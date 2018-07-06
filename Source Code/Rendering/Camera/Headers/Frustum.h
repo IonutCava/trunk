@@ -93,12 +93,10 @@ class Frustum {
         return ContainsSphere(center, radius, lastPlaneCache);
     }
 
-    // Get the frustum corners in WorldSpace. cornerWS must be a vector with at
-    // least 8 allocated slots
-    void getCornersWorldSpace(vector<vec3<F32> >& cornersWS);
-    // Get the frustum corners in ViewSpace. cornerVS must be a vector with at
-    // least 8 allocated slots
-    void getCornersViewSpace(vector<vec3<F32> >& cornersVS);
+    // Get the frustum corners in WorldSpace. cornerWS must be a vector with at least 8 allocated slots
+    void getCornersWorldSpace(std::array<vec3<F32>, 8>& cornersWS) const;
+    // Get the frustum corners in ViewSpace. cornerVS must be a vector with at least 8 allocated slots
+    void getCornersViewSpace(std::array<vec3<F32>, 8>& cornersVS) const;
 
     void computePlanes(const mat4<F32>& viewProjMatrix);
 

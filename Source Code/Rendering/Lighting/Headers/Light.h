@@ -39,6 +39,8 @@
 
 namespace Divide {
 
+typedef std::array<Camera*, Config::Lighting::MAX_SPLITS_PER_LIGHT> ShadowCameraPool;
+
 /// The different types of lights supported
 enum class LightType : U8 {
     DIRECTIONAL = 0,
@@ -160,16 +162,7 @@ class Light : public SceneNode {
                      SceneState& sceneState) override;
 
     /*----------- Shadow Mapping-------------------*/
-    /// Set the function used to generate shadows for this light
-    inline ShadowMapInfo* getShadowMapInfo() const { return _shadowMapInfo; }
-
-    void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
-    bool removeShadowMapInfo();
-
-    void validateOrCreateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState);
-    virtual void generateShadowMaps(U32 passIdx, GFX::CommandBuffer& bufferInOut);
-
-    inline const ShadowProperties& getShadowProperties() const {
+     inline const ShadowProperties& getShadowProperties() const {
         return _shadowProperties;
     }
 
@@ -191,6 +184,10 @@ class Light : public SceneNode {
         return _shadowProperties._lightPosition[index];
     }
 
+    inline U16 getShadowOffset() const {
+        return to_U16(_shadowProperties._lightDetails.z);
+    }
+
     inline void setShadowVPMatrix(U8 index, const mat4<F32>& newValue) {
         assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
 
@@ -207,6 +204,13 @@ class Light : public SceneNode {
         _shadowProperties._lightPosition[index].set(newValue, 1.0f);
     }
 
+    inline void setShadowOffset(U16 offset) {
+        _shadowProperties._lightDetails.z = to_F32(offset);
+    }
+
+    inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }
+    inline const ShadowCameraPool& shadowCameras() const { return _shadowCameras; }
+
    protected:
     friend class LightPool;
     template <typename T>
@@ -222,6 +226,10 @@ class Light : public SceneNode {
 
     void updateImpostor();
 
+
+    virtual void updateDebugViews(bool state, U32 arrayOffset) = 0;
+    virtual void initDebugViews(GFXDevice& context) = 0;
+
    protected:
     bool _spotPropertiesChanged;
     /// Used to generate spot light penumbra using D3D's dual-cone method
@@ -236,8 +244,6 @@ class Light : public SceneNode {
     bool _castsShadows;
     // Shadow mapping properties
     ShadowProperties _shadowProperties;
-
-    ShadowMapInfo* _shadowMapInfo;
 
     LightType _type;
 

@@ -52,81 +52,52 @@ class Camera;
 class ShadowMapInfo;
 class SceneRenderState;
 
+struct DebugView;
+
+enum class LightType : U8;
+
 namespace GFX {
     class CommandBuffer;
 };
 
-typedef std::array<Camera*, Config::Lighting::MAX_SPLITS_PER_LIGHT> ShadowCameraPool;
+class ShadowMapGenerator {
+protected:
+    explicit ShadowMapGenerator(GFXDevice& context);
+
+    friend class ShadowMap;
+    virtual void render(const Camera& playerCamera, Light& light, U32 passIdx, GFX::CommandBuffer& bufferInOut) = 0;
+
+protected:
+    GFXDevice& _context;
+};
 
 /// All the information needed for a single light's shadowmap
 class NOINITVTABLE ShadowMap {
-   public:
-    explicit ShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, ShadowType type);
-    virtual ~ShadowMap();
-
-    /// Render the scene and save the frame to the shadow map
-    virtual void render(U32 passIdx, GFX::CommandBuffer& bufferInOut) = 0;
-    /// Get the current shadow mapping technique
-    inline ShadowType getShadowMapType() const { return _shadowMapType; }
-
-    RenderTarget& getDepthMap();
-    const RenderTarget& getDepthMap() const;
-
-    RenderTargetID getDepthMapID();
-    const RenderTargetID getDepthMapID() const;
-
-    inline U32 getArrayOffset() const {
-        return _arrayOffset;
-    }
-
-    virtual void init(ShadowMapInfo* const smi) = 0;
-    static void resetShadowMaps(GFXDevice& context);
+  public:
+    // Init and destroy buffers, shaders, etc
     static void initShadowMaps(GFXDevice& context);
-    static void clearShadowMaps(GFXDevice& context);
+    static void destroyShadowMaps(GFXDevice& context);
+
+    // Reset usage flags
+    static void resetShadowMaps();
+
     static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
-    static U16  findDepthMapLayer(ShadowType shadowType);
-    static void commitDepthMapLayer(ShadowType shadowType, U32 layer);
-    static bool freeDepthMapLayer(ShadowType shadowType, U32 layer);
+    static U16  findDepthMapOffset(ShadowType shadowType);
+    static void commitDepthMapOffset(ShadowType shadowType, U32 layer);
+    static bool freeDepthMapOffset(ShadowType shadowType, U32 layer);
     static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
+    static void generateShadowMaps(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut);
 
-   protected:
-     Camera* playerCamera() const;
+    static ShadowType getShadowTypeForLightType(LightType type);
 
-   protected:
-    GFXDevice& _context;
+    static const RenderTargetHandle& getDepthMap(LightType type);
 
+  protected:
     typedef vector<bool> LayerUsageMask;
-    static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> _depthMapUsage;
-    
-    ShadowType _shadowMapType;
-    U16 _arrayOffset;
-    /// Internal pointer to the parent light
-    Light* _light;
-    const ShadowCameraPool& _shadowCameras;
-    bool _init;
+    static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> s_depthMapUsage;
+    static std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> s_shadowMapGenerators;
 
     static vector<RenderTargetHandle> s_shadowMaps;
-};
-
-class ShadowMapInfo {
-   public:
-    ShadowMapInfo(Light* light);
-    virtual ~ShadowMapInfo();
-
-    inline ShadowMap* getShadowMap() { return _shadowMap; }
-
-    ShadowMap* createShadowMap(GFXDevice& context, const SceneRenderState& sceneRenderState, const ShadowCameraPool& shadowCameras);
-
-    inline U8 numLayers() const { return _numLayers; }
-
-    inline void numLayers(U8 layerCount) {
-        _numLayers = std::min(layerCount, to_U8(Config::Lighting::MAX_SPLITS_PER_LIGHT));
-    }
-
-   private:
-    U8 _numLayers;
-    ShadowMap* _shadowMap;
-    Light* _light;
 };
 
 };  // namespace Divide

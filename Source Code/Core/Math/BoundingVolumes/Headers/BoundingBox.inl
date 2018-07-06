@@ -60,6 +60,12 @@ inline void BoundingBox::createFromPoints(const vector<vec3<F32>>& points) {
     }
 }
 
+inline void BoundingBox::createFromPoints(const std::array<vec3<F32>, 8>& points) {
+    for (const vec3<F32>& p : points) {
+        add(p);
+    }
+}
+
 inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) {
     _max.set(center + radius);
     _min.set(center - radius);

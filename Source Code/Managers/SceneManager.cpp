@@ -204,7 +204,8 @@ void SceneManager::setActiveScene(Scene* const scene) {
         //corrupt save
     }
 
-    ShadowMap::resetShadowMaps(_platformContext->gfx());
+    ShadowMap::resetShadowMaps();
+
     _platformContext->gui().onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->name());
 
@@ -472,7 +473,7 @@ bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
         Scene& activeScene = getActiveScene();
         LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
         assert(lightPool != nullptr);
-        return lightPool->generateShadowMaps(activeScene.renderState(), *playerCamera(), bufferInOut);
+        return lightPool->generateShadowMaps(*playerCamera(), bufferInOut);
     }
 
     return true;

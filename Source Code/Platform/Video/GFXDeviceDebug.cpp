@@ -120,6 +120,12 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 
         constexpr I32 maxViewportColumnCount = 10;
         I32 viewCount = to_I32(_debugViews.size());
+        for (auto view : _debugViews) {
+            if (!view->_enabled) {
+                --viewCount;
+            }
+        }
+
         I32 columnCount = std::min(viewCount, maxViewportColumnCount);
         I32 rowCount = viewCount / maxViewportColumnCount;
         if (viewCount % maxViewportColumnCount > 0) {
@@ -152,8 +158,12 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         drawCommand._drawCommands.push_back(triangleCmd);
 
         for (U8 idx = 0; idx < to_U8(_debugViews.size()); ++idx) {
-
             DebugView& view = *_debugViews[idx];
+
+            if (!view._enabled) {
+                continue;
+            }
+
             pipelineDesc._shaderProgramHandle = view._shader->getID();
 
             bindPipeline._pipeline = newPipeline(pipelineDesc);
@@ -212,7 +222,7 @@ DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
 
 void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
     if (_debugFrustum != nullptr) {
-        vector<vec3<F32>> corners;
+        std::array<vec3<F32>, 8> corners;
         _debugFrustum->getCornersViewSpace(corners);
 
         vector<Line> lines;

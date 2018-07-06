@@ -23,4 +23,32 @@ DirectionalLight::~DirectionalLight()
 {
 }
 
+
+void DirectionalLight::initDebugViews(GFXDevice& context)
+{
+    _debugViews.resize(_csmSplitCount);
+
+    ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
+    shadowPreviewShader.setThreadedLoading(false);
+    ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(parentResourceCache(), shadowPreviewShader);
+    for (U32 i = 0; i < _csmSplitCount; ++i) {
+        DebugView_ptr shadow = std::make_shared<DebugView>();
+        shadow->_texture = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+        shadow->_shader = previewDepthMapShader;
+        shadow->_shaderData.set("layer", GFX::PushConstantType::INT, i + getShadowOffset());
+        shadow->_shaderData.set("useScenePlanes", GFX::PushConstantType::BOOL, false);
+        shadow->_name = Util::StringFormat("CSM_%d", i + getShadowOffset());
+        _debugViews[i] = context.addDebugView(shadow);
+    }
+}
+
+void DirectionalLight::updateDebugViews(bool state, U32 arrayOffset) {
+    for (U32 i = 0; i < _csmSplitCount; ++i) {
+        _debugViews[i]->_enabled = state;
+        if (state) {
+            _debugViews[i]->_shaderData.set("layer", GFX::PushConstantType::INT, i + arrayOffset);
+            _debugViews[i]->_name = Util::StringFormat("CSM_%d", i + arrayOffset);
+        }
+    }
+}
 };

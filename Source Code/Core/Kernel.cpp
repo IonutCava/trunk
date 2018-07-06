@@ -747,7 +747,7 @@ void Kernel::shutdown() {
     _sceneManager.reset();
     ECS::Terminate();
 
-    ShadowMap::clearShadowMaps(_platformContext->gfx());
+    ShadowMap::destroyShadowMaps(_platformContext->gfx());
     OpenCLInterface::instance().deinit();
     _renderPassManager.reset();
 

@@ -116,15 +116,18 @@ struct DebugView {
     DebugView()
         : _textureBindSlot(0)
         , _sortIndex(-1)
+        , _enabled (true)
     {
     }
 
     DebugView(U16 sortIndex)
         : _textureBindSlot(0)
         , _sortIndex(to_I16(sortIndex))
+        , _enabled(true)
     {
     }
 
+    bool _enabled;
     U8 _textureBindSlot;
     Texture_ptr _texture;
     ShaderProgram_ptr _shader;

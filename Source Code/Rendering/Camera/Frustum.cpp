@@ -9,8 +9,7 @@
 namespace Divide {
 
 Frustum::Frustum(Camera& parentCamera)
-    : _parentCamera(parentCamera),
-      _pointsDirty(true)
+    : _parentCamera(parentCamera)
 {
 }
 
@@ -151,37 +150,30 @@ void Frustum::intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
 }
 
 void Frustum::updatePoints() {
-    if (_pointsDirty) {
-        const Plane<F32>& leftPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_LEFT)];
-        const Plane<F32>& rightPlane  = _frustumPlanes[to_base(FrustPlane::PLANE_RIGHT)];
-        const Plane<F32>& nearPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_NEAR)];
-        const Plane<F32>& farPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_FAR)];
-        const Plane<F32>& topPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_TOP)];
-        const Plane<F32>& bottomPlane = _frustumPlanes[to_base(FrustPlane::PLANE_BOTTOM)];
+    const Plane<F32>& leftPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_LEFT)];
+    const Plane<F32>& rightPlane  = _frustumPlanes[to_base(FrustPlane::PLANE_RIGHT)];
+    const Plane<F32>& nearPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_NEAR)];
+    const Plane<F32>& farPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_FAR)];
+    const Plane<F32>& topPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_TOP)];
+    const Plane<F32>& bottomPlane = _frustumPlanes[to_base(FrustPlane::PLANE_BOTTOM)];
 
-        intersectionPoint(nearPlane, leftPlane,  topPlane,    _frustumPoints[to_base(FrustPoints::NEAR_LEFT_TOP)]);
-        intersectionPoint(nearPlane, rightPlane, topPlane,    _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_TOP)]);
-        intersectionPoint(nearPlane, rightPlane, bottomPlane, _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_BOTTOM)]);
-        intersectionPoint(nearPlane, leftPlane,  bottomPlane, _frustumPoints[to_base(FrustPoints::NEAR_LEFT_BOTTOM)]);
-        intersectionPoint(farPlane,  leftPlane,  topPlane,    _frustumPoints[to_base(FrustPoints::FAR_LEFT_TOP)]);
-        intersectionPoint(farPlane,  rightPlane, topPlane,    _frustumPoints[to_base(FrustPoints::FAR_RIGHT_TOP)]);
-        intersectionPoint(farPlane,  rightPlane, bottomPlane, _frustumPoints[to_base(FrustPoints::FAR_RIGHT_BOTTOM)]);
-        intersectionPoint(farPlane,  leftPlane,  bottomPlane, _frustumPoints[to_base(FrustPoints::FAR_LEFT_BOTTOM)]);
-
-        _pointsDirty = false;
-    }
+    intersectionPoint(nearPlane, leftPlane,  topPlane,    _frustumPoints[to_base(FrustPoints::NEAR_LEFT_TOP)]);
+    intersectionPoint(nearPlane, rightPlane, topPlane,    _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_TOP)]);
+    intersectionPoint(nearPlane, rightPlane, bottomPlane, _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_BOTTOM)]);
+    intersectionPoint(nearPlane, leftPlane,  bottomPlane, _frustumPoints[to_base(FrustPoints::NEAR_LEFT_BOTTOM)]);
+    intersectionPoint(farPlane,  leftPlane,  topPlane,    _frustumPoints[to_base(FrustPoints::FAR_LEFT_TOP)]);
+    intersectionPoint(farPlane,  rightPlane, topPlane,    _frustumPoints[to_base(FrustPoints::FAR_RIGHT_TOP)]);
+    intersectionPoint(farPlane,  rightPlane, bottomPlane, _frustumPoints[to_base(FrustPoints::FAR_RIGHT_BOTTOM)]);
+    intersectionPoint(farPlane,  leftPlane,  bottomPlane, _frustumPoints[to_base(FrustPoints::FAR_LEFT_BOTTOM)]);
 }
 
 // Get the frustum corners in WorldSpace.
-void Frustum::getCornersWorldSpace(vector<vec3<F32> >& cornersWS) {
-    updatePoints();
-
-    cornersWS.resize(0);
-    cornersWS.insert(std::begin(cornersWS), std::cbegin(_frustumPoints), std::cend(_frustumPoints));
+void Frustum::getCornersWorldSpace(std::array<vec3<F32>, 8 >& cornersWS) const {
+    cornersWS = _frustumPoints;
 }
 
 // Get the frustum corners in ViewSpace.
-void Frustum::getCornersViewSpace(vector<vec3<F32> >& cornersVS) {
+void Frustum::getCornersViewSpace(std::array<vec3<F32>, 8 >& cornersVS) const {
     getCornersWorldSpace(cornersVS);
 
     const mat4<F32>& viewMatrix = _parentCamera.getViewMatrix();
@@ -216,7 +208,7 @@ void Frustum::computePlanes(const mat4<F32>& viewProjMatrix) {
     }
 #endif
 
-    _pointsDirty = true;
+    updatePoints();
 }
 
 void Frustum::computePlanes(const mat4<F32>& viewProjMatrix, Plane<F32>* planesOut) {

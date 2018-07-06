@@ -134,8 +134,6 @@ bool LightPool::clear() {
 }
 
 bool LightPool::addLight(Light& light) {
-    light.addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(&light));
-
     const LightType type = light.getLightType();
     const U32 lightTypeIdx = to_base(type);
 
@@ -149,6 +147,7 @@ bool LightPool::addLight(Light& light) {
 
     UpgradeToWriteLock w_lock(ur_lock);
     _lights[lightTypeIdx].emplace_back(&light);
+    light.initDebugViews(_context);
 
     return true;
 }
@@ -175,10 +174,11 @@ void LightPool::idle() {
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
-bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Camera& playerCamera, GFX::CommandBuffer& bufferInOut) {
+bool LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut) {
     Time::ScopedTimer timer(_shadowPassTimer);
 
     ShadowMap::clearShadowMapBuffers(bufferInOut);
+    ShadowMap::resetShadowMaps();
 
     LightVec sortedLights;
     U32 shadowLightCount = 0;
@@ -188,12 +188,13 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Cam
 
     for (Light* light : sortedLights) {
         if (_sortedShadowProperties.size() >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-            break;
-        }
-
-         light->validateOrCreateShadowMaps(_context, sceneRenderState);
-         light->generateShadowMaps(shadowLightCount++ * Config::Lighting::MAX_SPLITS_PER_LIGHT, bufferInOut);
-         _sortedShadowProperties.emplace_back(light->getShadowProperties());
+            light->updateDebugViews(false, 0);
+        } else {
+            U32 offset = shadowLightCount++ * Config::Lighting::MAX_SPLITS_PER_LIGHT;
+            ShadowMap::generateShadowMaps(playerCamera, *light, offset, bufferInOut);
+             _sortedShadowProperties.emplace_back(light->getShadowProperties());
+             light->updateDebugViews(true, offset);
+         }
     }
 
     vec_size lightShadowCount = std::min(_sortedShadowProperties.size(), static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));

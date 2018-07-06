@@ -18,7 +18,6 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
       _rangeChanged(true),
       _drawImpostor(false),
       _impostor(nullptr),
-      _shadowMapInfo(nullptr),
       _impostorSGN(nullptr),
       _castsShadows(false),
       _spotPropertiesChanged(false),
@@ -65,7 +64,6 @@ bool Light::unload() {
         Camera::destroyCamera(_shadowCameras[i]);
     }
     _shadowCameras.fill(nullptr);
-    removeShadowMapInfo();
 
     return SceneNode::unload();
 }
@@ -180,31 +178,6 @@ void Light::updateImpostor() {
         _impostor->setRadius(range);
         _rangeChanged = false;
     }
-}
-
-void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo) {
-    MemoryManager::SAFE_UPDATE(_shadowMapInfo, shadowMapInfo);
-}
-
-bool Light::removeShadowMapInfo() {
-    MemoryManager::DELETE(_shadowMapInfo);
-    return true;
-}
-
-void Light::validateOrCreateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState) {
-    _shadowMapInfo->createShadowMap(context, sceneRenderState, _shadowCameras);
-}
-
-void Light::generateShadowMaps(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
-    ShadowMap* sm = _shadowMapInfo->getShadowMap();
-
-    DIVIDE_ASSERT(sm != nullptr,
-                  "Light::generateShadowMaps error: Shadow casting light "
-                  "with no shadow map found!");
-
-    _shadowProperties._lightDetails.z = sm->getArrayOffset();
-    sm->render(passIdx, bufferInOut);
-
 }
 
 };

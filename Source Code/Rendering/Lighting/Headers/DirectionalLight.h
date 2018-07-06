@@ -50,6 +50,10 @@ class DirectionalLight : public Light {
     inline F32 csmSplitLogFactor() const { return _csmSplitLogFactor; }
     inline void csmSplitLogFactor(F32 factor) { _csmSplitLogFactor = factor; }
 
+    void updateDebugViews(bool state, U32 arrayOffset) override;
+   protected:
+    void initDebugViews(GFXDevice& context) override;
+
    protected:
     /// CSM split count
     U8 _csmSplitCount;
@@ -57,6 +61,8 @@ class DirectionalLight : public Light {
     F32 _csmSplitLogFactor;
     /// CSM extra back up distance for light position
     F32 _csmNearClipOffset;
+    // Shadow debug views
+    vector<DebugView*> _debugViews;
 };
 
 };  // namespace Divide

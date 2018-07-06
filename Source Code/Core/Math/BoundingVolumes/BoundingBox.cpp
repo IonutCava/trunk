@@ -27,6 +27,12 @@ BoundingBox::BoundingBox(const vector<vec3<F32> >& points) noexcept
     createFromPoints(points);
 }
 
+BoundingBox::BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept
+    : BoundingBox()
+{
+    createFromPoints(points);
+}
+
 BoundingBox::~BoundingBox()
 {
 }

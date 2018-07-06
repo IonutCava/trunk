@@ -23,6 +23,12 @@ BoundingSphere::BoundingSphere(const vector<vec3<F32> >& points) noexcept
     createFromPoints(points);
 }
 
+BoundingSphere::BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept
+    : BoundingSphere()
+{
+    createFromPoints(points);
+}
+
 BoundingSphere::BoundingSphere(const BoundingSphere& s) noexcept {
     // WriteLock w_lock(_lock);
     this->_visibility = s._visibility;

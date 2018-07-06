@@ -52,6 +52,7 @@ class BoundingBox {
     BoundingBox() noexcept;
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept;
     BoundingBox(const vector<vec3<F32>>& points) noexcept;
+    BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept;
     BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept;
     ~BoundingBox();
 
@@ -73,6 +74,7 @@ class BoundingBox {
     AABBRayResult intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
 
     void createFromPoints(const vector<vec3<F32>>& points);
+    void createFromPoints(const std::array<vec3<F32>, 8>& points);
     void createFromSphere(const vec3<F32>& center, F32 radius);
 
     void add(const vec3<F32>& v) noexcept;

@@ -280,13 +280,7 @@
     <ClCompile Include="..\../Source Code/Rendering\Lighting\SpotLight.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp">
-      <Filter>Rendering\Lighting\ShadowMapping</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\ShadowMap.cpp">
-      <Filter>Rendering\Lighting\ShadowMapping</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\SingleShadowMap.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Graphs\SceneNodeRenderState.cpp">
@@ -336,9 +330,6 @@
     </ClCompile>
     <ClCompile Include="..\../Source Code/Rendering\RenderPass\RenderPassCuller.cpp">
       <Filter>Rendering\RenderPass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp">
-      <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Rendering\Camera\Frustum.cpp">
       <Filter>Rendering\Camera</Filter>
@@ -595,6 +586,15 @@
     <ClCompile Include="..\..\Source Code\Rendering\Camera\CameraSnapshot.cpp">
       <Filter>Rendering\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMapsGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMapGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -685,13 +685,7 @@
     <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\SpotLight.h">
       <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h">
-      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h">
-      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\SingleShadowMap.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Graphs\Headers\SceneNodeRenderState.h">
@@ -729,9 +723,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/Rendering\RenderPass\Headers\RenderPassCuller.h">
       <Filter>Rendering\RenderPass\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMaps.h">
-      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\Frustum.h">
       <Filter>Rendering\Camera\Headers</Filter>
@@ -1051,6 +1042,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\CameraSnapshot.h">
       <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\SingleShadowMapGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMapGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

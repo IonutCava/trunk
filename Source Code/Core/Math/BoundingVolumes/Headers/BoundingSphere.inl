@@ -107,6 +107,22 @@ inline void BoundingSphere::createFromPoints(const vector<vec3<F32>>& points) {
     }
 }
 
+inline void BoundingSphere::createFromPoints(const std::array<vec3<F32>, 8>& points) {
+    _radius = 0;
+
+    for (const vec3<F32>& p : points) {
+        _center += p / 8;
+    }
+
+    for (const vec3<F32>& p : points) {
+        const F32 distance = (p - _center).length();
+
+        if (distance > _radius) {
+            _radius = distance;
+        }
+    }
+}
+
 inline void BoundingSphere::reset() {
     _center.reset();
     _radius = 0.0f;

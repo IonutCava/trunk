@@ -40,8 +40,14 @@ class PointLight : public Light {
    public:
     explicit PointLight(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, F32 range, LightPool& parentPool);
 
+   protected:
+    void initDebugViews(GFXDevice& context) override;
+    void updateDebugViews(bool state, U32 arrayOffset) override;
+
    private:
     vec3<F32> _direction[6];
+    // Shadow debug views
+    vector<DebugView*> _debugViews;
 };
 
 };  // namespace Divide

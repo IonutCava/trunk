@@ -424,10 +424,10 @@
     <ClCompile Include="..\../Source Code/Rendering\Lighting\Light.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\Lighting\LightPool.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\Lighting\PointLight.cpp" />
-    <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp" />
-    <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMapGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMapsGenerator.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\ShadowMap.cpp" />
-    <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\SingleShadowMap.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\Lighting\SpotLight.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp" />
@@ -578,10 +578,10 @@
     <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\LightPool.h" />
     <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\PointLight.h" />
     <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\SpotLight.h" />
-    <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h" />
-    <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMaps.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMapGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h" />
     <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h" />
-    <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\SingleShadowMap.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\SingleShadowMapGenerator.h" />
     <ClInclude Include="..\../Source Code/Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h" />
     <ClInclude Include="..\../Source Code/Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h" />
     <ClInclude Include="..\../Source Code/Rendering\PostFX\CustomOperators\Headers\PostAAPreRenderOperator.h" />
