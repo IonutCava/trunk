@@ -67,53 +67,6 @@ DEFINE_SINGLETON(ParamHandler)
     template <typename T>
     bool isParam(const stringImpl& param) const;
 
-    template <>
-    stringImpl getParam(const stringImpl& name, stringImpl defaultValue) const;
-
-    template <>
-    void setParam(const stringImpl& name, const stringImpl& value);
-
-    #if defined(STRING_IMP) && STRING_IMP != 1
-    template <>
-    std::string getParam(const stringImpl& name, std::string defaultValue) const;
-
-    template <>
-    void setParam(const stringImpl& name, const std::string& value);
-
-    template <>
-    void delParam<std::string>(const stringImpl& name);
-    #endif
-
-    template <>
-    void delParam<stringImpl>(const stringImpl& name);
-
-    template <>
-    bool isParam<stringImpl>(const stringImpl& param) const;
-
-    template <>
-    bool getParam(const stringImpl& name, bool defaultValue) const;
-
-    template <>
-    void setParam(const stringImpl& name, const bool& value);
-
-    template <>
-    void delParam<bool>(const stringImpl& name);
-
-    template <>
-    bool isParam<bool>(const stringImpl& param) const;
-
-    template <>
-    F32 getParam(const stringImpl& name, F32 defaultValue) const;
-
-    template <>
-    void setParam(const stringImpl& name, const F32& value);
-
-    template <>
-    void delParam<F32>(const stringImpl& name);
-
-    template <>
-    bool isParam<F32>(const stringImpl& param) const;
-
   private:
     ParamMap _params;
     ParamBoolMap _paramBool;
@@ -124,6 +77,52 @@ DEFINE_SINGLETON(ParamHandler)
 
 END_SINGLETON
 
+template <>
+stringImpl ParamHandler::getParam(const stringImpl& name, stringImpl defaultValue) const;
+
+template <>
+void ParamHandler::setParam(const stringImpl& name, const stringImpl& value);
+
+#if defined(STRING_IMP) && STRING_IMP != 1
+template <>
+std::string ParamHandler::getParam(const stringImpl& name, std::string defaultValue) const;
+
+template <>
+void ParamHandler::setParam(const stringImpl& name, const std::string& value);
+
+template <>
+void ParamHandler::delParam<std::string>(const stringImpl& name);
+#endif
+
+template <>
+void ParamHandler::delParam<stringImpl>(const stringImpl& name);
+
+template <>
+bool ParamHandler::isParam<stringImpl>(const stringImpl& param) const;
+
+template <>
+bool ParamHandler::getParam(const stringImpl& name, bool defaultValue) const;
+
+template <>
+void ParamHandler::setParam(const stringImpl& name, const bool& value);
+
+template <>
+void ParamHandler::delParam<bool>(const stringImpl& name);
+
+template <>
+bool ParamHandler::isParam<bool>(const stringImpl& param) const;
+
+template <>
+F32 ParamHandler::getParam(const stringImpl& name, F32 defaultValue) const;
+
+template <>
+void ParamHandler::setParam(const stringImpl& name, const F32& value);
+
+template <>
+void ParamHandler::delParam<F32>(const stringImpl& name);
+
+template <>
+bool ParamHandler::isParam<F32>(const stringImpl& param) const;
 };  // namespace Divide
 
 #endif  //_CORE_PARAM_HANDLER_H_

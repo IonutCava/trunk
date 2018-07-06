@@ -39,13 +39,13 @@
 
 // PhysX includes
 
-#include < PxPhysicsAPI.h >
-#include < PxDefaultErrorCallback.h >
-#include < PxDefaultAllocator.h >
-#include < PxVisualDebuggerExt.h >
-#include < PxAllocatorCallback.h >
+#include <PxPhysicsAPI.h>
 // Connecting the SDK to Visual Debugger
-#include < pvd/PxVisualDebugger.h >
+#include <pvd/PxVisualDebugger.h>
+#include <extensions/PxDefaultErrorCallback.h>
+#include <extensions/PxDefaultAllocator.h>
+#include <extensions/PxVisualDebuggerExt.h>
+#include <foundation/PxAllocatorCallback.h>
 // PhysX includes //
 
 #include "Physics/Headers/PhysicsAPIWrapper.h"

@@ -37,7 +37,6 @@
 #include "Utility/Headers/HashMap.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
-#include <limits.h>
 #include <functional>
 #include <atomic>
 #include <type_traits>
@@ -47,7 +46,7 @@
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 
 #if defined(_WIN32)
 #include "PlatformDefinesWindows.h"
@@ -87,7 +86,6 @@ typedef int8_t I8;
 typedef int16_t I16;
 typedef int32_t I32;
 typedef int64_t I64;
-typedef __int64 _I64;
 typedef float F32;
 typedef double D32;
 typedef void* bufferPtr;
@@ -100,8 +98,7 @@ constexpr U32 operator"" _u32 ( Enum value )
 }*/
 
 template <typename Type, typename = void>
-/*constexpr*/ auto to_underlying_type(const Type value) ->
-    typename Type {
+/*constexpr*/ auto to_underlying_type(const Type value) -> Type {
     return value;
 }
 
@@ -170,10 +167,15 @@ T to_bitwise(T X) {
     return 1 << X;
 }
 
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 template<typename T >
 std::unique_ptr<T> copy_unique(const std::unique_ptr<T>& source)
 {
-    return source ? std::make_unique<T>(*source) : nullptr;
+    return source ? make_unique<T>(*source) : nullptr;
 }
 
 
@@ -528,7 +530,7 @@ inline void DELETE_VECTOR(vectorImpl<T*>& vec) {
 template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
 inline void DELETE_HASHMAP(hashMapImpl<K, V, HashFun>& map) {
     if (!map.empty()) {
-        for (hashMapImpl<K, V, HashFun>::value_type& iter : map) {
+        for (typename hashMapImpl<K, V, HashFun>::value_type iter : map) {
             delete iter.second;
         }
         hashAlg::fastClear(map);

@@ -40,6 +40,11 @@
 #define THREAD_LOCAL __thread
 #endif  //THREAD_LOCAL
 
+#ifndef FORCE_INLINE
+#define FORCE_INLINE __attribute__((always_inline))
+#endif //FORCE_INLINE
+
+#include <limits>
 #include <Carbon/Carbon.h>
 void checkMacEvents();
 

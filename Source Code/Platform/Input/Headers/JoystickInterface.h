@@ -34,7 +34,7 @@
 
 #include "InputVariables.h"
 #include "Utility/Headers/Localization.h"
-#include "Core/Headers/console.h"
+#include "Core/Headers/Console.h"
 
 namespace Divide {
 namespace Input {

@@ -149,7 +149,7 @@ template <typename T>
 inline T vec2<T>::normalize() {
     T l = this->length();
 
-    if (l < EPSILON) {
+    if (l < EPSILON_F32) {
         return 0;
     }
 
@@ -161,7 +161,7 @@ inline T vec2<T>::normalize() {
 
 /// compare 2 vectors using the given tolerance
 template <typename T>
-inline bool vec2<T>::compare(const vec2 &v, F32 epsi = EPSILON_F32) const {
+inline bool vec2<T>::compare(const vec2 &v, F32 epsi) const {
     return (FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
             FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi));
 }
@@ -209,14 +209,14 @@ inline void vec2<T>::get(T *v) const {
 /// return the coordinates of the closest point from *this to the line
 /// determined by points vA and vB
 template <typename T>
-inline vec2<T> ClosestPointOnLine(const vec2<T> &vA, const vec2<T> &vB) {
+inline vec2<T> vec2<T>::closestPointOnLine(const vec2 &vA, const vec2 &vB) {
     return (((vB - vA) * this->projectionOnLine(vA, vB)) + vA);
 }
 
 /// return the coordinates of the closest point from *this to the segment
 /// determined by points vA and vB
 template <typename T>
-inline vec2<T> ClosestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB) {
+inline vec2<T> vec2<T>::closestPointOnSegment(const vec2 &vA, const vec2 &vB) {
     T factor = this->projectionOnLine(vA, vB);
 
     if (factor <= 0) return vA;
@@ -225,6 +225,7 @@ inline vec2<T> ClosestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB) {
 
     return (((vB - vA) * factor) + vA);
 }
+
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
 inline void vec2<T>::lerp(const vec2 &v, T factor) {
@@ -247,8 +248,8 @@ inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, T factor) {
 /// linear interpolation between 2 vectors based on separate x and y factors
 template <typename T>
 inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
-    return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x),
-                 (u.y * (1 - factor.y)) + (v.y * factor.y)));
+    return (vec2<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
+                    (u.y * (1 - factor.y)) + (v.y * factor.y)));
 }
 
 /*
@@ -256,7 +257,7 @@ inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
 */
 /// compare 2 vectors within the specified tolerance
 template <typename T>
-inline bool vec3<T>::compare(const vec3 &v, F32 epsi = EPSILON_F32) const {
+inline bool vec3<T>::compare(const vec3 &v, F32 epsi) const {
     return FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
            FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi) &&
            FLOAT_COMPARE_TOLERANCE(this->z, v.z, epsi);
@@ -326,7 +327,7 @@ inline T vec3<T>::angle(vec3 &v) const {
     T angle =
         (T)std::fabs(std::acos(this->dot(v) / (this->length() * v.length())));
 
-    if (angle < EPSILON) {
+    if (angle < EPSILON_F32) {
         return 0;
     }
     return angle;
@@ -430,14 +431,14 @@ inline vec3<T> vec3<T>::vector(const vec3 &vp1, const vec3 &vp2) const {
 /// return the closest point on the line defined by the 2 points (A, B) and this
 /// vector
 template <typename T>
-inline vec3<T> ClosestPointOnLine(const vec3<T> &vA, const vec3<T> &vB) {
+inline vec3<T> vec3<T>::closestPointOnLine(const vec3 &vA, const vec3 &vB) {
     return (((vB - vA) * this->projectionOnLine(vA, vB)) + vA);
 }
 
 /// return the closest point on the line segment created between the 2 points
 /// (A, B) and this vector
 template <typename T>
-inline vec3<T> ClosestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB) {
+inline vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
     T factor = this->projectionOnLine(vA, vB);
 
     if (factor <= 0.0f) return vA;
@@ -468,7 +469,7 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
 /// compare this vector with the one specified and see if they match within the
 /// specified amount
 template <typename T>
-inline bool vec4<T>::compare(const vec4 &v, F32 epsi = EPSILON_F32) const {
+inline bool vec4<T>::compare(const vec4 &v, F32 epsi) const {
     return (FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
             FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi) &&
             FLOAT_COMPARE_TOLERANCE(this->z, v.z, epsi) &&

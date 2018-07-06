@@ -237,6 +237,12 @@ class vec2 {
     inline T dot(const vec2 &v) const;
     /// project this vector on the line defined by the 2 points(A, B)
     inline T projectionOnLine(const vec2 &vA, const vec2 &vB) const;
+    /// return the closest point on the line defined by the 2 points (A, B) and this
+    /// vector
+    inline vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB);
+    /// return the closest point on the line segment defined between the 2 points
+    /// (A, B) and this vector
+    inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB);
     /// compare 2 vectors within the specified tolerance
     inline bool compare(const vec2 &_v, F32 epsi = EPSILON_F32) const;
     /// export the vector's components in the first 2 positions of the specified
@@ -260,14 +266,6 @@ class vec2 {
     };
 };
 
-/// return the closest point on the line defined by the 2 points (A, B) and this
-/// vector
-template <typename T>
-inline vec2<T> ClosestPointOnLine(const vec2<T> &vA, const vec2<T> &vB);
-/// return the closest point on the line segment defined between the 2 points
-/// (A, B) and this vector
-template <typename T>
-inline vec2<T> ClosestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB);
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T, typename U>
 inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor);
@@ -464,6 +462,12 @@ class vec3 {
     inline void round();
     /// project this vector on the line defined by the 2 points(A, B)
     inline T projectionOnLine(const vec3 &vA, const vec3 &vB) const;
+    /// return the closest point on the line defined by the 2 points (A, B) and this
+    /// vector
+    inline vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB);
+    /// return the closest point on the line segment created between the 2 points
+    /// (A, B) and this vector
+    inline vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB);
     /// get the direction vector to the specified point
     inline vec3 direction(const vec3 &u) const;
     /// lerp between this and the specified vector by the specified amount
@@ -513,14 +517,6 @@ class vec3 {
     };
 };
 
-/// return the closest point on the line defined by the 2 points (A, B) and this
-/// vector
-template <typename T>
-inline vec3<T> ClosestPointOnLine(const vec3<T> &vA, const vec3<T> &vB);
-/// return the closest point on the line segment created between the 2 points
-/// (A, B) and this vector
-template <typename T>
-inline vec3<T> ClosestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB);
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T, typename U>
 inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor);

@@ -344,7 +344,8 @@ class mat3 {
         T l =
             static_cast<T>(std::sqrt(static_cast<D32>(x * x + y * y + z * z)));
 
-        l = l < EPSILON ? 1 : 1 / l x *= l;
+        l = l < EPSILON_F32 ? 1 : 1 / l;
+        x *= l;
         y *= l;
         z *= l;
 

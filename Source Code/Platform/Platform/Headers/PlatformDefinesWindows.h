@@ -54,9 +54,15 @@
 
 #ifndef THREAD_LOCAL
 #define THREAD_LOCAL __declspec(thread)
-#endif
+#endif //THREAD_LOCAL
+
+#ifndef FORCE_INLINE
+#define FORCE_INLINE __forceinline
+#endif //FORCE_INLINE
 
 #include <windows.h>
+#include <limits.h>
+
 #ifdef DELETE
 #undef DELETE
 #endif

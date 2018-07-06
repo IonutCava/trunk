@@ -54,7 +54,7 @@ static const D32 M_PIDIV180 = M_PI / 180;
 static const D32 M_180DIVPI = 180 / M_PI;
 static const D32 M_PIDIV360 = M_PIDIV180 / 2;
 
-const F32 INV_RAND_MAX = 1.0f / (RAND_MAX + 1);
+const F32 INV_RAND_MAX = 1.0f / RAND_MAX ;
 
 template <typename T>
 T Random(T max = RAND_MAX);
@@ -283,18 +283,18 @@ vec3<F32> UNPACK_VEC3(F32 value);
 
 namespace Mat4 {
 template <typename T>
-__forceinline void Add(const T* a, const T* b, T* r);
+FORCE_INLINE void Add(const T* a, const T* b, T* r);
 template <typename T>
-__forceinline void Subtract(const T* a, const T* b, T* r);
+FORCE_INLINE void Subtract(const T* a, const T* b, T* r);
 template <typename T>
-__forceinline void Multiply(const T* a, const T* b, T* r);
+FORCE_INLINE void Multiply(const T* a, const T* b, T* r);
 template <typename T>
-__forceinline void MultiplyScalar(const T* a, T b, T* r);
+FORCE_INLINE void MultiplyScalar(const T* a, T b, T* r);
 template <typename T>
-__forceinline T Det(const T* mat);
+FORCE_INLINE T Det(const T* mat);
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
 template <typename T>
-__forceinline void Inverse(const T* in, T* out);
+FORCE_INLINE void Inverse(const T* in, T* out);
 };  // namespace Mat4
 };  // namespace Util
 };  // namespace Divide

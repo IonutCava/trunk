@@ -42,6 +42,12 @@
 #define THREAD_LOCAL __thread
 #endif  //THREAD_LOCAL
 
+#ifndef FORCE_INLINE
+#define FORCE_INLINE __attribute__((always_inline))
+#endif //FORCE_INLINE
+
+#include <sys/time.h>
+#include <limits>
 #include <X11/Xlib.h>
 void checkX11Events();
 
@@ -60,7 +66,7 @@ namespace Divide {
         int _systemResolutionHeight;
     };
 
-    typedef timeVal TimeValue;
+typedef timeval TimeValue;
 }; //namespace Divide
 
 #endif //_PLATFORM_DEFINES_UNIX_H_
