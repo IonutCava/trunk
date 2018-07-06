@@ -197,8 +197,8 @@ bool Scene::loadGeometry(const FileData& data) {
     ResourceDescriptor item(data.ItemName);
     item.setResourceLocation(data.ModelName);
     if (data.ModelName.compare("Box3D") == 0) {
+        item.setPropertyList(Util::StringFormat("%2.2f", data.data));
         thisObj = CreateResource<Box3D>(item);
-        static_cast<Box3D*>(thisObj)->setSize(data.data);
     } else if (data.ModelName.compare("Sphere3D") == 0) {
         thisObj = CreateResource<Sphere3D>(item);
         static_cast<Sphere3D*>(thisObj)->setRadius(data.data);
