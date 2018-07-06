@@ -230,7 +230,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     SceneMap _sceneMap;
     Material* _defaultMaterial;
     SceneShaderData _sceneData;
-    Time::ProfileTimer* _sceneGraphCullTimer;
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
     U64 _saveTimer;

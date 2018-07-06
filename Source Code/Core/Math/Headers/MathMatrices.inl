@@ -1291,7 +1291,7 @@ template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator*(const mat4<U>& matrix) const {
     mat4<T> retValue;
-    Multiply(mat, matrix.mat, retValue.mat);
+    Multiply(*this, matrix, retValue);
     return retValue;
 }
 
@@ -1299,68 +1299,95 @@ template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator/(const mat4<U>& matrix) const {
     mat4<T> retValue;
-    Multiply(mat, matrix.getInverse().mat, retValue.mat);
+    Multiply(*this, matrix.getInverse(), retValue);
     return retValue;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator+(const mat4<U> &matrix) const {
-    mat4<T> retValue;
-    Add(mat, matrix.mat, retValue.mat);
-    return retValue;
+    const U* b = matrix.mat;
+
+    return mat4<T>(mat[0]  + static_cast<T>(b[0]),  mat[1]  + static_cast<T>(b[1]),  mat[2]  + static_cast<T>(b[2]),  mat[3]  + static_cast<T>(b[3]),
+                   mat[4]  + static_cast<T>(b[4]),  mat[5]  + static_cast<T>(b[5]),  mat[6]  + static_cast<T>(b[6]),  mat[7]  + static_cast<T>(b[7]), 
+                   mat[8]  + static_cast<T>(b[8]),  mat[9]  + static_cast<T>(b[9]),  mat[10] + static_cast<T>(b[10]), mat[11] + static_cast<T>(b[11]), 
+                   mat[12] + static_cast<T>(b[12]), mat[13] + static_cast<T>(b[13]), mat[14] + static_cast<T>(b[14]), mat[15] + static_cast<T>(b[15]));
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator-(const mat4<U> &matrix) const {
-    mat4<T> retValue;
-    Subtract(mat, matrix.mat, retValue.mat);
-    return retValue;
+    const U* b = matrix.mat;
+
+    return mat4<T>(mat[0]  - static_cast<T>(b[0]),  mat[1]  - static_cast<T>(b[1]),  mat[2]  - static_cast<T>(b[2]),  mat[3]  - static_cast<T>(b[3]),
+                   mat[4]  - static_cast<T>(b[4]),  mat[5]  - static_cast<T>(b[5]),  mat[6]  - static_cast<T>(b[6]),  mat[7]  - static_cast<T>(b[7]),
+                   mat[8]  - static_cast<T>(b[8]),  mat[9]  - static_cast<T>(b[9]),  mat[10] - static_cast<T>(b[10]), mat[11] - static_cast<T>(b[11]),
+                   mat[12] - static_cast<T>(b[12]), mat[13] - static_cast<T>(b[13]), mat[14] - static_cast<T>(b[14]), mat[15] - static_cast<T>(b[15]));
 }
 
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator*=(const mat4<U> &matrix) {
-    set(*this * matrix);
+    Multiply(*this, matrix, *this);
     return *this;
 }
 
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator/=(const mat4<U> &matrix) {
-    set(*this / matrix);
+    Multiply(*this, matrix.getInverse(), *this);
     return *this;
 }
 
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator+=(const mat4<U> &matrix) {
-    Add(mat, matrix.mat, mat);
+    const U* b = matrix.mat;
+
+    U8 index = 0;
+    for (U8 i = 0; i < 4; ++i) {
+        index = i * 4;
+        setRow(i, mat[index + 0] + static_cast<T>(b[index + 0]),
+                  mat[index + 1] + static_cast<T>(b[index + 1]),
+                  mat[index + 2] + static_cast<T>(b[index + 2]),
+                  mat[index + 3] + static_cast<T>(b[index + 3]));
+    }
     return *this;
 }
 
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) {
-    Subtract(mat, matrix.mat, mat);
+    const U* b = matrix.mat;
+
+    U8 index = 0;
+    for (U8 i = 0; i < 4; ++i) {
+        index = i * 4;
+        setRow(i, mat[index + 0] - static_cast<T>(b[index + 0]),
+                  mat[index + 1] - static_cast<T>(b[index + 1]),
+                  mat[index + 2] - static_cast<T>(b[index + 2]),
+                  mat[index + 3] - static_cast<T>(b[index + 3]));
+    }
+
     return *this;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator*(U f) const {
-    mat4<T> retValue;
-    MultiplyScalar(mat, f, retValue.mat);
-    return retValue;
+    return mat4<T>(mat[0]  * f, mat[1]  * f, mat[2]  * f, mat[3]  * f,
+                   mat[4]  * f, mat[5]  * f, mat[6]  * f, mat[7]  * f,
+                   mat[8]  * f, mat[9]  * f, mat[10] * f, mat[11] * f,
+                   mat[12] * f, mat[13] * f, mat[14] * f, mat[15] * f);
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator/(U f) const {
-    mat4<T> retValue;
-    DivideScalar(mat, f, retValue.mat);
-    return retValue;
+    return mat4<T>(mat[0]  / f, mat[1]  / f, mat[2]  / f, mat[3]  / f,
+                   mat[4]  / f, mat[5]  / f, mat[6]  / f, mat[7]  / f,
+                   mat[8]  / f, mat[9]  / f, mat[10] / f, mat[11] / f,
+                   mat[12] / f, mat[13] / f, mat[14] / f, mat[15] / f);
 }
 
 template<typename T>
@@ -1384,14 +1411,30 @@ mat4<T> mat4<T>::operator-(U f) const {
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator*=(U f) {
-    MultiplyScalar(mat, f, mat);
+    U8 index = 0;
+    for (U8 i = 0; i < 4; ++i) {
+        index = i * 4;
+        setRow(i, mat[index + 0] * f,
+                  mat[index + 1] * f,
+                  mat[index + 2] * f,
+                  mat[index + 3] * f);
+    }
+
     return *this;
 }
 
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator/=(U f) {
-    DivideScalar(mat, f, mat);
+    U8 index = 0;
+    for (U8 i = 0; i < 4; ++i) {
+        index = i * 4;
+        setRow(i, mat[index + 0] / f,
+                  mat[index + 1] / f,
+                  mat[index + 2] / f,
+                  mat[index + 3] / f);
+    }
+
     return *this;
 }
 
@@ -2070,68 +2113,13 @@ void mat4<T>::extractMat3(mat3<U> &matrix3) const {
 
 template<typename T>
 template<typename U>
-FORCE_INLINE void mat4<T>::Add(const T* a, const U* b, T* r) {
-    for (U8 i = 0; i < 16; ++i) {
-        r[i] = a[i] + static_cast<T>(b[i]);
-    }
-}
-
-template<typename T>
-template<typename U>
-FORCE_INLINE void mat4<T>::Subtract(const T* a, const U* b, T* r) {
-    for (U8 i = 0; i < 16; ++i) { 
-        r[i] = a[i] - static_cast<T>(b[i]);
-    }
-}
-
-template<typename T>
-template<typename U>
-FORCE_INLINE void mat4<T>::Multiply(const T* _RESTRICT_ a, const U* _RESTRICT_ b, T* _RESTRICT_ r) {
-    T rTemp[] =
-    { (a[0]  * b[0]) + (a[1] *  b[4]) + (a[2]  * b[8])  + (a[3]  * b[12]),
-      (a[0]  * b[1]) + (a[1] *  b[5]) + (a[2]  * b[9])  + (a[3]  * b[13]),
-      (a[0]  * b[2]) + (a[1] *  b[6]) + (a[2]  * b[10]) + (a[3]  * b[14]),
-      (a[0]  * b[3]) + (a[1] *  b[7]) + (a[2]  * b[11]) + (a[3]  * b[15]),
-      (a[4]  * b[0]) + (a[5] *  b[4]) + (a[6]  * b[8])  + (a[7]  * b[12]),
-      (a[4]  * b[1]) + (a[5] *  b[5]) + (a[6]  * b[9])  + (a[7]  * b[13]),
-      (a[4]  * b[2]) + (a[5] *  b[6]) + (a[6]  * b[10]) + (a[7]  * b[14]),
-      (a[4]  * b[3]) + (a[5] *  b[7]) + (a[6]  * b[11]) + (a[7]  * b[15]),
-      (a[8]  * b[0]) + (a[9] *  b[4]) + (a[10] * b[8])  + (a[11] * b[12]),
-      (a[8]  * b[1]) + (a[9] *  b[5]) + (a[10] * b[9])  + (a[11] * b[13]),
-      (a[8]  * b[2]) + (a[9] *  b[6]) + (a[10] * b[10]) + (a[11] * b[14]),
-      (a[8]  * b[3]) + (a[9] *  b[7]) + (a[10] * b[11]) + (a[11] * b[15]),
-      (a[12] * b[0]) + (a[13] * b[4]) + (a[14] * b[8])  + (a[15] * b[12]),
-      (a[12] * b[1]) + (a[13] * b[5]) + (a[14] * b[9])  + (a[15] * b[13]),
-      (a[12] * b[2]) + (a[13] * b[6]) + (a[14] * b[10]) + (a[15] * b[14]),
-      (a[12] * b[3]) + (a[13] * b[7]) + (a[14] * b[11]) + (a[15] * b[15]) };
-
-    memcpy(r, rTemp, 16 * sizeof(T));
-}
-
-template<typename T>
-template<typename U>
 FORCE_INLINE void mat4<T>::Multiply(const mat4<U>& matrixA, const mat4<U>& matrixB, mat4<U>& ret) {
+    // Calling this with matrixA == ret should be safe!
     for (U8 i = 0; i < 4; ++i) {
-        ret._vec[i].set(matrixB._vec[0] * matrixA._vec[i][0] +
-                        matrixB._vec[1] * matrixA._vec[i][1] +
-                        matrixB._vec[2] * matrixA._vec[i][2] +
-                        matrixB._vec[3] * matrixA._vec[i][3]);
-    }
-}
-
-template<typename T>
-template<typename U>
-FORCE_INLINE void mat4<T>::MultiplyScalar(const T* a, U b, T* r) {
-    for (U8 i = 0; i < 16; ++i) {
-        r[i] = static_cast<T>(a[i] * b);
-    }
-}
-
-template<typename T>
-template<typename U>
-FORCE_INLINE void mat4<T>::DivideScalar(const T* a, U b, T* r) {
-    for (U8 i = 0; i < 16; ++i) {
-        r[i] = static_cast<T>(a[i] / b);
+        ret.setRow(i, matrixB._vec[0] * matrixA._vec[i][0] +
+                      matrixB._vec[1] * matrixA._vec[i][1] +
+                      matrixB._vec[2] * matrixA._vec[i][2] +
+                      matrixB._vec[3] * matrixA._vec[i][3]);
     }
 }
 

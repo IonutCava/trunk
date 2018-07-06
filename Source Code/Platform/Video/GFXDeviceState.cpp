@@ -244,8 +244,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // If render targets ready, we initialize our post processing system
     PostFX::instance().init();
 
-    _commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
-
     _axisGizmo = getOrCreatePrimitive(false);
     _axisGizmo->name("GFXDeviceAxisGizmo");
     RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
@@ -323,7 +321,7 @@ void GFXDevice::closeRenderingAPI() {
     _api->closeRenderingAPI();
     // Close the loading thread and wait for it to terminate
     _state.stopLoaderThread();
-    Time::REMOVE_TIMER(_commandBuildTimer);
+
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {

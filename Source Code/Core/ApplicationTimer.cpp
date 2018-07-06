@@ -76,20 +76,6 @@ ApplicationTimer::~ApplicationTimer()
 {
 }
 
-void ApplicationTimer::addTimer(ProfileTimer* const timer) {
-    _profileTimers.push_back(timer);
-}
-
-void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
-    const stringImpl& timerName = timer->name();
-    _profileTimers.erase(
-        std::remove_if(std::begin(_profileTimers), std::end(_profileTimers),
-                       [&timerName](ProfileTimer* tTimer) -> bool {
-                           return tTimer->name().compare(timerName) == 0;
-                       }),
-        std::end(_profileTimers));
-}
-
 /// No need for init to be threadsafe
 void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);  //<prevent double init
@@ -128,12 +114,6 @@ void ApplicationTimer::benchmarkInternal(const U64 elapsedTime) {
                          _frameRateHandler.minFrameRate(),
                          1000.0f / _frameRateHandler.averageFrameRate());
 
-#if !defined(_RELEASE)
-        for (ProfileTimer* const timer : _profileTimers) {
-            timer->print();
-            timer->reset();
-        }
-#endif
     }
 }
 

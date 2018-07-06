@@ -642,7 +642,6 @@ DEFINE_SINGLETON(GFXDevice)
     mutable SharedLock _renderQueueLock;
     vectorImpl<RenderQueue> _renderQueues;
 
-    Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     typedef std::array<std::unique_ptr<ShaderBuffer>, MAX_PASSES_PER_STAGE> RenderStageBuffer;
     // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFERS

@@ -33,7 +33,9 @@ LoopTimingData::LoopTimingData() : _previousTime(0ULL),
 {
 }
 
-static Time::ProfileTimer* s_appLoopTimer = nullptr;
+namespace {
+    Time::ProfileTimer& g_appLoopTimer = Time::ADD_TIMER("Main Loop Timer");
+};
 
 bool Kernel::initStaticData() {
     return SceneManager::initStaticData();
@@ -66,8 +68,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _cameraMgr->addCameraUpdateListener(
         DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
     ParamHandler::instance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
-
-    s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
 }
 
 Kernel::~Kernel()
@@ -109,57 +109,59 @@ void Kernel::onLoop() {
     // Update internal timer
     Time::ApplicationTimer::instance().update();
 
-    Time::START_TIMER(*s_appLoopTimer);
 
-    // Update time at every render loop
-    _timingData._previousTime = _timingData._currentTime;
-    _timingData._currentTime = Time::ElapsedMicroseconds();
-    _timingData._currentTimeDelta = _timingData._currentTime - 
-                                    _timingData._previousTime;
-
-    // In case we break in the debugger
-    if (_timingData._currentTimeDelta > Time::SecondsToMicroseconds(1)) {
-        _timingData._currentTimeDelta = Config::SKIP_TICKS;
-        _timingData._previousTime = _timingData._currentTime -
-                                    _timingData._currentTimeDelta;
-    }
-
-    idle();
-
-    FrameEvent evt;
-    FrameListenerManager& frameMgr = FrameListenerManager::instance();
-
-    // Restore GPU to default state: clear buffers and set default render state
-    _GFX.beginFrame();
     {
-        // Launch the FRAME_STARTED event
-        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_STARTED, evt);
-        _timingData._keepAlive = frameMgr.frameEvent(evt);
+        Time::ScopedTimer timer(g_appLoopTimer);
+   
+        // Update time at every render loop
+        _timingData._previousTime = _timingData._currentTime;
+        _timingData._currentTime = Time::ElapsedMicroseconds();
+        _timingData._currentTimeDelta = _timingData._currentTime - 
+                                        _timingData._previousTime;
 
-        // Process the current frame
-        _timingData._keepAlive = mainLoopScene(evt) && _timingData._keepAlive;
+        // In case we break in the debugger
+        if (_timingData._currentTimeDelta > Time::SecondsToMicroseconds(1)) {
+            _timingData._currentTimeDelta = Config::SKIP_TICKS;
+            _timingData._previousTime = _timingData._currentTime -
+                                        _timingData._currentTimeDelta;
+        }
 
-        // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended
-        // event)
-        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_PROCESS, evt);
+        idle();
 
+        FrameEvent evt;
+        FrameListenerManager& frameMgr = FrameListenerManager::instance();
+
+        // Restore GPU to default state: clear buffers and set default render state
+        _GFX.beginFrame();
+        {
+            // Launch the FRAME_STARTED event
+            frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_STARTED, evt);
+            _timingData._keepAlive = frameMgr.frameEvent(evt);
+
+            // Process the current frame
+            _timingData._keepAlive = mainLoopScene(evt) && _timingData._keepAlive;
+
+            // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended
+            // event)
+            frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_PROCESS, evt);
+
+            _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
+        }
+        _GFX.endFrame(_APP.mainLoopActive());
+
+        // Launch the FRAME_ENDED event (buffers have been swapped)
+        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);
         _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
+
+        _timingData._keepAlive = !_APP.ShutdownRequested() && _timingData._keepAlive;
+
+        ErrorCode err = _APP.errorCode();
+
+        if (err != ErrorCode::NO_ERR) {
+            Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
+            _timingData._keepAlive = false;
+        }
     }
-    _GFX.endFrame(_APP.mainLoopActive());
-
-    // Launch the FRAME_ENDED event (buffers have been swapped)
-    frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);
-    _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
-
-    _timingData._keepAlive = !_APP.ShutdownRequested() && _timingData._keepAlive;
-
-    ErrorCode err = _APP.errorCode();
-
-    if (err != ErrorCode::NO_ERR) {
-        Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
-        _timingData._keepAlive = false;
-    }
-    Time::STOP_TIMER(*s_appLoopTimer);
 
 #if !defined(_RELEASE)
     if (_GFX.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0) {
@@ -172,7 +174,7 @@ void Kernel::onLoop() {
     }
 
     Util::RecordFloatEvent("kernel.mainLoopApp",
-                           to_float(s_appLoopTimer->get()),
+                           to_float(g_appLoopTimer.get()),
                            _timingData._currentTime);
 #endif
 }
@@ -334,6 +336,7 @@ void Kernel::warmup() {
     par.setParam(_ID("freezeLoopTime"), false);
 #if defined(_DEBUG) || defined(_PROFILE)
     Time::ApplicationTimer::instance().benchmark(true);
+    Time::ProfileTimer::printAll();
 #endif
     Attorney::SceneManagerKernel::initPostLoadState();
 
@@ -499,8 +502,6 @@ void Kernel::shutdown() {
     // Destroy the shader manager AFTER the resource cache
     ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
-   
-    Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
 void Kernel::onChangeWindowSize(U16 w, U16 h) {

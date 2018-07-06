@@ -14,6 +14,10 @@
 
 namespace Divide {
 
+namespace {
+    Time::ProfileTimer& g_commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
+};
+
 // ToDo: This will return false if the number of shader buffers or number of
 // textures does not match between the 2 packages although said buffers/textures
 // might be compatible and batchable between the two.
@@ -227,8 +231,9 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
 void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
                                   SceneRenderState& sceneRenderState,
                                   bool refreshNodeData,
-                                  U32 pass) {
-    Time::ScopedTimer timer(*_commandBuildTimer);
+                                  U32 pass)
+{
+    Time::ScopedTimer timer(g_commandBuildTimer);
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
 

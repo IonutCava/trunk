@@ -633,17 +633,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     void extractMat3(mat3<U> &matrix3) const;
 
     template <typename U>
-    static void Add(const T* a, const U* b, T* r);
-    template <typename U>
-    static void Subtract(const T* a, const U* b, T* r);
-    template <typename U>
-    static void Multiply(const T* _RESTRICT_ a, const U* _RESTRICT_ b, T* _RESTRICT_ r);
-    template <typename U>
     static void Multiply(const mat4<U>& matrixA, const mat4<U>& matrixB, mat4<U>& ret);
-    template <typename U>
-    static void MultiplyScalar(const T* a, U b, T* r);
-    template <typename U>
-    static void DivideScalar(const T* a, U b, T* r);
     // Copyright 2011 The Closure Library Authors. All Rights Reserved.
     static void Inverse(const T* in, T* out);
 

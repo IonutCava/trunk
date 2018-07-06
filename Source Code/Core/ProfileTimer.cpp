@@ -5,7 +5,15 @@
 namespace Divide {
 namespace Time {
 
-ScopedTimer::ScopedTimer(ProfileTimer& timer) : _timer(timer)
+namespace {
+    std::array<ProfileTimer, Config::Profile::MAX_PROFILE_TIMERS> g_profileTimers;
+    std::array<bool, Config::Profile::MAX_PROFILE_TIMERS> g_profileTimersState;
+
+    bool g_timersInit = false;
+};
+
+ScopedTimer::ScopedTimer(ProfileTimer& timer) 
+    : _timer(timer)
 {
     _timer.start();
 }
@@ -15,68 +23,86 @@ ScopedTimer::~ScopedTimer()
     _timer.stop();
 }
 
-ProfileTimer::ProfileTimer() {
-    _init = false;
-    _paused = false;
-    _timer = 0.0;
-#if defined(_DEBUG) || defined(_PROFILE)
-    _timerAverage = 0.0;
-    _timerCounter = 0;
-#endif
+ProfileTimer::ProfileTimer()
+    : _timer(0.0),
+      _timerAverage(0.0),
+      _timerCounter(0),
+      _globalIndex(0),
+      _paused(false)
+{
 }
 
 ProfileTimer::~ProfileTimer()
 {
-    ApplicationTimer::instance().removeTimer(this);
-}
-
-void ProfileTimer::reset() {
-#if defined(_DEBUG) || defined(_PROFILE)
-    _timerAverage = 0.0;
-    _timerCounter = 0;
-#endif
 }
 
 void ProfileTimer::start() {
 #if defined(_DEBUG) || defined(_PROFILE)
-    _timer = Time::MicrosecondsToMilliseconds<D64>(
-        ApplicationTimer::instance().getElapsedTime(true));
+    _timer = ElapsedMilliseconds(true);
 #endif
 }
 
 void ProfileTimer::stop() {
 #if defined(_DEBUG) || defined(_PROFILE)
-    if (_paused) {
-        reset();
-        return;
+    if (!_paused) {
+        _timerAverage += ElapsedMilliseconds(true) - _timer;
+        _timerCounter++;
     }
-
-    _timer = Time::MicrosecondsToMilliseconds<D64>(
-                 ApplicationTimer::instance().getElapsedTime(true)) -
-             _timer;
-    _timerAverage = _timerAverage + _timer;
-    _timerCounter++;
 #endif
 }
 
-void ProfileTimer::create(const stringImpl& name) {
-    if (_init) {
-        return;
-    }
+void ProfileTimer::pause(const bool state) {
+    _paused = state;
+}
 
-    _name = name;
-    _init = true;
-    // should never be called twice for the same object
-    ApplicationTimer::instance().addTimer(this);
+void ProfileTimer::reset() {
+    _timerAverage = 0;
+    _timerCounter = 0;
+    _paused = false;
 }
 
 void ProfileTimer::print() const {
 #if defined(_DEBUG) || defined(_PROFILE)
-    if (!_paused) {
-        Console::printfn("[ %s ] : [ %5.3f ms]", _name.c_str(),
-                         _timerAverage / _timerCounter);
-    }
+    Console::printfn("[ %s ] : [ %5.3f ms]", _name.c_str(), _timerAverage / _timerCounter);
 #endif
+}
+
+void ProfileTimer::printAll() {
+    for (ProfileTimer& entry : g_profileTimers) {
+        if (!g_profileTimersState[entry._globalIndex] || entry._paused) {
+            continue;
+        }
+        entry.print();
+        entry.reset();
+    }
+}
+
+ProfileTimer& ProfileTimer::getNewTimer(const char* timerName) {
+    if (!g_timersInit) {
+        g_profileTimersState.fill(false);
+
+        U32 index = 0;
+        for (ProfileTimer& entry : g_profileTimers) {
+            entry._globalIndex = index++;
+        }
+        g_timersInit = true;
+    }
+
+    for (ProfileTimer& entry : g_profileTimers) {
+        if (!g_profileTimersState[entry._globalIndex]) {
+            entry.reset();
+            entry._name = timerName;
+            g_profileTimersState[entry._globalIndex] = true;
+            return entry;
+        }
+    }
+
+    assert(false && "Reached max profile timer count!");
+    return g_profileTimers[0];
+}
+
+void ProfileTimer::removeTimer(ProfileTimer& timer) {
+    g_profileTimersState[timer._globalIndex] = false;
 }
 
 };  // namespace Time

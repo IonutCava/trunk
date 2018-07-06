@@ -95,7 +95,6 @@ class FrameRateHandler {
         U64 _tickTimeStamp;
 };
 
-class ProfileTimer;
 DEFINE_SINGLETON(ApplicationTimer)
     typedef std::chrono::microseconds USec;
     typedef std::chrono::milliseconds MSec;
@@ -121,11 +120,6 @@ DEFINE_SINGLETON(ApplicationTimer)
 
     inline TimeValue getCurrentTicksInternal() const;
     inline U64 getElapsedTimeInternal(const TimeValue& currentTicks) const;
-
-    friend class ProfileTimer;
-    void addTimer(ProfileTimer* const timer);
-    void removeTimer(ProfileTimer* const timer);
-    vectorImpl<ProfileTimer*> _profileTimers;
 
   private:
     bool _init;

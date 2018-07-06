@@ -1,6 +1,4 @@
 -- Compute
-#extension GL_ARB_shading_language_420pack : enable
-
 #include "HiZCullingAlgorithm.cmn";
 
 //ref: http://malideveloper.arm.com/resources/sample-code/occlusion-culling-hierarchical-z/

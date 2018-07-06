@@ -14,6 +14,10 @@
 
 namespace Divide {
 
+namespace {
+    Time::ProfileTimer& g_sceneGraphCullTimer = Time::ADD_TIMER("SceneGraph cull timer");
+};
+
 INIT_SCENE_FACTORY
 
 namespace {
@@ -69,7 +73,6 @@ SceneManager::~SceneManager()
 {
     _sceneShaderData->destroy();
     AI::AIManager::destroyInstance();
-    Time::REMOVE_TIMER(_sceneGraphCullTimer);
     UNREGISTER_FRAME_LISTENER(&(this->instance()));
     Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
@@ -93,7 +96,6 @@ bool SceneManager::init(GUI* const gui) {
     _GUI = gui;
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
     _renderPassManager = &RenderPassManager::instance();
-    _sceneGraphCullTimer = Time::ADD_TIMER("SceneGraph cull timer");
     _sceneShaderData.reset(GFX_DEVICE.newSB("sceneShaderData", 1, false, false, BufferUpdateFrequency::OFTEN));
     _sceneShaderData->create(1, sizeof(SceneShaderData));
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
@@ -340,9 +342,10 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
 
 void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {
     if (refreshNodeData) {
-        Time::ScopedTimer timer(*_sceneGraphCullTimer);
+        Time::ScopedTimer timer(g_sceneGraphCullTimer);
         cullSceneGraph(stage);
     }
+
     updateVisibleNodes(stage, refreshNodeData, pass);
 
     if (_activeScene->renderState().drawGeometry()) {

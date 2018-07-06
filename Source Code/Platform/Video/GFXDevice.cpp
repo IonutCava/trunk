@@ -52,7 +52,6 @@ GFXDevice::GFXDevice()
     _framebufferDraw = nullptr;
     _previewDepthMapShader = nullptr;
     _displayShader = nullptr;
-    _commandBuildTimer = nullptr;
     // Integers
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;

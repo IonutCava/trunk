@@ -42,27 +42,43 @@ class ProfileTimer {
     ProfileTimer();
     ~ProfileTimer();
 
-    void create(const stringImpl& name);
     void start();
     void stop();
-    void print() const;
+    void pause(const bool state);
     void reset();
+    void print() const;
 
     inline D64 get() const { return _timer; }
-    inline bool init() const { return _init; }
-    inline void pause(const bool state) { _paused = state; }
     inline const stringImpl& name() const { return _name; }
+
+    static void printAll();
+    static ProfileTimer& getNewTimer(const char* timerName);
+    static void removeTimer(ProfileTimer& timer);
 
    protected:
     stringImpl _name;
-    std::atomic_bool _paused;
-    std::atomic_bool _init;
-    std::atomic<D64> _timer;
-#if defined(_DEBUG) || defined(_PROFILE)
-    std::atomic<D64> _timerAverage;
-    std::atomic_int _timerCounter;
-#endif
+    D64 _timer;
+    D64 _timerAverage;
+    U32 _timerCounter;
+    U32 _globalIndex;
+    bool _paused;
 };
+
+class ScopedTimer : private NonCopyable {
+public:
+    explicit ScopedTimer(ProfileTimer& timer);
+    ~ScopedTimer();
+
+private:
+    ProfileTimer& _timer;
+};
+
+ProfileTimer& ADD_TIMER(const char* timerName);
+void REMOVE_TIMER(ProfileTimer*& timer);
+
+void START_TIMER(ProfileTimer& timer);
+void STOP_TIMER(ProfileTimer& timer);
+void PRINT_TIMER(ProfileTimer& timer);
 
 };  // namespace Time
 };  // namespace Divide

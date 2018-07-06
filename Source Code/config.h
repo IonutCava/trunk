@@ -141,6 +141,8 @@ const bool DISABLE_SHADING = false;
 const bool DISABLE_DRAWS = false;
 /// every viewport call is overridden with 1x1 (width x height)
 const bool USE_1x1_VIEWPORT = false;
+/// how many profiling timers are we allowed to use in our applications
+const unsigned int MAX_PROFILE_TIMERS = 2048;
 /// textures are capped at 2x2 when uploaded to the GPU
 const bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers
