@@ -163,12 +163,12 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
     terrainMaterial->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
-    terrainMaterial->addShaderDefines("COMPUTE_TBN");
-    terrainMaterial->addShaderDefines("SKIP_TEXTURES");
-    terrainMaterial->addShaderDefines(
+    terrainMaterial->setShaderDefines("COMPUTE_TBN");
+    terrainMaterial->setShaderDefines("SKIP_TEXTURES");
+    terrainMaterial->setShaderDefines(
         "MAX_TEXTURE_LAYERS " +
         std::to_string(TerrainLoaderAttorney::textureLayerCount(*terrain)));
-    terrainMaterial->addShaderDefines("CURRENT_TEXTURE_COUNT " +
+    terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +
                                       std::to_string(textureCount));
     terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW_STAGE,

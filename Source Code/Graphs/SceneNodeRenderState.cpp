@@ -27,12 +27,12 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(U32 stageMask) {
-    assert((stageMask & ~(to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
+    assert((stageMask & ~(to_bitwise(to_uint(RenderStage::COUNT)) - 1)) == 0);
     _exclusionMask &= ~stageMask;
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(U32 stageMask) {
-    assert((stageMask & ~(to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
+    assert((stageMask & ~(to_bitwise(to_uint(RenderStage::COUNT)) - 1)) == 0);
     _exclusionMask |= stageMask;
 }
 

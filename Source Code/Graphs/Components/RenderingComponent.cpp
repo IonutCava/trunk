@@ -269,14 +269,13 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
 
     bool depthPass = GFX_DEVICE.isDepthStage();
     bool shadowStage = GFX_DEVICE.getRenderStage() == RenderStage::SHADOW_STAGE;
+    bool reflectionStage = GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION_STAGE;
 
     if (!_materialInstance && depthPass) {
         return shadowStage
                    ? _parentSGN.getNode()->renderState().getShadowStateBlock()
                    : _parentSGN.getNode()->renderState().getDepthStateBlock();
     }
-
-    bool reflectionStage = GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION_STAGE);
 
     return _materialInstance->getRenderStateBlock(
         depthPass ? (shadowStage ? RenderStage::SHADOW_STAGE

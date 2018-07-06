@@ -903,6 +903,7 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
     }
 
     // Skip if the material was cooked by a different renderer
+    mat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
 
     mat->setDiffuse(
         vec4<F32>(pt.get<F32>("material.diffuse.<xmlattr>.r", 0.6f),
@@ -927,7 +928,6 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
     mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v", 50.f));
 
     mat->setDoubleSided(pt.get<bool>("material.doubleSided", false));
-    mat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture1")) {
         mat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0,

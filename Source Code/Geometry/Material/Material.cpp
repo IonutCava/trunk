@@ -59,7 +59,6 @@ Material::Material()
 
 Material::~Material()
 {
-    _defaultRenderStates.clear();
 }
 
 Material* Material::clone(const stringImpl& nameSuffix) {
@@ -69,6 +68,21 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     const Material& base = *this;
     Material* cloneMat =
         CreateResource<Material>(ResourceDescriptor(getName() + nameSuffix));
+
+    cloneMat->_shadingMode = base._shadingMode;
+    cloneMat->_shaderModifier = base._shaderModifier;
+    cloneMat->_translucencyCheck = base._translucencyCheck;
+    cloneMat->_dirty = base._dirty;
+    cloneMat->_dumpToFile = base._dumpToFile;
+    cloneMat->_useAlphaTest = base._useAlphaTest;
+    cloneMat->_doubleSided = base._doubleSided;
+    cloneMat->_hardwareSkinning = base._hardwareSkinning;
+    cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
+    cloneMat->_computedShaderTextures = base._computedShaderTextures;
+    cloneMat->_operation = base._operation;
+    cloneMat->_bumpMethod = base._bumpMethod;
+    cloneMat->_shaderData = base._shaderData;
+    cloneMat->_parallaxFactor = base._parallaxFactor;
 
     cloneMat->_translucencySource.clear();
 
@@ -95,20 +109,6 @@ Material* Material::clone(const stringImpl& nameSuffix) {
             cloneMat->addCustomTexture(tex.first, tex.second);
         }
     }
-    cloneMat->_shadingMode = base._shadingMode;
-    cloneMat->_shaderModifier = base._shaderModifier;
-    cloneMat->_translucencyCheck = base._translucencyCheck;
-    cloneMat->_dirty = base._dirty;
-    cloneMat->_dumpToFile = base._dumpToFile;
-    cloneMat->_useAlphaTest = base._useAlphaTest;
-    cloneMat->_doubleSided = base._doubleSided;
-    cloneMat->_hardwareSkinning = base._hardwareSkinning;
-    cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
-    cloneMat->_computedShaderTextures = base._computedShaderTextures;
-    cloneMat->_operation = base._operation;
-    cloneMat->_bumpMethod = base._bumpMethod;
-    cloneMat->_shaderData = base._shaderData;
-    cloneMat->_parallaxFactor = base._parallaxFactor;
 
     return cloneMat;
 }
@@ -239,8 +239,7 @@ void Material::clean() {
 }
 
 void Material::recomputeShaders() {
-    vectorAlg::vecSize size = _shaderInfo.size();
-    for (vectorAlg::vecSize index = 0; index < size; index++) {
+    for (U32 index = 0; index < to_uint(RenderStage::COUNT); index++) {
         ShaderInfo& info = _shaderInfo[index];
         if (!info._isCustomShader) {
             info._shaderCompStage =
@@ -452,7 +451,7 @@ ShaderProgram* const Material::ShaderInfo::getProgram() const {
 }
 
 Material::ShaderInfo& Material::getShaderInfo(RenderStage renderStage) {
-    return _shaderInfo[renderStageToIndex(renderStage)];
+    return _shaderInfo[to_uint(renderStage)];
 }
 
 void Material::setBumpMethod(const BumpMethod& newBumpMethod) {
@@ -476,7 +475,6 @@ bool Material::unload() {
             RemoveResource(shader);
         }
     }
-    _shaderInfo.clear();
     return true;
 }
 
@@ -488,14 +486,15 @@ void Material::setDoubleSided(bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if (_doubleSided) {
-        for (renderStateBlockMap::value_type& it : _defaultRenderStates) {
+        for (U32 index = 0; index < to_uint(RenderStage::COUNT); index++) {
+            size_t hash = _defaultRenderStates[index];
             RenderStateBlockDescriptor descriptor(
-                GFX_DEVICE.getStateBlockDescriptor(it.second));
+                GFX_DEVICE.getStateBlockDescriptor(hash));
             descriptor.setCullMode(CullMode::CULL_MODE_NONE);
             if (!_translucencySource.empty()) {
                 descriptor.setBlend(true);
             }
-            setRenderStateBlock(descriptor, it.first);
+            setRenderStateBlock(descriptor, static_cast<RenderStage>(index));
         }
     }
 

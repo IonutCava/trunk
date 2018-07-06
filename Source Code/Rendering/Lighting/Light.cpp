@@ -48,7 +48,8 @@ Light::Light(const F32 range, const LightType& type)
     memset(_dirty, true,
            to_uint(PropertyType::COUNT) * sizeof(bool));
     _enabled = true;
-    _renderState.addToDrawExclusionMask(RenderStage::DEPTH_STAGE);
+    _renderState.addToDrawExclusionMask(RenderStage::SHADOW_STAGE);
+    _renderState.addToDrawExclusionMask(RenderStage::Z_PRE_PASS_STAGE);
 }
 
 Light::~Light() { unload(); }
