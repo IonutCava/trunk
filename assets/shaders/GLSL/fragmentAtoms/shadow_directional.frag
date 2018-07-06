@@ -70,7 +70,7 @@ float applyShadowDirectional(int shadowIndex) {
         //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_shadowingSettings.y), 
         //             1.0, 
         //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
-        return chebyshevUpperBound(moments,  shadow_coord.w, dvd_shadowingSettings.y);
+        return chebyshevUpperBound(moments, shadow_coord.w, dvd_shadowingSettings.y);
     }
 
     return 1.0;

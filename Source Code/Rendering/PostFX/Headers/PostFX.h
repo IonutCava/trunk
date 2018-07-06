@@ -67,6 +67,14 @@ DEFINE_SINGLETON(PostFX)
     void idle();
     void updateResolution(U16 newWidth, U16 newHeight);
 
+    inline void toggleFilter(FilterType filter, const bool state) {
+        state ? SetBit(_filterMask, to_uint(filter)) : ClearBit(_filterMask, to_uint(filter));
+    }
+
+    inline bool getFilterState(FilterType filter) const {
+        return BitCompare(_filterMask, to_uint(filter));
+    }
+
   private:
     bool _enableNoise;
     bool _enableVignette;

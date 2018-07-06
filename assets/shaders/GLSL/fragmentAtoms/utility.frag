@@ -47,6 +47,10 @@ float ToLinearDepth(in float depthIn, in mat4 projMatrix) {
     return projMatrix[3][2] / (depthIn - projMatrix[2][2]);
 }
 
+bool InRangeExclusive(in float value, in float min, in float max) {
+    return value > min && value < max;
+}
+
 vec4 positionFromDepth(in float depth,
                        in mat4 invProjectionMatrix,
                        in vec2 uv) {

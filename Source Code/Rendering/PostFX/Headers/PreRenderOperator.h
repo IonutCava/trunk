@@ -46,15 +46,24 @@ class NOINITVTABLE PreRenderOperator {
     PreRenderOperator(FilterType operatorType, Framebuffer* hdrTarget, Framebuffer* ldrTarget)
         :  _operatorType(operatorType),
            _hdrTarget(hdrTarget),
-           _ldrTarget(ldrTarget)
+           _ldrTarget(ldrTarget),
+           _samplerCopy(nullptr)
     {
     }
 
-    virtual ~PreRenderOperator() {}
+    virtual ~PreRenderOperator() 
+    {
+        MemoryManager::DELETE(_samplerCopy);
+    }
 
     virtual void idle() = 0;
     virtual void execute() = 0;
-    virtual void reshape(U16 width, U16 height) = 0;
+
+    virtual void reshape(U16 width, U16 height) {
+        if (_samplerCopy) {
+            _samplerCopy->create(width, height);
+        }
+    }
 
     inline void addInputFB(Framebuffer* const input) {
         _inputFB.push_back(input);
@@ -67,11 +76,16 @@ class NOINITVTABLE PreRenderOperator {
     virtual void debugPreview(U8 slot) const {
     };
 
+    virtual Framebuffer* getOutput() const {
+        return _hdrTarget;
+    }
+
    protected:
     Framebuffer* _hdrTarget;
     Framebuffer* _ldrTarget;
-    FilterType  _operatorType;
+    Framebuffer* _samplerCopy;
 
+    FilterType  _operatorType;
     vectorImpl<Framebuffer*> _inputFB;
 };
 

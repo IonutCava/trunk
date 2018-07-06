@@ -57,6 +57,8 @@ void BloomPreRenderOperator::idle() {
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {
+    PreRenderOperator::reshape(width, height);
+
     U16 w = to_ushort(width / 4.0f);
     U16 h = to_ushort(height / 4.0f);
     _bloomOutput->create(w, h);

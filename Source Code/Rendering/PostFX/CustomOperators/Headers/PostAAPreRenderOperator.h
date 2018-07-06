@@ -53,7 +53,6 @@ class PostAAPreRenderOperator : public PreRenderOperator {
     I32 _postAASamples;
     ShaderProgram* _fxaa;
     ShaderProgram* _smaa;
-    Framebuffer* _samplerCopy;
 };
 
 };  // namespace Divide

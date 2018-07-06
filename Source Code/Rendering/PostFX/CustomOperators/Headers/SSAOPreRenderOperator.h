@@ -33,14 +33,6 @@
 #define _SSAO_PRE_RENDER_OPERATOR_H_
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
-/// This Operator processes the entire geometry via the SSAOShader, generating a
-/// intermediate FB
-/// The intermediate FB contains each object's normals in the "rgb" components,
-/// and the linear depth in the "a" component
-/// The intermediate FB is passed as a 2D sampler in the 2nd stage shader,
-/// processed and produces a full screen texure as a result
-/// The result FB contains AO ambient values that should be added to the final
-/// fragment's ambient lighting value
 
 namespace Divide {
 

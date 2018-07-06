@@ -24,18 +24,30 @@ class PreRenderBatch {
     }
 
     inline PreRenderOperator& getOperator(FilterType type) {
-        OperatorBatch& batch = _operators[to_uint(getOperatorSpace(type))];
-        OperatorBatch::iterator it = 
-            std::find_if(std::begin(batch), std::end(batch),
-                        [type](PreRenderOperator* op) { 
-                            return op->operatorType() == type;
-                        });
+        const OperatorBatch& batch = _operators[to_uint(getOperatorSpace(type))];
+        OperatorBatch::const_iterator it =
+            std::find_if(std::cbegin(batch), std::cend(batch),
+                [type](PreRenderOperator* op) {
+            return op->operatorType() == type;
+        });
+        assert(it != std::cend(batch));
+        return *(*it);
+    }
+
+    inline const PreRenderOperator& getOperator(FilterType type) const {
+        const OperatorBatch& batch = _operators[to_uint(getOperatorSpace(type))];
+        OperatorBatch::const_iterator it =
+            std::find_if(std::cbegin(batch), std::cend(batch),
+                [type](PreRenderOperator* op) {
+            return op->operatorType() == type;
+        });
         assert(it != std::cend(batch));
         return *(*it);
     }
 
    private:
-    inline FilterSpace getOperatorSpace(FilterType type) {
+
+    inline FilterSpace getOperatorSpace(FilterType type) const {
         switch(type) {
             case FilterType::FILTER_SS_ANTIALIASING :
                 return FilterSpace::FILTER_SPACE_LDR;

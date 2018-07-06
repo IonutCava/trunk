@@ -47,7 +47,6 @@ class DoFPreRenderOperator : public PreRenderOperator {
 
    private:
     ShaderProgram* _dofShader;
-    Framebuffer* _samplerCopy;
 };
 
 };  // namespace Divide

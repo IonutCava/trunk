@@ -143,7 +143,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _sceneData.lightCount(LightType::POINT, lightMgr.getActiveLightCount(LightType::POINT));
     _sceneData.lightCount(LightType::SPOT, lightMgr.getActiveLightCount(LightType::SPOT));
 
-    _sceneData._otherData.w = to_float(getRenderer().getFlag());
+    _sceneData.setRendererFlag(getRenderer().getFlag());
 
     _sceneData.toggleShadowMapping(lightMgr.shadowMappingEnabled());
 

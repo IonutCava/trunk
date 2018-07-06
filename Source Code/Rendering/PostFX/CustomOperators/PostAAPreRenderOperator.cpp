@@ -28,7 +28,6 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(Framebuffer* hdrTarget, Framebu
 PostAAPreRenderOperator::~PostAAPreRenderOperator() {
     RemoveResource(_fxaa);
     RemoveResource(_smaa);
-    MemoryManager::DELETE(_samplerCopy);
 }
 
 void PostAAPreRenderOperator::idle() {
@@ -42,7 +41,7 @@ void PostAAPreRenderOperator::idle() {
 }
 
 void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
-    _samplerCopy->create(width, height);
+    PreRenderOperator::reshape(width, height);
 }
 
 /// This is tricky as we use our screen as both input and output

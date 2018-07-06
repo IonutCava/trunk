@@ -67,10 +67,6 @@ struct SceneShaderData {
         _windDetails.set(directionX, directionY, directionZ, speed);
     }
 
-    inline void deltaTime(F32 deltaTimeSeconds) {
-        _otherData2.x = deltaTimeSeconds;
-    }
-
     inline void elapsedTime(U32 timeMS) {
         _otherData.x = to_float(timeMS);
     }
@@ -81,6 +77,14 @@ struct SceneShaderData {
 
     inline void toggleShadowMapping(bool state) {
         _otherData.z = state ? 1.0f : 0.0f;
+    }
+
+    inline void setRendererFlag(U32 flag) {
+        _otherData.w = to_float(flag);
+    }
+
+    inline void deltaTime(F32 deltaTimeSeconds) {
+        _otherData2.x = deltaTimeSeconds;
     }
 
     inline void lightCount(LightType type, U32 lightCount) {

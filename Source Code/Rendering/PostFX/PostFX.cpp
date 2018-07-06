@@ -197,48 +197,13 @@ void PostFX::idle() {
     bool enableLUT = false;
 
     _filterMask = 0;
-    if (enablePostAA) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_SS_ANTIALIASING));
-    } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_SS_ANTIALIASING));
-    }
-
-    if (enableSSR) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_SS_REFLECTIONS));
-    } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_SS_REFLECTIONS));
-    }
-
-    if (enableSSAO) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_SS_AMBIENT_OCCLUSION));
-    } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_SS_AMBIENT_OCCLUSION));
-    }
-
-    if (enableDoF) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_DEPTH_OF_FIELD));
-    } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_DEPTH_OF_FIELD));
-    }
-
-
-    if (enableMotionBlur) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_MOTION_BLUR));
-    } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_MOTION_BLUR));
-    }
-
-    if (enableBloom) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_BLOOM));
-    } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_BLOOM));
-    }
-
-    if (enableLUT) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_LUT_CORECTION));
-    } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_LUT_CORECTION));
-    }
+    toggleFilter(FilterType::FILTER_SS_ANTIALIASING, enablePostAA);
+    toggleFilter(FilterType::FILTER_SS_REFLECTIONS, enableSSR);
+    toggleFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION, enableSSAO);
+    toggleFilter(FilterType::FILTER_DEPTH_OF_FIELD, enableDoF);
+    toggleFilter(FilterType::FILTER_MOTION_BLUR, enableMotionBlur);
+    toggleFilter(FilterType::FILTER_BLOOM, enableBloom);
+    toggleFilter(FilterType::FILTER_LUT_CORECTION, enableLUT);
 }
 
 };

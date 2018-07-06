@@ -1,9 +1,9 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
+#include "utility.frag"
 #include "lightInput.cmn"
 #include "lightData.frag"
-#include "utility.frag"
 #include "materialData.frag"
 #include "shadowMapping.frag"
 #include "phong_lighting.frag"

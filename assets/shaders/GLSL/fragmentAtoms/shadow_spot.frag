@@ -1,30 +1,32 @@
 #ifndef _SHADOW_SPOT_FRAG_
 #define _SHADOW_SPOT_FRAG_
 
-float filterFinalShadow(in sampler2DArrayShadow depthMap, in vec4 vPosInDM){
+float compareResult(in float value, in float compare) {
+    return step(value, compare);
+}
+
+float filterFinalShadow(in sampler2DArray depthMap, in vec4 vPosInDM){
     // Gaussian 3x3 filter
-    float vDepthMapColor = texture(depthMap, vPosInDM);
-#if GPU_VENDOR == GPU_VENDOR_AMD
-    return vDepthMapColor;
-#else
+    float vDepthMapColor = compareResult(texture(depthMap, vPosInDM.xyz).r, vPosInDM.w);
+
     float fShadow = 0.0;
     if((vDepthMapColor+Z_TEST_SIGMA) < vPosInDM.z){
         fShadow = vDepthMapColor * 0.25;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1, -1)) * 0.0625;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1,  0))  * 0.125;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1,  1))  * 0.0625;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2(  0, -1)) * 0.125;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2(  0,  1))  * 0.125;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2(  1, -1)) * 0.0625;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2(  1,  0))  * 0.125;
-        fShadow += textureOffset(depthMap, vPosInDM, ivec2(  1,  1))  * 0.0625;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2( -1, -1)).r, vPosInDM.w) * 0.0625;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2( -1,  0)).r, vPosInDM.w)  * 0.125;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2( -1,  1)).r, vPosInDM.w)  * 0.0625;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2(  0, -1)).r, vPosInDM.w) * 0.125;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2(  0,  1)).r, vPosInDM.w)  * 0.125;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2(  1, -1)).r, vPosInDM.w) * 0.0625;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2(  1,  0)).r, vPosInDM.w)  * 0.125;
+        fShadow += compareResult(textureOffset(depthMap, vPosInDM.xyz, ivec2(  1,  1)).r, vPosInDM.w)  * 0.0625;
 
         fShadow = clamp(fShadow, 0.0, 1.0);
     }else{
         fShadow = 1.0;
     }
+
     return fShadow;
-#endif
 }
 
 float applyShadowSpot(int shadowIndex) {

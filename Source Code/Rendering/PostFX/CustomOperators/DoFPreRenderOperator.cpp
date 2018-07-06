@@ -13,7 +13,6 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* 
     _samplerCopy = GFX_DEVICE.newFB();
     _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
-    _samplerCopy->create(_hdrTarget->getWidth(), _hdrTarget->getHeight());
 
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
@@ -23,17 +22,17 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* 
 DoFPreRenderOperator::~DoFPreRenderOperator()
 {
     RemoveResource(_dofShader);
-    MemoryManager::DELETE(_samplerCopy);
 }
 
 void DoFPreRenderOperator::idle() {
 }
 
 void DoFPreRenderOperator::reshape(U16 width, U16 height) {
-    _samplerCopy->create(width, height);
+    PreRenderOperator::reshape(width, height);
 }
 
 void DoFPreRenderOperator::execute() {
+    return;
     // Copy current screen
     _samplerCopy->blitFrom(_hdrTarget);
     _samplerCopy->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));  // screenFB
