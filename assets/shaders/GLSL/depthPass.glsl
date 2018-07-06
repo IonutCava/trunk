@@ -45,7 +45,7 @@ void main()
 
 -- Fragment
 #if !defined(HAS_TRANSPARENCY)
-//layout(early_fragment_tests) in
+layout(early_fragment_tests) in;
 #endif
 
 #if defined(SHADOW_PASS)

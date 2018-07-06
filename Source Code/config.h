@@ -106,6 +106,15 @@ false;
 #else
 true;
 #endif
+
+/// If true, Hi-Z based occlusion culling is used
+const bool USE_HIZ_CULLING = true;
+/// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
+const bool DEBUG_HIZ_CULLING = true;
+/// If true, the depth pass acts as a zPrePass for the main draw pass as well
+/// If false, the main draw pass will clear the depth buffer and populate a new one instead
+const bool USE_Z_PRE_PASS = true;
+
 /// Compute related options
 namespace Compute {
 

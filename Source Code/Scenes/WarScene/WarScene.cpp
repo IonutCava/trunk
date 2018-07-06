@@ -471,7 +471,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
-    flagRComp->getMaterialInstance()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::BLUE());
 
     _flag[1] = _sceneGraph.getRoot().addNode(*flagNode, "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
@@ -490,7 +490,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
-    flagRComp->getMaterialInstance()->setDiffuse(vec4<F32>(1.0f, 0.0f, 0.0f, 1.0f));
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::RED());
 
     SceneGraphNode_ptr firstPersonFlag = _sceneGraph.getRoot().addNode(*flagNode, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
@@ -501,7 +501,9 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
-
+    flagRComp = firstPersonFlag->getChild(0, temp).getComponent<RenderingComponent>();
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::GREEN());
+    flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
     
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);

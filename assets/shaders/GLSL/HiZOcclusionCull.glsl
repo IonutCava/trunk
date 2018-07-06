@@ -22,12 +22,21 @@ layout(location = 0) uniform uint dvd_numEntities;
 layout(binding = 0, offset = 0) uniform atomic_uint culledCount;
 layout(local_size_x = 64) in;
 
+void cullNode(const in uint idx) {
+#if !defined(DEBUG_HIZ_CULLING)
+    atomicCounterIncrement(culledCount);
+    dvd_drawCommands[idx].instanceCount = 0;
+#endif
+
+    dvd_customData(idx) = 3.0;
+}
+
 void main()
 {
     uint ident = gl_GlobalInvocationID.x;
     
     if (ident >= dvd_numEntities) {
-        dvd_drawCommands[ident].instanceCount = 0;
+        cullNode(ident);
         return;
     }
     
@@ -44,9 +53,7 @@ void main()
     }
 
     if (zBufferCull(center, vec3(radius)) == 0) {
-        atomicCounterIncrement(culledCount);
-        dvd_drawCommands[ident].instanceCount = 0;
-        dvd_customData(nodeIndex) = 3.0;
+        cullNode(ident);
     }
 }
 

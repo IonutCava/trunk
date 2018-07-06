@@ -235,6 +235,8 @@ class Material : public Resource, public FrameListener {
 
     inline void useAlphaTest(const bool state) { _useAlphaTest = state; }
     
+    // Should the shaders be computed on add? Should reflections be always parsed? Etc
+    inline void setHighPriority(const bool state) { _highPriority = state; }
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
@@ -412,7 +414,7 @@ class Material : public Resource, public FrameListener {
                to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
 
     bool _shaderThreadedLoad;
-
+    bool _highPriority;
     /// use this map to add textures to the material
     vectorImpl<Texture*> _textures;
     vectorImpl<std::pair<Texture*, U8>> _customTextures;

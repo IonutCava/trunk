@@ -43,8 +43,7 @@ namespace {
 RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags)
     : _sortKey(sortKey),
       _name(name),
-      _stageFlags(passStageFlags),
-      _useZPrePass(GFX_DEVICE.getGPUVendor() != GPUVendor::AMD)
+      _stageFlags(passStageFlags)
 {
     STUBBED("Crimson drivers seem to be having issues with z-prepass at the moment!");
 
@@ -136,11 +135,13 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
-            if (_useZPrePass) {
+            if (Config::USE_HIZ_CULLING) {
                 GFX.occlusionCull(0);
+            }
+            if (Config::USE_Z_PRE_PASS) {
                 GFX.toggleDepthWrites(false);
             }
-            GFX.getRenderTarget(target)._buffer->begin(_useZPrePass ? _noDepthClear : Framebuffer::defaultPolicy());
+            GFX.getRenderTarget(target)._buffer->begin(Config::USE_Z_PRE_PASS ? _noDepthClear : Framebuffer::defaultPolicy());
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -182,7 +183,7 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
                 SceneManager::getInstance().getRenderer().preRender();
                 renderTarget.cacheSettings();
             } else {
-                if (_useZPrePass) {
+                if (Config::USE_Z_PRE_PASS) {
                     GFX.toggleDepthWrites(true);
                 }
             }

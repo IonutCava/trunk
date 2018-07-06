@@ -35,6 +35,7 @@ Material::Material()
       _useAlphaTest(false),
       _dumpToFile(true),
       _translucencyCheck(true),
+      _highPriority(false),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE)
 {
@@ -324,7 +325,7 @@ bool Material::canDraw(RenderStage renderStage) {
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         ShaderInfo& info = _shaderInfo[i];
         if (info._shaderCompStage != ShaderInfo::ShaderCompilationStage::COMPUTED) {
-            computeShader(static_cast<RenderStage>(i), false);
+            computeShader(static_cast<RenderStage>(i), _highPriority);
             return false;
         }
     }

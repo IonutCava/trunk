@@ -282,6 +282,14 @@ bool GL_API::initShaders() {
                              "//#pragma optionNV(unroll all)", lineOffsets);
     }
 
+    if (Config::USE_HIZ_CULLING) {
+        appendToShaderHeader(ShaderType::COUNT, "#define USE_HIZ_CULLING", lineOffsets);
+    }
+
+    if (Config::DEBUG_HIZ_CULLING) {
+        appendToShaderHeader(ShaderType::COUNT, "#define DEBUG_HIZ_CULLING", lineOffsets);
+    }
+
     appendToShaderHeader(
         ShaderType::COUNT,
         "const uint MAX_SPLITS_PER_LIGHT = " +
@@ -463,6 +471,8 @@ bool GL_API::initShaders() {
             std::to_string(
                 to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::LAYERED))),
         lineOffsets);
+
+    appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);
 
     // GLSL <-> VBO intercommunication
     appendToShaderHeader(ShaderType::VERTEX,

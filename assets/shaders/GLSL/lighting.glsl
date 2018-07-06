@@ -21,6 +21,9 @@ void main(void){
 }
 
 -- Fragment
+#if !defined(HAS_TRANSPARENCY)
+layout(early_fragment_tests) in;
+#endif
 
 #include "BRDF.frag"
 

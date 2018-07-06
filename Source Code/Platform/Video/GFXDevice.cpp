@@ -632,7 +632,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     return true;
 }
 
-/// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
+/// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 void GFXDevice::constructHIZ() {
     // The depth buffer's resolution should be equal to the screen's resolution
     Framebuffer* screenTarget = _renderTarget[anaglyphEnabled() ? to_const_uint(RenderTargetID::ANAGLYPH)
