@@ -23,7 +23,6 @@
 #ifndef _SHADER_HANDLER_H_
 #define _SHADER_HANDLER_H_
 
-#include "Utility/Headers/Vector.h"
 #include "Core/Resources/Headers/HardwareResource.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Video/Shaders/Headers/Shader.h"
@@ -52,7 +51,7 @@ public:
 
     virtual bool bind();
     virtual void unbind(bool resetActiveProgram = true);
-    virtual U8   update(const U64 deltaTime);
+    virtual bool update(const U64 deltaTime);
     virtual bool unload() { return true; }
     ///Attributes
     inline void Attribute(const stringImpl& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
@@ -191,8 +190,8 @@ protected:
     bool _refreshStage[ShaderType_PLACEHOLDER];
     bool _optimise;
     bool _dirty;
-    boost::atomic_bool _bound;
-    boost::atomic_bool _linked;
+    std::atomic_bool _bound;
+    std::atomic_bool _linked;
     U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
     U64 _elapsedTime;
     F32 _elapsedTimeMS;

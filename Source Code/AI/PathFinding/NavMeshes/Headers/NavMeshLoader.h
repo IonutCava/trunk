@@ -46,7 +46,6 @@
 #include "NavMeshConfig.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Graphs/Headers/SceneNode.h"
-#include <functional>
 
 namespace Divide {
     namespace AI {

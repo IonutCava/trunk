@@ -131,8 +131,8 @@ bool MainScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI
     _waterGraphNode->usageContext(SceneGraphNode::NODE_STATIC);
     _waterGraphNode->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
     //Render the scene for water reflection FB generation
-    _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
-    _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
+    _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, &SceneManager::getInstance()));
+    _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, &SceneManager::getInstance()));
 
     return loadState;
 }

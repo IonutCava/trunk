@@ -37,7 +37,7 @@ public:
     bool processCommand(const stringImpl& commandString);
 
 private:
-    typedef hashMapImpl<stringImpl/*command name*/, boost::function1<void, stringImpl /*args*/ > > CommandMap;
+    typedef hashMapImpl<stringImpl/*command name*/, std::function<void (stringImpl /*args*/) > > CommandMap;
 
     void handleSayCommand(const stringImpl& args);
     void handleQuitCommand(const stringImpl& args);

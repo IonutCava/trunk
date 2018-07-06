@@ -60,7 +60,7 @@ public:
     inline void value(const T& val) { _value = val; belief(1.0f); }
     inline void belief(F32 belief)  { _belief = belief; }
 
-    inline const T& value()  { belief(std::max(belief() - 0.01f, 0.0f)); return _value; }
+    inline const T& value()  const { return _value; }
     inline FactType type()   const { return _type; }
     inline F32      belief() const { return _belief; }
 
@@ -85,22 +85,21 @@ public:
         _hasEnemyFlag.value(false);
         _enemyHasFlag.value(false);
         _enemyFlagNear.value(false);
+		_friendlyFlagNear.value(true);
         _teamMateHasFlag.value(false);
-        _flagCarrierNear.value(false);
-        _enemyFlagCarrierNear.value(false);
         _health.value(100);
         _flagCarrier.value(nullptr);
         _enemyFlagCarrier.value(nullptr);
         _currentTargetEntity.value(nullptr);  
         _staticDataUpdated = false;
     }
-    static PositionFact     _team1FlagPosition;
-    static PositionFact     _team2FlagPosition;
-    static SmallCounterFact _team1Count;
-    static SmallCounterFact _team2Count;
-    static SGNNodeFact      _flags[2];
-    static AINodeFact       _flagCarrier;
-    static AINodeFact       _enemyFlagCarrier;
+	static SGNNodeFact      _flags[2];
+    static SmallCounterFact _teamCount[2];
+    static SmallCounterFact _flagProtectors[2];
+    static SmallCounterFact _flagRetrievers[2];
+	static PositionFact     _teamFlagPosition[2];
+		   AINodeFact       _flagCarrier;
+		   AINodeFact       _enemyFlagCarrier;
            SmallCounterFact _health;
            SGNNodeFact      _currentTargetEntity;
            PositionFact     _currentTargetPosition;
@@ -108,8 +107,7 @@ public:
            ToggleStateFact  _enemyHasFlag;
            ToggleStateFact  _teamMateHasFlag;
            ToggleStateFact  _enemyFlagNear;
-           ToggleStateFact  _enemyFlagCarrierNear;
-           ToggleStateFact  _flagCarrierNear;
+		   ToggleStateFact  _friendlyFlagNear;
     bool _staticDataUpdated;
 };
 
@@ -158,6 +156,8 @@ private:
     void updatePositions();
     bool performAction(const GOAPAction* planStep);
     bool performActionStep(GOAPAction::operationsIterator step);
+	bool printActionStats(const GOAPAction* planStep) const;
+	void printWorkingMemory() const;
     void init();
 
 private:

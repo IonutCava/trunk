@@ -26,7 +26,6 @@
 #define SCENE_GRAPH_PROCESS(pointer) DELEGATE_BIND(&SceneGraph::process(),pointer)
 
 #include "SceneNode.h"
-#include <boost/atomic.hpp>
 #include "Utility/Headers/StateTracker.h"
 #include "Graphs/Components/Headers/SGNComponent.h"
 #include "Graphs/Components/Headers/PhysicsComponent.h"
@@ -77,7 +76,7 @@ public:
 };
 
 class IMPrimitive;
-class SceneGraphNode : public GUIDWrapper, private boost::noncopyable{
+class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 public:
     typedef hashMapImpl<stringImpl, SceneGraphNode*> NodeChildren;
 
@@ -214,7 +213,7 @@ public:
     inline const mat4<F32>& getMaterialColorMatrix()    const { return _materialColorMatrix; }
     inline const mat4<F32>& getMaterialPropertyMatrix() const { return _materialPropertyMatrix; }
 
-    inline void registerdeletionCallback(const DELEGATE_CBK& cbk) {
+	inline void registerdeletionCallback(const DELEGATE_CBK<>& cbk) {
         _deletionCallbacks.push_back(cbk);
     }
 #ifdef _DEBUG
@@ -248,9 +247,10 @@ private:
     NodeChildren _children;
     SceneGraphNode *_parent;
     SceneGraph     *_sceneGraph;
-    boost::atomic<bool> _active;
-    boost::atomic<bool> _loaded;
-    boost::atomic<bool> _inView;
+    std::atomic<bool> _active;
+    std::atomic<bool> _loaded;
+    std::atomic<bool> _inView;
+	std::atomic<bool> _boundingBoxDirty;
     //Used to skip certain BB's (sky, lights, etc);
     U32 _bbAddExclusionList;
     bool _selected;
@@ -263,7 +263,6 @@ private:
     bool _renderWireframe;
     bool _renderBoundingBox;
     bool _renderSkeleton;
-    boost::atomic<bool> _boundingBoxDirty;
     bool _shouldDelete;
     ///_initialBoundingBox is a copy of the initialy calculate BB for transformation
     ///it should be copied in every computeBoungingBox call;
@@ -284,7 +283,7 @@ private:
 
     UsageContext _usageContext;
     SGNComponent* _components[SGNComponent::ComponentType_PLACEHOLDER];
-    vectorImpl<DELEGATE_CBK> _deletionCallbacks; 
+	vectorImpl<DELEGATE_CBK<> > _deletionCallbacks;
     hashMapImpl<RenderStage, bool, hashAlg::hash<I32>> _drawReset;
 
     StateTracker<bool> _trackedBools;

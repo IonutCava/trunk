@@ -23,7 +23,6 @@
 #ifndef _GUI_EDITOR_H_
 #define _GUI_EDITOR_H_
 
-#include "Core/Headers/Singleton.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 namespace CEGUI {

@@ -127,7 +127,7 @@ const char* Console::errorf(const char* format, ...) const {
 }
 
 const char* Console::output(const char* output, const bool error) const {
-    if(!_guiConsoleCallback.empty()){
+    if(_guiConsoleCallback){
         if(error){
             stringImpl outputString("Error: ");
             outputString.append(output);

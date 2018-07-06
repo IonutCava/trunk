@@ -16,16 +16,16 @@ namespace Divide {
 
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr)
 {
-    _commandMap["say"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand, this, _1);
-    _commandMap["quit"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand,this,_1);
-    _commandMap["help"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand,this,_1);
-    _commandMap["editparam"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand,this,_1);
-    _commandMap["playsound"] = DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand,this,_1);
-    _commandMap["createnavmesh"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand,this,_1);
-    _commandMap["recompileshader"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand,this,_1);
-    _commandMap["setfov"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand,this,_1);
-    _commandMap["invalidcommand"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand,this,_1);
-    _commandMap["addobject"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, _1);
+    _commandMap["say"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand, this, std::placeholders::_1);
+	_commandMap["quit"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand, this, std::placeholders::_1);
+	_commandMap["help"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand, this, std::placeholders::_1);
+	_commandMap["editparam"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand, this, std::placeholders::_1);
+	_commandMap["playsound"] = DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand, this, std::placeholders::_1);
+	_commandMap["createnavmesh"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand, this, std::placeholders::_1);
+	_commandMap["recompileshader"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand, this, std::placeholders::_1);
+	_commandMap["setfov"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand, this, std::placeholders::_1);
+	_commandMap["invalidcommand"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand, this, std::placeholders::_1);
+	_commandMap["addobject"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, std::placeholders::_1);
 
     _commandHelp["say"] = Locale::get("CONSOLE_SAY_COMMAND_HELP");
     _commandHelp["quit"] = Locale::get("CONSOLE_QUIT_COMMAND_HELP");
@@ -88,7 +88,7 @@ void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args){
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args){
     if(args.empty()){
         PRINT_FN(Locale::get("HELP_CONSOLE_COMMAND"));
-        FOR_EACH(CommandMap::value_type& it,_commandMap){
+		for (CommandMap::value_type& it : _commandMap){
             if(it.first.find("invalid") == stringImpl::npos){
                 PRINT_FN("/%s - %s",it.first.c_str(),_commandHelp[it.first]);
             }
@@ -162,7 +162,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args){
 	bool loaded = temp->load(nullptr);
 	if (!loaded) {
         // If we failed to load it from file, we need to build it first
-		loaded = temp->build(nullptr, false);
+		loaded = temp->build(nullptr, AI::Navigation::NavigationMesh::CreationCallback(), false);
         // Then save it to file
 		temp->save();
 	}

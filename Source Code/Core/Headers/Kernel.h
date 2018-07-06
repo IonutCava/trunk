@@ -28,8 +28,6 @@
 #include "Hardware/Platform/Headers/Task.h"
 #include "Hardware/Input/Headers/InputAggregatorInterface.h"
 
-#include <boost/noncopyable.hpp>
-
 namespace Divide {
 
 class Scene;
@@ -55,7 +53,7 @@ class GUI;
 ///-physx
 ///-scene manager
 ///-etc
-class Kernel : public Input::InputAggregatorInterface, private boost::noncopyable {
+class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
 public:
     Kernel(I32 argc, char **argv, Application& parentApp);
     ~Kernel();
@@ -104,19 +102,19 @@ public:
     ///Mouse button released
     bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
-    inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
+	inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK<>& threadedFunction, const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
          Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, numberOfTicks, threadedFunction);
-         taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
-         if (!onCompletionFunction.empty()){
+         taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
+         if (!onCompletionFunction){
             emplace(_threadedCallbackFunctions, static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
          }
          return taskPtr;
     }
 
-    inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
+	inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK<>& threadedFunction, const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
         Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, runOnce, threadedFunction);
-        taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
-        if (!onCompletionFunction.empty()){
+		taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
+        if (!onCompletionFunction){
             emplace(_threadedCallbackFunctions, static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
         }
         return taskPtr;
@@ -133,7 +131,7 @@ private:
 
 private:
     friend class SceneManager;
-    void submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK& sceneRenderCallback) const;
+	void submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK<>& sceneRenderCallback) const;
     
 private:
     Application&    _APP;
@@ -166,7 +164,7 @@ private:
 
     static SharedLock _threadedCallbackLock;
     static vectorImpl<U64 >  _threadedCallbackBuffer;
-    static hashMapImpl<U64, DELEGATE_CBK > _threadedCallbackFunctions;
+	static hashMapImpl<U64, DELEGATE_CBK<> > _threadedCallbackFunctions;
 
     //Command line arguments
     I32    _argc;

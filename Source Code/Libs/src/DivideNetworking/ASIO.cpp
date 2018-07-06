@@ -48,7 +48,7 @@ void ASIO::init(const stringImpl& address,const stringImpl& port){
 		_localClient = new Client(this, io_service_,_debugOutput);
 		_work.reset(new boost::asio::io_service::work(io_service_));
 	    _localClient->start(res.resolve(tcp::resolver::query(address.c_str(), port.c_str())));
-		_thread = new boost::thread(boost::bind(&boost::asio::io_service::run, &io_service_));
+		_thread = new std::thread([&]{ io_service_.run(); });
 	    io_service_.poll();
 		_connected = true;
 	}catch (std::exception& e){

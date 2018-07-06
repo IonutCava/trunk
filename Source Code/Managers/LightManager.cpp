@@ -65,7 +65,7 @@ bool LightManager::clear(){
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
 
     //Lights are removed by the sceneGraph
-    FOR_EACH(Light::LightMap::value_type it, _lights){
+	for (Light::LightMap::value_type it : _lights){
         //in case we had some light hanging
         RemoveResource(it.second);
     }
@@ -114,7 +114,7 @@ void LightManager::idle(){
 }
 
 void LightManager::updateResolution(I32 newWidth, I32 newHeight){
-    FOR_EACH(Light::LightMap::value_type& it, _lights) {
+	for(Light::LightMap::value_type& it : _lights) {
         it.second->updateResolution(newWidth, newHeight);
     }
 
@@ -141,7 +141,7 @@ U8 LightManager::getShadowBindSlotOffset(ShadowSlotType type) {
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
 void LightManager::onCameraChange(){
-     FOR_EACH(Light::LightMap::value_type& it, _lights){
+	for (Light::LightMap::value_type& it : _lights){
         assert(it.second != nullptr);
         it.second->onCameraChange();
     }
@@ -159,7 +159,7 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     //set the current render stage to SHADOW_STAGE
     RenderStage previousRS = GFX_DEVICE.setRenderStage(SHADOW_STAGE);
     //generate shadowmaps for each light
-    FOR_EACH(Light::LightMap::value_type& light, _lights){
+	for (Light::LightMap::value_type& light : _lights){
         setCurrentLight(light.second);
         light.second->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
     }
@@ -178,7 +178,7 @@ void LightManager::togglePreviewShadowMaps() {
     if (!_shadowMapsEnabled || !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
         return;
 
-    FOR_EACH(Light::LightMap::value_type& it, _lights){
+	for (Light::LightMap::value_type& it : _lights){
         if(it.second->getShadowMapInfo()->getShadowMap()){
             it.second->getShadowMapInfo()->getShadowMap()->togglePreviewShadowMaps(_previewShadowMaps);
         }
@@ -231,7 +231,7 @@ bool LightManager::shadowMappingEnabled() const {
     if(!_shadowMapsEnabled)
         return false;
 
-    FOR_EACH(Light::LightMap::value_type light, _lights){
+	for (Light::LightMap::value_type light : _lights){
         if(!light.second->castsShadows())
             continue;
 
@@ -266,7 +266,7 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix){
     _lightShadowProperties.clear();
     _lightShadowProperties.reserve(static_cast<vectorAlg::vecSize>(_lights.size()));
 
-    FOR_EACH(Light::LightMap::value_type& lightIt, _lights){
+	for (Light::LightMap::value_type& lightIt : _lights){
         Light* light = lightIt.second;
         if (light->_dirty[Light::PROPERTY_TYPE_PHYSICAL]){
             LightProperties temp = light->getProperties();

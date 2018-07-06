@@ -14,7 +14,7 @@ enum PhysXStateEnum{
     STATE_LOADING = 3
 };
 
-static boost::atomic<PhysXStateEnum > s_sceneState;
+static std::atomic<PhysXStateEnum > s_sceneState;
 
 //begin copy-paste
 void PhysXScene::preRender(){

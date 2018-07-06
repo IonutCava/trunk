@@ -17,7 +17,7 @@ namespace Divide {
 
 REGISTER_SCENE(TenisScene);
 
-static boost::atomic_bool s_gameStarted;
+static std::atomic_bool s_gameStarted;
 
 void TenisScene::preRender(){
     vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
@@ -262,7 +262,7 @@ bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
 
     //------------------------ Load up game elements -----------------------------///
     _net = _sceneGraph->findNode("Net");
-    //FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, _net->getChildren()){
+    //for(SceneGraphNode::NodeChildren::value_type& it : _net->getChildren()){
         //it.second->setReceivesShadows(false);
     //}
     _floor = _sceneGraph->findNode("Floor");

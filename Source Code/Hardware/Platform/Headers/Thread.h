@@ -29,4 +29,5 @@
 #include <boost/thread/locks.hpp>
 #include <boost/signals2.hpp>
 
+#include <thread>
 #endif

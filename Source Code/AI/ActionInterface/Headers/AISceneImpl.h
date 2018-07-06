@@ -26,8 +26,6 @@
 #include "GOAPInterface.h"
 #include "AI/Headers/AIEntity.h"
 #include "Core/Headers/cdigginsAny.h"
-#include <boost/noncopyable.hpp>
-#include <boost/atomic.hpp>
 
 namespace Divide {
     class Texture;
@@ -35,7 +33,7 @@ namespace Divide {
 
 enum AIMsg;
 /// Provides a scene-level AI implementation
-class AISceneImpl : private boost::noncopyable {
+class AISceneImpl : private NonCopyable {
 public:
     AISceneImpl() : _entity(nullptr),
                     _activeGoal(nullptr),
@@ -55,6 +53,7 @@ public:
     }
 
     inline GOAPWorldState& worldState() { return _worldState; }
+	inline const GOAPWorldState& worldStateConst() const { return _worldState; }
 
     /// Register a specific action. This only holds a reference to the action itself and does not create a local copy!
     virtual void registerAction(GOAPAction* const action) {
@@ -162,6 +161,19 @@ protected:
         return false;
     }
 
+	inline bool printPlan() {
+		if (_activeGoal == nullptr) {
+			return false;
+		}
+		const GOAPPlan& plan = _activeGoal->getCurrentPlan();
+		for (const GOAPAction* action : plan) {
+			if (!printActionStats(action)){
+				return false;
+			}
+		}
+		return true;
+	}
+
     inline void invalidateCurrentPlan() { 
         _activeGoal = nullptr;   
         _currentStep = -1;
@@ -182,6 +194,7 @@ protected:
 
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
     virtual bool performAction(const GOAPAction* planStep) = 0;
+	virtual bool printActionStats(const GOAPAction* planStep) const { return true;  }
     virtual void processData(const U64 deltaTime) = 0;
     virtual void processInput(const U64 deltaTime) = 0;
     virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
@@ -190,7 +203,7 @@ protected:
 
 protected:
     AIEntity*  _entity;
- 
+
 private:
     I32 _currentStep;
     GOAPGoal* _activeGoal;

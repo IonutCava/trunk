@@ -6,7 +6,6 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {
-
 /// Show the contents of the depth buffer in a small rectangle in the bottom right of the screen
 void GFXDevice::previewDepthBuffer() {
     // As this is touched once per frame, we'll only enable it in debug builds
@@ -28,8 +27,9 @@ void GFXDevice::previewDepthBuffer() {
         }
 
         _renderTarget[RENDER_TARGET_DEPTH]->Bind(ShaderProgram::TEXTURE_UNIT0, TextureDescriptor::Depth);
-    
-        renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-256,0,256,256), DELEGATE_BIND(&GFXDevice::drawPoints, this, 1, _defaultStateNoDepthHash, _previewDepthMapShader));
+
+		renderInViewport(vec4<I32>(Application::getInstance().getResolution().width - 256, 0, 256, 256), 
+			             DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))&GFXDevice::drawPoints, this, 1, _defaultStateNoDepthHash, _previewDepthMapShader));
 #   endif
 }
 

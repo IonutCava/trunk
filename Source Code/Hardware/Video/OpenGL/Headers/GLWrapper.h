@@ -193,7 +193,7 @@ private:
     typedef hashMapImpl<stringImpl , I32 > FontCache;
     FontCache  _fonts;
     /// Atomic boolean value used to signal the loading thread to stop
-    boost::atomic_bool _closeLoadingThread;
+    std::atomic_bool _closeLoadingThread;
     /// Optimisation context for shaders (used for post-load optimisation)
     glslopt_ctx* _GLSLOptContex;
     /// Current active vertex array object's handle

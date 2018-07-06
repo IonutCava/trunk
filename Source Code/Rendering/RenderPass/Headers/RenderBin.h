@@ -29,7 +29,6 @@
 #ifndef _RENDER_BIN_H_
 #define _RENDER_BIN_H_
 
-#include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
 
 namespace Divide {

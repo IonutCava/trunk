@@ -31,9 +31,9 @@ namespace Divide {
 ///singlethreaded hardware initialization (textures, shaders, etc)
 class HardwareResource : public Resource {
 public:
-	explicit HardwareResource(const stringImpl& name) : Resource(name),
-											             _hardwareInitComplete(false)
+	explicit HardwareResource(const stringImpl& name) : Resource(name)
 	{
+		_hardwareInitComplete = false;
 	}
 
 	virtual ~HardwareResource(){}
@@ -44,7 +44,7 @@ public:
 	virtual bool generateHWResource(const stringImpl& name)  {_hardwareInitComplete = true; return true;}
 
 private:
-	boost::atomic_bool _hardwareInitComplete;
+	std::atomic_bool _hardwareInitComplete;
 };
 
 }; //namespace Divide

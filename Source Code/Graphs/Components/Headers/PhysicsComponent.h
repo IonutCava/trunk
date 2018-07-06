@@ -24,8 +24,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _PHYSICS_COMPONENT_H_
 
 #include "SGNComponent.h"
-
-#include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
 
 namespace Divide {

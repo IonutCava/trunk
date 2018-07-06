@@ -52,10 +52,10 @@ class Resource : public TrackedObject {
 public:
     explicit Resource(const stringImpl& name) : TrackedObject(),
                                                  _name(name),
-                                                 _threadedLoading(true),
-                                                 _threadedLoadComplete(false),
                                                  _resourceState(RES_CREATED)
     {
+		_threadedLoading = true;
+		_threadedLoadComplete = false;
     }
 
     virtual ~Resource() {}
@@ -82,11 +82,11 @@ protected:
 protected:
     stringImpl	  _name;
     stringImpl   _resourceLocation; ///< Physical file location
-    boost::atomic<ResourceState> _resourceState;
+    std::atomic<ResourceState> _resourceState;
     ///Should load resource in a background thread
-    boost::atomic_bool _threadedLoading;
+    std::atomic_bool _threadedLoading;
     ///Becomes true when background thread finishes loading
-    boost::atomic_bool _threadedLoadComplete;
+    std::atomic_bool _threadedLoadComplete;
 };
 
 enum GeometryType {

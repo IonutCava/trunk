@@ -52,52 +52,6 @@ Scene::~Scene()
 }
 
 bool Scene::frameStarted() {
-    state()._moveFB = state()._moveLR = state()._roll = 0;
-    state()._angleLR = state()._angleUD = 0;
-
-    Input::InputInterface& input = Input::InputInterface::getInstance();
-    if (input.isKeyDown(Input::KeyCode::KC_W) || input.isKeyDown(Input::KeyCode::KC_S)) {
-        if (input.isKeyDown(Input::KeyCode::KC_W) && !input.isKeyDown(Input::KeyCode::KC_S)) {
-            state()._moveFB = 1;
-        } else if (!input.isKeyDown(Input::KeyCode::KC_W) && input.isKeyDown(Input::KeyCode::KC_S)) {
-            state()._moveFB = -1;
-        }
-    }
-    if (input.isKeyDown(Input::KeyCode::KC_A) || input.isKeyDown(Input::KeyCode::KC_D)) {
-        if (input.isKeyDown(Input::KeyCode::KC_A) && !input.isKeyDown(Input::KeyCode::KC_D)) {
-            state()._moveLR = -1;
-        } else if (!input.isKeyDown(Input::KeyCode::KC_A) && input.isKeyDown(Input::KeyCode::KC_D)) {
-            state()._moveLR = 1;
-        }
-    }
-    if (input.isKeyDown(Input::KeyCode::KC_Q) || input.isKeyDown(Input::KeyCode::KC_E)) {
-        if (input.isKeyDown(Input::KeyCode::KC_Q) && !input.isKeyDown(Input::KeyCode::KC_E)) {
-            state()._roll = 1;
-        } else if (!input.isKeyDown(Input::KeyCode::KC_Q) && input.isKeyDown(Input::KeyCode::KC_E)) {
-            state()._roll = -1;
-        }
-    }
-
-    if (!_mousePressed[Input::MouseButton::MB_Right]) {
-        if (input.isKeyDown(Input::KeyCode::KC_LEFT) || input.isKeyDown(Input::KeyCode::KC_RIGHT) ||
-            input.isKeyDown(Input::KeyCode::KC_UP)   || input.isKeyDown(Input::KeyCode::KC_DOWN)  ){
-        
-            if (input.isKeyDown(Input::KeyCode::KC_LEFT) && !input.isKeyDown(Input::KeyCode::KC_RIGHT)) {
-                state()._angleLR = 1;
-            } else if (!input.isKeyDown(Input::KeyCode::KC_LEFT) && input.isKeyDown(Input::KeyCode::KC_RIGHT)) {
-                state()._angleLR = -1;
-            }
-
-            if (input.isKeyDown(Input::KeyCode::KC_UP) && !input.isKeyDown(Input::KeyCode::KC_DOWN)) {
-                state()._angleUD = 1;
-            } else if (!input.isKeyDown(Input::KeyCode::KC_UP) && input.isKeyDown(Input::KeyCode::KC_DOWN)) {
-                state()._angleUD = -1;
-            }
-        }
-    } else {
-        state()._angleLR = -state()._mouseXDelta;
-        state()._angleUD = -state()._mouseYDelta;
-    }
     return true;
 }
 
@@ -360,9 +314,9 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
     _aiTask.reset(kernel->AddTask(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY, false, false,
-                                  DELEGATE_BIND(&AI::AIManager::update, DELEGATE_REF(AI::AIManager::getInstance()))));
+                                  DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance())));
 
-    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, DELEGATE_REF(GUI::getInstance()), this));
+    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &GUI::getInstance(), this));
     _loadComplete = true;
     return _loadComplete;
 }

@@ -146,12 +146,13 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage) {
 
 /// update water refraction
 void WaterPlane::updateRefraction(){
-    if (_cameraUnderWater)
-        return;
-
+	if (_cameraUnderWater) {
+		return;
+	}
     // Early out check for render callback
-    if(_renderCallback.empty()) return;
-
+	if (!_renderCallback) {
+		return;
+	}
     _refractionRendering = true;
     // If we are above water, process the plane's reflection. If we are below, we render the scene normally
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(FINAL_STAGE);
@@ -172,7 +173,7 @@ void WaterPlane::updateRefraction(){
 /// Update water reflections
 void WaterPlane::updateReflection(){
     // Early out check for render callback
-    if (!_renderCallback.empty()){
+    if (_renderCallback){
         //ToDo: this will cause problems later with multiple reflectors. Fix it! -Ionut
         _reflectionRendering = true;
     
@@ -212,20 +213,20 @@ void WaterPlane::updatePlaneEquation(){
     _dirty = true;
 }
 
-bool WaterPlane::previewReflection(){
+void WaterPlane::previewReflection(){
 #   ifdef _DEBUG
         if (_previewReflection) {
             F32 height = _resolution.y * 0.333f;
             _refractionTexture->Bind();
             vec4<I32> viewport(_resolution.x  * 0.333f, Application::getInstance().getResolution().y - height, _resolution.x  * 0.666f, height);
-            GFX_DEVICE.renderInViewport(viewport, DELEGATE_BIND(&GFXDevice::drawPoints, 
-                                                  DELEGATE_REF(GFX_DEVICE),
+			GFX_DEVICE.renderInViewport(viewport, DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))&GFXDevice::drawPoints,
+                                                  &GFX_DEVICE,
                                                   1,
                                                   GFX_DEVICE.getDefaultStateBlock(true),
                                                   _previewReflectionShader));
         }
 #   endif
-    return Reflector::previewReflection();
+    Reflector::previewReflection();
 }
 
 };

@@ -29,8 +29,6 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
     _success(false),
     _culledFinal(false),
     _shadowMapped(true),
-    _threadedLoadComplete(false),
-    _stopLoadingRequest(false),
     _terrainSGN(nullptr),
     _terrainChunk(nullptr),
     _instanceCountGrass(0),
@@ -39,6 +37,8 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
     _stateRefreshIntervalBuffer(0ULL),
     _stateRefreshInterval(getSecToUs(1)) ///<Every second?
 {
+	_threadedLoadComplete = false;
+	_stopLoadingRequest = false;
     _readBuffer = 1;
     _writeBuffer = 0;
 
@@ -67,7 +67,7 @@ Vegetation::~Vegetation(){
     U32 timer = 0;
     while(!_threadedLoadComplete){
         // wait for the loading thread to finish first;
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         timer += 10;
         if (timer > 1500) break;
     }
@@ -138,10 +138,10 @@ namespace{
     const U32 instanceDiv = 1;
 };
 
-bool Vegetation::uploadGrassData(){
+void Vegetation::uploadGrassData(){
     if (_grassPositions.empty()){
         _threadedLoadComplete = true;
-        return false;
+		return;
     }
 
     static const vec2<F32> pos000(cosf(RADIANS(0.000f)), sinf(RADIANS(0.000f)));
@@ -234,8 +234,6 @@ bool Vegetation::uploadGrassData(){
     _grassScales.clear();
 
     _render = _threadedLoadComplete = true;
-
-    return true;
 }
 
 void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){

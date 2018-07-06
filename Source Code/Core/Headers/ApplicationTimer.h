@@ -25,15 +25,11 @@
 
 #include "config.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-#include "Core/Headers/Singleton.h"
-#include <boost/atomic.hpp>
+
 #if defined ( OS_WINDOWS )
     #include <windows.h>
 #endif
 
-#if defined(_DEBUG) || defined(_PROFILE)
-    #include "Utility/Headers/Vector.h"
-#endif
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
@@ -62,7 +58,7 @@ private:
     bool _benchmark;      //Measure average FPS and output max/min/average fps to console
     bool _init;
     
-    boost::atomic<U64> _elapsedTimeUs;
+    std::atomic<U64> _elapsedTimeUs;
 
 public:
 
@@ -114,11 +110,11 @@ public:
 
 protected:
     const char*        _name;
-    boost::atomic_bool _paused;
-    boost::atomic_bool _init;
-    boost::atomic<D32> _timer;
-    boost::atomic<D32> _timerAverage;
-    boost::atomic_int  _timerCounter;
+    std::atomic_bool _paused;
+	std::atomic_bool _init;
+	std::atomic<D32> _timer;
+	std::atomic<D32> _timerAverage;
+	std::atomic_int  _timerCounter;
 };
 
     inline ProfileTimer* ADD_TIMER(const char* timerName) {

@@ -24,12 +24,10 @@
 #define _APPLICATION_H_
 
 
-#include "Core/Headers/Singleton.h"
 #include "Core/Math/Headers/MathClasses.h"
 #include "Hardware/Platform/Headers/Thread.h"
 
 #include <fstream>
-#include <boost/atomic.hpp>
 
 namespace Divide {
 
@@ -57,8 +55,8 @@ public:
     inline bool ShutdownRequested()           const { return _requestShutdown;  }
     inline Kernel* const getKernel()          const { return _kernel; }
 
-    inline const boost::thread::id&  getMainThreadId()               const { return _threadId; }
-    inline bool isMainThread()                                       const { return (_threadId == boost::this_thread::get_id()); }
+    inline const std::thread::id&  getMainThreadId()               const { return _threadId; }
+    inline bool isMainThread()                                       const { return (_threadId == std::this_thread::get_id()); }
     inline void setMemoryLogFile(const stringImpl& fileName)              { _memLogBuffer.open(fileName.c_str()); }
     ///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
     void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
@@ -92,9 +90,9 @@ private:
 private:
     ErrorCode _errorCode;
     /// this is true when we are inside the main app loop
-    boost::atomic_bool  _mainLoopActive;
-    boost::atomic_bool  _mainLoopPaused;
-    boost::atomic_bool  _requestShutdown;
+    std::atomic_bool  _mainLoopActive;
+    std::atomic_bool  _mainLoopPaused;
+    std::atomic_bool  _requestShutdown;
     /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
     bool      _hasFocus; 
     /// this is false if the application is running in windowed mode
@@ -108,7 +106,7 @@ private:
     ///buffer to register all of the memory allocations recorded via "New"
     std::ofstream _memLogBuffer;
     ///Main application thread id
-    boost::thread::id _threadId;
+    std::thread::id _threadId;
 
 END_SINGLETON
 

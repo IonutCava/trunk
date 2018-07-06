@@ -47,7 +47,7 @@ public:
     ShadowMap(Light* light, Camera* shadowCamera, ShadowType type);
     virtual ~ShadowMap();
     ///Render the scene and save the frame to the shadow map
-    virtual void render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction) = 0;
+	virtual void render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction) = 0;
     ///Setup needed before rendering the light
     void preRender();
     ///Setup needed after rendering the light

@@ -327,7 +327,9 @@ bool Camera::updateViewMatrix(){
 void Camera::updateListeners(){
     assert(_isActive);
 
-    for(const DELEGATE_CBK& listener : _listeners) listener();
+	for (const DELEGATE_CBK<>& listener : _listeners) {
+		listener();
+	}
 }
 
 bool Camera::updateFrustum(){

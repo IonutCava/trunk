@@ -24,7 +24,6 @@
 #define _TASKS_H_
 
 #include "SharedMutex.h"
-#include <boost/atomic.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "Utility/Headers/GUIDWrapper.h"
 
@@ -42,7 +41,7 @@ enum CallbackParam {
     TYPE_DOUBLE,
     TYPE_CHAR
 };
-///Using std::atomic / boost::atomic for thread-shared data to avoid locking
+///Using std::atomic for thread-shared data to avoid locking
 class Task : public GUIDWrapper, public boost::enable_shared_from_this<Task>
 {
     typedef boost::signals2::signal<void(U64)> SendCompleted;
@@ -50,15 +49,12 @@ public:
     /// <summary>
     /// Creates a new Task that runs in a separate thread
     /// </summary>
-    /// <remarks>
-    /// The class uses Boost::thread library (http://www.boost.org)
-    /// </remarks>
     /// <param name="tickInterval">The delay (in milliseconds) between each callback</param>
     /// <param name="startOnCreate">The Task begins processing as soon as it is created (no need to call 'startTask()')</param>
     /// <param name="numberOfTicks">The number of times to call the callback function before the Task is deleted</param>
     /// <param name="*f">The callback function</param>
-    Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& f);
-    Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK& f);
+    Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK<>& f);
+	Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK<>& f);
     ~Task();
     void updateTickInterval(U64 tickIntervalMs) {_tickIntervalMS = tickIntervalMs;}
     void updateTickCounter(I32 numberOfTicks)   {_numberOfTicks = numberOfTicks;}
@@ -75,12 +71,12 @@ public:
 
 private:
     mutable SharedLock _lock;
-    mutable boost::atomic<U64> _tickIntervalMS;
-    mutable boost::atomic<I32> _numberOfTicks;
-    mutable boost::atomic<bool> _end;
-    mutable boost::atomic<bool> _paused;
-    mutable boost::atomic<bool> _done;
-    DELEGATE_CBK _callback;
+    mutable std::atomic<U64> _tickIntervalMS;
+    mutable std::atomic<I32> _numberOfTicks;
+    mutable std::atomic<bool> _end;
+    mutable std::atomic<bool> _paused;
+    mutable std::atomic<bool> _done;
+	DELEGATE_CBK<> _callback;
     boost::threadpool::pool* _tp;
     SendCompleted            _completionSignal;
 

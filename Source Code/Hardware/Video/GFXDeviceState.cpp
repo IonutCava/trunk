@@ -114,7 +114,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
     /// Create a separate loading thread that shares resources with the main rendering context
-    _loaderThread = New boost::thread(&GFXDevice::createLoaderThread, this);
+    _loaderThread = New std::thread(&GFXDevice::createLoaderThread, this);
     /// Register a 2D function used for previewing the depth buffer.
 #   ifdef _DEBUG
         add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
@@ -142,7 +142,7 @@ void GFXDevice::closeRenderingApi() {
     // And delete it
     SAFE_DELETE(_loaderThread);
     // Delete our default render state blocks
-    FOR_EACH(RenderStateMap::value_type& it, _stateBlockMap) {
+    for(RenderStateMap::value_type& it : _stateBlockMap) {
         SAFE_DELETE(it.second);
     }
     _stateBlockMap.clear();
@@ -187,7 +187,7 @@ void GFXDevice::endFrame() {
     if (Application::getInstance().mainLoopActive()) {
         // Render all 2D debug info and call API specific flush function
         toggle2D(true);
-        for (std::pair<U32, DELEGATE_CBK>& callbackFunction : _2dRenderQueue) {
+		for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction : _2dRenderQueue) {
             callbackFunction.second();
         }
         toggle2D(false);

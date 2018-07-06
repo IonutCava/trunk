@@ -52,7 +52,7 @@ void ResourceCache::Destroy(){
 
     PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
 
-    FOR_EACH(ResourceMap::value_type& it, _resDB){
+	for (ResourceMap::value_type& it : _resDB){
         if (removeInternal(it.second, true)) {
             SAFE_DELETE(it.second);
         }

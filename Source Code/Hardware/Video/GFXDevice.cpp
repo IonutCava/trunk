@@ -220,14 +220,14 @@ void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const vec
     // Ideally, we would merge all of the draw commands in a command buffer, sort by state, shader, etc, and submit a single render call
     STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");    
     // That feature will be added later, so, for now, submit each command manually
-    FOR_EACH(const GenericDrawCommand& cmd, cmds) {
+    for(const GenericDrawCommand& cmd : cmds) {
         // Data validation is handled in the single command version
         submitRenderCommand(buffer, cmd);
     }
 }
 
 /// Generate a cube texture and store it in the provided framebuffer
-void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, const DELEGATE_CBK& renderFunction, const vec2<F32>& zPlanes, const RenderStage& renderStage) {
+void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, const DELEGATE_CBK<>& renderFunction, const vec2<F32>& zPlanes, const RenderStage& renderStage) {
     // Only the first color attachment or the depth attachment is used for now and it must be a cube map texture
     Texture* colorAttachment = cubeMap.GetAttachment(TextureDescriptor::Color0);
     Texture* depthAttachment = cubeMap.GetAttachment(TextureDescriptor::Depth);
@@ -250,7 +250,7 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, con
         return;
     }
     // Calling this function without a callback is a programming error and should never happen
-    DIVIDE_ASSERT(!renderFunction.empty(), "GFXDevice error: tried to generate a cube map without a valid render function!");
+    DIVIDE_ASSERT(renderFunction == false, "GFXDevice error: tried to generate a cube map without a valid render function!");
     // No dual-paraboloid rendering here. Just draw once for each face.
     static vec3<F32> TabUp[6] = {
         WORLD_Y_NEG_AXIS,  
@@ -642,9 +642,9 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
 }
 
 /// Depending on the context, either immediately call the function, or pass it to the loading thread via a queue
-bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {
+bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<>& callback) {
     // Skip invalid callbacks
-    if (callback.empty()) {
+    if (!callback) {
         return false;
     }
     // If we want and can call the function in the loading thread, add it to the lock-free, single-producer, single-consumer queue
@@ -787,8 +787,8 @@ void GFXDevice::drawLines(const vectorImpl<Line >& lines, const mat4<F32>& globa
     priv->worldMatrix(globalOffset);
     // If we need to render it into a specific viewport, set the pre and post draw functions to set up the needed viewport rendering (e.g. axis lines)
     if (inViewport) {
-        priv->setRenderStates(DELEGATE_BIND(&GFXDevice::setViewport, DELEGATE_REF(GFX_DEVICE), viewport),
-                              DELEGATE_BIND(&GFXDevice::restoreViewport, DELEGATE_REF(GFX_DEVICE)));            
+        priv->setRenderStates(DELEGATE_BIND(&GFXDevice::setViewport, this, viewport),
+                              DELEGATE_BIND(&GFXDevice::restoreViewport, this));            
     }
     // Create the object containing all of the lines
     priv->beginBatch();

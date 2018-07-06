@@ -58,7 +58,6 @@
 #define _CHARACTER_H_
 
 #include "Unit.h"
-#include <boost/atomic.hpp>
 
 namespace Divide {
 
@@ -115,8 +114,8 @@ private:
     vec3<F32> _lookingDirection;
     vec3<F32> _newPosition, _oldPosition, _curPosition;
     vec3<F32> _newVelocity, _curVelocity;
-    boost::atomic_bool _positionDirty;
-    boost::atomic_bool _velocityDirty;
+    std::atomic_bool _positionDirty;
+    std::atomic_bool _velocityDirty;
 };
 
 }; //namespace Divide

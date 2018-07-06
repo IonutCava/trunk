@@ -131,7 +131,7 @@ private:
     ///Scene pool
     SceneMap _sceneMap;
     ///Scene_Name -Scene_Factory table
-    hashMapImpl<stringImpl, boost::function<Scene*()> > _sceneFactory;
+    hashMapImpl<stringImpl, std::function<Scene*()> > _sceneFactory;
     Material* _defaultMaterial;
 
 END_SINGLETON

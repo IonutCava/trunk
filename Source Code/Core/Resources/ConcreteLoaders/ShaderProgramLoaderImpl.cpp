@@ -5,7 +5,6 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
-#include <boost/algorithm/string.hpp>
 #include <EASTL/string.h>
 
 namespace Divide {

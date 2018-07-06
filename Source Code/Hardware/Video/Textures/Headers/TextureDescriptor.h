@@ -108,22 +108,22 @@ public:
 
     inline size_t getHash() const {
         size_t hash = 0;
-        boost::hash_combine(hash, _cmpFunc);
-        boost::hash_combine(hash, _useRefCompare);
-        boost::hash_combine(hash, _wrapU);
-        boost::hash_combine(hash, _wrapV);
-        boost::hash_combine(hash, _wrapW);
-        boost::hash_combine(hash, _minFilter);
-        boost::hash_combine(hash, _magFilter);
-        boost::hash_combine(hash, _minLOD);
-        boost::hash_combine(hash, _maxLOD);
-        boost::hash_combine(hash, _biasLOD);
-        boost::hash_combine(hash, _anisotropyLevel);
-        boost::hash_combine(hash, _generateMipMaps);
-        boost::hash_combine(hash, _borderColor.r);
-        boost::hash_combine(hash, _borderColor.g);
-        boost::hash_combine(hash, _borderColor.b);
-        boost::hash_combine(hash, _borderColor.a);
+        hash_combine(hash, _cmpFunc);
+        hash_combine(hash, _useRefCompare);
+        hash_combine(hash, _wrapU);
+        hash_combine(hash, _wrapV);
+        hash_combine(hash, _wrapW);
+        hash_combine(hash, _minFilter);
+        hash_combine(hash, _magFilter);
+        hash_combine(hash, _minLOD);
+        hash_combine(hash, _maxLOD);
+        hash_combine(hash, _biasLOD);
+        hash_combine(hash, _anisotropyLevel);
+        hash_combine(hash, _generateMipMaps);
+        hash_combine(hash, _borderColor.r);
+        hash_combine(hash, _borderColor.g);
+        hash_combine(hash, _borderColor.b);
+        hash_combine(hash, _borderColor.a);
         return hash;
     }
     /*

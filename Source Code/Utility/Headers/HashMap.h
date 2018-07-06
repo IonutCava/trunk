@@ -27,9 +27,6 @@
 #include "config.h"
 #endif
 
-#include <boost/foreach.hpp>
-#define FOR_EACH BOOST_FOREACH
-
 #if defined(HASH_MAP_IMP) && HASH_MAP_IMP == 0
     #include <boost/Unordered_Map.hpp>
     
@@ -95,7 +92,8 @@
         inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
             map.reset();
         }
-    
+#ifndef EASTL_PAIR_FUNCS
+#define EASTL_PAIR_FUNCS
         template<typename K, typename V>
         inline eastl::pair<K, V> makePair(const K& key, const V& val) {
             return eastl::make_pair_ref(key, val);
@@ -105,6 +103,7 @@
         inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
             return eastl::make_pair_ref(key, val);
         }
+#endif
     };
 
 #else //defined(HASH_MAP_IMP) && HASH_MAP_IMP == 2
@@ -130,7 +129,8 @@
         inline void fastClear(hashMapImpl<K, V, HashFun>& map){
             map.clear();
         }
- 
+#ifndef STD_PAIR_FUNCS
+#define STD_PAIR_FUNCS
         template<typename K, typename V>
         inline std::pair<K, V> makePair(const K& key, const V& val) {
             return std::make_pair(key, val);
@@ -140,6 +140,7 @@
         inline std::pair<K, V> makePairCpy(const K& key, V val) {
             return std::make_pair(key, val);
         }
+#endif
     };
 
 #endif //defined(HASH_MAP_IMP)

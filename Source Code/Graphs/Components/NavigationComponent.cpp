@@ -17,14 +17,14 @@ NavigationComponent::~NavigationComponent()
 
 void NavigationComponent::navigationContext(const NavigationContext& newContext) {
     _navigationContext = newContext;
-    FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, _parentSGN->getChildren()){
+	for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()){
         it.second->getComponent<NavigationComponent>()->navigationContext(_navigationContext);
     }
 }
 
 void  NavigationComponent::navigationDetailOverride(const bool detailOverride){
     _overrideNavMeshDetail = detailOverride;
-    FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, _parentSGN->getChildren()){
+	for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()){
         it.second->getComponent<NavigationComponent>()->navigationDetailOverride(detailOverride);
     }
 }

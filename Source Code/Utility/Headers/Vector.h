@@ -27,7 +27,7 @@
 #include "config.h"
 //#endif
 
-#if defined(VECTOR_IMP) /*&& VECTOR_IMP == 0*/ && VECTOR_IMP != 2
+#if defined(VECTOR_IMP) /*&& VECTOR_IMP == 0*/ && VECTOR_IMP != 1
 
 /// vector.hpp has some issues in 1.55 (fixed in 1.56)
 /*
@@ -63,8 +63,22 @@ namespace eastl {
     inline void shrinkToFit(vectorImpl<T>& inputVector) {
         inputVector.set_capacity(inputVector.size()  * sizeof(T));
     }
+
+#ifndef EASTL_PAIR_FUNCS
+#define EASTL_PAIR_FUNCS
+	template<typename K, typename V>
+	inline eastl::pair<K, V> makePair(const K& key, const V& val) {
+		return eastl::make_pair_ref(key, val);
+	}
+
+	template<typename K, typename V>
+	inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
+		return eastl::make_pair_ref(key, val);
+	}
+#endif
+
 };
-#else //defined(VECTOR_IMP) && VECTOR_IMP == 2
+#else //defined(VECTOR_IMP) && VECTOR_IMP == 1
 
 #include <vector>
 
@@ -76,10 +90,25 @@ using vectorImpl = vectorAlg::vector<Type>;
 namespace std {
     typedef size_t vecSize;
 
+	template<typename T1, typename T2>
+	using pair = std::pair<T1, T2>;
+
     template<typename T>
     inline void shrinkToFit(vectorImpl<T>& inputVector) {
         inputVector.shrink_to_fit();
     }
+#ifndef STD_PAIR_FUNCS
+#define STD_PAIR_FUNCS
+	template<typename K, typename V>
+	inline std::pair<K, V> makePair(const K& key, const V& val) {
+		return std::make_pair(key, val);
+	}
+
+	template<typename K, typename V>
+	inline std::pair<K, V> makePairCpy(const K& key, V val) {
+		return std::make_pair(key, val);
+	}
+#endif
 };
 #endif //defined(VECTOR_IMP)
 

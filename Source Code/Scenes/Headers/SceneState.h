@@ -145,7 +145,7 @@ public:
     }
 
     virtual ~SceneState(){
-        FOR_EACH(MusicPlaylist::value_type& it, _backgroundMusic){
+		for (MusicPlaylist::value_type& it : _backgroundMusic){
             if(it.second){
                 RemoveResource(it.second);
             }

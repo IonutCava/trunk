@@ -47,7 +47,7 @@ void GUIButton::setFont(const stringImpl& fontName,const stringImpl& fontFileNam
 }
 
 bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/){
-    if(!_callbackFunction.empty()){
+    if(_callbackFunction){
         _callbackFunction();
         return true;
     }

@@ -26,12 +26,12 @@
 
 #include "Core/Headers/Singleton.h"
 #include <boost/thread/mutex.hpp>
-#include <boost/function.hpp>
+#include <functional>
 
 namespace Divide {
 
 DEFINE_SINGLETON(Console)
-	typedef boost::function2<void, const char*, bool > consolePrintCallback;
+	typedef std::function<void (const char*, bool)> consolePrintCallback;
 
 public:
 	void printCopyrightNotice() const;

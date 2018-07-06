@@ -28,7 +28,6 @@
 #define ANIMATION_CONTROLLER_H_
 
 #include <fstream>
-#include <boost/cstdint.hpp>
 #include "AnimationEvaluator.h"
 
 struct aiNode;

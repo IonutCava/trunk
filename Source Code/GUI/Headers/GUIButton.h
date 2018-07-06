@@ -35,8 +35,9 @@ namespace CEGUI {
 namespace Divide {
 
 class GUIButton : public GUIElement {
-typedef DELEGATE_CBK ButtonCallback;
-friend class GUI;
+	typedef DELEGATE_CBK<> ButtonCallback;
+	friend class GUI;
+
 protected:
     GUIButton(const stringImpl& id,
               const stringImpl& text,

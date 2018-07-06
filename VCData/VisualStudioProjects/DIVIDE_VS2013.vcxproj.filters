@@ -1382,6 +1382,9 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\String.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

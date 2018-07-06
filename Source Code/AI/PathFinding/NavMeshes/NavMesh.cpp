@@ -153,11 +153,49 @@ namespace Navigation {
             _buildThread->stopTask();
         }
 
-        _buildThread.reset(Application::getInstance().getKernel()->AddTask(3, true, true, DELEGATE_BIND(&NavigationMesh::buildProcess, this)));
+		_buildThread.reset(Application::getInstance().getKernel()->AddTask(3, true, true, DELEGATE_BIND(&NavigationMesh::buildInternal, this)));
 
         return true;
     }
     
+	void NavigationMesh::buildInternal() {
+		_building = true;
+		// Create mesh
+		D32 timeStart = GETTIME();
+		bool success = generateMesh();
+		if (!success) {
+			ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), GETTIME(true) - timeStart);
+			return;
+		}
+
+		PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"), GETTIME(true) - timeStart);
+
+		_navigationMeshLock.lock();
+		{
+			// Copy new NavigationMesh into old.
+			dtNavMesh *old = _navMesh;
+			// I am trusting that this is atomic.
+			_navMesh = _tempNavMesh;
+			dtFreeNavMesh(old);
+			_debugDrawInterface->setDirty(true);
+			_tempNavMesh = nullptr;
+
+			bool navQueryComplete = createNavigationQuery();
+			DIVIDE_ASSERT(navQueryComplete, "NavigationMesh Error: Navigation query creation failed!");
+		}
+		_navigationMeshLock.unlock();
+
+		// Free structs used during build
+		freeIntermediates(false);
+
+		_building = false;
+
+		if (_loadCompleteClbk) {
+			_loadCompleteClbk(this);
+		}
+
+	}
+
     bool NavigationMesh::buildProcess() {
         _building = true;
         // Create mesh
@@ -190,7 +228,7 @@ namespace Navigation {
 
         _building = false;
 
-        if (!_loadCompleteClbk.empty()) {
+        if (_loadCompleteClbk) {
             _loadCompleteClbk(this);
         }
 

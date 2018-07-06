@@ -1,9 +1,10 @@
 #ifndef _DIVIDE_BOOST_ASIO_TPL_H_
 #define _DIVIDE_BOOST_ASIO_TPL_H_
 
-#include <boost/asio.hpp>
-#include <boost/thread.hpp>
 #include "WorldPacket.h"
+
+#include <boost/asio.hpp>
+#include <thread>
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -45,7 +46,7 @@ protected:
 protected:
 	Client *_localClient;
 	std::auto_ptr<io_service::work> _work;
-	boost::thread *_thread;
+	std::thread *_thread;
 	bool _connected;
 	bool _debugOutput;
 	io_service io_service_;

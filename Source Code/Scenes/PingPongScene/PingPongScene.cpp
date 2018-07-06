@@ -178,7 +178,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
             _score--;
 
             if(b == TYPE_INTEGER){
-                I32 quote = boost::any_cast<I32>(a);
+                I32 quote = a.constant_cast<I32>();
                 if(_score % 3 == 0 ) _GUI->modifyText("insults",(char*)_quotes[quote].c_str());
             }
         }else{

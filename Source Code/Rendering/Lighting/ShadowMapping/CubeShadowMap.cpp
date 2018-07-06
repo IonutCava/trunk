@@ -46,9 +46,9 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor){
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void CubeShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
+void CubeShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction){
     // Only if we have a valid callback;
-	if(sceneRenderFunction.empty()) {
+	if(!sceneRenderFunction) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
 		return;
 	}

@@ -46,7 +46,7 @@ public:
     }
 
     virtual void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock) = 0;
-    virtual void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) = 0;
+	virtual void render(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState) = 0;
     virtual void updateResolution(U16 width, U16 height) = 0;
 
     inline RendererType getType() const { return _type; }

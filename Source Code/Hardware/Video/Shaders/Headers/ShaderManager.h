@@ -23,9 +23,6 @@
 #ifndef SHADER_MANAGER_H_
 #define SHADER_MANAGER_H_
 
-#include "Core/Headers/Singleton.h"
-#include "Utility/Headers/Vector.h"
-#include "Utility/Headers/HashMap.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include <stack>
@@ -54,9 +51,9 @@ public:
     /// Remove default shaders and and destroy API specific shader loading code (programs can still be unloaded, but not loaded)
     void destroy();
     /// Called once per frame
-    U8 update(const U64 deltaTime);
+    bool update(const U64 deltaTime);
     /// Called once per frame after a swap buffer request
-    U8 idle();
+    void idle();
     /// Calling refreshShaderData will mark all shader programs as dirty (general data)
     void refreshShaderData();
     /// Calling refreshSceneData will mark all shader programs as dirty (scene specific data only)

@@ -20,35 +20,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _NAVIGATION_COMPONENT_H_
-#define _NAVIGATION_COMPONENT_H_
+#ifndef _NON_COPYABLE_H_
+#define _NON_COPYABLE_H_
 
-#include "SGNComponent.h"
-#include "Core/Math/Headers/MathClasses.h"
 
-namespace Divide {
+namespace Divide 
+{
+	/// Inherit from this class to avoid any form of object copying. (deletes thecopy constructor and assignment operator)
+	class NonCopyable
+	{
+	protected:
+		/*constexpr */NonCopyable() = default;
+		~NonCopyable() = default;
 
-class SceneGraphNode;
-class NavigationComponent : public SGNComponent {
-public:
-    enum NavigationContext {
-        NODE_OBSTACLE = 0,
-        NODE_IGNORE
-    };
 
-    NavigationComponent(SceneGraphNode* const sgn);
-    ~NavigationComponent();
+		NonCopyable(const NonCopyable&) = delete;
+		NonCopyable& operator=(const NonCopyable&) = delete;
+	};
+}; // namespace Divide
 
-    inline const NavigationContext& navigationContext()     const { return _navigationContext; }
-    inline       bool               navMeshDetailOverride() const { return _overrideNavMeshDetail; }
-
-    void  navigationContext(const NavigationContext& newContext);
-    void  navigationDetailOverride(const bool detailOverride);
-
-protected:
-    NavigationContext _navigationContext;
-    bool              _overrideNavMeshDetail;
-};
-
-}; //namespace Divide
 #endif

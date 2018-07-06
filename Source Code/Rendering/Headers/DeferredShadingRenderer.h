@@ -24,8 +24,6 @@
 #define _DEF_SHADE_RENDERER_H_
 
 #include "Renderer.h"
-#include "Utility/Headers/Vector.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
@@ -40,12 +38,12 @@ public:
 	DeferredShadingRenderer();
 	~DeferredShadingRenderer();
     void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock);
-	void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
+	void render(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView();
     void updateResolution(U16 width, U16 height);
 
 private:
-	void firstPass(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
+	void firstPass(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState);
 	void secondPass(const SceneRenderState& sceneRenderState);
 
 private:

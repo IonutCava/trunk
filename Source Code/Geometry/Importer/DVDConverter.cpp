@@ -192,9 +192,9 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
 
     if(temp.empty()){
         std::stringstream ss;
-        ss << stringAlg::fromBase(_fileLocation.substr(_fileLocation.rfind("/")+1,_fileLocation.length()));
+        ss << _fileLocation.substr(_fileLocation.rfind("/")+1, _fileLocation.length()).c_str();
         ss << "-submesh-";
-        ss << (U32)count;
+        ss << static_cast<U32>(count);
         temp = stringAlg::toBase(ss.str());
     }
 

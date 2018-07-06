@@ -44,7 +44,7 @@ AIEntity::~AIEntity()
     _agent = nullptr;
 
     SAFE_DELETE(_AISceneImpl);
-    FOR_EACH(SensorMap::value_type& it , _sensorList) {
+	for (SensorMap::value_type& it : _sensorList) {
         SAFE_DELETE(it.second);
     }
     _sensorList.clear();

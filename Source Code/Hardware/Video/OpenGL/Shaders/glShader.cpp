@@ -2,11 +2,11 @@
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 
-#include <boost/regex.hpp>
-#include <boost/algorithm/string.hpp>
-#include <glsl/glsl_optimizer.h>
+
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
+#include <glsl/glsl_optimizer.h>
+#include <regex>
 
 namespace Divide {
 
@@ -35,9 +35,9 @@ bool glShader::load(const stringImpl& source){
         ERROR_FN(Locale::get("ERROR_GLSL_SHADER_NOT_FOUND"),getName().c_str());
         return false;
     }
-    stringImpl parsedSource = preprocessIncludes(source,getName(),0);
-    boost::trim(parsedSource);
-    
+	stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
+	Util::trim(parsedSource);
+
 #ifdef NDEBUG
 
     if((_type == FRAGMENT_SHADER || _type == VERTEX_SHADER) && _optimise){
@@ -99,13 +99,13 @@ stringImpl glShader::preprocessIncludes( const stringImpl& source, const stringI
         ERROR_FN(Locale::get("ERROR_GLSL_INCLUD_LIMIT"));
     }
 
-    static const boost::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+    static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
     std::stringstream input, output;
 
     input << source.c_str();
 
     size_t line_number = 1;
-    boost::smatch matches;
+    std::smatch matches;
 
     std::string line;
     stringImpl include_file, include_string, loc;
@@ -113,7 +113,7 @@ stringImpl glShader::preprocessIncludes( const stringImpl& source, const stringI
 	stringImpl shaderAtomLocationPrefix(par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
 									    par.getParam<stringImpl>("shaderLocation", "shaders") + "/GLSL/");
     while(std::getline(input, line))	{
-        if (boost::regex_search(line, matches, re))	{
+        if (std::regex_search(line, matches, re))	{
             include_file = stringAlg::toBase(matches[1].str());
 
             if(include_file.find("frag") != stringImpl::npos){

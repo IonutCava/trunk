@@ -53,8 +53,8 @@ private:
     GLenum _type;
     GLenum _format;
     GLenum _internalFormat;
-    boost::atomic_bool _allocatedStorage;
-    boost::atomic_bool _samplerCreated;    
+    std::atomic_bool _allocatedStorage;
+    std::atomic_bool _samplerCreated;    
     size_t _samplerHash;
     GLushort _mipMaxLevel;
     GLushort _mipMinLevel;

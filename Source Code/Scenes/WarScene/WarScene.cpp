@@ -113,7 +113,7 @@ void WarScene::processTasks(const U64 deltaTime){
     Scene::processTasks(deltaTime);
 }
 
-static boost::atomic_bool navMeshStarted;
+static std::atomic_bool navMeshStarted;
 
 void navMeshCreationCompleteCallback(AI::AIEntity::PresetAgentRadius radius,  AI::Navigation::NavigationMesh* navMesh){
     navMesh->save();
@@ -345,6 +345,10 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
+
+	state().getGeneralVisibility() *= 2;
+	Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(135);
+
     _sceneReady = true;
     return loadState;
 }
@@ -376,46 +380,52 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
 
-    AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
-    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
-    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(false));
-    approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
- 
-    AI::CaptureFlag captureEnemyFlag("CaptureEnemyFlag");
-    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
-    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
-    captureEnemyFlag.setEffect(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
-  
-    AI::ReturnFlag returnEnemyFlag("ReturnEnemyFlag");
-    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
-    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
-    returnEnemyFlag.setEffect(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
+	AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
+	approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(false));
+	approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
+	approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
+	approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(false));
 
-    AI::ProtectFlagCarrier protectFlag("ProtectFlag");
-    protectFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
-    protectFlag.setEffect(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+    AI::CaptureFlag captureEnemyFlag("CaptureEnemyFlag");
+	captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
+	captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
+	captureEnemyFlag.setEffect(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(true));
+  
+	AI::ReturnHome returnHome("ReturnHome");
+	returnHome.setPrecondition(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(false));
+	returnHome.setEffect(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
+	returnHome.setEffect(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(false));
+
+    AI::ReturnFlag returnEnemyFlag("ReturnEnemyFlag");
+	returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
+	returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(true));
+	returnEnemyFlag.setEffect(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
+
+	AI::RecoverFlag recoverFlag("RecoverOwnFlag");
+	recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+	recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyHasFlag), AI::GOAPValue(false));
+	recoverFlag.setEffect(AI::GOAPFact(AI::HasOwnFlag), AI::GOAPValue(true));
+	
+	AI::KillEnemy killEnemy("KillEnemy");
+	recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(false));
+	recoverFlag.setEffect(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
 
     AI::GOAPGoal findFlag("Find enemy flag");
-    findFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
-    findFlag.setVariable(AI::GOAPFact(AI::AtTargetNode),  AI::GOAPValue(true));
+	findFlag.setVariable(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
 
     AI::GOAPGoal captureFlag("Capture enemy flag");
-    captureFlag.setVariable(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
-    captureFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
+	captureFlag.setVariable(AI::GOAPFact(AI::HasEnemyFlag),   AI::GOAPValue(true));
 
     AI::GOAPGoal returnFlag("Return enemy flag");
-    returnFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
-
-    AI::GOAPGoal protectFlagCarrier("Protect flag carrier");
-    protectFlagCarrier.setVariable(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
-    protectFlagCarrier.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
+	captureFlag.setVariable(AI::GOAPFact(AI::HasEnemyFlag),  AI::GOAPValue(true));
+	captureFlag.setVariable(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
 
     AI::GOAPGoal retrieveFlag("Retrieve flag");
-    retrieveFlag.setVariable(AI::GOAPFact(AI::AtTargetNode),  AI::GOAPValue(true));
-    retrieveFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
+	retrieveFlag.setVariable(AI::GOAPFact(AI::HasOwnFlag), AI::GOAPValue(true));
+    retrieveFlag.setVariable(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
 
     for(U8 k = 0; k < 2; ++k) {
-        for(U8 i = 0; i < 15; ++i){
+        for(U8 i = 0; i < /*15*/1; ++i){
             F32 speed = 5.5f; // 5.5 m/s
             U8 zFactor = 0;
             if(i < 5){
@@ -455,19 +465,28 @@ bool WarScene::initializeAI(bool continueOnErrors){
             k == 0 ? currentNode->renderBoundingBox(true) : currentNode->renderSkeleton(true);
 
             AI::WarSceneAISceneImpl* brain = New AI::WarSceneAISceneImpl();
-            brain->worldState().setVariable(AI::GOAPFact(AI::HasTargetNode),  AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::AtTargetNode),   AI::GOAPValue(false));
-            brain->registerAction(&approachEnemyFlag);
-            brain->registerAction(&captureEnemyFlag);
-            brain->registerAction(&returnEnemyFlag);
-            brain->registerAction(&protectFlag);
-            brain->registerGoal(captureFlag);
-            brain->registerGoal(returnFlag);
-            brain->registerGoal(findFlag);
-            brain->registerGoal(protectFlagCarrier);
-            brain->registerGoal(retrieveFlag);
-            aiSoldier->addAISceneImpl(brain);
 
+			//GOAP
+			brain->worldState().setVariable(AI::GOAPFact(AI::AtHomeFlagLoc),   AI::GOAPValue(true));
+			brain->worldState().setVariable(AI::GOAPFact(AI::AtEnemyFlagLoc),  AI::GOAPValue(false));
+			brain->worldState().setVariable(AI::GOAPFact(AI::HasEnemyFlag),    AI::GOAPValue(false));
+			brain->worldState().setVariable(AI::GOAPFact(AI::EnemyDead),       AI::GOAPValue(false));
+			brain->worldState().setVariable(AI::GOAPFact(AI::EnemyHasFlag),    AI::GOAPValue(false));
+			brain->worldState().setVariable(AI::GOAPFact(AI::HasOwnFlag),      AI::GOAPValue(false));
+			brain->worldState().setVariable(AI::GOAPFact(AI::FlagCarrierDead), AI::GOAPValue(false));
+
+			brain->registerAction(&approachEnemyFlag);
+			brain->registerAction(&captureEnemyFlag);
+			brain->registerAction(&returnHome);
+			brain->registerAction(&returnEnemyFlag);
+			brain->registerAction(&recoverFlag);
+			brain->registerAction(&killEnemy);
+            brain->registerGoal(captureFlag);
+            brain->registerGoal(findFlag);
+			brain->registerGoal(returnFlag);
+            brain->registerGoal(retrieveFlag);
+
+            aiSoldier->addAISceneImpl(brain);
             soldier = New NPC(currentNode, aiSoldier);
             soldier->setMovementSpeed(speed * 2); 
             _armyNPCs[k].push_back(soldier);

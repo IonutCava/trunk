@@ -73,23 +73,22 @@ void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
 }
 
 /// Called once per frame
-U8 ShaderManager::update(const U64 deltaTime) {
+bool ShaderManager::update(const U64 deltaTime) {
     // Pass the update call to all registered programs
-    FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms) {
-        if (it.second->update(deltaTime) == 0) {
+    for(ShaderProgramMap::value_type& it : _shaderPrograms) {
+        if (!it.second->update(deltaTime)) {
             // If an update call fails, stop updating
-            return 0;
+            return false;
         }
     }
-
-    return 1;
+	return true;
 }
 
 /// Calling this will force a recompilation of all shader stages for the program that matches the name specified
 bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
     bool state = false;
     // Find the shader program
-    FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms) {
+    for(ShaderProgramMap::value_type& it : _shaderPrograms) {
         const stringImpl& shaderName = it.second->getName();
         // Check if the name matches any of the program's name components
         if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
@@ -108,28 +107,26 @@ bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
 }
 
 /// Called after a swap buffer request
-U8 ShaderManager::idle(){
+void ShaderManager::idle(){
     // If we don't have any shaders queued for recompilation, return early
-    if (_recompileQueue.empty()) {
-        return 0;
-    }
-    // Else, recompile the top program from the queue
-    _recompileQueue.top()->recompile(true,true,true,true,true);
-    _recompileQueue.pop();
-
-    return 1;
+	if (!_recompileQueue.empty()) {
+		// Else, recompile the top program from the queue
+		_recompileQueue.top()->recompile(true, true, true, true, true);
+		_recompileQueue.pop();
+	}
+    return;
 }
 
 /// Pass uniform data update call to every registered program
 void ShaderManager::refreshShaderData() {
-    FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms) {
+    for(ShaderProgramMap::value_type& it : _shaderPrograms) {
         it.second->refreshShaderData();
     }
 }
 
 /// Pass scene data update call to every registered program
 void ShaderManager::refreshSceneData() {
-   FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms) {
+   for(ShaderProgramMap::value_type& it : _shaderPrograms) {
         it.second->refreshSceneData();
     }
 }

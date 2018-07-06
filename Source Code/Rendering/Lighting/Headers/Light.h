@@ -138,7 +138,7 @@ public:
     /*----------- Shadow Mapping-------------------*/
     ///Set the function used to generate shadows for this light (usually _scenegraph->render)
     inline ShadowMapInfo* getShadowMapInfo() const {return _shadowMapInfo;}
-    inline void setShadowMappingCallback(const DELEGATE_CBK& callback) { _callback = callback; }
+	inline void setShadowMappingCallback(const DELEGATE_CBK<>& callback) { _callback = callback; }
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
     virtual void generateShadowMaps(SceneRenderState& sceneRenderState);
@@ -191,7 +191,7 @@ private:
     SceneGraphNode* _lightSGN;
     SceneGraphNode* _impostorSGN;
     Camera*         _shadowCamera;
-    DELEGATE_CBK _callback;
+	DELEGATE_CBK<> _callback;
     F32   _score;
     bool  _enabled;
 

@@ -132,9 +132,9 @@ void SceneManager::renderVisibleNodes() {
 void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
     assert(_activeScene != nullptr);
 
-    static DELEGATE_CBK renderFunction;
-    if(renderFunction.empty()){
-        if(_activeScene->renderCallback().empty()){
+    static DELEGATE_CBK<> renderFunction;
+    if(!renderFunction){
+        if(!_activeScene->renderCallback()){
             renderFunction = DELEGATE_BIND(&SceneManager::renderVisibleNodes, this);
         }else{
             renderFunction = _activeScene->renderCallback();

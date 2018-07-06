@@ -109,9 +109,9 @@ void CascadedShadowMaps::updateResolution(I32 newWidth, I32 newHeight){
     ShadowMap::updateResolution(newWidth, newHeight);
 }
 
-void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
+void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction){
     //Only if we have a valid callback;
-    if (sceneRenderFunction.empty()) {
+    if (!sceneRenderFunction) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
         return;
     }
@@ -265,8 +265,8 @@ void CascadedShadowMaps::previewShadowMaps() {
     for (U8 i = 0; i < _numSplits; ++i){
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform("zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
-        GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND(&GFXDevice::drawPoints, 
-                                                                     DELEGATE_REF(GFX_DEVICE),
+		GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))&GFXDevice::drawPoints,
+                                                                     &GFX_DEVICE,
                                                                      1,
                                                                      GFX_DEVICE.getDefaultStateBlock(true),
                                                                      _previewDepthMapShader));

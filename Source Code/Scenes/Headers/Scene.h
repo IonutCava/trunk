@@ -115,13 +115,13 @@ public:
     inline SceneGraphNode* getCurrentSelection() const { return _currentSelection; }
     void findSelection(F32 mouseX, F32 mouseY);
     void deleteSelection();
-    inline void addSelectionCallback(const DELEGATE_CBK& selectionCallback) { 
+	inline void addSelectionCallback(const DELEGATE_CBK<>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback); 
     }
     
     ///call this function if you want to use a more complex rendering callback other than "SceneGraph::render()"
-    void renderCallback(const DELEGATE_CBK& renderCallback) {_renderCallback = renderCallback;}
-    const DELEGATE_CBK& renderCallback() {return _renderCallback;}
+	void renderCallback(const DELEGATE_CBK<>& renderCallback) { _renderCallback = renderCallback; }
+	const DELEGATE_CBK<>& renderCallback() { return _renderCallback; }
 
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
@@ -153,7 +153,7 @@ protected:
 
     ///This is the rendering function used to override the default one for the renderer.
     ///If this is empty, the renderer will use the scene's scenegraph render function
-    DELEGATE_CBK _renderCallback;
+	DELEGATE_CBK<> _renderCallback;
 
     ///Scene::load must be called by every scene. Add a load flag to make sure!
     bool _loadComplete;
@@ -171,7 +171,7 @@ private:
     ///Contains all game related info for the scene (wind speed, visibility ranges, etc)
     SceneState       _sceneState;
     vectorImpl<SceneGraphNode* >   _skiesSGN;///<Add multiple skies that you can toggle through
-    vectorImpl<DELEGATE_CBK > _selectionChangeCallbacks;
+	vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
 
 protected:
 

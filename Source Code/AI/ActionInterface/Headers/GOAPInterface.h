@@ -22,7 +22,6 @@
 #ifndef _AESOP_ACTION_INTERFACE_H_
 #define _AESOP_ACTION_INTERFACE_H_
 
-#include "Utility/Headers/Vector.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 #include <CPPGoap/AStar.h>

@@ -96,7 +96,7 @@ protected:
     bool _hasTransparency;
     TextureType _textureType;
     mat4<F32> _transformMatrix;
-    boost::atomic<U32>	_handle;
+    std::atomic<U32>	_handle;
     SamplerDescriptor _samplerDescriptor;
 };
 

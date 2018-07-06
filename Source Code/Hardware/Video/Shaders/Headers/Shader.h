@@ -26,7 +26,6 @@
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
-#include "Utility/Headers/Vector.h"
 
 namespace Divide {
 
@@ -67,7 +66,7 @@ protected:
     bool _optimise;
     /// The API dependent object handle. Not thread-safe!
     U32  _shader;
-    boost::atomic_bool _compiled;
+    std::atomic_bool _compiled;
     vectorImpl<ShaderProgram* > _parentShaderPrograms;
 };
 

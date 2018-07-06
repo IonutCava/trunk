@@ -3,15 +3,17 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Utility/Headers/Localization.h"
-#include <boost/thread.hpp>
+
+#include <chrono>
+#include <thread>
 
 namespace Divide {
 
-Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK& f) : Task(tp, tickIntervalMS, startOnCreate, runOnce ? 0 : -1, f)
+Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK<>& f) : Task(tp, tickIntervalMS, startOnCreate, runOnce ? 0 : -1, f)
 {
 }
 
-Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& f) : GUIDWrapper(), 
+Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK<>& f) : GUIDWrapper(),
                                                                                                                             _tp(tp), 
                                                                                                                             _tickIntervalMS(tickIntervalMs),
                                                                                                                             _numberOfTicks(numberOfTicks),
@@ -30,7 +32,7 @@ Task::~Task(){
         ERROR_FN(Locale::get("TASK_DELETE_ACTIVE"));
     }
     while (!_done) {
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
 
@@ -50,31 +52,30 @@ void Task::pauseTask(bool state){
 }
 
 void Task::run(){
-    //try	{ //< threadpool does not support exceptions
-        D_PRINT_FN(Locale::get("TASK_START_THREAD"), boost::this_thread::get_id());
-        while(true) {
-            while (_paused || Application::getInstance().mainLoopPaused()) {
-                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickIntervalMS > 0 ? _tickIntervalMS : 10));
-            }
-            if (_end || Application::getInstance().ShutdownRequested()) {
-                break;
-            }
-
-            if (_tickIntervalMS > 0) {
-                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickIntervalMS));
-            }
-
-            _callback();
-
-            if (_numberOfTicks > 0) {
-                _numberOfTicks--;
-            } else if(_numberOfTicks == 0) {
-                _end = true;
-            }
+    D_PRINT_FN(Locale::get("TASK_START_THREAD"), std::this_thread::get_id());
+    while(true) {
+		U64 interval = _tickIntervalMS;
+        while (_paused || Application::getInstance().mainLoopPaused()) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(interval > 0 ? interval : 10));
         }
-    //}catch(const boost::thread_interrupted&){}
+        if (_end || Application::getInstance().ShutdownRequested()) {
+            break;
+        }
 
-    D_PRINT_FN(Locale::get("TASK_DELETE_THREAD"), boost::this_thread::get_id());
+		if (interval > 0) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        }
+
+        _callback();
+
+        if (_numberOfTicks > 0) {
+            _numberOfTicks--;
+        } else if(_numberOfTicks == 0) {
+            _end = true;
+        }
+    }
+
+    D_PRINT_FN(Locale::get("TASK_DELETE_THREAD"), std::this_thread::get_id());
 
     _completionSignal(getGUID());
     _done = true;

@@ -59,14 +59,14 @@ public:
     /// Used for many things, such as culling switches, and underwater effects
     inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
 
-    inline void setReflectionCallback(const DELEGATE_CBK& callback) { Reflector::setRenderCallback(callback);}
-    inline void setRefractionCallback(const DELEGATE_CBK& callback) { _refractionCallback = callback; }
+	inline void setReflectionCallback(const DELEGATE_CBK<>& callback) { Reflector::setRenderCallback(callback); }
+	inline void setRefractionCallback(const DELEGATE_CBK<>& callback) { _refractionCallback = callback; }
 
 protected:
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     void postLoad(SceneGraphNode* const sgn);
-    bool previewReflection();
+    void previewReflection();
 
     inline const Plane<F32>&  getRefractionPlane() { return _refractionPlane; }
 
@@ -90,7 +90,7 @@ private:
     SceneGraphNode* _planeSGN;
     Framebuffer*    _refractionTexture;
     Plane<F32>      _refractionPlane;
-    DELEGATE_CBK    _refractionCallback;
+	DELEGATE_CBK<>  _refractionCallback;
     bool            _refractionRendering;
     bool            _reflectionRendering;
     bool            _dirty;

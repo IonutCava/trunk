@@ -26,9 +26,11 @@
 #include "Utility/Headers/Vector.h"
 #include "Utility/Headers/String.h"
 #include "Utility/Headers/HashMap.h"
-
+#include "Core/Headers/Singleton.h"
+#include "Core/Headers/NonCopyable.h"
 #include <limits.h>
-#include <boost/function.hpp>
+#include <functional>
+#include <atomic>
 
 namespace Divide {
 
@@ -48,7 +50,13 @@ typedef double   D32;
 void log_delete(size_t t,char* zFile, I32 nLine);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
-
+/// a la Boost
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v)
+{
+	std::hash<T> hasher;
+	seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
 /* See
  
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/
@@ -191,9 +199,23 @@ typedef union {
 #define SAFE_DELETE_vector(R)      for(vectorAlg::vecSize r_iter(0); r_iter< R.size(); r_iter++){ LOG(R); Del R[r_iter]; }
 #define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ LOG(OLD); Del OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 
-#define DELEGATE_BIND boost::bind
-#define DELEGATE_REF  boost::ref
-#define DELEGATE_CBK  boost::function0<void>
+template <typename... Args>
+auto DELEGATE_BIND(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) {
+	return std::bind(std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+auto DELEGATE_REF(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) {
+	return std::bind(std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+auto DELEGATE_CREF(Args&&... args) -> decltype(std::cref(std::forward<Args>(args)...)) {
+	return std::cref(std::forward<Args>(args)...);
+}
+
+template <typename T = void>
+using DELEGATE_CBK = std::function<T()>;
 
 }; //namespace Divide
 

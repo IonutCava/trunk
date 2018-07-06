@@ -150,7 +150,7 @@ public:
     ///Nothing really to unload
     virtual bool unload() {return true;}
     ///Add an event listener called after every RenderLookAt or RenderLookAtCube call
-    virtual void addUpdateListener(const DELEGATE_CBK& f) {_listeners.push_back(f);}
+	virtual void addUpdateListener(const DELEGATE_CBK<>& f) { _listeners.push_back(f); }
     ///Informs all listeners of a new event
     virtual void updateListeners();
     ///Clear all listeners from the current camera
@@ -211,7 +211,7 @@ protected:
     F32 _camIOD;
     CameraType	_type;
 
-    vectorImpl<DELEGATE_CBK > _listeners;
+	vectorImpl<DELEGATE_CBK<> > _listeners;
     bool            _isActive;
     bool            _projectionDirty;
     bool            _viewMatrixDirty;

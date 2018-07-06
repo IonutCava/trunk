@@ -6,10 +6,11 @@
 namespace Divide {
 
 Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit::UNIT_TYPE_CHARACTER, node),
-                                                                       _type(type),
-                                                                       _positionDirty(false),
-                                                                       _velocityDirty(false)
+                                                                       _type(type)
 {
+
+	_positionDirty = false;
+	_velocityDirty = false;
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();

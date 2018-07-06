@@ -25,12 +25,11 @@
 
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
-#include <boost/noncopyable.hpp>
 
 namespace Divide {
 
 class Texture;
-class Framebuffer : private boost::noncopyable, public GUIDWrapper {
+class Framebuffer : private NonCopyable, public GUIDWrapper {
 public:
     struct FramebufferTarget {
         bool _depthOnly;

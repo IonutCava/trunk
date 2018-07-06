@@ -29,7 +29,7 @@ namespace Divide {
 
 class Resource;
 class HardwareResource;
-class ResourceLoader : private boost::noncopyable {
+class ResourceLoader : private NonCopyable {
 public:
     ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor) {}
 

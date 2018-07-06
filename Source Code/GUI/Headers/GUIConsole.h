@@ -26,7 +26,6 @@
 #define CEGUI_MAX_INPUT_HISTORY 5
 
 #include <CEGUI/CEGUI.h>
-#include "Utility/Headers/Vector.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"           //For multi-threading
 #include <deque>

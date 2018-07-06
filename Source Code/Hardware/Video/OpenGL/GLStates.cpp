@@ -42,7 +42,7 @@ void GL_API::clearStates(const bool skipShader, const bool skipTextures, const b
     }
 
     if (!skipTextures) {
-        FOR_EACH(textureBoundMapDef::value_type& it, _textureBoundMap) {
+        for(textureBoundMapDef::value_type& it : _textureBoundMap) {
             GL_API::bindTexture(it.first, 0, it.second.second);
         }
 

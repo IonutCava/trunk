@@ -13,7 +13,7 @@ namespace Divide {
 bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     BoundingBox& bb = sgn->getBoundingBox();
     bb.reset();
-    FOR_EACH(SceneGraphNode::NodeChildren::value_type& s, sgn->getChildren()){
+	for (SceneGraphNode::NodeChildren::value_type& s : sgn->getChildren()){
         sgn->addBoundingBox(s.second->getBoundingBoxConst(), s.second->getNode()->getType());
     }
     bb.setComputed(true);
@@ -22,42 +22,42 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
 
 void SceneGraphNode::setSelected(const bool state) {
     _selected = state;
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children){
         it.second->setSelected(_selected);
     }
 }
 
 void SceneGraphNode::renderSkeleton(const bool state) {
     _renderSkeleton = state;
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children){
         it.second->renderSkeleton(_renderSkeleton);
     }
 }
 
 void SceneGraphNode::renderWireframe(const bool state) {
     _renderWireframe = state;
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children){
         it.second->renderWireframe(_renderWireframe);
     }
 }
 
 void SceneGraphNode::renderBoundingBox(const bool state) {
     _renderBoundingBox = state; 
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children){
         it.second->renderBoundingBox(_renderBoundingBox);
     }
 }
 
 void SceneGraphNode::castsShadows(const bool state)    {
     _castsShadows = state;
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children){
         it.second->castsShadows(_castsShadows);
     }
 }
 
 void SceneGraphNode::receivesShadows(const bool state) {
     _receiveShadows = state;
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children){
         it.second->receivesShadows(_receiveShadows);
     }
 }
@@ -87,17 +87,17 @@ void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox
     }
 }
 
-void SceneGraphNode::onCameraChange(){
-    FOR_EACH(NodeChildren::value_type& it, _children)
-        it.second->onCameraChange();
-    
+void SceneGraphNode::onCameraChange() {
+	for (NodeChildren::value_type& it : _children) {
+		it.second->onCameraChange();
+	}
     _node->onCameraChange(this);
 }
 
 ///Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     //Compute from leaf to root to ensure proper calculations
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children) {
         assert(it.second);
         it.second->sceneUpdate(deltaTime, sceneState);
     }
@@ -116,7 +116,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     }
     if (getComponent<PhysicsComponent>()->transformUpdated()){
         _boundingBoxDirty = true;
-        FOR_EACH(NodeChildren::value_type& it, _children){
+		for (NodeChildren::value_type& it : _children){
             it.second->getComponent<PhysicsComponent>()->transformUpdated(true);
         }
     }
@@ -170,7 +170,7 @@ bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStag
     if (_drawReset[renderStage]) {
         _drawReset[renderStage] = false;
         if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
-            FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, getParent()->getChildren()) {
+			for (SceneGraphNode::NodeChildren::value_type& it : getParent()->getChildren()) {
                 if (it.second->getComponent<AnimationComponent>()) {
                     it.second->getComponent<AnimationComponent>()->reset();
                 }

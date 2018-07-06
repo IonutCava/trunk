@@ -1,5 +1,4 @@
 #include "Headers/RenderStateBlock.h"
-#include <boost/functional/hash.hpp>
 
 namespace Divide {
 
@@ -157,27 +156,27 @@ void RenderStateBlockDescriptor::clean() {
     }
 
     _cachedHash = 0;
-    boost::hash_combine(_cachedHash, _colorWrite.i);
-    boost::hash_combine(_cachedHash, _blendEnable);
-    boost::hash_combine(_cachedHash, _blendSrc);
-    boost::hash_combine(_cachedHash, _blendDest);
-    boost::hash_combine(_cachedHash, _blendOp);
-    boost::hash_combine(_cachedHash, _cullMode);
-    boost::hash_combine(_cachedHash, _cullEnabled);
-    boost::hash_combine(_cachedHash, _zEnable);
-    boost::hash_combine(_cachedHash, _zWriteEnable);
-    boost::hash_combine(_cachedHash, _zFunc);
-    boost::hash_combine(_cachedHash, _zBias);
-    boost::hash_combine(_cachedHash, _zUnits);
-    boost::hash_combine(_cachedHash, _stencilEnable);
-    boost::hash_combine(_cachedHash, _stencilRef);
-    boost::hash_combine(_cachedHash, _stencilMask);
-    boost::hash_combine(_cachedHash, _stencilWriteMask);
-    boost::hash_combine(_cachedHash, _stencilFailOp);
-    boost::hash_combine(_cachedHash, _stencilZFailOp);
-    boost::hash_combine(_cachedHash, _stencilPassOp);
-    boost::hash_combine(_cachedHash, _stencilFunc);
-    boost::hash_combine(_cachedHash, _fillMode);
+    hash_combine(_cachedHash, _colorWrite.i);
+    hash_combine(_cachedHash, _blendEnable);
+    hash_combine(_cachedHash, _blendSrc);
+    hash_combine(_cachedHash, _blendDest);
+    hash_combine(_cachedHash, _blendOp);
+    hash_combine(_cachedHash, _cullMode);
+    hash_combine(_cachedHash, _cullEnabled);
+    hash_combine(_cachedHash, _zEnable);
+    hash_combine(_cachedHash, _zWriteEnable);
+    hash_combine(_cachedHash, _zFunc);
+    hash_combine(_cachedHash, _zBias);
+    hash_combine(_cachedHash, _zUnits);
+    hash_combine(_cachedHash, _stencilEnable);
+    hash_combine(_cachedHash, _stencilRef);
+    hash_combine(_cachedHash, _stencilMask);
+    hash_combine(_cachedHash, _stencilWriteMask);
+    hash_combine(_cachedHash, _stencilFailOp);
+    hash_combine(_cachedHash, _stencilZFailOp);
+    hash_combine(_cachedHash, _stencilPassOp);
+    hash_combine(_cachedHash, _stencilFunc);
+    hash_combine(_cachedHash, _fillMode);
 }
 
 };

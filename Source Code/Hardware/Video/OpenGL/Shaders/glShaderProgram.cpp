@@ -10,11 +10,11 @@
 namespace Divide {
 
 glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
-                                                        _validationQueued(false),
                                                         _loadedFromBinary(false),
                                                         _validated(false),
                                                         _shaderProgramIDTemp(0)
 {
+	_validationQueued = false; 
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramId = GLUtil::_invalidObjectID;
     // some basic translation tables for shade types
@@ -36,7 +36,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 glShaderProgram::~glShaderProgram()
 {
     // remove shader stages
-    FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap) {
+    for(ShaderIdMap::value_type& it : _shaderIdMap) {
         detachShader(it.second);
     }
     // delete shader program
@@ -62,7 +62,7 @@ void glShaderProgram::validateInternal() {
 }
 
 /// Called once per frame. Used to update internal state
-U8 glShaderProgram::update(const U64 deltaTime){
+bool glShaderProgram::update(const U64 deltaTime){
     // If we haven't validated the program but used it at lease once ...
     if(_validationQueued){
         // Call the internal validation function

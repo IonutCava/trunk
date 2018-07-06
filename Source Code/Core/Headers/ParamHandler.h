@@ -29,7 +29,6 @@
 #include "Utility/Headers/Localization.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-#include <boost/atomic.hpp>
 
 namespace Divide {
 
@@ -157,7 +156,7 @@ private:
 	ParamMap _params;
 	ParamStringMap _paramsStr;
 	mutable SharedLock _mutex;
-	boost::atomic_bool _logState;
+	std::atomic_bool _logState;
 
 END_SINGLETON
 

@@ -8,9 +8,9 @@ namespace Divide {
 Shader::Shader(const stringImpl& name, const ShaderType& type,const bool optimise) : _shader(std::numeric_limits<U32>::max()),
                                                                                       _name(name),
                                                                                       _type(type),
-                                                                                      _compiled(false),
                                                                                       _optimise(optimise)
 {
+	_compiled = false;
 }
 
 Shader::~Shader()

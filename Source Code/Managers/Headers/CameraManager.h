@@ -23,7 +23,6 @@
 #ifndef _CAMERA_MANAGER_H
 #define _CAMERA_MANAGER_H
 
-#include <boost/noncopyable.hpp>
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include <stack>
@@ -33,7 +32,7 @@ namespace Divide {
 class Kernel;
 /// Multiple camera managers can be created if needed in the future
 /// No need for singletons here
-class CameraManager : private boost::noncopyable, public FrameListener {
+class CameraManager : private NonCopyable, public FrameListener {
 typedef hashMapImpl<stringImpl, Camera*> CameraPool;
 typedef hashMapImpl<I64,        Camera*> CameraPoolGUID;
 
@@ -45,8 +44,8 @@ public:
 
     void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 
-    void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
-    void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f); _addNewListener = true;}
+	void addCameraChangeListener(const DELEGATE_CBK<>& f) { _changeCameralisteners.push_back(f); }
+	void addCameraUpdateListener(const DELEGATE_CBK<>& f) { _updateCameralisteners.push_back(f); _addNewListener = true; }
 
     inline bool mouseMoved(const Input::MouseEvent& arg) { return _camera->mouseMoved(arg); }
 
@@ -79,8 +78,8 @@ private:
     CameraPool _cameraPool;
     CameraPoolGUID _cameraPoolGUID;
     std::stack<Camera* > _cameraStack;
-    vectorImpl<DELEGATE_CBK > _changeCameralisteners;
-    vectorImpl<DELEGATE_CBK > _updateCameralisteners;
+	vectorImpl<DELEGATE_CBK<> > _changeCameralisteners;
+	vectorImpl<DELEGATE_CBK<> > _updateCameralisteners;
 };
 
 }; //namespace Divide

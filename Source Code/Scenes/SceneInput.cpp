@@ -55,7 +55,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
 #endif
     }
 
-    FOR_EACH(DELEGATE_CBK& cbk, _selectionChangeCallbacks) {
+	for(DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {
         cbk();
     }
 }
@@ -82,8 +82,13 @@ bool Scene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton
     switch (button){
         default:       return false;
 
-        case Input::MouseButton::MB_Left:    findSelection(key.state.X.abs, key.state.Y.abs); break;
-        case Input::MouseButton::MB_Right:   break;
+		case Input::MouseButton::MB_Left:    {
+			findSelection(key.state.X.abs, key.state.Y.abs);
+		}break;
+		case Input::MouseButton::MB_Right:   {
+			state()._angleLR = 0;
+			state()._angleUD = 0;
+		}break;
         case Input::MouseButton::MB_Middle:  break;
         case Input::MouseButton::MB_Button3: break;
         case Input::MouseButton::MB_Button4: break;
@@ -98,22 +103,28 @@ bool Scene::mouseMoved(const Input::MouseEvent& key){
     state()._mouseXDelta = _previousMousePos.x - key.state.X.abs;
     state()._mouseYDelta = _previousMousePos.y - key.state.Y.abs;
     _previousMousePos.set(key.state.X.abs, key.state.Y.abs);
+	if (_mousePressed[Input::MouseButton::MB_Right]) {
+		state()._angleLR = -state()._mouseXDelta;
+		state()._angleUD = -state()._mouseYDelta;
+	}
     return true;
 }
 
 using namespace Input;
 bool Scene::onKeyDown(const Input::KeyEvent& key){
     switch(key._key){
-        default:             return false;
-        case KeyCode::KC_END   : deleteSelection(); break;
-        case KeyCode::KC_ADD   : {
+        default:  return false;
+		case KeyCode::KC_END : {
+			deleteSelection();  
+		} break;
+        case KeyCode::KC_ADD : {
             Camera& cam = renderState().getCamera();
             F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
             if (currentCamMoveSpeedFactor < 50){
                 cam.setMoveSpeedFactor( currentCamMoveSpeedFactor + 1.0f);
                 cam.setTurnSpeedFactor( cam.getTurnSpeedFactor()  + 1.0f);
             }
-        }break;
+        } break;
         case KeyCode::KC_SUBTRACT :	{
             Camera& cam = renderState().getCamera();
             F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
@@ -121,52 +132,100 @@ bool Scene::onKeyDown(const Input::KeyEvent& key){
                 cam.setMoveSpeedFactor( currentCamMoveSpeedFactor - 1.0f);
                 cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 1.0f);
             }
-        }break;
+        } break;
+		case KeyCode::KC_W: {
+			state()._moveFB = 1;
+		} break;
+		case KeyCode::KC_S: {
+			state()._moveFB = -1;
+		} break;
+		case KeyCode::KC_A: {
+			state()._moveLR = -1;
+		} break;
+		case KeyCode::KC_D: {
+			state()._moveLR = 1;
+		} break;
+		case KeyCode::KC_Q: {
+			state()._roll = 1;
+		} break;
+		case KeyCode::KC_E: {
+			state()._roll = -1;
+		} break;
+		case KeyCode::KC_RIGHT: {
+			state()._angleLR = 1;
+		}break;
+		case KeyCode::KC_LEFT: {
+			state()._angleLR = -1;
+		} break;
+		case KeyCode::KC_UP: {
+			state()._angleUD = -1;
+		} break;
+		case KeyCode::KC_DOWN: {
+			state()._angleUD = 1;
+		} break;
     }
-
     return true;
 }
 
 bool Scene::onKeyUp(const Input::KeyEvent& key){
-    switch( key._key ){
-        case KeyCode::KC_P: 
-            _paramHandler.setParam("freezeLoopTime", !_paramHandler.getParam("freezeLoopTime", false)); 
-            break;
-        case KeyCode::KC_F2:
-            renderState().toggleSkeletons();
-            break;
-        case KeyCode::KC_F3:
-            _paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
-            break;
-        case KeyCode::KC_F4:
-            _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
-            break;
-        case KeyCode::KC_F5:
-            renderState().toggleAxisLines();
-            break;
-        case KeyCode::KC_B:{
+    switch( key._key ) {
+		case KeyCode::KC_P: {
+			_paramHandler.setParam("freezeLoopTime", !_paramHandler.getParam("freezeLoopTime", false));
+		} break;
+		case KeyCode::KC_F2: {
+			renderState().toggleSkeletons();
+		} break;
+		case KeyCode::KC_F3: {
+			_paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
+		} break;
+		case KeyCode::KC_F4: {
+			_paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
+		} break;
+		case KeyCode::KC_F5: {
+			renderState().toggleAxisLines();
+		} break;
+        case KeyCode::KC_B: {
             renderState().toggleBoundingBoxes();
-            }break;
-        case KeyCode::KC_F8:
-            renderState().drawDebugLines(!renderState()._debugDrawLines);
-            break;
-        case KeyCode::KC_F9:{
-#ifdef _DEBUG
-            for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i)
-                _lines[i].clear();
-#endif
-            }break;
-        case KeyCode::KC_F10:
-            LightManager::getInstance().togglePreviewShadowMaps();
-            GFX_DEVICE.togglePreviewDepthBuffer();
-            break;
-        case KeyCode::KC_F7:
+        } break;
+		case KeyCode::KC_F8: {
+			renderState().drawDebugLines(!renderState()._debugDrawLines);
+		} break;
+#		ifdef _DEBUG
+			case KeyCode::KC_F9: {
+				for (U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i) {
+					_lines[i].clear();
+				}
+			} break;
+#		endif
+		case KeyCode::KC_F10: {
+			LightManager::getInstance().togglePreviewShadowMaps();
+			GFX_DEVICE.togglePreviewDepthBuffer();
+		} break;
+        case KeyCode::KC_F7: {
             GFX_DEVICE.Screenshot("screenshot_");
-            break;
-        default:
-            return false;
+        } break;
+		case KeyCode::KC_W: 
+		case KeyCode::KC_S: {
+			state()._moveFB = 0;
+		} break;
+		case KeyCode::KC_A: 
+		case KeyCode::KC_D: {
+			state()._moveLR = 0;
+		} break;
+		case KeyCode::KC_Q: 
+		case KeyCode::KC_E: {
+			state()._roll = 0;
+		} break;
+		case KeyCode::KC_RIGHT:
+		case KeyCode::KC_LEFT: {
+			state()._angleLR = 0;
+		} break;
+		case KeyCode::KC_UP: 
+		case KeyCode::KC_DOWN: {
+			state()._angleUD = 0;
+		} break;
+		default: return false;
     }
-
     return true;
 }
 

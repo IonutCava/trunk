@@ -24,9 +24,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _ANIMATION_COMPONENT_H_
 
 #include "SGNComponent.h"
-
-#include "Utility/Headers/Vector.h"
-#include "Utility/Headers/HashMap.h"
 #include "Core/Math/Headers/MathClasses.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 

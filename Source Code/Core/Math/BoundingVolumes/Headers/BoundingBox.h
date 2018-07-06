@@ -24,9 +24,8 @@
 #define BOUNDINGBOX_H_
 
 #include "Core/Math/Headers/Ray.h"
-#include "Utility/Headers/Vector.h"
 #include "Utility/Headers/GUIDWrapper.h"
-#include "Core/Math/Headers/MathClasses.h"
+#include <algorithm>
 
 namespace Divide {
 
@@ -90,16 +89,16 @@ public:
 
     inline bool  Collision(const BoundingBox& AABB2) const {
         //ReadLock r_lock(_lock);
+		const vec3<F32>& center = this->getCenter();
+		const vec3<F32>& halfWidth = this->getHalfExtent();
+		const vec3<F32>& otherCenter = AABB2.getCenter();
+		const vec3<F32>& otherHalfWidth = AABB2.getHalfExtent();
 
-        if(this->_max.x < AABB2._min.x) return false;
-        if(this->_max.y < AABB2._min.y) return false;
-        if(this->_max.z < AABB2._min.z) return false;
+		bool x = std::abs(center[0] - otherCenter[0]) <= (halfWidth[0] + otherHalfWidth[0]);
+		bool y = std::abs(center[1] - otherCenter[1]) <= (halfWidth[1] + otherHalfWidth[1]);
+		bool z = std::abs(center[2] - otherCenter[2]) <= (halfWidth[2] + otherHalfWidth[2]);
 
-        if(this->_min.x > AABB2._max.x) return false;
-        if(this->_min.y > AABB2._max.y) return false;
-        if(this->_min.z > AABB2._max.z) return false;
-
-        return true;
+		return x && y && z;
     }
 
     inline bool Compare(const BoundingBox& bb) const {
@@ -329,7 +328,7 @@ public:
     inline F32 nearestDistanceFromPointSquared( const vec3<F32> &pos ) const {
         const vec3<F32>& center = getCenter();
         const vec3<F32>& hextent = getHalfExtent();
-        _cacheVector.set(std::max( 0.0f, fabsf( pos.x - center.x ) - hextent.x ),
+        _cacheVector.set(std::max(0.0f, fabsf( pos.x - center.x ) - hextent.x ),
                          std::max(0.0f, fabsf(pos.y - center.y) - hextent.y),
                          std::max(0.0f, fabsf(pos.z - center.z) - hextent.z));
         return _cacheVector.lengthSquared();

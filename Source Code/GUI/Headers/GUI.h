@@ -62,7 +62,7 @@ class Scene;
 
 DEFINE_SINGLETON_EXT1( GUI, Input::InputAggregatorInterface )
     typedef hashMapImpl<stringImpl, GUIElement*> guiMap;
-    typedef DELEGATE_CBK ButtonCallback;
+	typedef DELEGATE_CBK<> ButtonCallback;
 
 public:
     /// Main update call

@@ -23,7 +23,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TERRAIN_LOADER_H_
 #define _TERRAIN_LOADER_H_
 
-#include "Core/Headers/Singleton.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 

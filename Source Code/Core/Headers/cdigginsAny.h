@@ -194,17 +194,27 @@ public:
 
     /// Cast operator. You can only cast to the original type.
     template<typename T>
-    const T& constant_cast(bool& success) const {
-        success = (policy == anyimpl::get_policy<T>());
+    inline const T& constant_cast() const {
         return *(reinterpret_cast<const T*>(policy->get_value_const(&object)));
     }
 
     template<typename T>
-    T& cast(bool& success) {
-        success = (policy == anyimpl::get_policy<T>());
+	inline  T& cast() {
         return *(reinterpret_cast<T*>(policy->get_value(&object)));
     }
 
+	/// Cast operator. You can only cast to the original type.
+	template<typename T>
+	inline const T& constant_cast(bool& success) const {
+		success = (policy == anyimpl::get_policy<T>());
+		return this->constant_cast<T>();
+	}
+
+	template<typename T>
+	inline T& cast(bool& success) {
+		success = (policy == anyimpl::get_policy<T>());
+		return this->cast<T>();
+	}
     /// Returns true if the any contains no value.
     bool empty() const {
         return policy == anyimpl::get_policy<anyimpl::empty_any>();

@@ -39,7 +39,7 @@ inline void GFXDevice::setApi(const RenderAPI& api){
 }
 
 /// Render specified function inside of a viewport of specified dimensions and position
-inline void GFXDevice::renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback){
+inline void GFXDevice::renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK<>& callback){
     setViewport(rect);
     callback();
     restoreViewport();
@@ -60,12 +60,12 @@ inline void GFXDevice::toggleRasterization(bool state) {
 }
 
 /// Register a function to be called in the 2D rendering fase of the GFX Flush routine. Use callOrder for sorting purposes 
-inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK& callback, U32 callOrder) {
+inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder) {
 	_2dRenderQueue.push_back(std::make_pair(callOrder, callback));
 
     std::sort(_2dRenderQueue.begin(), 
               _2dRenderQueue.end(), 
-			  [](const std::pair<U32, DELEGATE_CBK> & a, const std::pair<U32, DELEGATE_CBK> & b) -> bool {
+			  [](const std::pair<U32, DELEGATE_CBK<> > & a, const std::pair<U32, DELEGATE_CBK<> > & b) -> bool {
                     return a.first < b.first;
               });
 }

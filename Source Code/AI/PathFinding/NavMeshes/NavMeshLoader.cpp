@@ -381,8 +381,10 @@ namespace Navigation {
 
             //although labels are bad, skipping here using them is the easiest solution to follow -Ionut
             next:;
-            FOR_EACH(SceneGraphNode::NodeChildren::value_type& it,sgn->getChildren()){
-                if (!parse(it.second->getBoundingBoxConst(), outData, it.second))	return false;
+			for (SceneGraphNode::NodeChildren::value_type& it : sgn->getChildren()){
+				if (!parse(it.second->getBoundingBoxConst(), outData, it.second)) {
+					return false;
+				}
             }
 
             return true;

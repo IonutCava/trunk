@@ -15,12 +15,12 @@ namespace Divide {
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
                                                     _optimise(optimise),
                                                     _dirty(true),
-                                                    _bound(false),
-                                                    _linked(false),
                                                     _outputCount(0),
                                                     _elapsedTime(0ULL),
                                                     _elapsedTimeMS(0.0f)
 {
+	_bound = false;
+	_linked = false;
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramId = 0;
     // Start with clean refresh flags
@@ -39,7 +39,7 @@ ShaderProgram::~ShaderProgram()
 {
     D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
     // Remove every shader attached to this program
-    FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap) {
+    for(ShaderIdMap::value_type& it : _shaderIdMap) {
         ShaderManager::getInstance().removeShader(it.second);
     }
     // Unregister the program from the manager
@@ -48,7 +48,7 @@ ShaderProgram::~ShaderProgram()
 }
 
 /// Called once per frame. Update common values used across programs
-U8 ShaderProgram::update(const U64 deltaTime) {
+bool ShaderProgram::update(const U64 deltaTime) {
     ParamHandler& par = ParamHandler::getInstance();
     LightManager& lightMgr = LightManager::getInstance();
 
@@ -57,7 +57,7 @@ U8 ShaderProgram::update(const U64 deltaTime) {
     _elapsedTimeMS = static_cast<F32>(getUsToMs(_elapsedTime));
     // Skip programs that aren't fully loaded
     if (!isHWInitComplete()) {
-        return 0;
+        return false;
     }
     // Toggle fog on or off
     bool enableFog = par.getParam<bool>("rendering.enableFog");
@@ -97,7 +97,7 @@ U8 ShaderProgram::update(const U64 deltaTime) {
         _dirty = false;
     }
 
-    return 1;
+    return true;
 }
 
 /// Rendering API specific loading (called after the API specific derived calls processed the request)

@@ -26,7 +26,6 @@
 #include "core.h"
 #include "AI/Headers/AIEntity.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
-#include <boost/atomic.hpp>
 
 namespace Divide {
 
@@ -39,7 +38,7 @@ public:
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
     void Destroy();
     /// Called at a fixed interval (preferably in a separate thread);
-    U8 update();
+    void update();
     /// Add an AI Entity to a specific team. Entities can be added to multiple teams. Caller is responsible for the lifetime of entity
     bool registerEntity(U32 teamId, AIEntity* entity);
     /// Remove an AI Entity from a specific teams. Entities can be added to multiple teams. Caller is responsible for the lifetime of entity
@@ -67,7 +66,7 @@ public:
     ///Remove a NavMesh
     void destroyNavMesh(AIEntity::PresetAgentRadius radius);
 
-    inline void setSceneCallback(const DELEGATE_CBK& callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
+    inline void setSceneCallback(const DELEGATE_CBK<>& callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
     inline void pauseUpdate(bool state)       { _pauseUpdate = state;}
     inline bool updatePaused()          const { return _pauseUpdate; }
     inline bool updating()              const { return _updating; }
@@ -101,14 +100,14 @@ private:
 
 private:
     U64 _deltaTime,_currentTime, _previousTime;
-    boost::atomic<bool> _navMeshDebugDraw;
-    boost::atomic<bool> _pauseUpdate;
-    boost::atomic<bool> _updating;
+    std::atomic<bool> _navMeshDebugDraw;
+    std::atomic<bool> _pauseUpdate;
+    std::atomic<bool> _updating;
     NavMeshMap      _navMeshes;
     AITeamMap       _aiTeams;
     mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;
-    DELEGATE_CBK       _sceneCallback;
+	DELEGATE_CBK<>     _sceneCallback;
 
 END_SINGLETON
 

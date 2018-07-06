@@ -24,8 +24,6 @@
 #define _RENDER_QUEUE_H_
 
 #include "RenderBin.h"
-#include "Core/Headers/Singleton.h"
-#include "Utility/Headers/HashMap.h"
 
 namespace Divide {
 

@@ -46,7 +46,7 @@ public:
     /// Check every possible combination of flags to make sure this program can be used for rendering
     bool isValid() const;
     /// Called once per frame. Used to update internal state
-    U8 update(const U64 deltaTime);
+    bool update(const U64 deltaTime);
     /// Add a new shader stage to this program
     void attachShader(Shader* const shader,const bool refresh = false);
     /// Remove a shader stage from this program
@@ -111,7 +111,7 @@ private:
 
     ShaderVarMap _shaderVars;
     TextureSlotMap _textureSlots;
-    boost::atomic_bool _validationQueued;
+    std::atomic_bool _validationQueued;
     GLenum  _binaryFormat;
     bool    _validated;
     bool    _loadedFromBinary;

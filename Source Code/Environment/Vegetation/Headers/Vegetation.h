@@ -76,7 +76,7 @@ protected:
     void gpuCull();
 
 private:
-    bool uploadGrassData();
+    void uploadGrassData();
     void generateTrees();
     void generateGrass();
 
@@ -92,7 +92,8 @@ private:
     //variables
     bool _render; ///< Toggle vegetation rendering On/Off
     bool _success;
-    boost::atomic_bool _threadedLoadComplete, _stopLoadingRequest;
+	std::atomic_bool _threadedLoadComplete;
+	std::atomic_bool _stopLoadingRequest;
     SceneGraphNode* _terrainSGN;
     Terrain*        _terrain;
     TerrainChunk*   _terrainChunk;

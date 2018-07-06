@@ -7,12 +7,12 @@ Transform::Transform() : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>
 
 Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation,
-                     const vec3<F32>& scale) :  GUIDWrapper(),
-                                                _dirty(true),
-                                                _rebuildMatrix(true),
-                                                _hasParentTransform(false)
+                     const vec3<F32>& scale) :  GUIDWrapper()
 {
-    _transformValues._scale.set(scale);
+	_dirty = true;
+	_rebuildMatrix = true; 
+	_hasParentTransform = false;
+	_transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
     _worldMatrix.identity();

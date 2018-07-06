@@ -34,7 +34,7 @@ ProfileTimer* s_appLoopTimer = nullptr;
 
 SharedLock Kernel::_threadedCallbackLock;
 vectorImpl<U64> Kernel::_threadedCallbackBuffer;
-hashMapImpl<U64, DELEGATE_CBK > Kernel::_threadedCallbackFunctions;
+hashMapImpl<U64, DELEGATE_CBK<> > Kernel::_threadedCallbackFunctions;
 
 #if defined(USE_FIXED_TIMESTEP)
 static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
@@ -61,8 +61,8 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     _cameraMgr = New CameraManager(this);               //Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange, DELEGATE_REF(LightManager::getInstance())));
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&SceneManager::onCameraChange, DELEGATE_REF(SceneManager::getInstance())));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange, &LightManager::getInstance()));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&SceneManager::onCameraChange, &SceneManager::getInstance()));
     //We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
     //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
@@ -109,8 +109,8 @@ void Kernel::idle(){
     UpgradableReadLock ur_lock(_threadedCallbackLock);
     if (!_threadedCallbackBuffer.empty()) {
         UpgradeToWriteLock uw_lock(ur_lock);
-        const DELEGATE_CBK& cbk = _threadedCallbackFunctions[_threadedCallbackBuffer.back()];
-        if (!cbk.empty()) {
+        const DELEGATE_CBK<>& cbk = _threadedCallbackFunctions[_threadedCallbackBuffer.back()];
+        if (cbk) {
             cbk();
         }
         _threadedCallbackBuffer.pop_back();
@@ -217,7 +217,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 #endif
     
     // Get input events
-    /*_APP.hasFocus() ?*/ _input.update(deltaTime) /*: _sceneMgr.onLostFocus()*/;
+    _APP.hasFocus() ? _input.update(deltaTime) : _sceneMgr.onLostFocus();
 
     // Call this to avoid interpolating 60 bone matrices per entity every render call
     // Update the scene state based on current time (e.g. animation matrices)
@@ -372,7 +372,7 @@ void Kernel::firstLoop() {
     _currentTime = _nextGameTick = GETUSTIME();
 }
 
-void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK& sceneRenderCallback) const {
+void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK<>& sceneRenderCallback) const {
     _GFX.setRenderStage(stage);
     _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
 }
@@ -380,7 +380,7 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
-    Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), _1, _2));
+	Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), std::placeholders::_1, std::placeholders::_2));
     //Using OpenGL for rendering as default
     _GFX.setApi(OpenGL);
     _GFX.setStateChangeExclusionMask(TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY | TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES);
@@ -481,7 +481,7 @@ void Kernel::runLogicLoop(){
 void Kernel::shutdown() {
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
-    Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
+    Console::getInstance().bindConsoleOutput(std::function<void (const char*, bool)>());
     GUI::destroyInstance(); ///Deactivate GUI
     _sceneMgr.unloadCurrentScene();
     _sceneMgr.deinitializeAI(true);

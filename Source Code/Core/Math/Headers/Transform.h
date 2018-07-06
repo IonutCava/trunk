@@ -23,8 +23,6 @@
 #ifndef _TRANSFORM_H_
 #define _TRANSFORM_H_
 
-#include <boost/atomic.hpp>
-#include <boost/noncopyable.hpp>
 #include "Quaternion.h"
 #include "Utility/Headers/GUIDWrapper.h"
    
@@ -39,7 +37,7 @@ struct TransformValues {
     Quaternion<F32> _orientation;
 };
 
-class Transform : public GUIDWrapper, private boost::noncopyable {
+class Transform : public GUIDWrapper, private NonCopyable {
 public:
 
     Transform();
@@ -390,11 +388,11 @@ private:
     ///This is the actual model matrix, but it will not convert to world space as it depends on it's parent in graph
     mat4<F32> _worldMatrix, _worldMatrixInterp;
     ///_dirty is set to true whenever a translation, rotation or scale is applied
-    boost::atomic_bool _dirty;
+    std::atomic_bool _dirty;
     ///_rebuildMatrix is set to true only when a rotation or scale is applied to avoid rebuilding matrices on translation only
-    boost::atomic_bool _rebuildMatrix;
+    std::atomic_bool _rebuildMatrix;
     Transform*         _parentTransform;
-    boost::atomic_bool _hasParentTransform;
+    std::atomic_bool _hasParentTransform;
     mutable SharedLock _lock;
     mutable SharedLock _parentLock;
 };

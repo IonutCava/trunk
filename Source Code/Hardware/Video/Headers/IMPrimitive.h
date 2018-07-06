@@ -23,7 +23,6 @@
 #ifndef _IM_EMULATION_H_
 #define _IM_EMULATION_H_
 
-#include <boost/noncopyable.hpp>
 #include "Core/Math/Headers/MathClasses.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
@@ -33,26 +32,28 @@ class Texture;
 class ShaderProgram;
 enum PrimitiveType;
 ///IMPrimitive replaces immediate mode calls to VB based rendering
-class IMPrimitive : public GUIDWrapper, private boost::noncopyable  {
+class IMPrimitive : public GUIDWrapper, private NonCopyable  {
 public:
-    inline void setRenderStates(const DELEGATE_CBK& setupStatesCallback, const DELEGATE_CBK& releaseStatesCallback){
+	inline void setRenderStates(const DELEGATE_CBK<>& setupStatesCallback, const DELEGATE_CBK<>& releaseStatesCallback){
         _setupStates = setupStatesCallback;
         _resetStates = releaseStatesCallback;
     }
 
     inline void clearRenderStates(){
-        _setupStates.clear();
-        _resetStates.clear();
+        _setupStates = nullptr;
+        _resetStates = nullptr;
     }
 
     inline void setupStates() {
-        if(!_setupStates.empty())
-            _setupStates();
+		if (_setupStates) {
+			_setupStates();
+		}
     }
 
     inline void resetStates() {
-        if(!_resetStates.empty())
-            _resetStates();
+		if (_resetStates) {
+			_resetStates();
+		}
     }
 
     inline void drawShader(ShaderProgram* const shaderProgram) {
@@ -90,7 +91,7 @@ public:
     inline U8   zombieCounter()              const {return _zombieCounter;}
     inline void forceWireframe(bool state)         {_forceWireframe = state;}
     inline bool forceWireframe()             const {return _forceWireframe; }
-    inline bool hasRenderStates()            const {return (!_setupStates.empty() && !_resetStates.empty());}
+    inline bool hasRenderStates()            const {return (!_setupStates && !_resetStates);}
 
     ///State management
     inline size_t  stateHash()              const { return _stateHash; }
@@ -127,8 +128,8 @@ private:
     ///If _pause is true, rendering for the current primitive is skipped and nothing is modified (e.g. zombie counters)
     bool         _paused;
     ///2 functions used to setup or reset states
-    DELEGATE_CBK _setupStates;
-    DELEGATE_CBK _resetStates;
+	DELEGATE_CBK<> _setupStates;
+	DELEGATE_CBK<> _resetStates;
     ///The state hash associated with this render instance
     size_t       _stateHash;
     ///The transform matrix for this element

@@ -52,9 +52,9 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor){
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void SingleShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
+void SingleShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction){
     ///Only if we have a valid callback;
-    if(sceneRenderFunction.empty()) {
+    if(!sceneRenderFunction) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
         return;
     }
@@ -63,7 +63,7 @@ void SingleShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& 
     renderState.getCameraMgr().popActiveCamera(false);
 }
 
-void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction) {
+void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction) {
     _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getDirection());
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
     _shadowCamera->renderLookAt();

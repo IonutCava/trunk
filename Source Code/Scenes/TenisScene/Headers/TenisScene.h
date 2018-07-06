@@ -92,21 +92,21 @@ private:
 
 private: //Game stuff
     mutable SharedLock _gameLock;
-    mutable boost::atomic_bool _collisionPlayer1;
-    mutable boost::atomic_bool _collisionPlayer2;
-    mutable boost::atomic_bool _collisionPlayer3;
-    mutable boost::atomic_bool _collisionPlayer4;
-    mutable boost::atomic_bool _collisionNet;
-    mutable boost::atomic_bool _collisionFloor;
-    mutable boost::atomic_bool _directionTeam1ToTeam2;
-    mutable boost::atomic_bool _upwardsDirection;
-    mutable boost::atomic_bool _touchedTerrainTeam1;
-    mutable boost::atomic_bool _touchedTerrainTeam2;
-    mutable boost::atomic_bool _lostTeam1;
-    mutable boost::atomic_bool _applySideImpulse;
-    mutable boost::atomic_bool _gamePlaying;
-    mutable boost::atomic_int  _scoreTeam1;
-    mutable boost::atomic_int  _scoreTeam2;
+    mutable std::atomic_bool _collisionPlayer1;
+    mutable std::atomic_bool _collisionPlayer2;
+    mutable std::atomic_bool _collisionPlayer3;
+    mutable std::atomic_bool _collisionPlayer4;
+    mutable std::atomic_bool _collisionNet;
+    mutable std::atomic_bool _collisionFloor;
+    mutable std::atomic_bool _directionTeam1ToTeam2;
+    mutable std::atomic_bool _upwardsDirection;
+    mutable std::atomic_bool _touchedTerrainTeam1;
+    mutable std::atomic_bool _touchedTerrainTeam2;
+    mutable std::atomic_bool _lostTeam1;
+    mutable std::atomic_bool _applySideImpulse;
+    mutable std::atomic_bool _gamePlaying;
+    mutable std::atomic_int  _scoreTeam1;
+    mutable std::atomic_int  _scoreTeam2;
     F32 _sideImpulseFactor;
     U32 _gameGUID;
     ///AIEntities are the "processors" behing the NPC's

@@ -27,8 +27,6 @@
 #ifndef TRACKED_OBJECT_H_
 #define TRACKED_OBJECT_H_
 #include <list>
-#include <boost/noncopyable.hpp>
-#include <boost/atomic.hpp>
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
@@ -36,7 +34,7 @@ namespace Divide {
 
 ///A tracked object takes car of it's own reference counting and knows it's own size
 ///It also schedules it's own deletion (a pompous name for a smart pointer)
-class TrackedObject : private boost::noncopyable, public GUIDWrapper {
+class TrackedObject : private NonCopyable, public GUIDWrapper {
     public:
       ///Increase reference count
       void AddRef();
@@ -59,7 +57,7 @@ class TrackedObject : private boost::noncopyable, public GUIDWrapper {
 
    private:
       //mutable SharedLock _dependencyLock;
-      boost::atomic<long> _refCount;
+      std::atomic<long> _refCount;
       std::list<TrackedObject* > _dependencyList;
 };
 //define a quickmacro to make things easier on derived classes

@@ -9,8 +9,13 @@
 namespace Divide {
 
 #if defined(_DEBUG) || defined(_PROFILE)
-ProfileTimer::ProfileTimer() : _init(false), _paused(false), _timer(0.0), _timerAverage(0.0), _timerCounter(0)
+ProfileTimer::ProfileTimer()
 {
+	_init = false;
+	_paused = false;
+	_timer = 0.0;
+	_timerAverage = 0.0;
+	_timerCounter = 0;
 }
 
 ProfileTimer::~ProfileTimer()

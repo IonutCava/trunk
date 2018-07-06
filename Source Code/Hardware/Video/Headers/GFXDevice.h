@@ -50,7 +50,7 @@ class SceneRenderState;
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
     typedef hashMapImpl<size_t, RenderStateBlock* > RenderStateMap;
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > ViewportStack;
-    typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
+	typedef boost::lockfree::spsc_queue<DELEGATE_CBK<>, boost::lockfree::capacity<15> > LoadQueue;
 
 public:
     struct NodeData{
@@ -146,7 +146,7 @@ public:
     inline void toggleRasterization(bool state);
     inline void setLineWidth(F32 width) { _previousLineWidth = _currentLineWidth; _currentLineWidth = width; _api.setLineWidth(width); }
     inline void restoreLineWidth()      { setLineWidth(_previousLineWidth); }
-    inline void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback);
+	inline void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK<>& callback);
 
     //returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
     //allowPrimitiveRecycle = do not reuse old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
@@ -250,7 +250,7 @@ public:
     ///use the callback param to override the draw function
     void  generateCubeMap(Framebuffer& cubeMap,
                           const vec3<F32>& pos,
-                          const DELEGATE_CBK& renderFunction, 
+						  const DELEGATE_CBK<>& renderFunction,
                           const vec2<F32>& zPlanes,
                           const RenderStage& renderStage = REFLECTION_STAGE);
 
@@ -274,12 +274,12 @@ public:
     RenderDetailLevel shadowDetailLevel()                              const { return _shadowDetailLevel; }
     void              shadowDetailLevel(RenderDetailLevel detailLevel)       { _shadowDetailLevel = detailLevel; }
 
-    inline void add2DRenderFunction(const DELEGATE_CBK& callback, U32 callOrder);
+	inline void add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder);
 
     void restoreViewport();
     void setViewport(const vec4<I32>& viewport);
 
-    bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
+	bool loadInContext(const CurrentContext& context, const DELEGATE_CBK<>& callback);
 
     void ConstructHIZ();
 
@@ -365,8 +365,8 @@ private:
     bool _drawDebugAxis;
     bool _viewportUpdate;
     LoadQueue _loadQueue;
-    boost::atomic_bool _loadingThreadAvailable;
-    boost::thread *_loaderThread;
+    std::atomic_bool _loadingThreadAvailable;
+    std::thread *_loaderThread;
     ShaderProgram* _activeShaderProgram;
      
     ::vectorImpl<Line > _axisLines;
@@ -415,7 +415,7 @@ protected:
     RenderDetailLevel _generalDetailLevel;
     RenderDetailLevel _shadowDetailLevel;
 
-    vectorImpl<std::pair<U32, DELEGATE_CBK> > _2dRenderQueue;
+	vectorImpl<std::pair<U32, DELEGATE_CBK<> > > _2dRenderQueue;
 
     ///Immediate mode emulation
     ShaderProgram*             _imShader;     //<The shader used to render VB data

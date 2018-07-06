@@ -25,12 +25,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Utility/Headers/GUIDWrapper.h"
-#include <boost/noncopyable.hpp>
 
 namespace Divide {
 
 class ShaderProgram;
-class ShaderBuffer : private boost::noncopyable, public GUIDWrapper {
+class ShaderBuffer : private NonCopyable, public GUIDWrapper {
 public:
     ShaderBuffer(bool unbound, bool persistentMapped) : GUIDWrapper(), _unbound(unbound), _primitiveSize(0),
                                                         _primitiveCount(0), _bufferSize(0), _persistentMapped(persistentMapped)

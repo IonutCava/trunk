@@ -42,7 +42,7 @@ void PhysicsComponent::physicsAsset(PhysicsAsset* asset) {
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName){
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
-    FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, _parentSGN->getChildren()){
+		for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()){
         it.second->getComponent<PhysicsComponent>()->cookCollisionMesh(sceneName);
     }
 

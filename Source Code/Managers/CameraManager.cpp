@@ -16,7 +16,7 @@ CameraManager::~CameraManager() {
     UNREGISTER_FRAME_LISTENER(this);
     PRINT_FN(Locale::get("CAMERA_MANAGER_DELETE"));
     PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
-    FOR_EACH(CameraPool::value_type& it, _cameraPool){
+	for (CameraPool::value_type& it : _cameraPool){
         it.second->unload();
         SAFE_DELETE(it.second);
     }
@@ -29,11 +29,12 @@ bool CameraManager::frameStarted(const FrameEvent& evt){
 
     if (_addNewListener){
         Camera* cam = nullptr;
-        FOR_EACH(CameraPool::value_type& it, _cameraPool){
+		for (CameraPool::value_type& it : _cameraPool){
             cam = it.second;
             cam->clearListeners();
-            for (const DELEGATE_CBK& listener : _updateCameralisteners)
-                cam->addUpdateListener(listener);
+			for (const DELEGATE_CBK<>& listener : _updateCameralisteners) {
+				cam->addUpdateListener(listener);
+			}
         }
         _addNewListener = false;
     }
@@ -51,7 +52,9 @@ void CameraManager::setActiveCamera(Camera* cam, bool callActivate) {
 
     if (callActivate) _camera->onActivate();
 
-    for(const DELEGATE_CBK& listener : _changeCameralisteners) listener();
+	for (const DELEGATE_CBK<>& listener : _changeCameralisteners) {
+		listener();
+	}
 }
 
 void CameraManager::addNewCamera(const stringImpl& cameraName, Camera* const camera){
@@ -63,7 +66,9 @@ void CameraManager::addNewCamera(const stringImpl& cameraName, Camera* const cam
     camera->setIOD(ParamHandler::getInstance().getParam<F32>("postProcessing.anaglyphOffset"));
     camera->setName(cameraName);
 
-    for(const DELEGATE_CBK& listener : _updateCameralisteners) camera->addUpdateListener(listener);
+	for (const DELEGATE_CBK<>& listener : _updateCameralisteners) {
+		camera->addUpdateListener(listener);
+	}
     
     hashAlg::emplace(_cameraPool, cameraName, camera);
     hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);

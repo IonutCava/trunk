@@ -24,7 +24,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
     BoundingBox& bb = sgn->getBoundingBox();
 
     bb.reset();
-    FOR_EACH(childrenNodes::value_type& s, sgn->getChildren()) {
+	for (childrenNodes::value_type& s : sgn->getChildren()) {
         bb.Add(s.second->getInitialBoundingBox());
     }
     bb.setComputed(true);
@@ -65,7 +65,7 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
     if (bitCompare(getFlagMask(), OBJECT_FLAG_SKINNED)) {
         bool playAnimation = (_playAnimations && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
         if (playAnimation != _playAnimationsCurrent) {
-            FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, sgn->getChildren()){
+			for (SceneGraphNode::NodeChildren::value_type& it : sgn->getChildren()){
                 it.second->getComponent<AnimationComponent>()->playAnimation(playAnimation);
             }
             _playAnimationsCurrent = playAnimation;

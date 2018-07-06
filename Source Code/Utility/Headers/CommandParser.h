@@ -3,7 +3,7 @@
 
 #include "String.h"
 #include "HashMap.h"
-#include <boost/function.hpp>
+#include <functional>
 
 namespace Divide {
 
@@ -16,7 +16,7 @@ public:
 	virtual bool processCommand(const stringImpl& commandString) = 0;
 
 protected:
-	hashMapImpl<stringImpl/*command name*/, boost::function1<void, stringImpl /*args*/ > > _commandMap;
+	hashMapImpl<stringImpl/*command name*/, std::function<void (stringImpl /*args*/) > > _commandMap;
 };
 
 };

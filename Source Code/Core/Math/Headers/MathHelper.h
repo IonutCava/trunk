@@ -31,6 +31,8 @@
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <sstream>
+#include <cctype>
+#include <algorithm>
 
 #define M_PIDIV2			1.570796326794896619231321691639f		//  PI / 2
 #define M_2PI				6.283185307179586476925286766559f		//  2 * PI
@@ -199,18 +201,34 @@ namespace Util {
         return floatValue;
     }
     /// http://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
-    inline void split(const stringImpl& input, const char* delimiter,  vectorImpl<stringImpl>& outputVector) {
-        stringAlg::stringSize delLen = static_cast<stringAlg::stringSize>(strlen(delimiter));
-        assert(!input.empty() &&  delLen > 0);
-        stringAlg::stringSize start = 0, end = 0;
-        while ( end != stringImpl::npos) {
-            end = input.find(delimiter, start);
-            // If at end, use length=maxLength.  Else use length=end-start.
-            outputVector.push_back(input.substr(start, (end == stringImpl::npos) ? stringImpl::npos : end - start));
-            // If at end, use start=maxSize.  Else use start=end+delimiter.
-            start = ((end > (stringImpl::npos - delLen) ) ? stringImpl::npos : end + delLen);
-    }
-}
+	inline void split(const stringImpl& input, const char* delimiter, vectorImpl<stringImpl>& outputVector) {
+		stringAlg::stringSize delLen = static_cast<stringAlg::stringSize>(strlen(delimiter));
+		assert(!input.empty() && delLen > 0);
+		stringAlg::stringSize start = 0, end = 0;
+		while (end != stringImpl::npos) {
+			end = input.find(delimiter, start);
+			// If at end, use length=maxLength.  Else use length=end-start.
+			outputVector.push_back(input.substr(start, (end == stringImpl::npos) ? stringImpl::npos : end - start));
+			// If at end, use start=maxSize.  Else use start=end+delimiter.
+			start = ((end > (stringImpl::npos - delLen)) ? stringImpl::npos : end + delLen);
+		}
+	}
+
+	/// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+	inline stringImpl& ltrim(stringImpl& s) {
+		s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+		return s;
+	}
+
+	inline stringImpl& rtrim(stringImpl& s) {
+		s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+		return s;
+	}
+
+	inline stringImpl& trim(stringImpl& s) {
+		return ltrim(rtrim(s));
+	}
+
     inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
         return DEGREES(2.0f * std::atan(tan(RADIANS(xfov) * 0.5f) / aspect));
     }

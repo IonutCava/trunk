@@ -23,14 +23,13 @@
 #ifndef _VERTEX_DATA_INTERFACE_H_
 #define _VERTEX_DATA_INTERFACE_H_
 
-#include <boost/noncopyable.hpp>
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
 namespace Divide {
 
-class VertexDataInterface : public FrameListener, public GUIDWrapper, private boost::noncopyable {
+class VertexDataInterface : public FrameListener, public GUIDWrapper, private NonCopyable {
 public:
     VertexDataInterface() : FrameListener(), GUIDWrapper() 
     {

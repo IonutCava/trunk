@@ -80,7 +80,7 @@ SceneGraphNode::~SceneGraphNode(){
 
     PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
     //delete children nodes recursively
-    FOR_EACH(NodeChildren::value_type it, _children){
+	for (NodeChildren::value_type it : _children){
         SAFE_DELETE(it.second);
     }
     for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
@@ -107,7 +107,7 @@ SceneGraphNode* SceneGraphNode::getRoot() const {
 }
 
 void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ) const {
-    FOR_EACH(const NodeChildren::value_type& it, _children){
+	for (const NodeChildren::value_type& it : _children){
         it.second->getBBoxes(boxes);
     }
 
@@ -115,7 +115,7 @@ void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ) const {
 }
 
 void SceneGraphNode::getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly) const {
-   FOR_EACH(const NodeChildren::value_type& it, _children){
+	for (const NodeChildren::value_type& it : _children){
        it.second->getShadowCastersAndReceivers(casters, receivers, visibleOnly);
     }
 
@@ -135,7 +135,7 @@ bool SceneGraphNode::unload(){
          return true;
     }
     //Unload every sub node recursively
-    FOR_EACH(NodeChildren::value_type& it, _children){
+	for (NodeChildren::value_type& it : _children){
         it.second->unload();
     }
     //Some debug output ...
@@ -151,9 +151,9 @@ bool SceneGraphNode::unload(){
     }
     _loaded = false;
 
-    for(DELEGATE_CBK& cbk : _deletionCallbacks) {
-        cbk();
-    }
+	for (DELEGATE_CBK<>& cbk : _deletionCallbacks) {
+		cbk();
+	}
     return true;
 }
 
@@ -249,7 +249,7 @@ SceneGraphNode* SceneGraphNode::findNode(const stringImpl& name, bool sceneNodeN
         }
 
         //The current node isn't the one we want, so recursively check all children
-        FOR_EACH(NodeChildren::value_type& it, _children){
+		for (NodeChildren::value_type& it : _children){
             returnValue = it.second->findNode(name);
             // if it is not nullptr it is the node we are looking for so just pass it through
             if (returnValue != nullptr) {
@@ -269,7 +269,7 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
         selectionHits.push_back(this);
     }
 
-    FOR_EACH(NodeChildren::value_type& it, _children) {
+	for (NodeChildren::value_type& it : _children) {
         it.second->Intersect(ray,start,end,selectionHits);
     }
 }

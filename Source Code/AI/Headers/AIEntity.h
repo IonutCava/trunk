@@ -158,7 +158,7 @@ protected:
     void init();
 
 private:
-    stringImpl           _name;
+    stringImpl            _name;
     AITeam*               _teamPtr;
     AISceneImpl*          _AISceneImpl;
 
@@ -176,6 +176,7 @@ private:
     /// The agent controlling this character.
     const dtCrowdAgent* _agent;
     PresetAgentRadius   _agentRadiusCategory;
+
     /**
       * The current destination set for this agent.
       * Take care in properly setting this variable, as it is only updated properly when

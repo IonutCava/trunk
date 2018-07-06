@@ -26,7 +26,6 @@
 #include "PhysX.h"
 #include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
 #include <boost/thread/locks.hpp>
-#include <boost/atomic.hpp>
 #include <boost/lockfree/stack.hpp>
 
 namespace Divide {
@@ -72,7 +71,7 @@ private:
     MaterialMap _materials;
     RigidMap    _sceneRigidActors;
     RigidMap    _sceneRigidQueue;
-    boost::atomic<U32> _rigidCount;
+    std::atomic<U32> _rigidCount;
     mutable SharedLock _queueLock;
 };
 

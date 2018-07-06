@@ -34,7 +34,7 @@ GUI::~GUI()
     PRINT_FN(Locale::get("STOP_GUI"));
     SAFE_DELETE(_console);
     RemoveResource(_guiShader);
-    FOR_EACH(guiMap::value_type it, _guiStack) {
+	for (guiMap::value_type it : _guiStack) {
         SAFE_DELETE(it.second);
     }
     _guiStack.clear();
@@ -50,7 +50,7 @@ void GUI::onResize(const vec2<U16>& newResolution) {
 
     vec2<I32> difDimensions((I32)_cachedResolution.width - newResolution.width, (I32)_cachedResolution.height - newResolution.height);
 
-    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
+	for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->onResize(difDimensions);
     }
 
@@ -65,7 +65,7 @@ void GUI::draw2D() {
     _guiShader->bind();
 
     GFXDevice& gfx = GFX_DEVICE;
-    FOR_EACH(guiMap::value_type& guiStackIterator, _guiStack) {
+	for (guiMap::value_type& guiStackIterator : _guiStack) {
         gfx.drawGUIElement(guiStackIterator.second);
     }
     const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
@@ -200,7 +200,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     event.mousePoint.x = arg.state.X.abs;
     event.mousePoint.y = arg.state.Y.abs;
 
-    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
+	for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->mouseMoved(event);
     }
 
@@ -216,7 +216,7 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton bu
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 0;
-            FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
+			for (guiMap::value_type& guiStackIterator : _guiStack) {
                 guiStackIterator.second->onMouseDown(event);
             }
         }
@@ -233,7 +233,7 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton b
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 1;
-            FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
+			for (guiMap::value_type& guiStackIterator : _guiStack) {
                 guiStackIterator.second->onMouseUp(event);
             }
         }

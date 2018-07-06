@@ -8,6 +8,9 @@
 
 #include <CEGUI/CEGUI.h>
 
+#include <chrono>
+#include <thread>
+
 namespace Divide {
 
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
@@ -274,11 +277,11 @@ void GL_API::closeRenderingApi(){
     // Close the loading thread 
     _closeLoadingThread = true;
     while(GFX_DEVICE.loadingThreadAvailable()){
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(20));//<Avoid burning the CPU - Ionut
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));//<Avoid burning the CPU - Ionut
     }
 
     // Destroy sampler objects
-    FOR_EACH(samplerObjectMap::value_type& it, _samplerMap) {
+    for(samplerObjectMap::value_type& it : _samplerMap) {
         SAFE_DELETE(it.second);
     }
     _samplerMap.clear();
@@ -327,10 +330,10 @@ void GL_API::createLoaderThread() {
 #   endif
 
     // This will be our target container for new items pulled from the queue
-    DELEGATE_CBK callback;
+			DELEGATE_CBK<> callback;
 
     // Delay startup of the thread by a 1/4 of a second. No real reason
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(250));
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
     // Use an atomic bool to check if the thread is still active (cheap and easy)
     GFX_DEVICE.loadingThreadAvailable(true);
     // Run an infinite loop until we actually request otherwise
@@ -342,7 +345,7 @@ void GL_API::createLoaderThread() {
             glFlush();
         } else {  // If there are no new items to process in the queue, just stall
             // Avoid burning the CPU - Ionut
-            boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
     }
     // If we close the loading thread, update our atomic bool to make sure the application isn't using it anymore

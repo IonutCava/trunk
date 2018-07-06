@@ -173,6 +173,13 @@ namespace Config {
     #define STRING_IMP 0
 #endif //STRING_IMP
 
+///Use boost, eastl or stl vector
+///0 = EASTL
+///1 = STL
+#ifndef VECTOR_IMP
+	#define VECTOR_IMP 0
+#endif //VECTOR_IMP
+
 ///Use boost, eastl or stl hash maps / unordered maps
 ///0 = BOOST
 ///1 = EASTL
@@ -181,13 +188,6 @@ namespace Config {
     #define HASH_MAP_IMP 1
 #endif //HASH_MAP_IMP
 
-///Use boost, eastl or stl vector
-///0 = BOOST
-///1 = EASTL
-///2 = STL
-#ifndef VECTOR_IMP
-    #define VECTOR_IMP 1
-#endif //VECTOR_IMP
 
 ///Disable the use of the PhysXAPI
 #ifndef _USE_PHYSX_API_
