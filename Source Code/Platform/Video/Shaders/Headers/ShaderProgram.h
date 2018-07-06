@@ -62,7 +62,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     virtual ~ShaderProgram();
 
     virtual bool bind() = 0;
-    virtual void unbind() = 0;
     /// Currently active
     virtual bool isBound() const = 0;
     /// Is the shader ready for drawing?

@@ -76,6 +76,9 @@ void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
 }
 
 bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
+    if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
+        return true;
+    }
     const Light::LightList& lights = LightManager::getInstance().getLights();
 
     _omniLightList.clear();

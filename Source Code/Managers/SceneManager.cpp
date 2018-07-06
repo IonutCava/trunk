@@ -183,6 +183,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
             *GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state(),
             cullingFunction);
 
+    RenderStage stage = GFX_DEVICE.getRenderStage();
     bool refreshNodeData = !nodes._locked;
     if (refreshNodeData) {
         queue.refresh();
@@ -190,7 +191,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         for (RenderPassCuller::RenderableNode& node : nodes._visibleNodes) {
             queue.addNodeToQueue(*node._visibleNode, eyePos);
         }
-        queue.sort(GFX_DEVICE.getRenderStage());
+        queue.sort(stage);
         sortVisibleNodes(nodes);
 
         /// Occlusion queries
@@ -206,14 +207,17 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         }
 
         // Generate and upload all lighting data
-        LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
+        if (stage != RenderStage::SHADOW &&
+            stage != RenderStage::DISPLAY) {
+            LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
+        }
     }
 
     _renderPassCuller->cullSpecial(nodes, meshCullingFunction);
 
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
-                                !refreshNodeData,
+                                refreshNodeData,
                                 false);
 }
 

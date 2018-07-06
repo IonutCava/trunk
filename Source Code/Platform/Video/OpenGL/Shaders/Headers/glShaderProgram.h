@@ -50,13 +50,10 @@ class glShaderProgram : public ShaderProgram {
 
     /// Make sure this program is ready for deletion
     inline bool unload() {
-        unbind();
         return ShaderProgram::unload();
     }
     /// Bind this shader program
     bool bind();
-    /// Unbinding this program, unless forced, just clears the _bound flag
-    void unbind();
     /// Returns true if the shader is currently active
     bool isBound() const;
     /// Check every possible combination of flags to make sure this program can

@@ -163,7 +163,7 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {
-        unbind();
+        ShaderManager::getInstance().unbind();
     }
     // Update refresh flags
     _refreshStage[to_uint(ShaderType::VERTEX)] = vertex;

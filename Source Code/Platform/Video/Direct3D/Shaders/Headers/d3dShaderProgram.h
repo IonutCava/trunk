@@ -43,12 +43,10 @@ class d3dShaderProgram : public ShaderProgram {
     ~d3dShaderProgram() {}
 
     bool unload() {
-        unbind();
         return true;
     }
 
     bool bind() { return false; }
-    void unbind() {}
 
     bool isBound() const { return false; }
     bool isValid() const { return false; }

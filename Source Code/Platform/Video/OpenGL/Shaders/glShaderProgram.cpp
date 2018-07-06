@@ -75,7 +75,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
         _lockManager->Wait();
     }
     // If we haven't validated the program but used it at lease once ...
-    if (_validationQueued) {
+    if (_validationQueued && _shaderProgramID != 0) {
         // Call the internal validation function
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
@@ -532,16 +532,11 @@ bool glShaderProgram::bind() {
 
     // Set this program as the currently active one
     GL_API::setActiveProgram(_shaderProgramID);
-    return true;
-}
-
-/// Unbinding this program
-void glShaderProgram::unbind() {
     // After using the shader at least once, validate the shader if needed
     if (!_validated) {
-        _validationQueued = isValid();
+        _validationQueued = true;
     }
-    GL_API::setActiveProgram(0);
+    return true;
 }
 
 void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {

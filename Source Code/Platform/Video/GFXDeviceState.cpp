@@ -166,9 +166,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
             resolution.width, resolution.height);
     }
 
-    // If render targets ready, we initialize our post processing system
-    PostFX::getInstance().init(resolution);
-
     // We also add a couple of useful cameras used by this class. One for
     // rendering in 2D and one for generating cube maps
     Application::getInstance().getKernel().getCameraMgr().addNewCamera(
@@ -197,6 +194,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     setRenderer(RendererType::RENDERER_FORWARD_PLUS);
     ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer",
                                                false);
+    // If render targets ready, we initialize our post processing system
+    PostFX::getInstance().init(resolution);
 
     _commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
 
