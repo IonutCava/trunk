@@ -5,6 +5,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 
@@ -247,7 +248,7 @@ bool GL_API::bindTexture(GLushort unit,
     DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::_maxTextureUnits),
                   "GLStates error: invalid texture unit specified as a texture binding slot!");
     GLuint samplerHandle = getSamplerHandle(samplerHash);
-    return bindTextures(0, 1, &handle, &target, &samplerHandle);
+    return bindTextures(unit, 1, &handle, &target, &samplerHandle);
 }
 
 bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,
