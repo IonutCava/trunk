@@ -75,7 +75,7 @@ void main (void)
 
 	//vec4 cAmbient = gl_LightSource[0].ambient * material[0];
 	// add Diffuse
-	_colorOut.rgb = texture(texWaterReflection, uvFinal).rgb;
+	_colorOut = texture(texWaterReflection, uvFinal);
 	// add Specular
 	_colorOut.rgb += vec4(gl_LightSource[0].specular * material[2] * iSpecular).rgb;
 

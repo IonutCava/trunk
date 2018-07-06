@@ -14,7 +14,6 @@ struct MaterialProperties {
 };
 
 uniform bool dvd_lightCastsShadows[MAX_LIGHT_COUNT];
-uniform bool dvd_lightEnabled[MAX_LIGHT_COUNT];
 uniform int  dvd_lightType[MAX_LIGHT_COUNT];
 uniform int  dvd_lightCount;
 uniform vec4 dvd_lightAmbient;
@@ -78,48 +77,48 @@ void phong_loop(in vec2 texCoord, in vec3 normal, inout MaterialProperties mater
     vec3 viewDirection = normalize(_viewDirection);
     if(dvd_lightCount == 0) 
         return;
-    if(dvd_lightEnabled[0]) applyLight(0, dvd_lightType[0], dvd_lightCastsShadows[0], texCoord, normal, viewDirection, materialProp);
+    applyLight(0, dvd_lightType[0], dvd_lightCastsShadows[0], texCoord, normal, viewDirection, materialProp);
 #if MAX_LIGHT_COUNT >= 2
     if(dvd_lightCount == 1)
         return;
-    if(dvd_lightEnabled[1]) applyLight(1, dvd_lightType[1], dvd_lightCastsShadows[1], texCoord, normal, viewDirection, materialProp);
+    applyLight(1, dvd_lightType[1], dvd_lightCastsShadows[1], texCoord, normal, viewDirection, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 3
     if(dvd_lightCount == 2) 
         return;
-    if(dvd_lightEnabled[2]) applyLight(2, dvd_lightType[2], dvd_lightCastsShadows[2], texCoord, normal, viewDirection, materialProp);
+    applyLight(2, dvd_lightType[2], dvd_lightCastsShadows[2], texCoord, normal, viewDirection, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 4
     if(dvd_lightCount == 3) 
         return;
-    if(dvd_lightEnabled[3]) applyLight(3, dvd_lightType[3], dvd_lightCastsShadows[3], texCoord, normal, viewDirection, materialProp);
+    applyLight(3, dvd_lightType[3], dvd_lightCastsShadows[3], texCoord, normal, viewDirection, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 5
     if(dvd_lightCount == 4) 
         return;
-    if(dvd_lightEnabled[4]) applyLight(4, dvd_lightType[4], dvd_lightCastsShadows[4], texCoord, normal, viewDirection, materialProp);
+    applyLight(4, dvd_lightType[4], dvd_lightCastsShadows[4], texCoord, normal, viewDirection, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 6
     if(dvd_lightCount == 5) 
         return;
-    if(dvd_lightEnabled[5]) applyLight(5, dvd_lightType[5], dvd_lightCastsShadows[5], texCoord, normal, viewDirection, materialProp);
+    applyLight(5, dvd_lightType[5], dvd_lightCastsShadows[5], texCoord, normal, viewDirection, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 7
     if(dvd_lightCount == 6) 
         return;
-    if(dvd_lightEnabled[6]) applyLight(6, dvd_lightType[6], dvd_lightCastsShadows[6], texCoord, normal, viewDirection, materialProp);
+    applyLight(6, dvd_lightType[6], dvd_lightCastsShadows[6], texCoord, normal, viewDirection, materialProp);
 #endif
 #if MAX_LIGHT_COUNT == 8
     if(dvd_lightCount == 7) 
         return;
-    if(dvd_lightEnabled[7]) applyLight(7, dvd_lightType[7], dvd_lightCastsShadows[7], texCoord, normal, viewDirection, materialProp);
+    applyLight(7, dvd_lightType[7], dvd_lightCastsShadows[7], texCoord, normal, viewDirection, materialProp);
 #endif
 #if MAX_LIGHT_COUNT > 8
     ///Apply the rest of the lights
     for(int i = 8; i =< MAX_LIGHT_COUNT; i++){
         if(dvd_lightCount == i)
             return;
-        if(dvd_lightEnabled[i]) applyLight(i, dvd_lightType[i], dvd_lightCastsShadows[i], texCoord, normal, viewDirection, materialProp);
+        applyLight(i, dvd_lightType[i], dvd_lightCastsShadows[i], texCoord, normal, viewDirection, materialProp);
     }
 #endif
 }

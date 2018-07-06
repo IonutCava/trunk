@@ -177,7 +177,6 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
     s->Uniform("dvd_lightType",        lightMgr.getLightTypesForCurrentNode());
     s->Uniform("dvd_lightCount",       lightMgr.getLightCountForCurrentNode());
-    s->Uniform("dvd_lightEnabled",     lightMgr.getLightsEnabledForCurrentNode());
     s->Uniform("dvd_lightCastsShadows",lightMgr.getShadowCastingLightsForCurrentNode());
 
     s->Uniform("windDirection",vec2<F32>(activeScene->state().getWindDirX(),activeScene->state().getWindDirZ()));

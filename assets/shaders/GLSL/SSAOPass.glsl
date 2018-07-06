@@ -92,6 +92,5 @@ void main(void) {
     dif5 += dif6 ;
     dif  += (max(dif1, 0.0) + max(dif3, 0.0) + max(dif5, 0.0)) * 0.5;
 
-    _colorOut.rgb = vec3(1.0 - dif * (dvd_zPlanes.y + dvd_zPlanes.x) * 255);
-    _colorOut.a = 1.0;
+    _colorOut = (vec3(1.0 - dif * (dvd_zPlanes.y + dvd_zPlanes.x) * 255), 1.0);
 }

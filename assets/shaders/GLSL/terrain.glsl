@@ -90,8 +90,8 @@ uniform sampler2D texBlend2;
 uniform sampler2D texBlend3;
 uniform sampler2D texWaterCaustics;
 
+uniform int   dvd_lightCount;
 uniform int   dvd_lightType[MAX_LIGHT_COUNT];
-uniform bool  dvd_lightEnabled[MAX_LIGHT_COUNT];
 uniform float dvd_time;
 
 uniform float LODFactor;
@@ -174,7 +174,7 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
     vec4 cAmbient = dvd_lightAmbient * material[0];
     vec4 cDiffuse = material[1] * iDiffuse;
 
-    if(dvd_lightEnabled[0]){
+    if(dvd_lightCount > 0){
         cAmbient += gl_LightSource[0].ambient * material[0];
         cDiffuse *= gl_LightSource[0].diffuse;
     }
@@ -218,7 +218,7 @@ vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
     float alpha = 0.0f;
     vec4 caustic = cSpecular;
 
-    if(dvd_lightEnabled[0]){
+    if(dvd_lightCount > 0){
         cAmbient += gl_LightSource[0].ambient * material[0];
         cDiffuse *= gl_LightSource[0].diffuse;
         // Add specular intensity

@@ -99,7 +99,6 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
         SET_STATE_BLOCK(_terrainRenderState);
     }
     const vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
-    const vectorImpl<I32>& enabled = LightManager::getInstance().getLightsEnabledForCurrentNode();
     const vectorImpl<I32>& lightShadowCast = LightManager::getInstance().getShadowCastingLightsForCurrentNode();
 
     _terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->Bind(0);
@@ -117,7 +116,6 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     terrainShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
     terrainShader->Uniform("dvd_lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
     terrainShader->Uniform("dvd_lightType",types);
-    terrainShader->Uniform("dvd_lightEnabled",enabled);
     terrainShader->Uniform("dvd_lightCastsShadows",lightShadowCast);
 }
 

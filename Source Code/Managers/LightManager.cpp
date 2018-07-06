@@ -238,7 +238,6 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     _tempLightsPerNode.resize(_lights.size());
     _currLightsPerNode.resize(0);
     _currLightTypes.resize(0);
-    _currLightsEnabled.resize(0);
     _currShadowLights.resize(0);
     // loop over every light in the scene
     // ToDo: add a grid based light search system? -Ionut
@@ -286,7 +285,6 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     for(U8 i = 0; i < maxLights; i++){
         _currLightsPerNode.push_back(_tempLightsPerNode[i]);
         _currLightTypes.push_back(_tempLightsPerNode[i]->getLightType());
-        _currLightsEnabled.push_back(_tempLightsPerNode[i]->getEnabled() ? 1 : 0);
         _currShadowLights.push_back(_tempLightsPerNode[i]->castsShadows() ? 1 : 0);
     }
 

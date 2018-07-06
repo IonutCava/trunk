@@ -67,7 +67,6 @@ public:
     inline       U16                     getLightCountForCurrentNode()          const {return _currLightsPerNode.size();}
     inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
     inline const vectorImpl<I32>&        getLightTypesForCurrentNode()          const {return _currLightTypes;}
-    inline const vectorImpl<I32>&        getLightsEnabledForCurrentNode()       const {return _currLightsEnabled;}
     inline const vectorImpl<I32>&        getShadowCastingLightsForCurrentNode() const {return _currShadowLights;}
     bool checkId(U32 value);
     void drawDepthMap(U8 light, U8 index);
@@ -88,7 +87,6 @@ private:
     bool      _shadowMapsEnabled;
     vec4<F32> _ambientLight;
     vectorImpl<I32>         _currLightTypes;
-    vectorImpl<I32>         _currLightsEnabled;
     vectorImpl<I32>         _currShadowLights;
     vectorImpl<Light* >     _currLightsPerNode;
     vectorImpl<Light* >     _tempLightsPerNode;

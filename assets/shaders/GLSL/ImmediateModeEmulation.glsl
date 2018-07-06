@@ -42,6 +42,5 @@ in  vec4 _color;
 out vec4 _colorOut;
 
 void main(){
-	_colorOut.rgb = _color.rgb;
-	_colorOut.a = texture(tex, _texCoord).a;
+	_colorOut = vec4(_color.rgb, texture(tex, _texCoord).a);
 }
