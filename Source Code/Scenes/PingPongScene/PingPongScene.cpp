@@ -283,7 +283,7 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
         else
             renderState().getCameraMgr().popActiveCamera();
     };
-    _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
+    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
 
     return loadState;
 }

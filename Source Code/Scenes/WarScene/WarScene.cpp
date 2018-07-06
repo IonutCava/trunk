@@ -133,7 +133,14 @@ void WarScene::processGUI(const U64 deltaTime) {
 namespace {
     F32 phiLight = 0.0f;
     vec3<F32> initPosLight[16];
+    vec3<F32> initPosLight2[80];
     bool initPosSetLight = false;
+
+    vec2<F32> rotatePoint(vec2<F32> center, F32 angle, vec2<F32> point) {
+
+        return vec2<F32>(std::cos(angle) * (point.x - center.x) - std::sin(angle) * (point.y - center.y) + center.x,
+                         std::sin(angle) * (point.x - center.x) + std::cos(angle) * (point.y - center.y) + center.y);
+    }
 };
 
 void WarScene::processTasks(const U64 deltaTime) {
@@ -186,23 +193,42 @@ void WarScene::processTasks(const U64 deltaTime) {
         for (U8 i = 0; i < 16; ++i) {
             initPosLight[i].set(_lightNodes[i].lock()->getComponent<PhysicsComponent>()->getPosition());
         }
+        for (U8 i = 0; i < 80; ++i) {
+            initPosLight2[i].set(_lightNodes2[i].first.lock()->getComponent<PhysicsComponent>()->getPosition());
+        }
         initPosSetLight = true;
     }
 
     if (_taskTimers[3] >= updateLights) {
 
-        phiLight += 0.1f;
+        phiLight += 0.01f;
         if (phiLight > 360.0f) {
             phiLight = 0.0f;
         }
+        F32 s1 = std::sin(phiLight);
+        F32 c1 = std::cos(phiLight);
+        F32 s2 = std::sin(-phiLight);
+        F32 c2 = std::cos(-phiLight);
         const F32 radius = 10;
         for (U8 i = 0; i < 16; ++i) {
-            F32 angle = i % 2 == 0 ? phiLight : -phiLight;
+            F32 c = i % 2 == 0 ? c1 : c2;
+            F32 s = i % 2 == 0 ? s1 : s2;
             SceneGraphNode_ptr light = _lightNodes[i].lock();
             PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
-            pComp->setPositionX(radius * std::cos(angle) + initPosLight[i].x);
-            pComp->setPositionZ(radius * std::sin(angle) + initPosLight[i].z);
-            pComp->setPositionY((radius * 0.5f) * std::sin(angle) + initPosLight[i].y);
+            pComp->setPositionX(radius * c + initPosLight[i].x);
+            pComp->setPositionZ(radius * s + initPosLight[i].z);
+            pComp->setPositionY((radius * 0.5f) * s + initPosLight[i].y);
+        }
+
+        for (U8 i = 0; i < 80; ++i) {
+            SceneGraphNode_ptr light = _lightNodes2[i].first.lock();
+            PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
+            F32 angle = _lightNodes2[i].second ? std::fmod(phiLight + 45.0f, 360.0f) : phiLight;
+            vec2<F32> position(rotatePoint(vec2<F32>(0.0f), angle, initPosLight2[i].xz()));
+            pComp->setPositionX(position.x);
+            pComp->setPositionZ(position.y);
+            /*pComp->setPositionX(radius2[i] * std::cos(angle) + initPosLight[i].x);
+            pComp->setPositionZ(radius2[i] * std::sin(angle) + initPosLight[i].z);*/
         }
         _taskTimers[3] = 0.0;
     }
@@ -324,6 +350,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     SceneNode* currentMesh = nullptr;
     SceneGraphNode_ptr baseNode;
 
+    U8 locationFlag = 0;
     std::pair<I32, I32> currentPos;
     for (U8 i = 0; i < 40; ++i) {
         if (i < 10) {
@@ -339,6 +366,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentName = "Cylinder_NE_" + std::to_string((I32)i);
             currentPos.first = 200 - 40 * (i % 10) - 50;
             currentPos.second = -200 + 40 * (i % 10) + 50;
+            locationFlag = 1;
         }
         else if (i >= 20 && i < 30) {
             baseNode = cylinder[3];
@@ -346,6 +374,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentName = "Cylinder_SW_" + std::to_string((I32)i);
             currentPos.first = -200 + 40 * (i % 20) + 50;
             currentPos.second = 200 - 40 * (i % 20) - 50;
+            locationFlag = 2;
         }
         else {
             baseNode = cylinder[4];
@@ -353,6 +382,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentName = "Cylinder_SE_" + std::to_string((I32)i);
             currentPos.first = 200 - 40 * (i % 30) - 50;
             currentPos.second = 200 - 40 * (i % 30) - 50;
+            locationFlag = 3;
         }
 
         SceneGraphNode_ptr crtNode = _sceneGraph.getRoot().addNode(*currentMesh, currentName);
@@ -369,9 +399,34 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             baseNode->getComponent<NavigationComponent>()
             ->navMeshDetailOverride());
 
+        vec3<F32> position(to_float(currentPos.first), -0.01f, to_float(currentPos.second));
         pComp->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
-        pComp->setPosition(
-            vec3<F32>(to_float(currentPos.first), -0.01f, to_float(currentPos.second)));
+        pComp->setPosition(position);
+
+        {
+            ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
+            tempLight.setEnumValue(to_uint(LightType::POINT));
+            Light* light = CreateResource<Light>(tempLight);
+            light->setDrawImpostor(false);
+            light->setRange(25.0f);
+            light->setCastShadows(false);
+            light->setDiffuseColor(DefaultColors::RANDOM());
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
+            lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
+            _lightNodes2.push_back(std::make_pair(lightSGN, false));
+        }
+        {
+            ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
+            tempLight.setEnumValue(to_uint(LightType::POINT));
+            Light* light = CreateResource<Light>(tempLight);
+            light->setDrawImpostor(false);
+            light->setRange(35.0f);
+            light->setCastShadows(false);
+            light->setDiffuseColor(DefaultColors::RANDOM());
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
+            lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
+            _lightNodes2.push_back(std::make_pair(lightSGN, true));
+        }
     }
 
     SceneGraphNode_ptr flag;
@@ -495,7 +550,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
             tempLight.setEnumValue(to_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
-            light->setDrawImpostor(true);
+            light->setDrawImpostor(false);
             light->setRange(20.0f);
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
@@ -523,6 +578,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     cbks.second = [](){DIVIDE_ASSERT(false, "Test Assert"); };
     _input->addKeyMapping(Input::KeyCode::KC_5, cbks);
+
+    cbks.second = [this]() {
+        _sun.lock()->getNode<Light>()->setEnabled(!_sun.lock()->getNode<Light>()->getEnabled());
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
 
     _sceneReady = true;
     return loadState;

@@ -31,9 +31,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Game", "VisualStudio
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AArch64-Android-NVIDIA = Debug|AArch64-Android-NVIDIA
 		Debug|x64 = Debug|x64

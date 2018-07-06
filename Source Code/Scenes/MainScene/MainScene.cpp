@@ -188,7 +188,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
                                                                     : 10.0f);
     };
 
-    _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
+    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
     cbks.second = [this]() {
         for (SceneGraphNode_wptr ter : _visibleTerrains) {
             ter.lock()->getNode<Terrain>()->toggleBoundingBoxes();

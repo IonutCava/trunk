@@ -521,7 +521,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     cbks.second = [this]() {
         toggleFlashlight();
     };
-    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
+    _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
 
     _input->addKeyMapping(Input::KeyCode::KC_RETURN, cbks);
     _loadComplete = true;
