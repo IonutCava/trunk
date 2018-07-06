@@ -81,12 +81,12 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p) {
         data.modelName.push_back(modelname);
         data.version.push_back(to_float(version));
     }
-    bool updated = Patch::getInstance().compareData(data);
+    bool updated = Patch::instance().compareData(data);
 
     if (!updated) {
         WorldPacket r(OPCodesEx::SMSG_GEOMETRY_APPEND);
 
-        vectorImpl<FileData> PatchData = Patch::getInstance().updateClient();
+        vectorImpl<FileData> PatchData = Patch::instance().updateClient();
         r << PatchData.size();
         for (vectorImpl<FileData>::iterator _iter = std::begin(PatchData);
              _iter != std::end(PatchData); _iter++) {
@@ -113,7 +113,7 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p) {
         std::cout << "Sending [SMSG_GEOMETRY_APPEND] with : "
                   << PatchData.size() << " models to update" << std::endl;
         sendPacket(r);
-        Patch::getInstance().reset();
+        Patch::instance().reset();
     }
 }
 

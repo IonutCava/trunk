@@ -39,12 +39,12 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
       _APP(parentApp),
-      _GFX(GFXDevice::getInstance()),                // Video
-      _SFX(SFXDevice::getInstance()),                // Audio
-      _PFX(PXDevice::getInstance()),                 // Physics
-      _input(Input::InputInterface::getInstance()),  // Input
-      _GUI(GUI::getInstance()),                      // Graphical User Interface
-      _sceneMgr(SceneManager::getInstance())         // Scene Manager
+      _GFX(GFXDevice::instance()),                // Video
+      _SFX(SFXDevice::instance()),                // Audio
+      _PFX(PXDevice::instance()),                 // Physics
+      _input(Input::InputInterface::instance()),  // Input
+      _GUI(GUI::instance()),                      // Graphical User Interface
+      _sceneMgr(SceneManager::instance())         // Scene Manager
 
 {
     ResourceCache::createInstance();
@@ -60,7 +60,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
     _cameraMgr->addCameraUpdateListener(
         DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
-    ParamHandler::getInstance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
+    ParamHandler::instance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 
     s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
 }
@@ -70,20 +70,20 @@ Kernel::~Kernel()
 }
 
 void Kernel::idle() {
-    GFX_DEVICE.idle();
-    PHYSICS_DEVICE.idle();
-    SceneManager::getInstance().idle();
-    LightManager::getInstance().idle();
-    FrameListenerManager::getInstance().idle();
+    _GFX.idle();
+    _PFX.idle();
+    _sceneMgr.idle();
+    LightManager::instance().idle();
+    FrameListenerManager::instance().idle();
 
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
 
     _timingData._freezeGUITime = par.getParam(_ID("freezeGUITime"), false);
     bool freezeLoopTime = par.getParam(_ID("freezeLoopTime"), false);
     if (freezeLoopTime != _timingData._freezeLoopTime) {
         _timingData._freezeLoopTime = freezeLoopTime;
         _timingData._currentTimeFrozen = _timingData._currentTime;
-        Application::getInstance().mainLoopPaused(_timingData._freezeLoopTime);
+        _APP.mainLoopPaused(_timingData._freezeLoopTime);
     }
 
     const stringImpl& pendingLanguage = par.getParam<stringImpl>(_ID("language"));
@@ -97,12 +97,12 @@ void Kernel::idle() {
 void Kernel::onLoop() {
     if (!_timingData._keepAlive) {
         // exiting the rendering loop will return us to the last control point
-        Application::getInstance().mainLoopActive(false);
+        _APP.mainLoopActive(false);
         return;
     }
 
     // Update internal timer
-    Time::ApplicationTimer::getInstance().update();
+    Time::ApplicationTimer::instance().update();
 
     Time::START_TIMER(*s_appLoopTimer);
 
@@ -122,7 +122,7 @@ void Kernel::onLoop() {
     idle();
 
     FrameEvent evt;
-    FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
+    FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
     // Restore GPU to default state: clear buffers and set default render state
     _GFX.beginFrame();
@@ -240,15 +240,15 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
                                             : _timingData._currentTimeDelta);
     // Update the graphical user interface
     if (!_timingData._freezeGUITime) {
-        GUI::getInstance().update(_timingData._freezeGUITime ? 0ULL
-                                                             : _timingData._currentTimeDelta);
+        _GUI.update(_timingData._freezeGUITime ? 0ULL
+                                               : _timingData._currentTimeDelta);
     }
 
     return presentToScreen(evt);
 }
 
 bool Kernel::presentToScreen(FrameEvent& evt) {
-    FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
+    FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
     frameMgr.createEvent(_timingData._currentTime,
                          FrameEventType::FRAME_PRERENDER_START, evt);
@@ -258,7 +258,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     }
 
     // perform time-sensitive shader tasks
-    ShaderManager::getInstance().update(_timingData._currentTimeDelta);
+    ShaderManager::instance().update(_timingData._currentTimeDelta);
 
     frameMgr.createEvent(_timingData._currentTime,
                          FrameEventType::FRAME_PRERENDER_END, evt);
@@ -267,15 +267,15 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
         return false;
     }
 
-    RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), false);
-    //PostFX::getInstance().apply();
+    RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState(), false);
+    //PostFX::instance().apply();
 
     if (_GFX.anaglyphEnabled()) {
         // Save previous screen render target as left eye.
         // Render right eye
         Attorney::GFXDeviceKernel::flushAnaglyph();
-        RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), true);
-        PostFX::getInstance().apply();
+        RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState(), true);
+        PostFX::instance().apply();
     }
     
     Attorney::GFXDeviceKernel::flushDisplay();
@@ -306,7 +306,7 @@ void Kernel::warmup() {
     GET_ACTIVE_SCENE().state().runningState(true);
     _timingData._keepAlive = true;
 
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     bool shadowMappingEnabled = par.getParam<bool>(_ID("rendering.enableShadows"));
     // Skip two frames, one without and one with shadows, so all resources can
     // be built while
@@ -328,7 +328,7 @@ void Kernel::warmup() {
     par.setParam(_ID("freezeGUITime"), false);
     par.setParam(_ID("freezeLoopTime"), false);
 #if defined(_DEBUG) || defined(_PROFILE)
-    Time::ApplicationTimer::getInstance().benchmark(true);
+    Time::ApplicationTimer::instance().benchmark(true);
 #endif
     Attorney::SceneManagerKernel::initPostLoadState();
 
@@ -336,9 +336,9 @@ void Kernel::warmup() {
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
 
-    SysInfo& systemInfo = Application::getInstance().sysInfo();
+    SysInfo& systemInfo = Application::instance().sysInfo();
     if (!CheckMemory(Config::REQUIRED_RAM_SIZE, systemInfo)) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
@@ -348,7 +348,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Console::bindConsoleOutput(
-        DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),
+        DELEGATE_BIND(&GUIConsole::printText, _GUI.getConsole(),
                       std::placeholders::_1, std::placeholders::_2));
     _PFX.setAPI(PXDevice::PhysicsAPI::PhysX);
     _SFX.setAPI(SFXDevice::AudioAPI::SDL);
@@ -390,15 +390,15 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
-    initError = OpenCLInterface::getInstance().init();
+    initError = OpenCLInterface::instance().init();
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-    RenderPassManager::getInstance().addRenderPass("environmentPass", 0, { RenderStage::REFLECTION });
-    RenderPassManager::getInstance().addRenderPass("shadowPass", 1, { RenderStage::SHADOW });
-    RenderPassManager::getInstance().addRenderPass("displayStage", 2, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
+    RenderPassManager::instance().addRenderPass("environmentPass", 0, { RenderStage::REFLECTION });
+    RenderPassManager::instance().addRenderPass("shadowPass", 1, { RenderStage::SHADOW });
+    RenderPassManager::instance().addRenderPass("displayStage", 2, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 
@@ -433,7 +433,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Bind the kernel with the input interface
-    initError = Input::InputInterface::getInstance().init(*this, renderResolution);
+    initError = _input.init(*this, renderResolution);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
@@ -441,7 +441,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Initialize GUI with our current resolution
     _GUI.init(renderResolution);
 
-    LightManager::getInstance().init();
+    LightManager::instance().init();
 
     _sceneMgr.init(&_GUI);
 
@@ -481,7 +481,7 @@ void Kernel::shutdown() {
     _PFX.closePhysicsAPI();
     PXDevice::destroyInstance();
     Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
-    OpenCLInterface::getInstance().deinit();
+    OpenCLInterface::instance().deinit();
     _SFX.closeAudioAPI();
     _GFX.closeRenderingAPI();
     Input::InputInterface::destroyInstance();
@@ -498,8 +498,8 @@ void Kernel::shutdown() {
 void Kernel::onChangeWindowSize(U16 w, U16 h) {
     Attorney::GFXDeviceKernel::onChangeWindowSize(w, h);
 
-    if (Input::InputInterface::getInstance().isInit()) {
-        const OIS::MouseState& ms = Input::InputInterface::getInstance().getMouse().getMouseState();
+    if (_input.isInit()) {
+        const OIS::MouseState& ms = _input.getMouse().getMouseState();
         ms.width = w;
         ms.height = h;
     }
@@ -514,7 +514,7 @@ void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
 
     Camera* mainCamera = _cameraMgr->findCamera(_ID_RT("defaultCamera"));
     if (mainCamera) {
-        const ParamHandler& par = ParamHandler::getInstance();
+        const ParamHandler& par = ParamHandler::instance();
         mainCamera->setProjection(to_float(w) / to_float(h),
                                   par.getParam<F32>(_ID("rendering.verticalFOV")),
                                   vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),

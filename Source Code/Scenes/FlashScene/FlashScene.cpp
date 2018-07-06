@@ -18,8 +18,8 @@ void FlashScene::processGUI(const U64 deltaTime) {
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay", 
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                            Time::ApplicationTimer::getInstance().getFps(),
-                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFps(),
+                                            Time::ApplicationTimer::instance().getFrameTime()));
         _guiTimers[0] = 0.0;
     }
 }

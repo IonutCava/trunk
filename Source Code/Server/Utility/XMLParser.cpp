@@ -44,7 +44,7 @@ void loadGeometry(const stringImpl &file) {
         model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
         model.type = GeometryType::MESH;
         model.version = pt.get<F32>(name + ".version");
-        Patch::getInstance().addGeometry(model);
+        Patch::instance().addGeometry(model);
     }
     for (it = std::begin(pt.get_child("vegetation"));
          it != std::end(pt.get_child("vegetation")); ++it) {
@@ -68,7 +68,7 @@ void loadGeometry(const stringImpl &file) {
         model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
         model.type = GeometryType::VEGETATION;
         model.version = pt.get<F32>(name + ".version");
-        Patch::getInstance().addGeometry(model);
+        Patch::instance().addGeometry(model);
     }
 
     if (boost::optional<ptree &> primitives =
@@ -116,7 +116,7 @@ void loadGeometry(const stringImpl &file) {
 
             model.type = GeometryType::PRIMITIVE;
             model.version = pt.get<F32>(name + ".version");
-            Patch::getInstance().addGeometry(model);
+            Patch::instance().addGeometry(model);
         }
 }
 }

@@ -44,7 +44,7 @@ LightManager::LightManager()
     _shadowLocation[to_const_uint(ShadowType::SINGLE)] = startOffset + 2;
     _shadowLocation[to_const_uint(ShadowType::LAYERED)] = startOffset + 3;
 
-    ParamHandler::getInstance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
+    ParamHandler::instance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
 }
 
 LightManager::~LightManager()
@@ -102,7 +102,7 @@ void LightManager::init() {
     iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);
     stringImpl iconImageLocation =
         Util::StringFormat("%s/misc_images/lightIcons.png",
-            ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
+            ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
     iconImage.setResourceLocation(iconImageLocation);
     iconImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _lightIconsTexture = CreateResource<Texture>(iconImage);
@@ -166,7 +166,7 @@ bool LightManager::removeLight(I64 lightGUID, LightType type) {
 
 void LightManager::idle() {
     _shadowMapsEnabled =
-        ParamHandler::getInstance().getParam<bool>(_ID("rendering.enableShadows"));
+        ParamHandler::instance().getParam<bool>(_ID("rendering.enableShadows"));
 
     s_shadowPassTimer->pause(!_shadowMapsEnabled);
 }
@@ -203,12 +203,12 @@ void LightManager::togglePreviewShadowMaps() {
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled ||
         GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
-        ParamHandler::getInstance().setParam(
+        ParamHandler::instance().setParam(
             _ID("rendering.debug.displayShadowDebugInfo"), false);
         return;
     }
 
-    ParamHandler::getInstance().setParam(
+    ParamHandler::instance().setParam(
         _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
 }
 

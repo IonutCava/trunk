@@ -47,7 +47,7 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
     if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {
         GLfloat anisoLevel =
             std::min<GLfloat>(to_float(descriptor.anisotropyLevel()),
-                              to_float(ParamHandler::getInstance().getParam<GLint>(
+                              to_float(ParamHandler::instance().getParam<GLint>(
                                   _ID("rendering.anisotropicFilteringLevel"))));
 
         glSamplerParameterf(_samplerID, gl::GL_TEXTURE_MAX_ANISOTROPY_EXT,

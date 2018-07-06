@@ -73,12 +73,12 @@ DEFINE_SINGLETON(FrameListenerManager)
 END_SINGLETON
 
 inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder) {
-    FrameListenerManager::getInstance().registerFrameListener(listener,
+    FrameListenerManager::instance().registerFrameListener(listener,
                                                               callOrder);
 }
 
 inline void UNREGISTER_FRAME_LISTENER(FrameListener* listener) {
-    FrameListenerManager::getInstance().removeFrameListener(listener);
+    FrameListenerManager::instance().removeFrameListener(listener);
 }
 
 };  // namespace Divide

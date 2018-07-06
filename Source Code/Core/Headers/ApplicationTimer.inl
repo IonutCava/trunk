@@ -63,7 +63,7 @@ inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) {
 }
 
 inline F32 FRAME_SPEED_FACTOR() {
-    return ApplicationTimer::getInstance().getSpeedfactor();
+    return ApplicationTimer::instance().getSpeedfactor();
 }
 
 };  // namespace Time

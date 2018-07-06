@@ -53,7 +53,7 @@ Scene::Scene()
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
-      _paramHandler(ParamHandler::getInstance())
+      _paramHandler(ParamHandler::instance())
 {
     _sceneTimer = 0UL;
     _input.reset(new SceneInput(*this));
@@ -92,7 +92,7 @@ bool Scene::idle() {  // Called when application is idle
 
     Attorney::SceneRenderStateScene::playAnimations(
         renderState(),
-        ParamHandler::getInstance().getParam<bool>(_ID("mesh.playAnimations"), true));
+        ParamHandler::instance().getParam<bool>(_ID("mesh.playAnimations"), true));
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
@@ -294,7 +294,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 
     ResourceDescriptor defaultLight(
         lightType +
-        std::to_string(LightManager::getInstance().getLights(type).size()));
+        std::to_string(LightManager::instance().getLights(type).size()));
 
     defaultLight.setEnumValue(to_uint(type));
     Light* light = CreateResource<Light>(defaultLight);
@@ -351,7 +351,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     _GUI = guiInterface;
     _name = name;
 
-    SceneManager::getInstance().enableFog(_sceneState.fogDescriptor()._fogDensity,
+    SceneManager::instance().enableFog(_sceneState.fogDescriptor()._fogDensity,
                                           _sceneState.fogDescriptor()._fogColor);
 
     loadXMLAssets();
@@ -377,7 +377,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         }
     }
     // Camera position is overridden in the scene's XML configuration file
-    if (ParamHandler::getInstance().getParam<bool>(
+    if (ParamHandler::instance().getParam<bool>(
         _ID("options.cameraStartPositionOverride"))) {
         renderState().getCamera().setEye(vec3<F32>(
             _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.x")),
@@ -398,7 +398,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.turn")));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
-                                       &GUI::getInstance(), this));
+                                       &GUI::instance(), this));
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = DELEGATE_BIND(&Scene::findSelection, this);
@@ -459,7 +459,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     cbks.first = [this]()  {
         if (_input->getKeyState(Input::KeyCode::KC_LCONTROL) == SceneInput::InputState::PRESSED) {
-            Application::getInstance().RequestShutdown();
+            Application::instance().RequestShutdown();
         } else {
             state().roll(SceneState::MoveDirection::POSITIVE);
         }
@@ -485,24 +485,24 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     cbks.first = [](){};
     cbks.second = []() {
-        ParamHandler::getInstance().setParam(
+        ParamHandler::instance().setParam(
             _ID("freezeLoopTime"),
-            !ParamHandler::getInstance().getParam(_ID("freezeLoopTime"), false));
+            !ParamHandler::instance().getParam(_ID("freezeLoopTime"), false));
     };
     _input->addKeyMapping(Input::KeyCode::KC_P, cbks);
 
     cbks.second = []() {
-        ParamHandler::getInstance().setParam(
+        ParamHandler::instance().setParam(
             _ID("postProcessing.enableDepthOfField"),
-            !ParamHandler::getInstance().getParam(
+            !ParamHandler::instance().getParam(
                 _ID("postProcessing.enableDepthOfField"), false));
     };
     _input->addKeyMapping(Input::KeyCode::KC_F2, cbks);
 
     cbks.second = []() {
-        ParamHandler::getInstance().setParam(
+        ParamHandler::instance().setParam(
             _ID("postProcessing.enableBloom"),
-            !ParamHandler::getInstance().getParam(
+            !ParamHandler::instance().getParam(
                 _ID("postProcessing.enableBloom"), false));
     };
     _input->addKeyMapping(Input::KeyCode::KC_F3, cbks);
@@ -526,8 +526,8 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     _input->addKeyMapping(Input::KeyCode::KC_B, cbks);
 
     cbks.second = []() {
-        ParamHandler& param = ParamHandler::getInstance();
-        LightManager::getInstance().togglePreviewShadowMaps();
+        ParamHandler& param = ParamHandler::instance();
+        LightManager::instance().togglePreviewShadowMaps();
         param.setParam<bool>(
             _ID("rendering.previewDepthBuffer"),
             !param.getParam<bool>(_ID("rendering.previewDepthBuffer"), false));
@@ -570,7 +570,7 @@ bool Scene::unload() {
     clearTasks();
     /// Destroy physics (:D)
     PHYSICS_DEVICE.setPhysicsScene(nullptr);
-    LightManager::getInstance().clear();
+    LightManager::instance().clear();
     clearObjects();
     _loadComplete = false;
     return true;
@@ -598,14 +598,14 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 }
 
 bool Scene::initializeAI(bool continueOnErrors) {
-    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance()));
+    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::instance()));
     return true;
 }
 
  /// Shut down AIManager thread
 bool Scene::deinitializeAI(bool continueOnErrors) { 
-    AI::AIManager::getInstance().stop();
-    WAIT_FOR_CONDITION(!AI::AIManager::getInstance().running());
+    AI::AIManager::instance().stop();
+    WAIT_FOR_CONDITION(!AI::AIManager::instance().running());
     _aiTask.join();
         
     return true;
@@ -786,13 +786,13 @@ void Scene::debugDraw(RenderStage stage) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes
-        AI::AIManager::getInstance().debugDraw(false);
-        LightManager::getInstance().drawLightImpostors();
+        AI::AIManager::instance().debugDraw(false);
+        LightManager::instance().drawLightImpostors();
     }
 }
 
 void Scene::findHoverTarget() {
-    const vec2<U16>& displaySize = Application::getInstance().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
     const vec2<I32>& mousePos = _input->getMousePosition();
 
@@ -804,7 +804,7 @@ void Scene::findHoverTarget() {
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)
-    RenderPassCuller::VisibleNodeList& nodes = SceneManager::getInstance().getVisibleNodesCache(RenderStage::Z_PRE_PASS);
+    RenderPassCuller::VisibleNodeList& nodes = SceneManager::instance().getVisibleNodesCache(RenderStage::Z_PRE_PASS);
 
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));

@@ -63,10 +63,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     // Initialize the shader manager
-    ShaderManager::getInstance().init();
+    ShaderManager::instance().init();
     // Create an immediate mode shader used for general purpose rendering (e.g.
     // to mimic the fixed function pipeline)
-    _imShader = ShaderManager::getInstance().getDefaultShader();
+    _imShader = ShaderManager::instance().getDefaultShader();
     _imShaderTextureFlag = _imShader->getUniformLocation("useTexture");
     _imShaderWorldMatrix = _imShader->getUniformLocation("dvd_WorldMatrix");
 
@@ -103,7 +103,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     // Utility cameras
-    CameraManager& cameraMgr = Application::getInstance().kernel().getCameraMgr();
+    CameraManager& cameraMgr = Application::instance().kernel().getCameraMgr();
     _2DCamera = cameraMgr.createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
     _2DCamera->lockView(true);
     _cubeCamera = cameraMgr.createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
@@ -195,8 +195,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
-        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zNear")),
-        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zFar"))));
+        ParamHandler::instance().getParam<F32>(_ID("rendering.zNear")),
+        ParamHandler::instance().getParam<F32>(_ID("rendering.zFar"))));
     _gpuBlock._updated = true;
 
     // Create a separate loading thread that shares resources with the main
@@ -219,9 +219,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #endif
 
-    ParamHandler::getInstance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
+    ParamHandler::instance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system
-    PostFX::getInstance().init();
+    PostFX::instance().init();
 
     _commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
 
@@ -236,7 +236,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     assert(_framebufferDraw != nullptr);
 
     // Create initial buffers, cameras etc for this resolution. It should match window size
-    WindowManager& winMgr = Application::getInstance().windowManager();
+    WindowManager& winMgr = Application::instance().windowManager();
     winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
                              winMgr.getActiveWindow().getGUID(),
                              to_int(renderResolution.width),
@@ -295,7 +295,7 @@ void GFXDevice::closeRenderingAPI() {
     }
 
     // Close the shader manager
-    ShaderManager::getInstance().destroy();
+    ShaderManager::instance().destroy();
     // Close the rendering API
     _api->closeRenderingAPI();
     // Close the loading thread and wait for it to terminate
@@ -323,12 +323,12 @@ void GFXDevice::closeRenderingAPI() {
 void GFXDevice::idle() {
     // Update the zPlanes if needed
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
-        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zNear")),
-        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zFar"))));
+        ParamHandler::instance().getParam<F32>(_ID("rendering.zNear")),
+        ParamHandler::instance().getParam<F32>(_ID("rendering.zFar"))));
     // Pass the idle call to the post processing system
-    PostFX::getInstance().idle();
+    PostFX::instance().idle();
     // And to the shader manager
-    ShaderManager::getInstance().idle();
+    ShaderManager::instance().idle();
 }
 
 void GFXDevice::beginFrame() {
@@ -346,7 +346,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
         IN_MAX_FRAMES_RECYCLE_COUNT;
 
     // Render all 2D debug info and call API specific flush function
-    if (Application::getInstance().mainLoopActive()) {
+    if (Application::instance().mainLoopActive()) {
         GFX::Scoped2DRendering scoped2D(true);
         for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction : _2dRenderQueue) {
             callbackFunction.second();
@@ -390,7 +390,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
     // Activate the default render states
     setStateBlock(_defaultStateBlockHash);
     // Unbind shaders
-    ShaderManager::getInstance().unbind();
+    ShaderManager::instance().unbind();
     _api->endFrame(swapBuffers);
 }
 
@@ -400,10 +400,10 @@ ErrorCode GFXDevice::createAPIInstance() {
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            _api = &GL_API::getInstance();
+            _api = &GL_API::instance();
         } break;
         case RenderAPI::Direct3D: {
-            _api = &DX_API::getInstance();
+            _api = &DX_API::instance();
             Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
             return ErrorCode::GFX_NOT_SUPPORTED;
         } break;

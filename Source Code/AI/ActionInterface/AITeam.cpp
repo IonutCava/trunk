@@ -11,12 +11,12 @@ using namespace AI;
 AITeam::AITeam(U32 id) : GUIDWrapper(), _teamID(id)
 {
     _team.clear();
-    AIManager::getInstance().registerTeam(this);
+    AIManager::instance().registerTeam(this);
 }
 
 AITeam::~AITeam()
 {
-    AIManager::getInstance().unregisterTeam(this);
+    AIManager::instance().unregisterTeam(this);
     {
         WriteLock w1_lock(_crowdMutex);
         MemoryManager::DELETE_HASHMAP(_aiTeamCrowd);

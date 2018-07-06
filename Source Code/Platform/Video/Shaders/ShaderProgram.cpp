@@ -29,10 +29,10 @@ ShaderProgram::~ShaderProgram()
     Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), getName().c_str());
     // Remove every shader attached to this program
     for (ShaderIDMap::value_type& it : _shaderIDMap) {
-        ShaderManager::getInstance().removeShader(it.second);
+        ShaderManager::instance().removeShader(it.second);
     }
     // Unregister the program from the manager
-    ShaderManager::getInstance().unregisterShaderProgram(getName());
+    ShaderManager::instance().unregisterShaderProgram(getName());
     _shaderIDMap.clear();
 }
 
@@ -80,7 +80,7 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {
-        ShaderManager::getInstance().unbind();
+        ShaderManager::instance().unbind();
     }
     // Update refresh flags
     _refreshStage[to_const_uint(ShaderType::VERTEX)] = vertex;

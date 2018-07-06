@@ -15,7 +15,7 @@ namespace Divide {
 template<>
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
 
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     ShaderProgram* ptr = GFX_DEVICE.newShaderProgram(USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded() : false);
 
     if (_descriptor.getResourceLocation().compare("default") == 0) {
@@ -40,7 +40,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     if (!load(ptr, _descriptor.getName())) {
         MemoryManager::DELETE(ptr);
     } else {
-        ShaderManager::getInstance().registerShaderProgram(ptr->getName(), ptr);
+        ShaderManager::instance().registerShaderProgram(ptr->getName(), ptr);
     }
 
     return ptr;

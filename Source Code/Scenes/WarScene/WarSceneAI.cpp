@@ -53,7 +53,7 @@ void WarScene::checkGameCompletion() {
                 restartGame = true;
             }
             else if (_runCount == 2) {
-                Application::getInstance().RequestShutdown();
+                Application::instance().RequestShutdown();
             }
         }
     }
@@ -74,7 +74,7 @@ void WarScene::checkGameCompletion() {
                 _runCount = 2;
             }
             else if (_runCount == 2) {
-                Application::getInstance().RequestShutdown();
+                Application::instance().RequestShutdown();
             }
         }
         restartGame = true;
@@ -143,11 +143,11 @@ bool WarScene::initializeAI(bool continueOnErrors) {
 }
 
 bool WarScene::removeUnits(bool removeNodesOnCall) {
-    WAIT_FOR_CONDITION(!AI::AIManager::getInstance().updating());
+    WAIT_FOR_CONDITION(!AI::AIManager::instance().updating());
 
     for (U8 i = 0; i < 2; ++i) {
         for (AI::AIEntity* const entity : _army[i]) {
-            AI::AIManager::getInstance().unregisterEntity(entity);
+            AI::AIManager::instance().unregisterEntity(entity);
         }
 
         MemoryManager::DELETE_VECTOR(_army[i]);
@@ -380,7 +380,7 @@ bool WarScene::addUnits() {
     //----------------------- AI controlled units ---------------------//
     for (U8 i = 0; i < 2; ++i) {
         for (U8 j = 0; j < _army[i].size(); ++j) {
-            AI::AIManager::getInstance().registerEntity(i, _army[i][j]);
+            AI::AIManager::instance().registerEntity(i, _army[i][j]);
         }
     }
 
@@ -402,17 +402,17 @@ AI::AIEntity* WarScene::findAI(SceneGraphNode_ptr node) {
 }
 
 bool WarScene::resetUnits() {
-    AI::AIManager::getInstance().pauseUpdate(true);
+    AI::AIManager::instance().pauseUpdate(true);
     bool state = false;
     if (removeUnits(true)) {
        state = addUnits();
     }
-    AI::AIManager::getInstance().pauseUpdate(false);
+    AI::AIManager::instance().pauseUpdate(false);
     return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors) {
-    AI::AIManager::getInstance().pauseUpdate(true);
+    AI::AIManager::instance().pauseUpdate(true);
     if (removeUnits(true)) {
         for (U8 i = 0; i < 2; ++i) {
             MemoryManager::DELETE(_faction[i]);
@@ -430,7 +430,7 @@ void WarScene::startSimulation() {
 
     g_navMeshStarted = true;
 
-    AI::AIManager::getInstance().pauseUpdate(true);
+    AI::AIManager::instance().pauseUpdate(true);
     _infoBox->setTitle("NavMesh state");
     _infoBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_INFO);
     bool previousMesh = false;
@@ -440,11 +440,11 @@ void WarScene::startSimulation() {
     if (_lastNavMeshBuildTime == 0UL ||
         diffTime > Time::SecondsToMicroseconds(10)) {
         AI::Navigation::NavigationMesh* navMesh =
-            AI::AIManager::getInstance().getNavMesh(
+            AI::AIManager::instance().getNavMesh(
                 _army[0][0]->getAgentRadiusCategory());
         if (navMesh) {
             previousMesh = true;
-            AI::AIManager::getInstance().destroyNavMesh(
+            AI::AIManager::instance().destroyNavMesh(
                 _army[0][0]->getAgentRadiusCategory());
         }
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh();
@@ -457,13 +457,13 @@ void WarScene::startSimulation() {
             navMesh->build(
                 _sceneGraph.getRoot(),
                 [&radius](AI::Navigation::NavigationMesh* navMesh) {
-                AI::AIManager::getInstance().toggleNavMeshDebugDraw(true);
-                AI::AIManager::getInstance().addNavMesh(radius, navMesh);
+                AI::AIManager::instance().toggleNavMeshDebugDraw(true);
+                AI::AIManager::instance().addNavMesh(radius, navMesh);
                 g_navMeshStarted = false;
             });
         }
         else {
-            AI::AIManager::getInstance().addNavMesh(
+            AI::AIManager::instance().addNavMesh(
                 _army[0][0]->getAgentRadiusCategory(), navMesh);
 #ifdef _DEBUG
             navMesh->debugDraw(true);
@@ -519,7 +519,7 @@ void WarScene::startSimulation() {
         _infoBox->show();
     }
 
-    AI::AIManager::getInstance().pauseUpdate(false);
+    AI::AIManager::instance().pauseUpdate(false);
 }
 
 };  // namespace Divide

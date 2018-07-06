@@ -36,8 +36,8 @@ void TenisScene::processGUI(const U64 deltaTime) {
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                            Time::ApplicationTimer::getInstance().getFps(),
-                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFps(),
+                                            Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText("RenderBinCount",
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
@@ -296,7 +296,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     _floor = _sceneGraph.findNode("Floor");
     _floor.lock()->get<RenderingComponent>()->castsShadows(false);
 
-    AI::AIManager::getInstance().pauseUpdate(false);
+    AI::AIManager::instance().pauseUpdate(false);
     return loadState;
 }
 
@@ -340,16 +340,16 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     _team2 = MemoryManager_NEW AI::AITeam(2);
 
     if (state || continueOnErrors) {
-        state = AI::AIManager::getInstance().registerEntity(0, _aiPlayer1);
+        state = AI::AIManager::instance().registerEntity(0, _aiPlayer1);
     }
     if (state || continueOnErrors) {
-        state = AI::AIManager::getInstance().registerEntity(0, _aiPlayer2);
+        state = AI::AIManager::instance().registerEntity(0, _aiPlayer2);
     }
     if (state || continueOnErrors) {
-        state = AI::AIManager::getInstance().registerEntity(1, _aiPlayer3);
+        state = AI::AIManager::instance().registerEntity(1, _aiPlayer3);
     }
     if (state || continueOnErrors) {
-        state = AI::AIManager::getInstance().registerEntity(1, _aiPlayer4);
+        state = AI::AIManager::instance().registerEntity(1, _aiPlayer4);
     }
     if (state || continueOnErrors) {
         //----------------------- AI controlled units (NPC's)
@@ -370,12 +370,12 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
 }
 
 bool TenisScene::deinitializeAI(bool continueOnErrors) {
-    AI::AIManager::getInstance().pauseUpdate(true);
+    AI::AIManager::instance().pauseUpdate(true);
 
-    AI::AIManager::getInstance().unregisterEntity(_aiPlayer1);
-    AI::AIManager::getInstance().unregisterEntity(_aiPlayer2);
-    AI::AIManager::getInstance().unregisterEntity(_aiPlayer3);
-    AI::AIManager::getInstance().unregisterEntity(_aiPlayer4);
+    AI::AIManager::instance().unregisterEntity(_aiPlayer1);
+    AI::AIManager::instance().unregisterEntity(_aiPlayer2);
+    AI::AIManager::instance().unregisterEntity(_aiPlayer3);
+    AI::AIManager::instance().unregisterEntity(_aiPlayer4);
     MemoryManager::DELETE(_aiPlayer1);
     MemoryManager::DELETE(_aiPlayer2);
     MemoryManager::DELETE(_aiPlayer3);
@@ -409,7 +409,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ballSGN.lock()->setSelectable(true);
 
     const vec2<U16>& resolution
-        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
+        = Application::instance().windowManager().getActiveWindow().getDimensions();
 
     GUIElement* btn = _GUI->addButton(
         "Serve", "Serve",

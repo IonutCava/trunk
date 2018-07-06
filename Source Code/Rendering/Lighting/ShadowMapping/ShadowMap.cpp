@@ -95,7 +95,7 @@ void ShadowMap::clearShadowMaps() {
 }
 
 void ShadowMap::bindShadowMaps() {
-    LightManager& lightMgr = LightManager::getInstance();
+    LightManager& lightMgr = LightManager::instance();
 
     for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
         TextureDescriptor::AttachmentType attachment
@@ -147,7 +147,7 @@ ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type)
       _shadowCamera(shadowCamera),
       _shadowMapType(type),
       _arrayOffset(0),
-      _par(ParamHandler::getInstance())
+      _par(ParamHandler::instance())
 {
     _bias.bias();
 

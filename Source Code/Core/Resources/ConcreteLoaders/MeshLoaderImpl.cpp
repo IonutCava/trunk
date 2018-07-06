@@ -7,7 +7,7 @@ namespace Divide {
 
 template<>
 Mesh* ImplResourceLoader<Mesh>::operator()() {
-    MeshImporter& importer = MeshImporter::getInstance();
+    MeshImporter& importer = MeshImporter::instance();
 
     Mesh* ptr = nullptr;
     Import::ImportData tempMeshData;

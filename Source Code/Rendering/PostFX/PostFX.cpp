@@ -26,7 +26,7 @@ PostFX::PostFX()
       _underwaterTexture(nullptr),
       _gfx(nullptr)
 {
-    ParamHandler::getInstance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
+    ParamHandler::instance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
 
     _postFXTarget._clearDepthBufferOnBind = false;
     _postFXTarget._drawMask.fill(false);
@@ -44,7 +44,7 @@ PostFX::~PostFX()
 
 void PostFX::init() {
     Console::printfn(Locale::get(_ID("START_POST_FX")));
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     _gfx = &GFX_DEVICE;
     _enableNoise = par.getParam<bool>(_ID("postProcessing.enableNoise"));
     _enableVignette = par.getParam<bool>(_ID("postProcessing.enableVignette"));
@@ -146,7 +146,7 @@ void PostFX::apply() {
 }
 
 void PostFX::idle() {
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     // Update states
     _underwater = GET_ACTIVE_SCENE().state().cameraUnderwater();
     _enableNoise = par.getParam<bool>(_ID("postProcessing.enableNoise"));

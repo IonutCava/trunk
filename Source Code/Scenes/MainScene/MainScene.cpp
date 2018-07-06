@@ -74,8 +74,8 @@ void MainScene::processGUI(const U64 deltaTime) {
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                             Time::ApplicationTimer::getInstance().getFps(),
-                                             Time::ApplicationTimer::getInstance().getFrameTime()));
+                                             Time::ApplicationTimer::instance().getFps(),
+                                             Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText("underwater",
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state().cameraUnderwater() ? "true" : "false",
@@ -153,10 +153,10 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     // Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-                                                &SceneManager::getInstance(),
+                                                &SceneManager::instance(),
                                                 RenderStage::REFLECTION, true, 0));
     _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-                                                &SceneManager::getInstance(),
+                                                &SceneManager::instance(),
                                                 RenderStage::DISPLAY, true, 0));*/
 
     SceneInput::PressReleaseActions cbks;

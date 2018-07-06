@@ -95,7 +95,7 @@ Task& TaskPool::getAvailableTask() {
 }
 
 TaskHandle GetTaskHandle(I64 taskGUID) {
-    return GetTaskHandle(Application::getInstance()
+    return GetTaskHandle(Application::instance()
                                      .kernel()
                                      .taskPool(),
                          taskGUID);
@@ -129,7 +129,7 @@ TaskHandle CreateTask(I64 jobIdentifier,
                    const DELEGATE_CBK_PARAM<bool>& threadedFunction,
                    const DELEGATE_CBK<>& onCompletionFunction)
 {
-    TaskPool& pool = Application::getInstance().kernel().taskPool();
+    TaskPool& pool = Application::instance().kernel().taskPool();
     return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
 }
 

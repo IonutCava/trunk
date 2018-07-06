@@ -393,7 +393,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                 _aiTextureMapMode_Force32Bit,
                                 _aiTextureMapMode_Force32Bit};
 
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
 
     U8 count = 0;
     // Compare load results with the standard success value

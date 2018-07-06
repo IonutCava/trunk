@@ -81,8 +81,8 @@ void WarScene::processGUI(const U64 deltaTime) {
         const vec3<F32>& euler = cam.getEuler();
         _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                            Time::ApplicationTimer::getInstance().getFps(),
-                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFps(),
+                                            Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText("RenderBinCount",
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
@@ -279,7 +279,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         pComp->rotateY(phi);
     }
 
-    if (!AI::AIManager::getInstance().getNavMesh(
+    if (!AI::AIManager::instance().getNavMesh(
             _army[0][0]->getAgentRadiusCategory())) {
         return;
     }
@@ -307,7 +307,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     }
     GFX_DEVICE.drawLines(*_targetLines, paths, vec4<I32>());
 
-    if (!AI::AIManager::getInstance().updatePaused()) {
+    if (!AI::AIManager::instance().updatePaused()) {
         _elapsedGameTime += deltaTime;
         checkGameCompletion();
     }
@@ -599,7 +599,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         }
     }
 
-    Application::getInstance()
+    Application::instance()
         .kernel()
         .getCameraMgr()
         .getActiveCamera()
@@ -620,7 +620,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
    
     cbks.second = []() {
-        LightManager& lightMgr = LightManager::getInstance();
+        LightManager& lightMgr = LightManager::instance();
         /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
         bool dir = lightMgr.lightTypeEnabled(LightType::DIRECTIONAL);
         bool point = lightMgr.lightTypeEnabled(LightType::POINT);
@@ -674,7 +674,7 @@ void WarScene::toggleCamera() {
 
 bool WarScene::loadResources(bool continueOnErrors) {
     const vec2<U16>& resolution
-        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
+        = Application::instance().windowManager().getActiveWindow().getDimensions();
 
     _GUI->addButton("Simulate", "Simulate",
                     vec2<I32>(resolution.width - 220, 60),

@@ -132,7 +132,7 @@ namespace Attorney {
     class InputInterfaceEvent {
     private:
         static KeyEvent& getKeyRef(U32 index) {
-            return InputInterface::getInstance().getKeyRef(index);
+            return InputInterface::instance().getKeyRef(index);
         }
 
         friend class Divide::Input::EventHandler;

@@ -110,7 +110,7 @@ void GL_API::beginFrame() {
 
 /// Finish rendering the current frame
 void GL_API::endFrame(bool swapBuffers) {
-    DisplayWindow& win = Application::getInstance()
+    DisplayWindow& win = Application::instance()
                          .windowManager()
                          .getActiveWindow();
     // Revert back to the default OpenGL states
@@ -449,21 +449,21 @@ bool GL_API::initShaders() {
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
             std::to_string(
-                to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::CUBEMAP))),
+                to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::CUBEMAP))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
             std::to_string(
-                to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::SINGLE))),
+                to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::SINGLE))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_LAYERED_MAP_ARRAY " +
             std::to_string(
-                to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::LAYERED))),
+                to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::LAYERED))),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);
@@ -625,7 +625,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
             // Fonts are stored in the general asset directory -> in the GUI
             // subfolder -> in the fonts subfolder
             stringImpl fontPath(
-                ParamHandler::getInstance().getParam<stringImpl>(
+                ParamHandler::instance().getParam<stringImpl>(
                     _ID("assetsLocation"), "assets") +
                 "/GUI/fonts/");
             fontPath += fontName;
@@ -797,7 +797,7 @@ Framebuffer* GL_API::newFB(GFXDevice& context, bool multisampled) const {
     // The framebuffer is responsible for deleting it's own resolve child!
     return MemoryManager_NEW glFramebuffer(context,
         (multisampled &&
-         ParamHandler::getInstance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) > 0));
+         ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) > 0));
 }
 
 /// Create and return a new vertex array (VAO + VB + IB). The callee is

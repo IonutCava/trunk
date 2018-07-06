@@ -76,7 +76,7 @@ void GUI::draw() const {
     }
     
     const OIS::MouseState& mouseState =
-        Input::InputInterface::getInstance().getMouse().getMouseState();
+        Input::InputInterface::instance().getMouse().getMouseState();
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
@@ -102,9 +102,9 @@ void GUI::update(const U64 deltaTime) {
         _console->update(deltaTime);
     }
 
-    GUIEditor::getInstance().update(deltaTime);
+    GUIEditor::instance().update(deltaTime);
 
-    const DebugInterface& debugInterface = DebugInterface::getInstance();
+    const DebugInterface& debugInterface = DebugInterface::instance();
     U32 debugVarEntries = to_uint(debugInterface.debugVarCount());
     if (_debugVarCacheCount != debugVarEntries) {
 
@@ -154,7 +154,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     }
     _resolutionCache.set(renderResolution);
 
-    _enableCEGUIRendering = !(ParamHandler::getInstance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
+    _enableCEGUIRendering = !(ParamHandler::instance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 #endif
@@ -162,7 +162,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     rp = static_cast<CEGUI::DefaultResourceProvider*>(
         CEGUI::System::getSingleton().getResourceProvider());
     CEGUI::String CEGUIInstallSharePath(
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")));
+        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")));
     CEGUIInstallSharePath += "/GUI/";
     rp->setResourceGroupDirectory("schemes",
                                   CEGUIInstallSharePath + "schemes/");
@@ -199,7 +199,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     CEGUI::FontManager::getSingleton().createFromFile(
         "DejaVuSans-12-NoScale.font");
     _defaultGUIScheme =
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("GUI.defaultScheme"));
+        ParamHandler::instance().getParam<stringImpl>(_ID("GUI.defaultScheme"));
     CEGUI::SchemeManager::getSingleton().createFromFile(_defaultGUIScheme + ".scheme");
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(
@@ -211,7 +211,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     _rootSheet->setPixelAligned(false);
     assert(_console);
     //_console->CreateCEGUIWindow();
-    GUIEditor::getInstance().init();
+    GUIEditor::instance().init();
 
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
@@ -220,7 +220,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw, this),
                                    std::numeric_limits<U32>::max() - 1);
     const OIS::MouseState& mouseState =
-        Input::InputInterface::getInstance().getMouse().getMouseState();
+        Input::InputInterface::instance().getMouse().getMouseState();
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
@@ -242,7 +242,7 @@ void GUI::onChangeResolution(U16 w, U16 h) {
 }
 
 void GUI::selectionChangeCallback(Scene* const activeScene) {
-    GUIEditor::getInstance().Handle_ChangeSelection(
+    GUIEditor::instance().Handle_ChangeSelection(
         activeScene->getCurrentSelection());
 }
 
@@ -269,8 +269,8 @@ bool GUI::onKeyUp(const Input::KeyEvent& key) {
 
 #ifdef _DEBUG
     if (key._key == Input::KeyCode::KC_F11) {
-        GUIEditor::getInstance().setVisible(
-            !GUIEditor::getInstance().isVisible());
+        GUIEditor::instance().setVisible(
+            !GUIEditor::instance().isVisible());
     }
 #endif
 

@@ -103,7 +103,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         "glTexture::reserverStorage error: width and height for "
         "cube map texture do not match!");
 
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
 
     GLenum glInternalFormat = _descriptor._internalFormat == GFXImageFormat::DEPTH_COMPONENT
                             ? GL_DEPTH_COMPONENT32

@@ -380,7 +380,7 @@ bool Material::computeShader(RenderStage renderStage,
         }
     }
 
-    bool deferredPassShader = SceneManager::getInstance().getRenderer().getType() !=
+    bool deferredPassShader = SceneManager::instance().getRenderer().getType() !=
                               RendererType::RENDERER_FORWARD_PLUS;
     bool depthPassShader = renderStage == RenderStage::SHADOW ||
                            renderStage == RenderStage::Z_PRE_PASS;
@@ -564,7 +564,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
 
 ShaderProgram* const Material::ShaderInfo::getProgram() const {
     return _shaderRef == nullptr
-               ? ShaderManager::getInstance().getDefaultShader()
+               ? ShaderManager::instance().getDefaultShader()
                : _shaderRef;
 }
 

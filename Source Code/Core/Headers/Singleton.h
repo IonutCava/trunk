@@ -44,12 +44,12 @@ class Singleton {
 protected:
    public:
 
-    // Alias for getInstance() to easily explain intent
+    // Alias for instance() to easily explain intent
     inline static T& createInstance() {
-        return getInstance();
+        return instance();
     }
 
-    inline static T& getInstance() { 
+    inline static T& instance() { 
 #   if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
         assert(!_zombified);
 #    endif
@@ -58,7 +58,7 @@ protected:
     }
 
     inline static void destroyInstance() {
-        delete &getInstance();
+        delete &instance();
 #       if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
         _zombified = true;
 #       endif

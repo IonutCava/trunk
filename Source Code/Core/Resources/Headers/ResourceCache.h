@@ -92,7 +92,7 @@ END_SINGLETON
 template <typename T>
 typename std::enable_if<std::is_base_of<Resource, T>::value, bool>::type
 RemoveResource(T*& resource) {
-    if (ResourceCache::getInstance().remove(resource)) {
+    if (ResourceCache::instance().remove(resource)) {
         resource = nullptr;
         return true;
     }
@@ -103,13 +103,13 @@ RemoveResource(T*& resource) {
 template <typename T>
 typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
 CreateResource(const ResourceDescriptor& descriptor) {
-    return ResourceCache::getInstance().loadResource<T>(descriptor);
+    return ResourceCache::instance().loadResource<T>(descriptor);
 }
 
 template <typename T>
 typename std::enable_if<std::is_base_of<Resource, T>::value, T* const>::type
 FindResourceImpl(const stringImpl& name) {
-    return static_cast<T*>(ResourceCache::getInstance().find(name));
+    return static_cast<T*>(ResourceCache::instance().find(name));
 }
 
 };  // namespace Divide

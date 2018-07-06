@@ -140,7 +140,7 @@ inline void PhysX::updateTimeStep(U8 timeStepFactor) {
     CLAMP<U8>(timeStepFactor, 1, timeStepFactor);
     _timeStepFactor = timeStepFactor;
     _timeStep = 1.0f / _timeStepFactor;
-    _timeStep *= ParamHandler::getInstance().getParam<F32>(_ID("simSpeed"));
+    _timeStep *= ParamHandler::instance().getParam<F32>(_ID("simSpeed"));
 }
 
 /// Process results

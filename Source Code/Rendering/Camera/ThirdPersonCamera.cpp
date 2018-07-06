@@ -9,7 +9,7 @@ ThirdPersonCamera::ThirdPersonCamera(const vec3<F32>& eye)
     : OrbitCamera(CameraType::THIRD_PERSON, eye) {}
 
 void ThirdPersonCamera::onActivate() {
-    Application::getInstance().snapCursorToCenter();
+    Application::instance().snapCursorToCenter();
     OrbitCamera::onActivate();
 }
 
@@ -24,7 +24,7 @@ bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
 
     mousePos.set(arg.state.X.rel, arg.state.Y.rel);
 
-    Application::getInstance().snapCursorToCenter();
+    Application::instance().snapCursorToCenter();
 
     if (IS_ZERO(mousePos.x) && IS_ZERO(mousePos.y)) {
         return OrbitCamera::mouseMoved(arg);

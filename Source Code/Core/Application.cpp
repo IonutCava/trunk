@@ -33,7 +33,7 @@ Application::Application() : _kernel(nullptr)
     ParamHandler::createInstance();
     Time::ApplicationTimer::createInstance();
     // Don't log parameter requests
-    ParamHandler::getInstance().setDebugOutput(false);
+    ParamHandler::instance().setDebugOutput(false);
     // Print a copyright notice in the log file
     Console::printCopyrightNotice();
     Console::toggleTimeStamps(true);
@@ -75,7 +75,7 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char**
     assert(!entryPoint.empty());
     Console::start();
     // Target FPS is usually 60. So all movement is capped around that value
-    Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
+    Time::ApplicationTimer::instance().init(Config::TARGET_FRAME_RATE);
     // Read language table
     if (!Locale::init()) {
         return errorCode();
@@ -83,7 +83,7 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char**
     Console::printfn(Locale::get(_ID("START_APPLICATION")));
 
     // Create a new kernel
-    _kernel.reset(new Kernel(argc, argv, this->getInstance()));
+    _kernel.reset(new Kernel(argc, argv, this->instance()));
     assert(_kernel.get() != nullptr);
 
     // and load it via an XML file config

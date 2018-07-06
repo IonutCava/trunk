@@ -99,7 +99,7 @@ void WarSceneAIProcessor::initInternal() {
                   "current AI entity!");
 
     AITeam* currentTeam = _entity->getTeam();
-    AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
+    AITeam* enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
@@ -174,7 +174,7 @@ bool WarSceneAIProcessor::DIE() {
         g_flagContainer,
         _globalWorkingMemory._flags[1].value().lock()->getGUID());
 
-    AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
+    AITeam* enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
@@ -487,7 +487,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 _entity->sendMessage(*member.second, AIMsg::HAVE_FLAG, _entity);
             }
             
-            const AITeam* const enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
+            const AITeam* const enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
             for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
                 _entity->sendMessage(*enemy.second, AIMsg::ENEMY_HAS_FLAG, _entity);
             }
@@ -692,7 +692,7 @@ void WarSceneAIProcessor::updatePositions() {
             _initialFlagPositions[1]) <= g_ATTACK_RADIUS_SQ);
 
     AITeam* currentTeam = _entity->getTeam();
-    AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
+    AITeam* enemyTeam = AIManager::instance().getTeamByID(currentTeam->getEnemyTeamID(0));
 
     bool atHome = atHomeBase();
     U32 teamID = currentTeam->getTeamID();
@@ -761,7 +761,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
         return true;
     }
 
-    if (!AIManager::getInstance().getNavMesh(_entity->getAgentRadiusCategory())) {
+    if (!AIManager::instance().getNavMesh(_entity->getAgentRadiusCategory())) {
         return false;
     }
 

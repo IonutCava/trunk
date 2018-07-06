@@ -44,7 +44,7 @@ Light::~Light()
 bool Light::load(const stringImpl& name) {
     setName(name);
     _shadowCamera =
-        Application::getInstance()
+        Application::instance()
         .kernel()
         .getCameraMgr()
         .createCamera(name + "_shadowCamera", Camera::CameraType::FREE_FLY);
@@ -53,7 +53,7 @@ bool Light::load(const stringImpl& name) {
     _shadowCamera->setTurnSpeedFactor(0.0f);
     _shadowCamera->setFixedYawAxis(true);
 
-    if (LightManager::getInstance().addLight(*this)) {
+    if (LightManager::instance().addLight(*this)) {
         return Resource::load();
     }
 
@@ -61,7 +61,7 @@ bool Light::load(const stringImpl& name) {
 }
 
 bool Light::unload() {
-    LightManager::getInstance().removeLight(getGUID(), getLightType());
+    LightManager::instance().removeLight(getGUID(), getLightType());
 
     removeShadowMapInfo();
 

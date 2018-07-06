@@ -24,7 +24,7 @@ template <class T>
 class Singleton{
 
 public :
-	inline static T& getInstance() {
+	inline static T& instance() {
 		if (!_instance)   {
 			UpgradableReadLock ur_lock(_singletonMutex);
 			if (!_instance){ //double-checked lock

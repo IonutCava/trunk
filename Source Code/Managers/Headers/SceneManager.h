@@ -246,11 +246,11 @@ namespace Attorney {
 class SceneManagerKernel {
    private:
     static void initPostLoadState() {
-        Divide::SceneManager::getInstance().initPostLoadState();
+        Divide::SceneManager::instance().initPostLoadState();
     }
 
     static void onCameraUpdate(Camera& camera) {
-        Divide::SceneManager::getInstance().onCameraUpdate(camera);
+        Divide::SceneManager::instance().onCameraUpdate(camera);
     }
 
     friend class Divide::Kernel;
@@ -259,7 +259,7 @@ class SceneManagerKernel {
 
 /// Return a pointer to the currently active scene
 inline Scene& GET_ACTIVE_SCENE() {
-    return SceneManager::getInstance().getActiveScene();
+    return SceneManager::instance().getActiveScene();
 }
 
 /// Return a pointer to the currently active scene's scenegraph

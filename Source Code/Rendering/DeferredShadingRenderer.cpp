@@ -78,7 +78,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     _renderQuads.push_back(CreateResource<Quad3D>(mrt4));
     _renderQuads.push_back(CreateResource<Quad3D>(mrtPreviewSmall));
 
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam(_ID("rendering.enableShadows"), false);
 
@@ -88,7 +88,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
 
     updateResolution(width, height);
 
-    GUI& gui = GUI::getInstance();
+    GUI& gui = GUI::instance();
     gui.addText("PositionData",                  // Unique ID
                 vec2<I32>(60, 60),               // Position
                 Font::DIVIDE_DEFAULT,            // Font
@@ -130,7 +130,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
 void DeferredShadingRenderer::preRender() {
     Renderer::preRender();
 
-    Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
+    Light::LightList& lights = LightManager::instance().getLights(LightType::POINT);
 
     if (lights.size() != _cachedLightCount) {
         _cachedLightCount = (U16)lights.size();
@@ -214,7 +214,7 @@ void DeferredShadingRenderer::secondPass(
         GFX_DEVICE.submitCommand(cmd);
     }
 
-    GUI& gui = GUI::getInstance();
+    GUI& gui = GUI::instance();
     GUIElement* guiElement = gui.getGuiElement("FinalImage");
     if (guiElement) {
         guiElement->setVisible(_debugView);

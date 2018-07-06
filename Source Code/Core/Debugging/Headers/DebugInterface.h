@@ -92,7 +92,7 @@ protected:
 END_SINGLETON
 
 #define ADD_DEBUG_GROUP_CHILD(name, parentGUID) \
-    DebugInterface::getInstance().addDebugGroup(name, parentGUID);
+    DebugInterface::instance().addDebugGroup(name, parentGUID);
 
 #define ADD_DEBUG_GROUP(name) \
     ADD_DEBUG_GROUP_CHILD(name, -1);
@@ -104,45 +104,45 @@ END_SINGLETON
     ADD_DEBUG_GROUP(__FILE__);
 
 #define ADD_DEBUG_VAR(pointer, type, group, locked) \
-    DebugInterface::getInstance().addDebugVar(__FILE__, __LINE__, pointer, type, group, locked);
+    DebugInterface::instance().addDebugVar(__FILE__, __LINE__, pointer, type, group, locked);
 
 #define ADD_DEBUG_VAR_FILE(pointer, type, locked) \
-    ADD_DEBUG_VAR(pointer, type, DebugInterface::getInstance().getDebugGroup(__FILE__), locked);
+    ADD_DEBUG_VAR(pointer, type, DebugInterface::instance().getDebugGroup(__FILE__), locked);
 
 namespace Attorney {
     class DebugInterfaceGUI {
     private:
         static hashMapImpl<I64, DebugInterface::DebugGroup>& getDebugGroups() {
-            return DebugInterface::getInstance().getDebugGroups();
+            return DebugInterface::instance().getDebugGroups();
         }
 
         static hashMapImpl<I64, DebugInterface::DebugVar>& getDebugVariables() {
-            return DebugInterface::getInstance().getDebugVariables();
+            return DebugInterface::instance().getDebugVariables();
         }
 
         static void lockVars(bool write) {
             if (write) {
-                DebugInterface::getInstance()._varMutex.lock();
+                DebugInterface::instance()._varMutex.lock();
             } else {
-                DebugInterface::getInstance()._varMutex.lock_shared();
+                DebugInterface::instance()._varMutex.lock_shared();
             }
         }
 
         static void unlockVars() {
-            DebugInterface::getInstance()._varMutex.unlock();
+            DebugInterface::instance()._varMutex.unlock();
         }
 
         static void lockGroups(bool write) {
             if (write) {
-                DebugInterface::getInstance()._groupMutex.lock();
+                DebugInterface::instance()._groupMutex.lock();
             }
             else {
-                DebugInterface::getInstance()._groupMutex.lock_shared();
+                DebugInterface::instance()._groupMutex.lock_shared();
             }
         }
 
         static void unlockGroups() {
-            DebugInterface::getInstance()._groupMutex.unlock();
+            DebugInterface::instance()._groupMutex.unlock();
         }
 
         friend class GUI;

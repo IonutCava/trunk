@@ -103,7 +103,7 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     }
 
     Input::JoystickInterface* joyInterface = nullptr;
-    joyInterface = Input::InputInterface::getInstance().getJoystickInterface();
+    joyInterface = Input::InputInterface::instance().getJoystickInterface();
     const Input::JoystickData& joyData = joyInterface->getJoystickData(joystick);
     I32 deadZone = joyData._deadZone;
     I32 axisABS = std::min(arg.state.mAxes[axis].abs, joyData._max);

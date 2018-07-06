@@ -24,7 +24,7 @@ ErrorCode WindowManager::init(RenderAPI api,
 
     // Most runtime variables are stored in the ParamHandler, including
     // initialization settings retrieved from XML
-    SysInfo& systemInfo = Application::getInstance().sysInfo();
+    SysInfo& systemInfo = Application::instance().sysInfo();
     SDL_DisplayMode displayMode;
     SDL_GetCurrentDisplayMode(targetDisplay(), &displayMode);
     systemInfo._systemResolutionWidth = displayMode.w;
@@ -90,12 +90,12 @@ ErrorCode WindowManager::initWindow(U32 index,
 void WindowManager::setActiveWindow(U32 index) {
     index = std::min(index, to_uint(_windows.size() -1));
     _activeWindowGUID = _windows[index].getGUID();
-    SysInfo& systemInfo = Application::getInstance().sysInfo();
+    SysInfo& systemInfo = Application::instance().sysInfo();
     getWindowHandle(_windows[index].getRawWindow(), systemInfo);
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) {
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
 
     U32 windowFlags = 0;
 
@@ -163,7 +163,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::SHOWN: {
         } break;
         case WindowEvent::MINIMIZED: {
-            Application::getInstance().mainLoopPaused(true);
+            Application::instance().mainLoopPaused(true);
             getWindow(winGUID).minimized(true);
         } break;
         case WindowEvent::MAXIMIZED: {
@@ -181,7 +181,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::RESIZED_INTERNAL: {
             // Only if rendering window
             if (_activeWindowGUID == winGUID) {
-                Application::getInstance().onChangeWindowSize(to_ushort(data1), 
+                Application::instance().onChangeWindowSize(to_ushort(data1), 
                                                               to_ushort(data2));
             }
         } break;
@@ -190,7 +190,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::RESOLUTION_CHANGED: {
             // Only if rendering window
             if (_activeWindowGUID == winGUID) {
-                Application::getInstance().onChangeRenderResolution(to_ushort(data1),
+                Application::instance().onChangeRenderResolution(to_ushort(data1),
                                                                     to_ushort(data2));
             }
         } break;

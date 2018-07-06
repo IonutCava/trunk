@@ -145,7 +145,7 @@ END_SINGLETON
 /// The following functions force a timer update 
 /// (a call to query performance timer).
 inline U64 ElapsedMicroseconds(bool forceUpdate = false) {
-    return ApplicationTimer::getInstance().getElapsedTime(forceUpdate);
+    return ApplicationTimer::instance().getElapsedTime(forceUpdate);
 }
 
 inline D32 ElapsedMilliseconds(bool forceUpdate = false) {

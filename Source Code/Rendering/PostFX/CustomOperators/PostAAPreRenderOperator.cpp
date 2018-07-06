@@ -31,7 +31,7 @@ PostAAPreRenderOperator::~PostAAPreRenderOperator() {
 }
 
 void PostAAPreRenderOperator::idle() {
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     I32 samples= par.getParam<I32>(_ID("rendering.PostAASamples"), 0);
     if (_postAASamples != samples) {
         _postAASamples = samples;

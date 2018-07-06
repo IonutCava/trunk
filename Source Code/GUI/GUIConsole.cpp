@@ -50,7 +50,7 @@ void GUIConsole::CreateCEGUIWindow() {
     }
     // load the console Window from the layout file
     const stringImpl& layoutFile =
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("GUI.consoleLayout"));
+        ParamHandler::instance().getParam<stringImpl>(_ID("GUI.consoleLayout"));
     _consoleWindow =
         CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile);
 
@@ -190,7 +190,7 @@ void GUIConsole::OutputText(const char* inMsg, const bool error) {
 }
 
 void GUIConsole::update(const U64 deltaTime) {
-    if (!_init || !Application::getInstance().isMainThread() || _closing) {
+    if (!_init || !Application::instance().isMainThread() || _closing) {
         return;
     }
     if (!isVisible()) {

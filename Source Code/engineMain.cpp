@@ -15,10 +15,10 @@ int engineMain(int argc, char** argv) {
 
         // Initialize our application based on XML configuration. Error codes are
         // always less than 0
-        returnCode = Application::getInstance().initialize("main.xml", argc, argv);
+        returnCode = Application::instance().initialize("main.xml", argc, argv);
 
         if (returnCode == ErrorCode::NO_ERR) {
-            Application::getInstance().run();
+            Application::instance().run();
         } else {
             // If any error occurred, close the application as details should
             // already be logged

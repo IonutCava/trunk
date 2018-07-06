@@ -100,7 +100,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
                        const vec2<U32>& position, const vec2<U32>& extent);
     /// Get a pointer to our console window
     inline GUIConsole* const getConsole() { return _console; }
-    inline const GUIEditor& getEditor() { return GUIEditor::getInstance(); }
+    inline const GUIEditor& getEditor() { return GUIEditor::instance(); }
     /// Get a const pointer to an element by name/id
     inline GUIElement* const getItem(const stringImpl& id) { return _guiStack[_ID_RT(id)]; }
     /// Get a pointer to an element by name/id

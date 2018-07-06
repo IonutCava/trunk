@@ -25,7 +25,7 @@ PhysXSceneInterface::PhysXSceneInterface(Scene* parentScene)
 PhysXSceneInterface::~PhysXSceneInterface() { release(); }
 
 bool PhysXSceneInterface::init() {
-    physx::PxPhysics* gPhysicsSDK = PhysX::getInstance().getSDK();
+    physx::PxPhysics* gPhysicsSDK = PhysX::instance().getSDK();
     // Create the scene
     if (!gPhysicsSDK) {
         Console::errorfn(Locale::get(_ID("ERROR_PHYSX_SDK")));

@@ -87,6 +87,7 @@ class ParticleEmitter : public SceneNode {
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+    void postUpdate();
    private:
     vec3<F32> _camUp, _camRight;
     std::shared_ptr<ParticleData> _particles;

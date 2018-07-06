@@ -652,7 +652,7 @@ namespace Attorney {
         static void drawText(const TextLabel& text,
                              U32 stateHash,
                              const vec2<F32>& position) {
-            return GFXDevice::getInstance().drawText(text, stateHash, position);
+            return GFXDevice::instance().drawText(text, stateHash, position);
         }
 
         friend class Divide::GUI;
@@ -662,7 +662,7 @@ namespace Attorney {
     class GFXDeviceRenderStateBlock {
     private:
         static bool registerStateBlock(const RenderStateBlock& block) {
-            return GFXDevice::getInstance().registerRenderStateBlock(block);
+            return GFXDevice::instance().registerRenderStateBlock(block);
         }
 
         friend class Divide::RenderStateBlock;
@@ -671,23 +671,23 @@ namespace Attorney {
     class GFXDeviceKernel {
     private:
         static void onCameraUpdate(Camera& camera) {
-            GFXDevice::getInstance().onCameraUpdate(camera);
+            GFXDevice::instance().onCameraUpdate(camera);
         }
 
         static void flushDisplay() {
-            GFXDevice::getInstance().flushDisplay();
+            GFXDevice::instance().flushDisplay();
         }
 
         static void flushAnaglyph() {
-            GFXDevice::getInstance().flushAnaglyph();
+            GFXDevice::instance().flushAnaglyph();
         }
 
         static void onChangeWindowSize(U16 w, U16 h) {
-            GFXDevice::getInstance().setBaseViewport(vec4<I32>(0, 0, w, h));
+            GFXDevice::instance().setBaseViewport(vec4<I32>(0, 0, w, h));
         }
 
         static void onChangeRenderResolution(U16 w, U16 h) {
-            GFXDevice::getInstance().onChangeResolution(w, h);
+            GFXDevice::instance().onChangeResolution(w, h);
         }
 
         friend class Divide::Kernel;
@@ -696,7 +696,7 @@ namespace Attorney {
     class GFXDeviceRenderer {
         private:
         static void uploadGPUBlock() {
-            GFXDevice::getInstance().uploadGPUBlock();
+            GFXDevice::instance().uploadGPUBlock();
         }
         friend class Divide::Renderer;
     };

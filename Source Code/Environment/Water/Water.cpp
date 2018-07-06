@@ -21,7 +21,7 @@ WaterPlane::WaterPlane()
       _dirty(true),
       _paramsDirty(true),
       _cameraUnderWater(false),
-      _cameraMgr(Application::getInstance().kernel().getCameraMgr()) {
+      _cameraMgr(Application::instance().kernel().getCameraMgr()) {
     // Set water plane to be single-sided
     P32 quadMask;
     quadMask.i = 0;

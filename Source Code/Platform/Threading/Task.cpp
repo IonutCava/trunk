@@ -106,7 +106,7 @@ void Task::run() {
         Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
     }
 
-    if (!Application::getInstance().ShutdownRequested()) {
+    if (!Application::instance().ShutdownRequested()) {
 
         if (_callback) {
             _callback(_stopRequested);

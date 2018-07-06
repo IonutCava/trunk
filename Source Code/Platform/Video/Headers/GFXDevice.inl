@@ -34,9 +34,9 @@
 
 namespace Divide {
 
-#define GFX_DEVICE GFXDevice::getInstance()
+#define GFX_DEVICE GFXDevice::instance()
 #define GFX_RENDER_BIN_SIZE \
-    RenderPassManager::getInstance().getLastTotalBinSize(RenderStage::DISPLAY)
+    RenderPassManager::instance().getLastTotalBinSize(RenderStage::DISPLAY)
 #define GFX_HIZ_CULL_COUNT \
     GFX_DEVICE.getLastCullCount()
 

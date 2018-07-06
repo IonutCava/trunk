@@ -18,7 +18,7 @@ void GFXDevice::previewDepthBuffer() {
 // As this is touched once per frame, we'll only enable it in debug builds
 #ifdef _DEBUG
     // Early out if we didn't request the preview
-    if (!ParamHandler::getInstance().getParam<bool>(
+    if (!ParamHandler::instance().getParam<bool>(
         _ID("rendering.previewDepthBuffer"), false)) {
         return;
     }

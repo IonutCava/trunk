@@ -9,6 +9,6 @@ int main() {
     std::cout.rdbuf(stdConsole.rdbuf());
 
     stringImpl address("127.0.0.1");
-    Divide::Server::getInstance().init(((Divide::U16)443), address, true);
+    Divide::Server::instance().init(((Divide::U16)443), address, true);
     return 0;
 }

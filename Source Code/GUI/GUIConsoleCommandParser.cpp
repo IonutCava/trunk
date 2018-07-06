@@ -103,7 +103,7 @@ void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args) {
         Console::printfn(Locale::get(_ID("CONSOLE_QUIT_COMMAND_ARGUMENT")),
                          args.c_str());
     }
-    Application::getInstance().RequestShutdown();
+    Application::instance().RequestShutdown();
 }
 
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {
@@ -125,7 +125,7 @@ void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
-    if (ParamHandler::getInstance().isParam<stringImpl>(args.c_str())) {
+    if (ParamHandler::instance().isParam<stringImpl>(args.c_str())) {
         Console::printfn(Locale::get(_ID("CONSOLE_EDITPARAM_FOUND")), args.c_str(),
                          "N/A", "N/A", "N/A");
     } else {
@@ -135,7 +135,7 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
     stringImpl filename =
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) +
+        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/" + args;
     std::ifstream soundfile(filename);
     if (soundfile) {
@@ -156,11 +156,11 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
         _sound = CreateResource<AudioDescriptor>(sound);
         if (filename.find("music") != stringImpl::npos) {
             // play music
-            SFXDevice::getInstance().playMusic(_sound);
+            SFXDevice::instance().playMusic(_sound);
         } else {
             // play sound but stop music first if it's playing
-            SFXDevice::getInstance().stopMusic();
-            SFXDevice::getInstance().playSound(_sound);
+            SFXDevice::instance().stopMusic();
+            SFXDevice::instance().playSound(_sound);
         }
     } else {
         Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FILE")),
@@ -178,7 +178,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     }
     // Check if we already have a NavMesh created
     AI::Navigation::NavigationMesh* temp =
-        AI::AIManager::getInstance().getNavMesh(
+        AI::AIManager::instance().getNavMesh(
             AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
     if (!temp) {
@@ -198,14 +198,14 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     }
     // If we loaded/built the NavMesh correctly, add it to the AIManager
     if (loaded) {
-        AI::AIManager::getInstance().addNavMesh(
+        AI::AIManager::instance().addNavMesh(
             AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL, temp);
     }
 }
 
 void GUIConsoleCommandParser::handleShaderRecompileCommand(
     const stringImpl& args) {
-    ShaderManager::getInstance().recompileShaderProgram(args);
+    ShaderManager::instance().recompileShaderProgram(args);
 }
 
 void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
@@ -216,7 +216,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
     I32 FoV = (atoi(args.c_str()));
     CLAMP<I32>(FoV, 40, 140);
 
-    Application::getInstance()
+    Application::instance()
         .kernel()
         .getCameraMgr()
         .getActiveCamera()
@@ -236,7 +236,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
         scale = to_float(atof(args2.c_str()));
     }
     stringImpl assetLocation(
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
+        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
 
     FileData model;
     model.ItemName = args1 + "_console" + args;

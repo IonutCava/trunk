@@ -18,7 +18,7 @@ SceneRenderState::SceneRenderState()
 
 {
     _gizmoState = GizmoState::NO_GIZMO;
-    _cameraMgr = &Application::getInstance().kernel().getCameraMgr();
+    _cameraMgr = &Application::instance().kernel().getCameraMgr();
 }
 
 void SceneRenderState::toggleSkeletons() {

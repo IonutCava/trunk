@@ -67,7 +67,7 @@ bool GUIEditor::init() {
         CEGUI::WindowManager::getSingletonPtr();
     // load the editor Window from the layout file
     const stringImpl &layoutFile =
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("GUI.editorLayout"));
+        ParamHandler::instance().getParam<stringImpl>(_ID("GUI.editorLayout"));
     _editorWindow = pWindowManager->loadLayoutFromFile(layoutFile.c_str());
 
     if (_editorWindow) {
@@ -167,7 +167,7 @@ void GUIEditor::UpdateControls() {
         toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_SKELETONS)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)
-            ->setEnabled(LightManager::getInstance().shadowMappingEnabled());
+            ->setEnabled(LightManager::instance().shadowMappingEnabled());
     }
 
     if (!hasValidTransform) {
@@ -217,7 +217,7 @@ void GUIEditor::UpdateControls() {
     toggleButton(ToggleButtons::TOGGLE_POST_FX)
         ->setEnabled(false);
     toggleButton(ToggleButtons::TOGGLE_FOG)
-        ->setSelected(ParamHandler::getInstance().getParam<bool>(
+        ->setSelected(ParamHandler::instance().getParam<bool>(
             _ID("rendering.enableFog"), false));
 
     toggleButton(ToggleButtons::TOGGLE_DEPTH_PREVIEW)
@@ -240,10 +240,10 @@ bool GUIEditor::update(const U64 deltaTime) {
         state = false;
         // Check if we already have a NavMesh created
         AI::Navigation::NavigationMesh *temp =
-            AI::AIManager::getInstance().getNavMesh(
+            AI::AIManager::instance().getNavMesh(
                 AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
         // Check debug rendering status
-        AI::AIManager::getInstance().toggleNavMeshDebugDraw(
+        AI::AIManager::instance().toggleNavMeshDebugDraw(
             toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
         // Create a new NavMesh if we don't currently have one
         if (!temp) {
@@ -263,7 +263,7 @@ bool GUIEditor::update(const U64 deltaTime) {
         }
         // If we loaded/built the NavMesh correctly, add it to the AIManager
         if (loaded) {
-            state = AI::AIManager::getInstance().addNavMesh(
+            state = AI::AIManager::instance().addNavMesh(
                 AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL, temp);
         }
 
@@ -934,7 +934,7 @@ bool GUIEditor::Handle_EditFieldClick(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_CreateNavMesh(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: NavMesh creation queued!");
-    GUI::getInstance().getConsole()->setVisible(true);
+    GUI::instance().getConsole()->setVisible(true);
     _createNavMeshQueued = true;
     return true;
 }
@@ -1005,7 +1005,7 @@ bool GUIEditor::Handle_FogToggle(const CEGUI::EventArgs &e) {
         Console::d_printfn("[Editor]: Fog disabled!");
     }
 
-    ParamHandler::getInstance().setParam(
+    ParamHandler::instance().setParam(
         _ID("rendering.enableFog"),
         toggleButton(ToggleButtons::TOGGLE_FOG)->isSelected());
 
@@ -1043,7 +1043,7 @@ bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: NavMesh rendering disabled!");
     }
-    AI::AIManager::getInstance().toggleNavMeshDebugDraw(
+    AI::AIManager::instance().toggleNavMeshDebugDraw(
         toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
     return true;
 }

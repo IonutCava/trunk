@@ -9,7 +9,7 @@ namespace Divide {
 template <>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
                                           const stringImpl& name) {
-    ParamHandler& param = ParamHandler::getInstance();
+    ParamHandler& param = ParamHandler::instance();
 
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);

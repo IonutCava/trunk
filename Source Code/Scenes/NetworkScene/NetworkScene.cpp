@@ -10,7 +10,7 @@ namespace Divide {
 REGISTER_SCENE(NetworkScene);
 
 void NetworkScene::preRender() {
-    Light* light = LightManager::getInstance().getLight(0, LightType::DIRECTIONAL);
+    Light* light = LightManager::instance().getLight(0, LightType::DIRECTIONAL);
     vec4<F32> vSunColor = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
                                vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
                                0.25f + cosf(_sunAngle.y) * 0.75f);
@@ -28,7 +28,7 @@ void NetworkScene::processGUI(const U64 deltaTime) {
     D32 ServerPing = Time::SecondsToMilliseconds(1.0);
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay",
-                         Util::StringFormat("FPS: %5.2f", Time::ApplicationTimer::getInstance().getFps()));
+                         Util::StringFormat("FPS: %5.2f", Time::ApplicationTimer::instance().getFps()));
         _guiTimers[0] = 0.0;
     }
 
@@ -61,11 +61,11 @@ void NetworkScene::checkPatches() {
         p << (*_iter).ModelName;
         p << (*_iter).version;
     }*/
-    ASIOImpl::getInstance().sendPacket(p);
+    ASIOImpl::instance().sendPacket(p);
 }
 
 bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
-    ASIOImpl::getInstance().init(
+    ASIOImpl::instance().init(
         _paramHandler.getParam<stringImpl>(_ID("serverAddress")).c_str(), "443");
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
@@ -81,19 +81,19 @@ bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
 void NetworkScene::test() {
     WorldPacket p(OPCodesEx::CMSG_PING);
     p << Time::ElapsedMilliseconds();
-    ASIOImpl::getInstance().sendPacket(p);
+    ASIOImpl::instance().sendPacket(p);
 }
 
 void NetworkScene::connect() {
     _GUI->modifyText("statusText", "Connecting to server ...");
-    ASIOImpl::getInstance().connect(_paramHandler.getParam<stringImpl>(_ID("serverAddress")), "443");
+    ASIOImpl::instance().connect(_paramHandler.getParam<stringImpl>(_ID("serverAddress")), "443");
 }
 
 void NetworkScene::disconnect() {
-    if (!ASIOImpl::getInstance().isConnected()) {
+    if (!ASIOImpl::instance().isConnected()) {
         _GUI->modifyText("statusText", "Disconnecting to server ...");
     }
-    ASIOImpl::getInstance().disconnect();
+    ASIOImpl::instance().disconnect();
 }
 
 bool NetworkScene::loadResources(bool continueOnErrors) {
@@ -103,7 +103,7 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
     const vec2<U16>& resolution
-        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
+        = Application::instance().windowManager().getActiveWindow().getDimensions();
 
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position

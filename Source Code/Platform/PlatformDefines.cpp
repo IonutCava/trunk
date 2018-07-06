@@ -41,7 +41,7 @@ bool preAssert(const bool expression, const char* failMessage) {
     }
     /// Message boxes without continue on assert don't render!
     if (Config::Assert::SHOW_MESSAGE_BOX && Config::Assert::CONTINUE_ON_ASSERT) {
-        GUIMessageBox* const msgBox = GUI::getInstance().getDefaultMessageBox();
+        GUIMessageBox* const msgBox = GUI::instance().getDefaultMessageBox();
         if (msgBox) {
             msgBox->setTitle("Assertion Failed!");
             msgBox->setMessage(stringImpl("Assert: ") + failMessage);

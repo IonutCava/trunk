@@ -65,7 +65,7 @@ glShader::glShader(GFXDevice& context,
     };
 
     if (shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)].empty()) {
-        ParamHandler& par = ParamHandler::getInstance();
+        ParamHandler& par = ParamHandler::instance();
         stringImpl locPrefix = par.getParam<stringImpl>(_ID("assetsLocation"), "assets") +
                                "/" +
                                par.getParam<stringImpl>(_ID("shaderLocation"), "shaders") +
@@ -103,7 +103,7 @@ bool glShader::load(const stringImpl& source) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-        ShaderManager::getInstance().shaderFileWrite(Shader::CACHE_LOCATION_TEXT + getName(), src);
+        ShaderManager::instance().shaderFileWrite(Shader::CACHE_LOCATION_TEXT + getName(), src);
     }
 
     return true;
@@ -155,7 +155,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
 
     stringImpl output, line;
     stringImpl include_file, include_string;
-    ShaderManager& sMgr = ShaderManager::getInstance();
+    ShaderManager& sMgr = ShaderManager::instance();
 
     std::istringstream input(source);
     while (std::getline(input, line)) {

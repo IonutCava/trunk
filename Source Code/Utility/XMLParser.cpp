@@ -206,7 +206,7 @@ inline stringImpl getRendererTypeName(RendererType type) {
 }
 
 stringImpl loadScripts(const stringImpl &file) {
-    ParamHandler &par = ParamHandler::getInstance();
+    ParamHandler &par = ParamHandler::instance();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
     read_xml(file, pt);
     stringImpl activeScene("MainScene");
@@ -229,7 +229,7 @@ stringImpl loadScripts(const stringImpl &file) {
 }
 
 void loadConfig(const stringImpl &file) {
-    ParamHandler &par = ParamHandler::getInstance();
+    ParamHandler &par = ParamHandler::instance();
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), file.c_str());
     read_xml(file, pt);
@@ -314,7 +314,7 @@ void loadConfig(const stringImpl &file) {
 }
 
 void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
-    ParamHandler &par = ParamHandler::getInstance();
+    ParamHandler &par = ParamHandler::instance();
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
     stringImpl sceneLocation(
@@ -421,7 +421,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
     ptree::iterator itTerrain;
     ptree::iterator itTexture;
     stringImpl assetLocation(
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) +
+        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/");
 
     for (itTerrain = std::begin(pt.get_child("terrainList"));
@@ -589,7 +589,7 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     read_xml(file, pt);
     ptree::iterator it;
     stringImpl assetLocation =
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) +
+        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/";
 
     if (boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
@@ -827,7 +827,7 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
 }
 
 Material *loadMaterial(const stringImpl &file) {
-    ParamHandler &par = ParamHandler::getInstance();
+    ParamHandler &par = ParamHandler::instance();
     stringImpl location = par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
                           par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
                           par.getParam<stringImpl>(_ID("currentScene")) +
@@ -840,7 +840,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     stringImpl materialFile(matName);
     if (rendererDependent) {
         materialFile +=
-            "-" + getRendererTypeName(SceneManager::getInstance().getRenderer().getType()) +
+            "-" + getRendererTypeName(SceneManager::instance().getRenderer().getType()) +
             ".xml";
     } else {
         materialFile += ".xml";
@@ -943,7 +943,7 @@ void dumpMaterial(Material &mat) {
     }
 
     ptree pt_writer;
-    ParamHandler &par = ParamHandler::getInstance();
+    ParamHandler &par = ParamHandler::instance();
     stringImpl file(mat.getName());
     file = file.substr(file.rfind("/") + 1, file.length());
 
@@ -954,7 +954,7 @@ void dumpMaterial(Material &mat) {
 
     stringImpl fileLocation(
         location + file + "-" +
-        getRendererTypeName(SceneManager::getInstance().getRenderer().getType()) + ".xml");
+        getRendererTypeName(SceneManager::instance().getRenderer().getType()) + ".xml");
     pt_writer.clear();
     pt_writer.put("material.name", file);
     pt_writer.put("material.diffuse.<xmlattr>.r",

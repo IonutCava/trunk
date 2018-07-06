@@ -54,13 +54,13 @@ ErrorCode GL_API::destroyGLContext() {
 /// Try and create a valid OpenGL context taking in account the specified
 /// resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
 
     // Fill our (abstract API <-> openGL) enum translation tables with proper
     // values
     GLUtil::fillEnumTables();
 
-    const DisplayWindow& window = Application::getInstance().windowManager().getActiveWindow();
+    const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
     ErrorCode errorState = createGLContext(window);
     if (errorState != ErrorCode::NO_ERR) {
         return errorState;
@@ -295,7 +295,7 @@ void GL_API::closeRenderingAPI() {
 void GL_API::threadedLoadCallback() {
     glbinding::ContextHandle glCtx = glbinding::getCurrentContext();
     if (glCtx == 0) {
-        const DisplayWindow& window = Application::getInstance().windowManager().getActiveWindow();
+        const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
         SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glSecondaryContexts.front());
         glbinding::Binding::initialize(false);
     // Enable OpenGL debug callbacks for this context as well

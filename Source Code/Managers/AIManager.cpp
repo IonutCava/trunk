@@ -49,7 +49,7 @@ void AIManager::Destroy() {
 
 void AIManager::update() {
     static const U64 updateFreq = Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY);
-    _previousTime = Time::ApplicationTimer::getInstance().getElapsedTime(true);
+    _previousTime = Time::ApplicationTimer::instance().getElapsedTime(true);
     _running = true;
 
     while(true) {
@@ -57,7 +57,7 @@ void AIManager::update() {
             break;
         }
 
-        _currentTime = Time::ApplicationTimer::getInstance().getElapsedTime(true);
+        _currentTime = Time::ApplicationTimer::instance().getElapsedTime(true);
         if (_currentTime >= _previousTime + updateFreq) {
 
             /// Lock the entities during update() adding or deleting entities is
@@ -81,7 +81,7 @@ void AIManager::update() {
                 _updating = false;
             }
 
-            _previousTime = Time::ApplicationTimer::getInstance().getElapsedTime(true);
+            _previousTime = Time::ApplicationTimer::instance().getElapsedTime(true);
 
             if (Config::AI_THREAD_UPDATE_FREQUENCY > Config::MIN_SLEEP_THRESHOLD_MS) {
                 //ToDo: this needs adjustment to account for AI execution time

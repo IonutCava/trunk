@@ -117,7 +117,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState) {
     applyFrustumSplits();
 
     /*const RenderPassCuller::VisibleNodeList& nodes = 
-        SceneManager::getInstance().cullSceneGraph(RenderStage::SHADOW);
+        SceneManager::instance().cullSceneGraph(RenderStage::SHADOW);
 
     _previousFrustumBB.reset();
     for (SceneGraphNode_wptr node_wptr : nodes) {
@@ -134,7 +134,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState) {
 
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     getDepthMap()->begin(*_renderPolicy);
-        SceneManager::getInstance().renderVisibleNodes(RenderStage::SHADOW, true);
+        SceneManager::instance().renderVisibleNodes(RenderStage::SHADOW, true);
     getDepthMap()->end();
     renderState.getCameraMgr().popActiveCamera();
 

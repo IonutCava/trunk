@@ -20,6 +20,8 @@ namespace {
     static const U32 g_particleGeometryBuffer = 0;
     static const U32 g_particlePositionBuffer = 1;
     static const U32 g_particleColorBuffer = 2;
+
+    static const bool g_usePersistentlyMappedBuffers = true;
 };
 
 ParticleEmitter::ParticleEmitter()
@@ -45,7 +47,8 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
                   "ParticleEmitter::initData error: Double initData detected!");
 
-    _particleGPUBuffer = GFX_DEVICE.newGVD(true, g_particleBufferSizeFactor);
+    _particleGPUBuffer = GFX_DEVICE.newGVD(g_usePersistentlyMappedBuffers,
+                                           g_particleBufferSizeFactor);
     _particleGPUBuffer->create(3);
 
     static F32 particleQuad[] = {
@@ -55,7 +58,14 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
          0.5f,  0.5f, 0.0f,
     };
 
-    _particleGPUBuffer->setBuffer(g_particleGeometryBuffer, 4, 3 * sizeof(F32), false, particleQuad, false, false, true);
+    _particleGPUBuffer->setBuffer(g_particleGeometryBuffer,
+                                  4,
+                                  3 * sizeof(F32),
+                                  false,
+                                  particleQuad,
+                                  false,
+                                  false,
+                                  g_usePersistentlyMappedBuffers);
     GenericVertexData::AttributeDescriptor& descriptor = 
         _particleGPUBuffer->getDrawAttribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
 
@@ -102,8 +112,22 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     U32 particleCount = _particles->totalCount();
 
-    _particleGPUBuffer->setBuffer(g_particlePositionBuffer, particleCount, 4 * sizeof(F32), true, NULL, true, true, true);
-    _particleGPUBuffer->setBuffer(g_particleColorBuffer, particleCount, 4 * sizeof(U8), true, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(g_particlePositionBuffer,
+                                  particleCount,
+                                  4 * sizeof(F32),
+                                  true,
+                                  NULL,
+                                  true,
+                                  true,
+                                  g_usePersistentlyMappedBuffers);
+    _particleGPUBuffer->setBuffer(g_particleColorBuffer,
+                                  particleCount,
+                                  4 * sizeof(U8),
+                                  true,
+                                  NULL,
+                                  true,
+                                  true,
+                                  g_usePersistentlyMappedBuffers);
 
     _particleGPUBuffer->getDrawAttribDescriptor(positionAttribLocation)
         .set(g_particlePositionBuffer, 1, 4, false, 0, GFXDataFormat::FLOAT_32);
@@ -128,8 +152,8 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
         ResourceDescriptor texture(_particles->_textureFileName);
 
         texture.setResourceLocation(
-            ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) + "/" +
-            ParamHandler::getInstance().getParam<stringImpl>(_ID("defaultTextureLocation")) + "/" +
+            ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/" +
+            ParamHandler::instance().getParam<stringImpl>(_ID("defaultTextureLocation")) + "/" +
             _particles->_textureFileName);
 
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
@@ -238,6 +262,13 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     return _enabled &&  getAliveParticleCount() > 0;
 }
 
+void ParticleEmitter::postUpdate() {
+    U32 aliveCount = to_uint(_particles->_renderingPositions.size());
+    _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
+    _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
+    _particleGPUBuffer->incQueue();
+}
+
 /// Pre-process particles
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
@@ -286,18 +317,11 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
 
         // const vec3<F32>& origin = transform->getPosition();
         // const Quaternion<F32>& orientation = transform->getOrientation();
-
+       
         CreateTask(
-            [this](const std::atomic_bool& stopRequested) {
+            [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
                 // invalidateCache means that the existing particle data is no longer partially sorted
                 _particles->sort(true);
-            },
-            [this, averageEmitRate]()
-            {
-                U32 aliveCount = to_uint(_particles->_renderingPositions.size());
-                _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
-                _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
-                _particleGPUBuffer->incQueue();
 
                 _boundingBox.reset();
 
@@ -305,6 +329,15 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                     _boundingBox.add(_particles->_position[i]);
                 }
 
+                //if (g_usePersistentlyMappedBuffers) {
+                //    postUpdate();
+                //}
+            },
+            [this]()
+            {
+                //if (!g_usePersistentlyMappedBuffers) {
+                    postUpdate();
+                //}
                 _updating = false;
             })._task->startTask(Task::TaskPriority::HIGH);
     }

@@ -27,7 +27,7 @@ ProfileTimer::ProfileTimer() {
 
 ProfileTimer::~ProfileTimer()
 {
-    ApplicationTimer::getInstance().removeTimer(this);
+    ApplicationTimer::instance().removeTimer(this);
 }
 
 void ProfileTimer::reset() {
@@ -40,7 +40,7 @@ void ProfileTimer::reset() {
 void ProfileTimer::start() {
 #if defined(_DEBUG) || defined(_PROFILE)
     _timer = Time::MicrosecondsToMilliseconds<D32>(
-        ApplicationTimer::getInstance().getElapsedTime(true));
+        ApplicationTimer::instance().getElapsedTime(true));
 #endif
 }
 
@@ -52,7 +52,7 @@ void ProfileTimer::stop() {
     }
 
     _timer = Time::MicrosecondsToMilliseconds<D32>(
-                 ApplicationTimer::getInstance().getElapsedTime(true)) -
+                 ApplicationTimer::instance().getElapsedTime(true)) -
              _timer;
     _timerAverage = _timerAverage + _timer;
     _timerCounter++;
@@ -67,7 +67,7 @@ void ProfileTimer::create(const stringImpl& name) {
     _name = name;
     _init = true;
     // should never be called twice for the same object
-    ApplicationTimer::getInstance().addTimer(this);
+    ApplicationTimer::instance().addTimer(this);
 }
 
 void ProfileTimer::print() const {

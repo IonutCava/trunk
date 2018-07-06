@@ -78,7 +78,7 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
     U32 idx = 0;
     for (RenderStage stageFlag : _stageFlags) {
         preRender(renderState, anaglyph, idx);
-        Renderer& renderer = SceneManager::getInstance().getRenderer();
+        Renderer& renderer = SceneManager::instance().getRenderer();
 
         bool refreshNodeData = idx == 0;
 
@@ -88,18 +88,18 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
             case RenderStage::DISPLAY: {
                 renderer.render(
                     [stageFlag, refreshNodeData]() {
-                        SceneManager::getInstance().renderVisibleNodes(stageFlag, refreshNodeData);
+                        SceneManager::instance().renderVisibleNodes(stageFlag, refreshNodeData);
                     },
                     renderState);
             } break;
             case RenderStage::SHADOW: {
-                LightManager::getInstance().generateShadowMaps();
+                LightManager::instance().generateShadowMaps();
             } break;
             case RenderStage::REFLECTION: {
                 const vec2<F32>& zPlanes= renderState.getCameraConst().getZPlanes();
                 // Get list of reflective nodes from the scene manager
                 const RenderPassCuller::VisibleNodeList& nodeCache = 
-                    SceneManager::getInstance().getSortedReflectiveNodes();
+                    SceneManager::instance().getSortedReflectiveNodes();
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
@@ -138,7 +138,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
     bool bindShadowMaps = false;
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY: {
-            RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
+            RenderQueue& renderQueue = RenderPassManager::instance().getQueue();
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
             if (Config::USE_HIZ_CULLING) {
@@ -160,7 +160,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
     };
     
     if (bindShadowMaps) {
-        LightManager::getInstance().bindShadowMaps();
+        LightManager::instance().bindShadowMaps();
     }
 
     return true;
@@ -169,10 +169,10 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
 bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pass) {
     GFXDevice& GFX = GFX_DEVICE;
 
-    RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
+    RenderQueue& renderQueue = RenderPassManager::instance().getQueue();
     renderQueue.postRender(renderState, _stageFlags[pass]);
 
-    Attorney::SceneRenderPass::debugDraw(SceneManager::getInstance().getActiveScene(), _stageFlags[pass]);
+    Attorney::SceneRenderPass::debugDraw(SceneManager::instance().getActiveScene(), _stageFlags[pass]);
 
     GFXDevice::RenderTargetID target = anaglyph ? GFXDevice::RenderTargetID::ANAGLYPH
                                                 : GFXDevice::RenderTargetID::SCREEN;
@@ -184,9 +184,9 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
 
             if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {
                 GFX.constructHIZ();
-                LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(),
+                LightManager::instance().updateAndUploadLightData(renderState.getCameraConst().getEye(),
                                                                      GFX.getMatrix(MATRIX::VIEW));
-                SceneManager::getInstance().getRenderer().preRender();
+                SceneManager::instance().getRenderer().preRender();
                 renderTarget.cacheSettings();
             } else {
                 if (_useZPrePass) {

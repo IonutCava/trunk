@@ -75,7 +75,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
 
 END_SINGLETON
 
-#define SFX_DEVICE SFXDevice::getInstance()
+#define SFX_DEVICE SFXDevice::instance()
 
 };  // namespace Divide
 

@@ -290,7 +290,7 @@ void glShaderProgram::link() {
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
 bool glShaderProgram::load() {
-    ShaderManager& shaderMgr = ShaderManager::getInstance();
+    ShaderManager& shaderMgr = ShaderManager::instance();
 
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine

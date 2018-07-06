@@ -28,8 +28,8 @@ void PhysXScene::processGUI(const U64 deltaTime) {
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                            Time::ApplicationTimer::getInstance().getFps(),
-                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFps(),
+                                            Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText("RenderBinCount",
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
@@ -79,8 +79,8 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     };
     _input->addKeyMapping(Input::KeyCode::KC_4, cbks);
     cbks.second = []() {
-        ParamHandler::getInstance().setParam(_ID("simSpeed"),
-            IS_ZERO(ParamHandler::getInstance().getParam<F32>(_ID("simSpeed")))
+        ParamHandler::instance().setParam(_ID("simSpeed"),
+            IS_ZERO(ParamHandler::instance().getParam<F32>(_ID("simSpeed")))
                 ? 1.0f
                 : 0.0f);
         PHYSICS_DEVICE.updateTimeStep();
@@ -106,8 +106,8 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
     renderState().getCamera().setRotation(-45 /*yaw*/, 10 /*pitch*/);
     renderState().getCamera().setEye(vec3<F32>(0, 30, -40));
     renderState().getCamera().setFixedYawAxis(true);
-    ParamHandler::getInstance().setParam(_ID("rendering.enableFog"), false);
-    ParamHandler::getInstance().setParam(_ID("postProcessing.bloomFactor"), 0.1f);
+    ParamHandler::instance().setParam(_ID("rendering.enableFog"), false);
+    ParamHandler::instance().setParam(_ID("postProcessing.bloomFactor"), 0.1f);
     return true;
 }
 

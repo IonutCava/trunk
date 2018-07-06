@@ -17,7 +17,7 @@ bool init(const stringImpl& newLanguage) {
     stringImpl file = "localisation/" + g_localeFile + ".ini";
 
     if (g_languageFile.LoadFile(file.c_str()) != SI_OK) {
-        Application::getInstance().throwError(ErrorCode::NO_LANGUAGE_INI);
+        Application::instance().throwError(ErrorCode::NO_LANGUAGE_INI);
         return false;
     }
 

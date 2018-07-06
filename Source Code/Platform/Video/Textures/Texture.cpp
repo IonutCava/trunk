@@ -117,7 +117,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     if (!img.data()) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
         // Missing texture fallback.
-        ParamHandler& par = ParamHandler::getInstance();
+        ParamHandler& par = ParamHandler::instance();
         img.flip(false);
         // missing_texture.jpg must be something that really stands out
         ImageTools::ImageDataInterface::CreateImageData(

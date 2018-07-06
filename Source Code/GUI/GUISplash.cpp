@@ -23,7 +23,7 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
     stringImpl splashImageLocation = 
         Util::StringFormat("%s/misc_images/%s",
-                           ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")).c_str(),
+                           ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str(),
                            splashImageName.c_str());
     splashImage.setResourceLocation(splashImageLocation);
     splashImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));

@@ -61,7 +61,7 @@ class ImplResourceLoader : public ResourceLoader {
 
     bool load(ResourceType* const res, const stringImpl& name) {
         res->setState(ResourceState::RES_LOADING);
-        return ResourceCache::getInstance().load(res, name);
+        return ResourceCache::instance().load(res, name);
     }
 };
 

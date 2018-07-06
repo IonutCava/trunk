@@ -29,8 +29,8 @@ void PingPongScene::processGUI(const U64 deltaTime) {
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                            Time::ApplicationTimer::getInstance().getFps(),
-                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFps(),
+                                            Time::ApplicationTimer::instance().getFrameTime()));
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -325,7 +325,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     light->setPosition(vec3<F32>(0, 6, 2));
     */
     const vec2<U16>& resolution
-        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
+        = Application::instance().windowManager().getActiveWindow().getDimensions();
     // Buttons and text labels
     _GUI->addButton("Serve", "Serve",
                     vec2<I32>(to_int(resolution.width - 120),

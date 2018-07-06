@@ -45,7 +45,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     }
 
     for (GFXDevice::RenderPackage& pkg : _renderData) {
-        pkg._textureData.reserve(ParamHandler::getInstance().getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
+        pkg._textureData.reserve(ParamHandler::instance().getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
     }
 
     // Prepare it for rendering lines
@@ -514,7 +514,7 @@ U32 RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     I32 variant = 0;
 
     if (shadowStage) {
-        LightType type = LightManager::getInstance().currentShadowCastingLight()->getLightType();
+        LightType type = LightManager::instance().currentShadowCastingLight()->getLightType();
         type == LightType::DIRECTIONAL
                ? 0
                : type == LightType::POINT 

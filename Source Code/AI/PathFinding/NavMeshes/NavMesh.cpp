@@ -19,7 +19,7 @@ namespace Navigation {
 NavigationMesh::NavigationMesh() : GUIDWrapper(),
                                    _buildJobGUID(-1)
 {
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     stringImpl path(par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
                     par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
                     par.getParam<stringImpl>(_ID("currentScene")));
@@ -780,12 +780,12 @@ bool NavigationMesh::getClosestPosition(const vec3<F32>& destination,
                                         F32 delta,
                                         vec3<F32>& result) const {
     dtPolyRef resultPoly;
-    return Navigation::DivideRecast::getInstance().findNearestPointOnNavmesh(
+    return Navigation::DivideRecast::instance().findNearestPointOnNavmesh(
         *this, destination, extents, delta, result, resultPoly);
 }
 
 bool NavigationMesh::getRandomPosition(vec3<F32>& result) const {
-    return Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(
+    return Navigation::DivideRecast::instance().getRandomNavMeshPoint(
         *this, result);
 }
 
@@ -794,7 +794,7 @@ bool NavigationMesh::getRandomPositionInCircle(const vec3<F32>& center,
                                                const vec3<F32>& extents,
                                                vec3<F32>& result,
                                                U8 maxIters) const {
-    return Navigation::DivideRecast::getInstance().getRandomPointAroundCircle(
+    return Navigation::DivideRecast::instance().getRandomPointAroundCircle(
         *this, center, radius, extents, result, maxIters);
 }
 };  // namespace Navigation

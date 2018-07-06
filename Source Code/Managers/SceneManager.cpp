@@ -64,7 +64,7 @@ SceneManager::~SceneManager()
     _sceneShaderData->destroy();
     AI::AIManager::destroyInstance();
     Time::REMOVE_TIMER(_sceneGraphCullTimer);
-    UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
+    UNREGISTER_FRAME_LISTENER(&(this->instance()));
     Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
     Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
@@ -74,19 +74,19 @@ SceneManager::~SceneManager()
 }
 
 bool SceneManager::init(GUI* const gui) {
-    REGISTER_FRAME_LISTENER(&(this->getInstance()), 1);
+    REGISTER_FRAME_LISTENER(&(this->instance()), 1);
 
     // Load default material
     Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
     _defaultMaterial = XML::loadMaterialXML(
-        ParamHandler::getInstance().getParam<stringImpl>(_ID("scriptLocation")) +
+        ParamHandler::instance().getParam<stringImpl>(_ID("scriptLocation")) +
             "/defaultMaterial",
         false);
     _defaultMaterial->dumpToFile(false);
 
     _GUI = gui;
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
-    _renderPassManager = &RenderPassManager::getInstance();
+    _renderPassManager = &RenderPassManager::instance();
     _sceneGraphCullTimer = Time::ADD_TIMER("SceneGraph cull timer");
     _sceneShaderData.reset(GFX_DEVICE.newSB("sceneShaderData", 1, false, false, BufferUpdateFrequency::OFTEN));
     _sceneShaderData->create(1, sizeof(SceneShaderData));
@@ -130,7 +130,7 @@ Scene* SceneManager::createScene(const stringImpl& name) {
 }
 
 bool SceneManager::unloadCurrentScene() {
-    AI::AIManager::getInstance().pauseUpdate(true);
+    AI::AIManager::instance().pauseUpdate(true);
     RemoveResource(_defaultMaterial);
     bool state = Attorney::SceneManager::deinitializeAI(*_activeScene);
     if (state) {
@@ -163,8 +163,8 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _elapsedTime += deltaTime;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
-    ParamHandler& par = ParamHandler::getInstance();
-    LightManager& lightMgr = LightManager::getInstance();
+    ParamHandler& par = ParamHandler::instance();
+    LightManager& lightMgr = LightManager::instance();
 
     // Shadow splits are only visible in debug builds
     _sceneData.enableDebugRender(par.getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
@@ -201,7 +201,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
 /// Update fog values
 void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
-    ParamHandler& par = ParamHandler::getInstance();
+    ParamHandler& par = ParamHandler::instance();
     par.setParam(_ID("rendering.sceneState.fogColor.r"), color.r);
     par.setParam(_ID("rendering.sceneState.fogColor.g"), color.g);
     par.setParam(_ID("rendering.sceneState.fogColor.b"), color.b);
@@ -337,7 +337,7 @@ void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U
     updateVisibleNodes(stage, refreshNodeData, pass);
 
     if (_activeScene->renderState().drawGeometry()) {
-        RenderPassManager::getInstance()
+        RenderPassManager::instance()
             .getQueue()
             .populateRenderQueues(stage);
     }
