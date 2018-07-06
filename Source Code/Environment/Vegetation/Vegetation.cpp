@@ -105,12 +105,9 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->setShaderDefines("SKIP_TEXTURES");
-    vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY,
-                                  true);
-    vegMaterial->setShaderProgram(_grassShaderName + ".Shadow",
-                                  RenderStage::SHADOW, true);
-    vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",
-                                  RenderStage::Z_PRE_PASS, true);
+    vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY, true);
+    vegMaterial->setShaderProgram(_grassShaderName + ".Shadow", RenderStage::SHADOW, true);
+    vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",RenderPassType::DEPTH_PASS, true);
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, _grassBillboards);
     vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
@@ -207,18 +204,15 @@ void Vegetation::uploadGrassData() {
     }
 
     const Material_ptr& mat = getMaterialTpl();
-    for (U8 i = 0; i < 3; ++i) {
-        const ShaderProgram_ptr& shaderProg =
-            mat->getShaderInfo(i == 0
-                                   ? RenderStage::DISPLAY
-                                   : (i == 1 ? RenderStage::SHADOW
-                                             : RenderStage::Z_PRE_PASS))
-                .getProgram();
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass))).getProgram();
 
-        shaderProg->Uniform("positionOffsets", grassBlades);
-        shaderProg->Uniform("texCoordOffsets", texCoord);
-        shaderProg->Uniform("rotationMatrices", rotationMatrices);
-        shaderProg->Uniform("lod_metric", 100.0f);
+            drawShader->Uniform("positionOffsets", grassBlades);
+            drawShader->Uniform("texCoordOffsets", texCoord);
+            drawShader->Uniform("rotationMatrices", rotationMatrices);
+            drawShader->Uniform("lod_metric", 100.0f);
+        }
     }
 
     for (U8 i = 0; i < 2; ++i) {
@@ -289,14 +283,6 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                 _windX = sceneState.windDirX();
                 _windZ = sceneState.windDirZ();
                 _windS = sceneState.windSpeed();
-                const Material_ptr& mat = sgn.get<RenderingComponent>()->getMaterialInstance();
-                for (U8 i = 0; i < 3; ++i) {
-                    RenderStage stage =
-                        (i == 0 ? RenderStage::DISPLAY
-                                : (i == 1 ? RenderStage::SHADOW : RenderStage::Z_PRE_PASS));
-                    mat->getShaderInfo(stage).getProgram()->Uniform(
-                        "grassScale", /* _grassSize*/ 1.0f);
-                }
                 _stateRefreshIntervalBuffer -= _stateRefreshInterval;
                 _cullShader->Uniform("dvd_visibilityDistance",
                                      sceneState.renderState().grassVisibility());
@@ -383,7 +369,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
 }
 
 void Vegetation::initialiseDrawCommands(SceneGraphNode& sgn,
-                                        RenderStage renderStage,
+                                        const RenderStagePass& renderStagePass,
                                         GenericDrawCommands& drawCommandsInOut) {
 
     GenericDrawCommand cmd;
@@ -394,7 +380,7 @@ void Vegetation::initialiseDrawCommands(SceneGraphNode& sgn,
     cmd.stateHash(_grassStateBlockHash);
     drawCommandsInOut.push_back(cmd);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
 void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
@@ -413,6 +399,7 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand& cmd = drawCommandsOut.front();
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_ubyte(queryID));
     cmd.sourceBuffer(buffer);
+    cmd.shaderProgram()->Uniform("grassScale", /*_grassScale*/1.0f);
 
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsOut);
 }

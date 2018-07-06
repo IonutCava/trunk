@@ -168,15 +168,12 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setShaderDefines("COMPUTE_TBN");
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
     terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
-    terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " +
-        to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
-    terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +
-                                      to_stringImpl(textureCount));
-    terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY, true);
-    terrainMaterial->setShaderProgram("terrain", RenderStage::REFLECTION, true);
-    terrainMaterial->setShaderProgram("terrain", RenderStage::REFRACTION, true);
+    terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
+    terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " + to_stringImpl(textureCount));
+
+    terrainMaterial->setShaderProgram("terrain", true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW, true);
-    terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", RenderStage::Z_PRE_PASS, true);
+    terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", RenderPassType::DEPTH_PASS, true);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainMapLocation);
@@ -215,11 +212,8 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     // terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
-    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::DISPLAY);
-    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::Z_PRE_PASS);
-    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::REFRACTION);
+    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
-    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::DISPLAY);
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
     return loadThreadedResources(terrain, terrainDescriptor);

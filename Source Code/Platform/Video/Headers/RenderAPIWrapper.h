@@ -138,24 +138,24 @@ class RingBuffer {
 };
 
 struct RenderStagePass {
-    explicit RenderStagePass(RenderStage stage, bool prePass)
+    explicit RenderStagePass(RenderStage stage, RenderPassType prePass)
         : _stage(stage),
-          _prePass(prePass)
+          _passType(prePass)
     {
-        assert(_stage != RenderStage::Z_PRE_PASS);
     }
 
     inline bool operator==(const RenderStagePass& other) const {
-        return _prePass == other._prePass &&
+        return _passType == other._passType &&
                _stage == other._stage;
     }
 
     inline bool operator!=(const RenderStagePass& other) const {
-        return _prePass != other._prePass ||
+        return _passType != other._passType ||
                _stage != other._stage;
     }
+
     RenderStage _stage;
-    bool _prePass;
+    RenderPassType _passType;
 };
 
 /// Renderer Programming Interface

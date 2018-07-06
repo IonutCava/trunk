@@ -101,13 +101,14 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile,
 void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,  SceneState& sceneState) {
     if (_paramsDirty) {
         RenderingComponent* rComp = sgn.get<RenderingComponent>();
-        const ShaderProgram_ptr& shader =
-                rComp->getMaterialInstance()
-                     ->getShaderInfo(RenderStage::DISPLAY)
-                     .getProgram();
-        shader->Uniform("_waterShininess", _shininess);
-        shader->Uniform("_noiseFactor", _noiseFactor);
-        shader->Uniform("_noiseTile", _noiseTile);
+        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+                const ShaderProgram_ptr& shader = rComp->getMaterialInstance()->getShaderInfo(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass))).getProgram();
+                shader->Uniform("_waterShininess", _shininess);
+                shader->Uniform("_noiseFactor", _noiseFactor);
+                shader->Uniform("_noiseTile", _noiseTile);
+            }
+        }
         _paramsDirty = false;
     }
     
@@ -123,7 +124,7 @@ bool WaterPlane::onRender(const RenderStagePass& renderStagePass) {
 }
 
 void WaterPlane::initialiseDrawCommands(SceneGraphNode& sgn,
-                                        RenderStage renderStage,
+                                        const RenderStagePass& renderStagePass,
                                         GenericDrawCommands& drawCommandsInOut) {
     GenericDrawCommand cmd;
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
@@ -131,7 +132,7 @@ void WaterPlane::initialiseDrawCommands(SceneGraphNode& sgn,
     cmd.cmd().indexCount = to_uint(_plane->getGeometryVB()->getIndexCount());
     drawCommandsInOut.push_back(cmd);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
 void WaterPlane::updateDrawCommands(SceneGraphNode& sgn,
@@ -139,12 +140,6 @@ void WaterPlane::updateDrawCommands(SceneGraphNode& sgn,
                                     const SceneRenderState& sceneRenderState,
                                     GenericDrawCommands& drawCommandsInOut) {
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
-}
-
-
-bool WaterPlane::getDrawState(RenderStage currentStage) {
-    // Else, process normal exclusion
-    return SceneNode::getDrawState(currentStage);
 }
 
 /// update water refraction

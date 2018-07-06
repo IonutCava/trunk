@@ -44,7 +44,7 @@ class SceneRenderState;
 class Task;
 class Camera;
 class SceneGraph;
-struct RenderStagePass;
+enum class RenderStage : U32;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
@@ -69,7 +69,7 @@ class RenderPassCuller {
 
     void frustumCull(SceneGraph& sceneGraph,
                      const SceneState& sceneState,
-                     const RenderStagePass& stage,
+                     RenderStage stage,
                      const CullingFunction& cullingFunction);
 
     bool wasNodeInView(I64 GUID, RenderStage stage) const;
@@ -80,20 +80,21 @@ class RenderPassCuller {
     void frustumCullNode(const Task& parentTask,
                          const SceneGraphNode& node,
                          const Camera& currentCamera,
-                         const RenderStagePass& stage,
+                         RenderStage stage,
                          F32 cullMaxDistance,
                          VisibleNodeList& nodes,
                          bool clearList) const;
+
     void addAllChildren(const SceneGraphNode& currentNode,
-                        const RenderStagePass& stage,
+                        RenderStage stage,
                         VisibleNodeList& nodes) const;
 
     U32 stageToCacheIndex(RenderStage stage) const;
 
    protected:
-    std::array<CullingFunction, to_const_uint(RenderStage::COUNT) - 1> _cullingFunction;
-    std::array<VisibleNodeList, to_const_uint(RenderStage::COUNT) - 1> _visibleNodes;
-    std::array<vectorImpl<VisibleNodeList>, to_const_uint(RenderStage::COUNT) - 1> _perThreadNodeList;
+    std::array<CullingFunction, to_const_uint(RenderStage::COUNT)> _cullingFunction;
+    std::array<VisibleNodeList, to_const_uint(RenderStage::COUNT)> _visibleNodes;
+    std::array<vectorImpl<VisibleNodeList>, to_const_uint(RenderStage::COUNT)> _perThreadNodeList;
 };
 
 };  // namespace Divide

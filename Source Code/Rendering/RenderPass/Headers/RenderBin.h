@@ -49,7 +49,7 @@ class Task;
 class GFXDevice;
 class SceneGraphNode;
 class RenderingComponent;
-enum class RenderStage : U32;
+struct RenderStagePass;
 
 struct RenderBinItem {
     RenderingComponent* _renderable;
@@ -59,7 +59,7 @@ struct RenderBinItem {
     F32 _distanceToCameraSq;
 
     RenderBinItem() : _sortKeyA(-1), _sortKeyB(-1), _stateHash(0), _distanceToCameraSq(-1.0f), _renderable(nullptr) {}
-    RenderBinItem(RenderStage currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, RenderingComponent& renderable);
+    RenderBinItem(const RenderStagePass& currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, RenderingComponent& renderable);
 };
 
 struct RenderingOrder {
@@ -108,13 +108,13 @@ class RenderBin {
 
     ~RenderBin();
 
-    void sort(const Task& parentTask, RenderStage renderStage);
-    void populateRenderQueue(const Task& parentTask, RenderStage renderStage);
+    void sort(const Task& parentTask);
+    void populateRenderQueue(const Task& parentTask, const RenderStagePass& renderStagePass);
     void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut);
     void refresh();
 
     void addNodeToBin(const SceneGraphNode& sgn,
-                      RenderStage stage,
+                      const RenderStagePass& renderStagePass,
                       const vec3<F32>& eyePos);
 
     inline const RenderBinItem& getItem(U16 index) const {

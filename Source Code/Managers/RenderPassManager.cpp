@@ -9,23 +9,6 @@
 
 namespace Divide {
 
-namespace {
-    const char* getStageName(RenderStage stage) {
-        switch (stage) {
-            case RenderStage::DISPLAY: 
-                return "DISPLAY";
-            case RenderStage::REFLECTION:
-                return "REFLECTION";
-            case RenderStage::REFRACTION:
-                return "REFRACTION";
-            case RenderStage::SHADOW:
-                return "SHADOW";
-        };
-
-        return "error";
-    }
-};
-
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
       _context(context),
@@ -182,9 +165,9 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     }
 
     if (params.doPrePass) {
-        _context.setRenderStagePass(RenderStagePass(params.stage, true));
+        _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::DEPTH_PASS));
 
-        GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", getStageName(params.stage)).c_str(), 0);
+        GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage)).c_str(), 0);
 
         Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                               *params.camera,
@@ -214,10 +197,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             }
         }
     }
-
-    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", getStageName(params.stage)).c_str(), 1);
-
-    _context.setRenderStagePass(RenderStagePass(params.stage, false));
+    _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::COLOUR_PASS));
+    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage)).c_str(), 1);
 
     // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
     Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,

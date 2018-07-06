@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-RenderBinItem::RenderBinItem(RenderStage currentStage, 
+RenderBinItem::RenderBinItem(const RenderStagePass& currentStage,
                              I32 sortKeyA,
                              I32 sortKeyB,
                              F32 distToCamSq,
@@ -86,7 +86,7 @@ RenderBin::~RenderBin()
 {
 }
 
-void RenderBin::sort(const Task& parentTask, RenderStage renderStage) {
+void RenderBin::sort(const Task& parentTask) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:
@@ -132,7 +132,7 @@ void RenderBin::refresh() {
     _renderBinStack.reserve(128);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
+void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& renderStagePass, const vec3<F32>& eyePos) {
     I32 keyA = to_uint(_renderBinStack.size() + 1);
     I32 keyB = keyA;
 
@@ -140,18 +140,18 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
 
     const Material_ptr& nodeMaterial = renderable->getMaterialInstance();
     if (nodeMaterial) {
-        nodeMaterial->getSortKeys(keyA, keyB);
+        nodeMaterial->getSortKeys(renderStagePass, keyA, keyB);
     }
 
     vectorAlg::emplace_back(_renderBinStack, 
-                            stage,
+                            renderStagePass,
                             keyA,
                             keyB,
                             sgn.get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(eyePos),
                             *renderable);
 }
 
-void RenderBin::populateRenderQueue(const Task& parentTask, RenderStage renderStage) {
+void RenderBin::populateRenderQueue(const Task& parentTask, const RenderStagePass& renderStagePass) {
     I32 renderQueueIndex = _context.reserveRenderQueue();
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
@@ -159,7 +159,7 @@ void RenderBin::populateRenderQueue(const Task& parentTask, RenderStage renderSt
             break;
         }
         _context.addToRenderQueue(renderQueueIndex,
-                                  Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
+                                  Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStagePass));
     }
 }
 

@@ -22,8 +22,58 @@
 
 namespace Divide {
 
-D64 GFXDevice::s_interpolationFactor = 1.0;
+namespace TypeUtil {
+    const char* renderStageToString(RenderStage stage) {
+        switch (stage) {
+            case RenderStage::DISPLAY:
+                return "DISPLAY";
+            case RenderStage::REFLECTION:
+                return "REFLECTION";
+            case RenderStage::REFRACTION:
+                return "REFRACTION";
+            case RenderStage::SHADOW:
+                return "SHADOW";
+        };
 
+        return "error";
+    }
+
+    const char* renderPassTypeToString(RenderPassType pass) {
+        switch (pass) {
+            case RenderPassType::DEPTH_PASS:
+                return "DEPTH_PASS";
+            case RenderPassType::COLOUR_PASS:
+                return "COLOUR_PASS";
+        };
+
+        return "error";
+    }
+
+    RenderStage stringToRenderStage(const char* stage) {
+        if (strcmp(stage, "DISPLAY") == 0) {
+            return RenderStage::DISPLAY;
+        } else if (strcmp(stage, "REFLECTION") == 0) {
+            return RenderStage::REFLECTION;
+        } else if (strcmp(stage, "REFRACTION") == 0) {
+            return RenderStage::REFRACTION;
+        } else if (strcmp(stage, "SHADOW") == 0) {
+            return RenderStage::SHADOW;
+        }
+
+        return RenderStage::COUNT;
+    }
+
+    RenderPassType stringToRenderPassType(const char* pass) {
+        if (strcmp(pass, "DEPTH_PASS") == 0) {
+            return RenderPassType::DEPTH_PASS;
+        } else if (strcmp(pass, "COLOUR_PASS") == 0) {
+            return RenderPassType::COLOUR_PASS;
+        }
+
+        return RenderPassType::COUNT;
+    }
+};
+D64 GFXDevice::s_interpolationFactor = 1.0;
 
 GFXDevice::GFXDevice(Kernel& parent)
    : KernelComponent(parent), 
@@ -31,8 +81,8 @@ GFXDevice::GFXDevice(Kernel& parent)
     _renderer(nullptr),
     _shaderComputeQueue(nullptr),
     _commandPool(Config::MAX_DRAW_COMMANDS_IN_FLIGHT),
-    _renderStagePass(RenderStage::DISPLAY, false),
-    _prevRenderStagePass(RenderStage::COUNT, false),
+    _renderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS),
+    _prevRenderStagePass(RenderStage::COUNT, RenderPassType::COLOUR_PASS),
     _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer"))
 {
     // Hash values
@@ -94,9 +144,13 @@ GFXDevice::GFXDevice(Kernel& parent)
     // Don't (currently) need these for shadow passes
     flags[to_const_uint(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
     flags[to_const_uint(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
-    VertexBuffer::setAttribMask(RenderStage::Z_PRE_PASS, flags);
+    for (U8 stage = 0; stage < to_const_ubyte(RenderStage::COUNT); ++stage) {
+        VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::DEPTH_PASS), flags);
+    }
     flags[to_const_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
-    VertexBuffer::setAttribMask(RenderStage::SHADOW, flags);
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), flags);
+    }
 }
 
 GFXDevice::~GFXDevice()

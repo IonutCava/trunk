@@ -102,7 +102,7 @@ bool Object3D::onRender(const RenderStagePass& renderStagePass) {
 }
 
 void Object3D::initialiseDrawCommands(SceneGraphNode& sgn,
-                                      RenderStage renderStage,
+                                      const RenderStagePass& renderStagePass,
                                       GenericDrawCommands& drawCommandsInOut) {
     if (drawCommandsInOut.empty()) {
         GenericDrawCommand cmd;
@@ -112,7 +112,7 @@ void Object3D::initialiseDrawCommands(SceneGraphNode& sgn,
         drawCommandsInOut.push_back(cmd);
     }
 
-    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
 // Create a list of triangles from the vertices + indices lists based on

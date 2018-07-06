@@ -49,11 +49,11 @@ class RenderQueue {
     RenderQueue(GFXDevice& context);
     ~RenderQueue();
 
-    void populateRenderQueues(RenderStage renderStage);
+    void populateRenderQueues(const RenderStagePass& renderStagePass);
     void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut);
-    void sort(RenderStage renderStage);
+    void sort();
     void refresh();
-    void addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos);
+    void addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass& stage, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize() const;
 
     inline RenderBin* getBin(RenderBinType rbType) {

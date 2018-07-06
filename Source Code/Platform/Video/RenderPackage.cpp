@@ -4,6 +4,7 @@
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
+
 // ToDo: This will return false if the number of shader buffers or number of
 // textures does not match between the 2 packages although said buffers/textures
 // might be compatible and batchable between the two.

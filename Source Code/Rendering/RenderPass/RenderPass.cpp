@@ -280,7 +280,6 @@ U32 RenderPass::getBufferCountForStage(RenderStage stage) const {
             // Either CSM or cube map will have the highest stage count.
             maxStages = std::max(Config::Lighting::MAX_SPLITS_PER_LIGHT, 6u);// number of cube faces
         }; break;
-        case RenderStage::Z_PRE_PASS:
         case RenderStage::DISPLAY: {
             maxPasses = 1;
             maxStages = 1;

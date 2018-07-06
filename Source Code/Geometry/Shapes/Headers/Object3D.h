@@ -113,7 +113,7 @@ class Object3D : public SceneNode {
     virtual void setGeometryVB(VertexBuffer* const vb);
 
     virtual void initialiseDrawCommands(SceneGraphNode& sgn,
-                                        RenderStage renderStage,
+                                        const RenderStagePass& renderStagePass,
                                         GenericDrawCommands& drawCommandsInOut) override;
    protected:
     GFXDevice& _context;

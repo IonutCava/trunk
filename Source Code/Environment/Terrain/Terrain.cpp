@@ -90,33 +90,39 @@ void Terrain::buildQuadtree() {
 
 
     const Material_ptr& mat = getMaterialTpl();
-    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        RenderStage stage = static_cast<RenderStage>(i);
 
-        const ShaderProgram_ptr& drawShader = mat->getShaderInfo(stage).getProgram();
+    const vec3<F32>& bbMin = _boundingBox.getMin();
+    const vec3<F32>& bbExtent = _boundingBox.getExtent();
 
-        drawShader->Uniform("bbox_min", _boundingBox.getMin());
-        drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
-        drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            RenderStage stage = static_cast<RenderStage>(i);
 
-        U8 textureOffset = to_const_ubyte(ShaderProgram::TextureUsage::COUNT);
-        U8 layerOffset = 0;
-        stringImpl layerIndex;
-        for (U8 k = 0; k < _terrainTextures.size(); ++k) {
-            layerOffset = k * 3 + textureOffset;
-            layerIndex = to_stringImpl(k);
-            TerrainTextureLayer* textureLayer = _terrainTextures[k];
+            const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass(stage, static_cast<RenderPassType>(pass))).getProgram();
 
-            drawShader->Uniform(("texBlend[" + layerIndex + "]").c_str(), layerOffset);
-            drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(), layerOffset + 1);
-            drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(), layerOffset + 2);
-            drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(), textureLayer->getDiffuseScales());
-            drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(), textureLayer->getDetailScales());
+            drawShader->Uniform("bbox_min", bbMin);
+            drawShader->Uniform("bbox_extent", bbExtent);
+            drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-            if (i == 0) {
-                getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
-                getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
-                getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
+            U8 textureOffset = to_const_ubyte(ShaderProgram::TextureUsage::COUNT);
+            U8 layerOffset = 0;
+            stringImpl layerIndex;
+            for (U8 k = 0; k < _terrainTextures.size(); ++k) {
+                layerOffset = k * 3 + textureOffset;
+                layerIndex = to_stringImpl(k);
+                TerrainTextureLayer* textureLayer = _terrainTextures[k];
+
+                drawShader->Uniform(("texBlend[" + layerIndex + "]").c_str(), layerOffset);
+                drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(), layerOffset + 1);
+                drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(), layerOffset + 2);
+                drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(), textureLayer->getDiffuseScales());
+                drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(), textureLayer->getDetailScales());
+
+                if (i == 0) {
+                    getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
+                    getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
+                    getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
+                }
             }
         }
     }
@@ -131,7 +137,7 @@ void Terrain::sceneUpdate(const U64 deltaTime,
 }
 
 void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
-                                     RenderStage renderStage,
+                                     const RenderStagePass& renderStagePass,
                                      GenericDrawCommands& drawCommandsInOut) {
 
     GenericDrawCommand cmd;
@@ -160,7 +166,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
         drawCommandsInOut.push_back(bbCommand);
     }
 
-    Object3D::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+    Object3D::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
 void Terrain::updateDrawCommands(SceneGraphNode& sgn,

@@ -38,8 +38,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
-    _customShaders.fill(nullptr);
-
     Object3D_ptr node = parentSGN.getNode<Object3D>();
     Object3D::ObjectType type = node->getObjectType();
     SceneNodeType nodeType = node->getType();
@@ -47,16 +45,20 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
     bool nodeSkinned = parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
-    if (_materialInstance) {
-        assert(!_materialInstance->getName().empty());
-        if (!isSubMesh) {
-            _materialInstance->addShaderModifier(RenderStage::SHADOW, "TriangleStrip");
-            _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");
-        }
-    }
+    assert(!_materialInstance || (_materialInstance && !_materialInstance->getName().empty()));
 
-    for (RenderPackage& pkg : _renderData) {
-        pkg.isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        if (_materialInstance) {
+            if (!isSubMesh) {
+                _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
+                _materialInstance->setShaderDefines(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
+            }
+        }
+
+        _customShaders[pass].fill(nullptr);
+        for (RenderPackage& pkg : _renderData[pass]) {
+            pkg.isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
+        }
     }
 
     // Prepare it for rendering lines
@@ -142,9 +144,13 @@ RenderingComponent::~RenderingComponent()
 }
 
 void RenderingComponent::postLoad() {
-    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        RenderPackage& pkg = _renderData[to_uint(static_cast<RenderStage>(i))];
-        _parentSGN.getNode()->initialiseDrawCommands(_parentSGN, static_cast<RenderStage>(i), pkg._drawCommands);
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            RenderStagePass stagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass));
+
+            RenderPackage& pkg = renderData(stagePass);
+            _parentSGN.getNode()->initialiseDrawCommands(_parentSGN, stagePass, pkg._drawCommands);
+        }
     }
 }
 
@@ -168,11 +174,11 @@ void RenderingComponent::update(const U64 deltaTime) {
 
 }
 
-bool RenderingComponent::canDraw(RenderStage renderStage) {
-    if (_parentSGN.getNode()->getDrawState(renderStage)) {
+bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass) {
+    if (_parentSGN.getNode()->getDrawState(renderStagePass)) {
         const Material_ptr& mat = getMaterialInstance();
         if (mat) {
-            if (!mat->canDraw(renderStage)) {
+            if (!mat->canDraw(renderStagePass)) {
                 return false;
             }
         }
@@ -207,9 +213,7 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
 bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
-    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
-
-    RenderPackage& pkg = _renderData[to_uint(activeStage)];
+    RenderPackage& pkg = renderData(renderStagePass);
 
     pkg._textureData.clear(false);
     const Material_ptr& mat = getMaterialInstance();
@@ -363,7 +367,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
 /// Called after the current node was rendered
 void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
     
-    if (renderStagePass._stage != RenderStage::DISPLAY || renderStagePass._prePass) {
+    if (renderStagePass._stage != RenderStage::DISPLAY || renderStagePass._passType == RenderPassType::DEPTH_PASS) {
         return;
     }
 
@@ -484,41 +488,43 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               ShaderBuffer& shaderBuffer) {
 
     ShaderBufferList::iterator it;
-    for (RenderPackage& pkg : _renderData) {
-        ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
-        it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
-            [slot](const ShaderBufferBinding& binding)
-                    -> bool { return binding._slot == slot; });
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (RenderPackage& pkg : _renderData[pass]) {
+            ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
+            it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
+                [slot](const ShaderBufferBinding& binding)
+                        -> bool { return binding._slot == slot; });
 
-        if (it == itEnd) {
-           vectorAlg::emplace_back(pkg._shaderBuffers, slot, &shaderBuffer, bindRange);
-        } else {
-            it->set(slot, &shaderBuffer, bindRange);
+            if (it == itEnd) {
+               vectorAlg::emplace_back(pkg._shaderBuffers, slot, &shaderBuffer, bindRange);
+            } else {
+                it->set(slot, &shaderBuffer, bindRange);
+            }
         }
     }
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    for (RenderPackage& pkg : _renderData) {
-        pkg._shaderBuffers.erase(
-            std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
-                [&slot](const ShaderBufferBinding& binding)
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (RenderPackage& pkg : _renderData[pass]) {
+            pkg._shaderBuffers.erase(
+                std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
+                    [&slot](const ShaderBufferBinding& binding)
                     -> bool { return binding._slot == slot; }),
-            std::end(pkg._shaderBuffers));
+                std::end(pkg._shaderBuffers));
+        }
     }
 }
 
-ShaderProgram_ptr RenderingComponent::getDrawShader(RenderStage renderStage) {
+ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& renderStagePass) {
     return (getMaterialInstance()
-                ? _materialInstance->getShaderInfo(renderStage).getProgram()
-                : _customShaders[to_uint(renderStage)]);
+                ? _materialInstance->getShaderInfo(renderStagePass).getProgram()
+                : _customShaders[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)]);
 }
 
-size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
-    bool shadowStage = renderStage == RenderStage::SHADOW;
-    bool depthPass = renderStage == RenderStage::Z_PRE_PASS || shadowStage;
-    bool reflectionStage = renderStage == RenderStage::REFLECTION;
-    bool refractionStage = renderStage == RenderStage::REFRACTION;
+size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePass) {
+    bool shadowStage = renderStagePass._stage == RenderStage::SHADOW;
+    bool depthPass   = renderStagePass._passType == RenderPassType::DEPTH_PASS || shadowStage;
 
     if (!getMaterialInstance() && depthPass) {
         
@@ -531,11 +537,6 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
         return 0;
     }
 
-    RenderStage blockStage = depthPass ? (shadowStage ? RenderStage::SHADOW
-                                                      : RenderStage::Z_PRE_PASS)
-                                       : (reflectionStage ? RenderStage::REFLECTION
-                                                          : refractionStage ? RenderStage::REFRACTION
-                                                                            : RenderStage::DISPLAY);
     I32 variant = 0;
     if (shadowStage) {
         LightType type = LightPool::currentShadowCastingLight()->getLightType();
@@ -546,18 +547,18 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                                  : 2);
     }
 
-    return _materialInstance->getRenderStateBlock(blockStage, variant);
+    return _materialInstance->getRenderStateBlock(renderStagePass, variant);
     
 }
 
-void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStage renderStage) {
+void RenderingComponent::updateLoDLevel(const Camera& camera, const RenderStagePass& renderStagePass) {
     static const U32 SCENE_NODE_LOD0_SQ = Config::SCENE_NODE_LOD0 * Config::SCENE_NODE_LOD0;
     static const U32 SCENE_NODE_LOD1_SQ = Config::SCENE_NODE_LOD1 * Config::SCENE_NODE_LOD1;
 
     _lodLevel = to_ubyte(_parentSGN.getNode()->getLODcount() - 1);
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
-    if (renderStage != RenderStage::REFLECTION && renderStage != RenderStage::REFRACTION) {
+    if (renderStagePass._stage != RenderStage::REFLECTION && renderStagePass._stage != RenderStage::REFRACTION) {
         const vec3<F32>& eyePos = camera.getEye();
         const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
         F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
@@ -571,28 +572,24 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStage render
 }
 
 void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
-    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
-
-    _preDrawPass = canDraw(activeStage) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass);
+    _preDrawPass = canDraw(renderStagePass) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass);
 }
 
 RenderPackage&
 RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
-    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
-
-    RenderPackage& pkg = _renderData[to_uint(activeStage)];
+    RenderPackage& pkg = renderData(renderStagePass);
     pkg.isRenderable(false);
     if (_preDrawPass)
     {
         for (GenericDrawCommand& cmd : pkg._drawCommands) {
             cmd.renderMask(renderMask());
-            cmd.stateHash(getDrawStateHash(activeStage));
-            cmd.shaderProgram(getDrawShader(activeStage));
+            cmd.stateHash(getDrawStateHash(renderStagePass));
+            cmd.shaderProgram(getDrawShader(renderStagePass));
         }
 
         _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg._drawCommands);
 
-        updateLoDLevel(*Camera::activeCamera(), activeStage);
+        updateLoDLevel(*Camera::activeCamera(), renderStagePass);
 
         U32 offset = commandOffset();
         bool sceneRenderWireframe = sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
@@ -613,9 +610,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, con
 
 RenderPackage& 
 RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
-    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
-
-    return _renderData[to_uint(activeStage)];
+    return renderData(renderStagePass);
 }
 
 void RenderingComponent::setActive(const bool state) {
@@ -682,7 +677,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                      0,
                                      camera->getEye(),
                                      vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                     RenderStagePass(RenderStage::REFLECTION, false),
+                                     RenderStagePass(RenderStage::REFLECTION, RenderPassType::COLOUR_PASS),
                                      reflectionIndex);
         }
     }

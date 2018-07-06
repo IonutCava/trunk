@@ -57,7 +57,7 @@ class Sky : public SceneNode {
     void postLoad(SceneGraphNode& sgn) override;
 
     void initialiseDrawCommands(SceneGraphNode& sgn,
-                                RenderStage renderStage,
+                                const RenderStagePass& renderStagePass,
                                 GenericDrawCommands& drawCommandsInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
                             const RenderStagePass& renderStagePass,

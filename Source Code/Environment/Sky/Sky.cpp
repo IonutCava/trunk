@@ -125,14 +125,14 @@ bool Sky::onRender(const RenderStagePass& renderStagePass) {
 }
 
 void Sky::initialiseDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
+                                 const RenderStagePass& renderStagePass,
                                  GenericDrawCommands& drawCommandsInOut) {
     GenericDrawCommand cmd;
     cmd.sourceBuffer(_sky->getGeometryVB());
     cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
     drawCommandsInOut.push_back(cmd);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
 void Sky::updateDrawCommands(SceneGraphNode& sgn,
@@ -141,11 +141,16 @@ void Sky::updateDrawCommands(SceneGraphNode& sgn,
                              GenericDrawCommands& drawCommandsInOut) {
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
-    cmd.stateHash(renderStagePass._stage == RenderStage::REFLECTION
-                                          ? _skyboxRenderStateReflectedHash
-                                          : renderStagePass._prePass  ? _skyboxRenderStateHashPrePass
-                                                                      : _skyboxRenderStateHash);
-    cmd.shaderProgram(renderStagePass._prePass ? _skyShaderPrePass : _skyShader);
+    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
+        cmd.stateHash(_skyboxRenderStateHashPrePass);
+        cmd.shaderProgram(_skyShaderPrePass);
+    }  else {
+        cmd.stateHash(renderStagePass._stage == RenderStage::REFLECTION
+                                              ? _skyboxRenderStateReflectedHash
+                                              : _skyboxRenderStateHash);
+        cmd.shaderProgram(_skyShader);
+    }
+
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }
 

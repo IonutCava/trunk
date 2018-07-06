@@ -84,16 +84,15 @@ class ParticleEmitter : public SceneNode {
                      SceneState& sceneState) override;
 
     void initialiseDrawCommands(SceneGraphNode& sgn,
-                                RenderStage renderStage,
+                                const RenderStagePass& renderStagePass,
                                 GenericDrawCommands& drawCommandsInOut) override;
+
     void updateDrawCommands(SceneGraphNode& sgn,
                             const RenderStagePass& renderStagePass,
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
 
     void prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera);
-
-    U32 getIndexForStage(RenderStage stage) const;
 
     GenericVertexData& getDataBuffer(RenderStage stage, U8 playerIndex);
 

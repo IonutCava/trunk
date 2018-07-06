@@ -41,6 +41,7 @@
 namespace Divide {
 
 class ShaderProgram;
+struct RenderStagePass;
 /// Vertex Buffer interface class to allow API-independent implementation of
 /// data
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER /
@@ -350,15 +351,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     bool deserialize(ByteBuffer& dataIn);
     bool serialize(ByteBuffer& dataOut) const;
 
-    static void setAttribMasks(const AttribFlags& flagMask) {
-        for (AttribFlags& flags : _attribMaskPerStage) {
-            flags = flagMask;
-        }
-    }
-
-    static void setAttribMask(RenderStage stage, const AttribFlags& flagMask) {
-        _attribMaskPerStage[to_uint(stage)] = flagMask;
-    }
+    static void setAttribMasks(const AttribFlags& flagMask);
+    static void setAttribMask(const RenderStagePass& stagePass, const AttribFlags& flagMask);
 
     inline void keepData(const bool state) {
         _keepDataInMemory = state;
@@ -368,7 +362,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual void computeTangents();
 
    protected:
-    static std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> _attribMaskPerStage;
+    static std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> _attribMaskPerStage[to_const_uint(RenderPassType::COUNT)];
 
     virtual void checkStatus() = 0;
     virtual bool refresh() = 0;

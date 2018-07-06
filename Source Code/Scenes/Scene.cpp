@@ -1004,7 +1004,7 @@ void Scene::processTasks(const U64 deltaTime) {
 }
 
 void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
-    if (stagePass._stage != RenderStage::DISPLAY || stagePass._prePass) {
+    if (stagePass._stage != RenderStage::DISPLAY || stagePass._passType == RenderPassType::DEPTH_PASS) {
         return;
     }
 
@@ -1089,7 +1089,7 @@ void Scene::findHoverTarget(U8 playerIndex) {
     vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
     _sceneSelectionCandidates.clear();
-    // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)
+    // get the list of visible nodes (use DEPTH_PASS because the nodes are sorted by depth, front to back)
     RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
 
     // Cast the picking ray and find items between the nearPlane and far Plane

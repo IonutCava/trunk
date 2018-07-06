@@ -46,7 +46,7 @@ class SceneState;
 class WorldPacket;
 class SceneRenderState;
 class NetworkingComponent;
-enum class RenderStage : U32;
+struct RenderStagePass;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 FWD_DECLARE_MANAGED_CLASS(Material);
@@ -111,10 +111,10 @@ class NOINITVTABLE SceneNode : public Resource {
     virtual bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION
-    virtual bool getDrawState(RenderStage currentStage);
+    virtual bool getDrawState(const RenderStagePass& renderStage);
 
     virtual void initialiseDrawCommands(SceneGraphNode& sgn,
-                                        RenderStage renderStage,
+                                        const RenderStagePass& renderStage,
                                         GenericDrawCommands& drawCommandsInOut);
     virtual void updateDrawCommands(SceneGraphNode& sgn,
                                     const RenderStagePass& renderStagePass,

@@ -48,7 +48,6 @@ namespace Divide {
 class RenderStateBlock;
 class ResourceDescriptor;
 class RenderStateBlock;
-enum class RenderStage : U32;
 enum class BlendProperty : U32;
 enum class ReflectorType : U32;
 
@@ -202,12 +201,15 @@ class Material : public Resource {
     /// Shader modifiers add tokens to the end of the shader name.
     /// Add as many tokens as needed but separate them with a ".". i.e:
     /// "Tree.NoWind.Glow"
-    inline void addShaderModifier(RenderStage renderStage, const stringImpl& shaderModifier) {
-        _shaderModifier[to_uint(renderStage)] = shaderModifier;
+    inline void addShaderModifier(const RenderStagePass& renderStagePass, const stringImpl& shaderModifier) {
+        _shaderModifier[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)] = shaderModifier;
     }
+
     inline void addShaderModifier(const stringImpl& shaderModifier) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-            addShaderModifier(static_cast<RenderStage>(i), shaderModifier);
+        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+                addShaderModifier(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), shaderModifier);
+            }
         }
     }
 
@@ -218,16 +220,18 @@ class Material : public Resource {
     /// The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4
     ///#define MAX_SHADOW_CASTERS 2
-    inline void setShaderDefines(RenderStage renderStage,  const stringImpl& shaderDefines) {
-        vectorImpl<stringImpl>& defines =  _shaderInfo[to_uint(renderStage)]._shaderDefines;
+    inline void setShaderDefines(const RenderStagePass& renderStagePass,  const stringImpl& shaderDefines) {
+        vectorImpl<stringImpl>& defines = shaderInfo(renderStagePass)._shaderDefines;
         if (std::find(std::cbegin(defines), std::cend(defines), shaderDefines) == std::cend(defines)) {
             defines.push_back(shaderDefines);
         }
     }
 
     inline void setShaderDefines(const stringImpl& shaderDefines) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-            setShaderDefines(static_cast<RenderStage>(i), shaderDefines);
+        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+                setShaderDefines(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), shaderDefines);
+            }
         }
     }
 
@@ -236,33 +240,81 @@ class Material : public Resource {
         _shaderThreadedLoad = state;
     }
 
+    /// Add the specified shader to the specified Stage Pass (stage and pass type)
     void setShaderProgram(const stringImpl& shader,
-                          RenderStage renderStage,
+                          const RenderStagePass& renderStagePass,
+                          const bool computeOnAdd);
+
+    /// Add the specified shader to the specified render stage (for all pass types)
+    void setShaderProgram(const stringImpl& shader,
+                          RenderStage stage,
+                          const bool computeOnAdd);
+
+    /// Add the specified shader to the specified pass type (for all render stages)
+    void setShaderProgram(const stringImpl& shader,
+                          RenderPassType passType,
                           const bool computeOnAdd);
 
     inline void setShaderProgram(const stringImpl& shader,
                                  const bool computeOnAdd) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-            setShaderProgram(shader, static_cast<RenderStage>(i), computeOnAdd);
+        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+                setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), computeOnAdd);
+            }
         }
     }
 
     inline void setRenderStateBlock(size_t renderStateBlockHash,
                                     I32 variant = -1) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-            setRenderStateBlock(renderStateBlockHash, static_cast<RenderStage>(i), variant);
+        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+                setRenderStateBlock(renderStateBlockHash, RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), variant);
+            }
         }
     }
 
     inline void setRenderStateBlock(size_t renderStateBlockHash,
                                     RenderStage renderStage,
                                     I32 variant = -1) {
-        if (variant < 0 || variant >= _defaultRenderStates[to_uint(renderStage)].size()) {
-            for (size_t& state : _defaultRenderStates[to_uint(renderStage)]) {
+        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+            RenderStagePass renderStagePass(renderStage, static_cast<RenderPassType>(pass));
+
+            if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
+                for (size_t& state : defaultRenderStates(renderStagePass)) {
+                    state = renderStateBlockHash;
+                }
+            } else {
+                defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
+            }
+        }
+    }
+
+    inline void setRenderStateBlock(size_t renderStateBlockHash,
+                                    RenderPassType renderPassType,
+                                    I32 variant = -1) {
+        for (U8 stage = 0; stage < to_const_ubyte(RenderStage::COUNT); ++stage) {
+            RenderStagePass renderStagePass(static_cast<RenderStage>(stage), renderPassType);
+
+            if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
+                for (size_t& state : defaultRenderStates(renderStagePass)) {
+                    state = renderStateBlockHash;
+                }
+            }
+            else {
+                defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
+            }
+        }
+    }
+
+    inline void setRenderStateBlock(size_t renderStateBlockHash,
+                                    const RenderStagePass& renderStagePass,
+                                    I32 variant = -1) {
+        if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
+            for (size_t& state : defaultRenderStates(renderStagePass)) {
               state  = renderStateBlockHash;
             }
         } else {
-            _defaultRenderStates[to_uint(renderStage)][variant] = renderStateBlockHash;
+            defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
         }
     }
 
@@ -270,18 +322,18 @@ class Material : public Resource {
         _parallaxFactor = std::min(0.01f, factor);
     }
 
-    void getSortKeys(I32& shaderKey, I32& textureKey) const;
+    void getSortKeys(const RenderStagePass& renderStagePass, I32& shaderKey, I32& textureKey) const;
 
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
     inline F32 getParallaxFactor() const { return _parallaxFactor; }
 
-    size_t getRenderStateBlock(RenderStage currentStage, I32 variant = 0);
+    size_t getRenderStateBlock(const RenderStagePass& renderStagePass, I32 variant = 0);
     inline std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const {
         return _textures[to_uint(textureUsage)];
     }
 
-    ShaderProgramInfo& getShaderInfo(RenderStage renderStage = RenderStage::DISPLAY);
+    ShaderProgramInfo& getShaderInfo(const RenderStagePass& renderStagePass);
 
     inline const TextureOperation& getTextureOperation() const { return _operation; }
 
@@ -302,9 +354,9 @@ class Material : public Resource {
     inline bool useAlphaTest() const { return _useAlphaTest; }
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
-    bool computeShader(RenderStage renderStage, const bool computeOnAdd);
+    bool computeShader(const RenderStagePass& renderStagePass, const bool computeOnAdd);
 
-    bool canDraw(RenderStage renderStage);
+    bool canDraw(const RenderStagePass& renderStagePass);
 
     void updateReflectionIndex(ReflectorType type, I32 index);
     void updateRefractionIndex(ReflectorType type, I32 index);
@@ -321,11 +373,23 @@ class Material : public Resource {
 
     void recomputeShaders();
     void setShaderProgramInternal(const stringImpl& shader,
-                                  RenderStage renderStage,
+                                  const RenderStagePass& renderStagePass,
                                   const bool computeOnAdd);
 
     inline bool isExternalTexture(ShaderProgram::TextureUsage slot) const {
         return _textureExtenalFlag[to_uint(slot)];
+    }
+
+    inline ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass) {
+        return _shaderInfo[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
+    }
+
+    inline const ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass) const {
+        return _shaderInfo[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
+    }
+
+    inline std::array<size_t, 3>& defaultRenderStates(const RenderStagePass& renderStagePass) {
+        return _defaultRenderStates[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
     }
 
    private:
@@ -333,7 +397,7 @@ class Material : public Resource {
     ResourceCache& _parentCache;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"
-    std::array<stringImpl, to_const_uint(RenderStage::COUNT)> _shaderModifier;
+    std::array<stringImpl, to_const_uint(RenderStage::COUNT)> _shaderModifier[to_const_uint(RenderPassType::COUNT)];
     TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
@@ -345,8 +409,8 @@ class Material : public Resource {
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
-    std::array<ShaderProgramInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo;
-    std::array<std::array<size_t, 3>,  to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
+    std::array<ShaderProgramInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo[to_const_uint(RenderPassType::COUNT)];
+    std::array<std::array<size_t, 3>,  to_const_uint(RenderStage::COUNT)> _defaultRenderStates[to_const_uint(RenderPassType::COUNT)];
 
     bool _shaderThreadedLoad;
     bool _highPriority;

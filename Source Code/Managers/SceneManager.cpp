@@ -123,15 +123,12 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
 
         _scenePool = MemoryManager_NEW ScenePool(*this);
 
-        _sceneGraphCullTimers[0][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display");
-        _sceneGraphCullTimers[0][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection");
-        _sceneGraphCullTimers[0][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction");
-        _sceneGraphCullTimers[0][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow");
-
-        _sceneGraphCullTimers[1][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display PrePass");
-        _sceneGraphCullTimers[1][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection PrePass");
-        _sceneGraphCullTimers[1][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction PrePass");
-        _sceneGraphCullTimers[1][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow PrePass");
+        for (U8 i = 0; i < to_const_ubyte(RenderPassType::COUNT); ++i) {
+            _sceneGraphCullTimers[i][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Display [pass: %d]", i).c_str());
+            _sceneGraphCullTimers[i][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Reflection [pass: %d]", i).c_str());
+            _sceneGraphCullTimers[i][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Refraction [pass: %d]", i).c_str());
+            _sceneGraphCullTimers[i][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Shadow [pass: %d]", i).c_str());
+        }
 
         // Load default material
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
@@ -593,7 +590,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const Rend
 
     _renderPassCuller->frustumCull(activeScene.sceneGraph(),
                                    activeScene.state(),
-                                   stage,
+                                   stage._stage,
                                    cullingFunction);
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage._stage);
 
@@ -623,16 +620,15 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
 
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage._stage);
 
-    RenderStage queueStage = stage._prePass ? RenderStage::Z_PRE_PASS : stage._stage;
     if (refreshNodeData) {
         queue.refresh();
         const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-            queue.addNodeToQueue(*node.second, queueStage, eyePos);
+            queue.addNodeToQueue(*node.second, stage, eyePos);
         }
     }
     
-    queue.sort(queueStage);
+    queue.sort();
 
     auto setOrder = [&visibleNodes](const Task& parentTask, U32 start, U32 end) { 
         for (U32 i = start; i < end; ++i) {
@@ -662,22 +658,21 @@ bool SceneManager::populateRenderQueue(const Camera& camera,
 
     const RenderStagePass& stage = _platformContext->gfx().getRenderStage();
 
-    if (!stage._prePass) {
+    if (stage._passType != RenderPassType::DEPTH_PASS) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
         lightPool->prepareLightData(camera.getEye(), camera.getViewMatrix());
     }
 
     if (doCulling) {
-        Time::ScopedTimer timer(*_sceneGraphCullTimers[stage._prePass ? 0 : 1][to_uint(stage._stage)]);
+        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_uint(stage._passType)][to_uint(stage._stage)]);
         cullSceneGraph(stage);
     }
 
     updateVisibleNodes(stage, doCulling, passIndex);
 
-    RenderStage queueStage = stage._prePass ? RenderStage::Z_PRE_PASS : stage._stage;
     RenderQueue& queue = parent().renderPassManager().getQueue();
     if (getActiveScene().renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
-        queue.populateRenderQueues(queueStage);
+        queue.populateRenderQueues(stage);
     }
 
     return queue.getRenderQueueStackSize() > 0;

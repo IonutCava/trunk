@@ -54,7 +54,7 @@ ParticleEmitter::~ParticleEmitter()
 }
 
 GenericVertexData& ParticleEmitter::getDataBuffer(RenderStage stage, U8 playerIndex) {
-    return *_particleGPUBuffers[playerIndex % s_MaxPlayerBuffers][getIndexForStage(stage)];
+    return *_particleGPUBuffers[playerIndex % s_MaxPlayerBuffers][to_uint(stage)];
 }
 
 bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {
@@ -195,7 +195,7 @@ if (_particleTexture && _particleTexture->flushTextureState()) {
 }
 
 void ParticleEmitter::initialiseDrawCommands(SceneGraphNode& sgn,
-                                             RenderStage renderStage,
+                                             const RenderStagePass& renderStagePass,
                                              GenericDrawCommands& drawCommandsInOut) {
     U32 indexCount = to_uint(_particles->particleGeometryIndices().size());
     if (indexCount == 0) {
@@ -205,19 +205,11 @@ void ParticleEmitter::initialiseDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
     drawCommandsInOut.push_back(cmd);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
-}
-
-U32 ParticleEmitter::getIndexForStage(RenderStage stage) const {
-    if (stage == RenderStage::DISPLAY || stage == RenderStage::Z_PRE_PASS) {
-        return to_uint(RenderStage::DISPLAY);
-    }
-
-    return to_uint(stage);
+    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
 void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera) {
-    if (!renderStagePass._prePass) {
+    if (renderStagePass._passType != RenderPassType::DEPTH_PASS) {
         return;
     }
 
@@ -239,7 +231,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
             // invalidateCache means that the existing particle data is no longer partially sorted
             _particles->sort(true);
-            _buffersDirty[getIndexForStage(renderStagePass._stage)] = true;
+            _buffersDirty[to_uint(renderStagePass._stage)] = true;
         }));
     
     _bufferUpdate.back().startTask(Task::TaskPriority::HIGH);
@@ -254,12 +246,12 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
     }
     _bufferUpdate.clear();
 
-    if (!renderStagePass._prePass && _buffersDirty[getIndexForStage(renderStagePass._stage)]) {
+    if (renderStagePass._passType != RenderPassType::DEPTH_PASS && _buffersDirty[to_uint(renderStagePass._stage)]) {
         GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, sceneRenderState.playerPass());
         buffer.updateBuffer(g_particlePositionBuffer, to_uint(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
         buffer.updateBuffer(g_particleColourBuffer, to_uint(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
         buffer.incQueue();
-        _buffersDirty[getIndexForStage(renderStagePass._stage)] = false;
+        _buffersDirty[to_uint(renderStagePass._stage)] = false;
     }
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();

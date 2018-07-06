@@ -5,6 +5,7 @@
 
 namespace Divide {
 
+struct RenderStagePass;
 enum class RenderStage : U32;
 
 class SceneNodeRenderState {
@@ -17,9 +18,13 @@ class SceneNodeRenderState {
     inline void setDrawState(bool state) { _drawState = state; }
     inline bool getDrawState() const { return _drawState; }
 
-    bool getDrawState(RenderStage currentStage) const;
-    void addToDrawExclusionMask(RenderStage stage);
-    void removeFromDrawExclusionMask(RenderStage stage);
+    bool getDrawState(const RenderStagePass& currentStagePass) const;
+
+    void addToDrawExclusionMask(const RenderStagePass& currentStagePass);
+    void removeFromDrawExclusionMask(const RenderStagePass& currentStagePass);
+
+    void addToDrawExclusionMask(RenderStage currentStage);
+    void removeFromDrawExclusionMask(RenderStage currentStage);
 
     size_t getDepthStateBlock();
     size_t getShadowStateBlock();
@@ -27,7 +32,7 @@ class SceneNodeRenderState {
    protected:
     bool _drawState;
     bool _noDefaultMaterial;
-    U32 _exclusionMask;
+    vectorImpl<U32> _exclusionMask;
 
     size_t _depthStateBlockHash;
     size_t _shadowStateBlockHash;

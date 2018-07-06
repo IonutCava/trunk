@@ -1,8 +1,10 @@
 #include "Headers/VertexBuffer.h"
 
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
+
 namespace Divide {
 
-std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
+std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage[to_const_uint(RenderPassType::COUNT)];
 
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),
@@ -26,6 +28,19 @@ bool VertexBuffer::create(bool staticDraw) {
 
 bool VertexBuffer::createInternal() {
     return true;
+}
+
+
+void VertexBuffer::setAttribMasks(const AttribFlags& flagMask) {
+    for (U8 i = 0; i < to_const_uint(RenderPassType::COUNT); ++i) {
+        for (AttribFlags& flags : _attribMaskPerStage[i]) {
+            flags = flagMask;
+        }
+    }
+}
+
+void VertexBuffer::setAttribMask(const RenderStagePass& stagePass, const AttribFlags& flagMask) {
+    _attribMaskPerStage[to_uint(stagePass._passType)][to_uint(stagePass._stage)] = flagMask;
 }
 
 

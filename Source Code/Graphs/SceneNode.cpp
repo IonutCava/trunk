@@ -82,8 +82,8 @@ void SceneNode::postLoad(SceneGraphNode& sgn) {
     sgn.postLoad();
 }
 
-bool SceneNode::getDrawState(RenderStage currentStage) {
-    return _renderState.getDrawState(currentStage);
+bool SceneNode::getDrawState(const RenderStagePass& currentStagePass) {
+    return _renderState.getDrawState(currentStagePass);
 }
 
 const Material_ptr& SceneNode::getMaterialTpl() {
@@ -123,10 +123,10 @@ bool SceneNode::unload() {
 }
 
 void SceneNode::initialiseDrawCommands(SceneGraphNode& sgn,
-                                       RenderStage renderStage,
+                                       const RenderStagePass& renderStagePass,
                                        GenericDrawCommands& drawCommandsInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(renderStage);
+    ACKNOWLEDGE_UNUSED(renderStagePass);
     ACKNOWLEDGE_UNUSED(drawCommandsInOut);
 }
 

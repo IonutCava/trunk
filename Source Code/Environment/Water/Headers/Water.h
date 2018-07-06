@@ -51,8 +51,6 @@ class WaterPlane : public SceneNode {
     /// General SceneNode stuff
     bool onRender(const RenderStagePass& renderStagePass) override;
 
-    bool getDrawState(RenderStage currentStage);
-
     bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
 
     void setParams(F32 shininess, const vec2<F32>& noiseTile,
@@ -70,7 +68,7 @@ class WaterPlane : public SceneNode {
 
    protected:
     void initialiseDrawCommands(SceneGraphNode& sgn,
-                                RenderStage renderStage,
+                                const RenderStagePass& renderStagePass,
                                 GenericDrawCommands& drawCommandsInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
                             const RenderStagePass& renderStagePass,

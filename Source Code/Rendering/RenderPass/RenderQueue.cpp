@@ -119,7 +119,7 @@ RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
+void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass& stage, const vec3<F32>& eyePos) {
     static Material_ptr defaultMat;
 
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
@@ -132,7 +132,7 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, c
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStage renderStage) {
+void RenderQueue::populateRenderQueues(const RenderStagePass& renderStagePass) {
     TaskPool& pool = Application::instance().kernel().taskPool();
 
     TaskHandle populateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
@@ -140,8 +140,8 @@ void RenderQueue::populateRenderQueues(RenderStage renderStage) {
         if (!renderBin->empty()) {
             populateTask.addChildTask(
                 CreateTask(pool,
-                           [renderBin, renderStage](const Task& parentTask) {
-                               renderBin->populateRenderQueue(parentTask, renderStage);
+                           [renderBin, &renderStagePass](const Task& parentTask) {
+                               renderBin->populateRenderQueue(parentTask, renderStagePass);
                            })._task)->startTask(Task::TaskPriority::HIGH);
         }
     }
@@ -155,7 +155,7 @@ void RenderQueue::postRender(const SceneRenderState& renderState, const RenderSt
     }
 }
 
-void RenderQueue::sort(RenderStage renderStage) {
+void RenderQueue::sort() {
     U32 index = 0;
     for (RenderBin* renderBin : _activeBins) {
         renderBin->binIndex(index);
@@ -167,8 +167,8 @@ void RenderQueue::sort(RenderStage renderStage) {
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             sortTask.addChildTask(CreateTask(pool,
-                [renderBin, renderStage](const Task& parentTask) {
-                    renderBin->sort(parentTask, renderStage);
+                [renderBin](const Task& parentTask) {
+                    renderBin->sort(parentTask);
                 })._task)->startTask(Task::TaskPriority::HIGH);
         }
     }

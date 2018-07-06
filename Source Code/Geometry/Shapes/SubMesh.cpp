@@ -27,8 +27,9 @@ SubMesh::~SubMesh()
 }
 
 void SubMesh::initialiseDrawCommands(SceneGraphNode& sgn,
-                                     RenderStage renderStage,
+                                     const RenderStagePass& renderStagePass,
                                      GenericDrawCommands& drawCommandsInOut) {
+
     GenericDrawCommand cmd(PrimitiveType::TRIANGLES,
         getGeometryVB()->getPartitionOffset(_geometryPartitionID),
         getGeometryVB()->getPartitionIndexCount(_geometryPartitionID));
@@ -37,7 +38,7 @@ void SubMesh::initialiseDrawCommands(SceneGraphNode& sgn,
 
     drawCommandsInOut.push_back(cmd);
 
-    Object3D::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+    Object3D::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
 void SubMesh::setParentMesh(Mesh* const parentMesh) {

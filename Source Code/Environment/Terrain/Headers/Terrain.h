@@ -126,7 +126,7 @@ class Terrain : public Object3D {
     
    protected:
     void initialiseDrawCommands(SceneGraphNode& sgn,
-                                RenderStage renderStage,
+                                const RenderStagePass& renderStagePass,
                                 GenericDrawCommands& drawCommandsInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
                             const RenderStagePass& renderStagePass,

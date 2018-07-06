@@ -8,12 +8,11 @@ namespace Divide {
 SceneNodeRenderState::SceneNodeRenderState()
   : _drawState(true),
     _noDefaultMaterial(false),
-    _exclusionMask(0),
     _depthStateBlockHash(0),
-    _shadowStateBlockHash(0)
+    _shadowStateBlockHash(0),
+    _exclusionMask(to_const_uint(RenderPassType::COUNT), 0u)
 {
 }
-
 
 SceneNodeRenderState::~SceneNodeRenderState()
 {
@@ -41,17 +40,29 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
     return _shadowStateBlockHash;
 }
 
-bool SceneNodeRenderState::getDrawState(RenderStage currentStage) const {
+bool SceneNodeRenderState::getDrawState(const RenderStagePass& currentStagePass) const {
     return _drawState &&
-           !BitCompare(_exclusionMask, to_uint(1 << (to_uint(currentStage) + 1)));
+           !BitCompare(_exclusionMask[to_uint(currentStagePass._passType)], to_uint(1 << (to_uint(currentStagePass._stage) + 1)));
 }
 
-void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage) {
-    _exclusionMask |= (1 << (to_uint(stage) + 1));
+void SceneNodeRenderState::addToDrawExclusionMask(const RenderStagePass& currentStagePass) {
+    _exclusionMask[to_uint(currentStagePass._passType)] |= (1 << (to_uint(currentStagePass._stage) + 1));
 }
 
-void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage stage) {
-    _exclusionMask &= ~(1 << (to_uint(stage) + 1));
+void SceneNodeRenderState::removeFromDrawExclusionMask(const RenderStagePass& currentStagePass) {
+    _exclusionMask[to_uint(currentStagePass._passType)] &= ~(1 << (to_uint(currentStagePass._stage) + 1));
+}
+
+void SceneNodeRenderState::addToDrawExclusionMask(RenderStage currentStage) {
+    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
+        addToDrawExclusionMask(RenderStagePass(currentStage, static_cast<RenderPassType>(pass)));
+    }
+}
+
+void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage currentStage) {
+    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
+        removeFromDrawExclusionMask(RenderStagePass(currentStage, static_cast<RenderPassType>(pass)));
+    }
 }
 
 };

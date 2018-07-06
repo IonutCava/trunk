@@ -51,8 +51,11 @@ glVertexArray::glVertexArray(GFXDevice& context)
     _prevSizeIndices = -1;
     _effectiveEntrySize = -1;
     _IBid = 0;
-    _vaoCaches.fill(0);
-    _vaoHashes.fill(0);
+
+    for (U8 i = 0; i < to_const_uint(RenderPassType::COUNT); ++i) {
+        _vaoCaches[i].fill(0);
+        _vaoHashes[i].fill(0);
+    }
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -67,8 +70,9 @@ void glVertexArray::reset() {
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
-    _vaoHashes.fill(0);
-
+    for (U8 i = 0; i < to_const_uint(RenderPassType::COUNT); ++i) {
+        _vaoHashes[i].fill(0);
+    }
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
     VertexBuffer::reset();
@@ -200,30 +204,31 @@ bool glVertexArray::refresh() {
 
 
     Console::printfn("VAO HASHES: ");
-    std::array<bool, to_const_uint(RenderStage::COUNT)> vaoCachesDirty;
-    vaoCachesDirty.fill(false);
+    std::array<bool, to_const_uint(RenderStage::COUNT)> vaoCachesDirty[to_const_uint(RenderPassType::COUNT)];
     std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> attributesPerStage;
-    for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        const AttribFlags& stageMask = _attribMaskPerStage[i];
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        vaoCachesDirty[pass].fill(false);
+        for (U8 i = 0; i < to_const_ubyte(RenderStage::COUNT); ++i) {
+            const AttribFlags& stageMask = _attribMaskPerStage[pass][i];
 
-        AttribFlags& stageUsage = attributesPerStage[i];
-        for (U8 j = 0; j < to_const_uint(VertexAttribute::COUNT); ++j) {
-            stageUsage[j] = _useAttribute[j] && stageMask[j];
-        }
-        size_t crtHash = std::hash<AttribFlags>()(stageUsage);
-        _vaoHashes[i] = crtHash;
-        _vaoCaches[i] = getVao(crtHash);
-        if (_vaoCaches[i] == 0) {
-            // Generate a "Vertex Array Object"
-            _vaoCaches[i] = GLUtil::_vaoPool.allocate();
-            assert(_vaoCaches[i] != 0 && Locale::get(_ID("ERROR_VAO_INIT")));
-            setVao(crtHash, _vaoCaches[i]);
-            vaoCachesDirty[i] = true;
-        }
+            AttribFlags& stageUsage = attributesPerStage[i];
+            for (U8 j = 0; j < to_const_ubyte(VertexAttribute::COUNT); ++j) {
+                stageUsage[j] = _useAttribute[j] && stageMask[j];
+            }
+            size_t crtHash = std::hash<AttribFlags>()(stageUsage);
+            _vaoHashes[pass][i] = crtHash;
+            _vaoCaches[pass][i] = getVao(crtHash);
+            if (_vaoCaches[pass][i] == 0) {
+                // Generate a "Vertex Array Object"
+                _vaoCaches[pass][i] = GLUtil::_vaoPool.allocate();
+                assert(_vaoCaches[pass][i] != 0 && Locale::get(_ID("ERROR_VAO_INIT")));
+                setVao(crtHash, _vaoCaches[pass][i]);
+                vaoCachesDirty[pass][i] = true;
+            }
 
-        Console::printfn("      %d : %d", i, to_uint(crtHash));
+            Console::printfn("      %d : %d (pass: %s)", i, to_uint(crtHash), (pass == 0 ? "PrePass" : "FwdPass"));
+        }
     }
-
 
     std::pair<bufferPtr, size_t> bufferData = getMinimalData();
     // If any of the VBO's components changed size, we need to recreate the
@@ -275,16 +280,18 @@ bool glVertexArray::refresh() {
     }
 
     vectorImpl<GLuint> vaos;
-    for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        if (vaoCachesDirty[i]) {
-            GLuint crtVao = _vaoCaches[i];
-            if (std::find_if(std::cbegin(vaos), 
-                             std::cend(vaos),
-                             [crtVao](GLuint vao) {
-                                return crtVao == vao;
-                             }) == std::cend(vaos))
-            {
-                vaos.push_back(crtVao);
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U8 i = 0; i < to_const_ubyte(RenderStage::COUNT); ++i) {
+            if (vaoCachesDirty[pass][i]) {
+                GLuint crtVao = _vaoCaches[pass][i];
+                if (std::find_if(std::cbegin(vaos),
+                                 std::cend(vaos),
+                                     [crtVao](GLuint vao) {
+                                         return crtVao == vao;
+                                     }) == std::cend(vaos))
+                {
+                    vaos.push_back(crtVao);
+                }
             }
         }
     }
@@ -294,7 +301,10 @@ bool glVertexArray::refresh() {
         uploadVBAttributes(vaos[i]);
     }
 
-    vaoCachesDirty.fill(false);
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        vaoCachesDirty[pass].fill(false);
+    }
+    
     // Validate the buffer
     checkStatus();
     // Possibly clear client-side buffer for all non-required attributes?
@@ -350,9 +360,9 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
         }
     }
 
-    // Bind the vertex array object that in turn activates all of the bindings
-    // and pointers set on creation
-    GLuint vao = _vaoCaches[to_uint(_context.getRenderStage()._prePass ? RenderStage::Z_PRE_PASS : _context.getRenderStage()._stage)];
+    // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
+    const RenderStagePass& stagePass = _context.getRenderStage();
+    GLuint vao = _vaoCaches[to_uint(stagePass._passType)][to_uint(stagePass._stage)];
     if (GL_API::setActiveVAO(vao)) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests

@@ -101,7 +101,7 @@ void EnvironmentProbe::refresh() {
                                  _currentArrayIndex,
                                  _aabb.getCenter(),
                                  vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
-                                 RenderStagePass(RenderStage::REFLECTION, false),
+                                 RenderStagePass(RenderStage::REFLECTION, RenderPassType::COLOUR_PASS),
                                  getRTIndex());
         _currentUpdateCall = 0;
     }

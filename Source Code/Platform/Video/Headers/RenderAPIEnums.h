@@ -111,7 +111,12 @@ enum class RenderStage : U32 {
     REFLECTION = 1,
     REFRACTION = 2,
     DISPLAY = 3,
-    Z_PRE_PASS = 4,
+    COUNT
+};
+
+enum class RenderPassType : U32 {
+    DEPTH_PASS = 0,
+    COLOUR_PASS = 1,
     COUNT
 };
 

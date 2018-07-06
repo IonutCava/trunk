@@ -55,16 +55,13 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, const stringI
     /// Normal state for final rendering
     RenderStateBlock stateDescriptor;
     stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
-    setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY);
-    setRenderStateBlock(stateDescriptor.getHash(), RenderStage::REFRACTION);
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
-    setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION);
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColourWrites(true, true, true, false);
     zPrePassDescriptor.setZFunc(ComparisonFunction::LESS);
-    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::Z_PRE_PASS);
+
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CullMode::CCW);
@@ -73,10 +70,23 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, const stringI
     /// ignore half of the colours 
     /// Some shadowing techniques require drawing to the a colour buffer
     shadowDescriptor.setColourWrites(true, true, false, false);
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 0);
-    zPrePassDescriptor.setColourWrites(false, false, false, false);
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 1);
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 2);
+    RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
+    shadowDescriptorNoColour.setColourWrites(false, false, false, false);
+
+    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
+    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::COLOUR_PASS));
+    setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::COLOUR_PASS));
+
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 0);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 1);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::COLOUR_PASS), 2);
+
+    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::DEPTH_PASS));
+    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::DEPTH_PASS));
+    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::DEPTH_PASS));
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 0);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 1);
+    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS), 2);
 }
 
 Material::~Material()
@@ -107,14 +117,16 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
 
-    for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); i++) {
-        cloneMat->_shaderModifier[i] = base._shaderModifier[i];
-        cloneMat->_shaderInfo[i] = _shaderInfo[i];
-        for (U8 j = 0; j < _defaultRenderStates[i].size(); ++j) {
-            cloneMat->_defaultRenderStates[i][j] = _defaultRenderStates[i][j];
+    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
+        for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); i++) {
+            cloneMat->_shaderModifier[pass][i] = base._shaderModifier[pass][i];
+            cloneMat->_shaderInfo[pass][i] = _shaderInfo[pass][i];
+            for (U8 j = 0; j < _defaultRenderStates[pass][i].size(); ++j) {
+                cloneMat->_defaultRenderStates[pass][i][j] = _defaultRenderStates[pass][i][j];
+            }
         }
     }
-    
+
     for (U8 i = 0; i < to_ubyte(base._textures.size()); ++i) {
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
         if (!isExternalTexture(usage)) {
@@ -136,11 +148,13 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 }
 
 void Material::update(const U64 deltaTime) {
-    for (ShaderProgramInfo& info : _shaderInfo) {
-        if (info.computeStage() == ShaderProgramInfo::BuildStage::COMPUTED) {
-            if (info._shaderRef->getState() == ResourceState::RES_LOADED) {
-                info.computeStage(ShaderProgramInfo::BuildStage::READY);
-                _dirty = true;
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (ShaderProgramInfo& info : _shaderInfo[pass]) {
+            if (info.computeStage() == ShaderProgramInfo::BuildStage::COMPUTED) {
+                if (info._shaderRef->getState() == ResourceState::RES_LOADED) {
+                    info.computeStage(ShaderProgramInfo::BuildStage::READY);
+                    _dirty = true;
+                }
             }
         }
     }
@@ -148,9 +162,9 @@ void Material::update(const U64 deltaTime) {
     clean();
 }
 
-size_t Material::getRenderStateBlock(RenderStage currentStage, I32 variant) {
-    assert(variant >= 0 && variant < _defaultRenderStates[to_uint(currentStage)].size());
-    return _defaultRenderStates[to_uint(currentStage)][variant];
+size_t Material::getRenderStateBlock(const RenderStagePass& renderStagePass, I32 variant) {
+    assert(variant >= 0 && variant < defaultRenderStates(renderStagePass).size());
+    return defaultRenderStates(renderStagePass)[variant];
 }
 
 // base = base texture
@@ -209,17 +223,33 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
 // Here we set the shader's name
 void Material::setShaderProgram(const stringImpl& shader,
-                                RenderStage renderStage,
+                                const RenderStagePass& renderStagePass,
                                 const bool computeOnAdd) {
-    _shaderInfo[to_uint(renderStage)]._customShader = true;
-    setShaderProgramInternal(shader, renderStage, computeOnAdd);
+    shaderInfo(renderStagePass)._customShader = true;
+    setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
+}
+
+void Material::setShaderProgram(const stringImpl& shader,
+                                RenderStage stage,
+                                const bool computeOnAdd) {
+    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
+        setShaderProgram(shader, RenderStagePass(stage, static_cast<RenderPassType>(pass)), computeOnAdd);
+    }
+}
+
+void Material::setShaderProgram(const stringImpl& shader,
+                                RenderPassType passType,
+                                const bool computeOnAdd) {
+    for (U8 stage = 0; stage < to_const_uint(RenderStage::COUNT); ++stage) {
+        setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(stage), passType), computeOnAdd);
+    }
 }
 
 void Material::setShaderProgramInternal(const stringImpl& shader,
-                                        RenderStage renderStage,
+                                        const RenderStagePass& renderStagePass,
                                         const bool computeOnAdd) {
-    U32 stageIndex = to_uint(renderStage);
-    ShaderProgramInfo& info = _shaderInfo[stageIndex];
+    ShaderProgramInfo& info = shaderInfo(renderStagePass);
+
     // if we already had a shader assigned ...
     if (!info._shader.empty()) {
         // and we are trying to assign the same one again, return.
@@ -244,7 +274,7 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
     ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
-    queueElement._shaderData = &_shaderInfo[stageIndex];
+    queueElement._shaderData = &shaderInfo(renderStagePass);
     
     ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
     if (computeOnAdd) {
@@ -266,19 +296,23 @@ void Material::clean() {
 }
 
 void Material::recomputeShaders() {
-    for (ShaderProgramInfo& info : _shaderInfo) {
-        if (!info._customShader) {
-            info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (ShaderProgramInfo& info : _shaderInfo[pass]) {
+            if (!info._customShader) {
+                info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
+            }
         }
     }
 }
 
-bool Material::canDraw(RenderStage renderStage) {
-    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        ShaderProgramInfo& info = _shaderInfo[i];
-        if (info.computeStage() != ShaderProgramInfo::BuildStage::READY) {
-            computeShader(static_cast<RenderStage>(i), _highPriority);
-            return false;
+bool Material::canDraw(const RenderStagePass& renderStage) {
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            ShaderProgramInfo& info = _shaderInfo[pass][i];
+            if (info.computeStage() != ShaderProgramInfo::BuildStage::READY) {
+                computeShader(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), _highPriority);
+                return false;
+            }
         }
     }
 
@@ -339,8 +373,8 @@ void Material::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 ar
 }
 
 /// If the current material doesn't have a shader associated with it, then add the default ones.
-bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
-    ShaderProgramInfo& info = _shaderInfo[to_uint(renderStage)];
+bool Material::computeShader(const RenderStagePass& renderStagePass, const bool computeOnAdd){
+    ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // If shader's invalid, try to request a recompute as it might fix it
     if (info.computeStage() == ShaderProgramInfo::BuildStage::COUNT) {
         info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
@@ -378,8 +412,8 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
 
     bool deferredPassShader = _context.getRenderer().getType() !=
                               RendererType::RENDERER_TILED_FORWARD_SHADING;
-    bool depthPassShader = renderStage == RenderStage::SHADOW ||
-                           renderStage == RenderStage::Z_PRE_PASS;
+    bool depthPassShader = renderStagePass._stage == RenderStage::SHADOW ||
+                           renderStagePass._passType == RenderPassType::DEPTH_PASS;
 
     // the base shader is either for a Deferred Renderer or a Forward  one ...
     stringImpl shader =
@@ -388,106 +422,107 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
 
     if (Config::Profile::DISABLE_SHADING) {
         shader = g_PassThroughMaterialShaderName;
-        setShaderProgramInternal(shader, renderStage, computeOnAdd);
+        setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
         return false;
     }
 
-    if (depthPassShader && renderStage == RenderStage::SHADOW) {
-        setShaderDefines(renderStage, "SHADOW_PASS");
+    if (depthPassShader && renderStagePass._stage == RenderStage::SHADOW) {
+        setShaderDefines(renderStagePass, "SHADOW_PASS");
         shader += ".Shadow";
     } else {
-        setShaderDefines(renderStage, "DEPTH_PASS");
+        setShaderDefines(renderStagePass, "DEPTH_PASS");
     }
 
     // What kind of effects do we need?
     if (_textures[slot0]) {
         // Bump mapping?
         if (_textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
-            setShaderDefines(renderStage, "COMPUTE_TBN");
+            setShaderDefines(renderStagePass, "COMPUTE_TBN");
             shader += ".Bump";  // Normal Mapping
             if (_bumpMethod == BumpMethod::PARALLAX) {
                 shader += ".Parallax";
-                setShaderDefines(renderStage, "USE_PARALLAX_MAPPING");
+                setShaderDefines(renderStagePass, "USE_PARALLAX_MAPPING");
             } else if (_bumpMethod == BumpMethod::RELIEF) {
                 shader += ".Relief";
-                setShaderDefines(renderStage, "USE_RELIEF_MAPPING");
+                setShaderDefines(renderStagePass, "USE_RELIEF_MAPPING");
             }
         } else {
             // Or simple texture mapping?
             shader += ".Texture";
         }
     } else {
-        setShaderDefines(renderStage, "SKIP_TEXTURES");
+        setShaderDefines(renderStagePass, "SKIP_TEXTURES");
         shader += ".NoTexture";
     }
 
     if (_textures[to_const_uint(ShaderProgram::TextureUsage::SPECULAR)]) {
         shader += ".Specular";
-        setShaderDefines(renderStage, "USE_SPECULAR_MAP");
+        setShaderDefines(renderStagePass, "USE_SPECULAR_MAP");
     }
 
     if (updateTranslucency()) {
         switch (_translucencySource) {
             case TranslucencySource::OPACITY_MAP: {
                 shader += ".OpacityMap";
-                setShaderDefines(renderStage, "USE_OPACITY_MAP");
+                setShaderDefines(renderStagePass, "USE_OPACITY_MAP");
             } break;
             case TranslucencySource::DIFFUSE: {
                 shader += ".DiffuseAlpha";
-                setShaderDefines(renderStage, "USE_OPACITY_DIFFUSE");
+                setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE");
             } break;
             case TranslucencySource::DIFFUSE_MAP: {
                 shader += ".DiffuseMapAlpha";
-                setShaderDefines(renderStage, "USE_OPACITY_DIFFUSE_MAP");
+                setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE_MAP");
             } break;
         };
     }
 
     if (_doubleSided) {
         shader += ".DoubleSided";
-        setShaderDefines(renderStage, "USE_DOUBLE_SIDED");
+        setShaderDefines(renderStagePass, "USE_DOUBLE_SIDED");
     }
 
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
-        setShaderDefines(renderStage, "USE_GPU_SKINNING");
+        setShaderDefines(renderStagePass, "USE_GPU_SKINNING");
         shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only property
     }
 
     switch (_shadingMode) {
         default:
         case ShadingMode::FLAT: {
-            setShaderDefines(renderStage, "USE_SHADING_FLAT");
+            setShaderDefines(renderStagePass, "USE_SHADING_FLAT");
             shader += ".Flat";
         } break;
         case ShadingMode::PHONG: {
-            setShaderDefines(renderStage, "USE_SHADING_PHONG");
+            setShaderDefines(renderStagePass, "USE_SHADING_PHONG");
             shader += ".Phong";
         } break;
         case ShadingMode::BLINN_PHONG: {
-            setShaderDefines(renderStage, "USE_SHADING_BLINN_PHONG");
+            setShaderDefines(renderStagePass, "USE_SHADING_BLINN_PHONG");
             shader += ".BlinnPhong";
         } break;
         case ShadingMode::TOON: {
-            setShaderDefines(renderStage, "USE_SHADING_TOON");
+            setShaderDefines(renderStagePass, "USE_SHADING_TOON");
             shader += ".Toon";
         } break;
         case ShadingMode::OREN_NAYAR: {
-            setShaderDefines(renderStage, "USE_SHADING_OREN_NAYAR");
+            setShaderDefines(renderStagePass, "USE_SHADING_OREN_NAYAR");
             shader += ".OrenNayar";
         } break;
         case ShadingMode::COOK_TORRANCE: {
-            setShaderDefines(renderStage, "USE_SHADING_COOK_TORRANCE");
+            setShaderDefines(renderStagePass, "USE_SHADING_COOK_TORRANCE");
             shader += ".CookTorrance";
         } break;
     }
     // Add any modifiers you wish
-    if (!_shaderModifier[to_uint(renderStage)].empty()) {
+    stringImpl& modifier = _shaderModifier[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
+    if (!modifier.empty()) {
         shader += ".";
-        shader += _shaderModifier[to_uint(renderStage)];
+        shader += modifier;
     }
 
-    setShaderProgramInternal(shader, renderStage, computeOnAdd);
+    setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
 
     return false;
 }
@@ -559,8 +594,8 @@ void Material::getTextureData(TextureDataContainer& textureData) {
     }
 }
 
-ShaderProgramInfo& Material::getShaderInfo(RenderStage renderStage) {
-    return _shaderInfo[to_uint(renderStage)];
+ShaderProgramInfo& Material::getShaderInfo(const RenderStagePass& renderStagePass) {
+    return shaderInfo(renderStagePass);
 }
 
 void Material::setBumpMethod(const BumpMethod& newBumpMethod) {
@@ -577,7 +612,9 @@ bool Material::unload() {
 
     _textures.fill(nullptr);
     _customTextures.clear();
-    _shaderInfo.fill(ShaderProgramInfo());
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        _shaderInfo[pass].fill(ShaderProgramInfo());
+    }
 
     return true;
 }
@@ -590,15 +627,17 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if (_doubleSided) {
-        for (U32 index = 0; index < to_const_uint(RenderStage::COUNT); ++index) {
-            for (U8 variant = 0; variant < _defaultRenderStates[index].size(); ++variant) {
-                size_t hash = _defaultRenderStates[index][variant];
-                RenderStateBlock descriptor(RenderStateBlock::get(hash));
-                descriptor.setCullMode(CullMode::NONE);
-                if (_translucencySource != TranslucencySource::COUNT) {
-                    descriptor.setBlend(true);
+        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+            for (U32 index = 0; index < to_const_uint(RenderStage::COUNT); ++index) {
+                for (U8 variant = 0; variant < to_ubyte(_defaultRenderStates[index].size()); ++variant) {
+                    size_t hash = _defaultRenderStates[pass][index][variant];
+                    RenderStateBlock descriptor(RenderStateBlock::get(hash));
+                    descriptor.setCullMode(CullMode::NONE);
+                    if (_translucencySource != TranslucencySource::COUNT) {
+                        descriptor.setBlend(true);
+                    }
+                    setRenderStateBlock(descriptor.getHash(), RenderStagePass(static_cast<RenderStage>(index), static_cast<RenderPassType>(pass)), variant);
                 }
-                setRenderStateBlock(descriptor.getHash(), static_cast<RenderStage>(index), variant);
             }
         }
     }
@@ -644,10 +683,10 @@ bool Material::updateTranslucency() {
     return isTranslucent();
 }
 
-void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
+void Material::getSortKeys(const RenderStagePass& renderStagePass, I32& shaderKey, I32& textureKey) const {
     static const I16 invalidShaderKey = -std::numeric_limits<I16>::max();
 
-    const ShaderProgramInfo& info = _shaderInfo[to_const_uint(RenderStage::DISPLAY)];
+    const ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
     shaderKey = info._shaderRef ? info._shaderRef->getID()
                                 : invalidShaderKey;
@@ -665,9 +704,12 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
 
 void Material::rebuild() {
     recomputeShaders();
-    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        computeShader(static_cast<RenderStage>(i), _highPriority);
-        _shaderInfo[i]._shaderRef->recompile();
+
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            computeShader(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), _highPriority);
+            _shaderInfo[pass][i]._shaderRef->recompile();
+        }
     }
 }
 

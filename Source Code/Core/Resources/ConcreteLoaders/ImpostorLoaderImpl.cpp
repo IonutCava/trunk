@@ -18,9 +18,9 @@ Resource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
         Material_ptr matTemp = 
             CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.getName()));
 
-        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));
+        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS))));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY);
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
         matTemp->setShadingMode(Material::ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);
@@ -33,7 +33,6 @@ Resource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
     return ptr;
 }
 
-
 template <>
 Resource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
     std::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_context.gfx(), _cache, _descriptor.getName(), 1.0f),
@@ -45,9 +44,9 @@ Resource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
         Material_ptr matTemp =
             CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.getName()));
 
-        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));
+        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS))));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY);
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
         matTemp->setShadingMode(Material::ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);

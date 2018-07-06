@@ -149,9 +149,9 @@ class RenderingComponent : public SGNComponent {
 
     inline U32 commandOffset() const { return _commandOffset; }
 
-    ShaderProgram_ptr getDrawShader(RenderStage renderStage = RenderStage::DISPLAY);
+    ShaderProgram_ptr getDrawShader(const RenderStagePass& renderStagePass);
 
-    size_t getDrawStateHash(RenderStage renderStage);
+    size_t getDrawStateHash(const RenderStagePass& renderStagePass);
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
@@ -184,8 +184,8 @@ class RenderingComponent : public SGNComponent {
     ~RenderingComponent();
 
    protected:
-    bool canDraw(RenderStage renderStage);
-    void updateLoDLevel(const Camera& camera, RenderStage renderStage);
+    bool canDraw(const RenderStagePass& renderStagePass);
+    void updateLoDLevel(const Camera& camera, const RenderStagePass& renderStagePass);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
@@ -218,10 +218,14 @@ class RenderingComponent : public SGNComponent {
 
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
+    inline RenderPackage& renderData(const RenderStagePass& stagePass) {
+        return _renderData[to_uint(stagePass._passType)][to_uint(stagePass._stage)];
+    }
+
    protected:
     GFXDevice& _context;
     Material_ptr _materialInstance;
-    std::array<ShaderProgram_ptr, to_const_uint(RenderStage::COUNT)> _customShaders;
+    std::array<ShaderProgram_ptr, to_const_uint(RenderStage::COUNT)> _customShaders[to_const_uint(RenderPassType::COUNT)];
 
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
@@ -238,7 +242,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderSkeleton;
     bool _isVisible;
     TextureDataContainer _textureDependencies;
-    std::array<RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
+    std::array<RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData[to_const_uint(RenderPassType::COUNT)];
     
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
@@ -299,15 +303,25 @@ class RenderingCompSceneNode {
         }
 
         static void setCustomShader(RenderingComponent& renderable,
-                                    RenderStage renderStage,
+                                    const RenderStagePass& renderStagePass,
                                     const ShaderProgram_ptr& shaderProgram)  {
-            renderable._customShaders[to_uint(renderStage)] = shaderProgram;
+            renderable._customShaders[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)] = shaderProgram;
+        }
+
+        static void setCustomShader(RenderingComponent& renderable,
+                                    RenderStage renderStage,
+                                    const ShaderProgram_ptr& shaderProgram) {
+            for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+                renderable._customShaders[pass][to_uint(renderStage)] = shaderProgram;
+            }
         }
 
         static void setCustomShader(RenderingComponent& renderable,
                                     const ShaderProgram_ptr& shaderProgram) {
-            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-                renderable._customShaders[i] = shaderProgram;
+            for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+                for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+                    renderable._customShaders[pass][i] = shaderProgram;
+                }
             }
         }
 
@@ -340,8 +354,8 @@ class RenderingCompGFXDevice {
 
 class RenderingCompRenderBin {
    private:
-    static const RenderPackage& getRenderData(RenderingComponent& renderable, RenderStage renderStage) {
-        return renderable._renderData[to_uint(renderStage)];
+    static const RenderPackage& getRenderData(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
+        return renderable.renderData(renderStagePass);
     }
 
     static void postRender(RenderingComponent& renderable,

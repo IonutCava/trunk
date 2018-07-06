@@ -44,7 +44,7 @@ void CubeShadowMap::render(GFXDevice& context, U32 passIdx) {
                             _arrayOffset,
                             _light->getPosition(),
                             vec2<F32>(0.1f, _light->getRange()),
-                            RenderStagePass(RenderStage::SHADOW, false),
+                            RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS),
                             passIdx);
 }
 

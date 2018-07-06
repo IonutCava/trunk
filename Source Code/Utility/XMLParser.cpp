@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -876,6 +877,19 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
             loadTextureXML(cache, "specularMap", pt.get("specularMap.file", "none").c_str(), pt));
     }
 
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            RenderStage stage = static_cast<RenderStage>(i);
+            RenderPassType passType = static_cast<RenderPassType>(pass);
+
+            stringImpl shader = Util::StringFormat("shaderProgram.%s.%s", TypeUtil::renderStageToString(stage), TypeUtil::renderPassTypeToString(passType));
+
+            if (boost::optional<ptree &> child = pt.get_child_optional(shader.c_str())) {
+                mat->setShaderProgram(pt.get(shader.c_str(), "NULL").c_str(), RenderStagePass(stage, passType), false);
+            }
+        }
+    }
+
     return mat;
 }
 
@@ -885,7 +899,6 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
         return;
     }
 
-    
     ParamHandler &par = ParamHandler::instance();
     stringImpl file(mat.getName());
     file = file.substr(file.rfind("/") + 1, file.length());
@@ -950,19 +963,14 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
         saveTextureXML("specularMap", texture, pt);
     }
 
-    ShaderProgram_ptr shaderProg = mat.getShaderInfo().getProgram();
-    if (shaderProg) {
-        pt.put("shaderProgram.effect", shaderProg->getName());
-    }
+    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            RenderStage stage = static_cast<RenderStage>(i);
+            RenderPassType passType = static_cast<RenderPassType>(pass);
 
-    shaderProg = mat.getShaderInfo(RenderStage::SHADOW).getProgram();
-    if (shaderProg) {
-        pt.put("shaderProgram.shadowEffect", shaderProg->getName());
-    }
-
-    shaderProg = mat.getShaderInfo(RenderStage::Z_PRE_PASS).getProgram();
-    if (shaderProg) {
-        pt.put("shaderProgram.zPrePassEffect", shaderProg->getName());
+            ShaderProgram_ptr shaderProg = mat.getShaderInfo(RenderStagePass(stage, passType)).getProgram();
+            pt.put(Util::StringFormat("shaderProgram.%s.%s", TypeUtil::renderStageToString(stage), TypeUtil::renderPassTypeToString(passType)).c_str(), shaderProg->getName());
+        }
     }
 
     SAVE_FILE(fileLocation.c_str());

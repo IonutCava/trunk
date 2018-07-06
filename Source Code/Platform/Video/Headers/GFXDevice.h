@@ -101,6 +101,13 @@ namespace Attorney {
     class KernelApplication;
 };
 
+namespace TypeUtil {
+    const char* renderStageToString(RenderStage stage);
+    const char* renderPassTypeToString(RenderPassType pass);
+    RenderStage stringToRenderStage(const char* stage);
+    RenderPassType stringToRenderPassType(const char* pass);
+};
+
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 class GFXDevice : public KernelComponent {

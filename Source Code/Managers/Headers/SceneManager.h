@@ -215,7 +215,7 @@ private:
     RenderPassCuller::VisibleNodeList _tempNodesCache;
 
     typedef std::array<Time::ProfileTimer*, to_const_uint(RenderStage::COUNT)> CullTimersPerPass;
-    std::array<CullTimersPerPass, 2> _sceneGraphCullTimers;
+    std::array<CullTimersPerPass, to_const_uint(RenderPassType::COUNT)> _sceneGraphCullTimers;
     PlayerList _players;
 
     std::queue<std::pair<Scene*, SceneGraphNode_ptr>>  _playerAddQueue;
