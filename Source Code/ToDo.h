@@ -33,6 +33,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DIVIDE_TO_DO_H_
 
 /*
+==================== Change scene system ===============================================
+Always load a default scene that will never be unloaded
+- Default scene will handle both  main menu and scene transition screen
+Remove SceneManager. Default scene will handle loading/unloading/reloading of scenes
+Move scene load from XML / save to XML to the scene code (Scene::loadFromXML / Scene::saveToXML)
+- saveToXML will run on a timer in PROFILE and DEBUG code only and check every n seconds/minutes if anything changed (e.g. added/deleted nodes)
+Node XML description must support parent/child specification + more physics properties
+
 ==================== Change physics system =============================================
 Per Object3D collision shape:
 - Sphere,
