@@ -86,8 +86,8 @@ struct CommandBase {
 
     virtual const char* toString() const { return _typeName; }
 
-    CommandType _type;
-    const char* _typeName = nullptr;;
+    CommandType _type = CommandType::COUNT;
+    const char* _typeName = nullptr;
 };
 
 template<typename T, CommandType enumVal>
@@ -211,7 +211,6 @@ struct ReadAtomicCounterCommand final : Command<ReadAtomicCounterCommand, Comman
 struct SwitchWindowCommand final : Command<SwitchWindowCommand, CommandType::SWITCH_WINDOW> {
     I64 windowGUID = -1;
 };
-
 
 struct ExternalCommand final : Command<ExternalCommand, CommandType::EXTERNAL> {
     std::function<void()> _cbk;

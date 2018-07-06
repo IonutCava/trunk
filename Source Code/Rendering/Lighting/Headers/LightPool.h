@@ -157,9 +157,9 @@ class LightPool : public SceneComponent {
       void uploadLightBuffers(U8 stageIndex);
 
   private:
-    typedef vector<LightProperties> LightPropertiesVec;
-    typedef vector<Light::ShadowProperties> LightShadowProperties;
-    typedef vector<Light*> LightVec;
+    typedef vectorEASTL<LightProperties> LightPropertiesVec;
+    typedef vectorEASTL<Light::ShadowProperties> LightShadowProperties;
+    typedef vectorFast<Light*> LightVec;
 
     std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
     std::array<LightVec, to_base(RenderStage::COUNT)> _sortedLights;

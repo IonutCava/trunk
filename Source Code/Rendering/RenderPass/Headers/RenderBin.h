@@ -114,7 +114,7 @@ class RenderBin {
 
     const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 
-    void getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& nodes) const;
+    void getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& nodes, U16& countOut) const;
 
     U16 getBinSize(RenderStage stage) const;
 

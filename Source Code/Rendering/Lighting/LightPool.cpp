@@ -137,7 +137,7 @@ bool LightPool::addLight(Light& light) {
     const LightType type = light.getLightType();
     const U32 lightTypeIdx = to_base(type);
 
-    if (findLight(light.getGUID(), type) != std::end(_lights[lightTypeIdx])) {
+    if (findLight(light.getGUID(), type) != eastl::end(_lights[lightTypeIdx])) {
 
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
                          light.getGUID());
@@ -153,7 +153,7 @@ bool LightPool::addLight(Light& light) {
 bool LightPool::removeLight(I64 lightGUID, LightType type) {
     Light::LightList::const_iterator it = findLight(lightGUID, type);
 
-    if (it == std::end(_lights[to_U32(type)])) {
+    if (it == eastl::end(_lights[to_U32(type)])) {
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
                          lightGUID);
         return false;
@@ -182,7 +182,9 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Cam
 
     LightVec sortedLights;
     for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-        sortedLights.insert(std::end(sortedLights), std::begin(_lights[i]), std::end(_lights[i]));
+        for (Light* light : _lights[i]) {
+            sortedLights.push_back(light);
+        }
     }
 
     const vec3<F32>& eyePos = playerCamera.getEye();
@@ -248,7 +250,7 @@ void LightPool::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInO
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {
     Light::LightList::const_iterator it = findLight(lightGUID, type);
-    assert(it != std::end(_lights[to_U32(type)]));
+    assert(it != eastl::end(_lights[to_U32(type)]));
 
     return *it;
 }
@@ -267,7 +269,9 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     _sortedLightProperties[stageIndex].resize(0);
 
     for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-        _sortedLights[stageIndex].insert(std::end(_sortedLights[stageIndex]), std::begin(_lights[i]), std::end(_lights[i]));
+        for (Light* light : _lights[i]) {
+            _sortedLights[stageIndex].push_back(light);
+        }
     }
 
     auto lightUpdate = [this, stageIndex, &eyePos, &viewMatrix](const Task& parentTask) mutable

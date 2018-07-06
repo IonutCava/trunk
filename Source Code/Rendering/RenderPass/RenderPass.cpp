@@ -171,7 +171,6 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             params._target = RenderTargetID(RenderTargetUsage::SCREEN);
             params._pass = 0;
             params._doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
-            params._occlusionCull = true;
             _parent.doCustomPass(params, bufferInOut);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;

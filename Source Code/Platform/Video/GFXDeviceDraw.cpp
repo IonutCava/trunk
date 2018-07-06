@@ -29,8 +29,9 @@ void GFXDevice::uploadGPUBlock() {
         // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-        _gpuBlock._needsUpload = false;
         _api->updateClipPlanes(_clippingPlanes);
+
+        _gpuBlock._needsUpload = false;
     }
 }
 

@@ -47,7 +47,7 @@ template <typename... Args>
 stringImpl StringFormat(const char *const format, Args&&... args) {
     //return fmt::sprintf(format, std::forward<Args>(args)...);
     int sz = snprintf(nullptr, 0, format, std::forward<Args>(args)...);
-    std::vector<char> buf(sz + 1 , '\0');
+    vectorEASTL<char> buf(sz + 1 , '\0');
     snprintf(&buf[0], buf.size(), format, std::forward<Args>(args)...);
     return stringImpl(buf.data(), buf.size() - 1);
 }

@@ -299,7 +299,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     {
         Time::ScopedTimer timer2(_sceneUpdateTimer);
 
-        U32 playerCount = _sceneManager->getActivePlayerCount();
+        U8 playerCount = _sceneManager->getActivePlayerCount();
 
         U8 loopCount = 0;
         while (_timingData.runUpdateLoop()) {
@@ -503,13 +503,13 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         }
     }
 
-    U32 playerCount = _sceneManager->getActivePlayerCount();
+    U8 playerCount = _sceneManager->getActivePlayerCount();
 
     const Rect<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
-    if (_prevViewport != mainViewport || _prevPlayerCount != to_U8(playerCount)) {
-        computeViewports(mainViewport, _targetViewports, to_U8(playerCount));
+    if (_prevViewport != mainViewport || _prevPlayerCount != playerCount) {
+        computeViewports(mainViewport, _targetViewports, playerCount);
         _prevViewport.set(mainViewport);
-        _prevPlayerCount = to_U8(playerCount);
+        _prevPlayerCount = playerCount;
     }
 
     for (U8 i = 0; i < playerCount; ++i) {
