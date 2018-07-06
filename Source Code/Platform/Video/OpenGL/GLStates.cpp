@@ -286,13 +286,10 @@ bool GL_API::bindTexture(GLuint unit,
         // Remember the new binding state for future reference
         currentMapping.first = handle;
         currentMapping.second = type;
-// Bind the texture to the current unit
-#ifdef GL_VERSION_4_5
-        glBindMultiTexture(GL_TEXTURE0 + unit, type, handle);
-#else
-        gl44ext::glBindMultiTextureEXT(GL_TEXTURE0 + unit, type, handle);
-#endif
-
+        // Bind the texture to the current unit
+        GL_API::setActiveTextureUnit(unit);
+        glBindTexture(type, handle); 
+        
         return true;
     }
 

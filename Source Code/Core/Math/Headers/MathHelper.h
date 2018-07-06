@@ -224,6 +224,9 @@ stringImpl& ltrim(stringImpl& s);
 stringImpl& rtrim(stringImpl& s);
 
 stringImpl& trim(stringImpl& s);
+//fmt_str is passed by value to conform with the requirements of va_start.
+//http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
+stringImpl stringFormat(const stringImpl fmt_str, ...);
 
 /** Ogre3D
 @brief Normalise the selected rotations to be within the +/-180 degree range.

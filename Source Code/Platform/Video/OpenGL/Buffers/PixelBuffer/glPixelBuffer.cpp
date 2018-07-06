@@ -63,45 +63,21 @@ void glPixelBuffer::Destroy() {
 
 void* glPixelBuffer::Begin() const {
     GL_API::setPixelPackUnpackAlignment();
-#ifdef GL_VERSION_4_5
     glNamedBufferSubData(_pixelBufferHandle, 0, _bufferSize, NULL);
-#else
-    gl44ext::glNamedBufferSubDataEXT(_pixelBufferHandle, 0, _bufferSize, NULL);
-#endif
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
 
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-#ifdef GL_VERSION_4_5
-            glTextureSubImage1D(_textureID, static_cast<GLenum>(_textureType),
-                                0, 0, _width, _format, _dataType, 0);
-#else
-            gl44ext::glTextureSubImage1DEXT(
-                _textureID, static_cast<GLenum>(_textureType), 0, 0, _width,
-                _format, _dataType, 0);
-#endif
+            glTextureSubImage1D(_textureID, 0, 0, _width, _format, _dataType,
+                                NULL);
             break;
         case PBType::PB_TEXTURE_2D:
-#ifdef GL_VERSION_4_5
-            glTextureSubImage2D(_textureID, static_cast<GLenum>(_textureType),
-                                0, 0, 0, _width, _height, _format, _dataType,
-                                0);
-#else
-            gl44ext::glTextureSubImage2DEXT(
-                _textureID, static_cast<GLenum>(_textureType), 0, 0, 0, _width,
-                _height, _format, _dataType, 0);
-#endif
+            glTextureSubImage2D(_textureID, 0, 0, 0, _width, _height, _format,
+                                _dataType, NULL);
             break;
         case PBType::PB_TEXTURE_3D:
-#ifdef GL_VERSION_4_5
-            glTextureSubImage3D(_textureID, static_cast<GLenum>(_textureType),
-                                0, 0, 0, 0, _width, _height, _depth, _format,
-                                _dataType, 0);
-#else
-            gl44ext::glTextureSubImage3DEXT(
-                _textureID, static_cast<GLenum>(_textureType), 0, 0, 0, 0,
-                _width, _height, _depth, _format, _dataType, 0);
-#endif
+            glTextureSubImage3D(_textureID, 0, 0, 0, 0, _width, _height, _depth,
+                                _format, _dataType, NULL);
             break;
     };
 
@@ -159,119 +135,38 @@ bool glPixelBuffer::Create(GLushort width,
     }
     _bufferSize *= _dataSizeBytes;
 
-    glGenTextures(1, &_textureID);
+    glCreateTextures(textureTypeEnum, 1, &_textureID);
+    glTextureParameteri(_textureID, GL_GENERATE_MIPMAP, 0);
+    glTextureParameteri(_textureID, GL_TEXTURE_MIN_FILTER, to_uint(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_MAG_FILTER, to_uint(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_BASE_LEVEL, 0);
+    glTextureParameteri(_textureID, GL_TEXTURE_MAX_LEVEL, 1000);
+    glTextureParameteri(_textureID, GL_TEXTURE_WRAP_S, to_uint(GL_REPEAT));
 
-#ifdef GL_VERSION_4_5
-    glTextureParameteri(_textureID, textureTypeEnum, GL_GENERATE_MIPMAP, 0);
-    glTextureParameteri(_textureID, textureTypeEnum, GL_TEXTURE_MIN_FILTER,
-                        to_uint(GL_NEAREST));
-    glTextureParameteri(_textureID, textureTypeEnum, GL_TEXTURE_MAG_FILTER,
-                        to_uint(GL_NEAREST));
-    glTextureParameteri(_textureID, textureTypeEnum, GL_TEXTURE_BASE_LEVEL, 0);
-    glTextureParameteri(_textureID, textureTypeEnum, GL_TEXTURE_MAX_LEVEL,
-                        1000);
-    glTextureParameteri(_textureID, textureTypeEnum, GL_TEXTURE_WRAP_S,
-                        to_uint(GL_REPEAT));
-#else
-    gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                    GL_GENERATE_MIPMAP, 0);
-    gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                    GL_TEXTURE_MIN_FILTER, to_uint(GL_NEAREST));
-    gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                    GL_TEXTURE_MAG_FILTER, to_uint(GL_NEAREST));
-    gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                    GL_TEXTURE_BASE_LEVEL, 0);
-    gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                    GL_TEXTURE_MAX_LEVEL, 1000);
-    gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                    GL_TEXTURE_WRAP_S, to_uint(GL_REPEAT));
-#endif
     if (_pbtype != PBType::PB_TEXTURE_1D) {
-#ifdef GL_VERSION_4_5
-        glTextureParameteri(_textureID, textureTypeEnum, GL_TEXTURE_WRAP_T,
-                            to_uint(GL_REPEAT));
-#else
-        gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                        GL_TEXTURE_WRAP_T, to_uint(GL_REPEAT));
-#endif
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_T, to_uint(GL_REPEAT));
     }
     if (_pbtype == PBType::PB_TEXTURE_3D) {
-#ifdef GL_VERSION_4_5
-        glTextureParameteri(_textureID, textureTypeEnum, GL_TEXTURE_WRAP_R,
-                            to_uint(GL_REPEAT));
-#else
-        gl44ext::glTextureParameteriEXT(_textureID, textureTypeEnum,
-                                        GL_TEXTURE_WRAP_R, to_uint(GL_REPEAT));
-#endif
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_R, to_uint(GL_REPEAT));
     }
-    void* pixels = nullptr;
 
-    switch (_dataType) {
-        default:
-            pixels = MemoryManager_NEW GLubyte[size];
-            break;
-        case GL_FLOAT:
-            pixels = MemoryManager_NEW GLfloat[size];
-            break;
-        case GL_UNSIGNED_INT:
-            pixels = MemoryManager_NEW GLuint[size];
-            break;
-        case GL_UNSIGNED_SHORT:
-            pixels = MemoryManager_NEW GLushort[size];
-            break;
-        case GL_BYTE:
-            pixels = MemoryManager_NEW GLbyte[size];
-            break;
-        case GL_SHORT:
-            pixels = MemoryManager_NEW GLshort[size];
-            break;
-        case GL_INT:
-            pixels = MemoryManager_NEW GLint[size];
-            break;
-    };
-
-    memset(pixels, NULL, size * sizeOf(_dataType));
-
+    U16 mipLevels = std::floor(std::log2(std::max(_width, _height))) + 1;
     GL_API::setPixelPackUnpackAlignment();
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-#ifdef GL_VERSION_4_5
-            glTextureImage1D(_textureID, textureTypeEnum, 0,
-                             to_uint(_internalFormat), _width, 0, _format,
-                             _dataType, pixels);
-#else
-            gl44ext::glTextureImage1DEXT(_textureID, textureTypeEnum, 0,
-                                         to_uint(_internalFormat), _width, 0,
-                                         _format, _dataType, pixels);
-#endif
+            glTextureStorage1D(_textureID, mipLevels, _internalFormat, _width);
             break;
         case PBType::PB_TEXTURE_2D:
-#ifdef GL_VERSION_4_5
-            glTextureImage2D(_textureID, textureTypeEnum, 0,
-                             to_uint(_internalFormat), _width, _height, 0,
-                             _format, _dataType, pixels);
-#else
-            gl44ext::glTextureImage2DEXT(
-                _textureID, textureTypeEnum, 0, to_uint(_internalFormat),
-                _width, _height, 0, _format, _dataType, pixels);
-#endif
+            glTextureStorage2D(_textureID, mipLevels, _internalFormat, _width,
+                               _height);
             break;
         case PBType::PB_TEXTURE_3D:
-#ifdef GL_VERSION_4_5
-            glTextureImage3D(_textureID, textureTypeEnum, 0,
-                             to_uint(_internalFormat), _width, _height, _depth,
-                             0, _format, _dataType, pixels);
-#else
-            gl44ext::glTextureImage3DEXT(
-                _textureID, textureTypeEnum, 0, to_uint(_internalFormat),
-                _width, _height, _depth, 0, _format, _dataType, pixels);
-#endif
+            glTextureStorage3D(_textureID, mipLevels, _internalFormat, _width,
+                               _height, _depth);
             break;
     };
-    MemoryManager::DELETE_ARRAY(pixels);
 
-    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW,
-                                 _pixelBufferHandle);
+    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW, _pixelBufferHandle);
     return true;
 }
 

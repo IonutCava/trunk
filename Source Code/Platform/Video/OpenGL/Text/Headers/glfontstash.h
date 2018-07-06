@@ -42,25 +42,20 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
         width > 0 && height > 0,
         "glfons__renderCreate error: invalid texture dimensions!");
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
-    glGenTextures(1, &gl->tex);
-    glGenVertexArrays(1, &gl->glfons_vaoID);
-    glGenBuffers(1, &gl->glfons_vboID);
+    glCreateTextures(GL_TEXTURE_2D, 1, &gl->tex);
+    glCreateVertexArrays(1, &gl->glfons_vaoID);
+    glCreateBuffers(1, &gl->glfons_vboID);
+
     if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) {
         return 0;
     }
     gl->width = width;
     gl->height = height;
-#ifdef GL_VERSION_4_5
-    glTextureImage2D(gl->tex, GL_TEXTURE_2D, 0, static_cast<GLint>(GL_R8),
-                     gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
-    glTextureParameteri(gl->tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+
+    glTextureStorage2D(gl->tex, 1, GL_R8, gl->width, gl->height);
+    glTextureParameteri(gl->tex, GL_TEXTURE_MIN_FILTER,
                         static_cast<GLint>(GL_LINEAR));
-#else
-    gl44ext::glTextureImage2DEXT(gl->tex, GL_TEXTURE_2D, 0, static_cast<GLint>(GL_R8),
-                        gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
-    gl44ext::glTextureParameteriEXT(gl->tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                           static_cast<GLint>(GL_LINEAR));
-#endif
+
     return 1;
 }
 
@@ -76,13 +71,8 @@ static void glfons__renderUpdate(void* userPtr,
     }
 
     Divide::GL_API::setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
-#ifdef GL_VERSION_4_5
-    glTextureSubImage2D(gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1], w, h,
-                        GL_RED, GL_UNSIGNED_BYTE, data);
-#else
-    gl44ext::glTextureSubImage2DEXT(gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1], w, h,
-                           GL_RED, GL_UNSIGNED_BYTE, data);
-#endif
+    glTextureSubImage2D(gl->tex, 0, rect[0], rect[1], w, h, GL_RED,
+                        GL_UNSIGNED_BYTE, data);
 }
 
 static void glfons__renderDraw(void* userPtr,
@@ -100,16 +90,16 @@ static void glfons__renderDraw(void* userPtr,
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
 
     GLuint bufferID = gl->glfons_vboID;
-    Divide::GLUtil::allocBuffer(
-        bufferID, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts,
-        GL_STREAM_DRAW);
-    Divide::GLUtil::updateBuffer(bufferID, 0, vertDataSize,
-                                 (const Divide::GLUtil::bufferPtr)verts);
-    Divide::GLUtil::updateBuffer(bufferID, vertDataSize, vertDataSize,
-                                 (const Divide::GLUtil::bufferPtr)tcoords);
-    Divide::GLUtil::updateBuffer(bufferID, 2 * vertDataSize,
-                                 sizeof(unsigned char) * 4 * nverts,
-                                 (const Divide::GLUtil::bufferPtr)colors);
+    glNamedBufferData(bufferID,
+                      2 * vertDataSize + sizeof(unsigned char) * 4 * nverts,
+                      NULL, GL_STREAM_DRAW);
+    glNamedBufferSubData(bufferID, 0, vertDataSize,
+                         (const Divide::GLUtil::bufferPtr)verts);
+    glNamedBufferSubData(bufferID, vertDataSize, vertDataSize,
+                         (const Divide::GLUtil::bufferPtr)tcoords);
+    glNamedBufferSubData(bufferID, 2 * vertDataSize,
+                         sizeof(unsigned char) * 4 * nverts,
+                         (const Divide::GLUtil::bufferPtr)colors);
 
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     glEnableVertexAttribArray(0);

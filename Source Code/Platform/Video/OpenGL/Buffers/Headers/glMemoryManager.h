@@ -36,11 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 namespace GLUtil {
-    void allocBuffer(GLuint bufferId,
-                     GLsizeiptr bufferSize,
-                     GLenum usageMask,
-                     const bufferPtr data = NULL);
-
     void createAndAllocBuffer(GLsizeiptr bufferSize,
                               GLenum usageMask,
                               GLuint& bufferIdOut,
@@ -57,11 +52,6 @@ namespace GLUtil {
                                              BufferAccessMask accessMask,
                                              GLuint& bufferIdOut,
                                              const bufferPtr data = NULL);
-
-    void updateBuffer(GLuint bufferId,
-                      GLintptr offset,
-                      GLsizeiptr size,
-                      const bufferPtr data);
 
     void freeBuffer(GLuint &bufferId, bufferPtr mappedPtr = nullptr);
 

@@ -307,7 +307,7 @@ __forceinline void inverse(const T* in, T* out) {
 
 template <typename T>
 void multiply(const T* a, const T* b, T* r) {
-    memset(r, 0, sizeof(T) * 16);
+    //memset(r, 0, sizeof(T) * 16);
     U32 row, row_offset;
     for (row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4) {
         r[row_offset + 0] =

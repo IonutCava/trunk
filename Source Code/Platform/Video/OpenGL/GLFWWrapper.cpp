@@ -70,11 +70,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     } else {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-#ifdef GL_VERSION_4_5
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-#else
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-#endif
     }
 
     // Open an OpenGL window; resolution and windowed mode is specified in the
@@ -332,10 +328,10 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         to_uint(AttribLocation::VERTEX_POSITION));
 
     // We need a dummy VAO object for point rendering
-    glGenVertexArrays(1, &_pointDummyVAO);
+    glCreateVertexArrays(1, &_pointDummyVAO);
     // Allocate a buffer for indirect draw used to store the query results
     // without a round-trip to the CPU
-    glGenBuffers(1, &_indirectDrawBuffer);
+    glCreateBuffers(1, &_indirectDrawBuffer);
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
 #ifdef _DEBUG

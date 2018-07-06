@@ -40,6 +40,27 @@ vectorImpl<stringImpl> split(const stringImpl& input, char delimiter) {
     return elems;
 }
 
+stringImpl stringFormat(const stringImpl fmt_str, ...) {
+    // Reserve two times as much as the length of the fmt_str
+    I32 final_n, n = static_cast<I32>(fmt_str.size()) * 2; 
+    std::unique_ptr<char[]> formatted;
+    va_list ap;
+    while(1) {
+        /// Wrap the plain char array into the unique_ptr
+        formatted.reset(new char[n]); 
+        strcpy(&formatted[0], fmt_str.c_str());
+        va_start(ap, fmt_str);
+        final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
+        va_end(ap);
+        if (final_n < 0 || final_n >= n) {
+            n += abs(final_n - n + 1);
+        } else {
+            break;
+        }
+    }
+    return stringImpl(formatted.get());
+}
+
 vec4<U8> toByteColor(const vec4<F32>& floatColor) {
     return vec4<U8>(toByteColor(floatColor.rgb()),
                     static_cast<U8>(floatColor.a * 255));

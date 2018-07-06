@@ -224,7 +224,7 @@ namespace NS_GLIM
         m_PositionData.push_back (Glim4ByteData(y));
         m_PositionData.push_back (Glim4ByteData(z));
 
-        std::map<stringImpl, GlimArrayData>::iterator it, itend;
+        hashMapImpl<stringImpl, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)
@@ -250,7 +250,7 @@ namespace NS_GLIM
 
         m_Signature.push_back (sig);
 
-        std::map<stringImpl, GlimArrayData>::const_iterator it, itend;
+        hashMapImpl<stringImpl, GlimArrayData>::const_iterator it, itend;
         itend = m_Attributes.end ();
 
         unsigned int uiOffset = sizeof (float) * 3;
@@ -327,7 +327,7 @@ namespace NS_GLIM
     {
         unsigned int uiVertexDataSize = sizeof (float) * 3;
 
-        std::map<stringImpl, GlimArrayData>::const_iterator it, itend;
+        hashMapImpl<stringImpl, GlimArrayData>::const_iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)
@@ -390,7 +390,7 @@ namespace NS_GLIM
         Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
         Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        std::map<stringImpl, GlimArrayData>::iterator it, itend;
+        hashMapImpl<stringImpl, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)
@@ -471,17 +471,17 @@ namespace NS_GLIM
         if (!m_bCreatedVBOs)
         {
             m_bCreatedVBOs = true;
-            glGenVertexArrays(1, &m_VertexArrayObjectID);
-            glGenBuffers (1, &m_uiVertexBufferID);
-            glGenBuffers (1, &m_uiElementBufferID_Points);
-            glGenBuffers (1, &m_uiElementBufferID_Lines);
-            glGenBuffers (1, &m_uiElementBufferID_Triangles);
-            glGenBuffers (1, &m_uiElementBufferID_Wireframe);
+            glCreateVertexArrays(1, &m_VertexArrayObjectID);
+            glCreateBuffers (1, &m_uiVertexBufferID);
+            glCreateBuffers (1, &m_uiElementBufferID_Points);
+            glCreateBuffers (1, &m_uiElementBufferID_Lines);
+            glCreateBuffers (1, &m_uiElementBufferID_Triangles);
+            glCreateBuffers (1, &m_uiElementBufferID_Wireframe);
         }
 
         // space reservation pre-pass;
         size_t bufferSize = m_PositionData.size();
-        std::map<stringImpl, GlimArrayData>::iterator it, itend;
+        hashMapImpl<stringImpl, GlimArrayData>::iterator it, itend;
         it = std::begin(m_Attributes);
         itend = std::end(m_Attributes);
         for (; it != itend; ++it) {
@@ -512,9 +512,8 @@ namespace NS_GLIM
             uiOffset += uiAttributeSize;
         }
 
-        Divide::GLUtil::allocBuffer(m_uiVertexBufferID,
-                                    uiVertices * uiVertexDataSize,
-                                    GL_STREAM_DRAW, m_bufferData.data());
+        glNamedBufferData(m_uiVertexBufferID, uiVertices * uiVertexDataSize,
+                          m_bufferData.data(), GL_STREAM_DRAW);
         // the buffer in RAM can be cleared now
         m_bufferData.clear();
 
@@ -525,37 +524,33 @@ namespace NS_GLIM
 
         // upload the index buffer for the points
         if (m_uiPointElements > 0) {
-            Divide::GLUtil::allocBuffer(
-                m_uiElementBufferID_Points,
-                m_uiPointElements * sizeof(unsigned int), GL_STATIC_DRAW,
-                m_IndexBuffer_Points.data());
+            glNamedBufferData(m_uiElementBufferID_Points,
+                              m_uiPointElements * sizeof(unsigned int),
+                              m_IndexBuffer_Points.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Points.clear();
         }
 
         // upload the index buffer for the lines
         if (m_uiLineElements > 0) {
-            Divide::GLUtil::allocBuffer(m_uiElementBufferID_Lines,
-                                        m_uiLineElements * sizeof(unsigned int),
-                                        GL_STATIC_DRAW,
-                                        m_IndexBuffer_Lines.data());
+            glNamedBufferData(m_uiElementBufferID_Lines,
+                              m_uiLineElements * sizeof(unsigned int),
+                              m_IndexBuffer_Lines.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Lines.clear();
         }
 
         // upload the index buffer for the triangles
         if (m_uiTriangleElements > 0) {
-            Divide::GLUtil::allocBuffer(
-                m_uiElementBufferID_Triangles,
-                m_uiTriangleElements * sizeof(unsigned int), GL_STATIC_DRAW,
-                m_IndexBuffer_Triangles.data());
+            glNamedBufferData(m_uiElementBufferID_Triangles,
+                              m_uiTriangleElements * sizeof(unsigned int),
+                              m_IndexBuffer_Triangles.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Triangles.clear();
         }
 
         // upload the index buffer for the wireframe
         if (m_uiWireframeElements > 0) {
-            Divide::GLUtil::allocBuffer(
-                m_uiElementBufferID_Wireframe,
-                m_uiWireframeElements * sizeof(unsigned int), GL_STATIC_DRAW,
-                m_IndexBuffer_Wireframe.data());
+            glNamedBufferData(m_uiElementBufferID_Wireframe,
+                              m_uiWireframeElements * sizeof(unsigned int),
+                              m_IndexBuffer_Wireframe.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Wireframe.clear();
         }
     }

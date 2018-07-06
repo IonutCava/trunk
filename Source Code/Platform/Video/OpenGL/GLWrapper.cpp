@@ -174,11 +174,7 @@ bool GL_API::initShaders() {
 // Add our engine specific defines and various code pieces to every GLSL
 // shader
 // Add version as the first shader statement, followed by copyright notice
-#ifdef GL_VERSION_4_5
     appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
-#else
-    appendToShaderHeader(ShaderType::COUNT, "#version 440 core", lineOffsets);
-#endif
     appendToShaderHeader(ShaderType::COUNT,
                          "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
@@ -581,10 +577,10 @@ void GL_API::drawPoints(GLuint numPoints) {
 void GL_API::uploadDrawCommands(
     const vectorImpl<IndirectDrawCommand>& drawCommands) const {
     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-    GLUtil::allocBuffer(
+    glNamedBufferData(
         _indirectDrawBuffer,
         (GLsizeiptr)(sizeof(IndirectDrawCommand) * drawCommands.size()),
-        GL_DYNAMIC_DRAW, (GLUtil::bufferPtr)drawCommands.data());
+        (GLUtil::bufferPtr)drawCommands.data(), GL_DYNAMIC_DRAW);
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

@@ -151,6 +151,7 @@ const char* Console::errorf(const char* format, ...) {
 }
 
 void Console::flush() {
+    boost::mutex::scoped_lock lock(io_mutex);
     std::cerr << std::flush;
     std::cout << std::flush;
 }

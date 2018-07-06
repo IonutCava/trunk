@@ -129,6 +129,7 @@ class RenderingComponent : public SGNComponent {
 
    protected:
     Material* _materialInstance;
+    DELEGATE_CBK<> _firstDrawCbk;
     /// LOD level is updated at every visibility check
     /// (SceneNode::isInView(...));
     U8 _lodLevel;  ///<Relative to camera distance

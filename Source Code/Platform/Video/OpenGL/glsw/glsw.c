@@ -118,18 +118,28 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
         return 0;
     }
 
-    bstring prefix = bfromcstr(pathPrefix);
-    if (bstrcmp(gc->PathPrefix, prefix) != 0) {
-        bsetstr(gc->PathPrefix, 0, prefix, '\0');
+    if (!gc->PathPrefix) {
+        gc->PathPrefix = bfromcstr(pathPrefix);
     } else {
-        bdestroy(prefix);
+        bstring prefix = bfromcstr(pathPrefix);
+        if (bstrcmp(gc->PathPrefix, prefix) != 0) {
+            bassign(gc->PathPrefix, prefix);
+        }
+        else {
+            bdestroy(prefix);
+        }
     }
 
-    bstring suffix = bfromcstr(pathSuffix);
-    if (bstrcmp(gc->PathSuffix, suffix) != 0) {
-        bsetstr(gc->PathSuffix, 0, suffix, '\0');
+    if (!gc->PathSuffix) {
+        gc->PathSuffix = bfromcstr(pathSuffix);
     } else {
-        bdestroy(suffix);
+        bstring suffix = bfromcstr(pathSuffix);
+        if (bstrcmp(gc->PathSuffix, suffix) != 0) {
+            bassign(gc->PathSuffix, suffix);
+        }
+        else {
+            bdestroy(suffix);
+        }
     }
 
     return 1;

@@ -101,7 +101,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     glGenTransformFeedbacks(1, &_transformFeedback);
     // Create our buffer objects
     _bufferObjects.resize(numBuffers, 0);
-    glGenBuffers(numBuffers, &_bufferObjects[0]);
+    glCreateBuffers(numBuffers, &_bufferObjects[0]);
     // Prepare our generic queries
     _numQueries = numQueries;
     for (U8 i = 0; i < 2; ++i) {
@@ -325,10 +325,10 @@ void glGenericVertexData::SetBuffer(U32 buffer,
                            : GL_STATIC_DRAW);
         // If the buffer is not persistently mapped, allocate storage the
         // classic way
-        GLUtil::allocBuffer(currentBuffer, bufferSize * sizeFactor, flag);
+        glNamedBufferData(currentBuffer, bufferSize * sizeFactor, NULL, flag);
         // And upload sizeFactor copies of the data
         for (U8 i = 0; i < sizeFactor; ++i) {
-            GLUtil::updateBuffer(currentBuffer, i * bufferSize, bufferSize,
+            glNamedBufferSubData(currentBuffer, i * bufferSize, bufferSize,
                                  data);
         }
     }
@@ -352,7 +352,7 @@ void glGenericVertexData::UpdateBuffer(U32 buffer,
     if (!_bufferPersistent[buffer]) {
         // Update part of the data in the buffer at the specified buffer in the
         // copy that's ready for writing
-        GLUtil::updateBuffer(_bufferObjects[buffer],
+        glNamedBufferSubData(_bufferObjects[buffer],
                              _startDestOffset[buffer] + offset, dataCurrentSize,
                              data);
     } else {
