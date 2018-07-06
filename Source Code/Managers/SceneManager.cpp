@@ -147,12 +147,20 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         if (node.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type =
                 node.getNode<Object3D>()->getObjectType();
-            return (type == Object3D::ObjectType::MESH ||
-                    type == Object3D::ObjectType::FLYWEIGHT);
+            return (type == Object3D::ObjectType::FLYWEIGHT);
         }
         return false;
     };
 
+    auto meshCullingFunction = [](const RenderPassCuller::RenderableNode& node) -> bool {
+        const SceneGraphNode* sgnNode = node._visibleNode;
+        if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            Object3D::ObjectType type =
+                sgnNode->getNode<Object3D>()->getObjectType();
+            return (type == Object3D::ObjectType::MESH);
+        }
+        return false;
+    };
     if (flushCache) {
         _renderPassCuller->refresh();
     }
@@ -179,7 +187,9 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         LightManager::getInstance().updateAndUploadLightData(
             GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
     }
+    _renderPassCuller->cullSpecial(nodes, meshCullingFunction);
 
+    
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
                                 refreshNodeData);

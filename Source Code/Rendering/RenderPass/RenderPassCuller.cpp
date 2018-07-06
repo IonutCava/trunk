@@ -96,6 +96,17 @@ void RenderPassCuller::cullSceneGraphCPU(VisibleNodeCache& nodes,
     }
 }
 
+RenderPassCuller::VisibleNodeCache& RenderPassCuller::cullSpecial(
+    RenderPassCuller::VisibleNodeCache& inputNodes,
+    const std::function<bool(const RenderableNode&)>& cullingFunction) {
+    VisibleNodeList& nodes = inputNodes._visibleNodes;
+    nodes.erase(std::remove_if(std::begin(nodes),
+                               std::end(nodes),
+                               cullingFunction),
+                std::end(nodes));
+    return inputNodes;
+}
+
 RenderPassCuller::VisibleNodeCache& RenderPassCuller::occlusionCull(
     RenderPassCuller::VisibleNodeCache& inputNodes) {
     return inputNodes;

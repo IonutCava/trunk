@@ -225,7 +225,7 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
                                                      const D32 dt) {
     I32 frameIndex = _animations[animationIndex].frameIndexAt(dt);
     LineMap& lineMap = _skeletonLines[animationIndex];
-    LineMap::iterator it = lineMap.find(frameIndex);
+    LineMap::iterator it = lineMap.find(std::max(frameIndex - 2, 0));
 
     if (it == std::end(lineMap)) {
         vectorAlg::vecSize lineEntry =

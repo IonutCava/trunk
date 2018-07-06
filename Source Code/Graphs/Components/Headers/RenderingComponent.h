@@ -146,6 +146,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderBoundingBox;
     bool _renderSkeleton;
     bool _nodeSkinned;
+    bool _isSubMesh;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
 

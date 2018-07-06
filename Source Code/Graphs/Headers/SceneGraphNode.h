@@ -159,7 +159,7 @@ class SceneGraphNode : public GUIDWrapper,
     }
 
     inline NodeChildren& getChildren() { 
-        ReadLock(_childrenLock);
+        ReadLock r_lock(_childrenLock);
         return _children;
     }
 

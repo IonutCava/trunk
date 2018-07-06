@@ -24,6 +24,8 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
+     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+     _isSubMesh = type == Object3D::ObjectType::SUBMESH;
     _nodeSkinned = parentSGN.getNode<Object3D>()->isSkinned();
     _renderData._textureData.reserve(ParamHandler::getInstance().getParam<I32>(
         "rendering.maxTextureSlots", 16));
@@ -36,7 +38,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingBoxPrimitive->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
-
     if (_nodeSkinned) {
         primitiveStateBlock.setLineWidth(2.0f);
         primitiveStateBlock.setZReadWrite(false, true);
@@ -272,11 +273,10 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                              vec4<U8>(0, 0, 255, 255));
         node->postDrawBoundingBox(_parentSGN);
     }
-    
+
     if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
-        Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         // Continue only for skinned submeshes
-        if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
+        if (_isSubMesh && _nodeSkinned) {
             SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
             StateTracker<bool>& parentStates = grandParent->getTrackedBools();
             if (parentStates.getTrackedValue(
@@ -287,12 +287,10 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                 // Get the skeleton lines from the submesh's animation component
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
                 // Submit the skeleton lines to the GPU for rendering
-                _skeletonPrimitive->paused(false);
                 GFX_DEVICE.drawLines(*_skeletonPrimitive, skeletonLines,
                                      _parentSGN.getComponent<PhysicsComponent>()
                                          ->getWorldMatrix(),
                                      vec4<I32>(), false);
-
                 parentStates.setTrackedValue(
                     StateTracker<bool>::State::SKELETON_RENDERED, true);
             }
