@@ -22,10 +22,10 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     mat4  dvd_ViewMatrix;
     mat4  dvd_ViewProjectionMatrix;
     vec4  dvd_cameraPosition;
-    uvec4 dvd_ViewPort;
+    vec4  dvd_ViewPort;
     vec4  dvd_ZPlanesCombined; //xy - current, zw - main scene 
     vec4  dvd_invScreenDimensions;
-    uvec4 dvd_shadowProperties;
+    vec4  dvd_shadowProperties;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
 
@@ -36,15 +36,15 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     vec4  dvd_fogDetails;
     vec4  dvd_windDetails;
     vec4  dvd_shadowingSettings;
-    uvec4 dvd_otherData;
+    vec4  dvd_otherData;
 };
 
 #define dvd_fogColor dvd_fogDetails.xyz
 #define dvd_fogDensity dvd_fogDetails.w
-#define dvd_time dvd_otherData.x
-#define dvd_showDebugInfo dvd_otherData.y
-#define dvd_shadowsEnabled (dvd_otherData.z == 1)
-#define dvd_lightCount dvd_otherData.w
+#define dvd_time int(dvd_otherData.x)
+#define dvd_showDebugInfo int(dvd_otherData.y)
+#define dvd_shadowsEnabled (int(dvd_otherData.z) == 1)
+#define dvd_lightCount int(dvd_otherData.w)
 
 
 #if defined(VERT_SHADER)

@@ -525,7 +525,9 @@ bool GL_API::initShaders() {
     appendToShaderHeader(ShaderType::FRAGMENT, "in  PerVertexData{", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "in  PerVertexData{", lineOffsets);
     for (std::string entry : shaderVaryings) {
-        appendToShaderHeader(ShaderType::COUNT, "    " + entry, lineOffsets);
+        appendToShaderHeader(ShaderType::VERTEX, "    " + entry, lineOffsets);
+        appendToShaderHeader(ShaderType::FRAGMENT, "    " + entry, lineOffsets);
+        appendToShaderHeader(ShaderType::GEOMETRY, "    " + entry, lineOffsets);
     }
     appendToShaderHeader(ShaderType::GEOMETRY, "} v_in[];", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "out  PerVertexData{", lineOffsets);

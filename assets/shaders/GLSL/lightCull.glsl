@@ -8,8 +8,8 @@
 #define LIGHT_INDEX_BUFFER_SENTINEL 0x7fffffff
 #define FLT_MAX 3.402823466e+38F
 
-#define windowWidth dvd_ViewPort.z
-#define windowHeight dvd_ViewPort.w
+#define windowWidth int(dvd_ViewPort.z)
+#define windowHeight int(dvd_ViewPort.w)
 
 uniform uint numLights;
 uniform int maxNumLightsPerTile;

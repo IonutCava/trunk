@@ -33,6 +33,7 @@
 #define _SCENE_NODE_H_
 
 #include "SceneNodeRenderState.h"
+#include "Rendering/Camera/Headers/Frustum.h"
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
@@ -94,6 +95,7 @@ class NOINITVTABLE SceneNode : public Resource {
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual bool isInView(const SceneRenderState& sceneRenderState,
                           SceneGraphNode& sgn,
+                          Frustum::FrustCollision& collisionType,
                           const bool distanceCheck = true);
 
     /*//Rendering/Processing*/
@@ -162,8 +164,10 @@ class SceneNodeSceneGraph {
 
     static bool isInView(SceneNode& node,
                          const SceneRenderState& sceneRenderState,
-                         SceneGraphNode& sgn, const bool distanceCheck = true) {
-        return node.isInView(sceneRenderState, sgn, distanceCheck);
+                         SceneGraphNode& sgn,
+                         Frustum::FrustCollision& collisionType, 
+                         const bool distanceCheck = true) {
+        return node.isInView(sceneRenderState, sgn, collisionType, distanceCheck);
     }
 
     friend class Divide::SceneGraphNode;

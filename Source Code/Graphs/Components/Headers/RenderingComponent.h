@@ -69,11 +69,13 @@ class RenderingComponent : public SGNComponent {
     void renderGeometry(const bool state);
     void renderWireframe(const bool state);
     void renderBoundingBox(const bool state);
+    void renderBoundingSphere(const bool state);
     void renderSkeleton(const bool state);
 
     inline bool renderGeometry() const { return _renderGeometry; }
     inline bool renderWireframe() const { return _renderWireframe; }
     inline bool renderBoundingBox() const { return _renderBoundingBox; }
+    inline bool renderBoundingSphere() const { return _renderBoundingSphere; }
     inline bool renderSkeleton() const { return _renderSkeleton; }
 
     void castsShadows(const bool state);
@@ -156,6 +158,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderGeometry;
     bool _renderWireframe;
     bool _renderBoundingBox;
+    bool _renderBoundingSphere;
     bool _renderSkeleton;
     bool _nodeSkinned;
     bool _isSubMesh;
@@ -163,6 +166,7 @@ class RenderingComponent : public SGNComponent {
     std::array<GFXDevice::RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
     
     IMPrimitive* _boundingBoxPrimitive;
+    IMPrimitive* _boundingSpherePrimitive;
     IMPrimitive* _skeletonPrimitive;
 
 #ifdef _DEBUG

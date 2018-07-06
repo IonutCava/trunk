@@ -70,7 +70,7 @@ bool Sky::load() {
     skybox.setID(4); // resolution
     skybox.setEnumValue(1); // radius
     _sky = CreateResource<Sphere3D>(skybox);
-
+    
     ResourceDescriptor skyShaderDescriptor("sky");
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 

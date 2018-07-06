@@ -62,7 +62,7 @@ void main()
 {
     vec2 minMax = vec2(1.0f, -1.0f);
     ivec2 offset = ivec2(gl_FragCoord.xy) * ivec2(LIGHT_GRID_TILE_DIM_X, LIGHT_GRID_TILE_DIM_Y);
-    ivec2 end = min(dvd_ViewPort.zw, offset + ivec2(LIGHT_GRID_TILE_DIM_X, LIGHT_GRID_TILE_DIM_Y));
+    ivec2 end = min(ivec2(dvd_ViewPort.zw), offset + ivec2(LIGHT_GRID_TILE_DIM_X, LIGHT_GRID_TILE_DIM_Y));
 
     // Note: with large tiles and many samples this shader makes very poor use of 
     // graphics hardware paralellism. A few shader threads will perform a lot of sequential 

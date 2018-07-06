@@ -62,15 +62,12 @@ class RenderPassCuller {
                      bool async,
                      const CullingFunction& cullingFunction);
    protected:
-    // return true if the node is not inside the frustum
-    bool frustumCullNode(SceneGraphNode& node,
-                         RenderStage currentStage,
-                         SceneRenderState& sceneRenderState);
 
-    void frustumCullRecursive(SceneGraphNode& node,
-                              RenderStage currentStage,
-                              SceneRenderState& sceneRenderState,
-                              VisibleNodeList& nodes);
+    // return true if the node is not currently visible
+    void frustumCullNode(SceneGraphNode& node,
+                         RenderStage currentStage,
+                         SceneRenderState& sceneRenderState,
+                         VisibleNodeList& nodes);
 
    protected:
     CullingFunction _cullingFunction;

@@ -11,11 +11,11 @@ namespace Divide {
 namespace {
     vec3<U32> g_currentBindConfig;
     vec3<U32> g_tempConfig;
-    bool setIfDifferentBindRange(U32 UBOid, U32 offset, U32 size) {
-        g_tempConfig.set(UBOid, offset, size);
+    bool setIfDifferentBindRange(U32 VBOid, U32 offset, U32 size) {
+        g_tempConfig.set(VBOid, offset, size);
         if (g_tempConfig != g_currentBindConfig) {
             g_currentBindConfig.set(g_tempConfig);
-            glBindVertexBuffer(0, UBOid, offset, size);
+            glBindVertexBuffer(0, VBOid, offset, size);
             return true;
         }
 

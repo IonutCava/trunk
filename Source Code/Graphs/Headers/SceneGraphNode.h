@@ -259,10 +259,18 @@ class SceneGraphNode : public GUIDWrapper,
         return getGUID() != rhs.getGUID();
     }
 
+    inline bool getVisibleState(RenderStage currentStage) {
+        return _isVisible[to_uint(currentStage)];
+    }
+
    protected:
     friend class RenderPassCuller;
-    // Returns true if the node should be culled
-    bool cullNode(const SceneRenderState& sceneRenderState, RenderStage currentStage);
+    // Returns true if the node should be culled (is not visible for the current stage)
+    bool cullNode(const SceneRenderState& sceneRenderState,
+                  Frustum::FrustCollision& collisionType,
+                  RenderStage currentStage);
+
+    void setVisibleState(bool state, RenderStage currentStage);
 
    protected:
     friend class RenderingComponent;
@@ -307,6 +315,7 @@ class SceneGraphNode : public GUIDWrapper,
     std::array<std::unique_ptr<SGNComponent>,
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
+    std::array<bool, to_const_uint(RenderStage::COUNT)> _isVisible;
     StateTracker<bool> _trackedBools;
 };
 

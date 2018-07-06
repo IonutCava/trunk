@@ -70,6 +70,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // (Many small updates with BufferSubData are recommended with the target usage of the buffer)
     _gfxDataBuffer.reset(newSB("dvd_GPUBlock", 1, false, false, BufferUpdateFrequency::OFTEN));
     _gfxDataBuffer->create(1, sizeof(GPUBlock));
+    _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
     // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
     // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame

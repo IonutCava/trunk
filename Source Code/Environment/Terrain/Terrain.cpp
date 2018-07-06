@@ -122,16 +122,21 @@ bool Terrain::computeBoundingBox(SceneGraphNode& sgn) {
 
 bool Terrain::isInView(const SceneRenderState& sceneRenderState,
                        SceneGraphNode& sgn,
+                       Frustum::FrustCollision& collisionType,
                        const bool distanceCheck) {
     U32 temp = 0;
-    _terrainInView = SceneNode::isInView(sceneRenderState, sgn, distanceCheck);
+    _terrainInView = SceneNode::isInView(sceneRenderState, sgn, collisionType, distanceCheck);
     _planeInView = _terrainInView
                        ? false
                        : _plane->isInView(sceneRenderState,
                                           sgn.getChild(0, temp),
+                                          collisionType,
                                           distanceCheck);
 
-    return _terrainInView || _planeInView;
+    bool visible = _terrainInView || _planeInView;
+    collisionType = visible ? Frustum::FrustCollision::FRUSTUM_IN
+                            : Frustum::FrustCollision::FRUSTUM_OUT;
+    return visible;
 }
 
 void Terrain::sceneUpdate(const U64 deltaTime,

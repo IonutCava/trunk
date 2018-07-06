@@ -74,7 +74,11 @@ class Trigger : public SceneNode {
 
     /// SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn, const bool distanceCheck = false) {
+                  SceneGraphNode& sgn,
+                  Frustum::FrustCollision& collisionType,
+                  const bool distanceCheck = false) {
+        collisionType = _drawImpostor ? Frustum::FrustCollision::FRUSTUM_IN
+                                      : Frustum::FrustCollision::FRUSTUM_OUT;
         return _drawImpostor;
     }
 

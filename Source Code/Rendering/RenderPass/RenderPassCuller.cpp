@@ -56,7 +56,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
             _cullingTasks.push_back(std::async(async ? std::launch::async | std::launch::deferred
                                                      : std::launch::deferred,
             [&]() {
-                frustumCullRecursive(child, stage, renderState, container);
+                frustumCullNode(child, stage, renderState, container);
             }));
         }
 
@@ -72,37 +72,42 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
     }
 }
 
-bool RenderPassCuller::frustumCullNode(SceneGraphNode& node,
-                                       RenderStage currentStage,
-                                       SceneRenderState& sceneRenderState) {
-    // Skip all of this for inactive nodes.
-    if (node.isActive()) {
-        // If the current node is visible, add it to the render
-        // queue (if it passes our custom culling function)
-        if (!node.cullNode(sceneRenderState, currentStage)) {
-            return _cullingFunction(node);
-        }
-    }
-
-    return true;
-}
-
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullRecursive(SceneGraphNode& currentNode,
-                                            RenderStage currentStage,
-                                            SceneRenderState& sceneRenderState,
-                                            VisibleNodeList& nodes)
+void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
+                                       RenderStage currentStage,
+                                       SceneRenderState& sceneRenderState,
+                                       VisibleNodeList& nodes)
 {
-    // Skip processing children if the parent node isn't visible
-    if (!frustumCullNode(currentNode, currentStage, sceneRenderState)) {
+    Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
+
+    bool isVisible = currentNode.isActive() &&
+                     !_cullingFunction(currentNode) &&
+                     !currentNode.cullNode(sceneRenderState, collisionResult, currentStage);
+
+    currentNode.setVisibleState(isVisible, currentStage);
+    
+    if (isVisible) {
         nodes.push_back(currentNode.shared_from_this());
-        // Process children if we did not early-out of the culling loop
         U32 childCount = currentNode.getChildCount();
-        for (U32 i = 0; i < childCount; ++i) {
-            frustumCullRecursive(currentNode.getChild(i, childCount), currentStage, sceneRenderState, nodes);
+        if (childCount > 0) {
+            if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+                // Parent node intersects the view, so check children
+                for (U32 i = 0; i < childCount; ++i) {
+                    frustumCullNode(currentNode.getChild(i, childCount),
+                                    currentStage,
+                                    sceneRenderState,
+                                    nodes);
+                }
+            } else {
+                // All nodes are in view entirely
+                for (U32 i = 0; i < childCount; ++i) {
+                    nodes.push_back(currentNode.getChild(i, childCount).shared_from_this());
+                }
+            }
         }
     }
+
 }
 
 };

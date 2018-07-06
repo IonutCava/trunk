@@ -23,17 +23,4 @@ namespace NS_GLIM
         char GLIM_Interface::s_VertexPosSemanticName[32] = "POSITION";
 #endif
 
-
-    glimException::glimException (const string &err) : runtime_error (err)
-    {
-        printf (err.c_str ());
-        cerr << err;
-
-#ifdef WIN32
-        MessageBox (nullptr, err.c_str (), "GLIM - Error", MB_ICONERROR);
-#endif
-    }
-
-
-
 }

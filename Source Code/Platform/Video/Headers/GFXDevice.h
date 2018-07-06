@@ -38,8 +38,10 @@
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Direct3D/Headers/DXWrapper.h"
-#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
+
 #include "Managers/Headers/RenderPassManager.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 #include <stack>
 #include <future>
@@ -196,10 +198,10 @@ DEFINE_SINGLETON(GFXDevice)
            mat4<F32> _ViewMatrix;
            mat4<F32> _ViewProjectionMatrix;
            vec4<F32> _cameraPosition;
-           vec4<U32> _ViewPort;
+           vec4<F32> _ViewPort;
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
-           vec4<U32> _shadowProperties;
+           vec4<F32> _shadowProperties;
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
         } _data;
 
@@ -240,8 +242,13 @@ DEFINE_SINGLETON(GFXDevice)
     IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
 
     void debugDraw(const SceneRenderState& sceneRenderState);
+    void drawSphere3D(IMPrimitive& primitive,
+                      const vec3<F32>& center,
+                      F32 radius,
+                      const vec4<U8>& color);
     void drawBox3D(IMPrimitive& primitive,
-                   const vec3<F32>& min, const vec3<F32>& max,
+                   const vec3<F32>& min,
+                   const vec3<F32>& max,
                    const vec4<U8>& color);
     void drawLines(IMPrimitive& primitive,
                    const vectorImpl<Line>& lines,
@@ -252,7 +259,7 @@ DEFINE_SINGLETON(GFXDevice)
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
     void addToRenderQueue(const RenderPackage& package);
-    void flushRenderQueue(bool refreshNodeData, U32 pass = 0);
+    void flushRenderQueue(bool refreshNodeData, RenderBin::RenderBinType renderBinType, U32 pass = 0);
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc

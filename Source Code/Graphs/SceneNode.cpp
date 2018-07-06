@@ -40,16 +40,20 @@ bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
 }
 
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
-                         SceneGraphNode& sgn, bool distanceCheck) {
+                         SceneGraphNode& sgn,
+                         Frustum::FrustCollision& collisionType,
+                         bool distanceCheck) {
     const BoundingBox& boundingBox = sgn.getBoundingBoxConst();
     const BoundingSphere& sphere = sgn.getBoundingSphereConst();
 
     const Camera& cam = sceneRenderState.getCameraConst();
     const vec3<F32>& eye = cam.getEye();
+    const Frustum& frust = cam.getFrustumConst();
+    F32 radius = sphere.getRadius();
     const vec3<F32>& center = sphere.getCenter();
     F32 cameraDistance = center.distance(eye);
-    F32 visibilityDistance =
-        GET_ACTIVE_SCENE().state().generalVisibility() + sphere.getRadius();
+    F32 visibilityDistance = GET_ACTIVE_SCENE().state().generalVisibility() + radius;
+
     if (distanceCheck && cameraDistance > visibilityDistance) {
         if (boundingBox.nearestDistanceFromPointSquared(eye) >
             std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y)) {
@@ -58,13 +62,14 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
     }
 
     if (!boundingBox.containsPoint(eye)) {
-        switch (cam.getFrustumConst().ContainsSphere(center, sphere.getRadius())) {
+        collisionType = frust.ContainsSphere(center, radius);
+        switch (collisionType) {
             case Frustum::FrustCollision::FRUSTUM_OUT: {
                 return false;
             };
             case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
-                if (cam.getFrustumConst().ContainsBoundingBox(boundingBox) ==
-                    Frustum::FrustCollision::FRUSTUM_OUT) {
+                collisionType = frust.ContainsBoundingBox(boundingBox);
+                if (collisionType == Frustum::FrustCollision::FRUSTUM_OUT) {
                     return false;
                 }
             };
@@ -100,6 +105,7 @@ void SceneNode::setMaterialTpl(Material* const mat) {
         if (_materialTemplate) {  // If we had an old material
             if (_materialTemplate->getGUID() !=
                 mat->getGUID()) {  // if the old material isn't the same as the
+
                                    // new one
                 Console::printfn(Locale::get(_ID("REPLACE_MATERIAL")),
                                  _materialTemplate->getName().c_str(),

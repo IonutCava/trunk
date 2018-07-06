@@ -22,6 +22,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _renderWireframe(false),
       _renderGeometry(true),
       _renderBoundingBox(false),
+      _renderBoundingSphere(false),
       _renderSkeleton(false),
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
@@ -43,6 +44,11 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingBoxPrimitive->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
+    
+    _boundingSpherePrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
+    _boundingSpherePrimitive->stateHash(primitiveStateBlock.getHash());
+
     if (_nodeSkinned) {
         primitiveStateBlock.setZReadWrite(false, true);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
@@ -87,6 +93,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 RenderingComponent::~RenderingComponent()
 {
     _boundingBoxPrimitive->_canZombify = true;
+    _boundingSpherePrimitive->_canZombify = true;
     if (_skeletonPrimitive) {
         _skeletonPrimitive->_canZombify = true;
     }
@@ -121,14 +128,17 @@ void RenderingComponent::update(const U64 deltaTime) {
 
 bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
-    Material* mat = getMaterialInstance();
-    if (mat) {
-        if (!mat->canDraw(renderStage)) {
-            return false;
+    bool canDraw = _parentSGN.getNode()->getDrawState(renderStage);
+    if (canDraw) {
+        Material* mat = getMaterialInstance();
+        if (mat) {
+            if (!mat->canDraw(renderStage)) {
+                return false;
+            }
         }
     }
 
-    return _parentSGN.getNode()->getDrawState(renderStage);
+    return canDraw;
 }
 
 void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture) {
@@ -211,6 +221,20 @@ void RenderingComponent::renderBoundingBox(const bool state) {
         RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderBoundingBox(state);
+        }
+    }
+}
+
+void RenderingComponent::renderBoundingSphere(const bool state) {
+    _renderBoundingSphere = state;
+    if (!state) {
+        _boundingSpherePrimitive->paused(true);
+    }
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+        if (renderable) {
+            renderable->renderBoundingSphere(state);
         }
     }
 }
@@ -327,10 +351,27 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, Rend
         if (bb.isComputed()) {
             GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive, bb.getMin(), bb.getMax(),
                                  vec4<U8>(0, 0, 255, 255));
+
+
         }
         node->postDrawBoundingBox(_parentSGN);
+        if (_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+            renderBoundingSphere(true);
+        } else {
+            renderBoundingSphere(false);
+        }
     } else {
         _boundingBoxPrimitive->paused(true);
+        renderBoundingSphere(false);
+    }
+
+    
+    if (renderBoundingSphere()) {
+        const BoundingSphere& bs = _parentSGN.getBoundingSphereConst();
+        GFX_DEVICE.drawSphere3D(*_boundingSpherePrimitive, bs.getCenter(), bs.getRadius(),
+                                vec4<U8>(0, 255, 0, 255));
+    } else {
+        _boundingSpherePrimitive->paused(true);
     }
 
     if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
@@ -468,6 +509,7 @@ void RenderingComponent::setActive(const bool state) {
     if (!state) {
         renderSkeleton(false);
         renderBoundingBox(false);
+        renderBoundingSphere(false);
     }
     SGNComponent::setActive(state);
 }

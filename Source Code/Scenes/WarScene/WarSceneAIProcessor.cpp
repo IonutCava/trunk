@@ -933,6 +933,14 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
 
     ret += _planStatus;
 
+    SceneGraphNode_ptr node = _entity->getUnitRef()->getBoundNode().lock();
+    U32 childCount = node->getChildCount();
+    ret += "\n";
+    for (U32 i = 0; i < childCount; ++i) {
+        SceneGraphNode& child = node->getChild(i, childCount);
+        ret += "    Child [ " + child.getName() + " ] is visible: " + (child.getVisibleState(RenderStage::Z_PRE_PASS) ? "true" : "false");
+        ret += "\n";
+    }
     return ret;
 }
 

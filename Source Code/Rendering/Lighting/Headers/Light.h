@@ -139,10 +139,13 @@ class Light : public SceneNode {
     bool computeBoundingBox(SceneGraphNode& sgn);
 
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn, const bool distanceCheck = true);
+                  SceneGraphNode& sgn,
+                  Frustum::FrustCollision& collisionType,
+                  const bool distanceCheck = true) override;
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                     SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTime,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) override;
 
     /*----------- Shadow Mapping-------------------*/
     /// Set the function used to generate shadows for this light

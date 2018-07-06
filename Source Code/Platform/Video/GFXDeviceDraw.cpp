@@ -5,7 +5,6 @@
 #include "GUI/Headers/GUIFlash.h"
 
 #include "Rendering/Headers/Renderer.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 #include "Managers/Headers/SceneManager.h"
 
@@ -116,15 +115,14 @@ void GFXDevice::processCommands(const vectorImpl<GenericDrawCommand>& cmds, bool
     }
 }
 
-void GFXDevice::flushRenderQueue(bool refreshNodeData, U32 pass) {
+void GFXDevice::flushRenderQueue(bool refreshNodeData, RenderBin::RenderBinType renderBinType, U32 pass) {
     if (_renderQueue.empty()) {
         return;
     }
+    uploadGPUBlock();
 
     if (refreshNodeData) {
-        uploadGPUBlock();
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
-        _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
         getNodeBuffer(getRenderStage(), pass).bind(ShaderBufferLocation::NODE_INFO);
     }
 
@@ -241,7 +239,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         Light* shadowLight = LightManager::getInstance().currentShadowCastingLight();
         assert(shadowLight != nullptr);
         if (_gpuBlock._data._shadowProperties.x != shadowLight->getShadowProperties()._arrayOffset.x) {
-            _gpuBlock._data._shadowProperties.x = shadowLight->getShadowProperties()._arrayOffset.x;
+            _gpuBlock._data._shadowProperties.x = to_float(shadowLight->getShadowProperties()._arrayOffset.x);
             _gpuBlock._updated = true;
         }
     }
@@ -401,6 +399,57 @@ void GFXDevice::drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram) 
     }
 
 }
+
+void GFXDevice::drawSphere3D(IMPrimitive& primitive,
+                             const vec3<F32>& center,
+                             F32 radius,
+                             const vec4<U8>& color) {
+
+    U32 slices = 8, stacks = 8;
+    F32 drho = to_float(M_PI) / stacks;
+    F32 dtheta = 2.0f * to_float(M_PI) / slices;
+    F32 ds = 1.0f / slices;
+    F32 dt = 1.0f / stacks;
+    F32 t = 1.0f;
+    F32 s = 0.0f;
+    U32 i, j;  // Looping variables
+    primitive.paused(false);
+    // Create the object
+    primitive.beginBatch(true, stacks * ((slices + 1) * 2));
+    primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
+    primitive.begin(PrimitiveType::LINE_LOOP);
+    for (i = 0; i < stacks; i++) {
+        F32 rho = i * drho;
+        F32 srho = std::sin(rho);
+        F32 crho = std::cos(rho);
+        F32 srhodrho = std::sin(rho + drho);
+        F32 crhodrho = std::cos(rho + drho);
+        s = 0.0f;
+        for (j = 0; j <= slices; j++) {
+            F32 theta = (j == slices) ? 0.0f : j * dtheta;
+            F32 stheta = -std::sin(theta);
+            F32 ctheta = std::cos(theta);
+
+            F32 x = stheta * srho;
+            F32 y = ctheta * srho;
+            F32 z = crho;
+            primitive.vertex((x * radius) + center.x,
+                             (y * radius) + center.y,
+                             (z * radius) + center.z);
+            x = stheta * srhodrho;
+            y = ctheta * srhodrho;
+            z = crhodrho;
+            s += ds;
+            primitive.vertex((x * radius) + center.x,
+                             (y * radius) + center.y,
+                             (z * radius) + center.z);
+        }
+        t -= dt;
+    }
+    primitive.end();
+    primitive.endBatch();
+}
+
 /// Draw the outlines of a box defined by min and max as extents using the
 /// specified world matrix
 void GFXDevice::drawBox3D(IMPrimitive& primitive,

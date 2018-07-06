@@ -67,12 +67,18 @@ class ParticleEmitter : public SceneNode {
 
     /// SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn, const bool distanceCheck = false) {
+                  SceneGraphNode& sgn,
+                  Frustum::FrustCollision& collisionType,
+                  const bool distanceCheck = false) override {
+        bool visible = false;
         if (_enabled && _impostor) {
-            return _impostor->isInView(sceneRenderState, sgn, distanceCheck);
+            visible = _impostor->isInView(sceneRenderState, sgn, collisionType, distanceCheck);
         }
 
-        return false;
+        collisionType = visible ? Frustum::FrustCollision::FRUSTUM_IN
+                                : Frustum::FrustCollision::FRUSTUM_OUT;
+
+        return visible;
     }
 
     inline void addUpdater(std::shared_ptr<ParticleUpdater> updater) {

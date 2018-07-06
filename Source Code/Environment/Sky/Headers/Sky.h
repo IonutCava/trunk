@@ -54,7 +54,10 @@ class Sky : public SceneNode {
     /// Skies are always visible (for now. Interiors will change that. Windows
     /// will require a occlusion query(?))
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn, const bool distanceCheck = false) override {
+                  SceneGraphNode& sgn,
+                  Frustum::FrustCollision& collisionType,
+                  const bool distanceCheck = false) override {
+        collisionType = Frustum::FrustCollision::FRUSTUM_IN;
         return true;
     }
 

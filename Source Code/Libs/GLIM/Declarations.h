@@ -12,17 +12,10 @@
 #endif
 
 #include "Core/TemplateLibraries/Headers/String.h"
-#include <stdexcept>
+#include <assert.h>
 
 namespace NS_GLIM
 {
-    //! Class for all exceptions that GLIM might throw. Derives from std::exception (indirectly).
-    class glimException : public std::runtime_error
-    {
-    public:
-        glimException (const stringImpl &err);
-
-    };
 
     //! The enum holding all important GLIM configuration values.
     enum class GLIM_ENUM : int
@@ -87,7 +80,7 @@ namespace NS_GLIM
         if (bCondition)
             return;
 
-        throw glimException (szErrorMsg);
+        assert(false && szErrorMsg);
     }
 
 }

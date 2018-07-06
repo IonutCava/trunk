@@ -234,8 +234,9 @@ namespace NS_GLIM
             InitData.SysMemSlicePitch = 0;
             InitData.pSysMem = (void*) &TempData[0];
 
-            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pVertexBuffer)))
-                throw glimException ("GLIM: Failed to upload the VertexBuffer.");
+            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pVertexBuffer))) {
+                assert(false && "GLIM: Failed to upload the VertexBuffer.");
+            }
         }
 
         m_uiPointElements = 0;
@@ -261,8 +262,9 @@ namespace NS_GLIM
             InitData.SysMemSlicePitch = 0;
             InitData.pSysMem = (void*) &m_IndexBuffer_Points[0];
 
-            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Points)))
-                throw glimException ("GLIM: Failed to upload the Line-IndexBuffer.");
+            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Points))) {
+                assert(false && "GLIM: Failed to upload the Line-IndexBuffer.");
+            }
 
             m_IndexBuffer_Points.clear ();
         }
@@ -285,9 +287,9 @@ namespace NS_GLIM
             InitData.SysMemSlicePitch = 0;
             InitData.pSysMem = (void*) &m_IndexBuffer_Lines[0];
 
-            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Lines)))
-                throw glimException ("GLIM: Failed to upload the Line-IndexBuffer.");
-
+            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Lines))) {
+                assert(false && "GLIM: Failed to upload the Line-IndexBuffer.");
+            }
             m_IndexBuffer_Lines.clear ();
         }
 
@@ -310,8 +312,9 @@ namespace NS_GLIM
             InitData.SysMemSlicePitch = 0;
             InitData.pSysMem = (void*) &m_IndexBuffer_Triangles[0];
 
-            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Triangles)))
-                throw glimException ("GLIM: Failed to upload the Triangle-IndexBuffer.");
+            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Triangles))) {
+                assert(false && "GLIM: Failed to upload the Triangle-IndexBuffer.");
+            }
 
             m_IndexBuffer_Triangles.clear ();
         }
@@ -337,14 +340,14 @@ namespace NS_GLIM
             char szTemp[256];
             sprintf (szTemp, "GLIM: Failed to upload the Wireframe-IndexBuffer: Elements = %d, Bytes = %d", m_uiWireframeElements, bd.ByteWidth);
 
-            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Wireframe)))
-                throw glimException (szTemp);//"GLIM: Failed to upload the Wireframe-IndexBuffer");
-
+            if (FAILED (GLIM_Interface::s_pDevice->CreateBuffer (&bd, &InitData, &m_pIndexBuffer_Wireframe))) {
+                assert(false && szTemp);//"GLIM: Failed to upload the Wireframe-IndexBuffer");
+            }
             m_IndexBuffer_Wireframe.clear ();
         }
     }
 
 }
-
+ 
 #endif
 

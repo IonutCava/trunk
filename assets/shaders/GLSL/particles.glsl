@@ -57,7 +57,7 @@ layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
 void main(){
     
-    float d = textureLod(texDepthMap, gl_FragCoord.xy * dvd_ViewPort.zw, 0).r  - gl_FragCoord.z;
+    float d = textureLod(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw), 0).r  - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 40.0 * d), 2.0);
     softness = max(0.1, 1.0 - pow(softness, 2.0));
         

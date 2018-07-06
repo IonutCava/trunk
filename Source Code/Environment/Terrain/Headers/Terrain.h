@@ -139,7 +139,9 @@ class Terrain : public Object3D {
     void postLoad(SceneGraphNode& sgn);
 
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn, const bool distanceCheck = true);
+                  SceneGraphNode& sgn,
+                  Frustum::FrustCollision& collisionType,
+                  const bool distanceCheck = true) override;
 
    protected:
     VegetationDetails _vegDetails;

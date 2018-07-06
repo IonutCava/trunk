@@ -125,7 +125,11 @@ bool Light::computeBoundingBox(SceneGraphNode& sgn) {
 }
 
 bool Light::isInView(const SceneRenderState& sceneRenderState,
-                     SceneGraphNode& sgn, const bool distanceCheck) {
+                     SceneGraphNode& sgn,
+                     Frustum::FrustCollision& collisionType,
+                     const bool distanceCheck) {
+    collisionType = _drawImpostor ? Frustum::FrustCollision::FRUSTUM_IN
+                                  : Frustum::FrustCollision::FRUSTUM_OUT;
     return _drawImpostor;
 }
 

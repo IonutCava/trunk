@@ -48,7 +48,7 @@ void main (void){
         _skyColor.rgb = normalize(dvd_NormalMatrix() * _normal);
         _skyColor.a = 1.0;
     } else {
-        vec3 sky_color = texture(texSky, vec4(_vertex.xyz, 0)).rgb;
+        vec3 sky_color = textureLod(texSky, vec4(_vertex.xyz, 0), 0).rgb;
         _skyColor = vec4(ToSRGB(enable_sun ? sky_color * sunColor() : sky_color), 1.0);
     }
 }

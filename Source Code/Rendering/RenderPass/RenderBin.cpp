@@ -165,8 +165,7 @@ void RenderBin::render(const SceneRenderState& renderState,
     for (const RenderBinItem& item : _renderBinStack) {
         gfx.addToRenderQueue(Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
-
-    gfx.flushRenderQueue(refreshNodeData, pass);
+    gfx.flushRenderQueue(refreshNodeData, _rbType, pass);
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage) {

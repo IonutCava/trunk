@@ -78,30 +78,29 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
         case RenderBin::RenderBinType::RBT_DECALS: {
             temp = MemoryManager_NEW RenderBinMesh(
                 RenderBin::RenderBinType::RBT_DECALS,
-                RenderingOrder::List::FRONT_TO_BACK, 4.0f);
-        } break;
-        case RenderBin::RenderBinType::RBT_SKY: {
-            // Draw sky after opaque but before translucent to prevent overdraw
-            temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RenderBinType::RBT_SKY, RenderingOrder::List::NONE,
-                5.0f);
+                RenderingOrder::List::FRONT_TO_BACK, 3.0f);
         } break;
         case RenderBin::RenderBinType::RBT_WATER: {
             // Water does not count as translucency, because rendering is very
             // specific
             temp = MemoryManager_NEW RenderBinDelegate(
                 RenderBin::RenderBinType::RBT_WATER,
-                RenderingOrder::List::BACK_TO_FRONT, 6.0f);
+                RenderingOrder::List::BACK_TO_FRONT, 4.0f);
         } break;
         case RenderBin::RenderBinType::RBT_VEGETATION_GRASS: {
             temp = MemoryManager_NEW RenderBinDelegate(
                 RenderBin::RenderBinType::RBT_VEGETATION_GRASS,
-                RenderingOrder::List::BACK_TO_FRONT, 7.0f);
+                RenderingOrder::List::BACK_TO_FRONT, 5.0f);
         } break;
         case RenderBin::RenderBinType::RBT_VEGETATION_TREES: {
             temp = MemoryManager_NEW RenderBinDelegate(
                 RenderBin::RenderBinType::RBT_VEGETATION_TREES,
-                RenderingOrder::List::BACK_TO_FRONT, 7.5f);
+                RenderingOrder::List::BACK_TO_FRONT, 6.0f);
+        } break;
+        case RenderBin::RenderBinType::RBT_IMPOSTOR: {
+            temp = MemoryManager_NEW RenderBinDelegate(
+                RenderBin::RenderBinType::RBT_IMPOSTOR,
+                RenderingOrder::List::FRONT_TO_BACK, 7.0f);
         } break;
         case RenderBin::RenderBinType::RBT_PARTICLES: {
             temp = MemoryManager_NEW RenderBinParticles(
@@ -115,10 +114,11 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
                 RenderBin::RenderBinType::RBT_TRANSLUCENT,
                 RenderingOrder::List::BACK_TO_FRONT, 9.0f);
         } break;
-        case RenderBin::RenderBinType::RBT_IMPOSTOR: {
+        case RenderBin::RenderBinType::RBT_SKY: {
+            // Draw sky after opaque but before translucent to prevent overdraw
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RenderBinType::RBT_IMPOSTOR,
-                RenderingOrder::List::FRONT_TO_BACK, 9.9f);
+                RenderBin::RenderBinType::RBT_SKY, 
+                RenderingOrder::List::NONE, 10.0f);
         } break;
         default:
         case RenderBin::RenderBinType::COUNT: {

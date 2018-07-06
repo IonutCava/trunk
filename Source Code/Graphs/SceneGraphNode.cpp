@@ -58,7 +58,8 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                     : nullptr,
             *this));
-    
+
+    _isVisible.fill(false);
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -279,6 +280,14 @@ void SceneGraphNode::setActive(const bool state) {
     }
 }
 
+void SceneGraphNode::setVisibleState(bool state, RenderStage currentStage) {
+    _isVisible[to_uint(currentStage)] = state;
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).setVisibleState(state, currentStage);
+    }
+}
+
 void SceneGraphNode::restoreActive() { 
     setActive(_wasActive);
 }
@@ -408,16 +417,20 @@ void SceneGraphNode::frameEnded() {
     }
 }
 
-bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState, RenderStage currentStage) {
+bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState,
+                              Frustum::FrustCollision& collisionType,
+                              RenderStage currentStage) {
 
     bool shadowPass = currentStage == RenderStage::SHADOW;
     if (shadowPass && !getComponent<RenderingComponent>()->castsShadows()) {
+        collisionType = Frustum::FrustCollision::FRUSTUM_OUT;
         return true;
     }
 
     return !Attorney::SceneNodeSceneGraph::isInView(*getNode(),
                                                     sceneRenderState,
                                                     *this,
+                                                    collisionType,
                                                     !shadowPass);
 }
 };
