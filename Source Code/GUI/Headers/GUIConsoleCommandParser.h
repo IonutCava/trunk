@@ -32,6 +32,7 @@
 #ifndef _GUI_CONSOLE_COMMAND_PARSER_H_
 #define _GUI_CONSOLE_COMMAND_PARSER_H_
 
+#include "Core/Headers/PlatformContextComponent.h"
 #include "Utility/Headers/CommandParser.h"
 /// Handle console commands that start with a forward slash
 
@@ -42,7 +43,7 @@ TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
 
 class ResourceCache;
 class PlatformContext;
-class GUIConsoleCommandParser : public CommandParser {
+class GUIConsoleCommandParser : public CommandParser, public PlatformContextComponent {
    public:
     GUIConsoleCommandParser(PlatformContext& context, ResourceCache& cache);
     ~GUIConsoleCommandParser();
@@ -66,7 +67,6 @@ class GUIConsoleCommandParser : public CommandParser {
 
    private:
     ResourceCache& _resCache;
-    PlatformContext& _context;
     /// Help text for every command
     hashMapImpl<U64, const char*> _commandHelp;
     /// used for sound playback

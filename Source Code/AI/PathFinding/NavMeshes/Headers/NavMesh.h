@@ -62,7 +62,7 @@
 #define _NAVIGATION_MESH_H_
 
 #include "Platform/Threading/Headers/Task.h"
-
+#include "Core/Headers/PlatformContextComponent.h"
 #include "NavMeshConfig.h"
 #include "NavMeshLoader.h"
 #include "NavMeshContext.h"
@@ -103,7 +103,7 @@ namespace Attorney {
     class NavigationMeshCrowd;
 };
 
-class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
+class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,public SceneObject */ {
     friend class Attorney::NavigationMeshCrowd;
 
    protected:
@@ -226,8 +226,6 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     RenderMode _renderMode;
     /// DebugDraw interface
     NavMeshDebugDraw* _debugDrawInterface;
-
-    PlatformContext& _context;
 };
 
 namespace Attorney {

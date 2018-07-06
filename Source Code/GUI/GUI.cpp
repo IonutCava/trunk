@@ -8,7 +8,6 @@
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIMessageBox.h"
-#include "GUIEditor/Headers/GUIEditor.h"
 
 #include "Scenes/Headers/Scene.h"
 #include "Core/Headers/XMLEntryData.h"
@@ -51,7 +50,6 @@ GUI::GUI(Kernel& parent)
     _defaultMsgBox(nullptr),
     _debugVarCacheCount(0),
     _activeScene(nullptr),
-    _guiEditor(nullptr),
     _console(nullptr),
     _textRenderInterval(Time::MillisecondsToMicroseconds(10))
 {
@@ -157,8 +155,6 @@ void GUI::update(const U64 deltaTimeUS) {
     if (_console) {
         _console->update(deltaTimeUS);
     }
-
-    _guiEditor->update(deltaTimeUS);
 }
 
 bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution) {
@@ -169,7 +165,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
 
     onChangeResolution(renderResolution.width, renderResolution.height);
 
-    _guiEditor = MemoryManager_NEW GUIEditor(context, cache);
     _console = MemoryManager_NEW GUIConsole(context, cache);
 
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -220,11 +215,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _rootSheet->setPixelAligned(false);
     assert(_console);
     //_console->CreateCEGUIWindow();
-    _guiEditor->init();
-
-    const OIS::MouseState& mouseState = context.input().getKeyboardMousePair(0).second->getMouseState();
-
-    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
     _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
                                "Assertion failure",
@@ -241,7 +231,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
 void GUI::destroy() {
     if (_init) {
         Console::printfn(Locale::get(_ID("STOP_GUI")));
-        MemoryManager::DELETE(_guiEditor);
         MemoryManager::DELETE(_console);
 
         {
@@ -286,7 +275,8 @@ void GUI::onChangeResolution(U16 w, U16 h) {
 }
 
 void GUI::selectionChangeCallback(Scene* const activeScene, PlayerIndex idx) {
-    _guiEditor->Handle_ChangeSelection(activeScene->getCurrentSelection(idx));
+    ACKNOWLEDGE_UNUSED(activeScene);
+    ACKNOWLEDGE_UNUSED(idx);
 }
 
 void GUI::setCursorPosition(I32 x, I32 y) const {
@@ -440,20 +430,20 @@ bool GUI::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 // Return true if input was consumed
-bool GUI::buttonPressed(const Input::JoystickEvent& arg,
+bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button) {
     if (parent().platformContext().config().gui.cegui.enabled) {
-        return _ceguiInput.buttonPressed(arg, button);
+        return _ceguiInput.joystickButtonPressed(arg, button);
     }
 
     return false;
 }
 
 // Return true if input was consumed
-bool GUI::buttonReleased(const Input::JoystickEvent& arg,
+bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg,
                                  Input::JoystickButton button) {
     if (parent().platformContext().config().gui.cegui.enabled) {
-        return _ceguiInput.buttonReleased(arg, button);
+        return _ceguiInput.joystickButtonReleased(arg, button);
     }
 
     return false;

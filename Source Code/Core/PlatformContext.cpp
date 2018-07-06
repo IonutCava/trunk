@@ -5,6 +5,7 @@
 #include "Headers/Configuration.h"
 
 #include "GUI/Headers/GUI.h"
+#include "Editor/Headers/Editor.h"
 #include "Physics/Headers/PXDevice.h"
 #include "Core/Networking/Headers/LocalClient.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
@@ -14,29 +15,28 @@
 
 namespace Divide {
 
-PlatformContext::PlatformContext(Application& app,
-                                 std::unique_ptr<GFXDevice> gfx,
-                                 std::unique_ptr<SFXDevice> sfx,
-                                 std::unique_ptr<PXDevice> pfx,
-                                 std::unique_ptr<GUI> gui,
-                                 std::unique_ptr<XMLEntryData> entryData,
-                                 std::unique_ptr<Configuration> config,
-                                 std::unique_ptr<LocalClient> client,
-                                 std::unique_ptr<DebugInterface> debug)
+PlatformContext::PlatformContext(Application& app, Kernel& kernel)
   : _app(app),
-    _gfx(std::move(gfx)),
-    _sfx(std::move(sfx)),
-    _pfx(std::move(pfx)),
-    _gui(std::move(gui)),
-    _entryData(std::move(entryData)),
-    _config(std::move(config)),
-    _client(std::move(client)),
-    _debug(std::move(debug))
+    _kernel(kernel)
 {
 }
 
 PlatformContext::~PlatformContext()
 {
+}
+
+void PlatformContext::init() {
+    _gfx = std::make_unique<GFXDevice>(_kernel);        // Video
+    _sfx = std::make_unique<SFXDevice>(_kernel);        // Audio
+    _pfx = std::make_unique<PXDevice>(_kernel);         // Physics
+    _gui = std::make_unique<GUI>(_kernel);              // Graphical User Interface
+    _entryData = std::make_unique<XMLEntryData>();      // Initial XML data
+    _config = std::make_unique<Configuration>();        // XML based configuration
+    _client = std::make_unique<LocalClient>(_kernel);   // Network client
+    _debug = std::make_unique<DebugInterface>(_kernel); // Debug Interface
+    if (Config::Build::ENABLE_EDITOR) {
+        _editor = std::make_unique<Editor>(*this);
+    }
 }
 
 void PlatformContext::terminate() {
@@ -48,6 +48,12 @@ void PlatformContext::terminate() {
     _config.reset();
     _client.reset();
     _debug.reset();
+    _editor.reset();
+}
+
+void PlatformContext::beginFrame() {
+    _gfx->beginFrame();
+    _sfx->beginFrame();
 }
 
 void PlatformContext::idle() {
@@ -57,6 +63,14 @@ void PlatformContext::idle() {
     _pfx->idle();
     //_gui->idle();
     _debug->idle();
+    if (Config::Build::ENABLE_EDITOR) {
+        _editor->idle();
+    }
+}
+
+void PlatformContext::endFrame() {
+    _gfx->endFrame();
+    _sfx->endFrame();
 }
 
 Input::InputInterface& PlatformContext::input() {

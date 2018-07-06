@@ -51,7 +51,7 @@ public:
     explicit InputInterface(DisplayWindow& parent);
     ~InputInterface();
 
-    ErrorCode init(Kernel& kernel, const vec2<U16>& inputAreaDimensions);
+    ErrorCode init(const vec2<U16>& inputAreaDimensions);
 
     U8 update(const U64 deltaTimeUS);
     void terminate();

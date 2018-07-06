@@ -23,7 +23,7 @@ namespace Navigation {
 
 NavigationMesh::NavigationMesh(PlatformContext& context)
     : GUIDWrapper(),
-      _context(context),
+      PlatformContextComponent(context),
       _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::instance();

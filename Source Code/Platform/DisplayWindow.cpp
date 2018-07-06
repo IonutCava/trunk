@@ -2,10 +2,12 @@
 
 #include "Headers/DisplayWindow.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
 
 #ifndef HAVE_M_PI
@@ -36,8 +38,8 @@ namespace {
 
 DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
  : GUIDWrapper(),
+   PlatformContextComponent(context),
    _parent(parent),
-   _context(context),
    _swapBuffers(true),
    _hasFocus(true),
    _minimized(false),
@@ -106,7 +108,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
         return ErrorCode::SDL_WINDOW_INIT_ERROR;
     }
 
-    return _inputHandler->init(_context.app().kernel(), dimensions);
+    return _inputHandler->init(dimensions);
 }
 
 void DisplayWindow::update(const U64 deltaTimeUS) {
@@ -280,6 +282,10 @@ void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
     }
 }
 
+vec2<U16> DisplayWindow::getDrawableSize() const {
+    return context().gfx().getDrawableSize(*this);
+}
+
 void DisplayWindow::opacity(U8 opacity) {
     if (SDL_SetWindowOpacity(_sdlWindow, opacity / 255.0f) != -1) {
         _opacity = opacity;
@@ -430,6 +436,92 @@ vec2<U16> DisplayWindow::getDimensions() const {
     }
 
     return _windowDimensions;
+}
+
+/// Key pressed: return true if input was consumed
+bool DisplayWindow::onKeyDown(const Input::KeyEvent& key) {
+    DisplayWindow::WindowEventArgs args;
+    args._windowGUID = getGUID();
+    args._key = key._key;
+    args._flag = true;
+    notifyListeners(WindowEvent::KEY_PRESS, args);
+
+    return _context.app().kernel().onKeyDown(key);
+}
+
+/// Key released: return true if input was consumed
+bool DisplayWindow::onKeyUp(const Input::KeyEvent& key) {
+    DisplayWindow::WindowEventArgs args;
+    args._windowGUID = getGUID();
+    args._key = key._key;
+    args._flag = false;
+    notifyListeners(WindowEvent::KEY_PRESS, args);
+
+    return _context.app().kernel().onKeyUp(key);
+}
+
+/// Joystick axis change: return true if input was consumed
+bool DisplayWindow::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
+    return _context.app().kernel().joystickAxisMoved(arg, axis);
+}
+
+/// Joystick direction change: return true if input was consumed
+bool DisplayWindow::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
+    return _context.app().kernel().joystickPovMoved(arg, pov);
+}
+
+/// Joystick button pressed: return true if input was consumed
+bool DisplayWindow::joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button) {
+    return _context.app().kernel().joystickButtonPressed(arg, button);
+}
+/// Joystick button released: return true if input was consumed
+bool DisplayWindow::joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button) {
+    return _context.app().kernel().joystickButtonReleased(arg, button);
+}
+bool DisplayWindow::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
+    return _context.app().kernel().joystickSliderMoved(arg, index);
+}
+
+bool DisplayWindow::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
+    return _context.app().kernel().joystickvector3Moved(arg, index);
+}
+/// Mouse moved: return true if input was consumed
+bool DisplayWindow::mouseMoved(const Input::MouseEvent& arg) {
+    DisplayWindow::WindowEventArgs args;
+    args._windowGUID = getGUID();
+
+    if (arg._event.state.Z.rel != 0) {
+        args._mod = arg._event.state.Z.rel / 60;
+        notifyListeners(WindowEvent::MOUSE_WHEEL, args);
+    } else {
+        args.x = arg._event.state.X.abs;
+        args.y = arg._event.state.Y.abs;
+        notifyListeners(WindowEvent::MOUSE_MOVE, args);
+    }
+
+    return _context.app().kernel().mouseMoved(arg);
+}
+
+/// Mouse button pressed: return true if input was consumed
+bool DisplayWindow::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
+    DisplayWindow::WindowEventArgs args;
+    args._windowGUID = getGUID();
+    args.id = to_I32(button);
+    args._flag = true;
+    notifyListeners(WindowEvent::MOUSE_BUTTON, args);
+
+    return _context.app().kernel().mouseButtonPressed(arg, button);
+}
+
+/// Mouse button released: return true if input was consumed
+bool DisplayWindow::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
+    DisplayWindow::WindowEventArgs args;
+    args._windowGUID = getGUID();
+    args.id = to_I32(button);
+    args._flag = false;
+    notifyListeners(WindowEvent::MOUSE_BUTTON, args);
+
+    return _context.app().kernel().mouseButtonReleased(arg, button);
 }
 
 }; //namespace Divide

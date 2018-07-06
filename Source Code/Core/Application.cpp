@@ -114,10 +114,12 @@ void Application::warmup(const Configuration& config) {
     //Make sure we are displaying a splash screen
     window.setDimensions(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
     window.changeType(WindowType::SPLASH);
+    Attorney::KernelApplication::startSplashScreen(*_kernel);
     window.swapBuffers(false);
     Attorney::KernelApplication::warmup(*_kernel);
     //Restore to normal window
     window.swapBuffers(true);
+    Attorney::KernelApplication::stopSplashScreen(*_kernel);
     window.setDimensions(previousDimensions);
     window.changeToPreviousType();
 }

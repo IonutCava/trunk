@@ -83,19 +83,19 @@ class SceneInput : public Input::InputAggregatorInterface {
     typedef vectorImpl<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
     typedef vectorImpl<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;
 
-    explicit SceneInput(Scene &parentScene, Input::InputInterface& context);
+    explicit SceneInput(Scene &parentScene, PlatformContext& context);
 
     //Keyboard: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent &arg);
     bool onKeyUp(const Input::KeyEvent &arg);
     /// Joystick or Gamepad: return true if input was consumed
-    bool buttonPressed(const Input::JoystickEvent &arg,
+    bool joystickButtonPressed(const Input::JoystickEvent &arg,
                                Input::JoystickButton button);
-    bool buttonReleased(const Input::JoystickEvent &arg,
+    bool joystickButtonReleased(const Input::JoystickEvent &arg,
                                 Input::JoystickButton button);
     bool joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis);
     bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov);
-    bool joystickSliderMoved(const Input::JoystickEvent &, I8 index);
+    bool joystickSliderMoved(const Input::JoystickEvent &arg, I8 index);
     bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index);
     /// Mouse: return true if input was consumed
     bool mouseMoved(const Input::MouseEvent &arg);
@@ -161,7 +161,7 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     vectorImpl<I32> _usedInputDevices;
 
-    Input::InputInterface& _context;
+    PlatformContext& _context;
     Scene &_parentScene;
 
     KeyMap _keyMap;

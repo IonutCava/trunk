@@ -42,6 +42,10 @@ inline void WindowManager::targetDisplay(I32 displayIndex) {
     _displayIndex = displayIndex;
 }
 
+inline U32 WindowManager::getWindowCount() const {
+    return to_U32(_windows.size());
+}
+
 inline DisplayWindow& WindowManager::getWindow(I64 guid) {
     for (DisplayWindow* win : _windows) {
         if (win->getGUID() == guid) {

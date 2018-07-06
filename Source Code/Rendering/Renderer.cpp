@@ -8,7 +8,7 @@
 namespace Divide {
 
 Renderer::Renderer(PlatformContext& context, ResourceCache& cache, RendererType type)
-    : _context(context),
+    : PlatformContextComponent(context),
       _resCache(cache),
       _flag(0),
       _debugView(false),

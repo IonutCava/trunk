@@ -47,6 +47,7 @@ template <typename T>
 class vec4;
 
 class Configuration;
+class DisplayWindow;
 struct TextElementBatch;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
@@ -91,6 +92,8 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) = 0;
 
     static GFXConfig& config() { return _config; }
+
+    virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;
 
    protected:
     virtual bool changeViewportInternal(const vec4<I32>& newViewport) = 0;

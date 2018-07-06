@@ -3,6 +3,7 @@
 #include "Headers/Scene.h"
 #include "Headers/SceneInput.h"
 
+#include "Core/Headers/PlatformContext.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Managers/Headers/SceneManager.h"
 
@@ -25,7 +26,7 @@ void PressReleaseActionCbks::from(const PressReleaseActions& actions, const Inpu
     _onRAltReleaseAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::RIGHT_ALT_RELEASE))._action;
 }
 
-SceneInput::SceneInput(Scene& parentScene, Input::InputInterface& context) 
+SceneInput::SceneInput(Scene& parentScene, PlatformContext& context) 
     : _parentScene(parentScene),
       _context(context)
 {
@@ -54,10 +55,12 @@ void SceneInput::onPlayerAdd(U8 index) {
 
     std::pair<I32, I32>& devices = _playerControlDevices[index];
     
+    const Input::InputInterface& input = _context.input();
+
     // Keyboard + Mouse pairs have priority
-    I32 numKBMousePairs = _context.kbMousePairCount();
+    I32 numKBMousePairs = input.kbMousePairCount();
     for (I32 i = 0; i < numKBMousePairs; ++i) {
-        Input::InputInterface::KBMousePair pair = _context.getKeyboardMousePair(to_U8(i));
+        Input::InputInterface::KBMousePair pair = input.getKeyboardMousePair(to_U8(i));
 
         std::pair<I32, I32> deviceIndices(pair.first ? pair.first->getID() : -1,
                                           pair.second ? pair.second->getID() : -1);
@@ -71,9 +74,9 @@ void SceneInput::onPlayerAdd(U8 index) {
     }
 
     // Fallback to gamepads
-    I32 numJoysticks = _context.joystickCount();
+    I32 numJoysticks = input.joystickCount();
     for (I32 i = 0; i < numJoysticks; ++i) {
-        OIS::JoyStick* joy = _context.getJoystick(static_cast<Input::Joystick>(i));
+        OIS::JoyStick* joy = input.getJoystick(static_cast<Input::Joystick>(i));
         I32 deviceIndex = joy ? joy->getID() : -1;
         if (!isDeviceInUse(deviceIndex)) {
             devices.first = deviceIndex;
@@ -112,16 +115,16 @@ U8 SceneInput::getPlayerIndexForDevice(U8 deviceIndex) const {
 }
 
 Input::InputState SceneInput::getKeyState(U8 deviceIndex, Input::KeyCode key) const {
-    return _context.getKeyState(deviceIndex, key);
+    return _context.input().getKeyState(deviceIndex, key);
 }
 
 Input::InputState SceneInput::getMouseButtonState(U8 deviceIndex, Input::MouseButton button) const {
-   return _context.getMouseButtonState(deviceIndex, button);
+   return _context.input().getMouseButtonState(deviceIndex, button);
 }
 
 Input::InputState SceneInput::getJoystickButtonState(Input::Joystick deviceIndex,
                                                      Input::JoystickButton button) const {
-    return _context.getJoystickeButtonState(deviceIndex, button);
+    return _context.input().getJoystickeButtonState(deviceIndex, button);
 }
 
 bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
@@ -190,10 +193,10 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
     return false;
 }
 
-bool SceneInput::buttonPressed(const Input::JoystickEvent& arg,
+bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
 
-    Input::Joystick joy = _context.joystick(arg._deviceIndex);
+    Input::Joystick joy = _context.input().joystick(arg._deviceIndex);
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
         return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_I32(button)), true);
@@ -202,10 +205,10 @@ bool SceneInput::buttonPressed(const Input::JoystickEvent& arg,
     return false;
 }
 
-bool SceneInput::buttonReleased(const Input::JoystickEvent& arg,
+bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
     
-    Input::Joystick joy = _context.joystick(arg._deviceIndex);
+    Input::Joystick joy = _context.input().joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
@@ -216,7 +219,7 @@ bool SceneInput::buttonReleased(const Input::JoystickEvent& arg,
 }
 
 bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    Input::Joystick joy = _context.joystick(arg._deviceIndex);
+    Input::Joystick joy = _context.input().joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::AXIS_MOVE, axis), cbks)) {
@@ -233,7 +236,7 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
 
 bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 
-    Input::Joystick joy = _context.joystick(arg._deviceIndex);
+    Input::Joystick joy = _context.input().joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::POV_MOVE, pov), cbks)) {
@@ -245,7 +248,7 @@ bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 bool SceneInput::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    Input::Joystick joy = _context.joystick(arg._deviceIndex);
+    Input::Joystick joy = _context.input().joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::SLIDER_MOVE, index), cbks)) {
@@ -259,7 +262,7 @@ bool SceneInput::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) 
 }
 
 bool SceneInput::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
-    Input::Joystick joy = _context.joystick(arg._deviceIndex);
+    Input::Joystick joy = _context.input().joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::VECTOR_MOVE, index), cbks)) {

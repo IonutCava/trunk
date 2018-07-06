@@ -37,14 +37,27 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+namespace Attorney {
+    class WindowManagerWindow;
+};
+
+class Editor;
+class ImwWindowDivide;
 class PlatformContext;
 class ImwWindowManagerDivide : public ImWindow::ImwWindowManager
 {
+    friend class Attorney::WindowManagerWindow;
+
   public:
-    explicit ImwWindowManagerDivide(PlatformContext& context);
+    explicit ImwWindowManagerDivide(Editor& parent);
     virtual  ~ImwWindowManagerDivide();
 
+    void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
+
   protected:
+    void registerWindow(ImwWindowDivide* window);
+    void unregisterWindow(ImwWindowDivide* window);
+
     virtual bool CanCreateMultipleWindow() { return true; }
 
     virtual ImWindow::ImwPlatformWindow* CreatePlatformWindow(ImWindow::EPlatformWindowType eType, ImWindow::ImwPlatformWindow* pParent);
@@ -53,9 +66,22 @@ class ImwWindowManagerDivide : public ImWindow::ImwWindowManager
     virtual bool IsLeftClickDown();
 
    private:
-     PlatformContext& _context;
+     U32 _windowCount;
+     Editor& _parent;
 };
 
+namespace Attorney {
+    class WindowManagerWindow {
+      private:
+      static void registerWindow(ImwWindowManagerDivide& mgr, ImwWindowDivide* window) {
+          mgr.registerWindow(window);
+      }
+      static void unregisterWindow(ImwWindowManagerDivide& mgr, ImwWindowDivide* window) {
+          mgr.unregisterWindow(window);
+      }
+      friend class Divide::ImwWindowDivide;
+    };
+};
 }; //namespace Divide
 
 #endif //_IM_WINDOW_MANAGER_DIVIDE_H_

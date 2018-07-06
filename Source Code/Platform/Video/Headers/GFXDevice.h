@@ -43,6 +43,7 @@
 #include "Core/Math/Headers/MathMatrices.h"
 
 #include "Core/Headers/KernelComponent.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 #include "Platform/Video/Headers/RenderStagePass.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
@@ -110,7 +111,7 @@ namespace TypeUtil {
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
-class GFXDevice : public KernelComponent {
+class GFXDevice : public KernelComponent, public PlatformContextComponent {
     friend class Attorney::GFXDeviceAPI;
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
@@ -316,6 +317,8 @@ public:  // Accessors and Mutators
 
     void addDebugView(const std::shared_ptr<DebugView>& view);
 
+    void setWindowTarget(I64 windowGUID);
+
     static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
     static void setGPUVendor(GPUVendor gpuvendor) { s_GPUVendor = gpuvendor; }
@@ -349,6 +352,9 @@ public:  // Direct API calls
         return _api->getFrameDurationGPU();
     }
 
+    inline vec2<U16> getDrawableSize(const DisplayWindow& window) const {
+        return _api->getDrawableSize(window);
+    }
 protected:
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 

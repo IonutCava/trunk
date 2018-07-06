@@ -18,7 +18,7 @@ void DeleteResource::operator()(CachedResource* res)
 }
 
 ResourceCache::ResourceCache(PlatformContext& context)
-    : _context(context)
+    : PlatformContextComponent(context)
 {
 }
 

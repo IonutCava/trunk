@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DISPLAY_WINDOW_H_
 #define _DISPLAY_WINDOW_H_
 
+#include "Core/Headers/PlatformContextComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
@@ -77,7 +78,7 @@ enum class WindowEvent : U32 {
     MOUSE_MOVE = 14,
     MOUSE_BUTTON = 15,
     MOUSE_WHEEL = 16,
-    CHAR = 17,
+    TEXT = 17,
     APP_QUIT = 18,
     COUNT
 };
@@ -90,13 +91,15 @@ class WindowManager;
 class PlatformContext;
 enum class ErrorCode;
 // Platform specific window
-class DisplayWindow : public GUIDWrapper {
+class DisplayWindow : public GUIDWrapper,
+                      public PlatformContextComponent,
+                      public Input::InputAggregatorInterface {
 public:
     struct WindowEventArgs {
         I64 _windowGUID = -1;
         bool _flag = false;
         Input::KeyCode _key;
-        char _char = ' ';
+        const char* _text = nullptr;
         int  _mod = 0;
         I32 x = -1, y = -1;
         I32 id = -1;
@@ -150,8 +153,11 @@ public:
 
     void setDimensions(U16 dimensionX, U16 dimensionY);
     void setDimensions(const vec2<U16>& dimensions);
+
     vec2<U16> getDimensions() const;
     vec2<U16> getPreviousDimensions() const;
+
+    vec2<U16> getDrawableSize() const;
 
     inline void setPosition(I32 positionX, I32 positionY);
     inline void setPosition(const vec2<I32>& position);
@@ -186,9 +192,31 @@ private:
     /// Changing from one window type to another
     /// should also change display dimensions and position
     void handleChangeWindowType(WindowType newWindowType);
+
+protected: //Input
+    /// Key pressed: return true if input was consumed
+    bool onKeyDown(const Input::KeyEvent& key);
+    /// Key released: return true if input was consumed
+    bool onKeyUp(const Input::KeyEvent& key);
+    /// Joystick axis change: return true if input was consumed
+    bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis);
+    /// Joystick direction change: return true if input was consumed
+    bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
+    /// Joystick button pressed: return true if input was consumed
+    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button);
+    /// Joystick button released: return true if input was consumed
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button);
+    bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
+    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
+    /// Mouse moved: return true if input was consumed
+    bool mouseMoved(const Input::MouseEvent& arg);
+    /// Mouse button pressed: return true if input was consumed
+    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
+    /// Mouse button released: return true if input was consumed
+    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
+
 private:
     WindowManager& _parent;
-    PlatformContext& _context;
     SDL_Window* _sdlWindow;
 
     /// The current rendering window type
@@ -212,6 +240,7 @@ private:
     vec2<I32> _windowPosition;
     vec2<U16> _prevDimensions;
     vec2<U16> _windowDimensions;
+    vec2<U16> _windowDrawableArea;
 
     typedef vectorImpl<EventListener> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;

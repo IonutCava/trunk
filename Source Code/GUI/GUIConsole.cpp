@@ -29,7 +29,7 @@ namespace {
 };
 
 GUIConsole::GUIConsole(PlatformContext& context, ResourceCache& cache)
-    : _context(context),
+    : PlatformContextComponent(context),
       _init(false),
       _closing(false),
       _editBox(nullptr),

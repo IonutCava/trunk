@@ -2,6 +2,7 @@
 
 #include "Headers/Scene.h"
 
+#include "Editor/Headers/Editor.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
@@ -29,7 +30,6 @@
 
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
-#include "GUI/GUIEditor/Headers/GUIEditor.h"
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
@@ -68,7 +68,7 @@ constexpr char* g_defaultPlayerName = "Player_%d";
 
 Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
     : Resource(ResourceType::DEFAULT, name),
-      _context(context),
+      PlatformContextComponent(context),
       _parent(parent),
       _resCache(cache),
       _LRSpeedFactor(5.0f),
@@ -80,7 +80,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
 {
     _sceneTimerUS = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
-    _input = MemoryManager_NEW SceneInput(*this, _context.input());
+    _input = MemoryManager_NEW SceneInput(*this, _context);
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
     _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.kernel().taskPool());
     _lightPool = MemoryManager_NEW LightPool(*this, _context.gfx());
@@ -655,7 +655,7 @@ U16 Scene::registerInputActions() {
 
     auto toggleEditor = [this](InputParams param) {
         if (Config::Build::IS_DEBUG_BUILD) {
-            _context.gui().getEditor().setVisible(!_context.gui().getEditor().isVisible());
+            _context.editor().toggle(!_context.editor().running());
         }
     };
 

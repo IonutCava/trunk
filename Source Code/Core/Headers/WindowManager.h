@@ -81,6 +81,8 @@ public:
     inline DisplayWindow& getWindow(U32 index);
     inline const DisplayWindow& getWindow(U32 index) const;
 
+    inline U32 getWindowCount() const;
+
     void handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2);
 
     vec2<U16> getFullscreenResolution() const;
@@ -88,6 +90,7 @@ public:
 protected:
     U32 createAPIFlags(RenderAPI api);
     void pollSDLEvents();
+
 protected:
     U32 _apiFlags;
     I32 _displayIndex;

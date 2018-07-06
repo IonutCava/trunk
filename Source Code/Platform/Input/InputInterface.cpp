@@ -43,7 +43,7 @@ InputInterface::~InputInterface()
     assert(!_bIsInitialized);
 }
 
-ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensions) {
+ErrorCode InputInterface::init(const vec2<U16>& inputAreaDimensions) {
     if (_bIsInitialized) {
         return ErrorCode::NO_ERR;
     }
@@ -77,7 +77,7 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
                      _pInputInterface->inputSystemName().c_str());
 
     // Create the event handler.
-    _pEventHdlr = MemoryManager_NEW EventHandler(this, kernel);
+    _pEventHdlr = MemoryManager_NEW EventHandler(this, _parent);
     assert(_pEventHdlr != nullptr && "InputInterface error: EventHandler allocation failed!");
 
     I32 numKB = _pInputInterface->getNumberOfDevices(OIS::OISKeyboard);

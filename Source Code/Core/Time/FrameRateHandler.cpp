@@ -15,6 +15,11 @@ FrameRateHandler::FrameRateHandler() : _fps(0.0f),
     _tickTimeStamp(0UL),
     _targetFrameRate(0)
 {
+    memset(&_framerateSecPerFrame, 0, sizeof(F32) * FRAME_ARRAY_SIZE);
+    _previousElapsedSeconds = 0.0f;
+    _framerate = 0.0f;
+    _framerateSecPerFrameIdx = 0;
+    _framerateSecPerFrameAccum = 0.0f;
 }
 
 FrameRateHandler::~FrameRateHandler()
@@ -62,6 +67,14 @@ void FrameRateHandler::tick(const U64 elapsedTime)
             _minFPS = std::min(_averageFps, _minFPS);
         }
     }
+
+    F32 elapsedSeconds = Time::MicrosecondsToSeconds(elapsedTime);
+    F32 deltaSeconds = elapsedSeconds - _previousElapsedSeconds;
+    _framerateSecPerFrameAccum += deltaSeconds - _framerateSecPerFrame[_framerateSecPerFrameIdx];
+    _framerateSecPerFrame[_framerateSecPerFrameIdx] = deltaSeconds;
+    _framerateSecPerFrameIdx = (_framerateSecPerFrameIdx + 1) % FRAME_ARRAY_SIZE;
+    _framerate = 1.0f / (_framerateSecPerFrameAccum / (F32)FRAME_ARRAY_SIZE);
+    _previousElapsedSeconds = elapsedSeconds;
 }
 
 }; //namespace Time

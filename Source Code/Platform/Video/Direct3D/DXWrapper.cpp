@@ -44,6 +44,15 @@ size_t DX_API::setStateBlock(size_t stateBlockHash) {
 }
 
 bool DX_API::changeViewportInternal(const vec4<I32>& viewport) {
+    ACKNOWLEDGE_UNUSED(viewport);
+
     return true;
+}
+
+vec2<U16> DX_API::getDrawableSize(const DisplayWindow& window) const {
+    ACKNOWLEDGE_UNUSED(window);
+
+    vec2<U16> ret(1u);
+    return ret;
 }
 };

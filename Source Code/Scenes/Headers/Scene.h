@@ -89,7 +89,7 @@ namespace Attorney {
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:
 /// one for game information and one for rendering information
 
-class Scene : public Resource {
+class Scene : public Resource, public PlatformContextComponent {
     friend class Attorney::SceneManager;
     friend class Attorney::SceneGraph;
     friend class Attorney::SceneRenderPass;
@@ -273,7 +273,6 @@ class Scene : public Resource {
        /// Global info
        SceneManager& _parent;
        ResourceCache& _resCache;
-       PlatformContext& _context;
        ParamHandler&  _paramHandler;
        SceneGraph*    _sceneGraph;
        AI::AIManager* _aiManager;

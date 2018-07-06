@@ -34,6 +34,7 @@
 
 #include "ResourceDescriptor.h"
 #include "Resource.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
 
@@ -51,11 +52,11 @@ struct DeleteResource {
 };
 
 class PlatformContext;
-class NOINITVTABLE ResourceLoader : private NonCopyable {
+class NOINITVTABLE ResourceLoader : public PlatformContextComponent {
    public:
     ResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
-        : _cache(cache),
-          _context(context),
+        : PlatformContextComponent(context),
+          _cache(cache),
           _descriptor(descriptor),
           _loadingDescriptorHash(loadingDescriptorHash)
     {
@@ -65,7 +66,6 @@ class NOINITVTABLE ResourceLoader : private NonCopyable {
 
    protected:
     ResourceCache& _cache;
-    PlatformContext& _context;
     ResourceDescriptor _descriptor;
     size_t _loadingDescriptorHash;
 };

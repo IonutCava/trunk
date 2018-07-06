@@ -48,7 +48,6 @@ namespace GFX {
     class CommandBuffer;
 };
 
-class GUIEditor;
 class GUIConsole;
 class GUIElement;
 class ResourceCache;
@@ -107,9 +106,6 @@ public:
     inline GUIConsole& getConsole() { return *_console; }
     inline const GUIConsole& getConsole() const { return *_console; }
 
-    inline GUIEditor& getEditor() { return *_guiEditor; }
-    inline const GUIEditor& getEditor() const { return *_guiEditor; }
-
     inline CEGUI::Window* rootSheet() const { return _rootSheet; }
     inline const stringImpl& guiScheme() const { return _defaultGUIScheme; }
 
@@ -133,9 +129,9 @@ public:
     /// Joystick direction change: return true if input was consumed
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
     /// Joystick button pressed: return true if input was consumed
-    bool buttonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button);
     /// Joystick button released: return true if input was consumed
-    bool buttonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
     bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
     /// Mouse moved: return true if input was consumed
@@ -171,7 +167,6 @@ private:
     CEGUIInput _ceguiInput;  //< Used to implement key repeat
     GUIConsole* _console;    //< Pointer to the GUIConsole object
     GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for general purpose messages
-    GUIEditor*  _guiEditor; //< Pointer to a World Editor type interface
     U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible
                               //for performance reasons
 

@@ -51,6 +51,7 @@ GLuint GL_API::s_activeBufferID[] = {GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID};
 VAOBindings GL_API::s_vaoBufferData;
 GLfloat GL_API::s_depthNearVal = 0.0f;
+I64 GL_API::s_activeWindowGUID = -1;
 Pipeline const* GL_API::s_activePipeline = nullptr;
 glFramebuffer* GL_API::s_activeRenderTarget = nullptr;
 glPixelBuffer* GL_API::s_activePixelBuffer = nullptr;
@@ -136,6 +137,7 @@ void GL_API::clearStates() {
     }
     GL_API::setBlendColour(vec4<U8>(0u), true);
 
+    s_activeWindowGUID = -1;
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
     s_activePixelBuffer = nullptr;
@@ -145,10 +147,11 @@ void GL_API::clearStates() {
 
     Attorney::GLAPIShaderProgram::unbind();
 
-    glClearColor(DefaultColours::DIVIDE_BLUE.r, 
-                 DefaultColours::DIVIDE_BLUE.g,
-                 DefaultColours::DIVIDE_BLUE.b,
-                 DefaultColours::DIVIDE_BLUE.a);
+    glClearColor(DefaultColours::DIVIDE_BLUE.r,
+                    DefaultColours::DIVIDE_BLUE.g,
+                    DefaultColours::DIVIDE_BLUE.b,
+                    DefaultColours::DIVIDE_BLUE.a);
+
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc

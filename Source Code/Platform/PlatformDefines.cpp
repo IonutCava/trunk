@@ -19,6 +19,9 @@
 
 #include "Platform/File/Headers/FileManagement.h"
 
+#define HAVE_M_PI
+#include <SDL.h>
+
 namespace Divide {
 
 namespace {
@@ -172,6 +175,22 @@ FileWithPath getExecutableLocation(char* argv0) {
     boost::filesystem::path p(boost::filesystem::canonical(argv0, boost::filesystem::current_path(), ec));
     return splitPathToNameAndLocation(p.make_preferred().string());
 }
+
+const char* GetClipboardText(void*)
+{
+    return SDL_GetClipboardText();
+}
+
+void SetClipboardText(void*, const char* text)
+{
+    SDL_SetClipboardText(text);
+}
+
+void ToggleCursor(bool state)
+{
+    SDL_ShowCursor(state ? 1 : 0);
+}
+
 };  // namespace Divide
 
 #if defined(_DEBUG)

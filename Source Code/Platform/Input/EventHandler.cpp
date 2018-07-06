@@ -7,8 +7,8 @@
 namespace Divide {
 namespace Input {
 
-EventHandler::EventHandler(InputInterface *pApp, Kernel& kernel)
-    : _kernel(&kernel),
+EventHandler::EventHandler(InputInterface *pApp, InputAggregatorInterface& eventListener)
+    : _eventListener(eventListener),
       _pApplication(pApp),
       _pJoystickInterface(nullptr),
       _pEffectMgr(nullptr)
@@ -23,31 +23,31 @@ void EventHandler::initialize(JoystickInterface *pJoystickInterface,
 
 /// Input events are either handled by the kernel
 bool EventHandler::onKeyDown(const KeyEvent &arg) {
-    return _kernel->onKeyDown(arg);
+    return _eventListener.onKeyDown(arg);
 }
 
 bool EventHandler::onKeyUp(const KeyEvent &arg) {
-    return _kernel->onKeyUp(arg);
+    return _eventListener.onKeyUp(arg);
 }
 
-bool EventHandler::buttonPressed(const JoystickEvent &arg, JoystickButton button) {
-    return _kernel->buttonPressed(arg, button);
+bool EventHandler::joystickButtonPressed(const JoystickEvent &arg, JoystickButton button) {
+    return _eventListener.joystickButtonPressed(arg, button);
 }
 
 bool EventHandler::buttonPressed(const OIS::JoyStickEvent& arg, JoystickButton button) {
-    return buttonPressed(JoystickEvent(to_U8(arg.device->getID()), arg), button);
+    return joystickButtonPressed(JoystickEvent(to_U8(arg.device->getID()), arg), button);
 }
 
-bool EventHandler::buttonReleased(const JoystickEvent &arg, JoystickButton button) {
-    return _kernel->buttonReleased(arg, button);
+bool EventHandler::joystickButtonReleased(const JoystickEvent &arg, JoystickButton button) {
+    return _eventListener.joystickButtonReleased(arg, button);
 }
 
-bool EventHandler::buttonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) {
-    return buttonReleased(JoystickEvent(to_U8(arg.device->getID()), arg), button);
+bool EventHandler::joystickButtonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) {
+    return joystickButtonReleased(JoystickEvent(to_U8(arg.device->getID()), arg), button);
 }
 
 bool EventHandler::joystickAxisMoved(const JoystickEvent &arg, I8 axis) {
-    return _kernel->joystickAxisMoved(arg, axis);
+    return _eventListener.joystickAxisMoved(arg, axis);
 }
 
 bool EventHandler::axisMoved(const OIS::JoyStickEvent& arg, int axis) {
@@ -55,7 +55,7 @@ bool EventHandler::axisMoved(const OIS::JoyStickEvent& arg, int axis) {
 }
 
 bool EventHandler::joystickPovMoved(const JoystickEvent &arg, I8 pov) {
-    return _kernel->joystickPovMoved(arg, pov);
+    return _eventListener.joystickPovMoved(arg, pov);
 }
 
 bool EventHandler::povMoved(const OIS::JoyStickEvent& arg, int pov) {
@@ -63,7 +63,7 @@ bool EventHandler::povMoved(const OIS::JoyStickEvent& arg, int pov) {
 }
 
 bool EventHandler::joystickSliderMoved(const JoystickEvent &arg, I8 index) {
-    return _kernel->joystickSliderMoved(arg, index);
+    return _eventListener.joystickSliderMoved(arg, index);
 }
 
 bool EventHandler::sliderMoved(const OIS::JoyStickEvent& arg, int index) {
@@ -71,7 +71,7 @@ bool EventHandler::sliderMoved(const OIS::JoyStickEvent& arg, int index) {
 }
 
 bool EventHandler::joystickvector3Moved(const JoystickEvent &arg, I8 index) {
-    return _kernel->joystickvector3Moved(arg, index);
+    return _eventListener.joystickvector3Moved(arg, index);
 }
 
 bool EventHandler::vector3Moved(const OIS::JoyStickEvent& arg, int index) {
@@ -79,7 +79,7 @@ bool EventHandler::vector3Moved(const OIS::JoyStickEvent& arg, int index) {
 }
 
 bool EventHandler::mouseMoved(const MouseEvent &arg) {
-    return _kernel->mouseMoved(arg);
+    return _eventListener.mouseMoved(arg);
 }
 
 bool EventHandler::mouseMoved(const OIS::MouseEvent &arg) {
@@ -87,7 +87,7 @@ bool EventHandler::mouseMoved(const OIS::MouseEvent &arg) {
 }
 
 bool EventHandler::mouseButtonPressed(const MouseEvent &arg, MouseButton id) {
-    return _kernel->mouseButtonPressed(arg, id);
+    return _eventListener.mouseButtonPressed(arg, id);
 }
 
 bool EventHandler::mousePressed(const OIS::MouseEvent& arg, OIS::MouseButtonID id) {
@@ -95,7 +95,7 @@ bool EventHandler::mousePressed(const OIS::MouseEvent& arg, OIS::MouseButtonID i
 }
 
 bool EventHandler::mouseButtonReleased(const MouseEvent &arg, MouseButton id) {
-    return _kernel->mouseButtonReleased(arg, id);
+    return _eventListener.mouseButtonReleased(arg, id);
 }
 
 bool EventHandler::mouseReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID id) {

@@ -167,9 +167,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     Kernel(I32 argc, char** argv, Application& parentApp);
     ~Kernel();
 
-    static bool onStartup();
-    static bool onShutdown();
-
     /// Our main application rendering loop.
     /// Call input requests, physics calculations, pre-rendering,
     /// rendering,post-rendering etc
@@ -189,10 +186,10 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// Joystick direction change
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
     /// Joystick button pressed
-    bool buttonPressed(const Input::JoystickEvent& arg,
+    bool joystickButtonPressed(const Input::JoystickEvent& arg,
                                Input::JoystickButton button);
     /// Joystick button released
-    bool buttonReleased(const Input::JoystickEvent& arg,
+    bool joystickButtonReleased(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
     bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
@@ -257,6 +254,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
     void shutdown();
+    void startSplashScreen();
+    void stopSplashScreen();
     bool mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS);
     bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
     bool setCursorPosition(I32 x, I32 y) const;
@@ -269,7 +268,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     std::unique_ptr<PlatformContext>   _platformContext;
     std::unique_ptr<SceneManager>      _sceneManager;
     std::unique_ptr<RenderPassManager> _renderPassManager;
-    std::unique_ptr<Editor>            _editor;
     LoopTimingData _timingData;
 
     TaskPool _taskPool;
@@ -320,6 +318,14 @@ namespace Attorney {
 
         static void onLoop(Kernel& kernel) {
             kernel.onLoop();
+        }
+
+        static void startSplashScreen(Kernel& kernel) {
+            kernel.startSplashScreen();
+        }
+
+        static void stopSplashScreen(Kernel& kernel) {
+            kernel.stopSplashScreen();
         }
 
         friend class Divide::Application;

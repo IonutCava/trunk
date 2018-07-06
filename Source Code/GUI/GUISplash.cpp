@@ -46,7 +46,7 @@ GUISplash::~GUISplash()
 {
 }
 
-void GUISplash::render(GFXDevice& context) {
+void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = context.get2DStateBlock();
     pipelineDescriptor._shaderProgram = _splashShader;

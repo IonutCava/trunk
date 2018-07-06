@@ -47,7 +47,7 @@ class ResourceCache;
 class PlatformContext;
 /// An abstract renderer used to switch between different rendering techniques:
 /// TiledForwardShading, Deferred Shading, etc
-class NOINITVTABLE Renderer {
+class NOINITVTABLE Renderer : public PlatformContextComponent {
    public:
     Renderer(PlatformContext& context, ResourceCache& cache, RendererType type);
     virtual ~Renderer();
@@ -68,7 +68,6 @@ class NOINITVTABLE Renderer {
     inline U32 getFlag() const { return _flag; }
 
    protected:
-    PlatformContext& _context;
     ResourceCache& _resCache;
     // General purpose flag
     U32 _flag;

@@ -76,7 +76,7 @@ class GUIButton : public GUIElement {
     ~GUIButton();
 
     void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const override;
-    bool buttonPressed(const CEGUI::EventArgs& /*e*/);
+    bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
    protected:;
     /// A pointer to a function to call if the button is pressed

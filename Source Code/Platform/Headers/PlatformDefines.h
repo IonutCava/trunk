@@ -139,6 +139,11 @@ ErrorCode PlatformPostInit(int argc, char** argv);
 ErrorCode PlatformInitImpl(int argc, char** argv);
 bool PlatformCloseImpl();
 
+const char* GetClipboardText(void*);
+void SetClipboardText(void*, const char* text);
+
+void ToggleCursor(bool state);
+
 template <typename T>
 struct synchronized {
 public:

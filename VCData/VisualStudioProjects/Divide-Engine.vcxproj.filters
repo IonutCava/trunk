@@ -784,6 +784,9 @@
     <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Text3D.h">
       <Filter>Geometry\Shapes\Predefined\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContextComponent.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

@@ -142,12 +142,6 @@
     <Filter Include="GUI">
       <UniqueIdentifier>{403c893d-cd4c-4f9e-830a-b586e4ac5908}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GUI\GUIEditor">
-      <UniqueIdentifier>{286e1310-e0b7-47a2-8bcf-70132cc00c8c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GUI\GUIEditor\Headers">
-      <UniqueIdentifier>{2b8cf422-24c3-47cd-a0c1-ec20cd492a94}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{8b3125d1-a0b9-4b4e-a7ef-1c34db34a6a8}</UniqueIdentifier>
     </Filter>
@@ -429,9 +423,6 @@
     <ClCompile Include="..\../Source Code/Environment\Vegetation\Vegetation.cpp">
       <Filter>Environment\Vegetation</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/GUI\GUIEditor\GUIEditor.cpp">
-      <Filter>GUI\GUIEditor</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp">
       <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
@@ -704,9 +695,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/Environment\Vegetation\Headers\Vegetation.h">
       <Filter>Environment\Vegetation\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/GUI\GUIEditor\Headers\GUIEditor.h">
-      <Filter>GUI\GUIEditor\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Scenes\CubeScene\Headers\CubeScene.h">
       <Filter>Scenes\CubeScene\Headers</Filter>

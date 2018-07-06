@@ -40,6 +40,7 @@
 #include <CEGUI/CEGUI.h>
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace CEGUI {
 class FormattedListboxTextItem;
@@ -52,7 +53,7 @@ class ResourceCache;
 class PlatformContext;
 class GUIConsoleCommandParser;
 /// GUIConsole implementation, CEGUI based, as in the practical tutorial series
-class GUIConsole {
+class GUIConsole : public PlatformContextComponent {
    public:
     explicit GUIConsole(PlatformContext& context, ResourceCache& cache);
     ~GUIConsole();
@@ -83,7 +84,6 @@ class GUIConsole {
     void OutputText(const char* inMsg, const bool error = false);
 
    protected:
-    PlatformContext& _context;
     /// used to check if the console is ready
     bool _init;
     bool _closing;

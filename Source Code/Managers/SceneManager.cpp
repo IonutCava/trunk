@@ -770,22 +770,22 @@ bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     return getActiveScene().input().joystickPovMoved(arg, pov);
 }
 
-bool SceneManager::buttonPressed(const Input::JoystickEvent& arg,
+bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg,
                                          Input::JoystickButton button) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().buttonPressed(arg, button);
+    return getActiveScene().input().joystickButtonPressed(arg, button);
 }
 
-bool SceneManager::buttonReleased(const Input::JoystickEvent& arg,
+bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg,
                                           Input::JoystickButton button) {
     if (!_processInput) {
         return false;
     }
 
-    return getActiveScene().input().buttonReleased(arg, button);
+    return getActiveScene().input().joystickButtonReleased(arg, button);
 }
 
 bool SceneManager::joystickSliderMoved(const Input::JoystickEvent& arg,

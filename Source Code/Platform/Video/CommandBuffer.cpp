@@ -71,7 +71,9 @@ void AddDrawIMGUICommand(CommandBuffer& buffer, const DrawIMGUICommand& cmd) {
 void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd) {
     buffer.add(cmd);
 }
-
+void AddSwitchWindow(CommandBuffer& buffer, const SwitchWindowCommand& cmd) {
+    buffer.add(cmd);
+}
 
 CommandBuffer::CommandBuffer(size_t index)
     : _index(index)
@@ -111,7 +113,8 @@ void CommandBuffer::batch() {
             case GFX::CommandType::SET_CLIP_PLANES:
             case GFX::CommandType::SET_SCISSOR:
             case GFX::CommandType::SET_BLEND:
-            case GFX::CommandType::SET_VIEWPORT: {
+            case GFX::CommandType::SET_VIEWPORT:
+            case GFX::CommandType::SWITCH_WINDOW: {
                 hasWork = true;
                 break;
             }break;
@@ -279,6 +282,7 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::BLIT_RT: {
                     needsDescriptorSets = true;
                 }break;
+                case GFX::CommandType::SWITCH_WINDOW:
                 case GFX::CommandType::DRAW_CEGUI: {
                     // no requirements yet
                 }break;
@@ -385,6 +389,9 @@ void CommandBuffer::toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtI
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             append(out, "DISPATCH_COMPUTE", crtIndent);
+        }break;
+        case GFX::CommandType::SWITCH_WINDOW: {
+            append(out, "SWITCH_WINDOW", crtIndent);
         }break;
     }
 }

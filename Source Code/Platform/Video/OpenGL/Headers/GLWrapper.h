@@ -127,6 +127,10 @@ protected:
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
     U32 getFrameDurationGPU() override;
+
+    /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
+    vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
+
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
         return s_activeFBID[to_U32(usage)];
@@ -264,6 +268,7 @@ private:
     /// Revert everything that was set up in "initShaders()"
     bool deInitShaders();
 
+    bool switchWindow(I64 windowGUID);
     bool bindPipeline(const Pipeline& pipeline);
     void sendPushConstants(const PushConstants& pushConstants);
     void dispatchCompute(const ComputeParams& computeParams);
@@ -322,6 +327,7 @@ private:
     typedef hashMapImpl<U64, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
+    static I64 s_activeWindowGUID;
     static Pipeline const* s_activePipeline;
     static glFramebuffer* s_activeRenderTarget;
     static glPixelBuffer* s_activePixelBuffer;

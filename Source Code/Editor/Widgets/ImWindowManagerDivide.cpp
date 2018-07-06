@@ -2,12 +2,15 @@
 
 #include "Headers/ImWindowManagerDivide.h"
 #include "Headers/ImWindowDivide.h"
+
+#include "Editor/Headers/Editor.h"
 #include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
 
-ImwWindowManagerDivide::ImwWindowManagerDivide(PlatformContext& context)
-    : _context(context)
+ImwWindowManagerDivide::ImwWindowManagerDivide(Editor& parent)
+    : _parent(parent),
+      _windowCount(0u)
 {
 }
 
@@ -20,7 +23,7 @@ ImWindow::ImwPlatformWindow* ImwWindowManagerDivide::CreatePlatformWindow(ImWind
 {
     IM_ASSERT(m_pCurrentPlatformWindow == nullptr);
 
-    ImwWindowDivide* pWindow = MemoryManager_NEW ImwWindowDivide(_context, eType, CanCreateMultipleWindow());
+    ImwWindowDivide* pWindow = MemoryManager_NEW ImwWindowDivide(*this, _parent.context(), eType, CanCreateMultipleWindow());
     if (pWindow->Init(pParent)) {
         return (ImWindow::ImwPlatformWindow*)pWindow;
     } else {
@@ -31,12 +34,30 @@ ImWindow::ImwPlatformWindow* ImwWindowManagerDivide::CreatePlatformWindow(ImWind
 
 ImVec2 ImwWindowManagerDivide::GetCursorPos()
 {
-    return ImVec2(vec2<F32>(_context.app().windowManager().getCursorPosition()));
+    return ImVec2(vec2<F32>(_parent.context().app().windowManager().getCursorPosition()));
 }
 
 bool ImwWindowManagerDivide::IsLeftClickDown()
 {
-    return _context.input().getMouseButtonState(0, Input::MouseButton::MB_Left) == Input::InputState::PRESSED;
+    return _parent.context().input().getMouseButtonState(0, Input::MouseButton::MB_Left) == Input::InputState::PRESSED;
+}
+
+
+void ImwWindowManagerDivide::renderDrawList(ImDrawData* pDrawData, I64 windowGUID) {
+    Attorney::EditorWindowManager::renderDrawList(_parent, pDrawData, windowGUID);
+}
+
+void ImwWindowManagerDivide::registerWindow(ImwWindowDivide* window) {
+    ACKNOWLEDGE_UNUSED(window);
+
+    ++_windowCount;
+}
+
+void ImwWindowManagerDivide::unregisterWindow(ImwWindowDivide* window) {
+    if (!window->isMainWindow()) {
+        _parent.context().app().windowManager().destroyWindow(window->nativeWindow());
+    }
+    --_windowCount;
 }
 
 }; //namespace Divide

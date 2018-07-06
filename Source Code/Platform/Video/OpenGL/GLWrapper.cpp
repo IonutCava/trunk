@@ -102,8 +102,18 @@ void GL_API::beginFrame() {
         GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
         glBeginQuery(GL_TIME_ELAPSED, writeQuery);
     }
+
     // Clear our buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
+    const WindowManager& winMgr = _context.parent().platformContext().app().windowManager();
+    U32 windowCount = winMgr.getWindowCount();
+    for (U32 i = 0; i < windowCount; ++i) {
+        const DisplayWindow& window = winMgr.getWindow(i);
+        if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
+        }
+    }
+    
+    
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
     _context.registerDrawCall();
@@ -116,12 +126,17 @@ void GL_API::endFrame() {
     // Revert back to the default OpenGL states
     clearStates();
     // Swap buffers
-    const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getActiveWindow();
-    if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
+    {
         Time::ScopedTimer time(_swapBufferTimer);
-        SDL_GL_SwapWindow(window.getRawWindow());
+        const WindowManager& winMgr = _context.parent().platformContext().app().windowManager();
+        U32 windowCount = winMgr.getWindowCount();
+        for (U32 i = 0; i < windowCount; ++i) {
+            const DisplayWindow& window = winMgr.getWindow(i);
+            if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
+                SDL_GL_SwapWindow(window.getRawWindow());
+            }
+        }
     }
-
     // End the timing query started in beginFrame() in debug builds
     if (Config::ENABLE_GPU_VALIDATION) {
         glEndQuery(GL_TIME_ELAPSED);
@@ -896,6 +911,16 @@ void GL_API::drawIMGUI(ImDrawData* data) {
     }
 }
 
+bool GL_API::switchWindow(I64 windowGUID) {
+    if (windowGUID != -1 && windowGUID != s_activeWindowGUID) {
+        DisplayWindow& window = _context.parent().platformContext().app().windowManager().getWindow(windowGUID);
+        SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
+        s_activeWindowGUID = windowGUID;
+        return true;
+    }
+    return false;
+}
+
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
     if (s_activePipeline && *s_activePipeline == pipeline) {
         return true;
@@ -1095,6 +1120,10 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::DRAW_CEGUI: {
                 //GFX::DrawCEGUICommand* crtCmd = static_cast<GFX::DrawCEGUICommand*>(cmd.get());
                 CEGUI::System::getSingleton().renderAllGUIContexts();
+            }break;
+            case GFX::CommandType::SWITCH_WINDOW: {
+                GFX::SwitchWindowCommand* crtCmd = static_cast<GFX::SwitchWindowCommand*>(cmd.get());
+                switchWindow(crtCmd->windowGUID);
             }break;
             case GFX::CommandType::DRAW_IMGUI: {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);

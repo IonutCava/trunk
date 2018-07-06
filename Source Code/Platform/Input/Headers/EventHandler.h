@@ -52,10 +52,10 @@ class EventHandler : public OIS::KeyListener,
     InputInterface* _pApplication;
     JoystickInterface* _pJoystickInterface;
     EffectManager* _pEffectMgr;
-    Kernel* _kernel;
+    InputAggregatorInterface& _eventListener;
 
    public:
-    EventHandler(InputInterface* pApp, Kernel& kernel);
+    EventHandler(InputInterface* pApp, InputAggregatorInterface& eventListener);
     void initialize(JoystickInterface* pJoystickInterface,
                     EffectManager* pEffectMgr);
 
@@ -69,13 +69,13 @@ class EventHandler : public OIS::KeyListener,
     /// Key released - OIS
     bool keyReleased(const OIS::KeyEvent& arg) override;
     /// Joystick button pressed - Engine: return true if input was consumed
-    bool buttonPressed(const JoystickEvent& arg, JoystickButton button);
+    bool joystickButtonPressed(const JoystickEvent& arg, JoystickButton button);
     /// Joystick button pressed - OIS
     bool buttonPressed(const OIS::JoyStickEvent& arg, JoystickButton button) override;
     /// Joystick button released - Engine: return true if input was consumed
-    bool buttonReleased(const JoystickEvent& arg, JoystickButton button);
+    bool joystickButtonReleased(const JoystickEvent& arg, JoystickButton button);
     /// Joystick button released - OIS
-    bool buttonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) override;
+    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) override;
     /// Joystick axis change - Engine: return true if input was consumed
     bool joystickAxisMoved(const JoystickEvent& arg, I8 axis);
     /// Joystick axis change - OIS

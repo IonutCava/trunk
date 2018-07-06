@@ -36,15 +36,16 @@
 #include "Platform/Threading/Headers/ThreadPool.h"
 
 #include "Utility/Headers/Localization.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
 
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources
-/// - load new resources using apropriate resource loader and store them in
+/// - load new resources using appropriate resource loader and store them in
 /// cache
 /// - remove resources by name / pointer or remove all
-class ResourceCache {
+class ResourceCache : public PlatformContextComponent {
 public:
     ResourceCache(PlatformContext& context);
     ~ResourceCache();
@@ -93,10 +94,6 @@ protected:
     SharedLock _creationMutex;
     typedef hashMapImpl<size_t, CachedResource_wptr> ResourceMap;
     ResourceMap _resDB;
-
-private:
-    PlatformContext& _context;
-
 };
 
 template <typename T>

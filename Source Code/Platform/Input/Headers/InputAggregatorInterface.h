@@ -125,18 +125,18 @@ class InputAggregatorInterface {
     /// Keyboard: return true if input was consumed
     virtual bool onKeyDown(const KeyEvent &arg) = 0;
     virtual bool onKeyUp(const KeyEvent &arg) = 0;
-    /// Joystick or Gamepad: return true if input was consumed
-    virtual bool buttonPressed(const JoystickEvent &arg, JoystickButton button) = 0;
-    virtual bool buttonReleased(const JoystickEvent &arg,
-                                        JoystickButton button) = 0;
-    virtual bool joystickAxisMoved(const JoystickEvent &arg, I8 axis) = 0;
-    virtual bool joystickPovMoved(const JoystickEvent &arg, I8 pov) = 0;
-    virtual bool joystickSliderMoved(const JoystickEvent &, I8 index) = 0;
-    virtual bool joystickvector3Moved(const JoystickEvent &arg, I8 index) = 0;
     /// Mouse: return true if input was consumed
     virtual bool mouseMoved(const MouseEvent &arg) = 0;
     virtual bool mouseButtonPressed(const MouseEvent &arg, MouseButton id) = 0;
     virtual bool mouseButtonReleased(const MouseEvent &arg, MouseButton id) = 0;
+
+    /// Joystick or Gamepad: return true if input was consumed
+    virtual bool joystickButtonPressed(const JoystickEvent &arg, JoystickButton button) = 0;
+    virtual bool joystickButtonReleased(const JoystickEvent &arg, JoystickButton button) = 0;
+    virtual bool joystickAxisMoved(const JoystickEvent &arg, I8 axis) = 0;
+    virtual bool joystickPovMoved(const JoystickEvent &arg, I8 pov) = 0;
+    virtual bool joystickSliderMoved(const JoystickEvent &arg, I8 index) = 0;
+    virtual bool joystickvector3Moved(const JoystickEvent &arg, I8 index) = 0;
 };
 
 };  // namespace Input

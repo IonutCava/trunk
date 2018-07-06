@@ -210,74 +210,17 @@ void WindowManager::pollSDLEvents() {
                                   event.quit.type,
                                   event.quit.timestamp);
             } break;
+            case SDL_TEXTINPUT: {
+                args._text = event.text.text;
+                focusedWindow.notifyListeners(WindowEvent::TEXT, args);
+            } break;
              case SDL_KEYUP:
-             case SDL_KEYDOWN: {
-                 args._key = SDLToOIS(event.key.keysym.sym);
-                 if (event.key.type == SDL_KEYUP) {
-                     s_KeyMod = 0;
-                     args._flag = false;
-                     focusedWindow.notifyListeners(WindowEvent::KEY_PRESS, args);
-                 } else {
-                     s_KeyMod = event.key.keysym.mod;
-
-                     args._flag = true;
-                     args._mod = s_KeyMod;
-                     focusedWindow.notifyListeners(WindowEvent::KEY_PRESS, args);
-                 }
-             } break;
-             case SDL_TEXTINPUT: {
-                 args._char = event.text.text[0];
-                 if (event.text.text[0] != 0 && event.text.text[1] == 0)
-                 {
-                     if (s_KeyMod & TW_KMOD_CTRL && event.text.text[0] < 32) {
-                         args._char = (event.text.text[0] + 'a' - 1);
-                         args._mod = s_KeyMod;
-                     } else {
-                         if (s_KeyMod & KMOD_RALT) {
-                             s_KeyMod &= ~KMOD_CTRL;
-                         }
-
-                         args._char = event.text.text[0];
-                         args._mod = s_KeyMod;
-                     }
-                 }
-                 s_KeyMod = 0;
-                 focusedWindow.notifyListeners(WindowEvent::CHAR, args);
-             } break;
-             case SDL_MOUSEBUTTONDOWN: {
-                 args._flag = true;
-                 args.id = event.button.button;
-                 focusedWindow.notifyListeners(WindowEvent::MOUSE_BUTTON, args);
-             } break;
-             case SDL_MOUSEBUTTONUP: {
-                 if (event.type == SDL_MOUSEBUTTONDOWN && (event.button.button == 4 || event.button.button == 5))
-                 {
-                     static int s_WheelPos = 0;
-                     if (event.button.button == 4) {
-                         ++s_WheelPos;
-                     } else {
-                         --s_WheelPos;
-                     }
-                     args.x = event.wheel.x;
-                     args.y = event.wheel.y;
-                     args._mod = s_WheelPos;
-                     focusedWindow.notifyListeners(WindowEvent::MOUSE_WHEEL, args);
-                 } else {
-
-                     args._flag = false;
-                     args.id = event.button.button;
-                     focusedWindow.notifyListeners(WindowEvent::MOUSE_BUTTON, args);
-                 }
-             } break;
-             case SDL_MOUSEMOTION: {
-                 args.x = event.motion.x;
-                 args.y = event.motion.y;
-                 focusedWindow.notifyListeners(WindowEvent::MOUSE_MOVE, args);
-             } break;
-             case SDL_MOUSEWHEEL: {
-                 args.x = event.wheel.x;
-                 args.y = event.wheel.y;
-                 focusedWindow.notifyListeners(WindowEvent::MOUSE_WHEEL, args);
+             case SDL_KEYDOWN:
+             case SDL_MOUSEBUTTONDOWN: 
+             case SDL_MOUSEBUTTONUP:
+             case SDL_MOUSEMOTION:
+             case SDL_MOUSEWHEEL:{
+                 // OIS handles this
              } break;
         }
     };

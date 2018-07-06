@@ -63,6 +63,8 @@ protected:
 
     U32 getFrameDurationGPU() override { return 0u; }
 
+    vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
+
     bool changeViewportInternal(const vec4<I32>& viewport) override;
 };
 

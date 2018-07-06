@@ -482,4 +482,10 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
     }
 }
 
+vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
+    int w = 1, h = 1;
+    SDL_GL_GetDrawableSize(window.getRawWindow(), &w, &h);
+    return vec2<U16>(w, h);
+}
+
 };

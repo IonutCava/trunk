@@ -57,7 +57,7 @@ namespace ImWindow
 	void ImwContainer::Dock(ImwWindow* pWindow, EDockOrientation eOrientation, float fRatio, int iPosition)
 	{
 		IM_ASSERT(NULL != pWindow);
-		IM_ASSERT(fRatio > 0.f && fRatio < 1.f);
+		IM_ASSERT(fRatio > 0.f && fRatio <= 1.f);
 
 		if ( NULL != pWindow )
 		{

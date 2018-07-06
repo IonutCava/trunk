@@ -85,7 +85,8 @@ GPUVendor GFXDevice::s_GPUVendor = GPUVendor::COUNT;
 GPURenderer GFXDevice::s_GPURenderer = GPURenderer::COUNT;
 
 GFXDevice::GFXDevice(Kernel& parent)
-   : KernelComponent(parent), 
+   : KernelComponent(parent),
+     PlatformContextComponent(parent.platformContext()),
     _api(nullptr),
     _renderer(nullptr),
     _shaderComputeQueue(nullptr),
@@ -417,7 +418,8 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
 
     // Update the 2D camera so it matches our new rendering viewport
     Camera::utilityCamera(Camera::UtilityCamera::_2D)->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1));
-
+    Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->setProjection(vec4<F32>(0, to_F32(w), to_F32(h), 0), vec2<F32>(-1, 1));
+    
     setBaseViewport(vec4<I32>(0, 0, to_I32(w), to_I32(h)));
 }
 

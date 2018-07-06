@@ -64,6 +64,7 @@ enum class CommandType : U8 {
     DISPATCH_COMPUTE,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
+    SWITCH_WINDOW,
     COUNT
 };
 
@@ -254,6 +255,13 @@ struct DispatchComputeCommand : Command {
     ComputeParams _params;
 };
 
+struct SwitchWindowCommand : Command {
+    SwitchWindowCommand() : Command(CommandType::SWITCH_WINDOW)
+    {
+    }
+
+    I64 windowGUID = -1;
+};
 }; //namespace GFX
 }; //namespace Divide
 

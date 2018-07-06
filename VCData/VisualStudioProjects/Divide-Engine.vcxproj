@@ -491,6 +491,7 @@
     <ClInclude Include="..\../Source Code/Scripting\Headers\GameScript.h" />
     <ClInclude Include="..\../Source Code/Scripting\Headers\Script.h" />
     <ClInclude Include="..\../Source Code/Scripting\Headers\ScriptBindings.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContextComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />

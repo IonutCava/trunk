@@ -71,11 +71,13 @@ Camera* Camera::utilityCamera(UtilityCamera type) {
 
 void Camera::initPool(const vec2<U16>& renderResolution) {
     _utilityCameras[to_base(UtilityCamera::_2D)] = Camera::createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
+    _utilityCameras[to_base(UtilityCamera::_2D_FLIP_Y)] = Camera::createCamera("2DRenderCameraFlipY", Camera::CameraType::FREE_FLY);
     _utilityCameras[to_base(UtilityCamera::CUBE)] = Camera::createCamera("CubeCamera", Camera::CameraType::FREE_FLY);
     _utilityCameras[to_base(UtilityCamera::DUAL_PARABOLOID)] = Camera::createCamera("DualParaboloidCamera", Camera::CameraType::FREE_FLY);
 
     // Update the 2D camera so it matches our new rendering viewport
     _utilityCameras[to_base(UtilityCamera::_2D)]->setProjection(vec4<F32>(0, to_F32(renderResolution.w), 0, to_F32(renderResolution.h)), vec2<F32>(-1, 1));
+    _utilityCameras[to_base(UtilityCamera::_2D_FLIP_Y)]->setProjection(vec4<F32>(0, to_F32(renderResolution.w), to_F32(renderResolution.h), 0), vec2<F32>(-1, 1));
 }
 
 void Camera::destroyPool() {

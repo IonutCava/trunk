@@ -45,7 +45,7 @@ class GUISplash {
    public:
     GUISplash(ResourceCache& cache, const stringImpl& splashImageName, const vec2<U16>& dimensions);
     ~GUISplash();
-    void render(GFXDevice& context);
+    void render(GFXDevice& context, const U64 deltaTimeUS);
 
    private:
     vec2<U16> _dimensions;

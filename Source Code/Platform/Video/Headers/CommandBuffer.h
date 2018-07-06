@@ -98,7 +98,7 @@ void AddDrawTextCommand(CommandBuffer& buffer, const DrawTextCommand& cmd);
 void AddDrawCEGUICommand(CommandBuffer& buffer, const DrawCEGUICommand& cmd);
 void AddDrawIMGUICommand(CommandBuffer& buffer, const DrawIMGUICommand& cmd);
 void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd);
-
+void AddSwitchWindow(CommandBuffer& buffer, const SwitchWindowCommand& cmd);
 }; //namespace GFX
 }; //namespace Divide
 

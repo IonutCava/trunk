@@ -38,14 +38,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Input/Headers/InputInterface.h"
 
 namespace Divide {
-    
-FWD_DECLARE_MANAGED_CLASS(Texture);
-FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
-class ImwWindowDivide : public ImWindow::ImwPlatformWindow
+
+class ImwWindowManagerDivide;
+class ImwWindowDivide : public ImWindow::ImwPlatformWindow, public PlatformContextComponent
 {
     friend class ImwWindowManagerOGL;
-    public:
-    ImwWindowDivide(PlatformContext& context, ImWindow::EPlatformWindowType eType, bool bCreateState);
+  public:
+    ImwWindowDivide(ImwWindowManagerDivide& parent, PlatformContext& context, ImWindow::EPlatformWindowType eType, bool bCreateState);
     virtual ~ImwWindowDivide();
 
     virtual bool Init(ImWindow::ImwPlatformWindow* parent) override;
@@ -55,6 +54,8 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
     virtual bool IsWindowMaximized() const override;
     virtual bool IsWindowMinimized() const override;
 
+    ImVec2 GetDrawableSize() const;
+
     virtual void Show(bool bShow) override;
     virtual void SetSize(int iWidth, int iHeight) override;
     virtual void SetPosition(int iX, int iY) override;
@@ -62,7 +63,10 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
     virtual void SetWindowMinimized() override;
     virtual void SetTitle(const char* pTtile) override;
 
-    protected:
+    inline bool isMainWindow() const { return _isMainWindow; }
+    inline DisplayWindow*& nativeWindow() { return _pWindow; }
+
+  protected:
     virtual void PreUpdate() override;
     virtual void Render() override;
 
@@ -74,19 +78,16 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
     void OnMouseMove(int iX, int iY);
     void OnMouseWheel(int iStep);
     void OnKey(Divide::Input::KeyCode eKey, bool bDown);
-    void OnChar(int iChar);
-
-    void RenderDrawList(ImDrawData* pDrawData);
-
-    DisplayWindow* m_pWindow;
-    Texture_ptr    m_texture;
+    void OnUTF8(const char* text);
 
   private:
-    static U32 m_windowCount;
+    ImVec2 _size;
+    ImVec2 _drawableSize;
+    I64 _windowGUID;
+    DisplayWindow* _pWindow;
+    bool _isMainWindow = false;
+    ImwWindowManagerDivide& _parent;
 
-    bool m_isMainWindow = false;
-    PlatformContext& m_context;
-    ShaderProgram_ptr m_imWindowProgram;
 };
 }; //namespace Divide
 

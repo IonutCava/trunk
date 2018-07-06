@@ -38,6 +38,7 @@ namespace Divide {
 
 class GUI;
 class Kernel;
+class Editor;
 class GFXDevice;
 class SFXDevice;
 class PXDevice;
@@ -54,20 +55,16 @@ namespace Input {
 
 class PlatformContext {
 public:
-    explicit PlatformContext(Application& app,
-                             std::unique_ptr<GFXDevice> gfx,
-                             std::unique_ptr<SFXDevice> sfx,
-                             std::unique_ptr<PXDevice> pfx,
-                             std::unique_ptr<GUI> gui,
-                             std::unique_ptr<XMLEntryData> entryData,
-                             std::unique_ptr<Configuration> config,
-                             std::unique_ptr<LocalClient> client,
-                             std::unique_ptr<DebugInterface> debug);
+    explicit PlatformContext(Application& app, Kernel& kernel);
     ~PlatformContext();
 
+    void beginFrame();
     void idle();
+    void endFrame();
+    void init();
     void terminate();
 
+    
     inline Application& app() { return _app; }
     inline const Application& app() const { return _app; }
 
@@ -95,6 +92,9 @@ public:
     inline DebugInterface& debug() { return *_debug; }
     inline const DebugInterface& debug() const { return *_debug; }
 
+    inline Editor& editor() { return *_editor; }
+    inline const Editor& editor() const { return *_editor; }
+
     Kernel& kernel();
     DisplayWindow& activeWindow();
     Input::InputInterface& input();
@@ -102,6 +102,8 @@ public:
     private:
     /// Main application instance
     Application& _app;
+    /// Main app's kernel
+    Kernel& _kernel;
     /// Access to the GPU
     std::unique_ptr<GFXDevice> _gfx;
     /// The graphical user interface
@@ -117,6 +119,8 @@ public:
     std::unique_ptr<LocalClient> _client;
     /// Debugging interface: read only / editable variables
     std::unique_ptr<DebugInterface> _debug;
+    /// Game editor
+    std::unique_ptr<Editor> _editor;
 };
 }; //namespace Divide
 

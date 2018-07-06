@@ -55,9 +55,9 @@ bool CEGUIInput::onKeyUp(const Input::KeyEvent& key) {
 
 // Return true if input was consumed
 bool CEGUIInput::mouseMoved(const Input::MouseEvent& arg) {
-    return (CEGUI_DEFAULT_CTX.injectMouseWheelChange(to_F32(arg._event.state.Z.abs)) ||
-            CEGUI_DEFAULT_CTX.injectMouseMove(to_F32(arg._event.state.X.rel),
-                                              to_F32(arg._event.state.Y.rel)));
+    bool wheel = CEGUI_DEFAULT_CTX.injectMouseWheelChange(to_F32(arg._event.state.Z.rel));
+    bool move = CEGUI_DEFAULT_CTX.injectMousePosition(to_F32(arg._event.state.X.abs), to_F32(arg._event.state.Y.abs));
+    return wheel || move;
 }
 
 // Return true if input was consumed
@@ -127,7 +127,7 @@ bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 // Return true if input was consumed
-bool CEGUIInput::buttonPressed(const Input::JoystickEvent& arg,
+bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
     bool consumed = false;
 
@@ -135,7 +135,7 @@ bool CEGUIInput::buttonPressed(const Input::JoystickEvent& arg,
 }
 
 // Return true if input was consumed
-bool CEGUIInput::buttonReleased(const Input::JoystickEvent& arg,
+bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
     bool consumed = false;
 

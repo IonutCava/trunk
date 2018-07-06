@@ -35,6 +35,11 @@
 #include <AntTweakBar/include/AntTweakBar.h>
 
 namespace Divide {
+namespace {
+    vectorImpl<TaskHandle> s_splashTask;
+    std::atomic_bool s_splashScreenUpdating;
+
+};
 
 LoopTimingData::LoopTimingData() : _updateLoops(0),
                                    _previousTimeUS(0ULL),
@@ -50,8 +55,8 @@ LoopTimingData::LoopTimingData() : _updateLoops(0),
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
-      _platformContext(nullptr),
       _resCache(nullptr),
+      _platformContext(std::make_unique<PlatformContext>(parentApp, *this)),
       _taskPool(Config::MAX_POOLED_TASKS),
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
       _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
@@ -66,16 +71,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _preRenderTimer(Time::ADD_TIMER("Pre-render Timer")),
       _postRenderTimer(Time::ADD_TIMER("Post-render Timer"))
 {
-    _platformContext = std::make_unique<PlatformContext>(
-        parentApp,
-        std::make_unique<GFXDevice>(*this),              // Video
-        std::make_unique<SFXDevice>(*this),              // Audio
-        std::make_unique<PXDevice>(*this),               // Physics
-        std::make_unique<GUI>(*this),                    // Graphical User Interface
-        std::make_unique<XMLEntryData>(),                // Initial XML data
-        std::make_unique<Configuration>(),               // XML based configuration
-        std::make_unique<LocalClient>(*this),            // Network client
-        std::make_unique<DebugInterface>(*this));        // Debug Interface
+    _platformContext->init();
 
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
 
@@ -95,16 +91,41 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 
     _resCache = std::make_unique<ResourceCache>(*_platformContext);
 
-    if (Config::Build::ENABLE_EDITOR) {
-        _editor = std::make_unique<Editor>(*_platformContext);
-    }
-
     FrameListenerManager::createInstance();
     OpenCLInterface::createInstance();
 }
 
 Kernel::~Kernel()
 {
+}
+
+void Kernel::startSplashScreen() {
+    s_splashScreenUpdating = true;
+    Configuration& config = _platformContext->config();
+    GUISplash splash(*_resCache, "divideLogo.jpg", config.runtime.splashScreen);
+
+    // Load and render the splash screen
+    s_splashTask.emplace_back(CreateTask(*_platformContext,
+        [this, &splash](const Task& /*task*/) {
+        U64 previousTimeUS = 0;
+        U64 currentTimeUS = Time::ElapsedMicroseconds(true);
+        while (s_splashScreenUpdating) {
+            U64 deltaTimeUS = currentTimeUS - previousTimeUS;
+            previousTimeUS = currentTimeUS;
+            _platformContext->beginFrame();
+            splash.render(_platformContext->gfx(), deltaTimeUS);
+            _platformContext->endFrame();
+            std::this_thread::sleep_for(std::chrono::milliseconds(15));
+
+            break;
+        }
+    }));
+    s_splashTask.back()._task->startTask(Task::TaskPriority::REALTIME/*HIGH*/);
+}
+
+void Kernel::stopSplashScreen() {
+    s_splashScreenUpdating = false;
+    s_splashTask.back().wait();
 }
 
 void Kernel::idle() {
@@ -146,8 +167,7 @@ void Kernel::onLoop() {
         FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
         // Restore GPU to default state: clear buffers and set default render state
-        _platformContext->sfx().beginFrame();
-        _platformContext->gfx().beginFrame();
+        _platformContext->beginFrame();
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
@@ -168,8 +188,7 @@ void Kernel::onLoop() {
 
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
         }
-        _platformContext->gfx().endFrame();
-        _platformContext->sfx().endFrame();
+        _platformContext->endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
         frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_EVENT_ENDED, evt);
@@ -278,7 +297,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
             }
 
             if (Config::Build::ENABLE_EDITOR) {
-                _editor->update(deltaTimeUS);
+                _platformContext->editor().update(deltaTimeUS);
             }
 
             _sceneManager->processGUI(deltaTimeUS);
@@ -339,9 +358,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     }
 
     // Update the graphical user interface
-    const OIS::MouseState& mouseState = _platformContext->input().getKeyboardMousePair(0).second->getMouseState();
     _platformContext->gui().update(deltaTimeUS);
-    _platformContext->gui().setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
     return presentToScreen(evt, deltaTimeUS);
 }
 
@@ -655,10 +672,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     window.setDimensions(config.runtime.splashScreen);
     window.changeType(WindowType::SPLASH);
     winManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
-    // Load and render the splash screen
-    _platformContext->gfx().beginFrame();
-    GUISplash(*_resCache, "divideLogo.jpg", config.runtime.splashScreen).render(_platformContext->gfx());
-    _platformContext->gfx().endFrame();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
     initError = _platformContext->sfx().initAudioAPI(*_platformContext);
@@ -699,7 +712,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     if (Config::Build::ENABLE_EDITOR) {
-        if (!_editor->init()) {
+        if (!_platformContext->editor().init()) {
             return ErrorCode::EDITOR_INIT_ERROR;
         }
     }
@@ -713,8 +726,7 @@ void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
     WaitForAllTasks(_taskPool, true, true, true);
     if (Config::Build::ENABLE_EDITOR) {
-        _editor->close();
-        _editor.reset();
+        _platformContext->editor().close();
     }
     SceneManager::onShutdown();
     Script::onShutdown();
@@ -759,6 +771,12 @@ bool Kernel::setCursorPosition(I32 x, I32 y) const {
 }
 
 bool Kernel::onKeyDown(const Input::KeyEvent& key) {
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_platformContext->editor().onKeyDown(key)) {
+            return true;
+        }
+    }
+
     if (!_platformContext->gui().onKeyDown(key)) {
         return _sceneManager->onKeyDown(key);
     }
@@ -766,6 +784,12 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
 }
 
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_platformContext->editor().onKeyUp(key)) {
+            return true;
+        }
+    }
+
     if (!_platformContext->gui().onKeyUp(key)) {
         return _sceneManager->onKeyUp(key);
     }
@@ -774,6 +798,12 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_platformContext->editor().mouseMoved(arg)) {
+            return true;
+        }
+    }
+
     if (!_platformContext->gui().mouseMoved(arg)) {
         return _sceneManager->mouseMoved(arg);
     }
@@ -783,6 +813,12 @@ bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
 
 bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
                                 Input::MouseButton button) {
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_platformContext->editor().mouseButtonPressed(arg, button)) {
+            return true;
+        }
+    }
+
     if (!_platformContext->gui().mouseButtonPressed(arg, button)) {
         return _sceneManager->mouseButtonPressed(arg, button);
     }
@@ -793,6 +829,12 @@ bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
 
 bool Kernel::mouseButtonReleased(const Input::MouseEvent& arg,
                                  Input::MouseButton button) {
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_platformContext->editor().mouseButtonReleased(arg, button)) {
+            return true;
+        }
+    }
+
     if (!_platformContext->gui().mouseButtonReleased(arg, button)) {
         return _sceneManager->mouseButtonReleased(arg, button);
     }
@@ -819,20 +861,20 @@ bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     return false;
 }
 
-bool Kernel::buttonPressed(const Input::JoystickEvent& arg,
+bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg,
                                    Input::JoystickButton button) {
-    if (!_platformContext->gui().buttonPressed(arg, button)) {
-        return _sceneManager->buttonPressed(arg, button);
+    if (!_platformContext->gui().joystickButtonPressed(arg, button)) {
+        return _sceneManager->joystickButtonPressed(arg, button);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::buttonReleased(const Input::JoystickEvent& arg,
+bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg,
                                     Input::JoystickButton button) {
-    if (!_platformContext->gui().buttonReleased(arg, button)) {
-        return _sceneManager->buttonReleased(arg, button);
+    if (!_platformContext->gui().joystickButtonReleased(arg, button)) {
+        return _sceneManager->joystickButtonReleased(arg, button);
     }
 
     // InputInterface needs to know when this is completed

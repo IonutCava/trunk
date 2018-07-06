@@ -20,7 +20,7 @@
 namespace Divide {
 
 GUIConsoleCommandParser::GUIConsoleCommandParser(PlatformContext& context, ResourceCache& cache)
-    : _context(context),
+    : PlatformContextComponent(context),
       _resCache(cache),
       _sound(nullptr)
 {

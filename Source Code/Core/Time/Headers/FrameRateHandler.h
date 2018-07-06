@@ -37,6 +37,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace Time {
 class FrameRateHandler {
+    static const U32 FRAME_ARRAY_SIZE = 120;
+
 public:
     FrameRateHandler();
     ~FrameRateHandler();
@@ -63,6 +65,12 @@ private:
     F32 _maxFPS;
 
     U64 _tickTimeStamp;
+
+    F32 _previousElapsedSeconds;
+    F32 _framerateSecPerFrame[FRAME_ARRAY_SIZE];
+    F32 _framerate;
+    I32 _framerateSecPerFrameIdx;
+    F32 _framerateSecPerFrameAccum;
 };
 
 }; //namespace Time
