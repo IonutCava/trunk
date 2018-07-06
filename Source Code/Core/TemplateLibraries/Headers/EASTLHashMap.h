@@ -37,11 +37,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 
 #include <EASTL/hash_map.h>
+#include <Allocator/stl_allocator.h>
 
 namespace hashAlg = eastl;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-using hashMapImpl = eastl::hash_map<K, V, HashFun>;
+using hashMapImpl = eastl::hash_map<K,
+                                    V,
+                                    HashFun,
+                                    eastl::equal_to<K>,
+                                    stl_allocator<eastl::pair<const K, V>>>;
 
 namespace eastl {
     

@@ -170,8 +170,12 @@ bool GUIConsole::isVisible() {
 }
 
 void GUIConsole::printText(const char* output, bool error) {
-    WriteLock w_lock(_outputLock);
-    _outputBuffer.push_back(std::make_pair(output, error));
+    if (!_init) {
+        _outputBuffer.push_back(std::make_pair(output, error));
+    } else {
+        WriteLock w_lock(_outputLock);
+        _outputBuffer.push_back(std::make_pair(output, error));
+    }
 }
 
 void GUIConsole::OutputText(const char* inMsg, const bool error) {

@@ -3,9 +3,13 @@
 
 uniform int bumpMapLightID = 0;
 
-vec3 getTBNNormal(vec2 uv) {
+vec3 getTBNNormal(in vec3 bump) {
     mat3 TBN = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
-    return TBN * normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0);
+    return TBN * bump;
+}
+
+vec3 getBump(in vec2 uv) {
+    return normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0);
 }
 
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
@@ -64,7 +68,7 @@ vec4 ParallaxMapping(in int bumpMapLightID, in vec2 uv){
                      viewVecTBN.z));
 
     
-    return getPixelColor(vTexCoord, getTBNNormal(vTexCoord));
+    return getPixelColor(vTexCoord, getTBNNormal(getBump(vTexCoord)));
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
@@ -87,7 +91,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-    return getPixelColor(uv + uv_offset, getTBNNormal(uv + uv_offset));
+    return getPixelColor(uv + uv_offset, getTBNNormal(getBump(uv + uv_offset)));
 }
 
 #endif //_BUMP_MAPPING_FRAG_

@@ -46,7 +46,8 @@ vec4 mappingFlat(){
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
-    return mix(getPixelColor(VAR._texCoord, getTBNNormal(VAR._texCoord)),
+    vec3 bump = getBump(VAR._texCoord);
+    return mix(getPixelColor(VAR._texCoord, getTBNNormal(bump)),
                mappingFlat(),
                vec4(dvd_lodLevel > 1));
 }

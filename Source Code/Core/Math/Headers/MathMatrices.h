@@ -769,6 +769,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     T &operator[](I32 i) { return this->mat[i]; }
     const T &operator[](I32 i) const { return this->mat[i]; }
 
+    mat4 &operator=(const mat4 other) { this->set(other); return *this; }
+
     inline vec3<T> getTranslation() const {
         return vec3<T>(mat[12], mat[13], mat[14]);
     }

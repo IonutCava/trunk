@@ -641,6 +641,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     bool operator==(const vec4 &v) const { return this->compare(v); }
     bool operator!=(const vec4 &v) const { return !(*this == v); }
     vec4 &operator=(T _f) { this->set(_f); }
+    vec4 &operator=(const vec4& other) { this->set(other); return *this; }
 
     const vec4 operator-(T _f) const {
         return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f);

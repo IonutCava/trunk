@@ -707,10 +707,12 @@ Divide::I32 Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
 #if !defined(_DEBUG)
 #define MemoryManager_NEW new
 #else
+#if defined(DEBUG_EXTERNAL_ALLOCATIONS)
 void* operator new(size_t size);
 void operator delete(void* p) noexcept;
 void* operator new[](size_t size);
 void operator delete[](void* p) noexcept;
+#endif
 
 void* operator new(size_t size, const char* zFile, size_t nLine);
 void operator delete(void* ptr, const char* zFile, size_t nLine);

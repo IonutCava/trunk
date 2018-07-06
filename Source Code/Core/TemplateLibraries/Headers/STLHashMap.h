@@ -32,11 +32,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _STL_HASH_MAP_H_
 #define _STL_HASH_MAP_H_
 #include <unordered_map>
+#include <Allocator/stl_allocator.h>
 
 namespace hashAlg = std;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-using hashMapImpl = std::unordered_map<K, V, HashFun>;
+using hashMapImpl = std::unordered_map<K,
+                                       V,
+                                       HashFun,
+                                       std::equal_to<K>,
+                                       stl_allocator<std::pair<const K, V>>>;
 
 namespace std {
 

@@ -5,6 +5,8 @@
 
 #include "Core/Headers/Console.h"
 
+#include <Allocator/xallocator.h>
+
 #if defined(_DEBUG)
 #include "Utility/Headers/MemoryTracker.h"
 #endif
@@ -56,6 +58,7 @@ bool preAssert(const bool expression, const char* failMessage) {
 };  // namespace Divide
 
 #if defined(_DEBUG)
+#if defined(DEBUG_EXTERNAL_ALLOCATIONS)
 void* operator new(size_t size) {
     static thread_local bool logged = false;
     void* ptr = malloc(size);
@@ -89,6 +92,7 @@ void operator delete[](void* ptr) noexcept {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }
+#endif
 
 void* operator new(size_t size, const char* zFile, size_t nLine) {
     void* ptr = malloc(size);
@@ -111,4 +115,5 @@ void operator delete[](void* ptr, const char* zFile, size_t nLine) {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }
+#else
 #endif

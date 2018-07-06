@@ -33,11 +33,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _BOOST_HASH_MAP_H_
 
 #include <boost/Unordered_Map.hpp>
+#include <Allocator/stl_allocator.h>
 
 namespace hashAlg = boost;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-using hashMapImpl = boost::unordered_map<K, V, HashFun>;
+using hashMapImpl = boost::unordered_map<K,
+                                         V,
+                                         HashFun,
+                                         std::equal_to<K>,
+                                         stl_allocator<std::pair<const K, V>>;
 
 namespace boost {
 

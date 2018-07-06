@@ -85,4 +85,26 @@ vec3  ToSRGB(vec3 v)  { return pow(v, invGammaVec); }
 vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
 
 
+float Gloss(vec3 bump)
+{
+    float gloss = 1.0;
+
+    /*if (do_toksvig)
+    {
+        // Compute the "Toksvig Factor"
+        float rlen = 1.0 / saturate(length(bump));
+        gloss = 1.0 / (1.0 + power*(rlen - 1.0));
+    }
+
+    if (do_toksmap)
+    {
+        // Fetch pre-computed "Toksvig Factor"
+        // and adjust for specified power
+        gloss = texture2D(gloss_map, texcoord).r;
+        gloss /= mix(power / baked_power, 1.0, gloss);
+    }
+    */
+    return gloss;
+}
+
 #endif //_LIGHTING_DEFAULTS_FRAG_
