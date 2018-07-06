@@ -127,12 +127,9 @@ namespace GLUtil {
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);
 
-#ifdef ENABLE_GPU_VALIDATION
 /// Check the current operation for errors
-void
-DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
-              GLsizei length, const GLchar* message, const void* userParam);
-#endif
+void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                   GLsizei length, const GLchar* message, const void* userParam);
 
 /// Invalid object value. Used to compare handles and determine if they were
 /// properly created

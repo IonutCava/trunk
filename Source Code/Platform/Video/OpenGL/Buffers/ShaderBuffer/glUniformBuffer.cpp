@@ -135,6 +135,14 @@ void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
 
     GLuint atomicsBuffer;
     glCreateBuffers(1, &atomicsBuffer);
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glObjectLabel(GL_BUFFER,
+                      atomicsBuffer,
+                      -1,
+                      Util::StringFormat("DVD_ATOMIC_BUFFER_%d", atomicsBuffer).c_str());
+    }
+
     glNamedBufferData(atomicsBuffer, sizeof(GLuint) * sizeFactor, data.data(), GL_DYNAMIC_READ);
     _atomicCounters.push_back({atomicsBuffer, sizeFactor, 0});
 }

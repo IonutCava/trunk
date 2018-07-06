@@ -128,34 +128,36 @@ bool glShader::compile() {
 
     glCompileShader(_shader);
     _compiled = true;
-
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glObjectLabel(GL_SHADER, _shader, -1, getName().c_str());
+    }
     return validate();
 }
 
 bool glShader::validate() {
-#if defined(ENABLE_GPU_VALIDATION)
-    GLint length = 0, status = 0;
+    if (Config::ENABLE_GPU_VALIDATION) {
+        GLint length = 0, status = 0;
 
-    glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
-    glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length);
-    if (length <= 1) {
-        return true;
+        glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
+        glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length);
+        if (length <= 1) {
+            return true;
+        }
+        vectorImpl<char> shaderLog(length);
+        glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
+        shaderLog.push_back('\n');
+        if (status == 0) {
+            Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
+                             &shaderLog[0]);
+            return true;
+        } else {
+            Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
+                               &shaderLog[0]);
+            return false;
+        }
     }
-    vectorImpl<char> shaderLog(length);
-    glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
-    shaderLog.push_back('\n');
-    if (status == 0) {
-        Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
-                         &shaderLog[0]);
-        return true;
-    } else {
-        Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
-                           &shaderLog[0]);
-        return false;
-    }
-#else
+
     return true;
-#endif
 }
 
 stringImpl glShader::preprocessIncludes(const stringImpl& source,

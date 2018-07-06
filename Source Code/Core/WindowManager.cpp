@@ -104,13 +104,13 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
 
     if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES) {
         Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-#      if defined(ENABLE_GPU_VALIDATION)
+        if (Config::ENABLE_GPU_VALIDATION) {
             // OpenGL error handling is available in any build configuration
             // if the proper defines are in place.
             OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG |
                            SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG |
                            SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
-#       endif
+        }
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);

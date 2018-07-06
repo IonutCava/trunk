@@ -25,10 +25,7 @@ namespace {
     };
 };
 
-#if defined(ENABLE_GPU_VALIDATION)
-    bool glFramebuffer::_bufferBound = false;
-#endif
-
+bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_viewportChanged = false;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
@@ -235,6 +232,15 @@ bool glFramebuffer::create(U16 width, U16 height) {
         shouldResize = false;
         _resolved = false;
         _isLayeredDepth = false;
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // label this FB to be able to tell that it's internally created and nor from a 3rd party lib
+        glObjectLabel(GL_FRAMEBUFFER,
+                      _framebufferHandle,
+                      -1,
+                      Util::StringFormat("DVD_FB_%d", _framebufferHandle).c_str());
+    }
+
     }
 
 
@@ -449,9 +455,9 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");
 
-#   if defined(ENABLE_GPU_VALIDATION)
-    assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
-#   endif
+    if (Config::ENABLE_GPU_VALIDATION) {
+        assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
+    }
 
     if (drawPolicy._changeViewport) {
         _viewportChanged = true;
@@ -484,15 +490,15 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     resetMipMaps(drawPolicy);
 
-#   if defined(ENABLE_GPU_VALIDATION)
+    if (Config::ENABLE_GPU_VALIDATION) {
         glFramebuffer::_bufferBound = true;
-#   endif
+    }
 }
 
 void glFramebuffer::end() {
-#   if defined(ENABLE_GPU_VALIDATION)
-    assert(glFramebuffer::_bufferBound && "glFramebuffer error: End() called without a previous call to Begin()");
-#   endif
+    if (Config::ENABLE_GPU_VALIDATION) {
+        assert(glFramebuffer::_bufferBound && "glFramebuffer error: End() called without a previous call to Begin()");
+    }
 
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     if (_viewportChanged) {
@@ -503,9 +509,9 @@ void glFramebuffer::end() {
     setInitialAttachments();
     resolve();
 
-#   if defined(ENABLE_GPU_VALIDATION)
+    if (Config::ENABLE_GPU_VALIDATION) {
         glFramebuffer::_bufferBound = false;
-#   endif
+    }
 }
 
 void glFramebuffer::setInitialAttachments() {
@@ -642,57 +648,57 @@ void glFramebuffer::readData(const vec4<U16>& rect,
 }
 
 bool glFramebuffer::checkStatus() const {
-#if defined(ENABLE_GPU_VALIDATION)
-    // check FB status
-    switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
-    {
-        case GL_FRAMEBUFFER_COMPLETE: {
-            return true;
-        }
-        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
-            return false;
-        }
-        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
-            return false;
-        }
-        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
-            return false;
-        }
-        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
-            return false;
-        }
-        case GL_FRAMEBUFFER_UNSUPPORTED: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
-            return false;
-        }
-        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
-            return false;
-        }
-        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
-            return false;
-        }
-        case gl::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-            Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
-            return false;
-        }
-        case gl::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
-             Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
-             return false;
-        }
-        default: {
-            Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
-            return false;
-        }
-    };
-#else
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // check FB status
+        switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
+        {
+            case GL_FRAMEBUFFER_COMPLETE: {
+                return true;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_UNSUPPORTED: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
+                return false;
+            }
+            case gl::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
+                return false;
+            }
+            case gl::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
+                 Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
+                 return false;
+            }
+            default: {
+                Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
+                return false;
+            }
+        };
+    }
+
     return true;
-#endif
 }
 
 };  // namespace Divide

@@ -56,6 +56,17 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
 
     assert(!isRunning());
 
+    if (Config::USE_SINGLE_THREADED_TASK_POOLS) {
+        if (priority != TaskPriority::REALTIME &&
+            priority != TaskPriority::REALTIME_WITH_CALLBACK) {
+            priority = TaskPriority::REALTIME_WITH_CALLBACK;
+        }
+    }
+    if (!Config::USE_GPU_THREADED_LOADING) {
+        if (BitCompare(_taskFlags, to_const_uint(TaskFlags::SYNC_WITH_GPU))) {
+            priority = TaskPriority::REALTIME_WITH_CALLBACK;
+        }
+    }
     _done = false;
     _priority = priority;
     if (priority != TaskPriority::REALTIME && 

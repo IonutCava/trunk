@@ -130,10 +130,7 @@ class glFramebuffer : public RenderTarget {
     bool _isLayeredDepth;
     GLuint _framebufferHandle;
     static bool _viewportChanged;
-
-#   if defined(ENABLE_GPU_VALIDATION)
-        static bool _bufferBound;
-#   endif
+    static bool _bufferBound;
 
     glFramebuffer* _resolveBuffer;
     RTDrawMask _previousMask;

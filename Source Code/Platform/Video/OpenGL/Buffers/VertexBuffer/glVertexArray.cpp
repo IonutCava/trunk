@@ -307,6 +307,12 @@ bool glVertexArray::createInternal() {
     _formatInternal = GLUtil::glDataFormat[to_uint(_format)];
     // Generate an "Index Buffer Object"
     glCreateBuffers(1, &_IBid);
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glObjectLabel(GL_BUFFER,
+                      _IBid,
+                      -1,
+                      Util::StringFormat("DVD_VAO_INDEX_BUFFER_%d", _IBid).c_str());
+    }
     // Validate buffer creation
     // Assert if the IB creation failed
     assert(_IBid != 0 && Locale::get(_ID("ERROR_IB_INIT")));

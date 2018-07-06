@@ -152,6 +152,12 @@ void computeCoordsV(in float texCoordX, in float texCoordY, in int layer){
 
 void passThrough(in float texCoordX, in float texCoordY, in int layer) {
     _blurCoords[0] = vec3(texCoordX, texCoordY, layer);
+    _blurCoords[1] = vec3(1.0);
+    _blurCoords[2] = vec3(1.0);
+    _blurCoords[3] = vec3(1.0);
+    _blurCoords[4] = vec3(1.0);
+    _blurCoords[5] = vec3(1.0);
+    _blurCoords[6] = vec3(1.0);
     _blurred = 0;
 }
 

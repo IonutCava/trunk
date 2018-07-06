@@ -90,10 +90,10 @@ void GL_API::deleteFonsContext() {
 
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame() {
-// Start a duration query in debug builds
-#if defined(ENABLE_GPU_VALIDATION)
-    glBeginQuery(GL_TIME_ELAPSED, _hardwareQueries[g_performanceQueryFrameDurationIndex]->writeQuery().getID());
-#endif
+    // Start a duration query in debug builds
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glBeginQuery(GL_TIME_ELAPSED, _hardwareQueries[g_performanceQueryFrameDurationIndex]->writeQuery().getID());
+    }
     // Clear our buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
     // Clears are registered as draw calls by most software, so we do the same
@@ -116,19 +116,19 @@ void GL_API::endFrame(bool swapBuffers) {
     }
 
     // End the timing query started in beginFrame() in debug builds
-#if defined(ENABLE_GPU_VALIDATION)
-    glEndQuery(GL_TIME_ELAPSED);
-    _hardwareQueries[g_performanceQueryFrameDurationIndex]->incQueue();
-#endif
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glEndQuery(GL_TIME_ELAPSED);
+        _hardwareQueries[g_performanceQueryFrameDurationIndex]->incQueue();
+    }
 }
 
 GLuint64 GL_API::getFrameDurationGPU() {
-#if defined(ENABLE_GPU_VALIDATION)
-    // The returned results are 'g_performanceQueryFrameDurationIndex' frames old!
-    glGetQueryObjectui64v(_hardwareQueries[g_performanceQueryFrameDurationIndex]->readQuery().getID(),
-                          GL_QUERY_RESULT,
-                          &FRAME_DURATION_GPU);
-#endif
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // The returned results are 'g_performanceQueryFrameDurationIndex' frames old!
+        glGetQueryObjectui64v(_hardwareQueries[g_performanceQueryFrameDurationIndex]->readQuery().getID(),
+                              GL_QUERY_RESULT,
+                              &FRAME_DURATION_GPU);
+    }
 
     return FRAME_DURATION_GPU;
 }

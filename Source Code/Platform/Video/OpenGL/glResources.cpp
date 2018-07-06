@@ -36,6 +36,12 @@ void glVAOPool::init(U32 capacity) {
     _pool.resize(capacity, std::make_pair(0, false));
     for (std::pair<GLuint, bool>& entry : _pool) {
         glCreateVertexArrays(1, &entry.first);
+        if (Config::ENABLE_GPU_VALIDATION) {
+            glObjectLabel(GL_VERTEX_ARRAY,
+                          entry.first,
+                          -1,
+                          Util::StringFormat("DVD_VAO_%d", entry.first).c_str());
+        }
     }
 
 
@@ -80,7 +86,14 @@ void glVAOPool::deallocate(GLuint& vao) {
     assert(it != std::cend(_pool));
     // We don't know what kind of state we may have in the current VAO so delete it and create a new one.
     glDeleteVertexArrays(1, &(it->first));
-    glGenVertexArrays(1, &(it->first));
+    glCreateVertexArrays(1, &(it->first));
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glObjectLabel(GL_VERTEX_ARRAY,
+                      it->first,
+                      -1,
+                      Util::StringFormat("DVD_VAO_%d", it->first).c_str());
+    }
     it->second = false;
     vao = 0;
 }

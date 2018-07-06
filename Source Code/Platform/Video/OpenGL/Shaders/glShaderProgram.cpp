@@ -291,6 +291,9 @@ void glShaderProgram::link() {
                            getName().c_str(), getLog().c_str());
         // The linked flag is set to true only if linking succeeded
         _linked = true;
+        if (Config::ENABLE_GPU_VALIDATION) {
+            glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, getName().c_str());
+        }
     }
 
     _shaderVarsU32.clear();
@@ -408,11 +411,11 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
     sourceCode.first = false;
 
     if (Config::USE_SHADER_TEXT_CACHE && !forceReParse) {
-#if !defined(ENABLE_GPU_VALIDATION)
-        ShaderProgram::shaderFileRead(glShader::CACHE_LOCATION_TEXT + stageName,
-                                      true,
-                                      sourceCode.second);
-#endif
+        if (Config::ENABLE_GPU_VALIDATION) {
+            ShaderProgram::shaderFileRead(glShader::CACHE_LOCATION_TEXT + stageName,
+                                          true,
+                                          sourceCode.second);
+        }
     }
 
     if (sourceCode.second.empty()) {

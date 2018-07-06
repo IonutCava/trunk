@@ -61,6 +61,8 @@ const unsigned int MAX_POOLED_TASKS = 4096;
 const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
 /// Toggle multi-threaded resource loading on or off
 const bool USE_GPU_THREADED_LOADING = true;
+/// Run all threaded tasks in a serial fashion. (used to debug multi-threaded related bugs)
+const bool USE_SINGLE_THREADED_TASK_POOLS = false;
 /// Maximum number of instances of a single mesh with a single draw call
 const unsigned int MAX_INSTANCE_COUNT = 512;
 /// Maximum number of points that can be sent to the GPU per batch
@@ -207,6 +209,29 @@ const unsigned int FORWARD_PLUS_TILE_RES = 16;
 const unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
 const unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 };  // namespace Lighting
+
+
+#ifndef GPU_VALIDATION_IN_RELEASE_BUILD
+    //#define GPU_VALIDATION_IN_RELEASE_BUILD
+#endif
+
+#ifndef GPU_VALIDATION_IN_PROFILE_BUILD
+    //#define GPU_VALIDATION_IN_PROFILE_BUILD
+#endif
+
+#ifndef GPU_VALIDATION_IN_DEBUG_BUILD
+#define GPU_VALIDATION_IN_DEBUG_BUILD
+#endif
+
+
+#if (defined(_RELEASE) && defined(GPU_VALIDATION_IN_RELEASE_BUILD)) || \
+    (defined(_PROFILE) && defined(GPU_VALIDATION_IN_PROFILE_BUILD)) || \
+    (defined(_DEBUG) && defined(GPU_VALIDATION_IN_DEBUG_BUILD))
+    const bool ENABLE_GPU_VALIDATION = true;
+#else
+    const bool ENABLE_GPU_VALIDATION = false;
+#endif
+
 };  // namespace Config
 };  // namespace Divide
 
@@ -252,31 +277,5 @@ const unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 #ifndef HASH_MAP_IMP
 #define HASH_MAP_IMP STL_IMP
 #endif  // HASH_MAP_IMP
-
-#ifndef GPU_VALIDATION_IN_RELEASE_BUILD
-//#define GPU_VALIDATION_IN_RELEASE_BUILD
-#endif
-
-#ifndef GPU_VALIDATION_IN_PROFILE_BUILD
-//#define GPU_VALIDATION_IN_PROFILE_BUILD
-#endif
-
-#ifndef GPU_VALIDATION_IN_DEBUG_BUILD
-#define GPU_VALIDATION_IN_DEBUG_BUILD
-#endif
-
-#ifndef ENABLE_GPU_VALIDATION
-    #if defined(_RELEASE) && defined(GPU_VALIDATION_IN_RELEASE_BUILD)
-    #define ENABLE_GPU_VALIDATION
-    #endif
-
-    #if defined(_PROFILE) && defined(GPU_VALIDATION_IN_PROFILE_BUILD)
-    #define ENABLE_GPU_VALIDATION
-    #endif
-
-    #if defined(_DEBUG) && defined(GPU_VALIDATION_IN_DEBUG_BUILD)
-    #define ENABLE_GPU_VALIDATION
-    #endif
-#endif
 
 #endif  //_DIVIDE_CONFIG_H_

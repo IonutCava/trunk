@@ -21,6 +21,7 @@
 #ifndef GLFONTSTASH_H
 #define GLFONTSTASH_H
 
+#include "Core/Math/Headers/MathHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
@@ -43,6 +44,17 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     glCreateTextures(GL_TEXTURE_2D, 1, &gl->tex);
     glCreateVertexArrays(1, &gl->glfons_vaoID);
     glCreateBuffers(1, &gl->glfons_vboID);
+
+    if (Divide::Config::ENABLE_GPU_VALIDATION) {
+        glObjectLabel(GL_BUFFER,
+                      gl->glfons_vaoID,
+                      -1,
+                      Divide::Util::StringFormat("DVD_FONT_VAO_%d", gl->glfons_vaoID).c_str());
+        glObjectLabel(GL_BUFFER,
+                      gl->glfons_vboID,
+                      -1,
+                      Divide::Util::StringFormat("DVD_FONT_VB_%d", gl->glfons_vboID).c_str());
+    }
 
     if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) {
         return 0;

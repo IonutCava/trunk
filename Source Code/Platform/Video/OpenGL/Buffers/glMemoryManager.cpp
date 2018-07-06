@@ -192,6 +192,12 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data) {
     glCreateBuffers(1, &bufferIdOut);
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glObjectLabel(GL_BUFFER,
+                      bufferIdOut,
+                      -1,
+                      Util::StringFormat("DVD_PERSISTENT_BUFFER_%d", bufferIdOut).c_str());
+    }
     assert(bufferIdOut != 0 && "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
     return allocPersistentBuffer(bufferIdOut, bufferSize, storageMask, accessMask,
@@ -203,6 +209,14 @@ void createAndAllocBuffer(GLsizeiptr bufferSize,
                           GLuint& bufferIdOut,
                           const bufferPtr data) {
     glCreateBuffers(1, &bufferIdOut);
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glObjectLabel(GL_BUFFER,
+                      bufferIdOut,
+                      -1,
+                      Util::StringFormat("DVD_GENERAL_BUFFER_%d", bufferIdOut).c_str());
+    }
+
     assert(bufferIdOut != 0 && "GLUtil::allocBuffer error: buffer creation failed");
     glNamedBufferData(bufferIdOut, bufferSize, data, usageMask);
 }

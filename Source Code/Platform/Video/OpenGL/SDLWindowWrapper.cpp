@@ -122,27 +122,28 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     // OpenGL has a nifty error callback system, available in every build
     // configuration if required
-#if defined(ENABLE_GPU_VALIDATION)
-    // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    // hardwire our debug callback function with OpenGL's implementation
-    glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, nullptr);
-    // nVidia flushes a lot of useful info about buffer allocations and shader
-    // recompiles due to state and what now, but those aren't needed until that's
-    // what's actually causing the bottlenecks
-    /*U32 nvidiaBufferErrors[] = { 131185, 131218 };
-    // Disable shader compiler errors (shader class handles that)
-    glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
-        GL_DONT_CARE, 0, nullptr, GL_FALSE);
-    // Disable nVidia buffer allocation info (an easy enable is to change the
-    // count param to 0)
-    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
-        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
-    // Shader will be recompiled nVidia error
-    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
-        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);*/
-#endif
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        // hardwire our debug callback function with OpenGL's implementation
+        glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, nullptr);
+        // nVidia flushes a lot of useful info about buffer allocations and shader
+        // recompiles due to state and what now, but those aren't needed until that's
+        // what's actually causing the bottlenecks
+        /*U32 nvidiaBufferErrors[] = { 131185, 131218 };
+        // Disable shader compiler errors (shader class handles that)
+        glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
+            GL_DONT_CARE, 0, nullptr, GL_FALSE);
+        // Disable nVidia buffer allocation info (an easy enable is to change the
+        // count param to 0)
+        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
+            GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+        // Shader will be recompiled nVidia error
+        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
+            GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);*/
+    }
+
     // Vsync is toggled on or off via the external config file
     SDL_GL_SetSwapInterval(par.getParam<bool>(_ID("runtime.enableVSync"), false) ? 1 : 0);
         
@@ -284,14 +285,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
-#if defined(ENABLE_GPU_VALIDATION)
-    // We have multiple counter buffers, and each can be multi-buffered
-    // (currently, only double-buffered, front and back)
-    // to avoid pipeline stalls
-    for (glHardwareQueryRing* queryRing : _hardwareQueries) {
-        queryRing->initQueries();
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // We have multiple counter buffers, and each can be multi-buffered
+        // (currently, only double-buffered, front and back)
+        // to avoid pipeline stalls
+        for (glHardwareQueryRing* queryRing : _hardwareQueries) {
+            queryRing->initQueries();
+        }
     }
-#endif
     
     // Once OpenGL is ready for rendering, init CEGUI
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
@@ -365,13 +366,13 @@ void GL_API::syncToThread(std::thread::id threadID) {
         SDL_GL_MakeCurrent(Application::instance().windowManager().getActiveWindow().getRawWindow(), ctx);
         glbinding::Binding::initialize(false);
         // Enable OpenGL debug callbacks for this context as well
-#if defined(ENABLE_GPU_VALIDATION)
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        // Debug callback in a separate thread requires a flag to distinguish it
-        // from the main thread's callbacks
-        glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, ctx);
-#endif
+        if (Config::ENABLE_GPU_VALIDATION) {
+            glEnable(GL_DEBUG_OUTPUT);
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+            // Debug callback in a separate thread requires a flag to distinguish it
+            // from the main thread's callbacks
+            glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, ctx);
+        }
     }
 }
 

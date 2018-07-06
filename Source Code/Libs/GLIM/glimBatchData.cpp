@@ -7,6 +7,7 @@
 #include "glimBatchData.h"
 #include "glimInterface.h"
 
+#include "Core/Math/Headers/MathHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
@@ -457,6 +458,33 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
         glCreateBuffers(1, &m_uiElementBufferID_Lines);
         glCreateBuffers(1, &m_uiElementBufferID_Triangles);
         glCreateBuffers(1, &m_uiElementBufferID_Wireframe);
+
+        if (Divide::Config::ENABLE_GPU_VALIDATION) {
+            glObjectLabel(GL_BUFFER,
+                          m_VertexArrayObjectID,
+                          -1,
+                          Divide::Util::StringFormat("DVD_GLIM_VAO_%d", m_VertexArrayObjectID).c_str());
+            glObjectLabel(GL_BUFFER,
+                          m_uiVertexBufferID,
+                          -1,
+                          Divide::Util::StringFormat("DVD_GLIM_VB_%d", m_uiVertexBufferID).c_str());
+            glObjectLabel(GL_BUFFER,
+                          m_uiElementBufferID_Points,
+                          -1,
+                          Divide::Util::StringFormat("DVD_GLIM_VB_POINTS_%d", m_uiElementBufferID_Points).c_str());
+            glObjectLabel(GL_BUFFER,
+                          m_uiElementBufferID_Lines,
+                          -1,
+                          Divide::Util::StringFormat("DVD_GLIM_VB_LINES_%d", m_uiElementBufferID_Lines).c_str());
+            glObjectLabel(GL_BUFFER,
+                          m_uiElementBufferID_Triangles,
+                          -1,
+                          Divide::Util::StringFormat("DVD_GLIM_VB_TRIANGLES_%d", m_uiElementBufferID_Triangles).c_str());
+            glObjectLabel(GL_BUFFER,
+                          m_uiElementBufferID_Wireframe,
+                          -1,
+                          Divide::Util::StringFormat("DVD_GLIM_VB_WIREFRAME_%d", m_uiElementBufferID_Wireframe).c_str());
+        }
     } else {
         // Buffer orphaning
         glInvalidateBufferData(m_uiVertexBufferID);
