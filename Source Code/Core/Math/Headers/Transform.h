@@ -34,8 +34,6 @@
 
 #include "TransformInterface.h"
 
-#include "Utility/Headers/GUIDWrapper.h"
-
 namespace Divide {
 
 struct TransformValues {

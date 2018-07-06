@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DEBUG_INTERFACE_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#include "Utility/Headers/GUIDWrapper.h"
 
 namespace Divide {
 

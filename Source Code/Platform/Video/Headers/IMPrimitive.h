@@ -33,7 +33,6 @@
 #define _IM_EMULATION_H_
 
 #include "Utility/Headers/Colours.h"
-#include "Utility/Headers/GUIDWrapper.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 

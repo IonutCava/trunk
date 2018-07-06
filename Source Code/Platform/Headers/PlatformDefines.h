@@ -41,6 +41,7 @@
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
+#include "Core/Headers/GUIDWrapper.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
 
 #include "ConditionalWait.h"
@@ -706,6 +707,17 @@ using DELEGATE_CBK_PARAM_2 = std::function < T(P1 param1, P2 param2) >;
 
 template <typename P1, typename P2, typename P3, typename T = void>
 using DELEGATE_CBK_PARAM_3 = std::function < T(P1 param1, P2 param2, P3 param3) >;
+
+class GUID_DELEGATE_CBK : public GUIDWrapper {
+  public:
+    GUID_DELEGATE_CBK(const DELEGATE_CBK<>& cbk)
+        : GUIDWrapper(),
+          _callback(cbk)
+    {
+    }
+
+    DELEGATE_CBK<> _callback;
+};
 
 U32 HARDWARE_THREAD_COUNT();
 

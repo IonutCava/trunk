@@ -192,11 +192,12 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                 }
             }
         },
-        [this, name]()
+        [this, name, unloadPrevious, &sceneToUnload]()
         {
             bool foundInCache = false;
             Scene* loadedScene = _scenePool->getOrCreateScene(name, foundInCache);
             assert(loadedScene != nullptr && foundInCache);
+
             if(loadedScene->getState() == ResourceState::RES_LOADING) {
                 Attorney::SceneManager::postLoadMainThread(*loadedScene);
                 if (loadedScene->getGUID() != _scenePool->defaultScene().getGUID())
@@ -215,6 +216,10 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
             assert(loadedScene->getState() == ResourceState::RES_LOADED);
             LoadSave::loadScene(*loadedScene);
             setActiveScene(loadedScene);
+
+            if (unloadPrevious) {
+                _scenePool->deleteScene(sceneToUnload);
+            }
 
             _renderPassCuller->clear();
             

@@ -32,7 +32,7 @@
 #ifndef _TASKS_H_
 #define _TASKS_H_
 
-#include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

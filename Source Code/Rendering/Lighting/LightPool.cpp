@@ -27,6 +27,7 @@ bool LightPool::_shadowMapsEnabled = true;
 
 LightPool::LightPool(Scene& parentScene)
     : SceneComponent(parentScene),
+      _previewShadowMapsCBK(DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr)),
       _init(false),
       _lightImpostorShader(nullptr),
       _lightIconsTexture(nullptr),
@@ -60,9 +61,8 @@ void LightPool::init() {
     if (_init) {
         return;
     }
-
-    GFX_DEVICE.add2DRenderFunction(
-        DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr), 1);
+    
+    GFX_DEVICE.add2DRenderFunction(_previewShadowMapsCBK, 1);
     // NORMAL holds general info about the currently active lights: position, colour, etc.
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB(1,
                                                                                    true,
@@ -120,6 +120,7 @@ bool LightPool::clear() {
         }
         lightList.clear();
     }
+    GFX_DEVICE.remove2DRenderFunction(_previewShadowMapsCBK);
     _init = false;
     
     return true;

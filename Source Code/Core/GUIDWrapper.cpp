@@ -2,5 +2,6 @@
 
 namespace Divide {
 
-I64 GUIDWrapper::_idGenerator = 0;
+int64_t GUIDWrapper::_idGenerator = 0;
+
 };  // namespace Divide

@@ -32,7 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DISPLAY_WINDOW_H_
 #define _DISPLAY_WINDOW_H_
 
-#include "Utility/Headers/GUIDWrapper.h"
 #include "Core/Math/Headers/MathMatrices.h"
 
 typedef struct SDL_Window SDL_Window;

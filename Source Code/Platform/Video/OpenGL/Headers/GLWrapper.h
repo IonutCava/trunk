@@ -227,8 +227,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     GLfloat _prevWidthString;
     /// Line width limit (hardware upper limit)
     GLint _lineWidthLimit;
-    /// Used to render points (e.g. to render full screen quads with geometry
-    /// shaders)
+    /// Used to render points (e.g. to render full screen quads with geometry shaders)
     GLuint _dummyVAO;
     /// Number of available texture units
     static GLint _maxTextureUnits;

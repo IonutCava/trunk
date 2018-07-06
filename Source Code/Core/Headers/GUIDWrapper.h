@@ -34,7 +34,8 @@
 */
 #ifndef _GUID_WRAPPER_H_
 #define _GUID_WRAPPER_H_
-#include "Platform/Headers/PlatformDefines.h"
+
+#include <cstdint>
 
 namespace Divide {
 
@@ -47,16 +48,16 @@ class GUIDWrapper {
 
     GUIDWrapper(const GUIDWrapper& old) : _GUID(_idGenerator++) {}
 
-    inline I64 getGUID() const { return _GUID; }
+    inline int64_t getGUID() const { return _GUID; }
 
    private:
     void operator=(const GUIDWrapper& old) = delete;
 
    protected:
-    const I64 _GUID;
+    const int64_t _GUID;
 
    private:
-    static I64 _idGenerator;
+    static int64_t _idGenerator;
 };
 
 };  // namespace Divide

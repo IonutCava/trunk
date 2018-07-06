@@ -379,9 +379,6 @@
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\GUIDWrapper.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp">
       <Filter>Rendering\Camera</Filter>
     </ClCompile>
@@ -541,6 +538,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderOperator.cpp">
       <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -762,9 +762,6 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsoleCommandParser.h">
       <Filter>GUI\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ScriptedCamera.h">
       <Filter>Rendering\Camera\Headers</Filter>
     </ClInclude>
@@ -957,6 +954,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\TemplateAllocator.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h">
+      <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

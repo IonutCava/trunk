@@ -10,7 +10,7 @@
 namespace Divide {
 
 namespace {
-    static const U32 g_nodesPerCullingPartition = 4;
+    static const U32 g_nodesPerCullingPartition = Config::MAX_VISIBLE_NODES / 4u;
 
     template <typename T>
     constexpr T&&

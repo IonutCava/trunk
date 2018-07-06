@@ -13,6 +13,10 @@
 
 namespace Divide {
 
+namespace {
+    const U32 g_numWarmupVAOs = 25u;
+};
+
 glVAOPool::glVAOPool()
 {
     
@@ -26,10 +30,16 @@ glVAOPool::~glVAOPool()
 void glVAOPool::init(U32 capacity) {
     destroy();
 
+    GLuint warmupVAOs[g_numWarmupVAOs] = {{0u}};
+    glCreateVertexArrays(g_numWarmupVAOs, warmupVAOs);
+    
     _pool.resize(capacity, std::make_pair(0, false));
     for (std::pair<GLuint, bool>& entry : _pool) {
         glCreateVertexArrays(1, &entry.first);
     }
+
+
+    glDeleteVertexArrays(g_numWarmupVAOs, warmupVAOs);
 }
 
 void glVAOPool::destroy() {

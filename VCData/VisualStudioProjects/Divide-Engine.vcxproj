@@ -254,6 +254,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp" />
@@ -354,7 +355,6 @@
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\GUIDWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Localization.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
@@ -375,6 +375,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Debugging\Headers\DebugInterface.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h" />
@@ -481,7 +482,6 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\Colours.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\MemoryTracker.h" />

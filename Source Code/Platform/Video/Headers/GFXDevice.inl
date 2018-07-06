@@ -224,14 +224,26 @@ GFXDevice::toggleRasterization(bool state) {
 /// Register a function to be called in the 2D rendering fase of the GFX Flush
 /// routine. Use callOrder for sorting purposes
 inline void 
-GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder) {
+GFXDevice::add2DRenderFunction(const GUID_DELEGATE_CBK& callback, U32 callOrder) {
     WriteLock w_lock(_2DRenderQueueLock);
-    _2dRenderQueue.push_back(std::make_pair(callOrder, callback));
-
+    _2dRenderQueue.push_back(std::make_pair(callOrder, std::make_pair(callback.getGUID(), callback._callback)));
+    
     std::sort(std::begin(_2dRenderQueue), std::end(_2dRenderQueue),
-              [](const std::pair<U32, DELEGATE_CBK<> >& a,
-                 const std::pair<U32, DELEGATE_CBK<> >& b)
+              [](const std::pair<U32, GUID2DCbk >& a,
+                 const std::pair<U32, GUID2DCbk >& b)
                   -> bool { return a.first < b.first; });
+}
+
+inline void
+GFXDevice::remove2DRenderFunction(const GUID_DELEGATE_CBK& callback) {
+    WriteLock w_lock(_2DRenderQueueLock);
+    
+    I64 targetGUID = callback.getGUID();
+    _2dRenderQueue.erase(
+        std::remove_if(std::begin(_2dRenderQueue), std::end(_2dRenderQueue),
+            [&targetGUID](const std::pair<U32, GUID2DCbk >& callback)
+            -> bool { return callback.second.first == targetGUID; }),
+        std::end(_2dRenderQueue));
 }
 
 /// Sets the current render stage.

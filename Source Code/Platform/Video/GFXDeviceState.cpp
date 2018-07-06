@@ -195,7 +195,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Register a 2D function used for previewing the depth buffer.
 #ifdef _DEBUG
-    add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
+    add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this)), 0);
 #endif
 
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
@@ -308,8 +308,8 @@ void GFXDevice::endFrame(bool swapBuffers) {
     if (Application::instance().mainLoopActive()) {
         GFX::Scoped2DRendering scoped2D(true);
         ReadLock r_lock(_2DRenderQueueLock);
-        for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction : _2dRenderQueue) {
-            callbackFunction.second();
+        for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
+            callbackFunction.second.second();
         }
     }
 

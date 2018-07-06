@@ -255,8 +255,8 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     immediateModeShader.setThreadedLoading(false);
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
     _guiShader->Uniform("dvd_WorldMatrix", mat4<F32>());
-    GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw, this),
-                                   std::numeric_limits<U32>::max() - 1);
+    GFX_DEVICE.add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GUI::draw, this)),
+                                                     std::numeric_limits<U32>::max() - 1);
     const OIS::MouseState& mouseState =
         Input::InputInterface::instance().getMouse().getMouseState();
 

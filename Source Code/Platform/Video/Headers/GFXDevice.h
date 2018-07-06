@@ -323,8 +323,8 @@ DEFINE_SINGLETON(GFXDevice)
     inline const GPUBlock::GPUData& renderingData() const;
     /// Register a function to be called in the 2D rendering fase of the GFX Flush
     /// routine. Use callOrder for sorting purposes
-    inline void add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder);
-
+    inline void add2DRenderFunction(const GUID_DELEGATE_CBK& callback, U32 callOrder);
+    inline void remove2DRenderFunction(const GUID_DELEGATE_CBK& callback);
     void restoreViewport();
     void setViewport(const vec4<I32>& viewport);
     inline void setViewport(I32 x, I32 y, I32 width, I32 height);
@@ -571,8 +571,9 @@ DEFINE_SINGLETON(GFXDevice)
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
 
+    typedef std::pair<I64, DELEGATE_CBK<>> GUID2DCbk;
     mutable SharedLock _2DRenderQueueLock;
-    vectorImpl<std::pair<U32, DELEGATE_CBK<> > > _2dRenderQueue;
+    vectorImpl<std::pair<U32, GUID2DCbk > > _2dRenderQueue;
 
     /// Immediate mode emulation shader
     ShaderProgram_ptr _imShader;

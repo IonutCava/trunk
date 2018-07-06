@@ -32,7 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCENE_COMPONENT_H_
 #define _SCENE_COMPONENT_H_
 
-#include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

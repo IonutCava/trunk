@@ -35,7 +35,6 @@
 #include "AI/Sensors/Headers/VisualSensor.h"
 
 #include "Core/Headers/cdigginsAny.h"
-#include "Utility/Headers/GUIDWrapper.h"
 
 struct dtCrowdAgent;
 

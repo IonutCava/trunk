@@ -61,7 +61,6 @@
 #ifndef _NAVIGATION_MESH_H_
 #define _NAVIGATION_MESH_H_
 
-#include "Utility/Headers/GUIDWrapper.h"
 #include "Platform/Threading/Headers/Task.h"
 
 #include "NavMeshConfig.h"

@@ -37,7 +37,7 @@
 #ifndef TRACKED_OBJECT_H_
 #define TRACKED_OBJECT_H_
 #include <list>
-#include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

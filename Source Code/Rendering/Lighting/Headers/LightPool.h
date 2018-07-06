@@ -167,7 +167,7 @@ class LightPool : public SceneComponent {
     std::array<Light::ShadowProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightShadowProperties;
     std::array<Light*, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _shadowCastingLights;
 
-
+    GUID_DELEGATE_CBK _previewShadowMapsCBK;
     Time::ProfileTimer& _shadowPassTimer;
 
     static bool _previewShadowMaps;

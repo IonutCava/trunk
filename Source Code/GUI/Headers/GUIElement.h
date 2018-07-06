@@ -33,10 +33,9 @@
 #define _GUI_ELEMENT_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Utility/Headers/GUIDWrapper.h"
 
 namespace CEGUI {
-class Window;
+    class Window;
 };
 
 namespace Divide {
