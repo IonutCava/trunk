@@ -16,6 +16,7 @@ struct Light {
 };
 
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent readonly buffer dvd_LightBlock
+//layout(binding = BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
     Light dvd_LightSource[MAX_LIGHTS_IN_VIEW];
 };

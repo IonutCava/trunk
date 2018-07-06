@@ -137,7 +137,7 @@ const bool SHOW_MESSAGE_BOX = false;
 
 namespace Lighting {
 /// Number of lights in the current view allowed to affect the scene
-const unsigned int MAX_LIGHTS_IN_VIEW = 128;
+const unsigned int MAX_LIGHTS_IN_VIEW = 16;
 // How many lights (in order as passed to the shader for the node) should cast
 /// shadows
 const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;

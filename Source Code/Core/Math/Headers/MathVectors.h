@@ -432,7 +432,7 @@ class vec3 {
         this->z = static_cast<T>(_z);
     }
     /// set the 3 components of the vector using a smaller source vector
-    inline void set(const vec2<T> &v) { this->set(v.x, v.y, 0.0); }
+    inline void set(const vec2<T> &v) { this->set(v.x, v.y, z); }
     /// set the 3 components of the vector using a source vector
     inline void set(const vec3<T> &v) { this->set(v.x, v.y, v.z); }
     /// set the 3 components of the vector using the first 3 components of the
@@ -788,17 +788,17 @@ class vec4 {
     /// set the 4 components of the vector using a source vector
     inline void set(const vec4 &v) { this->set(v.x, v.y, v.z, v.w); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T> &v) { this->set(v, 1); }
+    inline void set(const vec3<T> &v) { this->set(v, w); }
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec3<T> &v, T w_) { this->set(v.x, v.y, v.z, w_); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec2<T> &v) { this->set(v.x, v.y, 0.0, 1.0); }
+    inline void set(const vec2<T> &v) { this->set(v.x, v.y, z, w); }
     /// set the 4 components of the vector using smallers source vectors
     inline void set(const vec2<T> &v1, const vec2<T> &v2) {
         this->set(v1.x, v1.y, v2.x, v2.y);
     }
     /// set all the components back to 0
-    inline void reset() { this->set(0, 0, 0, 0); }
+    inline void reset() { this->set(0); }
     /// compare 2 vectors
     inline bool compare(const vec4 &v) const;
     /// compare 2 vectors within the specified tolerance

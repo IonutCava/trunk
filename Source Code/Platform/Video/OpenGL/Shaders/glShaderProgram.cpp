@@ -17,7 +17,7 @@ glShaderProgram::glShaderProgram()
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
-     _lockManager(new glLockManager(false))
+     _lockManager(new glLockManager(true))
 {
     _validationQueued = false;
     // each API has it's own invalid id. This is OpenGL's
