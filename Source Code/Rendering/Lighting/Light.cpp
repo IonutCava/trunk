@@ -254,10 +254,10 @@ void Light::setCameraToSceneView(){
     GFX_DEVICE.setOrthoProjection(vec4<F32>(-1.0, 1.0, -1.0, 1.0), _zPlanes);
     //Extract the view frustum from this projection mode
     Frustum::getInstance().Extract(_eyePos - _lightPos);
-    //get the MVP from the new Frustum as this is the light's full MVP
+    //get the VP from the new Frustum as this is the light's full MVP
     //mat4<F32> bias;
-    GFX_DEVICE.getMatrix(MVP_MATRIX,_lightProjectionMatrix);
-    //gfx.getMatrix(BIAS_MATRIX,bias);
+    GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX, _lightProjectionMatrix);
+    //gfx.getMatrix(GFXDevice::BIAS_MATRIX,bias);
     //_lightProjectionMatrix = bias * _lightProjectionMatrix;
 }
 

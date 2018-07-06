@@ -42,12 +42,6 @@ class glRenderStateBlock;
 
 struct glslopt_ctx;
 
-///Ugliest hack in the book, but it's needed for "deferred" immediate mode
-typedef struct
-{
-  GLfloat mat[16];
-} OffsetMatrix;
-
 DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
     typedef Unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
     typedef void (*callback)();	void glCommand(callback f){f();}
@@ -89,9 +83,8 @@ private:
     void idle();
     void flush();
     void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll);
-    void getMatrix(const MATRIX_MODE& mode,     mat4<GLfloat>& mat);
-    void getMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat);
-    void getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat);
+
+	void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
 
     FrameBufferObject*  newFBO(const FBOType& type);
     VertexBufferObject* newVBO(const PrimitiveType& type);
@@ -131,9 +124,6 @@ private:
     /*immediate mode emmlation end*/
 
     void renderInViewport(const vec4<GLuint>& rect, boost::function0<GLvoid> callback);
-
-    void renderInstance(RenderInstance* const instance);
-    void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
 
     void setLight(Light* const light);
 
@@ -186,10 +176,10 @@ private:
     FTFont* getFont(const std::string& fontName);
     glIMPrimitive* getOrCreateIMPrimitive(bool allowPrimitiveRecycle = true);
     ///Used for rendering skeletons
-    void setupLineState(const OffsetMatrix& mat, RenderStateBlock* const drawState,const bool ortho);
+    void setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawState,const bool ortho);
     void releaseLineState(const bool ortho);
     void drawDebugAxisInternal();
-    void setupLineStateViewPort(const OffsetMatrix& mat);
+    void setupLineStateViewPort(const mat4<F32>& mat);
     void releaseLineStateViewPort();
     void changeResolutionInternal(GLushort w, GLushort h);
 
@@ -229,6 +219,7 @@ private: //OpenGL specific:
     GLuint     _msaaSamples;
     bool       _useMSAA;///<set to falls for FXAA or SMAA
 
+	mat4<F32> _ViewProjectionCacheMatrix;
     static glslopt_ctx* _GLSLOptContex;
     static glShaderProgram* _activeShaderProgram;
     static GLuint _activeVAOId;

@@ -50,7 +50,7 @@ void GUI::draw(const D32 deltaTime){
 
     gfx.toggle2D(true);
     _guiShader->bind();
-    _guiShader->uploadModelMatrices();
+    _guiShader->uploadNodeMatrices();
 
     //------------------------------------------------------------------------
     for_each(guiMap::value_type& guiStackIterator,_guiStack){

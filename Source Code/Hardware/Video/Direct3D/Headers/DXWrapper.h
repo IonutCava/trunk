@@ -56,8 +56,6 @@ private:
     void endFrame();
     void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll) {}
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
-    void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
-    void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat);
 
     inline FrameBufferObject*  newFBO(const FBOType& type)  { return New d3dFrameBufferObject(type); }
 
@@ -90,8 +88,6 @@ private:
                    const bool disableDepth = false);
     void debugDraw();
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return NULL; }
-    void renderInstance(RenderInstance* const instance);
-    void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
 
     void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback);
     void updateClipPlanes();

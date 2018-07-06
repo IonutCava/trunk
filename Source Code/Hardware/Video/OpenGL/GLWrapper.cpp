@@ -92,7 +92,7 @@ void GL_API::debugDraw(){
         }
 
         _imShader->Uniform("useTexture", texture);
-        _imShader->uploadModelMatrices();
+        _imShader->uploadNodeMatrices();
 
         priv->renderBatch(priv->forceWireframe());
 
@@ -162,8 +162,8 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
     priv->endBatch();
 }
 
-void GL_API::setupLineState(const OffsetMatrix& mat, RenderStateBlock* const drawState,const bool ortho){
-    Divide::GL::_pushModelMatrix(mat.mat,false);
+void GL_API::setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawState,const bool ortho){
+    GFX_DEVICE.pushWorldMatrix(mat,false);
     SET_STATE_BLOCK(drawState,true);
 
     if(ortho){
@@ -175,10 +175,10 @@ void GL_API::setupLineState(const OffsetMatrix& mat, RenderStateBlock* const dra
 }
 
 void GL_API::releaseLineState(const bool ortho){
-    Divide::GL::_popModelMatrix();
+    GFX_DEVICE.popWorldMatrix();
     if(ortho){
         restoreViewport();
-        Divide::GL::_popModelMatrix();
+        GFX_DEVICE.popWorldMatrix();
         Divide::GL::_matrixMode(VIEW_MATRIX);
         Divide::GL::_popMatrix();
     }
@@ -235,7 +235,7 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
     if(pointsA.size() != colors.size()) return;
 
     IMPrimitive* priv = getOrCreateIMPrimitive();
-    OffsetMatrix offset;
+    mat4<F32> offset;
     std::copy(globalOffset.mat, globalOffset.mat+16, offset.mat);
     priv->_hasLines = true;
     priv->_lineWidth = 5.0f;
@@ -264,6 +264,8 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
 }
 
 void GL_API::drawText(const std::string& text, const GLint width, const std::string& fontName, const GLfloat fontSize){
+	setActiveVAO(0);
+
     FTFont* font = getFont(fontName);
     if(!font) return;
     if(!FLOAT_COMPARE(_prevSizeNode,fontSize)){
@@ -305,56 +307,6 @@ void GL_API::drawText(const std::string& text, const GLint width, const vec2<GLi
     }
 
     font->Render(text.c_str(),text.length(),*_prevPointString);
-}
-
-void GL_API::renderInstance(RenderInstance* const instance){
-    Object3D* model = instance->object3D();
-    assert(model != NULL);
-
-    if(model->getType() ==	Object3D::OBJECT_3D_PLACEHOLDER){
-        ERROR_FN(Locale::get("ERROR_GL_INVALID_OBJECT_TYPE"),model->getName().c_str());
-        return;
-    }
-
-    Transform* transform = instance->transform();
-
-    if(transform){
-        Divide::GL::_pushModelMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
-    }
-
-    if(model->getType() == Object3D::TEXT_3D){
-        Text3D* text = dynamic_cast<Text3D*>(model);
-        setActiveVAO(0);
-        drawText(text->getText(),text->getWidth(),text->getFont(),text->getHeight());
-        return;
-    }
-
-    VertexBufferObject* VBO = model->getGeometryVBO();
-
-    //Send our transformation matrixes (projection, model view, inv model view, MVP, etc)
-    VBO->currentShader()->uploadModelMatrices();
-    //Render our current vertex array object
-    VBO->Draw(model->getCurrentLOD());
-
-    if(transform){
-        Divide::GL::_popModelMatrix();
-    }
-}
-
-void GL_API::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform){
-    assert(vbo != NULL);
-
-    if(vboTransform){
-         Divide::GL::_pushModelMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
-         vbo->currentShader()->uploadModelMatrices();
-    }
-
-    //Render our current vertex array object
-    vbo->DrawRange();
-
-    if(vboTransform){
-        Divide::GL::_popModelMatrix();
-    }
 }
 
 //Save the area designated by the rectangle "rect" to a TGA file

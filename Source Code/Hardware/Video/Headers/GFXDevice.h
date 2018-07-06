@@ -23,6 +23,7 @@
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_H_
 
+#include "RenderInstance.h"
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Direct3D/Headers/DXWrapper.h"
 #include "Managers/Headers/RenderPassManager.h" ///<For GFX_RENDER_BIN_SIZE
@@ -45,8 +46,18 @@ class SceneRenderState;
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
 friend class Frustum; ///< For matrix recovery operations
+typedef std::stack<mat4<F32>, vectorImpl<mat4<F32> > > matrixStack;
 
 public:
+	///Compund matrices or sub-matrices
+	enum EXTENDED_MATRIX{
+		WORLD_MATRIX   = 0, //<Current model's world matrix. Changed for each render call, mainly
+		WV_MATRIX      = 1, //<WorldView matrix : ViewMatrix * WorldMatrix (as per OpenGL standards: name is backwards)
+		WV_INV_MATRIX  = 2, //<WorldViewInverse matrix: (ViewMatrix * WorldMatrix)^-1
+		WVP_MATRIX     = 4, //<WorldViewProjection matrix: ProjectionMatrix * ViewMatrix * WorldMatrix
+		NORMAL_MATRIX  = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * WorldMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*WorldMatrix)
+		BIAS_MATRIX    = 7  //<Bias matrix - scales and biases coordinates from [-1,1] to [0,1]
+	};
 
     void setApi(const RenderAPI& api);
 
@@ -200,8 +211,15 @@ public:
 
     inline bool loadInContext(const CurrentContext& context, boost::function0<void> callback) {return _api.loadInContext(context, callback);}
     inline void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)       {_api.getMatrix(mode, mat);}
-    inline void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat)   {_api.getMatrix(mode, mat);}
-    inline void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat)   {_api.getMatrix(mode, mat);}
+
+           void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat);
+   		   void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
+	       void pushWorldMatrix(const mat4<F32>& worldMatrix, bool isUniformedScaled);
+	       void popWorldMatrix(bool force = false); 
+		   void cleanMatrices();
+
+    inline void setViewDirty(bool state)        {_VDirty = state;}
+    inline void setProjectionDirty(bool state)  {_PDirty = state;}
 
 #if defined(OS_WINDOWS)
     HWND getHWND() {return _api.getHWND();}
@@ -247,6 +265,18 @@ protected:
     RenderStateBlock* _newStateBlock;
     RenderStateBlock* _previousStateBlock;
     RenderStateBlock* _defaultStateBlock;
+	matrixStack       _worldMatrices;
+	mat4<F32>         _WVCachedMatrix;
+	mat4<F32>         _VPCachedMatrix;
+	mat4<F32>         _WVPCachedMatrix;
+	mat4<F32>         _viewCacheMatrix;
+	mat4<F32>         _projectionCacheMatrix;
+	bool              _isUniformedScaled;
+	bool              _WDirty;
+	///If the _view changed, this will change to true
+	bool              _VDirty;
+    ///If _projection changed, this will change to true
+    bool              _PDirty;
     ///Pointer to current kernel
     Kernel* _kernel;
     PlaneList _clippingPlanes;

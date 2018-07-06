@@ -256,8 +256,10 @@ I8 Kernel::initialize(const std::string& entryPoint) {
 
     PostFX::getInstance().init(resolution);
 
+	size_t windowHandle = (size_t)_GFX.getHWND();
+	std::string windowTitle = par.getParam<std::string>("appTitle");
     //Bind the kernel with the input interface
-    _inputInterface.initialize(this,par.getParam<std::string>("appTitle"),(size_t)_GFX.getHWND());
+    _inputInterface.initialize(this,windowTitle,windowHandle);
 
     //Load default material
     PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));

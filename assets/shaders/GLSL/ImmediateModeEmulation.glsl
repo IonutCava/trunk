@@ -7,12 +7,12 @@ in vec3 inVertexData;
 out vec2 _texCoord;
 out vec4 _color;
 
-uniform mat4 dvd_ModelViewProjectionMatrix;
+uniform mat4 dvd_WorldViewProjectionMatrix;
 
 void main(){
   _texCoord = inTexCoordData;
   _color = inColorData;
-  gl_Position = dvd_ModelViewProjectionMatrix * vec4(inVertexData,1.0);
+  gl_Position = dvd_WorldViewProjectionMatrix * vec4(inVertexData,1.0);
 } 
 
 -- Fragment

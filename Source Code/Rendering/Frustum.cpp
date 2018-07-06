@@ -72,49 +72,49 @@ I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
 void Frustum::Extract(const vec3<F32>& eye){
     _eyePos = eye;
 
-    GFX_DEVICE.getMatrix(MVP_MATRIX, _modelViewProjectionMatrixCache);
+    GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX, _viewProjectionMatrixCache);
 
-    _frustumPlanes[0][0] = _modelViewProjectionMatrixCache[ 3] - _modelViewProjectionMatrixCache[ 0];
-    _frustumPlanes[0][1] = _modelViewProjectionMatrixCache[ 7] - _modelViewProjectionMatrixCache[ 4];
-    _frustumPlanes[0][2] = _modelViewProjectionMatrixCache[11] - _modelViewProjectionMatrixCache[ 8];
-    _frustumPlanes[0][3] = _modelViewProjectionMatrixCache[15] - _modelViewProjectionMatrixCache[12];
+    _frustumPlanes[0][0] = _viewProjectionMatrixCache[ 3] - _viewProjectionMatrixCache[ 0];
+    _frustumPlanes[0][1] = _viewProjectionMatrixCache[ 7] - _viewProjectionMatrixCache[ 4];
+    _frustumPlanes[0][2] = _viewProjectionMatrixCache[11] - _viewProjectionMatrixCache[ 8];
+    _frustumPlanes[0][3] = _viewProjectionMatrixCache[15] - _viewProjectionMatrixCache[12];
 
     _frustumPlanes[0].normalize();
 
-    _frustumPlanes[1][0] = _modelViewProjectionMatrixCache[ 3] + _modelViewProjectionMatrixCache[ 0];
-    _frustumPlanes[1][1] = _modelViewProjectionMatrixCache[ 7] + _modelViewProjectionMatrixCache[ 4];
-    _frustumPlanes[1][2] = _modelViewProjectionMatrixCache[11] + _modelViewProjectionMatrixCache[ 8];
-    _frustumPlanes[1][3] = _modelViewProjectionMatrixCache[15] + _modelViewProjectionMatrixCache[12];
+    _frustumPlanes[1][0] = _viewProjectionMatrixCache[ 3] + _viewProjectionMatrixCache[ 0];
+    _frustumPlanes[1][1] = _viewProjectionMatrixCache[ 7] + _viewProjectionMatrixCache[ 4];
+    _frustumPlanes[1][2] = _viewProjectionMatrixCache[11] + _viewProjectionMatrixCache[ 8];
+    _frustumPlanes[1][3] = _viewProjectionMatrixCache[15] + _viewProjectionMatrixCache[12];
 
     _frustumPlanes[1].normalize();
 
-    _frustumPlanes[2][0] = _modelViewProjectionMatrixCache[ 3] + _modelViewProjectionMatrixCache[ 1];
-    _frustumPlanes[2][1] = _modelViewProjectionMatrixCache[ 7] + _modelViewProjectionMatrixCache[ 5];
-    _frustumPlanes[2][2] = _modelViewProjectionMatrixCache[11] + _modelViewProjectionMatrixCache[ 9];
-    _frustumPlanes[2][3] = _modelViewProjectionMatrixCache[15] + _modelViewProjectionMatrixCache[13];
+    _frustumPlanes[2][0] = _viewProjectionMatrixCache[ 3] + _viewProjectionMatrixCache[ 1];
+    _frustumPlanes[2][1] = _viewProjectionMatrixCache[ 7] + _viewProjectionMatrixCache[ 5];
+    _frustumPlanes[2][2] = _viewProjectionMatrixCache[11] + _viewProjectionMatrixCache[ 9];
+    _frustumPlanes[2][3] = _viewProjectionMatrixCache[15] + _viewProjectionMatrixCache[13];
 
     _frustumPlanes[2].normalize();
 
-    _frustumPlanes[3][0] = _modelViewProjectionMatrixCache[ 3] - _modelViewProjectionMatrixCache[ 1];
-    _frustumPlanes[3][1] = _modelViewProjectionMatrixCache[ 7] - _modelViewProjectionMatrixCache[ 5];
-    _frustumPlanes[3][2] = _modelViewProjectionMatrixCache[11] - _modelViewProjectionMatrixCache[ 9];
-    _frustumPlanes[3][3] = _modelViewProjectionMatrixCache[15] - _modelViewProjectionMatrixCache[13];
+    _frustumPlanes[3][0] = _viewProjectionMatrixCache[ 3] - _viewProjectionMatrixCache[ 1];
+    _frustumPlanes[3][1] = _viewProjectionMatrixCache[ 7] - _viewProjectionMatrixCache[ 5];
+    _frustumPlanes[3][2] = _viewProjectionMatrixCache[11] - _viewProjectionMatrixCache[ 9];
+    _frustumPlanes[3][3] = _viewProjectionMatrixCache[15] - _viewProjectionMatrixCache[13];
 
     _frustumPlanes[3].normalize();
 
     // Far Plane
-    _frustumPlanes[4][0] = _modelViewProjectionMatrixCache[ 3] - _modelViewProjectionMatrixCache[ 2];
-    _frustumPlanes[4][1] = _modelViewProjectionMatrixCache[ 7] - _modelViewProjectionMatrixCache[ 6];
-    _frustumPlanes[4][2] = _modelViewProjectionMatrixCache[11] - _modelViewProjectionMatrixCache[10];
-    _frustumPlanes[4][3] = _modelViewProjectionMatrixCache[15] - _modelViewProjectionMatrixCache[14];
+    _frustumPlanes[4][0] = _viewProjectionMatrixCache[ 3] - _viewProjectionMatrixCache[ 2];
+    _frustumPlanes[4][1] = _viewProjectionMatrixCache[ 7] - _viewProjectionMatrixCache[ 6];
+    _frustumPlanes[4][2] = _viewProjectionMatrixCache[11] - _viewProjectionMatrixCache[10];
+    _frustumPlanes[4][3] = _viewProjectionMatrixCache[15] - _viewProjectionMatrixCache[14];
 
     _frustumPlanes[4].normalize();
 
     // Near Plane
-    _frustumPlanes[5][0] = _modelViewProjectionMatrixCache[3]  + _modelViewProjectionMatrixCache[ 2];
-    _frustumPlanes[5][1] = _modelViewProjectionMatrixCache[7]  + _modelViewProjectionMatrixCache[ 6];
-    _frustumPlanes[5][2] = _modelViewProjectionMatrixCache[11] + _modelViewProjectionMatrixCache[10];
-    _frustumPlanes[5][3] = _modelViewProjectionMatrixCache[15] + _modelViewProjectionMatrixCache[14];
+    _frustumPlanes[5][0] = _viewProjectionMatrixCache[3]  + _viewProjectionMatrixCache[ 2];
+    _frustumPlanes[5][1] = _viewProjectionMatrixCache[7]  + _viewProjectionMatrixCache[ 6];
+    _frustumPlanes[5][2] = _viewProjectionMatrixCache[11] + _viewProjectionMatrixCache[10];
+    _frustumPlanes[5][3] = _viewProjectionMatrixCache[15] + _viewProjectionMatrixCache[14];
 
     _frustumPlanes[5].normalize();
 }

@@ -6,9 +6,9 @@ out mat4 TBN;
 
 void main( void ){
     computeData();
-    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 
-    position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
+    position = vec3(transpose(dvd_WorldViewMatrix) * dvd_Vertex);
     normals = normalize(dvd_NormalMatrix * dvd_Normal);
 
     vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
@@ -21,6 +21,34 @@ void main( void ){
                t.z, b.z, n.z, 0,
                0, 0, 0, 1 );
 
+} 
+
+-- Vertex.Impostor
+
+uniform mat3 dvd_NormalMatrix;
+uniform mat4 dvd_WorldViewMatrix;
+
+layout(std140) uniform dvd_MatrixBlock
+{
+    mat4 dvd_ProjectionMatrix;
+    mat4 dvd_ViewMatrix;
+	mat4 dvd_ViewProjectionMatrix;
+};
+
+in vec3  inVertexData;
+in vec3  inNormalData;
+
+out vec3 normals;
+out vec3 position;
+
+void main( void ){
+    vec4 dvd_Vertex     = vec4(inVertexData,1.0);
+    vec3 dvd_Normal     = inNormalData;
+
+    gl_Position = dvd_ProjectionMatrix * dvd_WorldViewMatrix * dvd_Vertex;
+
+    position = vec3(transpose(dvd_WorldViewMatrix) * dvd_Vertex);
+    normals = normalize(dvd_NormalMatrix * dvd_Normal);
 } 
 
 -- Fragment
@@ -100,28 +128,6 @@ void main( void ){
    blendOutput.a = color.a;
 
 }
-
--- Vertex.Impostor
-
-uniform mat3 dvd_NormalMatrix;
-uniform mat4 dvd_ModelViewMatrix;
-uniform mat4 dvd_ModelViewProjectionMatrix;
-
-in vec3  inVertexData;
-in vec3  inNormalData;
-
-out vec3 normals;
-out vec3 position;
-
-void main( void ){
-    vec4 dvd_Vertex     = vec4(inVertexData,1.0);
-    vec3 dvd_Normal     = inNormalData;
-
-    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
-
-    position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
-    normals = normalize(dvd_NormalMatrix * dvd_Normal);
-} 
 
 -- Fragment.Impostor
 

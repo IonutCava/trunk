@@ -17,9 +17,9 @@ void main(void)
 	_texCoord = vPositionNormalized.xz;
 	
 	_pixToLight = -(gl_LightSource[0].position.xyz);
-	_pixToEye = -vec3(dvd_ModelViewMatrix * dvd_Vertex);	
+	_pixToEye = -vec3(dvd_WorldViewMatrix * dvd_Vertex);	
 
-	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+	gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 	
 }
 
@@ -36,7 +36,7 @@ uniform sampler2D texWaterNoiseNM;
 //built-in uniforms
 uniform mat4  material;
 uniform float dvd_time;
-uniform mat4  dvd_ModelViewMatrix;
+uniform mat4  dvd_WorldViewMatrix;
 uniform mat3  dvd_NormalMatrix;
 uniform ivec2 screenDimension;
 

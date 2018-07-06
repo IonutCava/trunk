@@ -18,7 +18,7 @@ vec3  dvd_BiTangent;
 vec4  dvd_BoneWeight;
 ivec4 dvd_BoneIndice;
 
-out vec4 _vertexM;
+out vec4 _vertexW;
 out vec2 _texCoord;
 out float outClip;
 
@@ -38,17 +38,18 @@ in vec3  inBiTangentData;
 in vec4  inBoneWeightData;
 in ivec4 inBoneIndiceData;
 
-uniform mat4 dvd_ModelMatrix;//[MAX_INSTANCES];
+uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];
 uniform mat3 dvd_NormalMatrix;
-uniform mat4 dvd_ModelViewMatrix;
-uniform mat4 dvd_ModelViewMatrixInverse;
-uniform mat4 dvd_ModelViewProjectionMatrix;
+uniform mat4 dvd_WorldViewMatrix;
+uniform mat4 dvd_WorldViewMatrixInverse;
+uniform mat4 dvd_WorldViewProjectionMatrix;
 uniform vec4 dvd_clip_plane[MAX_CLIP_PLANES];
 
 layout(std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
+	mat4 dvd_ViewProjectionMatrix;
 };
 
 //layout(std140) uniform dvd_LightBlock
@@ -60,22 +61,22 @@ void setClipPlanes(){
 #if defined(SKIP_HARDWARE_CLIPPING)
 
 #if MAX_CLIP_PLANES > 0
-    dvd_ClipDistance[0] = dot(_vertexM, dvd_clip_plane[0]);
+    dvd_ClipDistance[0] = dot(_vertexW, dvd_clip_plane[0]);
 #	if MAX_CLIP_PLANES > 1
         if(dvd_clip_plane_count == 1) return;
-        dvd_ClipDistance[1] = dot(_vertexM, dvd_clip_plane[1]) ;
+        dvd_ClipDistance[1] = dot(_vertexW, dvd_clip_plane[1]) ;
 #		if MAX_CLIP_PLANES > 2
             if(dvd_clip_plane_count == 2) return;
-            dvd_ClipDistance[2] = dot(_vertexM, dvd_clip_plane[2]);
+            dvd_ClipDistance[2] = dot(_vertexW, dvd_clip_plane[2]);
 #			if MAX_CLIP_PLANES > 3
                 if(dvd_clip_plane_count == 3) return;
-                dvd_ClipDistance[3] = dot(_vertexM, dvd_clip_plane[3]);
+                dvd_ClipDistance[3] = dot(_vertexW, dvd_clip_plane[3]);
 #				if MAX_CLIP_PLANES > 4
                     if(dvd_clip_plane_count == 4) return;
-                    dvd_ClipDistance[4] = dot(_vertexM, dvd_clip_plane[4]);
+                    dvd_ClipDistance[4] = dot(_vertexW, dvd_clip_plane[4]);
 #					if MAX_CLIP_PLANES > 5	
                         if(dvd_clip_plane_count == 5) return;
-                        dvd_ClipDistance[5] = dot(_vertexM, dvd_clip_plane[5]);
+                        dvd_ClipDistance[5] = dot(_vertexW, dvd_clip_plane[5]);
 #					endif //5
 #				endif //4
 #			endif //3
@@ -86,22 +87,22 @@ void setClipPlanes(){
 #else //skip clip planes
 
 #if MAX_CLIP_PLANES > 0
-    gl_ClipDistance[0] = dot(_vertexM, dvd_clip_plane[0]);
+    gl_ClipDistance[0] = dot(_vertexW, dvd_clip_plane[0]);
 #	if MAX_CLIP_PLANES > 1
         if(dvd_clip_plane_count == 1) return;
-        gl_ClipDistance[1] = dot(_vertexM, dvd_clip_plane[1]) ;
+        gl_ClipDistance[1] = dot(_vertexW, dvd_clip_plane[1]) ;
 #		if MAX_CLIP_PLANES > 2
             if(dvd_clip_plane_count == 2) return;
-            gl_ClipDistance[2] = dot(_vertexM, dvd_clip_plane[2]);
+            gl_ClipDistance[2] = dot(_vertexW, dvd_clip_plane[2]);
 #			if MAX_CLIP_PLANES > 3
                 if(dvd_clip_plane_count == 3) return;
-                gl_ClipDistance[3] = dot(_vertexM, dvd_clip_plane[3]);
+                gl_ClipDistance[3] = dot(_vertexW, dvd_clip_plane[3]);
 #				if MAX_CLIP_PLANES > 4
                     if(dvd_clip_plane_count == 4) return;
-                    gl_ClipDistance[4] = dot(_vertexM, dvd_clip_plane[4]);
+                    gl_ClipDistance[4] = dot(_vertexW, dvd_clip_plane[4]);
 #					if MAX_CLIP_PLANES > 5	
                         if(dvd_clip_plane_count == 5) return;
-                        gl_ClipDistance[5] = dot(_vertexM, dvd_clip_plane[5]);
+                        gl_ClipDistance[5] = dot(_vertexW, dvd_clip_plane[5]);
 #					endif //5
 #				endif //4
 #			endif //3
@@ -119,7 +120,7 @@ void computeData(){
     _texCoord      = inTexCoordData;
     dvd_Tangent    = inTangentData;
     dvd_BiTangent  = inBiTangentData;
-    _vertexM       = dvd_ModelMatrix * dvd_Vertex;
+    _vertexW       = dvd_WorldMatrix * dvd_Vertex;
     setClipPlanes();
 }
 

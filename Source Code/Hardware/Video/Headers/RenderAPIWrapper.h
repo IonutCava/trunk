@@ -24,7 +24,6 @@
 #define _RENDER_API_H_
 
 #include "RenderAPIEnums.h"
-#include "RenderInstance.h"
 #include <boost/function.hpp>
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
@@ -132,8 +131,6 @@ protected:
 
     virtual void idle() = 0;
     virtual void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) = 0;
-    virtual void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) = 0;
-    virtual void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat) = 0;
 
     ///Change the resolution and reshape all graphics data
     virtual void changeResolution(U16 w, U16 h) = 0;
@@ -190,13 +187,6 @@ protected:
     /*Immediate Mode Emmlation*/
     virtual IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) = 0;
     /*Immediate Mode Emmlation*/
-
-    /*Mesh Rendering*/
-    ///Render a specific object with a specific transform and/or transforms for instanced meshes
-    virtual void renderInstance(RenderInstance* const instance) = 0;
-    ///Render a single vbo with the specified transformation (THIS DOES NOT CALL ENABLE/DISABLE for you! - note: OGL does call Enable if needed to avoid crashes)
-    virtual void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL) = 0;
-    /*Mesh Rendering*/
 
     /*Light Management*/
     virtual void setLight(Light* const light) = 0;

@@ -182,7 +182,7 @@ void Terrain::drawInfinitePlain(){
 
 void Terrain::drawGround() const{
     assert(_groundVBO);
-    _groundVBO->currentShader()->uploadModelMatrices();
+    _groundVBO->currentShader()->uploadNodeMatrices();
     _terrainQuadtree->DrawGround(_drawReflected);
 }
 

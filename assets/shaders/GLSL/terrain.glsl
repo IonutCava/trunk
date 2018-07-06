@@ -1,14 +1,20 @@
 -- Vertex.Depth
-uniform mat4 dvd_ModelMatrix;//[MAX_INSTANCES];
-uniform mat4 dvd_ModelViewProjectionMatrix;
+uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];
+
+layout(std140) uniform dvd_MatrixBlock
+{
+    mat4 dvd_ProjectionMatrix;
+    mat4 dvd_ViewMatrix;
+	mat4 dvd_ViewProjectionMatrix;
+};
 
 in vec3  inVertexData;
-out vec4 _vertexM;
+out vec4 _vertexW;
 
 void main(void){
     vec4 dvd_Vertex = vec4(inVertexData,1.0);
-    _vertexM = dvd_ModelMatrix * dvd_Vertex;
-    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+    _vertexW = dvd_WorldMatrix * dvd_Vertex;
+    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 }
 
 -- Vertex
@@ -26,24 +32,24 @@ void main(void){
 
     _texCoord = vec3((dvd_Vertex.xyz - bbox_min.xyz) / bbox_diff).sp;
 
-    _vertexMV = dvd_ViewMatrix * _vertexM;
+    _vertexWV = dvd_ViewMatrix * _vertexW;
     computeLightVectors();
     
     if(dvd_enableShadowMapping) {
         // Transformed position 
-        //vec4 pos = dvd_ModelViewMatrix * dvd_Vertex;
+        //vec4 pos = dvd_WorldViewMatrix * dvd_Vertex;
         // position multiplied by the inverse of the camera matrix
-        //pos = dvd_ModelViewMatrixInverse * pos;
+        //pos = dvd_WorldViewMatrixInverse * pos;
         // position multiplied by the light matrix. The vertex's position from the light's perspective
         _shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
     }
 
-    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 }
 
 -- Fragment.Depth
 
-in vec4  _vertexM;
+in vec4  _vertexW;
 out vec4 _colorOut;
 
 uniform float _waterHeight;
@@ -70,8 +76,8 @@ in vec3 _lightDirection[MAX_LIGHT_COUNT];
 in vec3 _viewDirection;
 in vec2 _texCoord;
 in vec3 _normalMV;
-in vec4 _vertexM;
-in vec4 _vertexMV;
+in vec4 _vertexW;
+in vec4 _vertexWV;
 
 #if defined(SKIP_HARDWARE_CLIPPING)
 in float dvd_ClipDistance[MAX_CLIP_PLANES];
@@ -223,7 +229,7 @@ vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
         cDiffuse *= gl_LightSource[0].diffuse;
         // Add specular intensity
         cSpecular = gl_LightSource[0].specular * material[2] * iSpecular;
-        alpha = (_waterHeight - _vertexM.y) / (2*(_waterHeight - bbox_min.y));
+        alpha = (_waterHeight - _vertexW.y) / (2*(_waterHeight - bbox_min.y));
         caustic = alpha * CausticsColor();
     }
 

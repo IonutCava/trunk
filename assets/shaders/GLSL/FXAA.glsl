@@ -5,7 +5,8 @@ out vec2 _texCoord;
 
 in vec2  inTexCoordData;
 in vec3  inVertexData;
-uniform mat4 dvd_ModelViewProjectionMatrix;
+
+uniform mat4 dvd_WorldViewProjectionMatrix;
 
 uniform float FXAA_SUBPIX_SHIFT = 1.0/4.0;
 uniform vec2 size;
@@ -17,7 +18,7 @@ void main(void){
   _posPos.xy = _texCoord;
   _posPos.zw = _texCoord - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT));
 
-  gl_Position = dvd_ModelViewProjectionMatrix * vec4(inVertexData,1.0);
+  gl_Position = dvd_WorldViewProjectionMatrix * vec4(inVertexData,1.0);
 }
 
 -- Fragment

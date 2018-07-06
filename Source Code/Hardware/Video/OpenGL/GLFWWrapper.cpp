@@ -335,7 +335,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     _uniformBufferObjects.resize(UBO_PLACEHOLDER,NULL);
     _uniformBufferObjects[Matrices_UBO] = New glUniformBufferObject();
     _uniformBufferObjects[Matrices_UBO]->Create(Matrices_UBO, true,true);
-    _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2 * 16, sizeof(GLfloat)); //View and Projection 2 x 16 float values
+    _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(3 * 16, sizeof(GLfloat)); //View, Projection and ViewProjection 3 x 16 float values
     _uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
     _uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
     _uniformBufferObjects[Lights_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE_NODE, sizeof(LightProperties)); //Usually less or equal to 4
@@ -442,11 +442,11 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("","#extension GL_EXT_gpu_shader4 : enable");
 
     if(getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
-        glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
-        glswAddDirectiveToken("","#pragma optionNV(fastprecision on)");
-        glswAddDirectiveToken("","#pragma optionNV(inline all)");
-        glswAddDirectiveToken("","#pragma optionNV(strict on)");
-        glswAddDirectiveToken("","#pragma optionNV(unroll all)");
+        //glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
+        //glswAddDirectiveToken("","#pragma optionNV(fastprecision on)");
+        //glswAddDirectiveToken("","#pragma optionNV(inline all)");
+        //glswAddDirectiveToken("","#pragma optionNV(strict on)");
+        //glswAddDirectiveToken("","#pragma optionNV(unroll all)");
     }
 
     if(getGPUVendor() == GPU_VENDOR_AMD){

@@ -68,14 +68,6 @@ void DX_API::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)
 {
 }
 
-void DX_API::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat)
-{
-}
-
-void DX_API::getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat)
-{
-}
-
 void DX_API::toggle2D(bool _2D)
 {
 }
@@ -126,15 +118,6 @@ void DX_API::debugDraw()
 
 void DX_API::renderInViewport(const vec4<U32>& rect, boost::function0<void> callback)
 {
-}
-
-void DX_API::renderInstance(RenderInstance* const instance)
-{
-}
-
-void DX_API::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform)
-{
-    vbo->DrawRange();
 }
 
 void DX_API::initDevice(U32 targetFrameRate)

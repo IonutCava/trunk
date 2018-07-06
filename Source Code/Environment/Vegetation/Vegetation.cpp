@@ -87,7 +87,7 @@ void Vegetation::draw(const RenderStage& currentStage, Transform* const parentTr
 
     _grassShader->bind();
 
-    _grassShader->uploadModelMatrices();
+    _grassShader->uploadNodeMatrices();
 
     for(U32 index = 0; index < _billboardCount; index++){
         _grassBillboards[index]->Bind(0);

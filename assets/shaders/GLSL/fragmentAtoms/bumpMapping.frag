@@ -73,7 +73,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 	
 	vec2 uv_offset = h * AB;
 	
-	vec3 p = _vertexMV.xyz;
+	vec3 p = _vertexWV.xyz;
 	vec3 v = normalize(p);
 	//Compute light direction
 	p += v*h*viewVecTBN.z;	

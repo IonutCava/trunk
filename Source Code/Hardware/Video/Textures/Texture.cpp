@@ -35,9 +35,7 @@ bool Texture::LoadFile(U32 target, const std::string& name){
 		///Missing texture fallback
 		ParamHandler& par = ParamHandler::getInstance();
 		img.flip(false);
-		img.create(par.getParam<std::string>("assetsLocation")+"/"+
-			       par.getParam<std::string>("defaultTextureLocation") +"/"+
-				   "missing_texture.jpg");
+		img.create(par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+"missing_texture.jpg");
 	}
 
 	// Get width

@@ -91,12 +91,7 @@ public:
         _compiled = false;
     }
 
-    void uploadModelMatrices();
-
-    void setMatrixMask(const bool uploadNormals = true,
-                       const bool uploadModel = true,
-                       const bool uploadModelView = true,
-                       const bool uploadModelViewProjection = true);
+    void uploadNodeMatrices();
 
 protected:
     friend class ShaderManager;
@@ -130,12 +125,6 @@ protected:
     boost::atomic_bool _compiled;
     U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
     I32 _maxCombinedTextureUnits;
-    /**Skip or include certain matrices. Can change at any time:
-    /*b0 = normal_matrix
-    /*b1 = model_matrix
-    /*b2 = model_view_matrix
-    /*b3 = model_view_projection*/
-    P32 _matrixMask;
     ///A list of preprocessor defines
     vectorImpl<std::string > _definesList;
     ///A list of vertex shader uniforms

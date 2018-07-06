@@ -61,7 +61,6 @@ bool Sky::load() {
     ResourceDescriptor skyShaderDescriptor("sky");
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 
-    _skyShader->setMatrixMask(false,false,false,true);
     assert(_skyShader);
     _sky->setResolution(4);
     _sun->setResolution(16);

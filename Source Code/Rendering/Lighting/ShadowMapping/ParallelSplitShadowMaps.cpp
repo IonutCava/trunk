@@ -192,11 +192,10 @@ void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
             GFX_DEVICE.render(renderFunction, renderState);
     }
     _depthMap->End();
-    //get all the required information (light MVP matrix for example)
+    //get all the required information (light VP matrix for example)
     //and restore to the proper camera view
     _light->setCameraToSceneView();
-    //Undo all modifications to the Projection Matrix
-    //Undo all modifications to the ModelView Matrix
+    //Undo all modifications to the Projection and View Matrices
     gfx.releaseMatrices();
     //Restore our view frustum
     Frustum::getInstance().Extract(eyePos);

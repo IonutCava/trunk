@@ -1,7 +1,7 @@
 
 in vec2 _texCoord;
-in vec3 _normalMV;
-in vec4 _vertexMV;
+in vec3 _normalWV;
+in vec4 _vertexWV;
 
 uniform mat4  material;
 uniform float opacity;

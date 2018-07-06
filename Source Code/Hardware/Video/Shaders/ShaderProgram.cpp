@@ -20,8 +20,6 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
 {
     _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
-    //Enable all matrix uploads by default (note: projection and view matrices are ALWAYS uploaded)
-    _matrixMask.b.b0 = _matrixMask.b.b1 = _matrixMask.b.b2 = _matrixMask.b.b3 = 1;
 
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 }
@@ -83,16 +81,6 @@ U8 ShaderProgram::update(const D32 deltaTime){
     return 1;
 }
 
-void ShaderProgram::setMatrixMask(const bool uploadNormals,
-                                  const bool uploadModel,
-                                  const bool uploadModelView,
-                                  const bool uploadModelViewProjection){
-    _matrixMask.b.b0 = uploadNormals ? 1 : 0;
-    _matrixMask.b.b1 = uploadModel ? 1 : 0;
-    _matrixMask.b.b2 = uploadModelView ? 1 : 0;
-    _matrixMask.b.b3 = uploadModelViewProjection ? 1 : 0;
-}
-
 void ShaderProgram::threadedLoad(const std::string& name){
     if(ShaderProgram::generateHWResource(name)) 
         HardwareResource::threadedLoad(name);
@@ -116,28 +104,28 @@ void ShaderProgram::bind(){
     this->Attribute("dvd_cameraPosition",Frustum::getInstance().getEyePos());
 }
 
-void ShaderProgram::uploadModelMatrices(){
+void ShaderProgram::uploadNodeMatrices(){
     GFXDevice& GFX = GFX_DEVICE;
     /*Get and upload matrix data*/
-    if(_matrixMask.b.b0 && this->getUniformLocation("dvd_NormalMatrix") != -1 ){
-        GFX.getMatrix(NORMAL_MATRIX,_cachedNormalMatrix);
+    if(this->getUniformLocation("dvd_NormalMatrix") != -1 ){
+        GFX.getMatrix(GFXDevice::NORMAL_MATRIX,_cachedNormalMatrix);
         this->Uniform("dvd_NormalMatrix",_cachedNormalMatrix);
     }
-    if(_matrixMask.b.b1 && this->getUniformLocation("dvd_ModelMatrix") != -1){
-        GFX.getMatrix(MODEL_MATRIX,_cachedMatrix);
-        this->Uniform("dvd_ModelMatrix",_cachedMatrix);
+    if(this->getUniformLocation("dvd_WorldMatrix") != -1){
+		GFX.getMatrix(GFXDevice::WORLD_MATRIX,_cachedMatrix);
+        this->Uniform("dvd_WorldMatrix",_cachedMatrix);
     }
-    if(_matrixMask.b.b2 && this->getUniformLocation("dvd_ModelViewMatrix") != -1){
-        GFX.getMatrix(MV_MATRIX,_cachedMatrix);
-        this->Uniform("dvd_ModelViewMatrix",_cachedMatrix);
+    if(this->getUniformLocation("dvd_WorldViewMatrix") != -1){
+        GFX.getMatrix(GFXDevice::WV_MATRIX,_cachedMatrix);
+        this->Uniform("dvd_WorldViewMatrix",_cachedMatrix);
     }
-    if(_matrixMask.b.b3 && this->getUniformLocation("dvd_ModelViewProjectionMatrix") != -1){
-        GFX.getMatrix(MVP_MATRIX,_cachedMatrix);
-        this->Uniform("dvd_ModelViewProjectionMatrix",_cachedMatrix);
+	if(this->getUniformLocation("dvd_WorldViewMatrixInverse") != -1){
+        GFX.getMatrix(GFXDevice::WV_INV_MATRIX,_cachedMatrix);
+        this->Uniform("dvd_WorldViewMatrixInverse",_cachedMatrix);
     }
-    if(this->getUniformLocation("dvd_ModelViewMatrixInverse") != -1){
-        GFX.getMatrix(MV_INV_MATRIX,_cachedMatrix);
-        this->Uniform("dvd_ModelViewMatrixInverse",_cachedMatrix);
+	if(this->getUniformLocation("dvd_WorldViewProjectionMatrix") != -1){
+		GFX.getMatrix(GFXDevice::WVP_MATRIX, _cachedMatrix);
+        this->Uniform("dvd_WorldViewProjectionMatrix",_cachedMatrix);
     }
     /*Get and upload clip plane data*/
     if(GFX_DEVICE.clippingPlanesDirty()){

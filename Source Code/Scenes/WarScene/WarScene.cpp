@@ -31,7 +31,7 @@ void WarScene::processTasks(const D32 deltaTime){
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _taskTimers[0] = 0.0;
     }
-    processTasks(deltaTime);
+    Scene::processTasks(deltaTime);
 }
 
 void WarScene::resetSimulation(){

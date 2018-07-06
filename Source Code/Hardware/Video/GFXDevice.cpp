@@ -8,6 +8,7 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
@@ -33,6 +34,12 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
    _clippingPlanesDirty = true;
    _renderer = NULL;
    _renderStage = INVALID_STAGE;
+   _worldMatrices.push(mat4<F32>(/*identity*/));
+   _isUniformedScaled = true;
+   _WDirty = _VDirty = _PDirty = true;
+   _WVCachedMatrix.identity();
+   _WVPCachedMatrix.identity();
+
    Frustum::createInstance();
    RenderPass* diffusePass = New RenderPass("diffusePass");
    RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
@@ -72,9 +79,10 @@ void GFXDevice::closeRenderer(){
 void GFXDevice::renderInstance(RenderInstance* const instance){
     //All geometry is stored in VBO format
     assert(instance->object3D() != NULL);
-
+	Object3D* model = instance->object3D();
+ 
     if(instance->preDraw())
-        instance->object3D()->onDraw(getRenderStage());
+        model->onDraw(getRenderStage());
 
     if(instance->draw2D()){
         //toggle2D(true);
@@ -83,14 +91,50 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     if(_stateBlockDirty)
         updateStates();
 
-    _api.renderInstance(instance);
+	if(model->getType() == Object3D::OBJECT_3D_PLACEHOLDER){
+        ERROR_FN(Locale::get("ERROR_GFX_INVALID_OBJECT_TYPE"),model->getName().c_str());
+        return;
+    }
+	 
+	if(model->getType() == Object3D::TEXT_3D){
+        Text3D* text = dynamic_cast<Text3D*>(model);
+        drawText(text->getText(),text->getWidth(),text->getFont(),text->getHeight());
+        return;
+    }
+
+	Transform* transform = instance->transform();
+	VertexBufferObject* VBO = model->getGeometryVBO();
+	assert(VBO != NULL);
+
+	if(transform) 
+		pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
+
+    //Send our transformation matrixes (projection, world, view, inv model view, etc)
+    VBO->currentShader()->uploadNodeMatrices();
+    //Render our current vertex array object
+    VBO->Draw(model->getCurrentLOD());
+
+	if(transform) 
+		popWorldMatrix();
 }
 
-void GFXDevice::renderBuffer(VertexBufferObject* const vbo,Transform* const vboTransform){
+void GFXDevice::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform){
+	assert(vbo != NULL);
+
     if(_stateBlockDirty)
         updateStates();
+	 
+	if(vboTransform){
+         pushWorldMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
+    }
+         
+	vbo->currentShader()->uploadNodeMatrices();
+    //Render our current vertex array object
+    vbo->DrawRange();
 
-    _api.renderBuffer(vbo,vboTransform);
+	if(vboTransform){
+        popWorldMatrix();
+    }
 }
 
 void GFXDevice::renderGUIElement(GUIElement* const element,ShaderProgram* const guiShader){
@@ -265,4 +309,56 @@ void GFXDevice::enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32
     par.setParam("rendering.sceneState.fogEnd",endDist);
     par.setParam("rendering.sceneState.fogMode",mode);
     ShaderManager::getInstance().refresh();
+}
+
+ void GFXDevice::popWorldMatrix(bool force){
+	 _worldMatrices.pop();
+	 _isUniformedScaled = _WDirty = true;
+}
+
+void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, bool isUniformedScaled){
+    _worldMatrices.push(worldMatrix);
+	_isUniformedScaled = isUniformedScaled;
+    _WDirty = true;
+}
+       
+void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
+     assert(mode == NORMAL_MATRIX /*|| mode == ... */);
+     cleanMatrices();
+            
+	 // Normal Matrix
+     if(!_isUniformedScaled){
+		 mat4<F32> temp;
+		 _WVCachedMatrix.inverse(temp);
+		 mat.set(temp.transpose());
+	 }else{
+		 mat.set(_WVCachedMatrix);
+	 }
+}
+
+void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
+     assert(mode != NORMAL_MATRIX /*|| mode != ... */);
+
+	 //refresh cache
+	 if(mode != WORLD_MATRIX && mode != BIAS_MATRIX)
+		 cleanMatrices();
+
+      switch(mode){
+          case WORLD_MATRIX:  mat.set(_worldMatrices.top()); break;
+		  case WV_MATRIX:     mat.set(_WVCachedMatrix);      break;
+		  case WVP_MATRIX:    mat.set(_WVPCachedMatrix);     break;
+          case BIAS_MATRIX:   mat.bias();                    break;
+	      case WV_INV_MATRIX: _WVCachedMatrix.inverse(mat);  break;
+      }
+}
+
+void GFXDevice::cleanMatrices(){
+	 if(_WDirty){
+		if(_VDirty) 	       _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
+		if(_VDirty || _PDirty) _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
+	 
+		 _WVCachedMatrix.set(_viewCacheMatrix * _worldMatrices.top());
+		 _WVPCachedMatrix.set(_VPCachedMatrix * _worldMatrices.top());
+		 _VDirty = _PDirty = _WDirty = false;
+	 }
 }

@@ -26,7 +26,6 @@
 #include "config.h"
 
 enum MATRIX_MODE;
-enum EXTENDED_MATRIX;
 #if defined( OS_WINDOWS )
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
@@ -270,20 +269,12 @@ namespace Divide {
     extern matrixStack _projectionMatrix;
     ///Current texture matrix. Multiply and change manually if needed
     extern matrixStack _textureMatrix;
-    ///The current model matrices (entire stack is used for instance. Change per model or set to identity
-    extern matrixStack _modelMatrix;
     ///Current viewpoert stack
     extern viewportStack _viewport;
-    ///A bias matrix is useful for shadow calculations
-    extern glm::mat4   _biasMatrix;
     ///A cache value for anaglyph eye offset
     extern GLfloat     _anaglyphIOD;
     ///current camera view direction
     extern vector3Stack _currentViewDirection;
-    ///If the model matrix had a uniform scale applied or not
-    extern bool _isUniformScaled;
-    ///Use for lazy reset of the model matrix
-    extern bool _resetModelMatrixFlag;
 
     void _initStacks();
     /*-----------------BEGIN: FIXED PIPELINE EMULATION -----------------------*/
@@ -298,48 +289,11 @@ namespace Divide {
     void _popMatrix();
     void _loadIdentity();
     /*-----------------END: FIXED PIPELINE EMULATION -----------------------*/
-    void _pushModelMatrix(const mat4<GLfloat>& matrix,bool uniform = true);//<Use uniform to avoid inverseTranspose for normals
-    void _popModelMatrix(bool force = false);//<Use this to set the model matrix back to identity
-    void _queryMatrix(const MATRIX_MODE& mode,     vectorImpl<mat4<GLfloat> >& mat);
     void _queryMatrix(const MATRIX_MODE& mode,     mat4<GLfloat>& mat);
-    void _queryMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat);
-    void _queryMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat);
-
-    ///Cache management - try and avoid recalculating this if not needed
-    void _clean();
 
     /*-----------------Locals------------------------------------------------*/
-    extern glm::mat4   _MVCachedMatrix;
-    extern glm::mat4   _MVPCachedMatrix;
     extern glm::mat4   _identityMatrix;
-    ///If _projection changed, this will change to true
-    extern bool _PDirty;
-    ///If _model changed, this will change to true
-    extern bool _MDirty;
-    ///If the _view changed
-    extern bool _VDirty;
 
-    ///Matrix management
-    ///Current active matrix for push/pop operations: PROJECTION/VIEW/TEXTURE
-    extern MATRIX_MODE _currentMatrixMode;
-    ///Current view matrix. Changed only by LookAt call
-    extern matrixStack _viewMatrix;
-    ///Current projection matrix. Changed by Perspective and Ortho calls
-    extern matrixStack _projectionMatrix;
-    ///Current texture matrix. Multiply and change manually if needed
-    extern matrixStack _textureMatrix;
-    ///The current model matrix. Change per model or set to identity
-    extern matrixStack _modelMatrix;
-    ///A bias matrix is useful for shadow calculations
-    extern glm::mat4   _biasMatrix;
-    ///A cache value for anaglyph eye offset
-    extern GLfloat     _anaglyphIOD;
-    ///current camera view direction
-    extern vector3Stack _currentViewDirection;
-    ///If the model matrix had a uniform scale applied or not
-    extern bool _isUniformScaled;
-    ///Use for lazy reset of the model matrix
-    extern bool _resetModelMatrixFlag;
     }//GL
 }
 

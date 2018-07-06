@@ -15,7 +15,7 @@ void main(void){
     computeData();
 
 #if defined(USE_GPU_SKINNING)
-    applyBoneTransforms(dvd_Vertex,dvd_Normal);
+    applyBoneTransforms(dvd_Vertex, dvd_Normal);
 #endif
 
 #if defined(ADD_FOLIAGE) && defined(IS_TREE)
@@ -24,7 +24,7 @@ void main(void){
     
     computeLightVectors();
     //Compute the final vert position
-    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+    gl_Position = dvd_WorldViewProjectionMatrix * dvd_Vertex;
 }
 
 -- Fragment
@@ -39,7 +39,7 @@ out vec4 _colorOut;
 void main (void){
     gl_FragDepth = gl_FragCoord.z;
 
-    vec4 color = Phong(_texCoord, _normalMV);
+    vec4 color = Phong(_texCoord, _normalWV);
 
     applyFog(color);
 
@@ -55,7 +55,7 @@ out vec4 _colorOut;
 void main (void){
     gl_FragDepth = gl_FragCoord.z;
 
-    vec4 color = Phong(_texCoord, _normalMV);
+    vec4 color = Phong(_texCoord, _normalWV);
 
     applyFog(color);
 
