@@ -1,5 +1,3 @@
-#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
-
 #include "MainScene.h"
 
 #include "Utility/Headers/ParamHandler.h"
@@ -14,8 +12,12 @@
 #include "Rendering/Frustum.h"
 using namespace std;
 
-bool MainScene::updateLights()
-{
+bool MainScene::updateLights(){
+
+	RenderState activeRenderState = GFXDevice::getInstance().getActiveRenderState();
+	activeRenderState.lightingEnabled() = true;
+	GFXDevice::getInstance().setRenderState(activeRenderState);
+
 	_sun_cosy = cosf(_sunAngle.y);
 	_sunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + _sun_cosy * 0.75f);
@@ -24,7 +26,14 @@ bool MainScene::updateLights()
 	getLights()[0]->setLightProperties(string("ambient"),_white);
 	getLights()[0]->setLightProperties(string("diffuse"),_sunColor);
 	getLights()[0]->setLightProperties(string("specular"),_sunColor);
-	//getLights()[0]->update();
+	getLights()[0]->update();
+	return true;
+}
+
+bool MainScene::disableLights(){
+	RenderState activeRenderState = GFXDevice::getInstance().getActiveRenderState();
+	activeRenderState.lightingEnabled() = false;
+	GFXDevice::getInstance().setRenderState(activeRenderState);
 	return true;
 }
 
@@ -34,40 +43,25 @@ void MainScene::preRender()
 	Sky &sky = Sky::getInstance();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	ParamHandler &par = ParamHandler::getInstance();
-	for(U8 i = 0; i < _visibleTerrains.size(); i++){
-		_visibleTerrains[i]->setRenderingParams(false,_sunColor,_sunModelviewProj);
-	}
+	vec3 eye_pos = cam->getEye();
+	vec3 sun_pos = eye_pos - vec3(_sunVector);
+	D32 zNear = par.getParam<D32>("zNear");
+	D32 zFar = par.getParam<D32>("zFar");
+	vec2 zPlanes(zNear,zFar);
+	D32 tabOrtho[2] = {20.0, 100.0};
+	GFXDevice::getInstance().setLightCameraMatrices(_sunVector);
 
 	//SHADOW MAPPING
-	//GFXDevice::getInstance().setDepthMapRendering(true);
-	//D32 tabOrtho[2] = {20.0, 100.0};
+	GFXDevice::getInstance().setDepthMapRendering(true);
+	
 
-	//GFXDevice::getInstance().setLightCameraMatrices(_sunVector);
-
-	//D32 zNear = par.getParam<D32>("zNear");
-	//D32 zFar = par.getParam<D32>("zFar");
-	vec3 eye_pos = CameraManager::getInstance().getActiveCamera()->getEye();
-	//vec3 sun_pos = eye_pos - vec3(_sunVector);
-
-	for(U8 i=0; i<2; i++)
-	{
-	/*	glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-tabOrtho[i], tabOrtho[i], -tabOrtho[i], tabOrtho[i], zNear, zFar);
-		glMatrixMode(GL_MODELVIEW);
-		Frustum::getInstance().Extract(sun_pos);*/
-		
+	for(U8 i=0; i<2; i++){
+		GFXDevice::getInstance().setOrthoProjection(vec4(-tabOrtho[i], tabOrtho[i], -tabOrtho[i], tabOrtho[i]),zPlanes);
+		Frustum::getInstance().Extract(sun_pos);
+	
 		_depthMap[i]->Begin();
 			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-			for(U8 j = 0; j < _visibleTerrains.size(); j++){
-				_visibleTerrains[j]->setActive(false);//Disable terrain rendering ...
-				_visibleTerrains[j]->getVegetation()->draw(false); //... but draw the vegetation and then ...
-			}
-			_sceneGraph->render(); //render the rest of the stuff
-
-			for(U8 j = 0; j < _visibleTerrains.size(); j++){
-				_visibleTerrains[j]->restoreActive(); //.. restore terrain previous state
-			}
+			renderEnvironment(false, true);
 		_depthMap[i]->End();
 
 		for(U8 j = 0; j < _visibleTerrains.size(); j++){
@@ -75,63 +69,80 @@ void MainScene::preRender()
 		}
 	}
 
-	/*glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1.0, 1.0, -1.0, 1.0, zNear, zFar);
+	GFXDevice::getInstance().setOrthoProjection(vec4(-1.0f,1.0f,-1.0f,1.0f),zPlanes);
 	Frustum::getInstance().Extract(sun_pos);
-	mat4& matLightMV = Frustum::getInstance().getModelviewMatrix();
-	mat4& matLightProj = Frustum::getInstance().getProjectionMatrix();
-	_sunModelviewProj = matLightProj * matLightMV;
+	_sunModelviewProj = Frustum::getInstance().getModelvieProjectionwMatrix();
 
 	GFXDevice::getInstance().restoreLightCameraMatrices();
 	Frustum::getInstance().Extract(eye_pos);
-	GFXDevice::getInstance().setDepthMapRendering(false);*/
+	GFXDevice::getInstance().setDepthMapRendering(false);
 	//SHADOW MAPPING
 
+	//WATER REFLECTION
 	if(_water != NULL){
 		_skyFBO->Begin();
 			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-			updateLights();
-			sky.setParams(eye_pos,vec3(_sunVector),true,true,true);
-			sky.draw();
-			for(U8 i = 0; i < _visibleTerrains.size(); i++){
-				_visibleTerrains[i]->setRenderingParams(true,_sunColor,_sunModelviewProj);
-			}
-			_sceneGraph->render();
+			renderEnvironment(true,false);
 		_skyFBO->End();
-	}
-}
 
-void MainScene::render(){
-	Sky &sky = Sky::getInstance();
-	GUI &gui = GUI::getInstance();
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	const vec3& eye_pos = cam->getEye();
-	ParamHandler& par = ParamHandler::getInstance();
-	Frustum::getInstance().Extract(eye_pos);
-	updateLights();
-
-	sky.setParams(eye_pos,vec3(_sunVector),false,true,true);
-	sky.draw();
-
-	for(U8 i = 0; i < _visibleTerrains.size(); i++){
-		_visibleTerrains[i]->setRenderingParams(false,_sunColor,_sunModelviewProj);
-	}
-
-	
-	if(_water != NULL){
 		FrameBufferObject* fbo[] = {_skyFBO,_depthMap[0],_depthMap[1]};
 		_water->setFBO(fbo);
 		_water->setWaterTextureProjectionMatrix(_sunModelviewProj);
 	}
-	_sceneGraph->render();
+	//WATER REFLECTION
+}
 
-	gui.draw();	
+void MainScene::render(){
+	_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+	renderEnvironment(false,false);
+
+	GUI::getInstance().draw();
 	
 }
 
-void MainScene::processInput()
-{
+void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
+	Sky &sky = Sky::getInstance();
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
+	ParamHandler &par = ParamHandler::getInstance();
+
+	const vec3& eye_pos = cam->getEye();
+	GFXDevice::getInstance().ignoreStateChanges(true);
+	if(!depthMap){
+		updateLights();
+
+		if(eye_pos.y < getWaterLevel()){
+			waterReflection = false;
+			par.setParam("underwater",true);
+		}
+		else{
+			par.setParam("underwater",false);
+		}
+
+		sky.setParams(eye_pos,vec3(_sunVector),waterReflection,true,true);
+		sky.draw();
+		if(waterReflection){
+			RenderState activeState = GFXDevice::getInstance().getActiveRenderState();
+			activeState.cullingEnabled() = false;
+			GFXDevice::getInstance().setRenderState(activeState);
+			cam->ScaleScene(vec3(-1,1,1));
+			cam->RenderLookAt(true,getWaterLevel());
+		}
+		
+	}else{
+		disableLights();
+	}
+
+	_waterGraphNode->setActive(!waterReflection && !depthMap); //Do not render water for shadowmaping and water texturing passes;
+	for(U8 i = 0; i < _visibleTerrains.size(); i++){
+		_visibleTerrains[i]->setActive(!depthMap);//Disable terrain rendering ...
+		_visibleTerrains[i]->getVegetation()->draw(waterReflection); //... but draw the vegetation and then ...
+	}
+	
+	_sceneGraph->render(); //render the rest of the stuff
+	GFXDevice::getInstance().ignoreStateChanges(false);
+}
+
+void MainScene::processInput(){
 	_inputManager.tick();
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
@@ -187,7 +198,7 @@ bool MainScene::load(const string& name){
 	bool state = false;
 	state = Scene::load(name);
 	bool computeWaterHeight = false;
-	if(_waterHeight == RAND_MAX) computeWaterHeight = true;
+	if(getWaterLevel() == RAND_MAX) computeWaterHeight = true;
 	addDefaultLight();
 	getLights()[0]->toggleImpostor(false);
 	_sunModelviewProj.identity();
@@ -211,15 +222,14 @@ bool MainScene::load(const string& name){
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
 	_water = ResourceManager::getInstance().LoadResource<WaterPlane>(infiniteWater);
-	_water->setParams(50,10,0.1f,0.5f);
-	_sceneGraph->getRoot()->addNode(_water);
+	_water->setParams(50.0f,50,0.1f,0.5f);
+	_waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
 	if(computeWaterHeight)	_waterHeight -= 75;
 	
 	return state;
 }
 
-bool MainScene::unload()
-{
+bool MainScene::unload(){
 	SFXDevice::getInstance().stopMusic();
 	SFXDevice::getInstance().stopAllSounds();
 	ResourceManager::getInstance().remove(_backgroundMusic);
@@ -229,8 +239,8 @@ bool MainScene::unload()
 }
 
 bool _switchAB = false;
-void MainScene::test(boost::any a, CallbackParam b)
-{
+void MainScene::test(boost::any a, CallbackParam b){
+
 	vec3 pos;
 	SceneGraphNode* boxNode = _sceneGraph->findNode("box");
 	Object3D* box = NULL;
@@ -292,12 +302,12 @@ bool MainScene::loadResources(bool continueOnErrors)
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time
 
-	Console::getInstance().printfn("Creating Frame Buffer Objects for water reflexions and Shadow Mapping");
+	Console::getInstance().printfn("Creating Frame Buffer Objects for water reflections and Shadow Mapping");
 	_skyFBO = GFXDevice::getInstance().newFBO();
 	_depthMap[0] = GFXDevice::getInstance().newFBO();
 	_depthMap[1] = GFXDevice::getInstance().newFBO();
 	
-	Console::getInstance().printfn("Initializing Frame Buffer Objects for water reflexions and Shadow Mapping");
+	Console::getInstance().printfn("Initializing Frame Buffer Objects for water reflections and Shadow Mapping");
 	_skyFBO->Create(FrameBufferObject::FBO_2D_COLOR, 2048, 2048);
 	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);

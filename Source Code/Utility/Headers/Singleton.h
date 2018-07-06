@@ -15,23 +15,26 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SINGLETON_H
-#define SINGLETON_H
+#ifndef SINGLETON_H_
+#define SINGLETON_H_
 
 template <class T>
-class Singleton
-{
+class Singleton{
+
 public :
 	inline static T& getInstance() {
-		if (!s_pInstance)
-			s_pInstance = new T;
+		if (!_instance){
+			_instance = new T;
+		}
 
-		return *s_pInstance;
+		return *_instance;
 	}
 
 	inline static void DestroyInstance() {
-		if(s_pInstance) delete s_pInstance;
-		s_pInstance = 0;
+		if(_instance){
+			delete _instance;
+			_instance = NULL;
+		}
 	}
 
 protected :
@@ -39,27 +42,28 @@ protected :
 	~Singleton() {}
 
 private :
-	static T* s_pInstance;	// Instance de la classe
+	// singleton instance
+	static T* _instance;	
 
 	Singleton(Singleton&);
 	void operator =(Singleton&);
 };
 
-template <class T> T* Singleton<T>::s_pInstance = 0;
+template <class T> T* Singleton<T>::_instance = 0;
 
-#define SINGLETON_BEGIN(class_name) \
+#define DEFINE_SINGLETON(class_name) \
 	class class_name : public Singleton<class_name> { \
 		friend class Singleton<class_name>;
 
-#define SINGLETON_BEGIN_EXT1(class_name, base_class) \
+#define DEFINE_SINGLETON_EXT1(class_name, base_class) \
 	class class_name : public Singleton<class_name> , public base_class{ \
 		friend class Singleton<class_name>;
 
-#define SINGLETON_BEGIN_EXT2(class_name, base_class1, base_class2) \
+#define DEFINE_SINGLETON_EXT2(class_name, base_class1, base_class2) \
 	class class_name : public Singleton<class_name> , public base_class1, public base_class2{ \
 		friend class Singleton<class_name>;
 
-#define SINGLETON_END() };
+#define END_SINGLETON };
 
 #endif // SINGLETON_H
 

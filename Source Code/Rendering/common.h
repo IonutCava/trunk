@@ -29,7 +29,7 @@ class Terrain;
 class GFXDevice;
 class SFXDevice;
 
-SINGLETON_BEGIN( Engine )
+DEFINE_SINGLETON( Engine )
 
 private:
 	Engine();
@@ -60,6 +60,6 @@ public:
    I8   getMainWindowId(){return mainWindowId;}
    void setMainWindowId(U8 id){mainWindowId = id;}
  
-   SINGLETON_END()
+   END_SINGLETON
 
 #endif

@@ -26,7 +26,7 @@ class Texture;
 typedef Texture Texture2D;
 typedef Texture TextureCubemap;
 
-SINGLETON_BEGIN_EXT1( ResourceManager,Manager )
+DEFINE_SINGLETON_EXT1( ResourceManager,Manager )
 
 public:
 	template<class T>
@@ -36,7 +36,7 @@ public:
 protected:
 	Resource* LoadResource(const std::string& name);
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif
 

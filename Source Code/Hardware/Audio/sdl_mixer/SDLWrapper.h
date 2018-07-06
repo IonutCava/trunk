@@ -22,7 +22,7 @@
 #include "../AudioAPIWrapper.h"
 #include "Utility/Headers/Singleton.h"
 
-SINGLETON_BEGIN_EXT1(SDL_API,AudioAPIWrapper)
+DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 
 public:
 	void initHardware();
@@ -51,6 +51,6 @@ private:
 	Mix_Music *_music;
 	Mix_Chunk *_chunk;
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

@@ -241,8 +241,14 @@ void GL_API::restoreTextureMatrix(U16 slot){
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void GL_API::drawTextToScreen(Text* text)
-{
+void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void GL_API::drawTextToScreen(Text* text){
 	pushMatrix();
 		glLoadIdentity();
 		glColor3f(text->_color.x,text->_color.y,text->_color.z);
@@ -361,12 +367,19 @@ void GL_API::drawButton(Button* b)
 
 }
 
-void GL_API::setRenderState(RenderState& state)
-{
+void GL_API::setRenderState(RenderState& state){
 	state.blendingEnabled() ? glEnable(GL_BLEND)      : glDisable(GL_BLEND);
 	state.lightingEnabled() ? glEnable(GL_LIGHTING)   : glDisable(GL_LIGHTING);
 	state.cullingEnabled()  ? glEnable(GL_CULL_FACE)  : glDisable(GL_CULL_FACE);
 	state.texturesEnabled() ? glEnable(GL_TEXTURE_2D) : glDisable(GL_TEXTURE_2D);
+}
+
+void GL_API::ignoreStateChanges(bool state){
+	if(state){
+		glPushAttrib(GL_ENABLE_BIT);
+	}else{
+		glPopAttrib();
+	}
 }
 
 //ToDo: Sort meshes by material!!!!! - Ionut
@@ -402,9 +415,16 @@ void GL_API::prepareMaterial(SceneNode* model, Material* mat, Shader* prevShader
 		}else{
 			s->bind();
 		}
-		s->Uniform("scale",model->getTransform()->getScale());
+		if(model->getTransform()){
+			s->Uniform("scale",model->getTransform()->getScale());
+		}else{
+			s->Uniform("scale",vec3(1,1,1));
+		}
 		s->Uniform("material",mat->getMaterialMatrix());
-		if(baseTexture)	s->UniformTexture("texDiffuse0",0);
+		if(baseTexture){
+			s->UniformTexture("texDiffuse0",0);
+		}
+
 		if(!GFXDevice::getInstance().getDeferredShading()){
 			if(bumpTexture){
 				s->UniformTexture("texBump",1);
@@ -412,11 +432,14 @@ void GL_API::prepareMaterial(SceneNode* model, Material* mat, Shader* prevShader
 			}else{
 				s->Uniform("mode", 0);
 			}
-			if(secondTexture) s->UniformTexture("texDiffuse1",2);
+			if(secondTexture){
+				s->UniformTexture("texDiffuse1",2);
+			}
 			s->Uniform("textureCount",count);
 			s->Uniform("enable_shadow_mapping", 0);
 			s->Uniform("tile_factor", 1.0f);
 		}
+
 		s->Uniform("time", GETTIME());
 		s->Uniform("windDirectionX", windX);
 		s->Uniform("windDirectionZ", windZ);
@@ -477,41 +500,29 @@ void GL_API::drawBox3D(vec3 min, vec3 max)
 
 void GL_API::drawBox3D(Box3D* const model)
 {
-	pushMatrix();
-
-	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getTransform()->getParentMatrix());
-
-	prepareMaterial(model, model->getMaterial());
+	setObjectState(model);
 
 	glutSolidCube(model->getSize());
 
-	releaseMaterial(model->getMaterial());
-	
 	popMatrix();
 
 }
 
 void GL_API::drawSphere3D(Sphere3D* const model)
 {
-	pushMatrix();
-	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getTransform()->getParentMatrix());
-
-	prepareMaterial(model, model->getMaterial());
+	setObjectState(model);
 	
 	glutSolidSphere(model->getSize(), model->getResolution(),model->getResolution());
 
-	releaseMaterial(model->getMaterial());
-
-	popMatrix();
+	releaseObjectState(model);
 
 }
 void GL_API::setObjectState(SceneNode* const model){
 	pushMatrix();
-
-	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getTransform()->getParentMatrix());
+	if(model->getTransform()){
+		glMultMatrixf(model->getTransform()->getMatrix());
+		glMultMatrixf(model->getTransform()->getParentMatrix());
+	}
 
 	prepareMaterial(model, model->getMaterial());
 }
@@ -544,12 +555,7 @@ void GL_API::drawQuad3D(Quad3D* const model)
 
 void GL_API::drawText3D(Text3D* const model)
 {
-	pushMatrix();
-
-	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getTransform()->getParentMatrix());
-
-	prepareMaterial(model, model->getMaterial());
+	setObjectState(model);
 
 	glPushAttrib(GL_ENABLE_BIT);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -560,9 +566,7 @@ void GL_API::drawText3D(Text3D* const model)
 	glutStrokeString(model->getFont(), (const U8*)model->getText().c_str());
 	glPopAttrib();
 
-	releaseMaterial(model->getMaterial());
-
-	popMatrix();
+	releaseObjectState(model);
 
 }
 
@@ -572,8 +576,12 @@ void GL_API::renderModel(Object3D* const model)
 
 	pushMatrix();
 	//ToDo: Per submesh transforms!!!!!!!!!!!!!!!!!!! - Ionut
-	glMultMatrixf(tempModel->getTransform()->getMatrix());
-	glMultMatrixf(model->getTransform()->getParentMatrix());
+	if(tempModel->getTransform()){
+		glMultMatrixf(tempModel->getTransform()->getMatrix());
+	}
+	if(model->getTransform()){
+		glMultMatrixf(model->getTransform()->getParentMatrix());
+	}
 	Shader* prevShader = NULL;
 
 	for(vector<SubMesh* >::iterator subMeshIterator = tempModel->getSubMeshes().begin(); 
@@ -594,20 +602,11 @@ void GL_API::renderModel(Object3D* const model)
 	popMatrix();
 }
 
-void GL_API::renderElements(Type t, U32 count, const void* first_element, bool inverty)
-{
-	if(inverty){
-		glPushMatrix();
-		glScalef(1,-1,1);
-	}
+void GL_API::renderElements(Type t, U32 count, const void* first_element){
 	glDrawElements(t, count, GL_UNSIGNED_INT, first_element );
-
-	if(inverty)
-		glPopMatrix();
 }
 
-void GL_API::toggle2D(bool _2D)
-{
+void GL_API::toggle2D(bool _2D){
 	
 	if(_2D)
 	{
@@ -663,9 +662,8 @@ void GL_API::initDevice()
 	glutMainLoop();
 }
 
-void GL_API::setLight(U8 slot, tr1::unordered_map<string,vec4>& properties)
-{
-	glEnable(GL_LIGHTING);
+void GL_API::setLight(U8 slot, tr1::unordered_map<string,vec4>& properties){
+	if(!_state.lightingEnabled()) return;
 	glEnable(GL_LIGHT0+slot);
 	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties["position"]);
 	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties["ambient"]);

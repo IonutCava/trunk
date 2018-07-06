@@ -40,7 +40,7 @@ public:
 	bool load(const std::string& name);
 	bool unload();
 	
-	void drawGround(bool drawInReflexion) const;
+	void drawGround(bool drawInReflection) const;
 	void render();
 	void terrainSetParameters(const vec3& pos,const vec2& scale);
 
@@ -63,7 +63,7 @@ public:
 	void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
 	void initializeVegetation(TerrainDescriptor* terrain);
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
-	void setRenderingParams(bool drawInReflexion,vec4& ambientcolor,mat4& sunModelviewProj){_drawInReflexion = drawInReflexion; _terrainMaterial->setAmbient(ambientcolor/1.5);_sunModelviewProj = sunModelviewProj;}
+	void setRenderingParams(bool drawInReflection,vec4& ambientcolor,mat4& sunModelviewProj){_drawInReflection = drawInReflection; _terrainMaterial->setAmbient(ambientcolor/1.5);_sunModelviewProj = sunModelviewProj;}
 	void setDepthMap(U8 index, FrameBufferObject* depthMap){_depthMapFBO[index] = depthMap;}
 
 	bool isActive() {return _active;}
@@ -76,7 +76,7 @@ private:
 	VertexBufferObject*		_groundVBO;
 	
 	F32 terrainScaleFactor, _terrainHeightScaleFactor;
-	bool	_drawInReflexion,_loaded, _active, _wasActive,_alphaTexturePresent;
+	bool	_drawInReflection,_loaded, _active, _wasActive,_alphaTexturePresent;
 
 	Shader*					_terrainShader;
 	std::vector<Texture2D*>	_terrainTextures;

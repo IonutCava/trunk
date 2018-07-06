@@ -27,10 +27,20 @@ bool SceneGraphNode::unload(){
 
 SceneGraphNode* SceneGraphNode::addNode(SceneNode* node){
 	SceneGraphNode* sceneGraphNode = new SceneGraphNode(node);
+	SceneGraphNode* parentNode = this->getParent();
 	assert(sceneGraphNode);
 	sceneGraphNode->setParent(this);
-	sceneGraphNode->setGrandParent(this->getParent());
-
+	sceneGraphNode->setGrandParent(parentNode);
+	if(parentNode){
+		SceneNode* parentSceneNode = this->getParent()->getNode();
+		if(parentSceneNode){
+			Transform* nodeTransform = node->getTransform();
+			Transform* parentTransform = parentSceneNode->getTransform();
+			if(nodeTransform && parentTransform){
+				nodeTransform->setParentMatrix(parentTransform->getMatrix());
+			}
+		}
+	}
 	std::pair<std::tr1::unordered_map<std::string, SceneGraphNode*>::iterator, bool > result;
 	result = _children.insert(std::make_pair(node->getName(),sceneGraphNode));
 	if(!result.second){

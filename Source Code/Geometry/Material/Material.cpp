@@ -12,7 +12,11 @@ Material::Material() : Resource(),
 					   _materialMatrix(_ambient,_diffuse,_specular,vec4(_shininess,_emmissive.x,_emmissive.y,_emmissive.z)),
 					   _shader(NULL),
 					   _computedLightShaders(false)
-{}
+{
+   _textures[TEXTURE_BASE] = NULL;
+   _textures[TEXTURE_BUMP] = NULL;
+   _textures[TEXTURE_SECOND] = NULL;
+}
 
 
 Material::Material(const Material& old) : Resource(old){
@@ -66,15 +70,13 @@ Material::~Material(){
 //second = second texture used for multitexturing
 //bump = bump map
 void Material::setTexture(TextureUsage textureUsage, Texture2D* texture) {
-	if(!_textures.empty()){
-		if(_textures.find(textureUsage) != _textures.end())
+	if(_textures[textureUsage])
 			ResourceManager::getInstance().remove(_textures[textureUsage]);
-	}
-	_textures.insert(std::make_pair(textureUsage,texture));
+	_textures[textureUsage] = texture;
 }
 
 void Material::setShader(const std::string& shader){
-	if(_shader != NULL){
+	if(_shader){
 		if(_shader->getName().compare(shader) == 0) return;
 		ResourceManager::getInstance().remove(_shader);
 	}
@@ -84,10 +86,7 @@ void Material::setShader(const std::string& shader){
 }
 
 Texture2D* const  Material::getTexture(TextureUsage textureUsage)  {
-	textureMap::iterator result = _textures.find(textureUsage); 
-	if(result != _textures.end())
-		return result->second;
-	else return NULL;
+	return _textures[textureUsage];
 }
 
 void Material::computeLightShaders(){
@@ -96,7 +95,7 @@ void Material::computeLightShaders(){
 	if(_computedLightShaders) return;
 	if(_shader == NULL){
 		if(GFXDevice::getInstance().getDeferredShading()){
-			if(getTexture(Material::TEXTURE_BASE) != NULL){
+			if(_textures[TEXTURE_BASE]){
 				ResourceDescriptor deferred("DeferredShadingPass1");
 				_shader = ResourceManager::getInstance().LoadResource<Shader>(deferred);
 			}else{
@@ -119,12 +118,15 @@ void Material::skipComputeLightShaders(){
 }
 
 bool Material::unload(){
-	 ResourceManager::getInstance().remove(_shader);
-	if(!_textures.empty()){
-		for(textureMap::iterator iter = _textures.begin(); iter != _textures.end(); iter++){
+	if(_shader){
+		ResourceManager::getInstance().remove(_shader);
+	}
+	for(textureMap::iterator iter = _textures.begin(); iter != _textures.end(); iter++){
+		if(iter->second){
 			ResourceManager::getInstance().remove(iter->second);
 		}
-		_textures.clear();
 	}
+	_textures.clear();
+
 	return true;
 }

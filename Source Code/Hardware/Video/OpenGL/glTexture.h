@@ -33,8 +33,8 @@ public:
 	bool load(const std::string& name);
 	bool unload() {Destroy(); return true;}
 
-	void Bind(U16 slot) const;
-	void Unbind(U16 slot) const;
+	void Bind(U16 slot) ;
+	void Unbind(U16 slot) ;
 
 	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d);
 

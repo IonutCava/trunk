@@ -16,6 +16,8 @@ void Object3D::onDraw(){
 	getMaterial()->computeLightShaders(); //if it was previously computed, it just returns;
 	
 	if(!_boundingBox.isComputed()) computeBoundingBox();
-	_boundingBox.Transform(getOriginalBoundingBox(), getTransform()->getMatrix());
+	if(getTransform()){
+		_boundingBox.Transform(getOriginalBoundingBox(), getTransform()->getMatrix());
+	}
 	drawBBox();
 }

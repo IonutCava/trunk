@@ -36,9 +36,11 @@ public:
 
 private:
 	/*Specific Scene Requirement*/
+	void renderEnvironment(bool waterReflection, bool depthMap);
 	void restoreLightCameraMatrices();
 	void setLightCameraMatrices();
 	bool updateLights();
+	bool disableLights();
 	void processInput();
 	void processEvents(F32 time);
 	void test(boost::any a, CallbackParam b);
@@ -61,6 +63,7 @@ private:
 	AudioDescriptor* _backgroundMusic, *_beep;
 	std::vector<Terrain*> _visibleTerrains;
 	WaterPlane* _water;
+	SceneGraphNode* _waterGraphNode;
 
 };
 

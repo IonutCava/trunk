@@ -23,7 +23,7 @@
 
 class Object3D;
 class Framerate;
-SINGLETON_BEGIN_EXT1(GFXDevice,RenderAPIWrapper)
+DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
 
 public:
 	void setApi(RenderAPI api);
@@ -68,6 +68,7 @@ public:
 	void toggle2D(bool _2D) {_api.toggle2D(_2D);}
 	void setTextureMatrix(U16 slot, const mat4& transformMatrix) {_api.setTextureMatrix(slot,transformMatrix);}
 	void restoreTextureMatrix(U16 slot) {_api.restoreTextureMatrix(slot); }
+	void setOrthoProjection(const vec4& rect, const vec2& planes){_api.setOrthoProjection(rect,planes);}
 
 	void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
 	void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
@@ -81,7 +82,7 @@ public:
 	void drawText3D(Text3D* const text){_api.drawText3D(text);}
 
 	void renderModel(Object3D* const model);
-	void renderElements(Type t, U32 count, const void* first_element, bool inverty = false){_api.renderElements(t,count,first_element,inverty);}
+	void renderElements(Type t, U32 count, const void* first_element){_api.renderElements(t,count,first_element);}
 	
 	void setMaterial(Material* mat){_api.setMaterial(mat);}
 	void setColor(const vec4& v){_api.setColor(v);}
@@ -103,7 +104,7 @@ public:
    void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax);
 
    void setRenderState(RenderState& state) {_state = state; _api.setRenderState(state);}
-
+   void ignoreStateChanges(bool state) {_api.ignoreStateChanges(state);}
 public:
 	enum BufferType
 	{
@@ -122,6 +123,6 @@ private:
 	   }
 	RenderAPIWrapper& _api;
 	bool _wireframeMode,_depthMapRendering,_deferredShading;
-SINGLETON_END()
+END_SINGLETON
 
 #endif

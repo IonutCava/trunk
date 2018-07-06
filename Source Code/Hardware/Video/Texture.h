@@ -26,8 +26,8 @@ class Texture : public Resource
 {
 /*Abstract interface*/
 public:
-	virtual void Bind(U16 slot) const = 0;
-	virtual void Unbind(U16 slot) const = 0;
+	virtual void Bind(U16 slot)  = 0;
+	virtual void Unbind(U16 slot)  = 0;
 	virtual void Destroy() = 0;
 	virtual void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d) = 0;
 	virtual ~Texture() {_img.Destroy();}
@@ -44,19 +44,21 @@ public:
 	U16 getHeight() const {return _height;}
 	U8  getBitDepth() const {return _bitDepth;}
 	bool isFlipped()  {return _flipped;}
-	static void EnableGenerateMipmaps(bool b) {s_bGenerateMipmaps=b;}
+	static void enableGenerateMipmaps(bool generateMipMaps) {_generateMipmaps=generateMipMaps;}
 	bool LoadFile(U32 target, const std::string& name);
 	
 protected:
-	Texture(bool flipped = false) : Resource(), _flipped(flipped), _handle(0){}
+	Texture(bool flipped = false) : Resource(), _flipped(flipped), _handle(0), _bound(false){}
 
 protected:
 	U32	_handle;
 	U16 _width,_height;
 	U8  _bitDepth;			
 	bool _flipped;
+	bool _bound;
 	ImageTools::ImageData _img;
-	static bool s_bGenerateMipmaps;	
+	static bool _generateMipmaps;	
+
 };
 
 

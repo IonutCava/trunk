@@ -5,7 +5,6 @@
 #include "Managers/SceneManager.h"
 #include "Managers/CameraManager.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Video/OpenGL/glResources.h"
 #include "Hardware/Video/ShaderHandler.h"
 #include "Geometry/Predefined/Sphere3D.h"
 using namespace std;

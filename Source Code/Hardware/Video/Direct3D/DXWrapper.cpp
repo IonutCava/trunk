@@ -79,6 +79,10 @@ void DX_API::restoreTextureMatrix(U16 slot)
 {
 }
 
+void DX_API::setOrthoProjection(const vec4& rect, const vec2& planes)
+{
+}
+
 void DX_API::drawTextToScreen(Text* text)
 {
 }
@@ -177,7 +181,7 @@ void DX_API::renderModel(Object3D* const model)
 	//popMatrix();
 }
 
-void DX_API::renderElements(Type t, U32 count, const void* first_element,bool inverty)
+void DX_API::renderElements(Type t, U32 count, const void* first_element)
 {
 }
 

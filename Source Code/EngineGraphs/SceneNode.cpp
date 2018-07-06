@@ -20,11 +20,12 @@ void SceneNode::drawBBox(){
 
 Transform*	const SceneNode::getTransform(){
 	
-	if(!_transform){
+	if(!_transform && !_noDefaultTransform){
 		Quaternion rotation; rotation.FromEuler(0,0,-1);
 		_transform = New Transform(rotation, vec3(0,0,0),vec3(1,1,1));
+		assert(_transform);
 	}
-	assert(_transform);
+
 	return _transform;
 }
 
@@ -32,7 +33,7 @@ void SceneNode::setTransform(Transform* t){
 	if(_transform != NULL){
 		delete _transform;
 	}
-	_transform = new Transform(*t);
+	_transform = t;
 }
 
 	
@@ -63,7 +64,9 @@ void SceneNode::clearMaterials(){
 inline	BoundingBox&	SceneNode::getBoundingBox() {
 	if(!_boundingBox.isComputed())
 		computeBoundingBox();
-	_boundingBox.Transform(_originalBB,getTransform()->getMatrix());
+	if(getTransform()){
+		_boundingBox.Transform(_originalBB,getTransform()->getMatrix());
+	}
 	return _boundingBox;
 }
 

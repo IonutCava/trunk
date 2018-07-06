@@ -104,6 +104,7 @@ public:
 
 	void RenderLookAtToCubeMap(const vec3& eye, U8 nFace);
 	
+	void ScaleScene(const vec3& scaleFactor);
 };
 #endif
 

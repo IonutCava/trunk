@@ -14,10 +14,12 @@
 #include "Utility/Headers/Event.h"
 #include "Geometry/Predefined/Text3D.h"
 #include "Hardware/Audio/SFXDevice.h"
+#include "Rendering/PostFX/PostFX.h"
 
 void Engine::Idle()
 {
 	SceneManager::getInstance().clean();
+	PostFX::getInstance().idle();
 	GFXDevice::getInstance().idle();
 }
 
@@ -66,7 +68,7 @@ void Engine::DrawScene()
 		lights[i]->update();
 
 	_scene.preRender();
-	_scene.render();
+	PostFX::getInstance().render();
 	_scene.processInput();
 	_scene.processEvents(abs(GETTIME()));
 }
@@ -80,6 +82,7 @@ void Engine::Initialize()
 	_camera->setEye(vec3(0,50,0));
 	F32 fogColor[4] = {0.7f, 0.7f, 0.9f, 1.0}; 
 	_GFX.enableFog(0.3f,fogColor);
+	PostFX::getInstance().init();
 }
 
 void Engine::Quit()

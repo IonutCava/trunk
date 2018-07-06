@@ -30,12 +30,14 @@ public:
 				 _transform(NULL),
 				 _material(NULL),
 				 _renderState(true),
-				_noDefaultMaterial(false){}
+				_noDefaultMaterial(false),
+				_noDefaultTransform(false){}
 	SceneNode(std::string name) : Resource(name),
 								  _transform(NULL),
 								  _material(NULL),
 								  _renderState(true),
-								  _noDefaultMaterial(false){}
+								  _noDefaultMaterial(false),
+								  _noDefaultTransform(false){}
 	SceneNode(const SceneNode& old);
 	virtual ~SceneNode() {}
 	/*Rendering/Processing*/
@@ -57,13 +59,14 @@ public:
 	virtual	bool    computeBoundingBox() {return true;}
 	virtual void    drawBBox();
 	void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
+	void    useDefaultTransform(bool state) {_noDefaultTransform = !state;}
 private:
 	//_originalBB is a copy of the initialy calculate BB for transformation
 	//it should be copied in every computeBoungingBox call;
 	BoundingBox _originalBB; 
 	Material*	_material;				   
 	Transform*	_transform;
-	bool		_renderState,_noDefaultMaterial;
+	bool		_renderState,_noDefaultMaterial,_noDefaultTransform;
 
 protected:
 	BoundingBox	 _boundingBox;

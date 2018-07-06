@@ -27,7 +27,7 @@
 #include "../AudioAPIWrapper.h"
 #include "Utility/Headers/Singleton.h"
 
-SINGLETON_BEGIN_EXT1(FMOD_API,AudioAPIWrapper)
+DEFINE_SINGLETON_EXT1(FMOD_API,AudioAPIWrapper)
 
 public:
 	void initHardware(){}
@@ -43,6 +43,6 @@ public:
 
 	void setMusicVolume(I8 value){}
 	void setSoundVolume(I8 value){}
-SINGLETON_END()
+END_SINGLETON
 
 #endif

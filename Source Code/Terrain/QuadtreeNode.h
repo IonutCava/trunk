@@ -42,8 +42,8 @@ public:
 	void Destroy();
 
 	void DrawGround(I32 options);
-	void DrawGrass(bool drawInReflexion);
-	void DrawTrees(bool drawInReflexion);
+	void DrawGrass(bool drawInReflection);
+	void DrawTrees(bool drawInReflection);
 	void DrawBBox();
 
 	inline bool isALeaf() const							{return _children==0;}

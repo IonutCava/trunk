@@ -24,7 +24,7 @@
 #include "Utility/Headers/Singleton.h"
 
 class FreeFlyCamera;
-SINGLETON_BEGIN_EXT1(CameraManager,Manager)
+DEFINE_SINGLETON_EXT1(CameraManager,Manager)
 
 public:
 	Camera* const getActiveCamera();
@@ -34,6 +34,6 @@ private:
 	CameraManager() {_camera = NULL;}
 	Camera* _camera;
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

@@ -25,7 +25,7 @@ class Sphere3D;
 class Shader;
 class Texture;
 typedef Texture TextureCubemap;
-SINGLETON_BEGIN( Sky ) 
+DEFINE_SINGLETON( Sky ) 
 
 public:
 	void draw() const;
@@ -47,7 +47,7 @@ private:
 	void drawSun() const;
 	void drawSkyAndSun() const;
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif
 

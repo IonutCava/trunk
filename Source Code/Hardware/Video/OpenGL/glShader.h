@@ -24,7 +24,7 @@
 class glShader : public Shader
 {
 public:
-	glShader() : _loaded(false) {};
+	glShader() : _loaded(false), _bound(false) {};
 	glShader(const char *vsFile, const char *fsFile);
 	~glShader();
 	
@@ -52,6 +52,10 @@ public:
 private:
 
 	bool _loaded;
+	bool _bound;
+
+private:
+
 	char* shaderFileRead(const std::string &fn);
 	I8   shaderFileWrite(char *fn, char *s);
 	void  validateShader(U16 shader, const std::string &file = 0);

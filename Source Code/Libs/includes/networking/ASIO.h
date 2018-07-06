@@ -13,7 +13,7 @@ using namespace boost;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-SINGLETON_BEGIN(ASIO)
+DEFINE_SINGLETON(ASIO)
 	
 public:
 	void init(std::string& address, std::string& port);
@@ -49,6 +49,6 @@ private:
 	io_service io_service_;
 	std::string _address,_port;
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

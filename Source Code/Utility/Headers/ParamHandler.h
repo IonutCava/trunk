@@ -24,7 +24,7 @@
 
 using boost::any_cast;
 
-SINGLETON_BEGIN (ParamHandler)
+DEFINE_SINGLETON (ParamHandler)
 	typedef std::tr1::unordered_map<std::string, boost::any> ParamMap;
 public:
 
@@ -295,6 +295,6 @@ private:
 	ParamMap _params;
 	boost::mutex mutex_;
  
-SINGLETON_END()
+END_SINGLETON
 
 #endif

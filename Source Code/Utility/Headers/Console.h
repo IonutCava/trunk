@@ -5,7 +5,7 @@
 #include "Utility/Headers/Singleton.h" 
 #include <stdarg.h>
 
-SINGLETON_BEGIN(Console)
+DEFINE_SINGLETON(Console)
 
 public:
 	void printCopyrightNotice();
@@ -17,6 +17,6 @@ public:
 private:
 	void output(const std::string& text);
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

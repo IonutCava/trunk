@@ -38,7 +38,7 @@
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
-SINGLETON_BEGIN(Framerate)
+DEFINE_SINGLETON(Framerate)
 
 #if defined( __WIN32__ ) || defined( _WIN32 )
   typedef LARGE_INTEGER LI;
@@ -76,6 +76,6 @@ public:
   F32           getElapsedTime(){QueryPerformanceCounter(&_currentticks); return (F32)(_currentticks.QuadPart-_startupTime.QuadPart) *1000/(F32)_tickspersecond.QuadPart;}
   void          benchmark();
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

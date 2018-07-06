@@ -2,25 +2,25 @@
 #include "QuadtreeNode.h"
 #include "Hardware/Video/GFXDevice.h"
  
-void Quadtree::DrawGround(bool drawInReflexion) {
+void Quadtree::DrawGround(bool drawInReflection) {
 	assert(_root);
 	int options = CHUNK_BIT_TESTCHILDREN;
-	if(drawInReflexion)	options |= CHUNK_BIT_WATERREFLECTION;
+	if(drawInReflection)	options |= CHUNK_BIT_WATERREFLECTION;
 	if(GFXDevice::getInstance().getDepthMapRendering()) options |= CHUNK_BIT_DEPTHMAP;
 	_root->DrawGround(options);
 	//_root->DrawBBox();
 }
 
-void Quadtree::DrawGrass(bool drawInReflexion)
+void Quadtree::DrawGrass(bool drawInReflection)
 {
 	assert(_root);
-	_root->DrawGrass(drawInReflexion);
+	_root->DrawGrass(drawInReflection);
 }
 
-void Quadtree::DrawTrees(bool drawInReflexion)
+void Quadtree::DrawTrees(bool drawInReflection)
 {
 	assert(_root);
-	_root->DrawTrees(drawInReflexion);
+	_root->DrawTrees(drawInReflection);
 }
 
 void Quadtree::DrawBBox() {

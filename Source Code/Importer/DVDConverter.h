@@ -24,7 +24,7 @@
 struct aiScene;
 struct aiMesh;
 struct aiMaterial;
-SINGLETON_BEGIN( DVDConverter )
+DEFINE_SINGLETON( DVDConverter )
 
 public:
     Mesh* load(const std::string& file);
@@ -37,6 +37,6 @@ private:
 	std::string _fileLocation;
 	std::string _modelName;
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

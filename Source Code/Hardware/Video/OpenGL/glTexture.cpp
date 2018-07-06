@@ -15,7 +15,7 @@ bool glTexture::load(const string& name)
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	glPixelStorei(GL_PACK_ALIGNMENT,1);
 
-	if(!s_bGenerateMipmaps) {
+	if(!_generateMipmaps) {
 		glTexParameteri(_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
@@ -101,25 +101,28 @@ void glTexture::Destroy()
 }
 
 void glTexture::Bind() const {
-
+	
 	glBindTexture(_type, _handle);
 }
 
-void glTexture::Bind(U16 slot) const {
+void glTexture::Bind(U16 slot)  {
+	if(_bound) return; //If it's already bound on any slot, including this one
 	glActiveTexture(GL_TEXTURE0+slot);
 	glEnable(_type);
 	glBindTexture(_type, _handle);
+	_bound = true;
 }
 
 void glTexture::Unbind() const {
 	glBindTexture(_type, 0);
 }
 
-void glTexture::Unbind(U16 slot) const {
+void glTexture::Unbind(U16 slot) {
 
 	glActiveTexture(GL_TEXTURE0+slot);
 	glBindTexture(_type, 0);
-	glPopAttrib();//RenderState
+	//glPopAttrib();//RenderState
+	_bound = false;
 }
 
 

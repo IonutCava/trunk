@@ -109,7 +109,7 @@ void QuadtreeNode::Destroy()
 	}
 }
 //ToDo: Change vegetaion rendering and generation! -Ionut
-void QuadtreeNode::DrawGrass(bool drawInReflexion)
+void QuadtreeNode::DrawGrass(bool drawInReflection)
 {
 	if(!_children) {
 		assert(_terrainChunk);
@@ -120,19 +120,19 @@ void QuadtreeNode::DrawGrass(bool drawInReflexion)
 			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
 			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
 			_LOD = lod;
-			_terrainChunk->DrawGrass( (U32)_LOD, _camDistance,drawInReflexion );
+			_terrainChunk->DrawGrass( (U32)_LOD, _camDistance,drawInReflection );
 		}else
 			return;
 	}
 	else {
 		if( _LOD>=0 )
 			for(int i=0; i<4; i++)
-				_children[i].DrawGrass(drawInReflexion);
+				_children[i].DrawGrass(drawInReflection);
 		return;		
 	}
 }
 
-void QuadtreeNode::DrawTrees(bool drawInReflexion)
+void QuadtreeNode::DrawTrees(bool drawInReflection)
 {
 	if(!_children) {
 		assert(_terrainChunk);
@@ -143,14 +143,14 @@ void QuadtreeNode::DrawTrees(bool drawInReflexion)
 			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
 			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
 			_LOD = lod;
-			_terrainChunk->DrawTrees(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U8)_LOD , _camDistance );
+			_terrainChunk->DrawTrees(drawInReflection ? TERRAIN_CHUNKS_LOD-1 : (U8)_LOD , _camDistance );
 		}else
 			return;
 	}
 	else {
 		if( _LOD>=0 )
 			for(int i=0; i<4; i++)
-				_children[i].DrawTrees(drawInReflexion);
+				_children[i].DrawTrees(drawInReflection);
 		return;		
 	}
 }

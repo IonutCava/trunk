@@ -38,10 +38,13 @@ void Mesh::onDraw(){
 	//onDraw must be called before any other rendering call (such as "isInView")
 	//in order to properly compute the boundingbox
 	setRenderState(SceneManager::getInstance().getActiveScene()->drawObjects());
-	_boundingBox.Transform(getOriginalBoundingBox(),getTransform()->getMatrix()); 
+	if(getTransform()){
+		_boundingBox.Transform(getOriginalBoundingBox(),getTransform()->getMatrix()); 
+	}
 	drawBBox();
-	if(!_computedLightShaders) 
+	if(!_computedLightShaders) {
 		computeLightShaders();
+	}
 }
 
 bool Mesh::getVisibility(){
@@ -53,10 +56,6 @@ bool Mesh::getVisibility(){
 
 void Mesh::computeLightShaders(){
 	getMaterial()->computeLightShaders();
-	Shader* parentShader = getMaterial()->getShader();
-	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end();_subMeshIterator++){
-		(*_subMeshIterator)->getMaterial()->setShader(parentShader->getName());
-	}
 	_computedLightShaders = true;
 }
 

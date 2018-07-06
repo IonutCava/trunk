@@ -21,7 +21,7 @@
 #include "Utility/Headers/Singleton.h"
 #include "../RenderAPIWrapper.h"
 
-SINGLETON_BEGIN_EXT1(DX_API,RenderAPIWrapper)
+DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
 
 private:
 	DX_API() : RenderAPIWrapper() {}
@@ -59,7 +59,7 @@ private:
 	void toggle2D(bool _2D);
 	void setTextureMatrix(U16 slot, const mat4& transformMatrix);
 	void restoreTextureMatrix(U16 slot);
-
+	void setOrthoProjection(const vec4& rect, const vec2& planes);
 	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
 	void drawButton(Button*);
@@ -72,7 +72,7 @@ private:
 	void drawText3D(Text3D* const text);
 
 	void renderModel(Object3D* const model);
-	void renderElements(Type t, U32 count, const void* first_element, bool inverty = false);
+	void renderElements(Type t, U32 count, const void* first_element);
 
 	void setMaterial(Material* mat);
 	void setColor(const vec4& color);
@@ -90,6 +90,7 @@ private:
 	void toggleWireframe(bool state);
 
 	void setRenderState(RenderState& state){}
-SINGLETON_END()
+	void ignoreStateChanges(bool state){}
+END_SINGLETON
 
 #endif

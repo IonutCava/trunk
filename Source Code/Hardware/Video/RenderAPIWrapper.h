@@ -143,6 +143,7 @@ protected:
 	virtual void toggle2D(bool _2D) = 0;
 	virtual void setTextureMatrix(U16 slot, const mat4& transformMatrix) = 0;
 	virtual void restoreTextureMatrix(U16 slot) = 0;
+	virtual void setOrthoProjection(const vec4& rect, const vec2& planes) = 0;
 	/*State Matrix Manipulation*/
 
 	/*GUI Rendering*/
@@ -152,7 +153,7 @@ protected:
 	virtual void drawFlash(GuiFlash* flash) = 0;
 	/*GUI Rendering*/
 
-	/*Primitives Renderndering*/
+	/*Primitives Rendering*/
 	virtual void drawBox3D(vec3 min, vec3 max) = 0;
 	virtual void drawBox3D(Box3D* const box) = 0;
 	virtual void drawSphere3D(Sphere3D* const sphere) = 0;
@@ -162,7 +163,7 @@ protected:
 
 	/*Mesh Rendering*/
 	virtual void renderModel(Object3D* const model) = 0;
-	virtual void renderElements(Type t, U32 count, const void* first_element, bool inverty = false) = 0;
+	virtual void renderElements(Type t, U32 count, const void* first_element) = 0;
 	/*Mesh Rendering*/
 
 	/*Color Management*/
@@ -178,6 +179,7 @@ protected:
 	virtual void restoreLightCameraMatrices() = 0;
 	/*Light Management*/
 
+	virtual void ignoreStateChanges(bool state) = 0;
 	virtual void toggleWireframe(bool state) = 0;
 	virtual ~RenderAPIWrapper(){};
 

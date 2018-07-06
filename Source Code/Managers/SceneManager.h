@@ -23,7 +23,7 @@
 #include "Scenes/Scene.h"
 #include "Utility/Headers/Singleton.h"
 
-SINGLETON_BEGIN_EXT1(SceneManager,Manager)
+DEFINE_SINGLETON_EXT1(SceneManager,Manager)
 
 public:
 	Scene* getActiveScene() {return _scene;}
@@ -65,7 +65,7 @@ private:
 	std::map<std::string, Scene*>::iterator _sceneIter;
     Object3D* _currentSelection;
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif
 

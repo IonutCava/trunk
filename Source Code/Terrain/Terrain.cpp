@@ -336,13 +336,12 @@ vec3 Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
 void Terrain::render(){
 	if(!_active) return;
 
-	_veg->draw(_drawInReflexion);
+	_veg->draw(_drawInReflection);
 
-    if(GFXDevice::getInstance().getDepthMapRendering()) return;
 	GFXDevice::getInstance().setMaterial(_terrainMaterial);
 
 	RenderState old = GFXDevice::getInstance().getActiveRenderState();
-	RenderState s(true,false,true,true);
+	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 
 	GFXDevice::getInstance().setTextureMatrix(0,_sunModelviewProj); //Add sun projection matrix to the normal map for parallax rendering
@@ -360,7 +359,7 @@ void Terrain::render(){
 	_terrainShader->bind();	
 
 		_terrainShader->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
-		_terrainShader->Uniform("water_reflection_rendering", _drawInReflexion);
+		_terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
 		_terrainShader->Uniform("time", GETTIME());
 
 		_terrainShader->UniformTexture("texDiffuseMap", 0);
@@ -373,7 +372,7 @@ void Terrain::render(){
 		_terrainShader->UniformTexture("texDiffuse2", 7);
 		if(_alphaTexturePresent) _terrainShader->UniformTexture("texDiffuse3",8);
 		
-			drawGround(_drawInReflexion);
+			drawGround(_drawInReflection);
 			
 	_terrainShader->unbind();
 
@@ -394,11 +393,11 @@ void Terrain::render(){
 
 
 
-void Terrain::drawGround(bool drawInReflexion) const{
+void Terrain::drawGround(bool drawInReflection) const{
 	assert(_groundVBO);
 
 	_groundVBO->Enable();
-		_terrainQuadtree->DrawGround(drawInReflexion);
+		_terrainQuadtree->DrawGround(drawInReflection);
 	_groundVBO->Disable();
 }
 

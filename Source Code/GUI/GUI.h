@@ -163,7 +163,7 @@ enum Font
 };
 
 
-SINGLETON_BEGIN( GUI )
+DEFINE_SINGLETON( GUI )
 
 public:
 	void draw();
@@ -188,5 +188,5 @@ private:
 	std::tr1::unordered_map<std::string, GuiElement*>::iterator _guiStackIterator;
 	std::pair<std::tr1::unordered_map<std::string, GuiElement*>::iterator, bool > _resultGuiElement;
 
-SINGLETON_END()
+END_SINGLETON
 #endif

@@ -22,7 +22,7 @@
 #include "SDL_mixer/SDLWrapper.h"
 #include "openAl/ALWrapper.h"
 
-SINGLETON_BEGIN_EXT1(SFXDevice,AudioAPIWrapper)
+DEFINE_SINGLETON_EXT1(SFXDevice,AudioAPIWrapper)
 
 public:
 	
@@ -47,6 +47,6 @@ private:
 
 	AudioAPIWrapper& _api;
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

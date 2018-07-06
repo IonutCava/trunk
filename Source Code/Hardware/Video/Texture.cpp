@@ -1,6 +1,6 @@
 #include "texture.h"
 
-bool Texture::s_bGenerateMipmaps = true;
+bool Texture::_generateMipmaps = true;
 
 bool Texture::LoadFile(U32 target, const std::string& name)
 {

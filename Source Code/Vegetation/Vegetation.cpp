@@ -40,7 +40,7 @@ void Vegetation::initialize(const string& grassShader,const string& terrainName)
 
 }
 
-void Vegetation::draw(bool drawInReflexion)
+void Vegetation::draw(bool drawInReflection)
 {
 	if(!_render || !_success) return;
 	_grassShader->bind();
@@ -59,7 +59,7 @@ void Vegetation::draw(bool drawInReflexion)
 		_grassShader->Uniform("windDirectionX",_windX);
 		_grassShader->Uniform("windDirectionZ",_windZ);
 		_grassShader->Uniform("windSpeed", _windS);
-			DrawGrass(index,drawInReflexion);
+			DrawGrass(index,drawInReflection);
 		_grassBillboards[index]->Unbind(0);
 		
 		
@@ -67,7 +67,7 @@ void Vegetation::draw(bool drawInReflexion)
 	_grassShader->unbind();
 	GFXDevice::getInstance().setRenderState(old);
 
-	DrawTrees(drawInReflexion);
+	DrawTrees(drawInReflection);
 }
 
 
@@ -111,10 +111,16 @@ bool Vegetation::generateGrass(U32 index)
 
 		_grassSize = (F32)(map_color.green+1) / (256 / _grassScale);
 		vec3 P = _terrain->getPosition(x, y);
+
+		if(P.y < SceneManager::getInstance().getActiveScene()->getWaterLevel()){
+			k--;
+			continue;
+		}
+
 		vec3 N = _terrain->getNormal(x, y);
 		vec3 T = _terrain->getTangent(x, y);
 		vec3 B = Cross(N, T);
-
+	
 		if(N.y < 0.8f) {
 			k--;
 			continue;
@@ -182,7 +188,10 @@ bool Vegetation::generateTrees(){
 		
 		vec3 P = _terrain->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
 		P.y -= 0.2f;
-
+		if(P.y < SceneManager::getInstance().getActiveScene()->getWaterLevel()){
+			k--;
+			continue;
+		}
 		for(positionIterator = positions.begin(); positionIterator != positions.end(); positionIterator++)
 		{
 			vec3 temp = *positionIterator;
@@ -210,21 +219,21 @@ bool Vegetation::generateTrees(){
 	return true;
 }
 
-void Vegetation::DrawTrees(bool drawInReflexion)
+void Vegetation::DrawTrees(bool drawInReflection)
 {	
 	RenderState old = GFXDevice::getInstance().getActiveRenderState();
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
-	_terrain->getQuadtree().DrawTrees(drawInReflexion);
+	_terrain->getQuadtree().DrawTrees(drawInReflection);
 	GFXDevice::getInstance().setRenderState(old);
 }
 
-void Vegetation::DrawGrass(U8 index,bool drawInReflexion)
+void Vegetation::DrawGrass(U8 index,bool drawInReflection)
 {
 	if(_grassVBO[index] != NULL)
 	{
 		_grassVBO[index]->Enable();
-			_terrain->getQuadtree().DrawGrass(drawInReflexion);
+			_terrain->getQuadtree().DrawGrass(drawInReflection);
 		_grassVBO[index]->Disable();
 	}
 }

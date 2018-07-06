@@ -18,4 +18,13 @@
 	<windowHeight>768</windowHeight>
 </runtime>	
 
+<rendering>
+	<enablePostFX>false</enablePostFX>
+	<enable3D>true</enable3D>
+	<anaglyphOffset>0.16</anaglyphOffset>
+	<enableNoise>false</enableNoise>
+	<enableDepthOfField>false</enableDepthOfField>
+	<enableBloom>false</enableBloom>
+	<enableBlur>false</enableBlud>
+</rendering>
     

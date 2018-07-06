@@ -79,7 +79,7 @@ I8 glShader::shaderFileWrite(char *fn, char *s) {
 	return(status);
 }
 
-glShader::glShader(const char *vsFile, const char *fsFile)  : _loaded(false)  {
+glShader::glShader(const char *vsFile, const char *fsFile)  : _loaded(false), _bound(false)  {
     init(vsFile, fsFile);
 }
 
@@ -195,12 +195,15 @@ U16 glShader::getId() {
 }
 
 void glShader::bind() {
+	if(_bound) return;
 	if(!_shaderId || GFXDevice::getInstance().wireframeRendering()) return;
 	glUseProgram(_shaderId);
+	_bound = true;
 }
 
 void glShader::unbind() {
 	glUseProgram(0);
+	_bound = false;
 }
 
 void glShader::UniformTexture(const string& ext, U16 slot)

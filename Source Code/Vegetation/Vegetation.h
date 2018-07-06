@@ -44,7 +44,7 @@ public:
 	~Vegetation();
 	void initialize(const std::string& grassShader, const std::string& terrainName);
 	void toggleRendering(bool state){_render = state;}
-	void draw(bool drawInReflexion);
+	void draw(bool drawInReflection);
 
 private:
 	//variables
@@ -66,8 +66,8 @@ private:
 	std::vector<U32>					_grassIndice;
 	
 		
-	void DrawGrass(U8 index,bool drawInReflexion);
-	void DrawTrees(bool drawInReflexion);
+	void DrawGrass(U8 index,bool drawInReflection);
+	void DrawTrees(bool drawInReflection);
 };
 
 #endif

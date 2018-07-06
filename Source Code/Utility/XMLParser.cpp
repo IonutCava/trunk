@@ -42,6 +42,21 @@ namespace XML
 		par.setParam("windowHeight",pt.get("runtime.windowHeight",768));
 		Engine::getInstance().setWindowHeight(pt.get("runtime.windowHeight",768));
 		Engine::getInstance().setWindowWidth(pt.get("runtime.windowWidth",1024));
+		bool postProcessing = pt.get("rendering.enablePostFX",false);
+		par.setParam("enablePostFX",postProcessing);
+		if(postProcessing){
+			bool enable3D = pt.get("rendering.enable3D",false);
+			par.setParam("enable3D",enable3D);
+			if(enable3D){
+				par.setParam("anaglyphOffset",pt.get("rendering.anaglyphOffset",0.16f));
+			}
+			par.setParam("enableNoise",pt.get("rendering.enableNoise",false));
+			par.setParam("enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
+			par.setParam("enableBloom",pt.get("rendering.enableBloom",false));
+			par.setParam("enableBlur",pt.get("rendering.enableBlur",false));
+		}
+			
+
 	}
 
 	void loadScene(const string& sceneName)

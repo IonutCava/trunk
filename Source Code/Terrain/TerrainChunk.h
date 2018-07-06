@@ -24,8 +24,8 @@ using namespace std;
 
 #define TERRAIN_CHUNKS_LOD 3
 
-#define TERRAIN_CHUNK_LOD0	300.0f
-#define TERRAIN_CHUNK_LOD1	380.0f
+#define TERRAIN_CHUNK_LOD0	200.0f
+#define TERRAIN_CHUNK_LOD1	280.0f
 
 class Mesh;
 class Terrain;
@@ -34,9 +34,9 @@ class TerrainChunk
 {
 public:
 	void Destroy();
-	int  DrawGround(U32 lod, bool drawInReflexion = false);
-	void DrawGrass(U32 lod, F32 d, bool drawInReflexion = false);
-	void DrawTrees(U32 lod, F32 d, bool drawInReflexion = false);
+	int  DrawGround(U32 lod, bool drawInReflection = false);
+	void DrawGrass(U32 lod, F32 d, bool drawInReflection = false);
+	void DrawTrees(U32 lod, F32 d, bool drawInReflection = false);
 	void Load(U32 depth, ivec2 pos, ivec2 HMsize);
 
 	inline std::vector<U32>&					getIndiceArray(U32 lod)		   {return _indice[lod];}

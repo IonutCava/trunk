@@ -22,7 +22,10 @@ bool WaterPlane::load(const std::string& name){
 	_shader = ResourceManager::getInstance().LoadResource<Shader>(waterShader);
 	_plane = ResourceManager::getInstance().LoadResource<Quad3D>(waterPlane);
 	if(!_texture && !_shader && !_plane) return false;
-	
+	_plane->setMaterial(NULL);
+	_plane->useDefaultMaterial(false);
+	_plane->setTransform(NULL);
+	_plane->useDefaultTransform(false);
 	_name = name; //optional
 	_waterMaxDepth.set(-256,SceneManager::getInstance().getActiveScene()->getWaterLevel(),-256);
 	_waterMinDepth.set(256, _waterMaxDepth.y, 256);
@@ -34,11 +37,9 @@ bool WaterPlane::load(const std::string& name){
 	_shader->bind();
 		_shader->Uniform("fog_color", vec3(0.7f, 0.7f, 0.9f));
 		_shader->Uniform("water_shininess",50.0f );
-		_shader->Uniform("noise_tile", 10.0f );
+		_shader->Uniform("noise_tile", 1.5f );
 		_shader->Uniform("noise_factor", 0.1f);
 		_shader->Uniform("transparency",0.5f);
-		_shader->Uniform("water_min_depth",_waterMinDepth);
-		_shader->Uniform("water_max_depth",_waterMaxDepth);
 	_shader->unbind();
 
 	_maxViewDistance = 2.0f*ParamHandler::getInstance().getParam<D32>("zFar");
@@ -123,14 +124,18 @@ void WaterPlane::render(){
 		_shader->Uniform("time", GETTIME());
 		_shader->Uniform("win_width",  (I32)Engine::getInstance().getWindowDimensions().width);
 		_shader->Uniform("win_height", (I32)Engine::getInstance().getWindowDimensions().height);
-
 		const vec3& eye_pos = CameraManager::getInstance().getActiveCamera()->getEye();
 		_maxViewDistance = 2.0f*ParamHandler::getInstance().getParam<D32>("zFar");
 		_plane->getCorner(Quad3D::TOP_LEFT)     = vec3(eye_pos.x - _maxViewDistance, _waterMinDepth.y, eye_pos.z - _maxViewDistance);
 		_plane->getCorner(Quad3D::TOP_RIGHT)    = vec3(eye_pos.x + _maxViewDistance, _waterMinDepth.y, eye_pos.z - _maxViewDistance);
 		_plane->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(eye_pos.x - _maxViewDistance, _waterMinDepth.y, eye_pos.z + _maxViewDistance);
 		_plane->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(eye_pos.x + _maxViewDistance, _waterMinDepth.y, eye_pos.z + _maxViewDistance);
-
+		_plane->computeBoundingBox();
+		_waterMinDepth = _plane->getBoundingBox().getMin();
+		_waterMaxDepth = _plane->getBoundingBox().getMax();
+		_waterMaxDepth.y -= SceneManager::getInstance().getActiveScene()->getWaterDepth();
+		_shader->Uniform("water_min_depth",_waterMinDepth);
+		_shader->Uniform("water_max_depth",_waterMaxDepth);
 		GFXDevice::getInstance().drawQuad3D(_plane);
 
 	_shader->unbind();

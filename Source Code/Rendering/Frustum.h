@@ -27,7 +27,7 @@
 #define FRUSTUM_INTERSECT	2
 
 class BoundingBox;
-SINGLETON_BEGIN( Frustum )
+DEFINE_SINGLETON( Frustum )
 
 public:
 	void Extract(const vec3& eye);
@@ -41,6 +41,7 @@ public:
 	mat4& getModelviewMatrix()			{return _modelViewMatrix;}
 	mat4& getModelviewInvMatrix()		{return _modelViewMatrixInv;}
 	mat4& getProjectionMatrix()			{return _projectionMatrix;}
+	mat4  getModelvieProjectionwMatrix(){return _projectionMatrix * _modelViewMatrix;}
 
 private:
 	vec3	_eyePos;
@@ -49,6 +50,6 @@ private:
 	mat4	_projectionMatrix; 				// Projection Matrix
 	mat4	_modelViewProjectionMatrix;			// Modelview * Projection
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

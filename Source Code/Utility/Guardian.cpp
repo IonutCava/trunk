@@ -4,6 +4,8 @@
 #include "Headers/ParamHandler.h"
 #include "Headers/XMLParser.h"
 #include "Rendering/common.h"
+#include "Rendering/PostFX/PostFX.h"
+
 using namespace std;
 
 void Guardian::LoadApplication(const string& entryPoint)
@@ -71,6 +73,7 @@ void Guardian::TerminateApplication()
 	GFXDevice::getInstance().closeRenderingApi();	
 	Console::getInstance().printfn("Closing the PhysX engine ...");
 	PhysX::getInstance().ExitNx();
+	PostFX::getInstance().DestroyInstance();
 	Console::getInstance().printfn("Deleting running scene ...");
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
 	activeScene->unload();

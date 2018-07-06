@@ -175,11 +175,10 @@ bool CubeScene::loadResources(bool continueOnErrors)
 	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
-	ResourceDescriptor renderQuadMaterialDescriptor("MRT RenderQuad _material");
-	renderQuadMaterialDescriptor.setFlag(true); //no shaders and textures;
-	_renderQuad->setMaterial(ResourceManager::getInstance().LoadResource<Material>(renderQuadMaterialDescriptor));
-	_renderQuad->getMaterial()->setDiffuse(vec4(1,1,1,1));
-	_renderQuad->getTransform()->setPosition(vec3(0,0,-1));
+	_renderQuad->setMaterial(NULL);
+	_renderQuad->useDefaultMaterial(false);
+	_renderQuad->setTransform(NULL);
+	_renderQuad->useDefaultTransform(false);
 	_eventTimers.push_back(0.0f);
 	return true;
 }

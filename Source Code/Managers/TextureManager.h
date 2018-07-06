@@ -21,7 +21,7 @@
 #include "Hardware/Video/Texture.h"
 #include "Utility/Headers/Singleton.h"
 
-SINGLETON_BEGIN( TextureManager )
+DEFINE_SINGLETON( TextureManager )
 
 public :
 	TextureManager (void);
@@ -31,6 +31,6 @@ public :
 	I8 SaveSeries(char *filename, U16 width,U16 height,U8 pixelDepth,U8 *imageData);
 
 
-SINGLETON_END()
+END_SINGLETON
 
 #endif

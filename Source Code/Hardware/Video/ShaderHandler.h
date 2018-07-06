@@ -20,8 +20,7 @@
 
 #include "Utility/Headers/BaseClasses.h"
 
-class Shader : public Resource
-{
+class Shader : public Resource{
 
 public:
 	
@@ -47,6 +46,7 @@ public:
 	//Legacy
 	virtual void Uniform(I32 location, const vec4& value) = 0;
 	virtual ~Shader(){}
+
 protected:
 	virtual char* shaderFileRead(const std::string &fn) = 0;
 	virtual I8   shaderFileWrite(char *fn, char *s) = 0;

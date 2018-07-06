@@ -285,7 +285,7 @@ class EffectManager
 };
 
 
-SINGLETON_BEGIN( InputManagerInterface )
+DEFINE_SINGLETON( InputManagerInterface )
 
   protected:
     OIS::InputManager*    _pInputMgr;
@@ -520,7 +520,7 @@ public:
 	}
 
 
-SINGLETON_END()
+END_SINGLETON
 
 
 #endif

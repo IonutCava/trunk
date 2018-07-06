@@ -70,21 +70,22 @@ void Camera::Refresh()
 
 
 void Camera::RenderLookAt(bool inverty, F32 planey) {
-
-	vec3 eye = vEye, center = vCenter, up = vUp;
-	
 	if(inverty){
-		eye.y = 2.0f*planey-vEye.y;
-		center.y = 2.0f*planey-vCenter.y;
-		vUp *= -1;
+		GFXDevice::getInstance().lookAt(vec3(vEye.x,2.0f*planey-vEye.y,vEye.z),
+										vec3(vCenter.x,2.0f*planey-vCenter.y,vCenter.z),
+										vec3(-vUp.x,-vUp.y,-vUp.z));
+	}else{
+		GFXDevice::getInstance().lookAt(vEye,vCenter,vUp);
 	}
-	GFXDevice::getInstance().lookAt(eye,center,up);
 
 	Frustum::getInstance().Extract(vEye);
 }
 
 
-
+void Camera::ScaleScene(const vec3& scaleFactor){
+	GFXDevice::getInstance().loadIdentityMatrix();
+	GFXDevice::getInstance().scale(scaleFactor);
+}
 
 void Camera::PlayerMoveForward(F32 factor)	{	
 	vEye += vViewDir * factor;

@@ -32,7 +32,7 @@ class NxScene;
 class NxVec3;
 class simpletriangle{public:   U32 Vertex[3]; };
 
-SINGLETON_BEGIN( PhysX )
+DEFINE_SINGLETON( PhysX )
 
 private:
 	PhysX(); // Constructorul clasei noaste este private, deoarece implementam
@@ -133,6 +133,6 @@ public:
 	bool getPhysXWriteLock(){return writeLock;}
 	void setPhysXWriteLock(bool status){writeLock = status;}
 
-	SINGLETON_END()
+	END_SINGLETON
 
 #endif

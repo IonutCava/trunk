@@ -8,6 +8,8 @@
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Quad3D.h"
 #include "Geometry/Predefined/Text3D.h"
+#include "Rendering/PostFX/PostFX.h"
+
 using namespace std;
 
 void GFXDevice::setApi(RenderAPI api)
@@ -40,6 +42,7 @@ void GFXDevice::resizeWindow(U16 w, U16 h)
 	Engine::getInstance().setWindowWidth(w);
     Engine::getInstance().setWindowHeight(h);
 	_api.resizeWindow(w,h);
+	PostFX::getInstance().reshapeFBO(w, h);
 }
 
 void GFXDevice::renderModel(Object3D* const model)

@@ -18,7 +18,7 @@
 #include "resource.h"
 #include "PhysX/PhysX.h"
 
-SINGLETON_BEGIN( Guardian )
+DEFINE_SINGLETON( Guardian )
 
 
 public:
@@ -32,4 +32,4 @@ public:
 	std::ofstream myfile;
 	
 	
- SINGLETON_END()
+ END_SINGLETON

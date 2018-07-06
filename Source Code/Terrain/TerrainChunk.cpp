@@ -80,7 +80,7 @@ void TerrainChunk::Destroy(){
 
 }
 
-void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawInReflexion){
+void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawInReflection){
 
 	F32 treeVisibility = SceneManager::getInstance().getActiveScene()->getTreeVisibility();
 	SceneGraph* sceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
@@ -94,7 +94,7 @@ void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawInReflexion){
 			currentTree->restoreActive();
 			//ToDo: Fix upside-down object water rendering - Ionut
 			/*F32 yScale = currentTree->getNode<Mesh>()->getTransform()->getScale().y;
-			if( (drawInReflexion && yScale > 0) || (!drawInReflexion && yScale < 0) ) yScale = -yScale;
+			if( (drawInReflection && yScale > 0) || (!drawInReflection && yScale < 0) ) yScale = -yScale;
 			currentTree->getNode<Mesh>()->getTransform()->scaleY(yScale);*/
 
 				
@@ -103,18 +103,19 @@ void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawInReflexion){
 
 }
 
-int TerrainChunk::DrawGround(U32 lod, bool drawInReflexion){
+int TerrainChunk::DrawGround(U32 lod, bool drawInReflection){
 
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod>0) lod--;
 
-	for(U32 j=0; j < _indOffsetH[lod]; j++)
-		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]),drawInReflexion);
+	for(U32 j=0; j < _indOffsetH[lod]; j++){
+		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
+	}
 
 	return 1;
 }
 
-void  TerrainChunk::DrawGrass(U32 lod, F32 d, bool drawInReflexion){
+void  TerrainChunk::DrawGrass(U32 lod, F32 d, bool drawInReflection){
 
 	
 	F32 grassVisibility = SceneManager::getInstance().getActiveScene()->getGrassVisibility();
@@ -132,7 +133,7 @@ void  TerrainChunk::DrawGrass(U32 lod, F32 d, bool drawInReflexion){
 		indices_count -= indices_count%4; 
 
 		if(indices_count > 0)
-			GFXDevice::getInstance().renderElements(QUADS,indices_count, &(_grassIndice[0]),drawInReflexion);
+			GFXDevice::getInstance().renderElements(QUADS,indices_count, &(_grassIndice[0]));
 			
 	}
 
