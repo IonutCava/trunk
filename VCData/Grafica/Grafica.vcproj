@@ -1,0 +1,1056 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="Divide"
+	ProjectGUID="{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
+	RootNamespace="Grafica"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="$(SolutionDir)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				OpenMP="false"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="true"
+				AdditionalOptions="/Y3"
+				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-NetworkingD.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib"
+				ShowProgress="0"
+				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="LIBCMT.lib"
+				GenerateDebugInformation="true"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+				EmbedManifest="true"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(SolutionDir)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32"
+				StringPooling="true"
+				MinimalRebuild="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
+				OpenMP="false"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib"
+				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib&quot;"
+				IgnoreDefaultLibraryNames="LIBCMTD.lib"
+				GenerateDebugInformation="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+				EmbedManifest="true"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Rendering"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath="..\..\Source Code\Rendering\common.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\common.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\Framerate.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\Framerate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\Frustum.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\Frustum.h"
+				>
+			</File>
+			<Filter
+				Name="Camera"
+				>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Camera\Camera.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Camera\Camera.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Camera\FirstPersonCamera.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Camera\FreeFlyCamera.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Camera\OrbitCamera.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="PhysX"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+			<File
+				RelativePath="..\..\Source Code\PhysX\PhysX.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\PhysX\PhysX.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\PhysX\pxDecorator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\PhysX\pxStream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\PhysX\pxStream.h"
+				>
+			</File>
+			<Filter
+				Name="Actors"
+				>
+				<File
+					RelativePath="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Debug"
+				>
+				<File
+					RelativePath="..\..\Source Code\PhysX\Debug\ErrorStream.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\PhysX\Debug\pxDebugRenderer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\PhysX\Debug\pxDebugRenderer.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Importer"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+			<File
+				RelativePath="..\..\Source Code\Importer\DVDConverter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Importer\DVDConverter.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="GUI"
+			>
+			<File
+				RelativePath="..\..\Source Code\GUI\GUI.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\GUI\GUI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\GUI\GuiFlash.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\GUI\GuiFlash.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Vegetation"
+			>
+			<File
+				RelativePath="..\..\Source Code\Vegetation\Vegetation.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Vegetation\Vegetation.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Terrain"
+			>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Quadtree.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Quadtree.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\QuadtreeNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\QuadtreeNode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Sky.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Sky.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Terrain.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Terrain.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\TerrainChunk.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\TerrainChunk.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Water.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Terrain\Water.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Utility"
+			>
+			<File
+				RelativePath="..\..\Source Code\Utility\Event.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Utility\Guardian.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Utility\Headers\Manager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Utility\Quaternion.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Utility\XMLParser.cpp"
+				>
+			</File>
+			<Filter
+				Name="Headers"
+				>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\BaseClasses.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\BoundingBox.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\DataTypes.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Event.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Guardian.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\MathClasses.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\MathHelper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\ParamHandler.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Quaternion.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Ray.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Singleton.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Transform.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\XMLParser.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="TextureManager"
+			>
+			<File
+				RelativePath="..\..\Source Code\TextureManager\ImageTools.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\TextureManager\ImageTools.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Assets"
+			>
+			<File
+				RelativePath="..\..\Source Code\Assets\Bones.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Assets\Bones.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Scenes"
+			>
+			<File
+				RelativePath="..\..\Source Code\Scenes\CubeScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\CubeScene.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\FlashScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\FlashScene.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\MainScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\MainScene.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\NetworkScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\NetworkScene.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\PingPongScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\PingPongScene.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\Scene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\Scene.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Hardware"
+			>
+			<Filter
+				Name="Input"
+				>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Input\EventHandler.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Input\EventHandler.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Input\InputManager.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Input\InputVariables.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Input\JoystickManager.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Video"
+				>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\FrameBufferObject.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\GFXDevice.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\GFXDevice.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\Light.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\Light.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\PixelBufferObject.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\RenderAPIWrapper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\ShaderHandler.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\Texture.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\Texture.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\VertexBufferObject.h"
+					>
+				</File>
+				<Filter
+					Name="OpenGL"
+					>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glFrameBufferObject.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glFrameBufferObject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glResources.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glShader.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glShader.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glTexture.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glTexture.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glVertexBufferObject.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glVertexBufferObject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Direct3D"
+					>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Null"
+					>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Audio"
+				>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Audio\AudioAPIWrapper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Audio\AudioDescriptor.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Audio\SFXDevice.h"
+					>
+				</File>
+				<Filter
+					Name="fmod"
+					>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Audio\fmod\FmodWrapper.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="openal"
+					>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Audio\openAl\ALWrapper.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="sdl_mixer"
+					>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Network"
+				>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Network\ASIO.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\includes\networking\OPCodes.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Managers"
+			>
+			<File
+				RelativePath="..\..\Source Code\Managers\CameraManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\CameraManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\Manager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\Manager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\ResourceManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\ResourceManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\SceneManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\SceneManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\TerrainManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\TerrainManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\TextureManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\TextureManager.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Geometry"
+			>
+			<File
+				RelativePath="..\..\Source Code\Geometry\Mesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Geometry\Mesh.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Geometry\Object3D.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Geometry\Object3D.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Geometry\Object3DFlyWeight.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Geometry\SubMesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Geometry\SubMesh.h"
+				>
+			</File>
+			<Filter
+				Name="Predefined"
+				>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Predefined\Box3D.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Predefined\Quad3D.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Predefined\Sphere3D.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Predefined\Text3D.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Material"
+				>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Material\Material.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Material\Material.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Libs"
+			>
+			<Filter
+				Name="ois"
+				>
+				<Filter
+					Name="include"
+					>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OIS.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISConfig.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISEffect.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISEvents.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISException.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISFactoryCreator.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISForceFeedback.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISInputManager.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISInterface.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISJoyStick.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISKeyboard.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISMouse.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISMultiTouch.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISObject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\OISPrereqs.h"
+						>
+					</File>
+					<Filter
+						Name="win32"
+						>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\win32\dinput.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\win32\Win32ForceFeedback.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\win32\Win32InputManager.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\win32\Win32JoyStick.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\win32\Win32KeyBoard.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\win32\Win32Mouse.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\includes\win32\Win32Prereqs.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="src"
+					>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\OISEffect.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\OISException.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\OISForceFeedback.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\OISInputManager.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\OISJoyStick.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\OISKeyboard.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\OISObject.cpp"
+						>
+					</File>
+					<Filter
+						Name="win32"
+						>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\win32\Win32ForceFeedback.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\win32\Win32InputManager.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\win32\Win32JoyStick.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\win32\Win32KeyBoard.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Libs\UtilityLibraries\MultiModalInput\src\win32\Win32Mouse.cpp"
+							>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
+		</Filter>
+		<File
+			RelativePath="..\..\Source Code\config.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\Source Code\main.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\Source Code\readme.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\Source Code\resource.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\Source Code\SceneList.h"
+			>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
