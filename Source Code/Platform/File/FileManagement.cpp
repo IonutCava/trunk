@@ -8,52 +8,68 @@
 namespace Divide {
 
 namespace Paths {
-    const char* g_assetsLocation = nullptr;
-    const char* g_shadersLocation = nullptr;
-    const char* g_texturesLocation = nullptr;
-    const char* g_soundsLocation = nullptr;
-    const char* g_xmlDataLocation = nullptr;
-    const char* g_scenesLocation = nullptr;
-    const char* g_GUILocation = nullptr;
-    const char* g_FontsPath = nullptr;
 
-    const char* Shaders::g_CacheLocation = nullptr;
-    const char* Shaders::g_CacheLocationText = nullptr;
-    const char* Shaders::g_CacheLocationBin = nullptr;
-    const char* Shaders::GLSL::g_fragAtomExt = nullptr;
-    const char* Shaders::GLSL::g_vertAtomExt = nullptr;
-    const char* Shaders::GLSL::g_geomAtomExt = nullptr;
-    const char* Shaders::GLSL::g_tescAtomExt = nullptr;
-    const char* Shaders::GLSL::g_teseAtomExt = nullptr;
-    const char* Shaders::GLSL::g_compAtomExt = nullptr;
-    const char* Shaders::GLSL::g_comnAtomExt = nullptr;
-    const char* Shaders::GLSL::g_parentShaderLoc = nullptr;
-    const char* Shaders::GLSL::g_fragAtomLoc = nullptr;
-    const char* Shaders::GLSL::g_vertAtomLoc = nullptr;
-    const char* Shaders::GLSL::g_geomAtomLoc = nullptr;
-    const char* Shaders::GLSL::g_tescAtomLoc = nullptr;
-    const char* Shaders::GLSL::g_teseAtomLoc = nullptr;
-    const char* Shaders::GLSL::g_compAtomLoc = nullptr;
-    const char* Shaders::GLSL::g_comnAtomLoc = nullptr;
+    stringImplAligned g_assetsLocation;
+    stringImplAligned g_shadersLocation;
+    stringImplAligned g_texturesLocation;
+    stringImplAligned g_imagesLocation;
+    stringImplAligned g_materialsLocation;
+    stringImplAligned g_soundsLocation;
+    stringImplAligned g_xmlDataLocation;
+    stringImplAligned g_navMeshesLocation;
+    stringImplAligned g_scenesLocation;
+    stringImplAligned g_GUILocation;
+    stringImplAligned g_FontsPath;
+
+    namespace Shaders {
+        stringImplAligned g_CacheLocation;
+        stringImplAligned g_CacheLocationText;
+        stringImplAligned g_CacheLocationBin;
+
+        namespace GLSL {
+            // these must match the last 4 characters of the atom file
+            stringImplAligned g_fragAtomExt;
+            stringImplAligned g_vertAtomExt;
+            stringImplAligned g_geomAtomExt;
+            stringImplAligned g_tescAtomExt;
+            stringImplAligned g_teseAtomExt;
+            stringImplAligned g_compAtomExt;
+            stringImplAligned g_comnAtomExt;
+
+            // Shader subfolder name that contains shader files for OpenGL
+            stringImplAligned g_parentShaderLoc;
+            // Atom folder names in parent shader folder
+            stringImplAligned g_fragAtomLoc;
+            stringImplAligned g_vertAtomLoc;
+            stringImplAligned g_geomAtomLoc;
+            stringImplAligned g_tescAtomLoc;
+            stringImplAligned g_teseAtomLoc;
+            stringImplAligned g_compAtomLoc;
+            stringImplAligned g_comnAtomLoc;
+        };
+    };
     std::regex g_includePattern;
 
     void updatePaths(const PlatformContext& context) {
         const Configuration& config = context.config();
         const XMLEntryData& entryData = context.entryData();
         
-        g_assetsLocation = entryData.assetsLocation.c_str();
-        g_shadersLocation = config.defaultShadersLocation.c_str();
-        g_texturesLocation = config.defaultTextureLocation.c_str();
-        g_xmlDataLocation = entryData.scriptLocation.c_str();
-        g_scenesLocation = entryData.scenesLocation.c_str();
+        g_assetsLocation = entryData.assetsLocation + "/";
+        g_shadersLocation = config.defaultShadersLocation + "/";
+        g_texturesLocation = config.defaultTextureLocation + "/";
+        g_xmlDataLocation = entryData.scriptLocation + "/";
+        g_scenesLocation = entryData.scenesLocation + "/";
 
-        g_GUILocation = "GUI";
-        g_FontsPath = "fonts";
-        g_soundsLocation = "sounds";
+        g_imagesLocation = "misc_images/";
+        g_materialsLocation = "materials/";
+        g_navMeshesLocation = "navMeshes/";
+        g_GUILocation = "GUI/";
+        g_FontsPath = "fonts/";
+        g_soundsLocation = "sounds/";
 
-        Shaders::g_CacheLocation = "shaderCache";
-        Shaders::g_CacheLocationText = Util::StringFormat("%s/Text/", Shaders::g_CacheLocation).c_str();
-        Shaders::g_CacheLocationBin = Util::StringFormat("%s/Binary/", Shaders::g_CacheLocation).c_str();
+        Shaders::g_CacheLocation = "shaderCache/";
+        Shaders::g_CacheLocationText = Util::StringFormat("%s/Text/", Shaders::g_CacheLocation);
+        Shaders::g_CacheLocationBin = Util::StringFormat("%s/Binary/", Shaders::g_CacheLocation);
         // these must match the last 4 characters of the atom file
         Shaders::GLSL::g_fragAtomExt = "frag";
         Shaders::GLSL::g_vertAtomExt = "vert";
@@ -63,13 +79,13 @@ namespace Paths {
         Shaders::GLSL::g_compAtomExt = ".cpt";
         Shaders::GLSL::g_comnAtomExt = ".cmn";
         Shaders::GLSL::g_parentShaderLoc = "GLSL";
-        Shaders::GLSL::g_fragAtomLoc = "fragmentAtoms";
-        Shaders::GLSL::g_vertAtomLoc = "vertexAtoms";
-        Shaders::GLSL::g_geomAtomLoc = "geometryAtoms";
-        Shaders::GLSL::g_tescAtomLoc = "tessellationCAtoms";
-        Shaders::GLSL::g_teseAtomLoc = "tessellationEAtoms";
-        Shaders::GLSL::g_compAtomLoc = "computeAtoms";
-        Shaders::GLSL::g_comnAtomLoc = "common";
+        Shaders::GLSL::g_fragAtomLoc = "fragmentAtoms/";
+        Shaders::GLSL::g_vertAtomLoc = "vertexAtoms/";
+        Shaders::GLSL::g_geomAtomLoc = "geometryAtoms/";
+        Shaders::GLSL::g_tescAtomLoc = "tessellationCAtoms/";
+        Shaders::GLSL::g_teseAtomLoc = "tessellationEAtoms/";
+        Shaders::GLSL::g_compAtomLoc = "computeAtoms/";
+        Shaders::GLSL::g_comnAtomLoc = "common/";
 
         g_includePattern = std::regex("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
     }
@@ -112,12 +128,17 @@ std::pair<stringImpl/*fileName*/, stringImpl/*filePath*/>
 SplitPathToNameAndLocation(const stringImpl& input) {
     size_t pathNameSplitPoint = input.find_last_of('/') + 1;
 
-    return std::make_pair(input.substr(pathNameSplitPoint + 1, stringImpl::npos),
+    return std::make_pair(input.substr(pathNameSplitPoint, stringImpl::npos),
                           input.substr(0, pathNameSplitPoint));
 }
 
 bool FileExists(const char* filePath) {
     return std::ifstream(filePath).good();
+}
+
+bool HasExtension(const stringImpl& filePath, const stringImpl& extension) {
+    stringImpl ext("." + extension);
+    return Util::CompareIgnoreCase(Util::GetTrailingCharacters(filePath, ext.length()), ext);
 }
 
 }; //namespace Divide

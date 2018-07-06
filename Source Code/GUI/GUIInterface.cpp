@@ -8,10 +8,7 @@
 #include "Headers/GUIMessageBox.h"
 
 #include "Scenes/Headers/Scene.h"
-
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-
 #include "Core/Headers/Application.h"
 
 namespace Divide {
@@ -157,7 +154,7 @@ GUIButton* GUIInterface::addButton(U64 guiID,
 
     ResourceDescriptor beepSound("buttonClick");
     beepSound.setResourceName("beep.wav");
-    beepSound.setResourceLocation(Util::StringFormat("%s/%s/", Paths::g_assetsLocation, Paths::g_soundsLocation));
+    beepSound.setResourceLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
     beepSound.setFlag(false);
     AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
 

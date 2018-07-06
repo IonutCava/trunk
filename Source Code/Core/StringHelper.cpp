@@ -79,12 +79,6 @@ bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {
     return false;
 }
 
-
-bool HasExtension(const stringImpl& filePath, const stringImpl& extension) {
-    stringImpl ext("." + extension);
-    return CompareIgnoreCase(GetTrailingCharacters(filePath, ext.length()), ext);
-}
-
 void CStringRemoveChar(char* str, char charToRemove) {
     char *pr = str, *pw = str;
     while (*pr) {
@@ -95,4 +89,5 @@ void CStringRemoveChar(char* str, char charToRemove) {
 }
 
 }; //namespace Util
+
 }; //namespace Divide

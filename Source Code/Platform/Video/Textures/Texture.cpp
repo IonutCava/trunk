@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Console.h"
 #include "Core/Headers/TaskPool.h"
+#include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
@@ -68,6 +69,7 @@ void Texture::threadedLoad() {
     while (std::getline(textureLocationList, currentTextureLocation, ',') &&
            std::getline(textureFileList, currentTextureFile, ','))
     {
+        Util::Trim(currentTextureFile);
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
             currentTextureFullPath = (currentTextureLocation.empty() ? s_defaultTextureFilePath

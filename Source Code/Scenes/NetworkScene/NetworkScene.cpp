@@ -2,6 +2,7 @@
 #include "Network/Headers/ASIOImpl.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"

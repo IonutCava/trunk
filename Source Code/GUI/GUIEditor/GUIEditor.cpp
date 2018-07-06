@@ -71,7 +71,7 @@ bool GUIEditor::init() {
     CEGUI::WindowManager *pWindowManager =
         CEGUI::WindowManager::getSingletonPtr();
     // load the editor Window from the layout file
-    const stringImpl &layoutFile = _context.config().gui.editorLayout;
+    const stringImpl &layoutFile = _context.config().gui.editorLayoutFile;
     _editorWindow = pWindowManager->loadLayoutFromFile(layoutFile.c_str());
 
     if (_editorWindow) {
@@ -1006,7 +1006,7 @@ bool GUIEditor::Handle_FogToggle(const CEGUI::EventArgs &e) {
         Console::d_printfn("[Editor]: Fog disabled!");
     }
 
-    _context.config().rendering.enableFog = toggleButton(ToggleButtons::TOGGLE_FOG)->isSelected());
+    _context.config().rendering.enableFog = toggleButton(ToggleButtons::TOGGLE_FOG)->isSelected();
 
     return true;
 }

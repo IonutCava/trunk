@@ -135,7 +135,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
         // Load default material
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
         _defaultMaterial = XML::loadMaterialXML(*_platformContext,
-                                                stringImpl(Paths::g_xmlDataLocation) + "/defaultMaterial",
+                                                Paths::g_xmlDataLocation + "defaultMaterial",
                                                 false);
         _defaultMaterial->dumpToFile(false);
         _sceneData = MemoryManager_NEW SceneShaderData(platformContext.gfx());
@@ -181,7 +181,7 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
     if (sceneNotLoaded) {
         const XMLEntryData& entryData = _platformContext->entryData();
-        XML::loadScene(stringImpl(Paths::g_xmlDataLocation) + "/" + entryData.scenesLocation, sceneName, loadingScene, _platformContext->config());
+        XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, sceneName, loadingScene, _platformContext->config());
         state = Attorney::SceneManager::load(*loadingScene, sceneName);
         if (state) {
             Attorney::SceneManager::postLoad(*loadingScene);
@@ -387,11 +387,10 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _elapsedTime += deltaTime;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
-    ParamHandler& par = ParamHandler::instance();
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
 
     // Shadow splits are only visible in debug builds
-    _sceneData->enableDebugRender(par.getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
+    _sceneData->enableDebugRender(ParamHandler::instance().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTime));

@@ -50,7 +50,6 @@ PostFX::~PostFX()
 void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     Console::printfn(Locale::get(_ID("START_POST_FX")));
     _gfx = &context;
-    ParamHandler& par = ParamHandler::instance();
     _preRenderBatch = MemoryManager_NEW PreRenderBatch(context, cache);
 
     ResourceDescriptor postFXShader("postProcessing");
@@ -86,19 +85,19 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.setResourceName("terrain_water_NM.jpg");
-    textureWaterCaustics.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
+    textureWaterCaustics.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
      ResourceDescriptor noiseTexture("noiseTexture");
      noiseTexture.setResourceName("bruit_gaussien.jpg");
-     noiseTexture.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
+     noiseTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
      noiseTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _noise = CreateResource<Texture>(cache, noiseTexture);
 
      ResourceDescriptor borderTexture("borderTexture");
-     borderTexture.setResourceName("vignette.jpg");
-     borderTexture.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
+     borderTexture.setResourceName("vignette.jpeg");
+     borderTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
      borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(cache, borderTexture);
 

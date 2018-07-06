@@ -1,5 +1,4 @@
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -10,7 +9,6 @@ namespace Divide {
 
 template <>
 bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
-    const ParamHandler& param = ParamHandler::instance();
     const stringImpl& name = res->getName();
 
     SamplerDescriptor defaultSampler;
@@ -21,10 +19,10 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     ResourceDescriptor waterTexture("waterTexture_" + name);
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
     waterTexture.setResourceName("terrain_water_NM.jpg");
-    waterTexture.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
+    waterTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTexture.setPropertyDescriptor(defaultSampler);
     waterTextureDUDV.setResourceName("water_dudv.jpg");
-    waterTextureDUDV.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
+    waterTextureDUDV.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTextureDUDV.setPropertyDescriptor(defaultSampler);
 
     Texture_ptr waterNM = CreateResource<Texture>(_cache, waterTexture);

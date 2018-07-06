@@ -1,6 +1,7 @@
 #include "Headers/Scene.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -154,7 +155,7 @@ bool Scene::idle() {  // Called when application is idle
 
 void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile) {
 
-    std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(srcFile);
+    std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(srcFile);
     const stringImpl& musicFile = fileResult.first;
     const stringImpl& musicFilePath = fileResult.second;
 
@@ -611,7 +612,7 @@ U16 Scene::registerInputActions() {
 }
 
 void Scene::loadKeyBindings() {
-    XML::loadDefaultKeybindings(_context.entryData().scriptLocation + "keyBindings.xml", this);
+    XML::loadDefaultKeybindings(Paths::g_xmlDataLocation + "keyBindings.xml", this);
 }
 
 void Scene::loadBaseCamera() {

@@ -1,5 +1,6 @@
 #include "Headers/TaskPool.h"
 #include "Headers/Kernel.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 

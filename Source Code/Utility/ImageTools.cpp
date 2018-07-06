@@ -327,6 +327,8 @@ void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel
 
 std::mutex ImageDataInterface::_loadingMutex;
 void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& imgOut) {
+    assert(FileExists(filename.c_str()));
+
     std::lock_guard<std::mutex> lock(_loadingMutex);
     imgOut.create(filename);
 }

@@ -26,7 +26,7 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
             _descriptor.getResourceLocation().empty());
 
     if (s_defaultTexturePath.empty()) {
-        s_defaultTexturePath = Util::StringFormat("%s/%s", Paths::g_assetsLocation, Paths::g_texturesLocation);
+        s_defaultTexturePath = Paths::g_assetsLocation + Paths::g_texturesLocation;
     }
 
     if (Texture::s_defaultTextureFilePath == nullptr) {

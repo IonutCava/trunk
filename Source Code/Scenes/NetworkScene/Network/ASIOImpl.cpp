@@ -1,9 +1,10 @@
 #include "Headers/ASIOImpl.h"
-#include <boost/archive/text_iarchive.hpp>
+
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
+#include <boost/archive/text_iarchive.hpp>
 namespace Divide {
 
 ASIOImpl::ASIOImpl(Scene& parentScene) : ASIO(), _parentScene(parentScene)

@@ -25,13 +25,12 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
     ParamHandler& par = ParamHandler::instance();
     const XMLEntryData& entryData = context.entryData();
 
-    stringImpl path(entryData.scriptLocation + "/" +
-                    entryData.scenesLocation + "/" +
-                    par.getParam<stringImpl>(_ID("currentScene")));
+    stringImpl path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
+    path.append(par.getParam<stringImpl>(_ID("currentScene")));
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
 
-    _fileName = path + "/navMeshes/";
+    _fileName = path + "/" + Paths::g_navMeshesLocation;
     _configFile = path + "/navMeshConfig.ini";
     _buildThreaded = true;
     _debugDraw = false;

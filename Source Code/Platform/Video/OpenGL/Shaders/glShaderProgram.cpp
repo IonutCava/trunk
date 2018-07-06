@@ -8,7 +8,15 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
+#include "Core/Headers/Console.h"
+#include "Core/Headers/StringHelper.h"
+#include "Utility/Headers/Localization.h"
+
 namespace Divide {
+
+namespace {
+    size_t g_validationBufferMaxSize = 4096 * 16;
+};
 
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
@@ -120,7 +128,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
             glGetProgramBinary(_shaderProgramID, binaryLength, NULL, &_binaryFormat, binary);
             if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
-                stringImpl outFileName(glShader::CACHE_LOCATION_BIN + getName() + ".bin");
+                stringImpl outFileName(Paths::Shaders::g_CacheLocationBin + getName() + ".bin");
                 FILE* outFile = fopen(outFileName.c_str(), "wb");
                 if (outFile != NULL) {
                     fwrite(binary, binaryLength, 1, outFile);
@@ -170,13 +178,10 @@ stringImpl glShaderProgram::getLog() const {
         validationBuffer.append(&shaderProgramLog[0]);
         // To avoid overflowing the output buffers (both CEGUI and Console),
         // limit the maximum output size
-        if (validationBuffer.size() > 4096 * 16) {
-            // On some systems, the program's disassembly is printed, and that
-            // can get quite large
-            validationBuffer.resize(static_cast<stringAlg::stringSize>(
-                4096 * 16 - strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) - 10));
-            // Use the simple "truncate and inform user" system (a.k.a. add dots
-            // and delete the rest)
+        if (validationBuffer.size() > g_validationBufferMaxSize) {
+            // On some systems, the program's disassembly is printed, and that can get quite large
+            validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
+            // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
             validationBuffer.append(" ... ");
         }
     }
@@ -317,7 +322,7 @@ bool glShaderProgram::loadFromBinary() {
         if (Config::USE_SHADER_BINARY && false) {
             // Only available for new programs
             assert(_shaderProgramIDTemp == 0);
-            stringImpl fileName(glShader::CACHE_LOCATION_BIN + _resourceName + ".bin");
+            stringImpl fileName(Paths::Shaders::g_CacheLocationBin + _resourceName + ".bin");
             // Load the program's binary format from file
             FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
             if (inFile) {
@@ -369,7 +374,7 @@ bool glShaderProgram::loadFromBinary() {
 glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
     glShaderProgramLoadInfo loadInfo;
 
-    loadInfo._resourcePath = getResourceLocation() + "/" + parentShaderLoc +"/";
+    loadInfo._resourcePath = getResourceLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc;
     // Get all of the preprocessor defines and add them to the general shader header for this program
     for (U8 i = 0; i < _definesList.size(); ++i) {
         // Placeholders are ignored
@@ -414,7 +419,7 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
 
     if (Config::USE_SHADER_TEXT_CACHE && !forceReParse) {
         if (Config::ENABLE_GPU_VALIDATION) {
-            ShaderProgram::shaderFileRead(glShader::CACHE_LOCATION_TEXT + stageName,
+            ShaderProgram::shaderFileRead(Paths::Shaders::g_CacheLocationText + stageName,
                                           true,
                                           sourceCode.second);
         }

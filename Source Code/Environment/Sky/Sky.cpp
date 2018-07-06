@@ -1,6 +1,5 @@
 #include "Headers/Sky.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -38,8 +37,6 @@ bool Sky::load() {
     if (_sky != nullptr) {
         return false;
     }
-    stringImpl location(Paths::g_assetsLocation);
-    location.append("/misc_images/");
 
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);
@@ -50,7 +47,7 @@ bool Sky::load() {
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.setResourceName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
-    skyboxTextures.setResourceLocation(location + "," + location + "," +  location + "," + location + "," + location + "," + location);
+    skyboxTextures.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     skyboxTextures.setEnumValue(to_const_uint(TextureType::TEXTURE_CUBE_MAP));
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
     _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);

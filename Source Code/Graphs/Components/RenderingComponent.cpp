@@ -2,7 +2,6 @@
 
 #include "Headers/RenderingComponent.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"

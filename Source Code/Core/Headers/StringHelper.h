@@ -75,3 +75,5 @@ namespace Divide {
 }; //namespace Divide
 
 #endif //_CORE_STRING_HELPER_H_
+
+#include "StringHelper.inl"

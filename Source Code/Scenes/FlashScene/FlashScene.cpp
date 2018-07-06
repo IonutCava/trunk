@@ -1,5 +1,6 @@
 #include "Headers/FlashScene.h"
 
+#include "Core/Headers/StringHelper.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 

@@ -1,6 +1,7 @@
 #include "Headers/MainScene.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -289,7 +290,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
 
     ResourceDescriptor beepSound("beep sound");
     beepSound.setResourceName("beep.wav");
-    beepSound.setResourceLocation(Util::StringFormat("%s/%s/", Paths::g_assetsLocation, Paths::g_soundsLocation));
+    beepSound.setResourceLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
     beepSound.setFlag(false);
     _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
 

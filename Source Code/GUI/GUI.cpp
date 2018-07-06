@@ -222,22 +222,15 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
         = static_cast<CEGUI::DefaultResourceProvider*>(
             CEGUI::System::getSingleton().getResourceProvider());
 
-    CEGUI::String CEGUIInstallSharePath(Util::StringFormat("%s/%s/", Paths::g_assetsLocation, Paths::g_GUILocation));
-    rp->setResourceGroupDirectory("schemes",
-                                  CEGUIInstallSharePath + "schemes/");
-    rp->setResourceGroupDirectory("imagesets",
-                                  CEGUIInstallSharePath + "imagesets/");
-    rp->setResourceGroupDirectory("fonts", CEGUIInstallSharePath + "fonts/");
-    rp->setResourceGroupDirectory("layouts",
-                                  CEGUIInstallSharePath + "layouts/");
-    rp->setResourceGroupDirectory("looknfeels",
-                                  CEGUIInstallSharePath + "looknfeel/");
-    rp->setResourceGroupDirectory("lua_scripts",
-                                  CEGUIInstallSharePath + "lua_scripts/");
-    rp->setResourceGroupDirectory("schemas",
-                                  CEGUIInstallSharePath + "xml_schemas/");
-    rp->setResourceGroupDirectory("animations",
-                                  CEGUIInstallSharePath + "animations/");
+    CEGUI::String CEGUIInstallSharePath(Paths::g_assetsLocation + Paths::g_GUILocation);
+    rp->setResourceGroupDirectory("schemes", CEGUIInstallSharePath + "schemes/");
+    rp->setResourceGroupDirectory("imagesets", CEGUIInstallSharePath + "imagesets/");
+    rp->setResourceGroupDirectory("fonts", CEGUIInstallSharePath + Paths::g_FontsPath);
+    rp->setResourceGroupDirectory("layouts", CEGUIInstallSharePath + "layouts/");
+    rp->setResourceGroupDirectory("looknfeels", CEGUIInstallSharePath + "looknfeel/");
+    rp->setResourceGroupDirectory("lua_scripts", CEGUIInstallSharePath + "lua_scripts/");
+    rp->setResourceGroupDirectory("schemas", CEGUIInstallSharePath + "xml_schemas/");
+    rp->setResourceGroupDirectory("animations", CEGUIInstallSharePath + "animations/");
 
     // set the default resource groups to be used
     CEGUI::ImageManager::setImagesetDefaultResourceGroup("imagesets");

@@ -39,40 +39,43 @@ namespace Divide {
 
 class PlatformContext;
 namespace Paths {
-    extern const char* g_assetsLocation;
-    extern const char* g_shadersLocation;
-    extern const char* g_texturesLocation;
-    extern const char* g_soundsLocation;
-    extern const char* g_xmlDataLocation;
-    extern const char* g_scenesLocation;
-    extern const char* g_GUILocation;
-    extern const char* g_FontsPath;
+    extern stringImplAligned g_assetsLocation;
+    extern stringImplAligned g_shadersLocation;
+    extern stringImplAligned g_texturesLocation;
+    extern stringImplAligned g_imagesLocation;
+    extern stringImplAligned g_materialsLocation;
+    extern stringImplAligned g_soundsLocation;
+    extern stringImplAligned g_xmlDataLocation;
+    extern stringImplAligned g_navMeshesLocation;
+    extern stringImplAligned g_scenesLocation;
+    extern stringImplAligned g_GUILocation;
+    extern stringImplAligned g_FontsPath;
 
     namespace Shaders {
-        extern const char* g_CacheLocation;
-        extern const char* g_CacheLocationText;
-        extern const char* g_CacheLocationBin;
+        extern stringImplAligned g_CacheLocation;
+        extern stringImplAligned g_CacheLocationText;
+        extern stringImplAligned g_CacheLocationBin;
 
         namespace GLSL {
             // these must match the last 4 characters of the atom file
-            extern const char* g_fragAtomExt;
-            extern const char* g_vertAtomExt;
-            extern const char* g_geomAtomExt;
-            extern const char* g_tescAtomExt;
-            extern const char* g_teseAtomExt;
-            extern const char* g_compAtomExt;
-            extern const char* g_comnAtomExt;
+            extern stringImplAligned g_fragAtomExt;
+            extern stringImplAligned g_vertAtomExt;
+            extern stringImplAligned g_geomAtomExt;
+            extern stringImplAligned g_tescAtomExt;
+            extern stringImplAligned g_teseAtomExt;
+            extern stringImplAligned g_compAtomExt;
+            extern stringImplAligned g_comnAtomExt;
 
             // Shader subfolder name that contains shader files for OpenGL
-            extern const char* g_parentShaderLoc;
+            extern stringImplAligned g_parentShaderLoc;
             // Atom folder names in parent shader folder
-            extern const char* g_fragAtomLoc;
-            extern const char* g_vertAtomLoc;
-            extern const char* g_geomAtomLoc;
-            extern const char* g_tescAtomLoc;
-            extern const char* g_teseAtomLoc;
-            extern const char* g_compAtomLoc;
-            extern const char* g_comnAtomLoc;
+            extern stringImplAligned g_fragAtomLoc;
+            extern stringImplAligned g_vertAtomLoc;
+            extern stringImplAligned g_geomAtomLoc;
+            extern stringImplAligned g_tescAtomLoc;
+            extern stringImplAligned g_teseAtomLoc;
+            extern stringImplAligned g_compAtomLoc;
+            extern stringImplAligned g_comnAtomLoc;
         }; //namespace GLSL
         namespace HLSL {
 

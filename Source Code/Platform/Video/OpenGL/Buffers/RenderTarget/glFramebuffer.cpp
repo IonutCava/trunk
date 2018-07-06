@@ -7,6 +7,7 @@
 #include "Platform/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/GFXDevice.h"

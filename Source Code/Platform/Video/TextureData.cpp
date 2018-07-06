@@ -1,6 +1,7 @@
 #include "Headers/TextureData.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Math/Headers/MathHelper.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {

@@ -6,6 +6,7 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/ParamHandler.h"
 
 namespace Divide {

@@ -21,7 +21,7 @@ Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     }
 
     if (s_defaultShaderProgramPath.empty()) {
-        s_defaultShaderProgramPath = Util::StringFormat("%s/%s", Paths::g_assetsLocation, Paths::g_shadersLocation);
+        s_defaultShaderProgramPath = Paths::g_assetsLocation + Paths::g_shadersLocation;
     }
 
     if (_descriptor.getResourceLocation().empty()) {

@@ -5,8 +5,9 @@
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
-#include "Core/Headers/Application.h"
 #include "Core/Headers/Console.h"
+#include "Core/Headers/Application.h"
+#include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
 #include <GLIM/glim.h>

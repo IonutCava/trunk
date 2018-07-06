@@ -12,8 +12,10 @@
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "GUI/Headers/GUIText.h"
+#include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Core/Time/Headers/ProfileTimer.h"
+#include "Utility/Headers/Localization.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 
@@ -627,11 +629,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
         if (it == std::cend(_fonts)) {
             // Fonts are stored in the general asset directory -> in the GUI
             // subfolder -> in the fonts subfolder
-            stringImpl fontPath(Paths::g_assetsLocation);
-            fontPath.append("/");
-            fontPath.append(Paths::g_GUILocation);
-            fontPath.append("/");
-            fontPath.append(Paths::g_FontsPath);
+            stringImpl fontPath(Paths::g_assetsLocation + Paths::g_GUILocation + Paths::g_FontsPath);
             fontPath += fontName;
             // We use FontStash to load the font file
             _fontCache.second =

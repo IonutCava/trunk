@@ -1,8 +1,8 @@
 #include "Headers/GUIConsoleCommandParser.h"
 
 #include "Headers/GUI.h"
-#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/MathHelper.h"
@@ -139,8 +139,7 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
-    stringImpl filename(Paths::g_assetsLocation);
-    filename.append("/" + args);
+    stringImpl filename(Paths::g_assetsLocation + args);
 
     std::ifstream soundfile(filename.c_str());
     if (soundfile) {
@@ -239,7 +238,6 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
         scale = to_float(atof(args2.c_str()));
     }
     stringImpl assetLocation(Paths::g_assetsLocation);
-    assetLocation.append("/");
 
     FileData model;
     model.ItemName = args1 + "_console" + args;
