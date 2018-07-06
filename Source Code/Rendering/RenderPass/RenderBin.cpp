@@ -133,7 +133,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& r
         nodeMaterial->getSortKeys(renderStagePass, keyA, keyB);
     }
 
-    vectorAlg::emplace_back(_renderBinStack, 
+    _renderBinStack.emplace_back(
                             renderStagePass,
                             keyA,
                             keyB,

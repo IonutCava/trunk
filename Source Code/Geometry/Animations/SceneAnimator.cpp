@@ -207,7 +207,7 @@ I32 SceneAnimator::createSkeleton(Bone* piNode,
         } else {
             line.segment(parent.a4, parent.b4, parent.c4, me.a4, me.b4, me.c4);
         }
-        vectorAlg::emplace_back(lines, line);
+        lines.emplace_back(line);
     }
 
     // render all child nodes

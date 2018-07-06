@@ -141,7 +141,7 @@ bool LightPool::addLight(Light& light) {
         return false;
     }
 
-    vectorAlg::emplace_back(_lights[lightTypeIdx], &light);
+    _lights[lightTypeIdx].emplace_back(&light);
 
     return true;
 }

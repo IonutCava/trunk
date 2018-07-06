@@ -327,16 +327,10 @@
     <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\BoostVector.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\EASTLVector.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\HashMap.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\STLString.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\STLVector.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Core\TemplateLibraries\Headers\String.h">

@@ -951,7 +951,7 @@ void GL_API::popDebugMessage() {
 void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
 
-    const vectorFast<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
+    const vectorEASTL<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
     for (const std::shared_ptr<GFX::Command>& cmd : commands) {
         switch (cmd->_type) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {

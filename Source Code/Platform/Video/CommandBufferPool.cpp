@@ -5,18 +5,7 @@
 namespace Divide {
 namespace GFX {
 
-#define USE_MEMORY_POOL
-
-namespace {
-#if !defined(USE_MEMORY_POOL)
-    static SharedLock s_mutex;
-    static std::deque<CommandBuffer> s_pool;
-    static std::vector<bool> s_freeList;
-#endif
-};
-
 CommandBufferPool::CommandBufferPool()
-    : _count(0)
 {
 }
 
@@ -26,41 +15,15 @@ CommandBufferPool::~CommandBufferPool()
 }
 
 CommandBuffer* CommandBufferPool::allocateBuffer() {
-#if defined(USE_MEMORY_POOL)
     WriteLock lock(_mutex);
-    return _pool.newElement(_count++);
-#else
-    WriteLock lock(s_mutex);
-    for (size_t i = 0; i < s_freeList.size(); ++i) {
-        if (s_freeList[i]) {
-            s_freeList[i] = false;
-            _count++;
-            return &s_pool[i];
-        }
-    }
-
-    s_freeList.push_back(false);
-    s_pool.emplace_back(s_pool.size());
-    _count++;
-    return &s_pool.back();
-#endif
+    return _pool.newElement();
 }
 
 void CommandBufferPool::deallocateBuffer(CommandBuffer*& buffer) {
     if (buffer != nullptr) {
-#if defined(USE_MEMORY_POOL)
         WriteLock lock(_mutex);
         _pool.deleteElement(buffer);
-#else
-        size_t index = buffer->_index;
-        buffer->clear();
-
-        WriteLock lock(s_mutex);
-        s_freeList[index] = true;
-#endif
-
         buffer = nullptr;
-        _count--;
     }
 }
 

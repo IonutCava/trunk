@@ -95,7 +95,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
         }
     }
 
-    vectorAlg::shrinkToFit(animationData);
+    animationData.shrink_to_fit();
 
 
     ShaderBufferDescriptor bufferDescriptor;

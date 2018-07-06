@@ -52,7 +52,6 @@ class CommandBufferPool {
 
  private:
     mutable SharedLock _mutex;
-    size_t _count;
     MemoryPool<CommandBuffer, 4096 * 4> _pool;
 };
 

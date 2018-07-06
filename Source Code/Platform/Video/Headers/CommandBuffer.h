@@ -43,7 +43,7 @@ class CommandBuffer {
     friend class CommandBufferPool;
 
   public:
-    CommandBuffer(size_t index = 0);
+    CommandBuffer();
     ~CommandBuffer();
 
     template<typename T>
@@ -60,8 +60,8 @@ class CommandBuffer {
 
     // Return true if merge is successful
     bool tryMergeCommands(GFX::Command* prevCommand, GFX::Command* crtCommand) const;
-    inline vectorFast<std::shared_ptr<Command>>& operator()();
-    inline const vectorFast<std::shared_ptr<Command>>& operator()() const;
+    inline vectorEASTL<std::shared_ptr<Command>>& operator()();
+    inline const vectorEASTL<std::shared_ptr<Command>>& operator()() const;
 
     inline vec_size size() const { return _data.size(); }
     inline void clear();
@@ -74,9 +74,10 @@ class CommandBuffer {
     void toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtIndent, stringImpl& out) const;
     bool resetMerge(GFX::CommandType type) const;
   protected:
-    size_t _index = 0;
+    /*std::array<vectorFast<std::shared_ptr<Command>>, to_base(GFX::CommandType::COUNT)> _commands;
+    vectorFast<std::pair<GFX::CommandType, vec_size>> _commandOrder;*/
 
-    typedef vectorFast<std::shared_ptr<Command>> CommandData;
+    typedef vectorEASTL<std::shared_ptr<Command>> CommandData;
     CommandData _data;
 };
 

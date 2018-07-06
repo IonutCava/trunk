@@ -440,7 +440,7 @@ void Octree::getAllRegions(vector<BoundingBox>& regionsOut) const {
         }
     }
     
-    vectorAlg::emplace_back(regionsOut, getRegion().getMin(), getRegion().getMax());
+    regionsOut.emplace_back(getRegion().getMin(), getRegion().getMax());
 }
 
 U8 Octree::activeNodes() const {

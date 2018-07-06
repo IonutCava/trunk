@@ -142,9 +142,7 @@ vector<vec3<F32> > DivideRecast::getPath(I32 pathSlot) {
     result.reserve(path.MaxVertex);
 
     for (I32 i = 0; i < path.MaxVertex; ++i) {
-        vectorAlg::emplace_back(result, path.PosX[i],
-                                        path.PosY[i],
-                                        path.PosZ[i]);
+        result.emplace_back(path.PosX[i], path.PosY[i], path.PosZ[i]);
     }
 
     return result;

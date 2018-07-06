@@ -225,7 +225,7 @@ void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp) {
         vec = new vectorFast<GlobalFloatEvent>();
         _globalFloatEvents.reset(vec);
     }
-    vectorAlg::emplace_back(*vec, eventName, eventValue, timestamp);
+    vec->emplace_back(eventName, eventValue, timestamp);
 }
 
 const vectorFast<GlobalFloatEvent>& GetFloatEvents() {
@@ -245,8 +245,7 @@ void PlotFloatEvents(const char* eventName,
     targetGraph._coords.clear();
     for (GlobalFloatEvent& crtEvent : eventsCopy) {
         if (std::strcmp(eventName, crtEvent._eventName.c_str()) == 0) {
-            vectorAlg::emplace_back(
-                targetGraph._coords,
+            targetGraph._coords.emplace_back(
                 Time::MicrosecondsToMilliseconds<F32>(crtEvent._timeStamp),
                 crtEvent._eventValue);
         }

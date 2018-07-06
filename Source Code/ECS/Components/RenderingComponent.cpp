@@ -451,7 +451,7 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                                  -> bool { return binding._binding == slot; });
 
     if (it == std::end(_shaderBuffersCache)) {
-        vectorAlg::emplace_back(_shaderBuffersCache, slot, &shaderBuffer, bindRange);
+        _shaderBuffersCache.emplace_back(slot, &shaderBuffer, bindRange);
     } else {
         it->set(slot, &shaderBuffer, bindRange);
     }

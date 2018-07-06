@@ -74,8 +74,7 @@ void AddSwitchWindow(CommandBuffer& buffer, const SwitchWindowCommand& cmd) {
     buffer.add(cmd);
 }
 
-CommandBuffer::CommandBuffer(size_t index)
-    : _index(index)
+CommandBuffer::CommandBuffer()
 {
 }
 

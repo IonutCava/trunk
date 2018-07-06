@@ -167,8 +167,7 @@ bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
 
 bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
     if (g_recordInput) {
-        vectorAlg::emplace_back(
-            _keyLog[arg._deviceIndex], std::make_pair(arg._key, Input::InputState::PRESSED));
+        _keyLog[arg._deviceIndex].emplace_back(std::make_pair(arg._key, Input::InputState::PRESSED));
     }
 
     PressReleaseActionCbks cbks;
@@ -181,8 +180,7 @@ bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
 
 bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
     if (g_recordInput) {
-        vectorAlg::emplace_back(
-            _keyLog[arg._deviceIndex], std::make_pair(arg._key, Input::InputState::RELEASED));
+        _keyLog[arg._deviceIndex].emplace_back(std::make_pair(arg._key, Input::InputState::RELEASED));
     }
 
     PressReleaseActionCbks cbks;
@@ -302,7 +300,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
                                     Input::MouseButton id) {
 
     if (g_recordInput) {
-        vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
+        _mouseBtnLog[arg._deviceIndex].emplace_back(
             vectorAlg::make_tuple(id, Input::InputState::PRESSED, vec2<I32>(arg.X().abs, arg.Y().abs)));
     }
 
@@ -317,7 +315,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
 bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
                                      Input::MouseButton id) {
     if (g_recordInput) {
-        vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
+        _mouseBtnLog[arg._deviceIndex].emplace_back(
                                 vectorAlg::make_tuple(id, Input::InputState::RELEASED, vec2<I32>(arg.X().abs, arg.Y().abs)));
     }
 

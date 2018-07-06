@@ -140,7 +140,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, stage, collisionResult, distanceSqToCamera);
 
     if (isVisible && !parentTask.stopRequested()) {
-        vectorAlg::emplace_back(nodes, VisibleNode{ distanceSqToCamera, &currentNode });
+        nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
             auto childCull = [this, &parentTask, &currentCamera, &nodes, &stage, cullMaxDistance](const SceneGraphNode& child) {
@@ -164,7 +164,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderS
                 if (bComp != nullptr) {
                     distanceSqToCamera = bComp->getBoundingSphere().getCenter().distanceSquared(cameraEye);
                 }
-                vectorAlg::emplace_back(nodes, VisibleNode{ distanceSqToCamera, &child });
+                nodes.emplace_back(VisibleNode{ distanceSqToCamera, &child });
                 addAllChildren(child, stage, cameraEye, nodes);
             }
         }

@@ -201,9 +201,9 @@ unsigned int glimBatchData::AddVertex(float x, float y, float z) {
     if (z < m_fMinZ) m_fMinZ = z;
     if (z > m_fMaxZ) m_fMaxZ = z;
 
-    vectorAlg::emplace_back(m_PositionData, x);
-    vectorAlg::emplace_back(m_PositionData, y);
-    vectorAlg::emplace_back(m_PositionData, z);
+    m_PositionData.emplace_back(x);
+    m_PositionData.emplace_back(y);
+    m_PositionData.emplace_back(z);
 
     hashMap<unsigned int, GlimArrayData>::iterator it;
     hashMap<unsigned int, GlimArrayData>::const_iterator itend;

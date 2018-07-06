@@ -318,7 +318,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             }
             tempDestination.set(character->getDestination());
             if (!tempDestination.isZeroLength()) {
-                vectorAlg::emplace_back(paths,
+                paths.emplace_back(
                     character->getPosition(),
                     tempDestination,
                     i == 0 ? blueLine : redLine,

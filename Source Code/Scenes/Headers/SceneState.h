@@ -196,6 +196,7 @@ class SceneStatePerPlayer {
         _cameraUnderwater = false;
         _cameraUpdated = false;
         _overrideCamera = nullptr;
+        _cameraLockedToMouse = false;
     }
 
     inline void cameraUnderwater(bool state) { _cameraUnderwater = state; }
