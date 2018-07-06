@@ -64,9 +64,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Editor\ImguiExtras.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidock\imguidock.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.cpp" />
@@ -107,7 +112,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisqlite3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -157,7 +166,6 @@
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.h" />
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.h" />
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.h" />
-    <ClInclude Include="..\..\Source Code\Editor\Headers\ImguiExtraConfig.h" />
     <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\edtaa3func.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.h" />
@@ -299,7 +307,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
@@ -352,7 +360,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -394,7 +402,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>

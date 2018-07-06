@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include <imgui_internal.h>
 /* public domain, Simple, Minimalistic GIF writer - http://jonolick.com
  *
  * Quick Notes:

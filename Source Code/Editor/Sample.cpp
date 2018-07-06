@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/Sample.h"
-#include "Headers/ImguiExtraConfig.h"
 
 #ifdef _WIN32
 #define ImwNewline "\r\n"
@@ -9,7 +8,13 @@
 #define ImwNewline "\n"
 
 #endif
+
+#undef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui_internal.h>
+
 namespace Divide {
+
     StyleEditorWindow::StyleEditorWindow()
     {
         SetTitle("Style Editor");

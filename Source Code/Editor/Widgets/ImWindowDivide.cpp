@@ -92,7 +92,7 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 ImVec2 ImwWindowDivide::GetPosition() const
 {
     if (_pWindow != nullptr) {
-        return ImVec2(_pWindow->getPosition());
+        return ImVec2(_pWindow->getPosition().x, _pWindow->getPosition().y);
     }
     return ImVec2(1.0f, 1.0f);
 }
@@ -206,7 +206,7 @@ void ImwWindowDivide::OnSize(int iWidth, int iHeight)
     ACKNOWLEDGE_UNUSED(iWidth);
     ACKNOWLEDGE_UNUSED(iHeight);
     if (_pWindow != nullptr) {
-        _size = ImVec2(_pWindow->getDimensions());
+        _size = ImVec2(_pWindow->getDimensions().x, _pWindow->getDimensions().y);
         vec2<U16> display_size = _pWindow->getDrawableSize();
         _drawableSize = ImVec2(_size.x > 0 ? ((float)display_size.w / _size.x) : 0, _size.y > 0 ? ((float)display_size.h / _size.y) : 0);
     }

@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "imguibindings.h"
+
+#undef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
+
 // These variables can be declared extern and set at runtime-----------------------------------------------------
 bool gImGuiPaused = false;
 bool gImGuiDynamicFPSInsideImGui = false;                      // Well, almost...

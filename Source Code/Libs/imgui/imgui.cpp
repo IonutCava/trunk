@@ -574,7 +574,7 @@
 #endif
 
 #include "imgui.h"
-#define IMGUI_DEFINE_MATH_OPERATORS
+
 #define IMGUI_DEFINE_PLACEMENT_NEW
 #include "imgui_internal.h"
 
@@ -625,15 +625,13 @@ static bool             IsKeyPressedMap(ImGuiKey key, bool repeat = true);
 
 static ImFont*          GetDefaultFont();
 static void             SetCurrentFont(ImFont* font);
-static void             SetCurrentWindow(ImGuiWindow* window);
+
 static void             SetWindowScrollY(ImGuiWindow* window, float new_scroll_y);
-static void             SetWindowPos(ImGuiWindow* window, const ImVec2& pos, ImGuiCond cond);
 static void             SetWindowSize(ImGuiWindow* window, const ImVec2& size, ImGuiCond cond);
 static void             SetWindowCollapsed(ImGuiWindow* window, bool collapsed, ImGuiCond cond);
 static ImGuiWindow*     FindHoveredWindow(ImVec2 pos);
-static ImGuiWindow*     CreateNewWindow(const char* name, ImVec2 size, ImGuiWindowFlags flags);
+
 static void             ClearSetNextWindowData();
-static void             CheckStacksSize(ImGuiWindow* window, bool write);
 static ImVec2           CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window);
 
 static void             AddDrawListToRenderList(ImVector<ImDrawList*>& out_render_list, ImDrawList* draw_list);
@@ -644,18 +642,12 @@ static ImGuiIniData*    FindWindowSettings(const char* name);
 static ImGuiIniData*    AddWindowSettings(const char* name);
 static void             LoadIniSettingsFromDisk(const char* ini_filename);
 static void             SaveIniSettingsToDisk(const char* ini_filename);
-static void             MarkIniSettingsDirty(ImGuiWindow* window);
-
-static ImRect           GetVisibleRect();
 
 static void             CloseInactivePopups(ImGuiWindow* ref_window);
 static void             ClosePopupToLevel(int remaining);
-static ImGuiWindow*     GetFrontMostModalRootWindow();
-static ImVec2           FindBestPopupWindowPos(const ImVec2& base_pos, const ImVec2& size, int* last_dir, const ImRect& rect_to_avoid);
 
 static bool             InputTextFilterCharacter(unsigned int* p_char, ImGuiInputTextFlags flags, ImGuiTextEditCallback callback, void* user_data);
 static int              InputTextCalcTextLenAndLineCount(const char* text_begin, const char** out_text_end);
-static ImVec2           InputTextCalcTextSizeW(const ImWchar* text_begin, const ImWchar* text_end, const ImWchar** remaining = NULL, ImVec2* out_offset = NULL, bool stop_on_new_line = false);
 
 static inline void      DataTypeFormatString(ImGuiDataType data_type, void* data_ptr, const char* display_format, char* buf, int buf_size);
 static inline void      DataTypeFormatString(ImGuiDataType data_type, void* data_ptr, int decimal_precision, char* buf, int buf_size);
@@ -1865,7 +1857,7 @@ ImGuiID ImGuiWindow::GetIDNoKeepAlive(const char* str, const char* str_end)
 // Internal API exposed in imgui_internal.h
 //-----------------------------------------------------------------------------
 
-static void SetCurrentWindow(ImGuiWindow* window)
+void ImGui::SetCurrentWindow(ImGuiWindow* window)
 {
     ImGuiContext& g = *GImGui;
     g.CurrentWindow = window;
@@ -2617,7 +2609,7 @@ static void SaveIniSettingsToDisk(const char* ini_filename)
     fclose(f);
 }
 
-static void MarkIniSettingsDirty(ImGuiWindow* window)
+void ImGui::MarkIniSettingsDirty(ImGuiWindow* window)
 {
     ImGuiContext& g = *GImGui;
     if (!(window->Flags & ImGuiWindowFlags_NoSavedSettings))
@@ -2922,7 +2914,7 @@ void ImGui::LogText(const char* fmt, ...)
 
 // Internal version that takes a position to decide on newline placement and pad items according to their depth.
 // We split text into individual lines to add current tree level padding
-static void LogRenderedText(const ImVec2* ref_pos, const char* text, const char* text_end = NULL)
+void ImGui::LogRenderedText(const ImVec2* ref_pos, const char* text, const char* text_end)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
@@ -3490,7 +3482,7 @@ ImVec2 ImGui::CalcItemRectClosestPoint(const ImVec2& pos, bool on_edge, float ou
     return rect.GetClosestPoint(pos, on_edge);
 }
 
-static ImRect GetVisibleRect()
+ImRect ImGui::GetVisibleRect()
 {
     ImGuiContext& g = *GImGui;
     if (g.IO.DisplayVisibleMin.x != g.IO.DisplayVisibleMax.x && g.IO.DisplayVisibleMin.y != g.IO.DisplayVisibleMax.y)
@@ -3604,7 +3596,7 @@ static void CloseInactivePopups(ImGuiWindow* ref_window)
         ClosePopupToLevel(n);
 }
 
-static ImGuiWindow* GetFrontMostModalRootWindow()
+ImGuiWindow* ImGui::GetFrontMostModalRootWindow()
 {
     ImGuiContext& g = *GImGui;
     for (int n = g.OpenPopupStack.Size-1; n >= 0; n--)
@@ -3878,7 +3870,7 @@ void ImGui::EndChildFrame()
 }
 
 // Save and compare stack sizes on Begin()/End() to detect usage errors
-static void CheckStacksSize(ImGuiWindow* window, bool write)
+void ImGui::CheckStacksSize(ImGuiWindow* window, bool write)
 {
     // NOT checking: DC.ItemWidth, DC.AllowKeyboardFocus, DC.ButtonRepeat, DC.TextWrapPos (per window) to allow user to conveniently push once and not pop (they are cleared on Begin)
     ImGuiContext& g = *GImGui;
@@ -3892,7 +3884,7 @@ static void CheckStacksSize(ImGuiWindow* window, bool write)
     IM_ASSERT(p_backup == window->DC.StackSizesBackup + IM_ARRAYSIZE(window->DC.StackSizesBackup));
 }
 
-static ImVec2 FindBestPopupWindowPos(const ImVec2& base_pos, const ImVec2& size, int* last_dir, const ImRect& r_inner)
+ImVec2 ImGui::FindBestPopupWindowPos(const ImVec2& base_pos, const ImVec2& size, int* last_dir, const ImRect& r_inner)
 {
     const ImGuiStyle& style = GImGui->Style;
 
@@ -3927,7 +3919,7 @@ ImGuiWindow* ImGui::FindWindowByName(const char* name)
     return (ImGuiWindow*)g.WindowsById.GetVoidPtr(id);
 }
 
-static ImGuiWindow* CreateNewWindow(const char* name, ImVec2 size, ImGuiWindowFlags flags)
+ImGuiWindow* ImGui::CreateNewWindow(const char* name, ImVec2 size, ImGuiWindowFlags flags)
 {
     ImGuiContext& g = *GImGui;
 
@@ -4062,7 +4054,7 @@ static ImVec2 CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window)
     return scroll;
 }
 
-static ImGuiCol GetWindowBgColorIdxFromFlags(ImGuiWindowFlags flags)
+ImGuiCol ImGui::GetWindowBgColorIdxFromFlags(ImGuiWindowFlags flags)
 {
     if (flags & ImGuiWindowFlags_ComboBox)
         return ImGuiCol_ComboBg;
@@ -5174,7 +5166,7 @@ static void SetWindowScrollY(ImGuiWindow* window, float new_scroll_y)
     window->DC.CursorMaxPos.y -= window->Scroll.y;
 }
 
-static void SetWindowPos(ImGuiWindow* window, const ImVec2& pos, ImGuiCond cond)
+void ImGui::SetWindowPos(ImGuiWindow* window, const ImVec2& pos, ImGuiCond cond)
 {
     // Test condition (NB: bit 0 is always true) and clear flags for next time
     if (cond && (window->SetWindowPosAllowFlags & cond) == 0)
@@ -7698,7 +7690,7 @@ static int InputTextCalcTextLenAndLineCount(const char* text_begin, const char**
     return line_count;
 }
 
-static ImVec2 InputTextCalcTextSizeW(const ImWchar* text_begin, const ImWchar* text_end, const ImWchar** remaining, ImVec2* out_offset, bool stop_on_new_line)
+ImVec2 ImGui::InputTextCalcTextSizeW(const ImWchar* text_begin, const ImWchar* text_end, const ImWchar** remaining, ImVec2* out_offset, bool stop_on_new_line)
 {
     ImFont* font = GImGui->Font;
     const float line_height = GImGui->FontSize;
@@ -7755,7 +7747,7 @@ static void    STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* r, STB_TEXTEDIT_STRING* ob
 {
     const ImWchar* text = obj->Text.Data;
     const ImWchar* text_remaining = NULL;
-    const ImVec2 size = InputTextCalcTextSizeW(text + line_start_idx, text + obj->CurLenW, &text_remaining, NULL, true);
+    const ImVec2 size = ImGui::InputTextCalcTextSizeW(text + line_start_idx, text + obj->CurLenW, &text_remaining, NULL, true);
     r->x0 = 0.0f;
     r->x1 = size.x;
     r->baseline_y_delta = size.y;

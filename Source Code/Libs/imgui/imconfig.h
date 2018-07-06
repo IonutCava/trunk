@@ -31,13 +31,25 @@
 //---- Pack colors to BGRA instead of RGBA (remove need to post process vertex buffer in back ends)
 //#define IMGUI_USE_BGRA_PACKED_COLOR
 
-#define IM_VEC2_CLASS_EXTRA                                                 \
-        inline ImVec2 operator+(const ImVec2& rhs) const { return ImVec2(x + rhs.x, y + rhs.y); } \
-        inline ImVec2 operator-(const ImVec2& rhs) const { return ImVec2(x - rhs.x, y - rhs.y); }
+#include "Platform/Headers/PlatformDataTypes.h"
 
-#define IM_VEC4_CLASS_EXTRA                                                 \
-        inline ImVec4 operator+(const ImVec4& rhs) const { return ImVec4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); } \
-        inline ImVec4 operator-(const ImVec4& rhs) const { return ImVec4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
+namespace Divide {
+template<typename T>
+class vec2;
+template<typename T>
+class vec4;
+
+};
+
+#define IM_VEC2_CLASS_EXTRA                 \
+        ImVec2 operator=(const Divide::vec2<Divide::F32>& f); \
+        //inline ImVec2 operator+(const ImVec2& rhs) const { return ImVec2(x + rhs.x, y + rhs.y); } \
+        //inline ImVec2 operator-(const ImVec2& rhs) const { return ImVec2(x - rhs.x, y - rhs.y); }
+
+#define IM_VEC4_CLASS_EXTRA       \
+        ImVec4 operator=(const Divide::vec4<Divide::F32>& f); \
+        //inline ImVec4 operator+(const ImVec4& rhs) const { return ImVec4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); } \
+        //inline ImVec4 operator-(const ImVec4& rhs) const { return ImVec4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
 
 
 //---- Implement STB libraries in a namespace to avoid conflicts

@@ -7,6 +7,8 @@
 #include "../imguitabwindow/imguitabwindow.h"
 #endif //NO_IMGUITABWINDOW
 
+#undef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
 bool gImGuiDockpanelManagerExtendedStyle = true;
@@ -137,7 +139,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         window->PopupId = popup_ref.PopupId;
     }
 
-    const bool window_just_appearing_after_hidden_for_resize = (window->HiddenFrames == 1);
+    bool window_just_appearing_after_hidden_for_resize = (window->HiddenFrames == 1);
     window->Appearing = (window_just_activated_by_user || window_just_appearing_after_hidden_for_resize);
 
     // Process SetNextWindow***() calls
@@ -279,7 +281,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         //else window->Collapsed = false;
 
 
-        const bool window_just_appearing_after_hidden_for_resize = (window->HiddenFrames == 1);
+        window_just_appearing_after_hidden_for_resize = (window->HiddenFrames == 1);
         window->Appearing = (window_just_activated_by_user || window_just_appearing_after_hidden_for_resize);
         if (window->HiddenFrames > 0)
             window->HiddenFrames--;
