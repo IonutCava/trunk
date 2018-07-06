@@ -14,29 +14,27 @@ namespace Divide {
     {
         _editorComponent.registerField("Transform",
                                        &_transformInterface,
-                                       EditorComponentFieldType::TRANSFORM);
+                                       EditorComponentFieldType::TRANSFORM,
+                                       false);
+        _editorComponent.registerField("WorldMat", &_worldMatrix, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
+        
+        if (_ignoreViewSettings._cameraGUID != -1) {
+            _editorComponent.addHeader("Ignore View Settings");
 
+            _editorComponent.registerField("Camera GUID", &_ignoreViewSettings._cameraGUID, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
+            _editorComponent.registerField("Position Offset", &_ignoreViewSettings._posOffset, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
+            _editorComponent.registerField("Transform Offset", &_ignoreViewSettings._transformOffset, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
+        }
 
-        static mat2<F32> mata;
-        _editorComponent.registerField("TestMat2", &mata, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT2);
-
-        static mat3<F32> matb;
-        _editorComponent.registerField("TestMat3", &matb, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT3);
-
-        static mat4<F32> matc;
-        _editorComponent.registerField("TestMat4", &matc, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT4);
-
-        static mat2<I32> matd;
-        _editorComponent.registerField("TestMat2i", &matd, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT2);
-
-        static mat3<I32> mate;
-        _editorComponent.registerField("TestMat3i", &mate, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT3);
-
-        static mat4<I32> matf;
-        _editorComponent.registerField("TestMat4i", &matf, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT4);
-
-        static mat4<D64> matz;
-        _editorComponent.registerField("TestMat4d", &matz, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::DMAT4);
+        _editorComponent.onChangedCbk([this](EditorComponentField& field) {
+            if (field._name == "Transform") {
+                setTransformDirty(TransformType::TRANSLATION);
+                setTransformDirty(TransformType::SCALE);
+                setTransformDirty(TransformType::ROTATION);
+            } else if (field._name == "Position Offset") {
+                setTransformDirty(TransformType::VIEW_OFFSET);
+            }
+        });
     }
 
     TransformComponent::~TransformComponent()

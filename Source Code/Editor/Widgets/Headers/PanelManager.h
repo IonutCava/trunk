@@ -41,11 +41,15 @@ namespace Divide {
         class PanelManagerDockedWindows;
     };
 
+    class Camera;
     class DockedWindow;
     class TabbedWindow;
     class PanelManagerPane;
     class ResourceCache;
+    class PropertyWindow;
     class PreferencesWindow;
+    class SolutionExplorerWindow;
+
     FWD_DECLARE_MANAGED_CLASS(Texture);
     class PanelManager : public PlatformContextComponent {
         friend class Attorney::PanelManagerWidgets;
@@ -67,6 +71,10 @@ namespace Divide {
             CENTER,
             COUNT
         };
+
+      public:
+          static const U8 ButtonWidth = 8;
+          static const U8 ButtonHeight = 10;
 
       public:
         PanelManager(PlatformContext& context);
@@ -93,12 +101,11 @@ namespace Divide {
             return _sceneStepCount == 0 && _simulationPaused != nullptr && *_simulationPaused;
         }
 
-
       protected:
-        float calcMainMenuHeight();
-
-      protected:
-        static void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd);
+        F32 calcMainMenuHeight();
+        void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd);
+        void setSelectedCamera(Camera* camera);
+        Camera* getSelectedCamera() const;
 
       protected:
         bool* _showCentralWindow;
@@ -110,13 +117,15 @@ namespace Divide {
         std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures;
         std::unique_ptr<ImGui::PanelManager> _manager;
 
+        Camera* _selectedCamera;
+        vectorImpl<ImGui::TabWindow> _tabWindows;
+        vectorImpl<DockedWindow*> _dockedWindows;
         std::array<std::unique_ptr<TabbedWindow>, to_base(PanelPositions::COUNT)> _tabbedWindows;
         // No center toolbar
         std::array<std::unique_ptr<PanelManagerPane>, to_base(PanelPositions::COUNT) - 1> _toolbars;
 
      public:
-        static vectorImpl<ImGui::TabWindow> s_tabWindows;
-        static vectorImpl<DockedWindow*> s_dockedWindows;
+
         static ResourceCache* s_globalCache;
         static hashMapImpl<U32, Texture_ptr> s_imageEditorCache;
     }; //class PanelManager
@@ -130,7 +139,8 @@ namespace Divide {
             }
 
             static void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd) {
-                PanelManager::drawDockedTabWindows(wd);
+                Divide::PanelManager* mgr = static_cast<Divide::PanelManager*>(wd.userData);
+                mgr->drawDockedTabWindows(wd);
             }
 
             friend class Divide::TabbedWindow;
@@ -143,7 +153,17 @@ namespace Divide {
                   return mgr._showCentralWindow;
               }
 
+              static void setSelectedCamera(Divide::PanelManager& mgr, Camera* camera) {
+                  mgr.setSelectedCamera(camera);
+              }
+
+              static Camera* getSelectedCamera(Divide::PanelManager& mgr) {
+                  return mgr.getSelectedCamera();
+              }
+
+              friend class Divide::PropertyWindow;
               friend class Divide::PreferencesWindow;
+              friend class Divide::SolutionExplorerWindow;
         };
     };
 

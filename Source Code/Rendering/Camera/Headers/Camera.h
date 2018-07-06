@@ -52,7 +52,8 @@ class Camera : public Resource {
         FREE_FLY = 0,
         FIRST_PERSON,
         THIRD_PERSON,
-        ORBIT, SCRIPTED
+        ORBIT,
+        SCRIPTED
     };
 
     enum class UtilityCamera : U32 {
@@ -236,6 +237,10 @@ class Camera : public Resource {
 
     inline const vec3<Angle::DEGREES<F32>>& getEuler() const { return _euler; }
 
+    inline void setEuler(const vec3<Angle::DEGREES<F32>>& euler) {
+        setRotation(euler.yaw, euler.pitch, euler.roll);
+    }
+
     inline const mat4<F32>& getProjectionMatrix() const {
         return _projectionMatrix;
     }
@@ -373,6 +378,8 @@ class Camera : public Resource {
        static void update(const U64 deltaTimeUS);
        static void initPool();
        static void destroyPool();
+
+       static vectorImpl<U64> cameraList();
 
        static Camera* utilityCamera(UtilityCamera type);
 

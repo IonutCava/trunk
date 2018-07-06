@@ -43,16 +43,10 @@ namespace Divide {
 
         void addTabWindowIfSupported(const char* tabWindowNames[4]);
 
-        void setButtonSize(ImVec2 size);
-        void setSquareButtonSize(ImVec2 size);
-
         ImGui::PanelManager::Pane& impl();
         const ImGui::PanelManager::Pane& impl() const;
 
        protected:
-         ImVec2 _buttonSize;
-         ImVec2 _buttonSizeSq;
-
          PanelManager& _parent;
          stringImpl _name;
          ImGui::PanelManager::Pane* _pane;

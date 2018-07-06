@@ -5,6 +5,9 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Rendering/Camera/Headers/Camera.h"
+#include "Dynamics/Entities/Units/Headers/Player.h"
+#include "Widgets/Headers/PanelManager.h"
 
 namespace Divide {
     namespace {
@@ -23,7 +26,23 @@ namespace Divide {
 
     }
 
-    void printSceneGraphNode(Scene& activeScene, SceneGraphNode& sgn) {
+    void SolutionExplorerWindow::printCameraNode(Scene& activeScene, Camera* camera) {
+        if (camera == nullptr) {
+            return;
+        }
+
+        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Leaf;
+        if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->getName().c_str())) {
+            if (ImGui::IsItemClicked()) {
+                activeScene.resetSelection(0);
+                Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, camera);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    void SolutionExplorerWindow::printSceneGraphNode(Scene& activeScene, SceneGraphNode& sgn) {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
         if (sgn.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
@@ -37,9 +56,10 @@ namespace Divide {
         if (ImGui::IsItemClicked()) {
             activeScene.resetSelection(0);
             activeScene.setSelected(0, sgn);
+            Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, nullptr);
         }
         if (node_open) {
-            sgn.forEachChild([&activeScene](SceneGraphNode& child) {
+            sgn.forEachChild([this, &activeScene](SceneGraphNode& child) {
                 printSceneGraphNode(activeScene, child);
             });
             ImGui::TreePop();
@@ -55,10 +75,15 @@ namespace Divide {
         SceneManager& sceneManager = context().kernel().sceneManager();
         Scene& activeScene = sceneManager.getActiveScene();
         SceneGraphNode& root = activeScene.sceneGraph().getRoot();
-        
+
+
         if (ImGui::TreeNode(activeScene.getName().c_str()))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
+            const SceneManager::PlayerList& activePlayers = sceneManager.getPlayers();
+            for (const Player_ptr& player : activePlayers) {
+                printCameraNode(activeScene, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, player->index()));
+            }
             printSceneGraphNode(activeScene, root);
             ImGui::PopStyleVar();
             ImGui::TreePop();

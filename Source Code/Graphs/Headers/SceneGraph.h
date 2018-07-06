@@ -141,6 +141,10 @@ class SceneGraph : private NonCopyable,
     ECS::ComponentManager* GetComponentManager();
     ECS::ComponentManager* GetComponentManager() const;
 
+
+    bool save(ByteBuffer& outputBuffer) const;
+    bool load(ByteBuffer& inputBuffer);
+
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);

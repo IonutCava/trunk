@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Headers/PushConstant.h"
 
 namespace Divide {
-
+    class ByteBuffer;
     class PropertyWindow;
 
     namespace Attorney {
@@ -56,6 +56,7 @@ namespace Divide {
     {
         GFX::PushConstantType _basicType = GFX::PushConstantType::COUNT;
         EditorComponentFieldType _type = EditorComponentFieldType::COUNT;
+        bool _readOnly = false;
         stringImpl _name;
         void* _data = nullptr;
     };
@@ -70,17 +71,33 @@ namespace Divide {
 
         inline const stringImpl& name() const { return _name; }
 
+        inline void addHeader(const stringImpl& name) {
+            registerField(name, nullptr, EditorComponentFieldType::PUSH_TYPE, true);
+        }
+
         void registerField(const stringImpl& name, 
                            void* data,
                            EditorComponentFieldType type,
+                           bool readOnly,
                            GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);
+
 
         inline vectorImpl<EditorComponentField>& fields() { return _fields; }
         inline const vectorImpl<EditorComponentField>& fields() const { return _fields; }
 
+        inline void onChangedCbk(const DELEGATE_CBK<void, EditorComponentField&>& cbk) {
+            _onChangedCbk = cbk;
+        }
+
+        bool save(ByteBuffer& outputBuffer) const;
+        bool load(ByteBuffer& inputBuffer);
+
+      protected:
+        void onChanged(EditorComponentField& field);
+
       protected:
         const stringImpl _name;
-
+        DELEGATE_CBK<void, EditorComponentField&> _onChangedCbk;
         vectorImpl<EditorComponentField> _fields;
     };
 
@@ -95,6 +112,9 @@ namespace Divide {
                 return comp._fields;
             }
 
+            static void onChanged(EditorComponent& comp, EditorComponentField& field) {
+                comp.onChanged(field);
+            }
             friend class Divide::PropertyWindow;
         };
     };  // namespace Attorney

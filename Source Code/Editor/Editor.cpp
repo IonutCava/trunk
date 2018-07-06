@@ -15,6 +15,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -96,7 +97,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         // double init
         return false;
     }
-
+    
+    createDirectories((Paths::g_saveLocation + Paths::Editor::g_saveLocation).c_str());
     _mainWindow = &_context.app().windowManager().getWindow(0u);
     if (_activeWindowGUID == 0) {
         // Only add these once

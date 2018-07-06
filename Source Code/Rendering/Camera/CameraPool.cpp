@@ -38,6 +38,16 @@ void Camera::onUpdate(const Camera& cam) {
     }
 }
 
+vectorImpl<U64> Camera::cameraList() {
+    vectorImpl<U64> ret;
+    ReadLock r_lock(s_cameraPoolLock);
+    for (CameraPool::value_type& it : s_cameraPool) {
+        ret.push_back(it.first);
+    }
+
+    return ret;
+}
+
 bool Camera::activeCamera(Camera* camera) {
     if (s_activeCamera) {
         if (camera && s_activeCamera->getGUID() == camera->getGUID()) {

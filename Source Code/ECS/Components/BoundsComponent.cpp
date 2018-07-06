@@ -13,10 +13,10 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
      _lockBBTransforms(false)
 {
     RegisterEventCallback(&BoundsComponent::OnTransformDirty);
-    _editorComponent.registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX);
-    _editorComponent.registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX);
-    _editorComponent.registerField("BoundingSphere", &_boundingSphere, EditorComponentFieldType::BOUNDING_SPHERE);
-    _editorComponent.registerField("Lock BB Transform", &_lockBBTransforms, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::BOOL);
+    _editorComponent.registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
+    _editorComponent.registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
+    _editorComponent.registerField("BoundingSphere", &_boundingSphere, EditorComponentFieldType::BOUNDING_SPHERE, true);
+    _editorComponent.registerField("Lock BB Transform", &_lockBBTransforms, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::BOOL);
 }
 
 BoundsComponent::~BoundsComponent()

@@ -36,12 +36,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
+class Scene;
+class Camera;
+class SceneGraphNode;
 class SolutionExplorerWindow : public DockedWindow, public PlatformContextComponent {
     public:
         SolutionExplorerWindow(PanelManager& parent, PlatformContext& context);
         ~SolutionExplorerWindow();
 
         void draw() override;
+  protected:
+      void printCameraNode(Scene& activeScene, Camera* camera);
+      void printSceneGraphNode(Scene& activeScene, SceneGraphNode& sgn);
 };
 }; //namespace Divide
 

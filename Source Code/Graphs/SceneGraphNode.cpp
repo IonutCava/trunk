@@ -690,4 +690,34 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const Sc
     return true;
 }
 
+bool SceneGraphNode::save(ByteBuffer& outputBuffer) const {
+    for (EditorComponent* editorComponent : _editorComponents) {
+        if (!editorComponent->save(outputBuffer)) {
+            return false;
+        }
+    }
+
+    return !forEachChildInterruptible([&outputBuffer](const SceneGraphNode& child) {
+                if (child.save(outputBuffer)) {
+                    return false;
+                }
+                return true;
+            });
+}
+
+bool SceneGraphNode::load(ByteBuffer& inputBuffer) {
+    for (EditorComponent* editorComponent : _editorComponents) {
+        if (!editorComponent->load(inputBuffer)) {
+            return false;
+        }
+    }
+
+    return !forEachChildInterruptible([&inputBuffer](SceneGraphNode& child) {
+                if (child.load(inputBuffer)) {
+                    return false;
+                }
+                return true;
+            });
+}
+
 };

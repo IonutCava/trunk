@@ -247,4 +247,12 @@ ECS::ComponentManager* SceneGraph::GetComponentManager() {
 ECS::ComponentManager* SceneGraph::GetComponentManager() const {
     return GetECSEngine().GetComponentManager();
 }
+
+bool SceneGraph::save(ByteBuffer& outputBuffer) const {
+    return _root->save(outputBuffer);
+}
+
+bool SceneGraph::load(ByteBuffer& inputBuffer) {
+    return _root->load(inputBuffer);
+}
 };

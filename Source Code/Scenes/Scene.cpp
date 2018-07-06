@@ -1316,7 +1316,7 @@ bool Scene::save(ByteBuffer& outputBuffer) const {
         outputBuffer << _scenePlayers[i]->index() << cam.getEye() << cam.getEuler();
     }
 
-    return true;
+    return _sceneGraph->save(outputBuffer);
 }
 
 bool Scene::load(ByteBuffer& inputBuffer) {
@@ -1338,7 +1338,7 @@ bool Scene::load(ByteBuffer& inputBuffer) {
         }
     }
 
-    return true;
+    return _sceneGraph->load(inputBuffer);
 }
 
 Camera* Scene::playerCamera() const {

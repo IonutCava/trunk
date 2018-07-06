@@ -331,7 +331,7 @@ const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& z
     _projectionDirty = true;
     updateProjection();
 
-     return getProjectionMatrix();
+    return getProjectionMatrix();
 }
 
 void Camera::setAspectRatio(F32 ratio) {

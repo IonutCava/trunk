@@ -345,6 +345,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     void processDeleteQueue();
 
+    bool save(ByteBuffer& outputBuffer) const;
+    bool load(ByteBuffer& inputBuffer);
+
    private:
     void addToDeleteQueue(U32 idx);
 

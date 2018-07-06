@@ -56,6 +56,7 @@ namespace Attorney {
 class ScenePool;
 class SceneShaderData;
 class ShaderComputeQueue;
+class SolutionExplorerWindow;
 class GUIConsoleCommandParser;
 FWD_DECLARE_MANAGED_CLASS(Player);
 
@@ -317,6 +318,7 @@ class SceneManagerCameraAccessor {
     friend class Divide::Scene;
     friend class Divide::ShadowMap;
     friend class Divide::RenderPass;
+    friend class Divide::SolutionExplorerWindow;
     friend class Divide::GUIConsoleCommandParser;
 };
 
