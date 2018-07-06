@@ -63,8 +63,12 @@ struct LightProperties {
     vec4<F32> _direction;   //< xyz = Used by spot lights, w = spotExponent
     vec4<F32> _diffuse;     //< rgb = diffuse,  w = ambientFactor;
     vec4<F32> _specular;    //< rgb = specular color, w = brightness
-    mat4<F32> _lightVP[4];  //< light viewProjection matrices (e.g. for shadowmapping)
-    F32       _floatValues[4]; //< random float values
+};
+
+struct LightShadowProperties {
+    mat4<F32> _lightVP[4];  //< light viewProjection matrices
+    vec4<F32> _floatValues; //< random float values (e.g. split distances)
+    vec3<F32> _lightPosition[4]; //<light's position in world space
 };
 
 class Impostor;
@@ -99,6 +103,7 @@ public:
     inline bool  castsShadows() const {return _castsShadows;}
     ///Get the entire property block
     inline const LightProperties& getProperties() const {return _properties;}
+    inline const LightShadowProperties& getShadowProperties() const {return _shadowProperties;}
     ///Get light diffuse color
     inline vec3<F32>  getDiffuseColor() const {return _properties._diffuse.rgb();}
     ///Get light position for omni and spot or direction for a directional light (also accessible via the "getDirection" method of the "DirectionalLight" class
@@ -149,11 +154,12 @@ public:
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
     virtual void generateShadowMaps(const SceneRenderState& sceneRenderState);
-    inline const mat4<F32>& getVPMatrix(U8 index)   const { return _properties._lightVP[index]; }
-    inline const F32&       getFloatValue(U8 index) const { return _properties._floatValues[index]; }
-    inline void setVPMatrix(U8 index, const mat4<F32>& newValue)   { _properties._lightVP[index].set(newValue);  _dirty = true;}
-    inline void setFloatValue(U8 index, F32 newValue)              { _properties._floatValues[index] = newValue; _dirty = true;}
-
+    inline const mat4<F32>& getVPMatrix(U8 index)   const { return _shadowProperties._lightVP[index]; }
+    inline const vec4<F32>& getFloatValues()        const { return _shadowProperties._floatValues; }
+    inline const vec3<F32>& getLightPos(U8 index)   const { return _shadowProperties._lightPosition[index]; }
+    inline void setVPMatrix(U8 index, const mat4<F32>& newValue)   { _shadowProperties._lightVP[index].set(newValue);  }
+    inline void setFloatValue(U8 index, F32 newValue)              { _shadowProperties._floatValues[index] = newValue; }
+    inline void setLightPos(U8 index, const vec3<F32>& newValue)   { _shadowProperties._lightPosition[index].set(newValue); }
     inline void shadowMapResolutionFactor(U8 factor)       {_resolutionFactor = factor;}
     inline U8   shadowMapResolutionFactor()          const {return _resolutionFactor;}
 
@@ -171,6 +177,7 @@ protected:
     void setLightMode(const LightMode& mode);
     ///Called when the rendering resolution changes
     void updateResolution(I32 newWidth, I32 newHeight);
+
 private:
     ///Enum to char* translation for vector properties
     const char* LightEnum(const LightPropertiesV& key) const;
@@ -180,6 +187,7 @@ private:
 protected:
 
     LightProperties  _properties;
+    LightShadowProperties _shadowProperties;
 
     U32  _id;
     LightType _type;

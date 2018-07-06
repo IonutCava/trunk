@@ -37,8 +37,7 @@ public:
         bool _colorOnly;
         U32  _numColorChannels;
         bool _clearBuffersOnBind;
-        bool _clearColorOnBind;
-        FrameBufferTarget() : _depthOnly(false), _colorOnly(false), _clearBuffersOnBind(true), _clearColorOnBind(true), _numColorChannels(1)
+        FrameBufferTarget() : _depthOnly(false), _colorOnly(false), _clearBuffersOnBind(true), _numColorChannels(1)
         {
         }
     };
@@ -55,7 +54,6 @@ public:
     }
 
     virtual void Begin(const FrameBufferTarget& drawPolicy) = 0;
-    // the bool params are used only for resolving MS buffers
     virtual void End() = 0;
 
     virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
@@ -84,8 +82,6 @@ public:
 
     inline void clearBuffers(bool state)       {_clearBuffersState = state;}
     inline bool clearBuffers()           const {return _clearBuffersState;}
-    inline void clearColor(bool state)         {_clearColorState = state;}
-    inline bool clearColor()             const {return _clearColorState;}
 
     FrameBuffer(bool multiSample);
     virtual ~FrameBuffer();
@@ -97,7 +93,6 @@ protected:
     mutable bool _bound;
     bool        _layeredRendering;
     bool        _clearBuffersState;
-    bool        _clearColorState;
     bool		_useDepthBuffer;
     bool        _disableColorWrites;
     bool        _multisampled;

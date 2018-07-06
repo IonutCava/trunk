@@ -155,3 +155,12 @@ void Frustum::updatePoints(){
 
     _pointsDirty = false;
 }
+
+void Frustum::setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes, bool updateGFX) {
+    _aspectRatio = aspectRatio;
+    _verticalFoV = verticalFoV;
+    _zPlanes = zPlanes;
+    if (updateGFX){
+        GFX_DEVICE.updateProjection();
+    }
+}

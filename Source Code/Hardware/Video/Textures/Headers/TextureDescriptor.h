@@ -177,7 +177,7 @@ public:
         _packAlignment = packAlignment; _unpackAlignment = unpackAlignment;
     }
 
-    inline void setMipLevels(U16 mipMinLevel = 0, U16 mipMaxLevel = 1000) {
+    inline void setMipLevels(U16 mipMinLevel = 0, U16 mipMaxLevel = 0) {
         _mipMinLevel = mipMinLevel; _mipMaxLevel = mipMaxLevel;
     }
     

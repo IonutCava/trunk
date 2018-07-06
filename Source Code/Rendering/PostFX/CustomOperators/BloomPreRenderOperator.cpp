@@ -6,10 +6,9 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
-BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
-                                               FrameBuffer* result,
+BloomPreRenderOperator::BloomPreRenderOperator(FrameBuffer* result,
                                                const vec2<U16>& resolution,
-                                               SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,target,resolution,sampler),
+                                               SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,resolution,sampler),
                                                                                    _outputFB(result),
                                                                                    _tempHDRFB(nullptr),
                                                                                    _luminaMipLevel(0)
@@ -18,7 +17,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
     _luminaFB[1] = nullptr;
     F32 width = _resolution.width;
     F32 height = _resolution.height;
-
+    _horizBlur.resize(1);
+    _vertBlur.resize(1);
     _tempBloomFB = GFX_DEVICE.newFB();
 
     TextureDescriptor tempBloomDescriptor(TEXTURE_2D,
@@ -33,6 +33,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
     bright.setThreadedLoading(false);
     ResourceDescriptor blur("blur");
     blur.setThreadedLoading(false);
+
     _bright = CreateResource<ShaderProgram>(bright);
     _blur = CreateResource<ShaderProgram>(blur);
     _bright->UniformTexture("texScreen", 0);
@@ -40,7 +41,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
     _bright->UniformTexture("texPrevExposure", 2);
     _blur->UniformTexture("texScreen", 0);
     _blur->Uniform("kernelSize", 10);
-
+    _horizBlur[0] = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurHorizontal");
+    _vertBlur[0]  = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurVertical");
     reshape(width, height);
 }
 
@@ -83,55 +85,38 @@ void BloomPreRenderOperator::reshape(I32 width, I32 height){
 }
 
 void BloomPreRenderOperator::operation(){
-    if(!_enabled || !_renderQuad)
+    if(!_enabled)
         return;
 
     if(_inputFB.empty()){
         ERROR_FN(Locale::get("ERROR_BLOOM_INPUT_FB"));
-        assert(!_inputFB.empty());
+        return; 
     }
 
-    GFXDevice& gfx = GFX_DEVICE;
-    RenderInstance* quadRI = _renderQuad->renderInstance();
-
-    gfx.toggle2D(true);
-
     _bright->bind();
-    _renderQuad->setCustomShader(_bright);
-
     toneMapScreen();
-
     _bright->Uniform("toneMap", false);
-
     // render all of the "bright spots"
     _outputFB->Begin(FrameBuffer::defaultPolicy());
     //screen FB
     _inputFB[0]->Bind(0);
-        gfx.renderInstance(quadRI);
-
-
+    GFX_DEVICE.drawPoints(1);
     _blur->bind();
-    _blur->Uniform("horizontal", true);
-    _renderQuad->setCustomShader(_blur);
-
+    _blur->SetSubroutines(FRAGMENT_SHADER, _horizBlur);
     //Blur horizontally
     _tempBloomFB->Begin(FrameBuffer::defaultPolicy());
     //bright spots
     _outputFB->Bind(0);
-        gfx.renderInstance(quadRI);
-        
-    _blur->Uniform("horizontal", false);
-
+    GFX_DEVICE.drawPoints(1);
+    _blur->SetSubroutines(FRAGMENT_SHADER, _vertBlur);
     //Blur vertically
     _outputFB->Begin(FrameBuffer::defaultPolicy());
     //horizontally blurred bright spots
     _tempBloomFB->Bind(0);
-        gfx.renderInstance(quadRI);
-    
+    GFX_DEVICE.drawPoints(1);
     // clear states
     _tempBloomFB->Unbind(0);
     _outputFB->End();
-    gfx.toggle2D(false);
 }
 
 void BloomPreRenderOperator::toneMapScreen()
@@ -181,7 +166,7 @@ void BloomPreRenderOperator::toneMapScreen()
     _luminaFB[0]->Begin(FrameBuffer::defaultPolicy());
     _inputFB[0]->Bind(0);
     _luminaFB[1]->Bind(2);
-        GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
+    GFX_DEVICE.drawPoints(1);
     _luminaFB[1]->Unbind(2);
     
     _bright->Uniform("luminancePass", false);
@@ -195,6 +180,6 @@ void BloomPreRenderOperator::toneMapScreen()
     // luminance FB
     _luminaFB[0]->Bind(1);
     _luminaFB[0]->UpdateMipMaps(TextureDescriptor::Color0);
-        GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
+    GFX_DEVICE.drawPoints(1);
     _luminaFB[0]->Unbind(1);
 }

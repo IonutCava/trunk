@@ -27,12 +27,10 @@ protected:
 public:
 	///The RenderStage is used to inform the GFXDevice of what we are currently doing to set up apropriate states
 	///The target is the full screen quad to which we want to apply our operation to generate the result
-	PreRenderOperator(PostFXRenderStage stage, Quad3D* target,
-		              const vec2<U16>& resolution, SamplerDescriptor* const sampler) : _internalSampler(sampler),
-					                                                                   _stage(stage),
-																					   _renderQuad(target),
-																					   _resolution(resolution),
-																					   _genericFlag(false)
+	PreRenderOperator(PostFXRenderStage stage, const vec2<U16>& resolution, SamplerDescriptor* const sampler) : _internalSampler(sampler),
+					                                                                                            _stage(stage),
+																					                            _resolution(resolution),
+																					                            _genericFlag(false)
 	{
 	}
 
@@ -51,8 +49,6 @@ public:
 
 protected:
 
-	///Target to render to;
-	Quad3D*	_renderQuad;
 	bool    _enabled;
 	///Used to represent anything (for example: HDR on/off for bloom)
 	bool    _genericFlag;

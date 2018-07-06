@@ -63,6 +63,7 @@ protected:
     bool   _resolved;
     bool   _isLayeredDepth;
     static bool         _viewportChanged;
+    static vec2<U16>    _prevViewportDim;
     vectorImpl<GLenum > _colorBuffers;
     bool _colorMaskChanged;
     bool _depthMaskChanged;

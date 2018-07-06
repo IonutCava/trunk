@@ -104,6 +104,14 @@ public:
     
     inline U32 getHash()       { clean(); return _cachedHash; }
     inline U32 getGUID() const { return getGUID(); }
+
+    bool operator == (RenderStateBlockDescriptor& RSBD) const {
+        return _cachedHash == RSBD._cachedHash;
+    }
+
+    bool operator != (RenderStateBlockDescriptor& RSBD) const {
+        return !(*this == RSBD);
+    }
 };
 
 class RenderStateBlock : public GUIDWrapper {
@@ -122,17 +130,15 @@ public:
     const RenderStateBlockDescriptor& getDescriptorConst() const { return _descriptor; }
 
     bool operator == (RenderStateBlock& RSB) const {
-        assert(false);
-        return false;
+        return _descriptor == RSB._descriptor;
     }
 
     bool operator != (RenderStateBlock& RSB) const {
-        assert(false);
-        return false;
+        return !(*this == RSB);
     }
 
     inline bool Compare(RenderStateBlock& RSB) { 
-        return getDescriptor().getHash() == RSB.getDescriptor().getHash();
+        return (*this == RSB);
     }
 
     protected:

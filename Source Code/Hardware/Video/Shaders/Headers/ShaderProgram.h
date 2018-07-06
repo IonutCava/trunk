@@ -40,7 +40,7 @@ public:
     virtual void unbind(bool resetActiveProgram = true);
     virtual U8   update(const U64 deltaTime);
 
-    void ApplyMaterial(Material* const material);
+    void ApplyMaterial(Material* const material, U8 currentLOD);
     ///Attributes
     inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
     inline void Attribute(const std::string& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
@@ -67,7 +67,9 @@ public:
     inline void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
     ///Uniform Texture
     inline void UniformTexture(const std::string& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
-
+    ///Subroutine
+    virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
+    virtual U32  GetSubroutineIndex(ShaderType type, const std::string& name) const = 0;
     ///Attribute+Uniform+UniformTexture implementation
     virtual void Attribute(I32 location, D32 value) const = 0;
     virtual void Attribute(I32 location, F32 value) const = 0;
@@ -114,23 +116,13 @@ public:
     //flash stored uniform locations
     virtual void flushLocCache() = 0;
 
-    inline void setShaderMask(const P32 mask) {
-        _useVertex       = (mask.b.b0 == 1);
-        _useFragment     = (mask.b.b1 == 1);
-        _useGeometry     = (mask.b.b2 == 1);
-        _useTessellation = (mask.b.b3 == 1);
-        _linked = false;
-    }
-
-    inline void useCompute(const bool state){
-        _useCompute = state;
-    }
     void uploadNodeMatrices();
 
 protected:
     friend class ShaderManager;
     vectorImpl<Shader* > getShaders(const ShaderType& type) const;
     inline void setMatricesDirty() { _extendedMatricesDirty = true; }
+    inline void updateClipPlanes() { _clipPlanesDirty = true; }
     I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
     I32 operator!=(const ShaderProgram &_v) { return !(*this == _v); }
 
@@ -146,11 +138,6 @@ protected:
     void updateMatrices();
 
 protected:
-    bool _useTessellation;
-    bool _useGeometry;
-    bool _useFragment;
-    bool _useVertex;
-    bool _useCompute;
     bool _refreshVert;
     bool _refreshFrag;
     bool _refreshGeom;
@@ -178,13 +165,16 @@ protected:
     vectorImpl<vec4<F32> > _clipPlanes;
     ///cached clipping planes' states
     vectorImpl<I32 >       _clipPlanesStates;
+    ///light computation subroutines
+    vectorImpl<U32 >       _lod0VertLight;
+    vectorImpl<U32 >       _lod1VertLight;
 
 private:
     char _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
 
     Unordered_map<EXTENDED_MATRIX, I32  > _extendedMatrixEntry;
     bool _extendedMatricesDirty;
-
+    bool _clipPlanesDirty;
     ///Various uniform/attribute locations
     I32 _timeLoc;
     I32 _cameraLocationLoc;
@@ -206,6 +196,7 @@ private:
     I32 _fogEndLoc;
     I32 _fogModeLoc;
     I32 _fogDetailLevelLoc;
+    U8  _prevLOD;
 };
 
 #endif

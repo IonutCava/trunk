@@ -159,7 +159,7 @@ protected:
     /*Immediate Mode Emmlation*/
 
     /*Light Management*/
-    virtual void setLight(Light* const light) = 0;
+    virtual void setLight(Light* const light, bool shadowPass = false) = 0;
     /*Light Management*/
     virtual void Screenshot(char *filename, const vec4<F32>& rect) = 0;
     virtual ~RenderAPIWrapper(){};
@@ -169,7 +169,11 @@ protected:
     virtual I32 getDrawCallCount() const = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) = 0;
 
+    virtual void drawPoints(U32 numPoints) = 0;
+
 protected:
+    ///Update projection matrix
+    virtual void updateProjection() = 0;
     ///Change the resolution and reshape all graphics data
     virtual void changeResolutionInternal(U16 w, U16 h) = 0;
 

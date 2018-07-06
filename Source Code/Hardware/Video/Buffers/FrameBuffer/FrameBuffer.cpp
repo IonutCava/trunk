@@ -9,7 +9,6 @@ FrameBuffer::FrameBuffer(bool multiSampled) : GUIDWrapper(),
                                               _disableColorWrites(false),
                                               _bound(false),
                                               _clearBuffersState(true),
-                                              _clearColorState(true),
                                               _layeredRendering(false)
 {
     _clearColor.set(DefaultColors::WHITE());

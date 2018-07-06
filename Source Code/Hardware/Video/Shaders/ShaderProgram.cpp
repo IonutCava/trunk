@@ -11,11 +11,6 @@
 
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
                                                     _optimise(optimise),
-                                                    _useCompute(false),
-                                                    _useTessellation(false),
-                                                    _useGeometry(false),
-                                                    _useFragment(true),
-                                                    _useVertex(true),
                                                     _linked(false),
                                                     _bound(false),
                                                     _dirty(true),
@@ -29,7 +24,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 
     _extendedMatricesDirty = true;
- 
+    _clipPlanesDirty = true;
+
     _extendedMatrixEntry[WORLD_MATRIX]  = -1;
     _extendedMatrixEntry[WV_MATRIX]     = -1;
     _extendedMatrixEntry[WV_INV_MATRIX] = -1;
@@ -55,6 +51,9 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _fogEndLoc         = -1;
     _fogModeLoc        = -1;
     _fogDetailLevelLoc = -1;
+    _prevLOD           = 250;
+    _lod0VertLight.resize(1);
+    _lod1VertLight.resize(1);
     U32 i = 0, j = 0;
     for (; i < Material::TEXTURE_UNIT0; ++i)
         sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
@@ -167,6 +166,10 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _fogEndLoc         = this->cachedLoc("fogEnd");
     _fogModeLoc        = this->cachedLoc("fogMode");
     _fogDetailLevelLoc = this->cachedLoc("fogDetailLevel");
+
+    _lod0VertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD0");
+    _lod1VertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD1");
+
     _dirty = true;
 
     return true;
@@ -185,15 +188,7 @@ bool ShaderProgram::bind(){
 
 void ShaderProgram::uploadNodeMatrices(){
     GFXDevice& GFX = GFX_DEVICE;
-#if defined(CSM_USE_LAYERED_RENDERING)
-    if (_shadowCPV[0] != -1 && GFX.isCurrentRenderStage(SHADOW_STAGE)){
-        Light* currentLight = LightManager::getInstance().getCurrentLight();
-        if (currentLight)
-            for (U8 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i)
-                this->Uniform(_shadowCPV[i], currentLight->getVPMatrix(i));
-            this->Uniform("dvd_currentSplitCount", currentLight->getShadowMapInfo()->numLayers());
-    }
-#endif
+
     I32 currentLocation = -1;
     /*Get and upload matrix data*/
     if (_extendedMatricesDirty == true){
@@ -227,8 +222,7 @@ void ShaderProgram::uploadNodeMatrices(){
     }
     
     /*Get and upload clip plane data*/
-    if (GFX.clippingPlanesDirty()){
-        GFX.updateClipPlanes();
+    if (_clipPlanesDirty == true){
         size_t planeCount = GFX.getClippingPlanes().size();
         this->Uniform(_clipPlaneCountLoc, (I32)planeCount);
         _clipPlanes.resize(0);
@@ -245,10 +239,12 @@ void ShaderProgram::uploadNodeMatrices(){
 
         this->Uniform(_clipPlanesLoc, _clipPlanes);
         this->Uniform(_clipPlanesActiveLoc, _clipPlanesStates);
+
+        _clipPlanesDirty = false;
     }
 }
 
-void ShaderProgram::ApplyMaterial(Material* const material){
+void ShaderProgram::ApplyMaterial(Material* const material, U8 currentLOD){
     for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
         if (material->getTexture(i)){
             if (i >= Material::TEXTURE_UNIT0)
@@ -264,10 +260,20 @@ void ShaderProgram::ApplyMaterial(Material* const material){
     Uniform("material",     material->getMaterialMatrix());
     Uniform("textureCount", material->getTextureCount());
 
+    if (currentLOD != _prevLOD){
+        if (currentLOD == 0)
+            SetSubroutines(VERTEX_SHADER, _lod0VertLight);
+        else
+            SetSubroutines(VERTEX_SHADER, _lod1VertLight);
+
+        Uniform("lodLevel", (I32)currentLOD);
+        _prevLOD = currentLOD;
+    }
 }
 
 void ShaderProgram::unbind(bool resetActiveProgram){
     _bound = false;
+    _prevLOD = 250;
 }
 
 vectorImpl<Shader* > ShaderProgram::getShaders(const ShaderType& type) const{

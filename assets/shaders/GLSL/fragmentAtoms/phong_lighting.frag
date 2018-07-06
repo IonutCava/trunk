@@ -91,7 +91,7 @@ vec4 Phong(in vec2 texCoord, in vec3 normal){
 #endif
 
     //Apply shadowing
-    linearColor.rgb *= (0.4 + 0.6 * materialProp.shadowFactor);
+    linearColor.rgb *= (0.2 + 0.8 * materialProp.shadowFactor);
 
     return linearColor;
 

@@ -59,7 +59,6 @@ protected:
     mat4<F32> _viewInvMatrixCache;
     mat4<F32> _shadowViewMatrices[Config::MAX_SPLITS_PER_LIGHT];
     mat4<F32> _shadowProjMatrices[Config::MAX_SPLITS_PER_LIGHT];
-    Quad3D* _renderQuad;
     ShaderProgram*  _previewDepthMapShader;
     ShaderProgram*  _blurDepthMapShader;
     FrameBuffer::FrameBufferTarget* _renderPolicy;
@@ -70,10 +69,11 @@ protected:
     vectorImpl<vec3<F32> > _frustumCornersVS;
     vectorImpl<vec3<F32> > _frustumCornersWS;
     vectorImpl<vec3<F32> > _frustumCornersLS;
-    vectorImpl<vec3<F32> > _farFrustumCornersVS;
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
+    vectorImpl<vec4<F32> > _clipRect;
     vectorImpl<F32 >       _splitDepths;
-
+    vectorImpl<U32 >       _horizBlur;
+    vectorImpl<U32 >       _vertBlur;
 
 };
 #endif 

@@ -31,7 +31,7 @@
 
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
-	SSAOPreRenderOperator(Quad3D* const target, FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	SSAOPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~SSAOPreRenderOperator();
 
 	void operation();

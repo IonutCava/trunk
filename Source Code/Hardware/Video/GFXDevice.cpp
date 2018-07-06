@@ -39,11 +39,9 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _MSAASamples = 0;
    _FXAASamples = 0;
    _defaultStateBlock = nullptr;
-   _previousStateBlock = nullptr;
    _currentStateBlock = nullptr;
    _newStateBlock = nullptr;
    _previewDepthMapShader = nullptr;
-   _renderQuad = nullptr;
    _stateBlockDirty = false;
    _drawDebugAxis = false;
    _enablePostProcessing = false;
@@ -77,7 +75,6 @@ GFXDevice::~GFXDevice()
 I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     RenderStateBlockDescriptor defaultStateDescriptor;
     _defaultStateBlock = getOrCreateStateBlock(defaultStateDescriptor);
-    _previousStateBlock = getOrCreateStateBlock(defaultStateDescriptor);
 
     I8 hardwareState = _api.initHardware(resolution,argc,argv);
 
@@ -172,6 +169,13 @@ void GFXDevice::idle() {
     _api.idle();
 }
 
+void GFXDevice::drawPoints(U32 numPoints) {
+    if (_stateBlockDirty)
+        updateStates();
+
+    _api.drawPoints(numPoints); 
+}
+
 void GFXDevice::renderInstance(RenderInstance* const instance){
     //All geometry is stored in VB format
     assert(instance->object3D() != nullptr);
@@ -213,8 +217,6 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
 
     VertexBuffer* VB = model->getGeometryVB();
     assert(VB != nullptr);
-    //Send our transformation matrices (projection, world, view, inv model view, etc)
-    VB->currentShader()->uploadNodeMatrices();
     //Render our current vertex array object
     VB->Draw(model->getCurrentLOD());
 
@@ -231,7 +233,6 @@ void GFXDevice::renderBuffer(VertexBuffer* const vb, Transform* const vbTransfor
         pushWorldMatrix(vbTransform->getGlobalMatrix(), vbTransform->isUniformScaled());
     }
          
-    vb->currentShader()->uploadNodeMatrices();
     //Render our current vertex array
     vb->DrawRange();
 
@@ -350,10 +351,9 @@ RenderStateBlock* GFXDevice::getOrCreateStateBlock(RenderStateBlockDescriptor& d
 
 RenderStateBlock* GFXDevice::setStateBlock(RenderStateBlock* block, bool forceUpdate) {
    assert(block != nullptr);
-
+   RenderStateBlock* prev = _newStateBlock;
    if (!_currentStateBlock || !block->Compare(*_currentStateBlock)) {
        _deviceStateDirty = _stateBlockDirty = true;
-       _previousStateBlock = _newStateBlock;
        _newStateBlock = block;
        if(forceUpdate)  updateStates();//<there is no need to force a internal update of stateblocks if nothing changed
    } else {
@@ -361,7 +361,7 @@ RenderStateBlock* GFXDevice::setStateBlock(RenderStateBlock* block, bool forceUp
        _newStateBlock = _currentStateBlock;
    }
 
-   return _previousStateBlock;
+   return prev;
 }
 
 void GFXDevice::updateStates(bool force) {
@@ -379,13 +379,17 @@ void GFXDevice::updateStates(bool force) {
     }
 
     _stateBlockDirty = false;
-
-   LightManager::getInstance().update();
+    updateClipPlanes();
+    LightManager::getInstance().update();
 }
 
 bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){
     U16 exclusionMask = TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY | TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES;
     return (exclusionMask & currentType) == currentType ? true : false;
+}
+
+void GFXDevice::changeClipPlanes(F32 near, F32 far) {
+
 }
 
 void GFXDevice::changeResolution(U16 w, U16 h) {
@@ -484,13 +488,7 @@ void GFXDevice::previewDepthBuffer(){
         ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
         _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
         assert(_previewDepthMapShader != nullptr);
-        ResourceDescriptor mrt("DepthBufferPreviewQuad");
-        mrt.setFlag(true); //No default Material;
-        _renderQuad = CreateResource<Quad3D>(mrt);
-        _renderQuad->renderInstance()->draw2D(true);
-        _renderQuad->renderInstance()->preDraw(true);
-        _renderQuad->setCustomShader(_previewDepthMapShader);
-        _renderQuad->setDimensions(vec4<F32>(0,0,Application::getInstance().getResolution().width,Application::getInstance().getResolution().height));
+        _previewDepthMapShader->UniformTexture("tex", 0);
     }
 
     if(_previewDepthMapShader->getState() != RES_LOADED)
@@ -499,17 +497,26 @@ void GFXDevice::previewDepthBuffer(){
     const I32 viewportSide = 256;
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
     _previewDepthMapShader->bind();
-    _previewDepthMapShader->UniformTexture("tex",0);
-    toggle2D(true);
+    
     renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-viewportSide,0,viewportSide,viewportSide),
-                                boost::bind(&GFXDevice::renderInstance,
-                                            DELEGATE_REF(GFX_DEVICE),
-                                            _renderQuad->renderInstance()));
-    toggle2D(false);
+                               DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1));
+    
     _renderTarget[RENDER_TARGET_DEPTH]->Unbind(0);
 }
 
 void GFXDevice::flush(){
+    toggle2D(true);
     previewDepthBuffer();
+    // Preview depthmaps if needed
+    LightManager::getInstance().previewShadowMaps();
+    toggle2D(false);
     _api.flush();
+}
+
+void GFXDevice::updateClipPlanes() {
+    if (_clippingPlanesDirty) {
+        _api.updateClipPlanes(); 
+        _clippingPlanesDirty = false;
+        ShaderManager::getInstance().updateClipPlanes();
+    }
 }

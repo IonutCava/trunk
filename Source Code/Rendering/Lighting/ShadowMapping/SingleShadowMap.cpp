@@ -12,17 +12,10 @@
 SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_Single)
 {
     PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "Single Shadow Map");
-    std::stringstream ss;
-    ss << "Light " << (U32)light->getId() << " viewport " << 0;
-    ResourceDescriptor mrt(ss.str());
-    mrt.setFlag(true); //No default Material;
-    _renderQuad = CreateResource<Quad3D>(mrt);
     ResourceDescriptor shadowPreviewShader("fbPreview");
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
-    _renderQuad->setCustomShader(_previewDepthMapShader);
-    _renderQuad->renderInstance()->draw2D(true);
-
+    _previewDepthMapShader->UniformTexture("tex", 0);
     SamplerDescriptor depthMapSampler;
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(false);
@@ -43,7 +36,6 @@ SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_Si
 SingleShadowMap::~SingleShadowMap()
 {
     RemoveResource(_previewDepthMapShader);
-    RemoveResource(_renderQuad);
 }
 
 void SingleShadowMap::init(ShadowMapInfo* const smi){
@@ -60,7 +52,6 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor){
         _depthMap->Create(_resolution, _resolution);
     }
     ShadowMap::resolution(resolution, resolutionFactor);
-    _renderQuad->setDimensions(vec4<F32>(0,0,_depthMap->getWidth(),_depthMap->getHeight()));
 }
 
 void SingleShadowMap::render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
@@ -104,12 +95,6 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const 
 void SingleShadowMap::previewShadowMaps(){
     _depthMap->Bind(0);
     _previewDepthMapShader->bind();
-    _previewDepthMapShader->UniformTexture("tex",0);
-    GFX_DEVICE.toggle2D(true);
-        GFX_DEVICE.renderInViewport(vec4<I32>(0,0,256,256),
-                                    boost::bind(&GFXDevice::renderInstance,
-                                                DELEGATE_REF(GFX_DEVICE),
-                                                _renderQuad->renderInstance()));
-    GFX_DEVICE.toggle2D(false);
+    GFX_DEVICE.drawPoints(1);
     _depthMap->Unbind(0);
 }

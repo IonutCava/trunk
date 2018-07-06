@@ -44,6 +44,7 @@ protected:
     void exitRenderLoop(bool killCommand = false);
     void closeRenderingApi();
     void initDevice(U32 targetFrameRate);
+    void updateProjection();
     void changeResolutionInternal(U16 w, U16 h);
     void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
@@ -88,6 +89,8 @@ protected:
                    const mat4<F32>& globalOffset,
                    const bool orthoMode = false,
                    const bool disableDepth = false);
+    void drawPoints(U32 numPoints);
+
     void debugDraw();
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return nullptr; }
 
@@ -97,7 +100,7 @@ protected:
     typedef void (*callback)();
     void dxCommand(callback f){(*f)();};
 
-    void setLight(Light* const light){};
+    void setLight(Light* const light, bool shadowPass = false){};
 
     void Screenshot(char *filename, const vec4<F32>& rect);
 

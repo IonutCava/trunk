@@ -23,11 +23,10 @@ public:
    ///A target fullscreen quad to which it should render it's output. This output is saved in the "result" FB
    ///"state" is a reference to the global variable that enables or disables the effect (via options, PostFX, config, etc)
    template<class T>
-   inline PreRenderOperator* addPreRenderOperator(Quad3D* const target,
-												  bool& state,
+   inline PreRenderOperator* addPreRenderOperator(bool& state,
 												  FrameBuffer* result,
 												  const vec2<U16>& resolution){
-			return addToStage(New T(target,result,resolution,_screenSampler),state);
+			return addToStage(New T(result,resolution,_screenSampler),state);
    }
 
    inline PreRenderStage*	getPreRenderBatch() { return _renderStage; };

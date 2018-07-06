@@ -113,8 +113,8 @@ public: ///Input
 
 private:
    static void firstLoop();
-   void displayScene();
-   void displaySceneAnaglyph();
+   void renderScene();
+   void renderSceneAnaglyph();
    bool mainLoopScene(FrameEvent& evt);
    bool presentToScreen(FrameEvent& evt, const D32 interpolationFactor);
 

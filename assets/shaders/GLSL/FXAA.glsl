@@ -1,21 +1,45 @@
 -- Vertex
 
-out vec4 _posPos;
+void main(void)
+{
+}
+
+-- Geometry
+
+layout(points) in;
+layout(triangle_strip, max_vertices = 4) out;
+
 out vec2 _texCoord;
+out vec4 _posPos;
 
-uniform mat4 dvd_WorldViewProjectionMatrix;
-
-uniform float FXAA_SUBPIX_SHIFT = 1.0/4.0;
 uniform vec2 size;
+uniform float FXAA_SUBPIX_SHIFT = 1.0 / 4.0;
 
-void main(void){
+void main() {
+    vec2 rcpFrame = vec2(1.0 / size.x, 1.0 / size.y);
+    vec2 offset = rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT);
 
-  _texCoord  = inTexCoordData;
-  vec2 rcpFrame = vec2(1.0/size.x, 1.0/size.y);
-  _posPos.xy = _texCoord;
-  _posPos.zw = _texCoord - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT));
+    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+    _texCoord = vec2(1.0, 1.0);
+    _posPos = vec4(_texCoord, _texCoord - offset);
+    EmitVertex();
 
-  gl_Position = dvd_WorldViewProjectionMatrix * vec4(inVertexData,1.0);
+    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+    _texCoord = vec2(0.0, 1.0);
+    _posPos = vec4(_texCoord, _texCoord - offset);
+    EmitVertex();
+
+    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+    _texCoord = vec2(1.0, 0.0);
+    _posPos = vec4(_texCoord, _texCoord - offset);
+    EmitVertex();
+
+    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+    _texCoord = vec2(0.0, 0.0);
+    _posPos = vec4(_texCoord, _texCoord - offset);
+    EmitVertex();
+
+    EndPrimitive();
 }
 
 -- Fragment

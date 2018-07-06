@@ -76,6 +76,8 @@ public:
 
     void setMatricesDirty();
 
+    void updateClipPlanes();
+
 private:
     ///Shader cache
     ShaderMap        _shaderNameMap;
@@ -92,7 +94,7 @@ private:
     ShaderProgram* _imShader;
     ///A simple check to see if the manager is ready to process commands
     bool             _init;
-
+    
 private:
     ShaderManager();
     ~ShaderManager();

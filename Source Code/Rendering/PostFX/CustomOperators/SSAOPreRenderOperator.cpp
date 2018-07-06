@@ -6,10 +6,9 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
-                                             FrameBuffer* result,
+SSAOPreRenderOperator::SSAOPreRenderOperator(FrameBuffer* result,
                                              const vec2<U16>& resolution,
-                                             SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,target,resolution,sampler),
+                                             SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,resolution,sampler),
                                                                                  _outputFB(result)
 {
     TextureDescriptor outputDescriptor(TEXTURE_2D,
@@ -35,25 +34,14 @@ void SSAOPreRenderOperator::reshape(I32 width, I32 height){
 }
 
 void SSAOPreRenderOperator::operation(){
-    if(!_enabled || !_renderQuad) return;
-
-    GFXDevice& gfx = GFX_DEVICE;
-
-    gfx.toggle2D(true);
+    if(!_enabled) return;
 
     _ssaoShader->bind();
-    _renderQuad->setCustomShader(_ssaoShader);
-
     _outputFB->Begin(FrameBuffer::defaultPolicy());
-        _inputFB[0]->Bind(0); // screen
-        _inputFB[1]->Bind(1, TextureDescriptor::Depth); // depth
-
-            gfx.renderInstance(_renderQuad->renderInstance());
-
-        _inputFB[1]->Unbind(1);
-        _inputFB[0]->Unbind(0);
-
+    _inputFB[0]->Bind(0); // screen
+    _inputFB[1]->Bind(1, TextureDescriptor::Depth); // depth
+    GFX_DEVICE.drawPoints(1);
+    _inputFB[1]->Unbind(1);
+    _inputFB[0]->Unbind(0);
     _outputFB->End();
-
-    gfx.toggle2D(false);
 }

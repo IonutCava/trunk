@@ -18,7 +18,7 @@ GLuint GL_API::_activeVAOId = 0;
 GLuint GL_API::_activeFBId = 0;
 GLuint GL_API::_activeVBId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
-vec4<GLfloat> GL_API::_prevClearColor = DefaultColors::DIVIDE_BLUE();
+Unordered_map<GLuint, vec4<GLfloat> > GL_API::_prevClearColor;
 
 bool GL_API::_viewportForced = false;
 bool GL_API::_viewportUpdateGL = false;
@@ -53,11 +53,12 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 
 void GL_API::toggle2D(bool state){
     if(state == _2DRendering) return;
+    static RenderStateBlock* previousStateBlock = nullptr;
 
     _2DRendering = state;
 
     if(state){ //2D
-        SET_STATE_BLOCK(_state2DRendering);
+        previousStateBlock = SET_STATE_BLOCK(_state2DRendering);
         Divide::GL::_matrixMode(PROJECTION_MATRIX);
         Divide::GL::_pushMatrix(); //1
         Divide::GL::_ortho(0,_cachedResolution.width,0,_cachedResolution.height,-1,1);
@@ -65,17 +66,25 @@ void GL_API::toggle2D(bool state){
         Divide::GL::_pushMatrix(); //2
         Divide::GL::_loadIdentity();
     }else{ //3D
+        assert(previousStateBlock != nullptr);
+
         Divide::GL::_matrixMode(VIEW_MATRIX);
         Divide::GL::_popMatrix(); //2
         Divide::GL::_matrixMode(PROJECTION_MATRIX);
         Divide::GL::_popMatrix(); //1
-        SET_PREVIOUS_STATE_BLOCK();
+        SET_STATE_BLOCK(previousStateBlock);
     }
 }
 
 ///Update OpenGL light state
-void GL_API::setLight(Light* const light){
+void GL_API::setLight(Light* const light, bool shadowPass){
     assert(light != nullptr);
+    if (shadowPass){
+        const LightShadowProperties& crtShadow = light->getShadowProperties();
+        GLsizei sizeOfBlock = sizeof(LightShadowProperties);
+        _uniformBufferObjects[Shadow_UBO]->ChangeSubData(light->getSlot() * sizeOfBlock, sizeOfBlock, (const GLvoid*)(&crtShadow));
+        return;
+    }
 
     LightProperties crtLight = light->getProperties();
     
@@ -86,11 +95,12 @@ void GL_API::setLight(Light* const light){
 
     crtLight._position.set(viewMatrix * vec4<F32>(crtLight._position.xyz(), std::min(crtLight._position.w, 1.0f)));
 
-    if(lightType < 0.5f){ //directional light
+    if (light->getType() == LIGHT_TYPE_DIRECTIONAL){
         crtLight._position.normalize();
-    }else if(lightType > 1.5f){ //spot light
+    }else if (light->getType() == LIGHT_TYPE_SPOT){
         F32 spotExponent = crtLight._direction.w;
-        crtLight._direction.set(viewMatrix * vec4<F32>(crtLight._direction.xyz(), 0.0f));
+        crtLight._direction.w = 0.0f;
+        crtLight._direction.set(viewMatrix * crtLight._direction);
         crtLight._direction.normalize();
         crtLight._direction.w = spotExponent;
     }
@@ -101,6 +111,8 @@ void GL_API::setLight(Light* const light){
     _uniformBufferObjects[Lights_UBO]->ChangeSubData(light->getSlot() * (sizeOfBlock/* + padding*/),  // offset
                                                      sizeOfBlock,                     // size
                                                      (const GLvoid*)(&crtLight)); // data
+
+   
 }
 
 const size_t mat4Size = 16 * sizeof(GLfloat);
@@ -221,7 +233,7 @@ const GLfloat* GL_API::getOrthoProjection(const vec4<GLfloat>& rect, const vec2<
 // -and sets the matrix mode back to GL_MODELVIEW
 GLfloat* GL_API::setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const vec2<GLfloat>& planes){
     Divide::GL::_matrixMode(VIEW_MATRIX);
-    Frustum::getInstance().setProjection(aspectRatio, FoV, planes);
+    Frustum::getInstance().setProjection(aspectRatio, FoV, planes, false);
     return Divide::GL::_perspective(FoV, aspectRatio, planes.x, planes.y);
 }
 
@@ -232,10 +244,6 @@ void GL_API::setAnaglyphFrustum(GLfloat camIOD, bool rightFrustum){
 }
 
 void GL_API::updateClipPlanes(){
-    //ToDo: Hack because clearly, HW clipping is too complicated for some ATI cards ... -Ionut
-    if(getGPUVendor() == GPU_VENDOR_AMD)
-        return;
-
     const PlaneList& list = GFX_DEVICE.getClippingPlanes();
     bool clipPlaneState = false;
     for(GLuint clipPlaneIndex = 0; clipPlaneIndex < list.size(); clipPlaneIndex++){
@@ -310,13 +318,11 @@ bool GL_API::setActiveProgram(glShaderProgram* const program,const bool force){
     return true;
 }
 
-void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force){
-    if(!FLOAT_COMPARE(_prevClearColor.r,r ) ||
-       !FLOAT_COMPARE(_prevClearColor.g,g ) ||
-       !FLOAT_COMPARE(_prevClearColor.b,b ) ||
-       !FLOAT_COMPARE(_prevClearColor.a,a )){
-           _prevClearColor.set(r,g,b,a);
-            glClearColor(r,g,b,a);
+void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget, bool force){
+    vec4<F32>& prevClearColor = _prevClearColor[renderTarget];
+    if (!FLOAT_COMPARE(prevClearColor.r, r) || !FLOAT_COMPARE(prevClearColor.g, g) || !FLOAT_COMPARE(prevClearColor.b, b) || !FLOAT_COMPARE(prevClearColor.a, a)){
+        prevClearColor.set(r, g, b, a);
+        glClearColor(r,g,b,a);
     }
 }
 

@@ -53,11 +53,7 @@ public:
     inline void setVerticalFoV(F32 vFoV)   { _verticalFoV = vFoV; }
     inline void setHorizontalFoV(F32 hFoV) { _verticalFoV = Util::xfov_to_yfov(hFoV, _aspectRatio); }
     
-    inline void setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes) {
-        _aspectRatio = aspectRatio;
-        _verticalFoV = verticalFoV;
-        _zPlanes = zPlanes;
-    }
+    void setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes, bool updateGFX = true);
 
     inline void setOrtho(const vec4<F32>& rect, const vec2<F32>& zPlanes) {
         _orthoRect = rect;

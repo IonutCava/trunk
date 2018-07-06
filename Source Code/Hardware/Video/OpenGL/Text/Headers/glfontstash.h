@@ -74,9 +74,8 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex == 0) return;
 
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gl->tex);
-     
+    GL_API::setActiveTextureUnit(0);
     GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
     GL_API::setActiveVB(gl->glfons_vboID);

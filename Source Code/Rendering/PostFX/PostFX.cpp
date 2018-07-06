@@ -13,7 +13,6 @@
 #include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
 PostFX::PostFX(): _underwaterTexture(nullptr),
-    _renderQuad(nullptr),
     _anaglyphShader(nullptr),
     _postProcessingShader(nullptr),
     _noise(nullptr),
@@ -32,31 +31,18 @@ PostFX::PostFX(): _underwaterTexture(nullptr),
 
 PostFX::~PostFX()
 {
-    if(_renderQuad)
-        RemoveResource(_renderQuad);
 
     if(_postProcessingShader){
-        if(_underwaterTexture)
-            RemoveResource(_underwaterTexture);
-
         RemoveResource(_postProcessingShader);
-
-        if(_gfx->anaglyphEnabled()){
-            RemoveResource(_anaglyphShader);
-        }
-
-        if(_enableBloom){
-            if(_enableBloom)
-                SAFE_DELETE(_bloomFB);
-        }
+        if(_underwaterTexture)      RemoveResource(_underwaterTexture);
+        if(_gfx->anaglyphEnabled()) RemoveResource(_anaglyphShader);
+        if(_enableBloom)            SAFE_DELETE(_bloomFB);
+        if(_enableSSAO)             SAFE_DELETE(_SSAO_FB);
 
         if(_enableNoise){
             RemoveResource(_noise);
             RemoveResource(_screenBorder);
         }
-
-        if(_enableSSAO)
-            SAFE_DELETE(_SSAO_FB);
     }
     PreRenderStageBuilder::getInstance().destroyInstance();
 }
@@ -74,13 +60,6 @@ void PostFX::init(const vec2<U16>& resolution){
     _enableFXAA = _gfx->FXAAEnabled();
 
     if (_gfx->postProcessingEnabled()){
-        ResourceDescriptor mrt("PostFX RenderQuad");
-        mrt.setFlag(true); //No default Material;
-        _renderQuad = CreateResource<Quad3D>(mrt);
-        assert(_renderQuad);
-        _renderQuad->setDimensions(vec4<F32>(0,0,resolution.width,resolution.height));
-        _renderQuad->renderInstance()->preDraw(true);
-        _renderQuad->renderInstance()->draw2D(true);
         ResourceDescriptor postFXShader("postProcessing");
         std::stringstream ss;
         if(_enableBloom) ss << "POSTFX_ENABLE_BLOOM,";
@@ -137,26 +116,26 @@ void PostFX::createOperators(){
     // Bloom and Ambient Occlusion generate textures that are applied in the PostFX shader
     if(_enableBloom && !_bloomFB){
         _bloomFB = _gfx->newFB();
-        _bloomOP = stageBuilder.addPreRenderOperator<BloomPreRenderOperator>(_renderQuad, _enableBloom, _bloomFB, _resolutionCache);
-        _bloomOP->addInputFB(_gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN));
+        _bloomOP = stageBuilder.addPreRenderOperator<BloomPreRenderOperator>(_enableBloom, _bloomFB, _resolutionCache);
+        _bloomOP->addInputFB(screenBuffer);
     }
 
     if(_enableSSAO && !_SSAO_FB){
         _SSAO_FB = _gfx->newFB();
-        PreRenderOperator* ssaoOP = stageBuilder.addPreRenderOperator<SSAOPreRenderOperator>(_renderQuad, _enableSSAO, _SSAO_FB, _resolutionCache);
+        PreRenderOperator* ssaoOP = stageBuilder.addPreRenderOperator<SSAOPreRenderOperator>(_enableSSAO, _SSAO_FB, _resolutionCache);
         ssaoOP->addInputFB(screenBuffer);
         ssaoOP->addInputFB(depthBuffer);
     }
 
     // DOF and FXAA modify the screen FB
     if(_enableDOF && !_dofOP){
-        _dofOP = stageBuilder.addPreRenderOperator<DoFPreRenderOperator>(_renderQuad, _enableDOF, screenBuffer, _resolutionCache);
+        _dofOP = stageBuilder.addPreRenderOperator<DoFPreRenderOperator>(_enableDOF, screenBuffer, _resolutionCache);
         _dofOP->addInputFB(screenBuffer);
         _dofOP->addInputFB(depthBuffer);
     }
 
     if(_enableFXAA && !_fxaaOP){
-        _fxaaOP = stageBuilder.addPreRenderOperator<FXAAPreRenderOperator>(_renderQuad, _enableFXAA, screenBuffer, _resolutionCache);
+        _fxaaOP = stageBuilder.addPreRenderOperator<FXAAPreRenderOperator>(_enableFXAA, screenBuffer, _resolutionCache);
         _fxaaOP->addInputFB(screenBuffer);
     }
 
@@ -175,28 +154,34 @@ void PostFX::updateResolution(I32 width, I32 height){
 
     if (vec2<U16>(width, height) == _resolutionCache || width < 1 || height < 1)
         return;
+
     _resolutionCache.set(width, height);
-    _renderQuad->setDimensions(vec4<F32>(0,0,width,height));
     _postProcessingShader->refresh();
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->reshape(width,height);
 }
 
-void PostFX::displaySceneWithAnaglyph(){
+void PostFX::displaySceneAnaglyph(){
+    _gfx->toggle2D(true);
     _anaglyphShader->bind();
-    
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_RIGHT_EYE); //right eye buffer
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Bind(TEX_BIND_POINT_LEFT_EYE); //left eye buffer
 
-        _gfx->toggle2D(true);
-            _renderQuad->setCustomShader(_anaglyphShader);
-            _gfx->renderInstance(_renderQuad->renderInstance());
-        _gfx->toggle2D(false);
+       _gfx->drawPoints(1);
 
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Unbind(TEX_BIND_POINT_LEFT_EYE);
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Unbind(TEX_BIND_POINT_RIGHT_EYE);
+    _gfx->toggle2D(false);
 }
 
-void PostFX::displaySceneWithoutAnaglyph(){
+void PostFX::displayScene(){
+    if (!_gfx->postProcessingEnabled())
+         return;
+    if (_gfx->anaglyphEnabled()){
+        displaySceneAnaglyph();
+        return;
+    }
+    _gfx->toggle2D(true);
+
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->execute();
 
     _postProcessingShader->bind();
@@ -221,10 +206,7 @@ void PostFX::displaySceneWithoutAnaglyph(){
         _screenBorder->Bind(TEX_BIND_POINT_BORDER);
     }
 
-    _gfx->toggle2D(true);
-        _renderQuad->setCustomShader(_postProcessingShader);
-        _gfx->renderInstance(_renderQuad->renderInstance());
-    _gfx->toggle2D(false);
+    _gfx->drawPoints(1);
 
     if(_enableNoise){
         _screenBorder->Unbind(TEX_BIND_POINT_BORDER);
@@ -240,6 +222,8 @@ void PostFX::displaySceneWithoutAnaglyph(){
     if (_depthPreview) _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Unbind(TEX_BIND_POINT_SCREEN);
     else               _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Unbind(TEX_BIND_POINT_SCREEN);
 #endif
+
+    _gfx->toggle2D(false);
 }
 
 void PostFX::idle(){

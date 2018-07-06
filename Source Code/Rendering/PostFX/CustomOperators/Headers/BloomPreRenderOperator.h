@@ -33,7 +33,7 @@ typedef Texture Texture2D;
 
 class BloomPreRenderOperator : public PreRenderOperator {
 public:
-	BloomPreRenderOperator(Quad3D* const target, FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	BloomPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~BloomPreRenderOperator();
 
 	void operation();
@@ -51,6 +51,8 @@ private:
 	FrameBuffer* _tempHDRFB;
 	FrameBuffer* _luminaFB[2];
 	U32          _luminaMipLevel;
+    vectorImpl<U32 > _horizBlur;
+    vectorImpl<U32 > _vertBlur;
 };
 
 #endif

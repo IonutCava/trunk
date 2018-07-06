@@ -31,7 +31,8 @@ enum UBO_NAME {
     Matrices_UBO  = 0,
     Materials_UBO = 1,
     Lights_UBO    = 2,
-    UBO_PLACEHOLDER = 3
+    Shadow_UBO    = 3,
+    UBO_PLACEHOLDER = 4
 };
 
 ///Base class for shader uniform blocks

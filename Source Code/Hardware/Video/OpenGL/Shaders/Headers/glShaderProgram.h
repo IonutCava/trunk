@@ -35,9 +35,12 @@ public:
     bool unload(){unbind(); return true;}
     bool bind();
     void unbind(bool resetActiveProgram = true);
-    U8   update(const U64 deltaTime);
+    U8 update(const U64 deltaTime);
     void attachShader(Shader* const shader,const bool refresh = false);
     void detachShader(Shader* const shader);
+    //Subroutines
+    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const;
+    U32  GetSubroutineIndex(ShaderType type, const std::string& name) const;
     //Attributes
     void Attribute(GLint location, GLdouble value) const;
     void Attribute(GLint location, GLfloat value) const;
@@ -87,6 +90,7 @@ private:
     Shader* _tessellationEvaluationShader;
     Shader* _computeShader;
     GLuint  _shaderProgramIDTemp;
+    GLenum  _shaderStageTable[6];
 
 protected:
     bool generateHWResource(const std::string& name);

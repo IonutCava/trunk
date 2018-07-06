@@ -1,23 +1,31 @@
-struct Light{
+struct Light {
     vec4  _attenuation; ///< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
     vec4  _position;    ///< xyz = position/direction (omni,spot / directional). w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
     vec4  _direction;   ///< xyz = Used by spot lights, w = spotExponent
     vec4  _diffuse;     ///< rgb = diffuse,  w = ambientFactor;
     vec4  _specular;    ///< rgb = specular color, w = brightness
-    mat4  _lightVP0;
-    mat4  _lightVP1;
-    mat4  _lightVP2;
-    mat4  _lightVP3;
-    float  _floatValue0;
-    float  _floatValue1;
-    float  _floatValue2;
-    float  _floatValue3;
 };
 
 layout(std140) uniform dvd_LightBlock
 {
 	Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
 };
+
+#if defined(FRAG_SHADER)
+struct Shadow {
+    mat4  _lightVP0;
+    mat4  _lightVP1;
+    mat4  _lightVP2;
+    mat4  _lightVP3;
+    vec4  _floatValues;
+    vec3  _lightPosition[4];
+};
+
+layout(std140) uniform dvd_ShadowBlock
+{
+    Shadow dvd_ShadowSource[MAX_LIGHTS_PER_SCENE];
+}; 
+#endif
 
 uniform int  dvd_lightIndex[MAX_LIGHTS_PER_SCENE]; //<What lights to use from the light UBO for the current geometry
 uniform int  dvd_lightType[MAX_LIGHTS_PER_SCENE];

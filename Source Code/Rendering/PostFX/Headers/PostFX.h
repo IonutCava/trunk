@@ -41,11 +41,11 @@ private:
     ~PostFX();
     PostFX();
     void createOperators();
+    void displaySceneAnaglyph();
 
 public:
 
-    void displaySceneWithoutAnaglyph();
-    void displaySceneWithAnaglyph();
+    void displayScene();
 
     void init(const vec2<U16>& resolution);
     void idle();
@@ -94,7 +94,6 @@ private:
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
     D32 _timer, _tickInterval;
 
-    Quad3D*	_renderQuad;
     ShaderProgram* _anaglyphShader;
     ShaderProgram* _postProcessingShader;
     Texture2D* _underwaterTexture;

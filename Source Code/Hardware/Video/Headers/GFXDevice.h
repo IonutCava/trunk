@@ -73,6 +73,7 @@ public:
            void      closeRenderingApi();
            void      changeResolution(U16 w, U16 h);
     inline void      changeResolution(const vec2<U16>& resolution) {changeResolution(resolution.width, resolution.height);}
+           void      changeClipPlanes(F32 near, F32 far);
     inline void beginFrame() {_api.beginFrame();}
     inline void endFrame()   {_api.endFrame();  }
            void flush();
@@ -111,7 +112,7 @@ public:
     ///sets the view frustum to either the left or right eye position for anaglyph rendering
     inline void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false)  {_api.setAnaglyphFrustum(camIOD,rightFrustum);}
             ///sets a new horizontal FoV
-            void setHorizontalFoV(I32 newFoV);
+           void setHorizontalFoV(I32 newFoV);
     inline void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback)  {_api.renderInViewport(rect,callback);}
     //returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
     //allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
@@ -131,6 +132,7 @@ public:
                           const mat4<F32>& globalOffset,
                           const bool orthoMode = false,
                           const bool disableDepth = false) {_api.drawLines(pointsA,pointsB,colors,globalOffset,orthoMode,disableDepth);}
+          void drawPoints(U32 numPoints);
     ///Usefull to perform pre-draw operations on the model if it's drawn outside the scenegraph
     void renderInstance(RenderInstance* const instance);
     void renderBuffer(VertexBuffer* const vb, Transform* const vbTransform = nullptr);
@@ -138,7 +140,7 @@ public:
     ///The render callback must update all visual information and populate the "RenderBin"'s!
     void render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState);
     ///Update light properties internally in the Rendering API
-    inline void setLight(Light* const light)           {_api.setLight(light);}
+    inline void setLight(Light* const light, bool shadowPass = false)           { _api.setLight(light, shadowPass); }
     ///Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
     inline void  setRenderStage(RenderStage stage) {_prevRenderStage = _renderStage; _renderStage = stage;}
@@ -160,7 +162,7 @@ public:
     /* Clipping plane management. All the clipping planes are handled by shader programs only!
     */
     ///enable-disable HW clipping
-    inline void updateClipPlanes() {_api.updateClipPlanes(); }
+           void updateClipPlanes();
     /// add a new clipping plane. This will be limited by the actual shaders (how many planes they use)
     /// this function returns the newly added clip plane's index in the vector
     inline I32 addClipPlane(const Plane<F32>& p);
@@ -204,8 +206,6 @@ public:
     RenderStateBlock* setStateBlock(RenderStateBlock* block, bool forceUpdate = false);
     /// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
     RenderStateBlock* getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor);
-    ///Set previous state block - (deep, I know -Ionut)
-    inline RenderStateBlock* setPreviousStateBlock(bool forceUpdate = false) {return setStateBlock(_previousStateBlock, forceUpdate);}
     ///Sets a standard state block
     inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(_defaultStateBlock, forceUpdate);}
     ///Update the graphics pipeline using the current rendering API with the state block passed
@@ -262,6 +262,7 @@ protected:
     friend class Kernel;
     friend class Application;
     inline void setMousePosition(U16 x, U16 y) const {_api.setMousePosition(x,y);}
+    inline void updateProjection() { _api.updateProjection(); }
     inline void changeResolutionInternal(U16 width, U16 height) { _api.changeResolutionInternal(width, height); }
 private:
 
@@ -296,7 +297,6 @@ protected:
     bool _stateBlockByDescription;
     RenderStateBlock* _currentStateBlock;
     RenderStateBlock* _newStateBlock;
-    RenderStateBlock* _previousStateBlock;
     RenderStateBlock* _defaultStateBlock;
     matrixStack       _worldMatrices;
     mat4<F32> _WVCachedMatrix;
@@ -321,7 +321,6 @@ protected:
     bool      _enableHDR;
     ///shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
-    Quad3D* _renderQuad;
     bool    _previewDepthBuffer;
     ///getMatrix cache
     mat4<F32> _mat4Cache;

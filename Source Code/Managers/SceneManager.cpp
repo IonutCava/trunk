@@ -129,8 +129,6 @@ void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
 
 void SceneManager::postRender(){
     _activeScene->postRender();
-    // Preview depthmaps if needed
-    LightManager::getInstance().previewShadowMaps();
     _frameCount++;
 }
 

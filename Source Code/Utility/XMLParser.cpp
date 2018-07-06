@@ -268,7 +268,7 @@ namespace XML {
         Application::getInstance().setResolution(resolution.width, resolution.height);
         Frustum::getInstance().setProjection((F32)resolution.width / (F32)resolution.height,  // aspect ratio
                                               pt.get("runtime.verticalFOV", 60.0f),  // vertical FoV
-                                              vec2<F32>(pt.get("runtime.zNear", 0.1f), pt.get("runtime.zFar", 700.0f))); // near/far planes
+                                              vec2<F32>(pt.get("runtime.zNear", 0.1f), pt.get("runtime.zFar", 700.0f)), false); // near/far planes
 
         //global fog values
         par.setParam("rendering.sceneState.fogStart",   pt.get("rendering.fogStartDistance",300.0f));

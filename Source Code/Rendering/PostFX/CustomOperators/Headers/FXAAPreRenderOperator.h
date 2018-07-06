@@ -29,7 +29,7 @@
 
 class FXAAPreRenderOperator : public PreRenderOperator {
 public:
-	FXAAPreRenderOperator(Quad3D* const target, FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	FXAAPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~FXAAPreRenderOperator();
 
 	void operation();

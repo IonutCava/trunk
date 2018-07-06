@@ -104,8 +104,4 @@ inline RenderStateBlock* SET_DEFAULT_STATE_BLOCK(bool forceUpdate = false){
     return GFX_DEVICE.setDefaultStateBlock(forceUpdate);
 }
 
-inline RenderStateBlock* SET_PREVIOUS_STATE_BLOCK(bool forceUpdate = false){
-    return GFX_DEVICE.setPreviousStateBlock(forceUpdate);
-}
-
 #endif

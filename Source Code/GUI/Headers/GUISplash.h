@@ -39,7 +39,6 @@ public:
     void render();
 
 private:
-    Quad3D* 	   _renderQuad;
     Texture2D*     _splashImage;
     ShaderProgram* _splashShader;
 };

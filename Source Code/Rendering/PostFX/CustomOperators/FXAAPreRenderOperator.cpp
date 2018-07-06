@@ -5,10 +5,9 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
-FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
-                                             FrameBuffer* result,
+FXAAPreRenderOperator::FXAAPreRenderOperator(FrameBuffer* result,
                                              const vec2<U16>& resolution,
-                                             SamplerDescriptor* const sampler) : PreRenderOperator(FXAA_STAGE,target,resolution,sampler),
+                                             SamplerDescriptor* const sampler) : PreRenderOperator(FXAA_STAGE,resolution,sampler),
                                                                                  _outputFB(result),
                                                                                  _ready(false)
 {
@@ -42,23 +41,17 @@ void FXAAPreRenderOperator::reshape(I32 width, I32 height){
 void FXAAPreRenderOperator::operation(){
     if (!_ready){
         if (!_enabled) return;
-        if (!_renderQuad) return;
         _ready = true;
         return;
     }
-
-    GFXDevice& gfx = GFX_DEVICE;
-
+    
     //Copy current screen
     _samplerCopy->BlitFrom(_inputFB[0]);
     ///Apply FXAA to the output screen using the sampler copy as the texture input
     _outputFB->Begin(FrameBuffer::defaultPolicy());
-        _samplerCopy->Bind(0);
-        _fxaa->bind();
-            gfx.toggle2D(true);
-            _renderQuad->setCustomShader(_fxaa);//<Render quad is shared, so update internal shader
-            gfx.renderInstance(_renderQuad->renderInstance());
-            gfx.toggle2D(false);
-        _samplerCopy->Unbind(0);
+    _samplerCopy->Bind(0);
+    _fxaa->bind();
+    GFX_DEVICE.drawPoints(1);
+    _samplerCopy->Unbind(0);
     _outputFB->End();
 }

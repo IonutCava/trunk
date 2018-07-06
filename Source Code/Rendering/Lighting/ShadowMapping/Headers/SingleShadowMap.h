@@ -41,7 +41,6 @@ protected:
     void renderInternal(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction);
 
 private:
-    Quad3D* _renderQuad;
     ShaderProgram* _previewDepthMapShader;
 };
 

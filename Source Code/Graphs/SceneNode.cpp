@@ -151,9 +151,8 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     if(!s->bind())
         return false;
 
-    s->ApplyMaterial(_material);
+    s->ApplyMaterial(_material, getCurrentLOD());
     s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
-    s->Uniform("lodLevel", (I32)getCurrentLOD());
     s->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
     s->Uniform("dvd_lightIndex",          lightMgr.getLightIndicesForCurrentNode());
     s->Uniform("dvd_lightType",           lightMgr.getLightTypesForCurrentNode());
@@ -211,7 +210,7 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     if (!s->bind())
         return false;
 
-    s->ApplyMaterial(_material);
+    s->ApplyMaterial(_material, getCurrentLOD());
 
     if (_material->isTranslucent()){
         switch (_material->getTranslucencySource()){
@@ -233,8 +232,6 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     else{
         s->Uniform("dvd_hasAnimations", false);
     }
-
-    s->Uniform("lodLevel", (I32)getCurrentLOD());
 
     return true;
 }

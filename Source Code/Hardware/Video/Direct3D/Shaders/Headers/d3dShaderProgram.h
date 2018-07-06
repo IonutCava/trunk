@@ -35,6 +35,9 @@ public:
     void unbind(bool resetActiveProgram = true){}
     void attachShader(Shader* const shader,const bool refresh = false){}
     void detachShader(Shader* const shader) {}
+    //Subroutines
+    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {}
+    U32  GetSubroutineIndex(ShaderType type, const std::string& name) const { return 0; }
     //Attributes
     void Attribute(I32 location, D32 value) const {}
     void Attribute(I32 location, F32 value) const {}

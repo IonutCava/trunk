@@ -28,7 +28,7 @@
 
 class DoFPreRenderOperator : public PreRenderOperator {
 public:
-	DoFPreRenderOperator(Quad3D* const target, FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	DoFPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~DoFPreRenderOperator();
 
 	void operation();

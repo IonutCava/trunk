@@ -7,11 +7,6 @@
 
 GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensions)
 {
-    ResourceDescriptor mrt("SplashScreen RenderQuad");
-    mrt.setFlag(true); //No default Material;
-    _renderQuad = CreateResource<Quad3D>(mrt);
-    assert(_renderQuad);
-    _renderQuad->setDimensions(vec4<F32>(0,0,dimensions.width,dimensions.height));
     SamplerDescriptor splashSampler;
     splashSampler.toggleMipMaps(true);
     splashSampler.setAnisotropy(16);
@@ -28,24 +23,18 @@ GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensi
     ResourceDescriptor splashShader("fbPreview");
     splashShader.setThreadedLoading(false);
     _splashShader = CreateResource<ShaderProgram>(splashShader);
-    _renderQuad->setCustomShader(_splashShader);
-    _renderQuad->renderInstance()->preDraw(true);
-    _renderQuad->renderInstance()->draw2D(true);
+    _splashShader->UniformTexture("tex", 0);
 }
 
 GUISplash::~GUISplash()
 {
-    RemoveResource(_renderQuad);
     RemoveResource(_splashImage);
     RemoveResource(_splashShader);
 }
 
 void GUISplash::render(){
-    GFX_DEVICE.toggle2D(true);
-        _splashShader->bind();
-        _splashShader->UniformTexture("tex",0);
-        _splashImage->Bind(0);
-        GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
-        _splashImage->Unbind(0);
-    GFX_DEVICE.toggle2D(false);
+    _splashShader->bind();
+    _splashImage->Bind(0);
+    GFX_DEVICE.drawPoints(1);
+    _splashImage->Unbind(0);
 }

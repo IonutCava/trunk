@@ -30,9 +30,10 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     //All lights default to fully dynamic for now.
     setLightMode(LIGHT_MODE_MOVABLE);
     for (U8 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i){
-        _properties._floatValues[i] = -1.0f;
-        _properties._lightVP[i].identity();
+        _shadowProperties._lightVP[i].identity();
     }
+    _shadowProperties._floatValues.set(-1.0f);
+
     _properties._diffuse.set(DefaultColors::WHITE());
     _properties._specular.set(DefaultColors::WHITE());
     _properties._direction.w = 0.0f;

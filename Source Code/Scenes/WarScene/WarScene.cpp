@@ -183,6 +183,9 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
 }
 
 bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+    Frustum& frust = Frustum::getInstance();
+    frust.setProjection(frust.getAspectRatio(), frust.getVerticalFoV(), vec2<F32>(0.85f, 400.0f));
+
     navMeshStarted = false;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);

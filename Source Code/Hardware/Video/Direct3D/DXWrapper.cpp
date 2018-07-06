@@ -23,6 +23,10 @@ void DX_API::closeRenderingApi()
 {
 }
 
+void DX_API::updateProjection()
+{
+}
+
 void DX_API::changeResolutionInternal(U16 w, U16 h)
 {
 }
@@ -119,6 +123,10 @@ void DX_API::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32
 }
 
 void DX_API::drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<vec3<F32> >& pointsB,const vectorImpl<vec4<U8> >& colors, const mat4<F32>& globalOffset,const bool orthoMode,const bool disableDepth)
+{
+}
+
+void DX_API::drawPoints(U32 numPoints)
 {
 }
 

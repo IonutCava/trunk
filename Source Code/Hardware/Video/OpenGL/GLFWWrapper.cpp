@@ -271,7 +271,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     GL_ENUM_TABLE::fill();
 
     //Set the clear color to a nice blue
-    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
+    GL_API::clearColor(DefaultColors::DIVIDE_BLUE(),0,true);
 
     if(glewIsSupported("GL_seamless_cube_map")) glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     if(GFX_DEVICE.MSAAEnabled()) glEnable(GL_MULTISAMPLE);
@@ -303,6 +303,10 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     _uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
     _uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
     _uniformBufferObjects[Lights_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+    _uniformBufferObjects[Shadow_UBO] = New glUniformBufferObject();
+    _uniformBufferObjects[Shadow_UBO]->Create(Shadow_UBO, true, false);
+    _uniformBufferObjects[Shadow_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+    
 /*
     _uniformBufferObjects[Material_UBO]  = New glUniformBufferObject();
     _uniformBufferObjects[Material_UBO]->Create(Material_UBO,true,false);
@@ -368,6 +372,9 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         return GLFW_WINDOW_INIT_ERROR;
     }
     NS_GLIM::glim.SetVertexAttribLocation(Divide::VERTEX_POSITION_LOCATION);
+
+    glGenVertexArrays(1, &_pointDummyVAO);
+
     return 0;
 }
 
@@ -438,6 +445,9 @@ bool GL_API::initShaders(){
 #else
     glswAddDirectiveToken("", "#define _RELEASE");
 #endif
+    glswAddDirectiveToken("Vertex", "#define VERT_SHADER");
+    glswAddDirectiveToken("Geometry", "#define GEOM_SHADER");
+    glswAddDirectiveToken("Fragment", "#define FRAG_SHADER");
     glswAddDirectiveToken("", std::string("#define MAX_INSTANCES " + Util::toString(Config::MAX_INSTANCE_COUNT)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_LIGHTS_PER_NODE " + Util::toString(Config::MAX_LIGHTS_PER_SCENE_NODE)).c_str());
@@ -450,7 +460,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Fragment","//__CUSTOM_FRAGMENT_UNIFORMS__");
     glswAddDirectiveToken("Fragment", "const int DEPTH_EXP_WARP = 32;");
     glswAddDirectiveToken("Vertex","//__CUSTOM_VERTEX_UNIFORMS__");
-    glswAddDirectiveToken("Vertex",   "#define VERT_SHADER");
+    glswAddDirectiveToken("Vertex", "//__CUSTOM_VERTEX_UNIFORMS__");
     // GLSL <-> VBO intercommunication 
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION) + ") in vec3  inVertexData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_COLOR_LOCATION) + ") in vec4  inColorData;").c_str());
@@ -460,9 +470,6 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BITANGENT_LOCATION) + ") in vec3  inBiTangentData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
-
-    glswAddDirectiveToken("Geometry", "#define GEOM_SHADER");
-    glswAddDirectiveToken("Fragment", "#define FRAG_SHADER");
 
     GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES ? kGlslTargetOpenGLES30 : kGlslTargetOpenGL);
     if(glswState == 1 && GL_API::_GLSLOptContex != nullptr){
@@ -477,27 +484,29 @@ bool GL_API::deInitShaders(){
     return (glswShutdown() == 1);
 }
 
-void GL_API::changeResolutionInternal(GLushort w, GLushort h){
-    glfwSetWindowSize(Divide::GL::_mainWindow, w, h);
-
+void GL_API::updateProjection(){
     Frustum& frust = Frustum::getInstance();
     GLfloat zNear = frust.getZPlanes().x;
-    GLfloat zFar  = frust.getZPlanes().y;
-    GLfloat fov   = Frustum::getInstance().getVerticalFoV();
-    GLfloat ratio = (GLfloat)w / (GLfloat)h;
-
-    // Set the viewport to be the entire window
-    GL_API::setViewport(vec4<GLint>(0,0,w,h), true);
+    GLfloat zFar = frust.getZPlanes().y;
+    GLfloat fov = Frustum::getInstance().getVerticalFoV();
+    GLfloat ratio = (GLfloat)_cachedResolution.width / (GLfloat)_cachedResolution.height;
     // Set the clipping volume
-    Divide::GL::_perspective(fov,ratio,zNear,zFar);
+    Divide::GL::_perspective(fov, ratio, zNear, zFar);
 
     Divide::GL::_matrixMode(VIEW_MATRIX);
     Divide::GL::_loadIdentity();
+    //Update view frustum
+    Frustum::getInstance().setProjection(ratio, fov, vec2<GLfloat>(zNear, zFar), false);
+}
 
+void GL_API::changeResolutionInternal(GLushort w, GLushort h){
+    glfwSetWindowSize(Divide::GL::_mainWindow, w, h);
+    // Set the viewport to be the entire window
+    GL_API::setViewport(vec4<GLint>(0,0,w,h));
     _cachedResolution.width = w;
     _cachedResolution.height = h;
-    //Update view frustum
-    Frustum::getInstance().setProjection(ratio, fov, vec2<GLfloat>(zNear, zFar));
+
+    updateProjection();
     //Inform the Kernel
     Kernel::updateResolutionCallback(w,h);
 }

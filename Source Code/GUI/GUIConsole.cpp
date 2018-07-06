@@ -230,7 +230,8 @@ void GUIConsole::update(const U64 deltaTime){
     static bool lastMsgError = false;
     static std::string lastMsg;
 
-    for (std::pair<std::string, bool> message : _outputTempBuffer){
+    while(!_outputTempBuffer.empty()){
+        std::pair<std::string, bool>& message = _outputTempBuffer.front();
         if (lastMsgError != message.second){
             lastMsgError = message.second;
             assert(!message.first.empty());
@@ -240,6 +241,8 @@ void GUIConsole::update(const U64 deltaTime){
 
         lastMsg.append(message.first.c_str());
         lastMsg.append("\n");
+
+        _outputTempBuffer.erase(_outputTempBuffer.begin());
     }
     _outputTempBuffer.clear();
 

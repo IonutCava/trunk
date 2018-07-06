@@ -82,7 +82,6 @@ protected:
 
     DELEGATE_CBK _renderCallback;
     FrameBuffer* _reflectedTexture;
-    Quad3D*    _renderQuad;
     Plane<F32> _reflectionPlane;
     ShaderProgram* _previewReflectionShader;
     /// used for render exclusion. Do not render self in own reflection

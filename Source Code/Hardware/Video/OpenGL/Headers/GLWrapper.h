@@ -60,7 +60,8 @@ protected:
                _prevWidthString(0),
                _prevSizeNode(0),
                _prevSizeString(0),
-               _lineWidthLimit(1)
+               _lineWidthLimit(1),
+               _pointDummyVAO(0)
     {
     }
 
@@ -118,6 +119,7 @@ protected:
                    const mat4<GLfloat>& globalOffset,
                    const bool orthoMode = false,
                    const bool disableDepth = false);
+    void drawPoints(GLuint numPoints);
 
     /*immediate mode emmlation*/
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
@@ -125,7 +127,7 @@ protected:
 
     void renderInViewport(const vec4<GLint>& rect, const DELEGATE_CBK& callback);
 
-    void setLight(Light* const light);
+    void setLight(Light* const light, bool shadowPass = false);
 
     void Screenshot(char *filename, const vec4<GLfloat>& rect);
 
@@ -141,9 +143,9 @@ protected:
 
     static void restoreViewport();
     static vec4<GLint> setViewport(const vec4<GLint>& viewport, bool force = false);
-    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
-    inline static void clearColor(const vec4<GLfloat>& color,bool force = false) {
-        clearColor(color.r,color.g,color.b,color.a,force);
+    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget = 0, bool force = false);
+    inline static void clearColor(const vec4<GLfloat>& color, GLuint renderTarget = 0, bool force = false) {
+        clearColor(color.r,color.g,color.b,color.a,renderTarget,force);
     }
     inline static GLuint getActiveFB() { return _activeFBId; }
 
@@ -179,7 +181,7 @@ protected:
     void setupLineStateViewPort(const mat4<F32>& mat);
     void releaseLineStateViewPort();
     void changeResolutionInternal(GLushort w, GLushort h);
-
+    void updateProjection();
 private: //OpenGL specific:
 
     ///Text Rendering
@@ -209,7 +211,7 @@ private: //OpenGL specific:
     //Immediate mode emulation
     ShaderProgram*               _imShader;       //<The shader used to render VB data
     vectorImpl<glIMPrimitive* >  _glimInterfaces; //<The interface that coverts IM calls to VB data
-
+    GLuint _pointDummyVAO; //< Used to render points (e.g. to render full screen quads with geometry shaders)
     ///A cache of all fonts used 
     typedef Unordered_map<std::string , I32 > FontCache;
     ///2D GUI-like text (bitmap fonts) go in this
@@ -222,7 +224,7 @@ private: //OpenGL specific:
     static GLuint _activeFBId;
     static GLuint _activeVBId;
     static GLuint _activeTextureUnit;
-    static vec4<GLfloat> _prevClearColor;
+    static Unordered_map<GLuint, vec4<GLfloat> > _prevClearColor;
     static bool _viewportForced;
     static bool _viewportUpdateGL;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];

@@ -16,20 +16,15 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
                                                                      _previewReflection(false)
 {
     REGISTER_FRAME_LISTENER(this);
-    ResourceDescriptor mrt("reflectorPreviewQuad");
-    mrt.setFlag(true); //No default Material;
-    _renderQuad = CreateResource<Quad3D>(mrt);
     ResourceDescriptor reflectionPreviewShader("fbPreview");
     reflectionPreviewShader.setThreadedLoading(false);
     _previewReflectionShader = CreateResource<ShaderProgram>(reflectionPreviewShader);
-    _renderQuad->setCustomShader(_previewReflectionShader);
-    _renderQuad->renderInstance()->preDraw(true);
+    _previewReflectionShader->UniformTexture("tex", 0);
 }
 
 Reflector::~Reflector(){
     SAFE_DELETE(_reflectedTexture);
     RemoveResource(_previewReflectionShader);
-    RemoveResource(_renderQuad);
 }
 
 /// Returning false in any of the FrameListener methods will exit the entire application!
@@ -81,22 +76,16 @@ bool Reflector::build(){
     if(!_reflectedTexture->Create(_resolution.x, _resolution.y)){
         return false;
     }
-    _renderQuad->setDimensions(vec4<F32>(0,0,_resolution.x, _resolution.y));
+
     _createdFB = true;
     return true;
 }
 
 void Reflector::previewReflection(){
-    if(!_previewReflection || (_previewReflection && !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))) return;
+    if(!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) return;
 
     _previewReflectionShader->bind();
-    _previewReflectionShader->UniformTexture("tex",0);
     _reflectedTexture->Bind();
-    GFX_DEVICE.toggle2D(true);
-        GFX_DEVICE.renderInViewport(vec4<I32>(128,128,256,256),
-                                    DELEGATE_BIND(&GFXDevice::renderInstance,
-                                                DELEGATE_REF(GFX_DEVICE),
-                                                _renderQuad->renderInstance()));
-    GFX_DEVICE.toggle2D(false);
+    GFX_DEVICE.drawPoints(1);
     _reflectedTexture->Unbind();
 }

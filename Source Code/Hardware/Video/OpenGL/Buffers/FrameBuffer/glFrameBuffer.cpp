@@ -9,6 +9,7 @@
 bool glFrameBuffer::_viewportChanged = false;
 bool glFrameBuffer::_mipMapsDirty = false;
 GLint glFrameBuffer::_maxColorAttachments = -1;
+vec2<U16> glFrameBuffer::_prevViewportDim;
 
 glFrameBuffer::glFrameBuffer(glFrameBuffer* resolveBuffer) : FrameBuffer(resolveBuffer != nullptr),
                                                              _resolveBuffer(resolveBuffer),
@@ -136,7 +137,11 @@ void glFrameBuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     //Generate mipmaps if needed (first call to glGenerateMipMap allocates all levels)
     if (_mipMapEnabled[slot]) {
         glTexParameteri(textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel);
-        glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL,  texDescriptor._mipMaxLevel);
+        if (!texDescriptor._mipMaxLevel){
+            glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, (GLint)floorf(log2f(fmaxf(_width, _height))));
+        }else{
+            glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, texDescriptor._mipMaxLevel);
+        }
         glGenerateMipmap(textureType);
     }
         
@@ -266,7 +271,7 @@ bool glFrameBuffer::Create(GLushort width, GLushort height) {
 
     checkStatus();
 
-    if(_clearColorState) GL_API::clearColor( _clearColor );
+    GL_API::clearColor( _clearColor, _frameBufferHandle);
 
     glClear(_clearBufferMask);
 
@@ -370,17 +375,18 @@ void glFrameBuffer::Unbind(GLubyte unit) const {
 
 void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
     assert(_frameBufferHandle != 0);
-    if(_viewportChanged) {
+   
+    if(_viewportChanged){
         GL_API::restoreViewport();
         _viewportChanged = false;
     }
 
-    GL_API::setViewport(vec4<GLint>(0,0,_width,_height));
+    GL_API::setViewport(vec4<GLint>(0, 0, _width, _height));
     _viewportChanged = true;
 
     GL_API::setActiveFB(_frameBufferHandle, false, true);
     // this is checked so it isn't called twice on the GPU
-    if (_clearColorState && drawPolicy._clearColorOnBind)       GL_API::clearColor(_clearColor);
+    GL_API::clearColor(_clearColor, _frameBufferHandle);
     if (_clearBuffersState && drawPolicy._clearBuffersOnBind)   glClear(_clearBufferMask);
     if(!drawPolicy._depthOnly) _mipMapsDirty = true;
 
@@ -392,6 +398,7 @@ void glFrameBuffer::End() {
     GL_API::setActiveFB(0, true, true);
     GL_API::restoreViewport();
     _viewportChanged = false;
+
     resolve();
 }
 

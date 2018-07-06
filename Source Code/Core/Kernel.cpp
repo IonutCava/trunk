@@ -213,9 +213,14 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 #endif
 }
 
-void Kernel::displayScene(){
-     RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
-     bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
+void Kernel::renderScene(){
+    if (_GFX.anaglyphEnabled()){
+        renderSceneAnaglyph();
+        return;
+    }
+
+    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
+    bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
     _cameraMgr->getActiveCamera()->renderLookAt();
 
@@ -242,15 +247,16 @@ void Kernel::displayScene(){
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(FrameBuffer::defaultPolicy());
     }
         SceneManager::getInstance().render(stage, *this);
+
+    RenderPassManager::getInstance().unlock();
+
     if(postProcessing){
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->End();
-        PostFX::getInstance().displaySceneWithoutAnaglyph();
     }
-
-    RenderPassManager::getInstance().unlock();    
+    PostFX::getInstance().displayScene();
 }
 
-void Kernel::displaySceneAnaglyph(){
+void Kernel::renderSceneAnaglyph(){
     RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
     
     FrameBuffer::FrameBufferTarget depthPassPolicy, colorPassPolicy;
@@ -287,7 +293,8 @@ void Kernel::displaySceneAnaglyph(){
 
         RenderPassManager::getInstance().unlock();
     currentCamera->restoreCamera();
-    PostFX::getInstance().displaySceneWithAnaglyph();
+
+    PostFX::getInstance().displayScene();
 }
 
 
@@ -308,7 +315,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
     frameMgr.createEvent(_currentTime, FRAME_PRERENDER_END,evt);
     if(!frameMgr.framePreRenderEnded(evt)) return false;
 
-    _GFX.anaglyphEnabled() ? displaySceneAnaglyph() : displayScene();
+    renderScene();
 
     _sceneMgr.postRender();
 
@@ -317,7 +324,6 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
 
     // Draw the GUI
     _GUI.draw(_freezeGUITime ? 0ULL : _currentTimeDelta, interpolationFactor);
-
     return true;
 }
 

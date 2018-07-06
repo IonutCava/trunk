@@ -28,10 +28,6 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
         }
     }
 
-    if(_descriptor.getMask().i != 0){
-        ptr->setShaderMask(_descriptor.getMask());
-    }
-
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{

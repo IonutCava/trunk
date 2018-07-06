@@ -13,11 +13,12 @@ layout(std140) uniform dvd_MatrixBlock
 };
 
 uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];
-out float depth;
+
 out vec2 _texCoord;
 
 void main(void){
     vec4 dvd_Vertex = vec4(inVertexData, 1.0);
+
 
 #if defined(USE_GPU_SKINNING)
     vec3 dvd_Normal = vec3(1.0);
@@ -28,7 +29,6 @@ void main(void){
     vec4 wVertex = dvd_WorldMatrix * dvd_Vertex;
     setClipPlanes(wVertex);
     gl_Position = dvd_ViewProjectionMatrix * wVertex;
-    depth = (gl_Position.z / gl_Position.w);
 }
 
 -- Fragment.Shadow
@@ -47,8 +47,24 @@ uniform sampler2D texDiffuse0;
 uniform mat4      material;
 #endif
 
-in  float depth;
+uniform vec2 dvd_zPlanes;
+
 out vec2 _colorOut;
+
+vec2 computeMoments(in float depth) {
+    vec2 moments;
+
+    moments.x = depth;
+
+    // Compute partial derivatives of depth.  
+    float dx = dFdx(depth);
+    float dy = dFdy(depth);
+
+    // Compute second moment over the pixel extents.  
+    //moments.y = Depth*Depth + 0.25*(dx*dx + dy*dy);
+    moments.y = depth * depth;
+    return moments;
+}
 
 void main(){
 
@@ -62,10 +78,11 @@ void main(){
 #elif defined(USE_OPACITY_DIFFUSE_MAP)
     if (texture(texDiffuse0, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
 #endif
+
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float dx = dFdx(depth);
-    float dy = dFdy(depth);
-    _colorOut = vec2(depth, (depth * depth) + 0.25*(dx*dx + dy*dy));
+    float linearz = clamp(gl_FragCoord.z*gl_FragCoord.w, 0, 1);
+    //_colorOut = computeMoments(exp(DEPTH_EXP_WARP * linearz));
+    _colorOut = computeMoments( linearz);
 }
 
 -- Vertex.PrePass
@@ -102,66 +119,4 @@ void main(){
 #endif
 
     _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, 0.0);
-}
-
--- Vertex.GaussBlur
-
-#include "vertexDefault.vert"
-
-uniform int layer;
-uniform bool horizontal;
-uniform float blurSize;
-
-out vec3 _blurCoords[9];
-
-void main(void)
-{
-    computeData();
-    if (horizontal){
-        _blurCoords[0] = vec3(_texCoord.x, _texCoord.y - 4.0*blurSize, layer);
-        _blurCoords[1] = vec3(_texCoord.x, _texCoord.y - 3.0*blurSize, layer);
-        _blurCoords[2] = vec3(_texCoord.x, _texCoord.y - 2.0*blurSize, layer);
-        _blurCoords[3] = vec3(_texCoord.x, _texCoord.y - blurSize, layer);
-        _blurCoords[4] = vec3(_texCoord.x, _texCoord.y, layer);
-        _blurCoords[5] = vec3(_texCoord.x, _texCoord.y + blurSize, layer);
-        _blurCoords[6] = vec3(_texCoord.x, _texCoord.y + 2.0*blurSize, layer);
-        _blurCoords[7] = vec3(_texCoord.x, _texCoord.y + 3.0*blurSize, layer);
-        _blurCoords[8] = vec3(_texCoord.x, _texCoord.y + 4.0*blurSize, layer);
-    }
-    else{
-        _blurCoords[0] = vec3(_texCoord.x - 4.0*blurSize, _texCoord.y, layer);
-        _blurCoords[1] = vec3(_texCoord.x - 3.0*blurSize, _texCoord.y, layer);
-        _blurCoords[2] = vec3(_texCoord.x - 2.0*blurSize, _texCoord.y, layer);
-        _blurCoords[3] = vec3(_texCoord.x - blurSize, _texCoord.y, layer);
-        _blurCoords[4] = vec3(_texCoord.x, _texCoord.y, layer);
-        _blurCoords[5] = vec3(_texCoord.x + blurSize, _texCoord.y, layer);
-        _blurCoords[6] = vec3(_texCoord.x + 2.0*blurSize, _texCoord.y, layer);
-        _blurCoords[7] = vec3(_texCoord.x + 3.0*blurSize, _texCoord.y, layer);
-        _blurCoords[8] = vec3(_texCoord.x + 4.0*blurSize, _texCoord.y, layer);
-    }
-}
-
--- Fragment.GaussBlur
-
-in vec2 _texCoord;
-in vec3 _blurCoords[9];
-
-out vec2 _outColor;
-
-uniform sampler2DArray shadowMap;
-
-void main(void)
-{
-    vec2 sum = vec2(0.0);
-    sum += texture(shadowMap, _blurCoords[0]).rg * 0.05;
-    sum += texture(shadowMap, _blurCoords[1]).rg * 0.09;
-    sum += texture(shadowMap, _blurCoords[2]).rg * 0.12;
-    sum += texture(shadowMap, _blurCoords[3]).rg * 0.15;
-    sum += texture(shadowMap, _blurCoords[4]).rg * 0.16;
-    sum += texture(shadowMap, _blurCoords[5]).rg * 0.15;
-    sum += texture(shadowMap, _blurCoords[6]).rg * 0.12;
-    sum += texture(shadowMap, _blurCoords[7]).rg * 0.09;
-    sum += texture(shadowMap, _blurCoords[8]).rg * 0.05;
-
-    _outColor = sum;
 }

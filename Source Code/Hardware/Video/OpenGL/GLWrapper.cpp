@@ -35,8 +35,8 @@ namespace IMPrimitiveValidation{
 
 void GL_API::beginFrame(){
     glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
+    GL_API::clearColor(DefaultColors::DIVIDE_BLUE(), 0, true);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT/* | GL_STENCIL_BUFFER_BIT*/);
     SET_DEFAULT_STATE_BLOCK();
 }
 
@@ -272,6 +272,14 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
 
     priv->end();
     priv->endBatch();
+}
+
+void GL_API::drawPoints(GLuint numPoints) {
+    if(_activeShaderProgram)
+        _activeShaderProgram->uploadNodeMatrices();
+
+    GL_API::setActiveVAO(_pointDummyVAO);
+    glDrawArrays(GL_POINTS, 0, numPoints);
 }
 
 //Save the area designated by the rectangle "rect" to a TGA file
