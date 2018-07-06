@@ -31,8 +31,8 @@ namespace CEGUI {
     class ToggleButton;
 };
 
-#include "GUIEditorInterface.h"
 #include "Core/Headers/Singleton.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 
 ///Our world editor interface
 DEFINE_SINGLETON( GUIEditor )
