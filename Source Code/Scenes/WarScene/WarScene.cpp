@@ -234,8 +234,8 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Add a skybox
     _currentSky = addSky();
     // Position camera
-    renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
-    renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 35 /*pitch*/);
+    renderState().getCamera().setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
+    renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 59.21 /*pitch*/);
     _sun->csmSplitCount(3);  // 3 splits
     _sun->csmSplitLogFactor(0.925f);
     _sun->csmNearClipOffset(25.0f);
@@ -520,7 +520,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
         vec3<F32>(1.0f, 0.0f, 1.0f),  // Color
         "Score: A -  %d B - %d", 0, 0);  // Text and arguments
 
-    _GUI->addText("entityState", vec2<I32>(60, 143), Font::DIVIDE_DEFAULT,
+    _GUI->addText("entityState", vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.0f, 0.0f, 0.0f),
                   "");
 

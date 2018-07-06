@@ -53,7 +53,7 @@ class TenisSceneAIProcessor : public AIProcessor {
     void addEntityRef(AIEntity* entity);
     void processMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
 
-    inline stringImpl toString() const { return ""; }
+    inline stringImpl toString(bool state = false) const { return ""; }
 
    private:
     void updatePositions();

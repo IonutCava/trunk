@@ -751,7 +751,7 @@ void Scene::findSelection() {
     // Cast the picking ray and find items between the nearPlane (with an
     // offset) and limit the range to half of the far plane
     _sceneGraph->intersect(Ray(startRay, startRay.direction(endRay)),
-                           zPlanes.x + 0.5f, zPlanes.y * 0.5f,
+                           zPlanes.x + 0.5f, zPlanes.y * 1.5f,
                            _sceneSelectionCandidates);
 
     if (!_sceneSelectionCandidates.empty()) {

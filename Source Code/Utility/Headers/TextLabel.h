@@ -55,7 +55,9 @@ class TextLabel {
 
     inline void text(const stringImpl& text) {
         _text = text;
-        _multiLine = _text.find('\n') != stringImpl::npos;
+        size_t newLinePos = _text.find('\n');
+        _multiLine = (newLinePos != stringImpl::npos) &&
+                     (newLinePos != _text.length() - 1);
     }
 
     inline const stringImpl& text() const {

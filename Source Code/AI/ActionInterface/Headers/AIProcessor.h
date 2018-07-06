@@ -176,20 +176,20 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         return false;
     }
 
-    inline bool printPlan() {
+    inline stringImpl printPlan() {
         if (_activeGoal == nullptr) {
-            return false;
+            return "no active goal!";
         }
+        stringImpl returnString("");
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         for (const GOAPAction* action : plan) {
-            if (!printActionStats(*action)) {
-                return false;
-            }
+            returnString.append(" - " + printActionStats(*action) + "\n");
         }
-        return true;
+
+        return returnString;
     }
 
-    inline void invalidateCurrentPlan() {
+    virtual void invalidateCurrentPlan() {
         _activeGoal = nullptr;
         _currentStep = -1;
     }
@@ -207,11 +207,9 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
 
     inline const stringImpl& getPlanLog() const { return _planLog; }
 
+    virtual const stringImpl& printActionStats(const GOAPAction& planStep) const;
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
     virtual bool performAction(const GOAPAction& planStep) = 0;
-    virtual bool printActionStats(const GOAPAction& planStep) const {
-        return true;
-    }
     virtual bool processData(const U64 deltaTime) = 0;
     virtual bool processInput(const U64 deltaTime) = 0;
     virtual bool update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
@@ -226,7 +224,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
 
     virtual void initInternal() = 0;
     
-    virtual stringImpl toString() const = 0;
+    virtual stringImpl toString(bool state = false) const = 0;
 
    protected:
     AIEntity* _entity;

@@ -229,7 +229,8 @@ class WarSceneAIProcessor : public AIProcessor {
     bool preAction(ActionType type, const WarSceneAction* warAction);
     bool postAction(ActionType type, const WarSceneAction* warAction);
     bool checkCurrentActionComplete(const GOAPAction& planStep);
-    stringImpl toString() const;
+    void invalidateCurrentPlan();
+    stringImpl toString(bool state = false) const;
 
    private:
     bool DIE();
@@ -237,8 +238,8 @@ class WarSceneAIProcessor : public AIProcessor {
     void updatePositions();
     bool performAction(const GOAPAction& planStep);
     bool performActionStep(GOAPAction::operationsIterator step);
-    bool printActionStats(const GOAPAction& planStep) const;
-    void printWorkingMemory() const;
+    const stringImpl& printActionStats(const GOAPAction& planStep) const;
+    void printWorkingMemory();
     void initInternal();
     void beginPlan(const GOAPGoal& currentGoal);
     AIEntity* getUnitForNode(U32 teamID, std::weak_ptr<SceneGraphNode> node) const;
@@ -257,6 +258,7 @@ class WarSceneAIProcessor : public AIProcessor {
     U8 _visualSensorUpdateCounter;
     U64 _attackTimer;
     stringImpl _planStatus;
+    stringImpl _tempString;
     VisualSensor* _visualSensor;
     AudioSensor* _audioSensor;
     LocalWorkingMemory _localWorkingMemory;

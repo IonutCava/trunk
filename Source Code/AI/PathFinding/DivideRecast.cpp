@@ -234,7 +234,8 @@ bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh,
                                                     resultPoly);
 
     if (pointOnPolyMesh) {
-        bool pointIsInRange = position.distanceSquared(resultPt) <= distanceSq;
+        F32 distSQ = vec3<F32>(position.x, 0.0f, position.z).distanceSquared(vec3<F32>(resultPt.x, 0.0f, resultPt.z));
+        bool pointIsInRange = (distSQ <= distanceSq && abs(position.y - resultPt.y) < extents.y); 
 
         if (!pointIsInRange) {
             pointOnPolyMesh = findNearestPolyOnNavmesh(navMesh,
@@ -243,7 +244,8 @@ bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh,
                                                        resultPt,
                                                        resultPoly);
             if (pointOnPolyMesh) {
-                pointIsInRange = position.distanceSquared(resultPt) <= distanceSq;
+                F32 distance = position.distanceSquared(resultPt);
+                pointIsInRange = distance <= distanceSq;
             }
         }
         return pointIsInRange;

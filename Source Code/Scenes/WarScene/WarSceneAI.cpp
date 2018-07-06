@@ -261,6 +261,8 @@ bool WarScene::addUnits() {
     heavyPackage._actionSet.push_back(captureEnemyFlag);
     heavyPackage._actionSet.push_back(returnToBase);
     heavyPackage._actionSet.push_back(scoreEnemyFlag);
+    lightPackage._actionSet.push_back(approachEnemyFlag);
+
     heavyPackage._goalList.push_back(captureFlag);
     heavyPackage._goalList.push_back(scoreFlag);
     heavyPackage._goalList.push_back(protectFlagCarrier);

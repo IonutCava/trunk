@@ -70,7 +70,7 @@ namespace goap {
 
         int cost() const { return cost_; }
 
-        std::string name() const { return name_; }
+        const std::string& name() const { return name_; }
 
         virtual bool checkImplDependentCondition() const {
             return true;
