@@ -26,7 +26,7 @@
 #include "Scenes/Headers/Scene.h"
 
 class SkinnedSubMesh;
-class AICoordination;
+class AITeam;
 class AIEntity;
 class NPC;
 
@@ -84,7 +84,7 @@ private: //Game
     vectorImpl<NPC *> _army1NPCs;
     vectorImpl<NPC *> _army2NPCs;
     ///Team's are factions for AIEntites so they can manage friend/foe situations
-    AICoordination *_faction1, *_faction2;
+    AITeam *_faction1, *_faction2;
     SceneGraphNode *_bobNode;
     SceneGraphNode *_bobNodeBody;
     SceneGraphNode *_lampLightNode;

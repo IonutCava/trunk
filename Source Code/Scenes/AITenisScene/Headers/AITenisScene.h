@@ -26,7 +26,7 @@
 #include "Scenes/Headers/Scene.h"
 
 class AIEntity;
-class AICoordination;
+class AITeam;
 class Sphere3D;
 class NPC;
 
@@ -111,6 +111,6 @@ private: //Game stuff
     ///NPC's are the actual game entities
     NPC *_player1, *_player2, *_player3, *_player4;
     ///Team's are factions for AIEntites so they can manage friend/foe situations
-    AICoordination *_team1, *_team2;
+    AITeam *_team1, *_team2;
 };
 #endif

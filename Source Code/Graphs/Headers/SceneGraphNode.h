@@ -94,6 +94,8 @@ public:
     void updateTransforms();
     /// Apply current transform to the node's BB
     void updateBoundingBoxTransform(const mat4<F32>& transform);
+    /// Called if the current node is in view and is about to be rendered
+    void onDraw(RenderStage renderStage); 
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
     /*Node Management*/

@@ -52,7 +52,7 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
 
     _deltaTime += deltaTime;
 
-    AICoordination* currentTeam = _entity->getTeam();
+    AITeam* currentTeam = _entity->getTeam();
     assert(currentTeam);
 
     if(_entity->destinationReached()) {
@@ -63,8 +63,8 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
             _indexInMap = 0;
         }
 
-        AICoordination::teamMap& team = currentTeam->getTeam();
-        FOR_EACH(AICoordination::teamMap::value_type& member, team){
+        AITeam::teamMap& team = currentTeam->getTeam();
+        FOR_EACH(AITeam::teamMap::value_type& member, team){
             if(_entity->getGUID() != member.second->getGUID()){
                 _entity->sendMessage(member.second, CHANGE_DESTINATION_POINT, 0);
                 if(!foundId) _indexInMap++;
@@ -82,8 +82,8 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
     }
      
     if(!_currentEnemyTarget){
-        AICoordination::teamMap& enemyTeam = _entity->getTeam()->getEnemyTeam().getTeam();
-        AICoordination::teamMap::const_iterator it = enemyTeam.begin();
+        AITeam::teamMap& enemyTeam = _entity->getTeam()->getEnemyTeam().getTeam();
+        AITeam::teamMap::const_iterator it = enemyTeam.begin();
         I32 i = 0; 
         while(i < _indexInMap){++i; ++it;}
         _currentEnemyTarget = (*it).second;
@@ -91,8 +91,8 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
     }
 
     if(currentTeam->getTeamID() == 2 && _deltaTime > getUsToMs(250)){
-        AICoordination::teamMap& enemyTeam = _entity->getTeam()->getEnemyTeam().getTeam();
-        AICoordination::teamMap::const_iterator it = enemyTeam.begin();
+        AITeam::teamMap& enemyTeam = _entity->getTeam()->getEnemyTeam().getTeam();
+        AITeam::teamMap::const_iterator it = enemyTeam.begin();
 
         I32 i = 0; 
         while(i < _indexInMap){++i; ++it;}

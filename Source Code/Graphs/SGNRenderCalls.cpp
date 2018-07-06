@@ -105,3 +105,10 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     if (_node)        _node->sceneUpdate(deltaTime, this, sceneState);
     if(_shouldDelete) GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
 }
+
+void SceneGraphNode::onDraw(RenderStage renderStage){
+    FOR_EACH(NodeComponents::value_type& it, _components){
+        if (it.second)
+            it.second->onDraw(renderStage);
+    }
+}

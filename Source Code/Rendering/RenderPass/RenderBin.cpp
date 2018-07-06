@@ -162,6 +162,8 @@ void RenderBin::render(const RenderStage& currentRenderStage){
         //And get it's attached SceneNode and validate it
         sn = sgn->getSceneNode();
 
+        //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
+        sgn->onDraw(currentRenderStage);
         //Call any pre-draw operations on the SceneNode (refresh VBO, update materials, etc)
         sn->onDraw(currentRenderStage);
 

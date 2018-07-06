@@ -64,9 +64,10 @@ public:
     inline void drawObjects(bool visibility)    {_drawObjects = visibility;}
     inline void drawDebugLines(bool visibility) {_debugDrawLines = visibility;}
     ///Render skeletons for animated geometry
-    inline void toggleSkeletons() { drawSkeletons(!drawSkeletons()); }
+    inline void toggleSkeletons() { D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS")); drawSkeletons(!drawSkeletons()); }
     ///Show/hide bounding boxes
     inline void toggleBoundingBoxes(){
+        D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
         if(!drawBBox() && drawObjects())	{
             drawBBox(true);
             drawObjects(true);

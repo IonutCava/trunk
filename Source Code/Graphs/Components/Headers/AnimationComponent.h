@@ -36,8 +36,8 @@ class AnimationComponent : public SGNComponent {
 public:
     AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN);
     ~AnimationComponent();
+    void onDraw(RenderStage currentStage);
 
-    void update(const U64 deltaTime);
     void renderSkeleton();
     /// Select an animation by name
     bool playAnimation(const std::string& name);

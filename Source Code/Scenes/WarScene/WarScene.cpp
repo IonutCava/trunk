@@ -300,8 +300,8 @@ bool WarScene::initializeAI(bool continueOnErrors){
     //----------------------------Artificial Intelligence------------------------------//
     
     //Create 2 AI teams
-    _faction1 = New AICoordination(1);
-    _faction2 = New AICoordination(2);
+    _faction1 = New AITeam(1);
+    _faction2 = New AITeam(2);
 
     _faction1->addEnemyTeam(_faction2);
     _faction2->addEnemyTeam(_faction1);

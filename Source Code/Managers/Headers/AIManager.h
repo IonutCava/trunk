@@ -30,7 +30,7 @@
 #include <boost/atomic.hpp>
 DEFINE_SINGLETON(AIManager)
     typedef Unordered_map<I64, AIEntity*> AIEntityMap;
-    typedef Unordered_map<U32, AICoordination*> AITeamMap;
+    typedef Unordered_map<U32, AITeam*> AITeamMap;
 
 public:
     /// Destroy all entities
@@ -46,7 +46,7 @@ public:
     ///Remove an AI Entity from the manager
     void destroyEntity(U32 guid);
     ///Register an AI Team
-    inline void registerTeam(AICoordination* const team) {_aiTeams[team->getTeamID()] = team;}
+    inline void registerTeam(AITeam* const team) {_aiTeams[team->getTeamID()] = team;}
     ///Add a nav mesh
     bool addNavMesh(Navigation::NavigationMesh* const navMesh);
     Navigation::NavigationMesh* getNavMesh(U16 index) const {return (index >= _navMeshes.size() ? nullptr : _navMeshes[index]);}

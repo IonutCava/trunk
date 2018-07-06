@@ -214,7 +214,6 @@ public:
     inline TranslucencySource   getTranslucencySource() const {return _translucencySource;}
 
     void computeShader(bool force = false,const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
-    inline void dumpToXML() {XML::dumpMaterial(*this);}
 
 private:
 

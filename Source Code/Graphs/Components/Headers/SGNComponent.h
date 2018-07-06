@@ -25,6 +25,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 /// A generic component for the SceneGraphNode class
+enum RenderStage;
 class SceneGraphNode;
 class SGNComponent {
 public:
@@ -46,6 +47,7 @@ public:
 
     }
 
+    virtual void onDraw(RenderStage currentStage) {}
     virtual void update(const U64 deltaTime) {
         _deltaTime = deltaTime;
         _elapsedTime += deltaTime;

@@ -140,7 +140,7 @@ void AIEntity::update(const U64 deltaTime){
     updatePosition(deltaTime);
 }
 
-void AIEntity::setTeam(AICoordination* const coordination) {
+void AIEntity::setTeam(AITeam* const coordination) {
     ReadLock r_lock(_updateMutex);
     if(_coordination){
         //Remove from old team
@@ -163,7 +163,7 @@ void AIEntity::addUnitRef(NPC* const npc) {
 
 bool AIEntity::addFriend(AIEntity* const friendEntity){
     ReadLock r_lock(_updateMutex);
-    AICoordination* friendTeam = friendEntity->getTeam();
+    AITeam* friendTeam = friendEntity->getTeam();
     //If no team, check if our friend has a team and add ourself to it
     if(!_coordination){
         //If our friend has a team ...

@@ -398,6 +398,12 @@
     <Filter Include="Graphs\Components\Headers">
       <UniqueIdentifier>{e63dac5e-0be9-4591-a66a-3890633302b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI\AESOP">
+      <UniqueIdentifier>{84953f6c-d119-43d1-9113-a38819d2405d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\AESOP\Headers">
+      <UniqueIdentifier>{9111c95a-07c0-4e56-91ce-398630769324}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp">
@@ -510,9 +516,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp">
       <Filter>AI\Sensors</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\ActionInterface\Coordination.cpp">
-      <Filter>AI\ActionInterface</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp">
       <Filter>Managers</Filter>
@@ -869,6 +872,18 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopAction.cpp">
+      <Filter>AI\AESOP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopPlanner.cpp">
+      <Filter>AI\AESOP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopWorldState.cpp">
+      <Filter>AI\AESOP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp">
+      <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1037,9 +1052,6 @@
       <Filter>AI\Sensors\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\ActionList.h">
-      <Filter>AI\ActionInterface\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\Coordination.h">
       <Filter>AI\ActionInterface\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h">
@@ -1390,6 +1402,30 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NavigationComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\Aesop.h">
+      <Filter>AI\AESOP\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopAction.h">
+      <Filter>AI\AESOP\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopConfig.h">
+      <Filter>AI\AESOP\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopContext.h">
+      <Filter>AI\AESOP\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopPlanner.h">
+      <Filter>AI\AESOP\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopTypes.h">
+      <Filter>AI\AESOP\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopWorldState.h">
+      <Filter>AI\AESOP\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h">
+      <Filter>AI\ActionInterface\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -59,9 +59,7 @@ void AnimationComponent::renderSkeleton(){
     _animator->RenderSkeleton(_currentAnimIndex, _currentTimeStamp);
 }
 
-void AnimationComponent::update(const U64 deltaTime){
-    SGNComponent::update(deltaTime);
-
+void AnimationComponent::onDraw(RenderStage currentStage) {
     _skeletonAvailable = false;
 
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations)

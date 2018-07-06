@@ -25,7 +25,7 @@
 #include "core.h"
 #include "CommunicationInterface.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
-#include "AI/ActionInterface/Headers/Coordination.h"
+#include "AI/ActionInterface/Headers/AITeam.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
 class ActionList;
@@ -60,11 +60,11 @@ public:
     Sensor* getSensor(SensorType type);
     CommunicationInterface* getCommunicationInterface() {return _comInterface;}
 
-    inline AICoordination* getTeam() {return _coordination; }
+    inline AITeam* getTeam() {return _coordination; }
     inline U32  getTeamID() const    {if(_coordination != nullptr) { return _coordination->getTeamID();} return 0; }
 
     ///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first
-    void setTeam(AICoordination* const coordination);
+    void setTeam(AITeam* const coordination);
     ///Add a friend to our team
     bool addFriend(AIEntity* const friendEntity);
 
@@ -148,7 +148,7 @@ protected:
 
 private:
     std::string     _name;
-    AICoordination* _coordination;
+    AITeam* _coordination;
     ActionList*     _actionProcessor;
     mutable SharedLock    _updateMutex;
     mutable SharedLock    _managerQueryMutex;

@@ -301,8 +301,8 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
     _aiPlayer3->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));
     _aiPlayer4->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));
 
-    _team1 = New AICoordination(1);
-    _team2 = New AICoordination(2);
+    _team1 = New AITeam(1);
+    _team2 = New AITeam(2);
 
     _aiPlayer1->setTeam(_team1);
     state = _aiPlayer2->addFriend(_aiPlayer1);

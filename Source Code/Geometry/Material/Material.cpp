@@ -151,7 +151,7 @@ void Material::clean() {
         _shaderInfo[FINAL_STAGE]._matId.i = (_shaderInfo[FINAL_STAGE]._shaderRef != nullptr ? _shaderInfo[FINAL_STAGE]._shaderRef->getId() : 0);
         _shaderInfo[Z_PRE_PASS_STAGE]._matId.i = (_shaderInfo[Z_PRE_PASS_STAGE]._shaderRef != nullptr ? _shaderInfo[Z_PRE_PASS_STAGE]._shaderRef->getId() : 0);
         _shaderInfo[SHADOW_STAGE]._matId.i = (_shaderInfo[SHADOW_STAGE]._shaderRef != nullptr ? _shaderInfo[SHADOW_STAGE]._shaderRef->getId() : 0);
-        dumpToXML();
+        XML::dumpMaterial(*this);
        _dirty = false;
     }
 }

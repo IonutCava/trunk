@@ -95,6 +95,9 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_RIGHT:	state()._angleLR = 0; break;
         case OIS::KC_UP   :
         case OIS::KC_DOWN : state()._angleUD = 0; break;
+        case OIS::KC_F2:{
+            renderState().toggleSkeletons();
+        }break;
         case OIS::KC_F3:
             _paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
             break;
@@ -109,12 +112,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             PostFX::getInstance().toggleDepthPreview(state);
             state = !state;
         }break;
-                    case OIS::KC_F2:{
-            D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
-            renderState().toggleSkeletons();
-            }break;
         case OIS::KC_B:{
-            D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
             renderState().toggleBoundingBoxes();
             }break;
         case OIS::KC_F7:

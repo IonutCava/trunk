@@ -25,7 +25,7 @@ void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
 
 //Process message from sender to receiver
 void AITenisSceneAIActionList::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content){
-    AICoordination* currentTeam = nullptr;
+    AITeam* currentTeam = nullptr;
     switch(msg){
         case REQUEST_DISTANCE_TO_TARGET:
                 updatePositions();
@@ -38,7 +38,7 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AIMsg msg, const
         case ATTACK_BALL:
             currentTeam = _entity->getTeam();
             assert(currentTeam);
-            FOR_EACH(AICoordination::teamMap::value_type const& member, currentTeam->getTeam()){
+            FOR_EACH(AITeam::teamMap::value_type const& member, currentTeam->getTeam()){
                 if(_entity->getGUID() != member.second->getGUID()){
                     _entity->sendMessage(member.second, DONT_ATTACK_BALL, 0);
                 }
@@ -85,10 +85,10 @@ void AITenisSceneAIActionList::updatePositions(){
 ///Collect all of the necessary information for this current update step
 void AITenisSceneAIActionList::processInput(const U64 deltaTime){
     updatePositions();
-    AICoordination* currentTeam = _entity->getTeam();
+    AITeam* currentTeam = _entity->getTeam();
     assert(currentTeam != nullptr);
     _entity->getTeam()->getMemberVariable()[_entity] = distanceToBall(_initialPosition,_ballPosition);
-    FOR_EACH(AICoordination::teamMap::value_type& member, currentTeam->getTeam()){
+    FOR_EACH(AITeam::teamMap::value_type& member, currentTeam->getTeam()){
         ///Ask all of our team-mates to send us their distance to the ball
         if(_entity->getGUID() != member.second->getGUID()){
             _entity->sendMessage(member.second, REQUEST_DISTANCE_TO_TARGET, 0);

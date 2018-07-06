@@ -62,9 +62,7 @@ void SceneNode::onDraw(const RenderStage& currentStage){
     if(!mat)
         return;
 
-    mat->computeShader(false);
-    mat->computeShader(false,SHADOW_STAGE);
-    mat->computeShader(false,Z_PRE_PASS_STAGE);
+    mat->computeShader(false, currentStage);
 }
 
 void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
@@ -242,7 +240,7 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     if(_material->isTranslucent()){
         switch(_material->getTranslucencySource()){
             case Material::TRANSLUCENT_DIFFUSE :
-                 s->Uniform("material", _material->getMaterialMatrix());
+                s->Uniform("material", _material->getMaterialMatrix());
             case Material::TRANSLUCENT_OPACITY :
                 s->Uniform("opacity", _material->getOpacityValue());
             case Material::TRANSLUCENT_OPACITY_MAP :
