@@ -29,9 +29,7 @@
 
 namespace AI {
 enum AIMsg {
-    REQUEST_DISTANCE_TO_TARGET = 0,
-    RECEIVE_DISTANCE_TO_TARGET = 1,
-    CHANGE_DESTINATION_POINT = 2
+    HAVE_FLAG = 0
 };
 
 enum FactType {
@@ -145,24 +143,21 @@ public:
 
 protected:
     friend class WarSceneAction;
-    bool preAction(ActionType type);
-    bool postAction(ActionType type);
+    bool preAction(ActionType type, const WarSceneAction* warAction);
+    bool postAction(ActionType type, const WarSceneAction* warAction);
+    bool checkCurrentActionComplete(const GOAPAction* planStep);
 
 private:
     void requestOrders();
     void updatePositions();
-    // Creates a copy of the specified object and adds it to the action vector and the ActionSet
-
-    void handlePlan(const GOAPPlan& plan);
     bool performAction(const GOAPAction* planStep);
+    bool performActionStep(GOAPAction::operationsIterator step);
     void init();
 
 private:
-    U16       _tickCount;
-    U64       _deltaTime;
-    GOAPGoal* _activeGoal;
-    bool _newPlan;
-    bool _newPlanSuccess;
+    U16  _tickCount;
+    U64  _deltaTime;
+    U8   _orderRequestTryCount;
     U8   _visualSensorUpdateCounter;
     WorkingMemory _workingMemory;
 };

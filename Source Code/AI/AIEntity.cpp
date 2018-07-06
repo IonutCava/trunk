@@ -14,7 +14,7 @@
 
 using namespace AI;
 
-static const D32 DESTINATION_RADIUS = 1.5 * 1.5;
+static const D32 DESTINATION_RADIUS = 3 * 3;
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  : GUIDWrapper(),
                                                                                 _name(name),
@@ -217,7 +217,7 @@ bool AIEntity::setPosition(const vec3<F32> position) {
     vec3<F32> result;
     // Find position on NavMesh
     if (!_detourCrowd->getNavMesh().getClosestPosition(position, vec3<F32>(5), DESTINATION_RADIUS, result)) {
-        return false;
+        //return false;
     }
     // Remove agent from crowd and re-add at position
     _detourCrowd->removeAgent(_agentID);
@@ -262,13 +262,11 @@ bool AIEntity::updateDestination(const vec3<F32>& destination, bool updatePrevio
     }
     vec3<F32> result;
     // Find position on navmesh
-    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, DESTINATION_RADIUS, vec3<F32>(5), result, 10)) {
-        return false;
+    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, DESTINATION_RADIUS, vec3<F32>(5), result, 30)) {
+        if (!_detourCrowd->getNavMesh().getClosestPosition(destination, vec3<F32>(5), DESTINATION_RADIUS, result)) {
+            return false;
+        }
     }
-    /*if (!_detourCrowd->getNavMesh().getClosestPosition(position, vec3<F32>(5), DESTINATION_RADIUS, result)) {
-        return false;
-    }*/
-
     _detourCrowd->setMoveTarget(_agentID, result, updatePreviousPath);
     _destination = result;
     _stopped = false;

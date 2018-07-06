@@ -36,7 +36,9 @@ enum AIMsg;
 /// Provides a scene-level AI implementation
 class AISceneImpl : private boost::noncopyable {
 public:
-    AISceneImpl() : _entity(nullptr)
+    AISceneImpl() : _entity(nullptr),
+                    _activeGoal(nullptr),
+                    _currentStep(-1)
     {
     }
 
@@ -45,7 +47,7 @@ public:
         _goals.clear();
     }
 
-	virtual void addEntityRef(AIEntity* entity) {
+    virtual void addEntityRef(AIEntity* entity) {
         if (entity) {
             _entity = entity;
         }
@@ -75,21 +77,23 @@ public:
     }
 
     inline const vectorImpl<GOAPGoal >& goalListConst() const { return _goals; }
-    inline const GOAPActionSet&         actionSet()     const { return _actionSet; }
-
 
 protected:
     friend class AIEntity;
     inline vectorImpl<GOAPGoal >& goalList() { return _goals; }
     inline GOAPActionSet&  actionSetPtr() { return _actionSet; }
 
-    inline void clearActiveGoals() {
+    inline void resetActiveGoals() {
         _activeGoals.clear();
+        for (GOAPGoal& goal : goalList()) {
+            goal.relevancy(0.0f);
+            activateGoal(goal.getName());
+        }
     }
     /// Although we want the goal to be activated, it might not be the most relevant in the current scene state
     inline bool activateGoal(const std::string& name) {
         GOAPGoal* goal = findGoal(name);
-        if (goal) {
+        if (goal != nullptr) {
             _activeGoals.push_back(goal);
         }
         return (goal != nullptr);
@@ -104,11 +108,13 @@ protected:
         std::sort(_activeGoals.begin(), _activeGoals.end(), [](GOAPGoal const* a, GOAPGoal const* b) {
                                                                 return a->relevancy() < b->relevancy();
                                                             });
-        return _activeGoals.back();
+        _activeGoal = _activeGoals.back();
+        _currentStep = -1;
+        return _activeGoal;
     }
 
     bool popActiveGoal(GOAPGoal* goal) {
-        if (!goal) {
+        if (goal == nullptr) {
             return false;
         }
         if (_activeGoals.empty()) {
@@ -126,16 +132,67 @@ protected:
         return true;
     }
 
-	virtual void processData(const U64 deltaTime) = 0;
-	virtual void processInput(const U64 deltaTime) = 0;
-	virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
-	virtual void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) = 0;
+    inline bool replanGoal() {
+        if (_activeGoal != nullptr) {
+            if (_activeGoal->plan(_worldState, _actionSet) ) {
+                popActiveGoal(_activeGoal);
+                advanceGoal();
+                return true;
+            }  else {
+                invalidateCurrentPlan();
+            }
+        }
+        return false;
+    }
+
+    inline bool advanceGoal() {
+        if (_activeGoal == nullptr) {
+            return false;
+        }
+        const GOAPPlan& plan = _activeGoal->getCurrentPlan();
+        if (!plan.empty()) {
+            _currentStep++;
+            if (!performAction(getActiveAction())) {
+                invalidateCurrentPlan();
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    inline void invalidateCurrentPlan() { 
+        _activeGoal = nullptr;   
+        _currentStep = -1;
+    }
+
+    inline const GOAPAction* getActiveAction() const { 
+        if (_activeGoal == nullptr) {
+            return nullptr;
+        }
+        const GOAPPlan& plan = _activeGoal->getCurrentPlan();
+        if (_currentStep >= plan.size()) {
+            return nullptr;
+        }
+        return plan[_currentStep]; 
+    }
+
+    inline GOAPGoal* const getActiveGoal() { return _activeGoal; }
+
+    virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
+    virtual bool performAction(const GOAPAction* planStep) = 0;
+    virtual void processData(const U64 deltaTime) = 0;
+    virtual void processInput(const U64 deltaTime) = 0;
+    virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
+    virtual void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) = 0;
     virtual void init() = 0;
 
 protected:
-	AIEntity*  _entity;
+    AIEntity*  _entity;
  
 private:
+    I32 _currentStep;
+    GOAPGoal* _activeGoal;
     GOAPActionSet   _actionSet;
     GOAPWorldState  _worldState;
 

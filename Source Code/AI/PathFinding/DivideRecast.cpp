@@ -133,8 +133,7 @@ namespace Navigation {
         F32 radiusSq = radius * radius;
 
 	    dtPolyRef resultPoly;
-        query.findNearestPoly(centerPosition._v, extents, _filter, &resultPoly, resultPt._v);
-        
+        findNearestPolyOnNavmesh(navMesh, centerPosition, extents, resultPt, resultPoly);
         U8 i = 0;
         for (i = 0; i < maxIters; ++i) {
             query.findRandomPointAroundCircle(resultPoly, centerPosition._v, radius, _filter, frand,  &resultPoly, resultPt._v);

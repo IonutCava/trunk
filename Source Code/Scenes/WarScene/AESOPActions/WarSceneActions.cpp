@@ -16,11 +16,11 @@ namespace AI {
     }
 
     bool WarSceneAction::preAction() const {
-        return _parentScene->preAction(_type);
+        return _parentScene->preAction(_type, this);
     }
 
     bool WarSceneAction::postAction() const {
-        return _parentScene->postAction(_type);
+        return _parentScene->postAction(_type, this);
     }
     ApproachFlag::ApproachFlag(std::string name, F32 cost) : WarSceneAction(ACTION_APPROACH_FLAG, name, cost)
     {

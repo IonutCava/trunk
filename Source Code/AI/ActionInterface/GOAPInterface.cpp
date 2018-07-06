@@ -1,7 +1,7 @@
 #include "Headers/GOAPInterface.h"
 
 #include "Core\Math\Headers\MathHelper.h"
-
+#include "AI/ActionInterface/Headers/AISceneImpl.h"
 namespace AI {
 
 const char* GOAPFactName(GOAPFact fact) {
@@ -21,12 +21,11 @@ GOAPGoal::~GOAPGoal()
 bool GOAPGoal::plan(const GOAPWorldState& worldState, const GOAPActionSet& actionSet) {
     _currentPlan.resize(0);
     if (worldState.meetsGoal(*this)) {
-        return true;
+        return false;
     }
     if (_planner.plan(worldState, *this, actionSet, _currentPlan)) {
         std::reverse(_currentPlan.begin(), _currentPlan.end());
     }
-
     return !_currentPlan.empty();
 }
 

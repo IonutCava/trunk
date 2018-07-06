@@ -33,7 +33,7 @@ enum AIMsg {
 	DONT_ATTACK_BALL = 3
 };
 
-class TenisSceneAISceneImpl : public AISceneImpl{
+class TenisSceneAISceneImpl : public AISceneImpl {
 public:
     TenisSceneAISceneImpl(SceneGraphNode* target);
 	void processData(const U64 deltaTime);
@@ -46,6 +46,8 @@ private:
 	void updatePositions();
     void init(void) {}
 	F32 distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition);
+    bool performActionStep(GOAPAction::operationsIterator step) { return true; }
+    bool performAction(const GOAPAction* planStep) { return true; }
 
 private:
 	SceneGraphNode* _target;

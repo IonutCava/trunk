@@ -207,7 +207,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
         for(AI::AIEntity* character : _army[i]){
             _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
             _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
-            _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
+            _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(i == 1 ? 255 : 0, 0, i == 1 ? 0 : 255, 255);
             count++;
         }
     }

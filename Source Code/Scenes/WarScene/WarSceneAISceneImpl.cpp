@@ -19,9 +19,7 @@ SGNNodeFact      WorkingMemory::_flags[2];
 
 WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
                                             _tickCount(0),
-                                            _newPlan(false),
-                                            _newPlanSuccess(false),
-                                            _activeGoal(nullptr),
+                                            _orderRequestTryCount(0),
                                             _visualSensorUpdateCounter(0),
                                             _deltaTime(0ULL)
 {
@@ -37,6 +35,7 @@ WarSceneAISceneImpl::~WarSceneAISceneImpl()
 
 void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
     WarSceneAction* const warAction = dynamic_cast<WarSceneAction*>(action);
+    warAction->setParentAIScene(this);
     switch(warAction->actionType()){
         case ACTION_APPROACH_FLAG : AISceneImpl::registerAction(New ApproachFlag(*warAction)); return;
         case ACTION_CAPTURE_FLAG  : AISceneImpl::registerAction(New CaptureFlag(*warAction));  return;
@@ -52,8 +51,6 @@ static const U32 flagContainer = 2;
 
 void WarSceneAISceneImpl::init() {
     VisualSensor* sensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
-
-
     if (sensor) {
         AITeam* currentTeam = _entity->getTeam();
         const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
@@ -68,7 +65,6 @@ void WarSceneAISceneImpl::init() {
                 sensor->followSceneGraphNode(enemyTeamContainer, enemy.second->getUnitRef()->getBoundNode());
             }
         }
-
         sensor->followSceneGraphNode(flagContainer, WorkingMemory::_flags[0].value());
         sensor->followSceneGraphNode(flagContainer, WorkingMemory::_flags[1].value());
     }
@@ -79,11 +75,7 @@ void WarSceneAISceneImpl::requestOrders() {
     U8 priority[WarSceneOrder::ORDER_PLACEHOLDER];
     memset(priority, 0, sizeof(U8) * WarSceneOrder::ORDER_PLACEHOLDER);
 
-    clearActiveGoals();
-    for (GOAPGoal& goal : goalList()) {
-        goal.relevancy(0.0f);
-        activateGoal(goal.getName());
-    }
+    resetActiveGoals();
 
     for (Order* const order : orders) {
         WarSceneOrder::WarOrder orderId = static_cast<WarSceneOrder::WarOrder>(dynamic_cast<WarSceneOrder*>(order)->getId());
@@ -152,22 +144,35 @@ void WarSceneAISceneImpl::requestOrders() {
             goal.relevancy(priority[WarSceneOrder::ORDER_RETRIEVE_FLAG]);
         }
     }
-    if ((_activeGoal = findRelevantGoal()) != nullptr) {
-        PRINT_FN("Current goal: [ %s ]", _activeGoal->getName().c_str());
-        if (_activeGoal->plan(worldState(), actionSet())) {
-            popActiveGoal(_activeGoal);
-            _newPlan = true;
-        }
+
+    if (findRelevantGoal() != nullptr && replanGoal()) {
+        D_PRINT_FN("Current goal: [ %s ]", getActiveGoal()->getName().c_str());
+        D_PRINT_FN("The Plan for [ %d ] involves [ %d ] actions.", _entity->getGUID(), getActiveGoal()->getCurrentPlan().size());
     }
 }
 
-bool WarSceneAISceneImpl::preAction(ActionType type) {
+bool WarSceneAISceneImpl::preAction(ActionType type, const WarSceneAction* warAction) {
+    AITeam* currentTeam = _entity->getTeam();
+    DIVIDE_ASSERT(currentTeam != nullptr, "WarScene error: INVALID TEAM FOR INPUT UPDATE");
+
     switch (type) {
         case ACTION_APPROACH_FLAG : {
             PRINT_FN("Starting approach flag action");
+            _entity->updateDestination(currentTeam->getTeamID() == 0 ?  _workingMemory._team2FlagPosition.value() : _workingMemory._team1FlagPosition.value());
         } break;
         case ACTION_CAPTURE_FLAG : {
             PRINT_FN("Starting capture flag action");
+            const BoundingBox& bb1 = _entity->getUnitRef()->getBoundNode()->getBoundingBoxConst();
+            const BoundingBox& bb2 = _workingMemory._flags[currentTeam->getTeamID()].value()->getBoundingBoxConst();
+            if (bb1.Collision(bb2)) {
+                _workingMemory._hasEnemyFlag.value(true);
+                _workingMemory._hasEnemyFlag.belief(1.0);
+                FOR_EACH(const AITeam::TeamMap::value_type& member, currentTeam->getTeamMembers()) {
+                    if(_entity->getGUID() != member.second->getGUID()) {
+                        _entity->sendMessage(member.second, HAVE_FLAG, _entity);
+                    }
+                }
+            }
         } break;
         case ACTION_RETURN_FLAG : {
             PRINT_FN("Starting return flag action");
@@ -180,7 +185,7 @@ bool WarSceneAISceneImpl::preAction(ActionType type) {
     return true;
 }
 
-bool WarSceneAISceneImpl::postAction(ActionType type) {
+bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warAction) {
     switch (type) {
         case ACTION_APPROACH_FLAG : {
             PRINT_FN("Approach flag action over");
@@ -195,11 +200,52 @@ bool WarSceneAISceneImpl::postAction(ActionType type) {
             PRINT_FN("Normal action over");
         } break;
     };
-        
-    return true;
+    PRINT_FN("   %s ", warAction->name().c_str());
+    for(GOAPAction::operationsIterator o = warAction->effects().begin(); o != warAction->effects().end(); o++) {
+        performActionStep(o);
+    }
+    PRINT_F("\n");
+    return advanceGoal();
+}
+
+bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction* planStep) {
+    assert(planStep != nullptr);
+    const WarSceneAction& warAction = *dynamic_cast<const WarSceneAction*>(planStep);
+
+    bool state = false;
+    AITeam* currentTeam = _entity->getTeam();
+    DIVIDE_ASSERT(currentTeam != nullptr, "WarScene error: INVALID TEAM FOR INPUT UPDATE");
+
+    switch (warAction.actionType()) {
+        case ACTION_APPROACH_FLAG : {
+            const BoundingBox& bb1 = _entity->getUnitRef()->getBoundNode()->getBoundingBoxConst();
+            const BoundingBox& bb2 = _workingMemory._flags[1 - currentTeam->getTeamID()].value()->getBoundingBoxConst();
+            state = bb1.Collision(bb2);
+        } break;
+        case ACTION_CAPTURE_FLAG : {
+            PRINT_FN("Capture flag action over");
+        } break;
+        case ACTION_RETURN_FLAG : {
+            PRINT_FN("Return flag action over");
+        } break;
+        default : {
+            PRINT_FN("Normal action over");
+        } break;
+    };
+    if (state) {
+        return warAction.postAction();
+    }
+    return state;
 }
 
 void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content){
+    switch(msg){
+        case HAVE_FLAG : {
+            _workingMemory._teamMateHasFlag.value(true);
+            _workingMemory._teamMateHasFlag.belief(1.0f);
+            invalidateCurrentPlan();
+        } break;
+    };
 }
 
 void WarSceneAISceneImpl::updatePositions(){
@@ -209,37 +255,11 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
     if (!_entity) {
         return;
     }
-    AIManager& aiMgr = AIManager::getInstance();
-    if (!aiMgr.getNavMesh(_entity->getAgentRadiusCategory())) {
-        return;
-    }
+
     _deltaTime += deltaTime;
-
-    AITeam* currentTeam = _entity->getTeam();
-    DIVIDE_ASSERT(currentTeam != nullptr, "WarScene error: INVALID TEAM FOR INPUT UPDATE");
-
-    if (_entity->destinationReached() && _workingMemory._staticDataUpdated) {
-        if (_deltaTime > getUsToSec(1.5)) {//wait 1 and a half seconds at the destination
-
-            const BoundingBox& bb1 = _entity->getUnitRef()->getBoundNode()->getBoundingBoxConst();
-            const BoundingBox& bb2 = _workingMemory._flags[currentTeam->getTeamID()].value()->getBoundingBoxConst();
-
-            if (bb1.Collision(bb2)) {
-
-                _entity->stop();
-                _entity->getUnitRef()->lookAt(currentTeam->getTeamID() == 0 ? _workingMemory._team2FlagPosition.value() : _workingMemory._team1FlagPosition.value());
-
-            } else {
-
-                if (currentTeam->getTeamID() == 0) { 
-                    _entity->updateDestination(  _workingMemory._team2FlagPosition.value() );
-                } else {
-                    _entity->updateDestination( _workingMemory._team1FlagPosition.value() );
-                }    
-
-            }
-            _deltaTime = 0;
-        }
+    
+    if (_deltaTime > getUsToSec(1.5)) {//wait 1 and a half seconds at the destination
+        _deltaTime = 0;
     }
 }
 
@@ -247,17 +267,23 @@ void WarSceneAISceneImpl::processData(const U64 deltaTime) {
     if (!_entity) {
         return;
     }
+    AIManager& aiMgr = AIManager::getInstance();
 
-    if (_newPlan) {
-        assert(_activeGoal != nullptr);
-        handlePlan(_activeGoal->getCurrentPlan());
-        _newPlan = false;
+    if (!aiMgr.getNavMesh(_entity->getAgentRadiusCategory())) {
+        return;
     }
 
-    if (!_activeGoal && !goalList().empty()) {
-        requestOrders();
+    if (_workingMemory._staticDataUpdated) {
+        if (!getActiveGoal()) {
+            if (!goalList().empty() && _orderRequestTryCount < 3) {
+                requestOrders();
+                _orderRequestTryCount++;
+            }
+        } else {
+            _orderRequestTryCount = 0;
+            checkCurrentActionComplete(getActiveAction());
+        }   
     }
-
     updatePositions();
 }
 
@@ -265,9 +291,6 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
     if (!unitRef) {
         return;
     }
-
-    updatePositions();
-
     U8 visualSensorUpdateFreq = 10;
     _visualSensorUpdateCounter = (_visualSensorUpdateCounter + 1) % (visualSensorUpdateFreq + 1);
     /// Update sensor information
@@ -315,35 +338,34 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
     
 }
 
-void WarSceneAISceneImpl::handlePlan(const GOAPPlan& plan) {
-   GOAPPlan::const_iterator it;
-   PRINT_FN("The Plan for [ %d ] involves [ %d ] actions.", _entity->getGUID(), plan.size());
-   for (it = plan.begin(); it != plan.end(); it++) {
-      performAction(*it);
-   }
-}
-
 bool WarSceneAISceneImpl::performAction(const GOAPAction* planStep) {
-    const WarSceneAction* warSceneAction = dynamic_cast<const WarSceneAction*>(planStep);
-    assert(warSceneAction != nullptr);
-
-    if (!warSceneAction->preAction()){
+    if(planStep == nullptr) {
         return false;
     }
-    PRINT_FN("   %s ", warSceneAction->name().c_str());
-    
-    GOAPValue oldVal = false;
-    GOAPValue newVal = false;
-    GOAPFact crtFact;
-    for(GOAPAction::operationsIterator o = warSceneAction->effects().begin(); o != warSceneAction->effects().end(); o++) {
-        crtFact = o->first;
-        newVal  = o->second;
-        oldVal  = worldState().getVariable(crtFact);
-        if (oldVal != newVal) {
-            PRINT_FN("\t\tChanging \"%s\" from \"%s\" to \"%s\"", WarSceneFactName(crtFact), GOAPValueName(oldVal), GOAPValueName(newVal));
-            worldState().setVariable(crtFact, newVal);
-        }
+    return dynamic_cast<const WarSceneAction*>(planStep)->preAction();
+}
+
+bool WarSceneAISceneImpl::performActionStep(GOAPAction::operationsIterator step) {
+    GOAPFact crtFact = step->first;
+    GOAPValue newVal = step->second;
+    GOAPValue oldVal = worldState().getVariable(crtFact);
+    if (oldVal != newVal) {
+        switch(static_cast<Fact>(crtFact)) {
+            case EnemyVisible : {
+            } break;
+            case EnemyInAttackRange : {
+            } break;
+            case EnemyDead : {
+            } break;
+            case WaitingIdle : {
+            } break;
+            case AtTargetNode : {
+            } break;
+            case HasTargetNode : {
+            } break;
+        };
+        PRINT_FN("\t\tChanging \"%s\" from \"%s\" to \"%s\"", WarSceneFactName(crtFact), GOAPValueName(oldVal), GOAPValueName(newVal));
     }
-    PRINT_F("\n");
-    return warSceneAction->postAction();
+    worldState().setVariable(crtFact, newVal);
+    return true;
 }

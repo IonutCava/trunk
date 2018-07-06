@@ -58,12 +58,11 @@ namespace AI {
             virtual bool plan(const GOAPWorldState& worldState, const GOAPActionSet& actionSet);
 
             const GOAPPlan& getCurrentPlan() const;
-    
+
         protected:
             F32 _relevancy;    
             goap::AStar _planner;
             GOAPPlan    _currentPlan;
-   
     };
 };
 
