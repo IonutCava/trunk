@@ -367,6 +367,43 @@ bool GL_API::initShaders() {
         lineOffsets);
 
     appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_CULL_SPOT " +
+        std::to_string(to_uint(ShaderBufferLocation::LIGHT_CULL_SPOT)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_CULL_POINT " +
+        std::to_string(to_uint(ShaderBufferLocation::LIGHT_CULL_POINT)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define FORWARD_PLUS_TILE_RES " + std::to_string(Config::Lighting::FORWARD_PLUS_TILE_RES),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define MAX_NUM_LIGHTS_PER_TILE " + std::to_string(Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define LIGHT_INDEX_BUFFER_SENTINEL " + std::to_string(Config::Lighting::FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define MAX_TEXTURE_SLOTS " + std::to_string(GL_API::_maxTextureUnits),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define MAX_TEXTURE_SLOTS " + std::to_string(GL_API::_maxTextureUnits),
+        lineOffsets);
+
+    appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define MAX_TEXTURE_SLOTS " + std::to_string(GL_API::_maxTextureUnits),
         lineOffsets);

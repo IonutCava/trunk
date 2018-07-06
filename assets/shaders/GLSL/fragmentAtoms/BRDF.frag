@@ -51,14 +51,50 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
 #else
     vec3 lightColor = vec3(0.0);
     // Apply all lighting contributions
-    uint offset = 0;
-    for (uint i = 0; i < MAX_LIGHT_TYPES; ++i) {
-        uint lightCount = VAR._lightCount[i];
-        for (uint j = 0; j < lightCount; ++j){
-            getBRDFFactors(int(j + offset), normalWV, lightColor);
-        }
-        offset += lightCount;
+    uint lightIdx;
+    // Directional lights
+    for (lightIdx = 0; lightIdx < VAR._lightCount[0]; ++lightIdx) {
+        getBRDFFactors(int(lightIdx), normalWV, lightColor);
     }
+    uint offset = lightIdx + 1;
+    // Point lights
+    for (lightIdx = 0; lightIdx < VAR._lightCount[1]; ++lightIdx) {
+        getBRDFFactors(int(lightIdx + offset), normalWV, lightColor);
+    }
+    offset += lightIdx + 1;
+    // Spot lights
+    for (lightIdx = 0; lightIdx < VAR._lightCount[2]; ++lightIdx) {
+        getBRDFFactors(int(lightIdx + offset), normalWV, lightColor);
+    }
+
+/*  
+    uint maxLightsPerTile = uint(dvd_otherData.w);
+    uint nTileIndex = GetTileIndex(gl_FragCoord.xy);
+    uint nIndex = maxLightsPerTile * nTileIndex;
+    uint nNextLightIndex = perTileLightIndices[int(nIndex)];
+    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
+    {
+        uint nLightIndex = nNextLightIndex;
+        nIndex++;
+        nNextLightIndex = perTileLightIndices[int(nIndex)];
+        // offset index to account for directional lights
+        getBRDFFactors(int(nNextLightIndex + offset), normalWV, lightColor);
+    }
+    
+    // Moves past the first sentinel to get to the spot lights.
+    nIndex++;
+    nNextLightIndex = perTileLightIndexBuffer[int(nIndex))];
+
+    // Loops over spot lights.
+    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
+    {
+    uint nLightIndex = nNextLightIndex;
+    nIndex++;
+    nNextLightIndex = perTileLightIndexBuffer[int(nIndex))];
+    // offset index to account for directional and point lights
+    uint lightIndex = nNextLightIndex + dvd_lightCountPerType[0] + dvd_lightCountPerType[1];
+    }
+*/
 
     vec3 color = mix(dvd_MatEmissive, lightColor, DIST_TO_ZERO(length(lightColor)));
 #endif

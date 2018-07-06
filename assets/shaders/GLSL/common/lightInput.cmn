@@ -33,12 +33,26 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBl
     Light dvd_LightSource[MAX_POSSIBLE_LIGHTS];
 };
 
-#if defined(COMPUTE_SHADER)
 layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLightIndexBuffer
 {
-    uint perTileLightIndexBufferOut[];
+    uint perTileLightIndices[];
 };
+
+#if defined(COMPUTE_SHADER)
+
+layout(binding = BUFFER_LIGHT_CULL_POINT, std430) coherent ACCESS buffer pointLightData
+{
+    Light dvd_PointLightSource[];
+};
+
+layout(binding = BUFFER_LIGHT_CULL_SPOT, std430) coherent ACCESS buffer spotLightData
+{
+    Light dvd_SpotLightSource[];
+};
+
 #endif
+
+
 
 #if defined(FRAG_SHADER)
 struct Shadow {
@@ -52,6 +66,29 @@ layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowB
 {
     Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 };
-#endif
+#endif 
+
+#define windowWidth int(dvd_ViewPort.z)
+#define windowHeight int(dvd_ViewPort.w)
+
+// calculate the number of tiles in the horizontal direction
+uint GetNumTilesX()
+{
+    return uint(((windowWidth + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES)));
+}
+
+// calculate the number of tiles in the vertical direction
+uint GetNumTilesY()
+{
+    return uint(((windowHeight + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES)));
+}
+
+uint GetTileIndex(in vec2 ScreenPos)
+{
+    float fTileRes = float(FORWARD_PLUS_TILE_RES);
+    uint nNumCellsX = (windowWidth + FORWARD_PLUS_TILE_RES - 1) / FORWARD_PLUS_TILE_RES;
+    uint nTileIdx = uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * nNumCellsX);
+    return nTileIdx;
+}
 
 #endif //_LIGHT_INPUT_CMN_

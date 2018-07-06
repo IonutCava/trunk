@@ -50,6 +50,11 @@ class d3dConstantBuffer final : public ShaderBuffer {
     /// in the buffer and fill it with NULL values
     void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1) override;
 
+    void getData(ptrdiff_t offsetElementCount,
+                 ptrdiff_t rangeElementCount,
+                 bufferPtr result,
+                 U32 sizeFactorOffset = 0) const override;
+
     void updateData(ptrdiff_t offsetElementCount,
                     ptrdiff_t rangeElementCount,
                     const bufferPtr data,

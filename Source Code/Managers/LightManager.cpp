@@ -32,6 +32,7 @@ LightManager::LightManager()
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = nullptr;
+
     const U8 startOffset = to_ubyte(ShaderProgram::TextureUsage::COUNT);
     _shadowLocation[to_uint(ShadowType::CUBEMAP)] = startOffset + 1;
     _shadowLocation[to_uint(ShadowType::SINGLE)] = startOffset + 2;
@@ -300,7 +301,9 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
                 break;
             }
             LightType type = light->getLightType();
-            LightProperties& temp = _lightProperties[totalLightCount];
+            U32 typeUint = to_uint(type);
+
+            LightProperties& temp = _lightProperties[typeUint][_activeLightCount[typeUint]];
             temp._diffuse.set(light->getDiffuseColor(), light->getSpotCosOuterConeAngle());
             // Non directional lights are positioned at specific point in space
             // So we need W = 1 for a valid positional transform
@@ -312,7 +315,7 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
             temp._direction.set(viewMatrix.transformNonHomogeneous(light->getSpotDirection()),
                                 light->getSpotAngle());
 
-            temp._options.x = to_uint(type);
+            temp._options.x = typeUint;
             temp._options.y = light->castsShadows();
             if (light->castsShadows() && lightShadowPropertiesCount < lightShadowCount) {
 
@@ -321,15 +324,40 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
             }
 
             totalLightCount++;
-            _activeLightCount[to_uint(type)]++;
+            _activeLightCount[typeUint]++;
         }
 
     }
 
     // Passing 0 elements is fine (early out in the buffer code)
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->updateData(0, totalLightCount, _lightProperties.data());
+    U32 offset = 0;
+    for (U32 type = 0; type < to_uint(LightType::COUNT); ++type) {
+        U32 range = _activeLightCount[type];
+        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->updateData(offset, range, _lightProperties[type].data());
+        offset = range;
+    }
+
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bind(ShaderBufferLocation::LIGHT_NORMAL);
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
 }
+
+void LightManager::uploadLightData(LightType lightsByType, ShaderBufferLocation location) {
+    U32 offset = 0;
+    switch(lightsByType) {
+        case LightType::DIRECTIONAL: 
+            offset = 0;
+            break;
+        case LightType::POINT:
+            offset = _activeLightCount[to_uint(LightType::DIRECTIONAL)];
+            break;
+        case LightType::SPOT:
+            offset = _activeLightCount[to_uint(LightType::POINT)];
+            break;
+    };
+
+    U32 range = _activeLightCount[to_uint(lightsByType)];
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bindRange(location, offset, range);
+}
+
 };

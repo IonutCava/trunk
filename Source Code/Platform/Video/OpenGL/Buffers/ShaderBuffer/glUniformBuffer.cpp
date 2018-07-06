@@ -106,7 +106,29 @@ void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 si
     }
 }
 
-void glUniformBuffer::updateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount, const bufferPtr data, U32 sizeFactorOffset) {
+void glUniformBuffer::getData(GLintptr offsetElementCount,
+                              GLsizeiptr rangeElementCount,
+                              bufferPtr result,
+                              U32 sizeFactorOffset) const {
+    if (rangeElementCount > 0) {
+        GLintptr range = rangeElementCount * _primitiveSize;
+        GLintptr offset = offsetElementCount * _primitiveSize;
+
+        DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize && sizeFactorOffset < _sizeFactor,
+            "glUniformBuffer::UpdateData error: was called with an "
+            "invalid range (buffer overflow)!");
+
+        offset += _queueWriteIndex * _allignedBufferSize;
+        offset += _allignedBufferSize * sizeFactorOffset;
+
+        glGetNamedBufferSubData(_UBOid, offset, range, result);
+    }
+}
+
+void glUniformBuffer::updateData(GLintptr offsetElementCount, 
+                                 GLsizeiptr rangeElementCount,
+                                 const bufferPtr data,
+                                 U32 sizeFactorOffset) {
 
     if (rangeElementCount == 0) {
         return;

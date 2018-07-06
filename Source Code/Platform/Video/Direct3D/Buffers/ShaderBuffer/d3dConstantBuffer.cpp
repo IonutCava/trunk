@@ -23,6 +23,12 @@ void d3dConstantBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 
     ShaderBuffer::create(primitiveCount, primitiveSize, sizeFactor);
 }
 
+void d3dConstantBuffer::getData(ptrdiff_t offsetElementCount,
+                                ptrdiff_t rangeElementCount,
+                                bufferPtr result,
+                                U32 sizeFactorOffset) const {
+}
+
 void d3dConstantBuffer::updateData(ptrdiff_t offsetElementCount,
                                    ptrdiff_t rangeElementCount,
                                    const bufferPtr data,

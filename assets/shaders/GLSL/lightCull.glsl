@@ -2,10 +2,7 @@
 
 #include "lightInput.cmn"
 
-#define TILE_RES 16
-#define NUM_THREADS_PER_TILE (TILE_RES * TILE_RES)
-#define MAX_NUM_LIGHTS_PER_TILE 544
-#define LIGHT_INDEX_BUFFER_SENTINEL 0x7fffffff
+#define NUM_THREADS_PER_TILE (FORWARD_PLUS_TILE_RES * FORWARD_PLUS_TILE_RES)
 #define FLT_MAX 3.402823466e+38F
 
 #define windowWidth int(dvd_ViewPort.z)
@@ -48,16 +45,6 @@ vec4 CreatePlaneEquation(vec4 b, vec4 c)
     return n;
 }
 
-uint GetNumTilesX()
-{
-    return uint(((windowWidth + TILE_RES - 1) / float(TILE_RES)));
-}
-
-uint GetNumTilesY()
-{
-    return uint(((windowHeight + TILE_RES - 1) / float(TILE_RES)));
-}
-
 // point-plane distance, simplified for the case where 
 // the plane passes through the origin
 float GetSignedDistanceFromPlane(in vec4 p, in vec4 eqn)
@@ -79,7 +66,7 @@ void CalculateMinMaxDepthInLds(uvec3 globalThreadIdx)
     }
 }
 
-layout(local_size_x = TILE_RES, local_size_y = TILE_RES) in;
+layout(local_size_x = FORWARD_PLUS_TILE_RES, local_size_y = FORWARD_PLUS_TILE_RES) in;
 
 void main(void)
 {
@@ -87,7 +74,7 @@ void main(void)
     uvec3 localIdx = gl_LocalInvocationID;
     uvec3 groupIdx = gl_WorkGroupID;
 
-    uint localIdxFlattened = localIdx.x + localIdx.y * TILE_RES;
+    uint localIdxFlattened = localIdx.x + localIdx.y * FORWARD_PLUS_TILE_RES;
     uint tileIdxFlattened = groupIdx.x + groupIdx.y * GetNumTilesX();
 
     if (localIdxFlattened == 0)
@@ -100,13 +87,13 @@ void main(void)
     vec4 frustumEqn[4];
     {
         // construct frustum for this tile
-        uint pxm = TILE_RES*groupIdx.x;
-        uint pym = TILE_RES*groupIdx.y;
-        uint pxp = TILE_RES*(groupIdx.x + 1);
-        uint pyp = TILE_RES*(groupIdx.y + 1);
+        uint pxm = FORWARD_PLUS_TILE_RES*groupIdx.x;
+        uint pym = FORWARD_PLUS_TILE_RES*groupIdx.y;
+        uint pxp = FORWARD_PLUS_TILE_RES*(groupIdx.x + 1);
+        uint pyp = FORWARD_PLUS_TILE_RES*(groupIdx.y + 1);
 
-        uint uWindowWidthEvenlyDivisibleByTileRes = TILE_RES * GetNumTilesX();
-        uint uWindowHeightEvenlyDivisibleByTileRes = TILE_RES * GetNumTilesY();
+        uint uWindowWidthEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * GetNumTilesX();
+        uint uWindowHeightEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * GetNumTilesY();
 
         // four corners of the tile, clockwise from top-left
         vec4 frustum[4];
@@ -151,9 +138,8 @@ void main(void)
 
         if (il < numPointLights)
         {
-            vec4 center;// = pointLightBufferCenterAndRadius[int(il)];
+            vec4 center = dvd_PointLightSource[int(il)]._positionWV;
             float r = center.w;
-            center.xyz = (dvd_ViewMatrix * vec4(center.xyz, 1.0f)).xyz;
 
             // test if sphere is intersecting or inside frustum
             if (-center.z + minZ < r && center.z - maxZ < r)
@@ -184,9 +170,8 @@ void main(void)
 
         if (il < numSpotLights)
         {
-            vec4 center;// = spotLightBufferCenterAndRadius[int(il)];
+            vec4 center = dvd_SpotLightSource[int(il)]._positionWV;
             float r = center.w * 5.0f; // FIXME: Multiply was added, but more clever culling should be done instead.
-            center.xyz = (dvd_ViewMatrix * vec4(center.xyz, 1.0f)).xyz;
 
             // test if sphere is intersecting or inside frustum
             if (-center.z + minZ < r && center.z - maxZ < r)
@@ -213,23 +198,23 @@ void main(void)
         for (uint i = localIdxFlattened; i < uNumPointLightsInThisTile; i += NUM_THREADS_PER_TILE)
         {
             // per-tile list of light indices
-            perTileLightIndexBufferOut[int(startOffset + i)] = ldsLightIdx[i];
+            perTileLightIndices[int(startOffset + i)] = ldsLightIdx[i];
         }
 
         for (uint j = (localIdxFlattened + uNumPointLightsInThisTile); j < ldsLightIdxCounter; j += NUM_THREADS_PER_TILE)
         {
             // per-tile list of light indices
-            perTileLightIndexBufferOut[int(startOffset + j + 1)] = ldsLightIdx[j];
+            perTileLightIndices[int(startOffset + j + 1)] = ldsLightIdx[j];
         }
 
         if (localIdxFlattened == 0)
         {
             // mark the end of each per-tile list with a sentinel (point lights)
-            perTileLightIndexBufferOut[int(startOffset + uNumPointLightsInThisTile)] = LIGHT_INDEX_BUFFER_SENTINEL;
+            perTileLightIndices[int(startOffset + uNumPointLightsInThisTile)] = LIGHT_INDEX_BUFFER_SENTINEL;
 
             // mark the end of each per-tile list with a sentinel (spot lights)
-            //g_PerTileLightIndexBufferOut[ startOffset + ldsLightIdxCounter + 1 ] = LIGHT_INDEX_BUFFER_SENTINEL;
-            perTileLightIndexBufferOut[int(startOffset + ldsLightIdxCounter + 1)] = LIGHT_INDEX_BUFFER_SENTINEL;
+            //g_perTileLightIndices[ startOffset + ldsLightIdxCounter + 1 ] = LIGHT_INDEX_BUFFER_SENTINEL;
+            perTileLightIndices[int(startOffset + ldsLightIdxCounter + 1)] = LIGHT_INDEX_BUFFER_SENTINEL;
         }
     }
 }

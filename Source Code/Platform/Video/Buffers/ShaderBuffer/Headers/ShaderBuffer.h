@@ -59,6 +59,11 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
 
     virtual void setData(const bufferPtr data, U32 sizeFactorOffset = 0);
 
+    virtual void getData(ptrdiff_t offsetElementCount,
+                         ptrdiff_t rangeElementCount,
+                         bufferPtr result,
+                         U32 sizeFactorOffset = 0) const = 0;
+
     virtual bool bindRange(U32 bindIndex,
                            U32 offsetElementCount,
                            U32 rangeElementCount,

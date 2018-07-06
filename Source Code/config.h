@@ -159,6 +159,11 @@ const unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
 /// the maximum number of lights supported, this is limited by constant buffer
 /// size, commonly this is 64kb, but AMD only seem to allow 2048 lights...
 const unsigned int MAX_POSSIBLE_LIGHTS = 1024;
+
+/// The following parameters control the behaviour of the Forward+ renderer
+const unsigned int FORWARD_PLUS_TILE_RES = 16;
+const unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
+const unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 };  // namespace Lighting
 };  // namespace Config
 };  // namespace Divide

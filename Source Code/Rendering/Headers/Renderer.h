@@ -46,7 +46,7 @@ enum class RendererType : U32 {
 /// ForwardPlus, Deferred Shading, etc
 class NOINITVTABLE Renderer {
    public:
-    Renderer(RendererType type) : _type(type), _debugView(false) {}
+    Renderer(RendererType type) : _flag(0), _debugView(false), _type(type) {}
 
     virtual ~Renderer() {}
 
@@ -60,7 +60,10 @@ class NOINITVTABLE Renderer {
     inline RendererType getType() const { return _type; }
     inline void toggleDebugView() { _debugView = !_debugView; }
 
+    inline U32 getFlag() const { return _flag; }
    protected:
+    // General purpose flag
+    U32 _flag;
     bool _debugView;
     RendererType _type;
 };

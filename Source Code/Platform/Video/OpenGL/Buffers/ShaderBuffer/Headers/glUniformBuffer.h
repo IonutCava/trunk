@@ -53,6 +53,11 @@ class glUniformBuffer final : public ShaderBuffer {
     /// Create a new buffer object to hold our uniform shader data
     void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1) override;
 
+    void getData(GLintptr offsetElementCount,
+                 GLsizeiptr rangeElementCount,
+                 bufferPtr result,
+                 U32 sizeFactorOffset = 0) const override;
+
     void updateData(GLintptr offsetElementCount,
                     GLsizeiptr rangeElementCount,
                     const bufferPtr data,
