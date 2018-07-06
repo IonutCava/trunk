@@ -97,6 +97,7 @@ struct GenericDrawCommand {
     VertexDataInterface* _sourceBuffer;
 
    public:
+    inline void drawID(U32 ID) { _cmd.baseInstance = ID; }
     inline void LoD(U8 lod) { _lodIndex = lod; }
     inline void queryID(U8 queryID) { _queryID = queryID; }
     inline void stateHash(size_t hashValue) { _stateHash = hashValue; }

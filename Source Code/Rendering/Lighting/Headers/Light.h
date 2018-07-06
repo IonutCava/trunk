@@ -170,10 +170,7 @@ class Light : public SceneNode {
     /// Checks if this light needs and update
     void onCameraChange();
 
-    /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
-        return true;
-    }
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
 
     /// SceneNode concrete implementations
     bool unload();
@@ -235,12 +232,6 @@ class Light : public SceneNode {
     template <typename T>
     friend class ImplResourceLoader;
     bool load(const stringImpl& name);
-
-    /// When the SceneGraph calls the light's render function, we draw the
-    /// impostor if needed
-    virtual void render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage);
 
     virtual void getDrawCommands(
         SceneGraphNode& sgn, const RenderStage& currentRenderStage,

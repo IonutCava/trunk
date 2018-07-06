@@ -78,19 +78,19 @@ class RenderingComponent : public SGNComponent {
         RenderStage renderStage = RenderStage::FINAL_STAGE);
     size_t getDrawStateHash(RenderStage renderStage);
 
-    inline const vectorImpl<GenericDrawCommand>& getDrawCommands() const {
-        return _drawCommandsCache;
-    }
     inline void getMaterialColorMatrix(mat4<F32>& matOut) const {
         return matOut.set(_materialColorMatrix);
     }
+
     inline void getMaterialPropertyMatrix(mat4<F32>& matOut) const {
         return matOut.set(_materialPropertyMatrix);
     }
     inline Material* const getMaterialInstance() { return _materialInstance; }
 
     const vectorImpl<GenericDrawCommand>& getDrawCommands(
-        SceneRenderState& sceneRenderState, RenderStage renderStage);
+        U32 commandOffset,
+        SceneRenderState& sceneRenderState,
+        RenderStage renderStage);
 
 #ifdef _DEBUG
     void drawDebugAxis();

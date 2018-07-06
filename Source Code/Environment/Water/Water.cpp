@@ -140,6 +140,18 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn,
         _orientation.set(orientation);
         updatePlaneEquation();
     }
+
+    if (!_plane->onDraw(currentStage)) {
+        return false;
+    }
+
+    if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
+        _reflectedTexture->Bind(1);
+        if (!_cameraUnderWater) {
+            _refractionTexture->Bind(2);
+        }
+    }
+
     return true;
 }
 
@@ -167,22 +179,6 @@ void WaterPlane::getDrawCommands(
     drawCommandsOut.push_back(cmd);
 }
 
-void WaterPlane::render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage) {
-    if (!_plane->onDraw(currentRenderStage)) {
-        return;
-    }
-    if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
-        _reflectedTexture->Bind(1);
-        if (!_cameraUnderWater) {
-            _refractionTexture->Bind(2);
-        }
-    }
-
-    GFX_DEVICE.submitRenderCommand(
-        sgn.getComponent<RenderingComponent>()->getDrawCommands());
-}
 
 bool WaterPlane::getDrawState(const RenderStage& currentStage) {
     // Wait for the Reflector to update

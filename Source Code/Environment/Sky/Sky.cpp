@@ -90,7 +90,11 @@ void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                       SceneState& sceneState) {}
 
 bool Sky::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
-    return _sky->onDraw(sgn, currentStage);
+    if (_sky->onDraw(sgn, currentStage)) {
+        _skybox->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+        return true;
+    }
+    return false;
 }
 
 void Sky::getDrawCommands(SceneGraphNode& sgn,
@@ -107,14 +111,6 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
     cmd.sourceBuffer(_sky->getGeometryVB());
     cmd.indexCount(_sky->getGeometryVB()->getIndexCount());
     drawCommandsOut.push_back(cmd);
-}
-
-void Sky::render(SceneGraphNode& sgn,
-                 const SceneRenderState& sceneRenderState,
-                 const RenderStage& currentRenderStage) {
-    _skybox->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
-    GFX_DEVICE.submitRenderCommand(
-        sgn.getComponent<RenderingComponent>()->getDrawCommands());
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect,

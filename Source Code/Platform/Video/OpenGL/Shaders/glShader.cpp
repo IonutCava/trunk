@@ -11,7 +11,8 @@ namespace Divide {
 
 #define _COMPILE_SHADER_OUTPUT_IN_RELEASE
 
-glShader::glShader(const stringImpl& name, const ShaderType& type,
+glShader::glShader(const stringImpl& name,
+                   const ShaderType& type,
                    const bool optimise)
     : Shader(name, type, optimise) {
     switch (type) {
@@ -40,7 +41,9 @@ glShader::glShader(const stringImpl& name, const ShaderType& type,
     };
 }
 
-glShader::~glShader() { glDeleteShader(_shader); }
+glShader::~glShader() {
+    glDeleteShader(_shader);
+}
 
 bool glShader::load(const stringImpl& source) {
     if (source.empty()) {
@@ -53,13 +56,15 @@ bool glShader::load(const stringImpl& source) {
 
 #ifdef NDEBUG
 
-    if ((_type == FRAGMENT_SHADER || _type == VERTEX_SHADER) && _optimise) {
+    if ((_type == ShaderType::FRAGMENT_SHADER ||
+         _type == ShaderType::VERTEX_SHADER) &&
+        _optimise) {
         glslopt_ctx* ctx = GL_API::getInstance().getGLSLOptContext();
         DIVIDE_ASSERT(ctx != nullptr,
                       "glShader error: Invalid shader optimization context!");
         glslopt_shader_type shaderType =
-            (_type == FRAGMENT_SHADER ? kGlslOptShaderFragment
-                                      : kGlslOptShaderVertex);
+            (_type == ShaderType::FRAGMENT_SHADER ? kGlslOptShaderFragment
+                                                  : kGlslOptShaderVertex);
         glslopt_shader* shader =
             glslopt_optimize(ctx, shaderType, parsedSource.c_str(), 0);
         if (glslopt_get_status(shader)) {
@@ -103,7 +108,8 @@ void glShader::validate() {
 
     glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
     glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length);
-    if (length <= 1) return;
+    if (length <= 1)
+        return;
     vectorImpl<char> shaderLog(length);
     glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
     shaderLog.push_back('\n');

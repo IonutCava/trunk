@@ -92,11 +92,6 @@ class ParticleEmitter : public SceneNode {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
-    /// When the SceneGraph calls the particle emitter's render function, we
-    /// draw the impostor if needed
-    virtual void render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage);
     void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,

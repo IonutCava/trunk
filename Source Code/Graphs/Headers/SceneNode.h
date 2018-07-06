@@ -117,11 +117,6 @@ class SceneNode : public Resource {
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
-    /*Rendering/Processing*/
-    virtual void render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage) = 0;
-
     virtual void onCameraChange(SceneGraphNode& sgn) {}
 
     // Post insertion calls (Use this to setup child objects during creation)
@@ -148,11 +143,6 @@ class SceneNodeRenderAttorney {
     static void postDraw(SceneNode& node, SceneGraphNode& sgn,
                          const RenderStage& currentStage) {
         node.postDraw(sgn, currentStage);
-    }
-    static void render(SceneNode& node, SceneGraphNode& sgn,
-                       const SceneRenderState& sceneRenderState,
-                       const RenderStage& currentRenderStage) {
-        node.render(sgn, sceneRenderState, currentRenderStage);
     }
 
     friend class RenderingComponent;

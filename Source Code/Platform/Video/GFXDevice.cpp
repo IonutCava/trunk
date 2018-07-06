@@ -652,11 +652,14 @@ void GFXDevice::processVisibleNodes(
     // Generate and upload all lighting data
     LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
     // The first entry has identity values (e.g. for rendering points)
-    _matricesData.resize(nodeCount + 1);
+    _matricesData.reserve(nodeCount + 1);
+    _matricesData.resize(1);
     // Loop over the list of nodes
     for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
         SceneGraphNode* const crtNode = visibleNodes[i];
-        NodeData& temp = _matricesData[i + 1];
+        RenderingComponent* const renderable =
+            crtNode->getComponent<RenderingComponent>();
+        NodeData temp;
         // Extract transform data
         const PhysicsComponent* const transform =
             crtNode->getComponent<PhysicsComponent>();
@@ -692,15 +695,13 @@ void GFXDevice::processVisibleNodes(
             crtNode->getComponent<AnimationComponent>()
                 ? crtNode->getComponent<AnimationComponent>()->boneCount()
                 : 0);
-        RenderingComponent* const renderable =
-            crtNode->getComponent<RenderingComponent>();
-        if (renderable) {
-            // Get the color matrix (diffuse, ambient, specular, etc.)
-            renderable->getMaterialColorMatrix(temp._matrix[2]);
-            // Get the material property matrix (alpha test, texture count,
-            // texture operation, etc.)
-            renderable->getMaterialPropertyMatrix(temp._matrix[3]);
-        }
+        // Get the color matrix (diffuse, ambient, specular, etc.)
+        renderable->getMaterialColorMatrix(temp._matrix[2]);
+        // Get the material property matrix (alpha test, texture count,
+        // texture operation, etc.)
+        renderable->getMaterialPropertyMatrix(temp._matrix[3]);
+
+        _matricesData.push_back(temp);
     }
     // Once the CPU-side buffer is filled, upload the buffer to the GPU
     _nodeBuffer->UpdateData(0, (nodeCount + 1) * sizeof(NodeData),
@@ -716,29 +717,19 @@ void GFXDevice::buildDrawCommands(
         return;
     }
     vectorAlg::vecSize nodeCount = visibleNodes.size();
-    _drawCommandsCache.resize(nodeCount + 1);
+    _drawCommandsCache.reserve(nodeCount + 1);
+    _drawCommandsCache.resize(1);
     // Loop over the list of nodes
     for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
         RenderingComponent* const renderable =
             visibleNodes[i]->getComponent<RenderingComponent>();
-        if (renderable) {
-            const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-                renderable->getDrawCommands(sceneRenderState, getRenderStage());
-
-            vectorAlg::vecSize temp = 0;
-            vectorAlg::vecSize index = 0;
-            for (const GenericDrawCommand& cmd : nodeDrawCommands) {
-                index = 1 + i + temp++;
-                IndirectDrawCommand& tempCmd = _drawCommandsCache[index];
-                tempCmd = cmd.cmd();
-                tempCmd.baseInstance = static_cast<U32>(index);
-            }
+        const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
+            renderable->getDrawCommands(static_cast<U32>(_drawCommandsCache.size()),
+                                        sceneRenderState, getRenderStage());
+        for (const GenericDrawCommand& cmd : nodeDrawCommands) {
+            _drawCommandsCache.push_back(cmd.cmd());
         }
     }
-
-    DIVIDE_ASSERT(_drawCommandsCache.size() == _matricesData.size(),
-                  "GFXDevice::buildDrawCommands error: Command count does not "
-                  "match uploaded data count");
 
     uploadDrawCommands(_drawCommandsCache);
 }

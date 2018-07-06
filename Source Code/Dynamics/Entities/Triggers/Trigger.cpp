@@ -12,12 +12,32 @@ Trigger::Trigger()
     : SceneNode(SceneNodeType::TYPE_TRIGGER),
       _drawImpostor(false),
       _triggerImpostor(nullptr),
-      _enabled(true) {}
+      _enabled(true) {
+}
 
-Trigger::~Trigger() {}
+Trigger::~Trigger() {
+}
+
+bool Trigger::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+    /// The isInView call should stop impostor rendering if needed
+    if (!_triggerImpostor) {
+        ResourceDescriptor impostorDesc(_name + "_impostor");
+        _triggerImpostor = CreateResource<Impostor>(impostorDesc);
+        sgn.addNode(_triggerImpostor);
+    }
+    /// update dummy position if it is so
+    sgn.getChildren()[0]->getComponent<PhysicsComponent>()->setPosition(
+        _triggerPosition);
+    _triggerImpostor->setRadius(_radius);
+    _triggerImpostor->renderState().setDrawState(true);
+    sgn.getChildren()[0]->setActive(true);
+
+    return true;
+}
 
 void Trigger::setParams(Task_ptr triggeredTask,
-                        const vec3<F32>& triggerPosition, F32 radius) {
+                        const vec3<F32>& triggerPosition,
+                        F32 radius) {
     /// Check if position has changed
     if (!_triggerPosition.compare(triggerPosition)) {
         _triggerPosition = triggerPosition;
@@ -34,27 +54,13 @@ void Trigger::setParams(Task_ptr triggeredTask,
     _triggeredTask.swap(triggeredTask);
 }
 
-bool Trigger::unload() { return SceneNode::unload(); }
-
-void Trigger::render(SceneGraphNode& sgn,
-                     const SceneRenderState& sceneRenderState,
-                     const RenderStage& currentRenderStage) {
-    /// The isInView call should stop impostor rendering if needed
-    if (!_triggerImpostor) {
-        ResourceDescriptor impostorDesc(_name + "_impostor");
-        _triggerImpostor = CreateResource<Impostor>(impostorDesc);
-        sgn.addNode(_triggerImpostor);
-    }
-    /// update dummy position if it is so
-    sgn.getChildren()[0]->getComponent<PhysicsComponent>()->setPosition(
-        _triggerPosition);
-    _triggerImpostor->setRadius(_radius);
-    _triggerImpostor->renderState().setDrawState(true);
-    sgn.getChildren()[0]->setActive(true);
+bool Trigger::unload() {
+    return SceneNode::unload();
 }
 
 bool Trigger::check(Unit* const unit, const vec3<F32>& camEyePos) {
-    if (!_enabled) return false;
+    if (!_enabled)
+        return false;
 
     vec3<F32> position;
     if (!unit) {  ///< use camera position

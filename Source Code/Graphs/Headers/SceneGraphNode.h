@@ -63,9 +63,6 @@ class SceneRoot : public SceneNode {
     bool computeBoundingBox(SceneGraphNode& sgn);
 
    protected:
-    void render(SceneGraphNode& sgn,
-                const SceneRenderState& sceneRenderState,
-                const RenderStage& currentRenderStage) {}
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
     void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& renderStage,
@@ -82,9 +79,6 @@ class SceneTransform : public SceneNode {
         setState(ResourceState::RES_LOADED);
     }
 
-    void render(SceneGraphNode& sgn,
-                const SceneRenderState& sceneRenderState,
-                const RenderStage& currentRenderStage) {}
     bool onDraw(const RenderStage& currentStage) { return true; }
 
     void postLoad(SceneGraphNode& sgn) { return; }

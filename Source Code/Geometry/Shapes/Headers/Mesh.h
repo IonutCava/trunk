@@ -75,9 +75,6 @@ class Mesh : public Object3D {
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
-    virtual void render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage) {}
     virtual void getDrawCommands(
         SceneGraphNode& sgn, const RenderStage& renderStage,
         SceneRenderState& sceneRenderState,

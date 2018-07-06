@@ -202,9 +202,7 @@ bool Light::isInView(const SceneRenderState& sceneRenderState,
     return ((_impostorSGN != nullptr) && _drawImpostor);
 }
 
-void Light::render(SceneGraphNode& sgn,
-                   const SceneRenderState& sceneRenderState,
-                   const RenderStage& currentRenderStage) {
+bool Light::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
     // The isInView call should stop impostor rendering if needed
     if (!_impostor) {
         _impostor =
@@ -223,6 +221,8 @@ void Light::render(SceneGraphNode& sgn,
     if (!FLOAT_COMPARE(getRange(), _impostor->getRadius())) {
         _impostor->setRadius(getRange());
     }
+
+    return true;
 }
 
 void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo) {
@@ -237,7 +237,7 @@ void Light::updateResolution(I32 newWidth, I32 newHeight) {
     ShadowMap* sm = _shadowMapInfo->getShadowMap();
 
     if (!sm) {
-        return;
+        return; 
     }
 
     sm->updateResolution(newWidth, newHeight);

@@ -258,8 +258,8 @@ void PostFX::displayScene() {
                    _depthPreview ? TextureDescriptor::AttachmentType::Depth
                                  : TextureDescriptor::AttachmentType::Color0);
 #else
-        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
-            ->Bind(TEX_BIND_POINT_SCREEN);
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+            ->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
 #endif
 
         if (_underwaterTexture) {

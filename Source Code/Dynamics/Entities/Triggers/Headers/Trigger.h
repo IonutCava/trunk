@@ -48,9 +48,7 @@ class Trigger : public SceneNode {
     ~Trigger();
 
     /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
-        return true;
-    };
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
     bool check(Unit* const unit, const vec3<F32>& camEyePos = VECTOR3_ZERO);
@@ -74,11 +72,6 @@ class Trigger : public SceneNode {
     /// SceneNode concrete implementations
     bool unload();
 
-    /// When the SceneGraph calls the trigger's render function, we draw the
-    /// impostor if needed
-    virtual void render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage);
     void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,

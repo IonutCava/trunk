@@ -99,9 +99,6 @@ class Object3D : public SceneNode {
     bool computeTriangleList(bool force = false);
 
    protected:
-    virtual void render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage);
     virtual void getDrawCommands(
         SceneGraphNode& sgn, const RenderStage& currentRenderStage,
         SceneRenderState& sceneRenderState,

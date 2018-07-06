@@ -106,7 +106,9 @@ bool SceneManager::frameStarted(const FrameEvent& evt) {
     return SceneManagerAttorney::frameStarted(*_activeScene);
 }
 
-bool SceneManager::framePreRenderStarted(const FrameEvent& evt) { return true; }
+bool SceneManager::framePreRenderStarted(const FrameEvent& evt) {
+    return true;
+}
 
 bool SceneManager::frameEnded(const FrameEvent& evt) {
     _renderPassCuller->refresh();
@@ -117,11 +119,23 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
     return SceneManagerAttorney::frameEnded(*_activeScene);
 }
 
-void SceneManager::preRender() { _activeScene->preRender(); }
+void SceneManager::preRender() {
+    _activeScene->preRender();
+}
 
 void SceneManager::updateVisibleNodes() {
+    auto cullingFunction = [](SceneGraphNode* node) -> bool {
+        if (node->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            Object3D::ObjectType type =
+                node->getNode<Object3D>()->getObjectType();
+            return (type == Object3D::ObjectType::MESH ||
+                    type == Object3D::ObjectType::FLYWEIGHT);
+        }
+        return false;
+    };
+
     _renderPassCuller->cullSceneGraph(GET_ACTIVE_SCENEGRAPH().getRoot(),
-                                      _activeScene->state());
+                                      _activeScene->state(), cullingFunction);
 }
 
 void SceneManager::renderVisibleNodes() {
@@ -149,7 +163,9 @@ void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
     SceneManagerAttorney::debugDraw(*_activeScene, stage);
 }
 
-void SceneManager::postRender() { _activeScene->postRender(); }
+void SceneManager::postRender() {
+    _activeScene->postRender();
+}
 
 void SceneManager::onCameraChange() {
     SceneManagerAttorney::onCameraChange(*_activeScene);

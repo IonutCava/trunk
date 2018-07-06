@@ -74,13 +74,6 @@ void Object3D::getDrawCommands(
     drawCommandsOut.push_back(drawCmd);
 }
 
-void Object3D::render(SceneGraphNode& sgn,
-                      const SceneRenderState& sceneRenderState,
-                      const RenderStage& currentRenderStage) {
-    GFX_DEVICE.submitRenderCommand(
-        sgn.getComponent<RenderingComponent>()->getDrawCommands());
-}
-
 bool Object3D::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
     return onDraw(currentStage);
 }

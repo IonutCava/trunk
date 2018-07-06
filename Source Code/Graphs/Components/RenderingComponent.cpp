@@ -209,8 +209,8 @@ void RenderingComponent::render(const SceneRenderState& sceneRenderState,
     if (getMaterialInstance()) {
         getMaterialInstance()->bindTextures();
     }
-    SceneNodeRenderAttorney::render(*_parentSGN.getNode(), _parentSGN,
-                                    sceneRenderState, currentRenderStage);
+
+    GFX_DEVICE.submitRenderCommand(_drawCommandsCache);
 
     postDraw(sceneRenderState, currentRenderStage);
 }
@@ -260,10 +260,15 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
 }
 
 const vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
-    SceneRenderState& sceneRenderState, RenderStage renderStage) {
+    U32 commandOffset,
+    SceneRenderState& sceneRenderState,
+    RenderStage renderStage) {
     _drawCommandsCache.clear();
     _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
                                           sceneRenderState, _drawCommandsCache);
+    for (GenericDrawCommand& cmd : _drawCommandsCache) {
+        cmd.drawID(commandOffset);
+    }
     return _drawCommandsCache;
 }
 

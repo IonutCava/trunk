@@ -4,7 +4,6 @@
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
 
@@ -12,13 +11,17 @@ RenderPassCuller::RenderPassCuller() {
     _visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
 }
 
-RenderPassCuller::~RenderPassCuller() { _visibleNodes.clear(); }
+RenderPassCuller::~RenderPassCuller() {
+    _visibleNodes.clear();
+}
 
 /// This method performs the visibility check on the given node and all of it's
 /// children
 /// and adds them to the RenderQueue
-void RenderPassCuller::cullSceneGraph(SceneGraphNode& currentNode,
-                                      SceneState& sceneState) {
+void RenderPassCuller::cullSceneGraph(
+    SceneGraphNode& currentNode,
+    SceneState& sceneState,
+    const std::function<bool(SceneGraphNode*)>& cullingFunction) {
     bool renderingLocked = RenderPassManager::getInstance().isLocked();
 
     if (!_visibleNodes.empty()) {
@@ -31,7 +34,8 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode& currentNode,
         refreshNodeList();
     }
 
-    cullSceneGraphCPU(currentNode, sceneState.getRenderState());
+    cullSceneGraphCPU(currentNode, sceneState.getRenderState(),
+                      cullingFunction);
 
     const vec3<F32>& eyePos =
         sceneState.getRenderState().getCameraConst().getEye();
@@ -39,7 +43,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode& currentNode,
         RenderQueue::getInstance().addNodeToQueue(*node, eyePos);
     }
 
-    cullSceneGraphGPU(sceneState);
+    cullSceneGraphGPU(sceneState, cullingFunction);
 
     GFX_DEVICE.processVisibleNodes(_visibleNodes);
     GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState());
@@ -49,12 +53,15 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode& currentNode,
     }
 }
 
-void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode& currentNode,
-                                         SceneRenderState& sceneRenderState) {
+void RenderPassCuller::cullSceneGraphCPU(
+    SceneGraphNode& currentNode,
+    SceneRenderState& sceneRenderState,
+    const std::function<bool(SceneGraphNode*)>& cullingFunction) {
     // No point in updating visual information if the scene disabled object
     // rendering
     // or rendering of their bounding boxes
-    if (sceneRenderState.objectState() == SceneRenderState::ObjectRenderState::NO_DRAW) {
+    if (sceneRenderState.objectState() ==
+        SceneRenderState::ObjectRenderState::NO_DRAW) {
         return;
     }
     RenderStage currentStage = GFX_DEVICE.getRenderStage();
@@ -81,12 +88,15 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode& currentNode,
                     (currentStage == RenderStage::SHADOW_STAGE &&
                      (renderingCmp ? renderingCmp->castsShadows() : false))) {
                     // Perform visibility test on current node
-                    if (node->isInView(
-                            sceneRenderState, currentNode,
-                            currentStage == RenderStage::SHADOW_STAGE ? false : true)) {
+                    if (node->isInView(sceneRenderState, currentNode,
+                                       currentStage == RenderStage::SHADOW_STAGE
+                                           ? false
+                                           : true)) {
                         // If the current node is visible, add it to the render
-                        // queue
-                        _visibleNodes.push_back(&currentNode);
+                        // queue (if it passes our custom culling function)
+                        if (!cullingFunction(&currentNode)) {
+                            _visibleNodes.push_back(&currentNode);
+                        }
                         currentNode.inView(true);
                     }
                 }
@@ -97,12 +107,14 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode& currentNode,
     if (!skipChildren) {
         for (SceneGraphNode::NodeChildren::value_type& it :
              currentNode.getChildren()) {
-            cullSceneGraphCPU(*it.second, sceneRenderState);
+            cullSceneGraphCPU(*it.second, sceneRenderState, cullingFunction);
         }
     }
 }
 
-void RenderPassCuller::cullSceneGraphGPU(SceneState& sceneState) {
+void RenderPassCuller::cullSceneGraphGPU(
+    SceneState& sceneState,
+    const std::function<bool(SceneGraphNode*)>& cullingFunction) {
     /* http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter06.html
     TraversalStack.Push(hierarchy.Root);
 

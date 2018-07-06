@@ -33,6 +33,7 @@
 #define _RENDER_PASS_CULLER_H_
 
 #include "Utility/Headers/Vector.h"
+#include <functional>
 
 /// This class performs all the necessary visibility checks on the scene's
 /// scenegraph
@@ -50,8 +51,10 @@ class RenderPassCuller {
     /// This method performs the visibility check on the given node and all of
     /// it's children and
     /// adds them to the RenderQueue
-    void cullSceneGraph(SceneGraphNode& currentNode,
-                        SceneState& sceneState);
+    void cullSceneGraph(
+        SceneGraphNode& currentNode,
+        SceneState& sceneState,
+        const std::function<bool(SceneGraphNode*)>& cullingFunction);
     void refresh();
 
     const vectorImpl<SceneGraphNode*>& getVisibleNodes() const {
@@ -60,10 +63,14 @@ class RenderPassCuller {
 
    protected:
     /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)
-    void cullSceneGraphCPU(SceneGraphNode& currentNode,
-                           SceneRenderState& sceneRenderState);
+    void cullSceneGraphCPU(
+        SceneGraphNode& currentNode,
+        SceneRenderState& sceneRenderState,
+        const std::function<bool(SceneGraphNode*)>& cullingFunction);
     /// Perform GPU-based culling (e.g. Occlusion queries)
-    void cullSceneGraphGPU(SceneState& sceneState);
+    void cullSceneGraphGPU(
+        SceneState& sceneState,
+        const std::function<bool(SceneGraphNode*)>& cullingFunction);
     /// Internal cleanup
     void refreshNodeList();
 

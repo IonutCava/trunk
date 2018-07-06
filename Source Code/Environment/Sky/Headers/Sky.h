@@ -59,9 +59,6 @@ class Sky : public SceneNode {
     }
 
    protected:
-    void render(SceneGraphNode& sgn,
-                const SceneRenderState& sceneRenderState,
-                const RenderStage& currentRenderStage);
     void postLoad(SceneGraphNode& sgn);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);

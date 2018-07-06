@@ -213,24 +213,6 @@ void ParticleEmitter::getDrawCommands(
     drawCommandsOut.push_back(_drawCommand);
 }
 
-/// When the SceneGraph calls the particle emitter's render function, we draw
-/// the impostor if needed
-void ParticleEmitter::render(SceneGraphNode& sgn,
-                             const SceneRenderState& sceneRenderState,
-                             const RenderStage& currentRenderStage) {
-    U32 particleCount = getAliveParticleCount();
-
-    /*if (particleCount > 0 && _enabled) {
-        _particleTexture->Bind(
-            to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
-            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1),
-                   TextureDescriptor::AttachmentType::Depth);
-        GFX_DEVICE.submitRenderCommand(
-            sgn.getComponent<RenderingComponent>()->getDrawCommands());
-    }*/
-}
-
 void ParticleEmitter::uploadToGPU() {
     static const size_t attribSize_float = 4 * sizeof(F32);
     static const size_t attribSize_char = 4 * sizeof(U8);
@@ -268,6 +250,19 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
     }
     _particles->sort();
     uploadToGPU();
+
+
+    U32 particleCount = getAliveParticleCount();
+
+    /*if (particleCount > 0 && _enabled) {
+        _particleTexture->Bind(
+            to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1),
+                   TextureDescriptor::AttachmentType::Depth);
+        GFX_DEVICE.submitRenderCommand(
+            sgn.getComponent<RenderingComponent>()->getDrawCommands());
+    }*/
 
     return true;
 }

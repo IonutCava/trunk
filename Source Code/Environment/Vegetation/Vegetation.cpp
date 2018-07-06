@@ -443,12 +443,6 @@ bool Vegetation::onDraw(SceneGraphNode& sgn, const RenderStage& renderStage) {
               GFX_DEVICE.isCurrentRenderStage(RenderStage::SHADOW_STAGE)));
 }
 
-void Vegetation::render(SceneGraphNode& sgn,
-                        const SceneRenderState& sceneRenderState,
-                        const RenderStage& currentRenderStage) {
-    GFX_DEVICE.submitRenderCommand(_renderDrawCommand);
-}
-
 void Vegetation::generateTrees() {
 }
 

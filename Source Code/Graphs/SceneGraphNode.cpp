@@ -51,17 +51,17 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
     _instanceID = (node->GetRef() - 1);
     Material* const materialTpl = _node->getMaterialTpl();
 
-    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_ANIMATION)]
-        .reset(nullptr);
+    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_ANIMATION)].reset(
+        nullptr);
 
     _components[to_uint(SGNComponent::ComponentType::SGN_COMP_NAVIGATION)]
         .reset(MemoryManager_NEW NavigationComponent(*this));
 
-    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_PHYSICS)]
-        .reset(MemoryManager_NEW PhysicsComponent(*this));
+    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_PHYSICS)].reset(
+        MemoryManager_NEW PhysicsComponent(*this));
 
-    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_RENDERING)]
-        .reset(MemoryManager_NEW RenderingComponent(
+    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_RENDERING)].reset(
+        MemoryManager_NEW RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
             *this));
@@ -241,7 +241,9 @@ SceneGraphNode* SceneGraphNode::findNode(const stringImpl& name,
     return nullptr;
 }
 
-void SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end,
+void SceneGraphNode::intersect(const Ray& ray,
+                               F32 start,
+                               F32 end,
                                vectorImpl<SceneGraphNode*>& selectionHits) {
     if (isSelectable() && _boundingBox.Intersect(ray, start, end)) {
         selectionHits.push_back(this);
@@ -297,10 +299,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     // update local time
     _elapsedTime += deltaTime;
     // update all of the internal components (animation, physics, etc)
-    for (U8 i = 0;
-         i < to_uint(
-                 SGNComponent::ComponentType::COUNT);
-         ++i) {
+    for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
         if (_components[i]) {
             _components[i]->update(deltaTime);
         }
@@ -357,10 +356,7 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
         }
     }
 
-    for (U8 i = 0;
-         i < to_uint(
-                 SGNComponent::ComponentType::COUNT);
-         ++i) {
+    for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
         if (_components[i]) {
             if (!_components[i]->onDraw(renderStage)) {
                 return false;

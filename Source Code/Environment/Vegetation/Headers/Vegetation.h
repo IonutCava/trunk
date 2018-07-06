@@ -75,10 +75,6 @@ class Vegetation : public SceneNode {
 
     void initialize(TerrainChunk* const terrainChunk);
     inline void toggleRendering(bool state) { _render = state; }
-    /// parentTransform: the transform of the parent terrain node
-    void render(SceneGraphNode& sgn,
-                const SceneRenderState& sceneRenderState,
-                const RenderStage& currentRenderStage);
     void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& renderStage,
                          SceneRenderState& sceneRenderState,
