@@ -33,9 +33,9 @@ PostFX::PostFX()
 {
     ParamHandler::instance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
 
-    _postFXTarget._clearDepthBufferOnBind = false;
-    _postFXTarget._drawMask.disableAll();
-    _postFXTarget._drawMask.setEnabled(RTAttachment::Type::Colour, 0, true);
+    _postFXTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+    _postFXTarget.drawMask().disableAll();
+    _postFXTarget.drawMask().setEnabled(RTAttachment::Type::Colour, 0, true);
 }
 
 PostFX::~PostFX()

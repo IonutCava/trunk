@@ -65,13 +65,28 @@ class RTDrawMask {
 };
 
 class RTDrawDescriptor {
+  public: 
+    enum class State : U32 {
+        CLEAR_COLOUR_BUFFERS = toBit(1),
+        CLEAR_DEPTH_BUFFER = toBit(2),
+        CHANGE_VIEWPORT = toBit(3),
+        COUNT = 3
+    };
+
   public:
     RTDrawDescriptor();
 
+    void stateMask(U32 stateMask);
+    void enableState(State state);
+    void disableState(State state);
+    bool isEnabledState(State state) const;
+
+    inline RTDrawMask& drawMask() { return _drawMask; }
+    inline const RTDrawMask& drawMask() const { return _drawMask; }
+    inline U32 stateMask() const { return _stateMask; }
+  protected:
     RTDrawMask _drawMask;
-    bool _clearColourBuffersOnBind;
-    bool _clearDepthBufferOnBind;
-    bool _changeViewport;
+    U32 _stateMask;
 };
 }; //namespace Divide
 

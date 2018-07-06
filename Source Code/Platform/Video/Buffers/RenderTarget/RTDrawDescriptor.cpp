@@ -59,17 +59,53 @@ bool RTDrawMask::operator==(const RTDrawMask& other) const {
 }
 
 bool RTDrawMask::operator!=(const RTDrawMask& other) const {
-    return _disabledDepth != other._disabledDepth ||
+    return _disabledDepth   != other._disabledDepth ||
            _disabledStencil != other._disabledStencil ||
            _disabledColours != other._disabledColours;
 }
 
 RTDrawDescriptor::RTDrawDescriptor()
-    : _clearColourBuffersOnBind(true),
-      _clearDepthBufferOnBind(true),
-      _changeViewport(true)
+    : _stateMask(0)
 {
+    enableState(State::CLEAR_COLOUR_BUFFERS);
+    enableState(State::CLEAR_DEPTH_BUFFER);
+    enableState(State::CHANGE_VIEWPORT);
+
     _drawMask.enableAll();
+}
+
+void RTDrawDescriptor::stateMask(U32 stateMask) {
+    if (Config::Build::IS_DEBUG_BUILD) {
+        auto validateMask = [stateMask]() -> U32 {
+            U32 validMask = 0;
+            for (U32 stateIt = 1; stateIt <= to_const_uint(State::COUNT); ++stateIt) {
+                U32 bitState = toBit(stateIt);
+                if (BitCompare(stateMask, bitState)) {
+                    SetBit(validMask, bitState);
+                }
+            }
+            return validMask;
+        };
+
+        U32 parsedMask = validateMask();
+        DIVIDE_ASSERT(parsedMask != 0 && parsedMask == stateMask,
+                      "RTDrawDescriptor::stateMask error: Invalid state specified!");
+        _stateMask = parsedMask;
+    } else {
+        _stateMask = stateMask;
+    }
+}
+
+void RTDrawDescriptor::enableState(State state) {
+    SetBit(_stateMask, to_uint(state));
+}
+
+void RTDrawDescriptor::disableState(State state) {
+    ClearBit(_stateMask, to_uint(state));
+}
+
+bool RTDrawDescriptor::isEnabledState(State state) const {
+    return BitCompare(_stateMask, to_uint(state));
 }
 
 }; //namespace Divide

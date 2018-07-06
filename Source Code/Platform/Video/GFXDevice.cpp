@@ -641,11 +641,11 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         // We will use a state block that disables colour writes as we will render only a depth image,
         // disables depth testing but allows depth writes
         // Set the depth buffer as the currently active render target
-        depthOnlyTarget._clearColourBuffersOnBind = false;
-        depthOnlyTarget._clearDepthBufferOnBind = false;
-        depthOnlyTarget._changeViewport = false;
-        depthOnlyTarget._drawMask.disableAll();
-        depthOnlyTarget._drawMask.setEnabled(RTAttachment::Type::Depth, 0, true);
+        depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
+        depthOnlyTarget.drawMask().disableAll();
+        depthOnlyTarget.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
 
         firstRun = false;
     }

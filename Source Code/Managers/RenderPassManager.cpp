@@ -156,7 +156,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         }
     }
 
-    drawPolicy->_drawMask.setEnabled(RTAttachment::Type::Depth, 0, drawToDepth);
+    drawPolicy->drawMask().setEnabled(RTAttachment::Type::Depth, 0, drawToDepth);
 
     if (params.target) {
         params.target->begin(*drawPolicy);

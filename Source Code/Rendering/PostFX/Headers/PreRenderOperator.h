@@ -47,9 +47,9 @@ class NOINITVTABLE PreRenderOperator {
            _hdrTarget(hdrTarget),
            _ldrTarget(ldrTarget)
     {
-        _screenOnlyDraw._clearDepthBufferOnBind = false;
-        _screenOnlyDraw._drawMask.disableAll();
-        _screenOnlyDraw._drawMask.setEnabled(RTAttachment::Type::Colour, 0, true);
+        _screenOnlyDraw.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        _screenOnlyDraw.drawMask().disableAll();
+        _screenOnlyDraw.drawMask().setEnabled(RTAttachment::Type::Colour, 0, true);
     }
 
     virtual ~PreRenderOperator() 

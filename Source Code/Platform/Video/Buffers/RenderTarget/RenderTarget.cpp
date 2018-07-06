@@ -69,16 +69,14 @@ RTDrawDescriptor& RenderTarget::defaultPolicy() {
 
 RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
     static RTDrawDescriptor policyKeepDepth;
-    policyKeepDepth._clearDepthBufferOnBind = false;
+    policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
     return policyKeepDepth;
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
     static RTDrawDescriptor depthOnly;
-    depthOnly._clearColourBuffersOnBind = true;
-    depthOnly._clearDepthBufferOnBind = true;
-    depthOnly._drawMask.disableAll();
-    depthOnly._drawMask.setEnabled(RTAttachment::Type::Depth, 0, true);
+    depthOnly.drawMask().disableAll();
+    depthOnly.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
 
     return depthOnly;
 }

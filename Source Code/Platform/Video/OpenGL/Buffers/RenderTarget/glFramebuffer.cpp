@@ -442,7 +442,7 @@ void glFramebuffer::resetMipMaps(const RTDrawDescriptor& drawPolicy) {
     for (U8 i = 0; i < to_const_uint(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
         for (U8 j = 0; j < _attachments.attachmentCount(type); ++j)  {
-            if (drawPolicy._drawMask.isEnabled(type, j) &&
+            if (drawPolicy.drawMask().isEnabled(type, j) &&
                 _attachments.get(type, j)->asTexture())
             {
                 _attachments.get(type, j)->asTexture()->refreshMipMaps();
@@ -460,7 +460,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
     }
 
-    if (drawPolicy._changeViewport) {
+    if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
         _viewportChanged = true;
         _context.setViewport(vec4<GLint>(0, 0, _width, _height));
     }
@@ -471,26 +471,26 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         _resolved = false;
     }
 
-    if (_previousMask != drawPolicy._drawMask) {
+    if (_previousMask != drawPolicy.drawMask()) {
         // handle colour buffers first
         colourBuffers.resize(0);
         RTAttachment::Type type = RTAttachment::Type::Colour;
         U8 bufferCount = _attachments.attachmentCount(type);
         for (U8 j = 0; j < bufferCount; ++j) {
             glRTAttachment* thisAtt = static_cast<glRTAttachment*>(_attachments.get(type, j).get());
-            thisAtt->enabled(drawPolicy._drawMask.isEnabled(type, j) && thisAtt->used());
+            thisAtt->enabled(drawPolicy.drawMask().isEnabled(type, j) && thisAtt->used());
             colourBuffers.push_back(thisAtt->enabled() ? thisAtt->getInfo().first : GL_NONE);
         }
         glDrawBuffers(to_uint(bufferCount), colourBuffers.data());
         
-        bool drawToDepth = drawPolicy._drawMask.isEnabled(RTAttachment::Type::Depth, 0);
+        bool drawToDepth = drawPolicy.drawMask().isEnabled(RTAttachment::Type::Depth, 0);
         if (drawToDepth != _zWriteEnabled) {
             _zWriteEnabled = drawToDepth;
             glDepthMask(_zWriteEnabled ? GL_TRUE : GL_FALSE);
         }
 
         checkStatus();
-        _previousMask = drawPolicy._drawMask;
+        _previousMask = drawPolicy.drawMask();
     }
 
     clear(drawPolicy);
@@ -535,7 +535,7 @@ void glFramebuffer::setInitialAttachments() {
 }
 
 void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
-    if (hasColour() && drawPolicy._clearColourBuffersOnBind) {
+    if (hasColour() && drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS)) {
         for (U8 index = 0; index < _attachments.attachmentCount(RTAttachment::Type::Colour); ++index) {
             const RTAttachment_ptr& att = _attachments.get(RTAttachment::Type::Colour, index);
             if (att->enabled()) {
@@ -550,7 +550,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
         }
     }
 
-    if (hasDepth() && drawPolicy._clearDepthBufferOnBind) {
+    if (hasDepth() && drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER)) {
         glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_depthValue);
         _context.registerDrawCall();
     }
