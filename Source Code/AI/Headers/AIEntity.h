@@ -124,7 +124,7 @@ class AIEntity : public GUIDWrapper {
     /// Returns true when this agent has reached its set destination.
     bool destinationReached();
     /// Place agent at new position.
-    bool setPosition(const vec3<F32> position);
+    bool setPosition(const vec3<F32>& position);
     /// The current position of the agent.
     /// Is only up to date once update() has been called in a frame.
     const vec3<F32>& getPosition() const;

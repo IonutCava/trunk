@@ -16,6 +16,8 @@ namespace NS_GLIM {
 GlimArrayData::GlimArrayData() { Reset(); }
 
 void GlimArrayData::Reset(void) {
+    m_uiBufferOffset = 0;
+    m_uiBufferStride = 0;
     m_DataType = GLIM_ENUM::GLIM_NODATA;
     m_ArrayData.clear();
     m_ArrayData.reserve(256);

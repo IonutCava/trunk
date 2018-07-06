@@ -382,9 +382,9 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
         _player2->setMovementSpeed(1.5f);
         _player3->setMovementSpeed(1.475f);
         _player4->setMovementSpeed(1.45f);
+        Scene::initializeAI(continueOnErrors);
     }
 
-    if (state || continueOnErrors) Scene::initializeAI(continueOnErrors);
     return state;
 }
 

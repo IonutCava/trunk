@@ -11,12 +11,14 @@ void ParticleBasicTimeUpdater::update(const U64 deltaTime, ParticleData& p) {
     }
 
     for (U32 i = 0; i < endID; ++i) {
-        p._misc[i].x -= localDT;
-        // interpolation: from 0 (start of life) till 1 (end of life)
-        p._misc[i].y =
-            1.0f - (p._misc[i].x * p._misc[i].z);  // .z is 1.0/max life time
+        vec4<F32>& misc = p._misc[i];
 
-        if (p._misc[i].x <= 0.0f) {
+        misc.x -= localDT;
+        // interpolation: from 0 (start of life) till 1 (end of life)
+        misc.y =
+            1.0f - (misc.x * misc.z);  // .z is 1.0/max life time
+
+        if (misc.x <= 0.0f) {
             p.kill(i);
             endID = p.aliveCount() < p.totalCount() ? p.aliveCount()
                                                     : p.totalCount();

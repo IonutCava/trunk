@@ -172,7 +172,7 @@ void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
             break;
 
         case ShaderType::COUNT:
-            stage = "";
+            stage.clear();
             break;
 
         default:

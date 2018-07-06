@@ -366,7 +366,7 @@ void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) 
     bool isIntegerType = format != GFXDataFormat::FLOAT_16 &&
                          format != GFXDataFormat::FLOAT_32;
     
-    if (!isIntegerType || (isIntegerType && descriptor.normalized())) {
+    if (!isIntegerType || descriptor.normalized()) {
         glVertexAttribFormat(descriptor.attribIndex(),
                              descriptor.componentsPerElement(),
                              GLUtil::glDataFormat[to_uint(format)],

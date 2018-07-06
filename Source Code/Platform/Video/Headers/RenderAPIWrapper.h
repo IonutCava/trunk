@@ -129,18 +129,17 @@ struct GenericDrawCommand {
    private:
     // order is important to avoid padding for alignment reasons
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    U8 _lodIndex;                            // 1  bytes
-    U8 _drawToBuffer;                        // 2  bytes
-    U16 _drawCount;                          // 4  bytes
-    U32 _renderOptions;                      // 8  bytes
-    U32 _commandOffset;                      // 12 bytes
-    U64 _stateHash;                          // 20 bytes
-    PrimitiveType _type;                     // 24 bytes
-    VertexDataInterface* _sourceBuffer;      // 32 bytes
-    ShaderProgram* _shaderProgram;           // 40 bytes
-    IndirectDrawCommand _cmd;                // 60 bytes
     U32 __padding__reserved__;               // 64 bytes
-
+    IndirectDrawCommand _cmd;                // 60 bytes
+    ShaderProgram* _shaderProgram;           // 40 bytes
+    VertexDataInterface* _sourceBuffer;      // 32 bytes
+    PrimitiveType _type;                     // 24 bytes
+    U64 _stateHash;                          // 20 bytes
+    U32 _commandOffset;                      // 12 bytes
+    U32 _renderOptions;                      // 8  bytes
+    U16 _drawCount;                          // 4  bytes
+    U8 _drawToBuffer;                        // 2  bytes
+    U8 _lodIndex;                            // 1  bytes
    public:
 
     inline void drawCount(U16 count) { 
@@ -254,6 +253,10 @@ struct GenericDrawCommand {
         _shaderProgram = base._shaderProgram;
         _sourceBuffer = base._sourceBuffer;
         _commandOffset = base._commandOffset;
+    }
+
+    inline void reset() {
+        set(GenericDrawCommand());
     }
 
     inline bool compatible(const GenericDrawCommand& other) const {

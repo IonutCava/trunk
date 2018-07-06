@@ -185,7 +185,7 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
         }
 
         inline void reset() {
-            _targetSceneName = "";
+            _targetSceneName.clear();
             _unloadPreviousScene = true;
             _loadInSeparateThread = true;
             _isSet = false;

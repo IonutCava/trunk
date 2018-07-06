@@ -224,7 +224,7 @@ void AIEntity::resetCrowd() {
     }
 }
 
-bool AIEntity::setPosition(const vec3<F32> position) {
+bool AIEntity::setPosition(const vec3<F32>& position) {
     if (!isAgentLoaded()) {
         if (_unitRef) {
             _unitRef->setPosition(position);

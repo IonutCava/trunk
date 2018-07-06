@@ -354,13 +354,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     bool deserialize(ByteBuffer& dataIn);
     bool serialize(ByteBuffer& dataOut) const;
 
-    static void setAttribMasks(AttribFlags flagMask) {
+    static void setAttribMasks(const AttribFlags& flagMask) {
         for (AttribFlags& flags : _attribMaskPerStage) {
             flags = flagMask;
         }
     }
 
-    static void setAttribMask(RenderStage stage, AttribFlags flagMask) {
+    static void setAttribMask(RenderStage stage, const AttribFlags& flagMask) {
         _attribMaskPerStage[to_uint(stage)] = flagMask;
     }
 

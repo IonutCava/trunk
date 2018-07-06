@@ -9,9 +9,10 @@ void ParticleTimeGenerator::generate(TaskHandle& packagedTasksParent,
                                      U32 endIndex) {
     for (U32 i = startIndex; i < endIndex; ++i) {
         F32 time = Random(_minTime, _maxTime);
-        p._misc[i].x = time;
-        p._misc[i].y = 0.0f;
-        p._misc[i].z = time > EPSILON_F32 ? 1.0f / p._misc[i].x : 0.0f;
+        vec4<F32>& misc = p._misc[i];
+        misc.x = time;
+        misc.y = 0.0f;
+        misc.z = time > EPSILON_F32 ? 1.0f / misc.x : 0.0f;
     }
 }
 };

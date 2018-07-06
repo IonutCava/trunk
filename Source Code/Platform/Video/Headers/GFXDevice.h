@@ -36,6 +36,7 @@
 
 #include "GFXState.h"
 #include "ScopedStates.h"
+#include "GenericCommandPool.h"
 
 #include "Core/Math/Headers/Line.h"
 #include "Managers/Headers/RenderPassManager.h"
@@ -649,6 +650,7 @@ DEFINE_SINGLETON(GFXDevice)
     std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
     GenericDrawCommand _defaultDrawCmd;
 
+    GenericCommandPool _commandPool;
     Time::ProfileTimer& _commandBuildTimer;
 
 END_SINGLETON

@@ -177,11 +177,12 @@ void glFramebuffer::addDepthBuffer() {
     GFXDataFormat dataType = desc.dataType();
     bool fpDepth = (dataType == GFXDataFormat::FLOAT_16 ||
                     dataType == GFXDataFormat::FLOAT_32);
+
+    const SamplerDescriptor& srcDesc = desc.getSampler();
+
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
-    screenSampler.setWrapMode(desc.getSampler().wrapU(),
-                              desc.getSampler().wrapV(),
-                              desc.getSampler().wrapW());
+    screenSampler.setWrapMode(srcDesc.wrapU(), srcDesc.wrapV(), srcDesc.wrapW());
     
     TextureDescriptor depthDescriptor(
         texType,
@@ -192,7 +193,7 @@ void glFramebuffer::addDepthBuffer() {
 
     //screenSampler._useRefCompare = true;  //< Use compare function
     screenSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
-    screenSampler.toggleMipMaps(desc.getSampler().generateMipMaps());
+    screenSampler.toggleMipMaps(srcDesc.generateMipMaps());
 
     depthDescriptor.setSampler(screenSampler);
     depthDescriptor.setLayerCount(desc._layerCount);

@@ -61,7 +61,7 @@ class Variable {
     virtual void setValue(D64 dValue) { _dValue = dValue; }
 
     virtual stringImpl toString() const {
-        return to_stringImpl(_dValue).c_str();
+        return to_stringImpl(_dValue);
     }
 
     virtual void update(){};

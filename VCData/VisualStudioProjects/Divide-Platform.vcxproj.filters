@@ -310,6 +310,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\Headers\glRTAttachment.h">
       <Filter>Video\OpenGL\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -518,6 +521,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTDrawDescriptor.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\GenericCommandPool.cpp">
+      <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

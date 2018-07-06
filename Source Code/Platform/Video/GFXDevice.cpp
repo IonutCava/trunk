@@ -23,6 +23,7 @@ std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexB
 
 GFXDevice::GFXDevice()
     : _api(nullptr), 
+    _commandPool(Config::MAX_DRAW_COMMANDS_IN_FLIGHT),
     _renderStage(RenderStage::DISPLAY),
     _prevRenderStage(RenderStage::COUNT),
     _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer"))

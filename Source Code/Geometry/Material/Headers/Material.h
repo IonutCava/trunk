@@ -148,7 +148,7 @@ class Material : public Resource, public FrameListener {
         {
             _customShader = false;
             _shaderRef = nullptr;
-            _shader = "";
+            _shader.clear();
             _shaderCompStage = ShaderCompilationStage::UNHANDLED;
             _stage = RenderStage::COUNT;
 

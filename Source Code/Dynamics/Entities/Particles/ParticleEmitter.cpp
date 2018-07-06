@@ -46,7 +46,7 @@ ParticleEmitter::~ParticleEmitter() {
     unload(); 
 }
 
-bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
+bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {
     // assert if double init!
     DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
                   "ParticleEmitter::initData error: Double initData detected!");
@@ -103,7 +103,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     return (_particleShader != nullptr);
 }
 
-bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
+bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
     static const U32 positionAttribLocation = 13;
     static const U32 colourAttribLocation = to_const_uint(AttribLocation::VERTEX_COLOR);
 

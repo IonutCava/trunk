@@ -137,8 +137,7 @@ struct FONScontext* glfonsCreate(int width, int height, int flags) {
     return fonsCreateInternal(&params);
 
 error:
-    if (gl != nullptr)
-        free(gl);
+    free(gl);
     return nullptr;
 }
 
