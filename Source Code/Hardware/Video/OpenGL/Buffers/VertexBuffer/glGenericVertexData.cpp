@@ -43,8 +43,10 @@ glGenericVertexData::~glGenericVertexData()
     }
     glDeleteTransformFeedbacks(1, &_transformFeedback);
 
-    for (U8 i = 0; i < 2; ++i)
-        glDeleteQueries(_numQueries, _feedbackQueries[i]);
+    if (_numQueries > 0) {
+        for (U8 i = 0; i < 2; ++i)
+            glDeleteQueries(_numQueries, _feedbackQueries[i]);
+    }
 
     _transformFeedback = 0;
     _bufferObjects.clear();

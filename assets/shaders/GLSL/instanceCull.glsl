@@ -12,9 +12,9 @@ uniform float dvd_frustumBias = 0.01;
     mat4 transform[];
 };*/
 
-out vec4 OrigData;
-out float OrigData2;
-flat out int OrigData3;
+out vec4 OrigData0;
+out float OrigData1;
+flat out int OrigData2;
 flat out int objectVisible;
 
 vec4 BoundingBox[8];
@@ -67,11 +67,14 @@ int InstanceCloudReduction(const in vec3 position) {
 //subroutine(CullRoutineType)
 int HiZOcclusionCull(const in vec3 position) {
     /* first do instance cloud reduction */
-    if (InstanceCloudReduction(position) == 0) return 0;
-
-    if (distance(dvd_ViewMatrix * vec4(position, 1.0), vec4(0.0, 0.0, 0.0, 1.0)) > dvd_visibilityDistance)
+    if (InstanceCloudReduction(position) == 0) {
         return 0;
-    
+    }
+
+    if (distance(dvd_ViewMatrix * vec4(position, 1.0), vec4(0.0, 0.0, 0.0, 1.0)) > dvd_visibilityDistance) {
+        return 0;
+    }
+
     /* perform perspective division for the bounding box */
     BoundingBox[0].xyz /= BoundingBox[0].w;
     BoundingBox[1].xyz /= BoundingBox[1].w;
@@ -116,11 +119,11 @@ uniform uint cullType = 0;
 
 void main(void) {
 
-    OrigData = intanceData;
-    OrigData2 = instanceData2;
-    OrigData3 = gl_InstanceID;
+    OrigData0 = intanceData;
+    OrigData1 = instanceData2;
+    OrigData2 = gl_InstanceID;
     //objectVisible = CullRoutine(OrigData.xyz);
-    objectVisible = cullType > 0 ? (cullType > 1 ? HiZOcclusionCull(OrigData.xyz) : InstanceCloudReduction(OrigData.xyz)) : PassThrough(OrigData.xyz);
+    objectVisible = cullType > 0 ? (cullType > 1 ? HiZOcclusionCull(OrigData0.xyz) : InstanceCloudReduction(OrigData0.xyz)) : PassThrough(OrigData0.xyz);
 }
 
 -- Geometry
@@ -128,9 +131,9 @@ void main(void) {
 layout(points) in;
 layout(points, max_vertices = 1) out;
 
-in vec4 OrigData[1];
-in float OrigData2[1];
-flat in int OrigData3[1];
+in vec4 OrigData0[1];
+in float OrigData1[1];
+flat in int OrigData2[1];
 
 flat in int objectVisible[1];
 
@@ -146,9 +149,9 @@ void main() {
     // only emit primitive if the object is visible 
     if (objectVisible[0] == 1)  {
         //atomicCounterIncrement(primitiveCount[queryId]);
-        outData0 = OrigData[0];
-        outData1 = OrigData2[0];
-        outData2 = OrigData3[0];
+        outData0 = OrigData0[0];
+        outData1 = OrigData1[0];
+        outData2 = OrigData2[0];
         EmitVertex();
         EndPrimitive();
     }

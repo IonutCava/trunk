@@ -217,7 +217,7 @@ void glShaderProgram::link(){
         // This isn't as optimised as it should/could be, but it works
         vectorImpl<const char* > vars;
         for (U32 i = 0; i < _outputCount; ++i) {
-            vars.push_back(std::string("outData" + Util::toString(i)).c_str());
+            vars.push_back(strdup(std::string("outData" + Util::toString(i)).c_str()));
         }
         // Only separate attributes are supported for now. Interleaved not top prio
         glTransformFeedbackVaryings(_shaderProgramIDTemp, _outputCount, &vars.front(), GL_SEPARATE_ATTRIBS);
