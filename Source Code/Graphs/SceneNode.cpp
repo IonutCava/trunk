@@ -32,10 +32,11 @@ bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }
 
-void SceneNode::getDrawCommands(SceneGraphNode& sgn,
+bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
                                 RenderStage renderStage,
                                 const SceneRenderState& sceneRenderState,
                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+    return true;
 }
 
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,

@@ -150,7 +150,7 @@ void GFXDevice::flushRenderQueue() {
 }
 
 void GFXDevice::addToRenderQueue(const RenderPackage& package) {
-    if (package._drawCommands.empty()) {
+    if (!package._isRenderable) {
         return;
     }
 
@@ -159,8 +159,8 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 
         if (previous.isCompatible(package)) {
             previous._drawCommands.insert(std::end(previous._drawCommands),
-                                            std::begin(package._drawCommands),
-                                            std::end(package._drawCommands));
+                                          std::begin(package._drawCommands),
+                                          std::end(package._drawCommands));
             return;
         }
     }
@@ -239,15 +239,9 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         getRenderer().preRender(_gpuBlock);
     }
 
-    vectorAlg::vecSize nodeCount = visibleNodes.size();
-    _renderQueue.reserve(nodeCount);
-
     U32 lastCmdCount = 1;
     U32 lastNodeCount = 1;
     _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
-
-    vectorImpl<GenericDrawCommand> nodeDrawCommands;
-    nodeDrawCommands.reserve(nodeCount);
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     std::for_each(
@@ -255,15 +249,16 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         [&](VisibleNodeList::value_type& node) -> void {
             SceneGraphNode& nodeRef = *node._visibleNode;
             
-            if (Attorney::RenderingCompGFXDevice::getDrawCommands(
-                *nodeRef.getComponent<RenderingComponent>(),
-                sceneRenderState, currentStage, nodeDrawCommands)) {
-
+            RenderPackage& pkg = 
+                Attorney::RenderingCompGFXDevice::getDrawPackage(*nodeRef.getComponent<RenderingComponent>(),
+                                                                 sceneRenderState,
+                                                                 currentStage);
+            if(pkg._isRenderable)  {
                 if (refreshNodeData) {
                     processVisibleNode(node, _matricesData[lastNodeCount]);
                 }
 
-                for (GenericDrawCommand& cmd : nodeDrawCommands) {
+                for (GenericDrawCommand& cmd : pkg._drawCommands) {
                     IndirectDrawCommand& iCmd = cmd.cmd();
                     iCmd.baseInstance = lastNodeCount;
 

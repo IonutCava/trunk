@@ -91,9 +91,8 @@ class SceneAnimator {
     /// Get the transforms needed to pass to the vertex shader.
     /// This will wrap the dt value passed, so it is safe to pass 50000000 as a
     /// valid number
-    inline const vectorImpl<mat4<F32>>& transforms(
-        I32 animationIndex, D32 dt, I32& resultingFrameIndex) const {
-        return _animations[animationIndex].transforms(dt, resultingFrameIndex);
+    inline I32 frameIndexForTimeStamp(I32 animationIndex, const D32 dt) const {
+        return _animations[animationIndex].frameIndexAt(dt);
     }
 
     inline const vectorImpl<mat4<F32>>& transforms(I32 animationIndex,

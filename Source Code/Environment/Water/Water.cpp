@@ -162,7 +162,7 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     return true;
 }
 
-void WaterPlane::getDrawCommands(SceneGraphNode& sgn,
+bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
                                  RenderStage renderStage,
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) {
@@ -185,7 +185,7 @@ void WaterPlane::getDrawCommands(SceneGraphNode& sgn,
     cmd.shaderProgram(drawShader);
     cmd.sourceBuffer(_plane->getGeometryVB());
 
-    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 

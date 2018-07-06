@@ -344,11 +344,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
     GLint uboffset = GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
+    GLint uboSize = GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE);
+
     Console::printfn(Locale::get("GL_UBO_INFO"),
                      GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS),
-                     GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE) / 1024,
+                     uboSize / 1024,
                      uboffset);
     par.setParam<I32>("rendering.UBOAligment", uboffset);
+    par.setParam<U32>("rendering.UBOSize", to_uint(uboSize));
     // In order: Maximum number of shader storage buffer binding points,
     //           maximum size in basic machine units of a shader storage block,
     //           maximum total number of active shader storage blocks that may

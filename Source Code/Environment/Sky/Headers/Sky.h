@@ -65,7 +65,7 @@ class Sky : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    void getDrawCommands(SceneGraphNode& sgn,
+    bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;

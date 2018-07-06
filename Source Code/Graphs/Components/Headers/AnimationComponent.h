@@ -45,9 +45,6 @@ class SceneAnimator;
 class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
    public:
-    typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/>
-        FrameIndexes;
-
     AnimationComponent(SceneAnimator& animator, SceneGraphNode& parentSGN);
     ~AnimationComponent();
 
@@ -65,9 +62,8 @@ class AnimationComponent : public SGNComponent {
     bool playPreviousAnimation();
 
     inline U64 animationTimeStamp() const { return _currentTimeStamp;  }
-    inline I32 frameIndex() const { return frameIndex(_currentAnimIndex); }
+    inline I32 frameIndex() const { return _previousFrameIndex; }
     inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
-    I32 frameIndex(U32 animationID) const;
     I32 frameCount(U32 animationID) const;
 
     inline const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const {
@@ -79,17 +75,9 @@ class AnimationComponent : public SGNComponent {
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
 
-    inline const mat4<F32>& currentBoneTransform(const stringImpl& name) const {
-        return currentBoneTransform(_currentAnimIndex, name);
-    }
-
-    inline const mat4<F32>& getBoneTransform(const stringImpl& name) {
-        return getBoneTransform(_currentAnimIndex, name);
-    }
-
-    const mat4<F32>& currentBoneTransform(U32 animationID,
-                                          const stringImpl& name) const ;
-    const mat4<F32>& getBoneTransform(U32 animationID, const stringImpl& name);
+    const mat4<F32>& getBoneTransform(U32 animationID,
+                                      const D32 timeStamp,
+                                      const stringImpl& name);
 
     inline bool playAnimations() const { return _playAnimations; }
     inline void playAnimations(bool state) { _playAnimations = state; }
@@ -110,11 +98,11 @@ class AnimationComponent : public SGNComponent {
     I32 _currentAnimIndex;
     /// Current animation timestamp for the current SGN
     U64 _currentTimeStamp;
+    /// Previous frame index. Gets reset to -1 when animation changes
+    I32 _previousFrameIndex;
     /// Parent time stamp (e.g. Mesh). 
     /// Should be identical for all nodes of the same level with the same parent
     U64 _parentTimeStamp;
-    /// Last updated frame indexes for each animation
-    FrameIndexes _lastFrameIndexes;
     /// Animation playback toggle
     bool _playAnimations;
     /// Animation timestamp changed

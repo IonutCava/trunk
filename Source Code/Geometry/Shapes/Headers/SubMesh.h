@@ -82,7 +82,7 @@ class SubMesh : public Object3D {
 
    protected:
 
-    void getDrawCommands(SceneGraphNode& sgn,
+    bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;

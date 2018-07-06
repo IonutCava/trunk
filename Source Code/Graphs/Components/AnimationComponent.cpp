@@ -1,7 +1,8 @@
 #include "Headers/AnimationComponent.h"
 
-#include "Managers/Headers/SceneManager.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 
 namespace Divide {
@@ -18,13 +19,18 @@ AnimationComponent::AnimationComponent(SceneAnimator& animator,
       _playAnimations(true),
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
-      _currentAnimIndex(0)
+      _currentAnimIndex(0),
+      _previousFrameIndex(-1)
 {
     DIVIDE_ASSERT(_animator.boneCount() <= Config::MAX_BONE_COUNT_PER_NODE,
                   "AnimationComponent error: Too many bones for current node! "
                   "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", g_bufferQueueLength/*, true*/);
+    static const U32 uboBufferLimit = ParamHandler::getInstance().getParam<U32>("rendering.UBOSize");
+    const U32 bufferRequirement = to_uint(_animator.boneCount()) * sizeof(mat4<F32>);
+    DIVIDE_ASSERT(bufferRequirement <= uboBufferLimit, "AnimationComponent error: animation data does not fit in an UBO!");
+
+    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", g_bufferQueueLength, false, false);
     _boneTransformBuffer->Create(to_uint(_animator.boneCount()), sizeof(mat4<F32>));
 }
 
@@ -53,19 +59,19 @@ void AnimationComponent::update(const U64 deltaTime) {
     D32 animTimeStamp = Time::MicrosecondsToSeconds<D32>(_currentTimeStamp);
 
     if (_parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN)) {
-        I32 resultingFrameIndex = 0;
-        const vectorImpl<mat4<F32>>& animationTransforms = _animator.transforms(
-            _currentAnimIndex, animTimeStamp, resultingFrameIndex);
+        I32 resultingFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex, animTimeStamp);
 
-        I32& frameIndex = _lastFrameIndexes[_currentAnimIndex];
-        bool updateBuffers = resultingFrameIndex != frameIndex;
+        bool updateBuffers = (resultingFrameIndex != _previousFrameIndex) &&
+                              resultingFrameIndex >= 0;
 
         if (updateBuffers) {
-            frameIndex = resultingFrameIndex;
+            _previousFrameIndex = resultingFrameIndex;
 
-            _boneTransformBuffer->UpdateData(0,
-                                             animationTransforms.size(),
-                                             (const bufferPtr)animationTransforms.data());
+            const vectorImpl<mat4<F32>>& animationTransforms = 
+                _animator.transforms(_currentAnimIndex, to_uint(_previousFrameIndex));
+
+
+            _boneTransformBuffer->SetData((const bufferPtr)animationTransforms.data());
             _boneTransformBuffer->incQueue();
         }
     }
@@ -73,6 +79,7 @@ void AnimationComponent::update(const U64 deltaTime) {
 
 void AnimationComponent::resetTimers() {
     _currentTimeStamp = _parentTimeStamp = 0UL;
+    _previousFrameIndex = -1;
     SGNComponent::resetTimers();
 }
 
@@ -87,7 +94,9 @@ bool AnimationComponent::playAnimation(const stringImpl& name) {
     if (_currentAnimIndex == -1) {
         _currentAnimIndex = 0;
     }
+
     resetTimers();
+
     return oldIndex != _currentAnimIndex;
 }
 
@@ -101,6 +110,7 @@ bool AnimationComponent::playAnimation(I32 pAnimIndex) {
                                      // data and the object was actually
                                      // inserted
     resetTimers();
+
     return oldIndex != _currentAnimIndex;
 }
 
@@ -108,7 +118,9 @@ bool AnimationComponent::playAnimation(I32 pAnimIndex) {
 bool AnimationComponent::playNextAnimation() {
     I32 oldIndex = _currentAnimIndex;
     _currentAnimIndex = ++_currentAnimIndex % _animator.animations().size();
+
     resetTimers();
+
     return oldIndex != _currentAnimIndex;
 }
 
@@ -118,7 +130,9 @@ bool AnimationComponent::playPreviousAnimation() {
         _currentAnimIndex = to_int(_animator.animations().size());
     }
     _currentAnimIndex = --_currentAnimIndex;
+
     resetTimers();
+
     return oldIndex != _currentAnimIndex;
 }
 
@@ -141,15 +155,6 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     return true;
 }
 
-I32 AnimationComponent::frameIndex(U32 animationID) const {
-    FrameIndexes::const_iterator it = _lastFrameIndexes.find(animationID);
-    if (it != std::end(_lastFrameIndexes)) {
-        return it->second;
-    }
-
-    return 0;
-}
-
 I32 AnimationComponent::frameCount(U32 animationID) const {
     return _animator.frameCount(animationID);
 }
@@ -164,6 +169,7 @@ const vectorImpl<mat4<F32>>& AnimationComponent::transformsByIndex(
 }
 
 const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
+                                                      const D32 timeStamp,
                                                       const stringImpl& name) {
     Object3D* node = _parentSGN.getNode<Object3D>();
     assert(node != nullptr);
@@ -174,20 +180,15 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
         return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 
-    return currentBoneTransform(animationID, name);
-}
-
-const mat4<F32>& AnimationComponent::currentBoneTransform(
-    U32 animationID, const stringImpl& name) const {
-
     I32 boneIndex = _animator.boneIndex(name);
-    FrameIndexes::const_iterator it = _lastFrameIndexes.find(animationID);
-    if (boneIndex == -1 || it == std::end(_lastFrameIndexes)) {
+    I32 frameIndex = _animator.frameIndexForTimeStamp(animationID, timeStamp);
+
+    if (frameIndex == -1) {
         static mat4<F32> cacheIdentity;
         return cacheIdentity;
     }
 
-    return _animator.transforms(animationID, it->second).at(boneIndex);
+    return _animator.transforms(animationID, frameIndex).at(boneIndex);
 }
 
 Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {

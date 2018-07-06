@@ -422,50 +422,29 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
 }
 
 
-bool RenderingComponent::getDrawCommands(const SceneRenderState& sceneRenderState,
-                                         RenderStage renderStage,
-                                         vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+GFXDevice::RenderPackage&
+RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
+                                   RenderStage renderStage) {
 
     GFXDevice::RenderPackage& pkg = _renderData[to_uint(renderStage)];
 
+    pkg._isRenderable = false;
     if (canDraw(sceneRenderState, renderStage) &&
         preDraw(sceneRenderState, renderStage))
     {
         
-        _parentSGN.getNode()->getDrawCommands(_parentSGN,
-                                              renderStage,
-                                              sceneRenderState,
-                                              pkg._drawCommands);
-        return true;
+        pkg._isRenderable = _parentSGN.getNode()->getDrawCommands(_parentSGN,
+                                                                  renderStage,
+                                                                  sceneRenderState,
+                                                                  pkg._drawCommands);
     }
 
-    return false;
+    return pkg;
 }
 
-vectorImpl<GenericDrawCommand>&
-RenderingComponent::getDrawCommands(RenderStage renderStage) {
-    return _renderData[to_uint(renderStage)]._drawCommands;
-}
-
-bool RenderingComponent::getImpostorDrawCommand(const SceneRenderState& sceneRenderState,
-                                                RenderStage renderStage,
-                                                GenericDrawCommand& commandOut){
-    if (canDraw(sceneRenderState, renderStage) &&
-        preDraw(sceneRenderState, renderStage))
-    {
-        commandOut.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-        commandOut.sourceBuffer(getImpostor()->getGeometryVB());
-        commandOut.renderGeometry(renderGeometry());
-        commandOut.renderWireframe(renderWireframe());
-        commandOut.LoD(lodLevel());
-        commandOut.stateHash(getDrawStateHash(renderStage));
-        commandOut.shaderProgram(getDrawShader(renderStage));
-        commandOut.cmd().indexCount = 14;
-        commandOut.cmd().firstIndex = 0;
-        return true;
-    }
-
-    return false;
+GFXDevice::RenderPackage& 
+RenderingComponent::getDrawPackage(RenderStage renderStage) {
+    return _renderData[to_uint(renderStage)];
 }
 
 void RenderingComponent::inViewCallback() {

@@ -39,8 +39,9 @@ void SubMesh::postLoad(SceneGraphNode& sgn) {
     cmd.sourceBuffer(_parentMesh->getGeometryVB());
 
     for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
-        Attorney::RenderingCompSceneNode::getDrawCommands(*renderable,
-                                                          static_cast<RenderStage>(i)).push_back(cmd);
+        GFXDevice::RenderPackage& pkg = 
+            Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
+        pkg._drawCommands.push_back(cmd);
     }
 }
 
@@ -61,7 +62,7 @@ bool SubMesh::computeBoundingBox(SceneGraphNode& sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void SubMesh::getDrawCommands(SceneGraphNode& sgn,
+bool SubMesh::getDrawCommands(SceneGraphNode& sgn,
                               RenderStage renderStage,
                               const SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
@@ -76,7 +77,7 @@ void SubMesh::getDrawCommands(SceneGraphNode& sgn,
     cmd.stateHash(renderable->getDrawStateHash(renderStage));
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     
-    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    return Object3D::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 };

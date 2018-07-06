@@ -140,7 +140,7 @@ void Terrain::sceneUpdate(const U64 deltaTime,
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Terrain::getDrawCommands(SceneGraphNode& sgn,
+bool Terrain::getDrawCommands(SceneGraphNode& sgn,
                               RenderStage renderStage,
                               const SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
@@ -188,7 +188,11 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
         drawCommandsOut.push_back(cmd);
     }
 
-    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    if (drawCommandsOut.empty()) {
+        return false;
+    }
+
+    return Object3D::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 void Terrain::postDrawBoundingBox(SceneGraphNode& sgn) const {

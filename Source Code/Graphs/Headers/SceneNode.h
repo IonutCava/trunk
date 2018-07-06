@@ -86,7 +86,7 @@ class NOINITVTABLE SceneNode : public Resource {
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION
     virtual bool getDrawState(RenderStage currentStage);
-    virtual void getDrawCommands(SceneGraphNode& sgn,
+    virtual bool getDrawCommands(SceneGraphNode& sgn,
                                  RenderStage renderStage,
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut);

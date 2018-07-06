@@ -9,7 +9,12 @@ DEFAULT_LOADER_IMPL(Sphere3D)
 
 template<>
 Sphere3D* ImplResourceLoader<Sphere3D>::operator()() {
-    Sphere3D* ptr = MemoryManager_NEW Sphere3D(1, 32);
+    Sphere3D* ptr = MemoryManager_NEW Sphere3D(_descriptor.getEnumValue() == 0 
+                                                                          ? 1.0f
+                                                                          : to_float(_descriptor.getEnumValue()),
+                                               _descriptor.getID() == 0 
+                                                                   ? 32 : 
+                                                                   _descriptor.getID());
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);

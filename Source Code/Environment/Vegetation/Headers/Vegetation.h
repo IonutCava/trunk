@@ -77,7 +77,7 @@ class Vegetation : public SceneNode {
 
     inline void toggleRendering(bool state) { _render = state; }
 
-    void getDrawCommands(SceneGraphNode& sgn,
+    bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;

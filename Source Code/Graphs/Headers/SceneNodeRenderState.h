@@ -9,7 +9,6 @@ class SceneNodeRenderState {
    public:
     SceneNodeRenderState()
         : _hasWaterReflection(true),
-          _isVisible(true),
           _drawState(true),
           _noDefaultMaterial(false),
           _exclusionMask(0),
@@ -34,7 +33,6 @@ class SceneNodeRenderState {
 
    protected:
     bool _hasWaterReflection;
-    bool _isVisible;
     bool _drawState;
     bool _noDefaultMaterial;
     U32 _exclusionMask;

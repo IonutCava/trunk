@@ -129,9 +129,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
 
    struct RenderPackage {
+       RenderPackage() : _isRenderable(false)
+       {
+       }
+
        vectorImpl<GenericDrawCommand> _drawCommands;
        TextureDataContainer _textureData;
        ShaderBufferList _shaderBuffers;
+       bool _isRenderable;
 
        bool isCompatible(const RenderPackage& other) const;
    };

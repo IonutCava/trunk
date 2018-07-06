@@ -110,6 +110,8 @@ class Object3D : public SceneNode {
     bool computeTriangleList(bool force = false);
 
    protected:
+    bool isPrimitive();
+
     virtual void computeNormals();
     virtual void computeTangents();
     /// Use a custom vertex buffer for this object (e.g., a submesh uses the
@@ -117,6 +119,10 @@ class Object3D : public SceneNode {
     /// Please manually delete the old VB if available before replacing!
     virtual void setGeometryVB(VertexBuffer* const vb);
 
+    virtual bool getDrawCommands(SceneGraphNode& sgn,
+                                 RenderStage renderStage,
+                                 const SceneRenderState& sceneRenderState,
+                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
    protected:
     bool _update;
     bool _playAnimations;

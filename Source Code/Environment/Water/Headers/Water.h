@@ -92,7 +92,7 @@ class WaterPlane : public SceneNode, public Reflector {
 
     ~WaterPlane();
 
-    void getDrawCommands(SceneGraphNode& sgn,
+    bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;

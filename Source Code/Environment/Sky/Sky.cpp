@@ -67,6 +67,9 @@ bool Sky::load() {
 
     ResourceDescriptor skybox("SkyBox");
     skybox.setFlag(true);  // no default material;
+    skybox.setID(4); // resolution
+    skybox.setEnumValue(1); // radius
+
     _sky = CreateResource<Sphere3D>(skybox);
 
     ResourceDescriptor skyShaderDescriptor("sky");
@@ -75,7 +78,6 @@ bool Sky::load() {
     assert(_skyShader);
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
-    _sky->setResolution(4);
 
     Console::printfn(Locale::get("CREATE_SKY_RES_OK"));
     return true;
@@ -98,8 +100,9 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     cmd.shaderProgram(_skyShader);
 
     for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
-        Attorney::RenderingCompSceneNode::getDrawCommands(*renderable,
-            static_cast<RenderStage>(i)).push_back(cmd);
+        GFXDevice::RenderPackage& pkg = 
+            Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
+        pkg._drawCommands.push_back(cmd);
     }
 
     SceneNode::postLoad(sgn);
@@ -117,7 +120,7 @@ bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     return false;
 }
 
-void Sky::getDrawCommands(SceneGraphNode& sgn,
+bool Sky::getDrawCommands(SceneGraphNode& sgn,
                           RenderStage renderStage,
                           const SceneRenderState& sceneRenderState,
                           vectorImpl<GenericDrawCommand>& drawCommandsOut) {
@@ -131,7 +134,7 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
                               ? _skyboxRenderStateReflectedHash
                               : _skyboxRenderStateHash);
 
-    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect,

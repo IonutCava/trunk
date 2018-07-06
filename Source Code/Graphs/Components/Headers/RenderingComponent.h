@@ -142,15 +142,11 @@ class RenderingComponent : public SGNComponent {
     void postDraw(const SceneRenderState& sceneRenderState,
                   RenderStage renderStage);
 
-    bool getDrawCommands(const SceneRenderState& sceneRenderState,
-                         RenderStage renderStage,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    GFXDevice::RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState,
+                                             RenderStage renderStage);
 
-    vectorImpl<GenericDrawCommand>& getDrawCommands(RenderStage renderStage);
+    GFXDevice::RenderPackage& getDrawPackage(RenderStage renderStage);
 
-    bool getImpostorDrawCommand(const SceneRenderState& sceneRenderState,
-                                RenderStage renderStage,
-                                GenericDrawCommand& commandOut);
     inline void drawOrder(U32 index) { _drawOrder = index; }
 
    protected:
@@ -185,10 +181,9 @@ class RenderingComponent : public SGNComponent {
 namespace Attorney {
 class RenderingCompSceneNode {
     private:
-        static vectorImpl<GenericDrawCommand>& getDrawCommands(
-                                                    RenderingComponent& renderable,
-                                                    RenderStage renderStage) {
-            return renderable.getDrawCommands(renderStage);
+        static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,
+                                                        RenderStage renderStage) {
+            return renderable.getDrawPackage(renderStage);
         }
 
     friend class Divide::Sky;
@@ -198,25 +193,10 @@ class RenderingCompSceneNode {
 
 class RenderingCompGFXDevice {
    private:
-    static bool getDrawCommands(RenderingComponent& renderable,
-                                const SceneRenderState& sceneRenderState,
-                                RenderStage renderStage,
-                                vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-        return renderable.getDrawCommands(sceneRenderState, renderStage, drawCommandsOut);
-    }
-
-    static bool getImpostorDrawCommand(RenderingComponent& renderable,
-                                       const SceneRenderState& sceneRenderState,
-                                       RenderStage renderStage,
-                                       GenericDrawCommand& commandOut) {
-
-        return renderable.getImpostorDrawCommand(sceneRenderState, renderStage, commandOut);
-    }
-
-    static bool canDraw(RenderingComponent& renderable,
-                        const SceneRenderState& sceneRenderState,
-                        RenderStage renderStage) {
-        return renderable.canDraw(sceneRenderState, renderStage);
+    static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,
+                                                    const SceneRenderState& sceneRenderState,
+                                                    RenderStage renderStage) {
+        return renderable.getDrawPackage(sceneRenderState, renderStage);
     }
 
     friend class Divide::GFXDevice;

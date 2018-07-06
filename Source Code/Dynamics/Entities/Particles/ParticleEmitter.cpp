@@ -184,8 +184,9 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 4, 1);
     cmd.sourceBuffer(_particleGPUBuffer);
     for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
-        Attorney::RenderingCompSceneNode::getDrawCommands(*renderable,
-                                                          static_cast<RenderStage>(i)).push_back(cmd);
+        GFXDevice::RenderPackage& pkg = 
+            Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
+            pkg._drawCommands.push_back(cmd);
     }
 
     SceneNode::postLoad(sgn);
@@ -229,14 +230,14 @@ void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
                   viewMatrixCache.m[2][1]));
 }
 
-void ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
+bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
                                       RenderStage renderStage,
                                       const SceneRenderState& sceneRenderState,
                                       vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
     U32 particleCount = getAliveParticleCount();
     if (!_enabled || particleCount == 0) {
-        return;
+        return false;
     }
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
@@ -252,7 +253,7 @@ void ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
                                   ? _particleShader
                                   : _particleDepthShader);
 
-    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 void ParticleEmitter::uploadToGPU() {

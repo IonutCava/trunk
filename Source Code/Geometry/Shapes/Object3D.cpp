@@ -43,6 +43,13 @@ Object3D::~Object3D()
     }
 }
 
+bool Object3D::isPrimitive() {
+    return _geometryType == ObjectType::BOX_3D ||
+           _geometryType == ObjectType::QUAD_3D ||
+           _geometryType == ObjectType::SPHERE_3D ||
+           _geometryType == ObjectType::TEXT_3D;
+}
+
 void Object3D::postLoad(SceneGraphNode& sgn) {
      SceneNode::postLoad(sgn);
 }
@@ -64,6 +71,30 @@ bool Object3D::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
 
 bool Object3D::onDraw(RenderStage currentStage) {
     return getState() == ResourceState::RES_LOADED;
+}
+
+bool Object3D::getDrawCommands(SceneGraphNode& sgn,
+                               RenderStage renderStage,
+                               const SceneRenderState& sceneRenderState,
+                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+
+    // If we got to this point without any draw commands, and no early-out, add a default command
+    if (isPrimitive()) {
+        drawCommandsOut.resize(1);
+        GenericDrawCommand& cmd = drawCommandsOut.front();
+
+        RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+        VertexBuffer* const vb = getGeometryVB();
+
+        cmd.renderGeometry(renderable->renderGeometry());
+        cmd.renderWireframe(renderable->renderWireframe());
+        cmd.stateHash(renderable->getDrawStateHash(renderStage));
+        cmd.shaderProgram(renderable->getDrawShader(renderStage));
+        cmd.sourceBuffer(vb);
+        cmd.cmd().indexCount = to_uint(vb->getIndexCount());
+    }
+
+    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 void Object3D::computeNormals() {

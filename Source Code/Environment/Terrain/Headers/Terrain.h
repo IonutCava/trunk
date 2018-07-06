@@ -127,7 +127,7 @@ class Terrain : public Object3D {
     bool computeBoundingBox(SceneGraphNode& sgn);
 
    protected:
-    void getDrawCommands(SceneGraphNode& sgn,
+    bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;

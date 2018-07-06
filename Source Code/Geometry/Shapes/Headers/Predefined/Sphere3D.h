@@ -63,12 +63,10 @@ class Sphere3D : public Object3D {
     inline void setRadius(F32 radius) {
         _radius = radius;
         _dirty = true;
-        getGeometryVB()->queueRefresh();
     }
     inline void setResolution(U32 resolution) {
         _resolution = resolution;
         _dirty = true;
-        getGeometryVB()->queueRefresh();
     }
 
     virtual bool computeBoundingBox(SceneGraphNode& sgn) {
@@ -100,7 +98,9 @@ class Sphere3D : public Object3D {
    private:
     // SuperBible stuff
     void createSphere(U32 slices, U32 stacks) {
-        getGeometryVB()->reset();
+        VertexBuffer* const vb = getGeometryVB();
+
+        vb->reset();
         F32 drho = to_float(M_PI) / stacks;
         F32 dtheta = 2.0f * to_float(M_PI) / slices;
         F32 ds = 1.0f / slices;
@@ -130,35 +130,26 @@ class Sphere3D : public Object3D {
                 F32 y = ctheta * srho;
                 F32 z = crho;
 
-                getGeometryVB()->addPosition(
-                    vec3<F32>(x * _radius, y * _radius, z * _radius));
-                getGeometryVB()->getTexcoord().push_back(vec2<F32>(s, t));
-                getGeometryVB()->addNormal(vec3<F32>(x, y, z));
-                getGeometryVB()->addIndex(index++);
+                vb->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
+                vb->getTexcoord().push_back(vec2<F32>(s, t));
+                vb->addNormal(vec3<F32>(x, y, z));
+                vb->addIndex(index++);
 
                 x = stheta * srhodrho;
                 y = ctheta * srhodrho;
                 z = crhodrho;
                 s += ds;
 
-                getGeometryVB()->addPosition(
-                    vec3<F32>(x * _radius, y * _radius, z * _radius));
-                getGeometryVB()->getTexcoord().push_back(vec2<F32>(s, t - dt));
-                getGeometryVB()->addNormal(vec3<F32>(x, y, z));
-                getGeometryVB()->addIndex(index++);
+                vb->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
+                vb->getTexcoord().push_back(vec2<F32>(s, t - dt));
+                vb->addNormal(vec3<F32>(x, y, z));
+                vb->addIndex(index++);
             }
             t -= dt;
         }
 
-        vec2<U32> indiceLimits;
-        for (i = 0; i < getGeometryVB()->getIndexCount(); i++) {
-            if (indiceLimits.x > getGeometryVB()->getIndex(i))
-                indiceLimits.x = getGeometryVB()->getIndex(i);
-            if (indiceLimits.y < getGeometryVB()->getIndex(i))
-                indiceLimits.y = getGeometryVB()->getIndex(i);
-        }
-
-        getGeometryVB()->create();
+        vb->create();
+        vb->queueRefresh();
     }
 
    protected:

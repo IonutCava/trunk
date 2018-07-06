@@ -391,7 +391,7 @@ void Vegetation::gpuCull() {
     }
 }
 
-void Vegetation::getDrawCommands(SceneGraphNode& sgn,
+bool Vegetation::getDrawCommands(SceneGraphNode& sgn,
                                  RenderStage renderStage,
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) {
@@ -420,7 +420,7 @@ void Vegetation::getDrawCommands(SceneGraphNode& sgn,
     cmd.LoD(1);
     cmd.stateHash(_grassStateBlockHash);
 
-    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 bool Vegetation::onDraw(SceneGraphNode& sgn, RenderStage renderStage) {
