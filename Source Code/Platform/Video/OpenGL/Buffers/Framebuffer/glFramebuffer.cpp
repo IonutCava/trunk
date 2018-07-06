@@ -383,17 +383,17 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB,
                         previousFB);
 }
 
-Texture* glFramebuffer::GetAttachment(AttachmentType slot) {
+Texture* glFramebuffer::GetAttachment(AttachmentType slot, bool flushStateOnRequest) {
     if (_resolveBuffer) {
         resolve();
-        return _resolveBuffer->GetAttachment(slot);
+        return _resolveBuffer->GetAttachment(slot, flushStateOnRequest);
     }
 
-    return Framebuffer::GetAttachment(slot);
+    return Framebuffer::GetAttachment(slot, flushStateOnRequest);
 }
 
-void glFramebuffer::Bind(U8 unit, AttachmentType slot) {
-    GetAttachment(slot)->Bind(unit);
+void glFramebuffer::Bind(U8 unit, AttachmentType slot, bool flushStateOnRequest) {
+    GetAttachment(slot, flushStateOnRequest)->Bind(unit, flushStateOnRequest);
 }
 
 void glFramebuffer::ResetMipMaps(FramebufferTarget::BufferMask mask) {

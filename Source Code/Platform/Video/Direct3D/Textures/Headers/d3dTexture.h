@@ -44,7 +44,7 @@ class d3dTexture : public Texture {
     bool generateHWResource(const stringImpl& name) { return true; }
     bool unload() { return true; }
 
-    void Bind(U8 unit) {}
+    void Bind(U8 unit, bool flushStateOnRequest = true) {}
 
     void setMipMapRange(U16 base = 0, U16 max = 1000) {}
     void resize(const U8* const ptr,

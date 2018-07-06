@@ -104,7 +104,7 @@ class glVertexArray : public VertexBuffer {
     ByteBuffer _smallData;
     typedef std::array<bool, to_const_uint(VertexAttribute::COUNT)> AttribFlags;
     AttribFlags _useAttribute;
-    typedef std::array<size_t, to_const_uint(VertexAttribute::COUNT)> AttribValues;
+    typedef std::array<GLuint, to_const_uint(VertexAttribute::COUNT)> AttribValues;
     AttribValues _attributeOffset;
 
     size_t _vaoHash;

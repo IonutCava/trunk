@@ -557,7 +557,7 @@ void Kernel::runLogicLoop() {
 
     _timingData._keepAlive = true;
     _APP.mainLoopActive(true);
-
+    Console::printfn(Locale::get("START_MAIN_LOOP"));
     while (_APP.mainLoopActive()) {
         mainLoopApp();
     }

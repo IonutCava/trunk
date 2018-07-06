@@ -49,7 +49,8 @@ DEFINE_SINGLETON(ResourceCache)
   public:
     /// Each resource entity should have a 'resource name'Loader implementation.
     template <typename T>
-    inline T* loadResource(const ResourceDescriptor& descriptor) {
+    typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
+    loadResource(const ResourceDescriptor& descriptor) {
         /// Check cache first to avoit loading the same resource twice
         T* ptr = dynamic_cast<T*>(loadResource(descriptor.getName()));
         /// If the cache did not contain our resource ...
@@ -65,6 +66,18 @@ DEFINE_SINGLETON(ResourceCache)
             }
         }
         return ptr;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
+    cloneResource(T* resource) {
+        if (resource) {
+            resource->AddRef();
+            Console::d_printfn(Locale::get("RESOURCE_CACHE_GET_RES_INC"),
+                resource->getName().c_str(), resource->GetRef());
+        }
+
+        return resource;
     }
 
     Resource* const find(const stringImpl& name);
@@ -91,10 +104,8 @@ DEFINE_SINGLETON(ResourceCache)
 END_SINGLETON
 
 template <typename T>
-inline bool RemoveResource(T*& resource) {
-    DIVIDE_ASSERT(std::is_base_of<Resource, T>::value,
-                  Locale::get("RESOURCE_CACHE_REMOVE_NOT_RESOURCE"));
-
+typename std::enable_if<std::is_base_of<Resource, T>::value, bool>::type
+RemoveResource(T*& resource) {
     if (ResourceCache::getInstance().remove(resource)) {
         resource = nullptr;
         return true;
@@ -104,12 +115,20 @@ inline bool RemoveResource(T*& resource) {
 }
 
 template <typename T>
-inline T* CreateResource(const ResourceDescriptor& descriptor) {
+typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
+CloneResource(T*& resource) {
+    return ResourceCache::getInstance().cloneResource<T>(resource);
+}
+
+template <typename T>
+typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
+CreateResource(const ResourceDescriptor& descriptor) {
     return ResourceCache::getInstance().loadResource<T>(descriptor);
 }
 
 template <typename T>
-inline T* const FindResourceImpl(const stringImpl& name) {
+typename std::enable_if<std::is_base_of<Resource, T>::value, T* const>::type
+FindResourceImpl(const stringImpl& name) {
     return static_cast<T*>(ResourceCache::getInstance().find(name));
 }
 

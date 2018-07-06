@@ -312,8 +312,8 @@ bool glTexture::flushTextureState() {
     return true;
 }
 
-void glTexture::Bind(GLubyte unit) {
-    if (flushTextureState()) {
+void glTexture::Bind(U8 unit, bool flushStateOnRequest) {
+    if ((flushStateOnRequest && flushTextureState()) || !flushStateOnRequest) {
         GL_API::bindTexture(unit, _textureData.getHandleHigh(), _type,
                             _textureData._samplerHash);
     }

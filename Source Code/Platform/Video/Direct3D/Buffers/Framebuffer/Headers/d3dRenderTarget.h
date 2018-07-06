@@ -52,8 +52,10 @@ class d3dRenderTarget : public Framebuffer {
     void Begin(const FramebufferTarget& drawPolicy);
     void End();
 
-    void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot =
-                               TextureDescriptor::AttachmentType::Color0);
+    void Bind(U8 unit = 0,
+              TextureDescriptor::AttachmentType slot =
+                TextureDescriptor::AttachmentType::Color0,
+              bool flushStateOnRequest = true);
     void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
     void BlitFrom(Framebuffer* inputFB,

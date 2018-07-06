@@ -51,15 +51,13 @@ void ResourceCache::add(const stringImpl& name, Resource* const res) {
 }
 
 Resource* ResourceCache::loadResource(const stringImpl& name) {
-    Resource* res = find(name);
-    if (res) {
-        res->AddRef();
-        Console::d_printfn(Locale::get("RESOURCE_CACHE_GET_RES_INC"),
-                           name.c_str(), res->GetRef());
+    Resource* resource = find(name);
+    if (resource) {
+        cloneResource<Resource>(resource);
     } else {
         Console::printfn(Locale::get("RESOURCE_CACHE_GET_RES"), name.c_str());
     }
-    return res;
+    return resource;
 }
 
 Resource* const ResourceCache::find(const stringImpl& name) {

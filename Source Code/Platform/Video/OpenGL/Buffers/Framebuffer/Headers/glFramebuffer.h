@@ -47,7 +47,7 @@ class glFramebuffer : public Framebuffer {
     bool Create(U16 width, U16 height);
     void Destroy();
 
-    Texture* GetAttachment(TextureDescriptor::AttachmentType slot);
+    Texture* GetAttachment(TextureDescriptor::AttachmentType slot, bool flushStateOnRequest = true);
 
     void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
                      bool includeDepth = true);
@@ -59,8 +59,10 @@ class glFramebuffer : public Framebuffer {
     void Begin(const FramebufferTarget& drawPolicy);
     void End();
 
-    void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot =
-                               TextureDescriptor::AttachmentType::Color0);
+    void Bind(U8 unit = 0,
+              TextureDescriptor::AttachmentType slot =
+                         TextureDescriptor::AttachmentType::Color0,
+              bool flushStateOnRequest = true);
     void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
     void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot =

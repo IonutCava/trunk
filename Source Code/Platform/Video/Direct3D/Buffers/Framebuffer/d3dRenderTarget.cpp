@@ -15,7 +15,7 @@ void d3dRenderTarget::Begin(const FramebufferTarget& drawPolicy) {}
 
 void d3dRenderTarget::End() {}
 
-void d3dRenderTarget::Bind(U8 unit, TextureDescriptor::AttachmentType slot) {}
+void d3dRenderTarget::Bind(U8 unit, TextureDescriptor::AttachmentType slot, bool flushStateOnRequest) {}
 
 void d3dRenderTarget::DrawToLayer(TextureDescriptor::AttachmentType slot,
                                   U8 layer, bool includeDepth) {}

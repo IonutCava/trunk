@@ -60,7 +60,7 @@ class NOINITVTABLE Texture : public HardwareResource {
        };
     public:
     /// Bind the texture to the specified texture unit
-    virtual void Bind(U8 slot) = 0;
+    virtual void Bind(U8 slot, bool flushStateOnRequest = true) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
     /// Resize the texture to the specified dimensions and upload the new data

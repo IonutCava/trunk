@@ -93,7 +93,6 @@ static void glfons__renderDraw(void* userPtr,
     glNamedBufferSubData(bufferID, vertDataSize, vertDataSize, (Divide::bufferPtr)tcoords);
     glNamedBufferSubData(bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, (Divide::bufferPtr)colors);
 
-    glBindTexture(GL_TEXTURE_2D, gl->tex);
     Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);

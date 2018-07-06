@@ -274,7 +274,7 @@ void CascadedShadowMaps::postRender() {
     _blurDepthMapShader->Uniform("blurSize",
                                  1.0f / (_depthMap->getWidth() * 1.0f));
     _blurBuffer->Begin(*_renderPolicy);
-    _depthMap->Bind();
+    _depthMap->Bind(0, TextureDescriptor::AttachmentType::Color0, false);
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _blurBuffer->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,

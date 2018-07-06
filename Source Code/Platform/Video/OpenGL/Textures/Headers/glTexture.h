@@ -43,7 +43,7 @@ class glTexture : public Texture {
 
     bool unload();
 
-    void Bind(GLubyte unit);
+    void Bind(U8 unit, bool flushStateOnRequest = true);
 
     void setMipMapRange(GLushort base = 0, GLushort max = 1000);
 

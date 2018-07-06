@@ -64,7 +64,7 @@ glVertexArray::glVertexArray()
     _prevSizeIndices = -1;
     _bufferEntrySize = -1;
     _vaoCache = _VBid = _IBid = 0;
-    _vaoHash = -1;
+    _vaoHash = static_cast<size_t>(-1);
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -91,30 +91,30 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
 
     size_t prevOffset = sizeof(vec3<F32>);
     if (useNormals) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_NORMAL)] = prevOffset;
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_NORMAL)] = to_uint(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useTangents) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TANGENT)] = prevOffset;
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TANGENT)] = to_uint(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useColor) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_COLOR)] = prevOffset;
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_COLOR)] = to_uint(prevOffset);
         prevOffset += sizeof(vec4<U8>);
     }
 
     if (useTexcoords) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = prevOffset;
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = to_uint(prevOffset);
         prevOffset += sizeof(vec2<F32>);
     }
 
     if (useBoneData) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = prevOffset;
-        prevOffset += sizeof(U32);
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = prevOffset;
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = to_uint(prevOffset);
         prevOffset += sizeof(vec4<F32>);
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = to_uint(prevOffset);
+        prevOffset += sizeof(U32);
     }
 
     _bufferEntrySize = static_cast<GLsizei>(prevOffset);
@@ -147,11 +147,11 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         }
 
         if (useBoneData) {
-            _smallData << data._indices.i;
             _smallData << data._weights.x;
             _smallData << data._weights.y;
             _smallData << data._weights.z;
             _smallData << data._weights.w;
+            _smallData << data._indices.i;
         }
     }
 
