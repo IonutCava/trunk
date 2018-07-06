@@ -34,6 +34,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "GUIElement.h"
 
+namespace CEGUI {
+    class String;
+};
+
 namespace Divide {
 
 class GUIText;
@@ -139,6 +143,10 @@ public:
                               const RelativeScale2D& size) {
         return addFlash(guiID, movie, movie, position, size);
     }
+
+    virtual CEGUI::Window* createWindow(const CEGUI::String& type, const CEGUI::String& name);
+    virtual CEGUI::Window* loadWindowFromLayoutFile(const char* layoutFileName);
+    virtual bool unloadWindow(CEGUI::Window*& window);
 
     // Return true if input was consumed
     virtual bool mouseMoved(const GUIEvent& event);

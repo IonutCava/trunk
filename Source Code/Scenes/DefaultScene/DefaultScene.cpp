@@ -152,7 +152,7 @@ void DefaultScene::postLoadMainThread() {
                   Font::DIVIDE_DEFAULT,
                   UColour(128, 64, 64, 255),
                   "");
-    
+
     Scene::postLoadMainThread();
 }
 

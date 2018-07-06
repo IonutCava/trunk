@@ -253,4 +253,31 @@ GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text) {
     return textElement;
 }
 
+CEGUI::Window* GUIInterface::createWindow(const CEGUI::String& type, const CEGUI::String& name) {
+    CEGUI::Window* window = CEGUI::WindowManager::getSingleton().createWindow(type, name);
+    if (window != nullptr) {
+        _context->rootSheet()->addChild(window);
+    }
+
+    return window;
+}
+
+CEGUI::Window* GUIInterface::loadWindowFromLayoutFile(const char* layoutFileName) {
+    CEGUI::Window* window = CEGUI::WindowManager::getSingleton().loadLayoutFromFile(layoutFileName);
+    if (window != nullptr) {
+        _context->rootSheet()->addChild(window);
+    }
+
+    return window;
+}
+
+bool GUIInterface::unloadWindow(CEGUI::Window*& window) {
+    if (_context->rootSheet()->isChild(window)) {
+        _context->rootSheet()->destroyChild(window);
+        window = nullptr;
+        return true;
+    }
+
+    return false;
+}
 }; //namespace Divide
