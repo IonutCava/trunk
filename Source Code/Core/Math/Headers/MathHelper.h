@@ -107,6 +107,10 @@ T CLAMPED(const T& n, const T min, const T max);
 
 U32 nextPOW2(U32 n);
 
+// Calculate the smalles NxN matrix that can hold the specified
+// number of elements. Returns N
+U32 minSquareMatrixSize(U32 elementCount);
+
 template <typename T, typename U>
 T Lerp(const T v1, const T v2, const U t);
 

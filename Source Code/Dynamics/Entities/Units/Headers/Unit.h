@@ -40,7 +40,7 @@ namespace Divide {
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// Unit interface
-class Unit : public FrameListener {
+class Unit : public FrameListener, public GUIDWrapper {
    public:
     typedef hashMapImpl<U32, I32> AttributeMap;
 

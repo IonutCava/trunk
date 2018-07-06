@@ -52,12 +52,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
       _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer")),
       _preRenderTimer(Time::ADD_TIMER("Pre-render Timer")),
-      _postRenderTimer(Time::ADD_TIMER("Post-render Timer")),
-      _renderTimer(Time::ADD_TIMER("Render Timer")),
-      _postFxRenderTimer(Time::ADD_TIMER("PostFX Timer")),
-      _blitToDisplayTimer(Time::ADD_TIMER("Blit to screen Timer"))
+      _postRenderTimer(Time::ADD_TIMER("Post-render Timer"))
 {
-
     _platformContext = std::make_unique<PlatformContext>(
         std::make_unique<GFXDevice>(*this),              // Video
         std::make_unique<SFXDevice>(*this),              // Audio
@@ -79,9 +75,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _appScenePass.addChildTimer(_flushToScreenTimer);
     _flushToScreenTimer.addChildTimer(_preRenderTimer);
     _flushToScreenTimer.addChildTimer(_postRenderTimer);
-    _flushToScreenTimer.addChildTimer(_renderTimer);
-    _flushToScreenTimer.addChildTimer(_postFxRenderTimer);
-    _flushToScreenTimer.addChildTimer(_blitToDisplayTimer);
     _sceneUpdateTimer.addChildTimer(_sceneUpdateLoopTimer);
 
     _resCache = std::make_unique<ResourceCache>(*_platformContext);
@@ -341,7 +334,112 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
     return presentToScreen(evt, deltaTime);
 }
 
+void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targetViewports, U8 count) {
+    assert(count > 0);
+    I32 xOffset = mainViewport.x;
+    I32 yOffset = mainViewport.y;
+    I32 width = mainViewport.z;
+    I32 height = mainViewport.w;
+
+    targetViewports.resize(0);
+    if (count == 1) { //Single Player
+        targetViewports.push_back(mainViewport);
+        return;
+    } else if (count == 2) { //Split Screen
+        I32 halfHeight = height / 2;
+        targetViewports.emplace_back(xOffset, halfHeight + yOffset, width, halfHeight);
+        targetViewports.emplace_back(xOffset, 0 + yOffset,          width, halfHeight);
+        return;
+    }
+
+    // Basic idea (X - viewport):
+    // Odd # of players | Even # of players
+    // X X              |      X X
+    //  X               |      X X
+    //                  |
+    // X X X            |     X X X 
+    //  X X             |     X X X
+    // etc
+    // Always try to match last row with previous one
+    // If they match, move the first viewport from the last row
+    // to the previous row and add a new entry to the end of the
+    // current row
+
+    typedef vectorImpl<vec4<I32>> ViewportRow;
+    typedef vectorImpl<ViewportRow> ViewportRows;
+    ViewportRows rows;
+
+    // Allocates storage for a N x N matrix of viewports that will hold numViewports
+    // Returns N;
+    auto resizeViewportContainer = [&rows](U32 numViewports) {
+        //Try to fit all viewports into an appropriately sized matrix.
+        //If the number of resulting rows is too large, drop empty rows.
+        //If the last row has an odd number of elements, center them later.
+        U8 matrixSize = to_ubyte(minSquareMatrixSize(numViewports));
+        rows.resize(matrixSize);
+        std::for_each(std::begin(rows), std::end(rows), [matrixSize](ViewportRow& row) { row.resize(matrixSize); });
+
+        return matrixSize;
+    };
+
+    // Remove extra rows and columns, if any
+    U8 columnCount = resizeViewportContainer(count);
+    U8 extraColumns = (columnCount * columnCount) - count;
+    U8 extraRows = extraColumns / columnCount;
+    for (U8 i = 0; i < extraRows; ++i) {
+        rows.pop_back();
+    }
+    U8 columnsToRemove = extraColumns - (extraRows * columnCount);
+    for (U8 i = 0; i < columnsToRemove; ++i) {
+        rows.back().pop_back();
+    }
+
+    U8 rowCount = to_ubyte(rows.size());
+
+    // Calculate and set viewport dimensions
+    // The number of columns is valid for the width;
+    I32 playerWidth = width / columnCount;
+    // The number of rows is valid for the height;
+    I32 playerHeight = height / to_int(rowCount);
+
+    for (U8 i = 0; i < rowCount; ++i) {
+        ViewportRow& row = rows[i];
+        I32 playerYOffset = playerHeight * (rowCount - i - 1);
+        for (U8 j = 0; j < to_ubyte(row.size()); ++j) {
+            I32 playerXOffset = playerWidth * j;
+            row[j].set(playerXOffset, playerYOffset, playerWidth, playerHeight);
+        }
+    }
+
+    //Slide the last row to center it
+    if (extraColumns > 0) {
+        ViewportRow& lastRow = rows.back();
+        I32 slideFactor = to_int((rows.back().size() * playerWidth) / 2);
+        for (vec4<I32>& viewport : lastRow) {
+            viewport.x += slideFactor;
+        }
+    }
+
+    // Update the system viewports
+    for (const ViewportRow& row : rows) {
+        for (const vec4<I32>& viewport : row) {
+            targetViewports.push_back(viewport);
+        }
+    }
+}
+
+Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorImpl<Time::ProfileTimer*>& timers, U8 index, const char* name) {
+    while (timers.size() < index + 1) {
+        timers.push_back(&Time::ADD_TIMER(Util::StringFormat("%s %d", name, timers.size()).c_str()));
+        parentTimer.addChildTimer(*timers.back());
+    }
+
+    return *timers[index];
+}
+
 bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
+    static vectorImpl<vec4<I32>> targetViewports;
+
     Time::ScopedTimer time(_flushToScreenTimer);
 
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
@@ -365,18 +463,28 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
         }
     }
 
-    {
-        Time::ScopedTimer time2(_renderTimer);
-        _renderPassManager->render(_sceneManager->getActiveScene().renderState());
+    const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
+    const vec4<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
+
+    U8 playerCount = to_ubyte(activePlayers.size());
+    computeViewports(mainViewport, targetViewports, playerCount);
+
+
+    for (U8 i = 0; i < playerCount; ++i) {
+        {
+            Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));
+            _renderPassManager->render(_sceneManager->getActiveScene().renderState());
+        }
+        {
+            Time::ScopedTimer time3(getTimer(_flushToScreenTimer, _postFxRenderTimer, i, "PostFX Timer"));
+            PostFX::instance().apply(_platformContext->gfx());
+        }
+        {
+            Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
+            Attorney::GFXDeviceKernel::flushDisplay(_platformContext->gfx(), targetViewports[i]);
+        }
     }
-    {
-        Time::ScopedTimer time3(_postFxRenderTimer);
-        PostFX::instance().apply(_platformContext->gfx());
-    }
-    {
-        Time::ScopedTimer time4(_blitToDisplayTimer);
-        Attorney::GFXDeviceKernel::flushDisplay(_platformContext->gfx());
-    }
+
     {
         Time::ScopedTimer time5(_postRenderTimer);
         frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_START, evt);

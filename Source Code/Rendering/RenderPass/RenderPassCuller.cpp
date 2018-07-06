@@ -147,7 +147,9 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     }
 
     // Early out for non-shadow casters during shadow pass
-    if (currentStage == RenderStage::SHADOW && !currentNode.get<RenderingComponent>()->castsShadows()) {
+    if (currentStage == RenderStage::SHADOW && !(currentNode.get<RenderingComponent>() &&
+                                                 currentNode.get<RenderingComponent>()->castsShadows()))
+    {
         return;
     }
 

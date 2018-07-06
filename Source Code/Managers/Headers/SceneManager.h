@@ -52,11 +52,16 @@ namespace Attorney {
 class ScenePool;
 class SceneShaderData;
 class ShaderComputeQueue;
+FWD_DECLARE_MANAGED_CLASS(Player);
+
 class SceneManager : public FrameListener,
                      public Input::InputAggregatorInterface,
                      public KernelComponent {
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
+public:
+    typedef vectorImpl<Player_ptr> PlayerList;
+
 public:
     static bool onStartup();
     static bool onShutdown();
@@ -75,6 +80,15 @@ public:
 
     bool init(PlatformContext& platformContext, ResourceCache& cache);
     void destroy();
+
+    // Add a new player to the simulation
+    // Returns true if the specified player is already active
+    bool addPlayer(const Player_ptr& player);
+    // Removes the specified player from the active simulation
+    // Returns true if the player was previously registered
+    // On success, player pointer will be reset
+    bool removePlayer(Player_ptr& player);
+    const PlayerList& getPlayers() const;
 
     /*Base Scene Operations*/
     // generate a list of nodes to render
@@ -185,6 +199,7 @@ private:
 
     typedef std::array<Time::ProfileTimer*, to_const_uint(RenderStage::COUNT)> CullTimersPerPass;
     std::array<CullTimersPerPass, 2> _sceneGraphCullTimers;
+    PlayerList _players;
 
     struct SwitchSceneTarget {
         SwitchSceneTarget()

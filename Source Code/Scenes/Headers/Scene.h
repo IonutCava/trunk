@@ -74,6 +74,8 @@ class TerrainDescriptor;
 class ParticleEmitter;
 class PhysicsSceneInterface;
 
+FWD_DECLARE_MANAGED_CLASS(Player);
+
 namespace Attorney {
     class SceneManager;
     class SceneGraph;
@@ -255,6 +257,7 @@ class Scene : public Resource {
        AI::AIManager* _aiManager;
        SceneGUIElements* _GUI;
 
+       vectorImpl<Player_ptr> _scenePlayers;
        U64 _sceneTimer;
        vectorImpl<D64> _taskTimers;
        vectorImpl<D64> _guiTimers;

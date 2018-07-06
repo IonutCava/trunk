@@ -338,17 +338,31 @@ bool GFXDevice::draw(const GenericDrawCommand& cmd) {
 }
 
 
-void GFXDevice::flushDisplay() {
+void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
                               RTAttachment::Type::Colour,
                               to_const_ubyte(ScreenTargets::ALBEDO));
 
+
+    GFX::ScopedViewport targetArea(*this, targetViewport);
+
+    // Blit render target to screen
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
     triangleCmd.stateHash(getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_displayShader);
     draw(triangleCmd);
+
+
+    // Render all 2D debug info and call API specific flush function
+    if (Application::instance().mainLoopActive()) {
+        GFX::Scoped2DRendering scoped2D(*this);
+        ReadLock r_lock(_2DRenderQueueLock);
+        for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
+            callbackFunction.second.second();
+        }
+    }
 }
 
 };

@@ -15,7 +15,10 @@
 
 #include "Geometry/Importer/Headers/DVDConverter.h"
 
+#include "Dynamics/Entities/Units/Headers/Player.h"
+
 #include "Core/Debugging/Headers/DebugInterface.h"
+
 namespace Divide {
 
 /*
@@ -183,6 +186,7 @@ bool SceneManager::unloadScene(Scene* scene) {
     
     if (Attorney::SceneManager::deinitializeAI(*scene)) {
         _platformContext->gui().onUnloadScene(scene);
+        Attorney::SceneManager::onRemoveActive(*scene);
         return Attorney::SceneManager::unload(*scene);
     }
 
@@ -192,9 +196,9 @@ bool SceneManager::unloadScene(Scene* scene) {
 void SceneManager::setActiveScene(Scene* const scene) {
     assert(scene != nullptr);
 
-    if (!_scenePool->defaultSceneActive()) {
-        Attorney::SceneManager::onRemoveActive(getActiveScene());
-    }
+    Attorney::SceneManager::onRemoveActive(_scenePool->defaultSceneActive() ? _scenePool->defaultScene()
+                                                                            : getActiveScene());
+    
     Attorney::SceneManager::onSetActive(*scene);
     _scenePool->activeScene(*scene);
     ShadowMap::resetShadowMaps(_platformContext->gfx());
@@ -269,6 +273,45 @@ vectorImpl<stringImpl> SceneManager::sceneNameList(bool sorted) const {
 
 void SceneManager::initPostLoadState() {
     _processInput = true;
+}
+
+bool SceneManager::addPlayer(const Player_ptr& player) {
+    // If the player isn't in the list already
+    I64 targetGUID = player->getGUID();
+    if (std::find_if(std::begin(_players),
+                     std::end(_players),
+                     [targetGUID](const Player_ptr& crtPlayer) {
+                        return crtPlayer && crtPlayer->getGUID() == targetGUID;
+                     }) == std::end(_players)) {
+
+        _players.push_back(player);
+        return true;
+    }
+
+    return false;
+}
+
+bool SceneManager::removePlayer(Player_ptr& player) {
+    if (player) {
+        I64 targetGUID = player->getGUID();
+        vectorAlg::vecSize initialSize = _players.size();
+
+        _players.erase(
+            std::remove_if(std::begin(_players),
+                           std::end(_players),
+                           [&targetGUID](const Player_ptr& crtPlayer) {
+                               return crtPlayer->getGUID() == targetGUID;
+                           }),
+            std::end(_players));
+
+        return initialSize != _players.size();
+    }
+
+    return false;
+}
+
+const SceneManager::PlayerList& SceneManager::getPlayers() const {
+    return _players;
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {
@@ -445,7 +488,8 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
             Object3D::ObjectType type = node.getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::FLYWEIGHT);
         }
-        return false;
+
+        return node.getNode()->getType() == SceneNodeType::TYPE_TRANSFORM;
     };
 
     auto meshCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {

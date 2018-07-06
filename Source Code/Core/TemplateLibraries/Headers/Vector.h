@@ -60,4 +60,10 @@ typename vectorImpl<T>::iterator insert_sorted(vectorImpl<T>& vec, T const& item
     return vec.insert(std::upper_bound(std::begin(vec), std::end(vec), item, pred), item);
 }
 
+template<typename T>
+void pop_front(vectorImpl<T>& vec)
+{
+    assert(!vec.empty());
+    vec.erase(std::begin(vec));
+}
 #endif

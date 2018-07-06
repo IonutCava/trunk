@@ -358,15 +358,6 @@ void GFXDevice::beginFrame() {
 }
 
 void GFXDevice::endFrame(bool swapBuffers) {
-    // Render all 2D debug info and call API specific flush function
-    if (Application::instance().mainLoopActive()) {
-        GFX::Scoped2DRendering scoped2D(*this);
-        ReadLock r_lock(_2DRenderQueueLock);
-        for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
-            callbackFunction.second.second();
-        }
-    }
-
     FRAME_COUNT++;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     FRAME_DRAW_CALLS = 0;

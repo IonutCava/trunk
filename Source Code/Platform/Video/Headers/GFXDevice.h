@@ -353,7 +353,7 @@ protected:
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
 
-    void flushDisplay();
+    void flushDisplay(const vec4<I32>& targetViewport);
 
 protected:
     friend class SceneManager;
@@ -503,8 +503,8 @@ namespace Attorney {
             device.onCameraChange(camera);
         }
 
-        static void flushDisplay(GFXDevice& device) {
-            device.flushDisplay();
+        static void flushDisplay(GFXDevice& device, const vec4<I32>& targetViewport) {
+            device.flushDisplay(targetViewport);
         }
 
         static void onChangeWindowSize(GFXDevice& device, U16 w, U16 h) {

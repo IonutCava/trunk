@@ -22,6 +22,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
+#include "Dynamics/Entities/Units/Headers/Player.h"
+
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
@@ -611,7 +613,8 @@ bool Scene::load(const stringImpl& name) {
 
     loadXMLAssets();
     SceneGraphNode& root = _sceneGraph->getRoot();
-    // Add terrain from XML
+
+     // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
@@ -665,6 +668,8 @@ bool Scene::unload() {
     _context.pfx().setPhysicsScene(nullptr);
     clearObjects();
     _loadComplete = false;
+    assert(_scenePlayers.empty());
+
     return true;
 }
 
@@ -709,10 +714,32 @@ void Scene::onSetActive() {
         }
     }
     _context.sfx().playMusic(0);
+
+    const SceneManager::PlayerList& scenePlayers = _parent.getPlayers();
+    assert(scenePlayers.empty());
+
+    SceneGraphNode& root = _sceneGraph->getRoot();
+    SceneGraphNode_ptr playerSGN(_sceneGraph->findNode("Player 1").lock());
+    if (!playerSGN) {
+        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache)),
+                                 to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                 to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_uint(SGNComponent::ComponentType::BOUNDS),
+                                 PhysicsGroup::GROUP_KINEMATIC,
+                                 "Player 1");
+    }
+
+    _scenePlayers.emplace_back(MemoryManager_NEW Player(playerSGN));
+    _parent.addPlayer(_scenePlayers.back());
 }
 
 void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
+
+    for (Player_ptr& player : _scenePlayers) {
+        _parent.removePlayer(player);
+    }
+    _scenePlayers.clear();
 }
 
 bool Scene::loadPhysics(bool continueOnErrors) {

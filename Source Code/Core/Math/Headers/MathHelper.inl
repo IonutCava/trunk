@@ -148,6 +148,14 @@ inline U32 nextPOW2(U32 n) {
     return ++n;
 }
 
+inline U32 minSquareMatrixSize(U32 elementCount) {
+    U32 result = 1;
+    while (result * result < elementCount) {
+        ++result;
+    }
+    return result;
+}
+
 template <typename T, typename U>
 inline T Lerp(const T v1, const T v2, const U t) {
     return v1 + (v2 - v1 * t);
