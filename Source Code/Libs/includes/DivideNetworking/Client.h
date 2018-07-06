@@ -28,11 +28,13 @@ class Client {
     Client(ASIO* asioPointer, boost::asio::io_service& service,
            bool debugOutput)
         : _asioPointer(asioPointer),
-          stopped_(false),
+          _stopped(false),
           _debugOutput(debugOutput),
-          socket_(service),
-          deadline_(service),
-          heartbeat_timer_(service) {}
+          _socket(service),
+          _deadline(service),
+          _heartbeatTimer(service)
+    {
+    }
 
     // Start:: Called by the user of the client class to initiate the connection
     // process.
@@ -45,7 +47,7 @@ class Client {
     void start(tcp::resolver::iterator endpoint_iter);
     void stop();
 
-    inline tcp::socket& getSocket() { return socket_; }
+    inline tcp::socket& getSocket() { return _socket; }
 
     // Packet I/O
     void sendPacket(WorldPacket& p);
@@ -80,20 +82,19 @@ class Client {
     void check_deadline();
 
    private:
-    bool stopped_, _debugOutput;
-    tcp::socket socket_;
-    size_t header;
-    boost::asio::streambuf input_buffer_;
-    deadline_timer deadline_;
-    deadline_timer heartbeat_timer_;
+    bool _stopped, _debugOutput;
+    tcp::socket _socket;
+    size_t _header;
+    boost::asio::streambuf _inputBuffer;
+    deadline_timer _deadline;
+    deadline_timer _heartbeatTimer;
     std::deque<WorldPacket> _packetQueue;
 
     // File Data
-    std::ofstream output_file;
-    boost::asio::streambuf request_buf;
-    size_t file_size;
-    boost::array<char, 1024> buf;
-
+    std::ofstream _outputFile;
+    boost::asio::streambuf _requestBuf;
+    size_t _fileSize;
+    boost::array<char, 1024> _buf;
     ASIO* _asioPointer;
 };
 

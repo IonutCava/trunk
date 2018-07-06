@@ -57,14 +57,11 @@ void AIManager::update() {
     if (_sceneCallback) {
         _sceneCallback();
     }
-    r_lock.unlock();
 
-    {
-        ReadLock r_lock(_updateMutex);
-        processInput(_deltaTime);  // sensors
-        processData(_deltaTime);  // think
-        updateEntities(_deltaTime);  // react
-    }
+    processInput(_deltaTime);  // sensors
+    processData(_deltaTime);  // think
+    updateEntities(_deltaTime);  // react
+    
     _updating = false;
     return;
 }

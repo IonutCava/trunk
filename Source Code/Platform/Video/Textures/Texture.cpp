@@ -79,8 +79,6 @@ bool Texture::generateHWResource(const stringImpl& name) {
         return false;
     }
     setResourceLocation(name);
-    // When we finish loading the texture, we must update the mipmaps
-    updateMipMaps();
 
     return HardwareResource::generateHWResource(name);
 }
@@ -92,7 +90,8 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     // Flip image if needed
     img.flip(_flipped);
     // Save file contents in  the "img" object
-    img.create(name);
+    ImageTools::ImageDataInterface::CreateImageData(name, img);
+
     // Validate data
     if (!img.data()) {
         Console::errorfn(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
@@ -100,10 +99,10 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
         ParamHandler& par = ParamHandler::getInstance();
         img.flip(false);
         // missing_texture.jpg must be something that really stands out
-        img.create(
+        ImageTools::ImageDataInterface::CreateImageData(
             par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
             par.getParam<stringImpl>("defaultTextureLocation", "textures") +
-            "/" + "missing_texture.jpg");
+            "/" + "missing_texture.jpg", img);
     }
 
     // Extract width, height and bitdepth
@@ -151,11 +150,13 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
             break;
         case GFXImageFormat::RGB:
             internalFormat =
-                srgb ? GFXImageFormat::SRGB8 : GFXImageFormat::RGB8;
+                srgb ? GFXImageFormat::SRGB8 : 
+                       GFXImageFormat::RGB8;
             break;
         case GFXImageFormat::RGBA:
             internalFormat =
-                srgb ? GFXImageFormat::SRGBA8 : GFXImageFormat::RGBA8;
+                srgb ? GFXImageFormat::SRGBA8 : 
+                       GFXImageFormat::RGBA8;
             break;
     }
 

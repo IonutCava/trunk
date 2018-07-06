@@ -949,8 +949,7 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
         mat->setTexture(
             ShaderProgram::TextureUsage::NORMALMAP,
             loadTextureXML("bumpMap", pt.get("bumpMap.file", "none")));
-        if (boost::optional<ptree &> child =
-                pt.get_child_optional("bumpMap.method")) {
+        if (child = pt.get_child_optional("bumpMap.method")) {
             mat->setBumpMethod(getBumpMethod(
                 pt.get<std::string>("bumpMap.method", "NORMAL").c_str()));
         }

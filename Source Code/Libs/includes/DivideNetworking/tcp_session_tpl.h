@@ -44,7 +44,7 @@ class tcp_session_tpl : public subscriber,
    public:
     tcp_session_tpl(boost::asio::io_service& io_service, channel& ch);
 
-    inline boost::asio::ip::tcp::socket& getSocket() { return socket_; }
+    inline boost::asio::ip::tcp::socket& getSocket() { return _socket; }
 
     // Called by the server object to initiate the four actors.
     virtual void start();
@@ -85,17 +85,17 @@ class tcp_session_tpl : public subscriber,
     virtual void handlePacket(WorldPacket& p) = 0;
 
    private:
-    size_t header;
-    channel& channel_;
-    boost::asio::ip::tcp::socket socket_;
-    boost::asio::streambuf input_buffer_;
-    boost::asio::deadline_timer input_deadline_;
-    std::deque<WorldPacket> output_queue_;
-    std::deque<stringImpl> output_file_queue_;
-    boost::asio::deadline_timer non_empty_output_queue_;
-    boost::asio::deadline_timer output_deadline_;
+    size_t _header;
+    channel& _channel;
+    boost::asio::ip::tcp::socket _socket;
+    boost::asio::streambuf _inputBuffer;
+    boost::asio::deadline_timer _inputDeadline;
+    std::deque<WorldPacket> _outputQueue;
+    std::deque<stringImpl> _outputFileQueue;
+    boost::asio::deadline_timer _nonEmptyOutputQueue;
+    boost::asio::deadline_timer _outputDeadline;
     boost::asio::strand _strand;
-    time_t start_time;
+    time_t _startTime;
 };
 
 typedef boost::shared_ptr<tcp_session_tpl> tcp_session_ptr;

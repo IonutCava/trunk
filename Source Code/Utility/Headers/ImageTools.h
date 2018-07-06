@@ -34,35 +34,18 @@
 
 #include "Utility/Headers/String.h"
 #include "Core/Math/Headers/MathVectors.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
+#include "Core/Headers/NonCopyable.h"
+#include <mutex>
 
 namespace Divide {
 enum class GFXImageFormat : U32;
 namespace ImageTools {
 
-class ImageData {
+class ImageData : private NonCopyable {
    public:
-    ImageData()
-        : _flip(false),
-          _alpha(false),
-          _bpp(0),
-          _ilTexture(0),
-          _compressed(false),
-          _data(nullptr) {
-        _dimensions.set(0, 0);
-    }
+     ImageData();
+    ~ImageData();
 
-    ~ImageData() { destroy(); }
-
-    /// creates this image instance from the specified data
-    bool create(const stringImpl& fileName);
-    /// creates this image by reading a portion of memory from sistem RAM
-    /// defined by a starting position and a size
-    bool create(const void* ptr, U32 size);
-    /// destroy the image data allocated by the create call
-    void destroy();
-    /// change a image's width and height
-    void resize(U16 width, U16 height);
     /// image origin information
     inline void flip(bool state) { _flip = state; }
     inline bool flip() const { return _flip; }
@@ -80,20 +63,17 @@ class ImageData {
     inline const vec2<U16>& dimensions() const { return _dimensions; }
     /// the filename from which the image is created
     inline const stringImpl& name() const { return _name; }
-    /// the image handle as given by DevIL
-    inline U32 handle() const { return _ilTexture; }
     /// the image format as given by DevIL
     inline GFXImageFormat format() const { return _format; }
     /// get the texel color at the specified offset from the origin
     vec4<U8> getColor(U16 x, U16 y) const;
 
+  protected:
+    friend class ImageDataInterface;
+    /// creates this image instance from the specified data
+    bool create(const stringImpl& fileName);
+
    private:
-    /// this is called by either of the create functions to prepare DevIL for
-    /// loading
-    bool prepareInternalData();
-    /// this is called by either of the create functions to set the image info
-    /// (depth, resolution, pixel data, etc)
-    bool setInternalData();
     /// outputs a generic error and sets DevIL's image handle back to 0 so it
     /// can be reused on the next "create" call
     void throwLoadError(const stringImpl& fileName);
@@ -116,33 +96,25 @@ class ImageData {
     U32 _imageSize;
     /// the image format
     GFXImageFormat _format;
-    /// the DevIL texture handle
-    U32 _ilTexture;
     /// the actual image filename
     stringImpl _name;
 };
 
-/// prepares the image loading system
-void initialize();
-/// open an image file and save it's contents in the ImageData object
-inline void OpenImage(const stringImpl& filename, ImageData& img) {
-    img.create(filename);
-}
-/// read an image file from a block of memory and save it's contents in the
-/// ImageData object
-inline void OpenImage(const void* ptr, U32 size, ImageData& img) {
-    img.create(ptr, size);
-}
-/// save a single file to TGA
-I8 SaveToTGA(char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
-             U8* imageData);
-/// save a single file to tga using a sequential naming pattern
-I8 SaveSeries(char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
-              U8* imageData);
+class ImageDataInterface {
+public:
+    static void CreateImageData(const stringImpl& filename, ImageData& imgOut);
+private:
+    /// used to lock DevIL in a sequential operating mode in a multithreaded
+    /// environment
+    static std::mutex _loadingMutex;
+};
 
-/// used to lock DevIL in a sequential operating mode in a multithreaded
-/// environment
-static SharedLock _loadingMutex;
+/// save a single file to TGA
+I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
+    U8* imageData);
+/// save a single file to tga using a sequential naming pattern
+I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
+    U8* imageData);
 
 };  // namespace ImageTools
 };  // namespace Divide

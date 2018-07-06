@@ -66,11 +66,6 @@ class Mesh : public Object3D {
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
-    /// Use playAnimations() to toggle animation playback for the current mesh
-    /// (and all submeshes) on or off
-    inline void playAnimations(const bool state) { _playAnimations = state; }
-    inline bool playAnimations() const { return _playAnimations; }
-
    protected:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
@@ -84,8 +79,7 @@ class Mesh : public Object3D {
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
 
     bool _visibleToNetwork;
-    bool _playAnimations;
-    bool _playAnimationsCurrent;
+
 
     SubMeshRefMap _subMeshRefMap;
     BoundingBox _maxBoundingBox;

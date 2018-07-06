@@ -23,7 +23,7 @@ DEFINE_SINGLETON(Server)
   private:
     boost::asio::io_service io_service_;
     boost::asio::ip::tcp::acceptor* acceptor_;
-    channel channel_;
+    channel _channel;
     bool _debugOutput;
 
 END_SINGLETON

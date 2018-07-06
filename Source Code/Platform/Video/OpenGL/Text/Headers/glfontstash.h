@@ -52,9 +52,10 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     gl->width = width;
     gl->height = height;
 
-    Divide::GLUtil::DSAWrapper::dsaTextureStorage(
-        gl->tex, GL_TEXTURE_2D, 1, GL_R8, gl->width, gl->height, -1);
-
+    Divide::GLUtil::DSAWrapper::dsaTextureImage(
+        gl->tex, GL_TEXTURE_2D, 0, GL_R8, gl->width,
+        gl->height, -1, 0, GL_RED, GL_UNSIGNED_BYTE);
+        
     Divide::GLUtil::DSAWrapper::dsaTextureParameter(
         gl->tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
         static_cast<GLint>(GL_LINEAR));

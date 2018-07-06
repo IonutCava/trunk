@@ -65,7 +65,6 @@ GFXDevice::GFXDevice()
     _drawDebugAxis = false;
     _enableAnaglyph = false;
     _viewportUpdate = false;
-    _loadQueueDataReady = false;
     _rasterizationEnabled = true;
     _enablePostProcessing = false;
     _useIndirectCommands = false;
@@ -532,11 +531,6 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     if (context == CurrentContext::GFX_LOADING_CTX &&
         _state.loadingThreadAvailable()) {
         _state.addToLoadQueue(callback);
-        {
-            std::unique_lock<std::mutex> lk(_loadQueueMutex);
-            _loadQueueDataReady = true;
-        }
-        _loadQueueCV.notify_one();
     } else {
         callback();
     }
@@ -553,19 +547,8 @@ void GFXDevice::threadedLoadCallback() {
     _state.loadingThreadAvailable(true);
     // Run an infinite loop until we actually request otherwise
     while (!_state.closeLoadingThread()) {
-        std::unique_lock<std::mutex> lk(_loadQueueMutex);
-        _loadQueueCV.wait(lk, [this]{return _loadQueueDataReady;});
-
-        // Try to pull a new element from the queue
-        while (_state.getFromLoadQueue(callback)) {
-            // If we manage, we run it and force the gpu to process it
-            callback();
-        }
-        _loadQueueDataReady = false;
-        lk.unlock();
-        _loadQueueCV.notify_one();
+        _state.consumeOneFromQueue();
     }
-
     // If we close the loading thread, update our atomic bool to make sure the
     // application isn't using it anymore
     _state.loadingThreadAvailable(false);

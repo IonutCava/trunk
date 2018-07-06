@@ -23,6 +23,17 @@ void SceneAnimator::release() {
     MemoryManager::DELETE(_skeleton);
 }
 
+bool isMeshBone(const aiMesh* mesh, aiString name) {
+    for (U32 n = 0; n < mesh->mNumBones; ++n) {
+        const aiBone* bone = mesh->mBones[n];
+        if (bone->mName == name) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /// This will build the skeleton based on the scene passed to it and CLEAR
 /// EVERYTHING
 bool SceneAnimator::init(const aiScene* pScene, U8 meshPointer) {
@@ -32,10 +43,9 @@ bool SceneAnimator::init(const aiScene* pScene, U8 meshPointer) {
 
     release();
 
-    _skeleton = createBoneTree(pScene->mRootNode, nullptr);
-    extractAnimations(pScene);
-
     const aiMesh* mesh = pScene->mMeshes[meshPointer];
+    _skeleton = createBoneTree(pScene->mRootNode, mesh, nullptr);
+    extractAnimations(pScene);
 
     for (U32 n = 0; n < mesh->mNumBones; ++n) {
         const aiBone* bone = mesh->mBones[n];
@@ -129,11 +139,10 @@ void SceneAnimator::calculate(I32 animationIndex, const D32 pTime) {
 // ------------------------------------------------------------------------------------------------
 // Recursively creates an internal node structure matching the current scene and
 // animation.
-Bone* SceneAnimator::createBoneTree(aiNode* pNode, Bone* parent) {
-    Bone* internalNode =
-        MemoryManager_NEW Bone(pNode->mName.data);  // create a node
+Bone* SceneAnimator::createBoneTree(aiNode* pNode, const aiMesh* mesh, Bone* parent) {
+    Bone* internalNode =  MemoryManager_NEW Bone(pNode->mName.data);  // create a node
     internalNode->_parent = parent;  // set the parent, in the case this is
-                                     // theroot node, it will be null
+                                    // theroot node, it will be null
     _bonesByName[internalNode->_name] = internalNode;  // use the name as a key
     internalNode->_localTransform = pNode->mTransformation;
     if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
@@ -147,9 +156,10 @@ Bone* SceneAnimator::createBoneTree(aiNode* pNode, Bone* parent) {
     // children
     // recursively call this function on all children
     for (uint32_t i = 0; i < pNode->mNumChildren; i++) {
-        Bone* childNode = createBoneTree(pNode->mChildren[i], internalNode);
+        Bone* childNode = createBoneTree(pNode->mChildren[i], mesh, internalNode);
         internalNode->_children.push_back(childNode);
     }
+
     return internalNode;
 }
 

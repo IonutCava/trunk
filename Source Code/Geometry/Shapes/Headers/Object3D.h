@@ -80,6 +80,11 @@ class Object3D : public SceneNode {
     virtual bool onDraw(RenderStage currentStage);
 
     virtual bool updateAnimations(SceneGraphNode& sgn) { return false; }
+    /// Use playAnimations() to toggle animation playback for the current object
+    /// (and all subobjects) on or off
+    inline void playAnimations(const bool state) { _playAnimations = state; }
+    inline bool playAnimations() const { return _playAnimations; }
+
     inline void setGeometryPartitionID(size_t ID) {
         _geometryPartitionID = (U32)ID;
     }
@@ -112,6 +117,7 @@ class Object3D : public SceneNode {
 
    protected:
     bool _update;
+    bool _playAnimations;
     U32 _geometryFlagMask;
     U32 _geometryPartitionID;
     ObjectType _geometryType;

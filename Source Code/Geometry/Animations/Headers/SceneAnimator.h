@@ -38,6 +38,7 @@
 
 #include "AnimationEvaluator.h"
 
+struct aiMesh;
 struct aiNode;
 struct aiScene;
 
@@ -182,7 +183,7 @@ class SceneAnimator {
     void extractAnimations(const aiScene* pScene);
     /// Recursively creates an internal node structure matching the current
     /// scene and animation.
-    Bone* createBoneTree(aiNode* pNode, Bone* parent);
+    Bone* createBoneTree(aiNode* pNode, const aiMesh* mesh, Bone* parent);
 
     I32 createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
                        vectorImpl<Line>& lines);

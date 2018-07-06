@@ -66,7 +66,7 @@ class glTexture : public Texture {
     std::atomic_bool _allocatedStorage;
     GLushort _mipMaxLevel;
     GLushort _mipMinLevel;
-    const std::unique_ptr<glLockManager> _lockManager;
+    std::unique_ptr<glLockManager> _lockManager;
 };
 
 };  // namespace Divide

@@ -12,6 +12,7 @@
 #include <thread>
 
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
+#include <GL/glfw3native.h>
 
 namespace Divide {
 
@@ -95,7 +96,11 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
         return ErrorCode::GLFW_WINDOW_INIT_ERROR;
     }
-
+#if defined(OS_WINDOWS)
+    par.setParam("mainWindowHandle", glfwGetWin32Window(GLUtil::_mainWindow));
+#else
+    par.setParam("mainWindowHandle", glfwGetX11Window(GLUtil::_mainWindow));
+#endif
     // The application window will hold the main rendering context
     glfwMakeContextCurrent(GLUtil::_mainWindow);
     // Init OpenGL Bidnings for main context
@@ -139,7 +144,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // hardwire our debug callback function with OpenGL's implementation
-    glDebugMessageCallback(GLUtil::DebugCallback, (void*)(0));
+    glDebugMessageCallback(GLUtil::DebugCallback, nullptr);
     // nVidia flushes a lot of useful info about buffer allocations and shader
     // recompiles due to state and what now,
     // but those aren't needed until that's what's actually causing the
@@ -436,7 +441,7 @@ void GL_API::threadedLoadCallback() {
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // Debug callback in a separate thread requires a flag to distinguish it
     // from the main thread's callbacks
-    glDebugMessageCallback(GLUtil::DebugCallback, (void*)(1));
+    glDebugMessageCallback(GLUtil::DebugCallback, (void*)(GLUtil::_loaderWindow));
 #endif
     // Delay startup of the thread by a 1/4 of a second. No real reason
     std::this_thread::sleep_for(std::chrono::milliseconds(250));

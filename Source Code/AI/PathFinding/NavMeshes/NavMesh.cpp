@@ -645,7 +645,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
         return false;
     }
 
-    boost::mutex::scoped_lock(_navigationMeshLock);
+    boost::mutex::scoped_lock lock(_navigationMeshLock);
 
     if (_navMesh) {
         dtFreeNavMesh(_navMesh);

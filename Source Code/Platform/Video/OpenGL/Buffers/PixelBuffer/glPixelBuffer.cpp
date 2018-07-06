@@ -113,7 +113,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     _height = height;
     _depth = depth;
 
-    GLsizeiptr _bufferSize = _width * 4;
+    _bufferSize = _width * 4;
     switch (_pbtype) {
         case PBType::PB_TEXTURE_2D:
             _bufferSize *= _height;

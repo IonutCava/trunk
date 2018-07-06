@@ -108,9 +108,9 @@ inline T vec2<T>::normalize() {
 
 /// compare 2 vectors using the given tolerance
 template <typename T>
-inline bool vec2<T>::compare(const vec2 &_v, F32 epsi = EPSILON_F32) const {
-    return (FLOAT_COMPARE_TOLERANCE(this->x, _v.x, epsi) &&
-            FLOAT_COMPARE_TOLERANCE(this->y, _v.y, epsi));
+inline bool vec2<T>::compare(const vec2 &v, F32 epsi = EPSILON_F32) const {
+    return (FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+            FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi));
 }
 
 /// return the projection factor from *this to the line determined by points vA

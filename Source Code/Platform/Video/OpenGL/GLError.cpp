@@ -85,7 +85,9 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
     // Print the message and the details
     Console::errorfn(
         Locale::get("ERROR_GENERIC_GL_DEBUG"),
-        (GLuint)(userParam) == 0 ? " [Main Thread] " : " [Loader Thread] ",
+        userParam == nullptr
+            ? " [Main Thread] "
+            : " [Loader Thread] ",
         gl_source, gl_type, id, gl_severity, message);
 }
 }  // namespace GLUtil

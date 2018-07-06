@@ -42,7 +42,7 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _readBuffer = 1;
     _writeBuffer = 0;
 
-    _map.create(details.map);
+    ImageTools::ImageDataInterface::CreateImageData(details.map, _map);
     _grassShaderName = details.grassShaderName;
     _grassGPUBuffer[0] = GFX_DEVICE.newGVD(false);
     _grassGPUBuffer[1] = GFX_DEVICE.newGVD(false);

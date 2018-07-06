@@ -9,9 +9,8 @@ namespace Divide {
 
 Mesh::Mesh(ObjectFlag flag)
     : Object3D(ObjectType::MESH, flag),
-      _visibleToNetwork(true),
-      _playAnimations(true),
-      _playAnimationsCurrent(false) {
+      _visibleToNetwork(true)
+{
     setState(ResourceState::RES_LOADING);
 }
 
@@ -52,19 +51,16 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
     typedef SceneGraphNode::NodeChildren::value_type value_type;
 
-    if (bitCompare(getFlagMask(),
-                   to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
-        bool playAnimation =
-            (_playAnimations &&
-             ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
-        if (playAnimation != _playAnimationsCurrent) {
-            for (value_type& it : sgn.getChildren()) {
-                it.second->getComponent<AnimationComponent>()->playAnimation(
-                    playAnimation);
-            }
-            _playAnimationsCurrent = playAnimation;
+    if (bitCompare(getFlagMask(), to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
+        bool playAnimations = ParamHandler::getInstance().getParam<bool>("mesh.playAnimations");
+
+        for (value_type it : sgn.getChildren()) {
+            AnimationComponent* comp = it.second->getComponent<AnimationComponent>();
+            comp->playAnimations(playAnimations && _playAnimations);
+            comp->incParentTimeStamp(deltaTime);
         }
     }
+
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 };

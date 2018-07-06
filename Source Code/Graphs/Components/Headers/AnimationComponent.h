@@ -97,6 +97,7 @@ class AnimationComponent : public SGNComponent {
     const AnimEvaluator& GetAnimationByIndex(I32 animationID) const;
 
     void resetTimers();
+    void incParentTimeStamp(const U64 timestamp);
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
@@ -104,7 +105,10 @@ class AnimationComponent : public SGNComponent {
     /// Current animation index for the current SGN
     I32 _currentAnimIndex;
     /// Current animation timestamp for the current SGN
-    D32 _currentTimeStamp;
+    U64 _currentTimeStamp;
+    /// Parent time stamp (e.g. Mesh). 
+    /// Should be identical for all nodes of the same level with the same parent
+    U64 _parentTimeStamp;
     /// Last updated frame indexes for each animation
     FrameIndexes _lastFrameIndexes;
     /// Does the mesh have a valid skeleton?

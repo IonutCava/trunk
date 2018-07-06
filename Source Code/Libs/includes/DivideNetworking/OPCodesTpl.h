@@ -23,9 +23,10 @@ public:
 
     static const ValueType FIRST_FREE_OPCODE = OPCodes::CMSG_REQUEST_DISCONNECT;
  
-    static constexpr ValueType OPCODE_ID(ValueType index) {
+    /*static constexpr ValueType OPCODE_ID(const ValueType index) {
         return OPCodes::FIRST_FREE_OPCODE + index;
-    }
+    }*/
+#define OPCODE_ID(index) (OPCodes::FIRST_FREE_OPCODE + index)
 };
 
 /*To create new OPCodes follow this convention:

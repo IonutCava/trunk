@@ -71,7 +71,9 @@ void glShaderProgram::validateInternal() {
 
 /// Called once per frame. Used to update internal state
 bool glShaderProgram::update(const U64 deltaTime) {
-    _lockManager->Wait();
+    if (_lockManager) {
+        _lockManager->Wait();
+    }
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued) {
         // Call the internal validation function
@@ -478,9 +480,9 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 
     // try to link the program in a separate thread
     return GFX_DEVICE.loadInContext(
-        _threadedLoading && !_loadedFromBinary
+        /*_threadedLoading && !_loadedFromBinary
             ? CurrentContext::GFX_LOADING_CTX
-            : CurrentContext::GFX_RENDERING_CTX,
+            : */CurrentContext::GFX_RENDERING_CTX,
         DELEGATE_BIND(&glShaderProgram::threadedLoad, this, name));
 }
 
@@ -532,7 +534,10 @@ bool glShaderProgram::bind() {
     if (!isValid()) {
         return false;
     }
-    _lockManager->Wait();
+    if (_lockManager) {
+        _lockManager->Wait();
+        _lockManager.reset(nullptr);
+    }
     // Set this program as the currently active one
     GL_API::setActiveProgram(this);
     // Pass the rest of the binding responsibilities to the parent class

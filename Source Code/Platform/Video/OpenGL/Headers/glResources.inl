@@ -59,6 +59,31 @@ inline void dsaGenerateTextureMipmap(GLuint texture, GLenum target) {
     glGenerateTextureMipmapEXT(texture, target);
 }
 
+inline void dsaTextureImage(GLuint texture, GLenum target, GLsizei levels,
+                            GLenum internalformat, GLsizei width,
+                            GLsizei height, GLsizei depth, GLint border, 
+                            GLenum format, GLenum type) {
+#ifdef GL_VERSION_4_5
+    if (!GL_USE_DSA_EXTENSION) {
+        dsaTextureStorage(texture, target, levels, internalformat, width, height, depth);
+        return;
+    }
+#endif
+
+    if (height == -1 && depth == -1) {
+        glext::glTextureImage1DEXT(texture, target, levels, to_int(internalformat),
+                                   width, border, format, type, NULL);
+    }
+    else if (depth == -1) {
+        glext::glTextureImage2DEXT(texture, target, levels, to_int(internalformat),
+                                   width, height, border, format, type, NULL);
+    }
+    else {
+        glext::glTextureImage3DEXT(texture, target, levels, to_int(internalformat),
+                                   width, height, depth, border, format, type, NULL);
+    }
+}
+
 inline void dsaTextureStorage(GLuint texture, GLenum target, GLsizei levels,
                               GLenum internalformat, GLsizei width,
                               GLsizei height, GLsizei depth) {

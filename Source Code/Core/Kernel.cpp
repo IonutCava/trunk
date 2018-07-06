@@ -484,8 +484,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Bind the kernel with the input interface
-     if ((initError = Input::InputInterface::getInstance().init(
-        *this, par.getParam<stringImpl>("appTitle"))) !=
+     if ((initError = Input::InputInterface::getInstance().init(*this)) !=
         ErrorCode::NO_ERR) {
         return initError;
     }

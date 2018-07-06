@@ -32,15 +32,20 @@ inline GFXImageFormat textureFormatDevIL(ILint format) {
     return GFXImageFormat::RGB;
 }
 
-void initialize() {
-    // used to play nice with DevIL (DevIL acts like OpenGL - a state machine)
-    static bool first = true;
-    if (!first) return;
 
-    first = false;
-    ilInit();
-    ilEnable(IL_TYPE_SET);
-    ilTypeFunc(IL_UNSIGNED_BYTE);
+ImageData::ImageData()
+   : _flip(false),
+    _alpha(false),
+    _bpp(0),
+    _data(nullptr),
+    _compressed(false)
+{
+    _dimensions.set(0, 0);
+}
+
+ImageData::~ImageData()
+{
+    MemoryManager::DELETE_ARRAY(_data);
 }
 
 void ImageData::throwLoadError(const stringImpl& fileName) {
@@ -51,24 +56,25 @@ void ImageData::throwLoadError(const stringImpl& fileName) {
         Console::errorfn(Locale::get("ERROR_IMAGETOOLS_DEVIL"),
                          iluErrorString(error));
     }
-
-    ilDeleteImage(_ilTexture);
-    _ilTexture = 0;
 }
 
-bool ImageData::prepareInternalData() {
-    initialize();
+bool ImageData::create(const stringImpl& filename) {
+    _name = filename;
+    U32 ilTexture = 0;
 
-    ilOriginFunc(_flip ? IL_ORIGIN_LOWER_LEFT : IL_ORIGIN_UPPER_LEFT);
+    ilInit();
+    ilEnable(IL_TYPE_SET);
+    ilTypeFunc(IL_UNSIGNED_BYTE);
     ilEnable(IL_ORIGIN_SET);
-    ilGenImages(1, &_ilTexture);
-    ilBindImage(_ilTexture);
-    return true;
-}
+    ilOriginFunc(_flip ? IL_ORIGIN_LOWER_LEFT : IL_ORIGIN_UPPER_LEFT);
+    ilGenImages(1, &ilTexture);
+    ilBindImage(ilTexture);
 
-bool ImageData::setInternalData() {
-    DIVIDE_ASSERT(ilGetInteger(IL_CUR_IMAGE) != 0,
-                  "INVALID IMAGE FILE TARGET FOR INTERNAL DATA UPDATE!");
+    if (ilLoadImage(filename.c_str()) == IL_FALSE) {
+        throwLoadError(_name);
+        return false;
+    }
+
     _dimensions.set(ilGetInteger(IL_IMAGE_WIDTH),
                     ilGetInteger(IL_IMAGE_HEIGHT));
     _bpp = ilGetInteger(IL_IMAGE_BPP);
@@ -80,31 +86,31 @@ bool ImageData::setInternalData() {
 
     switch (format) {
         // palette types
-        case IL_COLOR_INDEX: {
-            switch (ilGetInteger(IL_PALETTE_TYPE)) {
-                default:
-                case IL_PAL_NONE: {
-                    throwLoadError(_name);
-                    return false;
-                }
-                case IL_PAL_RGB24:
-                case IL_PAL_RGB32:
-                case IL_PAL_BGR24:
-                case IL_PAL_BGR32:
-                    targetFormat = IL_RGB;
-                    break;
-                case IL_PAL_BGRA32:
-                case IL_PAL_RGBA32:
-                    targetFormat = IL_RGBA;
-                    break;
-            }
-        } break;
-        case IL_BGRA:
-            targetFormat = IL_RGBA;
-            break;
-        case IL_BGR:
+    case IL_COLOR_INDEX: {
+        switch (ilGetInteger(IL_PALETTE_TYPE)) {
+        default:
+        case IL_PAL_NONE: {
+            throwLoadError(_name);
+            return false;
+        }
+        case IL_PAL_RGB24:
+        case IL_PAL_RGB32:
+        case IL_PAL_BGR24:
+        case IL_PAL_BGR32:
             targetFormat = IL_RGB;
             break;
+        case IL_PAL_BGRA32:
+        case IL_PAL_RGBA32:
+            targetFormat = IL_RGBA;
+            break;
+        }
+    } break;
+    case IL_BGRA:
+        targetFormat = IL_RGBA;
+        break;
+    case IL_BGR:
+        targetFormat = IL_RGB;
+        break;
     }
 
     // if the image's format is not desired or the image's data type is not in
@@ -119,48 +125,21 @@ bool ImageData::setInternalData() {
     }
 
     // most formats do not have an alpha channel
-    _alpha = (format == IL_RGBA || format == IL_LUMINANCE_ALPHA ||
+    _alpha = (format == IL_RGBA || 
+              format == IL_LUMINANCE_ALPHA ||
               format == IL_ALPHA);
     _format = textureFormatDevIL(format);
-    _imageSize = static_cast<size_t>(_dimensions.width) *
-                 static_cast<size_t>(_dimensions.height) *
-                 static_cast<size_t>(_bpp);
+    _imageSize = static_cast<size_t>(_dimensions.width *
+                                     _dimensions.height *
+                                     _bpp);
 
     _data = MemoryManager_NEW U8[_imageSize];
     memcpy(_data, ilGetData(), _imageSize);
 
     ilBindImage(0);
+    ilDeleteImage(ilTexture);
+
     return true;
-}
-
-bool ImageData::create(const void* ptr, U32 size) {
-    WriteLock w_lock(_loadingMutex);
-    prepareInternalData();
-    _name = "[buffer offset file]";
-    if (ilLoadL(IL_TYPE_UNKNOWN, ptr, size) == IL_FALSE) {
-        throwLoadError(_name);
-        return false;
-    }
-
-    return setInternalData();
-}
-
-bool ImageData::create(const stringImpl& filename) {
-    WriteLock w_lock(_loadingMutex);
-    prepareInternalData();
-    _name = filename;
-    if (ilLoadImage(filename.c_str()) == IL_FALSE) {
-        throwLoadError(_name);
-        return false;
-    }
-
-    return setInternalData();
-}
-
-void ImageData::destroy() {
-    ilDeleteImage(_ilTexture);
-    _ilTexture = 0;
-    MemoryManager::DELETE_ARRAY(_data);
 }
 
 vec4<U8> ImageData::getColor(U16 x, U16 y) const {
@@ -169,15 +148,14 @@ vec4<U8> ImageData::getColor(U16 x, U16 y) const {
                     _alpha ? _data[idx + 3] : 255);
 }
 
-void ImageData::resize(U16 width, U16 height) {
-    ilBindImage(_ilTexture);
-    iluImageParameter(ILU_FILTER, ILU_SCALE_BELL);
-    iluScale(width, height, _bpp);
-    _dimensions.set(width, height);
-    ilBindImage(0);
+
+std::mutex ImageDataInterface::_loadingMutex;
+void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& imgOut) {
+    std::lock_guard<std::mutex> lock(_loadingMutex);
+    imgOut.create(filename);
 }
 
-I8 SaveToTGA(const char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
+I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
              U8* imageData) {
     U8 cGarbage = 0, type, mode, aux;
     I16 iGarbage = 0;
@@ -185,7 +163,7 @@ I8 SaveToTGA(const char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
     U16 height = dimensions.height;
 
     // open file and check for errors
-    FILE* file = fopen(filename, "wb");
+    FILE* file = fopen(filename.c_str(), "wb");
     if (file == nullptr) {
         return (-1);
     }
@@ -225,7 +203,7 @@ I8 SaveToTGA(const char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
 }
 
 /// saves a series of files with names "filenameX.tga"
-I8 SaveSeries(char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
+I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
               U8* imageData) {
     static I32 savedImages = 0;
     stringImpl newFilename(filename);
@@ -238,7 +216,9 @@ I8 SaveSeries(char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
         SaveToTGA(newFilename.c_str(), dimensions, pixelDepth, imageData);
 
     // increase the counter
-    if (status == 0) savedImages++;
+    if (status == 0) {
+        savedImages++;
+    }
 
     return status;
 }

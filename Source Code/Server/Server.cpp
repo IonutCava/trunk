@@ -24,9 +24,9 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address,
             port);
         acceptor_ = new tcp::acceptor(io_service_, listen_endpoint);
         subscriber_ptr bc(new udp_broadcaster(io_service_, broadcast_endpoint));
-        channel_.join(bc);
+        _channel.join(bc);
         tcp_session_ptr new_session(
-            new tcp_session_impl(io_service_, channel_));
+            new tcp_session_impl(io_service_, _channel));
 
         acceptor_->async_accept(
             new_session->getSocket(),
@@ -46,7 +46,7 @@ void Server::handle_accept(tcp_session_ptr session,
         session->start();
 
         tcp_session_ptr new_session(
-            new tcp_session_impl(io_service_, channel_));
+            new tcp_session_impl(io_service_, _channel));
 
         acceptor_->async_accept(
             new_session->getSocket(),

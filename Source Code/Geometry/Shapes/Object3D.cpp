@@ -24,6 +24,7 @@ Object3D::Object3D(const stringImpl& name, ObjectType type, ObjectFlag flag)
 Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
     : SceneNode(name, SceneNodeType::TYPE_OBJECT3D),
       _update(false),
+      _playAnimations(true),
       _geometryType(type),
       _geometryFlagMask(flagMask),
       _geometryPartitionID(0)

@@ -1,4 +1,5 @@
 #include "Headers/glLockManager.h"
+#include <assert.h>
 
 namespace Divide {
 
@@ -23,8 +24,11 @@ void glLockManager::Wait() {
 }
  
 void glLockManager::Lock() {
+    assert(_defaultSync == nullptr);
+
     _defaultSync =
-        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 
+                    UnusedMask::GL_UNUSED_BIT);
 }
 
 void glLockManager::wait(GLsync* syncObj) {

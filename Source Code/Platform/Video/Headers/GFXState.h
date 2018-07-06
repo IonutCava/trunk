@@ -37,6 +37,8 @@
 
 #include <boost/lockfree/spsc_queue.hpp>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace Divide {
 
@@ -67,17 +69,11 @@ class GPUState : private NonCopyable {
     void registerDisplayMode(const GPUVideoMode& mode);
     bool startLoaderThread(const DELEGATE_CBK<>& loadingFunction);
     bool stopLoaderThread();
+    void addToLoadQueue(const DELEGATE_CBK<>& callback);
+    void consumeOneFromQueue();
 
     inline const vectorImpl<GPUVideoMode>& getDisplayModes() const {
         return _supportedDislpayModes;
-    }
-
-    inline void addToLoadQueue(const DELEGATE_CBK<>& callback) {
-        while (!_loadQueue.push(callback));
-    }
-
-    inline bool getFromLoadQueue(DELEGATE_CBK<>& callback) {
-        return _loadQueue.pop(callback);
     }
 
     inline void initAA(U8 fxaaSamples, U8 msaaSamples) {
@@ -113,6 +109,9 @@ class GPUState : private NonCopyable {
     /// Threading system
     LoadQueue _loadQueue;
     std::atomic_bool _loadingThreadAvailable;
+    std::mutex _loadQueueMutex;
+    std::condition_variable _loadQueueCV;
+    bool _loadQueueDataReady;
     /// Atomic boolean value used to signal the loading thread to stop
     std::atomic_bool _closeLoadingThread;
     std::unique_ptr<std::thread> _loaderThread;

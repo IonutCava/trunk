@@ -12,7 +12,8 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
       _animator(animator),
       _skeletonAvailable(false),
       _playAnimations(true),
-      _currentTimeStamp(0.0),
+      _currentTimeStamp(0UL),
+      _parentTimeStamp(0UL),
       _currentAnimIndex(0),
       _dataRange(0),
       _readOffset(-1),
@@ -42,21 +43,29 @@ AnimationComponent::~AnimationComponent()
     MemoryManager::DELETE(_boneTransformBuffer);
 }
 
+void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
+    _parentTimeStamp += timestamp;
+}
+
 void AnimationComponent::update(const U64 deltaTime) {
     SGNComponent::update(deltaTime);
 
-    D32 timeStamp =
-        _playAnimations ? Time::MicrosecondsToSeconds<D32>(_elapsedTime) : 0.0;
-
-    if (DOUBLE_COMPARE(timeStamp, _currentTimeStamp)) {
+    if (_parentTimeStamp == _currentTimeStamp) {
         return;
     }
 
-    _currentTimeStamp = timeStamp;
+    _currentTimeStamp = _parentTimeStamp;
+
+    if (!_playAnimations) {
+        return;
+    }
+
+    D32 animTimeStamp = Time::MicrosecondsToSeconds<D32>(_currentTimeStamp);
+
     if (_parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN)) {
         I32 resultingFrameIndex = 0;
         const vectorImpl<mat4<F32>>& animationTransforms =
-            _animator->transforms(_currentAnimIndex, _currentTimeStamp,
+            _animator->transforms(_currentAnimIndex, animTimeStamp,
                                   resultingFrameIndex);
 
         I32& frameIndex = _lastFrameIndexes[_currentAnimIndex];
@@ -75,7 +84,7 @@ void AnimationComponent::update(const U64 deltaTime) {
 }
 
 void AnimationComponent::resetTimers() {
-    _currentTimeStamp = 0.0;
+    _currentTimeStamp = _parentTimeStamp = 0UL;
     SGNComponent::resetTimers();
 }
 
@@ -121,10 +130,10 @@ void AnimationComponent::renderSkeleton() {
          !_parentSGN.getComponent<RenderingComponent>()->renderSkeleton())) {
         return;
     }
-
+    D32 animTimeStamp = Time::MicrosecondsToSeconds<D32>(_currentTimeStamp);
     // update possible animation
     const vectorImpl<Line>& skeletonLines =
-        _animator->skeletonLines(_currentAnimIndex, _currentTimeStamp);
+        _animator->skeletonLines(_currentAnimIndex, animTimeStamp);
     // Submit skeleton to gpu
     IMPrimitive& prim = GFX_DEVICE.drawLines(
         skeletonLines, 2.0f,
@@ -138,7 +147,7 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     _skeletonAvailable = false;
 
     if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY ||
-        !_playAnimations || _currentTimeStamp < 0.0) {
+        !_playAnimations) {
         return true;
     }
     // All animation data is valid, so we have a skeleton to render if needed

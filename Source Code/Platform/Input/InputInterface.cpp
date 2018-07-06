@@ -4,7 +4,7 @@
 namespace Divide {
 namespace Input {
 
-ErrorCode InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
+ErrorCode InputInterface::init(Kernel& kernel) {
     if (_bIsInitialized) {
         return ErrorCode::NO_ERR;
     }
@@ -12,18 +12,18 @@ ErrorCode InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
     Console::printfn(Locale::get("INPUT_CREATE_START"));
 
     OIS::ParamList pl;
+    std::stringstream ss;
 #if defined OIS_WIN32_PLATFORM
-    U32 hwnd =
-        (U32)FindWindow(nullptr, ParamHandler::getInstance()
-                                     .getParam<stringImpl>("appTitle", "Divide")
-                                     .c_str());
+    ss << (size_t)(ParamHandler::getInstance().getParam<HWND>("mainWindowHandle"));
     // Create OIS input manager
-    pl.insert(std::make_pair("WINDOW", std::to_string(hwnd)));
+    pl.insert(std::make_pair("WINDOW", ss.str()));
     pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_mouse", "DISCL_NONEXCLUSIVE"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_NONEXCLUSIVE"));
 #elif defined OIS_LINUX_PLATFORM
+    ss << ParamHandler::getInstance().getParam<Window>("mainWindowHandle");
+    pl.insert(std::make_pair("GLXWINDOW", ss.str());
     pl.insert(std::make_pair("x11_mouse_grab", "false"));
     pl.insert(std::make_pair("x11_mouse_hide", "false"));
     pl.insert(std::make_pair("x11_keyboard_grab", "false"));

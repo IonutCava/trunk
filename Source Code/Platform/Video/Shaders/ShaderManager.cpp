@@ -26,6 +26,16 @@ ShaderManager::~ShaderManager()
 void ShaderManager::destroy() {
     RemoveResource(_imShader);
     RemoveResource(_nullShader);
+
+    vectorImpl<ShaderProgram*> unhandledPrograms;
+    unhandledPrograms.reserve(_shaderPrograms.size());
+    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+        unhandledPrograms.push_back(it.second);
+    }
+    for (ShaderProgram* prog : unhandledPrograms) {
+        RemoveResource(prog);
+    }
+    unhandledPrograms.clear();
     GFX_DEVICE.deInitShaders();
     _atoms.clear();
 }
