@@ -117,7 +117,13 @@ void DefaultScene::processInput(U8 playerIndex, const U64 deltaTime) {
         _sceneToLoad.clear();
     }
 
-    getPlayerForIndex(playerIndex)->getCamera().setYaw(_camAngle[getSceneIndexForPlayer(playerIndex)]);
+    if (playerIndex % 2 == 0) {
+        getPlayerForIndex(playerIndex)->getCamera().setYaw(_camAngle[getSceneIndexForPlayer(playerIndex)]);
+    } else if (playerIndex % 3 == 0) {
+        getPlayerForIndex(playerIndex)->getCamera().setRoll(_camAngle[getSceneIndexForPlayer(playerIndex)]);
+    } else {
+        getPlayerForIndex(playerIndex)->getCamera().setPitch(_camAngle[getSceneIndexForPlayer(playerIndex)]);
+    }
 
     Scene::processInput(playerIndex, deltaTime);
 }
@@ -127,7 +133,7 @@ void DefaultScene::processTasks(const U64 deltaTime) {
     if (_taskTimers[0] >= SpinTimer) {
         for (hashMapImpl<U8, F32>::value_type& it : _camAngle) {
             F32& angle = it.second;
-            angle += 0.025f * ((it.first * 5.0f) + 1.0f);
+            angle += 0.025f * ((it.first * 5.0f) + 1.0f) * (it.first % 2 == 0 ? -1 : 1);
             if (angle >= 360.0f) {
                 angle -= 360.0f;
             }

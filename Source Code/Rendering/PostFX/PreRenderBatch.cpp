@@ -17,7 +17,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, ResourceCache& cache)
       _resCache(cache),
       _adaptiveExposureControl(true),
       _debugOperator(nullptr),
-      _renderTarget(nullptr),
+      _renderTarget(RenderTargetUsage::SCREEN),
       _toneMap(nullptr)
 {
 }
@@ -38,7 +38,7 @@ void PreRenderBatch::destroy() {
     _context.deallocateRT(_postFXOutput);
 }
 
-void PreRenderBatch::init(RenderTarget* renderTarget) {
+void PreRenderBatch::init(RenderTargetID renderTarget) {
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
     _renderTarget = renderTarget;
 
@@ -77,12 +77,12 @@ void PreRenderBatch::init(RenderTarget* renderTarget) {
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
-    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
-    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
-    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
+    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, *this, _resCache));
+    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_context, *this, _resCache));
+    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_context, *this, _resCache));
 
     OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
-    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
+    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, *this, _resCache));
 
     ResourceDescriptor toneMap("bloom.ToneMap");
     toneMap.setThreadedLoading(false);
@@ -118,6 +118,14 @@ void PreRenderBatch::idle() {
     }
 }
 
+RenderTarget& PreRenderBatch::inputRT() const {
+    return _context.renderTarget(_renderTarget);
+}
+
+RenderTarget& PreRenderBatch::outputRT() const {
+    return *_postFXOutput._rt;
+}
+
 void PreRenderBatch::execute(const FilterStack& stack) {
     OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
@@ -130,7 +138,7 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        _renderTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+        inputRT().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
         _previousLuminance._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
 
         _currentLuminance._rt->begin(RenderTarget::defaultPolicy());
@@ -150,7 +158,7 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     }
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    _renderTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    inputRT().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
 
     if (_adaptiveExposureControl) {
         _currentLuminance._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);

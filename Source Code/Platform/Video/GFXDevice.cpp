@@ -49,7 +49,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _renderTargetDraw = nullptr;
     _previewDepthMapShader = nullptr;
     _displayShader = nullptr;
-    _activeRenderTarget = nullptr;
     _debugFrustum = nullptr;
     _debugFrustumPrimitive = nullptr;
     _renderDocManager = nullptr;

@@ -41,7 +41,7 @@ class ShaderProgram;
 
 class BloomPreRenderOperator : public PreRenderOperator {
    public:
-    BloomPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
+    BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~BloomPreRenderOperator();
 
     void idle() override;

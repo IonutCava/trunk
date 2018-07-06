@@ -1,19 +1,22 @@
 #include "Headers/SSAOPreRenderOperator.h"
+
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+#include "Rendering/PostFX/Headers/PreRenderBatch.h"
+
 namespace Divide {
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
-SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(context, cache, FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
+SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
+    : PreRenderOperator(context, parent, cache, FilterType::FILTER_SS_AMBIENT_OCCLUSION)
 {
 
     _samplerCopy = _context.allocateRT("SSAO");
-    _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
+    _samplerCopy._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
 
     U16 ssaoNoiseSize = 4;
     U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;
@@ -126,12 +129,11 @@ void SSAOPreRenderOperator::execute() {
     _ssaoGenerateShader->Uniform("invProjectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
 
     _noiseTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); // noise texture
-    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
-                      RTAttachment::Type::Depth,
-                      0);  // depth
-    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
-                      RTAttachment::Type::Colour,
-                      to_const_ubyte(GFXDevice::ScreenTargets::NORMALS));  // normals
+
+    RenderTarget* screen = &_parent.inputRT();
+
+    screen->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);  // depth
+    screen->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP), RTAttachment::Type::Colour, to_const_ubyte(GFXDevice::ScreenTargets::NORMALS));  // normals
     
     _ssaoOutput._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_ssaoGenerateShader);
@@ -145,14 +147,14 @@ void SSAOPreRenderOperator::execute() {
         _context.draw(triangleCmd);
     _ssaoOutputBlurred._rt->end();
     
-    _samplerCopy._rt->blitFrom(_hdrTarget);
+    _samplerCopy._rt->blitFrom(screen);
     _samplerCopy._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screen
     _ssaoOutputBlurred._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);  // AO texture
 
-    _hdrTarget->begin(_screenOnlyDraw);
+    screen->begin(_screenOnlyDraw);
         triangleCmd.shaderProgram(_ssaoApplyShader);
         _context.draw(triangleCmd);
-    _hdrTarget->end();
+    screen->end();
     
 }
 

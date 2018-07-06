@@ -415,7 +415,6 @@ private:
     Camera* _2DCamera;
     Camera* _dualParaboloidCamera;
 
-    RenderTarget* _activeRenderTarget;
     RenderStage _renderStage;
     RenderStage _prevRenderStage;
     vectorImpl<Line> _axisLines;

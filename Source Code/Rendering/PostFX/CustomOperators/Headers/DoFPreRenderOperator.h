@@ -38,7 +38,7 @@ namespace Divide {
 
 class DoFPreRenderOperator : public PreRenderOperator {
    public:
-    DoFPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
+    DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~DoFPreRenderOperator();
 
     void idle() override;

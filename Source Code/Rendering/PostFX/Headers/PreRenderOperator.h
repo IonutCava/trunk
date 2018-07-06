@@ -39,6 +39,7 @@ enum class FilterSpace : U32 {
 
 typedef std::array<U8 /*request count*/, to_const_uint(FilterType::FILTER_COUNT)> FilterStack;
 
+class PreRenderBatch;
 /// It's called a prerender operator because it operates on the buffer before
 /// "rendering" to the screen
 /// Technically, it's a post render operation
@@ -48,7 +49,7 @@ class NOINITVTABLE PreRenderOperator {
     /// doing to set up apropriate states
     /// The target is the full screen quad to which we want to apply our
     /// operation to generate the result
-    PreRenderOperator(GFXDevice& context, ResourceCache& cache, FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
+    PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache, FilterType operatorType);
     virtual ~PreRenderOperator();
 
     virtual void idle() = 0;
@@ -56,26 +57,20 @@ class NOINITVTABLE PreRenderOperator {
 
     virtual void reshape(U16 width, U16 height);
 
-    inline void addInputFB(RenderTarget* const input) { _inputFB.push_back(input); }
-
     inline FilterType operatorType() const { return _operatorType; }
 
     virtual void debugPreview(U8 slot) const;
-
-    virtual RenderTarget* getOutput() const;
 
     static void cacheDisplaySettings(const GFXDevice& context);
 
    protected:
     GFXDevice& _context;
 
-    RenderTarget* _hdrTarget;
-    RenderTarget* _ldrTarget;
-    RenderTargetHandle _samplerCopy;
+    PreRenderBatch& _parent;
 
+    RenderTargetHandle _samplerCopy;
     RTDrawDescriptor _screenOnlyDraw;
     FilterType  _operatorType;
-    vectorImpl<RenderTarget*> _inputFB;
 
     static F32 s_mainCamAspectRatio;
     static vec2<F32> s_mainCamZPlanes;

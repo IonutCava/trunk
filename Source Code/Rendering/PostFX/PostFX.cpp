@@ -108,15 +108,8 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
      _drawCommand.drawCount(1);
      _drawCommand.shaderProgram(_postProcessingShader);
 
-     RenderTarget& screenRT = _gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+     _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
 
-     _preRenderBatch->init(&_gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)));
-    PreRenderOperator& SSAOOp = _preRenderBatch->getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
-    SSAOOp.addInputFB(&screenRT);
-
-    PreRenderOperator& DOFOp = _preRenderBatch->getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
-    DOFOp.addInputFB(&screenRT);
-    
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
     _randomNoiseCoefficient = 0;

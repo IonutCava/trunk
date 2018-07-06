@@ -8,11 +8,10 @@ vec2<F32> PreRenderOperator::s_mainCamZPlanes;
 mat4<F32> PreRenderOperator::s_mainCamViewMatrixCache;
 mat4<F32> PreRenderOperator::s_mainCamProjectionMatrixCache;
 
-PreRenderOperator::PreRenderOperator(GFXDevice& context, ResourceCache& cache, FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache, FilterType operatorType)
     : _context(context),
-      _operatorType(operatorType),
-      _hdrTarget(hdrTarget),
-      _ldrTarget(ldrTarget)
+      _parent(parent),
+      _operatorType(operatorType)
 {
     ACKNOWLEDGE_UNUSED(cache);
     _screenOnlyDraw.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
@@ -40,10 +39,5 @@ void PreRenderOperator::reshape(U16 width, U16 height) {
 
 void PreRenderOperator::debugPreview(U8 slot) const {
 };
-
-RenderTarget* PreRenderOperator::getOutput() const {
-    return _hdrTarget;
-}
-
 
 }; //namespace Divide

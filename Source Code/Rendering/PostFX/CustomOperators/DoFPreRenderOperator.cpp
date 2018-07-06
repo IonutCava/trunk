@@ -5,13 +5,15 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+#include "Rendering/PostFX/Headers/PreRenderBatch.h"
+
 namespace Divide {
 
-DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(context, cache, FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
+DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
+    : PreRenderOperator(context, parent, cache, FilterType::FILTER_DEPTH_OF_FIELD)
 {
     _samplerCopy = _context.allocateRT("DoF");
-    _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
+    _samplerCopy._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
 
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
@@ -32,18 +34,19 @@ void DoFPreRenderOperator::reshape(U16 width, U16 height) {
 void DoFPreRenderOperator::execute() {
     // Copy current screen
     /*
-    _samplerCopy._rt->blitFrom(_hdrTarget);
+    RenderTarget* screen = &_parent.inputRT();
+    _samplerCopy._rt->blitFrom(screen);
     _samplerCopy._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screenFB
-    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
+    screen->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
         
-    _hdrTarget->begin(_screenOnlyDraw);
+    screen->begin(_screenOnlyDraw);
         GenericDrawCommand triangleCmd;
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
         triangleCmd.stateHash(_context.getDefaultStateBlock(true));
         triangleCmd.shaderProgram(_dofShader);
         _context.draw(triangleCmd);
-    _hdrTarget->end();
+    screen->end();
     */
 }
 };

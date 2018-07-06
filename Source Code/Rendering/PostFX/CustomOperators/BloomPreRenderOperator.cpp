@@ -7,19 +7,22 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+#include "Rendering/PostFX/Headers/PreRenderBatch.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+
 namespace Divide {
 
-BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(context, cache, FilterType::FILTER_BLOOM, hdrTarget, ldrTarget)
+BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
+    : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM)
 {
     for (U8 i = 0; i < 2; ++i) {
         _bloomBlurBuffer[i] = _context.allocateRT(Util::StringFormat("Bloom_Blur_%d", i));
-        _bloomBlurBuffer[i]._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
+        _bloomBlurBuffer[i]._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
         _bloomBlurBuffer[i]._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     }
 
     _bloomOutput = _context.allocateRT("Bloom");
-    _bloomOutput._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
+    _bloomOutput._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
     _bloomOutput._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");
@@ -69,8 +72,11 @@ void BloomPreRenderOperator::execute() {
     triangleCmd.drawCount(1);
     triangleCmd.stateHash(_context.getDefaultStateBlock(true));
 
+    RenderTarget* screen = &_parent.inputRT();
+
      // Step 1: generate bloom
-    _hdrTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //screen
+    screen->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //screen
+
     // render all of the "bright spots"
     _bloomOutput._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_bloomCalc);
@@ -96,13 +102,13 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[1]._rt->end();
         
     // Step 3: apply bloom
-    _bloomBlurBuffer[0]._rt->blitFrom(_hdrTarget);
+    _bloomBlurBuffer[0]._rt->blitFrom(screen);
     _bloomBlurBuffer[0]._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //Screen
     _bloomBlurBuffer[1]._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0); //Bloom
-    _hdrTarget->begin(_screenOnlyDraw);
+    screen->begin(_screenOnlyDraw);
         triangleCmd.shaderProgram(_bloomApply);
         _context.draw(triangleCmd);
-    _hdrTarget->end();
+    screen->end();
 }
 
 void BloomPreRenderOperator::debugPreview(U8 slot) const {

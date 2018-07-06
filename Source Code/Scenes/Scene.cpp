@@ -793,6 +793,8 @@ void Scene::onPlayerRemove(const Player_ptr& player) {
     input().onPlayerRemove(playerIndex);
     state().onPlayerRemove(playerIndex);
 
+    _sceneGraph->getRoot().removeNode(*player->getBoundNode().lock());
+
     _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(playerIndex));
 }
 
@@ -902,9 +904,9 @@ void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
-    //for (U8 i = 0; i < _scenePlayers.size(); ++i)
+    for (U8 i = 0; i < _scenePlayers.size(); ++i)
     {
-        findHoverTarget(0/*i*/);
+        findHoverTarget(i);
     }
 
     SceneGraphNode_ptr flashLight = _flashLight.lock();

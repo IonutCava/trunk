@@ -339,9 +339,10 @@ bool GFXDevice::draw(const GenericDrawCommand& cmd) {
 
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
-    activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                              RTAttachment::Type::Colour,
-                              to_const_ubyte(ScreenTargets::ALBEDO));
+    RenderTarget& screen = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    screen.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                RTAttachment::Type::Colour,
+                to_const_ubyte(ScreenTargets::ALBEDO));
 
 
     GFX::ScopedViewport targetArea(*this, targetViewport);

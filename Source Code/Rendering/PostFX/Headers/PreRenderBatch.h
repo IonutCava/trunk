@@ -11,7 +11,7 @@ class PreRenderBatch {
     PreRenderBatch(GFXDevice& context, ResourceCache& cache);
     ~PreRenderBatch();
 
-    void init(RenderTarget* renderTarget);
+    void init(RenderTargetID renderTarget);
     void destroy();
 
     void idle();
@@ -19,6 +19,9 @@ class PreRenderBatch {
     void reshape(U16 width, U16 height);
 
     void bindOutput(U8 slot);
+
+    RenderTarget& inputRT() const;
+    RenderTarget& outputRT() const;
 
     inline void toggleAdaptivExposure(const bool state) {
         _adaptiveExposureControl = state;
@@ -66,8 +69,8 @@ class PreRenderBatch {
 
     bool _adaptiveExposureControl;
 
+    RenderTargetID     _renderTarget;
     PreRenderOperator* _debugOperator;
-    RenderTarget* _renderTarget;
     RenderTargetHandle _postFXOutput;
     RenderTargetHandle _previousLuminance;
     RenderTargetHandle _currentLuminance;

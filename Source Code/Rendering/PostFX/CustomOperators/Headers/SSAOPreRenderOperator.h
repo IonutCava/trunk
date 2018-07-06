@@ -38,7 +38,7 @@ namespace Divide {
 
 class SSAOPreRenderOperator : public PreRenderOperator {
    public:
-    SSAOPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
+    SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~SSAOPreRenderOperator();
 
     void idle() override;

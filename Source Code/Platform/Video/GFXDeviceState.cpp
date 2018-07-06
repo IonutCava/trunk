@@ -174,8 +174,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS), DefaultColours::WHITE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY), DefaultColours::WHITE());
 
-    _activeRenderTarget = &screenTarget;
-
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setFilters(TextureFilter::NEAREST);
@@ -390,11 +388,4 @@ ErrorCode GFXDevice::createAPIInstance() {
     return err;
 }
 
-RenderTarget& GFXDevice::activeRenderTarget() {
-    return *_activeRenderTarget;
-}
-
-const RenderTarget& GFXDevice::activeRenderTarget() const {
-    return *_activeRenderTarget;
-}
 };
