@@ -303,9 +303,15 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     const vec3<F32>& bMin = terrainBB.getMin();
     const vec3<F32>& bMax = terrainBB.getMax();
 
+    vectorImpl<VertexBuffer::Vertex> testVerts;
+
     stringImpl cacheLocation(terrainMapLocation + terrainRawFile + ".cache");
     ByteBuffer terrainCache;
-    if (!terrainCache.loadFromFile(cacheLocation)) {
+    if (terrainCache.loadFromFile(cacheLocation)) {
+        terrainCache >> terrain->_physicsVerts;
+    }
+
+    if (terrain->_physicsVerts.empty()) {
         F32 altitudeRange = maxAltitude - minAltitude;
 
         vectorImpl<U16> heightValues;
@@ -345,7 +351,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
         terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
 
-        // scale and translate all height by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
+        // scale and translate all heights by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
 
         auto highDetailHeight = [minAltitude, altitudeRange](F32 height) -> F32 {
             constexpr F32 fMax = std::numeric_limits<U16>::max() + 1.0f;
@@ -376,12 +382,10 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                                                   : lowDetailHeight(heightValue),  //Y
                                      bMin.z + (to_F32(j)) * (bZRange) / (terrainHeight - 1));      //Z
 
-                    
-                U32 targetCoord = TER_COORD(i, j, terrainWidth);
-
-                #pragma omp critical
+                //#pragma omp critical
+                //Surely the id is unique and memory has also been allocated beforehand
                 {
-                    terrain->_physicsVerts[targetCoord]._position.set(vertexData);
+                    terrain->_physicsVerts[TER_COORD(i, j, terrainWidth)]._position.set(vertexData);
                 }
             }
         }
@@ -389,14 +393,11 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         heightValues.clear();
 
         I32 offset = 2;
-        U32 idx = 0, idx0 = 0, idx1 = 0;
-    
+   
         #pragma omp parallel for
         for (I32 j = offset; j < terrainHeight - offset; j++) {
             for (I32 i = offset; i < terrainWidth - offset; i++) {
                 vec3<F32> vU, vV, vUV;
-
-                idx = TER_COORD(i, j, terrainWidth);
 
                 vU.set(terrain->_physicsVerts[TER_COORD(i + offset, j + 0, terrainWidth)]._position -
                        terrain->_physicsVerts[TER_COORD(i - offset, j + 0, terrainWidth)]._position);
@@ -407,64 +408,53 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 vUV.normalize();
                 vU = -vU;
                 vU.normalize();
-                #pragma omp critical
+
+                //Again, not needed, I think
+                //#pragma omp critical
                 {
-                    terrain->_physicsVerts[idx]._normal = Util::PACK_VEC3(vUV);
-                    terrain->_physicsVerts[idx]._tangent = Util::PACK_VEC3(vU);
+                    I32 idx = TER_COORD(i, j, terrainWidth);
+                    VertexBuffer::Vertex& vert = terrain->_physicsVerts[idx];
+                    vert._normal = Util::PACK_VEC3(vUV);
+                    vert._tangent = Util::PACK_VEC3(vU);
                 }
             }
         }
         
-        vec3<F32> normal, tangent;
         for (I32 j = 0; j < offset; j++) {
             for (I32 i = 0; i < terrainWidth; i++) {
-                idx0 = TER_COORD(i, j, terrainWidth);
-                idx1 = TER_COORD(i, offset, terrainWidth);
+                I32 idx0 = TER_COORD(i, j, terrainWidth);
+                I32 idx1 = TER_COORD(i, offset, terrainWidth);
 
-                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
-                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
-
-                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
-                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
+                terrain->_physicsVerts[idx0]._normal = terrain->_physicsVerts[idx1]._normal;
+                terrain->_physicsVerts[idx0]._tangent = terrain->_physicsVerts[idx1]._tangent;
 
                 idx0 = TER_COORD(i, terrainHeight - 1 - j, terrainWidth);
                 idx1 = TER_COORD(i, terrainHeight - 1 - offset, terrainWidth);
 
-                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
-                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
-
-                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
-                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
+                terrain->_physicsVerts[idx0]._normal = terrain->_physicsVerts[idx1]._normal;
+                terrain->_physicsVerts[idx0]._tangent = terrain->_physicsVerts[idx1]._tangent;
             }
         }
 
         for (I32 i = 0; i < offset; i++) {
             for (I32 j = 0; j < terrainHeight; j++) {
-                idx0 = TER_COORD(i, j, terrainWidth);
-                idx1 = TER_COORD(offset, j, terrainWidth);
+                I32 idx0 = TER_COORD(i, j, terrainWidth);
+                I32 idx1 = TER_COORD(offset, j, terrainWidth);
 
-                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
-                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
-
-                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
-                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
+                terrain->_physicsVerts[idx0]._normal = terrain->_physicsVerts[idx1]._normal;
+                terrain->_physicsVerts[idx0]._tangent = terrain->_physicsVerts[idx1]._tangent;
 
                 idx0 = TER_COORD(terrainWidth - 1 - i, j, terrainWidth);
                 idx1 = TER_COORD(terrainWidth - 1 - offset, j, terrainWidth);
 
-                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
-                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
-
-                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
-                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
+                terrain->_physicsVerts[idx0]._normal = terrain->_physicsVerts[idx1]._normal;
+                terrain->_physicsVerts[idx0]._tangent = terrain->_physicsVerts[idx1]._tangent;
             }
         }
         terrainCache << terrain->_physicsVerts;
         terrainCache.dumpToFile(cacheLocation);
-    } else {
-        terrainCache >> terrain->_physicsVerts;
     }
-
+    
     F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
 
     ResourceDescriptor planeShaderDesc("terrainPlane.Colour");

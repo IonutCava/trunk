@@ -56,6 +56,27 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         vec2<F32> _texcoord;
         P32       _weights;
         P32       _indices;
+        
+        inline bool operator==(const Vertex& other) const {
+            return _position == other._position &&
+                   _normal == other._normal &&
+                   _tangent == other._tangent &&
+                   _colour == other._colour &&
+                   _texcoord == other._texcoord &&
+                   _weights.i  == other._weights.i &&
+                   _indices.i == other._indices.i;
+        }
+
+        inline bool operator!=(const Vertex& other) const {
+            return _position != other._position ||
+                   _normal != other._normal ||
+                   _tangent != other._tangent ||
+                   _colour != other._colour ||
+                   _texcoord != other._texcoord ||
+                   _weights.i != other._weights.i ||
+                   _indices.i != other._indices.i;
+        }
+
     };
 
     VertexBuffer(GFXDevice& context);
