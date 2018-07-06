@@ -112,16 +112,6 @@ void Scene::preRender() {
 }
 
 void Scene::postRender() {
-#ifdef _DEBUG
-    if (renderState().drawDebugLines()) {
-        static vec4<I32> nullViewport;
-        static vectorImpl<Line> pickVec(1);
-        pickVec[0] = _pickRayLine;
-        GFX_DEVICE.drawLines(*_linesPrimitive,
-                             pickVec, 
-                             nullViewport);
-    }
-#endif
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data) {
@@ -640,6 +630,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     state().cameraUnderwater(renderState().getCamera().getEye().y <
                              state().waterLevel());
     _sceneGraph->sceneUpdate(deltaTime, _sceneState);
+    findHoverTarget();
 }
 
 void Scene::deleteSelection() {
@@ -727,60 +718,82 @@ void Scene::debugDraw(RenderStage stage) {
     }
 }
 
-void Scene::resetSelection() {
-    SceneGraphNode_ptr selection(_currentSelection.lock());
-    if (selection) {
-        selection->setSelected(false);
-    }
-
-    _currentSelection.reset();
-}
-
-void Scene::findSelection() {
+void Scene::findHoverTarget() {
     vec2<I32> mousePos = _input->getMousePosition();
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = to_float(mousePos.y);
 
-    const vec2<U16>& displaySize 
+    const vec2<U16>& displaySize
         = Application::getInstance().getWindowManager().getWindowDimensions();
+    const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
 
     mouseY = displaySize.height - mouseY - 1;
     vec3<F32> startRay = renderState().getCameraConst().unProject(
         vec3<F32>(mouseX, mouseY, 0.0f));
     vec3<F32> endRay = renderState().getCameraConst().unProject(
         vec3<F32>(mouseX, mouseY, 1.0f));
-    const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
-
-    resetSelection();
-
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // Cast the picking ray and find items between the nearPlane (with an
     // offset) and limit the range to half of the far plane
     _sceneGraph->intersect(Ray(startRay, startRay.direction(endRay)),
-                           zPlanes.x + 0.5f, zPlanes.y * 1.5f,
-                           _sceneSelectionCandidates);
+                               zPlanes.x + 0.5f, zPlanes.y * 1.5f,
+                               _sceneSelectionCandidates);
 
     if (!_sceneSelectionCandidates.empty()) {
         std::sort(std::begin(_sceneSelectionCandidates),
-                  std::end(_sceneSelectionCandidates),
-                  selectionQueueDistanceFrontToBack(
-                      renderState().getCameraConst().getEye()));
-        _currentSelection = _sceneSelectionCandidates[0];
-        // set it's state to selected
-        _currentSelection.lock()->setSelected(true);
-#ifdef _DEBUG
-        _pickRayLine._startPoint.set(startRay);
-        _pickRayLine._endPoint.set(endRay);
-        _pickRayLine._colorStart.set(0, 128, 0, 255);
-        _pickRayLine._colorEnd.set(0, 255, 0, 255);
-        _pickRayLine._widthStart = 5.0f;
-        _pickRayLine._widthEnd = 2.0f;
-#endif
+            std::end(_sceneSelectionCandidates),
+            selectionQueueDistanceFrontToBack(
+                renderState().getCameraConst().getEye()));
+        _currentHoverTarget = _sceneSelectionCandidates[0];
+        SceneGraphNode_ptr target(_currentHoverTarget.lock());
+        if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
+        }
+    } else {
+        SceneGraphNode_ptr target(_currentHoverTarget.lock());
+        if (target) {
+            if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+                target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
+            }
+            _currentHoverTarget.reset();
+        }
+
     }
 
-    for (DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {
-        cbk();
+}
+
+void Scene::resetSelection() {
+    SceneGraphNode_ptr selection(_currentSelection.lock());
+    if (selection) {
+        selection->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
     }
+
+    _currentSelection.reset();
+}
+
+void Scene::findSelection() {
+    SceneGraphNode_ptr target(_currentHoverTarget.lock());
+    SceneGraphNode_ptr crtTarget(_currentSelection.lock());
+
+    bool hadTarget = crtTarget != nullptr;
+    bool haveTarget = target != nullptr;
+
+    I64 crtGUID = hadTarget ? crtTarget->getGUID() : -1;
+    I64 GUID = haveTarget ? target->getGUID() : -1;
+
+    if (crtGUID != GUID) {
+        resetSelection();
+
+        if (haveTarget) {
+            _currentSelection = target;
+            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
+        }
+
+        for (DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {
+            cbk();
+        }
+    }
+
 }
 };

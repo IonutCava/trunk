@@ -310,7 +310,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
             }
         }
     } else {
-        if (!_parentSGN.isSelected()) {
+        if (_parentSGN.getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             _axisGizmo->paused(true);
         }
     }
@@ -462,9 +462,16 @@ void RenderingComponent::inViewCallback() {
     _materialPropertyMatrix.zero();
 
     _materialPropertyMatrix.setCol(
-        0, vec4<F32>(_parentSGN.isSelected() ? 1.0f : 0.0f,
-                     receivesShadows() ? 1.0f : 0.0f,
-                     to_float(lodLevel()), 0.0f));
+        0, 
+        vec4<F32>(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
+                  ? -1.0f 
+                  : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
+                    ? 1.0f 
+                    : 0.0f,
+                  receivesShadows() ? 1.0f : 0.0f,
+                  to_float(lodLevel()),
+                  0.0));
+;
 
     Material* mat = getMaterialInstance();
 

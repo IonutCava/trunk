@@ -139,8 +139,12 @@ class NOINITVTABLE Scene : public Resource {
     inline SceneGraphNode_wptr getCurrentSelection() const {
         return _currentSelection;
     }
+    inline SceneGraphNode_wptr getCurrentHoverTarget() const {
+        return  _currentHoverTarget;
+    }
     void findSelection();
     void deleteSelection();
+
     inline void addSelectionCallback(const DELEGATE_CBK<>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
@@ -175,6 +179,7 @@ class NOINITVTABLE Scene : public Resource {
     F32 _LRSpeedFactor;
     /// Current selection
     SceneGraphNode_wptr _currentSelection;
+    SceneGraphNode_wptr _currentHoverTarget;
     SceneGraphNode_wptr _currentSky;
 
     /// Scene::load must be called by every scene. Add a load flag to make sure!
@@ -197,6 +202,7 @@ class NOINITVTABLE Scene : public Resource {
 
    protected:
     void resetSelection();
+    void findHoverTarget();
 
     virtual bool frameStarted();
     virtual bool frameEnded();
@@ -261,7 +267,6 @@ class NOINITVTABLE Scene : public Resource {
    protected:
     std::unique_ptr<SceneInput> _input;
 #ifdef _DEBUG
-    Line _pickRayLine;
     IMPrimitive* _linesPrimitive;
 #endif
 };

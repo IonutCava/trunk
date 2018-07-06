@@ -16,7 +16,7 @@ AnimationComponent::AnimationComponent(SceneAnimator& animator,
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
       _currentAnimIndex(0),
-      _previousFrameIndex(-1),
+      _previousFrameIndex(0),
       _previousAnimationIndex(-1)
 {
 }
@@ -42,23 +42,18 @@ void AnimationComponent::update(const U64 deltaTime) {
         return;
     }
 
-    if (_parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN)) {
-        _previousFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex, 
-                                                               Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
+    _parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN);
+    _previousFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex, 
+                                                            Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
 
-        if ((_currentAnimIndex != _previousAnimationIndex) &&  _currentAnimIndex >= 0) {
-            /*std::shared_ptr<AnimEvaluator> animation = getCurrentAnimation();
-            if (animation->getBoneBuffer().expired()) {
-                animation->initBuffers();
-            }*/
-            _previousAnimationIndex = _currentAnimIndex;
-        }
+    if ((_currentAnimIndex != _previousAnimationIndex) &&  _currentAnimIndex >= 0) {
+        _previousAnimationIndex = _currentAnimIndex;
     }
 }
 
 void AnimationComponent::resetTimers() {
     _currentTimeStamp = _parentTimeStamp = 0UL;
-    _previousFrameIndex = -1;
+    _previousFrameIndex = 0;
     SGNComponent::resetTimers();
 }
 

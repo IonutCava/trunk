@@ -66,12 +66,9 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
                  (materialProp.diffuse * textureColor.rgb) + 
                   materialProp.specular;
     
-    if (dvd_isSelected) {
-        color *= 2;
-    }
-
+    color *= mix(mix(1.0, 2.0, dvd_isHighlighted), 3.0, dvd_isSelected);
     // Apply shadowing
-    color *= shadow_loop();
+    color *= mix(1.0, shadow_loop(), dvd_shadowMapping);
 
     //return vec4(dvd_LightSource[0]._position.xyz, 1.0);
 #if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)

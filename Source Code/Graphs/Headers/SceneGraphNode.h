@@ -96,6 +96,13 @@ class SceneGraphNode : public GUIDWrapper,
         NODE_STATIC 
     };
 
+    enum class SelectionFlag : U32 {
+        SELECTION_NONE = 0,
+        SELECTION_HOVER,
+        SELECTION_SELECTED,
+        SELECTION_COUNT
+    };
+
     /// Update bounding boxes
     void checkBoundingBoxes();
     /// Apply current transform to the node's BB. Return true if the bounding
@@ -143,8 +150,9 @@ class SceneGraphNode : public GUIDWrapper,
     void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits);
 
     /// Selection helper functions
-    void setSelected(const bool state);
-    inline bool isSelected() const { return _selected; }
+    void setSelectionFlag(SelectionFlag flag);
+    inline SelectionFlag getSelectionFlag() const { return _selectionFlag; }
+
     inline bool isSelectable() const { return _isSelectable; }
     inline void setSelectable(const bool state) { _isSelectable = state; }
 
@@ -269,7 +277,7 @@ class SceneGraphNode : public GUIDWrapper,
     std::atomic<bool> _inView;
     std::atomic<bool> _boundingBoxDirty;
     U32 _bbAddExclusionList;
-    bool _selected;
+    SelectionFlag _selectionFlag;
     bool _isSelectable;
     bool _wasActive;
     bool _sorted;

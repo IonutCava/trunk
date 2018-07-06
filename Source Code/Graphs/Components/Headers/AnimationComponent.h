@@ -62,7 +62,7 @@ class AnimationComponent : public SGNComponent {
     bool playPreviousAnimation();
 
     inline U64 animationTimeStamp() const { return _currentTimeStamp;  }
-    inline I32 frameIndex() const { return _previousFrameIndex; }
+    inline U32 frameIndex() const { return _previousFrameIndex; }
     inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
     I32 frameCount(U32 animationID) const;
 
@@ -103,7 +103,7 @@ class AnimationComponent : public SGNComponent {
     /// Current animation timestamp for the current SGN
     U64 _currentTimeStamp;
     /// Previous frame index. Gets reset to -1 when animation changes
-    I32 _previousFrameIndex;
+    U32 _previousFrameIndex;
     /// Previous animation index
     I32 _previousAnimationIndex;
     /// Parent time stamp (e.g. Mesh). 

@@ -84,7 +84,7 @@ class Object3D : public SceneNode {
         return BitCompare(getFlagMask(), to_uint(flag));
     }
 
-    virtual bool updateAnimations(SceneGraphNode& sgn) { return false; }
+    virtual void updateAnimations(SceneGraphNode& sgn) { }
     /// Use playAnimations() to toggle animation playback for the current object
     /// (and all subobjects) on or off
     inline void playAnimations(const bool state) { _playAnimations = state; }

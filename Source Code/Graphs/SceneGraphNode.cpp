@@ -31,7 +31,6 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _wasActive(true),
       _active(true),
       _inView(false),
-      _selected(false),
       _isSelectable(false),
       _sorted(false),
       _boundingBoxDirty(true),
@@ -39,7 +38,8 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _updateTimer(Time::ElapsedMilliseconds()),
       _childQueue(0),
       _bbAddExclusionList(0),
-      _usageContext(UsageContext::NODE_DYNAMIC)
+      _usageContext(UsageContext::NODE_DYNAMIC),
+      _selectionFlag(SelectionFlag::SELECTION_NONE)
 {
     assert(_node != nullptr);
 
@@ -257,11 +257,11 @@ void SceneGraphNode::intersect(const Ray& ray,
     }
 }
 
-void SceneGraphNode::setSelected(const bool state) {
-    _selected = state;
+void SceneGraphNode::setSelectionFlag(SelectionFlag flag) {
+    _selectionFlag = flag;
     ReadLock r_lock(_childrenLock);
     for (SceneGraphNode_ptr child : _children) {
-        child->setSelected(_selected);
+        child->setSelectionFlag(flag);
     }
 }
 

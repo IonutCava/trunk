@@ -49,10 +49,10 @@ void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
 }
 
 /// update possible animations
-bool SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
+void SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
     assert(sgn.getComponent<AnimationComponent>());
 
-    return getBoundingBoxForCurrentFrame(sgn);
+    computeBoundingBoxForCurrentFrame(sgn);
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
@@ -98,11 +98,11 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComp
     }
 }
 
-bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
+void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     AnimationComponent* animComp = sgn.getComponent<AnimationComponent>();
-    // If anymations are paused or unavailable, keep the current BB
+    // If animations are paused or unavailable, keep the current BB
     if (!animComp->playAnimations()) {
-        return true;
+        return;
     }
     // Attempt to get the map of BBs for the current animation
     U32 animationIndex = animComp->animationIndex();
@@ -118,13 +118,10 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
                 .AddTask(1, 1, buildBB, builBBComplete));
             _bbBuildTasks.back().lock()->startTask(Task::TaskPriority::DONT_CARE);
         }
-
-        return true;
+    } else {
+        BoundingBox& bb = _boundingBoxes.at(animationIndex).at(animComp->frameIndex());
+        sgn.setInitialBoundingBox(bb);
     }
-
-    BoundingBox& bb = _boundingBoxes.at(animationIndex).at(std::max(animComp->frameIndex(), 0));
-    sgn.setInitialBoundingBox(bb);
-
-    return true;
 }
+
 };
