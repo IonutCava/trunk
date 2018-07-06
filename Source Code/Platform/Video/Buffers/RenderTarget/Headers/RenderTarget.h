@@ -48,7 +48,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
    protected:
     SET_DELETE_FRIEND
 
-    RenderTarget(GFXDevice& context, bool multiSample);
+    RenderTarget(GFXDevice& context);
     virtual ~RenderTarget();
 
    public:
@@ -58,8 +58,6 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
 
     /// If the FB is not initialized, it gets created, otherwise
     /// the attachements get resized.
-    /// If any internal state was changed between calls (_shouldRebuild == true),
-    /// the entire FB is recreated with the new state.
     virtual bool create(U16 width, U16 height) = 0;
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest = true);
     virtual void destroy() = 0;
@@ -91,7 +89,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     // Set the colour the FB will clear to when drawing to it
     void setClearColour(RTAttachment::Type type, U8 index, const vec4<F32>& clearColour);
     void setClearDepth(F32 depthValue);
-    bool isMultisampled() const;
+
     U16 getWidth()  const;
     U16 getHeight() const;
 
@@ -101,8 +99,6 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
    protected:
     static U8 g_maxColourAttachments;
 
-    bool _shouldRebuild;
-    bool _multisampled;
     U16 _width, _height;
     F32 _depthValue;
 

@@ -1,4 +1,5 @@
 #include "Core/Headers/Console.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -15,11 +16,22 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
 
     bool threadedLoad = _descriptor.getThreaded();
 
+    TextureType type = static_cast<TextureType>(_descriptor.getEnumValue());
+    if ((type == TextureType::TEXTURE_2D_MS || type == TextureType::TEXTURE_2D_ARRAY_MS) &&
+        ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) == 0) {
+        if (type == TextureType::TEXTURE_2D_MS) {
+            type = TextureType::TEXTURE_2D;
+        }
+        if (type == TextureType::TEXTURE_2D_ARRAY_MS) {
+            type = TextureType::TEXTURE_2D_ARRAY;
+        }
+    }
+
     Texture_ptr ptr(GFX_DEVICE.newTexture(_descriptor.getName(),
-                                                       _descriptor.getResourceLocation(),
-                                                       static_cast<TextureType>(_descriptor.getEnumValue()),
-                                                       threadedLoad),
-                                 DeleteResource());
+                                          _descriptor.getResourceLocation(),
+                                          type,
+                                          threadedLoad),
+                    DeleteResource());
 
     if (_descriptor.getID() > 0) {
         ptr->setNumLayers(to_ubyte(_descriptor.getID()));

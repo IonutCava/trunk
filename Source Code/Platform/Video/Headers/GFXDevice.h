@@ -423,12 +423,12 @@ DEFINE_SINGLETON(GFXDevice)
         _rtPool.set(target, index, newTarget);
     }
 
-    inline RenderTargetHandle allocateRT(RenderTargetID targetID, bool multisampled) {
-        return _rtPool.add(targetID, newRT(multisampled));
+    inline RenderTargetHandle allocateRT(RenderTargetID targetID) {
+        return _rtPool.add(targetID, newRT());
     }
 
-    inline RenderTargetHandle allocateRT(bool multisampled) {
-        return allocateRT(RenderTargetID::OTHER, multisampled);
+    inline RenderTargetHandle allocateRT() {
+        return allocateRT(RenderTargetID::OTHER);
     }
 
     inline bool deallocateRT(RenderTargetHandle& handle) {
@@ -484,7 +484,7 @@ DEFINE_SINGLETON(GFXDevice)
     }
 
   protected:
-    RenderTarget* newRT(bool multisampled) const;
+    RenderTarget* newRT() const;
 
     void setBaseViewport(const vec4<I32>& viewport);
 

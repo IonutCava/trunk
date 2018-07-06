@@ -28,24 +28,16 @@
 
 namespace Divide {
 
-RenderTarget* GFXDevice::newRT(bool multisampled) const {
-    multisampled = multisampled &&
-                   ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) > 0;
-
+RenderTarget* GFXDevice::newRT() const {
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new framebuffer.
             /// The callee is responsible for it's deletion!
-            // If MSAA is disabled, this will be a simple colour / depth buffer
-            // If we requested a MultiSampledFramebuffer and MSAA is enabled, we also
-            // allocate a resolve framebuffer
-            // We set the resolve framebuffer as the requested framebuffer's child.
-            // The framebuffer is responsible for deleting it's own resolve child!
-            return MemoryManager_NEW glFramebuffer(instance(), multisampled);
+            return MemoryManager_NEW glFramebuffer(instance());
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dRenderTarget(instance(), multisampled);
+            return MemoryManager_NEW d3dRenderTarget(instance());
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

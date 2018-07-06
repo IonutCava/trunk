@@ -3,8 +3,8 @@
 namespace Divide {
 
 IMPLEMENT_CUSTOM_ALLOCATOR(d3dRenderTarget, 0, 0)
-d3dRenderTarget::d3dRenderTarget(GFXDevice& context, bool multisampled)
-    : RenderTarget(context, multisampled)
+d3dRenderTarget::d3dRenderTarget(GFXDevice& context)
+    : RenderTarget(context)
 {
 }
 

@@ -30,13 +30,11 @@ bool glFramebuffer::_viewportChanged = false;
 bool glFramebuffer::_zWriteEnabled = true;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
-glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
-    : RenderTarget(context, useResolveBuffer),
-      _resolveBuffer(useResolveBuffer ? MemoryManager_NEW glFramebuffer(context)
-                                      : nullptr),
+glFramebuffer::glFramebuffer(GFXDevice& context)
+    : RenderTarget(context),
+      _resolveBuffer(nullptr),
       _resolved(false),
       _isLayeredDepth(false),
-      _isCreated(false),
       _framebufferHandle(0)
 {
     _previousMask.enableAll();
@@ -54,32 +52,28 @@ glFramebuffer::~glFramebuffer()
     MemoryManager::DELETE(_resolveBuffer);
 }
 
-void glFramebuffer::initAttachment(RTAttachment::Type type,
-                                   U8 index,
-                                   TextureDescriptor& texDescriptor,
-                                   bool resize) {
+void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
     const RTAttachment_ptr& attachment = _attachments.get(type, index);
-    // If it changed
-    bool shouldResize = resize && attachment->used();
-    if (!attachment->changed() && !shouldResize) {
+
+    if (!attachment->used() && !attachment->changed()) {
         return;
     }
 
-    assert(_width != 0 && _height != 0 && "glFramebuffer error: Invalid frame buffer dimensions!");
+    TextureDescriptor& texDescriptor = attachment->descriptor();
 
-    if (_multisampled) {
-        if (texDescriptor._type == TextureType::TEXTURE_2D) {
-            texDescriptor._type = TextureType::TEXTURE_2D_MS;
-        }
-        if (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY) {
-            texDescriptor._type = TextureType::TEXTURE_2D_ARRAY_MS;
-        }
-    } else {
-        if (texDescriptor._type == TextureType::TEXTURE_2D_MS) {
-            texDescriptor._type = TextureType::TEXTURE_2D;
-        }
-        if (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS) {
-            texDescriptor._type = TextureType::TEXTURE_2D_ARRAY;
+    bool multisampled = _resolveBuffer != nullptr;
+    if ((type == RTAttachment::Type::Colour && index == 0) ||
+         type == RTAttachment::Type::Depth) {
+        multisampled = texDescriptor._type == TextureType::TEXTURE_2D_MS ||
+                       texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS;
+        multisampled = multisampled &&
+                       ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) > 0;
+    }
+
+    if (multisampled) {
+        texDescriptor.getSampler().toggleMipMaps(false);
+        if (!_resolveBuffer) {
+             _resolveBuffer = MemoryManager_NEW glFramebuffer(_context);
         }
     }
 
@@ -99,15 +93,32 @@ void glFramebuffer::initAttachment(RTAttachment::Type type,
         }
     }
 
-    if (_multisampled) {
-        texDescriptor.getSampler().toggleMipMaps(false);
+}
+
+void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
+    const RTAttachment_ptr& attachment = _attachments.get(type, index);
+
+    if (!attachment->used() && !attachment->changed()) {
+        return;
     }
 
-    RTAttachment* att = attachment.get();
+    TextureDescriptor& texDescriptor = attachment->descriptor();
 
-    bool newTexture = false;
-    Texture_ptr tex = nullptr;
-    if (!att->asTexture()) {
+    assert(_width != 0 && _height != 0 && "glFramebuffer error: Invalid frame buffer dimensions!");
+
+    attachment->mipMapLevel(0,
+                            texDescriptor.getSampler().generateMipMaps()
+                                ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
+                                : 1);
+
+    // check if we have a valid attachment
+    if (attachment->used()) {
+        const Texture_ptr& tex = attachment->asTexture();
+        // Do we need to resize the attachment?
+        if (tex->getWidth() != _width || tex->getHeight() != _height) {
+            tex->resize(NULL, vec2<U16>(_width, _height), attachment->mipMapLevel());
+        }
+    } else {
         stringImpl attachmentName = Util::StringFormat(
             "Framebuffer_Att_%s_%d_%d", getAttachmentName(type), index, getGUID());
 
@@ -115,30 +126,17 @@ void glFramebuffer::initAttachment(RTAttachment::Type type,
         textureAttachment.setThreadedLoading(false);
         textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
         textureAttachment.setEnumValue(to_uint(texDescriptor._type));
-        tex = CreateResource<Texture>(textureAttachment);
+        Texture_ptr tex = CreateResource<Texture>(textureAttachment);
         assert(tex);
-        att->setTexture(tex);
-        newTexture = true;
+        Texture::TextureLoadInfo info;
+        info._type = texDescriptor._type;
+        tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), attachment->mipMapLevel());
+        tex->setNumLayers(texDescriptor._layerCount);
+        tex->lockAutomaticMipMapGeneration(!texDescriptor.automaticMipMapGeneration());
+        attachment->setTexture(tex);
     }
+
     
-    att->mipMapLevel(0,
-                     texDescriptor.getSampler().generateMipMaps()
-                         ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
-                         : 1);
-
-    tex->setNumLayers(texDescriptor._layerCount);
-    tex->lockAutomaticMipMapGeneration(!texDescriptor.automaticMipMapGeneration());
-
-    if (resize) {
-        tex->resize(NULL, vec2<U16>(_width, _height), att->mipMapLevel());
-    } else {
-        if (newTexture) {
-            Texture::TextureLoadInfo info;
-            info._type = texDescriptor._type;
-            tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), att->mipMapLevel());
-        }
-    }
-
     // Attach to frame buffer
     GLenum attachmentEnum;
     if (type == RTAttachment::Type::Depth) {
@@ -152,11 +150,11 @@ void glFramebuffer::initAttachment(RTAttachment::Type type,
         attachmentEnum = GLenum((U32)GL_COLOR_ATTACHMENT0 + index);
     }
 
-    att->clearRefreshFlag();
-    att->flagDirty();
-    att->enabled(true);
-
-    att->binding(to_uint(attachmentEnum));
+    attachment->binding(to_uint(attachmentEnum));
+       
+    attachment->flagDirty();
+    attachment->clearChanged();
+    attachment->enabled(true);
 }
 
 void glFramebuffer::toggleAttachment(RTAttachment::Type type, U8 index, bool state) {
@@ -172,46 +170,48 @@ void glFramebuffer::toggleAttachment(RTAttachment::Type type, U8 index, bool sta
 }
 
 bool glFramebuffer::create(U16 width, U16 height) {
+    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+        RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
+        for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
+            updateDescriptor(type, j);
+        }
+    }
+    
     if (_resolveBuffer) {
         for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
             RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
             for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
                 const RTAttachment_ptr& att = _attachments.get(type, j);
-                if (att->changed()) {
-                    _resolveBuffer->_attachments.get(type, j)->fromDescriptor(att->descriptor());
-                }
-                _resolveBuffer->_attachments.get(type, j)->clearColour(att->clearColour());
+                const RTAttachment_ptr& resAtt = _resolveBuffer->_attachments.get(type, j);
+                resAtt->fromDescriptor(att->descriptor());
+                resAtt->clearColour(att->clearColour());
             }
         }
 
         _resolveBuffer->create(width, height);
     }
 
-    bool shouldResize = false;
+    bool shouldResetAttachments = (_width != width || _height != height);
+    _width = width;
+    _height = height;
+
     if (Config::Profile::USE_2x2_TEXTURES) {
         _width = _height = 2;
-    } else {
-        shouldResize = (_width != width || _height != height);
-        _width = width;
-        _height = height;
     }
 
-    _isCreated = _isCreated && !_shouldRebuild;
-
-    if (!_isCreated) {
-        assert(_framebufferHandle == 0);
+    if (_framebufferHandle == 0) {
         glCreateFramebuffers(1, &_framebufferHandle);
-        shouldResize = false;
+        shouldResetAttachments = false;
         _resolved = false;
         _isLayeredDepth = false;
 
-    if (Config::ENABLE_GPU_VALIDATION) {
-        // label this FB to be able to tell that it's internally created and nor from a 3rd party lib
-        glObjectLabel(GL_FRAMEBUFFER,
-                      _framebufferHandle,
-                      -1,
-                      Util::StringFormat("DVD_FB_%d", _framebufferHandle).c_str());
-    }
+        if (Config::ENABLE_GPU_VALIDATION) {
+            // label this FB to be able to tell that it's internally created and nor from a 3rd party lib
+            glObjectLabel(GL_FRAMEBUFFER,
+                          _framebufferHandle,
+                          -1,
+                          Util::StringFormat("DVD_FB_%d", _framebufferHandle).c_str());
+        }
 
     }
 
@@ -222,14 +222,14 @@ bool glFramebuffer::create(U16 width, U16 height) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
         for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
             const RTAttachment_ptr& att = _attachments.get(type, j);
-            initAttachment(static_cast<RTAttachment::Type>(i), j, att->descriptor(), shouldResize);
+            initAttachment(static_cast<RTAttachment::Type>(i), j);
             if (type == RTAttachment::Type::Colour && att->enabled()) {
                 colorBuffsers.push_back(static_cast<GLenum>(att.get()->binding()));
             }
         }
     }
 
-    if (!shouldResize) {
+    if (!shouldResetAttachments) {
         resetAttachments();
     }
 
@@ -240,12 +240,12 @@ bool glFramebuffer::create(U16 width, U16 height) {
                                       colorBuffsers.data());
     }
 
-    _isCreated = checkStatus();
-    if (_isCreated) {
+    if (checkStatus()) {
         clear(RenderTarget::defaultPolicy());
+        return true;
     }
-    _shouldRebuild = !_isCreated;
-    return _isCreated;
+
+    return false;
 }
 
 void glFramebuffer::destroy() {

@@ -58,11 +58,11 @@ class RTAttachment {
         const TextureDescriptor& descriptor() const;
 
         void flush();
-        void clearRefreshFlag();
 
         bool used() const;
         
         bool changed() const;
+        void clearChanged();
 
         bool toggledState() const;
         void toggledState(const bool state);
@@ -92,7 +92,7 @@ class RTAttachment {
         bool _attDirty;
         bool _enabled;
         bool _toggledState;
-        bool _needsRefresh;
+        bool _changed;
         U32  _binding;
         Texture_ptr _texture;
         vec4<F32> _clearColour;

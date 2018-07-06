@@ -43,7 +43,7 @@ class glFramebuffer : public RenderTarget {
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
-    glFramebuffer(GFXDevice& context, bool useResolveBuffer = false);
+    glFramebuffer(GFXDevice& context);
     ~glFramebuffer();
 
     bool create(U16 width, U16 height) override;
@@ -95,10 +95,8 @@ class glFramebuffer : public RenderTarget {
     bool checkStatus() const;
     void resetAttachments();
 
-    void initAttachment(RTAttachment::Type type,
-                        U8 index,
-                        TextureDescriptor& texDescriptor,
-                        bool resize);
+    void initAttachment(RTAttachment::Type type, U8 index);
+    void updateDescriptor(RTAttachment::Type type, U8 index);
 
     void resetMipMaps(const RTDrawDescriptor& drawPolicy);
 
@@ -128,7 +126,6 @@ class glFramebuffer : public RenderTarget {
 
    protected:
     bool _resolved;
-    bool _isCreated;
     bool _isLayeredDepth;
     GLuint _framebufferHandle;
     static bool _viewportChanged;

@@ -48,7 +48,7 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW, false);
+                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW);
                 crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
 
@@ -65,7 +65,7 @@ void ShadowMap::initShadowMaps() {
                                                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW, false);
+                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW);
                 crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Colour, 0);
                 crtTarget._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
             } break;
@@ -84,7 +84,7 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setSampler(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW, false);
+                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW);
                 crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
         };

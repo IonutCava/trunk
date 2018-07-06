@@ -8,11 +8,9 @@ namespace Divide {
 // We don't need more than 4 colour attachments for now.
 U8 RenderTarget::g_maxColourAttachments = 4;
 
-RenderTarget::RenderTarget(GFXDevice& context, bool multiSampled)
+RenderTarget::RenderTarget(GFXDevice& context)
     : GraphicsResource(context),
       GUIDWrapper(),
-      _shouldRebuild(true),
-      _multisampled(multiSampled),
       _width(0),
       _height(0),
       _depthValue(1.0)
@@ -27,7 +25,6 @@ void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
                                  RTAttachment::Type type,
                                  U8 index) {
     _attachments.get(type, index)->fromDescriptor(descriptor);
-    _shouldRebuild = true;
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
@@ -113,10 +110,6 @@ void RenderTarget::setClearColour(RTAttachment::Type type, U8 index, const vec4<
 
 void RenderTarget::setClearDepth(F32 depthValue) {
     _depthValue = depthValue;
-}
-
-bool RenderTarget::isMultisampled() const {
-    return _multisampled;
 }
 
 U16 RenderTarget::getWidth()  const {

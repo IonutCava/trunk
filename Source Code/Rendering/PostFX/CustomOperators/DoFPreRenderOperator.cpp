@@ -10,7 +10,7 @@ namespace Divide {
 DoFPreRenderOperator::DoFPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : PreRenderOperator(FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
 {
-    _samplerCopy = GFX_DEVICE.allocateRT(false);
+    _samplerCopy = GFX_DEVICE.allocateRT();
     _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
 
     ResourceDescriptor dof("DepthOfField");

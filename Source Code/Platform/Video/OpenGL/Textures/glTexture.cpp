@@ -73,17 +73,18 @@ void glTexture::setMipMapRange(GLushort base, GLushort max) {
 void glTexture::resize(const bufferPtr ptr,
                        const vec2<U16>& dimensions,
                        const vec2<U16>& mipLevels) {
-    // Immutable storage requires us to create a new texture object 
-    U32 tempHandle = 0;
-    glCreateTextures(_type, 1, &tempHandle);
-    
-    assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
-
     U32 textureID = _textureData.getHandleHigh();
-    if (textureID > 0) {
+    if (textureID > 0 && _allocatedStorage) {
+        // Immutable storage requires us to create a new texture object 
+        U32 tempHandle = 0;
+        glCreateTextures(_type, 1, &tempHandle);
+        assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
+
         glDeleteTextures(1, &textureID);
+        textureID = tempHandle;
     }
-    _textureData.setHandleHigh(tempHandle);
+
+    _textureData.setHandleHigh(textureID);
     _allocatedStorage = false;
     TextureLoadInfo info;
     loadData(info, _descriptor, ptr, dimensions, mipLevels);
@@ -188,8 +189,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
-        }
-        else {
+        } else {
             _width = dimensions.width;
             _height = dimensions.height;
         }

@@ -8,7 +8,7 @@ RTAttachment::RTAttachment()
     : _clearColour(DefaultColours::WHITE()),
       _descriptor(TextureDescriptor()),
       _texture(nullptr),
-      _needsRefresh(false),
+      _changed(false),
       _attDirty(false),
       _enabled(false),
       _toggledState(false),
@@ -72,12 +72,13 @@ void RTAttachment::enabled(const bool state) {
 }
 
 bool RTAttachment::changed() const {
-    return _needsRefresh;
+    return _changed;
 }
 
 void RTAttachment::fromDescriptor(const TextureDescriptor& descriptor) {
     _descriptor = descriptor;
-    _needsRefresh = true;
+
+    _changed = true;
 }
 
 void RTAttachment::clearColour(const vec4<F32>& clearColour) {
@@ -88,8 +89,8 @@ const vec4<F32>& RTAttachment::clearColour() const {
     return _clearColour;
 }
 
-void RTAttachment::clearRefreshFlag() {
-    _needsRefresh = false;
+void RTAttachment::clearChanged() {
+    _changed = false;
 }
 
 U32 RTAttachment::binding() const {
