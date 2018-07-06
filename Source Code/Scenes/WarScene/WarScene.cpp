@@ -384,6 +384,10 @@ bool WarScene::load(const stringImpl& name) {
     std::shared_ptr<SceneNode> currentMesh;
     SceneGraphNode* baseNode;
 
+    SceneGraphNodeDescriptor sceneryNodeDescriptor;
+    sceneryNodeDescriptor._isSelectable = Config::Build::ENABLE_EDITOR;
+    sceneryNodeDescriptor._componentMask = normalMask;
+
     U8 locationFlag = 0;
     std::pair<I32, I32> currentPos;
     for (U8 i = 0; i < 40; ++i) {
@@ -416,9 +420,15 @@ bool WarScene::load(const stringImpl& name) {
             locationFlag = 3;
         }
 
-        SceneGraphNode* crtNode = _sceneGraph->getRoot().addNode(currentMesh, normalMask, baseNode->get<RigidBodyComponent>()->physicsGroup(), currentName);
-        crtNode->setSelectable(true);
-        crtNode->usageContext(baseNode->usageContext());
+
+        
+        sceneryNodeDescriptor._node = currentMesh;
+        sceneryNodeDescriptor._name = currentName;
+        sceneryNodeDescriptor._usageContext = baseNode->usageContext();
+        sceneryNodeDescriptor._physicsGroup = baseNode->get<RigidBodyComponent>()->physicsGroup();
+
+        SceneGraphNode* crtNode = _sceneGraph->getRoot().addNode(sceneryNodeDescriptor);
+        
         TransformComponent* tComp = crtNode->get<TransformComponent>();
         NavigationComponent* nComp = crtNode->get<NavigationComponent>();
         nComp->navigationContext(baseNode->get<NavigationComponent>()->navigationContext());
@@ -481,11 +491,15 @@ bool WarScene::load(const stringImpl& name) {
     flag->setActive(false);
     std::shared_ptr<SceneNode> flagNode = flag->getNode();
 
-    _flag[0] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<RigidBodyComponent>()->physicsGroup(), "Team1Flag");
+    sceneryNodeDescriptor._usageContext = flag->usageContext();
+    sceneryNodeDescriptor._node = flagNode;
+    sceneryNodeDescriptor._physicsGroup = flag->get<RigidBodyComponent>()->physicsGroup();
+    sceneryNodeDescriptor._name = "Team1Flag";
+
+    _flag[0] = _sceneGraph->getRoot().addNode(sceneryNodeDescriptor);
 
     SceneGraphNode* flag0(_flag[0]);
-    flag0->setSelectable(false);
-    flag0->usageContext(flag->usageContext());
+
     TransformComponent* flagtComp = flag0->get<TransformComponent>();
     NavigationComponent* flagNComp = flag0->get<NavigationComponent>();
     RenderingComponent* flagRComp = flag0->getChild(0).get<RenderingComponent>();
@@ -497,9 +511,9 @@ bool WarScene::load(const stringImpl& name) {
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::BLUE);
 
-    _flag[1] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<RigidBodyComponent>()->physicsGroup(), "Team2Flag");
+    sceneryNodeDescriptor._name = "Team2Flag";
+    _flag[1] = _sceneGraph->getRoot().addNode(sceneryNodeDescriptor);
     SceneGraphNode* flag1(_flag[1]);
-    flag1->setSelectable(false);
     flag1->usageContext(flag->usageContext());
 
     flagtComp = flag1->get<TransformComponent>();
@@ -513,9 +527,13 @@ bool WarScene::load(const stringImpl& name) {
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::RED);
 
-    SceneGraphNode* firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
+    sceneryNodeDescriptor._name = "FirstPersonFlag";
+    sceneryNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
+    sceneryNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    sceneryNodeDescriptor._isSelectable = false;
+    SceneGraphNode* firstPersonFlag = _sceneGraph->getRoot().addNode(sceneryNodeDescriptor);
     firstPersonFlag->lockVisibility(true);
-    firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
+
     flagtComp = firstPersonFlag->get<TransformComponent>();
     flagtComp->setScale(0.0015f);
     flagtComp->setPosition(1.25f, -1.5f, 0.15f);
@@ -530,8 +548,6 @@ bool WarScene::load(const stringImpl& name) {
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN);
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
-
-    //_firstPersonWeapon.lock()->get<TransformComponent>()->ignoreView(true, playerCamera()->getGUID());
 
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
@@ -550,7 +566,7 @@ bool WarScene::load(const stringImpl& name) {
         const F32 emitRate = particleCount / 4;
 
         std::shared_ptr<ParticleData> particles =
-            std::make_shared<ParticleData>(platformContext().gfx(),
+            std::make_shared<ParticleData>(context().gfx(),
                 particleCount,
                 to_base(ParticleData::Properties::PROPERTIES_POS) |
                 to_base(ParticleData::Properties::PROPERTIES_VEL) |
@@ -559,7 +575,7 @@ bool WarScene::load(const stringImpl& name) {
                 to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
         particles->_textureFileName = "particle.DDS";
 
-        std::shared_ptr<ParticleSource> particleSource = std::make_shared<ParticleSource>(platformContext().gfx(), emitRate);
+        std::shared_ptr<ParticleSource> particleSource = std::make_shared<ParticleSource>(context().gfx(), emitRate);
 
         std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
         boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
@@ -786,8 +802,12 @@ void WarScene::postLoadMainThread() {
                   "");
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
-
     Scene::postLoadMainThread();
+}
+
+void WarScene::onSetActive() {
+    Scene::onSetActive();
+    _firstPersonWeapon->lockToCamera(_ID_RT(playerCamera()->name()));
 }
 
 void WarScene::weaponCollision(const RigidBodyComponent& collider) {

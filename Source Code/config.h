@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _DIVIDE_CONFIG_H_
 #define _DIVIDE_CONFIG_H_
 

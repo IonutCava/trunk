@@ -522,7 +522,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
             continue;
         }
 
-        if (objPtr->get<BoundsComponent>()->getBoundingBox().intersect(intersectRay, start, end)) {
+        if (std::get<0>(objPtr->get<BoundsComponent>()->getBoundingBox().intersect(intersectRay, start, end))) {
             IntersectionRecord ir;
             if (getIntersection(*objPtr, intersectRay, start, end, ir)) {
                 ret.push_back(ir);
@@ -532,7 +532,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
 
     // test each child octant for intersection
     for (I32 i = 0; i < 8; ++i) {
-        if (_childNodes[i] != nullptr && _childNodes[i]->_region.intersect(intersectRay, start, end)) {
+        if (_childNodes[i] != nullptr && std::get<0>(_childNodes[i]->_region.intersect(intersectRay, start, end))) {
             vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(intersectRay, start, end, typeFilterMask);
             ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
         }
@@ -681,7 +681,7 @@ void Octree::handleIntersection(const IntersectionRecord& intersection) const {
 }
 
 bool Octree::isStatic(const SceneGraphNode& node) const {
-    return node.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC;
+    return node.usageContext() == NodeUsageContext::NODE_STATIC;
 }
 
 bool Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const {
@@ -719,7 +719,7 @@ bool Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, Inter
 
 bool Octree::getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const {
     const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
-    if (bb.intersect(intersectRay, start, end)) {
+    if (std::get<0>(bb.intersect(intersectRay, start, end))) {
         irOut.reset();
         irOut._intersectedObject1 = &node;
         irOut._ray = intersectRay;

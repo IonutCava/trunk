@@ -28,6 +28,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _SGN_COMPONENT_H_
 #define _SGN_COMPONENT_H_
 

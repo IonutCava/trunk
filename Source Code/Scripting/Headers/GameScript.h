@@ -37,15 +37,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 class GameScriptInstance {
-    public:
-        void frameStarted();
-        void framePreRenderStarted();
-        void framePreRenderEnded();
-        void frameRenderingQueued();
-        void framePostRenderStarted();
-        void framePostRenderEnded();
-        void frameEnded();
-    };
+public:
+    void frameStarted() {}
+    void framePreRenderStarted() {}
+    void framePreRenderEnded() {}
+    void frameRenderingQueued() {}
+    void framePostRenderStarted() {}
+    void framePostRenderEnded() {}
+    void frameEnded() {}
+};
 
     class GameScript : public Script,
                        public FrameListener {

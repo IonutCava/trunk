@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _D3D_PIXEL_BUFFER_OBJECT_H
 #define _D3D_PIXEL_BUFFER_OBJECT_H
 

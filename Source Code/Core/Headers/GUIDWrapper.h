@@ -32,6 +32,9 @@
 /*Code references:
     http://www.cplusplus.com/forum/lounge/27570/
 */
+
+
+#pragma once
 #ifndef _GUID_WRAPPER_H_
 #define _GUID_WRAPPER_H_
 

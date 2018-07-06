@@ -15,6 +15,8 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
+#include "Editor/Headers/Editor.h"
+
 #include "ECS/Events/Headers/EntityEvents.h"
 #include "ECS/Events/Headers/BoundsEvents.h"
 #include "ECS/Events/Headers/TransformEvents.h"
@@ -22,79 +24,76 @@
 
 namespace Divide {
 
-SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
-                               PhysicsGroup physicsGroup,
-                               const SceneNode_ptr& node,
-                               const stringImpl& name,
-                               U32 componentMask)
+SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor)
     : GUIDWrapper(),
       ECS::Event::IEventListener(&sceneGraph.GetECSEngine()),
+      _sceneGraph(sceneGraph),
+      _node(descriptor._node),
+      _componentMask(descriptor._componentMask),
+      _usageContext(descriptor._usageContext),
+      _isSelectable(descriptor._isSelectable),
+      _selectionFlag(SelectionFlag::SELECTION_NONE),
       _parent(nullptr),
       _frustPlaneCache(-1),
-      _sceneGraph(sceneGraph),
       _elapsedTimeUS(0ULL),
       _updateFlags(0U),
-      _node(node),
       _active(true),
       _visibilityLocked(false),
-      _isSelectable(false),
-      _componentMask(componentMask),
-      _selectionFlag(SelectionFlag::SELECTION_NONE),
-      _usageContext(UsageContext::NODE_DYNAMIC),
+      _lockToCamera(0),
       _relationshipCache(*this)
 {
     assert(_node != nullptr);
     _children.reserve(INITIAL_CHILD_COUNT);
     RegisterEventCallbacks();
     
-    setName(name);
+    name(descriptor._name.empty() ? Util::StringFormat("%s_SGN_%d", _node->name().c_str(), getGUID()) : descriptor._name);
 
-    if (BitCompare(componentMask, to_U32(ComponentType::ANIMATION))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::ANIMATION))) {
         AddSGNComponent<AnimationComponent>(*this);
     }
 
-    if (BitCompare(componentMask, to_U32(ComponentType::INVERSE_KINEMATICS))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::INVERSE_KINEMATICS))) {
         AddSGNComponent<IKComponent>(*this);
     }
-    if (BitCompare(componentMask, to_U32(ComponentType::NETWORKING))) {
-        LocalClient& client = _sceneGraph.parentScene().platformContext().client();
+    if (BitCompare(_componentMask, to_U32(ComponentType::NETWORKING))) {
+        LocalClient& client = _sceneGraph.parentScene().context().client();
         AddSGNComponent<NetworkingComponent>(*this, client);
     }
-    if (BitCompare(componentMask, to_U32(ComponentType::RAGDOLL))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::RAGDOLL))) {
         AddSGNComponent<RagdollComponent>(*this);
     }
-    if (BitCompare(componentMask, to_U32(ComponentType::NAVIGATION))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::NAVIGATION))) {
         AddSGNComponent<NavigationComponent>(*this);
     }
-    if (BitCompare(componentMask, to_U32(ComponentType::RIGID_BODY))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::RIGID_BODY))) {
+        PXDevice& pxContext = _sceneGraph.parentScene().context().pfx();
+
         STUBBED("Rigid body physics disabled for now - Ionut");
-        physicsGroup = PhysicsGroup::GROUP_IGNORE;
-        PXDevice& pxContext = _sceneGraph.parentScene().platformContext().pfx();
-        AddSGNComponent<RigidBodyComponent>(*this, physicsGroup, pxContext);
+        AddSGNComponent<RigidBodyComponent>(*this, /*descriptor._physicsGroup*/PhysicsGroup::GROUP_IGNORE, pxContext);
     }
-    if (BitCompare(componentMask, to_U32(ComponentType::TRANSFORM))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::TRANSFORM))) {
         AddSGNComponent<TransformComponent>(*this);
     }
 
-    if (BitCompare(componentMask, to_U32(ComponentType::BOUNDS))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::BOUNDS))) {
         AddSGNComponent<BoundsComponent>(*this);
     }
 
-    if (BitCompare(componentMask, to_U32(ComponentType::UNIT))) {
+    if (BitCompare(_componentMask, to_U32(ComponentType::UNIT))) {
         AddSGNComponent<UnitComponent>(*this);
     }
     
-    if (BitCompare(componentMask, to_U32(ComponentType::RENDERING))) {
-        GFXDevice& gfxContext = _sceneGraph.parentScene().platformContext().gfx();
+    if (BitCompare(_componentMask, to_U32(ComponentType::RENDERING))) {
+        GFXDevice& gfxContext = _sceneGraph.parentScene().context().gfx();
 
         const Material_ptr& materialTpl = _node->getMaterialTpl();
         AddSGNComponent<RenderingComponent>(gfxContext,
-                                            materialTpl ? materialTpl->clone("_instance_" + name)
+                                            materialTpl ? materialTpl->clone("_instance_" + name())
                                                         : nullptr,
                                             *this);
     }
 
-    Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, getGUID());
+    Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, this);
 }
 
 /// If we are destroying the current graph node
@@ -116,7 +115,7 @@ SceneGraphNode::~SceneGraphNode()
 
     RemoveAllSGNComponents();
 
-    Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
+    Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
 
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
         _node.reset();
@@ -153,12 +152,11 @@ void SceneGraphNode::setParentTransformDirty(U32 transformMask) {
     }
 }
 
-void SceneGraphNode::usageContext(const UsageContext& newContext) {
-    Attorney::SceneGraphSGN::onNodeUsageChange(_sceneGraph,
-                                               *this,
-                                               _usageContext,
-                                               newContext);
-    _usageContext = newContext;
+void SceneGraphNode::usageContext(const NodeUsageContext& newContext) {
+    TransformComponent* tComp = get<TransformComponent>();
+    if (tComp) {
+        Attorney::TransformComponentSGN::onParentUsageChanged(*tComp, _usageContext);
+    }
 }
 
 /// Change current SceneGraphNode's parent
@@ -196,32 +194,28 @@ SceneGraphNode* SceneGraphNode::registerNode(SceneGraphNode* node) {
 }
 
 /// Add a new SceneGraphNode to the current node's child list based on a SceneNode
-SceneGraphNode* SceneGraphNode::addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name) {
-    assert(node);
+SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descriptor) {
+    assert(descriptor._node);
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
-    SceneGraphNode* sceneGraphNode = parentGraph().createSceneGraphNode(_sceneGraph,
-                                                                        physicsGroup,
-                                                                        node,
-                                                                        name.empty() ? node->name()
-                                                                                     : name,
-                                                                        componentMask);
+
+    SceneGraphNode* sceneGraphNode = parentGraph().createSceneGraphNode(_sceneGraph, descriptor);
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
-    if (node->getState() == ResourceState::RES_LOADED) {
+    if (descriptor._node->getState() == ResourceState::RES_LOADED) {
         // Do all the post load operations on the SceneNode
         // Pass a reference to the newly created SceneGraphNode in case we need
         // transforms or bounding boxes
-        Attorney::SceneNodeSceneGraph::postLoad(*node, *sceneGraphNode);
+        Attorney::SceneNodeSceneGraph::postLoad(*descriptor._node, *sceneGraphNode);
         invalidateRelationshipCache();
-    } else if (node->getState() == ResourceState::RES_LOADING) {
+    } else if (descriptor._node->getState() == ResourceState::RES_LOADING) {
         setUpdateFlag(UpdateFlag::THREADED_LOAD);
 
         SceneGraphNode* callbackPtr = sceneGraphNode;
 
-        node->setStateCallback(ResourceState::RES_LOADED,
+        descriptor._node->setStateCallback(ResourceState::RES_LOADED,
             [this, callbackPtr](Resource_wptr res) {
                 Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(callbackPtr));
                 invalidateRelationshipCache();
@@ -367,12 +361,13 @@ SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNode
 void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
-                               vectorImpl<I64>& selectionHits,
+                               vectorImpl<SGNRayResult>& selectionHits,
                                bool recursive) const {
 
     if (isSelectable()) {
-        if (get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end)) {
-            selectionHits.push_back(getGUID());
+        AABBRayResult result = get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end);
+        if (std::get<0>(result)) {
+            selectionHits.push_back(std::make_tuple(getGUID(), std::get<1>(result), std::get<2>(result)));
         }
     }
 
@@ -401,6 +396,10 @@ void SceneGraphNode::setSelectable(const bool state) {
     }
 }
 
+bool SceneGraphNode::isSelectable() const {
+    return _isSelectable;
+}
+
 void SceneGraphNode::lockVisibility(const bool state) {
     if (_visibilityLocked != state) {
         _visibilityLocked = state;
@@ -423,12 +422,15 @@ void SceneGraphNode::setActive(const bool state) {
 
 void SceneGraphNode::getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList) {
     // Compute from leaf to root to ensure proper calculations
-    forEachChild([&nodeList](SceneGraphNode& child) {
-        child.getOrderedNodeList(nodeList);
-    });
+    {
+        ReadLock r_lock(_childLock);
+        for (auto& child : _children) {
+            child->getOrderedNodeList(nodeList);
+        }
+    }
 
     const SceneNode_ptr& node = getNode();
-    if (!node || (node && node->getState() == ResourceState::RES_LOADED)) {
+    if (!node || node->getState() == ResourceState::RES_LOADED) {
         nodeList.push_back(this);
     }
 }
@@ -473,6 +475,16 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     if (!_relationshipCache.isValid()) {
         _relationshipCache.rebuild();
     }
+    if (_lockToCamera != 0) {
+        TransformComponent* tComp = get<TransformComponent>();
+        if (tComp) {
+            Camera* cam = Camera::findCamera(_lockToCamera);
+            if (cam) {
+                cam->updateLookAt();
+                tComp->setOffset(true, cam->getWorldMatrix());
+            }
+        }
+    }
 
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTimeUS, *this, sceneState);
 }
@@ -494,20 +506,22 @@ bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
     return _node->onRender(*this, sceneRenderState, renderStagePass);
 }
 
-void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
-                                    const vec3<F32>& posOffset,
-                                    const mat4<F32>& rotationOffset) {
+void SceneGraphNode::onCameraUpdate(const U64 cameraNameHash,
+                                    const vec3<F32>& cameraEye,
+                                    const mat4<F32>& cameraView) {
 
-    forEachChild([cameraGUID, &posOffset, &rotationOffset](SceneGraphNode& child) {
-        child.onCameraUpdate(cameraGUID, posOffset, rotationOffset);
+    forEachChild([cameraNameHash, &cameraEye, &cameraView](SceneGraphNode& child) {
+        child.onCameraUpdate(cameraNameHash, cameraEye, cameraView);
     });
 
-    TransformComponent* tComp = get<TransformComponent>();
-    if (tComp && tComp->ignoreView(cameraGUID)) {
-        tComp->setViewOffset(posOffset, rotationOffset);
+    if (_lockToCamera == cameraNameHash) {
+        TransformComponent* tComp = get<TransformComponent>();
+        if (tComp) {
+            //tComp->setOffset(true, cameraView.getInverse());
+        }
     }
-    
-    Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraGUID, posOffset, rotationOffset);
+
+    Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraNameHash, cameraEye, cameraView);
 }
 
 void SceneGraphNode::onCameraChange(const Camera& cam) {
@@ -533,7 +547,8 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 bool SceneGraphNode::cullNode(const Camera& currentCamera,
                               F32 maxDistanceFromCamera,
                               RenderStage currentStage,
-                              Frustum::FrustCollision& collisionTypeOut) const {
+                              Frustum::FrustCollision& collisionTypeOut,
+                              F32& distanceSqToAABBCenter) const {
 
     if (getFlag(UpdateFlag::THREADED_LOAD)) {
         return true;
@@ -553,7 +568,8 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     const vec3<F32>& center = sphere.getCenter();
     F32 visibilityDistanceSq = std::pow(maxDistanceFromCamera + radius, 2);
 
-    if (distanceCheck && center.distanceSquared(eye) > visibilityDistanceSq) {
+    distanceSqToAABBCenter = center.distanceSquared(eye);
+    if (distanceCheck && distanceSqToAABBCenter > visibilityDistanceSq) {
         if (boundingBox.nearestDistanceFromPointSquared(eye) >
             std::min(visibilityDistanceSq, std::pow(currentCamera.getZPlanes().y, 2))) {
             return true;
@@ -698,7 +714,7 @@ bool SceneGraphNode::save(ByteBuffer& outputBuffer) const {
         }
     }
 
-    if (!ECSManager::save(*this, outputBuffer)) {
+    if (!parentGraph().GetECSManager().save(*this, outputBuffer)) {
         return false;
     }
 
@@ -714,7 +730,7 @@ bool SceneGraphNode::load(ByteBuffer& inputBuffer) {
         }
     }
 
-    if (!ECSManager::load(*this, inputBuffer)) {
+    if (!parentGraph().GetECSManager().load(*this, inputBuffer)) {
         return false;
     }
 

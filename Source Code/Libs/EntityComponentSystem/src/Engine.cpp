@@ -43,13 +43,24 @@ namespace ECS
 		ECS_EventHandler = nullptr;
 	}
 
-	void ECSEngine::Update(f32 tick_ms)
-	{
-		// Advance engine time
-		ECS_EngineTime->Tick(tick_ms);
+    void ECSEngine::PreUpdate(f32 tick_ms)
+    {
+        // Advance engine time
+        ECS_EngineTime->Tick(tick_ms);
 
-		// Update all running systems
-		ECS_SystemManager->Update(tick_ms);
+        // Update all running systems
+        ECS_SystemManager->PreUpdate(tick_ms);
+    }
+
+    void ECSEngine::Update(f32 tick_ms)
+    {
+        // Update all running systems
+        ECS_SystemManager->Update(tick_ms);
+    }
+
+    void ECSEngine::PostUpdate(f32 tick_ms)
+    {
+        ECS_SystemManager->PostUpdate(tick_ms);
 		ECS_EventHandler->DispatchEvents();
 
 		// Finalize pending destroyed entities

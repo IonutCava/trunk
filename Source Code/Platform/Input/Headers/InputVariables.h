@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _INPUT_VARIABLES_H_
 #define _INPUT_VARIABLES_H_
 

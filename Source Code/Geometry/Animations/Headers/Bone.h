@@ -33,6 +33,7 @@
     http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
+#pragma once
 #ifndef BONE_H_
 #define BONE_H_
 

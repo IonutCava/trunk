@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SPHERE_3D_H_
 #define _SPHERE_3D_H_
 
@@ -51,7 +52,7 @@ class Sphere3D : public Object3D {
     // SuperBible stuff
     void rebuildVB() override;
 
-    void updateBoundsInternal(SceneGraphNode& sgn) override;
+    void updateBoundsInternal() override;
 
   protected:
     F32 _radius;

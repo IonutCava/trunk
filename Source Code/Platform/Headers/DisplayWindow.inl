@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _DISPLAY_WINDOW_INL_
 #define _DISPLAY_WINDOW_INL_
 

@@ -62,7 +62,7 @@ bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
     VisibleNodeList::const_iterator it;
     it = std::find_if(std::cbegin(cache), std::cend(cache),
         [GUID](VisibleNode node) {
-            const SceneGraphNode* nodePtr = node.second;
+            const SceneGraphNode* nodePtr = node._node;
             return (nodePtr != nullptr && nodePtr->getGUID() == GUID);
         });
 
@@ -135,11 +135,12 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
 
     bool isVisible = !_cullingFunction[to_U32(stage)](currentNode);
 
+    F32 distanceSqToCamera = 0.0f;
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
-    isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, stage, collisionResult);
+    isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, stage, collisionResult, distanceSqToCamera);
 
     if (isVisible && !parentTask.stopRequested()) {
-        vectorAlg::emplace_back(nodes, 0, &currentNode);
+        vectorAlg::emplace_back(nodes, VisibleNode{ distanceSqToCamera, &currentNode });
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
             auto childCull = [this, &parentTask, &currentCamera, &nodes, &stage, cullMaxDistance](const SceneGraphNode& child) {
@@ -149,17 +150,22 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
             currentNode.forEachChild(childCull);
         } else {
             // All nodes are in view entirely
-            addAllChildren(currentNode, stage, nodes);
+            addAllChildren(currentNode, stage, currentCamera.getEye(), nodes);
         }
     }
 }
 
-void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage stage, VisibleNodeList& nodes) const {
-    currentNode.forEachChild([this, &currentNode, &stage, &nodes](const SceneGraphNode& child) {
-        if (!(stage == RenderStage::SHADOW &&   !currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS))) {
+void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage stage, const vec3<F32>& cameraEye, VisibleNodeList& nodes) const {
+    currentNode.forEachChild([this, &currentNode, &stage, &cameraEye, &nodes](const SceneGraphNode& child) {
+        if (!(stage == RenderStage::SHADOW && !currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS))) {
             if (child.isActive() && !_cullingFunction[to_U32(stage)](child)) {
-                vectorAlg::emplace_back(nodes, 0, &child);
-                addAllChildren(child, stage, nodes);
+                F32 distanceSqToCamera = 0.0f;
+                BoundsComponent* bComp = child.get<BoundsComponent>();
+                if (bComp != nullptr) {
+                    distanceSqToCamera = bComp->getBoundingSphere().getCenter().distanceSquared(cameraEye);
+                }
+                vectorAlg::emplace_back(nodes, VisibleNode{ distanceSqToCamera, &child });
+                addAllChildren(child, stage, cameraEye, nodes);
             }
         }
     });

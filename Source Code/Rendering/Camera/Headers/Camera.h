@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CAMERA_H
 #define _CAMERA_H
 
@@ -241,10 +242,6 @@ class Camera : public Resource {
         setRotation(euler.yaw, euler.pitch, euler.roll);
     }
 
-    inline const mat4<F32>& getProjectionMatrix() const {
-        return _projectionMatrix;
-    }
-
     inline const vec2<F32>& getZPlanes() const { return _zPlanes; }
 
     inline const vec4<F32>& orthoRect() const { return _orthoRect; }
@@ -267,7 +264,17 @@ class Camera : public Resource {
     }
 
     inline const mat4<F32>& getViewMatrix() {
+        updateViewMatrix();
         return _viewMatrix;
+    }
+
+    inline const mat4<F32>& getProjectionMatrix() {
+        updateProjection();
+        return _projectionMatrix;
+    }
+
+    inline const mat4<F32>& getProjectionMatrix() const {
+        return _projectionMatrix;
     }
 
     inline mat4<F32> getWorldMatrix() {
@@ -402,7 +409,6 @@ class Camera : public Resource {
 
     private:
       typedef hashMapImpl<U64, Camera*> CameraPool;
-      typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
 
       static Camera* s_activeCamera;
 

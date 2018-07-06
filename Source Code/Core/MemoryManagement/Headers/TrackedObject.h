@@ -34,6 +34,7 @@
    http://www.gamedev.net/page/resources/_/technical/game-programming/enginuity-part-ii-r1954
 */
 
+#pragma once
 #ifndef TRACKED_OBJECT_H_
 #define TRACKED_OBJECT_H_
 

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _TEXT_3D_H_
 #define _TEXT_3D_H_
 
@@ -50,7 +51,7 @@ class Text3D : public Object3D {
 
     void setWidth(F32 width);
 
-    void updateBoundsInternal(SceneGraphNode& sgn) override;
+    void updateBoundsInternal() override;
 
   private:
     stringImpl _text;

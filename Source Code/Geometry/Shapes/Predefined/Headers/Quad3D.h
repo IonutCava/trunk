@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _QUAD_3D_H_
 #define _QUAD_3D_H_
 
@@ -62,7 +63,7 @@ class Quad3D : public Object3D {
     // Remember to invert for 2D mode
     void setDimensions(const vec4<F32>& rect);
 
-    void updateBoundsInternal(SceneGraphNode& sgn) override;
+    void updateBoundsInternal() override;
 
 };
 

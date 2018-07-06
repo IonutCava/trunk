@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _VERTEX_BUFFER_OBJECT_H
 #define _VERTEX_BUFFER_OBJECT_H
 

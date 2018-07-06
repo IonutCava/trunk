@@ -6,8 +6,9 @@
 #include "ECS/Components/Headers/BoundsComponent.h"
 
 namespace Divide {
-    BoundsSystem::BoundsSystem(ECS::ECSEngine& parentEngine)
-        : ECSSystem(parentEngine)
+    BoundsSystem::BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
+        : ECSSystem(parentEngine),
+          PlatformContextComponent(context)
     {
 
     }
@@ -15,38 +16,32 @@ namespace Divide {
 
     BoundsSystem::~BoundsSystem()
     {
+    }
 
+    void BoundsSystem::onBoundsChanged(BoundsComponent* bComp) const {
+        ECS::EntityManager* entityManager = _engine.GetEntityManager();
+        const ECS::EntityId owner = bComp->GetOwner();
+        ECS::IEntity* entity = entityManager->GetEntity(owner);
+        SceneGraphNode* parent = static_cast<SceneGraphNode*>(entity);
+
+        if (parent != nullptr) {
+            const SceneNode_ptr& node = parent->getNode();
+            node->updateBoundsInternal();
+            bComp->onBoundsChange(node->getBoundsInternal());
+        }
     }
 
     void BoundsSystem::PreUpdate(F32 dt) {
-        ECS::EntityManager* entityManager = _engine.GetEntityManager();
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
         auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
         for (;bComp != bCompEnd; ++bComp)
         {
-            const ECS::EntityId owner = bComp->GetOwner();
-            ECS::IEntity* entity = entityManager->GetEntity(owner);
-
-            SceneGraphNode* parent = static_cast<SceneGraphNode*>(entity);
-
-            if (parent != nullptr) {
-                const SceneNode_ptr& node = parent->getNode();
-
-                vectorImpl<SceneNode::SGNParentData>::iterator it;
-                it = node->getSGNData(parent->getGUID());
-                if (it != std::cend(node->_sgnParents)) {
-                    SceneNode::SGNParentData& parentData = *it;
-
-                    if (parentData.getFlag(SceneNode::UpdateFlag::BOUNDS_CHANGED)) {
-                        node->updateBoundsInternal(*parent);
-                        bComp->onBoundsChange(node->refBoundingBox());
-                        parentData.clearFlag(SceneNode::UpdateFlag::BOUNDS_CHANGED);
-                    }
-                }
+            if (bComp->isBoundsChanged()) {
+                onBoundsChanged(bComp.operator->());
             }
 
-            U64 microSec = Time::MillisecondsToMicroseconds(dt);
             bComp->PreUpdate(microSec);
         }
     }

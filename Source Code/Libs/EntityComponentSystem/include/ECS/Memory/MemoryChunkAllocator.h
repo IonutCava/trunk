@@ -247,6 +247,7 @@ namespace ECS { namespace Memory {
 
 					chunk->objects.remove((OBJECT_TYPE*)object);
                     assert(chunk->objects.size() != objectCount && "Remove failed!");
+                    (void*)objectCount;
 
 					chunk->allocator->free(object);
 					return;

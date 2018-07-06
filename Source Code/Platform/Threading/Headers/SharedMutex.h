@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SHARED_MUTEX_BOOST_H_
 #define _SHARED_MUTEX_BOOST_H_
 

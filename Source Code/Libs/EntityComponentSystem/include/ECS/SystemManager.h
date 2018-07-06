@@ -66,7 +66,9 @@ namespace ECS
 		/// dt_ms - 	The dt in milliseconds.
 		///-------------------------------------------------------------------------------------------------
 
-		void Update(f32 dt_ms);
+        void PreUpdate(f32 dt_ms);
+        void Update(f32 dt_ms);
+		void PostUpdate(f32 dt_ms);
 
 	public:
 

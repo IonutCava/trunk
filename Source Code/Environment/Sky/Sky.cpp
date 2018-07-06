@@ -82,14 +82,18 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NAVIGATION);
-
     assert(_sky != nullptr);
 
-    sgn.addNode(_sky, normalMask, PhysicsGroup::GROUP_IGNORE);
+    SceneGraphNodeDescriptor skyNodeDescriptor;
+    skyNodeDescriptor._node = _sky;
+    skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    skyNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+    skyNodeDescriptor._isSelectable = false;
+    skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                       to_base(ComponentType::BOUNDS) |
+                                       to_base(ComponentType::RENDERING) |
+                                       to_base(ComponentType::NAVIGATION);
+    sgn.addNode(skyNodeDescriptor);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {

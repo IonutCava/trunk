@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _PHYSX_ACTOR_H_
 #define _PHYSX_ACTOR_H_
 
@@ -85,7 +86,7 @@ public:
 
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
-    const mat4<F32>& getMatrix() override;
+    mat4<F32> getMatrix() override;
 
     void getValues(TransformValues& valuesOut) const override;
 

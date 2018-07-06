@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CORE_SINGLETON_H_
 #define _CORE_SINGLETON_H_
 

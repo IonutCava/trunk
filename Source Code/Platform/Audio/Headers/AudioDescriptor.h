@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _AUDIO_DESCRIPTOR_H_
 #define _AUDIO_DESCRIPTOR_H_
 

@@ -5,81 +5,69 @@
 
 namespace Divide {
 
-ECS::ECSEngine* ECSManager::s_ecsEngine = nullptr;
-
-void ECSManager::init(ECS::ECSEngine& engine) 
+ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
+    : PlatformContextComponent(context),
+      _ecsEngine(engine)
 {
-    if (s_ecsEngine != nullptr) {
-        destroy(*s_ecsEngine);
-    }
-    s_ecsEngine = &engine;
-
-    TransformSystem* tSys = engine.GetSystemManager()->AddSystem<TransformSystem>(engine);
-    AnimationSystem* aSys = engine.GetSystemManager()->AddSystem<AnimationSystem>(engine);
-    RenderingSystem* rSys = engine.GetSystemManager()->AddSystem<RenderingSystem>(engine);
-    BoundsSystem*  bSys = engine.GetSystemManager()->AddSystem<BoundsSystem>(engine);
+    TransformSystem* tSys = _ecsEngine.GetSystemManager()->AddSystem<TransformSystem>(_ecsEngine, _context);
+    AnimationSystem* aSys = _ecsEngine.GetSystemManager()->AddSystem<AnimationSystem>(_ecsEngine, _context);
+    RenderingSystem* rSys = _ecsEngine.GetSystemManager()->AddSystem<RenderingSystem>(_ecsEngine, _context);
+    BoundsSystem*  bSys = _ecsEngine.GetSystemManager()->AddSystem<BoundsSystem>(_ecsEngine, _context);
 
     aSys->AddDependencies(tSys);
+    bSys->AddDependencies(aSys);
     rSys->AddDependencies(tSys);
     rSys->AddDependencies(bSys);
-    engine.GetSystemManager()->UpdateSystemWorkOrder();
+    _ecsEngine.GetSystemManager()->UpdateSystemWorkOrder();
 }
 
-void ECSManager::destroy(ECS::ECSEngine& engine) {
-    ACKNOWLEDGE_UNUSED(engine);
-    s_ecsEngine = nullptr;
+ECSManager::~ECSManager()
+{
+
 }
 
-bool ECSManager::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
-    if (s_ecsEngine != nullptr) {
-        TransformSystem* tSys = s_ecsEngine->GetSystemManager()->GetSystem<TransformSystem>();
-        if (tSys != nullptr) {
-            if (!tSys->save(sgn, outputBuffer)) {
-                return false;
-            }
+bool ECSManager::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const {
+    TransformSystem* tSys = _ecsEngine.GetSystemManager()->GetSystem<TransformSystem>();
+    if (tSys != nullptr) {
+        if (!tSys->save(sgn, outputBuffer)) {
+            return false;
         }
-        AnimationSystem* aSys = s_ecsEngine->GetSystemManager()->GetSystem<AnimationSystem>();
-        if (aSys != nullptr) {
-            if (!aSys->save(sgn, outputBuffer)) {
-                return false;
-            }
-        }
-        RenderingSystem* rSys = s_ecsEngine->GetSystemManager()->GetSystem<RenderingSystem>();
-        if (rSys != nullptr) {
-            if (!rSys->save(sgn, outputBuffer)) {
-                return false;
-            }
-        }
-        return true;
     }
-
-    return false;
+    AnimationSystem* aSys = _ecsEngine.GetSystemManager()->GetSystem<AnimationSystem>();
+    if (aSys != nullptr) {
+        if (!aSys->save(sgn, outputBuffer)) {
+            return false;
+        }
+    }
+    RenderingSystem* rSys = _ecsEngine.GetSystemManager()->GetSystem<RenderingSystem>();
+    if (rSys != nullptr) {
+        if (!rSys->save(sgn, outputBuffer)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool ECSManager::load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
-    if (s_ecsEngine != nullptr) {
-        TransformSystem* tSys = s_ecsEngine->GetSystemManager()->GetSystem<TransformSystem>();
-        if (tSys != nullptr) {
-            if (!tSys->load(sgn, inputBuffer)) {
-                return false;
-            }
+    TransformSystem* tSys = _ecsEngine.GetSystemManager()->GetSystem<TransformSystem>();
+    if (tSys != nullptr) {
+        if (!tSys->load(sgn, inputBuffer)) {
+            return false;
         }
-        AnimationSystem* aSys = s_ecsEngine->GetSystemManager()->GetSystem<AnimationSystem>();
-        if (aSys != nullptr) {
-            if (!aSys->load(sgn, inputBuffer)) {
-                return false;
-            }
-        }
-        RenderingSystem* rSys = s_ecsEngine->GetSystemManager()->GetSystem<RenderingSystem>();
-        if (rSys != nullptr) {
-            if (!rSys->load(sgn, inputBuffer)) {
-                return false;
-            }
-        }
-        return true;
     }
-
-    return false;
+    AnimationSystem* aSys = _ecsEngine.GetSystemManager()->GetSystem<AnimationSystem>();
+    if (aSys != nullptr) {
+        if (!aSys->load(sgn, inputBuffer)) {
+            return false;
+        }
+    }
+    RenderingSystem* rSys = _ecsEngine.GetSystemManager()->GetSystem<RenderingSystem>();
+    if (rSys != nullptr) {
+        if (!rSys->load(sgn, inputBuffer)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }; //namespace Divide

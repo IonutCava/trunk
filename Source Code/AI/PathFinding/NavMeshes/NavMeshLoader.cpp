@@ -248,7 +248,7 @@ NavModelData mergeModels(NavModelData& a,
             mergedData.clear();
     }
 
-    mergedData.setName(a.name() + "+" + b.name());
+    mergedData.name(a.name() + "+" + b.name());
     return mergedData;
 }
 
@@ -360,7 +360,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
             case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
                 if (navComp && !navComp->navMeshDetailOverride() &&
-                     sgn.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC) {
+                     sgn.usageContext() == NodeUsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }
                 if (static_cast<Object3D*>(sn.get())->getObjectType() ==

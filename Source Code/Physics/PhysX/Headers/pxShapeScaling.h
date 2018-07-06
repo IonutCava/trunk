@@ -34,6 +34,7 @@
 /* breeze Engine Physics Module (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef _PHYSX_SCALING_H_
 #define _PHYSX_SCALING_H_
 

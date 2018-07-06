@@ -4,8 +4,9 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
-    RenderingSystem::RenderingSystem(ECS::ECSEngine& parentEngine)
-        : ECSSystem(parentEngine)
+    RenderingSystem::RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
+        : ECSSystem(parentEngine),
+          PlatformContextComponent(context)
     {
 
     }

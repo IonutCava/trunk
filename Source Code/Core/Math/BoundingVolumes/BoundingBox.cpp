@@ -94,7 +94,7 @@ bool BoundingBox::collision(const BoundingSphere& bSphere) const {
 }
 
 /// Optimized method: http://www.cs.utah.edu/~awilliam/box/box.pdf
-bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
+AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
     // ReadLock r_lock(_lock);
     const vec3<F32> bounds[] = {_min, _max};
 
@@ -104,7 +104,7 @@ bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
     const F32 ty_max = (bounds[1 - r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 
     if ((t_min > ty_max) || (ty_min > t_max)) {
-        return false;
+        return std::make_tuple(false, t_min, t_max);
     }
 
     if (ty_min > t_min){
@@ -119,7 +119,7 @@ bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
     const F32 tz_max = (bounds[1 - r.sign[2]].z - r.origin.z) * r.inv_direction.z;
 
     if ((t_min > tz_max) || (tz_min > t_max)) {
-        return false;
+        return std::make_tuple(false, t_min, t_max);
     }
 
     if (tz_min > t_min) {
@@ -129,7 +129,7 @@ bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
     if (tz_max < t_max) {
         t_max = tz_max;
     }
-    return ((t_min < t1) && (t_max > t0));
+    return std::make_tuple(((t_min < t1) && (t_max > t0)), t_min, t_max);
 }
 
 void BoundingBox::transform(const mat4<F32>& mat) {

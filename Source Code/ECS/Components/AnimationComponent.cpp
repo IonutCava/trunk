@@ -169,9 +169,7 @@ const vectorImplBest<mat4<F32>>& AnimationComponent::transformsByIndex(U32 anima
     return _animator->transforms(animationID, index);
 }
 
-const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
-                                                      const D64 timeStamp,
-                                                      const stringImpl& name) {
+mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name) {
     const Object3D_ptr& node = _parentSGN.getNode<Object3D>();
     assert(node != nullptr);
     assert(_animator != nullptr);

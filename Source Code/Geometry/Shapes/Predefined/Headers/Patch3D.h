@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _PATCH_3D_H_
 #define _PATCH_3D_H_
 
@@ -49,7 +50,7 @@ public:
 
     void build();
 
-    void updateBoundsInternal(SceneGraphNode& sgn) override;
+    void updateBoundsInternal() override;
 
 protected:
     vec2<U16> _dimensions;

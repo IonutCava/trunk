@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SFX_DEVICE_H
 #define _SFX_DEVICE_H
 

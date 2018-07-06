@@ -30,7 +30,7 @@ PhysXSceneInterface::~PhysXSceneInterface() {
 }
 
 bool PhysXSceneInterface::init() {
-    physx::PxPhysics* gPhysicsSDK = static_cast<PhysX&>(_parentScene.platformContext().pfx().getImpl()).getSDK();
+    physx::PxPhysics* gPhysicsSDK = static_cast<PhysX&>(_parentScene.context().pfx().getImpl()).getSDK();
     // Create the scene
     if (!gPhysicsSDK) {
         Console::errorfn(Locale::get(_ID("ERROR_PHYSX_SDK")));

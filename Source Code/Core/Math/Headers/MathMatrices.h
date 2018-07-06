@@ -105,6 +105,7 @@ smasherprog@gmail.com or visit www.nolimitsdesigns.com
 
  */
 
+#pragma once
 #ifndef _MATH_MATRICES_H_
 #define _MATH_MATRICES_H_
 

@@ -8,27 +8,23 @@ namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
       : SGNComponent(parentSGN, "TRANSFORM"),
         _uniformScaled(false),
-        _transformUpdatedMask(to_base(TransformType::WORLD_TRANSFORMS))
+        _transformUpdatedMask(to_base(TransformType::ALL)),
+        _parentUsageContext(parentSGN.usageContext())
     {
         _editorComponent.registerField("Transform",
                                        &_transformInterface,
                                        EditorComponentFieldType::TRANSFORM,
                                        false);
         _editorComponent.registerField("WorldMat", &_worldMatrix, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
-        
-        if (_ignoreViewSettings._cameraGUID != -1) {
-            _editorComponent.addHeader("Ignore View Settings");
-
-            _editorComponent.registerField("Camera GUID", &_ignoreViewSettings._cameraGUID, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
-            _editorComponent.registerField("Position Offset", &_ignoreViewSettings._posOffset, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
-            _editorComponent.registerField("Transform Offset", &_ignoreViewSettings._transformOffset, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
+        if (_transformOffset.first) {
+            _editorComponent.registerField("Transform Offset", &_transformOffset.second, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
         }
 
         _editorComponent.onChangedCbk([this](EditorComponentField& field) {
             if (field._name == "Transform") {
-                setTransformDirty(to_base(TransformType::WORLD_TRANSFORMS));
+                setTransformDirty(to_base(TransformType::ALL));
             } else if (field._name == "Position Offset") {
-                setTransformDirty(TransformType::VIEW_OFFSET);
+                // view offset stuff
             }
 
             _hasChanged = true;
@@ -44,6 +40,10 @@ namespace Divide {
         if (transformMask != to_base(TransformType::NONE)) {
             _worldMatrixDirty = true;
         }
+    }
+
+    void TransformComponent::onParentUsageChanged(NodeUsageContext context) {
+        _parentUsageContext = context;
     }
 
     void TransformComponent::reset() {
@@ -78,11 +78,9 @@ namespace Divide {
         if (_transformUpdatedMask != to_base(TransformType::NONE))
         {
             UpgradeToWriteLock w_lock(r_lock);
-            if (AnyCompare(_transformUpdatedMask, to_base(TransformType::WORLD_TRANSFORMS))) {
-                _transformInterface.getValues(_prevTransformValues);
-            }
-            _worldMatrixDirty = true;
+            _transformInterface.getValues(_prevTransformValues);
             _transformUpdatedMask = to_base(TransformType::NONE);
+            _worldMatrixDirty = true;
         }
 
         SGNComponent<TransformComponent>::Update(deltaTimeUS);
@@ -93,16 +91,10 @@ namespace Divide {
         SGNComponent<TransformComponent>::PostUpdate(deltaTimeUS);
     }
 
-    void TransformComponent::ignoreView(const bool state, const I64 cameraGUID) {
-        _ignoreViewSettings._cameraGUID = cameraGUID;
-        setTransformDirty(TransformType::VIEW_OFFSET);
-    }
-
-    void TransformComponent::setViewOffset(const vec3<F32>& posOffset, const mat4<F32>& rotationOffset) {
-        _ignoreViewSettings._posOffset.set(posOffset);
-        _ignoreViewSettings._transformOffset.set(rotationOffset);
-
-        setTransformDirty(TransformType::VIEW_OFFSET);
+    void TransformComponent::setOffset(bool state, const mat4<F32>& offset) {
+        _transformOffset.first = state;
+        _transformOffset.second.set(offset);
+        setTransformDirty(TransformType::ALL);
     }
 
     void TransformComponent::setTransformDirty(TransformType type) {
@@ -374,7 +366,7 @@ namespace Divide {
 
             _transformStack.pop();
 
-            setTransformDirty(TransformType::WORLD_TRANSFORMS);
+            setTransformDirty(TransformType::ALL);
             return true;
         }
         return false;
@@ -383,13 +375,13 @@ namespace Divide {
     void TransformComponent::setTransform(const TransformValues& values) {
         WriteLock r_lock(_lock);
         _transformInterface.setValues(values);
-        setTransformDirty(TransformType::WORLD_TRANSFORMS);
+        setTransformDirty(TransformType::ALL);
     }
 
     void TransformComponent::setTransforms(const mat4<F32>& transform) {
         WriteLock r_lock(_lock);
         _transformInterface.setTransforms(transform);
-        setTransformDirty(TransformType::WORLD_TRANSFORMS);
+        setTransformDirty(TransformType::ALL);
     }
 
     void TransformComponent::getValues(TransformValues& valuesOut) const {
@@ -397,27 +389,37 @@ namespace Divide {
         _transformInterface.getValues(valuesOut);
     }
 
-    const mat4<F32>& TransformComponent::getMatrix() {
+    mat4<F32> TransformComponent::getMatrix() {
         ReadLock r_lock(_lock);
+        if (_transformOffset.first) {
+            return _transformInterface.getMatrix() * _transformOffset.second;
+        } 
         return _transformInterface.getMatrix();
+    }
+
+    mat4<F32> TransformComponent::getMatrix(D64 interpolationFactor) const {
+        mat4<F32> worldMatrixInterp(getLocalPosition(interpolationFactor),
+                                    getLocalScale(interpolationFactor),
+                                    GetMatrix(getLocalOrientation(interpolationFactor)));
+
+        if (_transformOffset.first) {
+            return worldMatrixInterp * _transformOffset.second;
+        }
+
+        return worldMatrixInterp;
     }
 
     const mat4<F32>& TransformComponent::updateWorldMatrix() {
         if (_worldMatrixDirty) {
             _worldMatrix.set(getMatrix());
-
+            
             SceneGraphNode* grandParentPtr = _parentSGN.getParent();
             if (grandParentPtr) {
                 _worldMatrix *= grandParentPtr->get<TransformComponent>()->updateWorldMatrix();
             }
 
-            if (_ignoreViewSettings._cameraGUID != -1) {
-                _worldMatrix = _worldMatrix * _ignoreViewSettings._transformOffset;
-            }
-
-            _worldMatrixDirty = false;
-
             _parentSGN.SendEvent<TransformUpdated>(GetOwner());
+            _worldMatrixDirty = false;
         }
 
         return _worldMatrix;
@@ -428,17 +430,15 @@ namespace Divide {
     }
 
     mat4<F32> TransformComponent::getWorldMatrix(D64 interpolationFactor) const {
-        mat4<F32> worldMatrixInterp(getLocalPosition(interpolationFactor),
-                                    getLocalScale(interpolationFactor),
-                                    GetMatrix(getLocalOrientation(interpolationFactor)));
+        if (interpolationFactor == 1.0 || _parentUsageContext == NodeUsageContext::NODE_STATIC) {
+            return getWorldMatrix();
+        }
+
+        mat4<F32> worldMatrixInterp(getMatrix(interpolationFactor));
 
         SceneGraphNode* grandParentPtr = _parentSGN.getParent();
         if (grandParentPtr) {
             worldMatrixInterp *= grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
-        }
-
-        if (_ignoreViewSettings._cameraGUID != -1) {
-            return worldMatrixInterp * _ignoreViewSettings._transformOffset;
         }
 
         return worldMatrixInterp;

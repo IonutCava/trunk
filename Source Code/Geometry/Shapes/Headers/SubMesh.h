@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SUB_MESH_H_
 #define _SUB_MESH_H_
 

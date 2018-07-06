@@ -126,7 +126,9 @@ namespace ECS
 		/// tick_ms - 	The tick in milliseconds.
 		///-------------------------------------------------------------------------------------------------
 
+        void PreUpdate(f32 tick_ms);
 		void Update(f32 tick_ms);
+        void PostUpdate(f32 tick_ms);
 	};
 
 } // namespace ECS

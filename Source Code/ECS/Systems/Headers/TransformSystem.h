@@ -29,16 +29,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TRANSFORM_SYSTEM_H_
 #define _TRANSFORM_SYSTEM_H_
 
 #include "ECSSystem.h"
+#include "Core/Headers/PlatformContextComponent.h"
+#include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {
 
-    class TransformSystem : public ECSSystem<TransformSystem> {
+    class TransformSystem : public PlatformContextComponent,
+                            public ECSSystem<TransformSystem> {
       public:
-        TransformSystem(ECS::ECSEngine& parentEngine);
+        TransformSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~TransformSystem();
 
         virtual void PreUpdate(F32 dt) override;
@@ -47,6 +51,11 @@ namespace Divide {
 
         bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) override;
         bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) override;
+
+    protected:
+        TaskHandle _preUpdateTask;
+        TaskHandle _updateTask;
+        TaskHandle _postUpdateTask;
     };
 };
 

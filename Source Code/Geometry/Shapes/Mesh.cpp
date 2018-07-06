@@ -30,11 +30,12 @@ void Mesh::addSubMesh(SubMesh_ptr subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
     _subMeshList.push_back(subMesh);
     Attorney::SubMeshMesh::setParentMesh(*subMesh.get(), this);
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
 }
 
-void Mesh::updateBoundsInternal(SceneGraphNode& sgn) {
+void Mesh::updateBoundsInternal() {
     _boundingBox.reset();
+    Object3D::updateBoundsInternal();
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
@@ -51,13 +52,16 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                                    to_base(ComponentType::INVERSE_KINEMATICS) |
                                    to_base(ComponentType::RAGDOLL);
 
+    SceneGraphNodeDescriptor subMeshDescriptor;
+    subMeshDescriptor._isSelectable = true;
+    subMeshDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
+    subMeshDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+
     for (const SubMesh_ptr& submesh : _subMeshList) {
-        sgn.addNode(submesh,
-                    submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask,
-                    PhysicsGroup::GROUP_IGNORE,
-                    Util::StringFormat("%s_%d",
-                                        sgn.name().c_str(),
-                                        submesh->getID()));
+        subMeshDescriptor._node = submesh;
+        subMeshDescriptor._componentMask = submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask;
+        subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn.name().c_str(), submesh->getID());
+        sgn.addNode(subMeshDescriptor);
     }
 
     sgn.get<BoundsComponent>()->ignoreTransform(true);

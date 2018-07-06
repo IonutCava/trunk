@@ -23,7 +23,7 @@ RenderTargetHandle EnvironmentProbe::s_reflection;
 
 EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
     GUIDWrapper(),
-    _context(parentScene.platformContext().gfx()),
+    _context(parentScene.context().gfx()),
     _type(type),
     _updateRate(1),
     _currentUpdateCall(0),

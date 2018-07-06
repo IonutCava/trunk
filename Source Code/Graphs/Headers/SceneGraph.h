@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SCENE_GRAPH_H_
 #define _SCENE_GRAPH_H_
 
@@ -43,6 +44,7 @@ namespace ECS {
 namespace Divide {
 class Ray;
 class SceneState;
+class ECSManager;
 
 namespace Attorney {
     class SceneGraphSGN;
@@ -98,27 +100,11 @@ class SceneGraph : private NonCopyable,
 
     void idle();
 
-    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& selectionHits) const;
+    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SGNRayResult>& selectionHits) const;
 
-    template<class... ARGS>
-    SceneGraphNode* createSceneGraphNode(ARGS&&... args) {
-        UniqueLock u_lock(_nodeCreateMutex);
+    SceneGraphNode* createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 
-        ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(std::forward<ARGS>(args)...);
-        return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));
-    }
-
-    void destroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true) {
-        if (node) {
-            if (inPlace) {
-                GetEntityManager()->DestroyAndRemoveEntity(node->GetEntityID());
-            }
-            else {
-                GetEntityManager()->DestroyEntity(node->GetEntityID());
-            }
-            node = nullptr;
-        }
-    }
+    void destroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true);
 
     // If this function returns true, the node was successfully removed (or queued for removal)
     bool removeNode(I64 guid);
@@ -134,6 +120,8 @@ class SceneGraph : private NonCopyable,
 
     const vectorImpl<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
 
+    ECSManager& GetECSManager() { return *_ecsManager; }
+    const ECSManager& GetECSManager() const { return *_ecsManager; }
     ECS::ECSEngine& GetECSEngine() { return *_ecsEngine; }
     const ECS::ECSEngine& GetECSEngine() const { return *_ecsEngine; }
     ECS::EntityManager* GetEntityManager();
@@ -150,13 +138,12 @@ class SceneGraph : private NonCopyable,
     void onNodeAdd(SceneGraphNode& newNode);
     void onNodeTransform(SceneGraphNode& node);
 
-    void unregisterNode(I64 guid, SceneGraphNode::UsageContext usage);
-
     bool frameStarted(const FrameEvent& evt);
     bool frameEnded(const FrameEvent& evt);
 
    private:
     std::unique_ptr<ECS::ECSEngine> _ecsEngine;
+    std::unique_ptr<ECSManager> _ecsManager;
 
     bool _loadComplete;
     bool _octreeChanged;
@@ -181,18 +168,6 @@ class SceneGraphSGN {
 
     static void onNodeDestroy(SceneGraph& sceneGraph, SceneGraphNode& oldNode) {
         sceneGraph.onNodeDestroy(oldNode);
-    }
-
-    static void onNodeUsageChange(SceneGraph& sceneGraph, 
-                                  SceneGraphNode& node,
-                                  SceneGraphNode::UsageContext oldUsage,
-                                  SceneGraphNode::UsageContext newUsage)
-    {
-        ACKNOWLEDGE_UNUSED(oldUsage);
-        ACKNOWLEDGE_UNUSED(newUsage);
-
-        sceneGraph.unregisterNode(node.getGUID(), node.usageContext());
-
     }
 
     static void onNodeTransform(SceneGraph& sceneGraph, SceneGraphNode& node)

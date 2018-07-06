@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _SHADER_PROGRAM_INFO_H_
 #define _SHADER_PROGRAM_INFO_H_
 
@@ -38,14 +39,14 @@ namespace Divide {
 
 class ShaderProgramInfo {
 public:
-    enum class BuildStage : U32 {
+    enum class BuildStage : U8 {
         QUEUED = 0,
         COMPUTED = 1,
         READY = 2,
         REQUESTED = 3,
         COUNT
     };
-
+    
 public:
     explicit ShaderProgramInfo();
     ShaderProgramInfo(const ShaderProgramInfo& other);

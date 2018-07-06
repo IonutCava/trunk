@@ -844,7 +844,7 @@ void Editor::drawIMGUIDebug(const U64 deltaTime) {
     }
 }
 
-bool Editor::needInput() {
+bool Editor::needInput() const {
     return _running || _gizmosVisible || showDebugWindow() || showSampleWindow();
 }
 

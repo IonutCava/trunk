@@ -150,9 +150,8 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 
                 crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc);
             } break;
-
-            s_shadowMaps.push_back(crtTarget);
         };
+        s_shadowMaps.push_back(crtTarget);
 
         _depthMapUsage[i].resize(0);
     }

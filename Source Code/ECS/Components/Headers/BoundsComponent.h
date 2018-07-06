@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _BOUNDS_COMPONENT_H_
 #define _BOUNDS_COMPONENT_H_
 
@@ -49,7 +50,7 @@ namespace Divide {
         inline bool ignoreTransform() const { return _ignoreTransform; }
         inline void ignoreTransform(bool state) { _ignoreTransform = state; }
 
-        void onBoundsChange(const BoundingBox& nodeBounds);
+        inline void boundsChanged() { _boundsChanged = true; }
 
     protected:
         friend class SceneGraph;
@@ -61,10 +62,13 @@ namespace Divide {
         void flagBoundingBoxDirty();
         const BoundingBox& updateAndGetBoundingBox();
         void onTransformUpdated(const TransformUpdated* event);
+        void onBoundsChange(const BoundingBox& nodeBounds);
+        inline bool isBoundsChanged() const { return _boundsChanged; }
 
     private:
-        std::atomic<bool> _ignoreTransform;
-        std::atomic<bool> _boundingBoxDirty;
+        std::atomic_bool _boundsChanged;
+        std::atomic_bool _ignoreTransform;
+        std::atomic_bool _boundingBoxDirty;
         BoundingBox _boundingBox;
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;

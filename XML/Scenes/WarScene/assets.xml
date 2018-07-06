@@ -60,6 +60,7 @@
 	<orientation x="0" y="0" z="-90" />
 	<colour r="0.1" g="0.4" b="0.1"/>
 	<version>1.0</version>
+  <isSelectable>false</isSelectable>
 	<staticObject>true</staticObject>
 	<castsShadows>false</castsShadows>
 	<addToNavigation>true</addToNavigation>
@@ -71,6 +72,7 @@
 	<position x="-100" y="0" z="-100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isSelectable>true</isSelectable>
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
 	<useHighNavigationDetail>true</useHighNavigationDetail>
@@ -82,6 +84,7 @@
 	<position x="100" y="0" z="-100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isSelectable>true</isSelectable>
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
 	<useHighNavigationDetail>true</useHighNavigationDetail>
@@ -93,6 +96,7 @@
 	<position x="-100" y="0" z="100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isSelectable>true</isSelectable>
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
 	<useHighNavigationDetail>true</useHighNavigationDetail>
@@ -104,6 +108,7 @@
 	<position x="100" y="0" z="100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isSelectable>true</isSelectable>
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
 	<useHighNavigationDetail>true</useHighNavigationDetail>
@@ -115,6 +120,7 @@
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isSelectable>false</isSelectable>
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
 	<useHighNavigationDetail>true</useHighNavigationDetail>

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _RENDER_API_H_
 #define _RENDER_API_H_
 

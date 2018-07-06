@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _RESOURCE_H_
 #define _RESOURCE_H_
 
@@ -147,7 +148,8 @@ protected:
 enum class GeometryType : U32 {
     VEGETATION,  ///< For special rendering subroutines
     PRIMITIVE,   ///< Simple objects: Boxes, Spheres etc
-    GEOMETRY     ///< All other forms of geometry
+    GEOMETRY,    ///< All other forms of geometry
+    COUNT
 };
 
 struct FileData {
@@ -157,30 +159,25 @@ struct FileData {
     vec3<F32> position;
     vec3<F32> orientation;
     vec3<F32> colour;
-    GeometryType type;
-    F32 data;  ///< general purpose
+    GeometryType type = GeometryType::COUNT;
+    F32 data = -1.0f;  ///< general purpose
     stringImpl data2;
     stringImpl data3;
-    F32 version;
-    bool isUnit;
-    bool castsShadows;
-    bool receivesShadows;
-    /// Used to determine if it's a static object or dynamic. Affects lighting,
-    /// navigation, etc.
-    bool staticUsage;
-    /// Used to determine if the object should be added to the nav mesh
-    /// generation process or not
-    bool navigationUsage;
+    F32 version = 1.0f;
+    bool isUnit = false;
+    bool isSelectable = false;
+    bool castsShadows = false;
+    bool receivesShadows = false;
+    /// Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
+    bool staticUsage = false;
+    /// Used to determine if the object should be added to the nav mesh generation process or not
+    bool navigationUsage = false;
     /// Used to determine if the object should be added to physics simulations
-    bool physicsUsage;
-    /// If physicsUsage is true, this determines if the node can be pushed
-    /// around by other actors
-    /// or if it is a static(fixed in space) actor
-    bool physicsStatic;
-    /// Used to force a geometry level parsing for nav mesh creation instead of
-    /// the default
-    /// bounding-box level
-    bool useHighDetailNavMesh;
+    bool physicsUsage = false;
+    /// If physicsUsage is true, this determines if the node can be pushed around by other actors or if it is a static(fixed in space) actor
+    bool physicsStatic = false;
+    /// Used to force a geometry level parsing for nav mesh creation instead of the default bounding-box level
+    bool useHighDetailNavMesh = false;
 };
 
 struct TerrainInfo {

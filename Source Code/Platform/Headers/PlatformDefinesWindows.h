@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PLATFORM_DEFINES_WINDOWS_H_
 #define _PLATFORM_DEFINES_WINDOWS_H_
 

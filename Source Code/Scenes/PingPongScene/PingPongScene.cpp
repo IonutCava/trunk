@@ -91,7 +91,7 @@ void PingPongScene::serveBall(I64 btnGUID) {
 
     removeTask(g_gameTaskID);
 
-    g_gameTaskID = registerTask(CreateTask(platformContext(), getGUID(),DELEGATE_BIND(&PingPongScene::test, this, std::placeholders::_1, Random(4), CallbackParam::TYPE_INTEGER)));
+    g_gameTaskID = registerTask(CreateTask(context(), getGUID(),DELEGATE_BIND(&PingPongScene::test, this, std::placeholders::_1, Random(4), CallbackParam::TYPE_INTEGER)));
 }
 
 void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
@@ -314,16 +314,6 @@ U16 PingPongScene::registerInputActions() {
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors) {
-    static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
-                                 to_base(ComponentType::BOUNDS) |
-                                 to_base(ComponentType::RENDERING);
-
-    static const U32 normalMask = lightMask |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::NETWORKING);
-        
-
     // Create a ball
     ResourceDescriptor minge("Ping Pong Ball");
     _ball = CreateResource<Sphere3D>(_resCache, minge);
@@ -332,18 +322,21 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setDiffuse(FColour(0.4f, 0.4f, 0.4f, 1.0f));
     _ball->getMaterialTpl()->setShininess(36.8f);
     _ball->getMaterialTpl()->setSpecular(FColour(0.774597f, 0.774597f, 0.774597f, 1.0f));
-    _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "PingPongBallSGN");
-    _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
 
-    /*ResourceDescriptor tempLight("Light Omni");
-    tempLight.setEnumValue(LIGHT_TYPE_POINT);
-    tempLight.setUserPtr(_lightPool.get());
-    Light* light = CreateResource<Light>(_resCache, tempLight);
-    _sceneGraph->getRoot()->addNode(light, lightMask);
-    light->setRange(30.0f);
-    light->setCastShadows(false);
-    light->setPosition(vec3<F32>(0, 6, 2));
-    */
+    SceneGraphNodeDescriptor ballNodeDescriptor;
+    ballNodeDescriptor._node = _ball;
+    ballNodeDescriptor._name = "PingPongBallSGN";
+    ballNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    ballNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
+    ballNodeDescriptor._isSelectable = false;
+    ballNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                        to_base(ComponentType::BOUNDS) |
+                                        to_base(ComponentType::RENDERING) |
+                                        to_base(ComponentType::RIGID_BODY) |
+                                        to_base(ComponentType::NAVIGATION) |
+                                        to_base(ComponentType::NETWORKING);
+    _ballSGN = _sceneGraph->getRoot().addNode(ballNodeDescriptor);
+    _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
  
     // Add some taunts
     _quotes.push_back("Ha ha ... even Odin's laughin'!");

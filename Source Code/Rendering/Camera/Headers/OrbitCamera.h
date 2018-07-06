@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _ORBIT_CAMERA_H_
 #define _ORBIT_CAMERA_H_
 

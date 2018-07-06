@@ -103,7 +103,7 @@ class NavModelData {
     inline bool isValid() const { return _valid; }
     inline void isValid(bool state) { _valid = state; }
 
-    inline void setName(const stringImpl& name) { _navMeshName = name; }
+    inline void name(const stringImpl& name) { _navMeshName = name; }
     inline const stringImpl& name() const { return _navMeshName; }
 
     inline const F32* getVerts() const { return _vertices; }

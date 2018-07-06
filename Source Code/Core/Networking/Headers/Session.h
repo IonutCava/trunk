@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _SESSION_IMPL_H_
 #define _SESSION_IMPL_H_
 

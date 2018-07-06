@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _TRANSFORM_H_
 #define _TRANSFORM_H_
 
@@ -82,7 +83,7 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
 
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
-    const mat4<F32>& getMatrix() override;
+    mat4<F32> getMatrix() override;
 
     /// Sets the transform to match a certain transformation matrix.
     /// Scale, orientation and translation are extracted from the specified matrix

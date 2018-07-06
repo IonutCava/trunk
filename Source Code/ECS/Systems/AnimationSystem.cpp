@@ -4,8 +4,9 @@
 #include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
-    AnimationSystem::AnimationSystem(ECS::ECSEngine& parentEngine)
-        : ECSSystem(parentEngine)
+    AnimationSystem::AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
+        : ECSSystem(parentEngine),
+          PlatformContextComponent(context)
     {
 
     }

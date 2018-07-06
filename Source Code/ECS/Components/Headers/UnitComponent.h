@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _UNIT_COMPONENT_H_
 #define _UNIT_COMPONENT_H_
 

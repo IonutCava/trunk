@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TRANSFORM_INTERFACE_H_
 #define _TRANSFORM_INTERFACE_H_
 
@@ -177,7 +178,7 @@ public:
 
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
-    virtual const mat4<F32>& getMatrix() = 0;
+    virtual mat4<F32> getMatrix() = 0;
 
     /// Get the current position, rotation and scale as a "TransformValues" package
     virtual void getValues(TransformValues& valuesOut) const = 0;

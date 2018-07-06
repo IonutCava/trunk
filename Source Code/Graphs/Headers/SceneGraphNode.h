@@ -29,6 +29,7 @@
 
    */
 
+#pragma once
 #ifndef _SCENE_GRAPH_NODE_H_
 #define _SCENE_GRAPH_NODE_H_
 
@@ -58,7 +59,25 @@ class BoundsComponent;
 class TransformComponent;
 
 struct TransformDirty;
-enum class PhysicsGroup : U32;
+
+enum class PhysicsGroup : U32 {
+    GROUP_STATIC = 0,
+    GROUP_DYNAMIC,
+    GROUP_KINEMATIC,
+    GROUP_RAGDOL,
+    GROUP_VEHICLE,
+    GROUP_IGNORE,
+    GROUP_COUNT
+};
+
+struct SceneGraphNodeDescriptor {
+    SceneNode_ptr    _node = nullptr;
+    stringImpl       _name = "";
+    U32              _componentMask = 0;
+    bool             _isSelectable = false;
+    PhysicsGroup     _physicsGroup = PhysicsGroup::GROUP_IGNORE;
+    NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
+};
 
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
@@ -86,9 +105,7 @@ class SceneTransform : public SceneNode {
         setState(ResourceState::RES_LOADED);
     }
 
-    inline void updateBoundsInternal(SceneGraphNode& sgn) override {
-        ACKNOWLEDGE_UNUSED(sgn);
-
+    inline void updateBoundsInternal() override {
         _boundingBox.setMin(-_extents * 0.5f);
         _boundingBox.setMax( _extents * 0.5f);
     }
@@ -104,6 +121,8 @@ namespace Attorney {
     class SceneGraphNodeComponent;
 };
 
+typedef std::tuple<I64, F32/*min*/, F32/*max*/> SGNRayResult;
+
 class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                        protected ECS::Event::IEventListener,
                        public GUIDWrapper,
@@ -115,11 +134,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     friend class Attorney::SceneGraphNodeComponent;
 
    public:
-    /// Usage context affects lighting, navigation, physics, etc
-    enum class UsageContext : U32 {
-        NODE_DYNAMIC = 0,
-        NODE_STATIC 
-    };
 
     enum class SelectionFlag : U32 {
         SELECTION_NONE = 0,
@@ -168,7 +182,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode* addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
+    SceneGraphNode* addNode(const SceneGraphNodeDescriptor& descriptor);
     SceneGraphNode* registerNode(SceneGraphNode* node);
 
     /// If this function returns true, the node will no longer be part of the scene hierarchy.
@@ -184,7 +198,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<I64>& selectionHits,
+                   vectorImpl<SGNRayResult>& selectionHits,
                    bool recursive = true) const;
 
     /// Selection helper functions
@@ -192,7 +206,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     inline SelectionFlag getSelectionFlag() const { return _selectionFlag; }
 
     void setSelectable(const bool state);
-    inline bool isSelectable() const { return _isSelectable; }
+    bool isSelectable() const;
 
     void lockVisibility(const bool state);
     inline bool visibilityLocked() const { return _visibilityLocked; }
@@ -211,8 +225,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void setActive(const bool state);
     inline bool isActive() const { return _active; }
 
-    inline const UsageContext& usageContext() const { return _usageContext; }
-    void usageContext(const UsageContext& newContext);
+    inline const NodeUsageContext& usageContext() const { return _usageContext; }
+    void usageContext(const NodeUsageContext& newContext);
 
     inline U64 getElapsedTimeUS() const { return _elapsedTimeUS; }
 
@@ -221,6 +235,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         // ToDo: Optimise this -Ionut
         return GetComponentManager()->GetComponent<T>(GetEntityID());
     }
+
+    inline void lockToCamera(U64 cameraNameHash) { _lockToCamera = cameraNameHash; }
 
     inline U32 componentMask() const { return _componentMask; }
 
@@ -296,11 +312,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     friend class SceneGraph;
     friend class std::shared_ptr<SceneGraphNode> ;*/
-    explicit SceneGraphNode(SceneGraph& sceneGraph,
-                            PhysicsGroup physicsGroup,
-                            const SceneNode_ptr& node,
-                            const stringImpl& name,
-                            U32 componentMask);
+    explicit SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
     ~SceneGraphNode();
 
     bool operator==(const SceneGraphNode& rhs) const {
@@ -327,7 +339,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     bool cullNode(const Camera& currentCamera,
                   F32 maxDistanceFromCamera,
                   RenderStage currentStage,
-                  Frustum::FrustCollision& collisionTypeOut) const;
+                  Frustum::FrustCollision& collisionTypeOut,
+                  F32& distanceSqToAABBCenter) const;
 
    protected:
     friend class RenderingComponent;
@@ -336,9 +349,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
    protected:
     friend class SceneGraph;
-    void onCameraUpdate(const I64 cameraGUID,
-                        const vec3<F32>& posOffset,
-                        const mat4<F32>& rotationOffset);
+    void onCameraUpdate(const U64 cameraNameHash,
+                        const vec3<F32>& cameraEye,
+                        const mat4<F32>& cameraView);
 
     void onCameraChange(const Camera& cam);
 
@@ -364,7 +377,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    private:
     void addToDeleteQueue(U32 idx);
 
-    inline void setName(const stringImpl& name) { 
+    inline void name(const stringImpl& name) { 
         _name = name;
     }
 
@@ -407,6 +420,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
 
+    U64 _lockToCamera = 0;
     mutable I8 _frustPlaneCache;
     U64 _elapsedTimeUS;
     U32 _componentMask;
@@ -424,7 +438,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     bool _isSelectable;
     SelectionFlag _selectionFlag;
 
-    UsageContext _usageContext;
+    NodeUsageContext _usageContext;
 
     StateTracker<bool> _trackedBools;
 

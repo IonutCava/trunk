@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _FRAME_LISTENER_MANAGER_H_
 #define _FRAME_LISTENER_MANAGER_H_
 

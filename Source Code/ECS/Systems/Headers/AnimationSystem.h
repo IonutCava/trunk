@@ -29,15 +29,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _ANIMATION_SYSTEM_H_
 #define _ANIMATION_SYSTEM_H_
 
 #include "ECSSystem.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
-    class AnimationSystem : public ECSSystem<AnimationSystem> {
+    class AnimationSystem : public PlatformContextComponent,
+                            public ECSSystem<AnimationSystem> {
       public:
-        AnimationSystem(ECS::ECSEngine& parentEngine);
+        AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~AnimationSystem();
 
         virtual void PreUpdate(F32 dt) override;

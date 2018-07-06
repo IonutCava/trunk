@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _BOX_3D_H_
 #define _BOX_3D_H_
 
@@ -45,7 +46,7 @@ class Box3D : public Object3D {
    void fromPoints(const std::initializer_list<vec3<F32>>& points,
                    const vec3<F32>& halfExtent);
 
-   void updateBoundsInternal(SceneGraphNode& sgn) override;
+   void updateBoundsInternal() override;
 
    private:
     vec3<F32> _halfExtent;

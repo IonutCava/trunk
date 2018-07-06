@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TASK_POOL_H_
 #define _TASK_POOL_H_
 
@@ -59,7 +60,7 @@ class TaskPool {
     void shutdown();
 
     void flushCallbackQueue();
-    void waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear = false);
+    void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
     TaskHandle getTaskHandle(I64 taskGUID);
     Task& getAvailableTask();
@@ -121,7 +122,7 @@ TaskHandle parallel_for(TaskPool& pool,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
                         U32 taskFlags = 0);
 
-void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks, bool foceClear);
+void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
 
 };
 

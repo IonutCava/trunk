@@ -65,6 +65,7 @@ class WarScene : public Scene {
     void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) override;
 
    private:
+    void onSetActive() override;
     void startSimulation(I64 btnGUID);
     void toggleCamera(InputParams param);
     bool removeUnits();

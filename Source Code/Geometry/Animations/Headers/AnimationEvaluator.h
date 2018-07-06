@@ -33,6 +33,7 @@
     http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
+#pragma once
 #ifndef ANIMATION_EVALUATOR_H_
 #define ANIMATION_EVALUATOR_H_
 

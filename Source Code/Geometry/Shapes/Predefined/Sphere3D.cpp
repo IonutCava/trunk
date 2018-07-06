@@ -87,13 +87,13 @@ void Sphere3D::rebuildVB() {
 
     vb->create();
     vb->queueRefresh();
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
 }
 
-void Sphere3D::updateBoundsInternal(SceneGraphNode& sgn) {
+void Sphere3D::updateBoundsInternal() {
     // add some depth padding for collision and nav meshes
     _boundingBox.set(vec3<F32>(-_radius), vec3<F32>(_radius));
-    Object3D::updateBoundsInternal(sgn);
+    Object3D::updateBoundsInternal();
 }
 
 }; //namespace Divide

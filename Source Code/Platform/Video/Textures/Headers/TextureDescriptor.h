@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _TEXTURE_DESCRIPTOR_H_
 #define _TEXTURE_DESCRIPTOR_H_
 

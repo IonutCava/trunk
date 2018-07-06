@@ -301,7 +301,7 @@ bool NavigationMesh::generateMesh() {
     Util::ReplaceStringInPlace(geometrySaveFile, ".nm", ".ig");
 
     data.clear(false);
-    data.setName(nodeName);
+    data.name(nodeName);
 
     if (!NavigationMeshLoader::loadMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str())) {
         if (!NavigationMeshLoader::parse(_sgn->get<BoundsComponent>()->getBoundingBox(), data, *_sgn)) {

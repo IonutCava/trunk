@@ -226,7 +226,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
                 for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                    const SceneGraphNode* nodePtr = node.second;
+                    const SceneGraphNode* nodePtr = node._node;
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
                         // Excluse node from rendering itself into the pass
@@ -275,7 +275,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
                 for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                    const SceneGraphNode* nodePtr = node.second;
+                    const SceneGraphNode* nodePtr = node._node;
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                     if (RefractionUtil::isInBudget()) {
                         bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef PHYSX_H_
 #define PHYSX_H_
 

@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _GFX_COMMAND_H_
 #define _GFX_COMMAND_H_
 

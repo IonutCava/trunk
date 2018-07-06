@@ -204,7 +204,7 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
                                                                  to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
     sgn.get<BoundsComponent>()->ignoreTransform(true);
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
     SceneNode::postLoad(sgn);
 }
 
@@ -343,7 +343,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             for (U32 i = 0; i < aliveCount; i += to_U32(averageEmitRate) / 4) {
                 _tempBB.add(_particles->_position[i]);
             }
-            setFlag(UpdateFlag::BOUNDS_CHANGED);
+            setBoundsChanged();
         });
         _bbUpdate.startTask(Task::TaskPriority::HIGH);
     }
@@ -358,7 +358,7 @@ U32 ParticleEmitter::getAliveParticleCount() const {
     return _particles->aliveCount();
 }
 
-void ParticleEmitter::updateBoundsInternal(SceneGraphNode& sgn) {
+void ParticleEmitter::updateBoundsInternal() {
     _bbUpdate.wait();
 
     U32 aliveCount = getAliveParticleCount();
@@ -368,7 +368,7 @@ void ParticleEmitter::updateBoundsInternal(SceneGraphNode& sgn) {
         _boundingBox.set(-VECTOR3_UNIT, VECTOR3_UNIT);
     }
 
-    SceneNode::updateBoundsInternal(sgn);
+    SceneNode::updateBoundsInternal();
 }
 
 };

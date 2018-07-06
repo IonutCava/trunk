@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CEGUI_INPUT_H_
 #define _CEGUI_INPUT_H_
 #include "Platform/Input/Headers/AutoKeyRepeat.h"

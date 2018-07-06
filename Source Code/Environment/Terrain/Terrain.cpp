@@ -40,14 +40,19 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
+    SceneGraphNodeDescriptor terrainNodeDescriptor;
+    terrainNodeDescriptor._node = _plane;
+    terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+    terrainNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_STATIC;
+    terrainNodeDescriptor._isSelectable = false;
+    terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                           to_base(ComponentType::TRANSFORM) |
+                                           to_base(ComponentType::RIGID_BODY) |
+                                           to_base(ComponentType::BOUNDS) |
+                                           to_base(ComponentType::RENDERING) |
+                                           to_base(ComponentType::NETWORKING);
 
-    SceneGraphNode* planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
+    SceneGraphNode* planeSGN = sgn.addNode(terrainNodeDescriptor);
     planeSGN->setActive(false);
     //for (TerrainChunk* chunk : _terrainChunks) {
         //SceneGraphNode* vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
@@ -98,11 +103,11 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS,
 }
 
 void Terrain::onCameraUpdate(SceneGraphNode& sgn,
-                             const I64 cameraGUID,
+                             const U64 cameraNameHash,
                              const vec3<F32>& posOffset,
                              const mat4<F32>& rotationOffset) {
     ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(cameraGUID);
+    ACKNOWLEDGE_UNUSED(cameraNameHash);
     ACKNOWLEDGE_UNUSED(posOffset);
     ACKNOWLEDGE_UNUSED(rotationOffset);
 

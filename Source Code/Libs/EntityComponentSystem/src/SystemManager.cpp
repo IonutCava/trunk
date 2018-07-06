@@ -43,33 +43,39 @@ namespace ECS
 		LogInfo("Release SystemManager!");
 	}
 
-	void SystemManager::Update(f32 dt_ms)
-	{
-		for (ISystem* system : this->m_SystemWorkOrder)
-		{
-			// increase interval since last update
-			system->m_TimeSinceLastUpdate = dt_ms;
+    void SystemManager::PreUpdate(f32 dt_ms)
+    {
+        for (ISystem* system : this->m_SystemWorkOrder)
+        {
+            // increase interval since last update
+            system->m_TimeSinceLastUpdate = dt_ms;
 
-			// check systems update state
-			system->m_NeedsUpdate = (system->m_UpdateInterval < 0.0f) || ((system->m_UpdateInterval > 0.0f) && (system->m_TimeSinceLastUpdate > system->m_UpdateInterval));
+            // check systems update state
+            system->m_NeedsUpdate = (system->m_UpdateInterval < 0.0f) || ((system->m_UpdateInterval > 0.0f) && (system->m_TimeSinceLastUpdate > system->m_UpdateInterval));
 
-			if (system->m_Enabled == true && system->m_NeedsUpdate == true)
-			{			
-				system->PreUpdate(dt_ms);	
-			}
-		}
+            if (system->m_Enabled == true && system->m_NeedsUpdate == true)
+            {
+                system->PreUpdate(dt_ms);
+            }
+        }
+    }
 
-		for (ISystem* system : this->m_SystemWorkOrder)
-		{
-			if (system->m_Enabled == true && system->m_NeedsUpdate == true)
-			{
-				system->Update(dt_ms);
+    void SystemManager::Update(f32 dt_ms)
+    {
+        for (ISystem* system : this->m_SystemWorkOrder)
+        {
+            if (system->m_Enabled == true && system->m_NeedsUpdate == true)
+            {
+                system->Update(dt_ms);
 
-				// reset interval
-				system->m_TimeSinceLastUpdate = 0.0f;
-			}
-		}
+                // reset interval
+                system->m_TimeSinceLastUpdate = 0.0f;
+            }
+        }
+    }
 
+    void SystemManager::PostUpdate(f32 dt_ms)
+    {
 		for (ISystem* system : this->m_SystemWorkOrder)
 		{
 			if (system->m_Enabled == true && system->m_NeedsUpdate == true)
@@ -170,7 +176,7 @@ namespace ECS
 			std::reverse(order.begin(), order.end());
 			
 			// note: MAX - PRIORITY will frce the correct sorting behaviour in multimap (by default a multimap sorts int values from low to high)
-			VERTEX_GROUPS_SORTED.insert(std::pair<SystemPriority, std::vector<SystemTypeId>>(std::numeric_limits<SystemPriority>::max() - GROUP_PRIORITY[i], order));
+			VERTEX_GROUPS_SORTED.insert(std::pair<SystemPriority, std::vector<SystemTypeId>>(static_cast<SystemPriority>(std::numeric_limits<SystemPriority>::max() - GROUP_PRIORITY[i]), order));
 		}
 
 

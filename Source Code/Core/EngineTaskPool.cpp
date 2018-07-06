@@ -33,9 +33,9 @@ TaskHandle CreateTask(const PlatformContext& context,
     return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
 }
 
-void WaitForAllTasks(const PlatformContext& context, bool yeld, bool flushCallbacks, bool foceClear) {
+void WaitForAllTasks(const PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {
     TaskPool& pool = context.app().kernel().taskPool();
-    WaitForAllTasks(pool, yeld, flushCallbacks, foceClear);
+    WaitForAllTasks(pool, yield, flushCallbacks, foceClear);
 }
 
 TaskHandle parallel_for(const PlatformContext& context,

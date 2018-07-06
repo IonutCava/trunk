@@ -27,14 +27,19 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                           SceneState& sceneState) {
     if (_drawImpostor) {
         if (!_triggerImpostor) {
-            static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                                          to_base(ComponentType::BOUNDS) |
-                                          to_base(ComponentType::RENDERING) |
-                                          to_base(ComponentType::NETWORKING);
-
             ResourceDescriptor impostorDesc(_name + "_impostor");
             _triggerImpostor = CreateResource<ImpostorSphere>(_parentCache, impostorDesc);
-            sgn.addNode(_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
+
+            SceneGraphNodeDescriptor triggerImpostorDescriptor;
+            triggerImpostorDescriptor._node = _triggerImpostor;
+            triggerImpostorDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                                       to_base(ComponentType::BOUNDS) |
+                                                       to_base(ComponentType::RENDERING) |
+                                                       to_base(ComponentType::NETWORKING);
+            triggerImpostorDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+            triggerImpostorDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+
+            sgn.addNode(triggerImpostorDescriptor);
         }
         /// update dummy position if it is so
         sgn.getChild(0).get<TransformComponent>()->setPosition(_triggerPosition);

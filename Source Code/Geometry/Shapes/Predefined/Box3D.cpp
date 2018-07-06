@@ -42,7 +42,7 @@ Box3D::Box3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHa
     }
 
     vb->create(false);
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
 }
 
 void Box3D::setHalfExtent(const vec3<F32>& halfExtent) {
@@ -65,7 +65,7 @@ void Box3D::setHalfExtent(const vec3<F32>& halfExtent) {
     }
 
     vb->queueRefresh();
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
 }
 
 void Box3D::fromPoints(const std::initializer_list<vec3<F32>>& points,
@@ -75,12 +75,12 @@ void Box3D::fromPoints(const std::initializer_list<vec3<F32>>& points,
     vb->modifyPositionValues(0, points);
     vb->queueRefresh();
     _halfExtent = halfExtent;
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
 }
 
-void Box3D::updateBoundsInternal(SceneGraphNode& sgn) {
+void Box3D::updateBoundsInternal() {
     _boundingBox.set(-_halfExtent * 0.5f, _halfExtent * 0.5f);
-    Object3D::updateBoundsInternal(sgn);
+    Object3D::updateBoundsInternal();
 }
 
 }; //namespace Divide

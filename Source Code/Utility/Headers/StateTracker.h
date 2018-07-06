@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef UTIL_STATE_TRACKER_H_
 #define UTIL_STATE_TRACKER_H_
 

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PHYSICS_DEVICE_H_
 #define _PHYSICS_DEVICE_H_
 

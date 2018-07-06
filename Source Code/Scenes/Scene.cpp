@@ -214,8 +214,19 @@ void Scene::loadXMLAssets(bool singleStep) {
 
     auto registerTerrain = [this](Resource_wptr res) {
         SceneGraphNode& root = _sceneGraph->getRoot();
-        SceneGraphNode* terrainTemp = root.addNode(std::dynamic_pointer_cast<Terrain>(res.lock()), normalMask, PhysicsGroup::GROUP_STATIC);
-        terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+
+        SceneGraphNodeDescriptor terrainNodeDescriptor;
+        terrainNodeDescriptor._node = std::dynamic_pointer_cast<Terrain>(res.lock());
+        terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+        terrainNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_STATIC;
+        terrainNodeDescriptor._isSelectable = false;
+        terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                               to_base(ComponentType::TRANSFORM) |
+                                               to_base(ComponentType::RIGID_BODY) |
+                                               to_base(ComponentType::BOUNDS) |
+                                               to_base(ComponentType::RENDERING) |
+                                               to_base(ComponentType::NETWORKING);
+        SceneGraphNode* terrainTemp = root.addNode(terrainNodeDescriptor);
 
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
@@ -267,13 +278,23 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), data.ModelName.c_str());
     } else {
         if (addToSceneGraph) {
-            SceneGraphNode* meshNode =
-                _sceneGraph->getRoot().addNode(thisObj,
-                                               data.isUnit ? normalMask | to_base(ComponentType::UNIT) : normalMask,
-                                               data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+            SceneGraphNodeDescriptor meshNodeDescriptor;
+            meshNodeDescriptor._node = thisObj;
+            meshNodeDescriptor._name = data.ItemName;
+            meshNodeDescriptor._usageContext = data.staticUsage ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC;
+            meshNodeDescriptor._physicsGroup = data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
                                                                                       : PhysicsGroup::GROUP_DYNAMIC
-                                                                 : PhysicsGroup::GROUP_IGNORE,
-                                               data.ItemName);
+                                                                 : PhysicsGroup::GROUP_IGNORE;
+            meshNodeDescriptor._isSelectable = data.isSelectable;
+            meshNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                                to_base(ComponentType::TRANSFORM) |
+                                                to_base(ComponentType::RIGID_BODY) |
+                                                to_base(ComponentType::BOUNDS) |
+                                                to_base(ComponentType::RENDERING) |
+                                                to_base(ComponentType::NETWORKING) |
+                                                (data.isUnit ? to_base(ComponentType::UNIT) : 0);
+
+            SceneGraphNode* meshNode = _sceneGraph->getRoot().addNode(meshNodeDescriptor);
             meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
             meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
             meshNode->get<TransformComponent>()->setScale(data.scale);
@@ -281,7 +302,7 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
             meshNode->get<TransformComponent>()->setPosition(data.position);
 
             if (data.staticUsage) {
-                meshNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+                meshNode->usageContext(NodeUsageContext::NODE_STATIC);
             }
             if (data.navigationUsage) {
                 meshNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
@@ -297,13 +318,6 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
 }
 
 Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
-
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
         _loadingTasks--;
@@ -354,18 +368,29 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
     thisObj->setMaterialTpl(tempMaterial);
 
     if (addToSceneGraph) {
-        SceneGraphNode* thisObjSGN = _sceneGraph->getRoot().addNode(thisObj,
-                                                                       normalMask,
-                                                                       data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
-                                                                                                              : PhysicsGroup::GROUP_DYNAMIC
-                                                                                         : PhysicsGroup::GROUP_IGNORE);
+        SceneGraphNodeDescriptor meshNodeDescriptor;
+        meshNodeDescriptor._node = thisObj;
+        meshNodeDescriptor._usageContext = data.staticUsage ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC;
+        meshNodeDescriptor._physicsGroup = data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+                                                                                  : PhysicsGroup::GROUP_DYNAMIC
+                                                             : PhysicsGroup::GROUP_IGNORE;
+        meshNodeDescriptor._isSelectable = data.isSelectable;
+        meshNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                            to_base(ComponentType::TRANSFORM) |
+                                            to_base(ComponentType::RIGID_BODY) |
+                                            to_base(ComponentType::BOUNDS) |
+                                            to_base(ComponentType::RENDERING) |
+                                            to_base(ComponentType::NETWORKING);
+
+        SceneGraphNode* thisObjSGN = _sceneGraph->getRoot().addNode(meshNodeDescriptor);
+
         thisObjSGN->get<TransformComponent>()->setScale(data.scale);
         thisObjSGN->get<TransformComponent>()->setRotation(data.orientation);
         thisObjSGN->get<TransformComponent>()->setPosition(data.position);
         thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
         thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
         if (data.staticUsage) {
-            thisObjSGN->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+            thisObjSGN->usageContext(NodeUsageContext::NODE_STATIC);
         }
         if (data.navigationUsage) {
             thisObjSGN->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
@@ -382,10 +407,6 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
 SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
                                              std::shared_ptr<ParticleData> data,
                                              SceneGraphNode& parentNode) {
-    static const U32 particleMask = to_base(ComponentType::TRANSFORM) |
-                                    to_base(ComponentType::BOUNDS) |
-                                    to_base(ComponentType::RENDERING) |
-                                    to_base(ComponentType::NETWORKING);
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -401,16 +422,21 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
         _context.app().mainThreadTask([&emitter, &data] { emitter->initData(data); });
     }
 
-    return parentNode.addNode(emitter, particleMask, PhysicsGroup::GROUP_IGNORE);
+    SceneGraphNodeDescriptor particleNodeDescriptor;
+    particleNodeDescriptor._node = emitter;
+    particleNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    particleNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+    particleNodeDescriptor._isSelectable = true;
+    particleNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                            to_base(ComponentType::BOUNDS) |
+                                            to_base(ComponentType::RENDERING) |
+                                            to_base(ComponentType::NETWORKING);
+
+    return parentNode.addNode(particleNodeDescriptor);
 }
 
 
-SceneGraphNode* Scene::addLight(LightType type,
-                                   SceneGraphNode& parentNode) {
-    static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
-                                 to_base(ComponentType::BOUNDS) |
-                                 to_base(ComponentType::RENDERING) |
-                                 to_base(ComponentType::NETWORKING);
+SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode) {
 
     const char* lightType = "";
     switch (type) {
@@ -436,15 +462,20 @@ SceneGraphNode* Scene::addLight(LightType type,
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
     }
-    return parentNode.addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+
+    SceneGraphNodeDescriptor lightNodeDescriptor;
+    lightNodeDescriptor._node = light;
+    lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    lightNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+    lightNodeDescriptor._isSelectable = false;
+    lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                         to_base(ComponentType::BOUNDS) |
+                                         to_base(ComponentType::RENDERING) |
+                                         to_base(ComponentType::NETWORKING);
+    return parentNode.addNode(lightNodeDescriptor);
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {
-    static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
-                                 to_base(ComponentType::BOUNDS) |
-                                 to_base(ComponentType::RENDERING) |
-                                 to_base(ComponentType::NETWORKING);
-
     SceneGraphNode*& flashLight = _flashLight[idx];
     if (!flashLight) {
         ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", idx));
@@ -455,15 +486,21 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColour(DefaultColours::WHITE);
-        flashLight = _sceneGraph->getRoot().addNode(tempLight,
-                                                    lightMask,
-                                                    PhysicsGroup::GROUP_IGNORE);
-        hashAlg::insert(_flashLight,
-                        idx,
-                        flashLight);
 
-        _cameraUpdateMap[idx] = 
-        Camera::addUpdateListener([this, idx](const Camera& cam) { 
+        SceneGraphNodeDescriptor lightNodeDescriptor;
+        lightNodeDescriptor._node = tempLight;
+        lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+        lightNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+        lightNodeDescriptor._isSelectable = false;
+        lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                             to_base(ComponentType::BOUNDS) |
+                                             to_base(ComponentType::RENDERING) |
+                                             to_base(ComponentType::NETWORKING);
+        flashLight = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
+
+        hashAlg::insert(_flashLight, idx, flashLight);
+
+        _cameraUpdateMap[idx] = Camera::addUpdateListener([this, idx](const Camera& cam) { 
             if (idx < _scenePlayers.size() && idx < _flashLight.size() && _flashLight[idx]) {
                 if (cam.getGUID() == _scenePlayers[getSceneIndexForPlayer(idx)]->getCamera().getGUID()) {
                     TransformComponent* tComp = _flashLight[idx]->get<TransformComponent>();
@@ -485,17 +522,18 @@ SceneGraphNode* Scene::addSky(const stringImpl& nodeName) {
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
 
-    static const U32 normalMask = 
-        to_base(ComponentType::NAVIGATION) |
-        to_base(ComponentType::TRANSFORM) |
-        to_base(ComponentType::BOUNDS) |
-        to_base(ComponentType::RENDERING) |
-        to_base(ComponentType::NETWORKING);
+    SceneGraphNodeDescriptor skyNodeDescriptor;
+    skyNodeDescriptor._node = skyItem;
+    skyNodeDescriptor._name = nodeName;
+    skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    skyNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+    skyNodeDescriptor._isSelectable = false;
+    skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                        to_base(ComponentType::BOUNDS) |
+                                        to_base(ComponentType::RENDERING) |
+                                        to_base(ComponentType::NETWORKING);
 
-    SceneGraphNode* skyNode = _sceneGraph->getRoot().addNode(skyItem,
-                                                                normalMask,
-                                                                PhysicsGroup::GROUP_IGNORE,
-                                                                nodeName);
+    SceneGraphNode* skyNode = _sceneGraph->getRoot().addNode(skyNodeDescriptor);
     skyNode->lockVisibility(true);
 
     return skyNode;
@@ -902,14 +940,21 @@ void Scene::addPlayerInternal(bool queue) {
     SceneGraphNode* playerSGN(_sceneGraph->findNode(playerName));
     if (!playerSGN) {
         SceneGraphNode& root = _sceneGraph->getRoot();
-        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents)),
-                                to_base(ComponentType::NAVIGATION) |
-                                to_base(ComponentType::TRANSFORM) |
-                                to_base(ComponentType::BOUNDS) |
-                                to_base(ComponentType::UNIT) |
-                                to_base(ComponentType::NETWORKING),
-                                PhysicsGroup::GROUP_KINEMATIC,
-                                playerName);
+
+        SceneGraphNodeDescriptor playerNodeDescriptor;
+        playerNodeDescriptor._node = SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents));
+        playerNodeDescriptor._name = playerName;
+        playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+        playerNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
+        playerNodeDescriptor._isSelectable = false;
+        playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |
+                                              to_base(ComponentType::NAVIGATION) |
+                                              to_base(ComponentType::TRANSFORM) |
+                                              to_base(ComponentType::BOUNDS) |
+                                              to_base(ComponentType::RENDERING) |
+                                              to_base(ComponentType::NETWORKING);
+
+        playerSGN = root.addNode(playerNodeDescriptor);
         _parent.addPlayer(*this, playerSGN, queue);
     } else {
         assert(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
@@ -1210,20 +1255,26 @@ void Scene::findHoverTarget(PlayerIndex idx) {
     vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
     _sceneSelectionCandidates.clear();
-    // get the list of visible nodes (use DEPTH_PASS because the nodes are sorted by depth, front to back)
+    // get the list of visible nodes
     RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
 
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));
     for (RenderPassCuller::VisibleNode& node : nodes) {
-        const SceneGraphNode* nodePtr = node.second;
+        const SceneGraphNode* nodePtr = node._node;
         if (nodePtr) {
-            nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates, false);                   
+            nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates, false);
         }
     }
 
     if (!_sceneSelectionCandidates.empty()) {
-        I64 crtCandidate = _sceneSelectionCandidates.front();
+        std::sort(std::begin(_sceneSelectionCandidates),
+                  std::end(_sceneSelectionCandidates),
+                  [](const SGNRayResult& A, const SGNRayResult& B) -> bool {
+                      return std::get<1>(A) < std::get<1>(B);
+                  });
+
+        I64 crtCandidate = std::get<0>(_sceneSelectionCandidates.front());
         SceneGraphNode* target = _sceneGraph->findNode(crtCandidate);
 
         const std::shared_ptr<SceneNode>& node = target->getNode();

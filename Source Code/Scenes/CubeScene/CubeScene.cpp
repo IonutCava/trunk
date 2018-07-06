@@ -83,11 +83,6 @@ bool CubeScene::load(const stringImpl& name) {
 
 bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
-    static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
-
     for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < 10; col++) {
             U8 lightID = to_U8(row * 10 + col);
@@ -101,7 +96,18 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);
-            _lightNodes.push_back(_sceneGraph->getRoot().addNode(light, normalMask, PhysicsGroup::GROUP_IGNORE));
+
+            SceneGraphNodeDescriptor lightNodeDescriptor;
+            lightNodeDescriptor._node = light;
+            lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+            lightNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+            lightNodeDescriptor._isSelectable = false;
+            lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                                 to_base(ComponentType::BOUNDS) |
+                                                 to_base(ComponentType::RENDERING) |
+                                                 to_base(ComponentType::NETWORKING);
+
+            _lightNodes.push_back(_sceneGraph->getRoot().addNode(lightNodeDescriptor));
         }
     }
 

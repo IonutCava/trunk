@@ -108,7 +108,7 @@ void TenisScene::resetGame() {
 void TenisScene::startGame(I64 btnGUID) {
     resetGame();
 
-    TaskHandle newGame(CreateTask(platformContext(),
+    TaskHandle newGame(CreateTask(context(),
                                   getGUID(),
                                DELEGATE_BIND(&TenisScene::playGame, this,
                                              std::placeholders::_1,
@@ -363,13 +363,6 @@ bool TenisScene::deinitializeAI(bool continueOnErrors) {
 }
 
 bool TenisScene::loadResources(bool continueOnErrors) {
-    static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::NETWORKING);
-
     // Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(_resCache, ballDescriptor);
@@ -378,7 +371,20 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(FColour(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "TenisBallSGN");
+
+    SceneGraphNodeDescriptor ballNodeDescriptor;
+    ballNodeDescriptor._node = _ball;
+    ballNodeDescriptor._name = "TenisBallSGN";
+    ballNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    ballNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
+    ballNodeDescriptor._isSelectable = false;
+    ballNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                        to_base(ComponentType::BOUNDS) |
+                                        to_base(ComponentType::RENDERING) |
+                                        to_base(ComponentType::RIGID_BODY) |
+                                        to_base(ComponentType::NAVIGATION) |
+                                        to_base(ComponentType::NETWORKING);
+    _ballSGN = _sceneGraph->getRoot().addNode(ballNodeDescriptor);
     _ballSGN->get<TransformComponent>()->translate(vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN->setSelectable(true);
 

@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _STL_VECTOR_H_
 #define _STL_VECTOR_H_
 

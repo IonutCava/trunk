@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef D3D_UNIFORM_BUFFER_OBJECT_H_
 #define D3D_UNIFORM_BUFFER_OBJECT_H_
 

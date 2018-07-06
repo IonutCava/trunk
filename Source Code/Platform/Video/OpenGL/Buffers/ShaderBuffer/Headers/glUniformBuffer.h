@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef GL_UNIFORM_BUFFER_OBJECT_H_
 #define GL_UNIFORM_BUFFER_OBJECT_H_
 

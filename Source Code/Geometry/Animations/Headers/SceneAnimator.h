@@ -33,6 +33,7 @@
     http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
+#pragma once
 #ifndef SCENE_ANIMATOR_H_
 #define SCENE_ANIMATOR_H_
 

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _GUI_SPLASH_H
 #define _GUI_SPLASH_H
 

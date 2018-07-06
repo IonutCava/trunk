@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef RESOURCE_DESCRIPTOR_H_
 #define RESOURCE_DESCRIPTOR_H_
 
@@ -124,7 +125,7 @@ class ResourceDescriptor : public Hashable {
         _resourceName = resourceName;
     }
     inline void setEnumValue(U32 enumValue) { _enumValue = enumValue; }
-    inline void setName(const stringImpl& name) { _name = name; }
+    inline void name(const stringImpl& name) { _name = name; }
     inline void setFlag(bool flag) { _flag = flag; }
     inline void setID(U32 ID) { _ID = ID; }
     inline void setBoolMask(P32 mask) { _mask = mask; }

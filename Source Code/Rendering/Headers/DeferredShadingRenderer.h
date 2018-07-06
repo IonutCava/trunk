@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _DEF_SHADE_RENDERER_H_
 #define _DEF_SHADE_RENDERER_H_
 

@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _DIVIDE_EDITOR_H_
 #define _DIVIDE_EDITOR_H_
 
@@ -113,6 +114,7 @@ class Editor : public PlatformContextComponent,
     void close();
     void idle();
     void update(const U64 deltaTimeUS);
+    bool needInput() const;
 
     void toggle(const bool state);
     bool running() const;
@@ -158,7 +160,6 @@ class Editor : public PlatformContextComponent,
     bool renderGizmos(const U64 deltaTime);
     bool renderMinimal(const U64 deltaTime);
     bool renderFull(const U64 deltaTime);
-    bool needInput();
     bool hasSceneFocus();
     bool hasSceneFocus(bool& gizmoFocus);
     bool hasGizmoFocus();

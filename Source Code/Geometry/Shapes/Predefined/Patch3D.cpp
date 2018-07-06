@@ -64,10 +64,10 @@ void Patch3D::build() {
     vb->addIndices(indices, false);
 
     vb->create();
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
 }
 
-void Patch3D::updateBoundsInternal(SceneGraphNode& sgn) {
+void Patch3D::updateBoundsInternal() {
     // add some depth padding for collision and nav meshes
     VertexBuffer* vb = getGeometryVB();
     for (U32 i = 0; i < vb->getVertexCount(); ++i) {
@@ -76,7 +76,7 @@ void Patch3D::updateBoundsInternal(SceneGraphNode& sgn) {
     if (COMPARE(_boundingBox.getMax().y, _boundingBox.getMin().y)) {
         _boundingBox.setMax(_boundingBox.getMax() + vec3<F32>(0.0f, 0.025f, 0.0f));
     }
-    Object3D::updateBoundsInternal(sgn);
+    Object3D::updateBoundsInternal();
 }
 
 }; //namespace Divide

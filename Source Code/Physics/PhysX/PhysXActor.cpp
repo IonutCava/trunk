@@ -170,7 +170,7 @@ namespace Divide {
         quatOut.identity();
     }
 
-    const mat4<F32>& PhysXActor::getMatrix() {
+    mat4<F32> PhysXActor::getMatrix() {
         return _cachedLocalMatrix;
     }
 

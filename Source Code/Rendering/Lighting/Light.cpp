@@ -99,18 +99,18 @@ void Light::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& 
 
     if (_spotProperties != dir) {
         _spotProperties.xyz(dir);
-        setFlag(UpdateFlag::BOUNDS_CHANGED);
+        setBoundsChanged();
     }
     const vec3<F32>& pos = tComp->getPosition();
     if (pos != _positionAndRange.xyz()) {
         _positionAndRange.xyz(pos);
-        setFlag(UpdateFlag::BOUNDS_CHANGED);
+        setBoundsChanged();
     }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-void Light::updateBoundsInternal(SceneGraphNode& sgn) {
+void Light::updateBoundsInternal() {
     if (_type == LightType::DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _positionAndRange.xyz() * 
@@ -125,7 +125,7 @@ void Light::updateBoundsInternal(SceneGraphNode& sgn) {
     if (_type == LightType::SPOT) {
         _boundingBox.multiply(0.5f);
     }
-    SceneNode::updateBoundsInternal(sgn);
+    SceneNode::updateBoundsInternal();
 }
 
 bool Light::onRender(SceneGraphNode& sgn,
@@ -138,14 +138,19 @@ bool Light::onRender(SceneGraphNode& sgn,
     }
 
     if (!_impostor) {
-        static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                                      to_base(ComponentType::BOUNDS) |
-                                      to_base(ComponentType::RENDERING);
-
         _impostor = CreateResource<ImpostorSphere>(_parentCache, ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_positionAndRange.w);
         _impostor->renderState().setDrawState(true);
-        _impostorSGN = sgn.addNode(_impostor, normalMask, PhysicsGroup::GROUP_IGNORE);
+
+
+        SceneGraphNodeDescriptor impostorDescriptor;
+        impostorDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING);
+        impostorDescriptor._node = _impostor;
+        impostorDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+        impostorDescriptor._isSelectable = false;
+        impostorDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+
+        _impostorSGN = sgn.addNode(impostorDescriptor);
         _impostorSGN->setActive(true);
     }
 

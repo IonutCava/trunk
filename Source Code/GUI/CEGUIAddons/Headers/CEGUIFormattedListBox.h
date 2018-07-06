@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef CEGUI_FORMATTED_LIST_BOX_H_
 #define CEGUI_FORMATTED_LIST_BOX_H_
 

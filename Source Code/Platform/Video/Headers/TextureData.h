@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TEXTURE_DATA_H_
 #define _TEXTURE_DATA_H_
 

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _INPUT_MANAGER_H_
 #define _INPUT_MANAGER_H_
 

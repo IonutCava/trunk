@@ -583,6 +583,12 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
                 model.staticUsage = false;
             }
 
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".isSelectable")) {
+                model.isSelectable = pt.get<bool>(name + ".isSelectable", false);
+            } else {
+                model.isSelectable = false;
+            }
+
             if (boost::optional<ptree &> child = pt.get_child_optional(name + ".isUnit")) {
                 model.isUnit = pt.get<bool>(name + ".isUnit", false);
             } else {

@@ -452,8 +452,6 @@ void OpenGLTexture::blitToMemory(void* targetData)
         GLuint framebuffer_old(0);
 
         glCreateFramebuffers(1, &texture_framebuffer);
-        GLenum framebuffer_target(GL_NONE), framebuffer_param(GL_NONE);
-
         //glNamedFramebufferTexture(texture_framebuffer, GL_COLOR_ATTACHMENT0, d_ogltexture, 0);
 
         Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_ONLY, texture_framebuffer, framebuffer_old);

@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _ANIMATION_COMPONENT_H_
 #define _ANIMATION_COMPONENT_H_
 
@@ -76,9 +77,7 @@ class AnimationComponent : public SGNComponent<AnimationComponent>{
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
 
-    const mat4<F32>& getBoneTransform(U32 animationID,
-                                      const D64 timeStamp,
-                                      const stringImpl& name);
+    mat4<F32> getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name);
 
     inline bool playAnimations() const { return _playAnimations; }
     inline void playAnimations(bool state) { _playAnimations = state; }

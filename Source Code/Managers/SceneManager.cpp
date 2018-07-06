@@ -28,29 +28,6 @@
 
 namespace Divide {
 
-/*
-    ToDo:
-    - Add IMPrimities per Scene and clear on scene unload
-    - Cleanup load flags and use ResourceState enum instead
-    - Sort out camera loading/unloading issues with parameters (position, orientation, etc)
-*/
-
-namespace {
-    struct VisibleNodesFrontToBack {
-        VisibleNodesFrontToBack(const vec3<F32>& camPos) : _camPos(camPos)
-        {
-        }
-
-        bool operator()(const RenderPassCuller::VisibleNode& a, const RenderPassCuller::VisibleNode& b) const {
-            F32 distASQ = a.second->get<BoundsComponent>()->getBoundingSphere().getCenter().distanceSquared(_camPos);
-            F32 distBSQ = b.second->get<BoundsComponent>()->getBoundingSphere().getCenter().distanceSquared(_camPos);
-            return distASQ < distBSQ;
-        }
-
-        const vec3<F32> _camPos;
-    };
-};
-
 bool SceneManager::onStartup() {
     return Attorney::SceneManager::onStartup();
 }
@@ -108,7 +85,7 @@ void SceneManager::idle() {
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.loadInSeparateThread());
-        WaitForAllTasks(getActiveScene().platformContext(), true, true, false);
+        WaitForAllTasks(getActiveScene().context(), true, true, false);
         PostFX::instance().setFadeIn(2750.0);
     } else {
         while (!_playerAddQueue.empty()) {
@@ -454,16 +431,16 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState.windSpeed());
 
     const vectorImpl<SceneGraphNode*>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
-    if (!waterBodies.empty()) {
-        U8 index = 0;
-        for (SceneGraphNode* body : waterBodies) {
-            const SceneGraphNode* water(body);
+    U8 index = 0;
+    for (SceneGraphNode* body : waterBodies) {
+        const SceneGraphNode* water(body);
             
-            _sceneData->waterDetails(index,
-                                     water->get<TransformComponent>()->getPosition(),
-                                     water->getNode<WaterPlane>()->getDimensions());
-            index++;
-            break;//<- temp
+        _sceneData->waterDetails(index,
+                                    water->get<TransformComponent>()->getPosition(),
+                                    water->getNode<WaterPlane>()->getDimensions());
+        ++index;
+        if (index == 1) {//<- temp
+            break;
         }
     }
 
@@ -541,8 +518,6 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
 
 const RenderPassCuller::VisibleNodeList&
 SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction) {
-    const vec3<F32>& camPos = playerCamera()->getEye();
-
     // Get list of nodes in view from the previous frame
     RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::DISPLAY);
 
@@ -559,14 +534,16 @@ SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCull
     // Sort the nodes from front to back
     std::sort(std::begin(_tempNodesCache),
               std::end(_tempNodesCache),
-              VisibleNodesFrontToBack(camPos));
+              [](const RenderPassCuller::VisibleNode& a, const RenderPassCuller::VisibleNode& b) -> bool {
+                return a._distanceToCameraSq < b._distanceToCameraSq;
+              });
 
     return _tempNodesCache;
 }
 
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node.second;
+        const SceneGraphNode* sgnNode = node._node;
         SceneNodeType type = sgnNode->getNode()->getType();
         if (type != SceneNodeType::TYPE_OBJECT3D &&
             type != SceneNodeType::TYPE_WATER) {
@@ -593,7 +570,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
 
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes() {
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node.second;
+        const SceneGraphNode* sgnNode = node._node;
         SceneNodeType type = sgnNode->getNode()->getType();
         if (type != SceneNodeType::TYPE_OBJECT3D && type != SceneNodeType::TYPE_WATER) {
             return true;
@@ -626,7 +603,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const Rend
     };
 
     auto meshCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node.second;
+        const SceneGraphNode* sgnNode = node._node;
         if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::MESH);
@@ -635,11 +612,11 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const Rend
     };
 
     auto shadowCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneNodeType type = node.second->getNode()->getType();
+        SceneNodeType type = node._node->getNode()->getType();
         return type == SceneNodeType::TYPE_LIGHT || type == SceneNodeType::TYPE_TRIGGER;
     };
 
-    _renderPassCuller->frustumCull(activeScene.platformContext(),
+    _renderPassCuller->frustumCull(activeScene.context(),
                                    activeScene.sceneGraph(),
                                    activeScene.state(),
                                    stage.stage(),
@@ -680,7 +657,7 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
         queue.refresh();
         const vec3<F32>& eyePos = playerCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-            queue.addNodeToQueue(*node.second, stage, eyePos);
+            queue.addNodeToQueue(*node._node, stage, eyePos);
         }
     }
     

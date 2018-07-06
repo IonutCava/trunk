@@ -68,13 +68,26 @@ bool SceneNode::onRender(SceneGraphNode& sgn,
     return false;
 }
 
-void SceneNode::updateBoundsInternal(SceneGraphNode& sgn) {
-    ACKNOWLEDGE_UNUSED(sgn);
+void SceneNode::updateBoundsInternal() {
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    BoundsComponent* bComp = sgn.get<BoundsComponent>();
+    if (bComp) {
+        bComp->boundsChanged();
+    }
     sgn.postLoad();
+}
+
+void SceneNode::setBoundsChanged() {
+    for (SceneGraphNode* parent : _sgnParents) {
+        assert(parent != nullptr);
+        
+        BoundsComponent* bComp = parent->get<BoundsComponent>();
+        if (bComp) {
+            bComp->boundsChanged();
+        }
+    }
 }
 
 bool SceneNode::getDrawState(const RenderStagePass& currentStagePass) {
@@ -126,11 +139,11 @@ void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
 }
 
 void SceneNode::onCameraUpdate(SceneGraphNode& sgn,
-                               const I64 cameraGUID,
+                               const U64 cameraNameHash,
                                const vec3<F32>& posOffset,
                                const mat4<F32>& rotationOffset) {
     ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(cameraGUID);
+    ACKNOWLEDGE_UNUSED(cameraNameHash);
     ACKNOWLEDGE_UNUSED(posOffset);
     ACKNOWLEDGE_UNUSED(rotationOffset);
 }
@@ -151,4 +164,28 @@ void SceneNode::onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const
     ACKNOWLEDGE_UNUSED(dataIn);
 }
 
+
+void Attorney::SceneNodeSceneGraph::registerSGNParent(SceneNode& node, SceneGraphNode* sgn) {
+    // prevent double add
+    I64 targetGUID = sgn ? -1 : sgn->getGUID();
+    vectorImpl<SceneGraphNode*>::const_iterator it;
+    it = std::find_if(std::cbegin(node._sgnParents), std::cend(node._sgnParents), [targetGUID](SceneGraphNode* sgn) {
+        return sgn && sgn->getGUID() == targetGUID;
+    });
+    assert(it == std::cend(node._sgnParents));
+
+    node._sgnParents.push_back(sgn);
+}
+
+void Attorney::SceneNodeSceneGraph::unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn) {
+    // prevent double remove
+    I64 targetGUID = sgn ? sgn->getGUID() : -1;
+    vectorImpl<SceneGraphNode*>::const_iterator it;
+    it = std::find_if(std::cbegin(node._sgnParents), std::cend(node._sgnParents), [targetGUID](SceneGraphNode* sgn) {
+        return sgn && sgn->getGUID() == targetGUID;
+    });
+    assert(it != std::cend(node._sgnParents));
+
+    node._sgnParents.erase(it);
+}
 };

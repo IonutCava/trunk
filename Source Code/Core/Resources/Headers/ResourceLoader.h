@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef RESOURCE_LOADER_H_
 #define RESOURCE_LOADER_H_
 

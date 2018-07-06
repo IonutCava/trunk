@@ -36,6 +36,7 @@
     Square root: http://www.codeproject.com/KB/cpp/Sqrt_Prec_VS_Speed.aspx
 */
 
+#pragma once
 #ifndef _CORE_MATH_MATH_UTIL_H_
 #define _CORE_MATH_MATH_UTIL_H_
 

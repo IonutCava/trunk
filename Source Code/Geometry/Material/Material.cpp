@@ -152,9 +152,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 
 void Material::update(const U64 deltaTimeUS) {
     for (ShaderProgramInfo& info : _shaderInfo) {
-        if (info.update()) {
-            _dirty = true;
-        }
+        _dirty = _dirty || info.update();
     }
 
     clean();
@@ -267,8 +265,9 @@ void Material::clean() {
         if (!Config::Build::IS_DEBUG_BUILD) {
             //XML::dumpMaterial(_context, *this);
         }
-        _dirty = false;
     }
+
+    _dirty = false;
 }
 
 void Material::recomputeShaders() {

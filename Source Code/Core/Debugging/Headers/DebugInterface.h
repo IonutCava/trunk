@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _DEBUG_INTERFACE_H_
 #define _DEBUG_INTERFACE_H_
 

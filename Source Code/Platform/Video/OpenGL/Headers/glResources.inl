@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _GL_RESOURCES_INL_
 #define _GL_RESOURCES_INL_
 

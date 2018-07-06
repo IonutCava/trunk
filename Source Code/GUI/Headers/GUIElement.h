@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _GUI_ELEMENT_H_
 #define _GUI_ELEMENT_H_
 
@@ -106,7 +107,7 @@ class GUIElement : public GUIDWrapper {
     inline const bool isActive() const { return _active; }
     virtual const bool isVisible() const { return _visible; }
 
-    inline  void setName(const stringImpl& name) { _name = name; }
+    inline  void name(const stringImpl& name) { _name = name; }
     virtual void setVisible(const bool visible) { _visible = visible; }
     virtual void setActive(const bool active) { _active = active; }
 

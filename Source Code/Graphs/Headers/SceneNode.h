@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SCENE_NODE_H_
 #define _SCENE_NODE_H_
 
@@ -59,6 +60,12 @@ namespace Attorney {
     class SceneNodeNetworkComponent;
 };
 
+/// Usage context affects lighting, navigation, physics, etc
+enum class NodeUsageContext : U32 {
+    NODE_DYNAMIC = 0,
+    NODE_STATIC
+};
+
 enum class SceneNodeType : U32 {
     TYPE_ROOT = toBit(1),       //< root node
     TYPE_OBJECT3D = toBit(2),   //< 3d objects in the scene
@@ -78,32 +85,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
     friend class Attorney::SceneNodeSceneGraph;
     friend class Attorney::SceneNodeNetworkComponent;
 
-    public:
-    enum class UpdateFlag : U32 {
-        BOUNDS_CHANGED = toBit(1),
-        COUNT = 1
-    };
-
-    class SGNParentData {
-        public:
-        explicit SGNParentData(I64 sgnGUID) : _GUID(sgnGUID)
-        {
-            _updateFlags = 1;
-        }
-
-        inline I64 sgnGUID() const { return _GUID; }
-
-        inline bool getFlag(UpdateFlag flag) const { return BitCompare(_updateFlags, to_base(flag)); }
-        inline void clearFlag(UpdateFlag flag) { ClearBit(_updateFlags, to_base(flag)); }
-        inline void setFlag(UpdateFlag flag) { SetBit(_updateFlags, to_base(flag)); }
-        inline void toggleFlag(UpdateFlag flag) { ToggleBit(_updateFlags, to_base(flag)); }
-
-        private:
-        I64 _GUID;
-        U32 _updateFlags;
-    };
-
-    public:
+  public:
     explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type);
     explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
@@ -141,7 +123,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
     const ResourceCache& parentResourceCache() const { return _parentCache; }
 
 
-    inline const BoundingBox& refBoundingBox() const { return _boundingBox; }
+    inline const BoundingBox& getBoundsInternal() const { return _boundingBox; }
    protected:
     friend class BoundsSystem;
     /// Called from SceneGraph "sceneUpdate"
@@ -150,33 +132,16 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
-    virtual void updateBoundsInternal(SceneGraphNode& sgn);
-
-    inline void setFlag(UpdateFlag flag) {
-        for (SGNParentData& data : _sgnParents) {
-            data.setFlag(flag);
-        }
-    }
-
-    inline vectorImpl<SceneNode::SGNParentData>::iterator getSGNData(I64 sgnGUID) {
-        vectorImpl<SceneNode::SGNParentData>::iterator it;
-        it = std::find_if(std::begin(_sgnParents), std::end(_sgnParents),
-            [&sgnGUID](const SceneNode::SGNParentData& sgnIter) {
-                return (sgnIter.sgnGUID() == sgnGUID);
-            });
-        return it;
-    }
-
-    inline vectorImpl<SceneNode::SGNParentData>::const_iterator getSGNData(I64 sgnGUID) const {
-        return getSGNData(sgnGUID);
-    }
+    virtual void updateBoundsInternal();
 
     virtual void onCameraUpdate(SceneGraphNode& sgn,
-                                const I64 cameraGUID,
+                                const U64 cameraNameHash,
                                 const vec3<F32>& posOffset,
                                 const mat4<F32>& rotationOffset);
     virtual void onCameraChange(SceneGraphNode& sgn,
                                 const Camera& cam);
+
+    virtual void setBoundsChanged();
 
    protected:
      virtual void onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const;
@@ -195,7 +160,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
     SceneNodeType _type;
     Material_ptr _materialTemplate;
 
-    vectorImpl<SGNParentData> _sgnParents;
+    vectorImpl<SceneGraphNode*> _sgnParents;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneNode);
@@ -212,35 +177,20 @@ class SceneNodeSceneGraph {
         node.sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 
-    static void registerSGNParent(SceneNode& node, I64 sgnGUID) {
-        // prevent double add
-        vectorImpl<SceneNode::SGNParentData>::const_iterator it;
-        it = node.getSGNData(sgnGUID);
-        assert(it == std::cend(node._sgnParents));
+    static void registerSGNParent(SceneNode& node, SceneGraphNode* sgn);
 
-        node._sgnParents.push_back(SceneNode::SGNParentData(sgnGUID));
-    }
-
-    static void unregisterSGNParent(SceneNode& node, I64 sgnGUID) {
-        // prevent double remove
-        vectorImpl<SceneNode::SGNParentData>::const_iterator it;
-        it = node.getSGNData(sgnGUID);
-        assert(it != std::cend(node._sgnParents));
-
-        node._sgnParents.erase(it);
-    }
+    static void unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn);
 
     static size_t parentCount(const SceneNode& node) {
         return node._sgnParents.size();
     }
 
-
     static void onCameraUpdate(SceneGraphNode& sgn,
                                SceneNode& node,
-                               const I64 cameraGUID,
+                               const U64 cameraNameHash,
                                const vec3<F32>& posOffset,
                                const mat4<F32>& rotationOffset) {
-        node.onCameraUpdate(sgn, cameraGUID, posOffset, rotationOffset);
+        node.onCameraUpdate(sgn, cameraNameHash, posOffset, rotationOffset);
     }
 
     static void onCameraChange(SceneGraphNode& sgn,

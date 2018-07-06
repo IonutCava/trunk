@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _RIGID_BODY_COMPONENT_H_
 #define _RIGID_BODY_COMPONENT_H_
 
@@ -37,6 +38,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 namespace Divide {
+    enum class PhysicsGroup : U32;
+
     class PXDevice;
     
     class RigidBodyComponent : public SGNComponent<RigidBodyComponent> {

@@ -48,10 +48,17 @@ class SceneGraphNode;
 class PlatformContext;
 enum class RenderStage : U32;
 
+template<typename T>
+class vec3;
+
 class RenderPassCuller {
    public:
     // draw order, node pointer
-    typedef std::pair<U32, const SceneGraphNode*> VisibleNode;
+    struct VisibleNode {
+        F32 _distanceToCameraSq = 0.0f;
+        const SceneGraphNode* _node = nullptr;
+    };
+
     typedef vectorImpl<VisibleNode> VisibleNodeList;
 
     //Should return true if the node is not inside the frustum
@@ -89,6 +96,7 @@ class RenderPassCuller {
 
     void addAllChildren(const SceneGraphNode& currentNode,
                         RenderStage stage,
+                        const vec3<F32>& cameraEye,
                         VisibleNodeList& nodes) const;
 
    protected:

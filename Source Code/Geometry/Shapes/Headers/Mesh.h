@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _MESH_H_
 #define _MESH_H_
 
@@ -86,7 +87,7 @@ class Mesh : public Object3D {
     virtual void sceneUpdate(const U64 deltaTimeUS,
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
-    void updateBoundsInternal(SceneGraphNode& sgn) override;
+    void updateBoundsInternal() override;
 
    protected:
     bool _visibleToNetwork;

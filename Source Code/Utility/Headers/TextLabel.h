@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _UTILITY_TEXT_LABEL_H_
 #define _UTILITY_TEXT_LABEL_H_
 

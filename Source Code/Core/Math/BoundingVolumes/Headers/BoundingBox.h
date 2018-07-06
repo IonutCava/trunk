@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CORE_MATH_BOUNDINGVOLUMES_BOUNDINGBOX_H_
 #define _CORE_MATH_BOUNDINGVOLUMES_BOUNDINGBOX_H_
 
@@ -39,6 +40,8 @@ namespace Divide {
 namespace Attorney {
     class BoundingBoxEditor;
 };
+
+typedef std::tuple<bool /*hit*/, F32/*min*/, F32/*max*/> AABBRayResult;
 
 class PropertyWindow;
 class BoundingSphere;
@@ -67,7 +70,7 @@ class BoundingBox {
     bool operator!=(const BoundingBox& B) const;
 
     /// Optimized method
-    bool intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
+    AABBRayResult intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
 
     void createFromPoints(const vectorImpl<vec3<F32>>& points);
     void createFromSphere(const vec3<F32>& center, F32 radius);

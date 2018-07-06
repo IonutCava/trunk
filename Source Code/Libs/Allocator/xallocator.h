@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _XALLOCATOR_H
 #define _XALLOCATOR_H
 

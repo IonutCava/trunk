@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PLATFORM_DEFINES_APPLE_H_
 #define _PLATFORM_DEFINES_APPLE_H_
 
@@ -49,6 +50,10 @@
 #include <limits>
 #include <Carbon/Carbon.h>
 void checkMacEvents();
+
+#ifndef thread_local
+#define thread_local __thread
+#endif //thread_local
 
 namespace Divide {
     struct WindowHandle {

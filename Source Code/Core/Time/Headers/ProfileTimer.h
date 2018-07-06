@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CORE_TIME_PROFILE_TIMER_H_
 #define _CORE_TIME_PROFILE_TIMER_H_
 

@@ -29,15 +29,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _RENDERING_SYSTEM_H_
 #define _RENDERING_SYSTEM_H_
 
 #include "ECSSystem.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
-    class RenderingSystem : public ECSSystem<RenderingSystem> {
+    class RenderingSystem : public PlatformContextComponent,
+                            public ECSSystem<RenderingSystem> {
         public:
-        RenderingSystem(ECS::ECSEngine& parentEngine);
+        RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~RenderingSystem();
 
         virtual void PreUpdate(F32 dt) override;

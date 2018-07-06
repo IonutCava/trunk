@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _D3D_RESOURCES_H_
 #define _D3D_RESOURCES_H_
 

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _EFFECT_MANAGER_H_
 #define _EFFECT_MANAGER_H_
 

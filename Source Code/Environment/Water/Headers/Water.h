@@ -72,7 +72,7 @@ class WaterPlane : public SceneNode {
     void postLoad(SceneGraphNode& sgn) override;
 
    private:
-    void updateBoundsInternal(SceneGraphNode& sgn) override;
+    void updateBoundsInternal() override;
     void updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
     void updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
 

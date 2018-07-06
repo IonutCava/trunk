@@ -591,7 +591,7 @@ namespace Divide {
 
             _textures[to_base(TextureUsage::Tile)] = CreateResource<Texture>(*s_globalCache, texture);
 
-            texture.setName("Panel Manager Texture 2");
+            texture.name("Panel Manager Texture 2");
             texture.setResourceName("myNumbersTexture.png");
             _textures[to_base(TextureUsage::Numbers)] = CreateResource<Texture>(*s_globalCache, texture);
 

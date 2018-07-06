@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _BOUNDS_EVENTS_H_
 #define _BOUNDS_EVENTS_H_
 

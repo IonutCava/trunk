@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _COLOURS_H_
 #define _COLOURS_H_
 

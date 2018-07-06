@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _INPUT_EVENT_HANDLER_H_
 #define _INPUT_EVENT_HANDLER_H_
 //'index' and 'arg' in OISJoyStick.h and 'n' in OISMultiTouch.h are unreferenced

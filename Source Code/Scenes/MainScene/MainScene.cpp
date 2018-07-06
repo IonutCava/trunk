@@ -170,8 +170,19 @@ bool MainScene::load(const stringImpl& name) {
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setUserPtr(g_waterDimensions);
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
-    SceneGraphNode* waterGraphNode = _sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE);
-    waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+
+    SceneGraphNodeDescriptor waterNodeDescriptor;
+    waterNodeDescriptor._node = water;
+    waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+    waterNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+    waterNodeDescriptor._isSelectable = false;
+    waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) | 
+                                         to_base(ComponentType::TRANSFORM) |
+                                         to_base(ComponentType::BOUNDS) |
+                                         to_base(ComponentType::RENDERING) |
+                                         to_base(ComponentType::NETWORKING);
+    SceneGraphNode* waterGraphNode = _sceneGraph->getRoot().addNode(waterNodeDescriptor);
+    
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<TransformComponent>()->setPositionY(state().waterLevel());
     PushConstants& constants = waterGraphNode->get<RenderingComponent>()->pushConstants();
@@ -277,7 +288,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
         if (g_boxMoveTaskID != 0) {
             if (!parentTask.stopRequested()) {
-                g_boxMoveTaskID = registerTask(CreateTask(platformContext(), 
+                g_boxMoveTaskID = registerTask(CreateTask(context(), 
                                                getGUID(),
                                                DELEGATE_BIND(&MainScene::test,
                                                              this,
@@ -300,7 +311,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
     removeTask(g_boxMoveTaskID);
-    g_boxMoveTaskID = registerTask(CreateTask(platformContext(),
+    g_boxMoveTaskID = registerTask(CreateTask(context(),
                                               getGUID(),
                                               DELEGATE_BIND(&MainScene::test,
                                               this,

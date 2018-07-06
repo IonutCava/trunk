@@ -199,6 +199,7 @@
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp">
       <Filter>3rdParty/ImGUI\addons\imgui_gizmo</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Libs/imgui\imconfig.h">

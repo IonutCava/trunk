@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _UTILITY_IMAGETOOLS_H
 #define _UTILITY_IMAGETOOLS_H
 

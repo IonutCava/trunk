@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _FRAME_LISTENER_H_
 #define _FRAME_LISTENER_H_
 
@@ -95,7 +96,7 @@ class FrameListener : public GUIDWrapper {
 
    protected:
     friend class FrameListenerManager;
-    inline void setName(const stringImpl& name) { _listenerName = name; }
+    inline void name(const stringImpl& name) { _listenerName = name; }
     inline void setCallOrder(U32 order) { _callOrder = order; }
     /// Adapter patern instead of pure interface for the same reason as the Ogre
     /// boys pointed out:

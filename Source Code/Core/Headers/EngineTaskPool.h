@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _ENGINE_TASK_POOL_H_
 #define _ENGINE_TASK_POOL_H_
 
@@ -70,7 +71,7 @@ TaskHandle parallel_for(const PlatformContext& context,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
                         U32 taskFlags = 0);
 
-void WaitForAllTasks(const PlatformContext& context, bool yeld, bool flushCallbacks, bool foceClear);
+void WaitForAllTasks(const PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear);
 
 }; //namespace Divide
 

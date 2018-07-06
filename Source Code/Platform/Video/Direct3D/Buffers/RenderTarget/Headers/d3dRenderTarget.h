@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _D3D_FRAME_BUFFER_OBJECT_H_
 #define _D3D_FRAME_BUFFER_OBJECT_H_
 

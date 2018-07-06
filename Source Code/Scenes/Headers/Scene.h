@@ -163,10 +163,6 @@ class Scene : public Resource, public PlatformContextComponent {
     inline AI::AIManager& aiManager() { return *_aiManager; }
     inline const AI::AIManager& aiManager() const { return *_aiManager; }
 
-    inline PlatformContext& platformContext() { return _context; }
-    inline const PlatformContext& platformContext() const { return _context; }
-
-
     inline ResourceCache& resourceCache() { return _resCache; }
     inline const ResourceCache& resourceCache() const { return _resCache; }
 
@@ -309,7 +305,7 @@ class Scene : public Resource, public PlatformContextComponent {
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
        vectorImpl<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
-       vectorImpl<I64> _sceneSelectionCandidates;
+       vectorImpl<SGNRayResult> _sceneSelectionCandidates;
        std::unordered_set<PlayerIndex> _hoverUpdateQueue;
 
    protected:

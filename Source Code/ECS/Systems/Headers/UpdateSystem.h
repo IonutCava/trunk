@@ -29,14 +29,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _UPDATE_SYSTEM_H_
 #define _UPDATE_SYSTEM_H_
 
 #include "ECSSystem.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
-    class UpdateSystem : public ECSSystem<UpdateSystem> {
-        UpdateSystem(ECS::ECSEngine& parentEngine);
+    class UpdateSystem : public PlatformContextComponent,
+                         public ECSSystem<UpdateSystem> {
+        UpdateSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~UpdateSystem();
 
         virtual void PreUpdate(F32 dt) override;

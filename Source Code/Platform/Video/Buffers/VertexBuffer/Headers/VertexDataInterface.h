@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _VERTEX_DATA_INTERFACE_H_
 #define _VERTEX_DATA_INTERFACE_H_
 

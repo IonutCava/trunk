@@ -28,7 +28,7 @@ ShaderProgramInfo& ShaderProgramInfo::operator=(const ShaderProgramInfo& other) 
 }
 
 bool ShaderProgramInfo::update() {
-    if (computeStage() == ShaderProgramInfo::BuildStage::COMPUTED) {
+    if (_shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
         if (_shaderRef != nullptr && _shaderRef->getState() == ResourceState::RES_LOADED) {
             computeStage(ShaderProgramInfo::BuildStage::READY);
             return true;

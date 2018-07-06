@@ -36,6 +36,9 @@
 // http://www.boost.org/LICENSE_1_0.txt
 // http://www.geometrictools.com/License/Boost/LICENSE_1_0.txt
 // This code is HEAVILY inspired by Ogre3D and Torque3D
+
+
+#pragma once
 #ifndef _CORE_MATH_PLANE_H_
 #define _CORE_MATH_PLANE_H_
 

@@ -158,7 +158,7 @@ OpenGL3StateChangeWrapper::~OpenGL3StateChangeWrapper()
 
 void OpenGL3StateChangeWrapper::reset()
 {
-    d_vertexArrayObject = -1;
+    d_vertexArrayObject = 0u;
     d_blendFuncParams.reset();
     d_blendFuncSeperateParams.reset();
     d_viewPortParams.reset();

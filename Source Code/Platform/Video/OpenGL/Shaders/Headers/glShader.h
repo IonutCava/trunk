@@ -29,8 +29,9 @@
 
  */
 
-#ifndef GL_H_
-#define GL_H_
+#pragma once
+#ifndef _GL_SHADER_H_
+#define _GL_SHADER_H_
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
@@ -119,4 +120,4 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
 };  // namespace Divide
 
-#endif
+#endif //_GL_SHADER_H_

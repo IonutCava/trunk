@@ -1,6 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Written by Philip Rideout in April 2010
 // Covered by the MIT License
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -8,6 +11,17 @@
 
 #include "Headers/bstrlib.h"
 #include "Headers/glsw.h"
+
+#ifndef thread_local
+#if defined(_WIN32)
+#define thread_local __declspec( thread )
+#elif defined(__APPLE_CC__) 
+#define thread_local __thread
+#else //defined(__linux) || defined (__unix)
+#define thread_local __thread
+#endif
+
+#endif //thread_local
 
 #ifdef WIN32
 #pragma warning(disable:4996) // allow "fopen"
@@ -416,3 +430,6 @@ int glswAddDirectiveToken(const char* token, const char* directive)
 
     return 1;
 }
+#ifdef __cplusplus
+}
+#endif

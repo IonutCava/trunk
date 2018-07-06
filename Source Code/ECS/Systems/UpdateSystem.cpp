@@ -5,8 +5,9 @@
 
 namespace Divide {
 
-    UpdateSystem::UpdateSystem(ECS::ECSEngine& parentEngine)
-        : ECSSystem(parentEngine)
+    UpdateSystem::UpdateSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
+        : ECSSystem(parentEngine),
+          PlatformContextComponent(context)
     {
 
     }

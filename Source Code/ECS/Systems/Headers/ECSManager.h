@@ -28,6 +28,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _ECS_MANAGER_H_
 #define _ECS_MANAGER_H_
 
@@ -37,19 +38,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderingSystem.h"
 #include "BoundsSystem.h"
 
+#include "Core/Headers/PlatformContextComponent.h"
+
 namespace Divide {
     class ByteBuffer;
     class SceneGraphNode;
-    class ECSManager {
+    class ECSManager : public PlatformContextComponent {
         public:
-            static void init(ECS::ECSEngine& engine);
-            static void destroy(ECS::ECSEngine& engine);
+            ECSManager(PlatformContext& context, ECS::ECSEngine& engine);
+            ~ECSManager();
 
-            static bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer);
-            static bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
+            bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const;
+            bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
 
         protected:
-            static ECS::ECSEngine* s_ecsEngine;
+            ECS::ECSEngine& _ecsEngine;
     };
 }; //namespace Divide
 

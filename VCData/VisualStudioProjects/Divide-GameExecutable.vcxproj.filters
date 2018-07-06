@@ -12,6 +12,7 @@
       <Filter>HotReloading</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/stdafx-executable.cpp" />
+    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/ToDo.h" />

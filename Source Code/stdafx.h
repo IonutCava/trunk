@@ -29,16 +29,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _DIVIDE_PCH_
 #define _DIVIDE_PCH_
 
-#if defined(_WIN32)
-#include "Platform/Headers/PlatformDefinesWindows.h"
-#elif defined(__APPLE_CC__) 
-#include "Platform/Headers/PlatformDefinesApple.h"
-#else //defined(__linux) || defined (__unix)
-#include "Platform/Headers/PlatformDefinesUnix.h"
-#endif
+#include "Platform/Headers/PlatformDefinesOS.h"
 
 #if !defined(CPP_VERSION)
 #   define CPP_VERSION __cplusplus

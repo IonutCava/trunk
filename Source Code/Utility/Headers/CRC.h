@@ -32,6 +32,9 @@
 /*Code references:
     http://www.cplusplus.com/forum/lounge/27570/
 */
+
+
+#pragma once
 #ifndef UTIL_CRC_H_
 #define UTIL_CRC_H_
 

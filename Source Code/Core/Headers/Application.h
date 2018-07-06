@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CORE_APPLICATION_H_
 #define _CORE_APPLICATION_H_
 

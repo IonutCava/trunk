@@ -29,13 +29,20 @@ SceneGraph::SceneGraph(Scene& parentScene)
      _ecsEngine(new ECS::ECSEngine()),
      _rootNode(new SceneRoot(parentScene.resourceCache(), 1234))
 {
-    ECSManager::init(GetECSEngine());
-
-    static const U32 rootMask = to_base(ComponentType::TRANSFORM) |
-                                to_base(ComponentType::BOUNDS);
+    _ecsManager = std::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
 
     REGISTER_FRAME_LISTENER(this, 1);
-    _root = createSceneGraphNode(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
+
+    SceneGraphNodeDescriptor rootDescriptor;
+    rootDescriptor._node = _rootNode;
+    rootDescriptor._name = "ROOT";
+    rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
+    rootDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
+    rootDescriptor._isSelectable = false;
+    rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+
+    _root = createSceneGraphNode(*this, rootDescriptor);
+
     _root->get<BoundsComponent>()->ignoreTransform(true);
 
     Attorney::SceneNodeSceneGraph::postLoad(*_rootNode, *_root);
@@ -58,7 +65,6 @@ SceneGraph::~SceneGraph()
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
     unload();
-    ECSManager::destroy(GetECSEngine());
 }
 
 void SceneGraph::unload()
@@ -80,9 +86,6 @@ bool SceneGraph::frameEnded(const FrameEvent& evt) {
     return true;
 }
 
-void SceneGraph::unregisterNode(I64 guid, SceneGraphNode::UsageContext usage) {
-}
-
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     I64 guid = oldNode.getGUID();
 
@@ -94,10 +97,6 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
                                          return node && node->getGUID() == guid;
                                      }),
                       std::end(nodesByType));
-
-    if (_loadComplete) {
-        unregisterNode(guid, oldNode.usageContext());
-    }
 
     Attorney::SceneGraph::onNodeDestroy(_parentScene, oldNode);
 
@@ -156,7 +155,10 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
 
 void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
-    GetECSEngine().Update(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
+    F32 msTime = Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS);
+    GetECSEngine().PreUpdate(msTime);
+    GetECSEngine().Update(msTime);
+    GetECSEngine().PostUpdate(msTime);
 
     // Gather all nodes in order
     _orderedNodeList.resize(0);
@@ -166,7 +168,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     }
 
     if (_loadComplete && false) {
-        CreateTask(parentScene().platformContext(),
+        CreateTask(parentScene().context(),
             [this, deltaTimeUS](const Task& parentTask) mutable
             {
                 _octreeUpdating = true;
@@ -183,22 +185,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 }
 
 void SceneGraph::onCameraUpdate(const Camera& camera) {
-    static const U32 s_nodesPerThread = 64;
-
-    I64 guid = camera.getGUID();
-    const vec3<F32>& eye = camera.getEye(); 
-    const mat4<F32>& world = camera.getWorldMatrix();
-
-    U32 childCount = _root->getChildCount();
-    auto updateCamera = [this, &guid, &eye, &world](const Task& parentTask, U32 start, U32 end) {
-        auto perChildCull = [this, &guid, &eye, &world](SceneGraphNode& child, I32 i) {
-            child.onCameraUpdate(guid, eye, world);
-        };
-
-        _root->forEachChild(perChildCull, start, end);
-    };
-
-    parallel_for(parentScene().platformContext(), updateCamera, childCount, s_nodesPerThread, Task::TaskPriority::MAX);
+    _root->onCameraUpdate(_ID_RT(camera.name()), camera.getEye(), camera.getViewMatrix());
 }
 
 void SceneGraph::onCameraChange(const Camera& camera) {
@@ -209,7 +196,7 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     _root->onNetworkSend(frameCount);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& selectionHits) const {
+void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SGNRayResult>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
 
     /*if (_loadComplete) {
@@ -228,6 +215,24 @@ void SceneGraph::postLoad() {
     _loadComplete = true;
 }
 
+SceneGraphNode* SceneGraph::createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor) {
+    UniqueLock u_lock(_nodeCreateMutex);
+
+    ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(sceneGraph, descriptor);
+    return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));
+}
+
+void SceneGraph::destroySceneGraphNode(SceneGraphNode*& node, bool inPlace) {
+    if (node) {
+        if (inPlace) {
+            GetEntityManager()->DestroyAndRemoveEntity(node->GetEntityID());
+        }
+        else {
+            GetEntityManager()->DestroyEntity(node->GetEntityID());
+        }
+        node = nullptr;
+    }
+}
 
 const vectorImpl<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
     return _nodesByType[to_base(type)];

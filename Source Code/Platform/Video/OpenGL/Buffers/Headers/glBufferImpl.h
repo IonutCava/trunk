@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _GL_BUFFER_IMPL_H_
 #define _GL_BUFFER_IMPL_H_
 

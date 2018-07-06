@@ -37,7 +37,7 @@ WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const 
 
     Console::printfn(Locale::get(_ID("REFRACTION_INIT_FB")), sideLength, sideLength);
 
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+    setBoundsChanged();
 
     _reflectionCam = Camera::createCamera(name + "_reflectionCam", Camera::CameraType::FREE_FLY);
 }
@@ -48,12 +48,6 @@ WaterPlane::~WaterPlane()
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
-
     F32 halfWidth = _dimensions.width * 0.5f;
     F32 halfLength = _dimensions.height * 0.5f;
 
@@ -64,7 +58,18 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     _plane->setNormal(Quad3D::CornerLocation::CORNER_ALL, WORLD_Y_AXIS);
     _plane->renderState().setDrawState(false);
     
-    sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC);
+    SceneGraphNodeDescriptor waterNodeDescriptor;
+    waterNodeDescriptor._node = _plane;
+    waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+    waterNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_STATIC;
+    waterNodeDescriptor._isSelectable = false;
+    waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
+                                         to_base(ComponentType::TRANSFORM) |
+                                         to_base(ComponentType::BOUNDS) |
+                                         to_base(ComponentType::RENDERING) |
+                                         to_base(ComponentType::NETWORKING);
+
+    sgn.addNode(waterNodeDescriptor);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     renderable->setReflectionCallback(DELEGATE_BIND(&WaterPlane::updateReflection,
@@ -81,13 +86,13 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void WaterPlane::updateBoundsInternal(SceneGraphNode& sgn) {
+void WaterPlane::updateBoundsInternal() {
     F32 halfWidth = _dimensions.width * 0.5f;
     F32 halfLength = _dimensions.height * 0.5f;
 
     _boundingBox.set(vec3<F32>(-halfWidth, _dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
 
-    SceneNode::updateBoundsInternal(sgn);
+    SceneNode::updateBoundsInternal();
 }
 
 bool WaterPlane::unload() {

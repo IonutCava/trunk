@@ -43,6 +43,7 @@ void BoundsComponent::onTransformUpdated(const TransformUpdated* event) {
 
 void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
     _refBoundingBox.set(nodeBounds);
+    _boundsChanged = false;
     flagBoundingBoxDirty();
 }
 

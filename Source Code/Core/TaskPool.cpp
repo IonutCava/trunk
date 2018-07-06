@@ -75,7 +75,7 @@ void TaskPool::flushCallbackQueue()
     }
 }
 
-void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) {
+void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear) {
     bool finished = _workerThreadCount == 0;
     while (!finished) {
         if (forceClear) {
@@ -92,7 +92,7 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
                                 [](TaskState entry) {
                                     return entry != TaskState::TASK_FREE;
                                 }) == std::cend(_taskStates);
-        if (yeld) {
+        if (yield) {
             std::this_thread::yield();
         }
     }
@@ -214,8 +214,8 @@ TaskHandle CreateTask(TaskPool& pool,
     return handle;
 }
 
-void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks, bool foceClear) {
-    pool.waitForAllTasks(yeld, flushCallbacks, foceClear);
+void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear) {
+    pool.waitForAllTasks(yield, flushCallbacks, foceClear);
 }
 
 

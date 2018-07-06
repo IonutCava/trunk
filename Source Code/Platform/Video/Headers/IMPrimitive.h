@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _IM_EMULATION_H_
 #define _IM_EMULATION_H_
 

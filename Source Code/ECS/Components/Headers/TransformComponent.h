@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TRANSFORM_COMPONENT_H_
 #define _TRANSFORM_COMPONENT_H_
 
@@ -45,20 +46,8 @@ namespace Divide {
         TRANSLATION = toBit(1),
         SCALE = toBit(2),
         ROTATION = toBit(3),
-        VIEW_OFFSET = toBit(4),
-        WORLD_TRANSFORMS = TRANSLATION | SCALE | ROTATION,
-        ALL = WORLD_TRANSFORMS | VIEW_OFFSET,
-        COUNT = 4
-    };
-
-    struct IgnoreViewSettings {
-        IgnoreViewSettings() : _cameraGUID(-1)
-        {
-        }
-
-        I64 _cameraGUID;
-        vec3<F32> _posOffset;
-        mat4<F32> _transformOffset;
+        ALL = TRANSLATION | SCALE | ROTATION,
+        COUNT = 3
     };
 
     class TransformComponent : public SGNComponent<TransformComponent>,
@@ -73,7 +62,7 @@ namespace Divide {
          void reset();
 
          const mat4<F32>& getWorldMatrix() const;
-         mat4<F32>        getWorldMatrix(D64 interpolationFactor) const;
+         mat4<F32> getWorldMatrix(D64 interpolationFactor) const;
 
          /// Component <-> Transform interface
          void setPosition(const vec3<F32>& position) override;
@@ -141,8 +130,12 @@ namespace Divide {
          /// Return the local orientation quaternion
          Quaternion<F32> getLocalOrientation(D64 interpolationFactor) const;
 
-         inline const mat4<F32>& getLocalMatrix() {
+         inline mat4<F32> getLocalMatrix() {
              return getMatrix();
+         }
+
+         inline mat4<F32> getLocalMatrix(D64 interpolationFactor) {
+             return getMatrix(interpolationFactor);
          }
 
          void setTransforms(const mat4<F32>& transform);
@@ -152,13 +145,7 @@ namespace Divide {
          void pushTransforms();
          bool popTransforms();
 
-         inline bool ignoreView(const I64 cameraGUID) const {
-             return _ignoreViewSettings._cameraGUID == cameraGUID;
-         }
-
-         void setViewOffset(const vec3<F32>& posOffset, const mat4<F32>& rotationOffset);
-
-         void ignoreView(const bool state, const I64 cameraGUID);
+         void setOffset(bool state, const mat4<F32>& offset = mat4<F32>());
 
          bool save(ByteBuffer& outputBuffer) const override;
          bool load(ByteBuffer& inputBuffer) override;
@@ -173,8 +160,11 @@ namespace Divide {
          void PostUpdate(const U64 deltaTimeUS) override;
 
          void onParentTransformDirty(U32 transformMask);
+         void onParentUsageChanged(NodeUsageContext context);
 
-         const mat4<F32>& getMatrix() override;
+         mat4<F32> getMatrix() override;
+         mat4<F32> getMatrix(D64 interpolationFactor) const;
+
          const mat4<F32>& updateWorldMatrix();
 
          // Local transform interface access (all are in local space)
@@ -183,7 +173,7 @@ namespace Divide {
          void getOrientation(Quaternion<F32>& quatOut) const override;
 
       private:
-        IgnoreViewSettings _ignoreViewSettings;
+        std::pair<bool, mat4<F32>> _transformOffset;
 
         typedef std::stack<TransformValues> TransformStack;
 
@@ -191,6 +181,8 @@ namespace Divide {
         TransformValues _prevTransformValues;
         TransformStack  _transformStack;
         Transform       _transformInterface;
+
+        NodeUsageContext _parentUsageContext;
 
         bool _uniformScaled;
         std::atomic_bool _worldMatrixDirty;
@@ -207,6 +199,9 @@ namespace Divide {
                 comp.onParentTransformDirty(transformMask);
             }
 
+            static void onParentUsageChanged(TransformComponent& comp, NodeUsageContext context) {
+                comp.onParentUsageChanged(context);
+            }
             friend class Divide::SceneGraphNode;
         };
 

@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _IK_COMPONENT_H_
 #define _IK_COMPONENT_H_
 

@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TRANSFORM_EVENTS_H_
 #define _TRANSFORM_EVENTS_H_
 

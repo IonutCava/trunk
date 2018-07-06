@@ -98,6 +98,7 @@
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\stdafx-cegui-renderer-opengl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\RenderTarget.inl">

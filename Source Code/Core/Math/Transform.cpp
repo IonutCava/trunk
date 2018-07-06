@@ -34,7 +34,7 @@ Transform::~Transform()
 {
 }
 
-const mat4<F32>& Transform::getMatrix() {
+mat4<F32> Transform::getMatrix() {
     if (_dirty) {
         if (_rebuildMatrix) {
             // Ordering - a la Ogre:

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _D3D_GENERIC_VERTEX_DATA_H
 #define _D3d_GENERIC_VERTEX_DATA_H
 

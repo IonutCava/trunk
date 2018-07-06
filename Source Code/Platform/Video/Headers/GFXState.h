@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _HARDWARE_VIDEO_GFX_STATE_H_
 #define _HARDWARE_VIDEO_GFX_STATE_H_
 

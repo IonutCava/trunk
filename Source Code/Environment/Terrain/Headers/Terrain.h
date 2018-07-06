@@ -149,7 +149,7 @@ class Terrain : public Object3D {
                   const RenderStagePass& renderStagePass) override;
 
     void onCameraUpdate(SceneGraphNode& sgn,
-                        const I64 cameraGUID,
+                        const U64 cameraNameHash,
                         const vec3<F32>& posOffset,
                         const mat4<F32>& rotationOffset) override;
 

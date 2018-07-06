@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _WRAPPER_DX_H_
 #define _WRAPPER_DX_H_
 

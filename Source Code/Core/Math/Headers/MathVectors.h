@@ -51,6 +51,7 @@
 
  */
 
+#pragma once
 #ifndef _MATH_VECTORS_H_
 #define _MATH_VECTORS_H_
 
