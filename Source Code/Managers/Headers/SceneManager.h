@@ -38,6 +38,42 @@
 
 namespace Divide {
 
+struct SceneShaderData {
+    vec4<F32> _lightInfo;
+    vec4<F32> _fogDetails;
+    vec4<F32> _windDetails;
+    vec4<F32> _shadowingSettings;
+    vec4<F32> _otherData;
+
+    inline void fogDetails(F32 colorR, F32 colorG, F32 colorB, F32 density) {
+        _fogDetails.set(colorR, colorG, colorB, density);
+    }
+
+    inline void fogDensity(F32 density) {
+        _fogDetails.w = density;
+    }
+
+    inline void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) {
+        _shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
+    }
+
+    inline void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) {
+        _windDetails.set(directionX, directionY, directionZ, speed);
+    }
+
+    inline void lightDetails(F32 ambientR, F32 ambientG, F32 ambientB, U32 lightCount) {
+        _lightInfo.set(ambientR, ambientG, ambientB, to_float(lightCount));
+    }
+
+    inline void elapsedTime(U32 timeMS) {
+        _otherData.x = to_float(timeMS);
+    }
+
+    inline void enableDebugRender(bool state) {
+        _otherData.y = state ? 1.0f : 0.0f;
+    }
+};
+
 enum class RenderStage : U32;
 namespace Attorney {
     class SceneManagerKernel;
@@ -62,6 +98,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     void preRender();
     void render(RenderStage stage, const Kernel& kernel, bool frustumCull, bool refreshNodeData);
     void postRender();
+
     // generate a list of nodes to render
     void updateVisibleNodes(RenderStage stage, bool refreshNodeData);
     void renderVisibleNodes(RenderStage stage, bool frustumCull, bool refreshNodeData);
@@ -82,9 +119,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                                                   continueOnErrors);
     }
     /// Update animations, network data, sounds, triggers etc.
-    inline void updateSceneState(const U64 deltaTime) {
-        _activeScene->updateSceneState(deltaTime);
-    }
+    void updateSceneState(const U64 deltaTime);
 
     /// Gather input events and process them in the current scene
     inline void processInput(const U64 deltaTime) {
@@ -105,6 +140,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
         return true;
     }
 
+    void enableFog(F32 density, const vec3<F32>& color);
   public:  /// Input
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
@@ -157,13 +193,17 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     RenderPassCuller* _renderPassCuller;
     /// Pointer to the render pass manager
     RenderPassManager* _renderPassManager;
+    /// Generic scene data that doesn't change per shader
+    std::unique_ptr<ShaderBuffer> _sceneShaderData;
     /// Scene pool
     SceneMap _sceneMap;
     /// Scene_Name -Scene_Factory table
     hashMapImpl<stringImpl, std::function<Scene*()> > _sceneFactory;
     Material* _defaultMaterial;
-
+    SceneShaderData _sceneData;
     Time::ProfileTimer* _sceneGraphCullTimer;
+    U64 _elapsedTime;
+    U32 _elapsedTimeMS;
 
 END_SINGLETON
 

@@ -71,7 +71,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
         getBRDFFactors(getLightProperties(i, normal), materialProp);
     }
 #endif
-    vec3 color = (materialProp.ambient + dvd_lightAmbient * dvd_MatAmbient) + 
+    vec3 color = (materialProp.ambient + dvd_lightInfo.rgb * dvd_MatAmbient) + 
                  (materialProp.diffuse * textureColor.rgb) + 
                   materialProp.specular;
 
@@ -88,7 +88,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
 
     //return vec4(dvd_LightSource[0]._position.xyz, 1.0);
 #if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)
-    if (dvd_showShadowDebugInfo) {
+    if (dvd_showDebugInfo()) {
         switch (_shadowTempInt){
             case -1: color    = vec3(1.0); break;
             case  0: color.r += 0.15; break;

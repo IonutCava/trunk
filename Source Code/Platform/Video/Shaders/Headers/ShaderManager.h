@@ -64,12 +64,6 @@ DEFINE_SINGLETON(ShaderManager)
     bool update(const U64 deltaTime);
     /// Called once per frame after a swap buffer request
     void idle();
-    /// Calling refreshShaderData will mark all shader programs as dirty (general
-    /// data)
-    void refreshShaderData();
-    /// Calling refreshSceneData will mark all shader programs as dirty (scene
-    /// specific data only)
-    void refreshSceneData();
     /// Remove a shader from the cache
     void removeShader(Shader* s);
     /// Return a new shader reference

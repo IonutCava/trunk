@@ -309,8 +309,8 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define BUFFER_UNIFORMS " +
-            std::to_string(to_uint(ShaderBufferLocation::UNIFORMS)),
+        "#define BUFFER_SCENE_DATA " +
+            std::to_string(to_uint(ShaderBufferLocation::SCENE_DATA)),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,

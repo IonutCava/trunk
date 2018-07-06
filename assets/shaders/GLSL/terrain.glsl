@@ -20,7 +20,7 @@ void main(void){
     _waterDepth = 1.0 - (dvd_waterHeight - _vertexW.y) / (dvd_waterHeight - bbox_min.y);
     computeLightVectors();
 
-    float time2 = dvd_time * 0.0001;
+    float time2 = dvd_time() * 0.0001;
     vec2 noiseUV = _texCoord * underwaterDiffuseScale;
     _uv0 = noiseUV;
     _uv1 = noiseUV + time2;

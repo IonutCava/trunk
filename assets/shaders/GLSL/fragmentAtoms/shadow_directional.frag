@@ -16,7 +16,7 @@ float chebyshevUpperBound(vec2 moments, float compare, float minVariance) {
     
     float d = (compare - moments.x);
 
-    float pMax = reduceLightBleeding(variance / (variance + d*d), dvd_lightBleedBias);
+    float pMax = reduceLightBleeding(variance / (variance + d*d), dvd_shadowingSettings.x);
     
     return min(max(p, pMax), 1.0);
 }
@@ -64,12 +64,12 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
 
         vec2 moments = getArrayShadowValue(lightIndex, shadow_coord.xyz);
        
-        //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_minShadowVariance);
+        //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_shadowingSettings.y);
         //float shadowWarpedz1 = exp(shadow_coord.w * DEPTH_EXP_WARP);
-        //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance), 
+        //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_shadowingSettings.y), 
         //             1.0, 
-        //             clamp(((gl_FragCoord.z + dvd_shadowFadeDist) - dvd_shadowMaxDist) / dvd_shadowFadeDist, 0.0, 1.0));
-        return chebyshevUpperBound(moments,  shadow_coord.w, dvd_minShadowVariance);
+        //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
+        return chebyshevUpperBound(moments,  shadow_coord.w, dvd_shadowingSettings.y);
     }
 
     return 1.0;

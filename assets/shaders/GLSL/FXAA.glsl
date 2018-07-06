@@ -12,11 +12,10 @@ layout(triangle_strip, max_vertices = 4) out;
 out vec2 _texCoord;
 out vec4 _posPos;
 
-uniform vec2 dvd_invScreenDimension;
 uniform float dvd_fxaaSubpixShift = 1.0 / 4.0;
 
 void main() {
-    vec2 offset = dvd_invScreenDimension * (0.5 + dvd_fxaaSubpixShift);
+    vec2 offset = dvd_invScreenDimensions() * (0.5 + dvd_fxaaSubpixShift);
 
     gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
     _texCoord = vec2(1.0, 1.0);
@@ -50,7 +49,6 @@ in  vec4 _posPos;
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-uniform vec2 dvd_invScreenDimension;
 uniform float dvd_fxaaSpanMax = 8.0;
 uniform float dvd_fxaaReduceMul = 1.0 / 8.0;
 uniform float dvd_fxaaReduceMin = 1.0 / 128.0;
@@ -60,9 +58,9 @@ void main(){
 /*---------------------------------------------------------*/
     const vec3 luma = vec3(0.299, 0.587, 0.114);
     float lumaNW = dot(FxaaTexLod0(texScreen, _posPos.zw).xyz ,luma);
-    float lumaNE = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(1,0), dvd_invScreenDimension.xy).xyz ,luma);
-    float lumaSW = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(0,1), dvd_invScreenDimension.xy).xyz ,luma);
-    float lumaSE = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(1,1), dvd_invScreenDimension.xy).xyz ,luma);
+    float lumaNE = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(1,0), dvd_invScreenDimensions()).xyz ,luma);
+    float lumaSW = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(0,1), dvd_invScreenDimensions()).xyz ,luma);
+    float lumaSE = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(1,1), dvd_invScreenDimensions()).xyz ,luma);
     float lumaM  = dot(FxaaTexLod0(texScreen, _posPos.xy).xyz, luma);
 /*---------------------------------------------------------*/
     float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
@@ -76,7 +74,7 @@ void main(){
     float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);
     dir = min(vec2( dvd_fxaaSpanMax,  dvd_fxaaSpanMax), 
               max(vec2(-dvd_fxaaSpanMax, -dvd_fxaaSpanMax), 
-                  dir * rcpDirMin)) * dvd_invScreenDimension.xy;
+                  dir * rcpDirMin)) * dvd_invScreenDimensions();
 /*--------------------------------------------------------*/
     vec3 rgbA = (1.0/2.0) * ( FxaaTexLod0(texScreen, _posPos.xy + dir * (1.0/3.0 - 0.5)).xyz +
                               FxaaTexLod0(texScreen, _posPos.xy + dir * (2.0/3.0 - 0.5)).xyz);

@@ -188,11 +188,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         "_gfxCubeCamera", _cubeCamera);
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
-    _HIZConstructProgram =
-        CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
-    _HIZConstructProgram->Uniform("LastMip", ShaderProgram::TextureUsage::UNIT0);
-    _HIZCullProgram = 
-        CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
+    _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
+    _HIZCullProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::getInstance().getParam<F32>("rendering.zNear"),

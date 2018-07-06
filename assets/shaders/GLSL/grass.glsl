@@ -48,7 +48,7 @@ void main()
 flat in int _arrayLayer;
 out vec4 _colorOut;
 
-uniform sampler2DArray texDiffuseGrass;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
     vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
@@ -63,7 +63,7 @@ void main (void){
 in vec2 _texCoord;
 flat in int _arrayLayer;
 
-uniform sampler2DArray texDiffuseGrass;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 out vec2 _colorOut;
 
@@ -87,7 +87,7 @@ void main(void){
 in vec2 _texCoord;
 flat in int _arrayLayer;
 
-uniform sampler2DArray texDiffuseGrass;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 out vec4 _colorOut;
 

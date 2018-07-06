@@ -5,11 +5,6 @@ layout(binding = SHADOW_CUBE_START)   uniform samplerCubeShadow texDepthMapFromL
 layout(binding = SHADOW_NORMAL_START) uniform sampler2DShadow   texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
 layout(binding = SHADOW_ARRAY_START)  uniform sampler2DArray    texDepthMapFromLightArray[MAX_SHADOW_CASTING_LIGHTS];
 
-uniform float dvd_lightBleedBias = 0.2;
-uniform float dvd_minShadowVariance = 0.00002;
-uniform float dvd_shadowMaxDist = 250.0;
-uniform float dvd_shadowFadeDist = 150.0;
-
 // dynamic indexing doesn't work for some reason
 vec2 getArrayShadowValue(in uint index, in vec3 coords){
     #if MAX_SHADOW_CASTING_LIGHTS > 1
@@ -47,8 +42,6 @@ float getCubeShadowValue(in uint index, in vec4 coords){
 
 #if defined(_DEBUG)
 #define DEBUG_SHADOWMAPPING
-
-uniform bool dvd_showShadowDebugInfo = false;
 // set this to whatever (current cascade, current depth comparison result, anything)
 int _shadowTempInt = -2;
 #endif

@@ -230,7 +230,6 @@ void Vegetation::uploadGrassData() {
         shaderProg->Uniform("texCoordOffsets", texCoord);
         shaderProg->Uniform("rotationMatrices", rotationMatrices);
         shaderProg->Uniform("lod_metric", 100.0f);
-        shaderProg->Uniform("texDiffuseGrass", ShaderProgram::TextureUsage::UNIT0);
     }
 
     for (U8 i = 0; i < 2; ++i) {

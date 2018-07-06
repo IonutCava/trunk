@@ -47,7 +47,6 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
-    _blurDepthMapShader->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
     _blurDepthMapShader->Uniform("layerTotalCount", (I32)_numSplits);
     _blurDepthMapShader->Uniform("layerCount", (I32)_numSplits - 1);
     _blurDepthMapShader->Uniform("layerOffset", (I32)0);

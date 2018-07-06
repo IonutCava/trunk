@@ -316,21 +316,11 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
     app.getWindowManager().setResolution(vec2<U16>(w, h));
-    // Refresh shader programs
-    ShaderManager::getInstance().refreshShaderData();
+
+    _gpuBlock._data._invScreenDimension.xy(vec2<F32>(1.0f / w, 1.0f / h));
+    _gpuBlock._updated = true;
 
     _api->changeResolution(w, h);
-}
-
-/// Update fog values
-void GFXDevice::enableFog(F32 density, const vec3<F32>& color) {
-    ParamHandler& par = ParamHandler::getInstance();
-    par.setParam("rendering.sceneState.fogColor.r", color.r);
-    par.setParam("rendering.sceneState.fogColor.g", color.g);
-    par.setParam("rendering.sceneState.fogColor.b", color.b);
-    par.setParam("rendering.sceneState.fogDensity", density);
-    // Shader programs will pick up the new values on the next update call
-    ShaderManager::getInstance().refreshSceneData();
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it

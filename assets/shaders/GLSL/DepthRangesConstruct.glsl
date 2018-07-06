@@ -37,7 +37,6 @@ void main(void)
  */
 /****************************************************************************/
 uniform mat4 dvd_ProjectionMatrixInverse;
-uniform vec2 dvd_invScreenDimension;
 uniform sampler2D depthTex;
 
 out vec2 resultMinMax;
@@ -56,7 +55,7 @@ vec3 unProject(vec2 fragmentPos, float fragmentDepth)
 
 vec3 fetchPosition(vec2 p, float d)
 {
-  vec2 fragmentPos = vec2(p.x * dvd_invScreenDimension.x, p.y * dvd_invScreenDimension.y);
+  vec2 fragmentPos = vec2(p.x * dvd_invScreenDimensions().x, p.y * dvd_invScreenDimensions().y);
   return unProject(fragmentPos, d);
 }
 

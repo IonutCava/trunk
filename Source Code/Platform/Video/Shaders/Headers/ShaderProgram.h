@@ -238,36 +238,17 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
         return U32(_availableFunctionIndex[shaderTypeValue].size() - 1);
     }
     /** ------ END EXPERIMENTAL CODE ----- **/
-
-   protected:
-    friend class ShaderManager;
-    /// Calling refreshSceneData will force an update on scene specific shader
-    /// uniforms
-    inline void refreshSceneData() { _sceneDataDirty = true; }
-    /// Calling refreshShaderData will force an update on default shader
-    /// uniforms
-    inline void refreshShaderData() { _dirty = true; }
-    I32 operator==(const ShaderProgram& _v) {
-        return this->getGUID() == _v.getGUID();
-    }
-    I32 operator!=(const ShaderProgram& _v) { return !(*this == _v); }
-
    protected:
     ShaderProgram();
 
     template <typename T>
     friend class ImplResourceLoader;
     virtual bool generateHWResource(const stringImpl& name);
-    void updateMatrices();
-    const vectorImpl<U32>& getAvailableFunctions(ShaderType type) const;
 
    protected:
-    bool _dirty;
     std::atomic_bool _linked;
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
     // with a mutex or something
-    U64 _elapsedTime;
-    U32 _elapsedTimeMS;
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
     /// ID<->shaders pair
@@ -276,28 +257,8 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     std::array<bool, to_const_uint(ShaderType::COUNT)> _refreshStage;
 
    private:
-    bool _sceneDataDirty;
-    std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>,
-               to_const_uint(ShaderType::COUNT)> _functionIndex;
-    std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>
-        _availableFunctionIndex;
-
-
-    struct {
-        I32 _timeLocation;
-        I32 _fogStateLocation;
-        I32 _fogColorLocation;
-        I32 _fogDensityLocation;
-        I32 _ambientLightLocation;
-        I32 _lightCountLocation;
-        I32 _windDirectionLocation;
-        I32 _windSpeedLocation;
-        I32 _invScreenDimLocation;
-        I32 _lightBleedBiasLocation;
-        I32 _minShadowVarianceLocation;
-        I32 _shadowMaxDistLocation;
-        I32 _shadowFadeDistLocation;
-    } _constantData;
+    std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_const_uint(ShaderType::COUNT)> _functionIndex;
+    std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>  _availableFunctionIndex;
 };
 
 };  // namespace Divide

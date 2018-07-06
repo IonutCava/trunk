@@ -24,7 +24,6 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);
     _fxaa = CreateResource<ShaderProgram>(fxaa);
-    _fxaa->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
     reshape(resolution.width, resolution.height);
 }
 

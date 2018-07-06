@@ -13,19 +13,13 @@
 namespace Divide {
 
 ShaderProgram::ShaderProgram()
-    : HardwareResource("temp_shader_program"),
-      _dirty(true),
-      _elapsedTime(0ULL),
-      _elapsedTimeMS(0)
+    : HardwareResource("temp_shader_program")
 {
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramID = 0;
     // Start with clean refresh flags
     _refreshStage.fill(false);
-    // Cache some frequently updated uniform locations
-    _sceneDataDirty = true;
-    _constantData = {-1};
 }
 
 ShaderProgram::~ShaderProgram()
@@ -42,72 +36,8 @@ ShaderProgram::~ShaderProgram()
 
 /// Called once per frame. Update common values used across programs
 bool ShaderProgram::update(const U64 deltaTime) {
-    static const stringImpl fogParamName("rendering.enableFog");
-
-    ParamHandler& par = ParamHandler::getInstance();
-    LightManager& lightMgr = LightManager::getInstance();
-
-    // Update internal timers
-    _elapsedTime += deltaTime;
-    _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
     // Skip programs that aren't fully loaded
-    if (!isHWInitComplete()) {
-        return false;
-    }
-    // Toggle fog on or off
-    bool enableFog = par.getParam<bool>(fogParamName);
-#ifdef _DEBUG
-    // Shadow splits are only visible in debug builds
-    this->Uniform("dvd_showShadowDebugInfo",
-                  par.getParam<bool>("rendering.debug.displayShadowDebugInfo"));
-#endif
-
-    // Time, fog, ambient light
-    this->Uniform(_constantData._timeLocation, _elapsedTimeMS);
-    this->Uniform(_constantData._fogStateLocation, enableFog);
-    this->Uniform(_constantData._ambientLightLocation, lightMgr.getAmbientLight());
-    this->Uniform(_constantData._lightCountLocation, lightMgr.getActiveLightCount());
-                                    
-    // Scene specific data is updated only if it changed
-    if (_sceneDataDirty) {
-        // Check and update fog properties
-        if (enableFog) {
-            this->Uniform(
-                _constantData._fogColorLocation,
-                vec3<F32>(
-                    par.getParam<F32>("rendering.sceneState.fogColor.r"),
-                    par.getParam<F32>("rendering.sceneState.fogColor.g"),
-                    par.getParam<F32>("rendering.sceneState.fogColor.b")));
-            this->Uniform(_constantData._fogDensityLocation,
-                          par.getParam<F32>("rendering.sceneState.fogDensity"));
-        }
-        // Upload wind data
-        const SceneState& activeSceneState = GET_ACTIVE_SCENE().state();
-        this->Uniform(_constantData._windDirectionLocation,
-                      vec2<F32>(activeSceneState.windDirX(),
-                                activeSceneState.windDirZ()));
-        this->Uniform(_constantData._windSpeedLocation, activeSceneState.windSpeed());
-        _sceneDataDirty = false;
-    }
-
-    // The following values are updated only if a call to the ShaderManager's
-    // refresh() function is made
-    if (_dirty) {
-        // Inverse screen resolution
-        const vec2<U16>& screenRes =
-            GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-                ->getResolution();
-        this->Uniform(_constantData._invScreenDimLocation, vec2<F32>(1.0f / screenRes.width,
-                                                                     1.0f / screenRes.height));
-        // Shadow mapping specific values
-        this->Uniform(_constantData._lightBleedBiasLocation, 0.0000002f);
-        this->Uniform(_constantData._minShadowVarianceLocation, 0.0002f);
-        this->Uniform(_constantData._shadowMaxDistLocation, 250.0f);
-        this->Uniform(_constantData._shadowFadeDistLocation, 150.0f);
-        _dirty = false;
-    }
-
-    return true;
+    return isHWInitComplete();
 }
 
 /// Rendering API specific loading (called after the API specific derived calls
@@ -118,29 +48,10 @@ bool ShaderProgram::generateHWResource(const stringImpl& name) {
     if (!HardwareResource::generateHWResource(name)) {
         return false;
     }
-
     // Finish threaded loading
     HardwareResource::threadedLoad(name);
-    _constantData._timeLocation = getUniformLocation("dvd_time");
-    _constantData._fogStateLocation = getUniformLocation("dvd_enableFog");
-    _constantData._fogColorLocation = getUniformLocation("fogColor");
-    _constantData._fogDensityLocation = getUniformLocation("fogDensity");
-    _constantData._ambientLightLocation = getUniformLocation("dvd_lightAmbient");
-    _constantData._lightCountLocation = getUniformLocation("dvd_lightCount");
-    _constantData._windDirectionLocation = getUniformLocation("windDirection");
-    _constantData._windSpeedLocation = getUniformLocation("windSpeed");
-    _constantData._invScreenDimLocation = getUniformLocation("dvd_invScreenDimension");
-    _constantData._lightBleedBiasLocation = getUniformLocation("dvd_lightBleedBias");
-    _constantData._minShadowVarianceLocation = getUniformLocation("dvd_minShadowVariance");
-    _constantData._shadowMaxDistLocation = getUniformLocation("dvd_shadowMaxDist");
-    _constantData._shadowFadeDistLocation = getUniformLocation("dvd_shadowFadeDist");
-
     // Validate loading state
-    DIVIDE_ASSERT(isHWInitComplete(),
-                  "ShaderProgram error: hardware initialization failed!");
-
-    // Make sure the first call to update processes all of the needed data
-    _dirty = _sceneDataDirty = true;
+    DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
 
     return true;
 }

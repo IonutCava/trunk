@@ -312,8 +312,8 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     _GUI = guiInterface;
     _name = name;
 
-    _GFX.enableFog(_sceneState.fogDescriptor()._fogDensity,
-                   _sceneState.fogDescriptor()._fogColor);
+    SceneManager::getInstance().enableFog(_sceneState.fogDescriptor()._fogDensity,
+                                          _sceneState.fogDescriptor()._fogColor);
 
     loadXMLAssets();
     SceneGraphNode_ptr root = _sceneGraph->getRoot();

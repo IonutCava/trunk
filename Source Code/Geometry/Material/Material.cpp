@@ -179,6 +179,10 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
     if (texture) {
         REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
+        // Environment maps ARE NOT OWNED by the material
+        if (slot == to_uint(ShaderProgram::TextureUsage::REFLECTION)) {
+            texture->AddRef();
+        }
     }
 
     if (computeShaders) {

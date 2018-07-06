@@ -9,7 +9,11 @@
 namespace Divide {
 
 ShaderManager::ShaderManager()
-    : _init(false), _imShader(nullptr), _nullShader(nullptr) {}
+    : _init(false),
+      _imShader(nullptr),
+      _nullShader(nullptr)
+{
+}
 
 ShaderManager::~ShaderManager()
 {
@@ -62,7 +66,6 @@ bool ShaderManager::init() {
         CreateResource<ShaderProgram>(ResourceDescriptor("NULL"));
     // The null shader should never be nullptr!!!!
     assert(_nullShader != nullptr);  // LoL -Ionut
-
     return _init;
 }
 
@@ -139,20 +142,6 @@ void ShaderManager::idle() {
         _recompileQueue.pop();
     }
     return;
-}
-
-/// Pass uniform data update call to every registered program
-void ShaderManager::refreshShaderData() {
-    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
-        it.second->refreshShaderData();
-    }
-}
-
-/// Pass scene data update call to every registered program
-void ShaderManager::refreshSceneData() {
-    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
-        it.second->refreshSceneData();
-    }
 }
 
 /// Open the file found at 'location' matching 'atomName' and return it's source

@@ -24,8 +24,6 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
     _dofShader = CreateResource<ShaderProgram>(dof);
-    _dofShader->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
-    _dofShader->Uniform("texDepth", ShaderProgram::TextureUsage::UNIT1);
 }
 
 DoFPreRenderOperator::~DoFPreRenderOperator()

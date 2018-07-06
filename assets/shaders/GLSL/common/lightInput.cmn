@@ -32,10 +32,7 @@ layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
     Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 }; 
 
-uniform vec3 dvd_lightAmbient;
 #endif
-
-uniform uint dvd_lightCount = 0;
 
 VARYING vec3 _normalWV;
 #if defined(COMPUTE_TBN)

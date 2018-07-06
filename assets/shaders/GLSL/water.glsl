@@ -32,12 +32,10 @@ uniform float _waterShininess;
 uniform float _transparencyBias;
 uniform bool  underwater;
 
-uniform sampler2D texWaterNoiseNM;
-uniform sampler2D texWaterNoiseDUDV;
-uniform sampler2D texWaterReflection;
-uniform sampler2D texWaterRefraction;
-
-uniform ivec2 dvd_invScreenDimension;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterNoiseNM;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texWaterReflection;
+layout(binding = 2) uniform sampler2D texWaterRefraction;
+layout(binding = 3) uniform sampler2D texWaterNoiseDUDV;
 
 #include "lightInput.cmn"
 #include "utility.frag"
@@ -54,7 +52,7 @@ void main (void)
     uvReflection *= vec4(0.5);
     uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
 
-    float time2 = dvd_time * 0.00001;
+    float time2 = dvd_time() * 0.00001;
     vec2 uvNormal0 = _texCoord * _noiseTile;
     uvNormal0.s += time2;
     uvNormal0.t += time2;

@@ -222,6 +222,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
            vec4<F32> _cameraPosition;
            vec4<F32> _ViewPort;
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
+           vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
         } _data;
 
@@ -240,7 +241,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void endFrame() override;
     void handleWindowEvent(WindowEvent event, I32 data1, I32 data2);
 
-    void enableFog(F32 density, const vec3<F32>& color);
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D
     /// (Perspective) rendering
     void toggle2D(bool state);

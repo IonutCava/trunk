@@ -37,10 +37,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
 
     _bright = CreateResource<ShaderProgram>(bright);
     _blur = CreateResource<ShaderProgram>(blur);
-    _bright->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
     _bright->Uniform("texExposure", ShaderProgram::TextureUsage::UNIT1);
     _bright->Uniform("texPrevExposure", 2);
-    _blur->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
     _blur->Uniform("kernelSize", 10);
     _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
     _vertBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");

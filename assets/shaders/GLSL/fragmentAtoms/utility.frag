@@ -21,17 +21,16 @@ void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     targetTexture.xyz = mix(targetTexture.xyz, projectedTex.xyz, projectedTextureMixWeight);
 }
 
-uniform bool  dvd_enableFog = true;
-uniform float fogDensity;
-uniform vec3  fogColor;
-
 vec3 applyFogColor(in vec3 color){
     const float LOG2 = 1.442695;
+    const float density = dvd_fogDensity();
     float zDepth = gl_FragCoord.z / gl_FragCoord.w;
-    return mix(fogColor, color, clamp(exp2(-fogDensity * fogDensity * zDepth * zDepth * LOG2), 0.0, 1.0));
+    return mix(dvd_fogColor(), color, clamp(exp2(-density * density * zDepth * zDepth * LOG2), 0.0, 1.0));
 }
 
-vec4 applyFog(in vec4 color) { return vec4(dvd_enableFog ? applyFogColor(color.rgb) : color.rgb, color.a); }  
+vec4 applyFog(in vec4 color) { 
+    return vec4(dvd_fogDensity() > 0.0 ? applyFogColor(color.rgb) : color.rgb, color.a);
+}
 
 const float gamma = 2.2;
 

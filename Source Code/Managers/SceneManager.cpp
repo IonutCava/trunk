@@ -17,7 +17,9 @@ SceneManager::SceneManager()
       _renderPassManager(nullptr),
       _defaultMaterial(nullptr),
       _processInput(false),
-      _init(false)
+      _init(false),
+      _elapsedTime(0ULL),
+      _elapsedTimeMS(0)
 
 {
     AI::AIManager::createInstance();
@@ -25,6 +27,7 @@ SceneManager::SceneManager()
 
 SceneManager::~SceneManager()
 {
+    _sceneShaderData->destroy();
     AI::AIManager::destroyInstance();
     Time::REMOVE_TIMER(_sceneGraphCullTimer);
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
@@ -50,6 +53,11 @@ bool SceneManager::init(GUI* const gui) {
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
     _renderPassManager = &RenderPassManager::getInstance();
     _sceneGraphCullTimer = Time::ADD_TIMER("SceneGraph cull timer");
+    _sceneShaderData.reset(GFX_DEVICE.newSB("sceneShaderData", 1, false, false, BufferUpdateFrequency::OFTEN));
+    _sceneShaderData->create(1, sizeof(SceneShaderData));
+    _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
+    _sceneData.shadowingSettings(0.0000002f, 0.0002f, 150.0f, 250.0f);
+
     _init = true;
     return true;
 }
@@ -104,8 +112,50 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
     return Attorney::SceneManager::frameEnded(*_activeScene);
 }
 
+void SceneManager::updateSceneState(const U64 deltaTime) {
+    // Update internal timers
+    _elapsedTime += deltaTime;
+    _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
+
+    ParamHandler& par = ParamHandler::getInstance();
+    LightManager& lightMgr = LightManager::getInstance();
+
+    // Shadow splits are only visible in debug builds
+    _sceneData.enableDebugRender(par.getParam<bool>("rendering.debug.displayShadowDebugInfo"));
+    // Time, fog, ambient light
+    _sceneData.elapsedTime(_elapsedTimeMS);
+
+    const vec3<F32>& ambient = lightMgr.getAmbientLight();
+    _sceneData.lightDetails(ambient.r, ambient.g, ambient.b, lightMgr.getActiveLightCount());
+
+    _sceneData.fogDensity(par.getParam<bool>("rendering.enableFog")
+                            ? par.getParam<F32>("rendering.sceneState.fogDensity")
+                            : -1.0f);
+
+    const SceneState& activeSceneState = _activeScene->state();
+    _sceneData.windDetails(activeSceneState.windDirX(),
+                           0.0f,
+                           activeSceneState.windDirZ(),
+                           activeSceneState.windSpeed());
+
+    _activeScene->updateSceneState(deltaTime);
+}
+
+/// Update fog values
+void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
+    ParamHandler& par = ParamHandler::getInstance();
+    par.setParam("rendering.sceneState.fogColor.r", color.r);
+    par.setParam("rendering.sceneState.fogColor.g", color.g);
+    par.setParam("rendering.sceneState.fogColor.b", color.b);
+    par.setParam("rendering.sceneState.fogDensity", density);
+
+    _sceneData.fogDetails(color.r, color.g, color.b,
+                          par.getParam<bool>("rendering.enableFog") ? density : -1.0f);
+}
+
 void SceneManager::preRender() {
     _activeScene->preRender();
+    _sceneShaderData->setData(&_sceneData);
 }
 
 const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderStage stage) {

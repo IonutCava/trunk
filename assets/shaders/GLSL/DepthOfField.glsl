@@ -17,8 +17,9 @@ void main(void)
 #define PI  3.14159265
 in  vec2 _texCoord;
 out vec4 _colorOut;
-uniform sampler2D texDepth;
-uniform sampler2D texScreen;
+
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
 
 uniform vec2 size;
 uniform bool bHorizontal;
@@ -220,8 +221,9 @@ void main()
 
 in vec2 _texCoord;
 
-uniform sampler2D texDepth;
-uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+
 uniform vec2 size;
 uniform bool bHorizontal;
 
