@@ -72,7 +72,6 @@
 
 #ifdef WIN32_LEAN_AND_MEAN
 #undef WIN32_LEAN_AND_MEAN
-#define SDL_VIDEO_DRIVER_WINDOWS
 // SDL redefines WIN32_LEAN_AND_MEAN
 #include <SDL_syswm.h>
 #endif

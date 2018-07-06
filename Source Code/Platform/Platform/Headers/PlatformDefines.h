@@ -49,7 +49,6 @@
 #include <memory>
 #include <bitset>
 #include <limits>
-#include <strings.h>
 #include <stdarg.h>
 #include <cmath>
 #include <cstdio>
