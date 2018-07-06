@@ -126,6 +126,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
         TextureFilter::NEAREST);
     depthSamplerHiZ.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthSamplerHiZ.toggleMipMaps(true);
+    depthSamplerHiZ._cmpFunc = ComparisonFunction::GEQUAL;
     TextureDescriptor depthDescriptorHiZ(TextureType::TEXTURE_2D_MS,
                                          GFXImageFormat::DEPTH_COMPONENT32F,
                                          GFXDataFormat::FLOAT_32);
@@ -135,13 +136,14 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
         screenDescriptor, TextureDescriptor::AttachmentType::Color0);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(
         depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->Create(
-        resolution.width, resolution.height);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->Create(resolution.width,
+                                                         resolution.height);
+
     _renderTarget[to_uint(RenderTarget::DEPTH)]->AddAttachment(
         depthDescriptorHiZ, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->Create(resolution.width,
-                                                             resolution.height);
+                                                        resolution.height);
     // If we enabled anaglyph rendering, we need a second target, identical to
     // the screen target
     // used to render the scene at an offset

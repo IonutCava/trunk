@@ -559,14 +559,15 @@ void GFXDevice::threadedLoadCallback() {
 void GFXDevice::ConstructHIZ() {
     // We don't want to change the viewport or clear the buffer when starting to
     // render to the buffer
-    static Framebuffer::FramebufferTarget hizTarget;
+    Framebuffer::FramebufferTarget hizTarget;
     // We want to process the data already in the buffer
     hizTarget._clearBuffersOnBind = false;
     // And we calculate the target viewport for each loop
     hizTarget._changeViewport = false;
+    hizTarget._drawMask = Framebuffer::FramebufferTarget::BufferMask::DEPTH;
     // The depth buffer's resolution should be equal to the screen's resolution
     vec2<U16> resolution =
-        _renderTarget[to_uint(RenderTarget::DEPTH)]
+        _renderTarget[to_uint(RenderTarget::SCREEN)]
             ->getResolution();
     // We use a special shader that downsamples the buffer
     _HIZConstructProgram->bind();

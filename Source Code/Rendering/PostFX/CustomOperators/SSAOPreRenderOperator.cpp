@@ -11,7 +11,8 @@ namespace Divide {
 SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler)
-    : PreRenderOperator(PostFXRenderStage::SSAO, resolution, sampler), _outputFB(result) {
+    : PreRenderOperator(PostFXRenderStage::SSAO, resolution, sampler), _outputFB(result)
+{
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RGB8,
                                        GFXDataFormat::UNSIGNED_BYTE);
@@ -25,7 +26,10 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
     _ssaoShader->Uniform("texDepth", ShaderProgram::TextureUsage::UNIT1);
 }
 
-SSAOPreRenderOperator::~SSAOPreRenderOperator() { RemoveResource(_ssaoShader); }
+SSAOPreRenderOperator::~SSAOPreRenderOperator() 
+{
+    RemoveResource(_ssaoShader);
+}
 
 void SSAOPreRenderOperator::reshape(I32 width, I32 height) {
     _outputFB->Create(width, height);

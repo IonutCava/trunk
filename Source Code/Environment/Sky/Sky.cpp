@@ -31,7 +31,8 @@ Sky::Sky(const stringImpl& name)
         GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
 }
 
-Sky::~Sky() {
+Sky::~Sky()
+{
     RemoveResource(_skyShader);
     RemoveResource(_skybox);
 }

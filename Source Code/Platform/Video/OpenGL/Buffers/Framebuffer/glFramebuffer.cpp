@@ -12,17 +12,19 @@ bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_viewportChanged = false;
 
 namespace {
-const char* getAttachmentName(TextureDescriptor::AttachmentType type) {
+typedef TextureDescriptor::AttachmentType AttachmentType;
+
+const char* getAttachmentName(AttachmentType type) {
     switch (type) {
-        case TextureDescriptor::AttachmentType::Depth:
+        case AttachmentType::Depth:
             return "Depth";
-        case TextureDescriptor::AttachmentType::Color0:
+        case AttachmentType::Color0:
             return "Color0";
-        case TextureDescriptor::AttachmentType::Color1:
+        case AttachmentType::Color1:
             return "Color1";
-        case TextureDescriptor::AttachmentType::Color2:
+        case AttachmentType::Color2:
             return "Color2";
-        case TextureDescriptor::AttachmentType::Color3:
+        case AttachmentType::Color3:
             return "Color3";
     }
     return "ERROR_TYPE";
@@ -45,7 +47,7 @@ glFramebuffer::~glFramebuffer() {
     Destroy();
 }
 
-void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
+void glFramebuffer::InitAttachment(AttachmentType type,
                                    const TextureDescriptor& texDescriptor) {
     // If it changed
     if (!_attachmentDirty[to_uint(type)]) {
@@ -55,7 +57,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
     DIVIDE_ASSERT(_width != 0 && _height != 0,
                   "glFramebuffer error: Invalid frame buffer dimensions!");
 
-    if (type != TextureDescriptor::AttachmentType::Depth) {
+    if (type != AttachmentType::Depth) {
         _hasColor = true;
     } else {
         _hasDepth = true;
@@ -141,13 +143,13 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
     tex->refreshMipMaps();
 
     // Attach to frame buffer
-    if (type == TextureDescriptor::AttachmentType::Depth) {
+    if (type == AttachmentType::Depth) {
         GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
             _framebufferHandle, GL_DEPTH_ATTACHMENT, tex->getHandle(), 0);
         _isLayeredDepth = isLayeredTexture;
     } else {
         GLint offset = 0;
-        if (slot > to_uint(TextureDescriptor::AttachmentType::Color0)) {
+        if (slot > to_uint(AttachmentType::Color0)) {
             offset = _attOffset[slot - 1];
         }
         if (texDescriptor.isCubeTexture() && !_layeredRendering) {
@@ -184,8 +186,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
 }
 
 void glFramebuffer::AddDepthBuffer() {
-    TextureDescriptor desc =
-        _attachment[to_uint(TextureDescriptor::AttachmentType::Color0)];
+    TextureDescriptor desc = _attachment[to_uint(AttachmentType::Color0)];
     TextureType texType = desc._type;
 
     if (texType == TextureType::TEXTURE_2D_ARRAY) {
@@ -217,10 +218,9 @@ void glFramebuffer::AddDepthBuffer() {
     screenSampler._cmpFunc =
         ComparisonFunction::LEQUAL;  //< Use less or equal
     depthDescriptor.setSampler(screenSampler);
-    _attachmentDirty[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
-    _attachment[to_uint(TextureDescriptor::AttachmentType::Depth)] =
-        depthDescriptor;
-    InitAttachment(TextureDescriptor::AttachmentType::Depth, depthDescriptor);
+    _attachmentDirty[to_uint(AttachmentType::Depth)] = true;
+    _attachment[to_uint(AttachmentType::Depth)] = depthDescriptor;
+    InitAttachment(AttachmentType::Depth, depthDescriptor);
 
     _hasDepth = true;
 }
@@ -236,11 +236,10 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
         _resolveBuffer->_disableColorWrites = _disableColorWrites;
         _resolveBuffer->_layeredRendering = _layeredRendering;
         _resolveBuffer->_clearColor.set(_clearColor);
-        for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT);
-             ++i) {
+        for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
             if (_attachmentDirty[i] &&
-                !_resolveBuffer->AddAttachment(
-                    _attachment[i], (TextureDescriptor::AttachmentType)i)) {
+                !_resolveBuffer->AddAttachment(_attachment[i],
+                                               (AttachmentType)i)) {
                 return false;
             }
         }
@@ -261,9 +260,8 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     _colorBuffers.resize(0);
 
     // For every attachment, be it a color or depth attachment ...
-    for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
-        InitAttachment(static_cast<TextureDescriptor::AttachmentType>(i),
-                       _attachment[i]);
+    for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
+        InitAttachment(static_cast<AttachmentType>(i), _attachment[i]);
     }
     // If we either specify a depth texture or request a depth buffer ...
     if (_useDepthBuffer && !_hasDepth) {
@@ -315,15 +313,14 @@ void glFramebuffer::Destroy() {
 
 void glFramebuffer::resolve() {
     if (_resolveBuffer && !_resolved) {
-        _resolveBuffer->BlitFrom(this,
-                                 TextureDescriptor::AttachmentType::Color0,
-                                 _hasColor, _hasDepth);
+        _resolveBuffer->BlitFrom(this, AttachmentType::Color0, _hasColor,
+                                 _hasDepth);
         _resolved = true;
     }
 }
 
 void glFramebuffer::BlitFrom(Framebuffer* inputFB,
-                             TextureDescriptor::AttachmentType slot,
+                             AttachmentType slot,
                              bool blitColor,
                              bool blitDepth) {
     if (!inputFB || (!blitColor && !blitDepth)) {
@@ -366,7 +363,7 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB,
                         previousFB);
 }
 
-Texture* glFramebuffer::GetAttachment(TextureDescriptor::AttachmentType slot) {
+Texture* glFramebuffer::GetAttachment(AttachmentType slot) {
     if (_resolveBuffer) {
         resolve();
         return _resolveBuffer->GetAttachment(slot);
@@ -375,48 +372,70 @@ Texture* glFramebuffer::GetAttachment(TextureDescriptor::AttachmentType slot) {
     return Framebuffer::GetAttachment(slot);
 }
 
-void glFramebuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
+void glFramebuffer::Bind(GLubyte unit, AttachmentType slot) {
     GetAttachment(slot)->Bind(unit);
 }
 
+void glFramebuffer::ResetMipMaps(FramebufferTarget::BufferMask mask) {
+    switch (mask) {
+        case FramebufferTarget::BufferMask::DEPTH: {
+            U32 idx = to_uint(AttachmentType::Depth);
+            if (_attachmentTexture[idx] != nullptr) {
+                _attachmentTexture[idx]->refreshMipMaps();
+            }
+        }break;
+        case FramebufferTarget::BufferMask::COLOR: {
+            U32 idx = 0;
+            for (; idx < to_uint(AttachmentType::COUNT); ++idx) {
+                if (_attachmentTexture[idx] != nullptr &&
+                    static_cast<AttachmentType>(idx) != AttachmentType::Depth)
+                {
+                    _attachmentTexture[idx]->refreshMipMaps();
+                }
+            }
+             to_uint(TextureDescriptor::AttachmentType::Color0);
+        }break;
+        case FramebufferTarget::BufferMask::BOTH: {
+            ResetMipMaps(FramebufferTarget::BufferMask::DEPTH);
+            ResetMipMaps(FramebufferTarget::BufferMask::COLOR);
+        }break;
+    };
+}
+
 void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
-    DIVIDE_ASSERT(
-        _framebufferHandle != 0,
-        "glFramebuffer error: Tried to bind and invalid framebuffer!");
+    DIVIDE_ASSERT(_framebufferHandle != 0,
+                  "glFramebuffer error: "
+                  "Tried to bind an invalid framebuffer!");
     DIVIDE_ASSERT(!glFramebuffer::_bufferBound,
-                  "glFramebuffer error: Begin() called without a call to the "
+                  "glFramebuffer error: "
+                  "Begin() called without a call to the "
                   "previous bound buffer's End()");
 
     if (drawPolicy._changeViewport) {
-        GFX_DEVICE.setViewport(vec4<GLint>(0, 0, _width, _height));
         _viewportChanged = true;
+        GFX_DEVICE.setViewport(vec4<GLint>(0, 0, _width, _height));
     }
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, _framebufferHandle);
+
     // this is checked so it isn't called twice on the GPU
     GL_API::clearColor(_clearColor, _prevClearColor);
+
     if (_clearBuffersState && drawPolicy._clearBuffersOnBind) {
-        glClear(_clearBufferMask);
+        if (drawPolicy._drawMask == FramebufferTarget::BufferMask::DEPTH &&
+            _hasDepth) {
+            glClear(GL_DEPTH_BUFFER_BIT);
+        } else if (drawPolicy._drawMask ==
+                       FramebufferTarget::BufferMask::COLOR &&
+                   _hasColor) {
+            glClear(GL_COLOR_BUFFER_BIT);
+        } else {
+            glClear(_clearBufferMask);
+        }
         GFX_DEVICE.registerDrawCall();
     }
 
-    if (!drawPolicy._depthOnly && !drawPolicy._colorOnly) {
-        for (Texture* texture : _attachmentTexture) {
-            if (texture) {
-                texture->refreshMipMaps();
-            }
-        }
-    } else if (drawPolicy._depthOnly) {
-        _attachmentTexture[to_uint(TextureDescriptor::AttachmentType::Depth)]
-            ->refreshMipMaps();
-    } else {
-        for (U8 i = 0;
-             i < to_uint(TextureDescriptor::AttachmentType::COUNT) - 1; ++i) {
-            if (_attachmentTexture[i]) {
-                _attachmentTexture[i]->refreshMipMaps();
-            }
-        }
-    }
+    ResetMipMaps(drawPolicy._drawMask);
 
     if (_resolveBuffer) {
         _resolved = false;
@@ -426,9 +445,9 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
 }
 
 void glFramebuffer::End() {
-    DIVIDE_ASSERT(
-        glFramebuffer::_bufferBound,
-        "glFramebuffer error: End() called without a previous call to Begin()");
+    DIVIDE_ASSERT(glFramebuffer::_bufferBound,
+                  "glFramebuffer error: "
+                  "End() called without a previous call to Begin()");
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
     if (_viewportChanged) {

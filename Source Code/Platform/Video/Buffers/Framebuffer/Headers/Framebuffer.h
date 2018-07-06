@@ -41,17 +41,25 @@ class Texture;
 class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
    public:
     struct FramebufferTarget {
-        bool _depthOnly;
-        bool _colorOnly;
+        enum class BufferMask : U32 {
+            COLOR = 0,
+            DEPTH = 1,
+            BOTH = 2,
+            COUNT
+        };
+
+        BufferMask _drawMask;
         U32 _numColorChannels;
         bool _clearBuffersOnBind;
         bool _changeViewport;
+
         FramebufferTarget()
-            : _depthOnly(false),
-              _colorOnly(false),
+            : _drawMask(BufferMask::BOTH),
               _clearBuffersOnBind(true),
               _changeViewport(true),
-              _numColorChannels(1) {}
+              _numColorChannels(1)
+        {
+        }
     };
 
     enum class FramebufferUsage : U32 {

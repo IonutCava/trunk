@@ -73,6 +73,7 @@ class glFramebuffer : public Framebuffer {
     bool checkStatus() const;
     void InitAttachment(TextureDescriptor::AttachmentType type,
                         const TextureDescriptor& texDescriptor);
+    void ResetMipMaps(FramebufferTarget::BufferMask mask);
     void clearColor();
 
    protected:

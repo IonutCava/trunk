@@ -280,39 +280,42 @@ void Kernel::renderScene() {
 
     if (_GFX.anaglyphEnabled() && postProcessing) {
         renderSceneAnaglyph();
-        return;
-    }
+    } else {
 
-    Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
-    depthPassPolicy._depthOnly = true;
-    colorPassPolicy._colorOnly = true;
+        Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
+        depthPassPolicy._drawMask =
+            Framebuffer::FramebufferTarget::BufferMask::DEPTH;
+        colorPassPolicy._drawMask =
+            Framebuffer::FramebufferTarget::BufferMask::COLOR;
 
-    // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-        ->Begin(Framebuffer::defaultPolicy());
-    _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
+        // Z-prePass
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
+            ->Begin(depthPassPolicy);
+        _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
 
-    _GFX.ConstructHIZ();
+        _GFX.ConstructHIZ();
 
-    if (postProcessing) {
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->Begin(Framebuffer::defaultPolicy());
-    }
+        if (postProcessing) {
+            _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
+                ->Begin(colorPassPolicy);
+        }
 
-    _sceneMgr.render(RenderStage::DISPLAY, *this);
+        _sceneMgr.render(RenderStage::DISPLAY, *this);
 
-    if (postProcessing) {
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
-        PostFX::getInstance().displayScene();
+        if (postProcessing) {
+            _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
+            PostFX::getInstance().displayScene();
+        }
     }
 }
 
 void Kernel::renderSceneAnaglyph() {
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
-    depthPassPolicy._depthOnly = true;
-    colorPassPolicy._colorOnly = true;
-
+    depthPassPolicy._drawMask =
+        Framebuffer::FramebufferTarget::BufferMask::DEPTH;
+    colorPassPolicy._drawMask =
+        Framebuffer::FramebufferTarget::BufferMask::COLOR;
     Camera* currentCamera = _cameraMgr->getActiveCamera();
 
     // Render to right eye
@@ -320,12 +323,12 @@ void Kernel::renderSceneAnaglyph() {
     currentCamera->renderLookAt();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-        ->Begin(Framebuffer::defaultPolicy());
+        ->Begin(depthPassPolicy);
     SceneManager::getInstance().render(RenderStage::Z_PRE_PASS, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
     // first screen buffer
     _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-        ->Begin(Framebuffer::defaultPolicy());
+        ->Begin(colorPassPolicy);
     SceneManager::getInstance().render(RenderStage::DISPLAY, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
 
@@ -334,12 +337,12 @@ void Kernel::renderSceneAnaglyph() {
     currentCamera->renderLookAt();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-        ->Begin(Framebuffer::defaultPolicy());
+        ->Begin(depthPassPolicy);
     SceneManager::getInstance().render(RenderStage::Z_PRE_PASS, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
     // second screen buffer
     _GFX.getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
-        ->Begin(Framebuffer::defaultPolicy());
+        ->Begin(colorPassPolicy);
     SceneManager::getInstance().render(RenderStage::DISPLAY, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)->End();
 

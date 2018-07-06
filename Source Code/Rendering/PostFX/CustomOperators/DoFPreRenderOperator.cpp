@@ -10,7 +10,8 @@ namespace Divide {
 DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
                                            const vec2<U16>& resolution,
                                            SamplerDescriptor* const sampler)
-    : PreRenderOperator(PostFXRenderStage::DOF, resolution, sampler), _outputFB(result) {
+    : PreRenderOperator(PostFXRenderStage::DOF, resolution, sampler), _outputFB(result)
+{
     TextureDescriptor dofDescriptor(TextureType::TEXTURE_2D,
                                     GFXImageFormat::RGBA8,
                                     GFXDataFormat::UNSIGNED_BYTE);
@@ -26,7 +27,8 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
     _dofShader->Uniform("texDepth", ShaderProgram::TextureUsage::UNIT1);
 }
 
-DoFPreRenderOperator::~DoFPreRenderOperator() {
+DoFPreRenderOperator::~DoFPreRenderOperator()
+{
     RemoveResource(_dofShader);
     MemoryManager::DELETE(_samplerCopy);
 }
@@ -36,7 +38,9 @@ void DoFPreRenderOperator::reshape(I32 width, I32 height) {
 }
 
 void DoFPreRenderOperator::operation() {
-    if (!_enabled) return;
+    if (!_enabled) {
+        return;
+    }
 
     if (_inputFB.empty()) {
         Console::errorfn(Locale::get("ERROR_DOF_INPUT_FB"));
