@@ -317,6 +317,9 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         
     }
 
+    if(Config::USE_SHADER_BINARY){
+        _shaderBinarySupported = (glewIsSupported("GL_ARB_get_program_binary") == GL_TRUE);
+    }
     glfwSwapInterval(par.getParam<bool>("runtime.enableVSync",false) ? 1 : 0);
     GLint numberOfDisplayModes;
     const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &numberOfDisplayModes );

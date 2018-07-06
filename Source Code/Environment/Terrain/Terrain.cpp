@@ -38,7 +38,7 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _stateRefreshIntervalBuffer(0ULL),
     _diffuseUVScale(1.0f),
     _normalMapUVScale(1.0f),
-    _stateRefreshInterval(500 * 1000) ///<Every half a second
+    _stateRefreshInterval(getSecToUs(0.5)) ///<Every half a second
 {
     _terrainTextures[TERRAIN_TEXTURE_DIFFUSE]   = NULL;
     _terrainTextures[TERRAIN_TEXTURE_NORMALMAP] = NULL;

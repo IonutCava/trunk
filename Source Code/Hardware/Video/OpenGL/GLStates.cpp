@@ -22,6 +22,7 @@ bool GL_API::_texCompressionSupported = false;
 bool GL_API::_viewportForced = false;
 bool GL_API::_viewportUpdateGL = false;
 bool GL_API::_useMSAA = false;
+bool GL_API::_shaderBinarySupported = false;
 
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
     if(!skipShader || forceAll) {

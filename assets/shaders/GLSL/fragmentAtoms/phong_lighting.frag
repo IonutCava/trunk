@@ -1,6 +1,5 @@
 in vec2 _texCoord;
 in vec3 _normalWV;
-in vec4 _vertexWV;
 
 uniform mat4  material;
 uniform float opacity = 1.0;

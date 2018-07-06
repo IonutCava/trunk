@@ -13,6 +13,10 @@
 
 Vegetation::~Vegetation(){
     PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getName().c_str());
+    _stopLoadingRequest = true;
+    while(!_threadedLoadComplete){
+        // wait for the loading thread to finish first;
+    }
     SAFE_DELETE(_grassVBO);
 
     RemoveResource(_grassShader);
@@ -73,17 +77,13 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
         _windZ = sceneState.getWindDirZ();
         _windS = sceneState.getWindSpeed();
         _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
-        _grassShader->bind();
         _grassShader->Uniform("windDirection",vec2<F32>(_windX,_windZ));
         _grassShader->Uniform("windSpeed", _windS);
         _grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
         _grassShader->Uniform("worldHalfExtent", LightManager::getInstance().getLigthOrthoHalfExtent());
-        _grassShader->unbind();
         _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }
     _stateRefreshIntervalBuffer += deltaTime;
-
-  
 }
 
 void Vegetation::render(SceneGraphNode* const sgn){
@@ -131,6 +131,10 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
         F32 grassScaleFactor = 256/_grassScale;
         I32 map_color;
         for(U32 k=0; k<(U32)_grassDensity; k++) {
+            if(_stopLoadingRequest){
+                _threadedLoadComplete = true;
+                return false;
+            }
             F32 x = random(1.0f);
             F32 y = random(1.0f);
 

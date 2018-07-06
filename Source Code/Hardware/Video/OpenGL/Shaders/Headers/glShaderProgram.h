@@ -81,6 +81,9 @@ private:
     vectorImpl<glUniformBufferObject* > _uniformBufferObjects;
     boost::atomic_bool _validationQueued;
     U32 _shaderProgramIdTemp;
+    GLenum _binaryFormat;
+    bool   _loadedFromBinary;
+
 protected:
     bool generateHWResource(const std::string& name);
     inline void validate() {_validationQueued = true;}

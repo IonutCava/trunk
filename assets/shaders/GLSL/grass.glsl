@@ -47,15 +47,17 @@ void main(void){
         _shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
     }
 
-	gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
+    gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
 }
 
 -- Fragment
 
 in vec2 _texCoord;
 in vec3 _normalWV;
-in vec3 _lightDirection[MAX_LIGHT_COUNT];
 in vec4 _grassColor;
+in vec4 _vertexW;
+in vec3 _lightDirection[MAX_LIGHT_COUNT];
+in float dvd_ClipDistance[MAX_CLIP_PLANES];
 
 out vec4 _colorOut;
 
@@ -65,7 +67,7 @@ uniform sampler2D texDiffuse;
 #include "shadowMapping.frag"
 
 void main (void){
-	
+    
     vec4 cBase = texture(texDiffuse, _texCoord);
 
     int i = 0;
@@ -76,10 +78,10 @@ void main (void){
     // SHADOW MAPPING
     float shadow = 1.0;
     applyShadowDirectional(0, shadow);
-	
+    
     _colorOut.rgb = cAmbient * cBase.rgb + cDiffuse * cBase.rgb *(0.2 + 0.8 * shadow);
-	//_colorOut.rgb = cBase.rgb;
-	//_colorOut.a = min(cBase.a, _grassColor.a);
+    //_colorOut.rgb = cBase.rgb;
+    //_colorOut.a = min(cBase.a, _grassColor.a);
     _colorOut.a = cBase.a;
 }
 

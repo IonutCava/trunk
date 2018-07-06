@@ -78,7 +78,8 @@ namespace Config
     /// Edit the maximum number of concurrent threads that this application may start excluding tasks.
     /// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
     const int THREAD_LIMIT = 2;
-
+    /// Use "precompiled" shaders if possible
+    const bool USE_SHADER_BINARY = true;
 	/// Use HW AA'ed lines
 	const bool USE_HARDWARE_AA_LINES = true;
 }

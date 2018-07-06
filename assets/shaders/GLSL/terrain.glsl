@@ -9,12 +9,10 @@ layout(std140) uniform dvd_MatrixBlock
 };
 
 in vec3  inVertexData;
-out vec4 _vertexW;
 
 void main(void){
     vec4 dvd_Vertex = vec4(inVertexData,1.0);
-    _vertexW = dvd_WorldMatrix * dvd_Vertex;
-    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+    gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * dvd_Vertex;
 }
 
 -- Vertex
@@ -48,7 +46,6 @@ void main(void){
 
 -- Fragment.Depth
 
-in vec4  _vertexW;
 out vec4 _colorOut;
 
 uniform float _waterHeight;

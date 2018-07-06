@@ -232,6 +232,7 @@ private: //OpenGL specific:
     static bool _useMSAA;
     static bool _anisotropySupported;
     static bool _texCompressionSupported;
+    static bool _shaderBinarySupported;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
 
     /// performance counters

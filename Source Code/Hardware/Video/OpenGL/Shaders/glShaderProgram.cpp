@@ -13,6 +13,7 @@
 
 glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
                                                         _validationQueued(false),
+                                                        _loadedFromBinary(false),
                                                         _shaderProgramIdTemp(0)
 {
     _shaderProgramId = Divide::GL::_invalidObjectID;
@@ -44,8 +45,24 @@ U8 glShaderProgram::update(const U64 deltaTime){
     if(_validationQueued && isHWInitComplete() && _wasBound/*after it was used at least once*/){
         validateInternal();
         flushLocCache();
-    }
 
+        if(GL_API::_shaderBinarySupported && _shaderProgramId != 0 && !_loadedFromBinary){
+            GLint   binaryLength;
+            void*   binary;
+            FILE*   outFile;
+    
+            GLCheck(glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength));
+            binary = (void*)malloc(binaryLength);
+            GLCheck(glGetProgramBinary(_shaderProgramId, binaryLength, NULL, &_binaryFormat, binary));
+ 
+            std::string outFileName("shaderCache/Binary/"+getName()+".bin");
+            outFile = fopen(outFileName.c_str(), "wb");
+            fwrite(binary, binaryLength, 1, outFile);
+            fclose(outFile);
+            free(binary);
+        }
+    }
+      
     return ShaderProgram::update(deltaTime);
 }
 
@@ -115,6 +132,35 @@ void glShaderProgram::threadedLoad(const std::string& name){
             ERROR_FN(Locale::get("ERROR_GLSL_SHADER_COMPILE"),it.second->getShaderId());
         }
     }
+    //Load the program from the binary file, if available, to avoid linking
+    if(GL_API::_shaderBinarySupported){
+        GLint   binaryLength;
+        GLint   success;
+        void*   binary;
+        FILE*   inFile;
+        std::string inFileName("shaderCache/Binary/"+getName()+".bin");
+        inFile = fopen(inFileName.c_str(), "rb");
+        if(inFile){
+            fseek(inFile, 0, SEEK_END);
+            binaryLength = (GLint)ftell(inFile);
+            binary = (void*)malloc(binaryLength);
+            fseek(inFile, 0, SEEK_SET);
+            fread(binary, binaryLength, 1, inFile);
+            fclose(inFile);
+            GLCheck(glProgramBinary(_shaderProgramIdTemp, _binaryFormat, binary, binaryLength));
+            free(binary);
+            GLCheck(glGetProgramiv(_shaderProgramIdTemp, GL_LINK_STATUS, &success));
+
+            if(success){
+                _loadedFromBinary = true;
+                initUBO();
+                validate();
+                _shaderProgramId = _shaderProgramIdTemp;
+                ShaderProgram::threadedLoad(name);
+                return;
+            }
+        }
+    }
 
     link();
     initUBO();
@@ -143,7 +189,19 @@ void glShaderProgram::initUBO(){
 }
 
 void glShaderProgram::link(){
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_POSITION_LOCATION ,"inVertexData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_NORMAL_LOCATION   ,"inNormalData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_COLOR_LOCATION    ,"inColorData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TEXCOORD_LOCATION ,"inTexCoordData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TANGENT_LOCATION  ,"inTangentData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BITANGENT_LOCATION,"inBiTangentData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BONE_WEIGHT_LOCATION,"inBoneWeightData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BONE_INDICE_LOCATION,"inBoneIndiceData"));
+
     GLint linkStatus = 0;
+    if(GL_API::_shaderBinarySupported){
+        GLCheck(glProgramParameteri(_shaderProgramIdTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE));
+    }
     D_PRINT_FN(Locale::get("GLSL_LINK_PROGRAM"),getName().c_str(), _shaderProgramIdTemp);
     GLCheck(glLinkProgram(_shaderProgramIdTemp));
     GLCheck(glGetProgramiv(_shaderProgramIdTemp, GL_LINK_STATUS, &linkStatus));
@@ -237,16 +295,6 @@ bool glShaderProgram::generateHWResource(const std::string& name){
     }
 
     vertexProperties += shaderProperties;
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_POSITION_LOCATION ,"inVertexData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_NORMAL_LOCATION   ,"inNormalData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_COLOR_LOCATION    ,"inColorData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TEXCOORD_LOCATION ,"inTexCoordData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TANGENT_LOCATION  ,"inTangentData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BITANGENT_LOCATION,"inBiTangentData"));
-    if(vertexProperties.find("Skinned") != std::string::npos){
-        GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BONE_WEIGHT_LOCATION,"inBoneWeightData"));
-        GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BONE_INDICE_LOCATION,"inBoneIndiceData"));
-    }
 
     if(_useVertex){
         Shader* vertexShader = NULL;

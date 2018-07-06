@@ -49,7 +49,7 @@ bool glShader::load(const std::string& source){
 #endif
     const char* src = parsedSource.c_str();
     GLCheck(glShaderSource(_shader, 1, &src, NULL));
-    ShaderManager::getInstance().shaderFileWrite((char*)(std::string("shaderCache/"+getName()).c_str()), src);
+    ShaderManager::getInstance().shaderFileWrite((char*)(std::string("shaderCache/Text/"+getName()).c_str()), src);
 
     return true;
 }

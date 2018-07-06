@@ -1,3 +1,4 @@
+in vec4 _vertexWV;
 
 //Normal or BumpMap
 uniform sampler2D texNormalMap;

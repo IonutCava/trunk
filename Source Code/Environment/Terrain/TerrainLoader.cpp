@@ -42,21 +42,19 @@ void Terrain::loadVisualResources(){
     //Generate a shadow render state
     terrainDesc.setCullMode(CULL_MODE_CCW);
     _terrainDepthRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
-    //For now, terrain doesn't cast shadows
-    //getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
 }
 
 bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
-    ///Terrain dimensions:
-    ///    |-----------------------|        /\						      /\
-    ///    |          /\           |         |					         /  \
-    ///    |          |            |         |					    /\__/    \
-    ///    |          |            | _terrainHeightScaleFactor  /\   /          \__/\___
-    ///    |<-_terrainScaleFactor->|         |				 |  --/                   \
-    ///    |          |            |         |                /                          \
-    ///    |          |            |         |              |-                            \
-    ///    |          |            |         \/            /_______________________________\
-    ///    |_________\/____________|
+    //Terrain dimensions:
+    //    |-----------------------|        /\						         /\
+    //    |          /\           |         |					            /  \
+    //    |          |            |         |					       /\__/    \
+    //    |          |            | _terrainHeightScaleFactor   /\    /          \__/\_
+    //    |<-_terrainScaleFactor->|         |				   |   --/                 \
+    //    |          |            |         |                /                          \
+    //    |          |            |         |              |                             \
+    //    |          |            |         \/            /_______________________________\
+    //    |_________\/____________|
 
     _terrainHeightScaleFactor = terrain->getScale().y;
 

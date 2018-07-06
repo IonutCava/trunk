@@ -57,11 +57,12 @@ public:
       _success(false),
       _shadowMapped(true),
       _threadedLoadComplete(false),
+      _stopLoadingRequest(false),
       _terrain(NULL),
       _terrainSGN(NULL),
       _grassShader(NULL),
       _stateRefreshIntervalBuffer(0ULL),
-      _stateRefreshInterval(1000 * 1000) ///<Every second?
+      _stateRefreshInterval(getSecToUs(1)) ///<Every second?
       {
           _map.create(map);
       }
@@ -83,7 +84,7 @@ private:
     //variables
     bool _render; ///< Toggle vegetation rendering On/Off
     bool _success;
-    boost::atomic_bool _threadedLoadComplete;
+    boost::atomic_bool _threadedLoadComplete, _stopLoadingRequest;
     SceneGraphNode* _terrainSGN;
     Terrain*        _terrain;
     D32 _grassDensity, _treeDensity;

@@ -17,6 +17,8 @@ void main(void){
 
 in vec2 _texCoord;
 in vec4 _vertexWVP;
+in vec4 _vertexW;
+in float dvd_ClipDistance[MAX_CLIP_PLANES];
 
 uniform float opacity = 1.0;
 uniform sampler2D texOpacityMap;

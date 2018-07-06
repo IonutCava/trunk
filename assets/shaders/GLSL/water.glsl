@@ -45,6 +45,9 @@ uniform ivec2 screenDimension;
 in vec3 _pixToLight;
 in vec3 _pixToEye;
 in vec2 _texCoord;
+in vec4 _vertexW;
+in float dvd_ClipDistance[MAX_CLIP_PLANES];
+
 out vec4 _colorOut;
 
 #include "lightInput.cmn"
