@@ -23,7 +23,7 @@ TaskPool::TaskPool(U32 maxTaskCount)
 
 TaskPool::~TaskPool()
 {
-    _tasksPool.clear();
+    shutdown();
 }
 
 bool TaskPool::init(U32 threadCount, TaskPoolType type, const stringImpl& workerName) {
@@ -51,6 +51,9 @@ bool TaskPool::init(U32 threadCount, TaskPoolType type, const stringImpl& worker
     return true;
 }
 
+void TaskPool::shutdown() {
+    _tasksPool.clear();
+}
 void TaskPool::runCbkAndClearTask(U32 taskIndex) {
     DELEGATE_CBK<void>& cbk = _taskCallbacks[taskIndex];
     if (cbk) {

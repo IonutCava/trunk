@@ -56,6 +56,8 @@ class TaskPool {
     ~TaskPool();
     
     bool init(U32 threadCount, TaskPoolType type, const stringImpl& workerName = "DVD_WORKER_");
+    void shutdown();
+
     void flushCallbackQueue();
     void waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear = false);
 

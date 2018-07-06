@@ -757,6 +757,7 @@ void Kernel::shutdown() {
     OpenCLInterface::instance().deinit();
     _renderPassManager.reset();
 
+    _taskPool.shutdown();
     Camera::destroyPool();
     _platformContext->terminate();
     _resCache->clear();
