@@ -84,7 +84,7 @@ struct PushConstant {
                  bool flag = false)
         : _binding(binding),
           _type(type),
-          _values(std::begin(values), std::end(values)),
+          _values(std::cbegin(values), std::cend(values)),
           _flag(flag),
           _transpose(false)
     {
@@ -96,10 +96,10 @@ struct PushConstant {
                  const std::array<T, N>& values,
                  bool flag = false)
         : _binding(binding),
-        _type(type),
-        _values(std::begin(values), std::end(values)),
-        _flag(flag),
-        _transpose(false)
+          _type(type),
+          _values(std::cbegin(values), std::cend(values)),
+          _flag(flag),
+          _transpose(false)
     {
     }
 

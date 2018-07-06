@@ -119,12 +119,12 @@ class TextureDataContainer {
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
-      vectorImpl<std::pair<TextureData, U8>>& textures();
-      const vectorImpl<std::pair<TextureData, U8>>& textures() const;
+      vectorImplFast<std::pair<TextureData, U8>>& textures();
+      const vectorImplFast<std::pair<TextureData, U8>>& textures() const;
       void clear(bool clearMemory = false);
 
     private:
-      vectorImpl<std::pair<TextureData, U8 /*binding*/>> _textures;
+    vectorImplFast<std::pair<TextureData, U8 /*binding*/>> _textures;
 };
 
 }; //namespace Divide

@@ -111,9 +111,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     };
 
     enum class UpdateFlag : U32 {
-        SPATIAL_PARTITION = 0,
-        THREADED_LOAD = 1,
-        COUNT
+        SPATIAL_PARTITION = toBit(1),
+        THREADED_LOAD = toBit(2),
+        COUNT = 2
     };
 
     /// Called from SceneGraph "sceneUpdate"
@@ -263,11 +263,13 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
 
     inline bool getFlag(UpdateFlag flag) const {
-        return _updateFlags[to_U32(flag)];
+        ReadLock r_lock(_updateFlagLock);
+        return BitCompare(_updateFlags, to_base(flag));
     }
 
     inline void clearUpdateFlag(UpdateFlag flag) {
-        _updateFlags[to_U32(flag)] = false;
+        WriteLock w_lock(_updateFlagLock);
+        ClearBit(_updateFlags, to_base(flag));
     }
 
     bool operator==(SceneGraphNode* other) const {
@@ -335,7 +337,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void onNetworkSend(U32 frameCount);
 
     inline void setUpdateFlag(UpdateFlag flag) {
-        _updateFlags[to_U32(flag)] = true;
+        WriteLock w_lock(_updateFlagLock);
+        SetBit(_updateFlags, to_base(flag));
     }
 
     void getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList);
@@ -374,7 +377,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
     std::atomic<bool> _visibilityLocked;
-    std::array<std::atomic<bool>, to_base(UpdateFlag::COUNT)> _updateFlags;
+
+    mutable SharedLock _updateFlagLock;
+    U32 _updateFlags;
 
     bool _isSelectable;
     SelectionFlag _selectionFlag;

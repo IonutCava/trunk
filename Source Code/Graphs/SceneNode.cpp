@@ -61,7 +61,11 @@ bool SceneNode::onRender(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(sceneRenderState);
     ACKNOWLEDGE_UNUSED(renderStagePass);
-    return true;
+
+    if (getState() == ResourceState::RES_LOADED) {
+        return true;
+    }
+    return false;
 }
 
 void SceneNode::updateBoundsInternal(SceneGraphNode& sgn) {

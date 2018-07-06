@@ -28,7 +28,6 @@ SceneShaderData::~SceneShaderData()
 
 void SceneShaderData::uploadToGPU() {
     _sceneShaderData->writeData(&_bufferData);
-    _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
 }
 
 }; //namespace Divide

@@ -6,7 +6,7 @@
 namespace Divide {
 namespace Util {
 
-static boost::thread_specific_ptr<vectorImpl<GlobalFloatEvent>> _globalFloatEvents;
+static boost::thread_specific_ptr<vectorImplFast<GlobalFloatEvent>> _globalFloatEvents;
 
 void ToByteColour(const FColour& floatColour, UColour& colourOut) {
     colourOut.set(FLOAT_TO_CHAR(floatColour.r),
@@ -211,27 +211,27 @@ void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw, bool normPi
 }
 
 void FlushFloatEvents() {
-    vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
+    vectorImplFast<GlobalFloatEvent>* vec = _globalFloatEvents.get();
     if( !vec ) {
-        vec = new vectorImpl<GlobalFloatEvent>();
+        vec = new vectorImplFast<GlobalFloatEvent>();
         _globalFloatEvents.reset(vec);
     }
     vec->clear();
 }
 
 void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp) {
-    vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
+    vectorImplFast<GlobalFloatEvent>* vec = _globalFloatEvents.get();
     if( !vec ) {
-        vec = new vectorImpl<GlobalFloatEvent>();
+        vec = new vectorImplFast<GlobalFloatEvent>();
         _globalFloatEvents.reset(vec);
     }
     vectorAlg::emplace_back(*vec, eventName, eventValue, timestamp);
 }
 
-const vectorImpl<GlobalFloatEvent>& GetFloatEvents() {
-    vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
+const vectorImplFast<GlobalFloatEvent>& GetFloatEvents() {
+    vectorImplFast<GlobalFloatEvent>* vec = _globalFloatEvents.get();
     if (!vec) {
-        vec = new vectorImpl<GlobalFloatEvent>();
+        vec = new vectorImplFast<GlobalFloatEvent>();
         _globalFloatEvents.reset(vec);
     }
 
@@ -239,7 +239,7 @@ const vectorImpl<GlobalFloatEvent>& GetFloatEvents() {
 }
 
 void PlotFloatEvents(const char* eventName,
-                     vectorImpl<GlobalFloatEvent> eventsCopy,
+                     vectorImplFast<GlobalFloatEvent> eventsCopy,
                      GraphPlot2D& targetGraph) {
     targetGraph._plotName = eventName;
     targetGraph._coords.clear();

@@ -115,11 +115,7 @@ bool Object3D::onRender(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStagePass& renderStagePass) {
     rebuild();
-    if (getState() == ResourceState::RES_LOADED) {
-        return SceneNode::onRender(sgn, sceneRenderState, renderStagePass);
-    }
-
-    return false;
+    return SceneNode::onRender(sgn, sceneRenderState, renderStagePass);
 }
 
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,

@@ -120,11 +120,11 @@ void Console::output(const char* text, const bool newline, const EntryType type)
 
 void Console::outThread() {
     //moodycamel::ConsumerToken ctok(outBuffer());
+    OutputEntry entry;
     while (_running) {
         UniqueLock lk(condMutex());
         entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
 
-        OutputEntry entry;
         if (outBuffer().try_dequeue(/*ctok, */entry)) {
             ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 

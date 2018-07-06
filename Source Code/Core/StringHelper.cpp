@@ -50,7 +50,7 @@ stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
 }
 
 stringImpl StringFormat(const char *const format, ...) {
-    vectorImpl<char> temp;
+    vectorImplFast<char> temp;
     std::size_t length = 63;
     std::va_list args;
     while (temp.size() <= length) {

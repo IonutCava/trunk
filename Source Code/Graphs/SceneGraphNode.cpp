@@ -30,6 +30,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _frustPlaneCache(-1),
       _sceneGraph(sceneGraph),
       _elapsedTimeUS(0ULL),
+      _updateFlags(0U),
       _node(node),
       _active(true),
       _visibilityLocked(false),
@@ -42,11 +43,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     assert(_node != nullptr);
     _children.reserve(INITIAL_CHILD_COUNT);
     RegisterEventCallbacks();
-
-    for (std::atomic_bool& flag : _updateFlags) {
-        flag = false;
-    }
-
+    
     setName(name);
 
     if (BitCompare(componentMask, to_U32(ComponentType::ANIMATION))) {
@@ -326,10 +323,8 @@ bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const
 }
 
 SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool recursive) const {
-    U32 childCount = getChildCount();
     ReadLock r_lock(_childLock);
-    for (U32 i = 0; i < childCount; ++i) {
-        SceneGraphNode* child = _children[i];
+    for (auto& child : _children) {
         if (child->getGUID() == GUID) {
             return child;
         } else {
@@ -347,10 +342,8 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool recursive) const {
 }
 
 SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) const {
-    U32 childCount = getChildCount();
     ReadLock r_lock(_childLock);
-    for (U32 i = 0; i < childCount; ++i) {
-        SceneGraphNode* child = _children[i];
+    for (auto& child : _children) {
         if (sceneNodeName ? child->getNode()->getName().compare(name) == 0
                           : child->getName().compare(name) == 0)
         {

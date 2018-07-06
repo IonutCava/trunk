@@ -16,7 +16,8 @@
 namespace Divide {
 
 BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
-    : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM)
+    : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM),
+      _bloomFactor(0.0f)
 {
     vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
 
@@ -67,7 +68,7 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
 }
 
 void BloomPreRenderOperator::idle(const Configuration& config) {
-    _bloomApplyConstants.set("bloomFactor", PushConstantType::FLOAT, config.rendering.bloomFactor);
+    _bloomFactor = config.rendering.bloomFactor;
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {
@@ -179,6 +180,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
+    _bloomApplyConstants.set("bloomFactor", PushConstantType::FLOAT, _bloomFactor);
     pushConstantsCommand._constants = _bloomApplyConstants;
     GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
 

@@ -80,26 +80,27 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
     public:
     enum class UpdateFlag : U32 {
-        BOUNDS_CHANGED = 0,
-        COUNT
+        BOUNDS_CHANGED = toBit(1),
+        COUNT = 1
     };
 
     class SGNParentData {
         public:
         explicit SGNParentData(I64 sgnGUID) : _GUID(sgnGUID)
         {
-            _updateFlags.fill(true);
+            _updateFlags = 1;
         }
 
         inline I64 sgnGUID() const { return _GUID; }
 
-        inline bool getFlag(UpdateFlag flag) const { return _updateFlags[to_U32(flag)]; }
-        inline void clearFlag(UpdateFlag flag) { _updateFlags[to_U32(flag)] = false; }
-        inline void setFlag(UpdateFlag flag) { _updateFlags[to_U32(flag)] = true; }
+        inline bool getFlag(UpdateFlag flag) const { return BitCompare(_updateFlags, to_base(flag)); }
+        inline void clearFlag(UpdateFlag flag) { ClearBit(_updateFlags, to_base(flag)); }
+        inline void setFlag(UpdateFlag flag) { SetBit(_updateFlags, to_base(flag)); }
+        inline void toggleFlag(UpdateFlag flag) { ToggleBit(_updateFlags, to_base(flag)); }
 
         private:
         I64 _GUID;
-        std::array<bool, to_base(UpdateFlag::COUNT)> _updateFlags;
+        U32 _updateFlags;
     };
 
     public:

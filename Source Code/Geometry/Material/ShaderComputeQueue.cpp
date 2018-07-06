@@ -26,11 +26,9 @@ ShaderComputeQueue::~ShaderComputeQueue()
 
 void ShaderComputeQueue::idle() {
     Time::ScopedTimer timer(_queueComputeTimer);
-    {
-        ReadLock r_lock(_queueLock);
-        if (_shaderComputeQueue.empty() || _shadersComputedThisFrame) {
-            return;
-        }
+
+    if (_shadersComputedThisFrame) {
+        return;
     }
 
     _totalShaderComputeCountThisFrame = 0;
@@ -38,7 +36,7 @@ void ShaderComputeQueue::idle() {
     WAIT_FOR_CONDITION(!(stepQueue() &&
                          ++_totalShaderComputeCountThisFrame < g_MaxShadersComputedPerFrame));
 
-    _shadersComputedThisFrame = true;
+    _shadersComputedThisFrame = _totalShaderComputeCountThisFrame > 0;
 }
 
 bool ShaderComputeQueue::stepQueue() {

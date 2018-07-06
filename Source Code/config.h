@@ -189,7 +189,7 @@ constexpr bool DISABLE_DRAWS = false;
 /// every viewport call is overridden with 1x1 (width x height)
 constexpr bool USE_1x1_VIEWPORT = false;
 /// how many profiling timers are we allowed to use in our applications
-constexpr unsigned int MAX_PROFILE_TIMERS = 2048;
+constexpr unsigned int MAX_PROFILE_TIMERS = 1024;
 /// textures are capped at 2x2 when uploaded to the GPU
 constexpr bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers

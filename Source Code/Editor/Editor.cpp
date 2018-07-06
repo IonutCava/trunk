@@ -84,7 +84,8 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
-    CLAMP(window_opacity, 0, 255);
+    assert(IS_IN_RANGE_INCLUSIVE(window_opacity, 0, 255));
+
     if (window_opacity != previous_window_opacity) {
         context().activeWindow().opacity(to_U8(window_opacity));
         previous_window_opacity = window_opacity;

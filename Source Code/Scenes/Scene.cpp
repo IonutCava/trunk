@@ -140,10 +140,6 @@ bool Scene::idle() {  // Called when application is idle
         loadXMLAssets(true);
     }
 
-    if (!_sceneGraph->getRoot().hasChildren()) {
-        return false;
-    }
-
     _sceneGraph->idle();
 
     Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.config().debug.mesh.playAnimations);

@@ -39,6 +39,9 @@ template<typename T>
 typename std::enable_if<std::is_same<T, vectorImpl<stringImpl>>::value ||
                         std::is_same<T, vectorImplFast<stringImpl>>::value, T&>::type
 Split(const stringImpl& input, char delimiter, T& elems) {
+#if defined(_USE_BOOST_STRING_SPLIT)
+    boost::split(elems, input, [delimiter](char c) {return c == delimiter;});
+#else
     elems.resize(0);
     if (!input.empty()) {
         istringstreamImpl ss(input);
@@ -47,7 +50,7 @@ Split(const stringImpl& input, char delimiter, T& elems) {
             vectorAlg::emplace_back(elems, item);
         }
     }
-
+#endif
     return elems;
 }
 

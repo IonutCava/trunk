@@ -61,6 +61,8 @@ class BloomPreRenderOperator : public PreRenderOperator {
     PushConstants _bloomApplyConstants;
     U32 _horizBlur;
     U32 _vertBlur;
+
+    F32 _bloomFactor;
 };
 
 };  // namespace Divide

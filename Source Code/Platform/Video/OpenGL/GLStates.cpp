@@ -857,9 +857,9 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
                       newBlock.stencilMask());
     }
     // Stencil operation is also dependent  on 3 state parameters set together
-    if (oldBlock.stencilFailOp() != newBlock.stencilFailOp() ||
+    if (oldBlock.stencilFailOp()  != newBlock.stencilFailOp() ||
         oldBlock.stencilZFailOp() != newBlock.stencilZFailOp() ||
-        oldBlock.stencilPassOp() != newBlock.stencilPassOp()) {
+        oldBlock.stencilPassOp()  != newBlock.stencilPassOp()) {
         glStencilOp(GLUtil::glStencilOpTable[to_U32(newBlock.stencilFailOp())],
                     GLUtil::glStencilOpTable[to_U32(newBlock.stencilZFailOp())],
                     GLUtil::glStencilOpTable[to_U32(newBlock.stencilPassOp())]);

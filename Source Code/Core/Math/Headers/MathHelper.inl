@@ -339,6 +339,9 @@ constexpr void SetBit(U32& bitMask, const U32 bit) noexcept {
 constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept {
     bitMask &= ~(bit);
 }
+constexpr void ToggleBit(U32& bitMask, const U32 bit) noexcept {
+    bitMask ^= 1 << bit;
+}
 
 template<typename T,
          typename = typename enable_if<is_integral<T>::value>::type,

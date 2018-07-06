@@ -123,6 +123,7 @@ ClearBit(U32& bitMask, const Type bit);
 constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept;
 constexpr void SetBit(U32& bitMask, const U32 bit) noexcept;
 constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept;
+constexpr void ToggleBit(U32& bitMask, const U32 bit) noexcept;
 
 /// Clamps value n between min and max
 template <typename T>
@@ -372,10 +373,10 @@ void FlushFloatEvents();
 
 void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp);
 
-const vectorImpl<GlobalFloatEvent>& GetFloatEvents();
+const vectorImplFast<GlobalFloatEvent>& GetFloatEvents();
 
 void PlotFloatEvents(const stringImpl& eventName,
-                     vectorImpl<GlobalFloatEvent> eventsCopy,
+                     vectorImplFast<GlobalFloatEvent> eventsCopy,
                      GraphPlot2D& targetGraph);
 
 /// a la Boost

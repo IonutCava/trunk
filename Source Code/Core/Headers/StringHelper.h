@@ -34,6 +34,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Headers/PlatformDefines.h"
 
+#ifndef _USE_BOOST_STRING_SPLIT
+#define _USE_BOOST_STRING_SPLIT
+#endif
+
+#if defined(_USE_BOOST_STRING_SPLIT)
+#include <boost/algorithm/string.hpp>
+#endif
+
 namespace Divide {
     namespace Util {
         bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
