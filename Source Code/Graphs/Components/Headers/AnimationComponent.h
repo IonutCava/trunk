@@ -86,14 +86,15 @@ class AnimationComponent : public SGNComponent {
 
     std::shared_ptr<AnimEvaluator> getAnimationByIndex(I32 animationID) const;
 
+    inline std::shared_ptr<AnimEvaluator> getCurrentAnimation() const {
+        return getAnimationByIndex(animationIndex());
+    }
+
     void resetTimers();
     void incParentTimeStamp(const U64 timestamp);
 
     const vectorImpl<Line>& skeletonLines() const;
-
-   protected:
-    void uploadAnimationToGPU();
-
+    
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
     SceneAnimator& _animator;
@@ -112,8 +113,6 @@ class AnimationComponent : public SGNComponent {
     bool _playAnimations;
     /// Animation timestamp changed
     bool _updateAnimations;
-    /// Bone buffer used to upload animation data to the GPU
-    ShaderBuffer* _boneTransformBuffer;
 };
 
 };  // namespace Divide

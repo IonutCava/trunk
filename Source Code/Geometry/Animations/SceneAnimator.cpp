@@ -97,7 +97,7 @@ bool SceneAnimator::init() {
         _maximumAnimationFrames = std::max(crtAnimation->frameCount(), _maximumAnimationFrames);
     }
 
-    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _skeletonDepthCache);
+     Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _skeletonDepthCache);
 
     return !_transforms.empty();
 }

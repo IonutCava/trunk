@@ -26,9 +26,13 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
             const GFXDevice::ShaderBufferList::value_type& buffer2 =
                 other._shaderBuffers[i];
 
+
+            I64 guid1 = buffer1._buffer ? buffer1._buffer->getGUID() : -1;
+            I64 guid2 = buffer2._buffer ? buffer2._buffer->getGUID() : -1;
             if (buffer1._slot != buffer2._slot ||
                 buffer1._range != buffer2._range ||
-                buffer1._buffer->getGUID() != buffer2._buffer->getGUID()) {
+                guid1 != guid2) 
+            {
                 return false;
             }
         }

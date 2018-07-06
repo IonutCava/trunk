@@ -206,7 +206,6 @@ class SceneAnimator {
     hashMapImpl<stringImpl, U32> _animationNameToID;
     /// temp array of transforms
     vectorImpl<aiMatrix4x4> _transforms;
-
     mat4<F32> _boneTransformCache;
     LineCollection _skeletonLines;
     vectorImpl<vectorImpl<Line>> _skeletonLinesContainer;

@@ -9,6 +9,7 @@ namespace Divide {
                                                         _bufferSize(0),
                                                         _primitiveSize(0),
                                                         _primitiveCount(0),
+                                                        _alignmentRequirement(0),
                                                         _unbound(unbound),
                                                         _persistentMapped(persistentMapped &&
                                                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)

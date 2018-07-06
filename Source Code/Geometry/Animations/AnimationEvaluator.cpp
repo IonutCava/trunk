@@ -7,9 +7,16 @@
 
 namespace Divide {
 
+AnimEvaluator::AnimEvaluator() : _lastTime(0.0),
+                                 _ticksPerSecond(0.0),
+                                 _duration(0.0),
+                                 _playAnimationForward(true)
+{
+}
+
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation.
-AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) {
+AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator() {
     _lastTime = 0.0;
     _ticksPerSecond = !IS_ZERO(pAnim->mTicksPerSecond)
                           ? pAnim->mTicksPerSecond
@@ -44,6 +51,48 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) {
     _lastPositions.resize(pAnim->mNumChannels, vec3<U32>());
 
     Console::d_printfn(Locale::get("CREATE_ANIMATION_END"), _name.c_str());
+}
+
+AnimEvaluator::~AnimEvaluator()
+{
+}
+
+bool AnimEvaluator::initBuffers() {
+    DIVIDE_ASSERT(_boneTransformBuffer.get() == nullptr && !_transforms.empty(),
+                  "AnimEvaluator error: can't create bone buffer at current stage!");
+
+    _boneTransformBuffer.reset(GFX_DEVICE.newSB("dvd_BoneTransforms", 1, true, false));
+
+    DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
+        "AnimEvaluator error: Too many bones for current node! "
+        "Increase MAX_BONE_COUNT_PER_NODE in Config!");
+    size_t paddingFactor = _boneTransformBuffer->getAlignmentRequirement();
+
+    U32 bonePadding = 0;
+    size_t boneCount = _transforms.front().size();
+    size_t bufferSize = sizeof(mat4<F32>) * boneCount;
+    while (bufferSize % paddingFactor != 0) {
+        bufferSize += sizeof(mat4<F32>);
+        bonePadding++;
+    }
+
+    _boneTransformBuffer->Create(frameCount(), bufferSize);
+
+    vectorImpl<mat4<F32>> animationData;
+    animationData.reserve((boneCount + bonePadding) * frameCount());
+
+    for (const vectorImpl<mat4<F32>>& frameTransforms : _transforms) {
+        animationData.insert(std::cend(animationData), std::cbegin(frameTransforms), std::cend(frameTransforms));
+        for (U32 i = 0; i < bonePadding; ++i) {
+            animationData.push_back(mat4<F32>());
+        }
+    }
+
+    vectorAlg::shrinkToFit(animationData);
+
+    _boneTransformBuffer->SetData((const bufferPtr)animationData.data());
+
+    return !animationData.empty();
 }
 
 I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {

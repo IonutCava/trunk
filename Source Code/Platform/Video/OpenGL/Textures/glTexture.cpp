@@ -15,9 +15,12 @@ glTexture::glTexture(TextureType type)
 {
     _format = _internalFormat = GFXImageFormat::COUNT;
     _allocatedStorage = false;
+
     _type = GLUtil::glTextureTypeTable[to_uint(type)];
+
     U32 tempHandle = 0;
     glCreateTextures(_type, 1, &tempHandle);
+    
     DIVIDE_ASSERT(tempHandle != 0,
                   "glTexture error: failed to generate new texture handle!");
     _textureData.setHandleHigh(tempHandle);
@@ -67,6 +70,7 @@ void glTexture::resize(const U8* const ptr,
     // Immutable storage requires us to create a new texture object 
     U32 tempHandle = 0;
     glCreateTextures(_type, 1, &tempHandle);
+    
     DIVIDE_ASSERT(tempHandle != 0,
         "glTexture error: failed to generate new texture handle!");
 
@@ -96,14 +100,9 @@ void glTexture::updateSampler() {
 }
 
 bool glTexture::generateHWResource(const stringImpl& name) {
-    STUBBED("ToDo: Remove this hack so that loading textures in a separate thread is possible on AMD - Ionut")
-    if (GFX_DEVICE.getGPUVendor() == GPUVendor::AMD) {
-        _threadedLoading = false;
-    }
-
     GFX_DEVICE.loadInContext(
-        _threadedLoading ? CurrentContext::GFX_LOADING_CTX
-                         : CurrentContext::GFX_RENDERING_CTX,
+        /*_threadedLoading ? CurrentContext::GFX_LOADING_CTX
+                         : */CurrentContext::GFX_RENDERING_CTX,
         DELEGATE_BIND(&glTexture::threadedLoad, this, name));
 
     return true;
@@ -128,7 +127,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
                 _width);
 
         } break;
-        case TextureType::TEXTURE_CUBE_MAP:
+        //case TextureType::TEXTURE_CUBE_MAP:
         case TextureType::TEXTURE_2D: {
             glTextureStorage2D(
                 _textureData.getHandleHigh(),
@@ -158,18 +157,20 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         } break;
         case TextureType::TEXTURE_3D:
         case TextureType::TEXTURE_2D_ARRAY:
+        case TextureType::TEXTURE_CUBE_MAP:
         case TextureType::TEXTURE_CUBE_ARRAY: {
+            U32 numFaces = 1;
+            if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
+                _textureData._textureType == TextureType::TEXTURE_CUBE_MAP) {
+                numFaces = 6;
+            }
             glTextureStorage3D(
                 _textureData.getHandleHigh(),
                 _mipMaxLevel,
                 glInternalFormat,
                 _width,
                 _height,
-                _numLayers * 
-                 (_textureData._textureType  == 
-                    TextureType::TEXTURE_CUBE_ARRAY 
-                                            ? 6 
-                                            : 1));
+                _numLayers * numFaces);
         } break;
         default:
             return;
@@ -257,34 +258,20 @@ void glTexture::loadData(const TextureLoadInfo& info,
             case TextureType::TEXTURE_2D_ARRAY_MS:
             case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
-                STUBBED("Remove this awful hack that prevents generic cube map loading with AMD cards (including Catalyst 15.7.1 driver) -Ionut")
-                if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP &&
-                    GFX_DEVICE.getGPUVendor() == GPUVendor::AMD) {
-                    glext::glTextureSubImage2DEXT(
-                        _textureData.getHandleHigh(),
-                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + info._layerIndex,
-                        0,
-                        0,
-                        0,
-                        _width,
-                        _height,
-                        glFormat,
-                        GL_UNSIGNED_BYTE,
-                        (bufferPtr)ptr);
-                } else {
-                    glTextureSubImage3D(
-                        _textureData.getHandleHigh(),
-                        0,
-                        0,
-                        0,
-                        (info._cubeMapCount * 6) + info._layerIndex,
-                        _width,
-                        _height,
-                        1,
-                        glFormat,
-                        GL_UNSIGNED_BYTE,
-                        (bufferPtr)ptr);
-                }
+                STUBBED("Remove this awful hack that prevents generic cube map loading with AMD cards (including Catalyst 15.9.1 driver) -Ionut")
+                glTextureSubImage3D(
+                    _textureData.getHandleHigh(),
+                    0,
+                    0,
+                    0,
+                    (info._cubeMapCount * 6) + info._layerIndex,
+                    _width,
+                    _height,
+                    1,
+                    glFormat,
+                    GL_UNSIGNED_BYTE,
+                    (bufferPtr)ptr);
+                
             } break;
         }
     }

@@ -75,10 +75,12 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
 
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
+    inline size_t getAlignmentRequirement() const { return _alignmentRequirement; }
 
    protected:
     size_t _bufferSize;
     size_t _primitiveSize;
+    size_t _alignmentRequirement;
     U32 _primitiveCount;
 
     const bool _unbound;

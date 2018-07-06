@@ -19,37 +19,14 @@ AnimationComponent::AnimationComponent(SceneAnimator& animator,
       _previousFrameIndex(-1),
       _previousAnimationIndex(-1)
 {
-    DIVIDE_ASSERT(_animator.boneCount() <= Config::MAX_BONE_COUNT_PER_NODE,
-                  "AnimationComponent error: Too many bones for current node! "
-                  "Increase MAX_BONE_COUNT_PER_NODE in Config!");
-
-    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", 1, true, true);
-    _boneTransformBuffer->Create(to_uint(_animator.boneCount()) * _animator.getMaxAnimationFrames(),
-                                 sizeof(mat4<F32>));
 }
 
 AnimationComponent::~AnimationComponent()
 {
-    MemoryManager::DELETE(_boneTransformBuffer);
 }
 
 void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
     _parentTimeStamp += timestamp;
-}
-
-void AnimationComponent::uploadAnimationToGPU() {
-    const vectorImpl<vectorImpl<mat4<F32>>>& animationTransforms =
-        _animator.animationByIndex(_currentAnimIndex)->transforms();
-
-    vectorImpl<mat4<F32>> animationData;
-    animationData.reserve(_animator.boneCount() * animationTransforms.size());
-
-    for (const vectorImpl<mat4<F32>>& frameTransforms : animationTransforms) {
-        animationData.insert(std::cend(animationData), std::cbegin(frameTransforms), std::cend(frameTransforms));
-    }
-    vectorAlg::shrinkToFit(animationData);
-
-    _boneTransformBuffer->UpdateData(0, animationData.size(), (const bufferPtr)animationData.data());
 }
 
 void AnimationComponent::update(const U64 deltaTime) {
@@ -70,9 +47,11 @@ void AnimationComponent::update(const U64 deltaTime) {
                                                                Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) &&  _currentAnimIndex >= 0) {
+            std::shared_ptr<AnimEvaluator> animation = getCurrentAnimation();
+            if (animation->getBoneBuffer().expired()) {
+                animation->initBuffers();
+            }
             _previousAnimationIndex = _currentAnimIndex;
-            uploadAnimationToGPU();
-            _boneTransformBuffer->incQueue();
         }
     }
 }
@@ -146,13 +125,18 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     if (!_playAnimations) {
         return true;
     }
-    
-    size_t boneCount = _animator.boneCount();
-    _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
-        ShaderBufferLocation::BONE_TRANSFORMS,
-        vec2<U32>(_previousFrameIndex * boneCount,
-                  boneCount),
-        *_boneTransformBuffer);
+
+    if (_previousAnimationIndex != -1) {
+        std::shared_ptr<AnimEvaluator> animation = getAnimationByIndex(_previousAnimationIndex);
+        std::shared_ptr<ShaderBuffer> boneBuffer = animation->getBoneBuffer().lock();
+
+        assert(boneBuffer != nullptr);
+
+        _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
+            ShaderBufferLocation::BONE_TRANSFORMS,
+            vec2<U32>(_previousFrameIndex, 1),
+            *boneBuffer.get());
+    }
 
     return true;
 }

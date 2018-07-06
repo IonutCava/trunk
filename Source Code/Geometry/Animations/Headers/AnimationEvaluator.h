@@ -43,6 +43,8 @@ struct aiAnimation;
 
 namespace Divide {
 class ByteBuffer;
+class ShaderBuffer;
+
 class AnimationChannel {
    public:
     stringImpl _name;
@@ -57,18 +59,15 @@ class AnimationChannel {
 
 class AnimEvaluator {
    public:
-    AnimEvaluator()
-        : _lastTime(0.0),
-          _ticksPerSecond(0.0),
-          _duration(0.0),
-          _playAnimationForward(true) {}
-
+    AnimEvaluator();
     AnimEvaluator(const aiAnimation* pAnim, U32 idx);
+    ~AnimEvaluator();
 
     void evaluate(const D32 dt, Bone* skeleton);
 
     I32 frameIndexAt(const D32 elapsedTime) const;
 
+    
     inline U32 frameCount() const {
         return to_uint(_transforms.size());
     }
@@ -137,9 +136,14 @@ class AnimEvaluator {
         return _duration;
     }
 
+    bool initBuffers();
 
     static void save(const AnimEvaluator& evaluator, ByteBuffer& dataOut);
     static void load(AnimEvaluator& evaluator, ByteBuffer& dataIn);
+
+    std::weak_ptr<ShaderBuffer> getBoneBuffer() const {
+        return _boneTransformBuffer;
+    }
 
    protected:
     stringImpl _name;
@@ -155,6 +159,8 @@ class AnimEvaluator {
     vectorImpl<vec3<U32>> _lastPositions;
     /// vector that holds all bone channels
     vectorImpl<AnimationChannel> _channels;
+    /// GPU buffer to hold bone transforms
+    std::shared_ptr<ShaderBuffer> _boneTransformBuffer;
 };
 
 };  // namespace Divide

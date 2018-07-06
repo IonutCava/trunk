@@ -10,13 +10,9 @@
 namespace Divide {
 
 namespace {
-    I32 g_targetDataAlignment[2] = {-1, -1};
+
     typedef std::array<vec3<U32>, to_const_uint(ShaderBufferLocation::COUNT)> BindConfig;
     BindConfig g_currentBindConfig;
-
-    I32 getTargetDataAlignment(bool unbound = false) {
-        return g_targetDataAlignment[unbound ? 0 : 1];
-    }
 
     bool setIfDifferentBindRange(U32 UBOid,
                                  U32 bindIndex,
@@ -50,15 +46,9 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
                        : nullptr)
 
 {
-    if (g_targetDataAlignment[0] == -1) {
-        g_targetDataAlignment[0] = 
-            ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 256);
-    }
-    if (g_targetDataAlignment[1] == -1) {
-        g_targetDataAlignment[1] = 
-            ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
-    }
     _updated = false;
+    _alignmentRequirement = _unbound ? ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 32)
+                                     : ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
 }
 
 glUniformBuffer::~glUniformBuffer() 
@@ -82,9 +72,7 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
 
     ShaderBuffer::Create(primitiveCount, primitiveSize);
 
-    _alignmentPadding = getTargetDataAlignment(_unbound);
-
-    _alignmentPadding = ((_bufferSize + (_alignmentPadding - 1)) & ~(_alignmentPadding - 1)) - _bufferSize;
+    _alignmentPadding = ((_bufferSize + (_alignmentRequirement - 1)) & ~(_alignmentRequirement - 1)) - _bufferSize;
 
     if (_persistentMapped) {
         _mappedBuffer = 

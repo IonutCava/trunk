@@ -16,7 +16,7 @@ out vec4 _skyColor;
 uniform bool enable_sun;
 uniform vec3 sun_vector;
 uniform vec3 sun_color;
-uniform samplerCube texSky;
+uniform samplerCubeArray texSky;
 
 #include "utility.frag"
 
@@ -37,6 +37,6 @@ vec3 sunColor(){
 
 void main (void){
 
-    vec3 sky_color = texture(texSky, _vertex.xyz).rgb;
+    vec3 sky_color = texture(texSky, vec4(_vertex.xyz, 0)).rgb;
     _skyColor = vec4(ToSRGB(enable_sun ? sky_color * sunColor() : sky_color), 1.0);
 }
