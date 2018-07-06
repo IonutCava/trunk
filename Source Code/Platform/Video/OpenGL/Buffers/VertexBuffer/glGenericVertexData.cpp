@@ -186,6 +186,7 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer,
 
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::Draw(const GenericDrawCommand& command,
+                               bool useCmdBuffer,
                                bool skipBind) {
     // Get the OpenGL specific command from the generic one
     const IndirectDrawCommand& cmd = command.cmd();
@@ -221,16 +222,20 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
                           : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[to_uint(
                                 command.primitiveType())];
 
+        GLUtil::bufferPtr offset =
+            (GLUtil::bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
+        if (!useCmdBuffer) {
+            GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+            offset = (GLUtil::bufferPtr)(&command.cmd());
+        }
+
         if (_indexBuffer > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-            glMultiDrawElementsIndirect(
-                type, GL_UNSIGNED_INT,
-                (void*)(command.drawID() * sizeof(IndirectDrawCommand)),
-                command.drawCount(), 0);
+            glMultiDrawElementsIndirect(type, GL_UNSIGNED_INT, offset,
+                                        command.drawCount(), 0);
+
         } else {
-            glMultiDrawArraysIndirect(
-                type, (void*)(command.drawID() * sizeof(IndirectDrawCommand)),
-                command.drawCount(), 0);
+            glMultiDrawArraysIndirect(type, offset, command.drawCount(), 0);
         }
     }
 

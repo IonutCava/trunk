@@ -4,6 +4,7 @@
 #include "SceneList.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 namespace Divide {
@@ -112,7 +113,7 @@ bool SceneManager::framePreRenderStarted(const FrameEvent& evt) {
 
 bool SceneManager::frameEnded(const FrameEvent& evt) {
     _renderPassCuller->refresh();
-
+     RenderQueue::getInstance().refresh(true);
     if (_loadPreRenderComplete) {
         Material::unlockShaderQueue();
     }
@@ -121,6 +122,26 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
 
 void SceneManager::preRender() {
     _activeScene->preRender();
+}
+
+void SceneManager::sortVisibleNodes(
+    RenderPassCuller::VisibleNodeCache& nodes) const {
+    if (nodes._sorted) {
+        return;
+    }
+
+    RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
+    std::sort(std::begin(visibleNodes), std::end(visibleNodes),
+              [](const RenderPassCuller::RenderableNode& nodeA,
+                 const RenderPassCuller::RenderableNode& nodeB) {
+                  RenderingComponent* renderableA =
+                      nodeA._visibleNode->getComponent<RenderingComponent>();
+                  RenderingComponent* renderableB =
+                      nodeB._visibleNode->getComponent<RenderingComponent>();
+                  return renderableA->drawOrder() < renderableB->drawOrder();
+              });
+
+    nodes._sorted = true;
 }
 
 void SceneManager::updateVisibleNodes() {
@@ -134,8 +155,26 @@ void SceneManager::updateVisibleNodes() {
         return false;
     };
 
-    _renderPassCuller->cullSceneGraph(GET_ACTIVE_SCENEGRAPH().getRoot(),
-                                      _activeScene->state(), cullingFunction);
+    RenderQueue& queue = RenderQueue::getInstance();
+    RenderPassCuller::VisibleNodeCache& nodes =
+        _renderPassCuller->frustumCull(
+            GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state(),
+            cullingFunction);
+
+    if (!nodes._locked) {
+        vec3<F32> eyePos(_activeScene->renderState().getCameraConst().getEye());
+        for (RenderPassCuller::RenderableNode& node : nodes._visibleNodes) {
+            queue.addNodeToQueue(*node._visibleNode, eyePos);
+        }
+        queue.sort(GFX_DEVICE.getRenderStage());
+        sortVisibleNodes(nodes);
+
+        nodes = _renderPassCuller->occlusionCull(nodes);
+    }
+
+    GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
+                                 _activeScene->renderState(),
+                                 !nodes._locked);
 }
 
 void SceneManager::renderVisibleNodes() {

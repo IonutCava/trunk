@@ -43,8 +43,8 @@ class d3dVertexBuffer : public VertexBuffer {
     void Destroy() {}
 
     bool SetActive() { return true; }
-    void Draw(const GenericDrawCommand& command, bool skipBind = false){};
-    void Draw(const vectorImpl<GenericDrawCommand>& commands,
+
+    void Draw(const GenericDrawCommand& command, bool useCmdBuffer = false,
               bool skipBind = false){};
 
     bool queueRefresh() { return Refresh(); }

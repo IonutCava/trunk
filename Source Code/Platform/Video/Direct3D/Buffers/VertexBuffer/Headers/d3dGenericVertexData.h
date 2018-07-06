@@ -43,7 +43,6 @@ class d3dGenericVertexData : public GenericVertexData {
     ~d3dGenericVertexData() {}
 
     void Create(U8 numBuffers = 1, U8 numQueries = 1) {}
-    void Draw(const GenericDrawCommand& command, bool skipBind = false) {}
 
     void SetIndexBuffer(const vectorImpl<U32>& indices, bool dynamic,
                         bool stream) {}
@@ -57,6 +56,11 @@ class d3dGenericVertexData : public GenericVertexData {
                       void* data) {}
     void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {}
     U32 GetFeedbackPrimitiveCount(U8 queryID) { return 0; }
+
+   protected:
+    friend class GFXDevice;
+    void Draw(const GenericDrawCommand& command, bool useCmdBuffer = false,
+              bool skipBind = false) {}
 };
 
 };  // namespace Divide

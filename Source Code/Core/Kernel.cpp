@@ -288,10 +288,6 @@ void Kernel::renderScene() {
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
 
-    /// Lock the render pass manager because the Z_PRE_PASS and the DISPLAY_STAGE
-    /// pass must render
-    /// the exact same geometry
-    RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
@@ -311,8 +307,6 @@ void Kernel::renderScene() {
         _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
         PostFX::getInstance().displayScene();
     }
-
-    RenderPassManager::getInstance().unlock();
 }
 
 void Kernel::renderSceneAnaglyph() {
@@ -325,7 +319,6 @@ void Kernel::renderSceneAnaglyph() {
     // Render to right eye
     currentCamera->setAnaglyph(true);
     currentCamera->renderLookAt();
-    RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
@@ -337,12 +330,9 @@ void Kernel::renderSceneAnaglyph() {
     SceneManager::getInstance().render(RenderStage::DISPLAY_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
 
-    RenderPassManager::getInstance().unlock();
-
     // Render to left eye
     currentCamera->setAnaglyph(false);
     currentCamera->renderLookAt();
-    RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
@@ -353,8 +343,6 @@ void Kernel::renderSceneAnaglyph() {
         ->Begin(Framebuffer::defaultPolicy());
     SceneManager::getInstance().render(RenderStage::DISPLAY_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)->End();
-
-    RenderPassManager::getInstance().unlock();
 
     PostFX::getInstance().displayScene();
 }

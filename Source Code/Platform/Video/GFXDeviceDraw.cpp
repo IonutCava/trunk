@@ -13,10 +13,9 @@
 namespace Divide {
 
 // ToDo: This will return false if the number of shader buffers or number of
-// textures
-// does not match between the 2 packages
-// altough said buffers/textures might be compatible and batchable between the
-// two. Obviously, this is not desirable. Fix it! -Ionut
+// textures does not match between the 2 packages altough said buffers/textures
+// might be compatible and batchable between the two.
+// Obviously, this is not desirable. Fix it! -Ionut
 bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
     vectorAlg::vecSize bufferCount = other._shaderBuffers.size();
     if (_shaderBuffers.size() == bufferCount) {
@@ -72,6 +71,25 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
                   "GFXDevice error: Draw shader state is not valid for the "
                   "current draw operation!");
+
+     if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
+        _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
+                        _matricesData.data());
+        _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
+    }
+
+    if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)]) {
+        uploadDrawCommands(_drawCommandsCache);
+        _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
+    }
+     
+    if (_buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)]) {
+        // We flush the entire buffer on update to inform the GPU that we don't need
+        // the previous data. Might avoid some driver sync
+        _gfxDataBuffer->SetData(&_gpuBlock);
+        _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = false;
+    }
+
     // Try to bind the shader program. If it failed to load, or isn't loaded
     // yet, cancel the draw request for this frame
     if (!cmd.shaderProgram()->bind()) {
@@ -83,22 +101,42 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     return true;
 }
 
-/// Submit a single draw command
 void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
+    _useIndirectCommands = false;
+    processCommand(cmd);
+}
+
+void GFXDevice::submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+    _useIndirectCommands = false;
+    processCommands(cmds);
+}
+
+void GFXDevice::submitIndirectRenderCommand(const GenericDrawCommand& cmd) {
+    _useIndirectCommands = true;
+    processCommand(cmd);
+}
+
+void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+    _useIndirectCommands = true;
+    processCommands(cmds);
+}
+
+
+void GFXDevice::processCommand(const GenericDrawCommand& cmd) {
+    /// Submit a single draw command
     DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr,
                   "GFXDevice error: Invalid vertex buffer submitted!");
     // We may choose the instance count programmatically, and it may turn out to
     // be 0, so skip draw
     if (setBufferData(cmd)) {
         // Same rules about pre-processing the draw command apply
-        cmd.sourceBuffer()->Draw(cmd);
+        cmd.sourceBuffer()->Draw(cmd, _useIndirectCommands);
     }
 }
 
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain
 /// or batched meshes)
-void GFXDevice::submitRenderCommand(
-    const vectorImpl<GenericDrawCommand>& cmds) {
+void GFXDevice::processCommands(const vectorImpl<GenericDrawCommand>& cmds) {
     // Ideally, we would merge all of the draw commands in a command buffer,
     // sort by state/shader/etc and submit a single render call
     STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");
@@ -106,7 +144,7 @@ void GFXDevice::submitRenderCommand(
     // manually
     for (const GenericDrawCommand& cmd : cmds) {
         // Data validation is handled in the single command version
-        submitRenderCommand(cmd);
+        processCommand(cmd);
     }
 }
 
@@ -137,7 +175,7 @@ void GFXDevice::flushRenderQueue() {
             }
 
             makeTexturesResident(package._textureData);
-            submitRenderCommand(package._drawCommands);
+            submitIndirectRenderCommands(package._drawCommands);
         }
     }
     _renderQueue.resize(0);
@@ -231,17 +269,7 @@ void GFXDevice::processVisibleNodes(VisibleNodeList& visibleNodes,
         _matricesData.push_back(temp);
     }
 
-    // Once the CPU-side buffer is filled, upload the buffer to the GPU
-    _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
-                            _matricesData.data());
-}
-
-void GFXDevice::refreshBuffers() {
-    _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
-                            _matricesData.data());
-    _gfxDataBuffer->SetData(&_gpuBlock);
-    uploadDrawCommands(_drawCommandsCache);
-    setInterpolation(1.0);
+    _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = true;
 }
 
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
@@ -293,8 +321,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         _drawCommandsCache.push_back(cmd.cmd());
     }
 
-    // Upload the rendering commands to the GPU memory
-    uploadDrawCommands(_drawCommandsCache);
+    _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,

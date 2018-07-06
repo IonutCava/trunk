@@ -68,7 +68,8 @@ class glVertexArray : public VertexBuffer {
 
    protected:
     friend class GFXDevice;
-    void Draw(const vectorImpl<GenericDrawCommand>& commands,
+    void Draw(const GenericDrawCommand& commands,
+              bool useCmdBuffer = false,
               bool skipBind = false);
 
    protected:
@@ -81,8 +82,6 @@ class glVertexArray : public VertexBuffer {
     void Upload_VB_Attributes();
     /// Integrity checks
     void checkStatus();
-    /// Internal draw command for a single command
-    void Draw(const GenericDrawCommand& command, bool skipBind = false);
 
    protected:
     GLenum _formatInternal;

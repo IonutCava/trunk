@@ -32,13 +32,10 @@
 #ifndef _RENDER_PASS_CULLER_H_
 #define _RENDER_PASS_CULLER_H_
 
-#include "Utility/Headers/Vector.h"
-#include <functional>
+#include "Platform\Video\Headers\RenderAPIEnums.h"
 
 /// This class performs all the necessary visibility checks on the scene's
-/// scenegraph
-/// to decide what get's rendered and what not
-/// All node's that should be rendered, will be added to the RenderQueue
+/// scenegraph to decide what get's rendered and what not
 namespace Divide {
 class SceneState;
 class SceneRenderState;
@@ -56,35 +53,35 @@ class RenderPassCuller {
             : _visibleNode(&node), _isDrawReady(false) {}
     };
 
+    typedef vectorImpl<RenderableNode> VisibleNodeList;
+
+    struct VisibleNodeCache {
+        VisibleNodeList _visibleNodes;
+        bool _sorted;
+        bool _locked;
+        VisibleNodeCache() : _sorted(false), _locked(false) {}
+    };
+
    public:
     RenderPassCuller();
     ~RenderPassCuller();
-    /// This method performs the visibility check on the given node and all of
-    /// it's children and
-    /// adds them to the RenderQueue
-    void cullSceneGraph(
-        SceneGraphNode& currentNode,
-        SceneState& sceneState,
+    VisibleNodeCache& frustumCull(
+        SceneGraphNode& currentNode, SceneState& sceneState,
         const std::function<bool(SceneGraphNode*)>& cullingFunction);
+    VisibleNodeCache& occlusionCull(
+        RenderPassCuller::VisibleNodeCache& inputNodes);
     void refresh();
 
    protected:
     /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)
     void cullSceneGraphCPU(
+        VisibleNodeCache& nodes,
         SceneGraphNode& currentNode,
         SceneRenderState& sceneRenderState,
         const std::function<bool(SceneGraphNode*)>& cullingFunction);
-    /// Perform GPU-based culling (e.g. Occlusion queries)
-    void cullSceneGraphGPU(
-        SceneState& sceneState,
-        const std::function<bool(SceneGraphNode*)>& cullingFunction);
-    /// Internal cleanup
-    void refreshNodeList();
-    /// Sort visible nodes based on their render bin order
-    void sortVisibleNodes();
-
+    VisibleNodeCache& getNodeCache(RenderStage stage);
    protected:
-    vectorImpl<RenderableNode> _visibleNodes;
+    VisibleNodeCache _visibleNodes[to_const_uint(RenderStage::COUNT)];
     bool _visibleNodesSorted;
 };
 

@@ -49,7 +49,5 @@ void RenderPass::render(const SceneRenderState& renderState,
             renderQueue.getBinSorted(i)->postRender(renderState, currentStage);
         }
     }
-
-    renderQueue.refresh();
 }
 };

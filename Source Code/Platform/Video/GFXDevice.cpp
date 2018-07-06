@@ -64,6 +64,10 @@ GFXDevice::GFXDevice()
     _viewportUpdate = false;
     _rasterizationEnabled = true;
     _enablePostProcessing = false;
+    _useIndirectCommands = false;
+    _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = true;
+    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
+    _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::DETAIL_HIGH;
     _GPUVendor = GPUVendor::COUNT;
@@ -321,10 +325,7 @@ void GFXDevice::updateClipPlanes() {
     for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
         _gpuBlock._clipPlanes[i] = _clippingPlanes[i].getEquation();
     }
-    // We flush the entire buffer on update to inform the GPU that we don't need
-    // the previous data.
-    // Might avoid some driver sync
-    _gfxDataBuffer->SetData(&_gpuBlock);
+    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
 }
 
 /// Update the internal GPU data buffer with the updated viewport dimensions
@@ -333,8 +334,7 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
     changeViewport(viewport);
     // Update the buffer with the new value
     _gpuBlock._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
-    // Update the buffer on the GPU
-    _gfxDataBuffer->SetData(&_gpuBlock);
+    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
 }
 
 /// Update the virtual camera's matrices and upload them to the GPU
@@ -351,7 +351,7 @@ F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
     if (updated) {
         _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
                                             _gpuBlock._ProjectionMatrix);
-        _gfxDataBuffer->SetData(&_gpuBlock);
+        _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
     }
     return _gpuBlock._ViewMatrix.mat;
 }
@@ -365,7 +365,7 @@ F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
     _gpuBlock._ZPlanesCombined.y = planes.y;
     _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
                                         _gpuBlock._ProjectionMatrix);
-    _gfxDataBuffer->SetData(&_gpuBlock);
+    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
 
     return _gpuBlock._ProjectionMatrix.mat;
 }
@@ -380,7 +380,7 @@ F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,
     _gpuBlock._ZPlanesCombined.y = planes.y;
     _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
                                         _gpuBlock._ProjectionMatrix);
-    _gfxDataBuffer->SetData(&_gpuBlock);
+    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
 
     return _gpuBlock._ProjectionMatrix.mat;
 }
@@ -430,8 +430,7 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
     _gpuBlock._ZPlanesCombined.y = zPlanes.y;
     _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
                                         _gpuBlock._ProjectionMatrix);
-    // Upload the new data to the GPU
-    _gfxDataBuffer->SetData(&_gpuBlock);
+    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
 }
 
 /// Enable or disable 2D rendering mode (orthographic projection, no depth

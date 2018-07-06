@@ -159,14 +159,8 @@ class GenericVertexData : public VertexDataInterface {
     virtual void SetFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
 
     virtual void Draw(const GenericDrawCommand& command,
+                      bool useCmdBuffer = false,
                       bool skipBind = false) = 0;
-
-    inline void Draw(const vectorImpl<GenericDrawCommand>& commands,
-                     bool skipBind = false) {
-        for (const GenericDrawCommand& cmd : commands) {
-            Draw(cmd, skipBind);
-        }
-    }
 
     /// When reading and writing to the same buffer, we use a round-robin
     /// approach and

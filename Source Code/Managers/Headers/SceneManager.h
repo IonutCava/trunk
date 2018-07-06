@@ -135,6 +135,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
   protected:
     void initPostLoadState();
     void onCameraChange();
+    void sortVisibleNodes(RenderPassCuller::VisibleNodeCache& nodes) const;
 
   protected:
     /// This is inherited from FrameListener and is used to setup cameras before

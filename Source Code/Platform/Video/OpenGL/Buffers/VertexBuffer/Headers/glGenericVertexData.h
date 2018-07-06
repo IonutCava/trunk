@@ -80,7 +80,8 @@ class glGenericVertexData : public GenericVertexData {
 
    protected:
     friend class GFXDevice;
-    void Draw(const GenericDrawCommand& command, bool skipBind = false);
+    void Draw(const GenericDrawCommand& command, bool useCmdBuffer = false,
+              bool skipBind = false);
 
    protected:
     void SetAttributes(bool feedbackPass);

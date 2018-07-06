@@ -20,24 +20,13 @@ RenderPassItem& RenderPassItem::operator=(RenderPassItem&& other) {
 RenderPassItem::~RenderPassItem() {}
 
 RenderPassManager::RenderPassManager()
-    : _renderPassesLocked(false), _renderPassesResetQueued(false) {
+{
     RenderQueue::createInstance();
 }
 
 RenderPassManager::~RenderPassManager() {
     _renderPasses.clear();
     RenderQueue::destroyInstance();
-}
-
-void RenderPassManager::lock() {
-    _renderPassesLocked = true;
-    RenderQueue::getInstance().lock();
-}
-
-void RenderPassManager::unlock(bool resetNodes) {
-    _renderPassesLocked = false;
-    _renderPassesResetQueued = true;
-    RenderQueue::getInstance().unlock();
 }
 
 void RenderPassManager::render(const SceneRenderState& sceneRenderState,

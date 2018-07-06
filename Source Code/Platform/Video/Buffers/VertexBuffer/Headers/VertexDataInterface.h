@@ -49,8 +49,7 @@ class VertexDataInterface : public FrameListener,
     virtual ~VertexDataInterface() { UNREGISTER_FRAME_LISTENER(this); }
 
     virtual void Draw(const GenericDrawCommand& command,
-                      bool skipBind = false) = 0;
-    virtual void Draw(const vectorImpl<GenericDrawCommand>& commands,
+                      bool useCmdBuffer = false, 
                       bool skipBind = false) = 0;
 
     /// Just before we render the frame

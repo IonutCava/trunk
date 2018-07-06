@@ -76,6 +76,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         }
     };
 
+    enum class GPUBuffer : U32 {
+        NODE_BUFFER = 0,
+        GPU_BUFFER = 1,
+        CMD_BUFFER = 2,
+        COUNT
+    };
   public:  // GPU specific data
    typedef vectorImpl<RenderPassCuller::RenderableNode> VisibleNodeList;
    typedef vectorImpl<std::pair<ShaderBufferLocation, ShaderBuffer*>>
@@ -163,10 +169,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                     ShaderProgram* const shaderProgram);
     void drawGUIElement(GUIElement* guiElement);
     void submitRenderCommand(const GenericDrawCommand& cmd);
-    void submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds);
+    void submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
+    void submitIndirectRenderCommand(const GenericDrawCommand& cmd);
+    void submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
     void addToRenderQueue(const RenderPackage& package);
     void flushRenderQueue();
-    void refreshBuffers();
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
@@ -393,7 +400,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                             F32 verticalFoV, bool rightFrustum = false);
 
    protected:
-    friend class RenderPassCuller;
+    friend class SceneManager;
     void processVisibleNodes(VisibleNodeList& visibleNodes,
                              SceneRenderState& sceneRenderState);
     void buildDrawCommands(VisibleNodeList& visibleNodes,
@@ -409,6 +416,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
     void forceViewportInternal(const vec4<I32>& viewport);
+    void processCommand(const GenericDrawCommand& cmd);
+    void processCommands(const vectorImpl<GenericDrawCommand>& cmds);
     /// returns false if there was an invalid state detected that could prevent
     /// rendering
     bool setBufferData(const GenericDrawCommand& cmd);
@@ -467,7 +476,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     bool _enableAnaglyph;
     bool _2DRendering;
     bool _rasterizationEnabled;
-
+    bool _useIndirectCommands;
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS;
     U32 FRAME_DRAW_CALLS_PREV;
@@ -501,10 +510,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;
 
+    //0 = gfxDataBuffer, 1 = nodeBuffer, 3 = command buffer
+    bool _buffersDirty[to_const_uint(GPUBuffer::COUNT)];
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
-
     GenericDrawCommand _defaultDrawCmd;
 END_SINGLETON
 

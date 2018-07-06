@@ -74,32 +74,13 @@ DEFINE_SINGLETON(RenderPassManager)
     void removeRenderPass(const stringImpl& name);
     U16 getLastTotalBinSize(U8 renderPassID) const;
 
-    /// Lock or unlock the render bin (if nothing changes: camera, nodes' positions,
-    /// etc)
-    /// Prevent culling and reparsing of the scenegraph when rendering the scene
-    /// multiple times from the same PoV
-    void lock();
-    /// Use lock/unlock, for example, when rendering the scene with a Z prepass.
-    /// Only the prepass needs to parse the scene
-    void unlock(bool resetNodes = false);
-    /// simple lock check
-    inline bool isLocked() const { return _renderPassesLocked; }
-
-  protected:
-    friend class RenderPassCuller;
-    /// simple node reset flag
-    inline bool isResetQueued() const { return _renderPassesResetQueued; }
-    inline void isResetQueued(bool state) { _renderPassesResetQueued = state; }
-
   private:
     RenderPassManager();
     ~RenderPassManager();
 
   private:
     // Some vector implementations are not move-awarem so use STL in this case
-    std::vector<RenderPassItem> _renderPasses;
-    bool _renderPassesLocked;
-    bool _renderPassesResetQueued;
+    vectorImpl<RenderPassItem> _renderPasses;
 
 END_SINGLETON
 
