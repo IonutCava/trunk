@@ -237,7 +237,7 @@ void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U
         RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
         U16 renderBinCount = renderQueue.getRenderQueueBinSize();
         for (U16 i = 0; i < renderBinCount; ++i) {
-            renderQueue.getBinSorted(i)->render(renderState, renderStage, refreshNodeData, pass);
+            renderQueue.getBinSorted(i)->render(renderState, renderStage);
         }
     }
 }

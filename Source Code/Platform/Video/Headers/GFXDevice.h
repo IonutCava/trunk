@@ -259,7 +259,7 @@ DEFINE_SINGLETON(GFXDevice)
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
     void addToRenderQueue(const RenderPackage& package);
-    void flushRenderQueue(bool refreshNodeData, RenderBin::RenderBinType renderBinType, U32 pass = 0);
+    void flushRenderQueue();
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc

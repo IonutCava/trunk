@@ -115,16 +115,11 @@ void GFXDevice::processCommands(const vectorImpl<GenericDrawCommand>& cmds, bool
     }
 }
 
-void GFXDevice::flushRenderQueue(bool refreshNodeData, RenderBin::RenderBinType renderBinType, U32 pass) {
+void GFXDevice::flushRenderQueue() {
     if (_renderQueue.empty()) {
         return;
     }
     uploadGPUBlock();
-
-    if (refreshNodeData) {
-        // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
-        getNodeBuffer(getRenderStage(), pass).bind(ShaderBufferLocation::NODE_INFO);
-    }
 
     U32 queueSize = _renderQueue.size();
     for (U32 idx = 0; idx < queueSize; ++idx) {
@@ -296,12 +291,14 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     });
     
     if (refreshNodeData) {
+        getNodeBuffer(currentStage, pass).updateData(0, nodeCount, _matricesData.data());
         ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage, pass);
         _api->registerCommandBuffer(cmdBuffer);
         cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());
-        getNodeBuffer(currentStage, pass).updateData(0, nodeCount, _matricesData.data());
         _lastCommandCount = cmdCount;
         _lastNodeCount = nodeCount;
+        // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
+        getNodeBuffer(getRenderStage(), pass).bind(ShaderBufferLocation::NODE_INFO);
     }
 }
 

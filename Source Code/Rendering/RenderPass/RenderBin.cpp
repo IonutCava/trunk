@@ -156,16 +156,14 @@ void RenderBin::addNodeToBin(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
 void RenderBin::preRender(RenderStage renderStage) {}
 
 void RenderBin::render(const SceneRenderState& renderState,
-                       RenderStage renderStage,
-                       bool refreshNodeData,
-                       U32 pass) {
+                       RenderStage renderStage) {
     GFXDevice& gfx = GFX_DEVICE;
     // We need to apply different materials for each stage. As nodes are sorted,
     // this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
         gfx.addToRenderQueue(Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
-    gfx.flushRenderQueue(refreshNodeData, _rbType, pass);
+    gfx.flushRenderQueue();
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage) {
