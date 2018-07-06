@@ -66,13 +66,13 @@ void GFXDevice::uploadGPUBlock() {
     if (_gpuBlock._updated) {
         // We flush the entire buffer on update to inform the GPU that we don't
         // need the previous data. Might avoid some driver sync
-        _gfxDataBuffer->SetData(&_gpuBlock._data);
+        _gfxDataBuffer->setData(&_gpuBlock._data);
         _gpuBlock._updated = false;
     }
 
     // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
-    _gfxDataBuffer->Bind(ShaderBufferLocation::GPU_BLOCK);
-    _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
+    _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
+    _nodeBuffer->bind(ShaderBufferLocation::NODE_INFO);
 }
 
 /// A draw command is composed of a target buffer and a command. The command
@@ -149,7 +149,7 @@ void GFXDevice::flushRenderQueue() {
                           [](GenericDrawCommand& cmd) -> void { cmd.lock(); });
 
             for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                it._buffer->BindRange(it._slot, it._range.x, it._range.y);
+                it._buffer->bindRange(it._slot, it._range.x, it._range.y);
             }
 
             makeTexturesResident(package._textureData);
@@ -198,9 +198,7 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
     mat4<F32>& modelMatrix = dataOut._matrix[0];
     mat4<F32>& normalMatrix = dataOut._matrix[1];
 
-    //https://github.com/lilleyse/Mass-Occlusion-Culling
-    const BoundingSphere& boundingSphere = nodeRef.getBoundingSphereConst();
-    dataOut._boundingSphere.set(boundingSphere.getCenter(), boundingSphere.getRadius());
+    dataOut._boundingSphere.set(nodeRef.getBoundingSphereConst().asVec4());
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -353,11 +351,11 @@ vec2<U32> GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     }
 
     if (refreshNodeData) {
-        _nodeBuffer->UpdateData(0, parsedValues.x, _matricesData.data());
+        _nodeBuffer->updateData(0, parsedValues.x, _matricesData.data());
         _lastNodeCount = parsedValues.x;
     }
 
-    _indirectCommandBuffer->UpdateData(0, parsedValues.y, _drawCommandsCache.data());
+    _indirectCommandBuffer->updateData(0, parsedValues.y, _drawCommandsCache.data());
 
     if (!refreshNodeData) {
         occlusionCull();
@@ -375,13 +373,12 @@ void GFXDevice::occlusionCull() {
     getRenderTarget(RenderTarget::DEPTH)->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
                                                TextureDescriptor::AttachmentType::Depth);
     uploadGPUBlock();
-    _indirectCommandBuffer->Bind(ShaderBufferLocation::GPU_COMMANDS);
-    _indirectCommandBuffer->BindAtomicCounter();
+    _indirectCommandBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
+    _indirectCommandBuffer->bindAtomicCounter();
     _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     _HIZCullProgram->SetMemoryBarrier();
-    U32 cullCount = _indirectCommandBuffer->GetAtomicCounter();
-    if (cullCount > 0) {
-        Console::d_printfn("Culled %d objects", cullCount);
+    if (_indirectCommandBuffer->getAtomicCounter() > 0) {
+        _indirectCommandBuffer->resetAtomicCounter();
     }
 }
 
@@ -423,24 +420,12 @@ void GFXDevice::drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& vie
 }
 
 void GFXDevice::postProcessRenderTarget(RenderTarget renderTarget) {
-    static ShaderProgram* testCompute = nullptr;
-    if (testCompute == nullptr) {
-        ResourceDescriptor computeDescriptor("testComputeShader");
-        computeDescriptor.setThreadedLoading(false);
-        testCompute = CreateResource<ShaderProgram>(computeDescriptor);
-    }
-
     switch(renderTarget) {
         case RenderTarget::DEPTH: 
             constructHIZ();
             break;
         case RenderTarget::ANAGLYPH:
-        case RenderTarget::SCREEN: {
-            /*getRenderTarget(renderTarget)->GetAttachment()->BindLayer(0, 0, 0, false, false, true);
-            testCompute->bind();
-            testCompute->Uniform("roll", GFX_DEVICE.getFrameCount()*0.05f);
-            testCompute->DispatchCompute(512 / 16, 512 / 16, 1);*/
-        }
+        case RenderTarget::SCREEN:
             break;
     }
 }

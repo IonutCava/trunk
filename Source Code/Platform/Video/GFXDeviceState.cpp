@@ -65,20 +65,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // (Many small updates with BufferSubData are recommended with the target
     // usage of the buffer)
     _gfxDataBuffer.reset(newSB("dvd_GPUBlock", 1, false, false, BufferUpdateFrequency::OFTEN));
-    _gfxDataBuffer->Create(1, sizeof(GPUBlock));
+    _gfxDataBuffer->create(1, sizeof(GPUBlock));
     // Every visible node will first update this buffer with required data
     // (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
     // Shader Storage Buffer that's persistently and coherently mapped
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true, true, BufferUpdateFrequency::OFTEN));
-    _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
+    _nodeBuffer->create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     // Create a shader buffer to hold all of our indirect draw commands
     // Usefull if we need access to the buffer in GLSL/Compute programs
     // ToDo: Might need to be unbound for access in compute shaders! -Ionut
     _indirectCommandBuffer.reset(newSB("dvd_GPUCmds", 1, true, false, BufferUpdateFrequency::OFTEN));
-    _indirectCommandBuffer->Create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
+    _indirectCommandBuffer->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
 #if defined(_DEBUG)
-    _indirectCommandBuffer->AddAtomicCounter();
+    _indirectCommandBuffer->addAtomicCounter();
 #endif
     registerCommandBuffer(*_indirectCommandBuffer);
     // Resize our window to the target resolution
@@ -243,9 +243,9 @@ void GFXDevice::closeRenderingAPI() {
     // Destroy all of the immediate mode emulation primitives created during
     // runtime
     MemoryManager::DELETE_VECTOR(_imInterfaces);
-    _gfxDataBuffer->Destroy();
-    _nodeBuffer->Destroy();
-    _indirectCommandBuffer->Destroy();
+    _gfxDataBuffer->destroy();
+    _nodeBuffer->destroy();
+    _indirectCommandBuffer->destroy();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets

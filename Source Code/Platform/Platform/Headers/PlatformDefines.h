@@ -252,6 +252,10 @@ T to_bitwise(T X) {
     return 1 << X;
 }
 
+static inline size_t realign_offset(size_t offset, size_t align) {
+    return (offset + align - 1) & ~(align - 1);
+}
+
 template<typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));

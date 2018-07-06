@@ -24,12 +24,7 @@ in vec2 _texCoord;
 
 void main(void)
 {
-    vec4 texels;
-    texels.x = texture(LastMip, _texCoord).x;
-    texels.y = textureOffset(LastMip, _texCoord, ivec2(-1, 0)).x;
-    texels.z = textureOffset(LastMip, _texCoord, ivec2(-1, -1)).x;
-    texels.w = textureOffset(LastMip, _texCoord, ivec2(0, -1)).x;
-
+    vec4 texels = textureGather(LastMip, _texCoord, 0);
     float maxZ = max(max(texels.x, texels.y), max(texels.z, texels.w));
 
     vec3 extra;
@@ -43,10 +38,8 @@ void main(void)
         extra.x = textureOffset(LastMip, _texCoord, ivec2(1, 0)).x;
         extra.y = textureOffset(LastMip, _texCoord, ivec2(1, -1)).x;
         maxZ = max(maxZ, max(extra.x, extra.y));
-    }
-    else
-        // if we are reducing an odd-height texture then the edge fragments have to fetch additional texels
-    if (((LastMipSize.y & 1) != 0) && (int(gl_FragCoord.y) == LastMipSize.y - 3)) {
+    // if we are reducing an odd-height texture then the edge fragments have to fetch additional texels
+    } else if (((LastMipSize.y & 1) != 0) && (int(gl_FragCoord.y) == LastMipSize.y - 3)) {
         extra.x = textureOffset(LastMip, _texCoord, ivec2(0, 1)).x;
         extra.y = textureOffset(LastMip, _texCoord, ivec2(-1, 1)).x;
         maxZ = max(maxZ, max(extra.x, extra.y));

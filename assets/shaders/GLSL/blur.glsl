@@ -104,7 +104,7 @@ void main(void)
 --Geometry.GaussBlur
 
 layout(points) in;
-layout(triangle_strip, max_vertices = 3) out;
+layout(triangle_strip, max_vertices = 4) out;
 
 uniform int layer;
 uniform float blurSize;
@@ -166,7 +166,6 @@ uniform sampler2DArray texScreen;
 
 void main(void)
 {
-
     _outColor  = texture(texScreen, _blurCoords[0]).rg * (1.0  / 64.0);
     _outColor += texture(texScreen, _blurCoords[1]).rg * (6.0  / 64.0);
     _outColor += texture(texScreen, _blurCoords[2]).rg * (15.0 / 64.0);

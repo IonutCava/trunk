@@ -20,6 +20,8 @@ void main()
 {
     uint ident = gl_GlobalInvocationID.x;
     if (ident >= dvd_numEntities) {
+        atomicCounterIncrement(culledCount);
+        dvd_drawCommands[ident].instanceCount = 0;
         return;
     }
     
@@ -68,10 +70,11 @@ void main()
     float lod = ceil(log2(max_diff));
     vec2 mid_pix = 0.5 * (max_xy + min_xy);
 
-    if (textureLod(texDepth, mid_pix, lod).x > 0.0) {
+    if (textureLod(texDepth, mid_pix, lod).r <= 0.0) {
+        atomicCounterIncrement(culledCount);
+        dvd_drawCommands[ident].instanceCount = 0;
         return;
     }
 
-    atomicCounterIncrement(culledCount);
-    dvd_drawCommands[ident].instanceCount = 0;
+    dvd_drawCommands[ident].instanceCount = 1;
 }

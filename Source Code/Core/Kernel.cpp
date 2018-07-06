@@ -312,7 +312,9 @@ void Kernel::renderScene() {
     //colorPassPolicy._drawMask = Framebuffer::FramebufferTarget::BufferMask::COLOR;
     Camera* currentCamera = _cameraMgr->getActiveCamera();
     for (U8 renderPasses = 0; renderPasses < loopCount; ++renderPasses) {
-        currentCamera->setAnaglyph(renderPasses == 1 ? true : false);
+        if (anaglyph) {
+            currentCamera->setAnaglyph(renderPasses == 1 ? true : false);
+        }
 
         _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->Begin(depthPassPolicy);
             _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);

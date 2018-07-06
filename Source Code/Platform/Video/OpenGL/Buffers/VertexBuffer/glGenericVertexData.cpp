@@ -471,8 +471,9 @@ void glGenericVertexData::setAttributeInternal(
                                 _bufferObjects[descriptor.bufferIndex()]);
     //}
     // Update the attribute data
-    switch (descriptor.dataType()) {
-        default: {
+    bool isIntegerType = descriptor.dataType() != GFXDataFormat::FLOAT_16 &&
+                         descriptor.dataType() != GFXDataFormat::FLOAT_32;
+    if (!isIntegerType || (isIntegerType && descriptor.normalized())) {
         glVertexAttribPointer(
             descriptor.attribIndex(),
             descriptor.componentsPerElement(),
@@ -480,23 +481,14 @@ void glGenericVertexData::setAttributeInternal(
             descriptor.normalized() ? GL_TRUE : GL_FALSE,
             (GLsizei)descriptor.stride(),
             (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
-        } break;
-
-        case GFXDataFormat::UNSIGNED_BYTE:
-        case GFXDataFormat::UNSIGNED_SHORT:
-        case GFXDataFormat::UNSIGNED_INT:
-        case GFXDataFormat::SIGNED_BYTE:
-        case GFXDataFormat::SIGNED_SHORT:
-        case GFXDataFormat::SIGNED_INT: {
-            glVertexAttribIPointer(
-                descriptor.attribIndex(),
-                descriptor.componentsPerElement(),
-                GLUtil::glDataFormat[to_uint(descriptor.dataType())],
-                (GLsizei)descriptor.stride(),
-                (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
-        } break;
-    };
-    
+    } else {
+        glVertexAttribIPointer(
+            descriptor.attribIndex(),
+            descriptor.componentsPerElement(),
+            GLUtil::glDataFormat[to_uint(descriptor.dataType())],
+            (GLsizei)descriptor.stride(),
+            (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
+    }
 
     if (descriptor.instanceDivisor() > 0) {
         glVertexAttribDivisor(descriptor.attribIndex(),

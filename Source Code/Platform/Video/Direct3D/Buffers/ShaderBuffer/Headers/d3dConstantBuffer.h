@@ -45,26 +45,28 @@ class d3dConstantBuffer final : public ShaderBuffer {
                       BufferUpdateFrequency frequency);
     ~d3dConstantBuffer();
 
-    void Destroy();
+    void destroy() override;
     /// Reserve primitiveCount * implementation specific primitive size of space
     /// in the buffer and fill it with NULL values
-    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    void create(U32 primitiveCount, ptrdiff_t primitiveSize) override;
 
-    void UpdateData(ptrdiff_t offsetElementCount,
+    void updateData(ptrdiff_t offsetElementCount,
                     ptrdiff_t rangeElementCount,
-                    const bufferPtr data);
+                    const bufferPtr data) override;
 
-    bool BindRange(U32 bindIndex,
+    bool bindRange(U32 bindIndex,
                    U32 offsetElementCount,
-                   U32 rangeElementCount);
+                   U32 rangeElementCount) override;
 
-    bool Bind(U32 bindIndex);
+    bool bind(U32 bindIndex) override;
 
-    void AddAtomicCounter(U32 sizeFactor = 1);
+    void addAtomicCounter(U32 sizeFactor = 1) override;
 
-    U32  GetAtomicCounter(U32 counterIndex = 0);
+    U32  getAtomicCounter(U32 counterIndex = 0) override;
 
-    void BindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0);
+    void bindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0) override;
+
+    void resetAtomicCounter(U32 counterIndex = 0) override;
 };
 
 };  // namespace Divide

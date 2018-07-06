@@ -53,11 +53,11 @@ uniform bool hasTexture = false;
 out vec4 color;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D depthBuffer;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
 void main(){
     
-    float d = texture(depthBuffer, gl_FragCoord.xy * ivec2(dvd_ViewPort.z, dvd_ViewPort.w)).r  - gl_FragCoord.z;
+    float d = texture(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.z, dvd_ViewPort.w)).r  - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 40.0 * d), 2.0);
     softness = max(0.1, 1.0 - pow(softness, 2.0));
         

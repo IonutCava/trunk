@@ -49,29 +49,29 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
     virtual ~ShaderBuffer();
 
     /// Create a new buffer to hold our shader data
-    virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
-    virtual void Destroy() = 0;
+    virtual void create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    virtual void destroy() = 0;
 
-    virtual void UpdateData(ptrdiff_t offsetElementCount,
+    virtual void updateData(ptrdiff_t offsetElementCount,
                             ptrdiff_t rangeElementCount,
                             const bufferPtr data) = 0;
 
-    virtual void SetData(const bufferPtr data);
+    virtual void setData(const bufferPtr data);
 
-    virtual bool BindRange(U32 bindIndex,
+    virtual bool bindRange(U32 bindIndex,
                            U32 offsetElementCount,
                            U32 rangeElementCount) = 0;
 
-    virtual bool Bind(U32 bindIndex) = 0;
+    virtual bool bind(U32 bindIndex) = 0;
 
-    inline bool Bind(ShaderBufferLocation bindIndex) {
-        return Bind(to_uint(bindIndex));
+    inline bool bind(ShaderBufferLocation bindIndex) {
+        return bind(to_uint(bindIndex));
     }
 
-    inline bool BindRange(ShaderBufferLocation bindIndex,
+    inline bool bindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
                           U32 rangeElementCount) {
-        return BindRange(to_uint(bindIndex),
+        return bindRange(to_uint(bindIndex),
                          offsetElementCount,
                          rangeElementCount);
 
@@ -81,9 +81,10 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
     inline size_t getAlignmentRequirement() const { return _alignmentRequirement; }
 
-    virtual void AddAtomicCounter(U32 sizeFactor = 1) = 0;
-    virtual U32  GetAtomicCounter(U32 counterIndex = 0) = 0;
-    virtual void BindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0) = 0;
+    virtual void addAtomicCounter(U32 sizeFactor = 1) = 0;
+    virtual U32  getAtomicCounter(U32 counterIndex = 0) = 0;
+    virtual void bindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0) = 0;
+    virtual void resetAtomicCounter(U32 counterIndex = 0) = 0;
 
    protected:
     size_t _bufferSize;

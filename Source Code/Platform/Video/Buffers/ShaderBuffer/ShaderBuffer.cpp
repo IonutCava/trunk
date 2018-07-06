@@ -23,16 +23,16 @@ namespace Divide {
     {
     }
 
-    void ShaderBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
+    void ShaderBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
         _primitiveCount = primitiveCount;
         _primitiveSize = primitiveSize;
         _bufferSize = primitiveSize * primitiveCount;
         DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::Create error: Invalid buffer size!");
     }
 
-    void ShaderBuffer::SetData(const bufferPtr data) {
+    void ShaderBuffer::setData(const bufferPtr data) {
         DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::SetData error: Invalid buffer size!");
-        UpdateData(0, _primitiveCount, data);
+        updateData(0, _primitiveCount, data);
     }
 
 }; //namespace Divide;

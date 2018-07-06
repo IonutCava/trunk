@@ -65,6 +65,10 @@ class BoundingSphere {
     F32 getRadius() const;
     F32 getDiameter() const;
 
+    inline vec4<F32> asVec4() const {
+        return vec4<F32>(getCenter(), getRadius());
+    }
+
     bool Collision(const BoundingSphere& sphere2) const;
 
    private:

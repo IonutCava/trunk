@@ -49,30 +49,32 @@ class glUniformBuffer final : public ShaderBuffer {
                      BufferUpdateFrequency frequency);
     ~glUniformBuffer();
 
-    void Destroy();
+    void destroy() override;
     /// Create a new buffer object to hold our uniform shader data
-    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    void create(U32 primitiveCount, ptrdiff_t primitiveSize) override;
 
-    void UpdateData(GLintptr offsetElementCount,
+    void updateData(GLintptr offsetElementCount,
                     GLsizeiptr rangeElementCount,
-                    const bufferPtr data);
+                    const bufferPtr data) override;
 
-    bool BindRange(U32 bindIndex,
+    bool bindRange(U32 bindIndex,
                    U32 offsetElementCount,
-                   U32 rangeElementCount);
+                   U32 rangeElementCount) override;
 
-    bool Bind(U32 bindIndex);
+    bool bind(U32 bindIndex) override;
 
     GLuint getBufferID() const { return _UBOid; }
 
-    void AddAtomicCounter(U32 sizeFactor = 1);
+    void addAtomicCounter(U32 sizeFactor = 1) override;
 
-    U32  GetAtomicCounter(U32 counterIndex = 0);
+    U32  getAtomicCounter(U32 counterIndex = 0) override;
 
-    void BindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0);
+    void bindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0) override;
+
+    void resetAtomicCounter(U32 counterIndex = 0) override;
 
    protected:
-    void PrintInfo(const ShaderProgram *shaderProgram, U32 bindIndex);
+    void printInfo(const ShaderProgram *shaderProgram, U32 bindIndex);
 
    protected:
 
@@ -84,7 +86,8 @@ class glUniformBuffer final : public ShaderBuffer {
     };
 
     GLuint _UBOid;
-    GLsizeiptr _alignmentPadding;
+    size_t     _allignedBufferSize;
+    GLsizeiptr _alignment;
     bufferPtr _mappedBuffer;
     bool _updated;
     const GLenum _target;

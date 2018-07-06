@@ -76,7 +76,7 @@ bool AnimEvaluator::initBuffers() {
         bonePadding++;
     }
 
-    _boneTransformBuffer->Create(frameCount(), bufferSize);
+    _boneTransformBuffer->create(frameCount(), bufferSize);
 
     vectorImpl<mat4<F32>> animationData;
     animationData.reserve((boneCount + bonePadding) * frameCount());
@@ -90,7 +90,7 @@ bool AnimEvaluator::initBuffers() {
 
     vectorAlg::shrinkToFit(animationData);
 
-    _boneTransformBuffer->SetData((const bufferPtr)animationData.data());
+    _boneTransformBuffer->setData((const bufferPtr)animationData.data());
 
     return !animationData.empty();
 }
