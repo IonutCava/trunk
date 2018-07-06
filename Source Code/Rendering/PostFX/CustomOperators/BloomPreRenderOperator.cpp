@@ -101,7 +101,7 @@ void BloomPreRenderOperator::operation(){
     {
         //screen FB
         _inputFB[0]->Bind(ShaderProgram::TEXTURE_UNIT0);
-        GFX_DEVICE.drawPoints(1, defaultStateHash);
+        GFX_DEVICE.drawPoints(1, defaultStateHash, _bright);
     }
     _outputFB->End();
 
@@ -112,7 +112,7 @@ void BloomPreRenderOperator::operation(){
     {
         //bright spots
         _outputFB->Bind(ShaderProgram::TEXTURE_UNIT0);
-        GFX_DEVICE.drawPoints(1, defaultStateHash);
+        GFX_DEVICE.drawPoints(1, defaultStateHash, _blur);
     }
     _tempBloomFB->End();
 
@@ -122,7 +122,7 @@ void BloomPreRenderOperator::operation(){
     {
         //horizontally blurred bright spots
         _tempBloomFB->Bind(ShaderProgram::TEXTURE_UNIT0);
-        GFX_DEVICE.drawPoints(1,defaultStateHash);
+        GFX_DEVICE.drawPoints(1,defaultStateHash, _blur);
         // clear states
     }
     _outputFB->End();
@@ -172,7 +172,7 @@ void BloomPreRenderOperator::toneMapScreen()
     _luminaFB[0]->Begin(Framebuffer::defaultPolicy());
     _inputFB[0]->Bind(0);
     _luminaFB[1]->Bind(2);
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _bright);
     
     _bright->Uniform("luminancePass", false);
     _bright->Uniform("toneMap", true);
@@ -184,6 +184,6 @@ void BloomPreRenderOperator::toneMapScreen()
     _tempHDRFB->Bind(0);
     // luminance FB
     _luminaFB[0]->Bind(1);
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _bright);
     _bright->Uniform("toneMap", false);
 }

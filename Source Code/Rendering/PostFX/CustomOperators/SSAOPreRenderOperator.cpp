@@ -33,10 +33,9 @@ void SSAOPreRenderOperator::reshape(I32 width, I32 height){
 void SSAOPreRenderOperator::operation(){
     if(!_enabled) return;
 
-    _ssaoShader->bind();
     _outputFB->Begin(Framebuffer::defaultPolicy());
     _inputFB[0]->Bind(0); // screen
     _inputFB[1]->Bind(1, TextureDescriptor::Depth); // depth
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _ssaoShader);
     _outputFB->End();
 }

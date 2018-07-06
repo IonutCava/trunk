@@ -230,7 +230,7 @@ void CascadedShadowMaps::postRender(){
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _blurBuffer->DrawToLayer(TextureDescriptor::Color0, i, false);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
     }
     _blurBuffer->End();
     //Blur vertically
@@ -241,7 +241,7 @@ void CascadedShadowMaps::postRender(){
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, false);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
     }
     _depthMap->End();
 
@@ -254,16 +254,19 @@ bool CascadedShadowMaps::BindInternal(U8 offset) {
     return true;
 }
 
-void CascadedShadowMaps::togglePreviewShadowMaps(bool state){
+void CascadedShadowMaps::togglePreviewShadowMaps(bool state) {
     ParamHandler::getInstance().setParam("rendering.debug.showSplits", state);
 }
 
-void CascadedShadowMaps::previewShadowMaps(){
-    _previewDepthMapShader->bind();
+void CascadedShadowMaps::previewShadowMaps() {
     _depthMap->Bind(ShaderProgram::TEXTURE_UNIT0);
     for (U8 i = 0; i < _numSplits; ++i){
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform("zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
-        GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1, GFX_DEVICE.getDefaultStateBlock(true)));
+        GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND(&GFXDevice::drawPoints, 
+                                                                     DELEGATE_REF(GFX_DEVICE),
+                                                                     1,
+                                                                     GFX_DEVICE.getDefaultStateBlock(true),
+                                                                     _previewDepthMapShader));
     }
 }

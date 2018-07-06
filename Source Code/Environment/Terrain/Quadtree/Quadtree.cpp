@@ -33,7 +33,7 @@ void Quadtree::CreateDrawCommands(const SceneRenderState& sceneRenderState) {
 void Quadtree::DrawBBox() const {
     assert(_root);
     _root->DrawBBox();
-    GFX_DEVICE.drawBox3D(_root->getBoundingBox().getMin(), _root->getBoundingBox().getMax(), mat4<F32>());
+    GFX_DEVICE.drawBox3D(_root->getBoundingBox().getMin(), _root->getBoundingBox().getMax(),  vec4<U8>(0, 64, 255, 255), mat4<F32>());
 }
 
 QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {

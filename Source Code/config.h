@@ -48,6 +48,8 @@ namespace Config
     const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
     /// Maximum number of instances of a single mesh with a single draw call
     const unsigned int MAX_INSTANCE_COUNT = 512;
+    /// Maximum number of points that can be sent to the GPU per batch
+    const unsigned int MAX_POINTS_PER_BATCH = (unsigned int)(1 << 31);
     /// Maximum number of bones available per node
     const unsigned int MAX_BONE_COUNT_PER_NODE = 256;
     /// Estimated maximum number of visible objects per render pass (This includes debug primitives);

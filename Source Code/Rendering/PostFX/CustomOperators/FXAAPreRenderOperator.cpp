@@ -50,7 +50,6 @@ void FXAAPreRenderOperator::operation(){
     //Apply FXAA to the output screen using the sampler copy as the texture input
     _outputFB->Begin(Framebuffer::defaultPolicy());
     _samplerCopy->Bind(0);
-    _fxaa->bind();
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _fxaa);
     _outputFB->End();
 }

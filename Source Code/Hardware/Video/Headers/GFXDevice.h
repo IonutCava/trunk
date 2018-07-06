@@ -88,8 +88,7 @@ public:
         RENDER_TARGET_SCREEN = 0,
         RENDER_TARGET_ANAGLYPH = 1,
         RENDER_TARGET_DEPTH = 2,
-        RENDER_TARGET_DEPTH_RANGES = 3,
-        RenderTarget_PLACEHOLDER = 4
+        RenderTarget_PLACEHOLDER = 3
     };
 
     enum SortReservedValues {
@@ -153,14 +152,14 @@ public:
     inline bool drawDebugAxis()                           const {return _drawDebugAxis;}
 
     void debugDraw(const SceneRenderState& sceneRenderState);
-    void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
+    void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const vec4<U8>& color, const mat4<F32>& globalOffset);
     void drawLines(const vectorImpl<Line >& lines,
                    const mat4<F32>& globalOffset,
                    const vec4<I32>& viewport, //<only for ortho mode
                    const bool inViewport = false,
                    const bool disableDepth = false);
     
-    void drawPoints(U32 numPoints, size_t stateHash);
+    void drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const shaderProgram);
     void drawGUIElement(GUIElement* guiElement);
     void submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd);
     void submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds);
@@ -247,7 +246,7 @@ public:
     ///use the callback param to override the draw function
     void  generateCubeMap(Framebuffer& cubeMap,
                           const vec3<F32>& pos,
-                          const DELEGATE_CBK& callback, 
+                          const DELEGATE_CBK& renderFunction, 
                           const vec2<F32>& zPlanes,
                           const RenderStage& renderStage = REFLECTION_STAGE);
 
@@ -279,7 +278,6 @@ public:
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     void ConstructHIZ();
-    void DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges);
 
     void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes);
 
@@ -378,7 +376,7 @@ protected:
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
     size_t _currentStateBlockHash;
-    size_t _newStateBlockHash;
+    size_t _previousStateBlockHash;
     size_t _defaultStateBlockHash;
     size_t _defaultStateNoDepthHash; //<The default render state buth with depth testing disabled
     size_t _state2DRenderingHash;    //<Special render state for 2D rendering
@@ -404,7 +402,6 @@ protected:
     ///shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
     ShaderProgram* _HIZConstructProgram;
-    ShaderProgram* _depthRangesConstructProgram;
     bool    _previewDepthBuffer;
     ///getMatrix cache
     mat4<F32> _mat4Cache;

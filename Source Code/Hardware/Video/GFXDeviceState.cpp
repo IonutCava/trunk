@@ -60,8 +60,6 @@ ErrorCodes GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, ch
     _renderTarget[RENDER_TARGET_SCREEN]       = newFB(true);
     // The depth buffer should probably be merged into the screen buffer
     _renderTarget[RENDER_TARGET_DEPTH]        = newFB(false);
-    // The down-sampled depth buffer is used to cull screen space lights for our Forward+ rendering algorithm. It's only updated on demand.
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES] = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled buffer (MSAA + HDR rendering if possible)
     TextureDescriptor screenDescriptor(TEXTURE_2D_MS, RGBA16F, FLOAT_16);
@@ -88,13 +86,6 @@ ErrorCodes GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, ch
     depthSamplerHiZ.toggleMipMaps(true);
     TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
     depthDescriptorHiZ.setSampler(depthSamplerHiZ);
-    /// Depth ranges are a bit more complicated and used for grid based light culling (see LightManager.cpp)
-    SamplerDescriptor depthRangesSampler;
-    depthRangesSampler.setFilters(TEXTURE_FILTER_NEAREST);
-    depthRangesSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    depthRangesSampler.toggleMipMaps(false);
-    TextureDescriptor depthRangesDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32);
-    depthRangesDescriptor.setSampler(depthRangesSampler);
     /// Add the attachments to the render targets
     _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
     _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(depthDescriptor,  TextureDescriptor::Depth);
@@ -102,12 +93,6 @@ ErrorCodes GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, ch
     _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptorHiZ, TextureDescriptor::Depth);
     _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
     _renderTarget[RENDER_TARGET_DEPTH]->Create(resolution.width, resolution.height);
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->AddAttachment(depthRangesDescriptor, TextureDescriptor::Color0);
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->toggleDepthBuffer(false);
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
-    vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
-    vec2<U16> resTemp(resolution + tileSize);
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->Create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
     /// If we enabled anaglyph rendering, we need a second target, identical to the screen target used to render the scene at an offset
     if(_enableAnaglyph){
         _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(true);
@@ -123,11 +108,6 @@ ErrorCodes GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, ch
     /// Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZConstructProgram->UniformTexture("LastMip", 0);
-    /// Initialize our depth ranges construction shader (see LightManager.cpp for more documentation)
-    ResourceDescriptor rangesDesc("DepthRangesConstruct");
-    rangesDesc.setPropertyList("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," + "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
-    _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
-    _depthRangesConstructProgram->UniformTexture("depthTex", 0);
     /// Store our target z distances
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
@@ -145,9 +125,8 @@ ErrorCodes GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, ch
 
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingApi() {
-    // Delete the 2 internal shaders
+    // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
-    RemoveResource(_depthRangesConstructProgram);
     // Destroy our post processing system
     PRINT_FN(Locale::get("STOP_POST_FX"));
     PostFX::destroyInstance();

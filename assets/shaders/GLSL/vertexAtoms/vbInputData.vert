@@ -3,7 +3,7 @@ invariant gl_Position;
 out vec4 _vertexW;
 out vec2 _texCoord;
 
-uniform int lodLevel = 0;
+uniform int dvd_lodLevel = 0;
 
 #include "nodeBufferedInput.cmn"
 
@@ -26,7 +26,7 @@ void computeData(){
     dvd_Color      = inColorData;
 
     #if defined(USE_GPU_SKINNING)
-    applyBoneTransforms(dvd_Vertex, dvd_Normal, lodLevel);
+    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
     #endif
 
     _texCoord = inTexCoordData;

@@ -55,8 +55,7 @@ void glShaderProgram::validateInternal() {
     } else{
         D_PRINT_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
     }
-
-    //  clear validation queue flag
+    // clear validation queue flag
     _validationQueued = false;
 }
 
@@ -67,7 +66,8 @@ U8 glShaderProgram::update(const U64 deltaTime){
         // Call the internal validation function
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
-        if (isValid() && !_loadedFromBinary){
+        if (isValid() && !_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
+            STUBBED("GLSL binary dump/load is only enabled for nVidia GPUS. Catalyst 14.x destroys uniforms on shader dump, for whatever reason. - Ionut")
             // Get the size of the binary code
             GLint binaryLength = 0;
             glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
@@ -107,7 +107,7 @@ std::string glShaderProgram::getLog() const {
     GLint length = 0;
     glGetProgramiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH, &length);
     // If we actually have something in the validation log
-    if(length > 1){
+    if (length > 1) {
         // Delete our OK string, and start on a new line
         validationBuffer = "\n -- ";
         // This little trick avoids a "New/Delete" set of calls and still gives us a linear array of char's
@@ -116,8 +116,8 @@ std::string glShaderProgram::getLog() const {
         // Append the program's log to the output message
         validationBuffer.append(&shaderProgramLog[0]);
         // To avoid overflowing the output buffers (both CEGUI and Console), limit the maximum output size
-        if(validationBuffer.size() > 4096 * 16){
-            // On some systems, the program's dissasembly is printed, and that can get quite large
+        if (validationBuffer.size() > 4096 * 16) {
+            // On some systems, the program's disassembly is printed, and that can get quite large
             validationBuffer.resize(4096 * 16 - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10);
             // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
             validationBuffer.append(" ... ");
@@ -169,7 +169,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(const std::string& name) {
     // Loading from binary gives us a linked program ready for usage.
-    if (!_loadedFromBinary){
+    if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object 
         // If we try to refresh the program, we already have a handle
         if (_shaderProgramId == Divide::GLUtil::_invalidObjectID) {
@@ -263,7 +263,7 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
 
 #   ifdef NDEBUG
     // Load the program from the binary file, if available and allowed, to avoid linking.
-    if (Config::USE_SHADER_BINARY && !refresh){
+    if (Config::USE_SHADER_BINARY && !refresh && GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
         std::string fileName("shaderCache/Binary/" + _name + ".bin");
@@ -313,7 +313,7 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
         // Use the specified shader path
         glswSetPath(std::string(getResourceLocation() + "GLSL/").c_str(), ".glsl");
         // Mirror initial shader defines to match line count
-        GLint initialOffset = 18;
+        GLint initialOffset = 19;
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) { //nVidia specific
             initialOffset += 6;
         }

@@ -215,10 +215,13 @@ bool WaterPlane::previewReflection(){
 #   ifdef _DEBUG
         if (_previewReflection) {
             F32 height = _resolution.y * 0.333f;
-            _previewReflectionShader->bind();
             _refractionTexture->Bind();
             vec4<I32> viewport(_resolution.x  * 0.333f, Application::getInstance().getResolution().y - height, _resolution.x  * 0.666f, height);
-            GFX_DEVICE.renderInViewport(viewport, DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1, GFX_DEVICE.getDefaultStateBlock(true)));
+            GFX_DEVICE.renderInViewport(viewport, DELEGATE_BIND(&GFXDevice::drawPoints, 
+                                                  DELEGATE_REF(GFX_DEVICE),
+                                                  1,
+                                                  GFX_DEVICE.getDefaultStateBlock(true),
+                                                  _previewReflectionShader));
         }
 #   endif
     return Reflector::previewReflection();

@@ -164,5 +164,5 @@ bool SceneNode::unload(){
 
 void SceneNode::drawBoundingBox(SceneGraphNode* const sgn) const {
     const BoundingBox& bb = sgn->getBoundingBoxConst();
-    GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),mat4<F32>());
+    GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255), mat4<F32>());
 }

@@ -37,7 +37,10 @@ void main(void){
 
 in vec2 _uv0;
 in vec2 _uv1;
+
 smooth in float _waterDepth;
+
+uniform int dvd_lodLevel = 0;
 
 out vec4 _colorOut;
 
@@ -78,7 +81,7 @@ vec4 UnderwaterMappingRoutine(){
 //subroutine uniform TerrainMappingType TerrainMappingRoutine;
 
 vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
-    return lodLevel == 0 ? computeLightInfoLOD0Frag() :  computeLightInfoLOD1Frag();
+    return dvd_lodLevel == 0 ? computeLightInfoLOD0Frag() :  computeLightInfoLOD1Frag();
 }
 
 void main(void) {

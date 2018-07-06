@@ -187,11 +187,14 @@ void PostFX::displayScene() {
     _gfx->toggle2D(true);
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->execute();
 
+    ShaderProgram* drawShader = nullptr;
     if (_gfx->anaglyphEnabled()) {
+        drawShader = _anaglyphShader;
         _anaglyphShader->bind();
         _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_RIGHT_EYE); //right eye buffer
         _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Bind(TEX_BIND_POINT_LEFT_EYE); //left eye buffer
     } else {
+        drawShader = _postProcessingShader;
         _postProcessingShader->bind();
         _postProcessingShader->SetSubroutines(FRAGMENT_SHADER, _shaderFunctionSelection);
 
@@ -224,7 +227,7 @@ void PostFX::displayScene() {
         }
     }    
 
-    _gfx->drawPoints(1, _gfx->getDefaultStateBlock(true));
+    _gfx->drawPoints(1, _gfx->getDefaultStateBlock(true), drawShader);
     _gfx->toggle2D(false);
 }
 

@@ -25,7 +25,6 @@
 
 #include "Renderer.h"
 #include "Rendering/Lighting/Headers/LightGrid.h"
-
 /// This class implements the forward plus renderer that creates a list of all important lights in screen space 
 /// Details: http://mynameismjp.wordpress.com/2012/03/31/light-indexed-deferred-rendering/
 class ForwardPlusRenderer : public Renderer {
@@ -39,10 +38,13 @@ public:
 
 protected:
     bool buildLightGrid(const GFXDevice::GPUBlock& gpuBlock);
+    void downSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges);
 
 private:
     LightGrid* _opaqueGrid;
     LightGrid* _transparentGrid;
+    Framebuffer* _depthRanges;
+    ShaderProgram* _depthRangesConstructProgram;
     vectorImpl<vec2<F32> > _depthRangesCache;
     vectorImpl<LightGrid::LightInternal > _omniLightList;
 };

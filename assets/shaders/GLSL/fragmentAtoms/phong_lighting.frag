@@ -1,5 +1,3 @@
-uniform int lodLevel = 0;
-
 #include "lightInput.cmn"
 #include "lightingDefaults.frag"
 

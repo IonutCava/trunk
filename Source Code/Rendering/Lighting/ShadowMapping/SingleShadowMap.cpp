@@ -76,6 +76,5 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const 
 
 void SingleShadowMap::previewShadowMaps(){
     _depthMap->Bind(ShaderProgram::TEXTURE_UNIT0);
-    _previewDepthMapShader->bind();
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _previewDepthMapShader);
 }

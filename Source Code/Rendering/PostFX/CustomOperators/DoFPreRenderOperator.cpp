@@ -43,9 +43,8 @@ void DoFPreRenderOperator::operation(){
     _samplerCopy->BlitFrom(_inputFB[0]);
 
     _outputFB->Begin(Framebuffer::defaultPolicy());
-    _dofShader->bind();
     _samplerCopy->Bind(0); //screenFB
     _inputFB[1]->Bind(1, TextureDescriptor::Depth); //depthFB
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
     _outputFB->End();
 }

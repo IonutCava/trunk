@@ -210,6 +210,12 @@ public:
         this->mat[2] = matrix[2]; this->mat[5] = matrix[6]; this->mat[8] = matrix[10];
     }
 
+    inline mat3 getInverse()                const { mat3 ret; this->inverse(ret); return ret;}
+    inline void inverse(mat3& ret)          const { ret.set(mat); ret.inverse(); }
+    inline mat3 getInverseTranspose()       const { mat3 ret; this->inverse(ret); return ret.transpose(); }
+    inline void inverseTranspose(mat3& ret) const { ret.set(mat); ret.inverseTranspose(); }
+    inline void inverseTranspose()                { this->inverse(); this->transpose(); }
+
     inline mat3 transpose() const {
         return mat3(mat[0], mat[3], mat[6],
                     mat[1], mat[4], mat[2],
@@ -503,6 +509,11 @@ public:
 
     inline void set(const mat4& matrix) {
         this->set(matrix.mat);
+    }
+
+    inline void set(const mat3<T>& matrix) {
+        identity();
+        memcpy(this->mat, m, sizeof(T) * 9);
     }
 
     inline F32* getRow(I32 index) {
