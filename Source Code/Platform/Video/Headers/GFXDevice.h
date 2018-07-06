@@ -90,7 +90,6 @@ DEFINE_SINGLETON(GFXDevice)
         mat4<F32> _normalMatrix;
         mat4<F32> _colorMatrix;
         vec4<F32> _properties;
-        vec4<F32> _boundingSphere;
 
         NodeData()
         {
@@ -140,10 +139,20 @@ DEFINE_SINGLETON(GFXDevice)
        void clear();
        void set(const RenderPackage& other);
 
-       bool _isRenderable;
+       inline bool isRenderable() const {
+           return  _isRenderable;
+       }
+
+       inline void isRenderable(bool state) {
+           _isRenderable = state;
+       }
+
        ShaderBufferList _shaderBuffers;
        TextureDataContainer _textureData;
        vectorImpl<GenericDrawCommand> _drawCommands;
+
+       private:
+           bool _isRenderable;
    };
 
    struct RenderQueue {

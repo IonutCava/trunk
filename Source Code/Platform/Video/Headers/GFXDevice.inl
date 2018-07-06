@@ -40,7 +40,6 @@ GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
     this->_normalMatrix.set(other._normalMatrix);
     this->_colorMatrix.set(other._colorMatrix);
     this->_properties.set(other._properties);
-    this->_boundingSphere.set(other._boundingSphere);
 }
 
 inline void 
@@ -66,7 +65,6 @@ GFXDevice::RenderPackage::clear() {
 
 inline void 
 GFXDevice::RenderPackage::set(const GFXDevice::RenderPackage& other) {
-    _isRenderable = other._isRenderable;
 #if 0
     size_t shaderBufferSize = other._shaderBuffers.size();
     size_t textureDataSize = other._textureData.size();

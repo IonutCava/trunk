@@ -201,29 +201,29 @@ void fillEnumTables() {
 }
 
 namespace {
-void submitMultiIndirectCommand(U32 baseInstance,
+void submitMultiIndirectCommand(U32 cmdOffset,
                                 U32 drawCount,
                                 GLenum mode,
                                 GLenum internalFormat,
                                 GLuint indexBuffer) {
     static const size_t cmdSize = sizeof(IndirectDrawCommand);
     if (indexBuffer > 0) {
-        glMultiDrawElementsIndirect(mode, internalFormat, (bufferPtr)(baseInstance * cmdSize), drawCount, cmdSize);
+        glMultiDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * cmdSize), drawCount, cmdSize);
     } else {
-        glMultiDrawArraysIndirect(mode, (bufferPtr)(baseInstance * cmdSize), drawCount, cmdSize);
+        glMultiDrawArraysIndirect(mode, (bufferPtr)(cmdOffset * cmdSize), drawCount, cmdSize);
     }
 }
 
-void submitIndirectCommand(U32 baseInstance,
+void submitIndirectCommand(U32 cmdOffset,
                            GLenum mode,
                            GLenum internalFormat,
                            GLuint indexBuffer) {
 
     static const size_t cmdSize = sizeof(IndirectDrawCommand);
     if (indexBuffer > 0) {
-        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(baseInstance * cmdSize));
+        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * cmdSize));
     } else {
-        glDrawArraysIndirect(mode, (bufferPtr)(baseInstance * cmdSize));
+        glDrawArraysIndirect(mode, (bufferPtr)(cmdOffset * cmdSize));
     }
 }
 
@@ -259,12 +259,14 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLenum internalFormat,
                          GLuint indexBuffer) {
+    
+    assert(drawCommand.commandOffset() == drawCommand.cmd().baseInstance);
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand.drawCount() > 1) {
-            submitMultiIndirectCommand(drawCommand.cmd().baseInstance, drawCommand.drawCount(), mode, internalFormat, indexBuffer);
+            submitMultiIndirectCommand(drawCommand.commandOffset(), drawCommand.drawCount(), mode, internalFormat, indexBuffer);
         } else {
-            submitIndirectCommand(drawCommand.cmd().baseInstance, mode, internalFormat, indexBuffer);
+            submitIndirectCommand(drawCommand.commandOffset(), mode, internalFormat, indexBuffer);
         }
     } else {
         if (drawCommand.drawCount() > 1) {

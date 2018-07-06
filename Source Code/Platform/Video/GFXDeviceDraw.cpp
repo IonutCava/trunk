@@ -148,7 +148,7 @@ void GFXDevice::flushRenderQueue() {
 }
 
 void GFXDevice::addToRenderQueue(const RenderPackage& package) {
-    if (!package._isRenderable) {
+    if (!package.isRenderable()) {
         return;
     }
 
@@ -189,15 +189,14 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
         normalMatrix.set(normalMatrix * _gpuBlock._data._ViewMatrix);
     }
 
-    // Since the normal matrix is 3x3, we can use the extra row and column
-    // to store additional data
-    normalMatrix.element(3, 2) = to_float(animComp ? animComp->boneCount() : 0);
+    // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
+    normalMatrix.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
+    normalMatrix.setRow(3, nodePtr->getBoundingSphereConst().asVec4());
     // Get the color matrix (diffuse, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._colorMatrix);
     // Get the material property matrix (alpha test, texture count,
     // texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties);
-    dataOut._boundingSphere.set(nodePtr->getBoundingSphereConst().asVec4());
 
     return dataOut;
 }
@@ -236,12 +235,12 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
         RenderingComponent* renderable = nodeRef->getComponent<RenderingComponent>();
         if (refreshNodeData) {
-            Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount);
+            Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount, cmdCount);
         }
 
         RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable, sceneRenderState, currentStage);
 
-        if (pkg._isRenderable) {
+        if (pkg.isRenderable()) {
             if (refreshNodeData) {
                 NodeData& dataOut = processVisibleNode(node, nodeCount);
                 if (isDepthStage()) {
@@ -266,10 +265,9 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                 }
 
                 for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                    _drawCommandsCache[cmd.cmd().baseInstance].set(cmd.cmd());
+                    _drawCommandsCache[cmdCount++].set(cmd.cmd());
                 }
             }
-            cmdCount += to_uint(pkg._drawCommands.size());
             nodeCount++;
         }
     });
@@ -277,10 +275,11 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     if (refreshNodeData) {
         _lastCommandCount = cmdCount;
         _lastNodeCount = nodeCount;
-        getNodeBuffer(currentStage, pass).updateData(0, nodeCount, _matricesData.data());
+        assert(_lastCommandCount >= _lastNodeCount);
+        getNodeBuffer(currentStage, pass).setData(_matricesData.data());
 
         ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage, pass);
-        cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());
+        cmdBuffer.setData(_drawCommandsCache.data());
         _api->registerCommandBuffer(cmdBuffer);
 
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM

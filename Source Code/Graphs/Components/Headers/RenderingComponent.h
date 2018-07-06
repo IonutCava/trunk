@@ -91,6 +91,8 @@ class RenderingComponent : public SGNComponent {
 
     inline U32 commandIndex() const { return _commandIndex; }
 
+    inline U32 commandOffset() const { return _commandOffset; }
+
     ShaderProgram* const getDrawShader(
         RenderStage renderStage = RenderStage::DISPLAY);
 
@@ -146,6 +148,8 @@ class RenderingComponent : public SGNComponent {
 
     inline void commandIndex(U32 index) { _commandIndex = index; }
 
+    inline void commandOffset(U32 offset) { _commandOffset = offset; }
+
    protected:
     Material* _materialInstance;
     /// LOD level is updated at every visibility check
@@ -153,6 +157,7 @@ class RenderingComponent : public SGNComponent {
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _drawOrder;
     U32 _commandIndex;
+    U32 _commandOffset;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderGeometry;
@@ -196,8 +201,9 @@ class RenderingCompGFXDevice {
         return renderable.getDrawPackage(sceneRenderState, renderStage);
     }
 
-    static void commandIndex(RenderingComponent& renderable, U32 index) {
+    static void commandIndex(RenderingComponent& renderable, U32 index, U32 offset) {
         renderable.commandIndex(index);
+        renderable.commandOffset(index);
     }
 
     friend class Divide::GFXDevice;

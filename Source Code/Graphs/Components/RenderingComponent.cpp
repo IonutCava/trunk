@@ -17,6 +17,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _lodLevel(0),
       _drawOrder(0),
       _commandIndex(0),
+      _commandOffset(0),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
@@ -482,18 +483,22 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                    RenderStage renderStage) {
 
     GFXDevice::RenderPackage& pkg = _renderData[to_uint(renderStage)];
-
-    pkg._isRenderable = false;
+    pkg.isRenderable(false);
     if (canDraw(sceneRenderState, renderStage) &&
         preDraw(sceneRenderState, renderStage))
     {
-        pkg._isRenderable = _parentSGN.getNode()->getDrawCommands(_parentSGN,
-                                                                  renderStage,
-                                                                  sceneRenderState,
-                                                                  pkg._drawCommands);
-        for (GenericDrawCommand& cmd : pkg._drawCommands) {
-            cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
-            cmd.cmd().baseInstance = commandIndex();
+        if (_parentSGN.getNode()->getDrawCommands(_parentSGN,
+                                                  renderStage,
+                                                  sceneRenderState,
+                                                  pkg._drawCommands)) {
+
+            U32 offset = commandOffset();
+            for (GenericDrawCommand& cmd : pkg._drawCommands) {
+                cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
+                cmd.commandOffset(offset++);
+                cmd.cmd().baseInstance = commandIndex();
+            }
+            pkg.isRenderable(!pkg._drawCommands.empty());
         }
     }
 

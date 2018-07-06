@@ -8,7 +8,6 @@ struct NodeData {
     mat4 _normalMatrix;
     mat4 _colorMatrix;
     vec4 _properties;
-    vec4 _boundingSphere;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
@@ -32,8 +31,8 @@ void main()
     
     uint nodeIndex = dvd_drawCommands[ident].baseInstance;
 
-    vec3 center = dvd_Matrices[nodeIndex]._boundingSphere.xyz;
-    float radius = dvd_Matrices[nodeIndex]._boundingSphere.w;
+    vec3 center = dvd_Matrices[nodeIndex]._normalMatrix[3].xyz;
+    float radius = dvd_Matrices[nodeIndex]._normalMatrix[3].w;
 
     // Sphere clips against near plane, just assume visibility.
     if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_ZPlanesCombined.x) {

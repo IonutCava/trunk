@@ -119,6 +119,7 @@ struct GenericDrawCommand {
     U32 _renderOptions;
     U32 _drawToBuffer;
     U32 _stateHash;
+    U32 _commandOffset;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
     ShaderProgram* _shaderProgram;
@@ -169,10 +170,15 @@ struct GenericDrawCommand {
         _type = type;
     }
 
+    inline void commandOffset(U32 offset) {
+        _commandOffset = offset;
+    }
+
     inline U8 LoD() const { return _lodIndex; }
     inline U16 drawCount() const { return _drawCount; }
     inline U32 stateHash() const { return _stateHash; }
     inline U32 drawToBuffer() const { return _drawToBuffer; }
+    inline U32 commandOffset() const { return _commandOffset; }
 
     inline bool renderWireframe() const {
         return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME));
@@ -208,6 +214,7 @@ struct GenericDrawCommand {
           _drawToBuffer(0),
           _stateHash(0),
     	  _type(type),
+          _commandOffset(0),
           _shaderProgram(nullptr),
           _sourceBuffer(nullptr)
     {
@@ -227,6 +234,7 @@ struct GenericDrawCommand {
         _type = base._type;
         _shaderProgram = base._shaderProgram;
         _sourceBuffer = base._sourceBuffer;
+        _commandOffset = base._commandOffset;
     }
 
     inline bool compatible(const GenericDrawCommand& other) const {
