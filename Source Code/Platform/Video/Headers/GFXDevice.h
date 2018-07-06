@@ -221,7 +221,7 @@ public:  // GPU interface
     /// Returns true if the viewport was changed
     bool setViewport(const Rect<I32>& viewport);
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
-    bool restoreViewport();
+    inline const Rect<I32>& getViewport() const;
 
     inline F32 renderingAspectRatio() const;
     inline const vec2<U16>& renderingResolution() const;
@@ -466,7 +466,6 @@ protected:
 
     /// Current viewport stack
     Rect<I32> _viewport;
-    Rect<I32> _prevViewport;
     Rect<I32> _baseViewport;
 
     vec2<U16> _renderingResolution;

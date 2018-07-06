@@ -137,6 +137,7 @@ class glFramebuffer : public RenderTarget,
    protected:
     bool _resolved;
     bool _isLayeredDepth;
+    Rect<I32> _prevViewport;
     GLuint _framebufferHandle;
     static bool _bufferBound;
     static bool _zWriteEnabled;

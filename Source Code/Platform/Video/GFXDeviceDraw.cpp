@@ -36,6 +36,7 @@ void GFXDevice::uploadGPUBlock() {
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     commandBuffer.batch();
+
     if (!commandBuffer.validate()) {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_INVALID_COMMAND_BUFFER")), commandBuffer.toString().c_str());
         DIVIDE_ASSERT(false, "GFXDevice::flushCommandBuffer error: Invalid command buffer. Check error log!");
@@ -43,25 +44,13 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     }
 
     const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
-    typedef vectorEASTL<GFX::CommandBuffer::CommandEntry>::const_iterator const_it;
-    for (const_it it = eastl::cbegin(commands); it != eastl::cend(commands); ++it) {
-        const GFX::CommandBuffer::CommandEntry& cmd = *it;
-
+    for (auto cmd : commands) {
         switch (cmd.first) {
             case GFX::CommandType::BLIT_RT: {
                 const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::BlitRenderTargetCommand>(cmd);
-                renderTargetPool().renderTarget(crtCmd._destination).blitFrom(&renderTargetPool().renderTarget(crtCmd._source),
-                                                                                crtCmd._blitColour,
-                                                                                crtCmd._blitDepth);
-            } break;
-            case GFX::CommandType::SET_VIEWPORT: {
-                setViewport(commandBuffer.getCommand<GFX::SetViewportCommand>(cmd)._viewport);
-            } break;
-            case GFX::CommandType::SET_CAMERA: {
-                renderFromCamera(*commandBuffer.getCommand<GFX::SetCameraCommand>(cmd)._camera);
-            } break;
-            case GFX::CommandType::SET_CLIP_PLANES: {
-                setClipPlanes(commandBuffer.getCommand<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
+                RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
+                RenderTarget& destination = renderTargetPool().renderTarget(crtCmd._destination);
+                destination.blitFrom(&source, crtCmd._blitColour, crtCmd._blitDepth);
             } break;
             case GFX::CommandType::READ_ATOMIC_COUNTER: {
                 const GFX::ReadAtomicCounterCommand& crtCmd = commandBuffer.getCommand<GFX::ReadAtomicCounterCommand>(cmd);
@@ -72,19 +61,29 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                     }
                 }
             } break;
-            case GFX::CommandType::EXTERNAL: {
-                const GFX::ExternalCommand& crtCmd = commandBuffer.getCommand<GFX::ExternalCommand>(cmd);
-                crtCmd._cbk();
-            } break;
+
+            case GFX::CommandType::SET_VIEWPORT:
+                setViewport(commandBuffer.getCommand<GFX::SetViewportCommand>(cmd)._viewport);
+                break;
+            case GFX::CommandType::SET_CAMERA:
+                renderFromCamera(*commandBuffer.getCommand<GFX::SetCameraCommand>(cmd)._camera);
+                break;
+            case GFX::CommandType::SET_CLIP_PLANES:
+                setClipPlanes(commandBuffer.getCommand<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
+                break;
+            case GFX::CommandType::EXTERNAL:
+                commandBuffer.getCommand<GFX::ExternalCommand>(cmd)._cbk();
+                break;
+
             case GFX::CommandType::DRAW_TEXT:
             case GFX::CommandType::DRAW_IMGUI:
             case GFX::CommandType::DRAW_COMMANDS:
-            case GFX::CommandType::DISPATCH_COMPUTE: {
-                uploadGPUBlock();
-            }
+            case GFX::CommandType::DISPATCH_COMPUTE:
+                uploadGPUBlock(); /*no break. fall-through*/
+
             default:
-                _api->flushCommand(cmd, commandBuffer);
-            } break;
+                _api->flushCommand(cmd, commandBuffer); break;
+        }
     }
 }
 

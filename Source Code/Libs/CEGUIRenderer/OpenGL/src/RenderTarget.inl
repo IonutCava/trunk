@@ -37,6 +37,11 @@
 // Start of CEGUI namespace section
 namespace CEGUI
 {
+
+namespace {
+    Divide::I32 prevViewport[4] = {-1, -1, -1, -1};
+};
+
 //----------------------------------------------------------------------------//
 template <typename T>
 const double OpenGLRenderTarget<T>::d_yfov_tan = 0.267949192431123;
@@ -96,6 +101,7 @@ const Rectf& OpenGLRenderTarget<T>::getArea() const
 template <typename T>
 void OpenGLRenderTarget<T>::activate()
 {
+    Divide::GL_API::getActiveViewport(prevViewport);
     Divide::GL_API::changeViewport(
                static_cast<Divide::I32>(d_area.left()),
                static_cast<Divide::I32>(d_area.top()),
@@ -114,7 +120,10 @@ void OpenGLRenderTarget<T>::activate()
 template <typename T>
 void OpenGLRenderTarget<T>::deactivate()
 {
-    Divide::GL_API::restoreViewport();
+    Divide::GL_API::changeViewport(prevViewport[0],
+                                   prevViewport[1],
+                                   prevViewport[2],
+                                   prevViewport[3]);
 }
 
 //----------------------------------------------------------------------------//

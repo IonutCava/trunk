@@ -130,7 +130,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _API_ID = RenderAPI::COUNT;
     
     _viewport.set(-1);
-    _prevViewport.set(-1);
     _baseViewport.set(-1);
 
     _lastCommandCount.fill(0);
@@ -518,7 +517,6 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     // Update the buffer with the new value
         _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
         _gpuBlock._needsUpload = true;
-        _prevViewport.set(_viewport);
         _viewport.set(viewport);
 
         return true;
@@ -527,17 +525,10 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     return false;
 }
 
-/// Restore the viewport to it's previous value
-bool GFXDevice::restoreViewport() {
-    return setViewport(_prevViewport);
-}
-
 /// Set a new viewport clearing the previous stack first
 void GFXDevice::setBaseViewport(const Rect<I32>& viewport) {
     setViewport(viewport);
-    _prevViewport.set(viewport);
     _baseViewport.set(viewport);
-    parent().setViewportDirty();
 }
 
 
@@ -574,7 +565,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     bool wasEven = false;
 
     // Store the current width and height of each mip
-    Rect<I32> previousViewport(_prevViewport);
+    Rect<I32> previousViewport(_viewport);
 
     // Bind the depth texture to the first texture unit
     Texture_ptr depth = screenTarget.getAttachment(RTAttachmentType::Depth, 0).texture();

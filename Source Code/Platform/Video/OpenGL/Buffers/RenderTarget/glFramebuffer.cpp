@@ -31,7 +31,8 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
       _isLayeredDepth(false),
       _activeDepthBuffer(false),
       _hasMultisampledColourAttachments(false),
-      _framebufferHandle(0)
+      _framebufferHandle(0),
+      _prevViewport(-1)
 {
     glCreateFramebuffers(1, &_framebufferHandle);
     assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");
@@ -418,7 +419,8 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     /// Set the viewport
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
-         _context.setViewport(0, 0, to_I32(getWidth()), to_I32(getHeight()));
+        _prevViewport.set(_context.getViewport());
+        _context.setViewport(0, 0, to_I32(getWidth()), to_I32(getHeight()));
     }
 
     setDefaultState(drawPolicy);
@@ -437,7 +439,7 @@ void glFramebuffer::end() {
 
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     if (_previousPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
-        _context.restoreViewport();
+        _context.setViewport(_prevViewport);
     }
 
     resolve();

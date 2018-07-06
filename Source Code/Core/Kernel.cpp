@@ -52,7 +52,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
       _resCache(nullptr),
-      _viewportDirty(false),
+      _prevViewport(-1),
+      _prevPlayerCount(0),
       _renderPassManager(nullptr),
       _splashScreenUpdating(false),
       _platformContext(std::make_unique<PlatformContext>(parentApp, *this)),
@@ -506,10 +507,11 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     U32 playerCount = _sceneManager->getActivePlayerCount();
 
-    if (_viewportDirty) {
-        const Rect<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
+    const Rect<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
+    if (_prevViewport != mainViewport || _prevPlayerCount != to_U8(playerCount)) {
         computeViewports(mainViewport, _targetViewports, to_U8(playerCount));
-        _viewportDirty = false;
+        _prevViewport.set(mainViewport);
+        _prevPlayerCount = to_U8(playerCount);
     }
 
     for (U8 i = 0; i < playerCount; ++i) {

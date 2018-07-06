@@ -52,7 +52,6 @@ glPixelBuffer* GL_API::s_activePixelBuffer = nullptr;
 
 UColour GL_API::s_blendColour = UColour(0u);
 Rect<I32> GL_API::s_activeViewport = Rect<I32>(-1);
-Rect<I32> GL_API::s_previousViewport = Rect<I32>(-1);
 Rect<I32> GL_API::s_activeScissor = Rect<I32>(-1);
 FColour GL_API::s_activeClearColour = DefaultColours::DIVIDE_BLUE;
 GLfloat GL_API::s_depthFarVal = 1.0f;
@@ -147,7 +146,6 @@ void GL_API::clearStates() {
     s_activeRenderTarget = nullptr;
     s_activePixelBuffer = nullptr;
     s_activeViewport.set(-1);
-    s_previousViewport.set(-1);
     s_activeClearColour.set(DefaultColours::DIVIDE_BLUE);
 
     Attorney::GLAPIShaderProgram::unbind();
@@ -774,7 +772,7 @@ void GL_API::setBlending(GLuint drawBufferIdx,const BlendingProperties& blending
 /// Change the current viewport area. Redundancy check is performed in GFXDevice
 /// class
 bool GL_API::changeViewport(I32 x, I32 y, I32 width, I32 height) {
-    if (Rect<I32>(x, y, width, height) != GL_API::s_activeViewport) {
+    if (width > 0 && height > 0 && Rect<I32>(x, y, width, height) != GL_API::s_activeViewport) {
         // Debugging and profiling the application may require setting a 1x1
          // viewport to exclude fill rate bottlenecks
         if (Config::Profile::USE_1x1_VIEWPORT) {
@@ -782,20 +780,12 @@ bool GL_API::changeViewport(I32 x, I32 y, I32 width, I32 height) {
         } else {
             glViewport(x, y, width, height);
         }
-        GL_API::s_previousViewport.set(GL_API::s_activeViewport);
         GL_API::s_activeViewport.set(x, y, width, height);
         
         return true;
     }
 
     return false;
-}
-
-bool GL_API::restoreViewport() {
-    return changeViewport(GL_API::s_previousViewport.x,
-                          GL_API::s_previousViewport.y,
-                          GL_API::s_previousViewport.z,
-                          GL_API::s_previousViewport.w);
 }
 
 bool GL_API::setClearColour(const FColour& colour) {

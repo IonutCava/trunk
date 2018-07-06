@@ -63,6 +63,11 @@ GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
     return setViewport(Rect<I32>(x, y, width, height));
 }
 
+inline const Rect<I32>&
+GFXDevice::getViewport() const {
+    return _viewport;
+}
+
 };  // namespace Divide
 
 #endif

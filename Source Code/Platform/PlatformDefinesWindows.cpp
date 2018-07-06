@@ -31,6 +31,7 @@
 #pragma comment(lib, "AntTweakBar64.lib")
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "glbindingd.lib")
+#pragma comment(lib, "glbinding-auxd.lib")
 #pragma comment(lib, "OIS_static_d.lib")
 #pragma comment(lib, "assimp-vc140-mt_d.lib")
 #pragma comment(lib, "IL_d.lib")
@@ -61,6 +62,7 @@
 
 #else  //_DEBUG
 #pragma comment(lib, "glbinding.lib")
+#pragma comment(lib, "glbinding-aux.lib")
 #pragma comment(lib, "OIS_static.lib")
 #pragma comment(lib, "IL.lib")
 #pragma comment(lib, "libpng.lib")

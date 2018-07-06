@@ -132,7 +132,7 @@ GLuint OpenGL3Shader::compile(GLenum type, const std::string &source)
     if (shader == 0)
     {
         std::stringstream stringStream;
-        stringStream << "Critical Error - Could not create shader object of type:" << type << ".";
+        stringStream << "Critical Error - Could not create shader object of type:" << static_cast<unsigned int>(type) << ".";
         CEGUI_THROW(RendererException(stringStream.str().c_str()));
         return 0;
     }

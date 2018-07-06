@@ -115,7 +115,6 @@ ErrorCode GL_API::destroyGLContext() {
     return ErrorCode::NO_ERR;
 }
 
-
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& config) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
@@ -129,8 +128,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
     GLUtil::_glMainRenderWindow = &window;
-    glbinding::Binding::initialize();
-    if (glbinding::getCurrentContext() == 0) {
+
+    glbinding::Binding::initialize([](const char *proc) { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
+
+    if (SDL_GL_GetCurrentContext() == NULL) {
         return ErrorCode::GLBINGING_INIT_ERROR;
     }
 
@@ -474,13 +475,13 @@ void GL_API::closeRenderingAPI() {
 }
 
 void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
-    if (Runtime::isMainThread() || glbinding::getCurrentContext() != 0) {
+    if (Runtime::isMainThread() || SDL_GL_GetCurrentContext() != NULL) {
         return;
     }
 
     // Double check so that we don't run into a race condition!
     UpgradableReadLock r_lock(GLUtil::_glSecondaryContextMutex);
-    if (glbinding::getCurrentContext() == 0) {
+    if (SDL_GL_GetCurrentContext() == NULL) {
         UpgradeToWriteLock w_lock(r_lock);
         // This also makes the context current
         assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
@@ -488,7 +489,7 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
         assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
         ACKNOWLEDGE_UNUSED(ctxFound);
         SDL_GL_MakeCurrent(GLUtil::_glMainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
-        glbinding::Binding::initialize(false);
+        glbinding::Binding::initialize([](const char *proc) { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
         // Enable OpenGL debug callbacks for this context as well
         if (Config::ENABLE_GPU_VALIDATION) {
             glEnable(GL_DEBUG_OUTPUT);

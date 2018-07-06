@@ -270,7 +270,6 @@ public:
         return changeViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
     }
 
-    static bool restoreViewport();
     static GLuint getBoundTextureHandle(GLuint slot);
 
     static void getActiveViewport(GLint* vp);
@@ -362,7 +361,6 @@ private:
 
     static UColour   s_blendColour;
     static Rect<I32> s_activeViewport;
-    static Rect<I32> s_previousViewport;
     static Rect<I32> s_activeScissor;
     static FColour   s_activeClearColour;
 

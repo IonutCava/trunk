@@ -243,9 +243,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
         return *_renderPassManager;
     }
 
-    inline void setViewportDirty() {
-        _viewportDirty = true;
-    }
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
@@ -260,7 +257,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
 
    private:
 
-    bool _viewportDirty;
+    U8 _prevPlayerCount;
+    Rect<I32> _prevViewport;
     vector<Rect<I32>> _targetViewports;
 
     TaskHandle _splashTask;

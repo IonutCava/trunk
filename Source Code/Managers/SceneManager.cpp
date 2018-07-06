@@ -371,7 +371,6 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
 
         if (found) {
             _platformContext->gfx().resizeHistory(to_U8(getActivePlayerCount()));
-            parent().setViewportDirty();
             Attorney::SceneManager::onPlayerRemove(parentScene, player);
         }
         player.reset();

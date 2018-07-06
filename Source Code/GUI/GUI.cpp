@@ -113,11 +113,13 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
         Attorney::GFXDeviceGUI::drawText(context, textBatch, bufferInOut);
     }
 
-    ReadLock r_lock(_guiStackLock);
-    // scene specific
-    GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-    if (it != std::cend(_guiStack)) {
-        it->second->draw(context, bufferInOut);
+    {
+        ReadLock r_lock(_guiStackLock);
+        // scene specific
+        GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+        if (it != std::cend(_guiStack)) {
+            it->second->draw(context, bufferInOut);
+        }
     }
 
     if (parent().platformContext().config().gui.cegui.enabled) {
@@ -346,12 +348,14 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
         return true;
     }
 
-    // scene specific
-    ReadLock r_lock(_guiStackLock);
-    GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-    if (it != std::cend(_guiStack)) {
-        if (it->second->mouseMoved(event)) {
-            return true;
+    {
+        // scene specific
+        ReadLock r_lock(_guiStackLock);
+        GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+        if (it != std::cend(_guiStack)) {
+            if (it->second->mouseMoved(event)) {
+                return true;
+            }
         }
     }
 
