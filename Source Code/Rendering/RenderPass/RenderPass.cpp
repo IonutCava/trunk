@@ -9,20 +9,18 @@
 
 namespace Divide {
 
-RenderPass::RenderPass(const stringImpl& name) : _name(name)
-{
+RenderPass::RenderPass(const stringImpl& name) : _name(name) {
     _lastTotalBinSize = 0;
 }
 
-RenderPass::~RenderPass()
-{
-}
+RenderPass::~RenderPass() {}
 
-void RenderPass::render(const SceneRenderState& renderState, const SceneGraph& activeSceneGraph) {
+void RenderPass::render(const SceneRenderState& renderState,
+                        const SceneGraph& activeSceneGraph) {
     const RenderStage& currentStage = GFX_DEVICE.getRenderStage();
-          RenderQueue& renderQueue = RenderQueue::getInstance();
-    bool  isDisplayStage = GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE);
-    //Sort the render queue by the specified key
+    RenderQueue& renderQueue = RenderQueue::getInstance();
+    bool isDisplayStage = GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE);
+    // Sort the render queue by the specified key
     renderQueue.sort(currentStage);
 
     if (isDisplayStage) {
@@ -31,19 +29,20 @@ void RenderPass::render(const SceneRenderState& renderState, const SceneGraph& a
 
     U16 renderBinCount = renderQueue.getRenderQueueBinSize();
 
-    //Draw the entire queue;
-    //Limited to 65536 (2^16) items per queue pass!
+    // Draw the entire queue;
+    // Limited to 65536 (2^16) items per queue pass!
     if (!(bitCompare(renderState.objectState(), SceneRenderState::NO_DRAW))) {
-        if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE) && renderBinCount > 0) {
+        if (GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE) &&
+            renderBinCount > 0) {
             LightManager::getInstance().bindDepthMaps();
         }
 
-        for(U16 i = 0; i < renderBinCount; ++i) {
+        for (U16 i = 0; i < renderBinCount; ++i) {
             renderQueue.getBinSorted(i)->render(renderState, currentStage);
         }
     }
 
-    //Unbind all shaders after every render pass
+    // Unbind all shaders after every render pass
     ShaderManager::getInstance().unbind();
 
     if (isDisplayStage) {
@@ -54,5 +53,4 @@ void RenderPass::render(const SceneRenderState& renderState, const SceneGraph& a
 
     renderQueue.refresh();
 }
-
 };

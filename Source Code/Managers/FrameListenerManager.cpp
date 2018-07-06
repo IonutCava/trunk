@@ -8,12 +8,14 @@
 
 namespace Divide {
 
-///Register a new Frame Listener to be processed every frame
-void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 callOrder) {
-    //Check if the listener has a name or we should assign an id
+/// Register a new Frame Listener to be processed every frame
+void FrameListenerManager::registerFrameListener(FrameListener* listener,
+                                                 U32 callOrder) {
+    // Check if the listener has a name or we should assign an id
     if (listener->getName().empty()) {
-        listener->setName("generic_f_listener_" + Util::toString(_listeners.size()));
-    }  
+        listener->setName("generic_f_listener_" +
+                          Util::toString(_listeners.size()));
+    }
 
     listener->setCallOrder(callOrder);
 
@@ -22,32 +24,41 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 ca
     std::sort(std::begin(_listeners), std::end(_listeners));
 }
 
-///Remove an existent Frame Listener from our collection
+/// Remove an existent Frame Listener from our collection
 void FrameListenerManager::removeFrameListener(FrameListener* listener) {
     stringImpl name = listener->getName();
-    vectorImpl<FrameListener* >::iterator it;
-    it = std::find_if(std::begin(_listeners), std::end(_listeners), [&name]( FrameListener const* fl )->bool {
-                                                                        return fl->getName().compare(name) == 0; 
-                                                                    });
+    vectorImpl<FrameListener*>::iterator it;
+    it = std::find_if(std::begin(_listeners), std::end(_listeners),
+                      [&name](FrameListener const* fl)
+                          -> bool { return fl->getName().compare(name) == 0; });
     if (it != std::end(_listeners)) {
         _listeners.erase(it);
     } else {
-        Console::errorfn(Locale::get("ERROR_FRAME_LISTENER_REMOVE"), listener->getName().c_str());
+        Console::errorfn(Locale::get("ERROR_FRAME_LISTENER_REMOVE"),
+                         listener->getName().c_str());
     }
 }
 
-///For each listener, notify of current event and check results
-///If any Listener returns false, the whole manager returns false for this specific step
-///If the manager returns false at any step, the application exists
+/// For each listener, notify of current event and check results
+/// If any Listener returns false, the whole manager returns false for this
+/// specific step
+/// If the manager returns false at any step, the application exists
 bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
     switch (evt._type) {
-        case FRAME_EVENT_STARTED    : return frameStarted(evt); 
-        case FRAME_PRERENDER_START  : return framePreRenderStarted(evt); 
-        case FRAME_PRERENDER_END    : return framePreRenderEnded(evt); 
-        case FRAME_POSTRENDER_START : return framePostRenderStarted(evt); 
-        case FRAME_POSTRENDER_END   : return framePostRenderEnded(evt); 
-        case FRAME_EVENT_PROCESS    : return frameRenderingQueued(evt); 
-        case FRAME_EVENT_ENDED      : return frameEnded(evt); 
+        case FRAME_EVENT_STARTED:
+            return frameStarted(evt);
+        case FRAME_PRERENDER_START:
+            return framePreRenderStarted(evt);
+        case FRAME_PRERENDER_END:
+            return framePreRenderEnded(evt);
+        case FRAME_POSTRENDER_START:
+            return framePostRenderStarted(evt);
+        case FRAME_POSTRENDER_END:
+            return framePostRenderEnded(evt);
+        case FRAME_EVENT_PROCESS:
+            return frameRenderingQueued(evt);
+        case FRAME_EVENT_ENDED:
+            return frameEnded(evt);
     };
 
     return false;
@@ -116,29 +127,29 @@ bool FrameListenerManager::frameEnded(const FrameEvent& evt) {
     return true;
 }
 
-///When the application is idle, we should really clear up old events
-void FrameListenerManager::idle() {
+/// When the application is idle, we should really clear up old events
+void FrameListenerManager::idle() {}
 
-}
-
-///Please see the Ogre3D documentation about this
-void FrameListenerManager::createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt) {
+/// Please see the Ogre3D documentation about this
+void FrameListenerManager::createEvent(const U64 currentTime,
+                                       FrameEventType type, FrameEvent& evt) {
     evt._currentTime = Time::MicrosecondsToMilliseconds<D32>(currentTime);
-    evt._timeSinceLastEvent = calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
+    evt._timeSinceLastEvent =
+        calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
     evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
     evt._type = type;
 }
 
-D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventType type) {
-
+D32 FrameListenerManager::calculateEventTime(const D32 currentTime,
+                                             FrameEventType type) {
     EventTimeMap& times = _eventTimers[type];
     times.push_back(currentTime);
 
-    if(times.size() == 1) {
+    if (times.size() == 1) {
         return 0.0;
     }
 
-    EventTimeMap::iterator it  = std::begin(times);
+    EventTimeMap::iterator it = std::begin(times);
     EventTimeMap::iterator end = std::end(times) - 2;
 
     while (it != end) {
@@ -150,7 +161,7 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventTy
     }
 
     times.erase(std::begin(times), it);
-    return (times.back() - times.front()) / Time::SecondsToMilliseconds(times.size() - 1);
+    return (times.back() - times.front()) /
+           Time::SecondsToMilliseconds(times.size() - 1);
 }
-
 };

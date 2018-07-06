@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -30,7 +39,7 @@ namespace Divide {
 class Sphere3D;
 
 class PingPongScene : public Scene {
-public:
+   public:
     PingPongScene() : Scene() {
         _sideDrift = 0;
         _directionTowardsAdversary = true;
@@ -55,25 +64,25 @@ public:
     void processGUI(const U64 deltaTime);
 
     bool onKeyUp(const Input::KeyEvent& key);
-    bool joystickAxisMoved(const Input::JoystickEvent& key,I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& key, I8 axis);
     bool joystickButtonReleased(const Input::JoystickEvent& key, I8 button);
 
-private:
+   private:
     void test(cdiggins::any a, CallbackParam b);
     void serveBall();
     void resetGame();
 
-private:
+   private:
     I8 _score;
     vectorImpl<stringImpl> _quotes;
     vec3<F32> _sunvector;
     Sphere3D* _ball;
     SceneGraphNode* _ballSGN;
-    Camera*         _freeFlyCam;
-    Camera*         _paddleCam;
+    Camera* _freeFlyCam;
+    Camera* _paddleCam;
     DirectionalLight* _sun;
 
-private: //Game stuff:
+   private:  // Game stuff:
     bool _directionTowardsAdversary;
     bool _upwardsDirection;
     bool _touchedOwnTableHalf;
@@ -84,6 +93,6 @@ private: //Game stuff:
     F32 _sideDrift;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 
 #endif

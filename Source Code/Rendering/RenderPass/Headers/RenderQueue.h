@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -30,47 +39,54 @@ namespace Divide {
 class Material;
 class SceneNode;
 
-///This class manages all of the RenderBins and renders them in the correct order
-DEFINE_SINGLETON( RenderQueue )
-    typedef hashMapImpl<RenderBin::RenderBinType, RenderBin*, hashAlg::hash<I32> > RenderBinMap;
-    typedef hashMapImpl<U16, RenderBin::RenderBinType > RenderBinIDType;
+/// This class manages all of the RenderBins and renders them in the correct
+/// order
+DEFINE_SINGLETON(RenderQueue)
+    typedef hashMapImpl<RenderBin::RenderBinType, RenderBin*, hashAlg::hash<I32> >
+        RenderBinMap;
+    typedef hashMapImpl<U16, RenderBin::RenderBinType> RenderBinIDType;
 
-public:
+  public:
     ///
     void sort(const RenderStage& currentRenderStage);
     void refresh(bool force = false);
     void addNodeToQueue(SceneGraphNode* const sgn, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize() const;
     SceneGraphNode* getItem(U16 renderBin, U16 index);
-    RenderBin*      getBin(RenderBin::RenderBinType rbType);
+    RenderBin* getBin(RenderBin::RenderBinType rbType);
 
-    inline U16        getRenderQueueBinSize()     { return (U16)_sortedRenderBins.size(); }
-    inline RenderBin* getBinSorted(U16 renderBin) { return _sortedRenderBins[renderBin]; }
-    inline RenderBin* getBin(U16 renderBin)       { return getBin(_renderBinId[renderBin]); }
-    inline bool       isSorted()                  { return _isSorted;}
+    inline U16 getRenderQueueBinSize() { return (U16)_sortedRenderBins.size(); }
+    inline RenderBin* getBinSorted(U16 renderBin) {
+        return _sortedRenderBins[renderBin];
+    }
+    inline RenderBin* getBin(U16 renderBin) {
+        return getBin(_renderBinId[renderBin]);
+    }
+    inline bool isSorted() { return _isSorted; }
 
-protected:
+  protected:
     friend class RenderPassManager;
-    ///See lock/unlock functions in RenderPassManager for more details
+    /// See lock/unlock functions in RenderPassManager for more details
     void lock();
     void unlock(bool resetNodes = false);
 
-private:
+  private:
     RenderQueue();
     ~RenderQueue();
 
-    RenderBin* getBinForNode(SceneNode* const nodeType, Material* const matInstance);
+    RenderBin* getBinForNode(SceneNode* const nodeType,
+                             Material* const matInstance);
     RenderBin* getOrCreateBin(const RenderBin::RenderBinType& rbType);
 
-private:
+  private:
     RenderBinMap _renderBins;
     RenderBinIDType _renderBinId;
-    vectorImpl<RenderBin* > _sortedRenderBins;
+    vectorImpl<RenderBin*> _sortedRenderBins;
     bool _renderQueueLocked;
     bool _isSorted;
 
 END_SINGLETON
 
-}; //namespace Divide
+};  // namespace Divide
 
 #endif

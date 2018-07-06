@@ -4,29 +4,29 @@
 #include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
-    
-Camera::Camera(const CameraType& type, const vec3<F32>& eye) : Resource("temp_camera"),
-                                                              _isActive(false),
-                                                              _isOrthoCamera(false),
-                                                              _projectionDirty(true),
-                                                              _viewMatrixDirty(true),
-                                                              _viewMatrixLocked(false),
-                                                              _rotationLocked(false),
-                                                              _movementLocked(false),
-                                                              _frustumLocked(false),
-                                                              _frustumDirty(true),
-                                                              _mouseSensitivity(1.0f),
-                                                              _zoomSpeedFactor(35.0f),
-                                                              _moveSpeedFactor(35.0f),
-                                                              _turnSpeedFactor(35.0f),
-                                                              _cameraMoveSpeed(35.0f),
-                                                              _cameraZoomSpeed(35.0f),
-                                                              _cameraTurnSpeed(35.0f),
-                                                              _aspectRatio(1.33f),
-                                                              _verticalFoV(60.0f),
-                                                              _camIOD(0.5f),
-                                                              _type(type)
-{
+
+Camera::Camera(const CameraType& type, const vec3<F32>& eye)
+    : Resource("temp_camera"),
+      _isActive(false),
+      _isOrthoCamera(false),
+      _projectionDirty(true),
+      _viewMatrixDirty(true),
+      _viewMatrixLocked(false),
+      _rotationLocked(false),
+      _movementLocked(false),
+      _frustumLocked(false),
+      _frustumDirty(true),
+      _mouseSensitivity(1.0f),
+      _zoomSpeedFactor(35.0f),
+      _moveSpeedFactor(35.0f),
+      _turnSpeedFactor(35.0f),
+      _cameraMoveSpeed(35.0f),
+      _cameraZoomSpeed(35.0f),
+      _cameraTurnSpeed(35.0f),
+      _aspectRatio(1.33f),
+      _verticalFoV(60.0f),
+      _camIOD(0.5f),
+      _type(type) {
     _eye.set(eye);
     _reflectedEye.set(eye * vec3<F32>(1.0f, -1.0f, 1.0f));
     _xAxis.set(WORLD_X_AXIS);
@@ -44,16 +44,14 @@ Camera::Camera(const CameraType& type, const vec3<F32>& eye) : Resource("temp_ca
     _frustum = MemoryManager_NEW Frustum(*this);
 }
 
-Camera::~Camera()
-{
-    MemoryManager::DELETE( _frustum );
-}
+Camera::~Camera() { MemoryManager::DELETE(_frustum); }
 
 void Camera::fromCamera(const Camera& camera) {
     if (camera._isOrthoCamera) {
         setProjection(camera._orthoRect, camera.getZPlanes());
     } else {
-        setProjection(camera.getAspectRatio(), camera.getVerticalFoV(), camera.getZPlanes());
+        setProjection(camera.getAspectRatio(), camera.getVerticalFoV(),
+                      camera.getZPlanes());
     }
 
     setMoveSpeedFactor(camera.getMoveSpeedFactor());
@@ -83,13 +81,16 @@ void Camera::updateProjection(bool force) {
 
     if (_projectionDirty || force) {
         if (_projectionDirty) {
-            _projectionMatrix.set(_isOrthoCamera ? GFX_DEVICE.setProjection(_orthoRect, _zPlanes) : 
-                                                   GFX_DEVICE.setProjection(_verticalFoV, _aspectRatio, _zPlanes));
+            _projectionMatrix.set(
+                _isOrthoCamera ? GFX_DEVICE.setProjection(_orthoRect, _zPlanes)
+                               : GFX_DEVICE.setProjection(
+                                     _verticalFoV, _aspectRatio, _zPlanes));
             _projectionDirty = false;
             _frustumDirty = true;
-        }else{
-            _isOrthoCamera ? GFX_DEVICE.setProjection(_orthoRect, _zPlanes) : 
-                             GFX_DEVICE.setProjection(_verticalFoV, _aspectRatio, _zPlanes);
+        } else {
+            _isOrthoCamera ? GFX_DEVICE.setProjection(_orthoRect, _zPlanes)
+                           : GFX_DEVICE.setProjection(_verticalFoV,
+                                                      _aspectRatio, _zPlanes);
         }
     }
 }
@@ -99,9 +100,7 @@ void Camera::onActivate() {
     updateProjection(true);
 }
 
-void Camera::onDeactivate() {
-    _isActive = false;
-}
+void Camera::onDeactivate() { _isActive = false; }
 
 void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
     if (_rotationLocked) {
@@ -127,14 +126,14 @@ void Camera::rotate(const Quaternion<F32>& q) {
     if (_type == FIRST_PERSON) {
         vec3<F32> euler;
         q.getEuler(&euler);
-        rotate(euler.yaw, euler.pitch,euler.roll);
+        rotate(euler.yaw, euler.pitch, euler.roll);
     } else {
         _tempOrientation.set(q);
         _tempOrientation.normalize();
         _orientation = _tempOrientation * _orientation;
     }
 
-     _viewMatrixDirty = true;
+    _viewMatrixDirty = true;
 }
 
 void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
@@ -142,9 +141,9 @@ void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
         return;
     }
 
-    yaw   =   -yaw * _cameraTurnSpeed;
+    yaw = -yaw * _cameraTurnSpeed;
     pitch = -pitch * _cameraTurnSpeed;
-    roll  =  -roll * _cameraTurnSpeed;
+    roll = -roll * _cameraTurnSpeed;
 
     if (_type == FIRST_PERSON) {
         _accumPitchDegrees += pitch;
@@ -177,7 +176,7 @@ void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
         _orientation *= _tempOrientation;
     }
 
-     _viewMatrixDirty = true;
+    _viewMatrixDirty = true;
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
@@ -203,8 +202,7 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     _viewMatrixDirty = true;
 }
 
-const mat4<F32>& Camera::lookAt(const vec3<F32>& eye, 
-                                const vec3<F32>& target, 
+const mat4<F32>& Camera::lookAt(const vec3<F32>& eye, const vec3<F32>& target,
                                 const vec3<F32>& up) {
     _eye = eye;
 
@@ -246,7 +244,8 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
 void Camera::setAnaglyph(bool rightEye) {
     assert(_isActive);
 
-    GFX_DEVICE.setAnaglyphFrustum(_camIOD, _zPlanes, _aspectRatio, _verticalFoV, rightEye);
+    GFX_DEVICE.setAnaglyphFrustum(_camIOD, _zPlanes, _aspectRatio, _verticalFoV,
+                                  rightEye);
     rightEye ? _eye.x += _camIOD / 2 : _eye.x -= _camIOD / 2;
 
     _viewMatrixDirty = true;
@@ -254,7 +253,7 @@ void Camera::setAnaglyph(bool rightEye) {
 
 /// Tell the rendering API to set up our desired PoV
 void Camera::renderLookAt() {
-    if (_reflectionRendering){
+    if (_reflectionRendering) {
         _reflectionRendering = false;
         _frustumDirty = true;
     }
@@ -265,7 +264,7 @@ void Camera::renderLookAt() {
 void Camera::renderLookAtReflected(const Plane<F32>& reflectionPlane) {
     _reflectionRendering = true;
     _reflectedViewMatrix.reflect(reflectionPlane);
-    _reflectedEye        = _reflectedViewMatrix * _eye;
+    _reflectedEye = _reflectedViewMatrix * _eye;
     _frustumDirty = true;
 
     lookAtInternal();
@@ -276,20 +275,19 @@ void Camera::lookAtInternal() {
 
     updateMatrices();
 
-    //Tell the Rendering API to draw from our desired PoV
-    GFX_DEVICE.lookAt(_reflectionRendering ? (_reflectedViewMatrix * _viewMatrix) : _viewMatrix,
+    // Tell the Rendering API to draw from our desired PoV
+    GFX_DEVICE.lookAt(_reflectionRendering
+                          ? (_reflectedViewMatrix * _viewMatrix)
+                          : _viewMatrix,
                       _reflectionRendering ? _reflectedEye : _eye);
 
     updateFrustum();
-    //Inform all listeners of a new event
+    // Inform all listeners of a new event
     updateListeners();
-
 }
 
-void Camera::setProjection(F32 aspectRatio,
-                           F32 verticalFoV, 
-                           const vec2<F32>& zPlanes, 
-                           bool updateOnSet) {
+void Camera::setProjection(F32 aspectRatio, F32 verticalFoV,
+                           const vec2<F32>& zPlanes, bool updateOnSet) {
     _zPlanes = zPlanes;
     _aspectRatio = aspectRatio;
     _verticalFoV = verticalFoV;
@@ -302,8 +300,7 @@ void Camera::setProjection(F32 aspectRatio,
     }
 }
 
-void Camera::setProjection(const vec4<F32>& rect, 
-                           const vec2<F32>& zPlanes, 
+void Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes,
                            bool updateOnSet) {
     _zPlanes = zPlanes;
     _orthoRect = rect;
@@ -335,7 +332,7 @@ bool Camera::updateViewMatrix() {
     _viewMatrix.m[3][0] = -_xAxis.dot(_eye);
     _viewMatrix.m[3][1] = -_yAxis.dot(_eye);
     _viewMatrix.m[3][2] = -_zAxis.dot(_eye);
-    _orientation.getEuler(&_euler,true);
+    _orientation.getEuler(&_euler, true);
 
     _viewMatrixDirty = false;
     _frustumDirty = true;
@@ -373,8 +370,9 @@ vec3<F32> Camera::unProject(const vec3<F32>& winCoords) const {
     return unProject(winCoords, GFX_DEVICE.getCurrentViewport());
 }
 
-vec3<F32> Camera::unProject(const vec3<F32>& winCoords, const vec4<I32>& viewport) const {
-    mat4<F32> cameraVP =  _frustum->_viewProjectionMatrixCache.getInverse();
+vec3<F32> Camera::unProject(const vec3<F32>& winCoords,
+                            const vec4<I32>& viewport) const {
+    mat4<F32> cameraVP = _frustum->_viewProjectionMatrixCache.getInverse();
 
     vec4<F32> temp(winCoords, 1.0f);
     temp.x = (temp.x - F32(viewport[0])) / F32(viewport[2]);
@@ -385,5 +383,4 @@ vec3<F32> Camera::unProject(const vec3<F32>& winCoords, const vec4<I32>& viewpor
 
     return temp.xyz();
 }
-
 };

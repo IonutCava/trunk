@@ -2,12 +2,7 @@
 
 namespace Divide {
 
-Ammunition::Ammunition(AmmunitionType type) : _type(type)
-{
-}
+Ammunition::Ammunition(AmmunitionType type) : _type(type) {}
 
-Ammunition::~Ammunition()
-{
-}
-
+Ammunition::~Ammunition() {}
 };

@@ -4,18 +4,27 @@ Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-and associated documentation files (the "Software"), to deal in the Software without restriction,
-including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software
+and associated documentation files (the "Software"), to deal in the Software
+without restriction,
+including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the Software
+is furnished to do so,
 subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
@@ -32,9 +41,7 @@ class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsComponent : public SGNComponent {
-public:
-   
-
+   public:
     PhysicsComponent(SceneGraphNode* const parentSGN);
     ~PhysicsComponent();
 
@@ -44,26 +51,25 @@ public:
         NODE_COLLIDE
     };
 
-    inline const PhysicsGroup& physicsGroup() const { 
-        return _physicsCollisionGroup; 
+    inline const PhysicsGroup& physicsGroup() const {
+        return _physicsCollisionGroup;
     }
 
     inline void physicsGroup(const PhysicsGroup& newGroup) {
-        _physicsCollisionGroup = newGroup; 
+        _physicsCollisionGroup = newGroup;
     }
 
     void physicsAsset(PhysicsAsset* const asset);
 
-    inline PhysicsAsset* const physicsAsset() {
-        return _physicsAsset;
-    }
+    inline PhysicsAsset* const physicsAsset() { return _physicsAsset; }
 
     void cookCollisionMesh(const stringImpl& sceneName);
 
     void reset();
 
-    const mat4<F32>& getWorldMatrix( D32 interpolationFactor, const bool local = false);
-    inline  const mat4<F32>& getWorldMatrix(const bool local = false) {
+    const mat4<F32>& getWorldMatrix(D32 interpolationFactor,
+                                    const bool local = false);
+    inline const mat4<F32>& getWorldMatrix(const bool local = false) {
         return getWorldMatrix(1.0, local);
     }
 
@@ -100,35 +106,33 @@ public:
     void setPositionX(const F32 positionX);
     void setPositionY(const F32 positionY);
     void setPositionZ(const F32 positionZ);
-        
+
     inline bool isUniformScaled() const {
         return _transform != nullptr ? _transform->isUniformScaled() : true;
     }
     /// Return the scale factor
-    const vec3<F32>& getScale( const bool local = false );
+    const vec3<F32>& getScale(const bool local = false);
     /// Return the position
-    const vec3<F32>& getPosition( const bool local = false );
+    const vec3<F32>& getPosition(const bool local = false);
     /// Return the orientation quaternion
-    const Quaternion<F32>& getOrientation( const bool local = false );
-    
-protected:
+    const Quaternion<F32>& getOrientation(const bool local = false);
+
+   protected:
     friend class SceneGraphNode;
     void useDefaultTransform(const bool state);
 
-    inline bool transformUpdated() const {
-        return _transformUpdated;
-    }
+    inline bool transformUpdated() const { return _transformUpdated; }
     inline void transformUpdated(const bool state) {
         _transformUpdated = state;
     }
 
-private:
+   private:
     void setTransformDirty();
 
-protected:
-    PhysicsAsset*   _physicsAsset;
-    PhysicsGroup    _physicsCollisionGroup;
-    Transform*      _transform;
+   protected:
+    PhysicsAsset* _physicsAsset;
+    PhysicsGroup _physicsCollisionGroup;
+    Transform* _transform;
     TransformValues _prevTransformValues;
 
     bool _transformUpdated;
@@ -139,5 +143,5 @@ protected:
     Quaternion<F32> _orientationCache;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

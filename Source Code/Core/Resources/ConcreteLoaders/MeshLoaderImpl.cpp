@@ -5,21 +5,21 @@
 
 namespace Divide {
 
-Mesh* ImplResourceLoader<Mesh>::operator()(){
-    Mesh* ptr = DVDConverter::getInstance().load(_descriptor.getResourceLocation());
+Mesh* ImplResourceLoader<Mesh>::operator()() {
+    Mesh* ptr =
+        DVDConverter::getInstance().load(_descriptor.getResourceLocation());
 
-    if ( !load( ptr, _descriptor.getName() ) || !ptr ) {
-        MemoryManager::DELETE( ptr );
+    if (!load(ptr, _descriptor.getName()) || !ptr) {
+        MemoryManager::DELETE(ptr);
     } else {
-        if ( _descriptor.getFlag() ) {
-            ptr->renderState().useDefaultMaterial( false );
+        if (_descriptor.getFlag()) {
+            ptr->renderState().useDefaultMaterial(false);
         }
-        ptr->setResourceLocation( _descriptor.getResourceLocation() );
+        ptr->setResourceLocation(_descriptor.getResourceLocation());
     }
 
     return ptr;
 }
 
 DEFAULT_LOADER_IMPL(Mesh)
-
 };

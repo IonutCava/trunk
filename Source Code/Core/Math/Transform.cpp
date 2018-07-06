@@ -1,25 +1,24 @@
 #include "Headers/Transform.h"
 
 namespace Divide {
-Transform::Transform() : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
+Transform::Transform()
+    : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
 {
 }
 
 Transform::Transform(const Quaternion<F32>& orientation,
-                     const vec3<F32>& translation,
-                     const vec3<F32>& scale) :  GUIDWrapper()
+                     const vec3<F32>& translation, const vec3<F32>& scale)
+    : GUIDWrapper() 
 {
     _dirty = true;
-    _rebuildMatrix = true; 
+    _rebuildMatrix = true;
     _transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
     _worldMatrix.identity();
 }
 
-Transform::~Transform()
-{
-}
+Transform::~Transform() {}
 
 const mat4<F32>& Transform::getMatrix() {
     if (_dirty) {
@@ -31,7 +30,8 @@ const mat4<F32>& Transform::getMatrix() {
                 //    1. Scale
                 _worldMatrix.setScale(_transformValues._scale);
                 //    2. Rotate
-                _worldMatrix *= Divide::getMatrix(_transformValues._orientation);
+                _worldMatrix *=
+                    Divide::getMatrix(_transformValues._orientation);
             }
             _rebuildMatrix = false;
         }
@@ -55,4 +55,4 @@ void Transform::identity() {
     _rebuildMatrix = _dirty = false;
 }
 
-}; //namespace Divide
+};  // namespace Divide

@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -27,42 +36,42 @@
 #include "Core/Math/Headers/Quaternion.h"
 
 namespace Divide {
-    namespace Navigation {
+namespace Navigation {
 
-    /// A point in space that AI units can navigate to
-    class Waypoint {
-    public:
-        Waypoint();
-        ~Waypoint();
+/// A point in space that AI units can navigate to
+class Waypoint {
+   public:
+    Waypoint();
+    ~Waypoint();
 
-        inline U32 getID() const {return _id;}
-    public:
+    inline U32 getID() const { return _id; }
 
-        vec3<F32>  _position;
-        Quaternion<F32> _orientation;
-        U32        _time;
+   public:
+    vec3<F32> _position;
+    Quaternion<F32> _orientation;
+    U32 _time;
 
-    private:
-        U32 _id;
-    };
+   private:
+    U32 _id;
+};
 
-    /// A straight line between 2 waypoints
-    ///
-    class WaypointPath {
-    public:
-        WaypointPath(Waypoint* first, Waypoint* second);
-        ~WaypointPath();
+/// A straight line between 2 waypoints
+///
+class WaypointPath {
+   public:
+    WaypointPath(Waypoint* first, Waypoint* second);
+    ~WaypointPath();
 
-    private:
-        Waypoint* _first;
-        Waypoint* _second;
-        /// If the path intersects an object in the scene, is the path still valid?
-        bool _throughObjects;
-        /// ray used for collision detection
-        Ray _collisionRay;
-    };
+   private:
+    Waypoint* _first;
+    Waypoint* _second;
+    /// If the path intersects an object in the scene, is the path still valid?
+    bool _throughObjects;
+    /// ray used for collision detection
+    Ray _collisionRay;
+};
 
-    }; //namespace Navigation
-}; //namespace Divide
+};  // namespace Navigation
+};  // namespace Divide
 
 #endif

@@ -8,7 +8,7 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "PathFinding/Waypoints/Headers/WaypointGraph.h"  ///< For waypoint movement
-#include "PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh movement
+#include "PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh movement
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "Managers/Headers/AIManager.h"
 
@@ -17,25 +17,24 @@ using namespace AI;
 
 static const D32 DESTINATION_RADIUS = 3 * 3;
 
-AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)  : GUIDWrapper(),
-                                                                                _name(name),
-                                                                                _AISceneImpl(nullptr),
-                                                                                _unitRef(nullptr),
-                                                                                _teamPtr(nullptr),
-                                                                                _detourCrowd(nullptr),
-                                                                                _agent(nullptr),
-                                                                                _agentID(-1),
-                                                                                _distanceToTarget(-1.f),
-                                                                                _previousDistanceToTarget(-1.f),
-                                                                                _moveWaitTimer(0ULL),
-                                                                                _stopped(false)
-{
+AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)
+    : GUIDWrapper(),
+      _name(name),
+      _AISceneImpl(nullptr),
+      _unitRef(nullptr),
+      _teamPtr(nullptr),
+      _detourCrowd(nullptr),
+      _agent(nullptr),
+      _agentID(-1),
+      _distanceToTarget(-1.f),
+      _previousDistanceToTarget(-1.f),
+      _moveWaitTimer(0ULL),
+      _stopped(false) {
     _currentPosition.set(currentPosition);
     _agentRadiusCategory = AGENT_RADIUS_SMALL;
 }
 
-AIEntity::~AIEntity()
-{
+AIEntity::~AIEntity() {
     if (_detourCrowd) {
         _detourCrowd->removeAgent(getAgentID());
     }
@@ -43,7 +42,7 @@ AIEntity::~AIEntity()
     _agentID = -1;
     _agent = nullptr;
 
-    MemoryManager::DELETE( _AISceneImpl );
+    MemoryManager::DELETE(_AISceneImpl);
     MemoryManager::DELETE_HASHMAP(_sensorList);
 }
 
@@ -51,10 +50,10 @@ void AIEntity::load(const vec3<F32>& position) {
     setPosition(position);
 
     if (!isAgentLoaded() && _detourCrowd) {
-        _agentID = _detourCrowd->addAgent(position, 
-                                          _unitRef ? _unitRef->getMovementSpeed() : 
-                                                     (_detourCrowd->getAgentHeight() / 2) * 3.5f,
-                                          10.0f);
+        _agentID = _detourCrowd->addAgent(
+            position, _unitRef ? _unitRef->getMovementSpeed()
+                               : (_detourCrowd->getAgentHeight() / 2) * 3.5f,
+            10.0f);
         _agent = _detourCrowd->getAgent(_agentID);
         _destination = position;
     }
@@ -71,18 +70,21 @@ void AIEntity::unload() {
     _agent = nullptr;
 }
 
-void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg, const cdiggins::any& msg_content) {
+void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg,
+                           const cdiggins::any& msg_content) {
     assert(receiver != nullptr);
     if (getGUID() != receiver->getGUID()) {
         receiver->receiveMessage(this, msg, msg_content);
     }
 }
 
-void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) {
+void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg,
+                              const cdiggins::any& msg_content) {
     this->processMessage(sender, msg, msg_content);
 }
 
-void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) {
+void AIEntity::processMessage(AIEntity* sender, AIMsg msg,
+                              const cdiggins::any& msg_content) {
     assert(_AISceneImpl);
 
     ReadLock r_lock(_updateMutex);
@@ -112,7 +114,7 @@ bool AIEntity::addSensor(SensorType type) {
     if (sensor) {
         SensorMap::iterator it = _sensorList.find(type);
         if (it != std::end(_sensorList)) {
-            MemoryManager::SAFE_UPDATE( it->second, sensor );
+            MemoryManager::SAFE_UPDATE(it->second, sensor);
         } else {
             hashAlg::emplace(_sensorList, type, sensor);
         }
@@ -126,7 +128,7 @@ bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl) {
     assert(AISceneImpl);
 
     WriteLock w_lock(_updateMutex);
-    MemoryManager::SAFE_UPDATE( _AISceneImpl, AISceneImpl );
+    MemoryManager::SAFE_UPDATE(_AISceneImpl, AISceneImpl);
     _AISceneImpl->addEntityRef(this);
     return true;
 }
@@ -138,14 +140,14 @@ void AIEntity::processInput(const U64 deltaTime) {
     }
 }
 
-void AIEntity::processData(const U64 deltaTime){
+void AIEntity::processData(const U64 deltaTime) {
     ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
         _AISceneImpl->processData(deltaTime);
     }
 }
 
-void AIEntity::update(const U64 deltaTime){
+void AIEntity::update(const U64 deltaTime) {
     ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
         _AISceneImpl->update(deltaTime, _unitRef);
@@ -160,16 +162,17 @@ void AIEntity::update(const U64 deltaTime){
 }
 
 void AIEntity::init() {
-    DIVIDE_ASSERT(_AISceneImpl != nullptr, 
-                  "AIEntity error: Can't init entity without a proper AISceneImpl");
+    DIVIDE_ASSERT(
+        _AISceneImpl != nullptr,
+        "AIEntity error: Can't init entity without a proper AISceneImpl");
     _AISceneImpl->init();
 }
- 
-I32 AIEntity::getTeamID() const { 
+
+I32 AIEntity::getTeamID() const {
     if (_teamPtr != nullptr) {
         return _teamPtr->getTeamID();
-    } 
-    return -1; 
+    }
+    return -1;
 }
 
 void AIEntity::setTeamPtr(AITeam* const teamPtr) {
@@ -220,12 +223,14 @@ bool AIEntity::setPosition(const vec3<F32> position) {
 
     vec3<F32> result;
     // Find position on NavMesh
-    if (!_detourCrowd->getNavMesh().getClosestPosition(position, vec3<F32>(5), DESTINATION_RADIUS, result)) {
-        //return false;
+    if (!_detourCrowd->getNavMesh().getClosestPosition(
+            position, vec3<F32>(5), DESTINATION_RADIUS, result)) {
+        // return false;
     }
     // Remove agent from crowd and re-add at position
     _detourCrowd->removeAgent(_agentID);
-    _agentID = _detourCrowd->addAgent(result, (_detourCrowd->getAgentHeight()/2)*3.5f, 10.0f);
+    _agentID = _detourCrowd->addAgent(
+        result, (_detourCrowd->getAgentHeight() / 2) * 3.5f, 10.0f);
     _agent = _detourCrowd->getAgent(_agentID);
 
     if (_unitRef) {
@@ -234,47 +239,44 @@ bool AIEntity::setPosition(const vec3<F32> position) {
     return true;
 }
 
-void AIEntity::updatePosition(const U64 deltaTime){
-    if(isAgentLoaded() && getAgent()->active){
+void AIEntity::updatePosition(const U64 deltaTime) {
+    if (isAgentLoaded() && getAgent()->active) {
         _previousDistanceToTarget = _distanceToTarget;
         _distanceToTarget = _currentPosition.distanceSquared(_destination);
 
         // if we are walking but did not change distance
-        if(std::abs(_previousDistanceToTarget - _distanceToTarget) < DESTINATION_RADIUS){
+        if (std::abs(_previousDistanceToTarget - _distanceToTarget) <
+            DESTINATION_RADIUS) {
             _moveWaitTimer += deltaTime;
-            if(Time::MicrosecondsToSeconds<D32>(_moveWaitTimer) > 5){
+            if (Time::MicrosecondsToSeconds<D32>(_moveWaitTimer) > 5) {
                 _moveWaitTimer = 0;
-                //updateDestination(_detourCrowd->getNavMesh().getRandomPosition());
-                //return;
+                // updateDestination(_detourCrowd->getNavMesh().getRandomPosition());
+                // return;
             }
-        }else{
+        } else {
             _moveWaitTimer = 0;
         }
         _currentPosition.setV(getAgent()->npos);
         _currentVelocity.setV(getAgent()->nvel);
     }
-    
-    if(_unitRef){          
+
+    if (_unitRef) {
         _unitRef->setPosition(_currentPosition);
         _unitRef->setVelocity(_currentVelocity);
     }
 }
 
-bool AIEntity::updateDestination(const vec3<F32>& destination, bool updatePreviousPath) {
+bool AIEntity::updateDestination(const vec3<F32>& destination,
+                                 bool updatePreviousPath) {
     if (!isAgentLoaded()) {
         return false;
     }
     vec3<F32> result;
     // Find position on navmesh
-    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, 
-                                                             DESTINATION_RADIUS, 
-                                                             vec3<F32>(5), 
-                                                             result, 
-                                                             10)) {
-        if (!_detourCrowd->getNavMesh().getClosestPosition(destination, 
-                                                           vec3<F32>(5), 
-                                                           DESTINATION_RADIUS, 
-                                                           result)) {
+    if (!_detourCrowd->getNavMesh().getRandomPositionInCircle(
+            destination, DESTINATION_RADIUS, vec3<F32>(5), result, 10)) {
+        if (!_detourCrowd->getNavMesh().getClosestPosition(
+                destination, vec3<F32>(5), DESTINATION_RADIUS, result)) {
             return false;
         }
     }
@@ -285,50 +287,50 @@ bool AIEntity::updateDestination(const vec3<F32>& destination, bool updatePrevio
     return true;
 }
 
-const vec3<F32>& AIEntity::getPosition() const {
-    return _currentPosition;
-}
+const vec3<F32>& AIEntity::getPosition() const { return _currentPosition; }
 
 const vec3<F32>& AIEntity::getDestination() const {
-    if (isAgentLoaded())
-        return _destination;
+    if (isAgentLoaded()) return _destination;
 
-    return getPosition();     // TODO this is not ideal
+    return getPosition();  // TODO this is not ideal
 }
 
-bool AIEntity::destinationReached(){
-    if(!isAgentLoaded())
-        return false;
+bool AIEntity::destinationReached() {
+    if (!isAgentLoaded()) return false;
 
-    if(_currentPosition.distanceSquared(getDestination()) <= DESTINATION_RADIUS)
+    if (_currentPosition.distanceSquared(getDestination()) <=
+        DESTINATION_RADIUS)
         return true;
 
     return _detourCrowd->destinationReached(getAgent(), DESTINATION_RADIUS);
 }
 
 void AIEntity::setDestination(const vec3<F32>& destination) {
-    if (!isAgentLoaded())
-        return;
+    if (!isAgentLoaded()) return;
 
     _destination = destination;
     _stopped = false;
 }
 
 void AIEntity::moveForward() {
-    vec3<F32> lookDirection = _unitRef != nullptr ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
+    vec3<F32> lookDirection = _unitRef != nullptr
+                                  ? _unitRef->getLookingDirection()
+                                  : WORLD_Z_NEG_AXIS;
     lookDirection.normalize();
 
     setVelocity(lookDirection * getMaxSpeed());
 }
 
-void AIEntity::moveBackwards(){
-    vec3<F32> lookDirection = _unitRef != nullptr ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
+void AIEntity::moveBackwards() {
+    vec3<F32> lookDirection = _unitRef != nullptr
+                                  ? _unitRef->getLookingDirection()
+                                  : WORLD_Z_NEG_AXIS;
     lookDirection.normalize();
 
     setVelocity(lookDirection * getMaxSpeed() * -1.0f);
 }
 
-void AIEntity::setVelocity(const vec3<F32>& velocity){
+void AIEntity::setVelocity(const vec3<F32>& velocity) {
     _stopped = false;
     _destination.reset();
 
@@ -353,12 +355,12 @@ vec3<F32> AIEntity::getVelocity() const {
     return (isAgentLoaded() ? vec3<F32>(getAgent()->nvel) : vec3<F32>());
 }
 
-D32 AIEntity::getMaxSpeed(){
+D32 AIEntity::getMaxSpeed() {
     return (isAgentLoaded() ? getAgent()->params.maxSpeed : 0.0);
 }
 
-D32 AIEntity::getMaxAcceleration(){
-    return (isAgentLoaded()  ? getAgent()->params.maxAcceleration : 0.0);
+D32 AIEntity::getMaxAcceleration() {
+    return (isAgentLoaded() ? getAgent()->params.maxAcceleration : 0.0);
 }
 
-}; //namespace Divide
+};  // namespace Divide

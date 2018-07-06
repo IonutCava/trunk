@@ -4,15 +4,14 @@
 
 namespace Divide {
 
-TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()(){
+TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()() {
     TerrainDescriptor* ptr = MemoryManager_NEW TerrainDescriptor();
-    if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::DELETE( ptr );
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
     }
 
     return ptr;
 }
 
 DEFAULT_LOADER_IMPL(TerrainDescriptor)
-
 };

@@ -20,45 +20,45 @@ REGISTER_SCENE(TenisScene);
 
 static std::atomic_bool s_gameStarted;
 
-void TenisScene::preRender(){
+void TenisScene::preRender() {
     vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
-    _sunvector = vec3<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
-                            -cosf(_sunAngle.y),
-                            -sinf(_sunAngle.x) * sinf(_sunAngle.y));
+    _sunvector =
+        vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
+                  -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
     _sun->setDirection(_sunvector);
-    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector,
+                                                  _sun->getDiffuseColor());
 }
 
-void TenisScene::processGUI(const U64 deltaTime){
+void TenisScene::processGUI(const U64 deltaTime) {
     D32 FpsDisplay = 0.7;
-    if (_guiTimers[0] >= FpsDisplay){
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
-                         Time::ApplicationTimer::getInstance().getFps(), 
+    if (_guiTimers[0] >= FpsDisplay) {
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
+                         Time::ApplicationTimer::getInstance().getFps(),
                          Time::ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d",
+                         GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
 }
 
-void TenisScene::processTasks(const U64 deltaTime){
-
-
+void TenisScene::processTasks(const U64 deltaTime) {
     Scene::processTasks(deltaTime);
 
     checkCollisions();
 
-    if(s_gameStarted && !_gamePlaying && _scoreTeam1 < 10 && _scoreTeam2 < 10)
+    if (s_gameStarted && !_gamePlaying && _scoreTeam1 < 10 && _scoreTeam2 < 10)
         startGame();
 
-    if(_scoreTeam1 == 10 || _scoreTeam2 == 10){
+    if (_scoreTeam1 == 10 || _scoreTeam2 == 10) {
         s_gameStarted = false;
         _GUI->modifyText("Message", "Team %d won!", _scoreTeam1 == 10 ? 1 : 2);
     }
 }
 
-void TenisScene::resetGame(){
+void TenisScene::resetGame() {
     removeTask(_gameGUID);
     _collisionPlayer1 = false;
     _collisionPlayer2 = false;
@@ -73,104 +73,114 @@ void TenisScene::resetGame(){
     _applySideImpulse = false;
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
-    _ballSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>((random(0,10) >= 5) ? 3.0f : -3.0f, 
-                                                                      0.2f,
-                                                                      _lostTeam1 ? -7.0f : 7.0f));
+    _ballSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(
+        (random(0, 10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
     _directionTeam1ToTeam2 = !_lostTeam1;
     _lostTeam1 = false;
     s_gameStarted = true;
 }
 
-void TenisScene::startGame(){
+void TenisScene::startGame() {
     resetGame();
     Kernel& kernel = Application::getInstance().getKernel();
-    Task_ptr newGame(kernel.AddTask(Time::MillisecondsToMicroseconds(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
+    Task_ptr newGame(kernel.AddTask(
+        Time::MillisecondsToMicroseconds(15), 0,
+        DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
     registerTask(newGame);
     newGame->startTask();
     _gameGUID = newGame->getGUID();
 }
 
-void TenisScene::checkCollisions(){
+void TenisScene::checkCollisions() {
     SceneGraphNode* Player1 = _aiPlayer1->getUnitRef()->getBoundNode();
     SceneGraphNode* Player2 = _aiPlayer2->getUnitRef()->getBoundNode();
     SceneGraphNode* Player3 = _aiPlayer3->getUnitRef()->getBoundNode();
     SceneGraphNode* Player4 = _aiPlayer4->getUnitRef()->getBoundNode();
-    BoundingBox ballBB      = _ballSGN->getBoundingBoxConst();
-    BoundingBox floorBB     = _floor->getBoundingBoxConst();
+    BoundingBox ballBB = _ballSGN->getBoundingBoxConst();
+    BoundingBox floorBB = _floor->getBoundingBoxConst();
     WriteLock w_lock(_gameLock);
     _collisionPlayer1 = ballBB.Collision(Player1->getBoundingBox());
     _collisionPlayer2 = ballBB.Collision(Player2->getBoundingBox());
     _collisionPlayer3 = ballBB.Collision(Player3->getBoundingBox());
     _collisionPlayer4 = ballBB.Collision(Player4->getBoundingBox());
-    _collisionNet     = ballBB.Collision(_net->getBoundingBox());
-    _collisionFloor   = floorBB.Collision(ballBB);
+    _collisionNet = ballBB.Collision(_net->getBoundingBox());
+    _collisionFloor = floorBB.Collision(ballBB);
 }
 
-//Team 1: Player1 + Player2
-//Team 2: Player3 + Player4
-void TenisScene::playGame(cdiggins::any a, CallbackParam b){
+// Team 1: Player1 + Player2
+// Team 2: Player3 + Player4
+void TenisScene::playGame(cdiggins::any a, CallbackParam b) {
     bool updated = false;
     stringImpl message;
-    if(!_gamePlaying){
+    if (!_gamePlaying) {
         return;
     }
 
     UpgradableReadLock ur_lock(_gameLock);
-    //Shortcut to the scene graph nodes containing our agents
+    // Shortcut to the scene graph nodes containing our agents
     SceneGraphNode* Player1 = _aiPlayer1->getUnitRef()->getBoundNode();
     SceneGraphNode* Player2 = _aiPlayer2->getUnitRef()->getBoundNode();
     SceneGraphNode* Player3 = _aiPlayer3->getUnitRef()->getBoundNode();
     SceneGraphNode* Player4 = _aiPlayer4->getUnitRef()->getBoundNode();
-    //Store by copy (thread-safe) current ball position (getPosition()) should be threadsafe
-    vec3<F32> netPosition  = _net->getComponent<PhysicsComponent>()->getPosition();
-    vec3<F32> ballPosition = _ballSGN->getComponent<PhysicsComponent>()->getPosition();
-    vec3<F32> player1Pos   = Player1->getComponent<PhysicsComponent>()->getPosition();
-    vec3<F32> player2Pos   = Player2->getComponent<PhysicsComponent>()->getPosition();
-    vec3<F32> player3Pos   = Player3->getComponent<PhysicsComponent>()->getPosition();
-    vec3<F32> player4Pos   = Player4->getComponent<PhysicsComponent>()->getPosition();
-    vec3<F32> netBBMax     = _net->getBoundingBox().getMax();
-    vec3<F32> netBBMin     = _net->getBoundingBox().getMin();
+    // Store by copy (thread-safe) current ball position (getPosition()) should
+    // be threadsafe
+    vec3<F32> netPosition =
+        _net->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> ballPosition =
+        _ballSGN->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player1Pos =
+        Player1->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player2Pos =
+        Player2->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player3Pos =
+        Player3->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player4Pos =
+        Player4->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> netBBMax = _net->getBoundingBox().getMax();
+    vec3<F32> netBBMin = _net->getBoundingBox().getMin();
 
     UpgradeToWriteLock uw_lock(ur_lock);
-    //Is the ball traveling from team 1 to team 2?
-    _directionTeam1ToTeam2 ? ballPosition.z -= 0.123f : ballPosition.z += 0.123f;
-    //Is the ball traveling upwards or is it falling?
+    // Is the ball traveling from team 1 to team 2?
+    _directionTeam1ToTeam2 ? ballPosition.z -= 0.123f : ballPosition.z +=
+                                                        0.123f;
+    // Is the ball traveling upwards or is it falling?
     _upwardsDirection ? ballPosition.y += 0.066f : ballPosition.y -= 0.066f;
-    //In case of a side drift, update accordingly
-    if(_applySideImpulse) ballPosition.x += _sideImpulseFactor;
+    // In case of a side drift, update accordingly
+    if (_applySideImpulse) ballPosition.x += _sideImpulseFactor;
 
-    //After we finish our computations, apply the new transform
-    //setPosition/getPosition should be thread-safe
+    // After we finish our computations, apply the new transform
+    // setPosition/getPosition should be thread-safe
     _ballSGN->getComponent<PhysicsComponent>()->setPosition(ballPosition);
-    //Add a spin to the ball just for fun ...
-    _ballSGN->getComponent<PhysicsComponent>()->rotate(vec3<F32>(ballPosition.z,1,1));
+    // Add a spin to the ball just for fun ...
+    _ballSGN->getComponent<PhysicsComponent>()->rotate(
+        vec3<F32>(ballPosition.z, 1, 1));
 
     //----------------------COLLISIONS------------------------------//
-    //z = depth. Descending to the horizon
+    // z = depth. Descending to the horizon
 
-    if(_collisionFloor){
-        if(ballPosition.z > netPosition.z){
+    if (_collisionFloor) {
+        if (ballPosition.z > netPosition.z) {
             _touchedTerrainTeam1 = true;
             _touchedTerrainTeam2 = false;
-        }else{
+        } else {
             _touchedTerrainTeam1 = false;
             _touchedTerrainTeam2 = true;
         }
         _upwardsDirection = true;
     }
 
-    //Where does the Kinetic  energy of the ball run out?
-    if(ballPosition.y > 3.5) _upwardsDirection = false;
+    // Where does the Kinetic  energy of the ball run out?
+    if (ballPosition.y > 3.5) _upwardsDirection = false;
 
-    //Did we hit a player?
+    // Did we hit a player?
 
     bool collisionTeam1 = _collisionPlayer1 || _collisionPlayer2;
     bool collisionTeam2 = _collisionPlayer3 || _collisionPlayer4;
 
-    if(collisionTeam1 || collisionTeam2){
-        //Something went very wrong. Very.
-        //assert(collisionTeam1 != collisionTeam2);
-        if(collisionTeam1 == collisionTeam2){
+    if (collisionTeam1 || collisionTeam2) {
+        // Something went very wrong. Very.
+        // assert(collisionTeam1 != collisionTeam2);
+        if (collisionTeam1 == collisionTeam2) {
             collisionTeam1 = !_directionTeam1ToTeam2;
             collisionTeam2 = !collisionTeam1;
             Console::d_errorfn("COLLISION ERROR");
@@ -178,49 +188,54 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
 
         F32 sideDrift = 0;
 
-        if(collisionTeam1){
-            _collisionPlayer1 ? sideDrift = player1Pos.x : sideDrift = player2Pos.x;
-        }else if(collisionTeam2){
-            _collisionPlayer3 ? sideDrift = player3Pos.x : sideDrift = player4Pos.x;
+        if (collisionTeam1) {
+            _collisionPlayer1 ? sideDrift = player1Pos.x : sideDrift =
+                                                               player2Pos.x;
+        } else if (collisionTeam2) {
+            _collisionPlayer3 ? sideDrift = player3Pos.x : sideDrift =
+                                                               player4Pos.x;
         }
 
         _sideImpulseFactor = (ballPosition.x - sideDrift);
         _applySideImpulse = !IS_ZERO(_sideImpulseFactor);
-        if(_applySideImpulse) _sideImpulseFactor *= 0.025f;
+        if (_applySideImpulse) _sideImpulseFactor *= 0.025f;
 
         _directionTeam1ToTeam2 = collisionTeam1;
     }
 
     //-----------------VALIDATING THE RESULTS----------------------//
-    //Which team won?
-    if(ballPosition.z >= player1Pos.z && ballPosition.z >= player2Pos.z){
+    // Which team won?
+    if (ballPosition.z >= player1Pos.z && ballPosition.z >= player2Pos.z) {
         _lostTeam1 = true;
         updated = true;
     }
 
-    if(ballPosition.z <= player3Pos.z &&  ballPosition.z <= player4Pos.z){
+    if (ballPosition.z <= player3Pos.z && ballPosition.z <= player4Pos.z) {
         _lostTeam1 = false;
         updated = true;
     }
-    //Which team kicked the ball in the net?
-    if(_collisionNet){
-        if(ballPosition.y < netBBMax.y - 0.25){
-            if(_directionTeam1ToTeam2){
+    // Which team kicked the ball in the net?
+    if (_collisionNet) {
+        if (ballPosition.y < netBBMax.y - 0.25) {
+            if (_directionTeam1ToTeam2) {
                 _lostTeam1 = true;
-            }else{
+            } else {
                 _lostTeam1 = false;
             }
             updated = true;
         }
     }
 
-    if(ballPosition.x + 0.5f < netBBMin.x || ballPosition.x + 0.5f > netBBMax.x){
-        //If we hit the ball and it touched the opposing team's terrain
-        //Or if the opposing team hit the ball but it didn't land in our terrain
-        if(_collisionFloor){
-            if((_touchedTerrainTeam2 && _directionTeam1ToTeam2) || (!_directionTeam1ToTeam2 && !_touchedTerrainTeam1)){
+    if (ballPosition.x + 0.5f < netBBMin.x ||
+        ballPosition.x + 0.5f > netBBMax.x) {
+        // If we hit the ball and it touched the opposing team's terrain
+        // Or if the opposing team hit the ball but it didn't land in our
+        // terrain
+        if (_collisionFloor) {
+            if ((_touchedTerrainTeam2 && _directionTeam1ToTeam2) ||
+                (!_directionTeam1ToTeam2 && !_touchedTerrainTeam1)) {
                 _lostTeam1 = false;
-            }else{
+            } else {
                 _lostTeam1 = true;
             }
             updated = true;
@@ -228,47 +243,48 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
     }
 
     //-----------------DISPLAY RESULTS---------------------//
-    if(updated){
-        if(_lostTeam1)    {
+    if (updated) {
+        if (_lostTeam1) {
             message = "Team 2 scored!";
             _scoreTeam2++;
-        }else{
+        } else {
             message = "Team 1 scored!";
             _scoreTeam1++;
         }
 
-        _GUI->modifyText("Team1Score","Team 1 Score: %d",_scoreTeam1);
-        _GUI->modifyText("Team2Score","Team 2 Score: %d",_scoreTeam2);
-        _GUI->modifyText("Message",(char*)message.c_str());
+        _GUI->modifyText("Team1Score", "Team 1 Score: %d", _scoreTeam1);
+        _GUI->modifyText("Team2Score", "Team 2 Score: %d", _scoreTeam2);
+        _GUI->modifyText("Message", (char*)message.c_str());
         _gamePlaying = false;
     }
 }
 
-void TenisScene::processInput(const U64 deltaTime){
-}
+void TenisScene::processInput(const U64 deltaTime) {}
 
-bool TenisScene::load(const stringImpl& name, GUI* const gui){
+bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     s_gameStarted = false;
-    //Load scene resources
-    bool loadState = SCENE_LOAD(name,gui,true,true);
+    // Load scene resources
+    bool loadState = SCENE_LOAD(name, gui, true, true);
 
-    //Add a light
+    // Add a light
     _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
-    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky =
+        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
-//    ResourceDescriptor tempLight1("Light omni");
-//    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
-//    light1 = CreateResource<Light>(tempLight1);
-//    addLight(light1);
+    //    ResourceDescriptor tempLight1("Light omni");
+    //    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
+    //    light1 = CreateResource<Light>(tempLight1);
+    //    addLight(light1);
 
-    //Position camera
-    //renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
-    //renderState().getCamera().setRotation(10/*yaw*/,-45/*pitch*/);
+    // Position camera
+    // renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
+    // renderState().getCamera().setRotation(10/*yaw*/,-45/*pitch*/);
 
-    //------------------------ Load up game elements -----------------------------///
+    //------------------------ Load up game elements
+    //-----------------------------///
     _net = _sceneGraph.findNode("Net");
-    //for(SceneGraphNode::NodeChildren::value_type& it : _net->getChildren()){
-        //it.second->setReceivesShadows(false);
+    // for(SceneGraphNode::NodeChildren::value_type& it : _net->getChildren()){
+    // it.second->setReceivesShadows(false);
     //}
     _floor = _sceneGraph.findNode("Floor");
     _floor->getComponent<RenderingComponent>()->castsShadows(false);
@@ -277,10 +293,11 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui){
     return loadState;
 }
 
-bool TenisScene::initializeAI(bool continueOnErrors){
+bool TenisScene::initializeAI(bool continueOnErrors) {
     bool state = false;
     SceneGraphNode* player[4];
-    //----------------------------ARTIFICIAL INTELLIGENCE------------------------------//
+    //----------------------------ARTIFICIAL
+    //INTELLIGENCE------------------------------//
     player[0] = _sceneGraph.findNode("Player1");
     player[1] = _sceneGraph.findNode("Player2");
     player[2] = _sceneGraph.findNode("Player3");
@@ -290,37 +307,46 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     player[2]->setSelectable(true);
     player[3]->setSelectable(true);
 
-    _aiPlayer1 = MemoryManager_NEW AI::AIEntity(player[0]->getComponent<PhysicsComponent>()->getPosition(), "Player1");
-    _aiPlayer2 = MemoryManager_NEW AI::AIEntity(player[1]->getComponent<PhysicsComponent>()->getPosition(), "Player2");
-    _aiPlayer3 = MemoryManager_NEW AI::AIEntity(player[2]->getComponent<PhysicsComponent>()->getPosition(), "Player3");
-    _aiPlayer4 = MemoryManager_NEW AI::AIEntity(player[3]->getComponent<PhysicsComponent>()->getPosition(), "Player4");
+    _aiPlayer1 = MemoryManager_NEW AI::AIEntity(
+        player[0]->getComponent<PhysicsComponent>()->getPosition(), "Player1");
+    _aiPlayer2 = MemoryManager_NEW AI::AIEntity(
+        player[1]->getComponent<PhysicsComponent>()->getPosition(), "Player2");
+    _aiPlayer3 = MemoryManager_NEW AI::AIEntity(
+        player[2]->getComponent<PhysicsComponent>()->getPosition(), "Player3");
+    _aiPlayer4 = MemoryManager_NEW AI::AIEntity(
+        player[3]->getComponent<PhysicsComponent>()->getPosition(), "Player4");
     _aiPlayer1->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer2->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer3->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer4->addSensor(AI::VISUAL_SENSOR);
 
-    _aiPlayer1->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer2->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer3->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer4->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer1->addAISceneImpl(
+        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer2->addAISceneImpl(
+        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer3->addAISceneImpl(
+        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer4->addAISceneImpl(
+        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
 
     _team1 = MemoryManager_NEW AI::AITeam(1);
     _team2 = MemoryManager_NEW AI::AITeam(2);
 
-    if(state || continueOnErrors){
+    if (state || continueOnErrors) {
         state = AI::AIManager::getInstance().registerEntity(0, _aiPlayer1);
     }
-    if(state || continueOnErrors) {
+    if (state || continueOnErrors) {
         state = AI::AIManager::getInstance().registerEntity(0, _aiPlayer2);
     }
-    if(state || continueOnErrors) {
+    if (state || continueOnErrors) {
         state = AI::AIManager::getInstance().registerEntity(1, _aiPlayer3);
     }
-    if(state || continueOnErrors) {
+    if (state || continueOnErrors) {
         state = AI::AIManager::getInstance().registerEntity(1, _aiPlayer4);
     }
-    if(state || continueOnErrors){
-    //----------------------- AI controlled units (NPC's) ---------------------//
+    if (state || continueOnErrors) {
+        //----------------------- AI controlled units (NPC's)
+        //---------------------//
         _player1 = MemoryManager_NEW NPC(player[0], _aiPlayer1);
         _player2 = MemoryManager_NEW NPC(player[1], _aiPlayer2);
         _player3 = MemoryManager_NEW NPC(player[2], _aiPlayer3);
@@ -332,32 +358,32 @@ bool TenisScene::initializeAI(bool continueOnErrors){
         _player4->setMovementSpeed(1.45f);
     }
 
-    if(state || continueOnErrors) Scene::initializeAI(continueOnErrors);
+    if (state || continueOnErrors) Scene::initializeAI(continueOnErrors);
     return state;
 }
 
-bool TenisScene::deinitializeAI(bool continueOnErrors){
+bool TenisScene::deinitializeAI(bool continueOnErrors) {
     AI::AIManager::getInstance().pauseUpdate(true);
 
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer1);
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer2);
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer3);
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer4);
-    MemoryManager::DELETE( _aiPlayer1 );
-    MemoryManager::DELETE( _aiPlayer2 );
-    MemoryManager::DELETE( _aiPlayer3 );
-    MemoryManager::DELETE( _aiPlayer4 );
-    MemoryManager::DELETE( _player1 );
-    MemoryManager::DELETE( _player2 );
-    MemoryManager::DELETE( _player3 );
-    MemoryManager::DELETE( _player4 );
-    MemoryManager::DELETE( _team1 );
-    MemoryManager::DELETE( _team2 );
+    MemoryManager::DELETE(_aiPlayer1);
+    MemoryManager::DELETE(_aiPlayer2);
+    MemoryManager::DELETE(_aiPlayer3);
+    MemoryManager::DELETE(_aiPlayer4);
+    MemoryManager::DELETE(_player1);
+    MemoryManager::DELETE(_player2);
+    MemoryManager::DELETE(_player3);
+    MemoryManager::DELETE(_player4);
+    MemoryManager::DELETE(_team1);
+    MemoryManager::DELETE(_team2);
     return Scene::deinitializeAI(continueOnErrors);
 }
 
-bool TenisScene::loadResources(bool continueOnErrors){
-    //Create our ball
+bool TenisScene::loadResources(bool continueOnErrors) {
+    // Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(ballDescriptor);
     _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.5f, 0.5f, 1.0f));
@@ -367,52 +393,55 @@ bool TenisScene::loadResources(bool continueOnErrors){
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
     _ballSGN = _sceneGraph.addNode(_ball, "TenisBallSGN");
-    _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));
+    _ballSGN->getComponent<PhysicsComponent>()->translate(
+        vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN->setSelectable(true);
-    GUIElement* btn = _GUI->addButton("Serve", "Serve",
-                                      vec2<I32>(renderState().cachedResolution().width-220,60),
-                                      vec2<U32>(100,25),
-                                      vec3<F32>(0.65f,0.65f,0.65f),
-                                      DELEGATE_BIND(&TenisScene::startGame,this));
+    GUIElement* btn = _GUI->addButton(
+        "Serve", "Serve",
+        vec2<I32>(renderState().cachedResolution().width - 220, 60),
+        vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
+        DELEGATE_BIND(&TenisScene::startGame, this));
     btn->setTooltip("Start a new game!");
 
-    _GUI->addText("Team1Score",vec2<I32>(renderState().cachedResolution().width - 250,
-                  renderState().cachedResolution().height/1.3f),
-                  Font::DIVIDE_DEFAULT,vec3<F32>(0,0.8f,0.8f), "Team 1 Score: %d",0);
+    _GUI->addText(
+        "Team1Score", vec2<I32>(renderState().cachedResolution().width - 250,
+                                renderState().cachedResolution().height / 1.3f),
+        Font::DIVIDE_DEFAULT, vec3<F32>(0, 0.8f, 0.8f), "Team 1 Score: %d", 0);
 
-    _GUI->addText("Team2Score",vec2<I32>(renderState().cachedResolution().width - 250,
-                  renderState().cachedResolution().height/1.5f),
-                  Font::DIVIDE_DEFAULT,vec3<F32>(0.2f,0.8f,0), "Team 2 Score: %d",0);
+    _GUI->addText(
+        "Team2Score", vec2<I32>(renderState().cachedResolution().width - 250,
+                                renderState().cachedResolution().height / 1.5f),
+        Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.8f, 0), "Team 2 Score: %d", 0);
 
-    _GUI->addText("Message",vec2<I32>(renderState().cachedResolution().width - 250,
-                  renderState().cachedResolution().height/1.7f),
-                  Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
+    _GUI->addText("Message",
+                  vec2<I32>(renderState().cachedResolution().width - 250,
+                            renderState().cachedResolution().height / 1.7f),
+                  Font::DIVIDE_DEFAULT, vec3<F32>(0, 1, 0), "");
 
-    _GUI->addText("fpsDisplay",              //Unique ID
-                  vec2<I32>(60,60),          //Position
-                  Font::DIVIDE_DEFAULT,      //Font
-                  vec3<F32>(0.0f,0.2f, 1.0f),//Color
-                  "FPS: %s",0);              //Text and arguments
+    _GUI->addText("fpsDisplay",  // Unique ID
+                  vec2<I32>(60, 60),  // Position
+                  Font::DIVIDE_DEFAULT,  // Font
+                  vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
+                  "FPS: %s", 0);  // Text and arguments
 
-    _GUI->addText("RenderBinCount",
-                  vec2<I32>(60,70),
-                  Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.6f,0.2f,0.2f),
-                  "Number of items in Render Bin: %d",0);
-    _guiTimers.push_back(0.0); //Fps
+    _GUI->addText("RenderBinCount", vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.6f, 0.2f, 0.2f),
+                  "Number of items in Render Bin: %d", 0);
+    _guiTimers.push_back(0.0);  // Fps
     return true;
 }
 
-bool TenisScene::onKeyUp(const Input::KeyEvent& key){
+bool TenisScene::onKeyUp(const Input::KeyEvent& key) {
     return Scene::onKeyUp(key);
 }
 
-bool TenisScene::mouseMoved(const Input::MouseEvent& key){
+bool TenisScene::mouseMoved(const Input::MouseEvent& key) {
     return Scene::mouseMoved(key);
 }
 
-bool TenisScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
-    return Scene::mouseButtonReleased(key,button);;
+bool TenisScene::mouseButtonReleased(const Input::MouseEvent& key,
+                                     Input::MouseButton button) {
+    return Scene::mouseButtonReleased(key, button);
+    ;
 }
-
 };

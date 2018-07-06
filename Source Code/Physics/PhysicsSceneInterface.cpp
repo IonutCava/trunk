@@ -3,10 +3,10 @@
 
 namespace Divide {
 
-void PhysicsSceneInterface::addToScene(PhysicsAsset& actor, SceneGraphNode* const outNode) {
-    if(outNode != nullptr) {
+void PhysicsSceneInterface::addToScene(PhysicsAsset& actor,
+                                       SceneGraphNode* const outNode) {
+    if (outNode != nullptr) {
         outNode->getComponent<PhysicsComponent>()->physicsAsset(&actor);
     }
 }
-
 };

@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -31,71 +40,86 @@ namespace Divide {
 class BoundingBox;
 
 class Object3D : public SceneNode {
-public:
+   public:
     enum ObjectType {
         SPHERE_3D = toBit(0),
-        BOX_3D    = toBit(1),
-        QUAD_3D   = toBit(2),
-        TEXT_3D   = toBit(3),
-        MESH      = toBit(4),
-        SUBMESH   = toBit(5),
-        TERRAIN   = toBit(6), 
+        BOX_3D = toBit(1),
+        QUAD_3D = toBit(2),
+        TEXT_3D = toBit(3),
+        MESH = toBit(4),
+        SUBMESH = toBit(5),
+        TERRAIN = toBit(6),
         FLYWEIGHT = toBit(7),
         OBJECT_3D_PLACEHOLDER = toBit(8)
     };
 
     enum ObjectFlag {
-        OBJECT_FLAG_NONE         = toBit(0),
-        OBJECT_FLAG_SKINNED      = toBit(1),
-        OBJECT_FLAG_NO_VB        = toBit(2),
-        OBJECT_FLAG_PLACEHOLDER  = toBit(3)
+        OBJECT_FLAG_NONE = toBit(0),
+        OBJECT_FLAG_SKINNED = toBit(1),
+        OBJECT_FLAG_NO_VB = toBit(2),
+        OBJECT_FLAG_PLACEHOLDER = toBit(3)
     };
 
-    explicit Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
-    explicit Object3D(const stringImpl& name, const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
+    explicit Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER,
+                      U32 flag = OBJECT_FLAG_NONE);
+    explicit Object3D(const stringImpl& name,
+                      const ObjectType& type = OBJECT_3D_PLACEHOLDER,
+                      U32 flag = OBJECT_FLAG_NONE);
 
     virtual ~Object3D();
 
     virtual VertexBuffer* const getGeometryVB() const;
-    inline  ObjectType          getObjectType() const {return _geometryType;}
-    inline  U32                 getFlagMask()   const {return _geometryFlagMask;}
+    inline ObjectType getObjectType() const { return _geometryType; }
+    inline U32 getFlagMask() const { return _geometryFlagMask; }
 
-    virtual bool  onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
-    virtual bool  updateAnimations(SceneGraphNode* const sgn) { return false; }
-    inline void   setGeometryPartitionId(size_t idx) { _geometryPartitionId = (U32)idx; }
+    virtual bool onDraw(SceneGraphNode* const sgn,
+                        const RenderStage& currentStage);
+    virtual bool updateAnimations(SceneGraphNode* const sgn) { return false; }
+    inline void setGeometryPartitionId(size_t idx) {
+        _geometryPartitionId = (U32)idx;
+    }
 
-    inline const vectorImpl<vec3<U32> >& getTriangles() const { return _geometryTriangles; }
-    inline void reserveTriangleCount(U32 size)                { _geometryTriangles.reserve(size); }
-    inline void addTriangle(const vec3<U32>& tri)             { _geometryTriangles.push_back(tri); }
+    inline const vectorImpl<vec3<U32> >& getTriangles() const {
+        return _geometryTriangles;
+    }
+    inline void reserveTriangleCount(U32 size) {
+        _geometryTriangles.reserve(size);
+    }
+    inline void addTriangle(const vec3<U32>& tri) {
+        _geometryTriangles.push_back(tri);
+    }
 
-    //Create a list of triangles from the vertices + indices lists based on primitive type
+    // Create a list of triangles from the vertices + indices lists based on
+    // primitive type
     bool computeTriangleList(bool force = false);
 
-protected:
-    virtual    void render(SceneGraphNode* const sgn, 
-                        const SceneRenderState& sceneRenderState, 
+   protected:
+    virtual void render(SceneGraphNode* const sgn,
+                        const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage);
-    virtual void getDrawCommands(SceneGraphNode* const sgn, 
-                                 const RenderStage& currentRenderStage, 
-                                 SceneRenderState& sceneRenderState, 
-                                 vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    virtual void getDrawCommands(
+        SceneGraphNode* const sgn, const RenderStage& currentRenderStage,
+        SceneRenderState& sceneRenderState,
+        vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();
     virtual void computeTangents();
-    /// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
+    /// Use a custom vertex buffer for this object (e.g., a submesh uses the
+    /// mesh's vb)
     /// Please manually delete the old VB if available before replacing!
     virtual void setGeometryVB(VertexBuffer* const vb);
 
-protected:
-    bool            _update;
-    U32             _geometryFlagMask;
-    U32             _geometryPartitionId;
-    ObjectType      _geometryType;
-    /// 3 indices, pointing to position values, that form a triangle in the mesh.
+   protected:
+    bool _update;
+    U32 _geometryFlagMask;
+    U32 _geometryPartitionId;
+    ObjectType _geometryType;
+    /// 3 indices, pointing to position values, that form a triangle in the
+    /// mesh.
     /// used, for example, for cooking collision meshes
-    vectorImpl<vec3<U32> > _geometryTriangles;    
-    ///A custom, override vertex buffer
+    vectorImpl<vec3<U32> > _geometryTriangles;
+    /// A custom, override vertex buffer
     VertexBuffer* _buffer;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

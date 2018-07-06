@@ -7,20 +7,20 @@
 
 namespace Divide {
 
-OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye) : Camera(type, eye),
-                                                                         _currentRotationX(0.0),
-                                                                         _currentRotationY(0.0),
-                                                                         _maxRadius(10.0f),
-                                                                         _minRadius(0.1f),
-                                                                         _curRadius(8.0f),
-                                                                         _targetNode(nullptr),
-                                                                         _rotationDirty(true)
-{
+OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye)
+    : Camera(type, eye),
+      _currentRotationX(0.0),
+      _currentRotationY(0.0),
+      _maxRadius(10.0f),
+      _minRadius(0.1f),
+      _curRadius(8.0f),
+      _targetNode(nullptr),
+      _rotationDirty(true) {
     setMouseSensitivity(0.5f);
 }
 
-
-void OrbitCamera::setTarget(SceneGraphNode* const sgn, const vec3<F32>& offsetDirection) {
+void OrbitCamera::setTarget(SceneGraphNode* const sgn,
+                            const vec3<F32>& offsetDirection) {
     assert(sgn != nullptr);
 
     _targetNode = sgn;
@@ -33,8 +33,7 @@ void OrbitCamera::onActivate() {
     Camera::onActivate();
 }
 
-void OrbitCamera::onDeactivate() {
-}
+void OrbitCamera::onDeactivate() {}
 
 bool OrbitCamera::updateViewMatrix() {
     setEye(_newEye);
@@ -45,15 +44,16 @@ bool OrbitCamera::updateViewMatrix() {
 void OrbitCamera::update(const U64 deltaTime) {
     Camera::update(deltaTime);
 
-    if(!_targetNode) {
+    if (!_targetNode) {
         return;
     }
 
-    PhysicsComponent* const trans = _targetNode->getComponent<PhysicsComponent>();
+    PhysicsComponent* const trans =
+        _targetNode->getComponent<PhysicsComponent>();
 
     static vec3<F32> newTargetOrientation;
 
-    if (/*trans->changedLastFrame() || */_rotationDirty || true) {
+    if (/*trans->changedLastFrame() || */ _rotationDirty || true) {
         trans->getOrientation().getEuler(&newTargetOrientation);
         newTargetOrientation.yaw = M_PI - newTargetOrientation.yaw;
         newTargetOrientation += _cameraRotation;
@@ -75,10 +75,8 @@ bool OrbitCamera::mouseMoved(const Input::MouseEvent& arg) {
     return Camera::mouseMoved(arg);
 }
 
-void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {
-}
+void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {}
 
-void OrbitCamera::rotate(F32 yaw, F32 pitch, F32 roll) {
-}
+void OrbitCamera::rotate(F32 yaw, F32 pitch, F32 roll) {}
 
-}; //namespace Divide
+};  // namespace Divide

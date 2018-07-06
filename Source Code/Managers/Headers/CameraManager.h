@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -33,28 +42,40 @@ class Kernel;
 /// Multiple camera managers can be created if needed in the future
 /// No need for singletons here
 class CameraManager : private NonCopyable, public FrameListener {
-typedef hashMapImpl<stringImpl, Camera*> CameraPool;
-typedef hashMapImpl<I64,        Camera*> CameraPoolGUID;
+    typedef hashMapImpl<stringImpl, Camera*> CameraPool;
+    typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
 
-public:
+   public:
     CameraManager(Kernel* const kernelPtr);
     ~CameraManager();
 
-    inline Camera* const getActiveCamera() { assert(_camera); return _camera; }
+    inline Camera* const getActiveCamera() {
+        assert(_camera);
+        return _camera;
+    }
 
     void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 
-    void addCameraChangeListener(const DELEGATE_CBK<>& f) { _changeCameralisteners.push_back(f); }
-    void addCameraUpdateListener(const DELEGATE_CBK<>& f) { _updateCameralisteners.push_back(f); _addNewListener = true; }
-
-    inline bool mouseMoved(const Input::MouseEvent& arg) { return _camera->mouseMoved(arg); }
-
-    inline void pushActiveCamera(const stringImpl& name, bool callActivate = true) { 
-        _cameraStack.push(findCamera(name));
-        setActiveCamera(_cameraStack.top(), callActivate); 
+    void addCameraChangeListener(const DELEGATE_CBK<>& f) {
+        _changeCameralisteners.push_back(f);
+    }
+    void addCameraUpdateListener(const DELEGATE_CBK<>& f) {
+        _updateCameralisteners.push_back(f);
+        _addNewListener = true;
     }
 
-    inline void pushActiveCamera(const Camera* camera, bool callActivate = true) {
+    inline bool mouseMoved(const Input::MouseEvent& arg) {
+        return _camera->mouseMoved(arg);
+    }
+
+    inline void pushActiveCamera(const stringImpl& name,
+                                 bool callActivate = true) {
+        _cameraStack.push(findCamera(name));
+        setActiveCamera(_cameraStack.top(), callActivate);
+    }
+
+    inline void pushActiveCamera(const Camera* camera,
+                                 bool callActivate = true) {
         _cameraStack.push(findCamera(camera->getGUID()));
         setActiveCamera(_cameraStack.top(), callActivate);
     }
@@ -64,24 +85,25 @@ public:
         setActiveCamera(_cameraStack.top(), callActivate);
     }
 
-protected:
-    ///This is inherited from FrameListener and is used to update the view matrix every frame
+   protected:
+    /// This is inherited from FrameListener and is used to update the view
+    /// matrix every frame
     bool frameStarted(const FrameEvent& evt);
     Camera* findCamera(const stringImpl& name);
     Camera* findCamera(U64 cameraGUID);
     void setActiveCamera(Camera* cam, bool callActivate = true);
 
-private:
-    bool    _addNewListener;
+   private:
+    bool _addNewListener;
     Kernel* _kernelPtr;
     Camera* _camera;
     CameraPool _cameraPool;
     CameraPoolGUID _cameraPoolGUID;
-    std::stack<Camera* > _cameraStack;
+    std::stack<Camera*> _cameraStack;
     vectorImpl<DELEGATE_CBK<> > _changeCameralisteners;
     vectorImpl<DELEGATE_CBK<> > _updateCameralisteners;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 
 #endif

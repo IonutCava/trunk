@@ -3,18 +3,27 @@ Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-and associated documentation files (the "Software"), to deal in the Software without restriction,
-including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software
+and associated documentation files (the "Software"), to deal in the Software
+without restriction,
+including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the Software
+is furnished to do so,
 subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
@@ -30,7 +39,7 @@ namespace Divide {
 enum RenderStage : I32;
 class SceneGraphNode;
 class SGNComponent : private NonCopyable {
-public:
+   public:
     enum ComponentType {
         SGN_COMP_ANIMATION = 0,
         SGN_COMP_NAVIGATION = 1,
@@ -42,9 +51,7 @@ public:
     SGNComponent(ComponentType type, SceneGraphNode* const parentSGN);
     virtual ~SGNComponent();
 
-    virtual bool onDraw(RenderStage currentStage) {
-        return true;
-    }
+    virtual bool onDraw(RenderStage currentStage) { return true; }
     virtual void update(const U64 deltaTime) {
         _deltaTime = deltaTime;
         _elapsedTime += deltaTime;
@@ -55,10 +62,10 @@ public:
         _elapsedTime = 0UL;
     }
 
-    inline ComponentType         getType() const { return _type; }
-    inline SceneGraphNode* const getSGN()  const { return _parentSGN; }
+    inline ComponentType getType() const { return _type; }
+    inline SceneGraphNode* const getSGN() const { return _parentSGN; }
 
-protected:
+   protected:
     /// The current instance using this component
     U32 _instanceID;
     /// Pointer to the SGN owning this instance of AnimationComponent
@@ -68,5 +75,5 @@ protected:
     U64 _deltaTime;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

@@ -3,31 +3,29 @@
 
 namespace Divide {
 
-NavigationComponent::NavigationComponent(SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_NAVIGATION,
-                                                                                         parentSGN),
-                                                                            _overrideNavMeshDetail(false),
-                                                                            _navigationContext(NODE_IGNORE)
-{
+NavigationComponent::NavigationComponent(SceneGraphNode* const parentSGN)
+    : SGNComponent(SGNComponent::SGN_COMP_NAVIGATION, parentSGN),
+      _overrideNavMeshDetail(false),
+      _navigationContext(NODE_IGNORE) {}
 
-}
+NavigationComponent::~NavigationComponent() {}
 
-NavigationComponent::~NavigationComponent()
-{
-
-}
-
-void NavigationComponent::navigationContext(const NavigationContext& newContext) {
+void NavigationComponent::navigationContext(
+    const NavigationContext& newContext) {
     _navigationContext = newContext;
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()) {
-        it.second->getComponent<NavigationComponent>()->navigationContext( _navigationContext );
+    for (SceneGraphNode::NodeChildren::value_type& it :
+         _parentSGN->getChildren()) {
+        it.second->getComponent<NavigationComponent>()->navigationContext(
+            _navigationContext);
     }
 }
 
-void  NavigationComponent::navigationDetailOverride(const bool detailOverride){
+void NavigationComponent::navigationDetailOverride(const bool detailOverride) {
     _overrideNavMeshDetail = detailOverride;
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()) {
-        it.second->getComponent<NavigationComponent>()->navigationDetailOverride( detailOverride );
+    for (SceneGraphNode::NodeChildren::value_type& it :
+         _parentSGN->getChildren()) {
+        it.second->getComponent<NavigationComponent>()
+            ->navigationDetailOverride(detailOverride);
     }
 }
-
 };

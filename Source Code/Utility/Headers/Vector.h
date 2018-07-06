@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    */
@@ -25,10 +34,11 @@
 
 #include "config.h"
 
-/// boost vectors have a completely different interface, so we can't actually use them
+/// boost vectors have a completely different interface, so we can't actually
+/// use them
 #if defined(VECTOR_IMP) && VECTOR_IMP == 2
-#    undef  VECTOR_IMP
-#    define VECTOR_IMP 0
+#undef VECTOR_IMP
+#define VECTOR_IMP 0
 #endif
 
 #if defined(VECTOR_IMP) && VECTOR_IMP == 2
@@ -69,80 +79,82 @@ return std::make_pair(key, val);
 
 namespace vectorAlg = eastl;
 
-template<typename Type>
-using vectorImpl = vectorAlg::vector < Type > ;
+template <typename Type>
+using vectorImpl = vectorAlg::vector<Type>;
 
 namespace eastl {
-    typedef eastl_size_t vecSize;
+typedef eastl_size_t vecSize;
 
-    template<typename T>
-    inline void shrinkToFit(vectorImpl<T>& inputVector) {
-        inputVector.set_capacity(inputVector.size()  * sizeof(T));
-    }
+template <typename T>
+inline void shrinkToFit(vectorImpl<T>& inputVector) {
+    inputVector.set_capacity(inputVector.size() * sizeof(T));
+}
 
-    template<typename T, class... Args>
-    inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector, Args&&... args) {
-        new(inputVector.push_back_uninitialized())T(std::forward<Args>(args)...);
-        return &inputVector.back();
-    }
+template <typename T, class... Args>
+inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector,
+                                                     Args&&... args) {
+    new (inputVector.push_back_uninitialized()) T(std::forward<Args>(args)...);
+    return &inputVector.back();
+}
 
-#    ifndef EASTL_PAIR_FUNCS
-#    define EASTL_PAIR_FUNCS
-    template<typename K, typename V>
-    inline eastl::pair<K, V> makePair(const K& key, const V& val) {
-        return eastl::make_pair_ref(key, val);
-    }
+#ifndef EASTL_PAIR_FUNCS
+#define EASTL_PAIR_FUNCS
+template <typename K, typename V>
+inline eastl::pair<K, V> makePair(const K& key, const V& val) {
+    return eastl::make_pair_ref(key, val);
+}
 
-    template<typename K, typename V>
-    inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
-        return eastl::make_pair_ref(key, val);
-    }
-#    endif
+template <typename K, typename V>
+inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
+    return eastl::make_pair_ref(key, val);
+}
+#endif
 };
 
-#else //defined(VECTOR_IMP) && VECTOR_IMP == 1
+#else  // defined(VECTOR_IMP) && VECTOR_IMP == 1
 
 #include <vector>
 
 namespace vectorAlg = std;
 
-template<typename Type>
+template <typename Type>
 using vectorImpl = vectorAlg::vector<Type>;
 
 namespace std {
-    typedef size_t vecSize;
+typedef size_t vecSize;
 
-    //template<typename T1, typename T2>
-    //using pair = std::pair<T1, T2>;
+// template<typename T1, typename T2>
+// using pair = std::pair<T1, T2>;
 
-    template<typename T>
-    inline void shrinkToFit(vectorImpl<T>& inputVector) {
-        inputVector.shrink_to_fit();
-    }
+template <typename T>
+inline void shrinkToFit(vectorImpl<T>& inputVector) {
+    inputVector.shrink_to_fit();
+}
 
-    template<typename T, class... _Valty>
-    inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector, _Valty&&... _Val) {
-        inputVector.emplace_back(std::forward<Args>(args)...);
-        return inputVector.back();
-    }
+template <typename T, class... _Valty>
+inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector,
+                                                     _Valty&&... _Val) {
+    inputVector.emplace_back(std::forward<Args>(args)...);
+    return inputVector.back();
+}
 
-#    ifndef STD_PAIR_FUNCS
-#    define STD_PAIR_FUNCS
-    template<typename K, typename V>
-    inline std::pair<K, V> makePair(const K& key, const V& val) {
-        return std::make_pair(key, val);
-    }
+#ifndef STD_PAIR_FUNCS
+#define STD_PAIR_FUNCS
+template <typename K, typename V>
+inline std::pair<K, V> makePair(const K& key, const V& val) {
+    return std::make_pair(key, val);
+}
 
-    template<typename K, typename V>
-    inline std::pair<K, V> makePairCpy(const K& key, V val) {
-        return std::make_pair(key, val);
-    }
-#    endif
+template <typename K, typename V>
+inline std::pair<K, V> makePairCpy(const K& key, V val) {
+    return std::make_pair(key, val);
+}
+#endif
 };
-#endif //defined(VECTOR_IMP)
+#endif  // defined(VECTOR_IMP)
 
-#define SET_VECTOR_EMPLACE_FRIEND template<typename T, typename... Args>  \
-                                  friend typename vectorImpl<T>::iterator \
-                                  vectorAlg::emplace_back(vectorImpl<T>& inputVector, \
-                                                          Args&&... args);
+#define SET_VECTOR_EMPLACE_FRIEND                                    \
+    template <typename T, typename... Args>                          \
+    friend typename vectorImpl<T>::iterator vectorAlg::emplace_back( \
+        vectorImpl<T>& inputVector, Args&&... args);
 #endif

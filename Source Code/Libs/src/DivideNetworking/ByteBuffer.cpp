@@ -3,8 +3,8 @@
 
 namespace Divide {
 
-void ByteBuffer::append(const U8 *src, size_t cnt){
-    if (!cnt)    return;
+void ByteBuffer::append(const U8 *src, size_t cnt) {
+    if (!cnt) return;
 
     assert(size() < 10000000 && "Invalid ByteBuffer size");
 
@@ -14,4 +14,4 @@ void ByteBuffer::append(const U8 *src, size_t cnt){
     _wpos += cnt;
 }
 
-}; //namespace Divide
+};  // namespace Divide

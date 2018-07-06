@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -31,51 +40,60 @@ class Unit;
 class Task;
 class Impostor;
 /// When a unit touches the circle described by
-class Trigger  : public SceneNode {
+class Trigger : public SceneNode {
     typedef std::shared_ptr<Task> Task_ptr;
 
-public:
+   public:
     Trigger();
     ~Trigger();
 
     /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; };
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
+        return true;
+    };
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
-    bool check(Unit* const unit,const vec3<F32>& camEyePos = VECTOR3_ZERO);
+    bool check(Unit* const unit, const vec3<F32>& camEyePos = VECTOR3_ZERO);
     /// Sets a new Task for this trigger
     void updateTriggeredTask(Task_ptr triggeredTask);
     /// Trigger's the Task regardless of position
     bool trigger();
-    ///Draw a sphere at the trigger's position
-    ///The impostor has the radius of the trigger's radius
-    inline void  setDrawImpostor(bool state) {_drawImpostor = state;}
-    ///Enable or disable the trigger
-    inline void  setEnabled(bool state) {_enabled = state;}
+    /// Draw a sphere at the trigger's position
+    /// The impostor has the radius of the trigger's radius
+    inline void setDrawImpostor(bool state) { _drawImpostor = state; }
+    /// Enable or disable the trigger
+    inline void setEnabled(bool state) { _enabled = state; }
     /// Set the callback, the position and the radius of the trigger
-    void setParams(Task_ptr triggeredTask, const vec3<F32>& triggerPosition, F32 radius);
+    void setParams(Task_ptr triggeredTask, const vec3<F32>& triggerPosition,
+                   F32 radius);
     /// Just update the callback
-    inline void setParams(Task_ptr triggeredTask) {setParams(triggeredTask,_triggerPosition,_radius);}
+    inline void setParams(Task_ptr triggeredTask) {
+        setParams(triggeredTask, _triggerPosition, _radius);
+    }
 
-    ///SceneNode concrete implementations
+    /// SceneNode concrete implementations
     bool unload();
 
-    ///When the SceneGraph calls the trigger's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn, 
-                        const SceneRenderState& sceneRenderState, 
+    /// When the SceneGraph calls the trigger's render function, we draw the
+    /// impostor if needed
+    virtual void render(SceneGraphNode* const sgn,
+                        const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage);
-    void getDrawCommands(SceneGraphNode* const sgn, 
+    void getDrawCommands(SceneGraphNode* const sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) { }
-    ///SceneNode test
-    bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = false ) {
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
+    /// SceneNode test
+    bool isInView(const SceneRenderState& sceneRenderState,
+                  SceneGraphNode* const sgn, const bool distanceCheck = false) {
         return _drawImpostor;
     }
-protected:
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {}
 
-private:
+   protected:
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+                     SceneState& sceneState) {}
+
+   private:
     /// The Task to be launched when triggered
     Task_ptr _triggeredTask;
     /// The trigger circle's center position
@@ -84,10 +102,10 @@ private:
     F32 _radius;
     /// Draw the impostor?
     bool _drawImpostor;
-    Impostor* _triggerImpostor; ///< used for debug rendering / editing - Ionut
+    Impostor* _triggerImpostor;  ///< used for debug rendering / editing - Ionut
     bool _enabled;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 
 #endif

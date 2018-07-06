@@ -7,8 +7,8 @@
 
 namespace Divide {
 
-void ASIOImpl::handlePacket(WorldPacket& p){
-    switch(p.getOpcode()){
+void ASIOImpl::handlePacket(WorldPacket& p) {
+    switch (p.getOpcode()) {
         case MSG_HEARTBEAT:
             HandleHeartBeatOpCode(p);
             break;
@@ -22,33 +22,37 @@ void ASIOImpl::handlePacket(WorldPacket& p){
             HandleGeometryAppendOpCode(p);
             break;
         default:
-            ParamHandler::getInstance().setParam("serverResponse", "Unknown OpCode: [ 0x" + Util::toString(p.getOpcode()) + " ]");
+            ParamHandler::getInstance().setParam(
+                "serverResponse",
+                "Unknown OpCode: [ 0x" + Util::toString(p.getOpcode()) + " ]");
             break;
     };
 }
 
-void ASIOImpl::HandlePongOpCode(WorldPacket& p){
+void ASIOImpl::HandlePongOpCode(WorldPacket& p) {
     F32 time = 0;
     p >> time;
     D32 result = Time::ElapsedMilliseconds() - time;
-    ParamHandler::getInstance().setParam("serverResponse", 
-                                         "Server says: Pinged with : " + Util::toString(floor(result+0.5f)) + " ms latency");
+    ParamHandler::getInstance().setParam(
+        "serverResponse", "Server says: Pinged with : " +
+                              Util::toString(floor(result + 0.5f)) +
+                              " ms latency");
 }
 
-void ASIOImpl::HandleDisconnectOpCode(WorldPacket& p){
+void ASIOImpl::HandleDisconnectOpCode(WorldPacket& p) {
     U8 code;
     p >> code;
     Console::printfn(Locale::get("ASIO_CLOSE"));
-    if(code == 0) close();
+    if (code == 0) close();
     // else handleError(code);
 }
 
-void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p){
+void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p) {
     Console::printfn(Locale::get("ASIO_PAK_REC_GEOM_APPEND"));
     U8 size;
     p >> size;
     vectorImpl<FileData> patch;
-    for(U8 i = 0; i < size; i++){
+    for (U8 i = 0; i < size; i++) {
         FileData d;
         I8 type = -1;
         p >> d.ItemName;
@@ -63,17 +67,19 @@ void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p){
         p >> d.scale.y;
         p >> d.scale.z;
         p >> type;
-        if(type == 0) d.type = GEOMETRY;
-        else if(type == 1) d.type = VEGETATION;
-        else d.type = PRIMITIVE;
+        if (type == 0)
+            d.type = GEOMETRY;
+        else if (type == 1)
+            d.type = VEGETATION;
+        else
+            d.type = PRIMITIVE;
         p >> d.version;
         patch.push_back(d);
     }
     GET_ACTIVE_SCENE()->addPatch(patch);
 }
 
-void ASIOImpl::HandleHeartBeatOpCode(WorldPacket& p){
-    ///nothing. Heartbeats keep us alive \:D/
+void ASIOImpl::HandleHeartBeatOpCode(WorldPacket& p) {
+    /// nothing. Heartbeats keep us alive \:D/
 }
-
 };

@@ -7,8 +7,8 @@
 
 namespace Divide {
 
-GUISplash::GUISplash(const stringImpl& splashImageName,const vec2<U16>& dimensions)
-{
+GUISplash::GUISplash(const stringImpl& splashImageName,
+                     const vec2<U16>& dimensions) {
     SamplerDescriptor splashSampler;
     splashSampler.toggleMipMaps(true);
     splashSampler.setAnisotropy(16);
@@ -17,8 +17,9 @@ GUISplash::GUISplash(const stringImpl& splashImageName,const vec2<U16>& dimensio
     splashImage.setFlag(true);
     splashImage.setThreadedLoading(false);
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
-    stringImpl splashImageLocation = stringAlg::toBase(ParamHandler::getInstance().getParam<std::string>("assetsLocation") +
-                                                       "/misc_images/");
+    stringImpl splashImageLocation = stringAlg::toBase(
+        ParamHandler::getInstance().getParam<std::string>("assetsLocation") +
+        "/misc_images/");
     splashImageLocation += splashImageName;
     splashImage.setResourceLocation(splashImageLocation);
 
@@ -28,15 +29,14 @@ GUISplash::GUISplash(const stringImpl& splashImageName,const vec2<U16>& dimensio
     _splashShader = CreateResource<ShaderProgram>(splashShader);
 }
 
-GUISplash::~GUISplash()
-{
+GUISplash::~GUISplash() {
     RemoveResource(_splashImage);
     RemoveResource(_splashShader);
 }
 
-void GUISplash::render(){
+void GUISplash::render() {
     _splashImage->Bind(ShaderProgram::TEXTURE_UNIT0);
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _splashShader);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
+                          _splashShader);
 }
-
 };

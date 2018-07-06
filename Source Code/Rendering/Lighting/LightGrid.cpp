@@ -26,12 +26,9 @@
 
 namespace Divide {
 
-LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(const mat4<F32>& projection,
-                                                       const vec3<F32>& pt,
-                                                       F32 rad, 
-                                                       I32 width, 
-                                                       I32 height, 
-                                                       F32 nearPlane) {
+LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(
+    const mat4<F32>& projection, const vec3<F32>& pt, F32 rad, I32 width,
+    I32 height, F32 nearPlane) {
     vec4<F32> reg = computeClipRegion(pt, rad, nearPlane, projection);
     reg = -reg;
 
@@ -54,9 +51,11 @@ LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(const mat4<F32>& projecti
     return result;
 }
 
-inline bool testDepthBounds(const vec2<F32>& zRange, const LightGrid::LightInternal& light) {
-    // Note that since in view space greater depth means _smaller_ z value (i.e. larger _negative_ Z values), 
-    // it all gets turned inside out. 
+inline bool testDepthBounds(const vec2<F32>& zRange,
+                            const LightGrid::LightInternal& light) {
+    // Note that since in view space greater depth means _smaller_ z value (i.e.
+    // larger _negative_ Z values),
+    // it all gets turned inside out.
     // Fairly easy to get confused...
     F32 lightMin = light.position.z + light.range;
     F32 lightMax = light.position.z - light.range;
@@ -64,17 +63,19 @@ inline bool testDepthBounds(const vec2<F32>& zRange, const LightGrid::LightInter
     return (zRange.y < lightMin && zRange.x > lightMax);
 }
 
-void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, const Lights& lights,
-                      const mat4<F32>& modelView, const mat4<F32>& projection, F32 nearPlane, 
+void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution,
+                      const Lights& lights, const mat4<F32>& modelView,
+                      const mat4<F32>& projection, F32 nearPlane,
                       const vectorImpl<vec2<F32> >& gridMinMaxZ) {
-
     m_gridMinMaxZ = gridMinMaxZ;
     m_minMaxGridValid = !gridMinMaxZ.empty();
 
-    const vec2<F32> *gridMinMaxZPtr = m_minMaxGridValid ? &m_gridMinMaxZ[0] : nullptr;
+    const vec2<F32>* gridMinMaxZPtr =
+        m_minMaxGridValid ? &m_gridMinMaxZ[0] : nullptr;
 
     m_tileSize = tileSize;
-    m_gridDim.set((resolution.x + tileSize.x - 1) / tileSize.x, (resolution.y + tileSize.y - 1) / tileSize.y);
+    m_gridDim.set((resolution.x + tileSize.x - 1) / tileSize.x,
+                  (resolution.y + tileSize.y - 1) / tileSize.y);
     m_maxTileLightCount = 0;
 
     buildRects(resolution, lights, modelView, projection, nearPlane);
@@ -82,8 +83,10 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
     memset(m_gridOffsets, 0, sizeof(m_gridOffsets));
     memset(m_gridCounts, 0, sizeof(m_gridCounts));
 
-    #define GRID_OFFSETS(_x_,_y_) (m_gridOffsets[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
-    #define GRID_COUNTS(_x_,_y_)  (m_gridCounts[ _x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
+#define GRID_OFFSETS(_x_, _y_) \
+    (m_gridOffsets[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
+#define GRID_COUNTS(_x_, _y_) \
+    (m_gridCounts[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
 
     I32 totalus = 0;
     {
@@ -100,7 +103,9 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
 
             for (U32 y = l.y; y < u.y; ++y) {
                 for (U32 x = l.x; x < u.x; ++x) {
-                    if (!m_minMaxGridValid || testDepthBounds(gridMinMaxZPtr[y * m_gridDim.x + x], light)) {
+                    if (!m_minMaxGridValid ||
+                        testDepthBounds(gridMinMaxZPtr[y * m_gridDim.x + x],
+                                        light)) {
                         GRID_COUNTS(x, y) += 1;
                         ++totalus;
                     }
@@ -110,17 +115,18 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
     }
     m_tileLightIndexLists.resize(totalus);
 #ifdef _DEBUG
-    if (!m_tileLightIndexLists.empty())
-    {
-        memset(&m_tileLightIndexLists[0], 0, m_tileLightIndexLists.size() * sizeof(m_tileLightIndexLists[0]));
+    if (!m_tileLightIndexLists.empty()) {
+        memset(&m_tileLightIndexLists[0], 0,
+               m_tileLightIndexLists.size() * sizeof(m_tileLightIndexLists[0]));
     }
-#endif // _DEBUG
+#endif  // _DEBUG
     U32 offset = 0;
     {
         for (U32 y = 0; y < m_gridDim.y; ++y) {
             for (U32 x = 0; x < m_gridDim.x; ++x) {
                 U32 count = GRID_COUNTS(x, y);
-                // set offset to be just past end, then decrement while filling in
+                // set offset to be just past end, then decrement while filling
+                // in
                 GRID_OFFSETS(x, y) = offset + count;
                 offset += count;
 
@@ -130,7 +136,7 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
         }
     }
     if (m_screenRects.size() && !m_tileLightIndexLists.empty()) {
-        I32 *data = &m_tileLightIndexLists[0];
+        I32* data = &m_tileLightIndexLists[0];
         for (vectorAlg::vecSize i = 0; i < m_screenRects.size(); ++i) {
             U32 lightId = U32(i);
 
@@ -146,7 +152,9 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
 
             for (U32 y = l.y; y < u.y; ++y) {
                 for (U32 x = l.x; x < u.x; ++x) {
-                    if (!m_minMaxGridValid || testDepthBounds(gridMinMaxZPtr[y * m_gridDim.x + x], light)) {
+                    if (!m_minMaxGridValid ||
+                        testDepthBounds(gridMinMaxZPtr[y * m_gridDim.x + x],
+                                        light)) {
                         // store reversely into next free slot
                         offset = GRID_OFFSETS(x, y) - 1;
                         data[offset] = lightId;
@@ -156,22 +164,24 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
             }
         }
     }
-    #undef GRID_COUNTS
-    #undef GRID_OFFSETS
+#undef GRID_COUNTS
+#undef GRID_OFFSETS
 }
 
 void LightGrid::prune(const vectorImpl<vec2<F32> >& gridMinMaxZ) {
     m_gridMinMaxZ = gridMinMaxZ;
     m_minMaxGridValid = !gridMinMaxZ.empty();
 
-    if (!m_minMaxGridValid || m_tileLightIndexLists.empty())
-        return;
+    if (!m_minMaxGridValid || m_tileLightIndexLists.empty()) return;
 
-    const vec2<F32> *gridMinMaxZPtr = m_minMaxGridValid ? &m_gridMinMaxZ[0] : nullptr;
-    I32 *lightInds = &m_tileLightIndexLists[0];
+    const vec2<F32>* gridMinMaxZPtr =
+        m_minMaxGridValid ? &m_gridMinMaxZ[0] : nullptr;
+    I32* lightInds = &m_tileLightIndexLists[0];
 
-    #define GRID_OFFSETS(_x_,_y_) (m_gridOffsets[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
-    #define GRID_COUNTS(_x_,_y_)  (m_gridCounts[ _x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
+#define GRID_OFFSETS(_x_, _y_) \
+    (m_gridOffsets[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
+#define GRID_COUNTS(_x_, _y_) \
+    (m_gridCounts[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
 
     I32 totalus = 0;
     m_maxTileLightCount = 0;
@@ -181,9 +191,11 @@ void LightGrid::prune(const vectorImpl<vec2<F32> >& gridMinMaxZ) {
             U32 offset = GRID_OFFSETS(x, y);
 
             for (U32 i = 0; i < count; ++i) {
-                const LightInternal &l = m_viewSpaceLights[lightInds[offset + i]];
+                const LightInternal& l =
+                    m_viewSpaceLights[lightInds[offset + i]];
                 if (!testDepthBounds(gridMinMaxZPtr[y * m_gridDim.x + x], l)) {
-                    std::swap(lightInds[offset + i], lightInds[offset + count - 1]);
+                    std::swap(lightInds[offset + i],
+                              lightInds[offset + count - 1]);
                     --count;
                 }
             }
@@ -192,26 +204,30 @@ void LightGrid::prune(const vectorImpl<vec2<F32> >& gridMinMaxZ) {
             m_maxTileLightCount = std::max(m_maxTileLightCount, count);
         }
     }
-    #undef GRID_COUNTS
-    #undef GRID_OFFSETS
+#undef GRID_COUNTS
+#undef GRID_OFFSETS
 }
 
-void LightGrid::pruneFarOnly(F32 aNear, const vectorImpl<vec2<F32> >& gridMinMaxZ) {
-
+void LightGrid::pruneFarOnly(F32 aNear,
+                             const vectorImpl<vec2<F32> >& gridMinMaxZ) {
     m_gridMinMaxZ = gridMinMaxZ;
     m_minMaxGridValid = !gridMinMaxZ.empty();
 
-    if (!m_minMaxGridValid || m_tileLightIndexLists.empty()){
+    if (!m_minMaxGridValid || m_tileLightIndexLists.empty()) {
         return;
     }
-    for (vectorImpl<vec2<F32> >::iterator it = std::begin(m_gridMinMaxZ); it != std::end(m_gridMinMaxZ); ++it) {
+    for (vectorImpl<vec2<F32> >::iterator it = std::begin(m_gridMinMaxZ);
+         it != std::end(m_gridMinMaxZ); ++it) {
         it->x = -aNear;
     }
-    const vec2<F32> *gridMinMaxZPtr = m_minMaxGridValid ? &m_gridMinMaxZ[0] : nullptr;
-    I32 *lightInds = &m_tileLightIndexLists[0];
+    const vec2<F32>* gridMinMaxZPtr =
+        m_minMaxGridValid ? &m_gridMinMaxZ[0] : nullptr;
+    I32* lightInds = &m_tileLightIndexLists[0];
 
-    #define GRID_OFFSETS(_x_,_y_) (m_gridOffsets[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
-    #define GRID_COUNTS(_x_,_y_)  (m_gridCounts[ _x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
+#define GRID_OFFSETS(_x_, _y_) \
+    (m_gridOffsets[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
+#define GRID_COUNTS(_x_, _y_) \
+    (m_gridCounts[_x_ + _y_ * Config::Lighting::LIGHT_GRID_MAX_DIM_X])
 
     I32 totalus = 0;
     m_maxTileLightCount = 0;
@@ -221,9 +237,11 @@ void LightGrid::pruneFarOnly(F32 aNear, const vectorImpl<vec2<F32> >& gridMinMax
             U32 offset = GRID_OFFSETS(x, y);
 
             for (U32 i = 0; i < count; ++i) {
-                const LightInternal &l = m_viewSpaceLights[lightInds[offset + i]];
+                const LightInternal& l =
+                    m_viewSpaceLights[lightInds[offset + i]];
                 if (!testDepthBounds(gridMinMaxZPtr[y * m_gridDim.x + x], l)) {
-                    std::swap(lightInds[offset + i], lightInds[offset + count - 1]);
+                    std::swap(lightInds[offset + i],
+                              lightInds[offset + count - 1]);
                     --count;
                 }
             }
@@ -232,29 +250,26 @@ void LightGrid::pruneFarOnly(F32 aNear, const vectorImpl<vec2<F32> >& gridMinMax
             m_maxTileLightCount = std::max(m_maxTileLightCount, count);
         }
     }
-    #undef GRID_COUNTS
-    #undef GRID_OFFSETS
+#undef GRID_COUNTS
+#undef GRID_OFFSETS
 }
 
-void LightGrid::buildRects(const vec2<U16>& resolution, 
-                           const Lights& lights, 
+void LightGrid::buildRects(const vec2<U16>& resolution, const Lights& lights,
                            const mat4<F32>& modelView,
-                           const mat4<F32>& projection,
-                           F32 nearPlane) {
-
+                           const mat4<F32>& projection, F32 nearPlane) {
     m_viewSpaceLights.clear();
     m_viewSpaceLights.reserve(lights.size());
 
     m_screenRects.clear();
     m_screenRects.reserve(lights.size());
 
-    for(U32 i = 0; i < lights.size(); ++i) {
-        const LightInternal &l = lights[i];
+    for (U32 i = 0; i < lights.size(); ++i) {
+        const LightInternal& l = lights[i];
         vec3<F32> vp = modelView.transform(l.position);
-        ScreenRect rect = findScreenSpaceBounds(projection, vp, l.range, resolution.x, resolution.y, nearPlane);
+        ScreenRect rect = findScreenSpaceBounds(
+            projection, vp, l.range, resolution.x, resolution.y, nearPlane);
 
-        if (rect.min.x < rect.max.x && rect.min.y < rect.max.y)
-        {
+        if (rect.min.x < rect.max.x && rect.min.y < rect.max.y) {
             m_screenRects.push_back(rect);
             // save light in model space
             m_viewSpaceLights.push_back(makeLight(vp, l));
@@ -262,4 +277,4 @@ void LightGrid::buildRects(const vec2<U16>& resolution,
     }
 }
 
-}; //namespace Divide
+};  // namespace Divide

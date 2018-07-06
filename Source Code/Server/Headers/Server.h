@@ -10,16 +10,17 @@
 namespace Divide {
 
 DEFINE_SINGLETON(Server)
+  public:
+    void init(U16 port, const stringImpl& broadcast_endpoint_address,
+              bool debugOutput);
 
-public:
-    void init(U16 port,const stringImpl& broadcast_endpoint_address,bool debugOutput);
-
-private:
+  private:
     Server();
     ~Server();
-    void handle_accept(tcp_session_ptr session, const boost::system::error_code& ec);
+    void handle_accept(tcp_session_ptr session,
+                       const boost::system::error_code& ec);
 
-private:
+  private:
     boost::asio::io_service io_service_;
     tcp::acceptor* acceptor_;
     channel channel_;
@@ -27,5 +28,5 @@ private:
 
 END_SINGLETON
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

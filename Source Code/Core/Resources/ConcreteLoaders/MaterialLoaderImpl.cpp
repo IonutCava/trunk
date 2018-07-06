@@ -5,18 +5,18 @@
 
 namespace Divide {
 
-Material* ImplResourceLoader<Material>::operator()(){
+Material* ImplResourceLoader<Material>::operator()() {
     Material* ptr = MemoryManager_NEW Material();
     assert(ptr != nullptr);
 
-    if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::DELETE( ptr );
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
     } else {
-        if ( _descriptor.getFlag() ) {
-            ptr->setShaderProgram( "", true );
+        if (_descriptor.getFlag()) {
+            ptr->setShaderProgram("", true);
         }
-        if ( _descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED ) {
-            ptr->setHardwareSkinning( true );
+        if (_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED) {
+            ptr->setHardwareSkinning(true);
         }
     }
 
@@ -24,5 +24,4 @@ Material* ImplResourceLoader<Material>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Material)
-
 };

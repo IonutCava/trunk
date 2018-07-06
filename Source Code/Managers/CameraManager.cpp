@@ -7,11 +7,11 @@
 
 namespace Divide {
 
-CameraManager::CameraManager(Kernel* const kernelPtr) : FrameListener(), 
-                                                        _kernelPtr(kernelPtr),
-                                                        _camera(nullptr),
-                                                        _addNewListener(false)
-{
+CameraManager::CameraManager(Kernel* const kernelPtr)
+    : FrameListener(),
+      _kernelPtr(kernelPtr),
+      _camera(nullptr),
+      _addNewListener(false) {
     REGISTER_FRAME_LISTENER(this, 0);
 }
 
@@ -26,16 +26,16 @@ CameraManager::~CameraManager() {
     _cameraPoolGUID.clear();
 }
 
-bool CameraManager::frameStarted(const FrameEvent& evt){
+bool CameraManager::frameStarted(const FrameEvent& evt) {
     assert(_camera);
 
-    if (_addNewListener){
+    if (_addNewListener) {
         Camera* cam = nullptr;
         for (CameraPool::value_type& it : _cameraPool) {
             cam = it.second;
             cam->clearListeners();
-            for ( const DELEGATE_CBK<>& listener : _updateCameralisteners ) {
-                cam->addUpdateListener( listener );
+            for (const DELEGATE_CBK<>& listener : _updateCameralisteners) {
+                cam->addUpdateListener(listener);
             }
         }
         _addNewListener = false;
@@ -43,7 +43,7 @@ bool CameraManager::frameStarted(const FrameEvent& evt){
 
     U64 timeDelta = _kernelPtr->getCurrentTimeDelta();
     _camera->update(timeDelta);
-    
+
     return true;
 }
 
@@ -59,35 +59,37 @@ void CameraManager::setActiveCamera(Camera* cam, bool callActivate) {
     }
 }
 
-void CameraManager::addNewCamera(const stringImpl& cameraName, Camera* const camera){
-    if(camera == nullptr) {
-        Console::errorfn(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),cameraName.c_str());
+void CameraManager::addNewCamera(const stringImpl& cameraName,
+                                 Camera* const camera) {
+    if (camera == nullptr) {
+        Console::errorfn(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),
+                         cameraName.c_str());
         return;
     }
 
-    camera->setIOD(ParamHandler::getInstance().getParam<F32>("postProcessing.anaglyphOffset"));
+    camera->setIOD(ParamHandler::getInstance().getParam<F32>(
+        "postProcessing.anaglyphOffset"));
     camera->setName(cameraName);
 
     for (const DELEGATE_CBK<>& listener : _updateCameralisteners) {
         camera->addUpdateListener(listener);
     }
-    
+
     hashAlg::emplace(_cameraPool, cameraName, camera);
     hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);
 }
 
-Camera* CameraManager::findCamera(const stringImpl& name){
+Camera* CameraManager::findCamera(const stringImpl& name) {
     const CameraPool::const_iterator& it = _cameraPool.find(name);
-    assert (it != std::end(_cameraPool));
+    assert(it != std::end(_cameraPool));
 
     return it->second;
 }
 
 Camera* CameraManager::findCamera(U64 cameraGUID) {
     const CameraPoolGUID::const_iterator& it = _cameraPoolGUID.find(cameraGUID);
-    assert (it != std::end(_cameraPoolGUID));
+    assert(it != std::end(_cameraPoolGUID));
 
     return it->second;
 }
-
 };

@@ -5,12 +5,12 @@
 
 namespace Divide {
 
-bool CEGUIInput::injectOISKey(bool pressed,const Input::KeyEvent& inKey){
-     if (pressed){
+bool CEGUIInput::injectOISKey(bool pressed, const Input::KeyEvent& inKey) {
+    if (pressed) {
         CEGUI_DEFAULT_CONTEXT.injectKeyDown((CEGUI::Key::Scan)inKey._key);
         CEGUI_DEFAULT_CONTEXT.injectChar((CEGUI::Key::Scan)inKey._text);
         begin(inKey);
-    }else{
+    } else {
         CEGUI_DEFAULT_CONTEXT.injectKeyUp((CEGUI::Key::Scan)inKey._key);
         end(inKey);
     }
@@ -18,10 +18,11 @@ bool CEGUIInput::injectOISKey(bool pressed,const Input::KeyEvent& inKey){
 }
 
 void CEGUIInput::repeatKey(I32 inKey, U32 Char) {
-    // Now remember the key is still down, so we need to simulate the key being released, and then repressed immediatly
-    CEGUI_DEFAULT_CONTEXT.injectKeyUp( (CEGUI::Key::Scan)inKey );   // Key UP
-    CEGUI_DEFAULT_CONTEXT.injectKeyDown( (CEGUI::Key::Scan)inKey ); // Key Down
-    CEGUI_DEFAULT_CONTEXT.injectChar( Char );     // What that key means
+    // Now remember the key is still down, so we need to simulate the key being
+    // released, and then repressed immediatly
+    CEGUI_DEFAULT_CONTEXT.injectKeyUp((CEGUI::Key::Scan)inKey);    // Key UP
+    CEGUI_DEFAULT_CONTEXT.injectKeyDown((CEGUI::Key::Scan)inKey);  // Key Down
+    CEGUI_DEFAULT_CONTEXT.injectChar(Char);  // What that key means
 }
 
 bool CEGUIInput::onKeyDown(const Input::KeyEvent& key) {
@@ -38,49 +39,53 @@ bool CEGUIInput::mouseMoved(const Input::MouseEvent& arg) {
     return true;
 }
 
-bool CEGUIInput::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
+bool CEGUIInput::mouseButtonPressed(const Input::MouseEvent& arg,
+                                    Input::MouseButton button) {
     switch (button) {
-        case Input::MouseButton::MB_Left : {
+        case Input::MouseButton::MB_Left: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::LeftButton);
         } break;
-        case Input::MouseButton::MB_Middle : {
+        case Input::MouseButton::MB_Middle: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::MiddleButton);
         } break;
-        case Input::MouseButton::MB_Right : {
+        case Input::MouseButton::MB_Right: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::RightButton);
         } break;
-        case Input::MouseButton::MB_Button3 : {
+        case Input::MouseButton::MB_Button3: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X1Button);
         } break;
-        case Input::MouseButton::MB_Button4 : {
+        case Input::MouseButton::MB_Button4: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X2Button);
         } break;
-        default : return false;
+        default:
+            return false;
     };
- 
+
     return true;
 }
 
-bool CEGUIInput::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
+bool CEGUIInput::mouseButtonReleased(const Input::MouseEvent& arg,
+                                     Input::MouseButton button) {
     switch (button) {
-        case Input::MouseButton::MB_Left : {
+        case Input::MouseButton::MB_Left: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::LeftButton);
         } break;
-        case Input::MouseButton::MB_Middle : {
+        case Input::MouseButton::MB_Middle: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::MiddleButton);
         } break;
-        case Input::MouseButton::MB_Right : {
+        case Input::MouseButton::MB_Right: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::RightButton);
         } break;
-        case Input::MouseButton::MB_Button3 : {
+        case Input::MouseButton::MB_Button3: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X1Button);
         } break;
-        case Input::MouseButton::MB_Button4 : {
+        case Input::MouseButton::MB_Button4: {
             CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X2Button);
         } break;
-        default : return false;
+        default:
+            return false;
     };
- 
+
     return true;
 }
 
@@ -88,24 +93,27 @@ bool CEGUIInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     return true;
 }
 
-bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov){
+bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     return true;
 }
 
-bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button){
+bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg,
+                                       I8 button) {
     return true;
 }
 
-bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg, I8 button){
+bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg,
+                                        I8 button) {
     return true;
 }
 
-bool CEGUIInput::joystickSliderMoved( const Input::JoystickEvent &arg, I8 index){
+bool CEGUIInput::joystickSliderMoved(const Input::JoystickEvent& arg,
+                                     I8 index) {
     return true;
 }
 
-bool CEGUIInput::joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index){
+bool CEGUIInput::joystickVector3DMoved(const Input::JoystickEvent& arg,
+                                       I8 index) {
     return true;
 }
-
 };

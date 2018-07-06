@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -27,9 +36,9 @@
 #include "GUIText.h"
 
 namespace CEGUI {
-    class Window;
-    class Font;
-    class EventArgs;
+class Window;
+class Font;
+class EventArgs;
 };
 
 namespace Divide {
@@ -38,31 +47,30 @@ class GUIButton : public GUIElement {
     typedef DELEGATE_CBK<> ButtonCallback;
     friend class GUI;
 
-protected:
-    GUIButton(const stringImpl& id,
-              const stringImpl& text,
-              const stringImpl& guiScheme,
-              const vec2<I32>& position,
-              const vec2<U32>& dimensions,
-              const vec3<F32>& color,
-              CEGUI::Window* parent,
-              ButtonCallback callback);
+   protected:
+    GUIButton(const stringImpl& id, const stringImpl& text,
+              const stringImpl& guiScheme, const vec2<I32>& position,
+              const vec2<U32>& dimensions, const vec3<F32>& color,
+              CEGUI::Window* parent, ButtonCallback callback);
     ~GUIButton();
 
     void setTooltip(const stringImpl& tooltipText);
-    void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
+    void setFont(const stringImpl& fontName, const stringImpl& fontFileName,
+                 U32 size);
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
-protected:
+   protected:
     stringImpl _text;
-    vec2<U32>    _dimensions;
-    vec3<F32>    _color;
-    bool        _pressed;
-    bool        _highlight;
-    ButtonCallback _callbackFunction;    /* A pointer to a function to call if the button is pressed */
-    CEGUI::Window *_btnWindow;
+    vec2<U32> _dimensions;
+    vec3<F32> _color;
+    bool _pressed;
+    bool _highlight;
+    ButtonCallback
+        _callbackFunction; /* A pointer to a function to call if the button is
+                              pressed */
+    CEGUI::Window* _btnWindow;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 
 #endif

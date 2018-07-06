@@ -25,75 +25,80 @@ namespace Divide {
 enum OPCodes : I32;
 class ASIO;
 
-class Client
-{
-public:
-  Client(ASIO* asioPointer, boost::asio::io_service& io_service, bool debugOutput)
-    : _asioPointer(asioPointer),
-      stopped_(false),
-      _debugOutput(debugOutput),
-      socket_(io_service),
-      deadline_(io_service),
-      heartbeat_timer_(io_service)
-  {
-  }
+class Client {
+   public:
+    Client(ASIO* asioPointer, boost::asio::io_service& io_service,
+           bool debugOutput)
+        : _asioPointer(asioPointer),
+          stopped_(false),
+          _debugOutput(debugOutput),
+          socket_(io_service),
+          deadline_(io_service),
+          heartbeat_timer_(io_service) {}
 
-  // Start:: Called by the user of the client class to initiate the connection process.
-  // The endpoint iterator will have been obtained using a tcp::resolver.
-  // Stop:: This function terminates all the actors to shut down the connection. It
-  // may be called by the user of the client class, or by the class itself in
-  // response to graceful termination or an unrecoverable error.
+    // Start:: Called by the user of the client class to initiate the connection
+    // process.
+    // The endpoint iterator will have been obtained using a tcp::resolver.
+    // Stop:: This function terminates all the actors to shut down the
+    // connection. It
+    // may be called by the user of the client class, or by the class itself in
+    // response to graceful termination or an unrecoverable error.
 
-  void start(tcp::resolver::iterator endpoint_iter);
-  void stop();
+    void start(tcp::resolver::iterator endpoint_iter);
+    void stop();
 
-  inline tcp::socket& getSocket(){  return socket_; }
+    inline tcp::socket& getSocket() { return socket_; }
 
-  //Packet I/O
-  void sendPacket(WorldPacket& p);
-  void receivePacket(WorldPacket& p);
+    // Packet I/O
+    void sendPacket(WorldPacket& p);
+    void receivePacket(WorldPacket& p);
 
-  void toggleDebugOutput(bool debugOutput){_debugOutput = debugOutput;}
+    void toggleDebugOutput(bool debugOutput) { _debugOutput = debugOutput; }
 
-private:
+   private:
+    // Connection
+    void start_connect(tcp::resolver::iterator endpoint_iter);
+    void handle_connect(const boost::system::error_code& ec,
+                        tcp::resolver::iterator endpoint_iter);
 
-  //Connection
-  void start_connect(tcp::resolver::iterator endpoint_iter);
-  void handle_connect(const boost::system::error_code& ec, tcp::resolver::iterator endpoint_iter);
+    // Read
+    void start_read();
+    void handle_read_body(const boost::system::error_code& ec,
+                          size_t bytes_transfered);
+    void handle_read_packet(const boost::system::error_code& ec,
+                            size_t bytes_transfered);
+    // File Input
+    void receiveFile();
+    void handle_read_file(const boost::system::error_code& ec,
+                          size_t bytes_transfered);
 
-  //Read
-  void start_read();
-  void handle_read_body(const boost::system::error_code& ec,size_t bytes_transfered);
-  void handle_read_packet(const boost::system::error_code& ec,size_t bytes_transfered);
-    //File Input
-  void receiveFile();
-  void handle_read_file(const boost::system::error_code& ec,size_t bytes_transfered);
+    // Write
+    void start_write();
+    void handle_write(const boost::system::error_code& ec);
+    void handle_read_file_content(const boost::system::error_code& err,
+                                  std::size_t bytes_transfered);
 
-  //Write
-  void start_write();
-  void handle_write(const boost::system::error_code& ec);
-  void handle_read_file_content(const boost::system::error_code& err, std::size_t bytes_transfered);
+    // Timers
+    void check_deadline();
 
-  //Timers
-  void check_deadline();
+   private:
+    bool stopped_, _debugOutput;
+    tcp::socket socket_;
+    size_t header;
+    boost::asio::streambuf input_buffer_;
+    deadline_timer deadline_;
+    deadline_timer heartbeat_timer_;
+    std::deque<WorldPacket> _packetQueue;
 
-private:
-  bool stopped_,_debugOutput;
-  tcp::socket socket_;
-  size_t header;
-  boost::asio::streambuf input_buffer_;
-  deadline_timer deadline_;
-  deadline_timer heartbeat_timer_;
-  std::deque<WorldPacket> _packetQueue;
+    // File Data
+    std::ofstream output_file;
+    ;
+    boost::asio::streambuf request_buf;
+    size_t file_size;
+    boost::array<char, 1024> buf;
 
-  //File Data
-  std::ofstream output_file;;
-  boost::asio::streambuf request_buf;
-  size_t file_size;
-  boost::array<char, 1024> buf;
-
-  ASIO* _asioPointer;
+    ASIO* _asioPointer;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

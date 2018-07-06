@@ -4,18 +4,27 @@ Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-and associated documentation files (the "Software"), to deal in the Software without restriction,
-including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software
+and associated documentation files (the "Software"), to deal in the Software
+without restriction,
+including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the Software
+is furnished to do so,
 subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
@@ -35,13 +44,15 @@ class AnimEvaluator;
 class SceneAnimator;
 class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
+   public:
+    typedef hashMapImpl<U32 /*frame index*/, BoundingBox> boundingBoxPerFrame;
+    typedef hashMapImpl<U32 /*animation ID*/, boundingBoxPerFrame>
+        boundingBoxPerAnimation;
+    typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/>
+        frameIndexes;
 
-public:
-    typedef hashMapImpl<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
-    typedef hashMapImpl<U32 /*animation ID*/, boundingBoxPerFrame> boundingBoxPerAnimation;
-    typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/> frameIndexes;
-
-    AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN);
+    AnimationComponent(SceneAnimator* animator,
+                       SceneGraphNode* const parentSGN);
     ~AnimationComponent();
     bool onDraw(RenderStage currentStage);
 
@@ -51,23 +62,20 @@ public:
     /// Select an animation by name
     bool playAnimation(const stringImpl& name);
     /// Select an animation by index
-    bool playAnimation(I32  pAnimIndex);
+    bool playAnimation(I32 pAnimIndex);
     /// Select next available animation
     bool playNextAnimation();
 
-    inline I32 frameIndex() const {
-        return frameIndex(_currentAnimIndex);
-    }
-    inline I32 frameCount() const {
-        return frameCount(_currentAnimIndex);
-    }
+    inline I32 frameIndex() const { return frameIndex(_currentAnimIndex); }
+    inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
     I32 frameIndex(U32 animationID) const;
     I32 frameCount(U32 animationID) const;
 
     inline const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const {
         return transformsByIndex(_currentAnimIndex, index);
     }
-    const vectorImpl<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
+    const vectorImpl<mat4<F32> >& transformsByIndex(U32 animationID,
+                                                    U32 index) const;
 
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
@@ -80,23 +88,24 @@ public:
         return getBoneTransform(_currentAnimIndex, name);
     }
 
-    const mat4<F32>& currentBoneTransform(U32 animationID, const stringImpl& name);
+    const mat4<F32>& currentBoneTransform(U32 animationID,
+                                          const stringImpl& name);
     const mat4<F32>& getBoneTransform(U32 animationID, const stringImpl& name);
 
-    inline bool playAnimations()           const { return _playAnimations; }
-    inline void playAnimations(bool state)       { _playAnimations = state; }
-    
-    inline I32  animationIndex() const { return _currentAnimIndex; }
+    inline bool playAnimations() const { return _playAnimations; }
+    inline void playAnimations(bool state) { _playAnimations = state; }
 
-    inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationID) { 
-        return _boundingBoxes[animationID]; 
+    inline I32 animationIndex() const { return _currentAnimIndex; }
+
+    inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationID) {
+        return _boundingBoxes[animationID];
     }
 
     const AnimEvaluator& GetAnimationByIndex(I32 animationID) const;
 
     void resetTimers();
 
-protected:
+   protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
     SceneAnimator* _animator;
     /// Current animation index for the current SGN
@@ -106,21 +115,21 @@ protected:
     /// Last updated frame indexes for each animation
     frameIndexes _lastFrameIndexes;
     /// Does the mesh have a valid skeleton?
-    bool _skeletonAvailable; 
+    bool _skeletonAvailable;
     /// Animation playback toggle
     bool _playAnimations;
     /// Animation timestamp changed
     bool _updateAnimations;
-    ///BoundingBoxes for every frame
+    /// BoundingBoxes for every frame
     boundingBoxPerFrame _bbsPerFrame;
-    ///store a map of bounding boxes for every animation at every frame
+    /// store a map of bounding boxes for every animation at every frame
     boundingBoxPerAnimation _boundingBoxes;
-    ///used to upload bone data to the gpu
+    /// used to upload bone data to the gpu
     ShaderBuffer* _boneTransformBuffer[2];
-    ///used to switch bone buffers around per frame
+    /// used to switch bone buffers around per frame
     U32 _readBuffer;
     U32 _writeBuffer;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

@@ -2,6 +2,4 @@
 
 #include "Core/Headers/Application.h"
 
-namespace Divide {
-
-}; //namespace Divide
+namespace Divide {};  // namespace Divide

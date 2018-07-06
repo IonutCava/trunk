@@ -8,41 +8,43 @@
 
 namespace Divide {
 
-SceneManager::SceneManager() : FrameListener(),
-                               _GUI(nullptr),
-                               _activeScene(nullptr),
-                               _renderPassCuller(nullptr),
-                               _renderPassManager(nullptr),
-                               _defaultMaterial(nullptr),
-                               _loadPreRenderComplete(false),
-                               _processInput(false),
-                               _init(false)
+SceneManager::SceneManager()
+    : FrameListener(),
+      _GUI(nullptr),
+      _activeScene(nullptr),
+      _renderPassCuller(nullptr),
+      _renderPassManager(nullptr),
+      _defaultMaterial(nullptr),
+      _loadPreRenderComplete(false),
+      _processInput(false),
+      _init(false)
 
 {
     DVDConverter::createInstance();
     AI::AIManager::createInstance();
 }
 
-SceneManager::~SceneManager()
-{
+SceneManager::~SceneManager() {
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
 
     Console::printfn(Locale::get("STOP_SCENE_MANAGER"));
-    //Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
+    // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
     Console::printfn(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
     MemoryManager::DELETE_HASHMAP(_sceneMap);
-    MemoryManager::DELETE( _renderPassCuller );
-    //Destroy the model loader;
+    MemoryManager::DELETE(_renderPassCuller);
+    // Destroy the model loader;
     DVDConverter::getInstance().destroyInstance();
 }
 
-bool SceneManager::init(GUI* const gui){
+bool SceneManager::init(GUI* const gui) {
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 1);
 
-    //Load default material
+    // Load default material
     Console::printfn(Locale::get("LOAD_DEFAULT_MATERIAL"));
-    _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial",
-                                            false);
+    _defaultMaterial = XML::loadMaterialXML(
+        ParamHandler::getInstance().getParam<std::string>("scriptLocation") +
+            "/defaultMaterial",
+        false);
     _defaultMaterial->dumpToFile(false);
 
     _GUI = gui;
@@ -52,22 +54,23 @@ bool SceneManager::init(GUI* const gui){
     return true;
 }
 
-bool SceneManager::load(const stringImpl& sceneName, const vec2<U16>& resolution){
+bool SceneManager::load(const stringImpl& sceneName,
+                        const vec2<U16>& resolution) {
     assert(_init == true && _GUI != nullptr);
     Console::printfn(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
-    //Initialize the model importer:
-    if(!DVDConverter::getInstance().init()){
+    // Initialize the model importer:
+    if (!DVDConverter::getInstance().init()) {
         return false;
     }
     XML::loadScene(stringAlg::fromBase(sceneName), *this);
-    if(!_activeScene){
+    if (!_activeScene) {
         return false;
     }
     cacheResolution(resolution);
     return _activeScene->load(sceneName, _GUI);
 }
 
-Scene* SceneManager::createScene(const stringImpl& name){
+Scene* SceneManager::createScene(const stringImpl& name) {
     Scene* scene = nullptr;
 
     if (!name.empty()) {
@@ -81,20 +84,20 @@ Scene* SceneManager::createScene(const stringImpl& name){
     return scene;
 }
 
-bool SceneManager::unloadCurrentScene()  {  
-    AI::AIManager::getInstance().pauseUpdate(true); 
+bool SceneManager::unloadCurrentScene() {
+    AI::AIManager::getInstance().pauseUpdate(true);
     RemoveResource(_defaultMaterial);
     return _activeScene->unload();
 }
 
-void SceneManager::initPostLoadState(){
+void SceneManager::initPostLoadState() {
     Material::serializeShaderLoad(true);
     _loadPreRenderComplete = _processInput = true;
 }
 
-bool SceneManager::deinitializeAI(bool continueOnErrors)  { 
+bool SceneManager::deinitializeAI(bool continueOnErrors) {
     bool state = _activeScene->deinitializeAI(continueOnErrors);
-    AI::AIManager::getInstance().destroyInstance(); 
+    AI::AIManager::getInstance().destroyInstance();
     return state;
 }
 
@@ -102,11 +105,9 @@ bool SceneManager::frameStarted(const FrameEvent& evt) {
     return _activeScene->frameStarted();
 }
 
-bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
-    return true;
-}
+bool SceneManager::framePreRenderStarted(const FrameEvent& evt) { return true; }
 
-bool SceneManager::frameEnded(const FrameEvent& evt){
+bool SceneManager::frameEnded(const FrameEvent& evt) {
     _renderPassCuller->refresh();
 
     if (_loadPreRenderComplete) {
@@ -115,27 +116,28 @@ bool SceneManager::frameEnded(const FrameEvent& evt){
     return _activeScene->frameEnded();
 }
 
-void SceneManager::preRender() {
-    _activeScene->preRender();
-}
+void SceneManager::preRender() { _activeScene->preRender(); }
 
 void SceneManager::updateVisibleNodes() {
-    _renderPassCuller->cullSceneGraph(GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state());
+    _renderPassCuller->cullSceneGraph(GET_ACTIVE_SCENEGRAPH().getRoot(),
+                                      _activeScene->state());
 }
 
 void SceneManager::renderVisibleNodes() {
     updateVisibleNodes();
-    _renderPassManager->render(_activeScene->renderState(), _activeScene->getSceneGraph());
+    _renderPassManager->render(_activeScene->renderState(),
+                               _activeScene->getSceneGraph());
 }
 
 void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
     assert(_activeScene != nullptr);
 
     static DELEGATE_CBK<> renderFunction;
-    if(!renderFunction){
-        if(!_activeScene->renderCallback()){
-            renderFunction = DELEGATE_BIND(&SceneManager::renderVisibleNodes, this);
-        }else{
+    if (!renderFunction) {
+        if (!_activeScene->renderCallback()) {
+            renderFunction =
+                DELEGATE_BIND(&SceneManager::renderVisibleNodes, this);
+        } else {
             renderFunction = _activeScene->renderCallback();
         }
     }
@@ -145,21 +147,18 @@ void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
     _activeScene->debugDraw(stage);
 }
 
-void SceneManager::postRender(){
-    _activeScene->postRender();
-}
+void SceneManager::postRender() { _activeScene->postRender(); }
 
-void SceneManager::onCameraChange(){
-    _activeScene->onCameraChange();
-}
+void SceneManager::onCameraChange() { _activeScene->onCameraChange(); }
 
-///--------------------------Input Management-------------------------------------///
+///--------------------------Input
+///Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
     if (!_processInput) {
         return false;
     }
-    return  _activeScene->onKeyDown(key);
+    return _activeScene->onKeyDown(key);
 }
 
 bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
@@ -178,61 +177,66 @@ bool SceneManager::mouseMoved(const Input::MouseEvent& arg) {
     return _activeScene->mouseMoved(arg);
 }
 
-bool SceneManager::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
+bool SceneManager::mouseButtonPressed(const Input::MouseEvent& arg,
+                                      Input::MouseButton button) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->mouseButtonPressed(arg,button);
+    return _activeScene->mouseButtonPressed(arg, button);
 }
 
-bool SceneManager::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
+bool SceneManager::mouseButtonReleased(const Input::MouseEvent& arg,
+                                       Input::MouseButton button) {
     if (!_processInput) {
         return false;
     }
 
-    return _activeScene->mouseButtonReleased(arg,button);
+    return _activeScene->mouseButtonReleased(arg, button);
 }
 
 bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickAxisMoved(arg,axis);
+    return _activeScene->joystickAxisMoved(arg, axis);
 }
 
-bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov){
+bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickPovMoved(arg,pov);
+    return _activeScene->joystickPovMoved(arg, pov);
 }
 
-bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button){
+bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg,
+                                         I8 button) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickButtonPressed(arg,button);
+    return _activeScene->joystickButtonPressed(arg, button);
 }
 
-bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg, I8 button){
+bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg,
+                                          I8 button) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickButtonReleased(arg,button);
+    return _activeScene->joystickButtonReleased(arg, button);
 }
 
-bool SceneManager::joystickSliderMoved( const Input::JoystickEvent &arg, I8 index){
+bool SceneManager::joystickSliderMoved(const Input::JoystickEvent& arg,
+                                       I8 index) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickSliderMoved(arg,index);
+    return _activeScene->joystickSliderMoved(arg, index);
 }
 
-bool SceneManager::joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index){
+bool SceneManager::joystickVector3DMoved(const Input::JoystickEvent& arg,
+                                         I8 index) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickVector3DMoved(arg,index);
+    return _activeScene->joystickVector3DMoved(arg, index);
 }
-
 };

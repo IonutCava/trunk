@@ -6,21 +6,17 @@
 namespace Divide {
 namespace AI {
 
-const char* GOAPFactName(GOAPFact fact) {
-    return Util::toString(fact).c_str();
-}
+const char* GOAPFactName(GOAPFact fact) { return Util::toString(fact).c_str(); }
 
-GOAPGoal::GOAPGoal(const std::string& name) : goap::WorldState(),
-                                              _relevancy(0.0f)
-{
+GOAPGoal::GOAPGoal(const std::string& name)
+    : goap::WorldState(), _relevancy(0.0f) {
     name_ = name;
 }
 
-GOAPGoal::~GOAPGoal()
-{
-}
+GOAPGoal::~GOAPGoal() {}
 
-bool GOAPGoal::plan(const GOAPWorldState& worldState, const GOAPActionSet& actionSet) {
+bool GOAPGoal::plan(const GOAPWorldState& worldState,
+                    const GOAPActionSet& actionSet) {
     _currentPlan.resize(0);
     if (worldState.meetsGoal(*this)) {
         return false;
@@ -31,9 +27,7 @@ bool GOAPGoal::plan(const GOAPWorldState& worldState, const GOAPActionSet& actio
     return !_currentPlan.empty();
 }
 
-const GOAPPlan& GOAPGoal::getCurrentPlan() const {
-    return _currentPlan;
-}
+const GOAPPlan& GOAPGoal::getCurrentPlan() const { return _currentPlan; }
 
-}; //namespace AI
-}; //namespace Divide
+};  // namespace AI
+};  // namespace Divide

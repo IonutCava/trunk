@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -31,23 +40,22 @@ class Terrain;
 class WaterPlane;
 
 class MainScene : public Scene {
-public:
-    MainScene() : Scene(),
-                  _waterGraphNode(nullptr),
-                  _water(nullptr),
-                  _beep(nullptr),
-                  _freeflyCamera(false),
-                  _updateLights(true),
-                  _sun(nullptr)
-    {
-    }
+   public:
+    MainScene()
+        : Scene(),
+          _waterGraphNode(nullptr),
+          _water(nullptr),
+          _beep(nullptr),
+          _freeflyCamera(false),
+          _updateLights(true),
+          _sun(nullptr) {}
 
     /*General Scene Requirement*/
     bool load(const stringImpl& name, GUI* const gui);
     bool unload();
     bool loadResources(bool continueOnErrors);
 
-private:
+   private:
     /*Specific Scene Requirement*/
     void updateLights();
     void processInput(const U64 deltaTime);
@@ -56,13 +64,13 @@ private:
     void test(cdiggins::any a, CallbackParam b);
     bool onKeyUp(const Input::KeyEvent& key);
     bool mouseMoved(const Input::MouseEvent& key);
-    bool mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button);
+    bool mouseButtonReleased(const Input::MouseEvent& key,
+                             Input::MouseButton button);
 
-private:
-
+   private:
     vec2<F32> _sunAngle;
-    vec4<F32> _sunvector,_sunColor;
-    F32  _sun_cosy;
+    vec4<F32> _sunvector, _sunColor;
+    F32 _sun_cosy;
     bool _freeflyCamera;
     bool _updateLights;
     AudioDescriptor* _beep;
@@ -72,6 +80,6 @@ private:
     SceneGraphNode* _waterGraphNode;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 
 #endif;

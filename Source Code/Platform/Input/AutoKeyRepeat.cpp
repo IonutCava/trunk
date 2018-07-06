@@ -2,13 +2,10 @@
 #include "Platform/Input/Headers/InputInterface.h"
 
 namespace Divide {
-    namespace Input {
+namespace Input {
 
-AutoRepeatKey::AutoRepeatKey(D32 repeatDelay, D32 initialDelay):
-    _repeatDelay(repeatDelay),
-    _initialDelay(initialDelay)
-{
-}
+AutoRepeatKey::AutoRepeatKey(D32 repeatDelay, D32 initialDelay)
+    : _repeatDelay(repeatDelay), _initialDelay(initialDelay) {}
 
 void AutoRepeatKey::begin(const KeyEvent &evt) {
     _key = evt;
@@ -24,12 +21,12 @@ void AutoRepeatKey::end(const KeyEvent &evt) {
     _key._key = KeyCode::KC_UNASSIGNED;
 }
 
-//Inject key repeats if the _repeatDelay expired between calls
+// Inject key repeats if the _repeatDelay expired between calls
 void AutoRepeatKey::update(const U64 deltaTime) {
     if (_key._key == KeyCode::KC_UNASSIGNED) {
         return;
     }
-    _elapsed += (deltaTime * 0.000001); //< use seconds
+    _elapsed += (deltaTime * 0.000001);  //< use seconds
     if (_elapsed < _delay) return;
 
     _elapsed -= _delay;
@@ -44,5 +41,5 @@ void AutoRepeatKey::update(const U64 deltaTime) {
     _elapsed = 0.0;
 }
 
-    }; //namespace Input
-}; //namespace Divide
+};  // namespace Input
+};  // namespace Divide

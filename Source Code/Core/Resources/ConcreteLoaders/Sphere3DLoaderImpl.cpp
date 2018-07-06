@@ -6,24 +6,24 @@
 
 namespace Divide {
 
-Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
+Sphere3D* ImplResourceLoader<Sphere3D>::operator()() {
     Sphere3D* ptr = MemoryManager_NEW Sphere3D(1, 32);
 
-    if ( _descriptor.getFlag() ) {
-        ptr->renderState().useDefaultMaterial( false );
+    if (_descriptor.getFlag()) {
+        ptr->renderState().useDefaultMaterial(false);
     } else {
-        Material* matTemp = CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
+        Material* matTemp = CreateResource<Material>(
+            ResourceDescriptor("Material_" + _descriptor.getName()));
         matTemp->setShadingMode(Material::SHADING_BLINN_PHONG);
         ptr->setMaterialTpl(matTemp);
     }
 
-    if(!load(ptr,_descriptor.getName())){
-        MemoryManager::DELETE( ptr );
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
     }
 
     return ptr;
 }
 
 DEFAULT_LOADER_IMPL(Sphere3D)
-
 };

@@ -1,5 +1,3 @@
 #include "Headers/DivideTileCache.h"
 
-namespace Divide {
-
-};
+namespace Divide {};

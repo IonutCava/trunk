@@ -9,13 +9,11 @@ using boost::asio::ip::udp;
 
 namespace Divide {
 
-class tcp_session_impl : public tcp_session_tpl
-{
-public:
-  tcp_session_impl(boost::asio::io_service& io_service, channel& ch);
+class tcp_session_impl : public tcp_session_tpl {
+   public:
+    tcp_session_impl(boost::asio::io_service& io_service, channel& ch);
 
-private:
-
+   private:
     void handlePacket(WorldPacket& p);
 
     void HandleHeartBeatOpCode(WorldPacket& p);
@@ -25,5 +23,5 @@ private:
     void HandlePingOpCode(WorldPacket& p);
 };
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

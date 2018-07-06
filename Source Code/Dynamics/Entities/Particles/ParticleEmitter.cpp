@@ -11,269 +11,295 @@
 
 namespace Divide {
 
-    ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
-        _drawImpostor(false),
-        _updateParticleEmitterBB(true),
-        _particleStateBlockHash(0),
-        _enabled(false),
-        _uploaded(false),
-        _created(false),
-        _particleTexture(nullptr),
-        _particleShader(nullptr),
-        _particleGPUBuffer(nullptr),
-        _particleDepthShader(nullptr)
-    {
-        _drawCommand = GenericDrawCommand(TRIANGLE_STRIP, 0, 4, 1);
-        _readOffset = 0;
-        _writeOffset = 2;
+ParticleEmitter::ParticleEmitter()
+    : SceneNode(TYPE_PARTICLE_EMITTER),
+      _drawImpostor(false),
+      _updateParticleEmitterBB(true),
+      _particleStateBlockHash(0),
+      _enabled(false),
+      _uploaded(false),
+      _created(false),
+      _particleTexture(nullptr),
+      _particleShader(nullptr),
+      _particleGPUBuffer(nullptr),
+      _particleDepthShader(nullptr) {
+    _drawCommand = GenericDrawCommand(TRIANGLE_STRIP, 0, 4, 1);
+    _readOffset = 0;
+    _writeOffset = 2;
+}
+
+ParticleEmitter::~ParticleEmitter() { unload(); }
+
+bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
+    // assert if double init!
+    DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
+                  "ParticleEmitter::initData error: Double initData detected!");
+
+    updateData(particleData);
+
+    _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/ false);
+    _particleGPUBuffer->Create(3);
+
+    // Not using Quad3D to improve performance
+    static F32 particleQuad[] = {
+        -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f,
+        -0.5f, 0.5f,  0.0f, 0.5f, 0.5f,  0.0f,
+    };
+
+    _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false,
+                                  false);
+    _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_POSITION_LOCATION)
+        .set(0, 0, 3, false, 0, 0, FLOAT_32);
+
+    // Generate a render state
+    RenderStateBlockDescriptor particleStateDesc;
+    particleStateDesc.setCullMode(CULL_MODE_NONE);
+    particleStateDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA,
+                               BLEND_PROPERTY_INV_SRC_ALPHA);
+    _particleStateBlockHash =
+        GFX_DEVICE.getOrCreateStateBlock(particleStateDesc);
+
+    ResourceDescriptor particleShaderDescriptor("particles");
+    _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
+    _particleShader->UniformTexture("depthBuffer", 1);
+    REGISTER_TRACKED_DEPENDENCY(_particleShader);
+
+    ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
+    _particleDepthShader =
+        CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
+    REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
+
+    _impostor =
+        CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
+    _impostor->renderState().setDrawState(false);
+    _impostor->getMaterialTpl()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
+    _impostor->getMaterialTpl()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
+
+    //_renderState.addToDrawExclusionMask(SHADOW_STAGE);
+
+    return (_particleShader != nullptr);
+}
+
+bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
+    DIVIDE_ASSERT(particleData.get() == nullptr,
+                  "ParticleEmitter::updateData error: Invalid particle data!");
+
+    _created = false;
+    U32 particleCount = _particles->totalCount();
+    _particles = particleData;
+
+    _particleGPUBuffer->SetBuffer(1, particleCount * 3, 4 * sizeof(F32), 1,
+                                  NULL, true, true, /*true*/ false);
+    _particleGPUBuffer->SetBuffer(2, particleCount * 3, 4 * sizeof(U8), 1, NULL,
+                                  true, true, /*true*/ false);
+
+    _particleGPUBuffer->getDrawAttribDescriptor(13)
+        .set(1, 1, 4, false, 0, 0, FLOAT_32);
+    _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION)
+        .set(2, 1, 4, true, 0, 0, UNSIGNED_BYTE);
+
+    for (U32 i = 0; i < particleCount; ++i) {
+        // Distance to camera (squared)
+        _particles->_misc[i].w = -1.0f;
+        _particles->_alive[i] = false;
     }
 
-    ParticleEmitter::~ParticleEmitter()
-    {
-        unload();
-    }
-
-    bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
-        // assert if double init!
-        DIVIDE_ASSERT(_particleGPUBuffer == nullptr, "ParticleEmitter::initData error: Double initData detected!");
-
-        updateData(particleData);
-
-        _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/false);
-        _particleGPUBuffer->Create(3);
-
-        // Not using Quad3D to improve performance
-        static F32 particleQuad[] = {
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f,
-             0.5f, 0.5f, 0.0f,
-        };
-
-        _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false, false);
-        _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_POSITION_LOCATION).set(0, 0, 3, false, 0, 0, FLOAT_32);
-
-        //Generate a render state
-        RenderStateBlockDescriptor particleStateDesc;
-        particleStateDesc.setCullMode(CULL_MODE_NONE);
-        particleStateDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-        _particleStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(particleStateDesc);
-
-        ResourceDescriptor particleShaderDescriptor("particles");
-        _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
-        _particleShader->UniformTexture("depthBuffer", 1);
-        REGISTER_TRACKED_DEPENDENCY(_particleShader);
-
-        ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
-        _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
-        REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
-
-        _impostor = CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
-        _impostor->renderState().setDrawState(false);
-        _impostor->getMaterialTpl()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-        _impostor->getMaterialTpl()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-
-        //_renderState.addToDrawExclusionMask(SHADOW_STAGE);
-
-        return (_particleShader != nullptr);
-    }
-
-    bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
-        DIVIDE_ASSERT(particleData.get() == nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
-
-        _created = false;
-        U32 particleCount = _particles->totalCount();
-        _particles = particleData;
-
-        _particleGPUBuffer->SetBuffer(1, particleCount * 3, 4 * sizeof(F32), 1, NULL, true, true, /*true*/false);
-        _particleGPUBuffer->SetBuffer(2, particleCount * 3, 4 * sizeof(U8),  1, NULL, true, true, /*true*/false);
-
-        _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, 0, FLOAT_32);
-        _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION).set(2, 1, 4, true, 0, 0, UNSIGNED_BYTE);
-
-        for (U32 i = 0; i < particleCount; ++i) {
-            //Distance to camera (squared)
-            _particles->_misc[i].w = -1.0f;
-            _particles->_alive[i] = false;
-        }
-
-        if (_particleTexture) {
-            UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
-            RemoveResource(_particleTexture);
-        }
-
-        if (!_particles->_textureFileName.empty()) {
-            SamplerDescriptor textureSampler;
-            textureSampler.toggleSRGBColorSpace(true);
-
-            ResourceDescriptor texture(_particles->_textureFileName);
-            texture.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/" +
-                                        ParamHandler::getInstance().getParam<stringImpl>("defaultTextureLocation") + "/" +
-                                        _particles->_textureFileName);
-            texture.setFlag(true);
-            texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-
-            _particleTexture = CreateResource<Texture>(texture);
-
-            REGISTER_TRACKED_DEPENDENCY(_particleTexture);
-        }
-        _created = true;
-
-        return _created;
-    }
-
-    bool ParticleEmitter::unload(){
-        if (getState() != RES_LOADED && getState() != RES_LOADING) {
-            return true;
-        }
-
+    if (_particleTexture) {
         UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
-        UNREGISTER_TRACKED_DEPENDENCY(_particleShader);
-        UNREGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
         RemoveResource(_particleTexture);
-        RemoveResource(_particleShader);
-        RemoveResource(_particleDepthShader);
-
-        MemoryManager::DELETE(_particleGPUBuffer);
-
-        _created = false;
-
-        return SceneNode::unload();
     }
 
-    void ParticleEmitter::postLoad(SceneGraphNode* const sgn){
-        sgn->addNode(_impostor)->setActive(false);
-        SceneNode::postLoad(sgn);
+    if (!_particles->_textureFileName.empty()) {
+        SamplerDescriptor textureSampler;
+        textureSampler.toggleSRGBColorSpace(true);
+
+        ResourceDescriptor texture(_particles->_textureFileName);
+        texture.setResourceLocation(
+            ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
+            "/" +
+            ParamHandler::getInstance().getParam<stringImpl>(
+                "defaultTextureLocation") +
+            "/" + _particles->_textureFileName);
+        texture.setFlag(true);
+        texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
+
+        _particleTexture = CreateResource<Texture>(texture);
+
+        REGISTER_TRACKED_DEPENDENCY(_particleTexture);
     }
+    _created = true;
 
-    bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn){
-        if (!_enabled || !_created) {
-            return false;
-        }
+    return _created;
+}
 
-        _updateParticleEmitterBB = true;
-        sgn->getBoundingBox().set(vec3<F32>(-5), vec3<F32>(5));
-        return SceneNode::computeBoundingBox(sgn);
-    }
-
-    void ParticleEmitter::onCameraChange(SceneGraphNode* const sgn){
-        const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
-        _particleShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], 
-                                                                     viewMatrixCache.m[1][0],
-                                                                     viewMatrixCache.m[2][0]));
-        _particleShader->Uniform("CameraUp_worldspace", vec3<F32>(viewMatrixCache.m[0][1],
-                                                                  viewMatrixCache.m[1][1],
-                                                                  viewMatrixCache.m[2][1]));
-        _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0],
-                                                                          viewMatrixCache.m[1][0], 
-                                                                          viewMatrixCache.m[2][0]));
-        _particleDepthShader->Uniform("CameraUp_worldspace", vec3<F32>(viewMatrixCache.m[0][1],
-                                                                       viewMatrixCache.m[1][1],
-                                                                       viewMatrixCache.m[2][1]));
-    }
-
-    void ParticleEmitter::getDrawCommands(SceneGraphNode* const sgn, 
-                                          const RenderStage& currentRenderStage, 
-                                          SceneRenderState& sceneRenderState,
-                                          vectorImpl<GenericDrawCommand>& drawCommandsOut) 
-    {
-        U32 particleCount = _particles->aliveCount();
-        if (!(particleCount > 0 && _enabled && _created)) {
-            return;
-        }
-
-        _drawCommand.renderWireframe(sgn->getComponent<RenderingComponent>()->renderWireframe());
-        _drawCommand.stateHash(_particleStateBlockHash);
-        _drawCommand.instanceCount(particleCount);
-        _drawCommand.shaderProgram(currentRenderStage == FINAL_STAGE ? _particleShader : _particleDepthShader);
-        _drawCommand.sourceBuffer(_particleGPUBuffer);
-        drawCommandsOut.push_back(_drawCommand);
-    }
-
-    ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
-    void ParticleEmitter::render(SceneGraphNode* const sgn,
-                                 const SceneRenderState& sceneRenderState, 
-                                 const RenderStage& currentRenderStage) {
-
-        U32 particleCount = _particles->aliveCount();
-        if (particleCount > 0 && _enabled && _created){
-            _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
-            GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(ShaderProgram::TEXTURE_UNIT1,
-                                                                             TextureDescriptor::Depth);
-            GFX_DEVICE.submitRenderCommand(sgn->getComponent<RenderingComponent>()->getDrawCommands());
-        }
-    }
-
-    void ParticleEmitter::uploadToGPU(){
-        static const size_t attribSize_float = 4 * sizeof(F32);
-        static const size_t attribSize_char = 4 * sizeof(U8);
-        if (_uploaded || !_created) {
-            return;
-        }
-
-        U32 writeOffset = _writeOffset * (U32)_particles->totalCount();
-        U32 readOffset = _readOffset   * (U32)_particles->totalCount();
-
-        _particleGPUBuffer->SetIndexBuffer(_particles->getSortedIndices(), true, true);
-        _particleGPUBuffer->UpdateBuffer(1, _particles->aliveCount(), writeOffset, _particles->_position.data());
-        _particleGPUBuffer->UpdateBuffer(2, _particles->aliveCount(), writeOffset, _particles->_color.data());
-
-        _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, readOffset, FLOAT_32);
-        _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION).set(2, 1, 4, true, 0, readOffset, UNSIGNED_BYTE);
-
-        _writeOffset = (_writeOffset + 1) % 3;
-        _readOffset = (_readOffset + 1) % 3;
-
-        _uploaded = true;
-    }
-
-    ///The onDraw call will emit particles
-    bool ParticleEmitter::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
-        if (!_enabled || _particles->aliveCount() == 0 || !_created) {
-            return false;
-        }
-        _particles->sort();
-        uploadToGPU();
-
+bool ParticleEmitter::unload() {
+    if (getState() != RES_LOADED && getState() != RES_LOADING) {
         return true;
     }
 
-    /// Pre-process particles
-    void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+    UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
+    UNREGISTER_TRACKED_DEPENDENCY(_particleShader);
+    UNREGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
+    RemoveResource(_particleTexture);
+    RemoveResource(_particleShader);
+    RemoveResource(_particleDepthShader);
 
-        if (!_enabled || !_created) {
-            return;
-        }
+    MemoryManager::DELETE(_particleGPUBuffer);
 
-        PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
-        const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
+    _created = false;
 
-        if (_updateParticleEmitterBB) {
-            sgn->updateBoundingBoxTransform(transform->getWorldMatrix());
-            _updateParticleEmitterBB = false;
-        }
+    return SceneNode::unload();
+}
 
-        for (std::shared_ptr<ParticleSource>& source : _sources) {
-            source->emit(deltaTime, _particles.get());
-        }
+void ParticleEmitter::postLoad(SceneGraphNode* const sgn) {
+    sgn->addNode(_impostor)->setActive(false);
+    SceneNode::postLoad(sgn);
+}
 
-        U32 count = _particles->totalCount();
-        U8 lodLevel = sgn->getComponent<RenderingComponent>()->lodLevel();
-        for (U32 i = 0; i < count; ++i) {
-            _particles->_misc[i].w = _particles->_position[i].xyz().distanceSquared(eyePos);
-            _particles->_acceleration[i].set(0.0f);
-            _particles->lodLevel(lodLevel);
-        }
-
-        for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
-            up->update(deltaTime, _particles.get());
-        }
-
-//        const vec3<F32>& origin = transform->getPosition();
-//        const Quaternion<F32>& orientation = transform->getOrientation();
-
-        _uploaded = false;
-
-        SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn) {
+    if (!_enabled || !_created) {
+        return false;
     }
+
+    _updateParticleEmitterBB = true;
+    sgn->getBoundingBox().set(vec3<F32>(-5), vec3<F32>(5));
+    return SceneNode::computeBoundingBox(sgn);
+}
+
+void ParticleEmitter::onCameraChange(SceneGraphNode* const sgn) {
+    const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
+    _particleShader->Uniform(
+        "CameraRight_worldspace",
+        vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0],
+                  viewMatrixCache.m[2][0]));
+    _particleShader->Uniform(
+        "CameraUp_worldspace",
+        vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1],
+                  viewMatrixCache.m[2][1]));
+    _particleDepthShader->Uniform(
+        "CameraRight_worldspace",
+        vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0],
+                  viewMatrixCache.m[2][0]));
+    _particleDepthShader->Uniform(
+        "CameraUp_worldspace",
+        vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1],
+                  viewMatrixCache.m[2][1]));
+}
+
+void ParticleEmitter::getDrawCommands(
+    SceneGraphNode* const sgn, const RenderStage& currentRenderStage,
+    SceneRenderState& sceneRenderState,
+    vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+    U32 particleCount = _particles->aliveCount();
+    if (!(particleCount > 0 && _enabled && _created)) {
+        return;
+    }
+
+    _drawCommand.renderWireframe(
+        sgn->getComponent<RenderingComponent>()->renderWireframe());
+    _drawCommand.stateHash(_particleStateBlockHash);
+    _drawCommand.instanceCount(particleCount);
+    _drawCommand.shaderProgram(currentRenderStage == FINAL_STAGE
+                                   ? _particleShader
+                                   : _particleDepthShader);
+    _drawCommand.sourceBuffer(_particleGPUBuffer);
+    drawCommandsOut.push_back(_drawCommand);
+}
+
+/// When the SceneGraph calls the particle emitter's render function, we draw
+/// the impostor if needed
+void ParticleEmitter::render(SceneGraphNode* const sgn,
+                             const SceneRenderState& sceneRenderState,
+                             const RenderStage& currentRenderStage) {
+    U32 particleCount = _particles->aliveCount();
+    if (particleCount > 0 && _enabled && _created) {
+        _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
+        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
+            ->Bind(ShaderProgram::TEXTURE_UNIT1, TextureDescriptor::Depth);
+        GFX_DEVICE.submitRenderCommand(
+            sgn->getComponent<RenderingComponent>()->getDrawCommands());
+    }
+}
+
+void ParticleEmitter::uploadToGPU() {
+    static const size_t attribSize_float = 4 * sizeof(F32);
+    static const size_t attribSize_char = 4 * sizeof(U8);
+    if (_uploaded || !_created) {
+        return;
+    }
+
+    U32 writeOffset = _writeOffset * (U32)_particles->totalCount();
+    U32 readOffset = _readOffset * (U32)_particles->totalCount();
+
+    _particleGPUBuffer->SetIndexBuffer(_particles->getSortedIndices(), true,
+                                       true);
+    _particleGPUBuffer->UpdateBuffer(1, _particles->aliveCount(), writeOffset,
+                                     _particles->_position.data());
+    _particleGPUBuffer->UpdateBuffer(2, _particles->aliveCount(), writeOffset,
+                                     _particles->_color.data());
+
+    _particleGPUBuffer->getDrawAttribDescriptor(13)
+        .set(1, 1, 4, false, 0, readOffset, FLOAT_32);
+    _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION)
+        .set(2, 1, 4, true, 0, readOffset, UNSIGNED_BYTE);
+
+    _writeOffset = (_writeOffset + 1) % 3;
+    _readOffset = (_readOffset + 1) % 3;
+
+    _uploaded = true;
+}
+
+/// The onDraw call will emit particles
+bool ParticleEmitter::onDraw(SceneGraphNode* const sgn,
+                             const RenderStage& currentStage) {
+    if (!_enabled || _particles->aliveCount() == 0 || !_created) {
+        return false;
+    }
+    _particles->sort();
+    uploadToGPU();
+
+    return true;
+}
+
+/// Pre-process particles
+void ParticleEmitter::sceneUpdate(const U64 deltaTime,
+                                  SceneGraphNode* const sgn,
+                                  SceneState& sceneState) {
+    if (!_enabled || !_created) {
+        return;
+    }
+
+    PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
+    const vec3<F32>& eyePos =
+        sceneState.getRenderState().getCameraConst().getEye();
+
+    if (_updateParticleEmitterBB) {
+        sgn->updateBoundingBoxTransform(transform->getWorldMatrix());
+        _updateParticleEmitterBB = false;
+    }
+
+    for (std::shared_ptr<ParticleSource>& source : _sources) {
+        source->emit(deltaTime, _particles.get());
+    }
+
+    U32 count = _particles->totalCount();
+    U8 lodLevel = sgn->getComponent<RenderingComponent>()->lodLevel();
+    for (U32 i = 0; i < count; ++i) {
+        _particles->_misc[i].w =
+            _particles->_position[i].xyz().distanceSquared(eyePos);
+        _particles->_acceleration[i].set(0.0f);
+        _particles->lodLevel(lodLevel);
+    }
+
+    for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
+        up->update(deltaTime, _particles.get());
+    }
+
+    //        const vec3<F32>& origin = transform->getPosition();
+    //        const Quaternion<F32>& orientation = transform->getOrientation();
+
+    _uploaded = false;
+
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+}
 };

@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -23,16 +32,17 @@
 #ifndef _FRAME_LISTENER_MANAGER_H_
 #define _FRAME_LISTENER_MANAGER_H_
 
-///Add this include here so that any FrameListner derived class only needs to include the manager
+/// Add this include here so that any FrameListner derived class only needs to
+/// include the manager
 #include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {
 
 DEFINE_SINGLETON(FrameListenerManager)
 
-typedef vectorImpl<D32> EventTimeMap;
+    typedef vectorImpl<D32> EventTimeMap;
 
-public:
+  public:
     void registerFrameListener(FrameListener* listener, U32 callOrder);
     void removeFrameListener(FrameListener* listener);
     void idle();
@@ -42,7 +52,7 @@ public:
     /// pass the current time in microseconds as the first parameter
     void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt);
 
-private:
+  private:
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
     bool framePreRenderEnded(const FrameEvent& evt);
@@ -55,21 +65,21 @@ private:
     /// returns the event time in milliseconds
     D32 calculateEventTime(const D32 currentTime, FrameEventType type);
 
-private:
-    vectorImpl<FrameListener* > _listeners;
+  private:
+    vectorImpl<FrameListener*> _listeners;
     EventTimeMap _eventTimers[FRAME_EVENT_ENDED + 1];
 
 END_SINGLETON
 
-inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder){
-    FrameListenerManager::getInstance().registerFrameListener(listener, callOrder);
+inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder) {
+    FrameListenerManager::getInstance().registerFrameListener(listener,
+                                                              callOrder);
 }
 
-
-inline void UNREGISTER_FRAME_LISTENER(FrameListener* listener){
+inline void UNREGISTER_FRAME_LISTENER(FrameListener* listener) {
     FrameListenerManager::getInstance().removeFrameListener(listener);
 }
 
-}; //namespace Divide
+};  // namespace Divide
 
 #endif

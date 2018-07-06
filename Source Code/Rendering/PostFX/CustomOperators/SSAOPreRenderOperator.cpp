@@ -10,12 +10,11 @@ namespace Divide {
 
 SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
-                                             SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,resolution,sampler),
-                                                                                 _outputFB(result)
-{
+                                             SamplerDescriptor* const sampler)
+    : PreRenderOperator(SSAO_STAGE, resolution, sampler), _outputFB(result) {
     TextureDescriptor outputDescriptor(TEXTURE_2D, RGB8, UNSIGNED_BYTE);
     outputDescriptor.setSampler(*_internalSampler);
-    _outputFB->AddAttachment(outputDescriptor,TextureDescriptor::Color0);
+    _outputFB->AddAttachment(outputDescriptor, TextureDescriptor::Color0);
     _outputFB->Create(_resolution.width, _resolution.height);
     ResourceDescriptor ssao("SSAOPass");
     ssao.setThreadedLoading(false);
@@ -24,22 +23,20 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
     _ssaoShader->UniformTexture("texDepth", 1);
 }
 
-SSAOPreRenderOperator::~SSAOPreRenderOperator(){
-    RemoveResource(_ssaoShader);
-}
+SSAOPreRenderOperator::~SSAOPreRenderOperator() { RemoveResource(_ssaoShader); }
 
-void SSAOPreRenderOperator::reshape(I32 width, I32 height){
+void SSAOPreRenderOperator::reshape(I32 width, I32 height) {
     _outputFB->Create(width, height);
 }
 
-void SSAOPreRenderOperator::operation(){
-    if(!_enabled) return;
+void SSAOPreRenderOperator::operation() {
+    if (!_enabled) return;
 
     _outputFB->Begin(Framebuffer::defaultPolicy());
-    _inputFB[0]->Bind(0); // screen
-    _inputFB[1]->Bind(1, TextureDescriptor::Depth); // depth
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _ssaoShader);
+    _inputFB[0]->Bind(0);                            // screen
+    _inputFB[1]->Bind(1, TextureDescriptor::Depth);  // depth
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
+                          _ssaoShader);
     _outputFB->End();
 }
-
 };

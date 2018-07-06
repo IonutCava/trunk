@@ -2,13 +2,7 @@
 
 namespace Divide {
 
-CommandParser::CommandParser()
-{
-}
+CommandParser::CommandParser() {}
 
-CommandParser::~CommandParser()
-{
-    _commandMap.clear();
-}
-
-};
+CommandParser::~CommandParser() { _commandMap.clear(); }
+};  // namespace Divide

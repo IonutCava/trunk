@@ -12,98 +12,105 @@
 namespace Divide {
 namespace AI {
 namespace Navigation {
-    NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false),
-                                           _dirty(true),
-                                           _paused(false), 
-                                           _color(0), 
-                                           _primitive(nullptr)
-    {
-        //Generate a render state
-        RenderStateBlockDescriptor navigationDebugDesc;
-        navigationDebugDesc.setCullMode(CULL_MODE_NONE);
-        navigationDebugDesc.setBlend(true);
-        _navMeshStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);
+NavMeshDebugDraw::NavMeshDebugDraw()
+    : _overrideColor(false),
+      _dirty(true),
+      _paused(false),
+      _color(0),
+      _primitive(nullptr) {
+    // Generate a render state
+    RenderStateBlockDescriptor navigationDebugDesc;
+    navigationDebugDesc.setCullMode(CULL_MODE_NONE);
+    navigationDebugDesc.setBlend(true);
+    _navMeshStateBlockHash =
+        GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);
+}
+
+NavMeshDebugDraw::~NavMeshDebugDraw() {
+    // Allow the primitive to be deleted
+    if (_primitive) _primitive->_canZombify = true;
+}
+
+void NavMeshDebugDraw::paused(bool state) {
+    _paused = state;
+    if (_primitive) _primitive->paused(_paused);
+}
+
+void NavMeshDebugDraw::depthMask(bool state) {
+    RenderStateBlockDescriptor newDepthDesc(
+        GFX_DEVICE.getStateBlockDescriptor(_navMeshStateBlockHash));
+    newDepthDesc.setZReadWrite(true, state);
+    _navMeshStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(newDepthDesc);
+}
+
+void NavMeshDebugDraw::beginBatch() {
+    if (!_primitive) {
+        _dirty = true;
+        _primitive = GFX_DEVICE.getOrCreatePrimitive(false);
+        _primitive->stateHash(_navMeshStateBlockHash);
     }
 
-    NavMeshDebugDraw::~NavMeshDebugDraw()
-    {
-       //Allow the primitive to be deleted
-        if(_primitive)
-            _primitive->_canZombify = true;
+    assert(_primitive != nullptr);
+
+    if (_dirty) _primitive->beginBatch();
+}
+
+void NavMeshDebugDraw::endBatch() {
+    if (!_dirty) return;
+
+    if (_primitive) _primitive->endBatch();
+
+    _dirty = false;
+}
+
+void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
+    if (!_dirty || !_primitive) return;
+
+    switch (prim) {
+        default:
+        case DU_DRAW_TRIS:
+            _primType = TRIANGLES;
+            break;
+        case DU_DRAW_POINTS:
+            _primType = API_POINTS;
+            break;
+        case DU_DRAW_LINES:
+            _primType = LINES;
+            break;
+        case DU_DRAW_QUADS: /*_primType = QUADS;*/
+            assert(prim == DU_DRAW_QUADS);
     }
 
-    void NavMeshDebugDraw::paused(bool state) {
-        _paused = state;
-        if(_primitive)
-            _primitive->paused(_paused);
+    _primitive->attribute4ub("inColorData", vec4<U8>(255, 255, 255, 64));
+    _primitive->begin(_primType);
+}
+
+void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z,
+                              U32 color) {
+    if (!_dirty || !_primitive) {
+        return;
+    }
+    if (_overrideColor) {
+        color = _color;
     }
 
-    void NavMeshDebugDraw::depthMask(bool state){
-        RenderStateBlockDescriptor newDepthDesc(GFX_DEVICE.getStateBlockDescriptor(_navMeshStateBlockHash));
-        newDepthDesc.setZReadWrite(true, state);
-        _navMeshStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(newDepthDesc);
-    }
+    U8 colorVec[4];
+    rcCol(color, colorVec[0], colorVec[1], colorVec[2], colorVec[3]);
+    colorVec[3] = 64;
 
-    void NavMeshDebugDraw::beginBatch(){
-        if(!_primitive){
-            _dirty = true;
-            _primitive = GFX_DEVICE.getOrCreatePrimitive(false);
-            _primitive->stateHash(_navMeshStateBlockHash);
-        }
+    _primitive->attribute4ub("inColorData", colorVec[0], colorVec[1],
+                             colorVec[2], colorVec[3]);
+    _primitive->vertex(x, y, z);
+}
 
-        assert(_primitive != nullptr);
+void NavMeshDebugDraw::end() {
+    if (_dirty && _primitive) _primitive->end();
+}
 
-        if(_dirty) _primitive->beginBatch();
-    }
-
-    void NavMeshDebugDraw::endBatch(){
-        if(!_dirty) return;
-            
-        if(_primitive)
-            _primitive->endBatch();
-    
-        _dirty = false;
-    }
-
-    void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
-        if(!_dirty || !_primitive) return;
-
-        switch(prim){
-            default :
-            case DU_DRAW_TRIS:   _primType = TRIANGLES;  break;
-            case DU_DRAW_POINTS: _primType = API_POINTS; break;
-            case DU_DRAW_LINES:  _primType = LINES;      break;
-            case DU_DRAW_QUADS:  /*_primType = QUADS;*/ assert(prim == DU_DRAW_QUADS);
-        }
-
-        _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,64));
-        _primitive->begin(_primType);
-    }
-
-    void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z, U32 color){
-        if (!_dirty || !_primitive){
-            return;
-        }
-        if (_overrideColor) {
-            color = _color;
-        }
-
-        U8 colorVec[4];
-        rcCol(color, colorVec[0], colorVec[1], colorVec[2], colorVec[3]);
-        colorVec[3] = 64;
-
-        _primitive->attribute4ub("inColorData", colorVec[0], colorVec[1], colorVec[2], colorVec[3]);
-        _primitive->vertex(x, y, z);
-    }
-
-    void NavMeshDebugDraw::end() {
-        if(_dirty && _primitive) _primitive->end();
-    }
-
-    void NavMeshDebugDraw::overrideColor(U32 col) {
-        _overrideColor = true;
-        _color = col;
-    }
-}; //namespace Navigation
-}; //namespace AI
-}; //namespace Divide
+void NavMeshDebugDraw::overrideColor(U32 col) {
+    _overrideColor = true;
+    _color = col;
+}
+};  // namespace Navigation
+};  // namespace AI
+};  // namespace Divide

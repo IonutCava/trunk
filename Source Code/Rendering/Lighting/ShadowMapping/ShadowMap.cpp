@@ -11,29 +11,23 @@
 
 namespace Divide {
 
-ShadowMap::ShadowMap(Light* light, 
-                     Camera* shadowCamera, 
-                     ShadowType type) : _init(false),
-                                        _light(light),
-                                        _shadowCamera(shadowCamera),
-                                        _shadowMapType(type),
-                                        _resolution(0),
-                                        _par(ParamHandler::getInstance())
-{
+ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type)
+    : _init(false),
+      _light(light),
+      _shadowCamera(shadowCamera),
+      _shadowMapType(type),
+      _resolution(0),
+      _par(ParamHandler::getInstance()) {
     _bias.bias();
 }
 
-ShadowMap::~ShadowMap()
-{
-    MemoryManager::DELETE( _depthMap );
-}
+ShadowMap::~ShadowMap() { MemoryManager::DELETE(_depthMap); }
 
-ShadowMapInfo::ShadowMapInfo(Light* light) : _light(light),
-                                             _shadowMap(nullptr)
-{
-    if ( GFX_DEVICE.shadowDetailLevel() == DETAIL_ULTRA ) {
+ShadowMapInfo::ShadowMapInfo(Light* light)
+    : _light(light), _shadowMap(nullptr) {
+    if (GFX_DEVICE.shadowDetailLevel() == DETAIL_ULTRA) {
         _resolution = 2048;
-    } else if ( GFX_DEVICE.shadowDetailLevel() == DETAIL_HIGH ) {
+    } else if (GFX_DEVICE.shadowDetailLevel() == DETAIL_HIGH) {
         _resolution = 1024;
     } else {
         _resolution = 512;
@@ -41,13 +35,10 @@ ShadowMapInfo::ShadowMapInfo(Light* light) : _light(light),
     _numLayers = 1;
 }
 
-ShadowMapInfo::~ShadowMapInfo()
-{
-    MemoryManager::DELETE( _shadowMap );
-}
+ShadowMapInfo::~ShadowMapInfo() { MemoryManager::DELETE(_shadowMap); }
 
-ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderState,
-                                               Camera* shadowCamera) {
+ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
+    const SceneRenderState& renderState, Camera* shadowCamera) {
     if (_shadowMap) {
         return _shadowMap;
     }
@@ -57,32 +48,34 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderSta
     }
 
     switch (_light->getLightType()) {
-        case LIGHT_TYPE_POINT:{
+        case LIGHT_TYPE_POINT: {
             _numLayers = 6;
             _shadowMap = MemoryManager_NEW CubeShadowMap(_light, shadowCamera);
-            }break;
-        case LIGHT_TYPE_DIRECTIONAL:{
+        } break;
+        case LIGHT_TYPE_DIRECTIONAL: {
             DirectionalLight* dirLight = static_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
-            _shadowMap = MemoryManager_NEW CascadedShadowMaps(_light, shadowCamera, _numLayers);
-            }break;
-        case LIGHT_TYPE_SPOT:{
-            _shadowMap = MemoryManager_NEW SingleShadowMap(_light, shadowCamera);
-            }break;
+            _shadowMap = MemoryManager_NEW CascadedShadowMaps(
+                _light, shadowCamera, _numLayers);
+        } break;
+        case LIGHT_TYPE_SPOT: {
+            _shadowMap =
+                MemoryManager_NEW SingleShadowMap(_light, shadowCamera);
+        } break;
         default:
             break;
     };
 
     _shadowMap->init(this);
 
-    
     return _shadowMap;
 }
 
 void ShadowMapInfo::resolution(U16 resolution) {
     _resolution = resolution;
     if (_shadowMap) {
-        _shadowMap->resolution(_resolution, _light->shadowMapResolutionFactor());
+        _shadowMap->resolution(_resolution,
+                               _light->shadowMapResolutionFactor());
     }
 }
 
@@ -95,11 +88,7 @@ bool ShadowMap::BindInternal(U8 offset) {
     return true;
 }
 
-U16  ShadowMap::resolution() {
-    return _depthMap->getWidth();
-}
+U16 ShadowMap::resolution() { return _depthMap->getWidth(); }
 
-void ShadowMap::postRender() {
-}
-
+void ShadowMap::postRender() {}
 };

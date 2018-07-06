@@ -4,18 +4,27 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -28,23 +37,16 @@
 #include "Core/Headers/cdigginsAny.h"
 
 namespace Divide {
-    class Texture;
-    namespace AI {
+class Texture;
+namespace AI {
 
 enum AIMsg : I32;
 /// Provides a scene-level AI implementation
 class AISceneImpl : private NonCopyable {
-public:
-    AISceneImpl() : _entity(nullptr),
-                    _activeGoal(nullptr),
-                    _currentStep(-1)
-    {
-    }
+   public:
+    AISceneImpl() : _entity(nullptr), _activeGoal(nullptr), _currentStep(-1) {}
 
-    virtual ~AISceneImpl() 
-    {
-        _goals.clear();
-    }
+    virtual ~AISceneImpl() { _goals.clear(); }
 
     virtual void addEntityRef(AIEntity* entity) {
         if (entity) {
@@ -56,36 +58,37 @@ public:
     inline const GOAPWorldState& worldStateConst() const { return _worldState; }
 
     /// Register a specific action.
-    /// This only holds a reference to the action itself and does not create a local copy!
+    /// This only holds a reference to the action itself and does not create a
+    /// local copy!
     virtual void registerAction(GOAPAction* const action) {
         _actionSet.push_back(action);
     }
     /// Register a specific action.
-    /// This only holds a reference to the action itself and does not create a local copy!
-    virtual void registerGoal(const GOAPGoal& goal) {
-        _goals.push_back(goal);
-    }
+    /// This only holds a reference to the action itself and does not create a
+    /// local copy!
+    virtual void registerGoal(const GOAPGoal& goal) { _goals.push_back(goal); }
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
-        vectorImpl<GOAPGoal >::iterator it;
-        it = std::find_if(std::begin(_goals), std::end(_goals), 
-                          [&goalName]( const GOAPGoal& goal )->bool {
-                            return goal.getName().compare(goalName.c_str()) == 0; 
+        vectorImpl<GOAPGoal>::iterator it;
+        it = std::find_if(std::begin(_goals), std::end(_goals),
+                          [&goalName](const GOAPGoal& goal) -> bool {
+                              return goal.getName().compare(goalName.c_str()) ==
+                                     0;
                           });
 
         if (it != std::end(_goals)) {
             return &(*it);
         }
-    
+
         return nullptr;
     }
 
-    inline const vectorImpl<GOAPGoal >& goalListConst() const { return _goals; }
+    inline const vectorImpl<GOAPGoal>& goalListConst() const { return _goals; }
 
-protected:
+   protected:
     friend class AIEntity;
-    inline vectorImpl<GOAPGoal >& goalList() { return _goals; }
-    inline GOAPActionSet&  actionSetPtr() { return _actionSet; }
+    inline vectorImpl<GOAPGoal>& goalList() { return _goals; }
+    inline GOAPActionSet& actionSetPtr() { return _actionSet; }
 
     inline void resetActiveGoals() {
         _activeGoals.clear();
@@ -94,7 +97,7 @@ protected:
             activateGoal(stringAlg::toBase(goal.getName()));
         }
     }
-    /// Although we want the goal to be activated, 
+    /// Although we want the goal to be activated,
     /// it might not be the most relevant in the current scene state
     inline bool activateGoal(const stringImpl& name) {
         GOAPGoal* goal = findGoal(name);
@@ -106,14 +109,13 @@ protected:
 
     /// Get the most relevant goal and set it as active
     GOAPGoal* findRelevantGoal() {
-
         if (_activeGoals.empty()) {
             return nullptr;
         }
 
-        std::sort(std::begin(_activeGoals), std::end(_activeGoals), 
+        std::sort(std::begin(_activeGoals), std::end(_activeGoals),
                   [](GOAPGoal const* a, GOAPGoal const* b) {
-                    return a->relevancy() < b->relevancy();
+                      return a->relevancy() < b->relevancy();
                   });
 
         _activeGoal = _activeGoals.back();
@@ -128,11 +130,12 @@ protected:
         if (_activeGoals.empty()) {
             return false;
         }
-        vectorImpl<GOAPGoal* >::iterator it;
-        it = vectorAlg::find_if(std::begin(_activeGoals), std::end(_activeGoals),
-                                [goal](GOAPGoal const* actGoal) { 
-                                    return actGoal->getName().compare(goal->getName()) == 0; 
-                                });
+        vectorImpl<GOAPGoal*>::iterator it;
+        it = vectorAlg::find_if(
+            std::begin(_activeGoals), std::end(_activeGoals),
+            [goal](GOAPGoal const* actGoal) {
+                return actGoal->getName().compare(goal->getName()) == 0;
+            });
 
         if (it == std::end(_activeGoals)) {
             return false;
@@ -144,11 +147,11 @@ protected:
 
     inline bool replanGoal() {
         if (_activeGoal != nullptr) {
-            if (_activeGoal->plan(_worldState, _actionSet) ) {
+            if (_activeGoal->plan(_worldState, _actionSet)) {
                 popActiveGoal(_activeGoal);
                 advanceGoal();
                 return true;
-            }  else {
+            } else {
                 invalidateCurrentPlan();
             }
         }
@@ -177,19 +180,19 @@ protected:
         }
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         for (const GOAPAction* action : plan) {
-            if (!printActionStats(action)){
+            if (!printActionStats(action)) {
                 return false;
             }
         }
         return true;
     }
 
-    inline void invalidateCurrentPlan() { 
-        _activeGoal = nullptr;   
+    inline void invalidateCurrentPlan() {
+        _activeGoal = nullptr;
         _currentStep = -1;
     }
 
-    inline const GOAPAction* getActiveAction() const { 
+    inline const GOAPAction* getActiveAction() const {
         if (_activeGoal == nullptr) {
             return nullptr;
         }
@@ -197,34 +200,37 @@ protected:
         if (static_cast<U32>(_currentStep) >= plan.size()) {
             return nullptr;
         }
-        return plan[_currentStep]; 
+        return plan[_currentStep];
     }
 
     inline GOAPGoal* const getActiveGoal() { return _activeGoal; }
 
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
     virtual bool performAction(const GOAPAction* planStep) = 0;
-    virtual bool printActionStats(const GOAPAction* planStep) const { return true;  }
+    virtual bool printActionStats(const GOAPAction* planStep) const {
+        return true;
+    }
     virtual void processData(const U64 deltaTime) = 0;
     virtual void processInput(const U64 deltaTime) = 0;
     virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
-    virtual void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) = 0;
+    virtual void processMessage(AIEntity* sender, AIMsg msg,
+                                const cdiggins::any& msg_content) = 0;
     virtual void init() = 0;
 
-protected:
-    AIEntity*  _entity;
+   protected:
+    AIEntity* _entity;
 
-private:
+   private:
     I32 _currentStep;
     GOAPGoal* _activeGoal;
-    GOAPActionSet   _actionSet;
-    GOAPWorldState  _worldState;
+    GOAPActionSet _actionSet;
+    GOAPWorldState _worldState;
 
-    vectorImpl<GOAPGoal >  _goals;
-    vectorImpl<GOAPGoal* > _activeGoals;
+    vectorImpl<GOAPGoal> _goals;
+    vectorImpl<GOAPGoal*> _activeGoals;
 };
 
-    }; //namespace AI
-}; //namespace Divide
+};  // namespace AI
+};  // namespace Divide
 
 #endif

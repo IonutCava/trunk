@@ -8,34 +8,35 @@
 
 namespace Divide {
 
-RenderPassCuller::RenderPassCuller()
-{
+RenderPassCuller::RenderPassCuller() {
     _visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
 }
 
-RenderPassCuller::~RenderPassCuller()
-{
-    _visibleNodes.clear();
-}
+RenderPassCuller::~RenderPassCuller() { _visibleNodes.clear(); }
 
-/// This method performs the visibility check on the given node and all of it's children 
+/// This method performs the visibility check on the given node and all of it's
+/// children
 /// and adds them to the RenderQueue
-void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState) {
+void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode,
+                                      SceneState& sceneState) {
     bool renderingLocked = RenderPassManager::getInstance().isLocked();
 
-    if ( !_visibleNodes.empty() ) {
-        if ( renderingLocked && !RenderPassManager::getInstance().isResetQueued() ) {
-            GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState());
+    if (!_visibleNodes.empty()) {
+        if (renderingLocked &&
+            !RenderPassManager::getInstance().isResetQueued()) {
+            GFX_DEVICE.buildDrawCommands(_visibleNodes,
+                                         sceneState.getRenderState());
             return;
-        } 
+        }
         refreshNodeList();
     }
 
     cullSceneGraphCPU(currentNode, sceneState.getRenderState());
 
-    const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
-    for ( SceneGraphNode* node : _visibleNodes ) {
-        RenderQueue::getInstance().addNodeToQueue( node, eyePos );
+    const vec3<F32>& eyePos =
+        sceneState.getRenderState().getCameraConst().getEye();
+    for (SceneGraphNode* node : _visibleNodes) {
+        RenderQueue::getInstance().addNodeToQueue(node, eyePos);
     }
 
     cullSceneGraphGPU(sceneState);
@@ -43,43 +44,48 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
     GFX_DEVICE.processVisibleNodes(_visibleNodes);
     GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState());
 
-    if ( !renderingLocked ) {
+    if (!renderingLocked) {
         refreshNodeList();
     }
 }
 
-void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, 
+void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
                                          SceneRenderState& sceneRenderState) {
-    //No point in updating visual information if the scene disabled object rendering
-    //or rendering of their bounding boxes
+    // No point in updating visual information if the scene disabled object
+    // rendering
+    // or rendering of their bounding boxes
     if (bitCompare(sceneRenderState.objectState(), SceneRenderState::NO_DRAW)) {
         return;
     }
     RenderStage currentStage = GFX_DEVICE.getRenderStage();
 
-    //Bounding Boxes should be updated, so we can early cull now.
+    // Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
 
     if (currentNode->getParent()) {
         currentNode->inView(false);
-        //Skip all of this for inactive nodes.
+        // Skip all of this for inactive nodes.
         if (currentNode->isActive()) {
             SceneNode* node = currentNode->getNode();
-            //If this node isn't render-disabled, check if it is visible
-            //Skip expensive frustum culling if we shouldn't draw the node in the first place
+            // If this node isn't render-disabled, check if it is visible
+            // Skip expensive frustum culling if we shouldn't draw the node in
+            // the first place
             if (!node->renderState().getDrawState(currentStage)) {
-                //If the current SceneGraphNode isn't visible, it's children aren't visible as well
+                // If the current SceneGraphNode isn't visible, it's children
+                // aren't visible as well
                 skipChildren = true;
             } else {
-                RenderingComponent* renderingCmp = currentNode->getComponent<RenderingComponent>();
-                if (currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE &&
-                    (renderingCmp ? renderingCmp->castsShadows() : false))) {
-                    //Perform visibility test on current node
-                    if (node->isInView(sceneRenderState,
-                        currentNode,
-                        currentStage == SHADOW_STAGE ? false :
-                        true)) {
-                        //If the current node is visible, add it to the render queue
+                RenderingComponent* renderingCmp =
+                    currentNode->getComponent<RenderingComponent>();
+                if (currentStage != SHADOW_STAGE ||
+                    (currentStage == SHADOW_STAGE &&
+                     (renderingCmp ? renderingCmp->castsShadows() : false))) {
+                    // Perform visibility test on current node
+                    if (node->isInView(
+                            sceneRenderState, currentNode,
+                            currentStage == SHADOW_STAGE ? false : true)) {
+                        // If the current node is visible, add it to the render
+                        // queue
                         _visibleNodes.push_back(currentNode);
                         currentNode->inView(true);
                     }
@@ -87,9 +93,10 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
             }
         }
     }
-    //If we don't need to skip child testing
-    if ( !skipChildren ) {
-        for (SceneGraphNode::NodeChildren::value_type& it : currentNode->getChildren()) {
+    // If we don't need to skip child testing
+    if (!skipChildren) {
+        for (SceneGraphNode::NodeChildren::value_type& it :
+             currentNode->getChildren()) {
             cullSceneGraphCPU(it.second, sceneRenderState);
         }
     }
@@ -101,8 +108,8 @@ void RenderPassCuller::cullSceneGraphGPU(SceneState& sceneState) {
 
     while (!TraversalStack.Empty() || !QueryQueue.Empty()) {
         //--PART 1: process finished occlusion queries
-        while (!QueryQueue.Empty() && 
-               (ResultAvailable(QueryQueue.Front()) || 
+        while (!QueryQueue.Empty() &&
+               (ResultAvailable(QueryQueue.Front()) ||
                 TraversalStack.Empty())) {
             node = QueryQueue.Dequeue();
             // wait if result not available
@@ -130,7 +137,7 @@ void RenderPassCuller::cullSceneGraphGPU(SceneState& sceneState) {
                     IssueOcclusionQuery(node);
                     QueryQueue.Enqueue(node);
                 }
- 
+
                // always traverse a node if it was visible
                 if (wasVisible)
                     TraverseNode(node);
@@ -161,5 +168,4 @@ void RenderPassCuller::refresh() {
     refreshNodeList();
     RenderQueue::getInstance().refresh(true);
 }
-
 };

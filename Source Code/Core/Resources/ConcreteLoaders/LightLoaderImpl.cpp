@@ -6,15 +6,15 @@
 
 namespace Divide {
 
-Light* ImplResourceLoader<Light>::operator()(){
+Light* ImplResourceLoader<Light>::operator()() {
     Light* ptr = nullptr;
-    //descriptor ID is not the same as light ID. This is the light's slot!!
-    switch(_descriptor.getEnumValue()){
+    // descriptor ID is not the same as light ID. This is the light's slot!!
+    switch (_descriptor.getEnumValue()) {
         case -1:
         case LIGHT_TYPE_POINT:
         default:
             ptr = MemoryManager_NEW PointLight();
-        break;
+            break;
         case LIGHT_TYPE_DIRECTIONAL:
             ptr = MemoryManager_NEW DirectionalLight();
             break;
@@ -24,15 +24,14 @@ Light* ImplResourceLoader<Light>::operator()(){
     };
     assert(ptr != nullptr);
 
-    if ( !ptr->load( _descriptor.getName() ) ) {
-        MemoryManager::DELETE( ptr );
+    if (!ptr->load(_descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
     } else {
-        ptr->renderState().useDefaultMaterial( false );
+        ptr->renderState().useDefaultMaterial(false);
     }
 
     return ptr;
 }
 
 DEFAULT_LOADER_IMPL(Light)
-
 };

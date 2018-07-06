@@ -11,16 +11,15 @@
 
 namespace Divide {
 
-RenderBinItem::RenderBinItem(I32 sortKeyA,
-                             I32 sortKeyB, 
-                             F32 distToCamSq, 
-                             SceneGraphNode* const node) : _node(node),
-                                                           _sortKeyA( sortKeyA ),
-                                                           _sortKeyB( sortKeyB ),
-                                                           _distanceToCameraSq(distToCamSq)
-{
+RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
+                             SceneGraphNode* const node)
+    : _node(node),
+      _sortKeyA(sortKeyA),
+      _sortKeyB(sortKeyB),
+      _distanceToCameraSq(distToCamSq) {
     _stateHash = 0;
-    RenderingComponent* const renderable = _node->getComponent<RenderingComponent>();
+    RenderingComponent* const renderable =
+        _node->getComponent<RenderingComponent>();
     if (renderable) {
         Material* nodeMaterial = renderable->getMaterialInstance();
         // If we do not have a material, no need to continue
@@ -29,18 +28,20 @@ RenderBinItem::RenderBinItem(I32 sortKeyA,
         }
         // Sort by state hash depending on the current rendering stage
         // Save the render state hash value for sorting
-        _stateHash = GFX_DEVICE.getStateBlockDescriptor(nodeMaterial->getRenderStateBlock(GFX_DEVICE.getRenderStage())).getHash();
+        _stateHash = GFX_DEVICE.getStateBlockDescriptor(
+                                    nodeMaterial->getRenderStateBlock(
+                                        GFX_DEVICE.getRenderStage())).getHash();
     }
 }
 
-struct RenderQueueDistanceBacktoFront{
-    bool operator()( const RenderBinItem &a, const RenderBinItem &b) const {
+struct RenderQueueDistanceBacktoFront {
+    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
         return a._distanceToCameraSq < b._distanceToCameraSq;
     }
 };
 
-struct RenderQueueDistanceFrontToBack{
-    bool operator()( const RenderBinItem &a, const RenderBinItem &b) const {
+struct RenderQueueDistanceFrontToBack {
+    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
         return a._distanceToCameraSq > b._distanceToCameraSq;
     }
 };
@@ -49,10 +50,10 @@ struct RenderQueueDistanceFrontToBack{
 /// 1: sort by shaders
 /// 2: if the shader is identical, sort by state hash
 /// 3: if shader is identical and state hash is identical, sort by albedo ID
-struct RenderQueueKeyCompare{
-    //Sort
-    bool operator()(const RenderBinItem &a, const RenderBinItem &b) const{
-        //Sort by shader in all states The sort key is the shader id (for now)
+struct RenderQueueKeyCompare {
+    // Sort
+    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+        // Sort by shader in all states The sort key is the shader id (for now)
         if (a._sortKeyA < b._sortKeyA) {
             return true;
         }
@@ -60,7 +61,7 @@ struct RenderQueueKeyCompare{
         if (a._sortKeyA > b._sortKeyA) {
             return false;
         }
-         
+
         // If the shader values are the same, we use the state hash for sorting
         // The _stateHash is a CRC value created based on the RenderState.
         if (a._stateHash < b._stateHash) {
@@ -71,103 +72,102 @@ struct RenderQueueKeyCompare{
             return false;
         }
 
-        // If both the shader are the same and the state hashes match, 
+        // If both the shader are the same and the state hashes match,
         // we sort by the secondary key (usually the texture id)
         return (a._sortKeyB < b._sortKeyB);
     }
 };
 
 RenderBin::RenderBin(const RenderBinType& rbType,
-                     const RenderingOrder::List& renderOrder,
-                     D32 drawKey) : _rbType(rbType),
-                                    _renderOrder(renderOrder),
-                                    _drawKey(drawKey)
-{
+                     const RenderingOrder::List& renderOrder, D32 drawKey)
+    : _rbType(rbType), _renderOrder(renderOrder), _drawKey(drawKey) {
     _renderBinStack.reserve(125);
     renderBinTypeToNameMap[RBT_PLACEHOLDER] = "Invalid Bin";
-    renderBinTypeToNameMap[RBT_MESH]        = "Mesh Bin";
-    renderBinTypeToNameMap[RBT_IMPOSTOR]    = "Impostor Bin";
-    renderBinTypeToNameMap[RBT_DELEGATE]    = "Delegate Bin";
+    renderBinTypeToNameMap[RBT_MESH] = "Mesh Bin";
+    renderBinTypeToNameMap[RBT_IMPOSTOR] = "Impostor Bin";
+    renderBinTypeToNameMap[RBT_DELEGATE] = "Delegate Bin";
     renderBinTypeToNameMap[RBT_TRANSLUCENT] = "Translucent Bin";
-    renderBinTypeToNameMap[RBT_SKY]         = "Sky Bin";
-    renderBinTypeToNameMap[RBT_WATER]       = "Water Bin";
-    renderBinTypeToNameMap[RBT_TERRAIN]     = "Terrain Bin";
-    renderBinTypeToNameMap[RBT_PARTICLES]   = "Particle Bin";
-    renderBinTypeToNameMap[RBT_VEGETATION_GRASS]   = "Grass Bin";
-    renderBinTypeToNameMap[RBT_VEGETATION_TREES]   = "Trees Bin";
-    renderBinTypeToNameMap[RBT_DECALS]      = "Decals Bin";
-    renderBinTypeToNameMap[RBT_SHADOWS]     = "Shadow Bin";
+    renderBinTypeToNameMap[RBT_SKY] = "Sky Bin";
+    renderBinTypeToNameMap[RBT_WATER] = "Water Bin";
+    renderBinTypeToNameMap[RBT_TERRAIN] = "Terrain Bin";
+    renderBinTypeToNameMap[RBT_PARTICLES] = "Particle Bin";
+    renderBinTypeToNameMap[RBT_VEGETATION_GRASS] = "Grass Bin";
+    renderBinTypeToNameMap[RBT_VEGETATION_TREES] = "Trees Bin";
+    renderBinTypeToNameMap[RBT_DECALS] = "Decals Bin";
+    renderBinTypeToNameMap[RBT_SHADOWS] = "Shadow Bin";
 }
 
-void RenderBin::sort(const RenderStage& currentRenderStage){
-    //WriteLock w_lock(_renderBinGetMutex);
-    switch(_renderOrder){
-        default :
-        case RenderingOrder::BY_STATE : {
+void RenderBin::sort(const RenderStage& currentRenderStage) {
+    // WriteLock w_lock(_renderBinGetMutex);
+    switch (_renderOrder) {
+        default:
+        case RenderingOrder::BY_STATE: {
             if (GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
-                std::sort(std::begin(_renderBinStack), std::end(_renderBinStack), 
+                std::sort(std::begin(_renderBinStack),
+                          std::end(_renderBinStack),
                           RenderQueueDistanceFrontToBack());
             } else {
-                std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
-                          RenderQueueKeyCompare());
+                std::sort(std::begin(_renderBinStack),
+                          std::end(_renderBinStack), RenderQueueKeyCompare());
             }
         } break;
-        case RenderingOrder::BACK_TO_FRONT : {
+        case RenderingOrder::BACK_TO_FRONT: {
             std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
                       RenderQueueDistanceBacktoFront());
         } break;
-        case RenderingOrder::FRONT_TO_BACK : {
+        case RenderingOrder::FRONT_TO_BACK: {
             std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
                       RenderQueueDistanceFrontToBack());
         } break;
-        case RenderingOrder::NONE : {
-            //no need to sort
+        case RenderingOrder::NONE: {
+            // no need to sort
         } break;
-        case RenderingOrder::ORDER_PLACEHOLDER : {
-            Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"), 
-                     renderBinTypeToNameMap[_rbType]);
+        case RenderingOrder::ORDER_PLACEHOLDER: {
+            Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"),
+                             renderBinTypeToNameMap[_rbType]);
         } break;
     };
 }
 
-void RenderBin::refresh(){
-    //WriteLock w_lock(_renderBinGetMutex);
+void RenderBin::refresh() {
+    // WriteLock w_lock(_renderBinGetMutex);
     _renderBinStack.clear();
     _renderBinStack.reserve(128);
 }
 
-void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
+void RenderBin::addNodeToBin(SceneGraphNode* const sgn,
+                             const vec3<F32>& eyePos) {
     I32 keyA = (U32)_renderBinStack.size() + 1;
     I32 keyB = keyA;
-    RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
+    RenderingComponent* const renderable =
+        sgn->getComponent<RenderingComponent>();
     if (renderable) {
         Material* nodeMaterial = renderable->getMaterialInstance();
-        if (nodeMaterial){
+        if (nodeMaterial) {
             nodeMaterial->getSortKeys(keyA, keyB);
         }
     }
-    _renderBinStack.push_back(RenderBinItem(keyA,
-                                            keyB, 
-                                            sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos), 
-                                            sgn));
+    _renderBinStack.push_back(RenderBinItem(
+        keyA, keyB,
+        sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
+        sgn));
 }
 
-void RenderBin::preRender(const RenderStage& currentRenderStage){
-}
+void RenderBin::preRender(const RenderStage& currentRenderStage) {}
 
-void RenderBin::render(const SceneRenderState& renderState, const RenderStage& currentRenderStage){
-    //We need to apply different materials for each stage. As nodes are sorted, this should be very fast
-    for(U16 j = 0; j < getBinSize(); ++j){
-        //Call render and the stage exclusion mask should do the rest
-        RenderingComponent* const renderable = getItem(j)._node->getComponent<RenderingComponent>();
+void RenderBin::render(const SceneRenderState& renderState,
+                       const RenderStage& currentRenderStage) {
+    // We need to apply different materials for each stage. As nodes are sorted,
+    // this should be very fast
+    for (U16 j = 0; j < getBinSize(); ++j) {
+        // Call render and the stage exclusion mask should do the rest
+        RenderingComponent* const renderable =
+            getItem(j)._node->getComponent<RenderingComponent>();
         if (renderable) {
             renderable->render(renderState, currentRenderStage);
         }
     }
 }
 
-void RenderBin::postRender(const RenderStage& currentRenderStage){
-
-}
-
+void RenderBin::postRender(const RenderStage& currentRenderStage) {}
 };

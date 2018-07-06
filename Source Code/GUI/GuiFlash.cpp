@@ -5,10 +5,7 @@
 
 namespace Divide {
 
-GUIFlash::~GUIFlash(){
-}
+GUIFlash::~GUIFlash() {}
 
-void GUIFlash::playMovie(){
-}
-
+void GUIFlash::playMovie() {}
 };

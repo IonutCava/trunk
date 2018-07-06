@@ -3,21 +3,17 @@
 
 namespace Divide {
 
-PreRenderStage::~PreRenderStage()
-{
-    MemoryManager::DELETE_VECTOR(_operators);
-}
+PreRenderStage::~PreRenderStage() { MemoryManager::DELETE_VECTOR(_operators); }
 
 void PreRenderStage::execute() {
-    for(PreRenderOperator* op : _operators){
+    for (PreRenderOperator* op : _operators) {
         op->operation();
     }
 }
 
-void PreRenderStage::reshape(I32 width, I32 height){
-    for(PreRenderOperator* op : _operators){
-        op->reshape(width,height);
+void PreRenderStage::reshape(I32 width, I32 height) {
+    for (PreRenderOperator* op : _operators) {
+        op->reshape(width, height);
     }
 }
-
 };

@@ -4,20 +4,21 @@
 
 namespace Divide {
 
-template<>
+template <>
 Box3D* ImplResourceLoader<Box3D>::operator()() {
     F32 size = 1.0f;
-    if ( !_descriptor.getPropertyListString().empty() ) {
-        size = atof( _descriptor.getPropertyListString().c_str() );//<should work
+    if (!_descriptor.getPropertyListString().empty()) {
+        size =
+            atof(_descriptor.getPropertyListString().c_str());  //<should work
     }
 
     Box3D* ptr = MemoryManager_NEW Box3D(size);
 
-    if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::DELETE( ptr );
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
     } else {
-        if ( _descriptor.getFlag() ) {
-            ptr->renderState().useDefaultMaterial( false );
+        if (_descriptor.getFlag()) {
+            ptr->renderState().useDefaultMaterial(false);
         }
     }
 
@@ -25,5 +26,4 @@ Box3D* ImplResourceLoader<Box3D>::operator()() {
 }
 
 DEFAULT_LOADER_IMPL(Box3D)
-
 };

@@ -4,26 +4,25 @@
 
 namespace Divide {
 
-SubMesh* ImplResourceLoader<SubMesh>::operator()(){
+SubMesh* ImplResourceLoader<SubMesh>::operator()() {
     SubMesh* ptr = nullptr;
 
-    if ( _descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED ) {
+    if (_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED) {
         ptr = MemoryManager_NEW SkinnedSubMesh(_descriptor.getName());
     } else {
         ptr = MemoryManager_NEW SubMesh(_descriptor.getName());
     }
 
-    if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::DELETE( ptr );
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
     } else {
-        if ( _descriptor.getFlag() ) {
-            ptr->renderState().useDefaultMaterial( false );
+        if (_descriptor.getFlag()) {
+            ptr->renderState().useDefaultMaterial(false);
         }
-        ptr->setId( _descriptor.getId() );
+        ptr->setId(_descriptor.getId());
     }
     return ptr;
 }
 
 DEFAULT_LOADER_IMPL(SubMesh)
-
 };

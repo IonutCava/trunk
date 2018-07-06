@@ -4,25 +4,33 @@
 
    This file is part of DIVIDE Framework.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-   and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software
+   and associated documentation files (the "Software"), to deal in the Software
+   without restriction,
+   including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so,
    subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+   IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
 
 #ifndef _CORE_APPLICATION_H_
 #define _CORE_APPLICATION_H_
-
 
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Threading/Headers/Thread.h"
@@ -55,16 +63,17 @@ enum ErrorCode {
 class Kernel;
 const char* getErrorCodeName(ErrorCode code);
 
-///Lightweight singleton class that manages our application's kernel and window information
-DEFINE_SINGLETON( Application )
+/// Lightweight singleton class that manages our application's kernel and window
+/// information
+DEFINE_SINGLETON(Application)
 
-public:
-    ///Startup and shutdown
-    ErrorCode initialize(const stringImpl& entryPoint,I32 argc, char **argv);
+  public:
+    /// Startup and shutdown
+    ErrorCode initialize(const stringImpl& entryPoint, I32 argc, char** argv);
     void run();
 
-    ///Application resolution (either fullscreen resolution or window dimensions)
-    inline const vec2<U16>& getResolution()   const;
+    /// Application resolution (either fullscreen resolution or window dimensions)
+    inline const vec2<U16>& getResolution() const;
     inline const vec2<U16>& getScreenCenter() const;
     inline const vec2<U16>& getPreviousResolution() const;
 
@@ -78,7 +87,7 @@ public:
     inline Kernel& getKernel() const;
 
     inline bool isMainThread() const;
-    inline const std::thread::id&  getMainThreadId() const;
+    inline const std::thread::id& getMainThreadId() const;
     inline void setMemoryLogFile(const stringImpl& fileName);
 
     inline bool hasFocus() const;
@@ -100,38 +109,42 @@ public:
     inline void throwError(ErrorCode err);
     inline ErrorCode errorCode() const;
 
-    /// Add a list of callback functions that should be called when the application instance is destroyed
+    /// Add a list of callback functions that should be called when the application
+    /// instance is destroyed
     /// (release hardware, file handlers, etc)
-    inline void registerShutdownCallback( const DELEGATE_CBK<>& cbk );
+    inline void registerShutdownCallback(const DELEGATE_CBK<>& cbk);
 
-private:
+  private:
     Application();
     ~Application();
 
-private:
+  private:
     ErrorCode _errorCode;
     /// this is true when we are inside the main app loop
-    std::atomic_bool  _mainLoopActive;
-    std::atomic_bool  _mainLoopPaused;
-    std::atomic_bool  _requestShutdown;
-    /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
-    bool      _hasFocus; 
+    std::atomic_bool _mainLoopActive;
+    std::atomic_bool _mainLoopPaused;
+    std::atomic_bool _requestShutdown;
+    /// this is false if the window/application lost focus (e.g. clicked another
+    /// window, alt + tab, etc)
+    bool _hasFocus;
     /// this is false if the application is running in windowed mode
-    bool      _isFullscreen;
+    bool _isFullscreen;
     vec2<U16> _resolution;
     vec2<U16> _screenCenter;
     vec2<U16> _prevResolution;
     std::unique_ptr<Kernel> _kernel;
-    ///buffer to register all of the memory allocations recorded via "MemoryManager_NEW"
+    /// buffer to register all of the memory allocations recorded via
+    /// "MemoryManager_NEW"
     stringImpl _memLogBuffer;
-    ///Main application thread id
+    /// Main application thread id
     std::thread::id _threadId;
-    ///A list of callback functions that get called when the application instance is destroyed
+    /// A list of callback functions that get called when the application instance
+    /// is destroyed
     vectorImpl<DELEGATE_CBK<> > _shutdownCallback;
 END_SINGLETON
 
-}; //namespace Divide
+};  // namespace Divide
 
-#endif //_CORE_APPLICATION_H_
+#endif  //_CORE_APPLICATION_H_
 
 #include "Application.inl"

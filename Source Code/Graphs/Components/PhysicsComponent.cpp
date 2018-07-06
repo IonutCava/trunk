@@ -9,20 +9,17 @@
 
 namespace Divide {
 
-PhysicsComponent::PhysicsComponent(SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_PHYSICS, parentSGN),
-                                                                       _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
-                                                                       _transformUpdated(true),
-                                                                       _physicsAsset(nullptr),
-                                                                       _transform(nullptr)
-{
+PhysicsComponent::PhysicsComponent(SceneGraphNode* const parentSGN)
+    : SGNComponent(SGNComponent::SGN_COMP_PHYSICS, parentSGN),
+      _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
+      _transformUpdated(true),
+      _physicsAsset(nullptr),
+      _transform(nullptr) {
     _transform = MemoryManager_NEW Transform();
     reset();
 }
 
-PhysicsComponent::~PhysicsComponent()
-{
-    MemoryManager::DELETE( _transform );
-}
+PhysicsComponent::~PhysicsComponent() { MemoryManager::DELETE(_transform); }
 
 void PhysicsComponent::reset() {
     _worldMatrix.identity();
@@ -37,7 +34,7 @@ void PhysicsComponent::reset() {
 void PhysicsComponent::useDefaultTransform(const bool state) {
     if (state && !_transform) {
         _transform = MemoryManager_NEW Transform();
-       reset();
+        reset();
     } else if (!state && _transform) {
         MemoryManager::DELETE(_transform);
         reset();
@@ -45,35 +42,45 @@ void PhysicsComponent::useDefaultTransform(const bool state) {
 }
 
 void PhysicsComponent::physicsAsset(PhysicsAsset* const asset) {
-    DIVIDE_ASSERT(_physicsAsset == nullptr, 
-                  "PhysicsComponent error: Double set physics asset detected! remove the previous one first!");
+    DIVIDE_ASSERT(_physicsAsset == nullptr,
+                  "PhysicsComponent error: Double set physics asset detected! "
+                  "remove the previous one first!");
     _physicsAsset = asset;
-    if ( _physicsAsset ) {
-        _physicsAsset->setParent( this );
+    if (_physicsAsset) {
+        _physicsAsset->setParent(this);
     }
 }
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()) {
-        it.second->getComponent<PhysicsComponent>()->cookCollisionMesh( sceneName );
+    for (SceneGraphNode::NodeChildren::value_type& it :
+         _parentSGN->getChildren()) {
+        it.second->getComponent<PhysicsComponent>()->cookCollisionMesh(
+            sceneName);
     }
 
     if (_parentSGN->getNode()->getType() == TYPE_OBJECT3D) {
-        U32 obj3DExclussionMask = Object3D::TEXT_3D | Object3D::MESH | Object3D::FLYWEIGHT;
-        if ( !bitCompare( obj3DExclussionMask, _parentSGN->getNode<Object3D>()->getObjectType() ) ) {
-            PHYSICS_DEVICE.createActor( _parentSGN, sceneName,
-                _parentSGN->usageContext() == SceneGraphNode::NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC,
-                _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE :
-                ( _physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE ) );
+        U32 obj3DExclussionMask =
+            Object3D::TEXT_3D | Object3D::MESH | Object3D::FLYWEIGHT;
+        if (!bitCompare(obj3DExclussionMask,
+                        _parentSGN->getNode<Object3D>()->getObjectType())) {
+            PHYSICS_DEVICE.createActor(
+                _parentSGN, sceneName,
+                _parentSGN->usageContext() == SceneGraphNode::NODE_STATIC
+                    ? MASK_RIGID_STATIC
+                    : MASK_RIGID_DYNAMIC,
+                _physicsCollisionGroup == NODE_COLLIDE_IGNORE
+                    ? GROUP_NON_COLLIDABLE
+                    : (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH
+                           ? GROUP_COLLIDABLE_NON_PUSHABLE
+                           : GROUP_COLLIDABLE_PUSHABLE));
         }
     }
-
 }
 
 void PhysicsComponent::setTransformDirty() {
-    if ( _physicsAsset ) {
-        _physicsAsset->resetTransforms( true );
+    if (_physicsAsset) {
+        _physicsAsset->resetTransforms(true);
     }
     _transformUpdated = true;
 }
@@ -92,7 +99,8 @@ void PhysicsComponent::setScale(const vec3<F32>& scale) {
     }
 }
 
-void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees) {
+void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees,
+                                   bool inDegrees) {
     if (_transform) {
         _transform->setRotation(axis, degrees, inDegrees);
         setTransformDirty();
@@ -127,7 +135,8 @@ void PhysicsComponent::scale(const vec3<F32>& axisFactors) {
     }
 }
 
-void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees) {
+void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees,
+                              bool inDegrees) {
     if (_transform) {
         _transform->rotate(axis, degrees, inDegrees);
         setTransformDirty();
@@ -148,7 +157,8 @@ void PhysicsComponent::rotate(const Quaternion<F32>& quat) {
     }
 }
 
-void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat, const D32 deltaTime) {
+void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat,
+                                   const D32 deltaTime) {
     if (_transform) {
         _transform->rotateSlerp(quat, deltaTime);
         setTransformDirty();
@@ -302,16 +312,19 @@ void PhysicsComponent::setPositionZ(const F32 positionZ) {
     }
 }
 
-const mat4<F32>& PhysicsComponent::getWorldMatrix( D32 interpolationFactor, const bool local ) {
+const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor,
+                                                  const bool local) {
     if (_transform) {
         if (interpolationFactor < 0.95) {
             _worldMatrix.identity();
-            _worldMatrix.setScale(lerp(_prevTransformValues._scale, _transform->getScale(), (F32)interpolationFactor));
-            _worldMatrix *= Divide::getMatrix(slerp(_prevTransformValues._orientation, 
-                                                    _transform->getOrientation(), 
-                                                    (F32)interpolationFactor));
-            _worldMatrix.setTranslation(lerp(_prevTransformValues._translation, 
-                                             _transform->getPosition(), 
+            _worldMatrix.setScale(lerp(_prevTransformValues._scale,
+                                       _transform->getScale(),
+                                       (F32)interpolationFactor));
+            _worldMatrix *= Divide::getMatrix(
+                slerp(_prevTransformValues._orientation,
+                      _transform->getOrientation(), (F32)interpolationFactor));
+            _worldMatrix.setTranslation(lerp(_prevTransformValues._translation,
+                                             _transform->getPosition(),
                                              (F32)interpolationFactor));
         } else {
             _worldMatrix.set(_transform->getMatrix());
@@ -322,15 +335,17 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix( D32 interpolationFactor, cons
     }
 
     const SceneGraphNode* const parent = _parentSGN->getParent();
-    if ( !local && parent ) {
-        _worldMatrix *= parent->getComponent<PhysicsComponent>()->getWorldMatrix(interpolationFactor, local);
+    if (!local && parent) {
+        _worldMatrix *=
+            parent->getComponent<PhysicsComponent>()->getWorldMatrix(
+                interpolationFactor, local);
     }
 
     return _worldMatrix;
 }
 
 /// Return the scale factor
-const vec3<F32>& PhysicsComponent::getScale( const bool local ) {
+const vec3<F32>& PhysicsComponent::getScale(const bool local) {
     if (_transform) {
         _scaleCache.set(_transform->getScale());
     } else {
@@ -338,15 +353,16 @@ const vec3<F32>& PhysicsComponent::getScale( const bool local ) {
     }
 
     const SceneGraphNode* const parent = _parentSGN->getParent();
-    if ( !local && parent ) {
-        _scaleCache *= parent->getComponent<PhysicsComponent>()->getScale(local);
-    } 
+    if (!local && parent) {
+        _scaleCache *=
+            parent->getComponent<PhysicsComponent>()->getScale(local);
+    }
 
     return _scaleCache;
 }
 
 /// Return the position
-const vec3<F32>& PhysicsComponent::getPosition( const bool local) {
+const vec3<F32>& PhysicsComponent::getPosition(const bool local) {
     if (_transform) {
         _positionCache.set(_transform->getPosition());
     } else {
@@ -354,15 +370,16 @@ const vec3<F32>& PhysicsComponent::getPosition( const bool local) {
     }
 
     const SceneGraphNode* const parent = _parentSGN->getParent();
-    if ( !local && parent ) {
-        _positionCache += parent->getComponent <PhysicsComponent>()->getPosition(local);
+    if (!local && parent) {
+        _positionCache +=
+            parent->getComponent<PhysicsComponent>()->getPosition(local);
     }
 
     return _positionCache;
 }
 
 /// Return the orientation quaternion
-const Quaternion<F32>& PhysicsComponent::getOrientation( const bool local ) {
+const Quaternion<F32>& PhysicsComponent::getOrientation(const bool local) {
     if (_transform) {
         _orientationCache.set(_transform->getOrientation());
     } else {
@@ -370,11 +387,13 @@ const Quaternion<F32>& PhysicsComponent::getOrientation( const bool local ) {
     }
 
     const SceneGraphNode* const parent = _parentSGN->getParent();
-    if ( !local && parent ) {
-        _orientationCache.set(parent->getComponent<PhysicsComponent>()->getOrientation(local).inverse() * _orientationCache);
+    if (!local && parent) {
+        _orientationCache.set(parent->getComponent<PhysicsComponent>()
+                                  ->getOrientation(local)
+                                  .inverse() *
+                              _orientationCache);
     }
 
     return _orientationCache;
 }
-
 };

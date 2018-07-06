@@ -5,9 +5,8 @@
 
 namespace Divide {
 
-ThirdPersonCamera::ThirdPersonCamera(const vec3<F32>& eye) : OrbitCamera(THIRD_PERSON, eye)
-{
-}
+ThirdPersonCamera::ThirdPersonCamera(const vec3<F32>& eye)
+    : OrbitCamera(THIRD_PERSON, eye) {}
 
 void ThirdPersonCamera::onActivate() {
     Application::getInstance().snapCursorToCenter();
@@ -16,8 +15,10 @@ void ThirdPersonCamera::onActivate() {
 
 bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
     static vec2<F32> mousePos;
-    static const F32 rotationLimitRollLower = M_PI * 0.30f  - Angle::DegreesToRadians(1);
-    static const F32 rotationLimitRollUpper = M_PI * 0.175f - Angle::DegreesToRadians(1);
+    static const F32 rotationLimitRollLower =
+        M_PI * 0.30f - Angle::DegreesToRadians(1);
+    static const F32 rotationLimitRollUpper =
+        M_PI * 0.175f - Angle::DegreesToRadians(1);
     static const F32 rotationLimitYaw = M_PI - Angle::DegreesToRadians(1);
 
     mousePos.set(arg.state.X.rel, arg.state.Y.rel);
@@ -32,8 +33,9 @@ bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
 
     if (!IS_ZERO(mousePos.y)) {
         F32 targetRoll = _cameraRotation.roll - mousePos.y;
-        if (targetRoll > -rotationLimitRollLower && targetRoll < rotationLimitRollUpper) {
-            _cameraRotation.roll -= mousePos.y; //why roll? beats me.
+        if (targetRoll > -rotationLimitRollLower &&
+            targetRoll < rotationLimitRollUpper) {
+            _cameraRotation.roll -= mousePos.y;  // why roll? beats me.
             _rotationDirty = true;
         }
     }
@@ -45,12 +47,11 @@ bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
             _rotationDirty = true;
         }
     }
-     
+
     if (_rotationDirty) {
-        Util::normalize(_cameraRotation, false,true, false, true);
+        Util::normalize(_cameraRotation, false, true, false, true);
     }
 
     return OrbitCamera::mouseMoved(arg);
 }
-
 };

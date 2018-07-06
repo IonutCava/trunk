@@ -9,33 +9,33 @@
 
 namespace Divide {
 
-SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag) : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
-                                                             _visibleToNetwork(true),
-                                                             _render(true),
-                                                             _id(0),
-                                                             _parentMesh(nullptr)
-{
+SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
+    : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
+      _visibleToNetwork(true),
+      _render(true),
+      _id(0),
+      _parentMesh(nullptr) {
     _drawCmd.primitiveType(TRIANGLES);
     _drawCmd.firstIndex(0);
     _drawCmd.indexCount(1);
 }
 
-SubMesh::~SubMesh()
-{
-}
+SubMesh::~SubMesh() {}
 
-
-void SubMesh::setParentMesh(Mesh* const parentMesh) { 
-    _parentMesh = parentMesh; 
+void SubMesh::setParentMesh(Mesh* const parentMesh) {
+    _parentMesh = parentMesh;
     setGeometryVB(_parentMesh->getGeometryVB());
-    // If the mesh has animation data, use dynamic VB's if we use software skinning
-    _drawCmd.firstIndex( getGeometryVB()->getPartitionOffset( _geometryPartitionId ) );
-    _drawCmd.indexCount( getGeometryVB()->getPartitionCount( _geometryPartitionId ) );
+    // If the mesh has animation data, use dynamic VB's if we use software
+    // skinning
+    _drawCmd.firstIndex(
+        getGeometryVB()->getPartitionOffset(_geometryPartitionId));
+    _drawCmd.indexCount(
+        getGeometryVB()->getPartitionCount(_geometryPartitionId));
 }
 
-bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
+bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn) {
     BoundingBox& bb = sgn->getBoundingBox();
-    if ( bb.isComputed() ) {
+    if (bb.isComputed()) {
         return true;
     }
 
@@ -45,13 +45,14 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void SubMesh::getDrawCommands(SceneGraphNode* const sgn, 
-                              const RenderStage& currentRenderStage, 
-                              SceneRenderState& sceneRenderState, 
+void SubMesh::getDrawCommands(SceneGraphNode* const sgn,
+                              const RenderStage& currentRenderStage,
+                              SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_parentMesh != nullptr);
 
-    RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
+    RenderingComponent* const renderable =
+        sgn->getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     _drawCmd.renderWireframe(renderable->renderWireframe());
@@ -61,5 +62,4 @@ void SubMesh::getDrawCommands(SceneGraphNode* const sgn,
     _drawCmd.sourceBuffer(_parentMesh->getGeometryVB());
     drawCommandsOut.push_back(_drawCmd);
 }
-
 };

@@ -4,18 +4,17 @@
 
 namespace Divide {
 
-Trigger* ImplResourceLoader<Trigger>::operator()(){
+Trigger* ImplResourceLoader<Trigger>::operator()() {
     Trigger* ptr = MemoryManager_NEW Trigger();
 
-    if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::DELETE( ptr );
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
     } else {
-        ptr->renderState().useDefaultMaterial( false );
+        ptr->renderState().useDefaultMaterial(false);
     }
 
     return ptr;
 }
 
 DEFAULT_LOADER_IMPL(Trigger)
-
 };

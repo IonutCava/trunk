@@ -6,17 +6,10 @@
 
 namespace Divide {
 
-enum GEOMETRY_TYPE
-{
-    MESH,
-    VEGETATION,
-    PRIMITIVE,
-    PLACEHOLDER
-};
+enum GEOMETRY_TYPE { MESH, VEGETATION, PRIMITIVE, PLACEHOLDER };
 
-class FileData
-{
-public:
+class FileData {
+   public:
     stringImpl ItemName;
     stringImpl ModelName;
     vec3<F32> scale;
@@ -24,10 +17,10 @@ public:
     vec3<F32> orientation;
     vec3<F32> color;
     GEOMETRY_TYPE type;
-    F32 data; //general purpose
+    F32 data;  // general purpose
     stringImpl data2;
     F32 version;
 };
 
-}; //namespace Divide
+};  // namespace Divide
 #endif

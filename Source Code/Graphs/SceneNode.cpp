@@ -10,53 +10,52 @@
 
 namespace Divide {
 
-SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
-{
+SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type) {}
+
+SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
+    : Resource(name),
+      _materialTemplate(nullptr),
+      _hasSGNParent(false),
+      _type(type),
+      _LODcount(1)  ///<Defaults to 1 LOD level
+{}
+
+SceneNode::~SceneNode() {}
+
+void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+                            SceneState& sceneState) {}
+
+bool SceneNode::getDrawState(const RenderStage& currentStage) {
+    return _renderState.getDrawState(currentStage);
 }
 
-SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type) : Resource(name),
-                                                             _materialTemplate(nullptr),
-                                                             _hasSGNParent(false),
-                                                             _type(type),
-                                                             _LODcount(1) ///<Defaults to 1 LOD level
-{
-}
-
-SceneNode::~SceneNode()
-{
-}
-
-void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-
-}
-
-bool SceneNode::getDrawState(const RenderStage& currentStage)  { 
-    return _renderState.getDrawState(currentStage); 
-}
-
-bool SceneNode::isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck ) {
+bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
+                         SceneGraphNode* const sgn, const bool distanceCheck) {
     const BoundingBox& boundingBox = sgn->getBoundingBoxConst();
     const BoundingSphere& sphere = sgn->getBoundingSphereConst();
 
     const Camera& cam = sceneRenderState.getCameraConst();
     const vec3<F32>& eye = cam.getEye();
     const vec3<F32>& center = sphere.getCenter();
-    F32  cameraDistance = center.distance( eye );
-    F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
-    if ( distanceCheck && cameraDistance > visibilityDistance ) {
-        if ( boundingBox.nearestDistanceFromPointSquared( eye ) > std::min(visibilityDistance, 
-                                                                           sceneRenderState.getCameraConst().getZPlanes().y)) {
+    F32 cameraDistance = center.distance(eye);
+    F32 visibilityDistance =
+        GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
+    if (distanceCheck && cameraDistance > visibilityDistance) {
+        if (boundingBox.nearestDistanceFromPointSquared(eye) >
+            std::min(visibilityDistance,
+                     sceneRenderState.getCameraConst().getZPlanes().y)) {
             return false;
         }
     }
 
-    if ( !boundingBox.ContainsPoint( eye ) ) {
-        switch ( cam.getFrustumConst().ContainsSphere( center, sphere.getRadius() ) ) {
+    if (!boundingBox.ContainsPoint(eye)) {
+        switch (
+            cam.getFrustumConst().ContainsSphere(center, sphere.getRadius())) {
             case Frustum::FRUSTUM_OUT: {
                 return false;
             };
-            case Frustum::FRUSTUM_INTERSECT:    {
-                if ( !cam.getFrustumConst().ContainsBoundingBox( boundingBox ) ) {
+            case Frustum::FRUSTUM_INTERSECT: {
+                if (!cam.getFrustumConst().ContainsBoundingBox(boundingBox)) {
                     return false;
                 }
             };
@@ -65,17 +64,21 @@ bool SceneNode::isInView( const SceneRenderState& sceneRenderState, SceneGraphNo
 
     RenderingComponent* rComp = sgn->getComponent<RenderingComponent>();
     if (rComp) {
-        rComp->lodLevel((cameraDistance > Config::SCENE_NODE_LOD0) ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1) : 0);
+        rComp->lodLevel(
+            (cameraDistance > Config::SCENE_NODE_LOD0)
+                ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1)
+                : 0);
     }
 
     return true;
 }
 
 Material* const SceneNode::getMaterialTpl() {
-    //UpgradableReadLock ur_lock(_materialLock);
+    // UpgradableReadLock ur_lock(_materialLock);
     if (_materialTemplate == nullptr && !_renderState._noDefaultMaterial) {
-        //UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = CreateResource<Material>(ResourceDescriptor("defaultMaterial_" + getName()));
+        // UpgradeToWriteLock uw_lock(ur_lock);
+        _materialTemplate = CreateResource<Material>(
+            ResourceDescriptor("defaultMaterial_" + getName()));
         _materialTemplate->setShadingMode(Material::SHADING_BLINN_PHONG);
         REGISTER_TRACKED_DEPENDENCY(_materialTemplate);
     }
@@ -83,24 +86,29 @@ Material* const SceneNode::getMaterialTpl() {
 }
 
 void SceneNode::setMaterialTpl(Material* const mat) {
-    if (mat) { //If we need to update the material
-        //UpgradableReadLock ur_lock(_materialLock);
-        if (_materialTemplate) { //If we had an old material
-            if (_materialTemplate->getGUID() != mat->getGUID()) { //if the old material isn't the same as the new one
-                Console::printfn(Locale::get("REPLACE_MATERIAL"), _materialTemplate->getName().c_str(), mat->getName().c_str());
-                //UpgradeToWriteLock uw_lock(ur_lock);
+    if (mat) {  // If we need to update the material
+        // UpgradableReadLock ur_lock(_materialLock);
+        if (_materialTemplate) {  // If we had an old material
+            if (_materialTemplate->getGUID() !=
+                mat->getGUID()) {  // if the old material isn't the same as the
+                                   // new one
+                Console::printfn(Locale::get("REPLACE_MATERIAL"),
+                                 _materialTemplate->getName().c_str(),
+                                 mat->getName().c_str());
+                // UpgradeToWriteLock uw_lock(ur_lock);
                 UNREGISTER_TRACKED_DEPENDENCY(_materialTemplate);
-                RemoveResource(_materialTemplate);            //remove the old material
-                //ur_lock.lock();
+                RemoveResource(_materialTemplate);  // remove the old material
+                // ur_lock.lock();
             }
         }
-        //UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = mat;                   //set the new material
+        // UpgradeToWriteLock uw_lock(ur_lock);
+        _materialTemplate = mat;  // set the new material
         REGISTER_TRACKED_DEPENDENCY(_materialTemplate);
-    } else { //if we receive a null material, the we need to remove this node's material
-        //UpgradableReadLock ur_lock(_materialLock);
+    } else {  // if we receive a null material, the we need to remove this
+              // node's material
+        // UpgradableReadLock ur_lock(_materialLock);
         if (_materialTemplate) {
-            //UpgradeToWriteLock uw_lock(ur_lock);
+            // UpgradeToWriteLock uw_lock(ur_lock);
             UNREGISTER_TRACKED_DEPENDENCY(_materialTemplate);
             RemoveResource(_materialTemplate);
         }
@@ -113,13 +121,10 @@ bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
     return true;
 }
 
-bool SceneNode::unload(){
+bool SceneNode::unload() {
     setMaterialTpl(nullptr);
     return true;
 }
 
-void SceneNode::postDrawBoundingBox(SceneGraphNode* const sgn) const {
-   
-}
-
+void SceneNode::postDrawBoundingBox(SceneGraphNode* const sgn) const {}
 };
