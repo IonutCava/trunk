@@ -21,11 +21,11 @@
 namespace Divide {
 
 void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
-    static DebugView* HiZPtr;
+    static DebugView* HiZPtr = nullptr;
     static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour(128), 96).getHash();
 
     // As this is touched once per frame, we'll only enable it in debug builds
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if (Config::ENABLE_GPU_VALIDATION) {
         // Early out if we didn't request the preview
         if (!ParamHandler::instance().getParam<bool>(_ID("rendering.previewDebugViews"), false)) {
             return;
@@ -33,9 +33,8 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 
         // Lazy-load preview shader
         if (!_previewDepthMapShader) {
-            // The LinearDepth variant converts the depth values to linear values
-            // between the 2 scene z-planes
-            ResourceDescriptor fbPreview("fbPreview.LinearDepth.ScenePlanes");
+            // The LinearDepth variant converts the depth values to linear values between the 2 scene z-planes
+            ResourceDescriptor fbPreview("fbPreview.LinearDepth");
             _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
             assert(_previewDepthMapShader != nullptr);
 
@@ -74,19 +73,19 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             AlphaAccumulationHigh->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
             AlphaAccumulationHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
 
-            //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
-            //AlphaAccumulationLow->_shader = _renderTargetDraw;
-            //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
-            //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
-            //AlphaAccumulationLow->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
-            //AlphaAccumulationLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-
             DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
             AlphaRevealageHigh->_shader = _renderTargetDraw;
             AlphaRevealageHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_FULL_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
             AlphaRevealageHigh->_name = "Alpha Revealage High";
             AlphaRevealageHigh->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
             AlphaRevealageHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
+
+            //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
+            //AlphaAccumulationLow->_shader = _renderTargetDraw;
+            //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
+            //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
+            //AlphaAccumulationLow->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
+            //AlphaAccumulationLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
 
             //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
             //AlphaRevealageLow->_shader = _renderTargetDraw;
@@ -105,15 +104,12 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             //addDebugView(AlphaRevealageLow);
         }
 
-        RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
-        RenderTarget& screenRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-
         if (HiZPtr) {
             //HiZ preview
             I32 LoDLevel = 0;
             if (Config::USE_HIZ_CULLING) {
-                LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
-                    (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
+                RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
+                LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
             }
             HiZPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
         }
@@ -132,6 +128,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             rowCount++;
         }
 
+        RenderTarget& screenRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
         U16 screenWidth = std::max(screenRT.getWidth(), to_U16(1280));
         U16 screenHeight = std::max(screenRT.getHeight(), to_U16(720));
         F32 aspectRatio = to_F32(screenWidth) / screenHeight;
@@ -141,7 +138,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         Rect<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
         PipelineDescriptor pipelineDesc = {};
-        pipelineDesc._stateHash = _defaultStateBlockHash;
+        pipelineDesc._stateHash = _state2DRenderingHash;
 
         GenericDrawCommand triangleCmd = {};
         triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
@@ -168,6 +165,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 
             bindPipeline._pipeline = newPipeline(pipelineDesc);
             GFX::EnqueueCommand(bufferInOut, bindPipeline);
+
             pushConstants._constants = view._shaderData;
             GFX::EnqueueCommand(bufferInOut, pushConstants);
 
@@ -265,9 +263,8 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
         drawDebugFrustum(bufferInOut);
 
         // Debug axis form the axis arrow gizmo in the corner of the screen
-        // This is togglable, so check if it's actually requested
-        if (BitCompare(to_U32(sceneRenderState.gizmoState()),
-                       to_base(SceneRenderState::GizmoState::SCENE_GIZMO))) {
+        // This is toggleable, so check if it's actually requested
+        if (BitCompare(to_U32(sceneRenderState.gizmoState()), to_base(SceneRenderState::GizmoState::SCENE_GIZMO))) {
 
             // Apply the inverse view matrix so that it cancels out in the shader
             // Submit the draw command, rendering it in a tiny viewport in the lower
