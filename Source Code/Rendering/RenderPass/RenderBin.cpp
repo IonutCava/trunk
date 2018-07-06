@@ -11,27 +11,26 @@
 
 namespace Divide {
 
-RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
-                             SceneGraphNode& node)
-    : _node(&node),
+RenderBinItem::RenderBinItem(I32 sortKeyA,
+                             I32 sortKeyB,
+                             F32 distToCamSq,
+                             RenderingComponent& renderable)
+    : _renderable(&renderable),
       _sortKeyA(sortKeyA),
       _sortKeyB(sortKeyB),
-      _distanceToCameraSq(distToCamSq) {
+      _distanceToCameraSq(distToCamSq)
+{
     _stateHash = 0;
-    RenderingComponent* const renderable =
-        _node->getComponent<RenderingComponent>();
-    if (renderable) {
-        Material* nodeMaterial = renderable->getMaterialInstance();
-        // If we do not have a material, no need to continue
-        if (!nodeMaterial) {
-            return;
-        }
-        // Sort by state hash depending on the current rendering stage
-        // Save the render state hash value for sorting
-        _stateHash = GFX_DEVICE.getStateBlockDescriptor(
-                                    nodeMaterial->getRenderStateBlock(
-                                        GFX_DEVICE.getRenderStage())).getHash();
+    Material* nodeMaterial = _renderable->getMaterialInstance();
+    // If we do not have a material, no need to continue
+    if (!nodeMaterial) {
+        return;
     }
+    // Sort by state hash depending on the current rendering stage
+    // Save the render state hash value for sorting
+    _stateHash = GFX_DEVICE.getStateBlockDescriptor(
+                                nodeMaterial->getRenderStateBlock(
+                                    GFX_DEVICE.getRenderStage())).getHash();
 }
 
 struct RenderQueueDistanceBacktoFront {
@@ -108,7 +107,7 @@ RenderBin::RenderBin(const RenderBinType& rbType,
         "Shadow Bin";
 }
 
-void RenderBin::sort(U32 binIndex, RenderStage currentRenderStage) {
+void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:
@@ -141,9 +140,8 @@ void RenderBin::sort(U32 binIndex, RenderStage currentRenderStage) {
 
     U32 index = 0;
     for (RenderBinItem& item : _renderBinStack) {
-        RenderingCompRenderBinAttorney::drawOrder(
-            *item._node->getComponent<RenderingComponent>(),
-            binIndex + index++);
+        RenderingCompRenderBinAttorney::drawOrder(*item._renderable,
+                                                  binIndex + index++);
     }
 }
 
@@ -158,27 +156,28 @@ void RenderBin::addNodeToBin(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
     I32 keyB = keyA;
     RenderingComponent* const renderable =
         sgn.getComponent<RenderingComponent>();
-    if (renderable) {
-        Material* nodeMaterial = renderable->getMaterialInstance();
-        if (nodeMaterial) {
-            nodeMaterial->getSortKeys(keyA, keyB);
-        }
+
+    Material* nodeMaterial = renderable->getMaterialInstance();
+    if (nodeMaterial) {
+        nodeMaterial->getSortKeys(keyA, keyB);
     }
+
     _renderBinStack.push_back(RenderBinItem(
         keyA, keyB,
         sgn.getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
-        sgn));
+        *renderable));
 }
 
-void RenderBin::preRender(RenderStage currentRenderStage) {}
+void RenderBin::preRender(RenderStage renderStage) {}
 
 void RenderBin::render(const SceneRenderState& renderState,
-                       RenderStage currentRenderStage) {
+                       RenderStage renderStage) {
     // We need to apply different materials for each stage. As nodes are sorted,
     // this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
         GFX_DEVICE.addToRenderQueue(
-            item._node->getComponent<RenderingComponent>()->getRenderData());
+            RenderingCompRenderBinAttorney::getRenderData(
+                *item._renderable, renderState, renderStage, true));
     }
 
     GFX_DEVICE.flushRenderQueue();
@@ -187,11 +186,8 @@ void RenderBin::render(const SceneRenderState& renderState,
 void RenderBin::postRender(const SceneRenderState& renderState,
                            RenderStage renderStage) {
     for (const RenderBinItem& item : _renderBinStack) {
-        RenderingCompRenderBinAttorney::postDraw(
-            *item._node->getComponent<RenderingComponent>(),
-            renderState,
-            renderStage);
+        RenderingCompRenderBinAttorney::postDraw(*item._renderable, renderState,
+                                                 renderStage);
     }
 }
-
 };

@@ -250,7 +250,7 @@ void GFXDevice::buildDrawCommands(
         return;
     }
 
-    _batchCommands = !refreshNodeData;
+    _batchCommands = true;
 
     if (refreshNodeData) {
         processVisibleNodes(visibleNodes, sceneRenderState);
@@ -263,7 +263,6 @@ void GFXDevice::buildDrawCommands(
     _nonBatchedCommands.push_back(_defaultDrawCmd);
 
     U32 drawID = 1;
-    U32 cmdID = 1;
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     for (SceneGraphNode* node : visibleNodes) {

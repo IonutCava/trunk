@@ -512,8 +512,7 @@ void Scene::debugDraw(RenderStage stage) {
     GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::GizmoState::NO_GIZMO);
 
     if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
-        if (_currentSelection != nullptr &&
-            _currentSelection->getComponent<RenderingComponent>()) {
+        if (_currentSelection != nullptr) {
             _currentSelection->getComponent<RenderingComponent>()
                 ->drawDebugAxis();
         }

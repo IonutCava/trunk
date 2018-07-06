@@ -99,13 +99,13 @@ bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
 }
 
 void Sky::getDrawCommands(SceneGraphNode& sgn,
-                          RenderStage currentRenderStage,
+                          RenderStage renderStage,
                           SceneRenderState& sceneRenderState,
                           vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     GenericDrawCommand cmd;
     cmd.renderWireframe(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
-    cmd.stateHash(currentRenderStage == RenderStage::REFLECTION_STAGE
+    cmd.stateHash(renderStage == RenderStage::REFLECTION_STAGE
                       ? _skyboxRenderStateReflectedHash
                       : _skyboxRenderStateHash);
     cmd.shaderProgram(_skyShader);

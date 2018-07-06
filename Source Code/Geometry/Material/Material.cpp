@@ -53,7 +53,6 @@ Material::Material()
     shadowDescriptor.setColorWrites(true, true, false, false);
     _defaultRenderStates[to_uint(RenderStage::SHADOW_STAGE)] =
         GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor);
-    _computedShaderTextures = false;
 }
 
 Material::~Material() {
@@ -75,7 +74,6 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
     cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
-    cloneMat->_computedShaderTextures = base._computedShaderTextures;
     cloneMat->_operation = base._operation;
     cloneMat->_bumpMethod = base._bumpMethod;
     cloneMat->_parallaxFactor = base._parallaxFactor;
@@ -112,21 +110,31 @@ Material* Material::clone(const stringImpl& nameSuffix) {
 }
 
 void Material::update(const U64 deltaTime) {
+    for (ShaderInfo& info : _shaderInfo) {
+        if (info._shaderCompStage ==
+            ShaderInfo::ShaderCompilationStage::PENDING) {
+            if (info._shaderRef->getState() == ResourceState::RES_LOADED) {
+                info._shaderCompStage =
+                    ShaderInfo::ShaderCompilationStage::COMPUTED;
+            }
+        }
+    }
+
     // build one shader per frame
     computeShaderInternal();
 
-    bool cleanMaterial = true;
     for (ShaderInfo& info : _shaderInfo) {
-        if (info._shaderCompStage ==  ShaderInfo::ShaderCompilationStage::QUEUED ||
-            info._shaderCompStage ==  ShaderInfo::ShaderCompilationStage::REQUESTED ||
-            info._shaderCompStage ==  ShaderInfo::ShaderCompilationStage::PENDING) {
-            cleanMaterial = false;
-            break;
+        if (info._shaderCompStage ==
+                ShaderInfo::ShaderCompilationStage::QUEUED ||
+            info._shaderCompStage ==
+                ShaderInfo::ShaderCompilationStage::REQUESTED ||
+            info._shaderCompStage ==
+                ShaderInfo::ShaderCompilationStage::PENDING) {
+            return;
         }
     }
-    if (cleanMaterial) {
-        clean();
-    }
+
+    clean();
 }
 
 size_t Material::getRenderStateBlock(RenderStage currentStage) {
@@ -194,6 +202,7 @@ void Material::setShaderProgramInternal(
     RenderStage renderStage,
     const bool computeOnAdd,
     const DELEGATE_CBK<>& shaderCompileCallback) {
+
     U32 stageIndex = to_uint(renderStage);
     ShaderInfo& info = _shaderInfo[stageIndex];
     ShaderProgram* shaderReference = info._shaderRef;
@@ -223,18 +232,18 @@ void Material::setShaderProgramInternal(
     shaderDescriptor.setPropertyList(stringAlg::toBase(ss.str()));
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
-    _computedShaderTextures = true;
+    ShaderQueueElement queueElement(stageIndex, shaderDescriptor, shaderCompileCallback);
+
     if (computeOnAdd) {
-        info._shaderRef = CreateResource<ShaderProgram>(shaderDescriptor);
-        info._shaderCompStage = ShaderInfo::ShaderCompilationStage::PENDING;
-        REGISTER_TRACKED_DEPENDENCY(info._shaderRef);
-        if (shaderCompileCallback) {
-            shaderCompileCallback();
-        }
+        _shaderComputeQueue.push_front(queueElement);
     } else {
-        _shaderComputeQueue.push(std::make_tuple(stageIndex, shaderDescriptor,
-                                                 shaderCompileCallback));
-        info._shaderCompStage = ShaderInfo::ShaderCompilationStage::QUEUED;
+        _shaderComputeQueue.push_back(queueElement);
+    }
+    
+    info._shaderCompStage = ShaderInfo::ShaderCompilationStage::QUEUED;
+
+    if (computeOnAdd) {
+        computeShaderInternal();
     }
 }
 
@@ -416,38 +425,29 @@ bool Material::computeShader(RenderStage renderStage,
     setShaderProgramInternal(shader, renderStage, computeOnAdd,
                              shaderCompileCallback);
 
-    return true;
+    return false;
 }
 
 void Material::computeShaderInternal() {
-    for (ShaderInfo& info : _shaderInfo) {
-        if (info._shaderCompStage ==
-            ShaderInfo::ShaderCompilationStage::PENDING) {
-            info._shaderCompStage =
-                ShaderInfo::ShaderCompilationStage::COMPUTED;
-        }
-    }
-
     if (_shaderComputeQueue.empty() /* || Material::isShaderQueueLocked()*/) {
         return;
     }
     // Material::lockShaderQueue();
-
-    const std::tuple<U32, ResourceDescriptor, DELEGATE_CBK<>>& currentItem =
-        _shaderComputeQueue.front();
-    const U32& renderStageIndex = std::get<0>(currentItem);
-    const ResourceDescriptor& descriptor = std::get<1>(currentItem);
-    const DELEGATE_CBK<>& callback = std::get<2>(currentItem);
+    const ShaderQueueElement& currentItem = _shaderComputeQueue.front();
     _dirty = true;
 
-    ShaderInfo& info = _shaderInfo[renderStageIndex];
-    info._shaderRef = CreateResource<ShaderProgram>(descriptor);
-    info._shaderCompStage = ShaderInfo::ShaderCompilationStage::PENDING;
+    ShaderInfo& info = _shaderInfo[std::get<0>(currentItem)];
+    info._shaderRef = CreateResource<ShaderProgram>(std::get<1>(currentItem));
+    info._shaderCompStage = info._shaderRef->getState() == ResourceState::RES_LOADED
+        ? ShaderInfo::ShaderCompilationStage::COMPUTED
+        : ShaderInfo::ShaderCompilationStage::PENDING;
+    REGISTER_TRACKED_DEPENDENCY(info._shaderRef);
+    _shaderComputeQueue.pop_front();
+
+    const DELEGATE_CBK<>& callback = std::get<2>(currentItem);
     if (callback) {
         callback();
     }
-    REGISTER_TRACKED_DEPENDENCY(info._shaderRef);
-    _shaderComputeQueue.pop();
 }
 
 void Material::getTextureData(ShaderProgram::TextureUsage slot,

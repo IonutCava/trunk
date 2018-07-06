@@ -100,7 +100,7 @@ class Object3D : public SceneNode {
 
    protected:
     virtual void getDrawCommands(
-        SceneGraphNode& sgn, RenderStage currentRenderStage,
+        SceneGraphNode& sgn, RenderStage renderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();

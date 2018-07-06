@@ -125,7 +125,7 @@ class Terrain : public Object3D {
 
    protected:
     void getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage currentRenderStage,
+                         RenderStage renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 

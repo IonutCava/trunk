@@ -83,7 +83,7 @@ class SceneNode : public Resource {
     /// render itself in REFLECTION_STAGE
     virtual bool getDrawState(RenderStage currentStage);
     virtual void getDrawCommands(
-        SceneGraphNode& sgn, RenderStage currentRenderStage,
+        SceneGraphNode& sgn, RenderStage renderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
     /*//Rendering/Processing*/

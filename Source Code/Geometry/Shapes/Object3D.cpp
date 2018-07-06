@@ -55,7 +55,7 @@ VertexBuffer* const Object3D::getGeometryVB() const {
 
 void Object3D::getDrawCommands(
     SceneGraphNode& sgn,
-    RenderStage currentRenderStage,
+    RenderStage renderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     RenderingComponent* const renderable =
@@ -66,8 +66,8 @@ void Object3D::getDrawCommands(
 
     GenericDrawCommand drawCmd;
     drawCmd.renderWireframe(renderable->renderWireframe());
-    drawCmd.stateHash(renderable->getDrawStateHash(currentRenderStage));
-    drawCmd.shaderProgram(renderable->getDrawShader(currentRenderStage));
+    drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
+    drawCmd.shaderProgram(renderable->getDrawShader(renderStage));
     drawCmd.sourceBuffer(vb);
     drawCmd.indexCount(static_cast<U32>(vb->getIndexCount()));
 

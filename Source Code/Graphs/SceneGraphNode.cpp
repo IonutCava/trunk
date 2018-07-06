@@ -41,6 +41,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
       _silentDispose(false),
       _boundingBoxDirty(true),
       _shouldDelete(false),
+      _firstDraw(false),
       _updateTimer(Time::ElapsedMilliseconds()),
       _childQueue(0),
       _bbAddExclusionList(0),
@@ -65,8 +66,6 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
             *this));
-
-    memset(_reset, false, sizeof(bool) * to_uint(RenderStage::COUNT));
 }
 
 /// If we are destroying the current graph node
@@ -300,6 +299,19 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     }
     // update local time
     _elapsedTime += deltaTime;
+
+    if (_firstDraw) {
+        _firstDraw = false;
+        if (getParent()) {
+            for (NodeChildren::value_type& it : _children) {
+                if (it.second->getComponent<AnimationComponent>()) {
+                    it.second->getComponent<AnimationComponent>()
+                        ->resetTimers();
+                }
+            }
+        }
+    }
+
     // update all of the internal components (animation, physics, etc)
     for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
         if (_components[i]) {
@@ -344,19 +356,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
-    if (_reset[to_uint(renderStage)]) {
-        _reset[to_uint(renderStage)] = false;
-        if (getParent() && !GFX_DEVICE.isDepthStage()) {
-            for (SceneGraphNode::NodeChildren::value_type& it :
-                 getParent()->getChildren()) {
-                if (it.second->getComponent<AnimationComponent>()) {
-                    it.second->getComponent<AnimationComponent>()
-                        ->resetTimers();
-                }
-            }
-        }
-    }
-
     for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
         if (_components[i]) {
             if (!_components[i]->onDraw(renderStage)) {

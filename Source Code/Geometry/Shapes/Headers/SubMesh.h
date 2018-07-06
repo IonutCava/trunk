@@ -78,7 +78,7 @@ class SubMesh : public Object3D {
     void setParentMesh(Mesh* const parentMesh);
 
     void getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage currentRenderStage,
+                         RenderStage renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 

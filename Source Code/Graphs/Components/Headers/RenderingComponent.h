@@ -96,10 +96,6 @@ class RenderingComponent : public SGNComponent {
 
     void unregisterShaderBuffer(ShaderBufferLocation slot);
 
-    inline const GFXDevice::RenderPackage& getRenderData() const {
-        return _renderData;
-    }
-
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
@@ -108,6 +104,9 @@ class RenderingComponent : public SGNComponent {
     void inViewCallback();
     bool canDraw(const SceneRenderState& sceneRenderState,
                  RenderStage renderStage);
+
+    bool preDraw(const SceneRenderState& renderState,
+                 RenderStage renderStage) const;
     /// Called after the parent node was rendered
     void postDraw(const SceneRenderState& sceneRenderState,
                   RenderStage renderStage);
@@ -116,6 +115,10 @@ class RenderingComponent : public SGNComponent {
         RenderStage renderStage);
 
     inline void drawOrder(U32 index) { _drawOrder = index; }
+
+    inline const GFXDevice::RenderPackage& getRenderData() const {
+        return _renderData;
+    }
 
    protected:
     Material* _materialInstance;
@@ -175,6 +178,19 @@ class RenderingCompSceneGraphAttorney {
 
 class RenderingCompRenderBinAttorney {
    private:
+
+    static const GFXDevice::RenderPackage& getRenderData(
+        RenderingComponent& renderable,
+        const SceneRenderState& renderState,
+        RenderStage renderStage,
+        bool preDraw = false) {
+        if (preDraw) {
+            renderable.preDraw(renderState, renderStage);
+        }
+
+        return renderable._renderData;
+    }
+
     static void postDraw(RenderingComponent& renderable,
                          const SceneRenderState& sceneRenderState,
                          RenderStage renderStage) {

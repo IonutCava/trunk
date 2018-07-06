@@ -63,7 +63,7 @@ class Sky : public SceneNode {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
     void getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage currentRenderStage,
+                         RenderStage renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 

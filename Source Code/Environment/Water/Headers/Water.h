@@ -87,7 +87,7 @@ class WaterPlane : public SceneNode, public Reflector {
     WaterPlane();
     ~WaterPlane() {}
     void getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage currentRenderStage,
+                         RenderStage renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 

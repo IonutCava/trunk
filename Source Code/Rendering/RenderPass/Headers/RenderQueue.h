@@ -48,11 +48,11 @@ DEFINE_SINGLETON(RenderQueue)
 
   public:
     ///
-    void sort(RenderStage currentRenderStage);
+    void sort(RenderStage renderStage);
     void refresh(bool force = false);
     void addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize() const;
-    SceneGraphNode* getItem(U16 renderBin, U16 index);
+    SceneGraphNode& getItem(U16 renderBin, U16 index);
     RenderBin* getBin(RenderBin::RenderBinType rbType);
 
     inline U16 getRenderQueueBinSize() { return (U16)_sortedRenderBins.size(); }

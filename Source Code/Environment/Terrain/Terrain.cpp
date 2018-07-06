@@ -149,17 +149,17 @@ void Terrain::sceneUpdate(const U64 deltaTime,
 }
 
 void Terrain::getDrawCommands(SceneGraphNode& sgn,
-                              RenderStage currentRenderStage,
+                              RenderStage renderStage,
                               SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     size_t drawStateHash = 0;
 
     if (GFX_DEVICE.isDepthStage()) {
-        drawStateHash = currentRenderStage == RenderStage::Z_PRE_PASS_STAGE
+        drawStateHash = renderStage == RenderStage::Z_PRE_PASS_STAGE
                             ? _terrainRenderStateHash
                             : _terrainDepthRenderStateHash;
     } else {
-        drawStateHash = currentRenderStage == RenderStage::REFLECTION_STAGE
+        drawStateHash = renderStage == RenderStage::REFLECTION_STAGE
                             ? _terrainReflectionRenderStateHash
                             : _terrainRenderStateHash;
     }
@@ -169,9 +169,9 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader = renderable->getDrawShader(
-        currentRenderStage == RenderStage::REFLECTION_STAGE
+        renderStage == RenderStage::REFLECTION_STAGE
             ? RenderStage::DISPLAY_STAGE
-            : currentRenderStage);
+            : renderStage);
 
     if (_terrainInView) {
         vectorImpl<GenericDrawCommand> tempCommands;

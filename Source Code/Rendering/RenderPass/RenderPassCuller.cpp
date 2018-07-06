@@ -101,8 +101,9 @@ void RenderPassCuller::cullSceneGraphCPU(
             // If this node isn't render-disabled, check if it is visible
             // Skip expensive frustum culling if we shouldn't draw the node in
             // the first place
-            if (!RenderingCompPassCullerAttorney::canDraw(
-                    *renderingCmp, sceneRenderState, currentStage)) {
+            if (!/*RenderingCompPassCullerAttorney::canDraw(
+                    *renderingCmp, sceneRenderState, currentStage)*/
+                    renderingCmp->getSGN().prepareDraw(sceneRenderState, currentStage)) {
                 // If the current SceneGraphNode isn't visible, it's children
                 // aren't visible as well
                 skipChildren = true;

@@ -269,7 +269,7 @@ class Material : public Resource {
                                  const stringImpl& shaderDefines) {
         vectorImpl<stringImpl>& defines =
             _shaderInfo[to_uint(renderStage)]._shaderDefines;
-        if (std::find(std::begin(defines), end(defines), shaderDefines) !=
+        if (std::find(std::begin(defines), end(defines), shaderDefines) ==
             std::end(defines)) {
             defines.push_back(shaderDefines);
         }
@@ -382,8 +382,9 @@ class Material : public Resource {
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
 
-    std::queue<std::tuple<U32, ResourceDescriptor, DELEGATE_CBK<>>>
-        _shaderComputeQueue;
+    typedef std::tuple<U32, ResourceDescriptor, DELEGATE_CBK<>>
+        ShaderQueueElement;
+    std::deque<ShaderQueueElement> _shaderComputeQueue;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"
     stringImpl _shaderModifier;
@@ -402,8 +403,6 @@ class Material : public Resource {
     size_t _defaultRenderStates[to_const_uint(RenderStage::COUNT)];
 
     bool _shaderThreadedLoad;
-    /// if we should recompute only fragment
-    bool _computedShaderTextures;
 
     /// use this map to add textures to the material
     vectorImpl<Texture*> _textures;

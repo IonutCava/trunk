@@ -273,12 +273,12 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
    protected:
     friend class RenderingComponent;
     bool prepareDraw(const SceneRenderState& sceneRenderState,
-                     RenderStage currentRenderStage);
+                     RenderStage renderStage);
 
    private:
     inline void setName(const stringImpl& name) { _name = name; }
-    inline void scheduleReset(RenderStage currentStage) {
-        _reset[to_uint(currentStage)] = true;
+    inline void firstDraw() {
+        _firstDraw = true;
     }
 
    private:
@@ -314,7 +314,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     std::unique_ptr<SGNComponent> _components[to_const_uint(
         SGNComponent::ComponentType::COUNT)];
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
-    bool _reset[to_const_uint(RenderStage::COUNT)];
+    bool _firstDraw;
 
     StateTracker<bool> _trackedBools;
 };

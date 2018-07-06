@@ -86,11 +86,11 @@ void NavigationMesh::freeIntermediates(bool freeAll) {
 
 namespace {
 inline F32 charToFloat(const char* val) {
-    return Util::convertData<F32, const char*>(val);
+    return Util::convertData<F32, stringImpl>(stringImpl(val));
 }
 
 inline bool charToBool(const char* val) {
-    return Util::convertData<bool, const char*>(val);
+    return Util::convertData<bool, stringImpl>(stringImpl(val));
 }
 };
 

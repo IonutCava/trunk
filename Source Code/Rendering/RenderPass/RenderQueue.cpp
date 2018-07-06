@@ -37,15 +37,14 @@ RenderBin* RenderQueue::getBin(RenderBin::RenderBinType rbType) {
     return temp;
 }
 
-SceneGraphNode* RenderQueue::getItem(U16 renderBin, U16 index) {
-    SceneGraphNode* temp = nullptr;
-    if (renderBin < _renderBins.size()) {
-        RenderBin* tempBin = _renderBins[_renderBinID[renderBin]];
-        if (index < tempBin->getBinSize()) {
-            temp = tempBin->getItem(index)._node;
-        }
-    }
-    return temp;
+SceneGraphNode& RenderQueue::getItem(U16 renderBin, U16 index) {
+    RenderBinIDType::const_iterator it = _renderBinID.find(renderBin);
+    assert(it != std::end(_renderBinID));
+    RenderBinMap::const_iterator it2 = _renderBins.find(it->second);
+    assert(it2 != std::end(_renderBins));
+
+    return it2->second->getItem(index)._renderable->getSGN();
+
 }
 
 RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
@@ -197,14 +196,14 @@ void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
     _isSorted = false;
 }
 
-void RenderQueue::sort(RenderStage currentRenderStage) {
+void RenderQueue::sort(RenderStage renderStage) {
     /*if(_renderQueueLocked && _isSorted) {
         return;
     }*/
 
     U32 index = 0;
     for (RenderBinMap::value_type& renderBin : _renderBins) {
-        renderBin.second->sort(index, currentRenderStage);
+        renderBin.second->sort(index, renderStage);
         index += renderBin.second->getBinSize();
     }
 

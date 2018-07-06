@@ -45,18 +45,19 @@
 namespace Divide {
 
 class SceneGraphNode;
+class RenderingComponent;
 enum class RenderStage : U32;
 
 struct RenderBinItem {
-    SceneGraphNode* _node;
+    RenderingComponent* _renderable;
     I32 _sortKeyA;
     I32 _sortKeyB;
     size_t _stateHash;
     F32 _distanceToCameraSq;
 
-    RenderBinItem() : _node(nullptr) {}
+    RenderBinItem() : _renderable(nullptr) {}
     RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
-                  SceneGraphNode& node);
+                  RenderingComponent& renderable);
 };
 
 struct RenderingOrder {
@@ -103,12 +104,12 @@ class RenderBin {
 
     virtual ~RenderBin() {}
 
-    virtual void sort(U32 binIndex, RenderStage currentRenderStage);
-    virtual void preRender(RenderStage currentRenderStage);
+    virtual void sort(U32 binIndex, RenderStage renderStage);
+    virtual void preRender(RenderStage renderStage);
     virtual void render(const SceneRenderState& renderState,
-                        RenderStage currentRenderStage);
+                        RenderStage renderStage);
     virtual void postRender(const SceneRenderState& renderState,
-                            RenderStage currentRenderStage);
+                            RenderStage renderStage);
     virtual void refresh();
 
     virtual void addNodeToBin(SceneGraphNode& sgn,

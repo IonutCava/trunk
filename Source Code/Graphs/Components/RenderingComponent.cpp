@@ -93,10 +93,9 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
     Material* mat = getMaterialInstance();
     if (mat) {
-        if (!mat->computeShader(renderStage, false,
-                                DELEGATE_BIND(&SceneGraphNode::scheduleReset,
-                                              &_parentSGN, renderStage)))
-        {
+        if (!mat->computeShader(
+                renderStage, /*false*/true /*ToDo: REMOVE THIS HACK! -Ionut*/,
+                DELEGATE_BIND(&SceneGraphNode::firstDraw, &_parentSGN))) {
             return false;
         }
     }
@@ -184,6 +183,11 @@ bool RenderingComponent::castsShadows() const {
 bool RenderingComponent::receivesShadows() const {
     return _receiveShadows &&
            LightManager::getInstance().shadowMappingEnabled();
+}
+
+bool RenderingComponent::preDraw(const SceneRenderState& renderState,
+                                 RenderStage renderStage) const {
+    return _parentSGN.prepareDraw(renderState, renderStage);
 }
 
 /// Called after the current node was rendered

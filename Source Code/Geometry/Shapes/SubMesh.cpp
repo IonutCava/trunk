@@ -52,7 +52,7 @@ bool SubMesh::computeBoundingBox(SceneGraphNode& sgn) {
 }
 
 void SubMesh::getDrawCommands(SceneGraphNode& sgn,
-                              RenderStage currentRenderStage,
+                              RenderStage renderStage,
                               SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_parentMesh != nullptr);
@@ -63,8 +63,8 @@ void SubMesh::getDrawCommands(SceneGraphNode& sgn,
 
     _drawCmd.renderWireframe(renderable->renderWireframe());
     _drawCmd.LoD(renderable->lodLevel());
-    _drawCmd.stateHash(renderable->getDrawStateHash(currentRenderStage));
-    _drawCmd.shaderProgram(renderable->getDrawShader(currentRenderStage));
+    _drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
+    _drawCmd.shaderProgram(renderable->getDrawShader(renderStage));
     _drawCmd.sourceBuffer(_parentMesh->getGeometryVB());
     drawCommandsOut.push_back(_drawCmd);
 }

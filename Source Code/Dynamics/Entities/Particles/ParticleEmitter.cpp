@@ -194,7 +194,7 @@ void ParticleEmitter::onCameraChange(SceneGraphNode& sgn) {
 }
 
 void ParticleEmitter::getDrawCommands(
-    SceneGraphNode& sgn, RenderStage currentRenderStage,
+    SceneGraphNode& sgn, RenderStage renderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     U32 particleCount = getAliveParticleCount();
@@ -206,7 +206,7 @@ void ParticleEmitter::getDrawCommands(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
     _drawCommand.stateHash(_particleStateBlockHash);
     _drawCommand.instanceCount(particleCount);
-    _drawCommand.shaderProgram(currentRenderStage == RenderStage::DISPLAY_STAGE
+    _drawCommand.shaderProgram(renderStage == RenderStage::DISPLAY_STAGE
                                    ? _particleShader
                                    : _particleDepthShader);
     _drawCommand.sourceBuffer(_particleGPUBuffer);
