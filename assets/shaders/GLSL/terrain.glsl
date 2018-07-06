@@ -192,7 +192,12 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
     
 vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
 {	
+#if defined(SKIP_HARDWARE_CLIPPING)
     if(dvd_clip_plane_active[0] == 1) discard;
+#else
+    if(gl_ClipDistance[0] == 1) discard;
+#endif
+    
 
     vec3 lightVecTBN = normalize(pixelToLightTBN);
     vec3 viewVecTBN  = normalize(_viewDirection);

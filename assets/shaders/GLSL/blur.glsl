@@ -18,7 +18,7 @@ uniform int kernelSize;
 
 void main(){
 
-	const vec2 pass = 1.0/size;
+	vec2 pass = 1.0/size;
 	vec3 color = vec3(0.0);
 	vec3 value;
 	int i = 0;
