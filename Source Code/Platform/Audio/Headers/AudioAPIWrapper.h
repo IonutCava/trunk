@@ -36,6 +36,8 @@
 
 namespace Divide {
 
+class PlatformContext;
+
 class AudioState {
    public:
     AudioState(bool enableA, bool enableB, bool enableC, bool enableD) {}
@@ -51,7 +53,7 @@ class NOINITVTABLE AudioAPIWrapper {
 
    protected:
     friend class SFXDevice;
-    virtual ErrorCode initAudioAPI() = 0;
+    virtual ErrorCode initAudioAPI(PlatformContext& context) = 0;
     virtual void closeAudioAPI() = 0;
 
     virtual void beginFrame() = 0;

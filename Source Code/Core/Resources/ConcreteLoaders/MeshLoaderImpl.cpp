@@ -11,8 +11,8 @@ Resource_ptr ImplResourceLoader<Mesh>::operator()() {
 
     Mesh_ptr ptr;
     Import::ImportData tempMeshData(_descriptor.getResourceLocation());
-    if (importer.loadMeshDataFromFile(tempMeshData)) {
-        ptr = importer.loadMesh(_descriptor.getName(), tempMeshData);
+    if (importer.loadMeshDataFromFile(_context, _cache, tempMeshData)) {
+        ptr = importer.loadMesh(_context, _cache, _descriptor.getName(), tempMeshData);
     } else {
         //handle error
         DIVIDE_UNEXPECTED_CALL(Util::StringFormat("Failed to import mesh [ %s ]!",

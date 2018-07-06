@@ -17,8 +17,9 @@ namespace Divide {
 
 bool Vegetation::_staticDataUpdated = false;
 
-Vegetation::Vegetation(const VegetationDetails& details)
-    : SceneNode(details.name, SceneNodeType::TYPE_VEGETATION_GRASS),
+Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, const VegetationDetails& details)
+    : SceneNode(parentCache, details.name, SceneNodeType::TYPE_VEGETATION_GRASS),
+      _context(context),
       _billboardCount(details.billboardCount),
       _grassDensity(details.grassDensity),
       _grassScale(details.grassScale),
@@ -44,10 +45,10 @@ Vegetation::Vegetation(const VegetationDetails& details)
 
     _map = details.map;
     _grassShaderName = details.grassShaderName;
-    _grassGPUBuffer[0] = GFXDevice::instance().newGVD(3);
-    _grassGPUBuffer[1] = GFXDevice::instance().newGVD(3);
-    _treeGPUBuffer[0] = GFXDevice::instance().newGVD(1);
-    _treeGPUBuffer[1] = GFXDevice::instance().newGVD(1);
+    _grassGPUBuffer[0] = _context.newGVD(3);
+    _grassGPUBuffer[1] = _context.newGVD(3);
+    _treeGPUBuffer[0] = _context.newGVD(1);
+    _treeGPUBuffer[1] = _context.newGVD(1);
 
     _cullDrawCommand = GenericDrawCommand(PrimitiveType::API_POINTS, 0, 1);
 
@@ -56,7 +57,7 @@ Vegetation::Vegetation(const VegetationDetails& details)
     ResourceDescriptor instanceCullShader("instanceCull");
     instanceCullShader.setThreadedLoading(false);
     instanceCullShader.setID(3);
-    _cullShader = CreateResource<ShaderProgram>(instanceCullShader);
+    _cullShader = CreateResource<ShaderProgram>(parentCache, instanceCullShader);
 }
 
 Vegetation::~Vegetation()
@@ -103,7 +104,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     _grassStateBlockHash = transparentRenderState.getHash();
 
     ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
-    Material_ptr vegMaterial = CreateResource<Material>(vegetationMaterial);
+    Material_ptr vegMaterial = CreateResource<Material>(_parentCache, vegetationMaterial);
 
     vegMaterial->setDiffuse(DefaultColours::WHITE());
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
@@ -316,7 +317,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
 }
 
 U32 Vegetation::getQueryID() {
-    switch (GFXDevice::instance().getRenderStage()) {
+    switch (_context.getRenderStage()) {
         case RenderStage::SHADOW:
             return 0;
         case RenderStage::REFLECTION:
@@ -331,14 +332,14 @@ U32 Vegetation::getQueryID() {
 void Vegetation::gpuCull() {
     U32 queryID = getQueryID();
 
-    if (GFXDevice::instance().is2DRendering())
+    if (_context.is2DRendering()) {
         return;
+    }
 
     bool draw = false;
     switch (queryID) {
         case 0 /*SHADOW*/: {
-            draw = GFXDevice::instance().getRenderStage() !=
-                   GFXDevice::instance().getPrevRenderStage();
+            draw = _context.getRenderStage() != _context.getPrevRenderStage();
             _culledFinal = false;
         } break;
         case 1 /*REFLECTION*/: {
@@ -358,7 +359,7 @@ void Vegetation::gpuCull() {
         _cullShader->Uniform("cullType",
                              /*queryID*/ to_const_uint(CullType::INSTANCE_CLOUD_REDUCTION));
 
-        GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).bind(0, RTAttachment::Type::Depth, 0);
+        _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).bind(0, RTAttachment::Type::Depth, 0);
         buffer->bindFeedbackBufferRange(to_const_uint(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
@@ -376,7 +377,7 @@ void Vegetation::gpuCull() {
         _cullDrawCommand.sourceBuffer(buffer);
         buffer->incQueryQueue();
 
-        GFXDevice::instance().draw(_cullDrawCommand);
+        _context.draw(_cullDrawCommand);
 
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //_cullDrawCommand.sourceBuffer(_treeGPUBuffer);
@@ -423,7 +424,7 @@ bool Vegetation::onRender(RenderStage renderStage) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
              _terrainChunk->getLoD() > 0 ||
-             (GFXDevice::instance().getRenderStage() == GFXDevice::instance().getPrevRenderStage() &&
+             (_context.getRenderStage() == _context.getPrevRenderStage() &&
               renderStage == RenderStage::SHADOW));
 }
 

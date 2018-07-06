@@ -12,8 +12,9 @@
 
 namespace Divide {
 
-PreRenderBatch::PreRenderBatch(GFXDevice& context)
+PreRenderBatch::PreRenderBatch(GFXDevice& context, ResourceCache& cache)
     : _context(context),
+      _resCache(cache),
       _adaptiveExposureControl(true),
       _debugOperator(nullptr),
       _renderTarget(nullptr),
@@ -76,25 +77,25 @@ void PreRenderBatch::init(RenderTarget* renderTarget) {
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
-    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
-    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
-    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
+    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
+    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
+    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
 
     OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
-    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, _renderTarget, _postFXOutput._rt));
+    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, _resCache, _renderTarget, _postFXOutput._rt));
 
     ResourceDescriptor toneMap("bloom.ToneMap");
     toneMap.setThreadedLoading(false);
-    _toneMap = CreateResource<ShaderProgram>(toneMap);
+    _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
 
     ResourceDescriptor toneMapAdaptive("bloom.ToneMap.Adaptive");
     toneMapAdaptive.setThreadedLoading(false);
     toneMapAdaptive.setPropertyList("USE_ADAPTIVE_LUMINANCE");
-    _toneMapAdaptive = CreateResource<ShaderProgram>(toneMapAdaptive);
+    _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
 
     ResourceDescriptor luminanceCalc("bloom.LuminanceCalc");
     luminanceCalc.setThreadedLoading(false);
-    _luminanceCalc = CreateResource<ShaderProgram>(luminanceCalc);
+    _luminanceCalc = CreateResource<ShaderProgram>(_resCache, luminanceCalc);
 
     //_debugOperator = hdrBatch[0];
 }

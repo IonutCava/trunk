@@ -37,6 +37,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class Scene;
+class GFXDevice;
 class IMPrimitive;
 class ShaderProgram;
 class ImpostorSphere;
@@ -54,11 +56,11 @@ public:
     };
 
 public:
-    EnvironmentProbe(ProbeType type);
+    EnvironmentProbe(Scene& parentScene, ProbeType type);
     ~EnvironmentProbe();
 
-    static void onStartup();
-    static void onShutdown();
+    static void onStartup(GFXDevice& context);
+    static void onShutdown(GFXDevice& context);
 
     void refresh();
     void setUpdateRate(U8 rate);
@@ -88,6 +90,7 @@ protected:
     std::shared_ptr<ShaderProgram> _impostorShader;
 
 private:
+    GFXDevice& _context;
     static vectorImpl<bool> s_availableSlices;
     static RenderTargetHandle s_reflection;
 };

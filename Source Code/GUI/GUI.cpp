@@ -10,6 +10,7 @@
 
 #include "Scenes/Headers/Scene.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
 
@@ -38,8 +39,9 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
     }
 }
 
-GUI::GUI()
+GUI::GUI(Kernel& parent)
     : GUIInterface(*this, vec2<U16>(1, 1)), //<dangerous, but better than a Singleton
+      KernelComponent(parent),
       _init(false),
       _rootSheet(nullptr),
       _defaultMsgBox(nullptr),
@@ -93,10 +95,6 @@ void GUI::draw(GFXDevice& context) const {
     if (!_init || !_activeScene) {
         return;
     }
-
-    const OIS::MouseState& mouseState = Input::InputInterface::instance().getMouse().getMouseState();
-
-    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
     _guiShader->bind();
 
@@ -194,7 +192,7 @@ void GUI::update(const U64 deltaTime) {
     }
 }
 
-bool GUI::init(PlatformContext& context, const vec2<U16>& renderResolution) {
+bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution) {
     if (_init) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
@@ -204,8 +202,8 @@ bool GUI::init(PlatformContext& context, const vec2<U16>& renderResolution) {
 
     _enableCEGUIRendering = !(ParamHandler::instance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
 
-    _guiEditor = MemoryManager_NEW GUIEditor(*this);
-    _console = MemoryManager_NEW GUIConsole(*this);
+    _guiEditor = MemoryManager_NEW GUIEditor(context, cache);
+    _console = MemoryManager_NEW GUIConsole(context, cache);
 
     if (Config::Build::IS_DEBUG_BUILD) {
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
@@ -269,12 +267,11 @@ bool GUI::init(PlatformContext& context, const vec2<U16>& renderResolution) {
 
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
-    _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
+    _guiShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
     _guiShader->Uniform("dvd_WorldMatrix", mat4<F32>());
-    context._GFX.add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GUI::draw, this, std::ref(context._GFX))),
-                            std::numeric_limits<U32>::max() - 1);
-    const OIS::MouseState& mouseState =
-        Input::InputInterface::instance().getMouse().getMouseState();
+    context.gfx().add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GUI::draw, this, std::ref(context.gfx()))),
+                                      std::numeric_limits<U32>::max() - 1);
+    const OIS::MouseState& mouseState = context.input().getMouse().getMouseState();
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
@@ -284,6 +281,9 @@ bool GUI::init(PlatformContext& context, const vec2<U16>& renderResolution) {
 
     g_assertMsgBox = _defaultMsgBox;
 
+    GUIButton::soundCallback(DELEGATE_BIND(&SFXDevice::playSound, 
+                                           &context.sfx(),
+                                           std::placeholders::_1));
     _init = true;
     return true;
 }

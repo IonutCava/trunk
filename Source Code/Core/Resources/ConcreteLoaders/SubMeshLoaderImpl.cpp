@@ -1,3 +1,4 @@
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
@@ -10,9 +11,9 @@ Resource_ptr ImplResourceLoader<SubMesh>::operator()() {
 
     if (_descriptor.getEnumValue() ==
         to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-        ptr.reset(MemoryManager_NEW SkinnedSubMesh(_descriptor.getName()), DeleteResource());
+        ptr.reset(MemoryManager_NEW SkinnedSubMesh(_context.gfx(), _cache, _descriptor.getName()), DeleteResource(_cache));
     } else {
-        ptr.reset(MemoryManager_NEW SubMesh(_descriptor.getName()), DeleteResource());
+        ptr.reset(MemoryManager_NEW SubMesh(_context.gfx(), _cache, _descriptor.getName()), DeleteResource(_cache));
     }
 
     if (!load(ptr)) {

@@ -33,6 +33,7 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "Core/Headers/NonCopyable.h"
+#include "Core/Headers/KernelComponent.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
@@ -44,22 +45,27 @@ class RenderTarget;
 class RTDrawDescriptor;
 enum class RenderStage : U32;
 
-DEFINE_SINGLETON(RenderPassManager)
-  public:
-      struct PassParams {
-          RenderTargetID target;
-          RTDrawDescriptor* drawPolicy = nullptr;
-          RenderStage stage = RenderStage::COUNT;
-          Camera* camera = nullptr;
-          bool occlusionCull = false;
-          bool doPrePass = true;
-          U32 pass = 0;
-      };
-  public:
+class RenderPassManager : public KernelComponent {
+public:
+    struct PassParams {
+        RenderTargetID target;
+        RTDrawDescriptor* drawPolicy = nullptr;
+        RenderStage stage = RenderStage::COUNT;
+        Camera* camera = nullptr;
+        bool occlusionCull = false;
+        bool doPrePass = true;
+        U32 pass = 0;
+    };
+public:
+    explicit RenderPassManager(Kernel& parent, GFXDevice& context);
+    ~RenderPassManager();
+
+    bool init();
+    void destroy();
     /// Call every renderqueue's render function in order
     void render(SceneRenderState& sceneRenderState);
     /// Add a new pass that will run once for each of the RenderStages specified
-    RenderPass& addRenderPass(const stringImpl& renderPassName, 
+    RenderPass& addRenderPass(const stringImpl& renderPassName,
                               U8 orderKey,
                               RenderStage renderStage);
     /// Find a renderpass by name and remove it from the manager
@@ -75,19 +81,16 @@ DEFINE_SINGLETON(RenderPassManager)
 
     void doCustomPass(PassParams& params);
 
-  private:
-    RenderPassManager();
-    ~RenderPassManager();
-
+private:
     RenderPass* getPassForStage(RenderStage renderStage) const;
 
-  private:
+private:
     GFXDevice& _context;
     // Some vector implementations are not move-awarem so use STL in this case
     vectorImpl<RenderPass*> _renderPasses;
     RenderQueue* _renderQueue;
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 

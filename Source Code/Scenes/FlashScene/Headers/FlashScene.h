@@ -38,8 +38,8 @@ namespace Divide {
 
 class FlashScene : public Scene {
    public:
-    explicit FlashScene(PlatformContext& context, const stringImpl& name)
-        : Scene(context, name)
+    explicit FlashScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+        : Scene(context, cache, parent, name)
     {
     }
 

@@ -28,13 +28,14 @@ namespace {
 
 };
 
-SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
-    : SceneNode(name, "", type)
+SceneNode::SceneNode(ResourceCache& parentCache, const stringImpl& name, const SceneNodeType& type)
+    : SceneNode(parentCache, name, "", type)
 {
 }
 
-SceneNode::SceneNode(const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type)
+SceneNode::SceneNode(ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type)
     : Resource(ResourceType::DEFAULT, name, resourceLocation),
+     _parentCache(parentCache),
      _materialTemplate(nullptr),
      _type(type),
      _LODcount(1)  ///<Defaults to 1 LOD level
@@ -85,7 +86,7 @@ const Material_ptr& SceneNode::getMaterialTpl() {
     // UpgradableReadLock ur_lock(_materialLock);
     if (_materialTemplate == nullptr && _renderState.useDefaultMaterial()) {
         // UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = CreateResource<Material>(ResourceDescriptor("defaultMaterial_" + getName()));
+        _materialTemplate = CreateResource<Material>(_parentCache, ResourceDescriptor("defaultMaterial_" + getName()));
         _materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     }
     return _materialTemplate;

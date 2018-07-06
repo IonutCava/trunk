@@ -1,3 +1,4 @@
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
@@ -8,13 +9,14 @@ namespace Divide {
 
 template <>
 Resource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
-    std::shared_ptr<ImpostorSphere> ptr(MemoryManager_NEW ImpostorSphere(_descriptor.getName(), 1.0f), DeleteResource());
+    std::shared_ptr<ImpostorSphere> ptr(MemoryManager_NEW ImpostorSphere(_context.gfx(), _cache, _descriptor.getName(), 1.0f), 
+                                        DeleteResource(_cache));
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
         Material_ptr matTemp = 
-            CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
+            CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.getName()));
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
@@ -34,13 +36,14 @@ Resource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
 
 template <>
 Resource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
-    std::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_descriptor.getName(), 1.0f), DeleteResource());
+    std::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_context.gfx(), _cache, _descriptor.getName(), 1.0f),
+                                     DeleteResource(_cache));
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
         Material_ptr matTemp =
-            CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
+            CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.getName()));
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));
         dummyDesc.setFillMode(FillMode::WIREFRAME);

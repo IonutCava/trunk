@@ -6,13 +6,14 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON(ASIOImpl, ASIO)
-  private:
-    /// Singleton class: Constructor/Destructor private
-    ASIOImpl() : ASIO() {}
+class Scene;
+class ASIOImpl : public ASIO {
+public:
+    ASIOImpl(Scene& parentScene);
 
-    ~ASIOImpl() {}
+    ~ASIOImpl();
 
+private:
     /// Define this functions to implement various packet handling (a switch
     /// statement for example)
     /// switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case
@@ -24,7 +25,10 @@ DEFINE_SINGLETON(ASIOImpl, ASIO)
     void HandleDisconnectOpCode(WorldPacket& p);
     void HandleGeometryAppendOpCode(WorldPacket& p);
 
-END_SINGLETON
+private:
+    Scene& _parentScene;
+
+};
 
 };  // namespace Divide
 #endif

@@ -2,6 +2,7 @@
 #include "Headers/DVDConverter.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -25,7 +26,9 @@ namespace Import {
         _vertexBuffer->destroy();
     }
 
-    bool ImportData::saveToFile(const stringImpl& fileName) {
+    bool ImportData::saveToFile(PlatformContext& context, const stringImpl& fileName) {
+        ACKNOWLEDGE_UNUSED(context);
+
         ByteBuffer tempBuffer;
         assert(_vertexBuffer != nullptr);
         tempBuffer << stringImpl("BufferEntryPoint");
@@ -43,7 +46,7 @@ namespace Import {
         return tempBuffer.dumpToFile(fileName + "." + g_parsedAssetGeometryExt);
     }
 
-    bool ImportData::loadFromFile(const stringImpl& fileName) {
+    bool ImportData::loadFromFile(PlatformContext& context, const stringImpl& fileName) {
         ByteBuffer tempBuffer;
         if (tempBuffer.loadFromFile(fileName + "." + g_parsedAssetGeometryExt)) {
             stringImpl signature;
@@ -53,7 +56,7 @@ namespace Import {
             }
             tempBuffer >> _modelName;
             tempBuffer >> _modelPath;
-            _vertexBuffer = GFXDevice::instance().newVB();
+            _vertexBuffer = context.gfx().newVB();
             _vertexBuffer->deserialize(tempBuffer);
             U32 subMeshCount = 0;
             tempBuffer >> subMeshCount;
@@ -163,7 +166,7 @@ namespace Import {
         return true;
     }
 };
-    bool MeshImporter::loadMeshDataFromFile(Import::ImportData& dataOut) {
+    bool MeshImporter::loadMeshDataFromFile(PlatformContext& context, ResourceCache& cache, Import::ImportData& dataOut) {
         Time::ProfileTimer importTimer;
         importTimer.start();
 
@@ -171,14 +174,14 @@ namespace Import {
         stringImpl path = dataOut._modelPath.substr(0, dataOut._modelPath.find_last_of('/'));
 
         bool success = false;
-        if (!dataOut.loadFromFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
+        if (!dataOut.loadFromFile(context, path + "/" + g_parsedAssetLocation + "/" + modelName)) {
             Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), modelName.c_str());
 
-            DVDConverter converter(dataOut, dataOut._modelPath, success);
+            DVDConverter converter(context, dataOut, dataOut._modelPath, success);
             if (success) {
                 dataOut._modelName = modelName;
                 dataOut._modelPath = path;
-                if (dataOut.saveToFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
+                if (dataOut.saveToFile(context, path + "/" + g_parsedAssetLocation + "/" + modelName)) {
                     Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), modelName.c_str());
                 } else {
                     Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), modelName.c_str());
@@ -197,7 +200,7 @@ namespace Import {
         return success;
     }
 
-    Mesh_ptr MeshImporter::loadMesh(const stringImpl& name, const Import::ImportData& dataIn) {
+    Mesh_ptr MeshImporter::loadMesh(PlatformContext& context, ResourceCache& cache, const stringImpl& name, const Import::ImportData& dataIn) {
         Time::ProfileTimer importTimer;
         importTimer.start();
 
@@ -209,12 +212,12 @@ namespace Import {
                                         g_parsedAssetLocation + "/" +
                                         dataIn._modelName + "." +
                                         g_parsedAssetAnimationExt)) {
-                animator->load(tempBuffer);
+                animator->load(context, tempBuffer);
             } else {
                 if (!dataIn._loadedFromFile) {
                     Attorney::SceneAnimatorMeshImporter::registerAnimations(*animator, dataIn._animations);
-                    animator->init(dataIn._skeleton, dataIn._bones);
-                    animator->save(tempBuffer);
+                    animator->init(context, dataIn._skeleton, dataIn._bones);
+                    animator->save(context, tempBuffer);
                     if (!tempBuffer.dumpToFile(dataIn._modelPath + "/" + 
                                                g_parsedAssetLocation + "/" +
                                                dataIn._modelName + "." +
@@ -229,12 +232,14 @@ namespace Import {
             }
         }
 
-        Mesh_ptr mesh(MemoryManager_NEW Mesh(name,
+        Mesh_ptr mesh(MemoryManager_NEW Mesh(context.gfx(),
+                                             cache,
+                                             name,
                                              dataIn._modelPath,
                                              dataIn._hasAnimations
                                                  ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
                                                  : Object3D::ObjectFlag::OBJECT_FLAG_NONE),
-                                DeleteResource());
+                                DeleteResource(cache));
         if (dataIn._hasAnimations) {
             mesh->setAnimator(animator);
             animator = nullptr;
@@ -253,7 +258,7 @@ namespace Import {
                 submeshdesc.setEnumValue(to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
             }
 
-            tempSubMesh = CreateResource<SubMesh>(submeshdesc);
+            tempSubMesh = CreateResource<SubMesh>(cache, submeshdesc);
             if (!tempSubMesh) {
                 continue;
             }
@@ -268,7 +273,7 @@ namespace Import {
                                                                  subMeshData._maxPos);
 
                 if (!tempSubMesh->getMaterialTpl()) {
-                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(subMeshData._material, subMeshData._boneCount > 0));
+                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(context, cache, subMeshData._material, subMeshData._boneCount > 0));
                 }
             }
 
@@ -286,7 +291,7 @@ namespace Import {
     }
 
     /// Load the material for the current SubMesh
-    Material_ptr MeshImporter::loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned) {
+    Material_ptr MeshImporter::loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned) {
         // See if the material already exists in a cooked state (XML file)
         STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
 #if !defined(DEBUG)
@@ -297,7 +302,7 @@ namespace Import {
 
         Material_ptr tempMaterial;
         if (!DISABLE_MAT_FROM_FILE) {
-            tempMaterial = XML::loadMaterial(importData._name);
+            tempMaterial = XML::loadMaterial(context.gfx(), importData._name);
             if (tempMaterial) {
                 return tempMaterial;
             }
@@ -305,7 +310,7 @@ namespace Import {
 
         // If it's not defined in an XML File, see if it was previously loaded by
         // the Resource Cache
-        tempMaterial = FindResourceImpl<Material>(importData._name);
+        tempMaterial = FindResourceImpl<Material>(cache, importData._name);
         if (tempMaterial) {
             return tempMaterial;
         }
@@ -316,7 +321,7 @@ namespace Import {
             materialDesc.setEnumValue(to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
 
-        tempMaterial = CreateResource<Material>(materialDesc);
+        tempMaterial = CreateResource<Material>(cache, materialDesc);
 
         tempMaterial->setColourData(importData._colourData);
         tempMaterial->setShadingMode(importData._shadingMode);
@@ -334,7 +339,7 @@ namespace Import {
                 texture.setResourceLocation(tex._texturePath);
                 texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
                 texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-                Texture_ptr textureRes = CreateResource<Texture>(texture);
+                Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
                 assert(textureRes != nullptr);
 
                 tempMaterial->setTexture(static_cast<ShaderProgram::TextureUsage>(i), textureRes, tex._operation);
@@ -346,7 +351,7 @@ namespace Import {
         if (!importData._ignoreAlpha && importData._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
             Texture_ptr diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
             if (diffuse && diffuse->hasTransparency()) {
-                Texture_ptr textureRes = CreateResource<Texture>(ResourceDescriptor(diffuse->getName()));
+                Texture_ptr textureRes = CreateResource<Texture>(cache, ResourceDescriptor(diffuse->getName()));
                 tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, Material::TextureOperation::REPLACE);
             }
         }

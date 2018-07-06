@@ -144,7 +144,7 @@ class LightPool : public SceneComponent {
 
   protected:
     friend class SceneManager;
-    bool generateShadowMaps(SceneRenderState& sceneRenderState);
+    bool generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState);
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
         return std::find_if(std::begin(_lights[to_uint(type)]), std::end(_lights[to_uint(type)]),

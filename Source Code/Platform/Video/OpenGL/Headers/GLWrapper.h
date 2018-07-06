@@ -63,7 +63,7 @@ enum class WindowType : U32;
 class DisplayWindow;
 
 /// OpenGL implementation of the RenderAPIWrapper
-DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
+class GL_API final : public RenderAPIWrapper {
     friend class glShader;
     friend class glTexture;
     friend class glIMPrimitive;
@@ -73,10 +73,11 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     friend class glSamplerObject;
     friend class glGenericVertexData;
 
-  protected:
-    GL_API();
+public:
+    GL_API(GFXDevice& context);
     ~GL_API();
 
+protected:
     /// Try and create a valid OpenGL context taking in account the specified
     /// command line arguments
     ErrorCode initRenderingAPI(I32 argc, char** argv) override;
@@ -128,7 +129,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData);
 
-  public:
+public:
     /// Enable or disable primitive restart and ensure that the correct index size is used
     static void togglePrimitiveRestart(bool state);
     /// Enable or disable primitive rasterization
@@ -156,33 +157,33 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// A state block should contain all rendering state changes needed for the next draw call.
     /// Some may be redundant, so we check each one individually
     void activateStateBlock(const RenderStateBlock& newBlock,
-                            const RenderStateBlock& oldBlock) const;
+        const RenderStateBlock& oldBlock) const;
     void activateStateBlock(const RenderStateBlock& newBlock) const;
     /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelPackUnpackAlignment(GLint packAlignment = 1,
-                                            GLint unpackAlignment = 1) {
+        GLint unpackAlignment = 1) {
         return (setPixelPackAlignment(packAlignment) &&
-                setPixelUnpackAlignment(unpackAlignment));
+            setPixelUnpackAlignment(unpackAlignment));
     }
     /// Pixel pack alignment is usually changed by textures, PBOs, etc
     static bool setPixelPackAlignment(GLint packAlignment = 1, GLint rowLength = 0,
-                                      GLint skipRows = 0, GLint skipPixels = 0);
+        GLint skipRows = 0, GLint skipPixels = 0);
     /// Pixel unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelUnpackAlignment(GLint unpackAlignment = 1,
-                                        GLint rowLength = 0, GLint skipRows = 0,
-                                        GLint skipPixels = 0);
+        GLint rowLength = 0, GLint skipRows = 0,
+        GLint skipPixels = 0);
     /// Bind a texture specified by a GL handle and GL type to the specified
     /// unit
     /// using the sampler object defined by hash value
     static bool bindTexture(GLushort unit, GLuint handle, GLenum target, size_t samplerHash = 0);
     static bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
-                                 bool layered, GLint layer, GLenum access,
-                                 GLenum format);
+        bool layered, GLint layer, GLenum access,
+        GLenum format);
     /// Bind multiple textures specified by an array of handles and an offset
     /// unit
     static bool bindTextures(GLushort unitOffset, GLuint textureCount,
-                             GLuint* textureHandles, GLenum* targets,
-                             GLuint* samplerHandles);
+        GLuint* textureHandles, GLenum* targets,
+        GLuint* samplerHandles);
 
     /// Bind the sampler object described by the hash value to the specified
     /// unit
@@ -190,16 +191,16 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Bind multiple samplers described by the array of hash values to the
     /// consecutive texture units starting from the specified offset
     static bool bindSamplers(GLushort unitOffset, GLuint samplerCount,
-                             GLuint* samplerHandles);
+        GLuint* samplerHandles);
     /// Return the OpenGL sampler object's handle for the given hash value
     static GLuint getSamplerHandle(size_t samplerHash);
     /// Modify buffer bindings for a specific vao
     static bool bindActiveBuffer(GLuint vaoID,
-                                 GLuint location,
-                                 GLuint bufferID,
-                                 GLintptr offset,
-                                 GLsizei stride);
-  private:
+        GLuint location,
+        GLuint bufferID,
+        GLintptr offset,
+        GLsizei stride);
+private:
     /// Prepare our shader loading system
     bool initShaders();
     /// Revert everything that was set up in "initShaders()"
@@ -217,13 +218,13 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// all stages
     typedef std::array<GLint, to_const_uint(ShaderType::COUNT) + 1> ShaderOffsetArray;
     void appendToShaderHeader(ShaderType type, const stringImpl& entry,
-                              ShaderOffsetArray& inOutOffset);
-  protected:
-      /// Number of available texture units
-      static GLint s_maxTextureUnits;
-      /// Number of available attribute binding indices
-      static GLint s_maxAttribBindings;
-  private:
+        ShaderOffsetArray& inOutOffset);
+protected:
+    /// Number of available texture units
+    static GLint s_maxTextureUnits;
+    /// Number of available attribute binding indices
+    static GLint s_maxAttribBindings;
+private:
     GFXDevice& _context;
     const DisplayWindow* _mainRenderWindow;
     /// The previous Text3D node's font face size
@@ -293,7 +294,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     size_t _previousStateBlockHash;
 
     Time::ProfileTimer& _swapBufferTimer;
-END_SINGLETON
+};
 
 };  // namespace Divide
 #endif

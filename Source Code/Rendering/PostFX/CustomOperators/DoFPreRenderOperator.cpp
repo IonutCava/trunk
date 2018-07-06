@@ -7,15 +7,15 @@
 
 namespace Divide {
 
-DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(context, FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
+DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, cache, FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
 {
     _samplerCopy = _context.allocateRT("DoF");
     _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
 
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
-    _dofShader = CreateResource<ShaderProgram>(dof);
+    _dofShader = CreateResource<ShaderProgram>(cache, dof);
 }
 
 DoFPreRenderOperator::~DoFPreRenderOperator()

@@ -1,5 +1,7 @@
 #include "Headers/SDLWrapper.h"
+
 #include "Core/Headers/Console.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
 
@@ -7,12 +9,17 @@
 
 namespace Divide {
 
+namespace {
+    SFXDevice* g_sfxDevice = nullptr;
+};
 
 void musicFinishedHook() {
-    SFXDevice::instance().musicFinished();
+    if (g_sfxDevice) {
+        g_sfxDevice->musicFinished();
+    }
 }
 
-ErrorCode SDL_API::initAudioAPI() {
+ErrorCode SDL_API::initAudioAPI(PlatformContext& context) {
 
     I32 flags = MIX_INIT_OGG | MIX_INIT_MP3;
     I32 ret = Mix_Init(flags);
@@ -29,6 +36,7 @@ ErrorCode SDL_API::initAudioAPI() {
             }
         }
 
+        g_sfxDevice = &context.sfx();
         Mix_HookMusicFinished(musicFinishedHook);
         return ErrorCode::NO_ERR;
     }
@@ -46,6 +54,7 @@ void SDL_API::closeAudioAPI() {
     }
     Mix_CloseAudio();
     Mix_Quit();
+    g_sfxDevice = nullptr;
 }
 
 void SDL_API::beginFrame() {

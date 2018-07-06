@@ -7,6 +7,11 @@
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIMessageBox.h"
 
+#include "Scenes/Headers/Scene.h"
+
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+
 #include "Core/Headers/Application.h"
 
 namespace Divide {
@@ -115,7 +120,13 @@ GUIButton* GUIInterface::addButton(U64 guiID,
         parent = _context->rootSheet();
     }
 
-    GUIButton* btn = MemoryManager_NEW GUIButton(guiID, text, _context->guiScheme(), relOffset, relDim, parent, callback);
+    stringImpl assetPath = ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation"));
+    ResourceDescriptor beepSound("buttonClick");
+    beepSound.setResourceLocation(assetPath + "/sounds/beep.wav");
+    beepSound.setFlag(false);
+    AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->activeScene()->resourceCache(), beepSound);
+
+    GUIButton* btn = MemoryManager_NEW GUIButton(guiID, text, _context->guiScheme(), relOffset, relDim, parent, callback, onClickSound);
 
     addElement(guiID, btn);
 

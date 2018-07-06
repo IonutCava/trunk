@@ -35,7 +35,7 @@ const EnvironmentProbeList& SceneEnvironmentProbePool::getNearestSorted() {
 
 
 EnvironmentProbe_wptr SceneEnvironmentProbePool::addInfiniteProbe(const vec3<F32>& position) {
-    EnvironmentProbe_ptr probe = std::make_shared<EnvironmentProbe>(EnvironmentProbe::ProbeType::TYPE_INFINITE);
+    EnvironmentProbe_ptr probe = std::make_shared<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_INFINITE);
     probe->setBounds(position, 1000.0f);
     _envProbes.push_back(probe);
     _isSorted = false;
@@ -44,7 +44,7 @@ EnvironmentProbe_wptr SceneEnvironmentProbePool::addInfiniteProbe(const vec3<F32
 
 EnvironmentProbe_wptr SceneEnvironmentProbePool::addLocalProbe(const vec3<F32>& bbMin,
                                                                const vec3<F32>& bbMax) {
-    EnvironmentProbe_ptr probe = std::make_shared<EnvironmentProbe>(EnvironmentProbe::ProbeType::TYPE_LOCAL);
+    EnvironmentProbe_ptr probe = std::make_shared<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_LOCAL);
     probe->setBounds(bbMin, bbMax);
     _envProbes.push_back(probe);
     _isSorted = false;

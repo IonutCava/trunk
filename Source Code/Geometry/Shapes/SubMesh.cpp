@@ -10,11 +10,12 @@
 
 namespace Divide {
 
-SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
-    : Object3D(
-          name,
-          ObjectType::SUBMESH,
-          to_uint(flag) | to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),
+SubMesh::SubMesh(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectFlag flag)
+    : Object3D(context,
+               parentCache,
+               name,
+               ObjectType::SUBMESH,
+               to_uint(flag) | to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _visibleToNetwork(true),
       _render(true),
       _ID(0),

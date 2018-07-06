@@ -10,6 +10,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUI.h"
@@ -20,8 +21,8 @@ namespace {
     std::atomic_bool s_gameStarted;
 };
 
-TenisScene::TenisScene(PlatformContext& context, const stringImpl& name)
-    : Scene(context, name),
+TenisScene::TenisScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+    : Scene(context, cache, parent, name),
     _aiPlayer1(nullptr),
     _aiPlayer2(nullptr),
     _aiPlayer3(nullptr),
@@ -55,7 +56,8 @@ void TenisScene::processGUI(const U64 deltaTime) {
                                             Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                                            GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
+                         _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
+                         _context.gfx().getLastCullCount()));
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -416,7 +418,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
 
     // Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
-    _ball = CreateResource<Sphere3D>(ballDescriptor);
+    _ball = CreateResource<Sphere3D>(_resCache, ballDescriptor);
     _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.5f, 0.5f, 1.0f));
     _ball->getMaterialTpl()->setShininess(0.2f);
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));

@@ -3,6 +3,7 @@
 
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -36,8 +37,8 @@ namespace {
     U64 elapsedGameTimeUs = 0;
 };
 
-WarScene::WarScene(PlatformContext& context, const stringImpl& name)
-    : Scene(context, name),
+WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+    : Scene(context, cache, parent, name),
     _infoBox(nullptr),
     _sceneReady(false),
     _lastNavMeshBuildTime(0UL)
@@ -57,7 +58,7 @@ WarScene::WarScene(PlatformContext& context, const stringImpl& name)
         }
     });
 
-    _targetLines = _context._GFX.newIMP();
+    _targetLines = _context.gfx().newIMP();
 
     _runCount = 0;
     _timeLimitMinutes = 5;
@@ -81,8 +82,9 @@ void WarScene::processGUI(const U64 deltaTime) {
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText(_ID("RenderBinCount"),
-                         Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                                            GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
+            Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
+                               _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
+                               _context.gfx().getLastCullCount()));
 
         _GUI->modifyText(_ID("camPosition"),
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
@@ -417,7 +419,7 @@ bool WarScene::load(const stringImpl& name) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
-            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
             light->setRange(25.0f);
             //light->setCastShadows(i == 0 ? true : false);
@@ -431,7 +433,7 @@ bool WarScene::load(const stringImpl& name) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
-            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
             light->setRange(35.0f);
             light->setCastShadows(false);
@@ -444,7 +446,7 @@ bool WarScene::load(const stringImpl& name) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::SPOT));
             tempLight.setUserPtr(_lightPool);
-            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
             light->setRange(55.0f);
             //light->setCastShadows(i == 1 ? true : false);
@@ -583,7 +585,7 @@ bool WarScene::load(const stringImpl& name) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
-            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
             light->setRange(20.0f);
             light->setCastShadows(false);

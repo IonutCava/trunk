@@ -6,13 +6,17 @@
 
 namespace Divide {
     
-PXDevice::PXDevice() : _API_ID(PhysicsAPI::COUNT),
-                       _api(nullptr)
+PXDevice::PXDevice(Kernel& parent)
+    : KernelComponent(parent), 
+      PhysicsAPIWrapper(),
+      _API_ID(PhysicsAPI::COUNT),
+      _api(nullptr)
 {
 }
 
 PXDevice::~PXDevice() 
 {
+    assert(_api == nullptr);
 }
 
 ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
@@ -20,7 +24,7 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
                 "PXDevice error: initPhysicsAPI called twice!");
     switch (_API_ID) {
         case PhysicsAPI::PhysX: {
-            _api = &PhysX::instance();
+            _api = std::make_unique<PhysX>();
         } break;
         case PhysicsAPI::ODE: 
         case PhysicsAPI::Bullet: 
@@ -38,16 +42,7 @@ bool PXDevice::closePhysicsAPI() {
             "PXDevice error: closePhysicsAPI called without init!");
         
     bool state = _api->closePhysicsAPI();
-
-    switch (_API_ID) {
-        case PhysicsAPI::PhysX: {
-            PhysX::destroyInstance();
-        } break;
-        case PhysicsAPI::ODE:
-        case PhysicsAPI::Bullet:
-        default: {
-        } break; 
-    };
+    _api.release();
 
     return state;
 }

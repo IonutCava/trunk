@@ -45,17 +45,17 @@ void Character::update(const U64 deltaTime) {
 
     PhysicsComponent* const nodePhysicsComponent =
         getBoundNode().lock()->get<PhysicsComponent>();
-
+    
     vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;
 
     _oldPosition.set(nodePhysicsComponent->getPosition());
-    _oldPosition.lerp(_curPosition, to_float(GFXDevice::instance().getInterpolation()));
+    _oldPosition.lerp(_curPosition, to_float(GFXDevice::getFrameInterpolationFactor()));
     nodePhysicsComponent->setPosition(_oldPosition);
     nodePhysicsComponent->rotateSlerp(
         nodePhysicsComponent->getOrientation() *
             RotationFromVToU(sourceDirection, _curVelocity),
-        to_float(GFXDevice::instance().getInterpolation()));
+        to_float(GFXDevice::getFrameInterpolationFactor()));
 }
 
 /// Just before we render the frame

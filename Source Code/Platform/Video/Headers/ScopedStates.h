@@ -37,22 +37,31 @@
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
+
+class GFXDevice;
+
 namespace GFX {
 
 class Scoped2DRendering : private NonCopyable {
    public:
-    Scoped2DRendering();
+    Scoped2DRendering(GFXDevice& context);
     ~Scoped2DRendering();
+
+   private:
+    GFXDevice& _context;
 };
 
 class ScopedViewport : private NonCopyable {
    public:
-    explicit ScopedViewport(const vec4<I32>& viewport);
-    explicit ScopedViewport(I32 x, I32 y, I32 width, I32 height) 
-        : ScopedViewport(vec4<I32>(x, y, width, height))
+    explicit ScopedViewport(GFXDevice& context, const vec4<I32>& viewport);
+    explicit ScopedViewport(GFXDevice& context, I32 x, I32 y, I32 width, I32 height)
+        : ScopedViewport(context, vec4<I32>(x, y, width, height))
     {
     }
     ~ScopedViewport();
+
+   private:
+     GFXDevice& _context;
 };
 
 };  // namespace GFX

@@ -1,6 +1,8 @@
 #include "Headers/EnvironmentProbe.h"
 
+#include "Scenes/Headers/Scene.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -16,8 +18,9 @@ namespace {
 vectorImpl<bool> EnvironmentProbe::s_availableSlices;
 RenderTargetHandle EnvironmentProbe::s_reflection;
 
-EnvironmentProbe::EnvironmentProbe(ProbeType type) :
+EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
     GUIDWrapper(),
+    _context(parentScene.platformContext().gfx()),
     _type(type),
     _updateRate(1),
     _currentUpdateCall(0),
@@ -28,22 +31,25 @@ EnvironmentProbe::EnvironmentProbe(ProbeType type) :
     _currentArrayIndex = allocateSlice();
 
     RenderStateBlock primitiveStateBlock;
-    _boundingBoxPrimitive = GFXDevice::instance().newIMP();
+    _boundingBoxPrimitive = _context.newIMP();
     _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
     _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
 
-    _impostor = CreateResource<ImpostorSphere>(ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID())));
+    _impostor = CreateResource<ImpostorSphere>(parentScene.resourceCache(),
+                                               ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID())));
     _impostor->setRadius(1.0f);
 
-    _impostorShader = CreateResource<ShaderProgram>(ResourceDescriptor("ImmediateModeEmulation.EnvironmentProbe"));
+    _impostorShader = CreateResource<ShaderProgram>(parentScene.resourceCache(), 
+                                                    ResourceDescriptor("ImmediateModeEmulation.EnvironmentProbe"));
 }
 
 EnvironmentProbe::~EnvironmentProbe()
 {
     s_availableSlices[_currentArrayIndex] = false;
-    _boundingBoxPrimitive->clear();}
+    _boundingBoxPrimitive->clear();
+}
 
-void EnvironmentProbe::onStartup() {
+void EnvironmentProbe::onStartup(GFXDevice& context) {
     s_availableSlices.resize(g_maxEnvironmentProbes, false);
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -64,15 +70,16 @@ void EnvironmentProbe::onStartup() {
     depthDescriptor.setSampler(reflectionSampler);
 
     RenderTargetHandle tempHandle;
-    s_reflection = GFXDevice::instance().allocateRT(RenderTargetUsage::ENVIRONMENT, "EnviromentProbe");
+    s_reflection = context.allocateRT(RenderTargetUsage::ENVIRONMENT, "EnviromentProbe");
     s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
     s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
     s_reflection._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
     s_reflection._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 }
 
-void EnvironmentProbe::onShutdown() {
-    GFXDevice::instance().deallocateRT(s_reflection);
+void EnvironmentProbe::onShutdown(GFXDevice& context)
+{
+    context.deallocateRT(s_reflection);
 }
 
 U32 EnvironmentProbe::allocateSlice() {
@@ -89,12 +96,12 @@ U32 EnvironmentProbe::allocateSlice() {
 
 void EnvironmentProbe::refresh() {
     if (++_currentUpdateCall % _updateRate == 0) {
-        GFXDevice::instance().generateCubeMap(*s_reflection._rt,
-                                              _currentArrayIndex,
-                                              _aabb.getCenter(),
-                                              vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
-                                              RenderStage::REFLECTION,
-                                              getRTIndex());
+        _context.generateCubeMap(*s_reflection._rt,
+                                 _currentArrayIndex,
+                                 _aabb.getCenter(),
+                                 vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
+                                 RenderStage::REFLECTION,
+                                 getRTIndex());
         _currentUpdateCall = 0;
     }
     _boundingBoxPrimitive->paused(true);

@@ -36,9 +36,9 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_W_SPECIFIER(OpenAL_API, AudioAPIWrapper, final)
-  public:
-    ErrorCode initAudioAPI() override;
+class OpenAL_API final : public AudioAPIWrapper {
+public:
+    ErrorCode initAudioAPI(PlatformContext& context) override;
     void closeAudioAPI() override;
 
     void beginFrame() override;
@@ -54,13 +54,13 @@ DEFINE_SINGLETON_W_SPECIFIER(OpenAL_API, AudioAPIWrapper, final)
     void setMusicVolume(I8 value) override;
     void setSoundVolume(I8 value) override;
 
-  protected:
+protected:
     void musicFinished() override;
 
-  private:
+private:
     U32 buffers[MAX_SOUND_BUFFERS];
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 

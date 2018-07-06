@@ -37,11 +37,18 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
-  protected:
-    DX_API() : RenderAPIWrapper() {}
-    virtual ~DX_API() {}
+class DX_API final : public RenderAPIWrapper {
+public:
+    DX_API(GFXDevice& context) : RenderAPIWrapper()
+    {
+        ACKNOWLEDGE_UNUSED(context);
+    }
 
+    virtual ~DX_API()
+    {
+    }
+
+protected:
     ErrorCode initRenderingAPI(I32 argc, char** argv) override;
     void closeRenderingAPI() override;
     void changeViewport(const vec4<I32>& newViewport) const override;
@@ -60,7 +67,7 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     size_t setStateBlock(size_t stateBlockHash) override;
 
     U64 getFrameDurationGPU() override { return 0; }
-END_SINGLETON
+};
 
 };  // namespace Divide
 #endif

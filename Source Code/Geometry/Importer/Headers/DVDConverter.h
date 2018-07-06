@@ -79,14 +79,15 @@ namespace Import {
 
 class SubMesh;
 class VertexBuffer;
+class PlatformContext;
 class DVDConverter {
   public:
 
     explicit DVDConverter();
-    explicit DVDConverter(Import::ImportData& target, const stringImpl& file, bool& result);
+    explicit DVDConverter(PlatformContext& context, Import::ImportData& target, const stringImpl& file, bool& result);
     ~DVDConverter();
 
-    bool load(Import::ImportData& target, const stringImpl& file);
+    bool load(PlatformContext& context, Import::ImportData& target, const stringImpl& file);
    private:
 
     void loadSubMeshGeometry(const aiMesh* source, 

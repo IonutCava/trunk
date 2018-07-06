@@ -29,26 +29,31 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _REFLECTION_SCENE_H_
-#define _REFLECTION_SCENE_H_
-
-#include "Scenes/Headers/Scene.h"
+#ifndef _KERNEL_COMPONENT_H_
+#define _KERNEL_COMPONENT_H_
 
 namespace Divide {
 
-    class ReflectionScene : public Scene {
-    public:
-        ReflectionScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
+class Kernel;
+class KernelComponent {
 
-        bool load(const stringImpl& name) override;
-        bool loadResources(bool continueOnErrors) override;
-        void processInput(const U64 deltaTime) override;
-        void processTasks(const U64 deltaTime) override;
-        void processGUI(const U64 deltaTime) override;
+public:
+    KernelComponent(Kernel& parent) : _parent(parent)
+    {
+    }
 
-        void onSetActive() override;
-        void onRemoveActive() override;
-    };
+    virtual ~KernelComponent()
+    {
+    }
+
+    inline Kernel& parent() { return _parent; }
+    inline const Kernel& parent() const { return _parent; }
+
+protected:
+    Kernel& _parent;
+
 };
 
-#endif //_REFLECTION_SCENE_H_
+}; //namespace Divide
+
+#endif //_KERNEL_COMPONENT_H_

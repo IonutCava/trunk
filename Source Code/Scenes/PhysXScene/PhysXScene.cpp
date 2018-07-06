@@ -4,6 +4,7 @@
 #include "Managers/Headers/RenderPassManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/ParamHandler.h"
 
 namespace Divide {
@@ -27,7 +28,8 @@ void PhysXScene::processGUI(const U64 deltaTime) {
                                             Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                                            GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
+                         _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
+                         _context.gfx().getLastCullCount()));
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);

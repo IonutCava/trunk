@@ -47,7 +47,7 @@ class WarSceneOrder;
 
 class WarScene : public Scene {
    public:
-    explicit WarScene(PlatformContext& context, const stringImpl& name);
+    explicit WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
     ~WarScene();
 
     bool load(const stringImpl& name) override;

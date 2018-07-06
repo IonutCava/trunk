@@ -57,7 +57,9 @@ FWD_DECLARE_MANAGED_CLASS(SubMesh);
 
 class Mesh : public Object3D {
    public:
-    explicit Mesh(const stringImpl& name,
+    explicit Mesh(GFXDevice& context,
+                  ResourceCache& parentCache,
+                  const stringImpl& name,
                   const stringImpl& resourceLocation,
                   ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
 

@@ -85,7 +85,7 @@ void LightPool::init() {
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
-    _lightImpostorShader = CreateResource<ShaderProgram>(lightImpostorShader);
+    _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
 
     SamplerDescriptor iconSampler;
     iconSampler.toggleMipMaps(false);
@@ -99,7 +99,7 @@ void LightPool::init() {
             ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
     iconImage.setResourceLocation(iconImageLocation);
     iconImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-    _lightIconsTexture = CreateResource<Texture>(iconImage);
+    _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);
 
     _init = true;
 }
@@ -167,7 +167,7 @@ void LightPool::idle() {
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
-bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
+bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState) {
     if (!_shadowMapsEnabled) {
         return true;
     }
@@ -178,8 +178,8 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
     for (Light* light : _shadowCastingLights) {
         if(light != nullptr) {
             _currentShadowCastingLight = light;
-            light->validateOrCreateShadowMaps(sceneRenderState);
-            light->generateShadowMaps(idx++ * 6);
+            light->validateOrCreateShadowMaps(context, sceneRenderState);
+            light->generateShadowMaps(context, idx++ * 6);
         }
     }
 
@@ -215,7 +215,7 @@ void LightPool::previewShadowMaps(Light* light) {
             if (shadowLight != nullptr &&
                 shadowLight->getShadowMapInfo()->getShadowMap() != nullptr)
             {
-                shadowLight->getShadowMapInfo()->getShadowMap()->previewShadowMaps(rowIndex++);
+                shadowLight->getShadowMapInfo()->getShadowMap()->previewShadowMaps(_context, rowIndex++);
             }
         }
         return;
@@ -223,7 +223,7 @@ void LightPool::previewShadowMaps(Light* light) {
 
     if (light && light->castsShadows()) {
         assert(light->getShadowMapInfo()->getShadowMap() != nullptr);
-        light->getShadowMapInfo()->getShadowMap()->previewShadowMaps(0);
+        light->getShadowMapInfo()->getShadowMap()->previewShadowMaps(_context, 0);
     }
 }
 

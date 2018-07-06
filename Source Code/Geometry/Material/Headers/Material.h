@@ -128,7 +128,7 @@ class Material : public Resource {
     };
 
    public:
-    explicit Material(const stringImpl& name);
+    explicit Material(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name);
     ~Material();
 
     /// Return a new instance of this material with the name composed of the
@@ -236,10 +236,9 @@ class Material : public Resource {
         _shaderThreadedLoad = state;
     }
 
-    void setShaderProgram(
-        const stringImpl& shader,
-        RenderStage renderStage,
-        const bool computeOnAdd);
+    void setShaderProgram(const stringImpl& shader,
+                          RenderStage renderStage,
+                          const bool computeOnAdd);
 
     inline void setShaderProgram(const stringImpl& shader,
                                  const bool computeOnAdd) {
@@ -330,6 +329,8 @@ class Material : public Resource {
     }
 
    private:
+    GFXDevice& _context;
+    ResourceCache& _parentCache;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"
     std::array<stringImpl, to_const_uint(RenderStage::COUNT)> _shaderModifier;

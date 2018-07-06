@@ -1,5 +1,6 @@
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/Application.h"
+
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -24,11 +25,11 @@ Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         resourceLocation = _descriptor.getResourceLocation();
     }
 
-    ShaderProgram_ptr ptr(GFXDevice::instance().newShaderProgram(_descriptor.getName(),
-                                                                 resourceLocation,
-                                                                 USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
-                                                                                          : false),
-                          DeleteResource());
+    ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_descriptor.getName(),
+                                                          resourceLocation,
+                                                          USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
+                                                                                   : false),
+                          DeleteResource(_cache));
 
 
 

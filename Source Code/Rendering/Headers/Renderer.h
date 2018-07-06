@@ -43,20 +43,16 @@ enum class RendererType : U32 {
 };
 
 class LightPool;
+class ResourceCache;
+class PlatformContext;
 /// A n abstract renderer used to switch between different rendering techniques:
 /// TiledForwardShading, Deferred Shading, etc
 class NOINITVTABLE Renderer {
    public:
-    Renderer(GFXDevice& context, RendererType type)
-        : _context(context), _flag(0), _debugView(false), _type(type)
-    {
-    }
+    Renderer(PlatformContext& context, ResourceCache& cache, RendererType type);
+    virtual ~Renderer();
 
-    virtual ~Renderer() {}
-
-    virtual void preRender(RenderTarget& target, LightPool& lightPool) {
-        Attorney::GFXDeviceRenderer::uploadGPUBlock();
-    }
+    virtual void preRender(RenderTarget& target, LightPool& lightPool);
 
     virtual void render(const DELEGATE_CBK<>& renderCallback,
                         const SceneRenderState& sceneRenderState) = 0;
@@ -69,7 +65,8 @@ class NOINITVTABLE Renderer {
     inline U32 getFlag() const { return _flag; }
 
    protected:
-    GFXDevice& _context;
+    PlatformContext& _context;
+    ResourceCache& _resCache;
     // General purpose flag
     U32 _flag;
     bool _debugView;

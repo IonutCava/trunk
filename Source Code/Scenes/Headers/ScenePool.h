@@ -36,9 +36,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class PlatformContext;
+
 
 class Scene;
+class SceneManager;
+class ResourceCache;
+class PlatformContext;
 class ScenePool {
 protected:
     SET_DELETE_FRIEND
@@ -46,7 +49,7 @@ protected:
     ScenePool(SceneManager& parentMgr);
     ~ScenePool();
 
-    Scene* getOrCreateScene(PlatformContext& context, const stringImpl& name, bool& foundInCache);
+    Scene* getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name, bool& foundInCache);
     bool   deleteScene(Scene*& scene);
 
     bool   defaultSceneActive() const;

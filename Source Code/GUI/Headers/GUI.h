@@ -33,6 +33,7 @@
 #define GUI_H_
 
 #include "GUIInterface.h"
+#include "Core/Headers/KernelComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
@@ -68,16 +69,17 @@ class Scene;
 
 class SceneGUIElements;
 class GUI : public GUIInterface,
-    public Input::InputAggregatorInterface {
+            public KernelComponent,
+            public Input::InputAggregatorInterface {
 public:
     typedef hashMapImpl<I64, SceneGUIElements*> GUIMapPerScene;
 
 public:
-    GUI();
+    explicit GUI(Kernel& parent);
     ~GUI();
 
     /// Create the GUI
-    bool init(PlatformContext& context, const vec2<U16>& renderResolution);
+    bool init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution);
     void destroy();
 
     void onChangeResolution(U16 w, U16 h) override;
@@ -149,9 +151,11 @@ public:
     Scene* activeScene() {
         return _activeScene;
     }
+
     const Scene* activeScene() const {
         return _activeScene;
     }
+
 protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName) const;
     GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID) const;

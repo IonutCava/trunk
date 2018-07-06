@@ -13,8 +13,8 @@ namespace {
     ClipPlaneIndex g_refractionClipID = ClipPlaneIndex::CLIP_PLANE_1;
 };
 
-WaterPlane::WaterPlane(const stringImpl& name, I32 sideLength)
-    : SceneNode(name, SceneNodeType::TYPE_WATER),
+WaterPlane::WaterPlane(ResourceCache& parentCache, const stringImpl& name, I32 sideLength)
+    : SceneNode(parentCache, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
       _sideLength(std::max(sideLength, 1)),
       _reflectionRendering(false),
@@ -34,7 +34,7 @@ WaterPlane::WaterPlane(const stringImpl& name, I32 sideLength)
     ResourceDescriptor waterPlane("waterPlane");
     waterPlane.setFlag(true);  // No default material
     waterPlane.setBoolMask(quadMask);
-    _plane = CreateResource<Quad3D>(waterPlane);
+    _plane = CreateResource<Quad3D>(parentCache, waterPlane);
 
     // The water doesn't cast shadows, doesn't need ambient occlusion and
     // doesn't have real "depth"
@@ -68,16 +68,10 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     renderable->setReflectionCallback(DELEGATE_BIND(&WaterPlane::updateReflection,
                                                     this,
-                                                    std::placeholders::_1,
-                                                    std::placeholders::_2,
-                                                    std::placeholders::_3,
-                                                    std::placeholders::_4));
+                                                    std::placeholders::_1));
     renderable->setRefractionCallback(DELEGATE_BIND(&WaterPlane::updateRefraction,
                                                     this,
-                                                    std::placeholders::_1,
-                                                    std::placeholders::_2,
-                                                    std::placeholders::_3,
-                                                    std::placeholders::_4));
+                                                    std::placeholders::_1));
 
     SceneNode::postLoad(sgn);
 }
@@ -168,14 +162,11 @@ bool WaterPlane::getDrawState(RenderStage currentStage) {
 }
 
 /// update water refraction
-void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
-                                  const SceneRenderState& sceneRenderState,
-                                  const RenderTargetID& renderTarget,
-                                  U32 passIndex) {
-    if (pointUnderwater(sgn, Camera::activeCamera()->getEye())) {
+void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
+    if (pointUnderwater(renderParams._sgn, Camera::activeCamera()->getEye())) {
         return;
     }
-    GFXDevice& gfx = GFXDevice::instance();
+    GFXDevice& gfx = renderParams._context;
     // We need a rendering method to create refractions
     _refractionRendering = true;
     // If we are above water, process the plane's refraction.
@@ -183,15 +174,15 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
     RenderStage prevRenderStage = gfx.setRenderStage(RenderStage::DISPLAY);
     gfx.toggleClipPlane(g_refractionClipID, true);
 
-    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager& passMgr = gfx.parent().renderPassManager();
     RenderPassManager::PassParams params;
     params.doPrePass = true;
     params.occlusionCull = true;
     params.camera = Camera::activeCamera();
     params.stage = RenderStage::REFRACTION;
-    params.target = renderTarget;
+    params.target = renderParams._renderTarget;
     params.drawPolicy = &RenderTarget::defaultPolicy();
-    params.pass = passIndex;
+    params.pass = renderParams._passIndex;
 
     passMgr.doCustomPass(params);
 
@@ -202,22 +193,19 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
 }
 
 /// Update water reflections
-void WaterPlane::updateReflection(const SceneGraphNode& sgn,
-                                  const SceneRenderState& sceneRenderState,
-                                  const RenderTargetID& renderTarget,
-                                  U32 passIndex) {
+void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     // ToDo: this will cause problems later with multiple reflectors.
     // Fix it! -Ionut
     _reflectionRendering = true;
-    GFXDevice& gfx = GFXDevice::instance();
+    GFXDevice& gfx = renderParams._context;
     Plane<F32> reflectionPlane, refractionPlane;
-    updatePlaneEquation(sgn, reflectionPlane, refractionPlane);
+    updatePlaneEquation(renderParams._sgn, reflectionPlane, refractionPlane);
 
 
     gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, reflectionPlane);
     gfx.setClipPlane(ClipPlaneIndex::CLIP_PLANE_1, refractionPlane);
 
-    bool underwater = pointUnderwater(sgn, Camera::activeCamera()->getEye());
+    bool underwater = pointUnderwater(renderParams._sgn, Camera::activeCamera()->getEye());
     RenderStage prevRenderStage = gfx.setRenderStage(underwater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
     gfx.toggleClipPlane(g_reflectionClipID, true);
 
@@ -228,15 +216,15 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
         _reflectionCam->reflect(reflectionPlane);
     }
 
-    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager& passMgr = gfx.parent().renderPassManager();
     RenderPassManager::PassParams params;
     params.doPrePass = true;
     params.occlusionCull = true;
     params.camera = _reflectionCam;
     params.stage = RenderStage::REFLECTION;
-    params.target = renderTarget;
+    params.target = renderParams._renderTarget;
     params.drawPolicy = &RenderTarget::defaultPolicy();
-    params.pass = passIndex;
+    params.pass = renderParams._passIndex;
 
     passMgr.doCustomPass(params);
 

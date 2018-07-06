@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Scenes/Headers/SceneInput.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -170,9 +171,10 @@ void saveTextureXML(const stringImpl &textureNode, std::weak_ptr<Texture> textur
     }
 }
 
-Texture_ptr loadTextureXML(const stringImpl &textureNode,
-                                        const stringImpl &textureName,
-                                        const ptree& pt) {
+Texture_ptr loadTextureXML(ResourceCache& targetCache,
+                           const stringImpl &textureNode,
+                           const stringImpl &textureName,
+                           const ptree& pt) {
     stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
     stringImpl pathName(textureName.substr(0, textureName.rfind("/") + 1));
     std::string node(textureNode.c_str());
@@ -199,7 +201,7 @@ Texture_ptr loadTextureXML(const stringImpl &textureNode,
     texture.setResourceLocation(pathName + img_name);
     texture.setPropertyDescriptor<SamplerDescriptor>(sampDesc);
 
-    return CreateResource<Texture>(texture);
+    return CreateResource<Texture>(targetCache, texture);
 }
 
 inline stringImpl getRendererTypeName(RendererType type) {
@@ -215,7 +217,7 @@ inline stringImpl getRendererTypeName(RendererType type) {
 }
 }
 
-stringImpl loadScripts(const stringImpl &file) {
+stringImpl loadScripts(PlatformContext& context, const stringImpl &file) {
     ptree pt;
     ParamHandler &par = ParamHandler::instance();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
@@ -227,7 +229,7 @@ stringImpl loadScripts(const stringImpl &file) {
     par.setParam(_ID("scenesLocation"),
                  pt.get<stringImpl>("scenesLocation", "Scenes"));
     par.setParam(_ID("serverAddress"), pt.get<stringImpl>("server", "127.0.0.1"));
-    loadConfig((par.getParam<stringImpl>(_ID("scriptLocation"), "XML") + "/" +
+    loadConfig(context, (par.getParam<stringImpl>(_ID("scriptLocation"), "XML") + "/" +
                 stringImpl(pt.get("config", "config.xml").c_str())));
     read_xml(std::string(par.getParam<stringImpl>(_ID("scriptLocation"), "XML").c_str()) + "/" +
              pt.get("startupScene", "scenes.xml"),
@@ -236,7 +238,7 @@ stringImpl loadScripts(const stringImpl &file) {
     return pt.get<stringImpl>("StartupScene", "DefaultScene");
 }
 
-void loadConfig(const stringImpl &file) {
+void loadConfig(PlatformContext& context, const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), file.c_str());
@@ -254,10 +256,10 @@ void loadConfig(const stringImpl &file) {
 
     I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
     if (shadowDetailLevel <= 0) {
-        GFXDevice::instance().shadowDetailLevel(RenderDetailLevel::LOW);
+        context.gfx().shadowDetailLevel(RenderDetailLevel::LOW);
         par.setParam(_ID("rendering.enableShadows"), false);
     } else {
-        GFXDevice::instance().shadowDetailLevel(
+        context.gfx().shadowDetailLevel(
             static_cast<RenderDetailLevel>(std::min(shadowDetailLevel, 3) - 1));
         par.setParam(_ID("rendering.enableShadows"), true);
     }
@@ -847,21 +849,23 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     }
 }
 
-Material_ptr loadMaterial(const stringImpl &file) {
+Material_ptr loadMaterial(GFXDevice& context, const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
     stringImpl location = par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
                           par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
                           par.getParam<stringImpl>(_ID("currentScene")) +
                           "/materials/";
 
-    return loadMaterialXML(location + file);
+    return loadMaterialXML(context, location + file);
 }
 
-Material_ptr loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
+Material_ptr loadMaterialXML(GFXDevice& context, const stringImpl &matName, bool rendererDependent) {
+    ResourceCache& cache = context.parent().resourceCache();
+
     stringImpl materialFile(matName);
     if (rendererDependent) {
         materialFile +=
-            "-" + getRendererTypeName(SceneManager::instance().getRenderer().getType()) +
+            "-" + getRendererTypeName(context.getRenderer().getType()) +
             ".xml";
     } else {
         materialFile += ".xml";
@@ -885,11 +889,11 @@ Material_ptr loadMaterialXML(const stringImpl &matName, bool rendererDependent) 
     stringImpl materialName =
         matName.substr(matName.rfind("/") + 1, matName.length());
 
-    if (!FindResourceImpl<Material>(materialName)) {
+    if (!FindResourceImpl<Material>(cache, materialName)) {
         skip = true;
     }
 
-    Material_ptr mat = CreateResource<Material>(ResourceDescriptor(materialName));
+    Material_ptr mat = CreateResource<Material>(cache, ResourceDescriptor(materialName));
     if (skip) {
         return mat;
     }
@@ -918,14 +922,16 @@ Material_ptr loadMaterialXML(const stringImpl &matName, bool rendererDependent) 
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture1")) {
         mat->setTexture(ShaderProgram::TextureUsage::UNIT0,
-                        loadTextureXML("diffuseTexture1",
+                        loadTextureXML(cache,
+                                       "diffuseTexture1",
                                        pt.get("diffuseTexture1.file", "none").c_str(), pt));
     }
 
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture2")) {
         mat->setTexture(ShaderProgram::TextureUsage::UNIT1,
-                        loadTextureXML("diffuseTexture2",
+                        loadTextureXML(cache,
+                                       "diffuseTexture2",
                                        pt.get("diffuseTexture2.file", "none").c_str(), pt),
                         getTextureOperation(
                             pt.get<stringImpl>("diffuseTexture2.operation",
@@ -935,7 +941,7 @@ Material_ptr loadMaterialXML(const stringImpl &matName, bool rendererDependent) 
     if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::NORMALMAP,
-            loadTextureXML("bumpMap", pt.get("bumpMap.file", "none").c_str(), pt));
+            loadTextureXML(cache, "bumpMap", pt.get("bumpMap.file", "none").c_str(), pt));
         if (child = pt.get_child_optional("bumpMap.method")) {
             mat->setBumpMethod(getBumpMethod(
                 pt.get<stringImpl>("bumpMap.method", "NORMAL")));
@@ -945,20 +951,20 @@ Material_ptr loadMaterialXML(const stringImpl &matName, bool rendererDependent) 
     if (boost::optional<ptree &> child = pt.get_child_optional("opacityMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::OPACITY,
-            loadTextureXML("opacityMap", pt.get("opacityMap.file", "none").c_str(), pt));
+            loadTextureXML(cache, "opacityMap", pt.get("opacityMap.file", "none").c_str(), pt));
     }
 
     if (boost::optional<ptree &> child = pt.get_child_optional("specularMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::SPECULAR,
-            loadTextureXML("specularMap", pt.get("specularMap.file", "none").c_str(), pt));
+            loadTextureXML(cache, "specularMap", pt.get("specularMap.file", "none").c_str(), pt));
     }
 
     return mat;
 }
 
 //ToDo: Fix this one day .... -Ionut
-void dumpMaterial(Material &mat) {
+void dumpMaterial(GFXDevice& context, Material &mat) {
     if (!mat.isDirty()) {
         return;
     }
@@ -975,7 +981,7 @@ void dumpMaterial(Material &mat) {
 
     stringImpl fileLocation(
         location + file + "-" +
-        getRendererTypeName(SceneManager::instance().getRenderer().getType()) + ".xml");
+        getRendererTypeName(context.getRenderer().getType()) + ".xml");
     pt_writer.clear();
     pt_writer.put("material.name", file);
     pt_writer.put("material.diffuse.<xmlattr>.r",

@@ -8,8 +8,8 @@
 
 namespace Divide {
 
-Trigger::Trigger(const stringImpl& name)
-    : SceneNode(name, SceneNodeType::TYPE_TRIGGER),
+Trigger::Trigger(ResourceCache& parentCache, const stringImpl& name)
+    : SceneNode(parentCache, name, SceneNodeType::TYPE_TRIGGER),
       _drawImpostor(false),
       _triggerImpostor(nullptr),
       _enabled(true),
@@ -34,7 +34,7 @@ void Trigger::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                 to_const_uint(SGNComponent::ComponentType::RENDERING);
             ResourceDescriptor impostorDesc(_name + "_impostor");
-            _triggerImpostor = CreateResource<ImpostorSphere>(impostorDesc);
+            _triggerImpostor = CreateResource<ImpostorSphere>(_parentCache, impostorDesc);
             sgn.addNode(_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
         }
         /// update dummy position if it is so

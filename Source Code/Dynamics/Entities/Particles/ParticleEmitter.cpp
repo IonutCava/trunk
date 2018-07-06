@@ -29,8 +29,9 @@ namespace {
     static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
 
-ParticleEmitter::ParticleEmitter(const stringImpl& name)
-    : SceneNode(name, SceneNodeType::TYPE_PARTICLE_EMITTER),
+ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
+    : SceneNode(parentCache, name, SceneNodeType::TYPE_PARTICLE_EMITTER),
+      _context(context),
       _drawImpostor(false),
       _particleStateBlockHash(0),
       _particleStateBlockHashDepth(0),
@@ -42,7 +43,7 @@ ParticleEmitter::ParticleEmitter(const stringImpl& name)
       _needsUpdate(false)
 {
     _updating = false;
-    _particleGPUBuffer = GFXDevice::instance().newGVD(g_particleBufferSizeFactor);
+    _particleGPUBuffer = _context.newGVD(g_particleBufferSizeFactor);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -99,10 +100,10 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     if (useTexture){
         particleShaderDescriptor.setPropertyList("HAS_TEXTURE");
     }
-    _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
+    _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShaderDescriptor);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
-    _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
+    _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
 
     return (_particleShader != nullptr);
 }
@@ -154,7 +155,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
 
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
         texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-        _particleTexture = CreateResource<Texture>(texture);
+        _particleTexture = CreateResource<Texture>(_parentCache, texture);
     }
 
     return true;
@@ -172,7 +173,7 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    RenderTarget& depthBuffer = GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& depthBuffer = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     TextureData depthBufferData = depthBuffer.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getData();
     depthBufferData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::DEPTH));
     sgn.get<RenderingComponent>()->registerTextureDependency(depthBufferData);
@@ -218,8 +219,8 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
                                          GenericDrawCommands& drawCommandsInOut) {
     GenericDrawCommand& cmd = drawCommandsInOut.front();
     cmd.cmd().primCount = to_uint(_particles->_renderingPositions.size());
-    cmd.stateHash(GFXDevice::instance().isDepthStage() ? _particleStateBlockHashDepth
-                                                       : _particleStateBlockHash);
+    cmd.stateHash(_context.isDepthStage() ? _particleStateBlockHashDepth
+                                          : _particleStateBlockHash);
 
     cmd.shaderProgram(renderStage != RenderStage::SHADOW
                                    ? _particleShader

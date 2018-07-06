@@ -55,11 +55,13 @@ enum class WindowEvent : U32 {
 
 enum class RenderAPI : U32;
 
+class GFXDevice;
 class WindowManager {
 public:
     WindowManager();
 
-    ErrorCode init(RenderAPI api,
+    ErrorCode init(GFXDevice& context, 
+                   RenderAPI api,
                    ResolutionByType initialResolutions,
                    bool startFullScreen,
                    I32 targetDisplayIndex);

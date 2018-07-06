@@ -12,6 +12,9 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
+#include "Rendering/Headers/TiledForwardShadingRenderer.h"
+#include "Rendering/Headers/DeferredShadingRenderer.h"
+
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -20,8 +23,14 @@
 
 namespace Divide {
 
-GFXDevice::GFXDevice()
-    : _api(nullptr), 
+D64 GFXDevice::s_interpolationFactor = 1.0;
+
+
+GFXDevice::GFXDevice(Kernel& parent)
+   : KernelComponent(parent), 
+    _api(nullptr),
+    _renderer(nullptr),
+    _shaderComputeQueue(nullptr),
     _commandPool(Config::MAX_DRAW_COMMANDS_IN_FLIGHT),
     _renderStage(RenderStage::DISPLAY),
     _prevRenderStage(RenderStage::COUNT),
@@ -49,8 +58,6 @@ GFXDevice::GFXDevice()
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     _graphicResources = 0;
-    // Floats
-    _interpolationFactor = 1.0;
     // Cameras
     _2DCamera = nullptr;
     _cubeCamera = nullptr;
@@ -147,7 +154,7 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     cubeMap.begin(RenderTarget::defaultPolicy());
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
-    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params.doPrePass = renderStage != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
@@ -205,7 +212,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
 
-    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params.doPrePass = renderStage != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
@@ -587,6 +594,39 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     screenTarget.resetMipLevel(RTAttachment::Type::Depth, 0);
     // Unbind the render target
     screenTarget.end();
+}
+
+Renderer& GFXDevice::getRenderer() const {
+    DIVIDE_ASSERT(_renderer != nullptr,
+        "GFXDevice error: Renderer requested but not created!");
+    return *_renderer;
+}
+
+void GFXDevice::setRenderer(RendererType rendererType) {
+    DIVIDE_ASSERT(rendererType != RendererType::COUNT,
+        "GFXDevice error: Tried to create an invalid renderer!");
+
+    PlatformContext& context = parent().platformContext();
+    ResourceCache& cache = parent().resourceCache();
+
+    switch (rendererType) {
+        case RendererType::RENDERER_TILED_FORWARD_SHADING: {
+            MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW TiledForwardShadingRenderer(context, cache));
+        } break;
+        case RendererType::RENDERER_DEFERRED_SHADING: {
+            MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW DeferredShadingRenderer(context, cache));
+        } break;
+    }
+}
+
+ShaderComputeQueue& GFXDevice::shaderComputeQueue() {
+    assert(_shaderComputeQueue != nullptr);
+    return *_shaderComputeQueue;
+}
+
+const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
+    assert(_shaderComputeQueue != nullptr);
+    return *_shaderComputeQueue;
 }
 
 /// Extract the pixel data from the main render target's first colour attachment

@@ -40,9 +40,10 @@ FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 class GFXDevice;
+class ResourceCache;
 class GUISplash {
    public:
-    GUISplash(const stringImpl& splashImageName, const vec2<U16>& dimensions);
+    GUISplash(ResourceCache& cache, const stringImpl& splashImageName, const vec2<U16>& dimensions);
     ~GUISplash();
     void render(GFXDevice& context);
 

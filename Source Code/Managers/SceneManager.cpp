@@ -3,18 +3,17 @@
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/ScenePool.h"
 #include "Scenes/Headers/SceneShaderData.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
+#include "Rendering/Headers/Renderer.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "Rendering/Headers/TiledForwardShadingRenderer.h"
-#include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
 #include "Geometry/Importer/Headers/DVDConverter.h"
-#include "Geometry/Material/Headers/ShaderComputeQueue.h"
 
 #include "Core/Debugging/Headers/DebugInterface.h"
 namespace Divide {
@@ -55,13 +54,14 @@ bool SceneManager::onShutdown() {
     return Attorney::SceneManager::onShutdown();
 }
 
-SceneManager::SceneManager()
+SceneManager::SceneManager(Kernel& parentKernel)
     : FrameListener(),
+      Input::InputAggregatorInterface(),
+      KernelComponent(parentKernel),
       _platformContext(nullptr),
-      _renderer(nullptr),
+      _resourceCache(nullptr),
+      _sceneData(nullptr),
       _renderPassCuller(nullptr),
-      _renderPassManager(nullptr),
-      _shaderComputeQueue(nullptr),
       _defaultMaterial(nullptr),
       _processInput(false),
       _scenePool(nullptr),
@@ -72,34 +72,11 @@ SceneManager::SceneManager()
 {
     ADD_FILE_DEBUG_GROUP();
     ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
-    AI::Navigation::DivideRecast::createInstance();
-
-    _sceneData = MemoryManager_NEW SceneShaderData(GFXDevice::instance());
-    _scenePool = MemoryManager_NEW ScenePool(*this);
-
-    _sceneGraphCullTimers[0][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display");
-    _sceneGraphCullTimers[0][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection");
-    _sceneGraphCullTimers[0][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction");
-    _sceneGraphCullTimers[0][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow");
-
-    _sceneGraphCullTimers[1][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display PrePass");
-    _sceneGraphCullTimers[1][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection PrePass");
-    _sceneGraphCullTimers[1][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction PrePass");
-    _sceneGraphCullTimers[1][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow PrePass");
 }
 
 SceneManager::~SceneManager()
 {
-    UNREGISTER_FRAME_LISTENER(&(this->instance()));
-    Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
-    // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
-    Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
-    MemoryManager::DELETE(_scenePool);
-    MemoryManager::DELETE(_sceneData);
-    MemoryManager::DELETE(_renderPassCuller);
-    MemoryManager::DELETE(_renderer);
-    MemoryManager::DELETE(_shaderComputeQueue);
-    AI::Navigation::DivideRecast::destroyInstance();
+    destroy();
 }
 
 Scene& SceneManager::getActiveScene() {
@@ -121,32 +98,62 @@ void SceneManager::idle() {
     }
 }
 
-bool SceneManager::init(PlatformContext& platformContext) {
-    assert(_platformContext == nullptr);
-    _platformContext = &platformContext;
+bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) {
+    if (_platformContext == nullptr) {
+        _platformContext = &platformContext;
+        _resourceCache = &cache;
+        REGISTER_FRAME_LISTENER(this, 1);
 
-    REGISTER_FRAME_LISTENER(&(this->instance()), 1);
+        AI::Navigation::DivideRecast::createInstance();
 
-    // Load default material
-    Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
-    _defaultMaterial = XML::loadMaterialXML(
-        ParamHandler::instance().getParam<stringImpl>(_ID("scriptLocation")) +
+        _scenePool = MemoryManager_NEW ScenePool(*this);
+
+        _sceneGraphCullTimers[0][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display");
+        _sceneGraphCullTimers[0][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection");
+        _sceneGraphCullTimers[0][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction");
+        _sceneGraphCullTimers[0][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow");
+
+        _sceneGraphCullTimers[1][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER("SceneGraph cull timer: Display PrePass");
+        _sceneGraphCullTimers[1][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Reflection PrePass");
+        _sceneGraphCullTimers[1][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER("SceneGraph cull timer: Refraction PrePass");
+        _sceneGraphCullTimers[1][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER("SceneGraph cull timer: Shadow PrePass");
+
+        // Load default material
+        Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
+        _defaultMaterial = XML::loadMaterialXML(_platformContext->gfx(),
+            ParamHandler::instance().getParam<stringImpl>(_ID("scriptLocation")) +
             "/defaultMaterial",
-        false);
-    _defaultMaterial->dumpToFile(false);
+            false);
+        _defaultMaterial->dumpToFile(false);
+        _sceneData = MemoryManager_NEW SceneShaderData(platformContext.gfx());
+        _renderPassCuller = MemoryManager_NEW RenderPassCuller();
+        _sceneData->init();
+        _scenePool->init();
+        _init = true;
+    } else {
+        _init = false;
+    }
+    return _init;
+}
 
-    _renderPassCuller = MemoryManager_NEW RenderPassCuller();
-    _renderPassManager = &RenderPassManager::instance();
-    _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue();
-    _sceneData->init();
-    _scenePool->init();
-    _init = true;
-    return true;
+void SceneManager::destroy() {
+    if (_init) {
+        MemoryManager::SAFE_DELETE(_sceneData);
+        UNREGISTER_FRAME_LISTENER(this);
+        Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
+        // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
+        Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
+        MemoryManager::DELETE(_scenePool);
+        MemoryManager::DELETE(_renderPassCuller);
+        AI::Navigation::DivideRecast::destroyInstance();
+        _platformContext = nullptr;
+        _init = false;
+    }
 }
 
 Scene* SceneManager::load(stringImpl sceneName) {
     bool foundInCache = false;
-    Scene* loadingScene = _scenePool->getOrCreateScene(*_platformContext, sceneName, foundInCache);
+    Scene* loadingScene = _scenePool->getOrCreateScene(*_platformContext, parent().resourceCache(), *this, sceneName, foundInCache);
 
     if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
@@ -190,7 +197,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     }
     Attorney::SceneManager::onSetActive(*scene);
     _scenePool->activeScene(*scene);
-    ShadowMap::resetShadowMaps(_platformContext->_GFX);
+    ShadowMap::resetShadowMaps(_platformContext->gfx());
     _platformContext->gui().onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->getName());
 }
@@ -217,7 +224,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
         [this, name, unloadPrevious, &sceneToUnload]()
         {
             bool foundInCache = false;
-            Scene* loadedScene = _scenePool->getOrCreateScene(*_platformContext, name, foundInCache);
+            Scene* loadedScene = _scenePool->getOrCreateScene(*_platformContext, parent().resourceCache(), *this, name, foundInCache);
             assert(loadedScene != nullptr && foundInCache);
 
             if(loadedScene->getState() == ResourceState::RES_LOADING) {
@@ -296,12 +303,10 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _sceneData->lightCount(LightType::POINT, lightPool->getActiveLightCount(LightType::POINT));
     _sceneData->lightCount(LightType::SPOT, lightPool->getActiveLightCount(LightType::SPOT));
 
-    _sceneData->setRendererFlag(getRenderer().getFlag());
+    _sceneData->setRendererFlag(_platformContext->gfx().getRenderer().getFlag());
 
     _sceneData->toggleShadowMapping(lightPool->shadowMappingEnabled());
 
-
-    _shaderComputeQueue->update(deltaTime);
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
     bool fogEnabled = par.getParam<bool>(_ID("rendering.enableFog"));
@@ -330,11 +335,11 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 }
 
 void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
-    const GFXDevice& gfx = GFXDevice::instance();
+    const GFXDevice& gfx = _platformContext->gfx();
 
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
     lightPool->updateAndUploadLightData(camera.getEye(), gfx.getMatrix(MATRIX::VIEW));
-    getRenderer().preRender(target, *lightPool);
+    gfx.getRenderer().preRender(target, *lightPool);
 
     if (gfx.getRenderStage() == RenderStage::DISPLAY) {
         PostFX::instance().cacheDisplaySettings(gfx);
@@ -345,17 +350,17 @@ void SceneManager::postRender(const Camera& camera, RenderStage stage, RenderSub
     Scene& activeScene = getActiveScene();
     SceneRenderState& activeSceneRenderState = activeScene.renderState();
 
-    _renderPassManager->getQueue().postRender(activeSceneRenderState, stage, subPassesInOut);
+    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stage, subPassesInOut);
     Attorney::SceneManager::debugDraw(activeScene, camera, stage, subPassesInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
-    GFXDevice::instance().debugDraw(activeSceneRenderState, camera, subPassesInOut);
+    _platformContext->gfx().debugDraw(activeSceneRenderState, camera, subPassesInOut);
 }
 
 bool SceneManager::generateShadowMaps() {
     Scene& activeScene = getActiveScene();
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
     assert(lightPool != nullptr);
-    return lightPool->generateShadowMaps(activeScene.renderState());
+    return lightPool->generateShadowMaps(_platformContext->gfx(), activeScene.renderState());
 }
 
 Camera* SceneManager::getDefaultCamera() const {
@@ -458,7 +463,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     };
 
     // If we are rendering a high node count, we might want to use async frustum culling
-    bool cullAsync = _renderPassManager->getLastTotalBinSize(stage) > g_asyncCullThreshold;
+    bool cullAsync = parent().renderPassManager().getLastTotalBinSize(stage) > g_asyncCullThreshold;
 
     _renderPassCuller->frustumCull(activeScene.sceneGraph(),
                                    activeScene.state(),
@@ -489,7 +494,7 @@ SceneManager::getVisibleNodesCache(RenderStage stage) {
 }
 
 void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, bool isPrePass, U32 pass) {
-    RenderQueue& queue = _renderPassManager->getQueue();
+    RenderQueue& queue = parent().renderPassManager().getQueue();
 
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
 
@@ -514,17 +519,17 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, b
         }
     );
 
-    RenderPass::BufferData& bufferData = _renderPassManager->getBufferData(stage, pass);
+    RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(stage, pass);
 
-    GFXDevice::instance().buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
+    _platformContext->gfx().buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
 }
 
 bool SceneManager::populateRenderQueue(RenderStage stage, 
                                        bool doCulling,
                                        U32 passIndex) {
 
-    RenderQueue& queue = _renderPassManager->getQueue();
-    bool isPrePass = GFXDevice::instance().isPrePass();
+    RenderQueue& queue = parent().renderPassManager().getQueue();
+    bool isPrePass = _platformContext->gfx().isPrePass();
 
     if (doCulling) {
         Time::ScopedTimer timer(*_sceneGraphCullTimers[isPrePass ? 0 : 1][to_uint(stage)]);
@@ -539,26 +544,6 @@ bool SceneManager::populateRenderQueue(RenderStage stage,
 
     return queue.getRenderQueueStackSize() > 0;
 
-}
-
-Renderer& SceneManager::getRenderer() const {
-    DIVIDE_ASSERT(_renderer != nullptr,
-        "SceneManager error: Renderer requested but not created!");
-    return *_renderer;
-}
-
-void SceneManager::setRenderer(RendererType rendererType) {
-    DIVIDE_ASSERT(rendererType != RendererType::COUNT,
-        "SceneManager error: Tried to create an invalid renderer!");
-
-    switch (rendererType) {
-    case RendererType::RENDERER_TILED_FORWARD_SHADING: {
-        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW TiledForwardShadingRenderer(GFXDevice::instance()));
-    } break;
-    case RendererType::RENDERER_DEFERRED_SHADING: {
-        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW DeferredShadingRenderer(GFXDevice::instance()));
-    } break;
-    }
 }
 
 void SceneManager::onLostFocus() {
@@ -713,13 +698,4 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     return false;
 }
 
-ShaderComputeQueue& SceneManager::shaderComputeQueue() {
-    assert(_shaderComputeQueue != nullptr);
-    return *_shaderComputeQueue;
-}
-
-const ShaderComputeQueue& SceneManager::shaderComputeQueue() const {
-    assert(_shaderComputeQueue != nullptr);
-    return *_shaderComputeQueue;
-}
 };

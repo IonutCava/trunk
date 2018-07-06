@@ -3,6 +3,7 @@
 #include "../Headers/DivideRecast.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
@@ -16,15 +17,16 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-NavigationMesh::NavigationMesh() : GUIDWrapper(),
-                                   _buildJobGUID(-1)
+NavigationMesh::NavigationMesh(PlatformContext& context)
+    : GUIDWrapper(),
+      _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::instance();
     stringImpl path(par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
                     par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
                     par.getParam<stringImpl>(_ID("currentScene")));
 
-    _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw();
+    _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
 
     _fileName = path + "/navMeshes/";
     _configFile = path + "/navMeshConfig.ini";

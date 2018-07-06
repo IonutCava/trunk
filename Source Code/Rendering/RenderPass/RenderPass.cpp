@@ -107,8 +107,9 @@ RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferInde
     return *_buffers[bufferIndex];
 }
 
-RenderPass::RenderPass(GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)
-    : _context(context),
+RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)
+    : _parent(parent),
+      _context(context),
       _sortKey(sortKey),
       _name(name),
       _stageFlag(passStageFlag)
@@ -142,21 +143,20 @@ void RenderPass::render(SceneRenderState& renderState) {
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
             const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-            RenderPassManager& passMgr = RenderPassManager::instance();
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;
-            params.camera = Attorney::SceneManagerRenderPass::getDefaultCamera(SceneManager::instance());
+            params.camera = Attorney::SceneManagerRenderPass::getDefaultCamera(_parent.parent().sceneManager());
             params.stage = _stageFlag;
             params.target = RenderTargetID(RenderTargetUsage::SCREEN);
             params.pass = 0;
             params.doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachment::Type::Depth, 0).used();
             params.occlusionCull = true;
-            passMgr.doCustomPass(params);
-            _lastTotalBinSize = passMgr.getQueue().getRenderQueueStackSize();
+            _parent.doCustomPass(params);
+            _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize();
 
         } break;
         case RenderStage::SHADOW: {
-            Attorney::SceneManagerRenderPass::generateShadowMaps(SceneManager::instance());
+            Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager());
         } break;
         case RenderStage::REFLECTION: {
             /*params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;

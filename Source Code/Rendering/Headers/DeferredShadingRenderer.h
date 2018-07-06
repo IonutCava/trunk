@@ -45,7 +45,7 @@ class ShaderProgram;
 /// G-buffer model
 class DeferredShadingRenderer : public Renderer {
    public:
-    DeferredShadingRenderer(GFXDevice& context);
+    DeferredShadingRenderer(PlatformContext& context, ResourceCache& cache);
     ~DeferredShadingRenderer();
 
     void preRender(RenderTarget& target, LightPool& lightPool) override;

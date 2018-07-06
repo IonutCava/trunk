@@ -38,8 +38,8 @@ namespace Divide {
 
 class CubeScene : public Scene {
    public:
-    explicit CubeScene(PlatformContext& context, const stringImpl& name)
-        : Scene(context, name)
+    explicit CubeScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+        : Scene(context, cache, parent, name)
     {
     }
 

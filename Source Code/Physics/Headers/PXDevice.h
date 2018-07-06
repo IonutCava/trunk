@@ -30,6 +30,7 @@
  */
 
 #include "Core/Headers/Application.h"
+#include "Core/Headers/KernelComponent.h"
 
 #ifndef _PHYSICS_DEVICE_H_
 #define _PHYSICS_DEVICE_H_
@@ -42,15 +43,18 @@
 namespace Divide {
 
 class PhysicsAsset;
-DEFINE_SINGLETON_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
-
-  public:
+class PXDevice final : public KernelComponent,
+                       public PhysicsAPIWrapper {
+public:
     enum class PhysicsAPI : U32 {
         PhysX = 0,
         ODE,
         Bullet,
         COUNT
     };
+
+    explicit PXDevice(Kernel& parent);
+    ~PXDevice();
 
     inline void setAPI(PhysicsAPI API) { _API_ID = API; }
     inline PhysicsAPI getAPI() const { return _API_ID; }
@@ -68,15 +72,14 @@ DEFINE_SINGLETON_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
     PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
 
-  private:
-    PXDevice();
-    ~PXDevice();
+    inline PhysicsAPIWrapper& getImpl() { assert(_api != nullptr); return *_api; }
+    inline const PhysicsAPIWrapper& getImpl() const { assert(_api != nullptr); return *_api; }
 
-  private:
+private:
     PhysicsAPI _API_ID;
-    PhysicsAPIWrapper* _api;
+    std::unique_ptr<PhysicsAPIWrapper> _api;
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 

@@ -42,6 +42,9 @@ namespace Time {
     class ProfileTimer;
 };
 
+class ResourceCache;
+class PlatformContext;
+
 class ShaderProgram;
 class ShaderComputeQueue : public FrameListener {
 public:
@@ -51,12 +54,12 @@ public:
     };
 
 public:
-    ShaderComputeQueue();
+    explicit ShaderComputeQueue(ResourceCache& cache);
     ~ShaderComputeQueue();
 
     // This is the main loop that steps through the queue and 
     // processes each entry
-    void update(const U64 deltaTime);
+    void idle();
     // Push a process request at the front of the queue
     void addToQueueFront(const ShaderQueueElement& element);
     // Push a process request at the end of the queue
@@ -71,6 +74,8 @@ protected:
     bool frameEnded(const FrameEvent& evt) override;
 
 private:
+    ResourceCache& _cache;
+
     Time::ProfileTimer& _queueComputeTimer;
 
     std::deque<ShaderQueueElement> _shaderComputeQueue;

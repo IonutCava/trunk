@@ -8,10 +8,12 @@
 
 namespace Divide {
 
-Mesh::Mesh(const stringImpl& name,
+Mesh::Mesh(GFXDevice& context,
+           ResourceCache& parentCache,
+           const stringImpl& name,
            const stringImpl& resourceLocation, 
            ObjectFlag flag)
-    : Object3D(name, resourceLocation, ObjectType::MESH, flag),
+    : Object3D(context, parentCache, name, resourceLocation, ObjectType::MESH, flag),
       _visibleToNetwork(true),
       _animator(nullptr)
 {

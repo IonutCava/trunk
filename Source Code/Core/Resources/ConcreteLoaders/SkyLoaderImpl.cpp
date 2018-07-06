@@ -6,7 +6,8 @@ namespace Divide {
 
 template<>
 Resource_ptr ImplResourceLoader<Sky>::operator()() {
-    std::shared_ptr<Sky> ptr(MemoryManager_NEW Sky(_descriptor.getName(), _descriptor.getID()), DeleteResource());
+    std::shared_ptr<Sky> ptr(MemoryManager_NEW Sky(_cache, _descriptor.getName(), _descriptor.getID()),
+                             DeleteResource(_cache));
 
     if (!load(ptr)) {
         ptr.reset();

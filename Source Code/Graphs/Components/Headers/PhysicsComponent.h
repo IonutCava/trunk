@@ -39,6 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class PXDevice;
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
@@ -235,7 +236,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
 
    protected:
     friend class SceneGraphNode;
-    PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup);
+    PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context);
     ~PhysicsComponent();
 
     inline void addTransformUpdateCbk(DELEGATE_CBK<> cbk) {

@@ -55,7 +55,7 @@ class TerrainChunk {
     friend class Attorney::TerrainChunkTerrain;
 
    public:
-    TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode);
+    TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, QuadtreeNode* const parentNode);
     ~TerrainChunk();
 
     void load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize);

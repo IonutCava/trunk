@@ -58,10 +58,28 @@ namespace Attorney {
     class RenderingCompSceneNode;
 };
 
-typedef DELEGATE_CBK_PARAM_4<const SceneGraphNode&, 
-                             const SceneRenderState&,
-                             const RenderTargetID&,
-                             U32> RenderCallback;
+struct RenderCbkParams {
+    explicit RenderCbkParams(GFXDevice& context,
+                             const SceneGraphNode& sgn,
+                             const SceneRenderState& sceneRenderState,
+                             const RenderTargetID& renderTarget,
+                             U32 passIndex)
+        : _context(context),
+          _sgn(sgn),
+          _sceneRenderState(sceneRenderState),
+          _renderTarget(renderTarget),
+         _passIndex(passIndex)
+    {
+    }
+
+    GFXDevice& _context;
+    const SceneGraphNode& _sgn;
+    const SceneRenderState& _sceneRenderState;
+    const RenderTargetID& _renderTarget;
+    U32 _passIndex;
+};
+
+typedef DELEGATE_CBK_PARAM<RenderCbkParams&> RenderCallback;
 
 class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderPass;
@@ -145,8 +163,9 @@ class RenderingComponent : public SGNComponent {
 
    protected:
     friend class SceneGraphNode;
-    RenderingComponent(Material_ptr materialInstance,
-                       SceneGraphNode& parentSGN);
+    explicit RenderingComponent(GFXDevice& context,
+                                Material_ptr materialInstance,
+                                SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
    protected:
@@ -184,6 +203,7 @@ class RenderingComponent : public SGNComponent {
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
    protected:
+    GFXDevice& _context;
     Material_ptr _materialInstance;
     std::array<ShaderProgram_ptr, to_const_uint(RenderStage::COUNT)> _customShaders;
 

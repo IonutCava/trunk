@@ -38,7 +38,7 @@ namespace Divide {
 
     class ShadowScene : public Scene {
     public:
-        ShadowScene(PlatformContext& context, const stringImpl& name);
+        ShadowScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
 
         bool load(const stringImpl& name) override;
         bool loadResources(bool continueOnErrors) override;

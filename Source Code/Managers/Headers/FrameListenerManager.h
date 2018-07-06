@@ -44,7 +44,7 @@ DEFINE_SINGLETON(FrameListenerManager)
 
   public:
     void registerFrameListener(FrameListener* listener, U32 callOrder);
-    void removeFrameListener(FrameListener* listener);
+    void removeFrameListener(FrameListener* const listener);
     void idle();
 
     bool frameEvent(const FrameEvent& evt);
@@ -77,7 +77,7 @@ inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder) {
                                                               callOrder);
 }
 
-inline void UNREGISTER_FRAME_LISTENER(FrameListener* listener) {
+inline void UNREGISTER_FRAME_LISTENER(FrameListener* const listener) {
     FrameListenerManager::instance().removeFrameListener(listener);
 }
 

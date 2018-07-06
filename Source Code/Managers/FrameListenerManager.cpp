@@ -22,7 +22,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
 }
 
 /// Remove an existent Frame Listener from our collection
-void FrameListenerManager::removeFrameListener(FrameListener* listener) {
+void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
     const stringImpl& name = listener->getListenerName();
 
     UpgradableReadLock ur_lock(_listenerLock);

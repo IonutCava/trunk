@@ -38,7 +38,7 @@ namespace Divide {
 
 class TiledForwardShadingRenderer : public Renderer {
    public:
-    TiledForwardShadingRenderer(GFXDevice& context);
+    TiledForwardShadingRenderer(PlatformContext& context, ResourceCache& cache);
     ~TiledForwardShadingRenderer();
 
     void preRender(RenderTarget& target, LightPool& lightPool) override;

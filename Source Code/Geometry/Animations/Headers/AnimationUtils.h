@@ -44,8 +44,8 @@ namespace Divide {
 const static F32 ANIMATION_TICKS_PER_SECOND = 20.0f;
 
 namespace AnimUtils {
-void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out);
-void TransformMatrix(const mat4<F32>& in, aiMatrix4x4& out);
+void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out, bool rowMajor = false);
+void TransformMatrix(const mat4<F32>& in, aiMatrix4x4& out, bool rowMajor = false);
 };
 
 };  // namespace Divide

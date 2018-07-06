@@ -6,6 +6,7 @@
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -123,7 +124,7 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
         textureAttachment.setThreadedLoading(false);
         textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
         textureAttachment.setEnumValue(to_uint(texDescriptor._type));
-        Texture_ptr tex = CreateResource<Texture>(textureAttachment);
+        Texture_ptr tex = CreateResource<Texture>(_context.parent().resourceCache(), textureAttachment);
         assert(tex);
         Texture::TextureLoadInfo info;
         info._type = texDescriptor._type;

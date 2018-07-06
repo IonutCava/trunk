@@ -38,9 +38,9 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
-  public:
-    ErrorCode initAudioAPI() override;
+class SDL_API final : public AudioAPIWrapper {
+public:
+    ErrorCode initAudioAPI(PlatformContext& context) override;
     void closeAudioAPI() override;
 
     void beginFrame() override;
@@ -56,16 +56,16 @@ DEFINE_SINGLETON_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
     void setMusicVolume(I8 value) override {}
     void setSoundVolume(I8 value) override {}
 
-  protected:
+protected:
     void musicFinished() override;
 
-  private:
+private:
     typedef hashMapImpl<I64, Mix_Music*> MusicMap;
     typedef hashMapImpl<I64, Mix_Chunk*> SoundMap;
 
     MusicMap _musicMap;
     SoundMap _soundMap;
-END_SINGLETON
+};
 
 };  // namespace Divide
 

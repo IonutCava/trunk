@@ -557,6 +557,12 @@
     <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp">
       <Filter>Core\ArenaAllocator</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Renderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\PlatformContext.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -983,6 +989,12 @@
       <Filter>Core\ArenaAllocator</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\KernelComponent.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>

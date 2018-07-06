@@ -10,7 +10,7 @@
 
 namespace Divide {
 
-PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup)
+PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context)
     : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
       TransformInterface(),
       _physicsCollisionGroup(physicsGroup),
@@ -21,7 +21,7 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physi
       _prevInterpValue(0.0)
 {
     if (physicsDriven()) {
-        _transformInterface.reset(PXDevice::instance().createRigidActor(parentSGN));
+        _transformInterface.reset(context.createRigidActor(parentSGN));
     } else {
         _transformInterface = std::make_unique<Transform>();
     }

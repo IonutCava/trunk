@@ -8,12 +8,13 @@ vec2<F32> PreRenderOperator::s_mainCamZPlanes;
 mat4<F32> PreRenderOperator::s_mainCamViewMatrixCache;
 mat4<F32> PreRenderOperator::s_mainCamProjectionMatrixCache;
 
-PreRenderOperator::PreRenderOperator(GFXDevice& context, FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+PreRenderOperator::PreRenderOperator(GFXDevice& context, ResourceCache& cache, FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : _context(context),
       _operatorType(operatorType),
       _hdrTarget(hdrTarget),
       _ldrTarget(ldrTarget)
 {
+    ACKNOWLEDGE_UNUSED(cache);
     _screenOnlyDraw.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
     _screenOnlyDraw.drawMask().disableAll();
     _screenOnlyDraw.drawMask().setEnabled(RTAttachment::Type::Colour, 0, true);

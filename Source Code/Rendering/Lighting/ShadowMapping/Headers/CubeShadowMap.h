@@ -38,12 +38,12 @@ namespace Divide {
 
 class CubeShadowMap : public ShadowMap {
    public:
-    CubeShadowMap(Light* light, Camera* shadowCamera);
+    explicit CubeShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera);
     ~CubeShadowMap();
-    void render(U32 passIdx);
+    void render(GFXDevice& context, U32 passIdx);
 
     /// Update depth maps
-    void previewShadowMaps(U32 rowIndex);
+    void previewShadowMaps(GFXDevice& context, U32 rowIndex);
     void init(ShadowMapInfo* const smi);
 
   private:

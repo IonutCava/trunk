@@ -48,6 +48,8 @@ TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
 
 class GUIButton : public GUIElement {
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
+    typedef DELEGATE_CBK_PARAM<AudioDescriptor_ptr> AudioCallback;
+
     friend class GUIInterface;
     friend class SceneGUIElements;
 
@@ -59,6 +61,9 @@ class GUIButton : public GUIElement {
     void setVisible(const bool visible) override;
     void setOnClickSound(const AudioDescriptor_ptr& onClickSound);
 
+    // return false if we replace an existing callback
+    static bool soundCallback(const AudioCallback& cbk);
+
    protected:
     GUIButton(U64 guiID,
               const stringImpl& text,
@@ -66,7 +71,8 @@ class GUIButton : public GUIElement {
               const vec2<F32>& relativeOffset,
               const vec2<F32>& relativeDimensions,
               CEGUI::Window* parent,
-              ButtonCallback callback);
+              ButtonCallback callback,
+              AudioDescriptor_ptr onClickSound);
     ~GUIButton();
 
     void draw(GFXDevice& context) const;
@@ -77,6 +83,8 @@ class GUIButton : public GUIElement {
     ButtonCallback _callbackFunction;
     CEGUI::Window* _btnWindow;
     AudioDescriptor_ptr _onClickSound;
+
+    static AudioCallback _soundCallback;
 };
 
 };  // namespace Divide

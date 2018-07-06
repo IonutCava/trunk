@@ -244,7 +244,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
 
     //==================== static methods ===============================//
     static void idle();
-    static void onStartup();
+    static void onStartup(ResourceCache& parentCache);
     static void onShutdown();
     static bool updateAll(const U64 deltaTime);
     /// Queue a shaderProgram recompile request

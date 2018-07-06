@@ -33,19 +33,24 @@
 #define _SFX_DEVICE_H
 
 #include "AudioAPIWrapper.h"
+#include "Core/Headers/KernelComponent.h"
 
 namespace Divide {
 
-DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
-  public:
+class SFXDevice final : public KernelComponent,
+                        public AudioAPIWrapper {
+public:
     enum class AudioAPI : U32 {
         FMOD,
         OpenAL,
         SDL,
         COUNT
     };
-    
-    ErrorCode initAudioAPI() override;
+
+    SFXDevice(Kernel& parent);
+    ~SFXDevice();
+
+    ErrorCode initAudioAPI(PlatformContext& context) override;
     void closeAudioAPI() override;
 
     inline void setAPI(AudioAPI API) { _API_ID = API; }
@@ -70,26 +75,22 @@ DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
     bool playMusic(MusicPlaylist& playlist);
 
     void dumpPlaylists();
-  protected:
-     friend void musicFinishedHook();
-     void musicFinished() override;
+protected:
+    friend void musicFinishedHook();
+    void musicFinished() override;
 
-  private:
-    SFXDevice();
-    ~SFXDevice();
-
-  protected:
+protected:
     AudioState _state;
 
     MusicPlaylists _musicPlaylists;
 
     MusicPlaylist _currentPlaylist;
 
-  private:
+private:
     AudioAPI _API_ID;
-    AudioAPIWrapper* _api;
+    std::unique_ptr<AudioAPIWrapper> _api;
     std::atomic_bool _playNextInPlaylist;
-END_SINGLETON
+};
 
 };  // namespace Divide
 

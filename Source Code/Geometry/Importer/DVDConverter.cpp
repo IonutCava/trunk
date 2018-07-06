@@ -10,6 +10,7 @@
 #include <assimp/postprocess.h>
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
@@ -101,15 +102,15 @@ DVDConverter::DVDConverter()
 {
 }
 
-DVDConverter::DVDConverter(Import::ImportData& target, const stringImpl& file, bool& result) {
-    result = load(target, file);
+DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, const stringImpl& file, bool& result) {
+    result = load(context, target, file);
 }
 
 DVDConverter::~DVDConverter()
 {
 }
 
-bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
+bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, const stringImpl& file) {
     Assimp::Importer importer;
 
     importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
@@ -177,7 +178,7 @@ bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
         vertCount += aiScenePointer->mMeshes[n]->mNumVertices;
     }
 
-    target._vertexBuffer = GFXDevice::instance().newVB();
+    target._vertexBuffer = context.gfx().newVB();
     target._vertexBuffer->useLargeIndices(vertCount + 1 > std::numeric_limits<U16>::max());
     target._vertexBuffer->setVertexCount(vertCount);
 

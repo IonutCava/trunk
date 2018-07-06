@@ -44,13 +44,14 @@ class ToggleButton;
 
 namespace Divide {
 
-class GUI;
+class ResourceCache;
+class PlatformContext;
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// Our world editor interface
 class GUIEditor {
 public:
-    explicit GUIEditor(GUI& context);
+    explicit GUIEditor(PlatformContext& context, ResourceCache& cache);
     ~GUIEditor();
     bool init();
     void setVisible(bool visible);  //< Hide or show the editor
@@ -173,7 +174,8 @@ private:
         return _transformButtonsDec[to_uint(transform)][to_uint(control)];
     }
 private:
-    GUI& _context;
+    PlatformContext& _context;
+    ResourceCache& _resCache;
     bool _init;
     bool _wasControlClick;
     bool _createNavMeshQueued;

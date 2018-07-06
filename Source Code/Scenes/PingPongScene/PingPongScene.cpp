@@ -9,8 +9,8 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {
-PingPongScene::PingPongScene(PlatformContext& context, const stringImpl& name)
-    : Scene(context, name)
+PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+    : Scene(context, cache, parent, name)
 {
     _sideDrift = 0;
     _directionTowardsAdversary = true;
@@ -320,7 +320,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
 
     // Create a ball
     ResourceDescriptor minge("Ping Pong Ball");
-    _ball = CreateResource<Sphere3D>(minge);
+    _ball = CreateResource<Sphere3D>(_resCache, minge);
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
     _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.4f, 0.4f, 1.0f));
@@ -333,7 +333,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     tempLight.setUserPtr(_lightPool.get());
-    Light* light = CreateResource<Light>(tempLight);
+    Light* light = CreateResource<Light>(_resCache, tempLight);
     _sceneGraph->getRoot()->addNode(light, lightMask);
     light->setRange(30.0f);
     light->setCastShadows(false);

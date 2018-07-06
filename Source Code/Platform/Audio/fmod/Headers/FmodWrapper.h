@@ -43,9 +43,12 @@ namespace Divide {
 /*    Visit: http://www.fmod.org/index.php/sales  for more details -Ionut */
 /*****************************************************************************************/
 
-DEFINE_SINGLETON_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
-  public:
-    ErrorCode initAudioAPI() override { return ErrorCode::FMOD_AUDIO_INIT_ERROR; }
+class FMOD_API final : public AudioAPIWrapper {
+public:
+    ErrorCode initAudioAPI(PlatformContext& context) override {
+        ACKNOWLEDGE_UNUSED(context);
+        return ErrorCode::FMOD_AUDIO_INIT_ERROR;
+    }
 
     void closeAudioAPI() override {}
 
@@ -65,8 +68,7 @@ DEFINE_SINGLETON_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
 
 protected:
     void musicFinished() override {}
-
-END_SINGLETON
+};
 
 };  // namespace Divide
 

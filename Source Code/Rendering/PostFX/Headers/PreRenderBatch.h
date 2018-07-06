@@ -5,9 +5,10 @@
 
 namespace Divide {
 
+class ResourceCache;
 class PreRenderBatch {
    public:
-    PreRenderBatch(GFXDevice& context);
+    PreRenderBatch(GFXDevice& context, ResourceCache& cache);
     ~PreRenderBatch();
 
     void init(RenderTarget* renderTarget);
@@ -61,6 +62,7 @@ class PreRenderBatch {
     OperatorBatch _operators[to_const_uint(FilterSpace::COUNT)];
 
     GFXDevice& _context;
+    ResourceCache& _resCache;
 
     bool _adaptiveExposureControl;
 

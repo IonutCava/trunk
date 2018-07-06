@@ -4,6 +4,7 @@
 #include "Graphs/Headers/SceneNode.h"
 #include "Graphs/Components/Headers/PhysicsComponent.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
@@ -29,7 +30,7 @@ PhysXSceneInterface::~PhysXSceneInterface() {
 }
 
 bool PhysXSceneInterface::init() {
-    physx::PxPhysics* gPhysicsSDK = PhysX::instance().getSDK();
+    physx::PxPhysics* gPhysicsSDK = static_cast<PhysX&>(_parentScene.platformContext().pfx().getImpl()).getSDK();
     // Create the scene
     if (!gPhysicsSDK) {
         Console::errorfn(Locale::get(_ID("ERROR_PHYSX_SDK")));

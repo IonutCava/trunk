@@ -37,6 +37,8 @@
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
+
+class GFXDevice;
 class IMPrimitive;
 class RenderStateBlock;
 class GenericDrawCommand;
@@ -56,7 +58,7 @@ inline void rcCol(U32 col, U8& r, U8& g, U8& b, U8& a) {
 
 class NavMeshDebugDraw : public duDebugDraw {
    public:
-    NavMeshDebugDraw();
+    NavMeshDebugDraw(GFXDevice& context);
     ~NavMeshDebugDraw();
 
     void paused(bool state);
@@ -85,7 +87,9 @@ class NavMeshDebugDraw : public duDebugDraw {
     }
 
     GenericDrawCommand toDrawCommand() const;
+
    private:
+    GFXDevice& _context;
     PrimitiveType _primType;
     IMPrimitive* _primitive;
     size_t _navMeshStateBlockHash;

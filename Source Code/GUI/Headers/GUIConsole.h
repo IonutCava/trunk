@@ -50,12 +50,14 @@ class FormattedListboxTextItem;
 namespace Divide {
 
 class GUI;
+class ResourceCache;
+class PlatformContext;
 class GUIConsoleCommandParser;
 /// GUIConsole implementation, CEGUI based, as in the practical tutorial series
 class GUIConsole {
    public:
-    GUIConsole(GUI& context);   //< Constructor
-    ~GUIConsole();  //< Destructor
+    explicit GUIConsole(PlatformContext& context, ResourceCache& cache);
+    ~GUIConsole();
 
     void setVisible(bool visible);  //< Hide or show the console
     bool isVisible();  //< Return true if console is visible, false if is hidden
@@ -81,7 +83,7 @@ class GUIConsole {
     void OutputText(const char* inMsg, const bool error = false);
 
    protected:
-    GUI& _context;
+    PlatformContext& _context;
     /// used to check if the console is ready
     bool _init;
     bool _closing;

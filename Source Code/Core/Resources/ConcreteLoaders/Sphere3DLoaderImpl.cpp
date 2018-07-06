@@ -1,3 +1,4 @@
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -6,14 +7,16 @@
 namespace Divide {
 
     Resource_ptr ImplResourceLoader<Sphere3D>::operator()() {
-    std::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_descriptor.getName(),
+    std::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_context.gfx(),
+                                                             _cache,
+                                                             _descriptor.getName(),
                                                              _descriptor.getEnumValue() == 0
                                                                                          ? 1.0f
                                                                                          : to_float(_descriptor.getEnumValue()),
                                                              _descriptor.getID() == 0 
                                                                                   ? 32 
                                                                                   : _descriptor.getID()),
-                                  DeleteResource());
+                                  DeleteResource(_cache));
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
@@ -21,7 +24,7 @@ namespace Divide {
 
         ResourceDescriptor matDesc("Material_" + _descriptor.getName());
         matDesc.setEnumValue(to_uint(Material::ShadingMode::BLINN_PHONG));
-        Material_ptr matTemp = CreateResource<Material>(matDesc);
+        Material_ptr matTemp = CreateResource<Material>(_cache, matDesc);
         ptr->setMaterialTpl(matTemp);
     }
 

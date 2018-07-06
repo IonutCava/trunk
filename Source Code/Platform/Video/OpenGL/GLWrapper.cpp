@@ -45,9 +45,9 @@ namespace {
     const U32 g_performanceQueryFrameDurationIndex = 0;
 };
 
-GL_API::GL_API()
+GL_API::GL_API(GFXDevice& context)
     : RenderAPIWrapper(),
-      _context(GFXDevice::instance()),
+      _context(context),
       _prevSizeNode(0),
       _prevSizeString(0),
       _prevWidthNode(0),

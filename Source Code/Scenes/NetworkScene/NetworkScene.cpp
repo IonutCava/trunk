@@ -6,6 +6,15 @@
 #include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
+NetworkScene::NetworkScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+    : Scene(context, cache, parent, name)
+{
+    _asio = std::make_unique<ASIOImpl>(*this);
+}
+
+NetworkScene::~NetworkScene()
+{
+}
 
 void NetworkScene::processInput(const U64 deltaTime) {
     Light* light = _lightPool->getLight(0, LightType::DIRECTIONAL);
@@ -57,12 +66,11 @@ void NetworkScene::checkPatches(I64 btnGUID) {
         p << (*_iter).ModelName;
         p << (*_iter).version;
     }*/
-    ASIOImpl::instance().sendPacket(p);
+    _asio->sendPacket(p);
 }
 
 bool NetworkScene::load(const stringImpl& name) {
-    ASIOImpl::instance().init(
-        _paramHandler.getParam<stringImpl>(_ID("serverAddress")).c_str(), "443");
+    _asio->init( _paramHandler.getParam<stringImpl>(_ID("serverAddress")).c_str(), "443");
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
 
@@ -77,19 +85,19 @@ bool NetworkScene::load(const stringImpl& name) {
 void NetworkScene::test(I64 btnGUID) {
     WorldPacket p(OPCodesEx::CMSG_PING);
     p << Time::ElapsedMilliseconds();
-    ASIOImpl::instance().sendPacket(p);
+    _asio->sendPacket(p);
 }
 
 void NetworkScene::connect(I64 btnGUID) {
     _GUI->modifyText(_ID("statusText"), "Connecting to server ...");
-    ASIOImpl::instance().connect(_paramHandler.getParam<stringImpl>(_ID("serverAddress")), "443");
+    _asio->connect(_paramHandler.getParam<stringImpl>(_ID("serverAddress")), "443");
 }
 
 void NetworkScene::disconnect(I64 btnGUID) {
-    if (!ASIOImpl::instance().isConnected()) {
+    if (!_asio->isConnected()) {
         _GUI->modifyText(_ID("statusText"), "Disconnecting to server ...");
     }
-    ASIOImpl::instance().disconnect();
+    _asio->disconnect();
 }
 
 bool NetworkScene::loadResources(bool continueOnErrors) {

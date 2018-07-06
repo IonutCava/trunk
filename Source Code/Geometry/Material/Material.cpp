@@ -20,8 +20,10 @@ namespace {
     const char* g_PassThroughMaterialShaderName = "passThrough";
 };
 
-Material::Material(const stringImpl& name)
+Material::Material(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
     : Resource(ResourceType::DEFAULT, name),
+      _context(context),
+      _parentCache(parentCache),
       _parallaxFactor(1.0f),
       _dirty(false),
       _doubleSided(false),
@@ -83,7 +85,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
                   "Material error: clone called without a valid name suffix!");
 
     const Material& base = *this;
-    Material_ptr cloneMat = CreateResource<Material>(ResourceDescriptor(getName() + nameSuffix));
+    Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(getName() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_translucencyCheck = base._translucencyCheck;
@@ -209,7 +211,7 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     // if we already had a shader assigned ...
     if (!info._shader.empty()) {
         // and we are trying to assign the same one again, return.
-        info._shaderRef = FindResourceImpl<ShaderProgram>(info._shader);
+        info._shaderRef = FindResourceImpl<ShaderProgram>(_parentCache, info._shader);
         if (info._shader.compare(shader) != 0) {
             Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shader.c_str(), shader.c_str());
         }
@@ -233,7 +235,7 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     queueElement._shaderData = &_shaderInfo[stageIndex];
     queueElement._shaderDescriptor = shaderDescriptor;
     
-    ShaderComputeQueue& shaderQueue = SceneManager::instance().shaderComputeQueue();
+    ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
     if (computeOnAdd) {
         shaderQueue.addToQueueFront(queueElement);
         shaderQueue.stepQueue();
@@ -245,9 +247,9 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
 void Material::clean() {
     if (_dirty && _dumpToFile) {
         updateTranslucency();
-#if !defined(DEBUG)
-        XML::dumpMaterial(*this);
-#endif
+        if (!Config::Build::IS_DEBUG_BUILD) {
+            XML::dumpMaterial(_context, *this);
+        }
         _dirty = false;
     }
 }
@@ -275,7 +277,7 @@ bool Material::canDraw(RenderStage renderStage) {
 void Material::updateReflectionIndex(I32 index) {
     _reflectionIndex = index;
     if (_reflectionIndex > -1) {
-        RenderTarget& reflectionTarget = GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION, index));
+        RenderTarget& reflectionTarget = _context.renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION, index));
         const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFLECTION, refTex);
     } else {
@@ -286,7 +288,7 @@ void Material::updateReflectionIndex(I32 index) {
 void Material::updateRefractionIndex(I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
-        RenderTarget& refractionTarget = GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION, index));
+        RenderTarget& refractionTarget = _context.renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION, index));
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFRACTION, refTex);
     } else {
@@ -344,7 +346,7 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
         }
     }
 
-    bool deferredPassShader = SceneManager::instance().getRenderer().getType() !=
+    bool deferredPassShader = _context.getRenderer().getType() !=
                               RendererType::RENDERER_TILED_FORWARD_SHADING;
     bool depthPassShader = renderStage == RenderStage::SHADOW ||
                            renderStage == RenderStage::Z_PRE_PASS;
@@ -494,7 +496,7 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 void Material::getTextureData(TextureDataContainer& textureData) {
     const U32 textureCount = to_const_uint(ShaderProgram::TextureUsage::COUNT);
 
-    if (!GFXDevice::instance().isDepthStage()) {
+    if (!_context.isDepthStage()) {
         getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
         getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);

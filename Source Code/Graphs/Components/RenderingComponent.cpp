@@ -16,9 +16,11 @@
 
 namespace Divide {
 
-RenderingComponent::RenderingComponent(Material_ptr materialInstance,
+RenderingComponent::RenderingComponent(GFXDevice& context,
+                                       Material_ptr materialInstance,
                                        SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
+      _context(context),
       _lodLevel(0),
       _drawOrder(0),
       _commandIndex(0),
@@ -57,25 +59,24 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
 
-    GFXDevice& gfx = GFXDevice::instance();
-    _boundingBoxPrimitive[0] = gfx.newIMP();
+    _boundingBoxPrimitive[0] = _context.newIMP();
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive[0]->stateHash(primitiveStateBlock.getHash());
     _boundingBoxPrimitive[0]->paused(true);
 
-    _boundingBoxPrimitive[1] = gfx.newIMP();
+    _boundingBoxPrimitive[1] = _context.newIMP();
     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.getName());
     _boundingBoxPrimitive[1]->stateHash(primitiveStateBlock.getHash());
     _boundingBoxPrimitive[1]->paused(true);
 
-    _boundingSpherePrimitive = gfx.newIMP();
+    _boundingSpherePrimitive = _context.newIMP();
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
     _boundingSpherePrimitive->stateHash(primitiveStateBlock.getHash());
     _boundingSpherePrimitive->paused(true);
 
     if (nodeSkinned) {
         primitiveStateBlock.setZRead(false);
-        _skeletonPrimitive = gfx.newIMP();
+        _skeletonPrimitive = _context.newIMP();
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
         _skeletonPrimitive->paused(true);
@@ -91,9 +92,9 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
         // Blue Z-axis
         _axisLines.push_back(
             Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
-        _axisGizmo = gfx.newIMP();
+        _axisGizmo = _context.newIMP();
         // Prepare it for line rendering
-        size_t noDepthStateBlock = gfx.getDefaultStateBlock(true);
+        size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
         RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
         _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
         _axisGizmo->stateHash(stateBlock.getHash());
@@ -353,7 +354,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
 /// Called after the current node was rendered
 void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut) {
     
-    if (renderStage != RenderStage::DISPLAY || GFXDevice::instance().isPrePass()) {
+    if (renderStage != RenderStage::DISPLAY || _context.isPrePass()) {
         return;
     }
 
@@ -638,14 +639,15 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     RenderTargetID reflectRTID(RenderTargetUsage::REFLECTION, reflectionIndex);
 
     if (_reflectionCallback) {
-        _reflectionCallback(_parentSGN, renderState, reflectRTID, reflectionIndex);
+        RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex);
+        _reflectionCallback(params);
     } else {
-        GFXDevice::instance().generateCubeMap(GFXDevice::instance().renderTarget(reflectRTID),
-                                              0,
-                                              camPos,
-                                              vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                              RenderStage::REFLECTION,
-                                              reflectionIndex);
+        _context.generateCubeMap(_context.renderTarget(reflectRTID),
+                                 0,
+                                 camPos,
+                                 vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
+                                 RenderStage::REFLECTION,
+                                 reflectionIndex);
     }
 
     return true;
@@ -686,10 +688,8 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     mat->updateRefractionIndex(refractionIndex);
 
-    _refractionCallback(_parentSGN,
-                        renderState,
-                        RenderTargetID(RenderTargetUsage::REFRACTION, refractionIndex),
-                        refractionIndex);
+    RenderCbkParams params(_context, _parentSGN, renderState, RenderTargetID(RenderTargetUsage::REFRACTION, refractionIndex), refractionIndex);
+    _refractionCallback(params);
 
     return true;
 }

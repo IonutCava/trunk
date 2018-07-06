@@ -66,13 +66,14 @@ class AnimationChannel {
     U32 _numScalingKeys;
 };
 
+class GFXDevice;
 class AnimEvaluator {
    public:
     AnimEvaluator();
     AnimEvaluator(const aiAnimation* pAnim, U32 idx);
     ~AnimEvaluator();
 
-    void evaluate(const D64 dt, Bone* skeleton);
+    void evaluate(const D64 dt, Bone* skeleton, bool rowMajor = false);
 
     I32 frameIndexAt(const D64 elapsedTime) const;
 
@@ -145,7 +146,7 @@ class AnimEvaluator {
         return _duration;
     }
 
-    bool initBuffers();
+    bool initBuffers(GFXDevice& context);
 
     static void save(const AnimEvaluator& evaluator, ByteBuffer& dataOut);
     static void load(AnimEvaluator& evaluator, ByteBuffer& dataIn);

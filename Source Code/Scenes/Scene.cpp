@@ -1,6 +1,7 @@
 #include "Headers/Scene.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 
 #include "Utility/Headers/XMLParser.h"
@@ -47,9 +48,11 @@ struct selectionQueueDistanceFrontToBack {
 };
 };
 
-Scene::Scene(PlatformContext& context, const stringImpl& name)
+Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
     : Resource(ResourceType::DEFAULT, name),
       _context(context),
+      _parent(parent),
+      _resCache(cache),
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
@@ -58,17 +61,17 @@ Scene::Scene(PlatformContext& context, const stringImpl& name)
 {
     _sceneTimer = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
-    _input = MemoryManager_NEW SceneInput(*this, _context._INPUT);
+    _input = MemoryManager_NEW SceneInput(*this, _context.input());
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
     _aiManager = MemoryManager_NEW AI::AIManager(*this);
-    _lightPool = MemoryManager_NEW LightPool(*this, _context._GFX);
+    _lightPool = MemoryManager_NEW LightPool(*this, _context.gfx());
     _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
 
     _GUI = MemoryManager_NEW SceneGUIElements(*this, _context.gui());
 
     if (Config::Build::IS_DEBUG_BUILD) {
         RenderStateBlock primitiveDescriptor;
-        _linesPrimitive = _context._GFX.newIMP();
+        _linesPrimitive = _context.gfx().newIMP();
         _linesPrimitive->name("LinesRayPick");
         _linesPrimitive->stateHash(primitiveDescriptor.getHash());
         _linesPrimitive->paused(true);
@@ -126,7 +129,7 @@ bool Scene::idle() {  // Called when application is idle
         ParamHandler::instance().getParam<bool>(_ID("mesh.playAnimations"), true));
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
-        if (_context._GFX.getFrameCount() > 1) {
+        if (_context.gfx().getFrameCount() > 1) {
             _sceneGraph->getRoot().get<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
@@ -147,7 +150,7 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
     music.setFlag(true);
     hashAlg::emplace(state().music(type),
                      _ID_RT(name),
-                     CreateResource<AudioDescriptor>(music));
+                     CreateResource<AudioDescriptor>(_resCache, music));
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data) {
@@ -181,7 +184,7 @@ bool Scene::loadModel(const FileData& data) {
     ResourceDescriptor model(data.ModelName);
     model.setResourceLocation(data.ModelName);
     model.setFlag(true);
-    Mesh_ptr thisObj = CreateResource<Mesh>(model);
+    Mesh_ptr thisObj = CreateResource<Mesh>(_resCache, model);
     if (!thisObj) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")),
                          data.ModelName.c_str());
@@ -224,9 +227,9 @@ bool Scene::loadGeometry(const FileData& data) {
     item.setResourceLocation(data.ModelName);
     if (data.ModelName.compare("Box3D") == 0) {
         item.setPropertyList(Util::StringFormat("%2.2f", data.data));
-        thisObj = CreateResource<Box3D>(item);
+        thisObj = CreateResource<Box3D>(_resCache, item);
     } else if (data.ModelName.compare("Sphere3D") == 0) {
-        thisObj = CreateResource<Sphere3D>(item);
+        thisObj = CreateResource<Sphere3D>(_resCache, item);
         static_cast<Sphere3D*>(thisObj.get())->setRadius(data.data);
     } else if (data.ModelName.compare("Quad3D") == 0) {
         vec3<F32> scale = data.scale;
@@ -235,7 +238,7 @@ bool Scene::loadGeometry(const FileData& data) {
         quadMask.i = 0;
         quadMask.b[0] = 1;
         item.setBoolMask(quadMask);
-        thisObj = CreateResource<Quad3D>(item);
+        thisObj = CreateResource<Quad3D>(_resCache, item);
         static_cast<Quad3D*>(thisObj.get())
             ->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
         static_cast<Quad3D*>(thisObj.get())
@@ -248,7 +251,7 @@ bool Scene::loadGeometry(const FileData& data) {
         /// set font file
         item.setResourceLocation(data.data3);
         item.setPropertyList(data.data2);
-        thisObj = CreateResource<Text3D>(item);
+        thisObj = CreateResource<Text3D>(_resCache, item);
         static_cast<Text3D*>(thisObj.get())->setWidth(data.data);
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")),
@@ -259,7 +262,7 @@ bool Scene::loadGeometry(const FileData& data) {
     Material_ptr tempMaterial = nullptr; /* = XML::loadMaterial(data.ItemName + "_material")*/;
     if (!tempMaterial) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
-        tempMaterial = CreateResource<Material>(materialDescriptor);
+        tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
         tempMaterial->setDiffuse(data.colour);
         tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     }
@@ -298,7 +301,7 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                   "Scene::addParticleEmitter error: invalid name specified!");
 
     ResourceDescriptor particleEmitter(name);
-    std::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(particleEmitter);
+    std::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(_resCache, particleEmitter);
 
     DIVIDE_ASSERT(emitter != nullptr,
                   "Scene::addParticleEmitter error: Could not instantiate emitter!");
@@ -339,7 +342,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 
     defaultLight.setEnumValue(to_uint(type));
     defaultLight.setUserPtr(_lightPool);
-    std::shared_ptr<Light> light = CreateResource<Light>(defaultLight);
+    std::shared_ptr<Light> light = CreateResource<Light>(_resCache, defaultLight);
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
     }
@@ -356,7 +359,7 @@ void Scene::toggleFlashlight() {
         ResourceDescriptor tempLightDesc("MainFlashlight");
         tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool);
-        std::shared_ptr<Light> tempLight = CreateResource<Light>(tempLightDesc);
+        std::shared_ptr<Light> tempLight = CreateResource<Light>(_resCache, tempLightDesc);
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
@@ -371,7 +374,7 @@ SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("Default Sky");
     skyDescriptor.setID(to_uint(std::floor(Camera::activeCamera()->getZPlanes().y * 2)));
 
-    std::shared_ptr<Sky> skyItem = CreateResource<Sky>(skyDescriptor);
+    std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
 
     static const U32 normalMask = 
@@ -410,8 +413,8 @@ U16 Scene::registerInputActions() {
             cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
         }
     };
-    auto increaseResolution = [this](InputParams param) {_context._GFX.increaseResolution();};
-    auto decreaseResolution = [this](InputParams param) {_context._GFX.decreaseResolution();};
+    auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
+    auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
     auto moveForward = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::POSITIVE);};
     auto moveBackwards = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NEGATIVE);};
     auto stopMoveFWDBCK = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NONE);};
@@ -455,13 +458,13 @@ U16 Scene::registerInputActions() {
     auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_AABB);};
     auto toggleShadowMapDepthBufferPreview = [this](InputParams param) {
         ParamHandler& par = ParamHandler::instance();
-        LightPool::togglePreviewShadowMaps(_context._GFX);
+        LightPool::togglePreviewShadowMaps(_context.gfx());
         par.setParam<bool>(
             _ID("rendering.previewDepthBuffer"),
             !par.getParam<bool>(_ID("rendering.previewDepthBuffer"), false));
     };
-    auto takeScreenshot = [this](InputParams param) { _context._GFX.Screenshot("screenshot_"); };
-    auto toggleFullScreen = [this](InputParams param) { _context._GFX.toggleFullScreen(); };
+    auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
+    auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
     auto toggleFlashLight = [this](InputParams param) {toggleFlashlight(); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(); };
@@ -471,7 +474,7 @@ U16 Scene::registerInputActions() {
         state().angleLR(SceneState::MoveDirection::NONE);
         state().angleUD(SceneState::MoveDirection::NONE);
     };
-    auto rendererDebugView = [](InputParams param) {SceneManager::instance().getRenderer().toggleDebugView();};
+    auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
     auto shutdown = [](InputParams param) {Application::instance().RequestShutdown();};
     auto povNavigation = [this](InputParams param) {
         if (param._var[0] & OIS::Pov::North) {  // Going up
@@ -496,7 +499,7 @@ U16 Scene::registerInputActions() {
         I32 axis = param._var[2];
         Input::Joystick joystick = static_cast<Input::Joystick>(param._var[3]);
 
-        Input::JoystickInterface* joyInterface = _context._INPUT.getJoystickInterface();
+        Input::JoystickInterface* joyInterface = _context.input().getJoystickInterface();
         
         const Input::JoystickData& joyData = joyInterface->getJoystickData(joystick);
         I32 deadZone = joyData._deadZone;
@@ -613,7 +616,7 @@ bool Scene::load(const stringImpl& name) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             terrain.setPropertyDescriptor(*terrainInfo);
-            std::shared_ptr<Terrain> temp = CreateResource<Terrain>(terrain);
+            std::shared_ptr<Terrain> temp = CreateResource<Terrain>(_resCache, terrain);
 
             SceneGraphNode_ptr terrainTemp = root.addNode(temp, normalMask, PhysicsGroup::GROUP_STATIC);
             terrainTemp->setActive(terrainInfo->getActive());
@@ -659,7 +662,7 @@ bool Scene::unload() {
     /// Destroy physics (:D)
     _pxScene->release();
     MemoryManager::DELETE(_pxScene);
-    _context._PFX.setPhysicsScene(nullptr);
+    _context.pfx().setPhysicsScene(nullptr);
     clearObjects();
     _loadComplete = false;
     return true;
@@ -691,21 +694,21 @@ void Scene::rebuildShaders() {
 }
 
 void Scene::onSetActive() {
-    _context._PFX.setPhysicsScene(_pxScene);
+    _context.pfx().setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
 
-    _context._SFX.stopMusic();
-    _context._SFX.dumpPlaylists();
+    _context.sfx().stopMusic();
+    _context.sfx().dumpPlaylists();
 
     for (U32 i = 0; i < to_const_uint(MusicType::COUNT); ++i) {
         const SceneState::MusicPlaylist& playlist = state().music(static_cast<MusicType>(i));
         if (!playlist.empty()) {
             for (const SceneState::MusicPlaylist::value_type& song : playlist) {
-                _context._SFX.addMusic(i, song.second);
+                _context.sfx().addMusic(i, song.second);
             }
         }
     }
-    _context._SFX.playMusic(0);
+    _context.sfx().playMusic(0);
 }
 
 void Scene::onRemoveActive() {
@@ -714,7 +717,7 @@ void Scene::onRemoveActive() {
 
 bool Scene::loadPhysics(bool continueOnErrors) {
     if (_pxScene == nullptr) {
-        _pxScene = _context._PFX.NewSceneInterface(*this);
+        _pxScene = _context.pfx().NewSceneInterface(*this);
         _pxScene->init();
     }
 
@@ -856,7 +859,7 @@ void Scene::processTasks(const U64 deltaTime) {
 }
 
 void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
-    if (stage != RenderStage::DISPLAY || _context._GFX.isPrePass()) {
+    if (stage != RenderStage::DISPLAY || _context.gfx().isPrePass()) {
         return;
     }
 
@@ -884,7 +887,7 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPa
             if (regionCount > primitiveCount) {
                 size_t diff = regionCount - primitiveCount;
                 for (size_t i = 0; i < diff; ++i) {
-                    _octreePrimitives.push_back(_context._GFX.newIMP());
+                    _octreePrimitives.push_back(_context.gfx().newIMP());
                 }
             }
 
@@ -910,7 +913,7 @@ bool Scene::checkCameraUnderwater() const {
     const Camera& crtCamera = *Camera::activeCamera();
     const vec3<F32>& eyePos = crtCamera.getEye();
 
-    RenderPassCuller::VisibleNodeList& nodes = SceneManager::instance().getVisibleNodesCache(RenderStage::DISPLAY);
+    RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
     for (RenderPassCuller::VisibleNode& node : nodes) {
         SceneGraphNode_cptr nodePtr = node.second.lock();
         if (nodePtr) {
@@ -935,13 +938,13 @@ void Scene::findHoverTarget() {
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = displaySize.height - to_float(mousePos.y) - 1;
 
-    const vec4<I32>& viewport = _context._GFX.getCurrentViewport();
+    const vec4<I32>& viewport = _context.gfx().getCurrentViewport();
     vec3<F32> startRay = crtCamera.unProject(mouseX, mouseY, 0.0f, viewport);
     vec3<F32> endRay = crtCamera.unProject(mouseX, mouseY, 1.0f, viewport);
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)
-    RenderPassCuller::VisibleNodeList& nodes = SceneManager::instance().getVisibleNodesCache(RenderStage::DISPLAY);
+    RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
 
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));

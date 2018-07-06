@@ -98,7 +98,7 @@ class Scene : public Resource {
     static bool onShutdown();
 
    public:
-    explicit Scene(PlatformContext& context, const stringImpl& name);
+    explicit Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
     virtual ~Scene();
 
     /**Begin scene logic loop*/
@@ -163,6 +163,13 @@ class Scene : public Resource {
 
     inline AI::AIManager& aiManager() { return *_aiManager; }
     inline const AI::AIManager& aiManager() const { return *_aiManager; }
+
+    inline PlatformContext& platformContext() { return _context; }
+    inline const PlatformContext& platformContext() const { return _context; }
+
+
+    inline ResourceCache& resourceCache() { return _resCache; }
+    inline const ResourceCache& resourceCache() const { return _resCache; }
 
    protected:
     virtual void rebuildShaders();
@@ -240,6 +247,8 @@ class Scene : public Resource {
 
    protected:
        /// Global info
+       SceneManager& _parent;
+       ResourceCache& _resCache;
        PlatformContext& _context;
        ParamHandler&  _paramHandler;
        SceneGraph*    _sceneGraph;

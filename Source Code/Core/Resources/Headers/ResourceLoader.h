@@ -40,27 +40,41 @@ namespace Divide {
 class Resource;
 // Used to delete resources
 struct DeleteResource {
+    DeleteResource(ResourceCache& context)
+        : _context(context)
+    {
+    }
+
     void operator()(Resource* res);
+
+    ResourceCache& _context;
 };
 
+class PlatformContext;
 class NOINITVTABLE ResourceLoader : private NonCopyable {
    public:
-    ResourceLoader(const ResourceDescriptor& descriptor)
-        : _descriptor(descriptor) 
+    ResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor)
+        : _cache(cache),
+          _context(context),
+          _descriptor(descriptor) 
     {
     }
 
     virtual Resource_ptr operator()() = 0;
 
    protected:
+    ResourceCache& _cache;
+    PlatformContext& _context;
     ResourceDescriptor _descriptor;
 };
 
 template <typename ResourceType>
 class ImplResourceLoader : public ResourceLoader {
    public:
-    ImplResourceLoader(const ResourceDescriptor& descriptor)
-        : ResourceLoader(descriptor) {}
+    ImplResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor)
+        : ResourceLoader(cache, context, descriptor)
+    {
+    }
 
     Resource_ptr operator()();
 

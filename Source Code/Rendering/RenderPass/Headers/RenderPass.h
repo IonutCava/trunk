@@ -44,6 +44,7 @@ namespace Time {
 class SceneGraph;
 class ShaderBuffer;
 class SceneRenderState;
+class RenderPassManager;
 enum class RenderStage : U32;
 
 // A RenderPass may contain multiple linked stages.
@@ -72,7 +73,7 @@ class RenderPass : private NonCopyable {
 
    public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
-    RenderPass(GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags);
+    explicit RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags);
     ~RenderPass();
 
     void generateDrawCommands();
@@ -90,6 +91,7 @@ class RenderPass : private NonCopyable {
     U32 getBufferCountForStage(RenderStage stages) const;
 
    private:
+    RenderPassManager& _parent;
     GFXDevice& _context;
     U8 _sortKey;
     stringImpl _name;

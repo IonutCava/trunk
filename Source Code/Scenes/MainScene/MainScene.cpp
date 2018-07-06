@@ -1,6 +1,7 @@
 #include "Headers/MainScene.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -12,8 +13,8 @@
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 namespace Divide {
-MainScene::MainScene(PlatformContext& context, const stringImpl& name)
-   : Scene(context, name),
+MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+   : Scene(context, cache, parent, name),
     _water(nullptr),
     _beep(nullptr),
     _freeflyCamera(false),
@@ -91,7 +92,8 @@ void MainScene::processGUI(const U64 deltaTime) {
                                              state().waterLevel()));
         _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                                            GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
+                                            _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
+                                            _context.gfx().getLastCullCount()));
         _guiTimers[0] = 0.0;
     }
 
@@ -151,7 +153,7 @@ bool MainScene::load(const stringImpl& name) {
 
     /*ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setID(to_uint(renderState().getCameraConst().getZPlanes().y));
-    _water = CreateResource<WaterPlane>(infiniteWater);
+    _water = CreateResource<WaterPlane>(_resCache, infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
     _waterGraphNode = _sceneGraph->getRoot().addNode(_water, normalMask);
@@ -176,7 +178,7 @@ U16 MainScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
 
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {_context._SFX.playSound(_beep);});
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {_context.sfx().playSound(_beep);});
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_X, actions);
     actionID++;
@@ -188,10 +190,10 @@ U16 MainScene::registerInputActions() {
             SceneState::MusicPlaylist::const_iterator it;
             it = state().music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
             if (it != std::cend(state().music(MusicType::TYPE_BACKGROUND))) {
-                _context._SFX.playMusic(it->second);
+                _context.sfx().playMusic(it->second);
             }
         } else {
-            _context._SFX.stopMusic();
+            _context.sfx().stopMusic();
         }
     });
     actions._onReleaseAction = actionID;
@@ -218,8 +220,8 @@ U16 MainScene::registerInputActions() {
 }
 
 bool MainScene::unload() {
-    _context._SFX.stopMusic();
-    _context._SFX.stopAllSounds();
+    _context.sfx().stopMusic();
+    _context.sfx().stopAllSounds();
 
     return Scene::unload();
 }
@@ -289,7 +291,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
         _paramHandler.getParam<stringImpl>(_ID("assetsLocation")) +
         "/sounds/beep.wav");
     beepSound.setFlag(false);
-    _beep = CreateResource<AudioDescriptor>(beepSound);
+    _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
 
     return true;
 }

@@ -43,7 +43,7 @@ class ShaderProgram;
 
 class WaterPlane : public SceneNode {
    public:
-    explicit WaterPlane(const stringImpl& name, I32 sideLength);
+    explicit WaterPlane(ResourceCache& parentCache, const stringImpl& name, I32 sideLength);
     ~WaterPlane();
 
     /// Resource inherited "unload"
@@ -86,14 +86,9 @@ class WaterPlane : public SceneNode {
 
    private:
     void updateBoundsInternal(SceneGraphNode& sgn) override;
-    void updateReflection(const SceneGraphNode& sgn,
-                          const SceneRenderState& sceneRenderState,
-                          const RenderTargetID& renderTarget,
-                          U32 passIndex);
-    void updateRefraction(const SceneGraphNode& sgn,
-                          const SceneRenderState& sceneRenderState,
-                          const RenderTargetID& renderTarget,
-                          U32 passIndex);
+    void updateReflection(RenderCbkParams& renderParams);
+    void updateRefraction(RenderCbkParams& renderParams);
+
    private:
     /// cached far plane value
     I32 _sideLength;

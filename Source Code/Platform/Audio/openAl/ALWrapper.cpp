@@ -5,12 +5,14 @@
 
 namespace Divide {
 
-ErrorCode OpenAL_API::initAudioAPI() {
+ErrorCode OpenAL_API::initAudioAPI(PlatformContext& context) {
+    ACKNOWLEDGE_UNUSED(context);
+
     // Initialization
     ALCdevice* device = alcOpenDevice(NULL);  // select the "preferred device"
     if (device) {
-        ALCcontext* context = alcCreateContext(device, NULL);
-        alcMakeContextCurrent(context);
+        ALCcontext* alContext = alcCreateContext(device, NULL);
+        alcMakeContextCurrent(alContext);
     }
     // Check for EAX 2.0 support
     // ALboolean g_bEAX = alIsExtensionPresent("EAX2.0");

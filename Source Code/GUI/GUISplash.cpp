@@ -1,5 +1,6 @@
 #include "Headers/GUISplash.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
@@ -9,7 +10,8 @@
 
 namespace Divide {
 
-GUISplash::GUISplash(const stringImpl& splashImageName,
+GUISplash::GUISplash(ResourceCache& cache,
+                     const stringImpl& splashImageName,
                      const vec2<U16>& dimensions) 
     : _dimensions(dimensions)
 {
@@ -27,10 +29,10 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
                            splashImageName.c_str());
     splashImage.setResourceLocation(splashImageLocation);
     splashImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-    _splashImage = CreateResource<Texture>(splashImage);
+    _splashImage = CreateResource<Texture>(cache, splashImage);
     ResourceDescriptor splashShader("fbPreview");
     splashShader.setThreadedLoading(false);
-    _splashShader = CreateResource<ShaderProgram>(splashShader);
+    _splashShader = CreateResource<ShaderProgram>(cache, splashShader);
 }
 
 GUISplash::~GUISplash()
@@ -38,7 +40,7 @@ GUISplash::~GUISplash()
 }
 
 void GUISplash::render(GFXDevice& context) {
-    GFX::ScopedViewport splashViewport(vec4<I32>(0, 0, _dimensions.width, _dimensions.height));
+    GFX::ScopedViewport splashViewport(context, vec4<I32>(0, 0, _dimensions.width, _dimensions.height));
     _splashImage->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
 
 

@@ -52,12 +52,17 @@ namespace Attorney {
 class ScenePool;
 class SceneShaderData;
 class ShaderComputeQueue;
-DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
+class SceneManager : public FrameListener,
+                     public Input::InputAggregatorInterface,
+                     public KernelComponent {
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
-  public:
+public:
     static bool onStartup();
     static bool onShutdown();
+
+    explicit SceneManager(Kernel& parentKernel);
+    ~SceneManager();
 
     void idle();
 
@@ -68,15 +73,10 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
 
     void setActiveScene(Scene* const scene);
 
-    bool init(PlatformContext& platformContext);
+    bool init(PlatformContext& platformContext, ResourceCache& cache);
+    void destroy();
 
     /*Base Scene Operations*/
-    Renderer& getRenderer() const;
-    void setRenderer(RendererType rendererType);
-
-    ShaderComputeQueue& shaderComputeQueue();
-    const ShaderComputeQueue& shaderComputeQueue() const;
-
     // generate a list of nodes to render
     void updateVisibleNodes(RenderStage stage, bool refreshNodeData, bool isPrePass, U32 pass = 0);
 
@@ -114,12 +114,12 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
 
     template <typename T, class Factory>
-    bool register_new_ptr(Factory& factory, BOOST_DEDUCED_TYPENAME Factory::id_param_type id) { 
+    bool register_new_ptr(Factory& factory, BOOST_DEDUCED_TYPENAME Factory::id_param_type id) {
         return factory.register_creator(id, new_ptr<T>());
     }
 
-  public:  /// Input
-    /// Key pressed
+public:  /// Input
+  /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
     /// Key released
     bool onKeyUp(const Input::KeyEvent& key);
@@ -129,30 +129,30 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
     /// Joystick button pressed
     bool joystickButtonPressed(const Input::JoystickEvent& arg,
-                               Input::JoystickButton button);
+        Input::JoystickButton button);
     /// Joystick button released
     bool joystickButtonReleased(const Input::JoystickEvent& arg,
-                                Input::JoystickButton button);
+        Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
     bool joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index);
     /// Mouse moved
     bool mouseMoved(const Input::MouseEvent& arg);
     /// Mouse button pressed
     bool mouseButtonPressed(const Input::MouseEvent& arg,
-                            Input::MouseButton button);
+        Input::MouseButton button);
     /// Mouse button released
     bool mouseButtonReleased(const Input::MouseEvent& arg,
-                             Input::MouseButton button);
+        Input::MouseButton button);
 
     bool switchScene(const stringImpl& name, bool unloadPrevious, bool threaded = true);
 
-  protected:
+protected:
     friend class ScenePool;
     void initPostLoadState();
     Scene* load(stringImpl name);
     bool   unloadScene(Scene* scene);
 
-  protected:
+protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
     void onCameraUpdate(const Camera& camera);
@@ -160,32 +160,26 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     void postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
     bool populateRenderQueue(RenderStage stage,
-                             bool doCulling,
-                             U32 passIndex);
+        bool doCulling,
+        U32 passIndex);
     Camera* getDefaultCamera() const;
-  private:
-    SceneManager();
-    ~SceneManager();
-
-  private:
+    
+private:
     bool _init;
     bool _processInput;
     /// Pointer to the hardware objects
     PlatformContext* _platformContext;
+    /// Pointer to the general purpose resource cache
+    ResourceCache*  _resourceCache;
     /// Pointer to the scene graph culler that's used to determine what nodes are
     /// visible in the current frame
     RenderPassCuller* _renderPassCuller;
-    /// Pointer to the render pass manager
-    RenderPassManager* _renderPassManager;
-    /// Pointer to a shader creation queue
-    ShaderComputeQueue* _shaderComputeQueue;
 
     ScenePool* _scenePool;
     SceneShaderData* _sceneData;
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
     U64 _saveTimer;
-    Renderer* _renderer;
     Material_ptr _defaultMaterial;
     RenderPassCuller::VisibleNodeList _tempNodesCache;
 
@@ -195,9 +189,9 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     struct SwitchSceneTarget {
         SwitchSceneTarget()
             : _targetSceneName(""),
-              _unloadPreviousScene(true),
-              _loadInSeparateThread(true),
-              _isSet(false)
+            _unloadPreviousScene(true),
+            _loadInSeparateThread(true),
+            _isSet(false)
         {
         }
 
@@ -213,8 +207,8 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
         }
 
         inline void set(const stringImpl& targetSceneName,
-                        bool unloadPreviousScene,
-                        bool loadInSeparateThread) {
+            bool unloadPreviousScene,
+            bool loadInSeparateThread) {
             _targetSceneName = targetSceneName;
             _unloadPreviousScene = unloadPreviousScene;
             _loadInSeparateThread = loadInSeparateThread;
@@ -233,24 +227,24 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
             return _loadInSeparateThread;
         }
 
-     private:
+    private:
         stringImpl _targetSceneName;
         bool _unloadPreviousScene;
         bool _loadInSeparateThread;
         bool _isSet;
     } _sceneSwitchTarget;
 
-END_SINGLETON
+};
 
 namespace Attorney {
 class SceneManagerKernel {
    private:
-    static void initPostLoadState() {
-        Divide::SceneManager::instance().initPostLoadState();
+    static void initPostLoadState(Divide::SceneManager& manager) {
+        manager.initPostLoadState();
     }
 
-    static void onCameraUpdate(const Camera& camera) {
-        Divide::SceneManager::instance().onCameraUpdate(camera);
+    static void onCameraUpdate(Divide::SceneManager& manager, const Camera& camera) {
+        manager.onCameraUpdate(camera);
     }
 
     friend class Divide::Kernel;

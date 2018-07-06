@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 
 namespace Divide {
+    class PlatformContext;
     class ByteBuffer;
     class VertexBuffer;
     namespace Import {
@@ -110,8 +111,8 @@ namespace Divide {
             }
             ~ImportData();
 
-            bool saveToFile(const stringImpl& fileName);
-            bool loadFromFile(const stringImpl& fileName);
+            bool saveToFile(PlatformContext& context, const stringImpl& fileName);
+            bool loadFromFile(PlatformContext& context, const stringImpl& fileName);
 
             // Was it loaded from file, or just created?
             bool _loadedFromFile;
@@ -137,11 +138,11 @@ namespace Divide {
 
     DEFINE_SINGLETON(MeshImporter)
         public:
-            bool loadMeshDataFromFile(Import::ImportData& dataOut);
-            Mesh_ptr loadMesh(const stringImpl& name, const Import::ImportData& dataIn);
+            bool loadMeshDataFromFile(PlatformContext& context, ResourceCache& cache, Import::ImportData& dataOut);
+            Mesh_ptr loadMesh(PlatformContext& context, ResourceCache& cache, const stringImpl& name, const Import::ImportData& dataIn);
 
         protected:
-            Material_ptr loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned);
+            Material_ptr loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned);
     END_SINGLETON
 
 };  // namespace Divide

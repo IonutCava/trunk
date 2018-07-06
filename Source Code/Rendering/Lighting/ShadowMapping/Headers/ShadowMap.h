@@ -56,11 +56,11 @@ class SceneRenderState;
 /// All the information needed for a single light's shadowmap
 class NOINITVTABLE ShadowMap {
    public:
-    ShadowMap(Light* light, Camera* shadowCamera, ShadowType type);
+    explicit ShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera, ShadowType type);
     virtual ~ShadowMap();
 
     /// Render the scene and save the frame to the shadow map
-    virtual void render(U32 passIdx) = 0;
+    virtual void render(GFXDevice& context, U32 passIdx) = 0;
     /// Get the current shadow mapping tehnique
     inline ShadowType getShadowMapType() const { return _shadowMapType; }
 
@@ -72,7 +72,7 @@ class NOINITVTABLE ShadowMap {
     }
 
     virtual void init(ShadowMapInfo* const smi) = 0;
-    virtual void previewShadowMaps(U32 rowIndex) = 0;
+    virtual void previewShadowMaps(GFXDevice& context, U32 rowIndex) = 0;
 
     static void resetShadowMaps(GFXDevice& context);
     static void initShadowMaps(GFXDevice& context);
@@ -86,9 +86,11 @@ class NOINITVTABLE ShadowMap {
     vec4<I32> getViewportForRow(U32 rowIndex) const;
 
    protected:
+    GFXDevice& _context;
+
     typedef std::array<bool, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LayerUsageMask;
     static std::array<LayerUsageMask, to_const_uint(ShadowType::COUNT)> _depthMapUsage;
-
+    
     ShadowType _shadowMapType;
     U32 _arrayOffset;
     /// Internal pointer to the parent light
@@ -105,7 +107,7 @@ class ShadowMapInfo {
 
     inline ShadowMap* getShadowMap() { return _shadowMap; }
 
-    ShadowMap* createShadowMap(const SceneRenderState& sceneRenderState, Camera* shadowCamera);
+    ShadowMap* createShadowMap(GFXDevice& context, const SceneRenderState& sceneRenderState, Camera* shadowCamera);
 
     inline U8 numLayers() const { return _numLayers; }
 

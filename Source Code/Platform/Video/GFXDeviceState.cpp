@@ -7,6 +7,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+#include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Headers/EnvironmentProbe.h"
@@ -19,6 +20,8 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+
+#include "Geometry/Material/Headers/ShaderComputeQueue.h"
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Direct3D/Headers/DXWrapper.h"
@@ -69,9 +72,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         }
     }
 
+    ResourceCache& cache = parent().resourceCache();
+
     // Initialize the shader manager
-    ShaderProgram::onStartup();
-    EnvironmentProbe::onStartup();
+    ShaderProgram::onStartup(cache);
+    EnvironmentProbe::onStartup(*this);
     PostFX::createInstance();
     // Create a shader buffer to store the following info:
     // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
@@ -80,6 +85,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _gfxDataBuffer = newSB(1, false, false, BufferUpdateFrequency::OFTEN);
     _gfxDataBuffer->create(1, sizeof(GPUBlock));
     _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
+
+    _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
     // Utility cameras
     _2DCamera = Camera::createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
@@ -213,9 +220,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
-    _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
-    _HIZCullProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
-    _displayShader = CreateResource<ShaderProgram>(ResourceDescriptor("display"));
+    _HIZConstructProgram = CreateResource<ShaderProgram>(cache, ResourceDescriptor("HiZConstruct"));
+    _HIZCullProgram = CreateResource<ShaderProgram>(cache, ResourceDescriptor("HiZOcclusionCull"));
+    _displayShader = CreateResource<ShaderProgram>(cache, ResourceDescriptor("display"));
 
     ParamHandler& par = ParamHandler::instance();
     PostFX& postFX = PostFX::instance();
@@ -233,7 +240,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     par.setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system
-    postFX.init(*this);
+    postFX.init(*this, cache);
     bool enablePostAA = par.getParam<I32>(_ID("rendering.PostAASamples"), 0) > 0;
     bool enableSSR = false;
     bool enableSSAO = par.getParam<bool>(_ID("postProcessing.enableSSAO"), false);
@@ -275,7 +282,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     ResourceDescriptor previewNormalsShader("fbPreview");
     previewNormalsShader.setThreadedLoading(false);
-    _renderTargetDraw = CreateResource<ShaderProgram>(previewNormalsShader);
+    _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
     assert(_renderTargetDraw != nullptr);
 
     // Create initial buffers, cameras etc for this resolution. It should match window size
@@ -303,9 +310,7 @@ void GFXDevice::closeRenderingAPI() {
     RenderStateBlock::clear();
     _gfxDataBuffer->destroy();
 
-    EnvironmentProbe::onShutdown();
-    // Destroy all rendering passes and rendering bins
-    RenderPassManager::destroyInstance();
+    EnvironmentProbe::onShutdown(*this);
     _rtPool.clear();
 
     _previewDepthMapShader = nullptr;
@@ -314,31 +319,18 @@ void GFXDevice::closeRenderingAPI() {
     _HIZCullProgram = nullptr;
     _displayShader = nullptr;
 
+    MemoryManager::DELETE(_renderer);
+
     // Close the shader manager
+    MemoryManager::DELETE(_shaderComputeQueue);
     ShaderProgram::onShutdown();
     _gpuObjectArena.clear();
     // Close the rendering API
     _api->closeRenderingAPI();
-
+    _api.release();
     if (_graphicResources > 0) {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), (I32)_graphicResources);
     }
-
-    switch (_API_ID) {
-        case RenderAPI::OpenGL:
-        case RenderAPI::OpenGLES: {
-            GL_API::destroyInstance();
-        } break;
-        case RenderAPI::Direct3D: {
-            DX_API::destroyInstance();
-        } break;
-        case RenderAPI::Vulkan: {
-        } break;
-        case RenderAPI::None: {
-        } break;
-        default: { 
-        } break;
-    };
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
@@ -348,6 +340,7 @@ void GFXDevice::idle() {
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::instance().getParam<F32>(_ID("rendering.zNear")),
         ParamHandler::instance().getParam<F32>(_ID("rendering.zFar"))));
+    _shaderComputeQueue->idle();
     // Pass the idle call to the post processing system
     PostFX::instance().idle();
     // And to the shader manager
@@ -377,7 +370,7 @@ void GFXDevice::beginFrame() {
 void GFXDevice::endFrame(bool swapBuffers) {
     // Render all 2D debug info and call API specific flush function
     if (Application::instance().mainLoopActive()) {
-        GFX::Scoped2DRendering scoped2D;
+        GFX::Scoped2DRendering scoped2D(*this);
         ReadLock r_lock(_2DRenderQueueLock);
         for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
             callbackFunction.second.second();
@@ -408,10 +401,10 @@ ErrorCode GFXDevice::createAPIInstance() {
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            _api = &GL_API::instance();
+            _api = std::make_unique<GL_API>(*this);
         } break;
         case RenderAPI::Direct3D: {
-            _api = &DX_API::instance();
+            _api = std::make_unique<DX_API>(*this);
         } break;
 
         default:

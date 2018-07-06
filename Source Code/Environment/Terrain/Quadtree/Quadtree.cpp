@@ -25,25 +25,26 @@ void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     _root->sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Quadtree::getChunkBufferData(const SceneRenderState& sceneRenderState, 
+void Quadtree::getChunkBufferData(GFXDevice& context,
+                                  const SceneRenderState& sceneRenderState, 
                                   vectorImpl<vec3<U32>>& chunkBufferData) const {
     assert(_root);
     U32 options = to_const_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
-    if (GFXDevice::instance().getRenderStage() == RenderStage::REFLECTION) {
+    if (context.getRenderStage() == RenderStage::REFLECTION) {
         options |= to_const_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION);
-    } else if (GFXDevice::instance().getRenderStage() == RenderStage::SHADOW) {
+    } else if (context.getRenderStage() == RenderStage::SHADOW) {
         options |= to_const_uint(ChunkBit::CHUNK_BIT_SHADOWMAP);
     }
 
     _root->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
 }
 
-void Quadtree::drawBBox(GenericDrawCommands& commandsOut) {
+void Quadtree::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut) {
     assert(_root);
-    _root->drawBBox(commandsOut);
+    _root->drawBBox(context, commandsOut);
     
     if (!_bbPrimitive) {
-        _bbPrimitive = GFXDevice::instance().newIMP();
+        _bbPrimitive = context.newIMP();
         _bbPrimitive->name("QuadtreeBoundingBox");
         RenderStateBlock primitiveRenderState;
         _bbPrimitive->stateHash(primitiveRenderState.getHash());
@@ -76,12 +77,12 @@ QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {
     return node;
 }
 
-void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize,
+void Quadtree::Build(GFXDevice& context, BoundingBox& terrainBBox, const vec2<U32>& HMsize,
                      U32 minHMSize, Terrain* const terrain) {
     _root = MemoryManager_NEW QuadtreeNode();
     _root->setBoundingBox(terrainBBox);
 
-    _root->Build(0, vec2<U32>(0, 0), HMsize, minHMSize, terrain, _chunkCount);
+    _root->Build(context, 0, vec2<U32>(0, 0), HMsize, minHMSize, terrain, _chunkCount);
 
     // Generate index buffer
     const U32 terrainWidth = HMsize.x;

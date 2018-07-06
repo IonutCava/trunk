@@ -63,11 +63,11 @@ AnimEvaluator::~AnimEvaluator()
 {
 }
 
-bool AnimEvaluator::initBuffers() {
+bool AnimEvaluator::initBuffers(GFXDevice& context) {
     DIVIDE_ASSERT(_boneTransformBuffer == nullptr && !_transforms.empty(),
                   "AnimEvaluator error: can't create bone buffer at current stage!");
 
-    _boneTransformBuffer = GFXDevice::instance().newSB(1, true, false, BufferUpdateFrequency::ONCE);
+    _boneTransformBuffer = context.newSB(1, true, false, BufferUpdateFrequency::ONCE);
 
     DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
         "AnimEvaluator error: Too many bones for current node! "
@@ -121,7 +121,7 @@ I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const {
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
-void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
+void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton, bool rowMajor) {
     D64 pTime = dt * _ticksPerSecond;
 
     D64 time = 0.0f;
@@ -134,7 +134,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
     aiQuaternion presentRotation(1, 0, 0, 0);
     aiQuaternion presentRotationDefault(1, 0, 0, 0);
     aiVector3D presentScaling(1, 1, 1);
-    bool transposeMat = GFXDevice::instance().getAPI() == RenderAPI::Direct3D;
+    
     // calculate the transformations for each animation channel
     for (U32 a = 0; a < _channels.size(); a++) {
         
@@ -236,7 +236,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
         mat.a4  = presentPosition.x;
         mat.b4  = presentPosition.y;
         mat.c4  = presentPosition.z;
-        if (transposeMat) {
+        if (rowMajor) {
             mat.Transpose();
         }
     }

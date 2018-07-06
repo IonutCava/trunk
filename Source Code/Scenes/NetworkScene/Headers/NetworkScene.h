@@ -36,12 +36,11 @@
 
 namespace Divide {
 
+class ASIOImpl;
 class NetworkScene : public Scene {
    public:
-    explicit NetworkScene(PlatformContext& context, const stringImpl& name)
-        : Scene(context, name)
-    {
-    }
+    explicit NetworkScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
+    ~NetworkScene();
 
     bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);
@@ -57,6 +56,7 @@ class NetworkScene : public Scene {
     void checkPatches(I64 btnGUID);
 
    private:
+    std::unique_ptr<ASIOImpl> _asio;
     vec2<F32> _sunAngle;
     vec3<F32> _sunvector;
 };

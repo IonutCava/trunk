@@ -26,18 +26,18 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -261,6 +261,7 @@
     <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\PlatformContext.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp" />
@@ -335,6 +336,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\DeferredShadingRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\EnvironmentProbe.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Renderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\TiledForwardShadingRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp" />
@@ -381,8 +383,10 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\KernelComponent.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\WindowManager.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h" />

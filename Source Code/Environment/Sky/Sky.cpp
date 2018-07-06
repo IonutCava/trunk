@@ -10,8 +10,8 @@
 
 namespace Divide {
 
-Sky::Sky(const stringImpl& name, U32 diameter)
-    : SceneNode(name, SceneNodeType::TYPE_SKY),
+Sky::Sky(ResourceCache& parentCache, const stringImpl& name, U32 diameter)
+    : SceneNode(parentCache, name, SceneNodeType::TYPE_SKY),
       _sky(nullptr),
       _skyShader(nullptr),
       _skyShaderPrePass(nullptr),
@@ -56,7 +56,7 @@ bool Sky::load() {
         location + "skybox_5.jpg," + location + "skybox_6.jpg");
     skyboxTextures.setEnumValue(to_const_uint(TextureType::TEXTURE_CUBE_MAP));
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
-    _skybox = CreateResource<Texture>(skyboxTextures);
+    _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);
 
     F32 radius = _diameter * 0.5f;
 
@@ -64,14 +64,14 @@ bool Sky::load() {
     skybox.setFlag(true);  // no default material;
     skybox.setID(4); // resolution
     skybox.setEnumValue(to_uint(radius)); // radius
-    _sky = CreateResource<Sphere3D>(skybox);
+    _sky = CreateResource<Sphere3D>(_parentCache, skybox);
     _sky->renderState().setDrawState(false);
 
     ResourceDescriptor skyShaderDescriptor("sky.Display");
-    _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
+    _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky.PrePass");
-    _skyShaderPrePass = CreateResource<ShaderProgram>(skyShaderPrePassDescriptor);
+    _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);
     _skyShader->Uniform("enable_sun", true);

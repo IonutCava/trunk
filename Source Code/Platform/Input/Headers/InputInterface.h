@@ -34,6 +34,7 @@
 
 #include "EffectManager.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/KernelComponent.h"
 
 namespace Divide {
 namespace Input {
@@ -42,9 +43,12 @@ namespace Attorney {
     class InputInterfaceEvent;
 };
 //////////// Event handler class declaration ////////////////////////////////////////////////
-DEFINE_SINGLETON(InputInterface)
+class InputInterface : public KernelComponent {
     friend class Attorney::InputInterfaceEvent;
-  public:
+public:
+    explicit InputInterface(Kernel& parent);
+    ~InputInterface();
+
     ErrorCode init(Kernel& kernel, const vec2<U16>& inputAreaDimensions);
 
     U8 update(const U64 deltaTime);
@@ -55,8 +59,8 @@ DEFINE_SINGLETON(InputInterface)
     }
 
     inline void stop() { _bMustStop = true; }
-    inline JoystickInterface* getJoystickInterface() { 
-        return _pJoystickInterface; 
+    inline JoystickInterface* getJoystickInterface() {
+        return _pJoystickInterface;
     }
     inline EffectManager& getEffectManager() { return *_pEffectMgr; }
     inline OIS::Keyboard& getKeyboard() const { return *_pKeyboard; }
@@ -89,28 +93,10 @@ DEFINE_SINGLETON(InputInterface)
     InputState getMouseButtonState(MouseButton button) const;
     InputState getJoystickeButtonState(Input::Joystick device, JoystickButton button) const;
 
-  protected:
+protected:
     inline KeyEvent& getKeyRef(U32 index) { return _keys[index]; }
 
-  private:
-    InputInterface()
-        : _pInputInterface(nullptr),
-          _pEventHdlr(nullptr),
-          _pKeyboard(nullptr),
-          _pMouse(nullptr),
-          _pJoystickInterface(nullptr),
-          _pEffectMgr(nullptr),
-          _bMustStop(false),
-          _bIsInitialized(false)
-    {
-        for (U16 i = 0; i < KeyCode_PLACEHOLDER; ++i) {
-            _keys[i]._key = static_cast<KeyCode>(i);
-        }
-    }
-
-    ~InputInterface() { terminate(); }
-
-  protected:
+protected:
     OIS::InputManager* _pInputInterface;
     EventHandler* _pEventHdlr;
     OIS::Keyboard* _pKeyboard;
@@ -135,13 +121,12 @@ DEFINE_SINGLETON(InputInterface)
 
     KeyEvent _keys[KeyCode_PLACEHOLDER];
 
-END_SINGLETON
-
+};
 namespace Attorney {
     class InputInterfaceEvent {
     private:
-        static KeyEvent& getKeyRef(U32 index) {
-            return InputInterface::instance().getKeyRef(index);
+        static KeyEvent& getKeyRef(InputInterface& input, U32 index) {
+            return input.getKeyRef(index);
         }
 
         friend class Divide::Input::EventHandler;

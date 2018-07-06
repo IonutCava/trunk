@@ -53,6 +53,7 @@ namespace Attorney {
 void calculateBoneToWorldTransform(Bone* pInternalNode);
 class ByteBuffer;
 class MeshImporter;
+class PlatformContext;
 class SceneAnimator {
     friend class Attorney::SceneAnimatorMeshImporter;
    public:
@@ -65,11 +66,11 @@ class SceneAnimator {
     ~SceneAnimator();
 
     /// This must be called to fill the SceneAnimator with valid data
-    bool init(Bone* skeleton, const vectorImpl<Bone*>& bones);
+    bool init(PlatformContext& context, Bone* skeleton, const vectorImpl<Bone*>& bones);
     /// Frees all memory and initializes everything to a default state
     void release(bool releaseAnimations = true);
-    void save(ByteBuffer& dataOut) const;
-    void load(ByteBuffer& dataIn);
+    void save(PlatformContext& context, ByteBuffer& dataOut) const;
+    void load(PlatformContext& context, ByteBuffer& dataIn);
     /// Lets the caller know if there is a skeleton present
     inline bool hasSkeleton() const { return _skeleton != nullptr; }
     /// The next two functions are good if you want to change the direction of
@@ -198,15 +199,17 @@ class SceneAnimator {
     }
 
    private:
-    bool init();
+    bool init(PlatformContext& context);
     /// I/O operations
     void saveSkeleton(ByteBuffer& dataOut, Bone* pNode) const;
     Bone* loadSkeleton(ByteBuffer& dataIn, Bone* pNode);
 
     void updateTransforms(Bone* pNode);
     void calculate(I32 animationIndex, const D64 pTime);
-    I32 createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
-                       vectorImpl<Line>& lines);
+    I32 createSkeleton(Bone* piNode,
+                       const aiMatrix4x4& parent,
+                       vectorImpl<Line>& lines,
+                       bool rowMajor = false);
 
    private:
     /// Frame count of the longest registered animation

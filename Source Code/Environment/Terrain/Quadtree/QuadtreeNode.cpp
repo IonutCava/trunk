@@ -33,7 +33,7 @@ QuadtreeNode::~QuadtreeNode()
     MemoryManager::DELETE(_children[to_const_uint(ChildPosition::CHILD_SE)]);
 }
 
-void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos,
+void QuadtreeNode::Build(GFXDevice& context, U8 depth, const vec2<U32>& pos,
                          const vec2<U32>& HMsize, U32 minHMSize,
                          Terrain* const terrain, U32& chunkCount) {
     _LOD = 0;
@@ -47,7 +47,7 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos,
     _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
 
     if (std::max(newsize.x, newsize.y) < _minHMSize) {
-        _terrainChunk = MemoryManager_NEW TerrainChunk(terrain, this);
+        _terrainChunk = MemoryManager_NEW TerrainChunk(context, terrain, this);
         _terrainChunk->load(depth, pos, _minHMSize, HMsize);
         chunkCount++;
         return;
@@ -81,16 +81,16 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos,
     tNewHMpos[to_const_uint(ChildPosition::CHILD_SE)] =
         pos + vec2<U32>(newsize.x, newsize.y);
     _children[to_const_uint(ChildPosition::CHILD_NW)]->Build(
-        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NW)], HMsize,
+        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NW)], HMsize,
         _minHMSize, terrain, chunkCount);
     _children[to_const_uint(ChildPosition::CHILD_NE)]->Build(
-        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NE)], HMsize,
+        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NE)], HMsize,
         _minHMSize, terrain, chunkCount);
     _children[to_const_uint(ChildPosition::CHILD_SW)]->Build(
-        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SW)], HMsize,
+        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SW)], HMsize,
         _minHMSize, terrain, chunkCount);
     _children[to_const_uint(ChildPosition::CHILD_SE)]->Build(
-        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SE)], HMsize,
+        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SE)], HMsize,
         _minHMSize, terrain, chunkCount);
 }
 
@@ -187,9 +187,9 @@ bool QuadtreeNode::isInView(U32 options,
     return true;
 }
 
-void QuadtreeNode::drawBBox(GenericDrawCommands& commandsOut) {
+void QuadtreeNode::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut) {
     if (!_bbPrimitive) {
-        _bbPrimitive = GFXDevice::instance().newIMP();
+        _bbPrimitive = context.newIMP();
         _bbPrimitive->name("QuadtreeNodeBoundingBox");
         RenderStateBlock primitiveRenderState;
         _bbPrimitive->stateHash(primitiveRenderState.getHash());
@@ -201,10 +201,10 @@ void QuadtreeNode::drawBBox(GenericDrawCommands& commandsOut) {
     commandsOut.push_back(_bbPrimitive->toDrawCommand());
 
     if (!isALeaf()) {
-        _children[to_const_uint(ChildPosition::CHILD_NW)]->drawBBox(commandsOut);
-        _children[to_const_uint(ChildPosition::CHILD_NE)]->drawBBox(commandsOut);
-        _children[to_const_uint(ChildPosition::CHILD_SW)]->drawBBox(commandsOut);
-        _children[to_const_uint(ChildPosition::CHILD_SE)]->drawBBox(commandsOut);
+        _children[to_const_uint(ChildPosition::CHILD_NW)]->drawBBox(context, commandsOut);
+        _children[to_const_uint(ChildPosition::CHILD_NE)]->drawBBox(context, commandsOut);
+        _children[to_const_uint(ChildPosition::CHILD_SW)]->drawBBox(context, commandsOut);
+        _children[to_const_uint(ChildPosition::CHILD_SE)]->drawBBox(context, commandsOut);
     }
 }
 

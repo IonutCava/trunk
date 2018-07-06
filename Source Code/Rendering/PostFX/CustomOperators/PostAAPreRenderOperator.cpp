@@ -7,8 +7,8 @@
 
 namespace Divide {
 
-PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(context, FilterType::FILTER_SS_ANTIALIASING, hdrTarget, ldrTarget),
+PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, cache, FilterType::FILTER_SS_ANTIALIASING, hdrTarget, ldrTarget),
       _useSMAA(false),
       _postAASamples(0)
 {
@@ -17,11 +17,11 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, RenderTarge
 
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);
-    _fxaa = CreateResource<ShaderProgram>(fxaa);
+    _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
 
     ResourceDescriptor smaa("SMAA");
     smaa.setThreadedLoading(false);
-    _smaa = CreateResource<ShaderProgram>(smaa);
+    _smaa = CreateResource<ShaderProgram>(cache, smaa);
 }
 
 PostAAPreRenderOperator::~PostAAPreRenderOperator()

@@ -1,4 +1,6 @@
 #include "Headers/ShaderComputeQueue.h"
+
+#include "Core/Headers/Kernel.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 
 namespace Divide {
@@ -7,8 +9,9 @@ namespace {
     const U32 g_MaxShadersComputedPerFrame = Config::Build::IS_DEBUG_BUILD ? 8 : 12;
 };
 
-ShaderComputeQueue::ShaderComputeQueue()
+ShaderComputeQueue::ShaderComputeQueue(ResourceCache& cache)
     : FrameListener(),
+      _cache(cache),
       _queueComputeTimer(Time::ADD_TIMER("Shader Queue Timer"))
 {
     REGISTER_FRAME_LISTENER(this, 9999);
@@ -19,7 +22,7 @@ ShaderComputeQueue::~ShaderComputeQueue()
     UNREGISTER_FRAME_LISTENER(this);
 }
 
-void ShaderComputeQueue::update(const U64 deltaTime) {
+void ShaderComputeQueue::idle() {
     Time::ScopedTimer timer(_queueComputeTimer);
     if (_shaderComputeQueue.empty() || _shadersComputedThisFrame) {
         return;
@@ -40,7 +43,8 @@ void ShaderComputeQueue::stepQueue() {
     if (!_shaderComputeQueue.empty()) {
         const ShaderQueueElement& currentItem = _shaderComputeQueue.front();
         ShaderProgramInfo& info = *currentItem._shaderData;
-        info._shaderRef = CreateResource<ShaderProgram>(currentItem._shaderDescriptor);
+        info._shaderRef = CreateResource<ShaderProgram>(_cache,
+                                                        currentItem._shaderDescriptor);
         info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
         _shaderComputeQueue.pop_front();
     }

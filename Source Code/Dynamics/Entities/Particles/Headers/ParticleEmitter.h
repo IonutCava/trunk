@@ -47,7 +47,7 @@ FWD_DECLARE_MANAGED_CLASS(Texture);
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
 class ParticleEmitter : public SceneNode {
    public:
-    explicit ParticleEmitter(const stringImpl& name);
+    explicit ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name);
     ~ParticleEmitter();
 
     bool onRender(RenderStage currentStage) override;
@@ -91,6 +91,7 @@ class ParticleEmitter : public SceneNode {
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
    private:
+    GFXDevice& _context;
     std::shared_ptr<ParticleData> _particles;
 
     vectorImpl<std::shared_ptr<ParticleSource>> _sources;

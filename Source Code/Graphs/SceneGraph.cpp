@@ -21,7 +21,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
       SceneComponent(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
-     _rootNode(new SceneRoot())
+     _rootNode(new SceneRoot(parentScene.resourceCache()))
 {
     static const U32 rootMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                 to_const_uint(SGNComponent::ComponentType::BOUNDS);

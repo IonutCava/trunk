@@ -20,13 +20,16 @@ Resource_ptr ImplResourceLoader<Light>::operator()() {
     switch (static_cast<LightType>(_descriptor.getEnumValue())) {
         default:
         case LightType::POINT:
-            ptr.reset(MemoryManager_NEW PointLight(_descriptor.getName(), 1, pool), DeleteResource());
+            ptr.reset(MemoryManager_NEW PointLight(_cache, _descriptor.getName(), 1, pool),
+                      DeleteResource(_cache));
             break;
         case LightType::DIRECTIONAL:
-            ptr.reset(MemoryManager_NEW DirectionalLight(_descriptor.getName(), pool), DeleteResource());
+            ptr.reset(MemoryManager_NEW DirectionalLight(_cache, _descriptor.getName(), pool),
+                      DeleteResource(_cache));
             break;
         case LightType::SPOT:
-            ptr.reset(MemoryManager_NEW SpotLight(_descriptor.getName(), 1, pool), DeleteResource());
+            ptr.reset(MemoryManager_NEW SpotLight(_cache, _descriptor.getName(), 1, pool),
+                      DeleteResource(_cache));
             break;
     };
     assert(ptr != nullptr);

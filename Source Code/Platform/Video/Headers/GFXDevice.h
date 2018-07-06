@@ -42,6 +42,8 @@
 #include "Core/Math/Headers/Line.h"
 #include "Core/Math/Headers/MathMatrices.h"
 
+#include "Core/Headers/KernelComponent.h"
+
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 #include "Rendering/Camera/Headers/Frustum.h"
@@ -79,6 +81,7 @@ class PixelBuffer;
 class VertexBuffer;
 class SceneGraphNode;
 class SceneRenderState;
+class ShaderComputeQueue;
 FWD_DECLARE_MANAGED_CLASS(Texture);
 
 namespace Time {
@@ -96,17 +99,17 @@ namespace Attorney {
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
-DEFINE_SINGLETON(GFXDevice)
+class GFXDevice : public KernelComponent {
     friend class Attorney::GFXDeviceAPI;
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
     friend class Attorney::GFXDeviceRenderer;
     friend class Attorney::GFXDeviceGraphicsResource;
 
-  protected:
+protected:
     typedef std::stack<vec4<I32>> ViewportStack;
 
-  public:
+public:
     struct NodeData : private NonCopyable {
         mat4<F32> _worldMatrix;
         mat4<F32> _normalMatrixWV;
@@ -123,50 +126,50 @@ DEFINE_SINGLETON(GFXDevice)
         void set(const NodeData& other);
     };
 
-  public:  // GPU specific data
+public:  // GPU specific data
 
-   struct GPUBlock {
-       GPUBlock() : _needsUpload(true),
-                    _data(GPUData())
-       {
-       }
+    struct GPUBlock {
+        GPUBlock() : _needsUpload(true),
+            _data(GPUData())
+        {
+        }
 
-       struct GPUData {
-           GPUData()
-           {
-               _ProjectionMatrix.identity();
-               _InvProjectionMatrix.identity();
-               _ViewMatrix.identity();
-               _ViewProjectionMatrix.identity();
-               _cameraPosition.set(0.0f);
-               _ViewPort.set(1.0f);
-               _ZPlanesCombined.set(1.0f, 1.1f, 1.0f, 1.1f);
-               _invScreenDimension.set(1.0f);
-               _renderProperties.set(0.0f);
-               for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
-                   _frustumPlanes[i].set(0.0f);
-               }
-               for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
-                   _frustumPlanes[i].set(1.0f);
-               }
-           }
+        struct GPUData {
+            GPUData()
+            {
+                _ProjectionMatrix.identity();
+                _InvProjectionMatrix.identity();
+                _ViewMatrix.identity();
+                _ViewProjectionMatrix.identity();
+                _cameraPosition.set(0.0f);
+                _ViewPort.set(1.0f);
+                _ZPlanesCombined.set(1.0f, 1.1f, 1.0f, 1.1f);
+                _invScreenDimension.set(1.0f);
+                _renderProperties.set(0.0f);
+                for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
+                    _frustumPlanes[i].set(0.0f);
+                }
+                for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
+                    _frustumPlanes[i].set(1.0f);
+                }
+            }
 
-           mat4<F32> _ProjectionMatrix;
-           mat4<F32> _InvProjectionMatrix;
-           mat4<F32> _ViewMatrix;
-           mat4<F32> _ViewProjectionMatrix;
-           vec4<F32> _cameraPosition; // xyz - position, w - aspect ratio
-           vec4<F32> _ViewPort;
-           vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
-           vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
-           vec4<F32> _renderProperties;
-           vec4<F32> _frustumPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
-           vec4<F32> _clipPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
+            mat4<F32> _ProjectionMatrix;
+            mat4<F32> _InvProjectionMatrix;
+            mat4<F32> _ViewMatrix;
+            mat4<F32> _ViewProjectionMatrix;
+            vec4<F32> _cameraPosition; // xyz - position, w - aspect ratio
+            vec4<F32> _ViewPort;
+            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
+            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
+            vec4<F32> _renderProperties;
+            vec4<F32> _frustumPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
+            vec4<F32> _clipPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
 
-           inline F32 aspectRatio() const;
-           inline vec2<F32> currentZPlanes() const;
-           inline F32 FoV() const;
-           inline F32 tanHFoV() const;
+            inline F32 aspectRatio() const;
+            inline vec2<F32> currentZPlanes() const;
+            inline F32 FoV() const;
+            inline F32 tanHFoV() const;
 
         } _data;
 
@@ -174,9 +177,12 @@ DEFINE_SINGLETON(GFXDevice)
         mat4<F32> _viewProjMatrixInv;
 
         bool _needsUpload = true;
-   };
+    };
 
-  public:  // GPU interface
+public:  // GPU interface
+    explicit GFXDevice(Kernel& parent);
+    ~GFXDevice();
+
     static const U32 MaxFrameQueueSize = 2;
     static_assert(MaxFrameQueueSize > 0, "FrameQueueSize is invalid!");
 
@@ -225,19 +231,19 @@ DEFINE_SINGLETON(GFXDevice)
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
     void generateCubeMap(RenderTarget& cubeMap,
-                         const U32 arrayOffset,
-                         const vec3<F32>& pos,
-                         const vec2<F32>& zPlanes,
-                         RenderStage renderStage,
-                         U32 passIndex);
+        const U32 arrayOffset,
+        const vec3<F32>& pos,
+        const vec2<F32>& zPlanes,
+        RenderStage renderStage,
+        U32 passIndex);
 
     void generateDualParaboloidMap(RenderTarget& targetBuffer,
-                                   const U32 arrayOffset,
-                                   const vec3<F32>& pos,
-                                   const vec2<F32>& zPlanes,
-                                   RenderStage renderStage,
-                                   U32 passIndex);
-                                     
+        const U32 arrayOffset,
+        const vec3<F32>& pos,
+        const vec2<F32>& zPlanes,
+        RenderStage renderStage,
+        U32 passIndex);
+
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
     /// Alternative to the normal version of getMatrix
     inline const mat4<F32>& getMatrix(const MATRIX& mode) const;
@@ -255,21 +261,24 @@ DEFINE_SINGLETON(GFXDevice)
     void increaseResolution();
     void decreaseResolution();
     bool loadInContext(const CurrentContext& context,
-                       const DELEGATE_CBK_PARAM<bool>& callback);
+        const DELEGATE_CBK_PARAM<bool>& callback);
 
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
 
-  public:  // Accessors and Mutators
+    Renderer& getRenderer() const;
+    void setRenderer(RendererType rendererType);
+
+    ShaderComputeQueue& shaderComputeQueue();
+    const ShaderComputeQueue& shaderComputeQueue() const;
+
+public:  // Accessors and Mutators
     inline const GPUState& gpuState() const { return _state; }
 
     inline GPUState& gpuState() { return _state; }
 
-    inline void setInterpolation(const D64 interpolation) {
-        _interpolationFactor = interpolation;
-    }
-
-    inline D64 getInterpolation() const { return _interpolationFactor; }
+    static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
+    static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
 
     inline void setGPUVendor(GPUVendor gpuvendor) { _GPUVendor = gpuvendor; }
     inline GPUVendor getGPUVendor() const { return _GPUVendor; }
@@ -292,8 +301,8 @@ DEFINE_SINGLETON(GFXDevice)
     /// returns the standard state block
     inline size_t getDefaultStateBlock(bool noDepth) const {
         return is2DRendering() ? _state2DRenderingHash
-                               : (noDepth ? _defaultStateNoDepthHash
-                                          : _defaultStateBlockHash);
+            : (noDepth ? _defaultStateNoDepthHash
+                : _defaultStateBlockHash);
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target) {
@@ -336,31 +345,31 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline RenderStage setRenderStage(RenderStage stage);
 
-  public:
-      IMPrimitive*       newIMP() const;
-      VertexBuffer*      newVB() const;
-      PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D) const;
-      GenericVertexData* newGVD(const U32 ringBufferLength) const;
-      Texture*           newTexture(const stringImpl& name,
-                                    const stringImpl& resourceLocation,
-                                    TextureType type,
-                                    bool asyncLoad) const;
-      ShaderProgram*     newShaderProgram(const stringImpl& name,
-                                          const stringImpl& resourceLocation,
-                                          bool asyncLoad) const;
-      ShaderBuffer*      newSB(const U32 ringBufferLength = 1,
-                               const bool unbound = false,
-                               const bool persistentMapped = true,
-                               BufferUpdateFrequency frequency =
-                                     BufferUpdateFrequency::ONCE) const;
-  public:  // Direct API calls
+public:
+    IMPrimitive*       newIMP() const;
+    VertexBuffer*      newVB() const;
+    PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D) const;
+    GenericVertexData* newGVD(const U32 ringBufferLength) const;
+    Texture*           newTexture(const stringImpl& name,
+        const stringImpl& resourceLocation,
+        TextureType type,
+        bool asyncLoad) const;
+    ShaderProgram*     newShaderProgram(const stringImpl& name,
+        const stringImpl& resourceLocation,
+        bool asyncLoad) const;
+    ShaderBuffer*      newSB(const U32 ringBufferLength = 1,
+        const bool unbound = false,
+        const bool persistentMapped = true,
+        BufferUpdateFrequency frequency =
+        BufferUpdateFrequency::ONCE) const;
+public:  // Direct API calls
 
 
     inline U64 getFrameDurationGPU() {
         return _api->getFrameDurationGPU();
     }
 
-  protected:
+protected:
     inline void syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
         if (beginSync) {
             _api->syncToThread(threadID);
@@ -380,7 +389,7 @@ DEFINE_SINGLETON(GFXDevice)
 
     void onChangeResolution(U16 w, U16 h);
 
-  protected:
+protected:
     friend class Camera;
     void renderFromCamera(Camera& camera);
     void onCameraUpdate(const Camera& camera);
@@ -388,28 +397,25 @@ DEFINE_SINGLETON(GFXDevice)
 
     void flushDisplay();
 
-   protected:
+protected:
     friend class SceneManager;
     friend class RenderPass;
     friend class RenderPassManager;
 
     void occlusionCull(const RenderPass::BufferData& bufferData,
-                       const Texture_ptr& depthBuffer);
+        const Texture_ptr& depthBuffer);
     void buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
-                           SceneRenderState& sceneRenderState,
-                           RenderPass::BufferData& bufferData,
-                           bool refreshNodeData);
+        SceneRenderState& sceneRenderState,
+        RenderPass::BufferData& bufferData,
+        bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
-                       GenericDrawCommand& currentIDC) const;
+        GenericDrawCommand& currentIDC) const;
     void constructHIZ(RenderTarget& depthBuffer);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }
 
-   private:
-    GFXDevice();
-    ~GFXDevice();
-
+private:
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
     void updateViewportInternal(I32 x, I32 y, I32 width, I32 height);
@@ -426,13 +432,19 @@ DEFINE_SINGLETON(GFXDevice)
     mat4<F32>& getMatrixInternal(const MATRIX& mode);
     const mat4<F32>& getMatrixInternal(const MATRIX& mode) const;
 
-  private:
+private:
+    std::unique_ptr<RenderAPIWrapper> _api;
+
+    Renderer* _renderer;
+
+    /// Pointer to a shader creation queue
+    ShaderComputeQueue* _shaderComputeQueue;
+
     Camera* _cubeCamera;
     Camera* _2DCamera;
     Camera* _dualParaboloidCamera;
 
     RenderTarget* _activeRenderTarget;
-    RenderAPIWrapper* _api;
     RenderStage _renderStage;
     RenderStage _prevRenderStage;
     bool _viewportUpdate;
@@ -443,7 +455,7 @@ DEFINE_SINGLETON(GFXDevice)
     Frustum         *_debugFrustum;
     IMPrimitive     *_debugFrustumPrimitive;
 
-  protected:
+protected:
     RenderAPI _API_ID;
     GPUVendor _GPUVendor;
     GPURenderer _GPURenderer;
@@ -459,7 +471,6 @@ DEFINE_SINGLETON(GFXDevice)
     size_t _state2DRenderingHash;
     size_t _stateDepthOnlyRenderingHash;
     /// The interpolation factor between the current and the last frame
-    D64 _interpolationFactor;
     PlaneList _clippingPlanes;
     bool _2DRendering;
     bool _isPrePassStage;
@@ -508,7 +519,9 @@ DEFINE_SINGLETON(GFXDevice)
     mutable std::mutex _gpuObjectArenaMutex;
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;
 
-END_SINGLETON
+
+    static D64 s_interpolationFactor;
+};
 
 namespace Attorney {
     class GFXDeviceGUI {
@@ -556,8 +569,8 @@ namespace Attorney {
 
     class GFXDeviceRenderer {
         private:
-        static void uploadGPUBlock() {
-            GFXDevice::instance().uploadGPUBlock();
+        static void uploadGPUBlock(GFXDevice& device) {
+            device.uploadGPUBlock();
         }
         friend class Divide::Renderer;
     };

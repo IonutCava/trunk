@@ -50,7 +50,10 @@ class SceneRenderState;
 
 class Quadtree {
    public:
-    void Build(BoundingBox& terrainBBox, const vec2<U32>& HMSize, U32 minHMSize,
+    void Build(GFXDevice& context, 
+               BoundingBox& terrainBBox,
+               const vec2<U32>& HMSize,
+               U32 minHMSize,
                Terrain* const terrain);
     BoundingBox& computeBoundingBox();
 
@@ -59,10 +62,11 @@ class Quadtree {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
-    void getChunkBufferData(const SceneRenderState& sceneRenderState, 
+    void getChunkBufferData(GFXDevice& context,
+                            const SceneRenderState& sceneRenderState, 
                             vectorImpl<vec3<U32>>& chunkBufferData) const;
 
-    void drawBBox(GenericDrawCommands& commandsOut);
+    void drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut);
 
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 

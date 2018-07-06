@@ -13,13 +13,13 @@
 
 namespace Divide {
 
-SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
-    : ShadowMap(light, shadowCamera, ShadowType::SINGLE) {
+SingleShadowMap::SingleShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera)
+    : ShadowMap(context, light, shadowCamera, ShadowType::SINGLE) {
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(),
                      "Single Shadow Map");
     ResourceDescriptor shadowPreviewShader("fbPreview.Single.LinearDepth");
     shadowPreviewShader.setThreadedLoading(false);
-    _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
+    _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
 
 }
 
@@ -32,11 +32,11 @@ void SingleShadowMap::init(ShadowMapInfo* const smi) {
 }
 
 
-void SingleShadowMap::render(U32 passIdx) {
+void SingleShadowMap::render(GFXDevice& context, U32 passIdx) {
     _shadowCamera->lookAt(_light->getPosition(), _light->getSpotDirection() + _light->getPosition());
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
 
-    RenderPassManager& passMgr = RenderPassManager::instance();
+    RenderPassManager& passMgr = context.parent().renderPassManager();
     RenderPassManager::PassParams params;
     params.doPrePass = false;
     params.occlusionCull = false;
@@ -49,7 +49,7 @@ void SingleShadowMap::render(U32 passIdx) {
     passMgr.doCustomPass(params);
 }
 
-void SingleShadowMap::previewShadowMaps(U32 rowIndex) {
+void SingleShadowMap::previewShadowMaps(GFXDevice& context, U32 rowIndex) {
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
@@ -59,15 +59,15 @@ void SingleShadowMap::previewShadowMaps(U32 rowIndex) {
     getDepthMap().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
     _previewDepthMapShader->Uniform("layer", _arrayOffset);
 
-    GFX::ScopedViewport sViewport(viewport);
+    GFX::ScopedViewport sViewport(context, viewport);
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFXDevice::instance().getDefaultStateBlock(true));
+    triangleCmd.stateHash(context.getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_previewDepthMapShader);
 
-    GFXDevice::instance().draw(triangleCmd);
+    context.draw(triangleCmd);
 }
 
 };

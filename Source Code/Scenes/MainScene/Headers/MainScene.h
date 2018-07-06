@@ -41,7 +41,7 @@ class WaterPlane;
 
 class MainScene : public Scene {
    public:
-    explicit MainScene(PlatformContext& context, const stringImpl& name);
+    explicit MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
 
     /*General Scene Requirement*/
     bool load(const stringImpl& name);

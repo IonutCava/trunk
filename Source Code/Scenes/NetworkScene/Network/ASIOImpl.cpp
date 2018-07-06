@@ -7,6 +7,14 @@
 
 namespace Divide {
 
+ASIOImpl::ASIOImpl(Scene& parentScene) : ASIO(), _parentScene(parentScene)
+{
+}
+
+ASIOImpl::~ASIOImpl()
+{
+}
+
 void ASIOImpl::handlePacket(WorldPacket& p) {
     switch (p.opcode()) {
         case OPCodes::MSG_HEARTBEAT:
@@ -76,7 +84,7 @@ void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p) {
         p >> d.version;
         patch.push_back(d);
     }
-    SceneManager::instance().getActiveScene().addPatch(patch);
+    _parentScene.addPatch(patch);
 }
 
 void ASIOImpl::HandleHeartBeatOpCode(WorldPacket& p) {

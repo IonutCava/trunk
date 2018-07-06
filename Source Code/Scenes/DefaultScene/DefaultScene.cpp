@@ -5,8 +5,8 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 
 namespace Divide {
-DefaultScene::DefaultScene(PlatformContext& context, const stringImpl& name)
-    : Scene(context, name)
+DefaultScene::DefaultScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+    : Scene(context, cache, parent, name)
 {
 }
 
@@ -40,7 +40,7 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
 
 void DefaultScene::postLoadMainThread() {
     // Replace buttons with nice, animated elements? images?
-    vectorImpl<stringImpl> scenes = SceneManager::instance().sceneNameList();
+    vectorImpl<stringImpl> scenes = _parent.sceneNameList();
 
     const vec2<U16>& resolution = _GUI->getDisplayResolution();
 
@@ -94,7 +94,7 @@ void DefaultScene::processInput(const U64 deltaTime) {
     if (!_sceneToLoad.empty()) {
         _GUI->modifyText(_ID("globalMessage"),
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
-        SceneManager::instance().switchScene(_sceneToLoad, false);
+        _parent.switchScene(_sceneToLoad, false);
         _sceneToLoad.clear();
     }
 }
@@ -134,7 +134,7 @@ void DefaultScene::loadScene(I64 btnGUID) {
 }
 
 void DefaultScene::onSetActive() {
-    vectorImpl<stringImpl> scenes = SceneManager::instance().sceneNameList();
+    vectorImpl<stringImpl> scenes = _parent.sceneNameList();
 
     for (const stringImpl& scene : scenes) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(_ID_RT("StartScene" + scene));

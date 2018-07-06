@@ -18,8 +18,8 @@
 
 namespace Divide {
 
-CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 numSplits)
-    : ShadowMap(light, shadowCamera, ShadowType::LAYERED)
+CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, Camera* shadowCamera, U8 numSplits)
+    : ShadowMap(context, light, shadowCamera, ShadowType::LAYERED)
 {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
     _splitLogFactor = 0.0f;
@@ -36,12 +36,12 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
     shadowPreviewShader.setPropertyList("USE_SCENE_ZPLANES");
-    _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
+    _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
     _previewDepthMapShader->Uniform("useScenePlanes", false);
 
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
     blurDepthMapShader.setThreadedLoading(false);
-    _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
+    _blurDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), blurDepthMapShader);
     _blurDepthMapShader->Uniform("layerTotalCount", (I32)_numSplits);
     _blurDepthMapShader->Uniform("layerCount",  (I32)_numSplits);
 
@@ -58,11 +58,11 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     blurMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
     blurMapDescriptor.setSampler(blurMapSampler);
     
-    _blurBuffer = GFXDevice::instance().allocateRT("CSM_Blur");
+    _blurBuffer = _context.allocateRT("CSM_Blur");
     _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0, false);
     _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
-    _shadowMatricesBuffer = GFXDevice::instance().newSB(1, false, false, BufferUpdateFrequency::OFTEN);
+    _shadowMatricesBuffer = _context.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
     _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
@@ -70,8 +70,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
 
 CascadedShadowMaps::~CascadedShadowMaps()
 {
-    GFXDevice::instance().deallocateRT(_blurBuffer);
-	_shadowMatricesBuffer->destroy();
+    _context.deallocateRT(_blurBuffer);
+    _shadowMatricesBuffer->destroy();
 }
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
@@ -92,7 +92,7 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CascadedShadowMaps::render(U32 passIdx) {
+void CascadedShadowMaps::render(GFXDevice& context, U32 passIdx) {
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
     _lightPosition.set(_light->getPosition());
@@ -129,9 +129,9 @@ void CascadedShadowMaps::render(U32 passIdx) {
     params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
     params.pass = passIdx;
 
-    RenderPassManager::instance().doCustomPass(params);
+    context.parent().renderPassManager().doCustomPass(params);
 
-    postRender();
+    postRender(context);
 }
 
 void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
@@ -212,9 +212,8 @@ void CascadedShadowMaps::applyFrustumSplits() {
     }
 }
 
-void CascadedShadowMaps::postRender() {
-    GFXDevice& gfx = GFXDevice::instance();
-    if (GFXDevice::instance().shadowDetailLevel() == RenderDetailLevel::LOW) {
+void CascadedShadowMaps::postRender(GFXDevice& context) {
+    if (context.shadowDetailLevel() == RenderDetailLevel::LOW) {
         return;
     }
 
@@ -225,7 +224,7 @@ void CascadedShadowMaps::postRender() {
     GenericDrawCommand pointsCmd;
     pointsCmd.primitiveType(PrimitiveType::API_POINTS);
     pointsCmd.drawCount(1);
-    pointsCmd.stateHash(gfx.getDefaultStateBlock(true));
+    pointsCmd.stateHash(context.getDefaultStateBlock(true));
     pointsCmd.shaderProgram(_blurDepthMapShader);
 
     // Blur horizontally
@@ -235,7 +234,7 @@ void CascadedShadowMaps::postRender() {
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer._rt->begin(RenderTarget::defaultPolicy());
     depthMap.bind(0, RTAttachment::Type::Colour, 0, false);
-        gfx.draw(pointsCmd);
+        context.draw(pointsCmd);
     depthMap.end();
 
     // Blur vertically
@@ -245,11 +244,11 @@ void CascadedShadowMaps::postRender() {
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     depthMap.begin(RenderTarget::defaultPolicy());
     _blurBuffer._rt->bind(0, RTAttachment::Type::Colour, 0);
-        gfx.draw(pointsCmd);
+        context.draw(pointsCmd);
     depthMap.end();
 }
 
-void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
+void CascadedShadowMaps::previewShadowMaps(GFXDevice& context, U32 rowIndex) {
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
@@ -259,14 +258,14 @@ void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFXDevice::instance().getDefaultStateBlock(true));
+    triangleCmd.stateHash(context.getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_previewDepthMapShader);
 
     const vec4<I32> viewport = getViewportForRow(rowIndex);
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i + _arrayOffset);
-        GFX::ScopedViewport sViewport(viewport.x * i, viewport.y, viewport.z, viewport.w);
-        GFXDevice::instance().draw(triangleCmd);
+        GFX::ScopedViewport sViewport(context, viewport.x * i, viewport.y, viewport.z, viewport.w);
+        context.draw(triangleCmd);
     }
 }
 };

@@ -1,3 +1,4 @@
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
@@ -11,9 +12,11 @@ Resource_ptr ImplResourceLoader<Box3D>::operator()() {
         size = atof(_descriptor.getPropertyListString().c_str());  //<should work
     }
 
-    std::shared_ptr<Box3D> ptr(MemoryManager_NEW Box3D(_descriptor.getName(),
+    std::shared_ptr<Box3D> ptr(MemoryManager_NEW Box3D(_context.gfx(),
+                                                       _cache,
+                                                       _descriptor.getName(),
                                                        vec3<F32>(to_float(size))),
-                                DeleteResource());
+                                DeleteResource(_cache));
 
     if (!load(ptr)) {
         ptr.reset();

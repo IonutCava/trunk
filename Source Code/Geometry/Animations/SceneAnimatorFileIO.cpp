@@ -129,7 +129,9 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
     evaluator._lastPositions.resize(evaluator._channels.size(), vec3<U32>());
 }
 
-void SceneAnimator::save(ByteBuffer& dataOut) const {
+void SceneAnimator::save(PlatformContext& context, ByteBuffer& dataOut) const {
+    ACKNOWLEDGE_UNUSED(context);
+
     // first recursively save the skeleton
     if (_skeleton) {
         saveSkeleton(dataOut, _skeleton);
@@ -149,7 +151,7 @@ void SceneAnimator::save(ByteBuffer& dataOut) const {
     }
 }
 
-void SceneAnimator::load(ByteBuffer& dataIn) {
+void SceneAnimator::load(PlatformContext& context, ByteBuffer& dataIn) {
     // make sure to clear this before writing new data
     release();
 
@@ -176,7 +178,7 @@ void SceneAnimator::load(ByteBuffer& dataIn) {
         hashAlg::emplace(_animationNameToID, _ID_RT(anim->name()), idx++);
     }
     
-    init();
+    init(context);
 }
 
 void SceneAnimator::saveSkeleton(ByteBuffer& dataOut, Bone* parent) const {

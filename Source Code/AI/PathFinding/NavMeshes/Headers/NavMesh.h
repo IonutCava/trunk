@@ -69,6 +69,8 @@
 
 namespace Divide {
 
+class PlatformContext;
+
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 namespace AI {
@@ -153,7 +155,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
                                    const vec3<F32>& extents, vec3<F32>& result,
                                    U8 maxIters = 15) const;
 
-    NavigationMesh();
+    NavigationMesh(PlatformContext& context);
     ~NavigationMesh();
 
    private:

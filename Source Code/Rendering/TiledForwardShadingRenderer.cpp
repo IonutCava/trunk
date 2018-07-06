@@ -3,6 +3,7 @@
 #include "Headers/TiledForwardShadingRenderer.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -12,21 +13,21 @@
 //ref: https://github.com/bioglaze/aether3d
 namespace Divide {
 
-TiledForwardShadingRenderer::TiledForwardShadingRenderer(GFXDevice& context)
-    : Renderer(context, RendererType::RENDERER_TILED_FORWARD_SHADING)
+TiledForwardShadingRenderer::TiledForwardShadingRenderer(PlatformContext& context, ResourceCache& cache)
+    : Renderer(context, cache, RendererType::RENDERER_TILED_FORWARD_SHADING)
 {
     ResourceDescriptor cullShaderDesc("lightCull");
     cullShaderDesc.setThreadedLoading(false);
-    _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
+    _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
 
-    RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _context.gfx().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     updateResolution(screenRT.getWidth(), screenRT.getHeight());
 
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
-    _perTileLightIndexBuffer = _context.newSB(1, true, true, BufferUpdateFrequency::ONCE);
+    _perTileLightIndexBuffer = _context.gfx().newSB(1, true, true, BufferUpdateFrequency::ONCE);
     _perTileLightIndexBuffer->create(maxNumLightsPerTile * numTiles, sizeof(U32));
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }

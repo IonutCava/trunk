@@ -68,7 +68,7 @@ void ScenePool::init() {
 }
 
 
-Scene* ScenePool::getOrCreateScene(PlatformContext& context, const stringImpl& name, bool& foundInCache) {
+Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name, bool& foundInCache) {
     assert(!name.empty());
 
     foundInCache = false;
@@ -84,7 +84,7 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, const stringImpl& n
     }
 
     if (ret == nullptr) {
-        ret = g_sceneFactory[name](context, name);
+        ret = g_sceneFactory[name](context, cache, parent, name);
 
         // Default scene is the first scene we load
         if (!_defaultScene) {

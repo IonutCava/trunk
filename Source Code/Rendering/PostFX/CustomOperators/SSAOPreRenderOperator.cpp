@@ -8,8 +8,8 @@
 namespace Divide {
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
-SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(context, FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
+SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, cache, FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
 {
 
     _samplerCopy = _context.allocateRT("SSAO");
@@ -49,7 +49,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, RenderTarget* h
     textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(noiseSampler);
     textureAttachment.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-    _noiseTexture = CreateResource<Texture>(textureAttachment);
+    _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
     TextureDescriptor noiseDescriptor;
     noiseDescriptor._internalFormat = GFXImageFormat::RGB16F;
@@ -82,16 +82,16 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, RenderTarget* h
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
     ssaoGenerate.setThreadedLoading(false);
     ssaoGenerate.setPropertyList(Util::StringFormat("USE_SCENE_ZPLANES,KERNEL_SIZE %d", kernelSize));
-    _ssaoGenerateShader = CreateResource<ShaderProgram>(ssaoGenerate);
+    _ssaoGenerateShader = CreateResource<ShaderProgram>(cache, ssaoGenerate);
 
     ResourceDescriptor ssaoBlur("SSAOPass.SSAOBlur");
     ssaoBlur.setThreadedLoading(false);
     ssaoBlur.setPropertyList(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize));
-    _ssaoBlurShader = CreateResource<ShaderProgram>(ssaoBlur);
+    _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     
     ResourceDescriptor ssaoApply("SSAOPass.SSAOApply");
     ssaoApply.setThreadedLoading(false);
-    _ssaoApplyShader = CreateResource<ShaderProgram>(ssaoApply);
+    _ssaoApplyShader = CreateResource<ShaderProgram>(cache, ssaoApply);
 
     _ssaoGenerateShader->Uniform("sampleKernel", kernel);
 }

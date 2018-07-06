@@ -4,6 +4,7 @@
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
@@ -14,7 +15,8 @@ namespace Divide {
 
 U32 TerrainChunk::_chunkID = 0;
 
-TerrainChunk::TerrainChunk(Terrain* const parentTerrain,
+TerrainChunk::TerrainChunk(GFXDevice& context,
+                           Terrain* const parentTerrain,
                            QuadtreeNode* const parentNode)
     : _parentNode(parentNode), 
       _parentTerrain(parentTerrain),
@@ -31,7 +33,7 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain,
     VegetationDetails& vegDetails =  Attorney::TerrainChunk::vegetationDetails(*parentTerrain);
     vegDetails.name += "_chunk_" + to_stringImpl(_chunkID);
     //<Deleted by the sceneGraph on "unload"
-    _vegetation = MemoryManager_NEW Vegetation(vegDetails);  
+    _vegetation = MemoryManager_NEW Vegetation(context, parentTerrain->parentResourceCache(), vegDetails);
     _vegetation->renderState().useDefaultMaterial(false);
     _vegetation->setMaterialTpl(nullptr);
     assert(_vegetation != nullptr);

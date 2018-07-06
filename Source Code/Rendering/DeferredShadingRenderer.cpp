@@ -3,9 +3,9 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "Scenes/Headers/SceneState.h"
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/RenderPassManager.h"
@@ -19,18 +19,18 @@
 
 namespace Divide {
 
-DeferredShadingRenderer::DeferredShadingRenderer(GFXDevice& context)
-    : Renderer(context, RendererType::RENDERER_DEFERRED_SHADING), _cachedLightCount(0)
+DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, ResourceCache& cache)
+    : Renderer(context, cache, RendererType::RENDERER_DEFERRED_SHADING), _cachedLightCount(0)
 {
-    _lightTexture = _context.newPB();
+    _lightTexture = _context.gfx().newPB();
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
-    _deferredShader = CreateResource<ShaderProgram>(deferred);
-    _deferredBuffer = _context.allocateRT("Deferred");
+    _deferredShader = CreateResource<ShaderProgram>(cache, deferred);
+    _deferredBuffer = _context.gfx().allocateRT("Deferred");
 
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);
-    _previewDeferredShader = CreateResource<ShaderProgram>(deferredPreview);
+    _previewDeferredShader = CreateResource<ShaderProgram>(cache, deferredPreview);
     SamplerDescriptor gBufferSampler;
     gBufferSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     gBufferSampler.setFilters(TextureFilter::NEAREST);
@@ -76,24 +76,24 @@ DeferredShadingRenderer::DeferredShadingRenderer(GFXDevice& context)
     mrt3.setFlag(true);  // no default material
     ResourceDescriptor mrt4("MRT RenderQuad4");
     mrt4.setFlag(true);  // no default material
-    _renderQuads.push_back(CreateResource<Quad3D>(mrt));
-    _renderQuads.push_back(CreateResource<Quad3D>(mrt2));
-    _renderQuads.push_back(CreateResource<Quad3D>(mrt3));
-    _renderQuads.push_back(CreateResource<Quad3D>(mrt4));
-    _renderQuads.push_back(CreateResource<Quad3D>(mrtPreviewSmall));
+    _renderQuads.push_back(CreateResource<Quad3D>(cache, mrt));
+    _renderQuads.push_back(CreateResource<Quad3D>(cache, mrt2));
+    _renderQuads.push_back(CreateResource<Quad3D>(cache, mrt3));
+    _renderQuads.push_back(CreateResource<Quad3D>(cache, mrt4));
+    _renderQuads.push_back(CreateResource<Quad3D>(cache, mrtPreviewSmall));
 
     ParamHandler& par = ParamHandler::instance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam(_ID("rendering.enableShadows"), false);
 
-    RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _context.gfx().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     U16 width = screenRT.getWidth();
     U16 height = screenRT.getHeight();
 
     updateResolution(width, height);
 
-    GUI& gui = Application::instance().kernel().platformContext().gui();
+    GUI& gui = _context.gui();
     gui.addText(_ID("PositionData"),                 // Unique ID
                       vec2<I32>(60, 60),             // Position
                       Font::DIVIDE_DEFAULT,          // Font
@@ -120,7 +120,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 {
     Console::printfn(Locale::get(_ID("DEFERRED_RT_DELETE")));
     _renderQuads.clear();
-    _context.deallocateRT(_deferredBuffer);
+    _context.gfx().deallocateRT(_deferredBuffer);
 	_lightTexture->destroy();}
 
 void DeferredShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
@@ -172,7 +172,7 @@ void DeferredShadingRenderer::secondPass(
     // Pass 2
     // Draw a 2D fullscreen quad with lighting shader applied and all generated
     // textures bound to that shader
-    GFX::Scoped2DRendering scoped2D;
+    GFX::Scoped2DRendering scoped2D(_context.gfx());
 
     _deferredBuffer._rt->bind(0, RTAttachment::Type::Colour, 0);
     _deferredBuffer._rt->bind(1, RTAttachment::Type::Colour, 1);
@@ -181,35 +181,35 @@ void DeferredShadingRenderer::secondPass(
     _lightTexture->bind(4);
 
     GenericDrawCommand cmd;
-    cmd.stateHash(_context.getDefaultStateBlock(true));
+    cmd.stateHash(_context.gfx().getDefaultStateBlock(true));
     cmd.shaderProgram(_previewDeferredShader);
     if (_debugView) {
         _previewDeferredShader->Uniform("texDiffuse0", 4);
-        if (_renderQuads[1]->onRender(_context.getRenderStage())) {
+        if (_renderQuads[1]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
-            _context.draw(cmd);
+            _context.gfx().draw(cmd);
         }
         _previewDeferredShader->Uniform("texDiffuse0", 1);
-        if (_renderQuads[2]->onRender(_context.getRenderStage())) {
+        if (_renderQuads[2]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
-            _context.draw(cmd);
+            _context.gfx().draw(cmd);
         }
         _previewDeferredShader->Uniform("texDiffuse0", 2);
-        if (_renderQuads[3]->onRender(_context.getRenderStage())) {
+        if (_renderQuads[3]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
-            _context.draw(cmd);
+            _context.gfx().draw(cmd);
         }
     }
 
     _deferredShader->Uniform("lightCount", (I32)_cachedLightCount);
 
     cmd.shaderProgram(_deferredShader);
-    if (_renderQuads[_debugView ? 4 : 0]->onRender(_context.getRenderStage())) {
+    if (_renderQuads[_debugView ? 4 : 0]->onRender(_context.gfx().getRenderStage())) {
         cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
-        _context.draw(cmd);
+        _context.gfx().draw(cmd);
     }
 
-    GUI& gui = Application::instance().kernel().platformContext().gui();
+    GUI& gui = _context.gui();
     GUIElement* guiElement = gui.getGUIElement(0, _ID("FinalImage"));
     if (guiElement) {
         guiElement->setVisible(_debugView);

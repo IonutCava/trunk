@@ -8,6 +8,27 @@ typedef std::map<stringImpl, OIS::KeyCode> KeyByNameMap;
 static KeyByNameMap initKeyByNameMap();
 static KeyByNameMap g_keysByNameMap = initKeyByNameMap();
 
+InputInterface::InputInterface(Kernel& parent)
+     : KernelComponent(parent), 
+      _pInputInterface(nullptr),
+      _pEventHdlr(nullptr),
+      _pKeyboard(nullptr),
+      _pMouse(nullptr),
+      _pJoystickInterface(nullptr),
+      _pEffectMgr(nullptr),
+      _bMustStop(false),
+      _bIsInitialized(false)
+{
+    for (U16 i = 0; i < KeyCode_PLACEHOLDER; ++i) {
+        _keys[i]._key = static_cast<KeyCode>(i);
+    }
+}
+
+InputInterface::~InputInterface()
+{
+    assert(!_bIsInitialized);
+}
+
 ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensions) {
     if (_bIsInitialized) {
         return ErrorCode::NO_ERR;
@@ -102,6 +123,35 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     return ErrorCode::NO_ERR;
 }
 
+void InputInterface::terminate() {
+    if (_pInputInterface) {
+        _pInputInterface->destroyInputObject(_pKeyboard);
+        _pKeyboard = nullptr;
+
+        _pInputInterface->destroyInputObject(_pMouse);
+        _pMouse = nullptr;
+
+        if (_pJoysticks.size() > 0) {
+            for (vectorImpl<OIS::JoyStick*>::iterator it =
+                std::begin(_pJoysticks);
+                it != std::end(_pJoysticks); ++it) {
+                _pInputInterface->destroyInputObject(*it);
+            }
+            _pJoysticks.clear();
+            MemoryManager::DELETE(_pJoystickInterface);
+        }
+
+        OIS::InputManager::destroyInputSystem(_pInputInterface);
+        _pInputInterface = nullptr;
+    }
+
+    MemoryManager::DELETE(_pEventHdlr);
+
+    MemoryManager::DELETE(_pEffectMgr);
+
+    _bIsInitialized = false;
+}
+
 U8 InputInterface::update(const U64 deltaTime) {
     const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
     U8 nEffectUpdateCnt = 0;
@@ -141,33 +191,6 @@ U8 InputInterface::update(const U64 deltaTime) {
     }
 
     return 1;
-}
-
-void InputInterface::terminate() {
-    if (_pInputInterface) {
-        _pInputInterface->destroyInputObject(_pKeyboard);
-        _pKeyboard = nullptr;
-
-        _pInputInterface->destroyInputObject(_pMouse);
-        _pMouse = nullptr;
-
-        if (_pJoysticks.size() > 0) {
-            for (vectorImpl<OIS::JoyStick*>::iterator it =
-                     std::begin(_pJoysticks);
-                 it != std::end(_pJoysticks); ++it) {
-                _pInputInterface->destroyInputObject(*it);
-            }
-            _pJoysticks.clear();
-            MemoryManager::DELETE(_pJoystickInterface);
-        }
-
-        OIS::InputManager::destroyInputSystem(_pInputInterface);
-        _pInputInterface = nullptr;
-    }
-
-    MemoryManager::DELETE(_pEventHdlr);
-
-    MemoryManager::DELETE(_pEffectMgr);
 }
 
 InputState InputInterface::getKeyState(KeyCode keyCode) const {

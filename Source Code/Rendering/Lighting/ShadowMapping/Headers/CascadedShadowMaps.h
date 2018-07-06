@@ -50,12 +50,12 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 /// This technique offers an implementation of the CSM method
 class CascadedShadowMaps : public ShadowMap {
    public:
-    CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 numSplits);
+    explicit CascadedShadowMaps(GFXDevice& context, Light* light, Camera* shadowCamera, U8 numSplits);
     ~CascadedShadowMaps();
-    void render(U32 passIdx);
-    void postRender();
+    void render(GFXDevice& context, U32 passIdx);
+    void postRender(GFXDevice& context);
     /// Update depth maps
-    void previewShadowMaps(U32 callIndex);
+    void previewShadowMaps(GFXDevice& context, U32 callIndex);
     void init(ShadowMapInfo* const smi);
 
    protected:

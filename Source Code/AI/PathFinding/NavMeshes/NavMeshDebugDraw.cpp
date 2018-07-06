@@ -14,8 +14,9 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-NavMeshDebugDraw::NavMeshDebugDraw()
-    : _overrideColour(false),
+NavMeshDebugDraw::NavMeshDebugDraw(GFXDevice& context)
+    : _context(context),
+      _overrideColour(false),
       _dirty(true),
       _paused(false),
       _colour(0),
@@ -45,7 +46,7 @@ void NavMeshDebugDraw::paused(bool state) {
 void NavMeshDebugDraw::beginBatch() {
     if (!_primitive) {
         _dirty = true;
-        _primitive = GFXDevice::instance().newIMP();
+        _primitive = _context.newIMP();
         _primitive->stateHash(_navMeshStateBlockHash);
     }
 

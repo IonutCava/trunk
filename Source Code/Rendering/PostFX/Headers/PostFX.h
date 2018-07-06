@@ -58,9 +58,9 @@ DEFINE_SINGLETON(PostFX)
     ~PostFX();
 
   public:
-    void apply();
+    void apply(GFXDevice& context);
 
-    void init(GFXDevice& context);
+    void init(GFXDevice& context, ResourceCache& cache);
     void idle();
     void update(const U64 deltaTime);
 

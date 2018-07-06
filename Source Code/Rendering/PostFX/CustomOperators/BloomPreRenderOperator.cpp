@@ -9,8 +9,8 @@
 
 namespace Divide {
 
-BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-    : PreRenderOperator(context, FilterType::FILTER_BLOOM, hdrTarget, ldrTarget)
+BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
+    : PreRenderOperator(context, cache, FilterType::FILTER_BLOOM, hdrTarget, ldrTarget)
 {
     for (U8 i = 0; i < 2; ++i) {
         _bloomBlurBuffer[i] = _context.allocateRT(Util::StringFormat("Bloom_Blur_%d", i));
@@ -24,15 +24,15 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, RenderTarget*
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");
     bloomCalc.setThreadedLoading(false);
-    _bloomCalc = CreateResource<ShaderProgram>(bloomCalc);
+    _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
 
     ResourceDescriptor bloomApply("bloom.BloomApply");
     bloomApply.setThreadedLoading(false);
-    _bloomApply = CreateResource<ShaderProgram>(bloomApply);
+    _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
 
     ResourceDescriptor blur("blur");
     blur.setThreadedLoading(false);
-    _blur = CreateResource<ShaderProgram>(blur);
+    _blur = CreateResource<ShaderProgram>(cache, blur);
 
     _blur->Uniform("kernelSize", 10);
     _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");

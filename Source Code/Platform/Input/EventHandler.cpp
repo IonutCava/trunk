@@ -68,7 +68,7 @@ bool EventHandler::mouseButtonReleased(const MouseEvent &arg, MouseButton id) {
 
 bool EventHandler::keyPressed(const OIS::KeyEvent &arg) {
     KeyEvent &key =
-        Attorney::InputInterfaceEvent::getKeyRef(to_uint(arg.key));
+        Attorney::InputInterfaceEvent::getKeyRef(*_pApplication, to_uint(arg.key));
     key._text = arg.text;
     key._pressed = true;
     return onKeyDown(key);
@@ -76,7 +76,7 @@ bool EventHandler::keyPressed(const OIS::KeyEvent &arg) {
 
 bool EventHandler::keyReleased(const OIS::KeyEvent &arg) {
     KeyEvent &key =
-        Attorney::InputInterfaceEvent::getKeyRef(to_uint(arg.key));
+        Attorney::InputInterfaceEvent::getKeyRef(*_pApplication, to_uint(arg.key));
     key._text = arg.text;
     key._pressed = false;
     return onKeyUp(key);

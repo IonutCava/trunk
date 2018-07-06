@@ -14,6 +14,25 @@ namespace Divide {
 
 std::array<ShadowMap::LayerUsageMask, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
 
+
+ShadowMap::ShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera, ShadowType type)
+    : _context(context),
+      _init(false),
+      _light(light),
+      _shadowCamera(shadowCamera),
+      _shadowMapType(type),
+      _arrayOffset(0),
+      _par(ParamHandler::instance())
+{
+    _arrayOffset = findDepthMapLayer(_shadowMapType);
+    commitDepthMapLayer(_shadowMapType, _arrayOffset);
+}
+
+ShadowMap::~ShadowMap()
+{
+    freeDepthMapLayer(_shadowMapType, _arrayOffset);
+}
+
 void ShadowMap::resetShadowMaps(GFXDevice& context) {
     ACKNOWLEDGE_UNUSED(context);
 
@@ -146,11 +165,11 @@ U32 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
 }
 
 RenderTarget& ShadowMap::getDepthMap() {
-    return GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType())));
+    return _context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType())));
 }
 
 const RenderTarget& ShadowMap::getDepthMap() const {
-    return GFXDevice::instance().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType())));
+    return _context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType())));
 }
 
 void ShadowMap::commitDepthMapLayer(ShadowType shadowType, U32 layer) {
@@ -169,24 +188,6 @@ bool ShadowMap::freeDepthMapLayer(ShadowType shadowType, U32 layer) {
     return true;
 }
 
-ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type)
-    : _init(false),
-      _light(light),
-      _shadowCamera(shadowCamera),
-      _shadowMapType(type),
-      _arrayOffset(0),
-      _par(ParamHandler::instance())
-{
-    _arrayOffset = findDepthMapLayer(_shadowMapType);
-    commitDepthMapLayer(_shadowMapType, _arrayOffset);
-}
-
-ShadowMap::~ShadowMap()
-{
-    freeDepthMapLayer(_shadowMapType, _arrayOffset);
-}
-
-
 vec4<I32> ShadowMap::getViewportForRow(U32 rowIndex) const {
     return vec4<I32>(128, 4 + (128 * rowIndex), 128, 128);
 }
@@ -204,7 +205,7 @@ ShadowMapInfo::~ShadowMapInfo()
     MemoryManager::DELETE(_shadowMap);
 }
 
-ShadowMap* ShadowMapInfo::createShadowMap(const SceneRenderState& renderState, Camera* shadowCamera) {
+ShadowMap* ShadowMapInfo::createShadowMap(GFXDevice& context, const SceneRenderState& renderState, Camera* shadowCamera) {
     if (_shadowMap) {
         return _shadowMap;
     }
@@ -216,15 +217,15 @@ ShadowMap* ShadowMapInfo::createShadowMap(const SceneRenderState& renderState, C
     switch (_light->getLightType()) {
         case LightType::POINT: {
             _numLayers = 6;
-            _shadowMap = MemoryManager_NEW CubeShadowMap(_light, shadowCamera);
+            _shadowMap = MemoryManager_NEW CubeShadowMap(context, _light, shadowCamera);
         } break;
         case LightType::DIRECTIONAL: {
             DirectionalLight* dirLight = static_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
-            _shadowMap = MemoryManager_NEW CascadedShadowMaps(_light, shadowCamera, _numLayers);
+            _shadowMap = MemoryManager_NEW CascadedShadowMaps(context, _light, shadowCamera, _numLayers);
         } break;
         case LightType::SPOT: {
-            _shadowMap = MemoryManager_NEW SingleShadowMap(_light, shadowCamera);
+            _shadowMap = MemoryManager_NEW SingleShadowMap(context, _light, shadowCamera);
         } break;
         default:
             break;

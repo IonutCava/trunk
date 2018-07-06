@@ -9,9 +9,12 @@
 
 namespace Divide {
 
-SFXDevice::SFXDevice() : _state(true, true, true, true),
-                         _API_ID(AudioAPI::COUNT),
-                         _api(nullptr)
+SFXDevice::SFXDevice(Kernel& parent)
+    : KernelComponent(parent), 
+      AudioAPIWrapper(),
+      _state(true, true, true, true),
+      _API_ID(AudioAPI::COUNT),
+      _api(nullptr)
 {
     _playNextInPlaylist = false;
 }
@@ -20,18 +23,18 @@ SFXDevice::~SFXDevice()
 {
 }
 
-ErrorCode SFXDevice::initAudioAPI() {
+ErrorCode SFXDevice::initAudioAPI(PlatformContext& context) {
     assert(_api == nullptr && "SFXDevice error: initAudioAPI called twice!");
 
     switch (_API_ID) {
         case AudioAPI::FMOD: {
-            _api = &FMOD_API::instance();
+            _api = std::make_unique<FMOD_API>();
         } break;
         case AudioAPI::OpenAL: {
-            _api = &OpenAL_API::instance();
+            _api = std::make_unique<OpenAL_API>();
         } break;
         case AudioAPI::SDL: {
-            _api = &SDL_API::instance();
+            _api = std::make_unique<SDL_API>();
         } break;
         default: {
             Console::errorfn(Locale::get(_ID("ERROR_SFX_DEVICE_API")));
@@ -39,27 +42,14 @@ ErrorCode SFXDevice::initAudioAPI() {
         } break;
     };
 
-    return _api->initAudioAPI();
+    return _api->initAudioAPI(context);
 }
 
 void SFXDevice::closeAudioAPI() {
     assert(_api != nullptr && "SFXDevice error: closeAudioAPI called without init!");
 
     _api->closeAudioAPI();
-
-    switch (_API_ID) {
-        case AudioAPI::FMOD: {
-            FMOD_API::destroyInstance();
-        } break;
-        case  AudioAPI::OpenAL: {
-            OpenAL_API::destroyInstance();
-        } break;
-        case AudioAPI::SDL: {
-            SDL_API::destroyInstance();
-        } break;
-        default: {
-        } break; 
-    };
+    _api.release();
 }
 
 void SFXDevice::beginFrame() {

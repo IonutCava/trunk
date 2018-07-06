@@ -44,8 +44,12 @@ class GFXDevice;
 class SFXDevice;
 class Application;
 class SceneManager;
+class ResourceCache;
+class PlatformContext;
 class SceneRenderState;
+class RenderPassManager;
 class FrameListenerManager;
+
 namespace Input {
     class InputInterface;
 };
@@ -53,33 +57,6 @@ namespace Input {
 enum class RenderStage : U32;
 
 struct FrameEvent;
-class GUI;
-
-class PlatformContext {
-public:
-    explicit PlatformContext(GFXDevice& gfx,
-                             SFXDevice& sfx,
-                             PXDevice&  pfx,
-                             std::unique_ptr<GUI> gui,
-                             Input::InputInterface& input);
-    void idle();
-
-    /// Access to the GPU
-    GFXDevice& _GFX;
-    /// Access to the audio device
-    SFXDevice& _SFX;
-    /// Access to the physics system
-    PXDevice& _PFX;
-    /// The input interface
-    Input::InputInterface& _INPUT;
-
-    inline GUI& gui() { return *_GUI; }
-    inline const GUI& gui() const { return *_GUI; }
-
-private:
-    /// The graphical user interface
-    std::unique_ptr<GUI> _GUI;
-};
 
 struct LoopTimingData {
     LoopTimingData();
@@ -168,6 +145,16 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
         return _taskPool;
     }
 
+    ResourceCache& resourceCache() {
+        assert(_resCache != nullptr);
+        return *_resCache;
+    }
+
+    const ResourceCache& resourceCache() const {
+        assert(_resCache != nullptr);
+        return *_resCache;
+    }
+
     PlatformContext& platformContext() {
         assert(_platformContext != nullptr);
         return *_platformContext;
@@ -177,6 +164,27 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
         assert(_platformContext != nullptr);
         return *_platformContext;
     }
+
+    SceneManager& sceneManager() {
+        assert(_sceneManager != nullptr);
+        return *_sceneManager;
+    }
+
+    const SceneManager& sceneManager() const {
+        assert(_sceneManager != nullptr);
+        return *_sceneManager;
+    }
+
+    RenderPassManager& renderPassManager() {
+        assert(_renderPassManager != nullptr);
+        return *_renderPassManager;
+    }
+
+    const RenderPassManager& renderPassManager() const {
+        assert(_renderPassManager != nullptr);
+        return *_renderPassManager;
+    }
+
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
@@ -192,10 +200,10 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
 
     Application& _APP;
 
-    PlatformContext* _platformContext;
-
-    /// The SceneManager/ Scene Pool
-    SceneManager& _sceneMgr;
+    std::unique_ptr<ResourceCache>     _resCache;
+    std::unique_ptr<PlatformContext>   _platformContext;
+    std::unique_ptr<SceneManager>      _sceneManager;
+    std::unique_ptr<RenderPassManager> _renderPassManager;
 
     LoopTimingData _timingData;
 

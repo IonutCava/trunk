@@ -8,7 +8,7 @@ template <>
 Resource_ptr ImplResourceLoader<AudioDescriptor>::operator()() {
     AudioDescriptor_ptr ptr(MemoryManager_NEW AudioDescriptor(_descriptor.getName(),
                                                                _descriptor.getResourceLocation()),
-                            DeleteResource());
+                            DeleteResource(_cache));
     if (!load(ptr)) {
         ptr.reset();
     } else {

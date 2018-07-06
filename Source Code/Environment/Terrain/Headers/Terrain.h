@@ -107,7 +107,7 @@ class Terrain : public Object3D {
     friend class Attorney::TerrainLoader;
 
    public:
-    explicit Terrain(const stringImpl& name);
+    explicit Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name);
     ~Terrain();
 
     bool unload();

@@ -195,15 +195,15 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
         Util::WriteTextFile(variant, sourceCode);
 }
 
-void ShaderProgram::onStartup() {
+void ShaderProgram::onStartup(ResourceCache& parentCache) {
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
-    _imShader = CreateResource<ShaderProgram>(immediateModeShader);
+    _imShader = CreateResource<ShaderProgram>(parentCache, immediateModeShader);
     assert(_imShader != nullptr);
 
     // Create a null shader (basically telling the API to not use any shaders when bound)
-    _nullShader = CreateResource<ShaderProgram>(ResourceDescriptor("NULL"));
+    _nullShader = CreateResource<ShaderProgram>(parentCache, ResourceDescriptor("NULL"));
     // The null shader should never be nullptr!!!!
     assert(_nullShader != nullptr);  // LoL -Ionut
 }

@@ -60,13 +60,13 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback {
 
 class PhysicsAsset;
 class SceneGraphNode;
-DEFINE_SINGLETON_W_SPECIFIER(PhysX,
-                             PhysicsAPIWrapper,
-                             physx::debugger::comm::PvdConnectionHandler,
-                             final)
+class PhysX final : public PhysicsAPIWrapper,
+                    private physx::debugger::comm::PvdConnectionHandler {
 
-  private:
+public:
     PhysX();
+    ~PhysX();
+private:
     ///////////////////////////////////////////////////////////////////////////////
     // Implements PvdConnectionFactoryHandler
     virtual void onPvdSendClassDescriptions(physx::debugger::comm::PvdConnection&) {
@@ -75,7 +75,7 @@ DEFINE_SINGLETON_W_SPECIFIER(PhysX,
     virtual void onPvdDisconnected(
         physx::debugger::comm::PvdConnection& inFactory) {}
 
-  public:
+public:
     ErrorCode initPhysicsAPI(U8 targetFrameRate);
     bool closePhysicsAPI();
     void update(const U64 deltaTime);
@@ -90,13 +90,13 @@ DEFINE_SINGLETON_W_SPECIFIER(PhysX,
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
 
     PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
-  protected:
+protected:
     physx::PxProfileZone* getOrCreateProfileZone(physx::PxFoundation& inFoundation);
 
-  protected:
+protected:
     PhysicsSceneInterface* _targetScene;
 
-  private:
+private:
     physx::PxPhysics* _gPhysicsSDK;
     physx::PxCooking* _cooking;
     physx::PxFoundation* _foundation;
@@ -110,7 +110,7 @@ DEFINE_SINGLETON_W_SPECIFIER(PhysX,
     static physx::PxDefaultErrorCallback _gDefaultErrorCallback;
 
     static hashMapImpl<stringImpl, physx::PxTriangleMesh*> _gMeshCache;
-END_SINGLETON
+};
 
 };  // namespace Divide
 

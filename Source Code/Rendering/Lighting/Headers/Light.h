@@ -79,7 +79,7 @@ class Light : public SceneNode {
     /// Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
-    explicit Light(const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool);
+    explicit Light(ResourceCache& parentCache, const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool);
     virtual ~Light();
 
     /// Is the light a shadow caster?
@@ -164,8 +164,8 @@ class Light : public SceneNode {
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
 
-    void validateOrCreateShadowMaps(SceneRenderState& sceneRenderState);
-    virtual void generateShadowMaps(U32 passIdx);
+    void validateOrCreateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState);
+    virtual void generateShadowMaps(GFXDevice& context, U32 passIdx);
 
     inline const ShadowProperties& getShadowProperties() const {
         return _shadowProperties;

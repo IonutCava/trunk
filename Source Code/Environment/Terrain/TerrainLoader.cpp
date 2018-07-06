@@ -45,7 +45,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
             terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
         textureBlendMap.setPropertyDescriptor(blendMapSampler);
         textureBlendMap.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-        textureLayer->setBlendMap(CreateResource<Texture>(textureBlendMap));
+        textureLayer->setBlendMap(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
 
         arrayLocation.clear();
         currentTexture =
@@ -100,7 +100,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         textureTileMaps.setResourceLocation(arrayLocation);
         textureTileMaps.setPropertyDescriptor(
             Attorney::TerrainLoader::getAlbedoSampler(*terrain));
-        textureLayer->setTileMaps(CreateResource<Texture>(textureTileMaps));
+        textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps));
 
         arrayLocation.clear();
         currentTexture =
@@ -151,14 +151,14 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         textureNormalMaps.setResourceLocation(arrayLocation);
         textureNormalMaps.setPropertyDescriptor(
             Attorney::TerrainLoader::getNormalSampler(*terrain));
-        textureLayer->setNormalMaps(CreateResource<Texture>(textureNormalMaps));
+        textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
 
         Attorney::TerrainLoader::addTextureLayer(*terrain, textureLayer);
     }
 
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
     Material_ptr terrainMaterial =
-        CreateResource<Material>(terrainMaterialDescriptor);
+        CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
 
     terrainMaterial->setDiffuse(
         vec4<F32>(DefaultColours::WHITE().rgb() / 2, 1.0f));
@@ -182,14 +182,14 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     textureWaterCaustics.setResourceLocation(terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
     textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(textureWaterCaustics));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" +
                                                name);
     underwaterAlbedoTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
     underwaterAlbedoTexture.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
     underwaterAlbedoTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(underwaterAlbedoTexture));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" +
                                                name);
@@ -198,7 +198,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     underwaterDetailTexture.setPropertyDescriptor(
         Attorney::TerrainLoader::getNormalSampler(*terrain));
     underwaterDetailTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(underwaterDetailTexture));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
     terrainMaterial->setShaderLoadThreaded(false);
     terrainMaterial->dumpToFile(false);
@@ -447,7 +447,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain, cons
     Attorney::TerrainLoader::buildQuadtree(*terrain);
 
 
-    Quad3D_ptr plane = CreateResource<Quad3D>(infinitePlane);
+    Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
     F32 height = bMin.y + yOffset;
     F32 farPlane = 2.0f * terrainBB.getWidth();
@@ -505,7 +505,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     textureDetailMaps.setID(textureCount);
     textureDetailMaps.setResourceLocation(textureLocation);
     textureDetailMaps.setPropertyDescriptor(grassSampler);
-    Texture_ptr grassBillboardArray = CreateResource<Texture>(textureDetailMaps);
+    Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
     VegetationDetails& vegDetails =
         Attorney::TerrainLoader::vegetationDetails(*terrain);

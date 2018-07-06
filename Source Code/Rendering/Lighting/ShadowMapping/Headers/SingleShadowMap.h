@@ -41,12 +41,12 @@ class ShaderProgram;
 /// A single shadow map system. Used, for example, by spot lights.
 class SingleShadowMap : public ShadowMap {
    public:
-    SingleShadowMap(Light* light, Camera* shadowCamera);
+    explicit SingleShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera);
     ~SingleShadowMap();
 
-    void render(U32 passIdx);
+    void render(GFXDevice& context, U32 passIdx);
     void init(ShadowMapInfo* const smi);
-    void previewShadowMaps(U32 rowIndex);
+    void previewShadowMaps(GFXDevice& context, U32 rowIndex);
 
    private:
        ShaderProgram_ptr _previewDepthMapShader;

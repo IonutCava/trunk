@@ -43,6 +43,11 @@ PhysX::PhysX()
 {
 }
 
+PhysX::~PhysX()
+{
+    assert(_gPhysicsSDK == nullptr);
+}
+
 ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
     Console::printfn(Locale::get(_ID("START_PHYSX_API")));
 
@@ -130,6 +135,8 @@ bool PhysX::closePhysicsAPI() {
     }
     _gPhysicsSDK->release();
     _foundation->release();
+    _gPhysicsSDK = nullptr;
+    _foundation = nullptr;
 
     return true;
 }

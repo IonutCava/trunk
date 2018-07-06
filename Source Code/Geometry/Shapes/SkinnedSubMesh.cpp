@@ -14,8 +14,8 @@ namespace {
     const bool MULTITHREADED_BOUNDING_BOX_CALCULATION = true;
 };
 
-SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
-    : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
+SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
+    : SubMesh(context, parentCache, name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
     _parentAnimatorPtr(nullptr)
 {
 }

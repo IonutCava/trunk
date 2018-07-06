@@ -5,6 +5,7 @@
 #include "Quadtree/Headers/QuadtreeNode.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/SceneManager.h"
@@ -15,8 +16,8 @@
 
 namespace Divide {
 
-Terrain::Terrain(const stringImpl& name)
-    : Object3D(name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
+Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
+    : Object3D(context, parentCache, name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
       _alphaTexturePresent(false),
       _plane(nullptr),
       _drawBBoxes(false),
@@ -70,6 +71,7 @@ void Terrain::buildQuadtree() {
     reserveTriangleCount((_terrainDimensions.x - 1) *
                          (_terrainDimensions.y - 1) * 2);
     _terrainQuadtree.Build(
+        _context,
         _boundingBox,
         vec2<U32>(_terrainDimensions.x, _terrainDimensions.y),
         _chunkSize, this);
@@ -157,7 +159,7 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
     vectorImpl<vec3<U32>> chunkData;
     size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
     chunkData.reserve(chunkCount);
-    _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);
+    _terrainQuadtree.getChunkBufferData(_context, sceneRenderState, chunkData);
 
     std::sort(std::begin(chunkData), std::end(chunkData),
                 [](const vec3<U32>& a, const vec3<U32>& b) {
@@ -181,7 +183,7 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
     if (_drawBBoxes) {
         GenericDrawCommands commands;
         commands.reserve(chunkCount);
-        _terrainQuadtree.drawBBox(commands);
+        _terrainQuadtree.drawBBox(_context, commands);
 
         for (const GenericDrawCommand& cmd : commands) {
             drawCommandsInOut[i++] = cmd;

@@ -1,5 +1,6 @@
 #include "Headers/GFXDevice.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
@@ -28,7 +29,7 @@ void GFXDevice::previewDepthBuffer() {
             // between the 2 scene z-planes
             ResourceDescriptor fbPreview("fbPreview.LinearDepth.ScenePlanes");
             fbPreview.setPropertyList("USE_SCENE_ZPLANES");
-            _previewDepthMapShader = CreateResource<ShaderProgram>(fbPreview);
+            _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
             assert(_previewDepthMapShader != nullptr);
         }
 
@@ -55,13 +56,13 @@ void GFXDevice::previewDepthBuffer() {
             }
 
             _previewDepthMapShader->Uniform("lodLevel", to_float(LoDLevel));
-            GFX::ScopedViewport viewport(screenWidth - 256, 0, 256, 256);
+            GFX::ScopedViewport viewport(*this, screenWidth - 256, 0, 256, 256);
             draw(triangleCmd);
         }
         {
             //Depth preview
             _previewDepthMapShader->Uniform("lodLevel", 0.0f);
-            GFX::ScopedViewport viewport(screenWidth - 512, 0, 256, 256);
+            GFX::ScopedViewport viewport(*this, screenWidth - 512, 0, 256, 256);
             draw(triangleCmd);
         }
 
@@ -70,7 +71,7 @@ void GFXDevice::previewDepthBuffer() {
             //Normals preview
             screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 1);
 
-            GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
+            GFX::ScopedViewport viewport(*this, screenWidth - 768, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);
             _renderTargetDraw->Uniform("unpack2Channel", true);
             draw(triangleCmd);
@@ -79,7 +80,7 @@ void GFXDevice::previewDepthBuffer() {
             //Velocity preview
             screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 2);
 
-            GFX::ScopedViewport viewport(screenWidth - 1024, 0, 256, 256);
+            GFX::ScopedViewport viewport(*this, screenWidth - 1024, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);
             _renderTargetDraw->Uniform("unpack2Channel", false);
             draw(triangleCmd);

@@ -62,10 +62,10 @@ class Object3D : public SceneNode {
     };
 
 
-    explicit Object3D(const stringImpl& name, ObjectType type, ObjectFlag flag);
-    explicit Object3D(const stringImpl& name, ObjectType type, U32 flagMask);
-    explicit Object3D(const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag);
-    explicit Object3D(const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
+    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectType type, ObjectFlag flag);
+    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectType type, U32 flagMask);
+    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag);
+    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
 
     virtual ~Object3D();
 
@@ -116,6 +116,7 @@ class Object3D : public SceneNode {
                                         RenderStage renderStage,
                                         GenericDrawCommands& drawCommandsInOut) override;
    protected:
+    GFXDevice& _context;
     bool _update;
     bool _playAnimations;
     U32 _geometryFlagMask;

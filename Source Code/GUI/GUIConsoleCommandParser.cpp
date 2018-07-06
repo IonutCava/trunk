@@ -2,6 +2,7 @@
 
 #include "Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
@@ -13,8 +14,9 @@
 
 namespace Divide {
 
-GUIConsoleCommandParser::GUIConsoleCommandParser(GUI& context)
+GUIConsoleCommandParser::GUIConsoleCommandParser(PlatformContext& context, ResourceCache& cache)
     : _context(context),
+      _resCache(cache),
       _sound(nullptr)
 {
     _commandMap[_ID("say")] =
@@ -152,14 +154,14 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
         ResourceDescriptor sound("consoleFilePlayback");
         sound.setResourceLocation(filename);
         sound.setFlag(false);
-        _sound = CreateResource<AudioDescriptor>(sound);
+        _sound = CreateResource<AudioDescriptor>(_resCache, sound);
         if (filename.find("music") != stringImpl::npos) {
             // play music
-            SFXDevice::instance().playMusic(_sound);
+            _context.sfx().playMusic(_sound);
         } else {
             // play sound but stop music first if it's playing
-            SFXDevice::instance().stopMusic();
-            SFXDevice::instance().playSound(_sound);
+            _context.sfx().stopMusic();
+            _context.sfx().playSound(_sound);
         }
     } else {
         Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FILE")),
@@ -168,7 +170,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
-    SceneGraph& sceneGraph = _context.activeScene()->sceneGraph();
+    SceneGraph& sceneGraph = _context.gui().activeScene()->sceneGraph();
     if (!args.empty()) {
         SceneGraphNode_ptr sgn = sceneGraph.findNode("args").lock();
         if (!sgn) {
@@ -181,10 +183,10 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     AI::Navigation::NavigationMesh* temp = aiManager.getNavMesh(AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
     if (!temp) {
-        temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
+        temp = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
     }
     // Set it's file name
-    temp->setFileName(_context.activeScene()->getName());
+    temp->setFileName(_context.gui().activeScene()->getName());
     // Try to load it from file
     bool loaded = temp->load(sceneGraph.getRoot());
     if (!loaded) {
@@ -251,7 +253,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     model.useHighDetailNavMesh = true;
     model.physicsUsage = true;
     model.physicsStatic = true;
-    _context.activeScene()->addModel(model);
+    _context.gui().activeScene()->addModel(model);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args) {

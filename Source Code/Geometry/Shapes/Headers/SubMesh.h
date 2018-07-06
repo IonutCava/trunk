@@ -65,8 +65,10 @@ class SubMesh : public Object3D {
     friend class Attorney::SubMeshMeshImporter;
 
    public:
-    SubMesh(const stringImpl& name,
-            ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
+    explicit SubMesh(GFXDevice& context,
+                     ResourceCache& parentCache,
+                     const stringImpl& name,
+                     ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
 
     virtual ~SubMesh();
 

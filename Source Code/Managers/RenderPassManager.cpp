@@ -7,19 +7,33 @@
 
 namespace Divide {
 
-RenderPassManager::RenderPassManager()
-    : _context(GFXDevice::instance()),
-      _renderQueue(MemoryManager_NEW RenderQueue(_context))
+RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
+    : KernelComponent(parent),
+      _context(context),
+      _renderQueue(nullptr)
 {
 }
 
 RenderPassManager::~RenderPassManager()
 {
+    destroy();
+}
+
+bool RenderPassManager::init() {
+    if (_renderQueue == nullptr) {
+        _renderQueue = MemoryManager_NEW RenderQueue(_context);
+        return true;
+    }
+
+    return false;
+}
+
+void RenderPassManager::destroy() {
     for (RenderPass* rp : _renderPasses) {
         MemoryManager::DELETE(rp);
     }
 
-    MemoryManager::DELETE(_renderQueue);
+    MemoryManager::SAFE_DELETE(_renderQueue);
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
@@ -49,7 +63,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              RenderStage renderStage) {
     assert(!renderPassName.empty());
 
-    _renderPasses.emplace_back(MemoryManager_NEW RenderPass(_context, renderPassName, orderKey, renderStage));
+    _renderPasses.emplace_back(MemoryManager_NEW RenderPass(*this, _context, renderPassName, orderKey, renderStage));
     RenderPass& item = *_renderPasses.back();
 
     std::sort(std::begin(_renderPasses), std::end(_renderPasses),
@@ -131,17 +145,15 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     commandBuffer.resize(0);
 
     // step1: cull nodes for current camera and pass
-    SceneManager& mgr = SceneManager::instance();
-
-    GFXDevice& GFX = GFXDevice::instance();
+    SceneManager& mgr = parent().sceneManager();
 
     // Tell the Rendering API to draw from our desired PoV
-    GFX.renderFromCamera(*params.camera);
+    _context.renderFromCamera(*params.camera);
    
-    GFX.setRenderStage(params.stage);
+    _context.setRenderStage(params.stage);
 
     if (params.doPrePass) {
-        GFX.setPrePass(true);
+        _context.setPrePass(true);
         
         Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                               params.stage,
@@ -152,29 +164,28 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             RenderPassCmd cmd;
             cmd._renderTarget = params.target;
             cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
-            GFX.renderQueueToSubPasses(cmd);
+            _context.renderQueueToSubPasses(cmd);
             RenderSubPassCmds postRenderSubPasses(1);
             Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, params.stage, postRenderSubPasses);
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
             commandBuffer.push_back(cmd);
             cleanCommandBuffer(commandBuffer);
-            GFX.flushCommandBuffer(commandBuffer);
+            _context.flushCommandBuffer(commandBuffer);
             commandBuffer.resize(0);
 
-            RenderTarget& target = GFX.renderTarget(params.target);
-            GFX.constructHIZ(target);
+            RenderTarget& target = _context.renderTarget(params.target);
+            _context.constructHIZ(target);
 
             if (params.occlusionCull) {
-                RenderPassManager& passMgr = RenderPassManager::instance();
-                RenderPass::BufferData& bufferData = passMgr.getBufferData(params.stage, params.pass);
-                GFX.occlusionCull(bufferData, target.getAttachment(RTAttachment::Type::Depth, 0).asTexture());
+                RenderPass::BufferData& bufferData = getBufferData(params.stage, params.pass);
+                _context.occlusionCull(bufferData, target.getAttachment(RTAttachment::Type::Depth, 0).asTexture());
             }
         }
     }
 
-    GFX.setPrePass(false);
+    _context.setPrePass(false);
     // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
-    GFX.setRenderStage(params.stage);
+    _context.setRenderStage(params.stage);
 
     Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                           params.stage,
@@ -183,7 +194,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     if (params.target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
         if (params.stage != RenderStage::SHADOW) {
-            Attorney::SceneManagerRenderPass::preRender(mgr, *params.camera, GFX.renderTarget(params.target));
+            Attorney::SceneManagerRenderPass::preRender(mgr, *params.camera, _context.renderTarget(params.target));
             if (params.doPrePass) {
                 drawToDepth = Config::DEBUG_HIZ_CULLING;
             }
@@ -197,13 +208,13 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         RenderPassCmd cmd;
         cmd._renderTarget = params.target;
         cmd._renderTargetDescriptor = drawPolicy;
-        GFX.renderQueueToSubPasses(cmd);
+        _context.renderQueueToSubPasses(cmd);
         RenderSubPassCmds postRenderSubPasses(1);
         Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, params.stage, postRenderSubPasses);
         cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
         commandBuffer.push_back(cmd);
         cleanCommandBuffer(commandBuffer);
-        GFX.flushCommandBuffer(commandBuffer);
+        _context.flushCommandBuffer(commandBuffer);
         commandBuffer.resize(0);
     }
 }

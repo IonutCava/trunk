@@ -38,7 +38,7 @@ namespace Divide {
 
 class DefaultScene : public Scene {
 public:
-    DefaultScene(PlatformContext& context, const stringImpl& name);
+    DefaultScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
 
     bool load(const stringImpl& name) override;
     void postLoadMainThread() override;

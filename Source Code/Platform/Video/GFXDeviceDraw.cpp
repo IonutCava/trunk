@@ -134,7 +134,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        dataOut._worldMatrix.set(transform->getWorldMatrix(_interpolationFactor));
+        dataOut._worldMatrix.set(transform->getWorldMatrix(getFrameInterpolationFactor()));
 
         mat4<F32> normalMatrix(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
@@ -286,7 +286,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Te
 
 U32 GFXDevice::getLastCullCount() const {
     const RenderPass::BufferData& bufferData = 
-        RenderPassManager::instance().getBufferData(RenderStage::DISPLAY, 0);
+        parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
 
     U32 cullCount = bufferData._cmdBuffer->getAtomicCounter();
     if (cullCount > 0) {

@@ -4,6 +4,7 @@
 #include "GUI/Headers/GUIConsole.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
@@ -15,8 +16,9 @@
 
 namespace Divide {
 
-GUIEditor::GUIEditor(GUI& context)
+GUIEditor::GUIEditor(PlatformContext& context, ResourceCache& cache)
     : _context(context),
+      _resCache(cache),
       _init(false),
       _wasControlClick(false),
       _createNavMeshQueued(false),
@@ -239,8 +241,8 @@ bool GUIEditor::update(const U64 deltaTime) {
     _wasControlClick = false;
     bool state = true;
     if (_createNavMeshQueued) {
-        Scene& activeScene = *_context.activeScene();
-        AI::AIManager& aiManager = _context.activeScene()->aiManager();
+        Scene& activeScene = *_context.gui().activeScene();
+        AI::AIManager& aiManager = _context.gui().activeScene()->aiManager();
 
         state = false;
         // Check if we already have a NavMesh created
@@ -249,7 +251,7 @@ bool GUIEditor::update(const U64 deltaTime) {
         aiManager.toggleNavMeshDebugDraw(toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
         // Create a new NavMesh if we don't currently have one
         if (!temp) {
-            temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
+            temp = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
         }
         // Set it's file name
         temp->setFileName(activeScene.getName());
@@ -935,7 +937,7 @@ bool GUIEditor::Handle_EditFieldClick(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_CreateNavMesh(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: NavMesh creation queued!");
-    _context.getConsole()->setVisible(true);
+    _context.gui().getConsole()->setVisible(true);
     _createNavMeshQueued = true;
     return true;
 }
@@ -952,7 +954,7 @@ bool GUIEditor::Handle_SaveSelection(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_DeleteSelection(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Deleting selection!");
-    _context.activeScene()->sceneGraph().deleteNode(_currentSelection, false);
+    _context.gui().activeScene()->sceneGraph().deleteNode(_currentSelection, false);
     return true;
 }
 
@@ -1044,7 +1046,7 @@ bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: NavMesh rendering disabled!");
     }
-    _context
+    _context.gui()
         .activeScene()
         ->aiManager()
         .toggleNavMeshDebugDraw(toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());

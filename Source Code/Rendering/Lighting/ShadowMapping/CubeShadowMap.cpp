@@ -10,34 +10,37 @@
 
 namespace Divide {
 
-CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
-    : ShadowMap(light, shadowCamera, ShadowType::CUBEMAP)
+CubeShadowMap::CubeShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera)
+    : ShadowMap(context, light, shadowCamera, ShadowType::CUBEMAP)
 {
+    
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(), "Single Shadow Map");
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Cube.LinearDepth.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
     shadowPreviewShader.setPropertyList("USE_SCENE_ZPLANES");
-    _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
+    _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
     _previewDepthMapShader->Uniform("useScenePlanes", false);
 }
 
-CubeShadowMap::~CubeShadowMap() {}
+CubeShadowMap::~CubeShadowMap()
+{
+}
 
 void CubeShadowMap::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CubeShadowMap::render(U32 passIdx) {
-    GFXDevice::instance().generateCubeMap(getDepthMap(),
-                                          _arrayOffset,
-                                          _light->getPosition(),
-                                          vec2<F32>(0.1f, _light->getRange()),
-                                          RenderStage::SHADOW,
-                                          passIdx);
+void CubeShadowMap::render(GFXDevice& context, U32 passIdx) {
+    context.generateCubeMap(getDepthMap(),
+                            _arrayOffset,
+                            _light->getPosition(),
+                            vec2<F32>(0.1f, _light->getRange()),
+                            RenderStage::SHADOW,
+                            passIdx);
 }
 
-void CubeShadowMap::previewShadowMaps(U32 rowIndex) {
+void CubeShadowMap::previewShadowMaps(GFXDevice& context, U32 rowIndex) {
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
@@ -50,13 +53,13 @@ void CubeShadowMap::previewShadowMaps(U32 rowIndex) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFXDevice::instance().getDefaultStateBlock(true));
+    triangleCmd.stateHash(context.getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_previewDepthMapShader);
 
     for (U32 i = 0; i < 6; ++i) {
         _previewDepthMapShader->Uniform("face", i);
-        GFX::ScopedViewport sViewport(viewport.x * i, viewport.y, viewport.z, viewport.w);
-        GFXDevice::instance().draw(triangleCmd);
+        GFX::ScopedViewport sViewport(context, viewport.x * i, viewport.y, viewport.z, viewport.w);
+        context.draw(triangleCmd);
     }
 }
 

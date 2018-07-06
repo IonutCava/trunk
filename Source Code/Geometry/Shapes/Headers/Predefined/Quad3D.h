@@ -40,8 +40,8 @@ namespace Divide {
 class ShaderProgram;
 class Quad3D : public Object3D {
    public:
-    explicit Quad3D(const stringImpl& name, const bool doubleSided = true) 
-        : Object3D(name, ObjectType::QUAD_3D, ObjectFlag::OBJECT_FLAG_NONE)
+    explicit Quad3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const bool doubleSided = true)
+        : Object3D(context, parentCache, name, ObjectType::QUAD_3D, ObjectFlag::OBJECT_FLAG_NONE)
     {
         U16 indices[] = {2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3};
 

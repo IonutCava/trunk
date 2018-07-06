@@ -11,8 +11,8 @@
 
 namespace Divide {
 
-Light::Light(const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool)
-    : SceneNode(name, SceneNodeType::TYPE_LIGHT),
+Light::Light(ResourceCache& parentCache, const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool)
+    : SceneNode(parentCache, name, SceneNodeType::TYPE_LIGHT),
       _parentPool(parentPool),
       _type(type),
       _rangeChanged(true),
@@ -144,7 +144,7 @@ bool Light::onRender(RenderStage currentStage) {
                                       to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                       to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-        _impostor = CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
+        _impostor = CreateResource<ImpostorSphere>(_parentCache, ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_positionAndRange.w);
         _impostor->renderState().setDrawState(true);
         _impostorSGN = _lightSGN->addNode(_impostor, normalMask, PhysicsGroup::GROUP_IGNORE);
@@ -187,11 +187,11 @@ bool Light::removeShadowMapInfo() {
     return true;
 }
 
-void Light::validateOrCreateShadowMaps(SceneRenderState& sceneRenderState) {
-    _shadowMapInfo->createShadowMap(sceneRenderState, shadowCamera());
+void Light::validateOrCreateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState) {
+    _shadowMapInfo->createShadowMap(context, sceneRenderState, shadowCamera());
 }
 
-void Light::generateShadowMaps(U32 passIdx) {
+void Light::generateShadowMaps(GFXDevice& context, U32 passIdx) {
     ShadowMap* sm = _shadowMapInfo->getShadowMap();
 
     DIVIDE_ASSERT(sm != nullptr,
@@ -199,7 +199,7 @@ void Light::generateShadowMaps(U32 passIdx) {
                   "with no shadow map found!");
 
     _shadowProperties._arrayOffset.set(sm->getArrayOffset());
-    sm->render(passIdx);
+    sm->render(context, passIdx);
 
 }
 

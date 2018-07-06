@@ -64,7 +64,7 @@ class SceneRenderState;
 class QuadtreeNode {
    public:
     /// recursive node building function
-    void Build(const U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize,
+    void Build(GFXDevice& context, const U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize,
                U32 minHMSize, Terrain* const terrain, U32& chunkCount);
 
     bool computeBoundingBox();
@@ -72,7 +72,7 @@ class QuadtreeNode {
     void getBufferOffsetAndSize(U32 options,
                                 const SceneRenderState& sceneRenderState,
                                 vectorImpl<vec3<U32>>& chunkBufferData) const;
-    void drawBBox(GenericDrawCommands& commandsOut);
+    void drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);

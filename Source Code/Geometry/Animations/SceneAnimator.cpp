@@ -5,6 +5,7 @@
 #include "Headers/AnimationUtils.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {
@@ -60,7 +61,7 @@ void SceneAnimator::release(bool releaseAnimations)
     MemoryManager::DELETE(_skeleton);
 }
 
-bool SceneAnimator::init() {
+bool SceneAnimator::init(PlatformContext& context) {
     Console::d_printfn(Locale::get(_ID("LOAD_ANIMATIONS_BEGIN")));
 
     _transforms.resize(_skeletonDepthCache);
@@ -105,7 +106,7 @@ bool SceneAnimator::init() {
 
     // pay the cost upfront
     for(const std::shared_ptr<AnimEvaluator>& crtAnimation : _animations) {
-        crtAnimation->initBuffers();
+        crtAnimation->initBuffers(context.gfx());
     }
 
      Console::d_printfn(Locale::get(_ID("LOAD_ANIMATIONS_END")), _skeletonDepthCache);
@@ -114,12 +115,12 @@ bool SceneAnimator::init() {
 }
 
 /// This will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
-bool SceneAnimator::init(Bone* skeleton, const vectorImpl<Bone*>& bones) {
+bool SceneAnimator::init(PlatformContext& context, Bone* skeleton, const vectorImpl<Bone*>& bones) {
     release(false);
     _skeleton = skeleton;
     _bones = bones;
     _skeletonDepthCache = to_int(_bones.size());
-    return init();
+    return init(context);
    
 }
 
@@ -187,8 +188,10 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
 }
 
 /// Create animation skeleton
-I32 SceneAnimator::createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
-                                  vectorImpl<Line>& lines) {
+I32 SceneAnimator::createSkeleton(Bone* piNode,
+                                  const aiMatrix4x4& parent,
+                                  vectorImpl<Line>& lines,
+                                  bool rowMajor) {
 
     const aiMatrix4x4& me = piNode->_globalTransform;
 
@@ -197,7 +200,7 @@ I32 SceneAnimator::createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
         line.colour(255, 0, 0, 255);
         line.width(2.0f);
 
-        if (GFXDevice::instance().getAPI() == RenderAPI::Direct3D) {
+        if (rowMajor) {
             line.segment(parent.d1, parent.d2, parent.d3, me.d1, me.d2, me.d3);
         } else {
             line.segment(parent.a4, parent.b4, parent.c4, me.a4, me.b4, me.c4);

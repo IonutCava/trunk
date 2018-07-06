@@ -1,5 +1,6 @@
 #include "Headers/SceneGraph.h"
 
+#include "Core/Headers/PlatformContext.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -57,7 +58,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::PHYSICS))) {
         STUBBED("Rigid body physics disabled for now - Ionut");
         physicsGroup = PhysicsGroup::GROUP_IGNORE;
-        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this, physicsGroup));
+        PXDevice& pxContext = _sceneGraph.parentScene().platformContext().pfx();
+        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this, physicsGroup, pxContext));
 
         PhysicsComponent* pComp = get<PhysicsComponent>();
         pComp->addTransformUpdateCbk(DELEGATE_BIND(&Attorney::SceneGraphSGN::onNodeTransform, std::ref(_sceneGraph), std::ref(*this)));
@@ -69,10 +71,12 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     }
     
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RENDERING))) {
+        GFXDevice& gfxContext = _sceneGraph.parentScene().platformContext().gfx();
 
         const Material_ptr& materialTpl = _node->getMaterialTpl();
         setComponent(SGNComponent::ComponentType::RENDERING, 
-                     new RenderingComponent(materialTpl ? materialTpl->clone("_instance_" + name) 
+                     new RenderingComponent(gfxContext,
+                                            materialTpl ? materialTpl->clone("_instance_" + name)
                                                         : nullptr,
                                             *this));
     }

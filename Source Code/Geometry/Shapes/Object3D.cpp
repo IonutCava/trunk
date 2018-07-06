@@ -1,5 +1,6 @@
 #include "Headers/Object3D.h"
 
+#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -7,33 +8,34 @@
 
 namespace Divide {
 
-Object3D::Object3D(const stringImpl& name, ObjectType type, ObjectFlag flag)
-    : Object3D(name, "", type, to_uint(flag))
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectType type, ObjectFlag flag)
+    : Object3D(context, parentCache, name, "", type, to_uint(flag))
 {
 }
 
-Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
-    : Object3D(name, "", type, flagMask)
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectType type, U32 flagMask)
+    : Object3D(context, parentCache, name, "", type, flagMask)
 {
 }
 
-Object3D::Object3D(const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
-    : Object3D(name, resourceLocation, type, to_uint(flag))
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
+    : Object3D(context, parentCache, name, resourceLocation, type, to_uint(flag))
 {
 }
 
-Object3D::Object3D(const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
-    : SceneNode(name, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
+    : SceneNode(parentCache, name, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
+    _context(context),
     _update(false),
+    _buffer(nullptr),
     _playAnimations(true),
     _geometryType(type),
     _geometryFlagMask(flagMask),
     _geometryPartitionID(0U)
 {
-    _buffer =
-        BitCompare(_geometryFlagMask, to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
-        ? nullptr
-        : GFXDevice::instance().newVB();
+    if (!BitCompare(_geometryFlagMask, to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
+        _buffer = context.newVB();
+    }
 
     switch (type) {
         case ObjectType::BOX_3D :

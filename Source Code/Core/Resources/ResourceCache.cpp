@@ -7,28 +7,32 @@ namespace Divide {
 
 void DeleteResource::operator()(Resource* res)
 {
-    ResourceCache::instance().remove(res);
+    _context.remove(res);
     if (res && res->getType() != ResourceType::GPU_OBJECT) {
         MemoryManager::DELETE(res);
     }
 }
 
-ResourceCache::ResourceCache()
+ResourceCache::ResourceCache(PlatformContext& context)
+    : _context(context)
 {
 }
 
-ResourceCache::~ResourceCache() {
-    destroy();
-    // DELETE(_loadingPool);
+ResourceCache::~ResourceCache()
+{
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_DELETE")));
+    clear();
+    // DELETE(_loadingPool);
 }
 
-void ResourceCache::destroy() {
+
+void ResourceCache::clear() {
+    WriteLock w_lock(_creationMutex);
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
     for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB);)
     {
         if (it->second.expired()) {
-             it = _resDB.erase(it);
+            it = _resDB.erase(it);
         } else {
             ++it;
         }

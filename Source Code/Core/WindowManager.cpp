@@ -14,7 +14,8 @@ WindowManager::WindowManager() : _displayIndex(0),
     SDL_Init(SDL_INIT_VIDEO);
 }
 
-ErrorCode WindowManager::init(RenderAPI api,
+ErrorCode WindowManager::init(GFXDevice& context,
+                              RenderAPI api,
                               ResolutionByType initialResolutions,
                               bool startFullScreen,
                               I32 targetDisplayIndex)
@@ -42,7 +43,7 @@ ErrorCode WindowManager::init(RenderAPI api,
 
     if (err == ErrorCode::NO_ERR) {
         setActiveWindow(0);
-        GPUState& gState = GFXDevice::instance().gpuState();
+        GPUState& gState = context.gpuState();
         // Query available display modes (resolution, bit depth per channel and
         // refresh rates)
         I32 numberOfDisplayModes = 0;

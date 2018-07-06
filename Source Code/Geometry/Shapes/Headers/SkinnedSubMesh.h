@@ -43,7 +43,7 @@ class SkinnedSubMesh : public SubMesh {
     typedef vectorImpl<AtomicWrapper<bool>>  BoundingBoxPerAnimationStatus;
 
    public:
-    SkinnedSubMesh(const stringImpl& name);
+    explicit SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name);
     ~SkinnedSubMesh();
 
    public:

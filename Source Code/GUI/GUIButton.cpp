@@ -1,7 +1,5 @@
 #include "Headers/GUIButton.h"
 
-#include "Core/Headers/ParamHandler.h"
-#include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
 
 #ifndef CEGUI_STATIC
@@ -11,16 +9,20 @@
 
 namespace Divide {
 
+GUIButton::AudioCallback GUIButton::_soundCallback;
+
 GUIButton::GUIButton(U64 guiID,
                      const stringImpl& text,
                      const stringImpl& guiScheme,
                      const vec2<F32>& relativeOffset,
                      const vec2<F32>& relativeDimensions,
                      CEGUI::Window* parent,
-                     ButtonCallback callback)
+                     ButtonCallback callback,
+                     AudioDescriptor_ptr onClickSound)
     : GUIElement(guiID, parent, GUIType::GUI_BUTTON),
       _callbackFunction(callback),
-      _btnWindow(nullptr)
+      _btnWindow(nullptr),
+      _onClickSound(onClickSound)
 {
     
     _btnWindow = CEGUI::WindowManager::getSingleton().createWindow((guiScheme + "/Button").c_str(), text.c_str());
@@ -34,12 +36,6 @@ GUIButton::GUIButton(U64 guiID,
     _parent->addChild(_btnWindow);
     _btnWindow->setEnabled(true);
 
-    stringImpl assetPath = ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation"));
-
-    ResourceDescriptor beepSound("buttonClick");
-    beepSound.setResourceLocation(assetPath + "/sounds/beep.wav");
-    beepSound.setFlag(false);
-    _onClickSound = CreateResource<AudioDescriptor>(beepSound);
     setActive(true);
 }
 
@@ -88,8 +84,8 @@ void GUIButton::setFont(const stringImpl& fontName,
 bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/) {
     if (_callbackFunction) {
         _callbackFunction(getGUID());
-        if (_onClickSound) {
-            SFXDevice::instance().playSound(_onClickSound);
+        if (_onClickSound && _soundCallback) {
+            _soundCallback(_onClickSound);
         }
         return true;
     }
@@ -98,6 +94,14 @@ bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/) {
 
 void GUIButton::setOnClickSound(const AudioDescriptor_ptr& onClickSound) {
     _onClickSound = onClickSound;
+}
+
+
+bool GUIButton::soundCallback(const AudioCallback& cbk) {
+    bool hasCbk = _soundCallback ? true : false;
+    _soundCallback = cbk;
+
+    return hasCbk;
 }
 
 };

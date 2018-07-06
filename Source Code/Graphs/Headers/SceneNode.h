@@ -95,8 +95,8 @@ class NOINITVTABLE SceneNode : public Resource {
     };
 
    public:
-    explicit SceneNode(const stringImpl& name, const SceneNodeType& type);
-    explicit SceneNode(const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache& parentCache, const stringImpl& name, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations (this is after sort and transform
@@ -131,6 +131,9 @@ class NOINITVTABLE SceneNode : public Resource {
     inline void decLODcount() { _LODcount--; }
     inline U8   getLODcount() const { return _LODcount; }
 
+    ResourceCache& parentResourceCache() { return _parentCache; }
+    const ResourceCache& parentResourceCache() const { return _parentCache; }
+
    protected:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
@@ -162,6 +165,7 @@ class NOINITVTABLE SceneNode : public Resource {
     }
 
    protected:
+    ResourceCache& _parentCache;
     /// The various states needed for rendering
     SceneNodeRenderState _renderState;
     /// Maximum available LOD levels

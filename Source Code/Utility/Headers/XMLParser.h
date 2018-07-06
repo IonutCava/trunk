@@ -39,25 +39,26 @@
 namespace Divide {
 
 class Scene;
-
+class GFXDevice;
+class PlatformContext;
 FWD_DECLARE_MANAGED_CLASS(Material);
 
 namespace XML {
 /// Parent Function
-stringImpl loadScripts(const stringImpl& file);
+stringImpl loadScripts(PlatformContext& context, const stringImpl& file);
 
 /// Child Functions
-void loadConfig(const stringImpl& file);
+void loadConfig(PlatformContext& context, const stringImpl& file);
 void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
 void loadScene(const stringImpl& sceneName, Scene* scene);
 void loadGeometry(const stringImpl& file, Scene* const scene);
 void loadTerrain(const stringImpl& file, Scene* const scene);
 void loadMusicPlaylist(const stringImpl& file, Scene* const scene);
 
-Material_ptr loadMaterial(const stringImpl& file);
-void dumpMaterial(Material& mat);
+Material_ptr loadMaterial(GFXDevice& context, const stringImpl& file);
+void dumpMaterial(GFXDevice& context, Material& mat);
 
-Material_ptr loadMaterialXML(const stringImpl& location, bool rendererDependent = true);
+Material_ptr loadMaterialXML(GFXDevice& context, const stringImpl& location, bool rendererDependent = true);
 };  // namespace XML
 };  // namespace Divide
 

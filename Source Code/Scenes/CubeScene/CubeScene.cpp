@@ -6,6 +6,7 @@
 
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
 
@@ -72,7 +73,7 @@ void CubeScene::processInput(const U64 deltaTime) {
 }
 
 bool CubeScene::load(const stringImpl& name) {
-    SceneManager::instance().setRenderer(RendererType::RENDERER_DEFERRED_SHADING);
+    _context.gfx().setRenderer(RendererType::RENDERER_DEFERRED_SHADING);
     // Load scene resources
     return SCENE_LOAD(name, true, true);
 }
@@ -92,7 +93,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
 
-            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);

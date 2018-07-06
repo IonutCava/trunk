@@ -1,5 +1,6 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -27,11 +28,11 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
         }
     }
 
-    Texture_ptr ptr(GFXDevice::instance().newTexture(_descriptor.getName(),
-                                                     _descriptor.getResourceLocation(),
-                                                     type,
-                                                     threadedLoad),
-                    DeleteResource());
+    Texture_ptr ptr(_context.gfx().newTexture(_descriptor.getName(),
+                                              _descriptor.getResourceLocation(),
+                                              type,
+                                              threadedLoad),
+                    DeleteResource(_cache));
 
     if (_descriptor.getID() > 0) {
         ptr->setNumLayers(to_ubyte(_descriptor.getID()));
