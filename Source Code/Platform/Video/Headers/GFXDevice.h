@@ -286,6 +286,9 @@ DEFINE_SINGLETON(GFXDevice)
    };
 
   public:  // GPU interface
+    static const U32 MaxFrameQueueSize = 2;
+    static_assert(MaxFrameQueueSize > 0, "FrameQueueSize is invalid!");
+
     ErrorCode initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution);
     void closeRenderingAPI();
 
@@ -414,6 +417,10 @@ DEFINE_SINGLETON(GFXDevice)
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target, U32 index = 0) {
+        return _rtPool.renderTarget(target, index);
+    }
+
+    inline RenderTarget& prevRenderTarget(RenderTargetID target, U32 index = 0) {
         return _rtPool.renderTarget(target, index);
     }
 
@@ -583,7 +590,7 @@ DEFINE_SINGLETON(GFXDevice)
     RenderAPI _API_ID;
     GPUVendor _GPUVendor;
     GPUState _state;
-    /* Rendering buffers*/
+    /* Rendering buffers.*/
     GFXRTPool _rtPool;
     /*State management */
     RenderStateMap _stateBlockMap;

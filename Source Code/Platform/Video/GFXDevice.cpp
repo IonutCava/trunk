@@ -368,7 +368,11 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
             rt->create(w, h);
         }
     }
-    
+    for (RenderTarget* rt : _rtPool.renderTargets(RenderTargetID::SCREEN_PREV)) {
+        if (rt) {
+            rt->create(w, h);
+        }
+    }
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);
     _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
@@ -528,7 +532,9 @@ void GFXDevice::toggle2D(bool state) {
         // Push the 2D camera
         kernel.getCameraMgr().pushActiveCamera(_2DCamera);
         // Upload 2D camera matrices to the GPU
-        _2DCamera->renderLookAt();
+        mat4<F32> viewMat; vec3<F32> eyeVec;
+        _2DCamera->renderLookAt(viewMat, eyeVec);
+        lookAt(viewMat, eyeVec);
     } else {
         // Reverting to 3D implies popping the 2D camera
         kernel.getCameraMgr().popActiveCamera();
@@ -582,7 +588,7 @@ void GFXDevice::onCameraUpdate(Camera& camera) {
         // Create a world matrix using a look at function with the eye position
         // backed up from the camera's view direction
         _axisGizmo->worldMatrix(
-            mat4<F32>(-camera.getViewDir() * 2, VECTOR3_ZERO, camera.getUpDir()) *
+            mat4<F32>(-camera.getForwardDir() * 2, VECTOR3_ZERO, camera.getUpDir()) *
             _gpuBlock._data._ViewMatrix.getInverse());
         _axisGizmo->paused(false);
     } else {

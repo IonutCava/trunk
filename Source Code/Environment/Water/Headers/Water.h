@@ -110,6 +110,7 @@ class WaterPlane : public SceneNode {
     bool _excludeSelfReflection;
 
     CameraManager& _cameraMgr;
+    Camera* _reflectionCam;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(WaterPlane);

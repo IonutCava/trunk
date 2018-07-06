@@ -99,13 +99,11 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     // step1: cull nodes for current camera and pass
     SceneManager& mgr = SceneManager::instance();
 
-    if (params.reflectionPlane) {
-        params.camera->renderLookAtReflected(*params.reflectionPlane);
-    } else {
-        params.camera->renderLookAt();
-    }
-
     GFXDevice& GFX = GFX_DEVICE;
+    mat4<F32> viewMat; vec3<F32> eyeVec;
+    params.camera->renderLookAt(viewMat, eyeVec);
+    // Tell the Rendering API to draw from our desired PoV
+    GFX.lookAt(viewMat, eyeVec);
 
     GFX.setRenderStage(params.stage);
 

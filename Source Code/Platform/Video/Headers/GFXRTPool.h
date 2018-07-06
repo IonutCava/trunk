@@ -40,11 +40,12 @@ class RenderTarget;
 
 enum class RenderTargetID : U32 {
     SCREEN = 0,
-    REFLECTION = 1,
-    REFRACTION = 2,
-    ENVIRONMENT = 3,
-    SHADOW = 4,
-    OTHER = 5,
+    SCREEN_PREV = 1,
+    REFLECTION = 2,
+    REFRACTION = 3,
+    ENVIRONMENT = 4,
+    SHADOW = 5,
+    OTHER = 6,
     COUNT
 };
 
@@ -97,6 +98,8 @@ protected:
     inline void set(const RenderTargetHandle& handle, RenderTarget* newTarget) {
         set(handle._targetID, handle._targetIndex, newTarget);
     }
+
+    void swap(RenderTargetID lhs, RenderTargetID rhs);
 
     void clear();
     void set(RenderTargetID target, U32 index, RenderTarget* newTarget);

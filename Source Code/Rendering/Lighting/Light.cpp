@@ -62,7 +62,10 @@ bool Light::load() {
 
 bool Light::unload() {
     _parentPool.removeLight(getGUID(), getLightType());
-
+    Application::instance()
+        .kernel()
+        .getCameraMgr()
+        .destroyCamera(_shadowCamera);
     removeShadowMapInfo();
 
     return SceneNode::unload();

@@ -21,6 +21,7 @@ WaterPlane::WaterPlane(const stringImpl& name, I32 sideLength)
       _updateSelf(false),
       _paramsDirty(true),
       _excludeSelfReflection(true),
+      _reflectionCam(nullptr),
       _cameraMgr(Application::instance().kernel().getCameraMgr()) 
 {
     // Set water plane to be single-sided
@@ -41,10 +42,13 @@ WaterPlane::WaterPlane(const stringImpl& name, I32 sideLength)
     Console::printfn(Locale::get(_ID("REFRACTION_INIT_FB")), nextPOW2(sideLength), nextPOW2(sideLength));
 
     setFlag(UpdateFlag::BOUNDS_CHANGED);
+
+    _reflectionCam = _cameraMgr.createCamera(name + "_reflectionCam", Camera::CameraType::FREE_FLY);
 }
 
 WaterPlane::~WaterPlane()
 {
+    _cameraMgr.destroyCamera(_reflectionCam);
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
@@ -221,14 +225,17 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
     GFX_DEVICE.toggleClipPlane(g_reflectionClipID, true);
 
 
+    // Reset reflection cam
+    _reflectionCam->fromCamera(_cameraMgr.getActiveCamera());
+    if (!underwater) {
+        _reflectionCam->reflect(reflectionPlane);
+    }
+
     RenderPassManager& passMgr = RenderPassManager::instance();
     RenderPassManager::PassParams params;
     params.doPrePass = true;
     params.occlusionCull = true;
-    params.camera = &_cameraMgr.getActiveCamera();
-    if (!underwater) {
-        params.reflectionPlane = &reflectionPlane;
-    }
+    params.camera = _reflectionCam;
     params.stage = RenderStage::REFLECTION;
     params.target = &renderTarget;
     params.drawPolicy = &RenderTarget::defaultPolicy();

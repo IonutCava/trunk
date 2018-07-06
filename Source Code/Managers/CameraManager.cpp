@@ -58,6 +58,23 @@ Camera* CameraManager::createCamera(const stringImpl& cameraName,
     return camera;
 }
 
+bool CameraManager::destroyCamera(Camera*& camera) {
+    if (camera != nullptr) {
+        if (_camera && _camera->getGUID()  == camera->getGUID()) {
+            setActiveCamera(nullptr);
+        }
+
+        if (camera->unload() ) {
+            _cameraPool.erase(_ID_RT(camera->getName()));
+            _cameraPoolGUID.erase(camera->getGUID());
+            MemoryManager::DELETE(camera);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void CameraManager::update(const U64 deltaTime) {
     assert(_camera);
     _camera->update(deltaTime);
@@ -87,9 +104,11 @@ void CameraManager::setActiveCamera(Camera* cam) {
     }
 
     _camera = cam;
-    _camera->onActivate();
-    for (const DELEGATE_CBK_PARAM<Camera&>& listener : _changeCameralisteners) {
-        listener(*cam);
+    if (_camera) {
+        _camera->onActivate();
+        for (const DELEGATE_CBK_PARAM<Camera&>& listener : _changeCameralisteners) {
+            listener(*cam);
+        }
     }
 }
 

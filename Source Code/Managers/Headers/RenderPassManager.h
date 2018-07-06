@@ -51,7 +51,6 @@ DEFINE_SINGLETON(RenderPassManager)
           RTDrawDescriptor* drawPolicy = nullptr;
           RenderStage stage = RenderStage::COUNT;
           Camera* camera = nullptr;
-          Plane<F32>* reflectionPlane = nullptr;
           bool occlusionCull = false;
           bool doPrePass = true;
           U32 pass = 0;

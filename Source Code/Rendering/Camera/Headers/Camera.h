@@ -54,17 +54,12 @@ class Camera : public Resource {
 
     virtual void update(const U64 deltaTime);
 
-    /// Rendering calls
-    /// Creates a viewMatrix and passes it to the rendering API
-    void renderLookAt();
-    /// Creates a reflection matrix using the specified plane height and passes
-    /// it
-    /// to the rendering API
-    void renderLookAtReflected(const Plane<F32>& reflectionPlane);
+    void renderLookAt(mat4<F32>& viewMatrixOut, vec3<F32>& eyeVecOut);
+
+    void reflect(const Plane<F32>& reflectionPlane);
     /// Moves the camera by the specified offsets in each direction
     virtual void move(F32 dx, F32 dy, F32 dz);
-    /// Global rotations are applied relative to the world axis, not the
-    /// camera's
+    /// Global rotations are applied relative to the world axis, not the camera's
     void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f);
     inline void setGlobalRotation(const vec3<F32>& euler) {
         setGlobalRotation(euler.yaw, euler.pitch, euler.roll);
@@ -77,7 +72,7 @@ class Camera : public Resource {
     void rotate(const Quaternion<F32>& q);
     /// Sets the camera to point at the specified target point
     inline const mat4<F32>& lookAt(const vec3<F32>& target) {
-        return lookAt(_eye, target, _yAxis);
+        return lookAt(_eye, target, getUpDir());
     }
     /// Sets the camera's orientation to match the specified yaw, pitch and roll
     /// values;
@@ -223,32 +218,31 @@ class Camera : public Resource {
     }
 
     /// Getter methods.
-    inline const Quaternion<F32>& getRotation() const { return _orientation; }
-    inline F32 getMouseSensitivity() const { return _mouseSensitivity; }
 
     inline F32 getMoveSpeedFactor() const { return _moveSpeedFactor; }
-
     inline F32 getTurnSpeedFactor() const { return _turnSpeedFactor; }
-
     inline F32 getZoomSpeedFactor() const { return _zoomSpeedFactor; }
 
     inline const CameraType& getType() const { return _type; }
 
     inline const vec3<F32>& getEye() const {
-        return _reflectionRendering ? _reflectedEye : _eye;
-    }
-
-    inline vec3<F32> getViewDir() const {
-        return _reflectionRendering ? _reflectedViewMatrix * _viewDir
-                                    : _viewDir;
+        return _eye;
     }
 
     inline vec3<F32> getUpDir() const {
-        return _reflectionRendering ? _reflectedViewMatrix * _yAxis : _yAxis;
+        const mat4<F32>& viewMat = getViewMatrix();
+        return vec3<F32>(viewMat.m[0][1], viewMat.m[1][1], viewMat.m[2][1]);
     }
 
     inline vec3<F32> getRightDir() const {
-        return _reflectionRendering ? _reflectedViewMatrix * _xAxis : _xAxis;
+        const mat4<F32>& viewMat = getViewMatrix();
+        return vec3<F32>(viewMat.m[0][0], viewMat.m[1][0], viewMat.m[2][0]);
+
+    }
+
+    inline vec3<F32> getForwardDir() const {
+        const mat4<F32>& viewMat = getViewMatrix();
+        return vec3<F32>(-viewMat.m[0][2], -viewMat.m[1][2], -viewMat.m[2][2]);
     }
 
     inline const vec3<F32>& getEuler() const { return _euler; }
@@ -272,8 +266,7 @@ class Camera : public Resource {
     inline const F32 getAspectRatio() const { return _aspectRatio; }
 
     inline const mat4<F32>& getViewMatrix() const {
-        assert(!_viewMatrixDirty);
-        return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;
+        return _viewMatrix;
     }
 
     inline const mat4<F32>& getViewMatrix(bool update = false) {
@@ -281,7 +274,7 @@ class Camera : public Resource {
             updateViewMatrix();
         }
 
-        return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;
+        return _viewMatrix;
     }
 
     inline void getWorldMatrix(mat4<F32>& worldMatOut) {
@@ -344,11 +337,11 @@ class Camera : public Resource {
     vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const vec4<I32>& viewport) const;
 
    protected:
-    virtual void lookAtInternal();
     virtual bool updateViewMatrix();
     virtual void updateProjection(bool updateGPU = true);
 
    protected:
+    SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
     friend class CameraManager;
     explicit Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
@@ -357,10 +350,8 @@ class Camera : public Resource {
    protected:
     mat4<F32> _viewMatrix;
     mat4<F32> _projectionMatrix;
-    mat4<F32> _reflectedViewMatrix;
-    Quaternion<F32> _orientation, _tempOrientation;
-    vec3<F32> _eye, _reflectedEye, _viewDir, _target;
-    vec3<F32> _xAxis, _yAxis, _zAxis;
+    Quaternion<F32> _orientation;
+    vec3<F32> _eye, _target;
     vec3<F32> _euler, _fixedYawAxis;
     vec2<F32> _zPlanes;
     vec4<F32> _orthoRect;
@@ -387,7 +378,6 @@ class Camera : public Resource {
     bool _movementLocked;
     bool _yawFixed;
     bool _isOrthoCamera;
-    bool _reflectionRendering;
     bool _frustumDirty;
     Frustum* _frustum;
 };

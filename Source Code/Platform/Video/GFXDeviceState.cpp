@@ -117,6 +117,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
     allocateRT(RenderTargetID::SCREEN, true);
+    allocateRT(RenderTargetID::SCREEN_PREV, true);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -147,14 +148,18 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     normalDescriptor.setSampler(screenSampler);
     
     // Add the attachments to the render targets
-    RenderTarget& screenTarget = renderTarget(RenderTargetID::SCREEN, 0);
-    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
-    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
-    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
-    screenTarget.setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::DIVIDE_BLUE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
+    for (U8 i = 0; i < 2; ++i) {
+        RenderTarget& screenTarget = renderTarget(i == 0 ? RenderTargetID::SCREEN_PREV : RenderTargetID::SCREEN, 0);
+        screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
+        screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
+        screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
+        screenTarget.setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::DIVIDE_BLUE());
+        screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
 
-    _activeRenderTarget = &screenTarget;
+        if (i == 1) {
+            _activeRenderTarget = &screenTarget;
+        }
+    }
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -356,6 +361,8 @@ void GFXDevice::endFrame(bool swapBuffers) {
             }
         });
     }
+
+    _rtPool.swap(RenderTargetID::SCREEN, RenderTargetID::SCREEN_PREV);
 
     FRAME_COUNT++;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;

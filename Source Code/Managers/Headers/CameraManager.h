@@ -53,6 +53,8 @@ class CameraManager : private NonCopyable, public FrameListener {
     Camera* createCamera(const stringImpl& cameraName,
                          Camera::CameraType type);
 
+    bool destroyCamera(Camera*& camera);
+
     inline Camera& getActiveCamera() {
         assert(_camera);
         return *_camera;
