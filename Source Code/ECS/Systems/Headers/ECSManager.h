@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "AnimationSystem.h"
 #include "UpdateSystem.h"
 #include "RenderingSystem.h"
+#include "BoundsSystem.h"
 
 namespace Divide {
 

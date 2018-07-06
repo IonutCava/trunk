@@ -433,6 +433,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
 
     pDrawData->ScaleClipRects(io.DisplayFramebufferScale);
 
+    if (pDrawData->CmdListsCount == 0) {
+        return;
+    }
+
     GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
     GFX::CommandBuffer& buffer = sBuffer();
 

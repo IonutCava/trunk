@@ -30,13 +30,14 @@ namespace Divide {
 
                 vectorImpl<SceneNode::SGNParentData>::iterator it;
                 it = node->getSGNData(parent->getGUID());
-                assert(it != std::cend(node->_sgnParents));
-                SceneNode::SGNParentData& parentData = *it;
+                if (it != std::cend(node->_sgnParents)) {
+                    SceneNode::SGNParentData& parentData = *it;
 
-                if (parentData.getFlag(SceneNode::UpdateFlag::BOUNDS_CHANGED)) {
-                    node->updateBoundsInternal(*parent);
-                    bComp->onBoundsChange(node->refBoundingBox());
-                    parentData.clearFlag(SceneNode::UpdateFlag::BOUNDS_CHANGED);
+                    if (parentData.getFlag(SceneNode::UpdateFlag::BOUNDS_CHANGED)) {
+                        node->updateBoundsInternal(*parent);
+                        bComp->onBoundsChange(node->refBoundingBox());
+                        parentData.clearFlag(SceneNode::UpdateFlag::BOUNDS_CHANGED);
+                    }
                 }
             }
         }

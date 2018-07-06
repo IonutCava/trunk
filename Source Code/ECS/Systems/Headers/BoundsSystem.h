@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <ECS.h>
 namespace Divide {
     class BoundsSystem : public ECS::System<BoundsSystem> {
+       public:
         BoundsSystem();
         virtual ~BoundsSystem();
 

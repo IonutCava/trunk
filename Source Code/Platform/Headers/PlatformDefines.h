@@ -666,8 +666,8 @@ constexpr void assert_type(const U& value) {
 }
 
 
-template<typename U, size_t N>
-vectorImpl<U> copy_array_to_vector(const std::array<U, N>& input) {
+template<typename U, typename V, size_t N>
+vectorImpl<U> copy_array_to_vector(const std::array<V, N>& input) {
     return vectorImpl<U>(std::begin(input), std::end(input));
 }
 

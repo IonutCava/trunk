@@ -187,8 +187,8 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     PushConstants constants = pkgInOut.pushConstants(0);
     constants.set("bbox_min", PushConstantType::VEC3, bbMin);
     constants.set("bbox_extent", PushConstantType::VEC3, bbExtent);
-    constants.set("diffuseScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDiffuseScales()));
-    constants.set("detailScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDetailScales()));
+    constants.set("diffuseScale", PushConstantType::VEC4, copy_array_to_vector<AnyParam>(textureLayer->getDiffuseScales()));
+    constants.set("detailScale", PushConstantType::VEC4, copy_array_to_vector<AnyParam>(textureLayer->getDetailScales()));
     pkgInOut.pushConstants(0, constants);
 
     GFX::SetClipPlanesCommand clipPlanesCommand;

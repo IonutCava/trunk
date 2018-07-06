@@ -77,25 +77,14 @@ enum class PushConstantType : U8 {
 struct PushConstant {
     PushConstant() = default;
 
+    template<typename T>
     PushConstant(const stringImplFast& binding,
                  PushConstantType type,
-                 const AnyParam& value,
+                 const vectorImpl<T>& values,
                  bool flag = false)
         : _binding(binding),
           _type(type),
-          _flag(flag),
-          _transpose(false)
-    {
-        _values.push_back(value);
-    }
-
-    PushConstant(const stringImplFast& binding,
-                 PushConstantType type,
-                 const vectorImpl<AnyParam>& values,
-                 bool flag = false)
-        : _binding(binding),
-          _type(type),
-          _values(values),
+          _values(std::begin(values), std::end(values)),
           _flag(flag),
           _transpose(false)
     {
@@ -150,19 +139,21 @@ public:
         }
     }
 
+    template<typename T>
     inline void set(const stringImplFast& binding,
                     PushConstantType type,
-                    const AnyParam& value,
+                    const T& value,
                     bool flag = false) {
-        vectorImpl<AnyParam> values{ value };
-        _data[_ID_RT(binding.c_str())] = PushConstant { binding, type, values, flag };
+        _data[_ID_RT(binding.c_str())] = PushConstant{ binding, type, vectorImpl<T>{ value }, flag };
     }
 
+    template<typename T>
     inline void set(const stringImplFast& binding,
                     PushConstantType type,
-                    const vectorImpl<AnyParam>& values,
+                    const vectorImpl<T>& values,
                     bool flag = false) {
-        _data[_ID_RT(binding.c_str())] = PushConstant { binding, type, values, flag };
+
+        _data[_ID_RT(binding.c_str())] = PushConstant{ binding, type, values, flag };
     }
 
     inline bool empty() const { return _data.empty(); }

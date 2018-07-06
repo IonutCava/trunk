@@ -98,11 +98,19 @@ void Light::setSpotCosOuterConeAngle(F32 newCosAngle) {
 }
 
 void Light::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
-    vec3<F32> dir(sgn.get<TransformComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
+    TransformComponent* tComp = sgn.get<TransformComponent>();
+    vec3<F32> dir(tComp->getOrientation() * WORLD_Z_NEG_AXIS);
     dir.normalize();
-    _spotProperties.xyz(dir);
-    _positionAndRange.xyz(sgn.get<TransformComponent>()->getPosition());
-    setFlag(UpdateFlag::BOUNDS_CHANGED);
+
+    if (_spotProperties != dir) {
+        _spotProperties.xyz(dir);
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
+    }
+    const vec3<F32>& pos = tComp->getPosition();
+    if (pos != _positionAndRange.xyz()) {
+        _positionAndRange.xyz(pos);
+        setFlag(UpdateFlag::BOUNDS_CHANGED);
+    }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }

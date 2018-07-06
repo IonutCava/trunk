@@ -160,7 +160,7 @@ void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (!_sceneToLoad.empty()) {
         _GUI->modifyText(_ID("globalMessage"),
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
-        //_parent.switchScene(_sceneToLoad, false);
+        _parent.switchScene(_sceneToLoad, false);
         _sceneToLoad.clear();
     }
 
