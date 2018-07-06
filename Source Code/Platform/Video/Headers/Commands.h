@@ -153,7 +153,7 @@ struct BeginRenderPassCommand final : Command {
 
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
-    stringImpl _name;
+    eastl::fixed_string<char, 128 + 1, true> _name;
 };
 REGISTER_COMMAND(BeginRenderPassCommand, 256);
 
@@ -293,7 +293,7 @@ struct BeginDebugScopeCommand final : Command {
 
     TYPE_HANDLER(BeginDebugScopeCommand);
 
-    stringImpl _scopeName;
+    eastl::fixed_string<char, 128 + 1, true> _scopeName;
     I32 _scopeID = -1;
 };
 REGISTER_COMMAND(BeginDebugScopeCommand, 4096);

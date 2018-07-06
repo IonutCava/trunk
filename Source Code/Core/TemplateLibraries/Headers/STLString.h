@@ -35,7 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "TemplateAllocator.h"
 #include <string>
-
 namespace stringAlg = std;
 
 typedef stringAlg::basic_string<char, stringAlg::char_traits<char>, dvd_allocator<char> > stringImplFast;

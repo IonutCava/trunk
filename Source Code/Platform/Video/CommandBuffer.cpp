@@ -447,7 +447,7 @@ void CommandBuffer::toString(const GFX::Command& cmd, I32& crtIndent, stringImpl
     switch (cmd._type) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             const GFX::BeginRenderPassCommand& crtCmd = static_cast<const GFX::BeginRenderPassCommand&>(cmd);
-            append(out, "BEGIN_RENDER_PASS: " + crtCmd._name, crtIndent);
+            append(out, "BEGIN_RENDER_PASS: " + stringImpl(crtCmd._name.c_str()), crtIndent);
             ++crtIndent;
         }break;
         case GFX::CommandType::END_RENDER_PASS: {
@@ -500,7 +500,7 @@ void CommandBuffer::toString(const GFX::Command& cmd, I32& crtIndent, stringImpl
         }break;
         case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
             const GFX::BeginDebugScopeCommand& crtCmd = static_cast<const GFX::BeginDebugScopeCommand&>(cmd);
-            append(out, "BEGIN_DEBUG_SCOPE: " + crtCmd._scopeName, crtIndent);
+            append(out, "BEGIN_DEBUG_SCOPE: " + stringImpl(crtCmd._scopeName.c_str()), crtIndent);
             ++crtIndent;
         } break;
         case GFX::CommandType::END_DEBUG_SCOPE: {
