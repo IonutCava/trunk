@@ -373,6 +373,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
 
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
 
+
+    Time::ProfileTimer& _swapBufferTimer;
 END_SINGLETON
 
 };  // namespace Divide

@@ -13,6 +13,7 @@
 #include "GUI/Headers/GUIText.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ProfileTimer.h"
 #include "Managers/Headers/LightManager.h"
 #include "Geometry/Material/Headers/Material.h"
 
@@ -66,7 +67,8 @@ GL_API::GL_API()
       _queryBackBuffer(0),
       _queryFrontBuffer(0),
       _fonsContext(nullptr),
-      _GUIGLrenderer(nullptr)
+      _GUIGLrenderer(nullptr),
+      _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0;
@@ -117,6 +119,7 @@ void GL_API::endFrame(bool swapBuffers) {
     clearStates();
     // Swap buffers
     if (swapBuffers) {
+        Time::ScopedTimer time(_swapBufferTimer);
         SDL_GL_SwapWindow(win.getRawWindow());
     }
 

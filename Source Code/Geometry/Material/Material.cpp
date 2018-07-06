@@ -211,8 +211,10 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     }
 
     if (_textures[slot]) {
-        UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);
-        RemoveResource(_textures[slot]);
+        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION) {
+            UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);
+            RemoveResource(_textures[slot]);
+        }
     } else {
         if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION) {
             // if we add a new type of texture recompute shaders
@@ -223,10 +225,9 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     _textures[slot] = texture;
 
     if (texture) {
-        if (textureUsageSlot == ShaderProgram::TextureUsage::REFLECTION) {
-            texture->AddRef();
+        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION) {
+            REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
         }
-        REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
     }
     
 

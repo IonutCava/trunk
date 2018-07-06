@@ -48,8 +48,13 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _input(Input::InputInterface::instance()),  // Input
       _GUI(GUI::instance()),                      // Graphical User Interface
       _sceneMgr(SceneManager::instance()),        // Scene Manager
-      _appLoopTimer(Time::ADD_TIMER("Main Loop Timer"))
-
+      _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
+      _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
+      _appIdleTimer(Time::ADD_TIMER("Loop Idle Timer")),
+      _appScenePass(Time::ADD_TIMER("Loop Scene Pass Timer")),
+      _physicsTimer(Time::ADD_TIMER("Physics Update Timer")),
+      _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
+      _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer"))
 {
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
@@ -123,14 +128,17 @@ void Kernel::onLoop() {
                                         _timingData._currentTimeDelta;
         }
 
-        idle();
-
+        {
+            Time::ScopedTimer timer2(_appIdleTimer);
+            idle();
+        }
         FrameEvent evt;
         FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
         // Restore GPU to default state: clear buffers and set default render state
         _GFX.beginFrame();
         {
+            Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
             frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_STARTED, evt);
             _timingData._keepAlive = frameMgr.frameEvent(evt);
@@ -161,13 +169,17 @@ void Kernel::onLoop() {
     }
 
 #if !defined(_RELEASE)
-    if (_GFX.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0) {
+    U32 frameCount = _GFX.getFrameCount();
+    if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
         Console::printfn(
             "GPU: [ %5.5f ] [DrawCalls: %d]",
             Time::MicrosecondsToSeconds<F32>(_GFX.getFrameDurationGPU()),
             _GFX.getDrawCallCount());
 
         Util::FlushFloatEvents();
+    }
+    if (frameCount % Config::TARGET_FRAME_RATE == 0) {
+        Time::ProfileTimer::printAll();
     }
 
     Util::RecordFloatEvent("kernel.mainLoopApp",
@@ -177,10 +189,15 @@ void Kernel::onLoop() {
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt) {
+    Time::ScopedTimer timer(_appScenePass);
+
     U64 deltaTime = Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS 
                                                : _timingData._currentTimeDelta;
-    // Update camera
-    _cameraMgr->update(deltaTime);
+    {
+        Time::ScopedTimer timer2(_cameraMgrTimer);
+        // Update cameras
+        _cameraMgr->update(deltaTime);
+    }
 
     if (_APP.windowManager().getActiveWindow().minimized()) {
         idle();
@@ -239,9 +256,12 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     } else {
         _sceneMgr.onLostFocus();
     }
-    // Update physics - uses own timestep implementation
-    _PFX.update(_timingData._freezeLoopTime ? 0ULL
-                                            : _timingData._currentTimeDelta);
+    {
+        Time::ScopedTimer timer3(_physicsTimer);
+        // Update physics - uses own timestep implementation
+        _PFX.update(_timingData._freezeLoopTime ? 0ULL
+                                                : _timingData._currentTimeDelta);
+    }
     // Update the graphical user interface
     if (!_timingData._freezeGUITime) {
         _GUI.update(_timingData._freezeGUITime ? 0ULL
@@ -252,6 +272,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
 }
 
 bool Kernel::presentToScreen(FrameEvent& evt) {
+    Time::ScopedTimer time(_flushToScreenTimer);
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
     frameMgr.createEvent(_timingData._currentTime,
@@ -333,7 +354,6 @@ void Kernel::warmup() {
     par.setParam(_ID("freezeLoopTime"), false);
 #if defined(_DEBUG) || defined(_PROFILE)
     Time::ApplicationTimer::instance().benchmark(true);
-    Time::ProfileTimer::printAll();
 #endif
     Attorney::SceneManagerKernel::initPostLoadState();
 

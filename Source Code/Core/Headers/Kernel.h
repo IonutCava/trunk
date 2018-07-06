@@ -175,6 +175,13 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     TaskPool _taskPool;
 
     Time::ProfileTimer& _appLoopTimer;
+    Time::ProfileTimer& _frameTimer;
+    Time::ProfileTimer& _appIdleTimer;
+    Time::ProfileTimer& _appScenePass;
+
+    Time::ProfileTimer& _physicsTimer;
+    Time::ProfileTimer& _cameraMgrTimer;
+    Time::ProfileTimer& _flushToScreenTimer;
     // Command line arguments
     I32 _argc;
     char** _argv;
