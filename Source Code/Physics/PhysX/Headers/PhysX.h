@@ -76,13 +76,13 @@ private:
         physx::debugger::comm::PvdConnection& inFactory) {}
 
 public:
-    ErrorCode initPhysicsAPI(U8 targetFrameRate);
+    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed);
     bool closePhysicsAPI();
     void update(const U64 deltaTime);
     void process(const U64 deltaTime);
     void idle();
 
-    void updateTimeStep(U8 timeStepFactor);
+    void updateTimeStep(U8 timeStepFactor, F32 simSpeed);
 
     PhysicsSceneInterface* NewSceneInterface(Scene& scene);
 
@@ -97,6 +97,7 @@ protected:
     PhysicsSceneInterface* _targetScene;
 
 private:
+    F32 _simulationSpeed;
     physx::PxPhysics* _gPhysicsSDK;
     physx::PxCooking* _cooking;
     physx::PxFoundation* _foundation;

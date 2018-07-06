@@ -502,7 +502,16 @@
       <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile2017|x64'">
+    <Link>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Core\Configuration.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
@@ -632,6 +641,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Debugging\Headers\DebugInterface.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\Configuration.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\KernelComponent.h" />
@@ -640,6 +650,7 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\WindowManager.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\XMLEntryData.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Line.h" />
@@ -663,6 +674,7 @@
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.h" />
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.h" />
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.h" />
+    <ClInclude Include="..\..\Source Code\Core\XMLEntryData.cpp" />
     <ClInclude Include="..\..\Source Code\engineMain.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\SceneAnimator.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />

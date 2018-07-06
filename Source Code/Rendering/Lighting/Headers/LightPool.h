@@ -120,7 +120,6 @@ class LightPool : public SceneComponent {
     /// shadow mapping
     static void bindShadowMaps(GFXDevice& context);
     static void togglePreviewShadowMaps(GFXDevice& context);
-    static bool shadowMappingEnabled();
 
     /// Get the appropriate shadow bind slot for every light's shadow
     static U8 getShadowBindSlotOffset(ShadowType type) {
@@ -188,7 +187,6 @@ class LightPool : public SceneComponent {
     Time::ProfileTimer& _shadowPassTimer;
 
     static bool _previewShadowMaps;
-    static bool _shadowMapsEnabled;
     static Light* _currentShadowCastingLight;
     static std::array<U8, to_const_uint(ShadowType::COUNT)> _shadowLocation;
 };

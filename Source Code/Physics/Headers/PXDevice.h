@@ -59,10 +59,10 @@ public:
     inline void setAPI(PhysicsAPI API) { _API_ID = API; }
     inline PhysicsAPI getAPI() const { return _API_ID; }
 
-    ErrorCode initPhysicsAPI(U8 targetFrameRate);
+    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed);
     bool closePhysicsAPI();
 
-    void updateTimeStep(U8 timeStepFactor);
+    void updateTimeStep(U8 timeStepFactor, F32 simSpeed);
     void update(const U64 deltaTime);
     void process(const U64 deltaTime);
     void idle();
@@ -76,6 +76,7 @@ public:
     inline const PhysicsAPIWrapper& getImpl() const { assert(_api != nullptr); return *_api; }
 
 private:
+    F32 _simulationSpeed;
     PhysicsAPI _API_ID;
     std::unique_ptr<PhysicsAPIWrapper> _api;
 

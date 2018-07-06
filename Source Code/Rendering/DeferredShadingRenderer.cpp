@@ -84,7 +84,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
 
     ParamHandler& par = ParamHandler::instance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
-    par.setParam(_ID("rendering.enableShadows"), false);
+    _context.gfx().shadowDetailLevel(RenderDetailLevel::OFF);
 
     RenderTarget& screenRT = _context.gfx().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 

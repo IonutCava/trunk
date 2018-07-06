@@ -40,6 +40,9 @@ class GUI;
 class GFXDevice;
 class SFXDevice;
 class PXDevice;
+class XMLEntryData;
+class Configuration;
+
 namespace Input {
     class InputInterface;
 };
@@ -50,7 +53,9 @@ public:
                              std::unique_ptr<SFXDevice> sfx,
                              std::unique_ptr<PXDevice> pfx,
                              std::unique_ptr<GUI> gui,
-                             std::unique_ptr<Input::InputInterface> input);
+                             std::unique_ptr<Input::InputInterface> input,
+                             std::unique_ptr<XMLEntryData> entryData,
+                             std::unique_ptr<Configuration> config);
     ~PlatformContext();
 
     void idle();
@@ -70,6 +75,12 @@ public:
     inline Input::InputInterface& input() { return *_input; }
     inline const Input::InputInterface& input() const { return *_input; }
 
+    inline XMLEntryData& entryData() { return *_entryData; }
+    inline const XMLEntryData& entryData() const { return *_entryData; }
+
+    inline Configuration& config() { return *_config; }
+    inline const Configuration& config() const { return *_config; }
+
 private:
     /// Access to the GPU
     std::unique_ptr<GFXDevice> _gfx;
@@ -81,6 +92,9 @@ private:
     std::unique_ptr<PXDevice> _pfx;
     /// The input interface
     std::unique_ptr<Input::InputInterface> _input;
+    /// XML configuration data
+    std::unique_ptr<XMLEntryData>  _entryData;
+    std::unique_ptr<Configuration> _config;
 };
 }; //namespace Divide
 

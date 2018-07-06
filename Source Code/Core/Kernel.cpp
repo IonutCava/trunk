@@ -1,6 +1,8 @@
 #include "config.h"
 
 #include "Headers/Kernel.h"
+#include "Headers/XMLEntryData.h"
+#include "Headers/Configuration.h"
 #include "Headers/PlatformContext.h"
 
 #include "GUI/Headers/GUI.h"
@@ -60,7 +62,9 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         std::make_unique<SFXDevice>(*this),              // Audio
         std::make_unique<PXDevice>(*this),               // Physics
         std::make_unique<GUI>(*this),                    // Graphical User Interface
-        std::make_unique<Input::InputInterface>(*this)); // Input
+        std::make_unique<Input::InputInterface>(*this),  // Input
+        std::make_unique<XMLEntryData>(),                // Initial XML data
+        std::make_unique<Configuration>());              // XML based configuration
 
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
 
@@ -106,12 +110,6 @@ void Kernel::idle() {
         _timingData._currentTimeFrozen = _timingData._currentTime;
         _APP.mainLoopPaused(_timingData._freezeLoopTime);
     }
-
-    const stringImpl& pendingLanguage = par.getParam<stringImpl>(_ID("language"));
-    if (pendingLanguage.compare(Locale::currentLanguage()) != 0) {
-        Locale::changeLanguage(pendingLanguage);
-    }
-
 }
 
 void Kernel::onLoop() {
@@ -534,14 +532,17 @@ void Kernel::warmup() {
     _timingData._keepAlive = true;
 
     ParamHandler& par = ParamHandler::instance();
-    bool shadowMappingEnabled = par.getParam<bool>(_ID("rendering.enableShadows"));
+    RenderDetailLevel shadowLevel = _platformContext->gfx().shadowDetailLevel();
     par.setParam(_ID("freezeLoopTime"), true);
-    par.setParam(_ID("rendering.enableShadows"), false);
+    _platformContext->gfx().shadowDetailLevel(RenderDetailLevel::OFF);
 
-    onLoop(); loopCount++;
-    if (shadowMappingEnabled) {
-        par.setParam(_ID("rendering.enableShadows"), true);
-        onLoop(); loopCount++;
+    onLoop();
+    loopCount++;
+
+    if (shadowLevel != RenderDetailLevel::OFF) {
+        _platformContext->gfx().shadowDetailLevel(shadowLevel);
+        onLoop();
+        loopCount++;
     }
 
     for (U8 i = 0; i < std::max(warmupLoopCount - loopCount, 0); ++i) {
@@ -577,9 +578,56 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                                              : RenderAPI::OpenGL);
     }
     // Load info from XML files
-    stringImpl startupScene(XML::loadScripts(*_platformContext, entryPoint));
+    XMLEntryData& entryData = _platformContext->entryData();
+    Configuration& config = _platformContext->config();
+    XML::loadFromXML(entryData, entryPoint.c_str());
+    XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
+
+    Locale::changeLanguage(config.language);
+
+    _platformContext->gfx().shadowDetailLevel(config.rendering.shadowDetailLevel);
+    //Temp hack
+    par.setParam(_ID("assetsLocation"), entryData.assetsLocation);
+    par.setParam(_ID("scenesLocation"), entryData.scenesLocation);
+    par.setParam(_ID("serverAddress"), entryData.serverAddress);
+    par.setParam(_ID("appTitle"), config.title);
+    par.setParam(_ID("mesh.playAnimations"), config.debug.mesh.playAnimations);
+    par.setParam(_ID("defaultTextureLocation"), config.defaultTextureLocation);
+    par.setParam(_ID("shaderLocation"), config.defaultShadersLocation);
+    par.setParam(_ID("rendering.MSAAsampless"), config.rendering.msaaSamples);
+    par.setParam(_ID("rendering.PostAASamples"), config.rendering.postAASamples);
+    par.setParam(_ID("rendering.PostAAType"), config.rendering.postAAType);
+    par.setParam(_ID("GUI.CEGUI.ExtraStates"), config.gui.cegui.extraStates);
+    par.setParam(_ID("GUI.CEGUI.SkipRendering"), config.gui.cegui.skipRendering);
+    par.setParam(_ID("GUI.defaultScheme"),config.gui.cegui.defaultGUIScheme);
+    par.setParam(_ID("GUI.consoleLayout"), config.gui.consoleLayoutFile);
+    par.setParam(_ID("GUI.editorLayout"), config.gui.editorLayoutFile);
+    par.setParam(_ID("rendering.anisotropicFilteringLevel"), config.rendering.anisotropicFilteringLevel);
+    par.setParam(_ID("rendering.enableFog"), config.rendering.enableFog);
+    par.setParam(_ID("runtime.targetDisplay"), config.runtime.targetDisplay);
+    par.setParam(_ID("runtime.startFullScreen"), !config.runtime.windowedMode);
+    par.setParam(_ID("runtime.windowWidth"), config.runtime.resolution.w);
+    par.setParam(_ID("runtime.windowHeight"), config.runtime.resolution.h);
+    par.setParam(_ID("runtime.splashWidth"), config.runtime.splashScreen.w);
+    par.setParam(_ID("runtime.splashHeight"), config.runtime.splashScreen.h);
+    par.setParam(_ID("runtime.windowResizable"), config.runtime.windowResizable);
+    par.setParam(_ID("runtime.enableVSync"), config.runtime.enableVSync);
+    par.setParam(_ID("postProcessing.anaglyphOffset"), config.rendering.anaglyphOffset);
+    par.setParam(_ID("postProcessing.enableDepthOfField"), config.rendering.enableDepthOfField);
+    par.setParam(_ID("postProcessing.enableBloom"), config.rendering.enableBloom);
+    par.setParam(_ID("postProcessing.enableSSAO"), config.rendering.enableSSAO);
+    par.setParam(_ID("postProcessing.bloomFactor"), config.rendering.bloomFactor);
+    par.setParam(_ID("rendering.verticalFOV"), config.runtime.verticalFOV);
+    par.setParam(_ID("rendering.zNear"), config.runtime.zNear);
+    par.setParam(_ID("rendering.zFar"), config.runtime.zFar);
+    // global fog values
+    par.setParam(_ID("rendering.sceneState.fogDensity"), config.rendering.fogDensity);
+    par.setParam(_ID("rendering.sceneState.fogColour.r"), config.rendering.fogColour.r);
+    par.setParam(_ID("rendering.sceneState.fogColour.g"), config.rendering.fogColour.g);
+    par.setParam(_ID("rendering.sceneState.fogColour.b"), config.rendering.fogColour.b);
+
     // Create mem log file
-    const stringImpl& mem = par.getParam<stringImpl>(_ID("memFile"));
+    const stringImpl& mem = config.debug.memFile;
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
@@ -644,7 +692,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
-    initError = _platformContext->pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE);
+    initError = _platformContext->pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE, config.runtime.simSpeed);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
@@ -676,14 +724,14 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Camera::addChangeListener([this](const Camera& cam) {
                                    Attorney::SceneManagerKernel::onCamerachange(*_sceneManager, cam);
                               });
-    if (!_sceneManager->switchScene(startupScene, true, false)) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
+    if (!_sceneManager->switchScene(entryData.startupScene, true, false)) {
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
     }
 
     if (!_sceneManager->checkLoadFlag()) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_NOT_CALLED")),
-                         startupScene.c_str());
+                         entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
 

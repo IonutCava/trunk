@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Scenes/Headers/SceneInput.h"
 #include "Rendering/Headers/Renderer.h"
@@ -15,6 +16,14 @@ namespace Divide {
 namespace XML {
 
 using boost::property_tree::ptree;
+
+bool loadFromXML(IXMLSerializable& object, const char* file) {
+    return object.fromXML(file);
+}
+
+bool saveToXML(const IXMLSerializable& object, const char* file) {
+    return object.toXML(file);
+}
 
 namespace {
 const ptree& empty_ptree() {
@@ -217,106 +226,6 @@ inline stringImpl getRendererTypeName(RendererType type) {
 }
 }
 
-stringImpl loadScripts(PlatformContext& context, const stringImpl &file) {
-    ptree pt;
-    ParamHandler &par = ParamHandler::instance();
-    Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
-    read_xml(file.c_str(), pt);
-
-    par.setParam(_ID("scriptLocation"),
-                 pt.get<stringImpl>("scriptLocation", "XML"));
-    par.setParam(_ID("assetsLocation"), pt.get<stringImpl>("assets", "assets"));
-    par.setParam(_ID("scenesLocation"),
-                 pt.get<stringImpl>("scenesLocation", "Scenes"));
-    par.setParam(_ID("serverAddress"), pt.get<stringImpl>("server", "127.0.0.1"));
-    loadConfig(context, (par.getParam<stringImpl>(_ID("scriptLocation"), "XML") + "/" +
-                stringImpl(pt.get("config", "config.xml").c_str())));
-    read_xml(std::string(par.getParam<stringImpl>(_ID("scriptLocation"), "XML").c_str()) + "/" +
-             pt.get("startupScene", "scenes.xml"),
-             pt);
-
-    return pt.get<stringImpl>("StartupScene", "DefaultScene");
-}
-
-void loadConfig(PlatformContext& context, const stringImpl &file) {
-    ParamHandler &par = ParamHandler::instance();
-    ptree pt;
-    Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), file.c_str());
-    read_xml(file.c_str(), pt);
-    par.setParam(_ID("locale"), pt.get("language", "enGB"));
-    par.setParam(_ID("logFile"), pt.get("debug.logFile", "none"));
-    par.setParam(_ID("memFile"), pt.get("debug.memFile", "none"));
-    par.setParam(_ID("simSpeed"), pt.get("runtime.simSpeed", 1.0f));
-    par.setParam(_ID("appTitle"), pt.get("title", "DIVIDE Framework"));
-    par.setParam(_ID("mesh.playAnimations"), pt.get("debug.mesh.playAnimations", true));
-    par.setParam(_ID("defaultTextureLocation"),
-                 pt.get("defaultTextureLocation", "textures/"));
-    par.setParam(_ID("shaderLocation"),
-                 pt.get("defaultShadersLocation", "shaders/"));
-
-    I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
-    if (shadowDetailLevel <= 0) {
-        context.gfx().shadowDetailLevel(RenderDetailLevel::LOW);
-        par.setParam(_ID("rendering.enableShadows"), false);
-    } else {
-        context.gfx().shadowDetailLevel(
-            static_cast<RenderDetailLevel>(std::min(shadowDetailLevel, 3) - 1));
-        par.setParam(_ID("rendering.enableShadows"), true);
-    }
-
-    par.setParam(_ID("rendering.MSAAsampless"),
-                 std::max(pt.get<I32>("rendering.MSAAsamples", 0), 0));
-    par.setParam(_ID("rendering.PostAASamples"),
-                 std::max(pt.get<I32>("rendering.PostAASamples", 0), 0));
-    par.setParam(_ID("rendering.PostAAType"), 
-                 _ID(pt.get<std::string>("rendering.PostAAType", "FXAA").c_str()));
-    par.setParam(_ID("GUI.CEGUI.ExtraStates"),
-                 pt.get("GUI.CEGUI.ExtraStates", false));
-    par.setParam(_ID("GUI.CEGUI.SkipRendering"),
-                 pt.get("GUI.CEGUI.SkipRendering", false));
-    par.setParam(_ID("GUI.defaultScheme"), pt.get("GUI.defaultGUIScheme", "GWEN"));
-    par.setParam(_ID("GUI.consoleLayout"),
-                 pt.get("GUI.consoleLayoutFile", "console.layout"));
-    par.setParam(_ID("GUI.editorLayout"),
-                 pt.get("GUI.editorLayoutFile", "editor.layout"));
-    par.setParam(_ID("rendering.anisotropicFilteringLevel"),
-                 std::max(pt.get<I32>("rendering.anisotropicFilteringLevel", 1), 1));
-    par.setParam(_ID("rendering.shadowDetailLevel"), shadowDetailLevel);
-    par.setParam(_ID("rendering.enableFog"), pt.get("rendering.enableFog", true));
-
-    par.setParam(_ID("runtime.targetDisplay"), pt.get("runtime.targetDisplay", 0));
-    par.setParam(_ID("runtime.startFullScreen"), !pt.get("rendering.windowedMode", true));
-    par.setParam(_ID("runtime.windowWidth"), pt.get("runtime.resolution.<xmlattr>.w", 1024));
-    par.setParam(_ID("runtime.windowHeight"), pt.get("runtime.resolution.<xmlattr>.h", 768));
-    par.setParam(_ID("runtime.splashWidth"), pt.get("runtime.splashScreenSize.<xmlattr>.w", 400));
-    par.setParam(_ID("runtime.splashHeight"), pt.get("runtime.splashScreenSize.<xmlattr>.h", 300));
-
-    par.setParam(_ID("runtime.windowResizable"), pt.get("runtime.windowResizable", true));
-    par.setParam(_ID("runtime.enableVSync"), pt.get("runtime.enableVSync", false));
-    par.setParam(_ID("postProcessing.anaglyphOffset"),
-                 pt.get("rendering.anaglyphOffset", 0.16f));
-    par.setParam(_ID("postProcessing.enableNoise"),
-                 pt.get("rendering.enableNoise", false));
-    par.setParam(_ID("postProcessing.enableDepthOfField"),
-                 pt.get("rendering.enableDepthOfField", false));
-    par.setParam(_ID("postProcessing.enableBloom"),
-                 pt.get("rendering.enableBloom", false));
-    par.setParam(_ID("postProcessing.enableSSAO"),
-                 pt.get("rendering.enableSSAO", false));
-    par.setParam(_ID("postProcessing.bloomFactor"),
-                 pt.get("rendering.bloomFactor", 0.4f));
-    par.setParam(_ID("rendering.verticalFOV"), pt.get("runtime.verticalFOV", 60.0f));
-    par.setParam(_ID("rendering.zNear"), pt.get("runtime.zNear", 0.1f));
-    par.setParam(_ID("rendering.zFar"), pt.get("runtime.zFar", 700.0f));
-
-
-    // global fog values
-    par.setParam(_ID("rendering.sceneState.fogDensity"),  pt.get("rendering.fogDensity", 0.01f));
-    par.setParam(_ID("rendering.sceneState.fogColour.r"), pt.get<F32>("rendering.fogColour.<xmlattr>.r", 0.2f));
-    par.setParam(_ID("rendering.sceneState.fogColour.g"), pt.get<F32>("rendering.fogColour.<xmlattr>.g", 0.2f));
-    par.setParam(_ID("rendering.sceneState.fogColour.b"), pt.get<F32>("rendering.fogColour.<xmlattr>.b", 0.2f));
-}
-
 void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
     actions._onPressAction = attributes.get<U16>("actionDown", 0u);
     actions._onReleaseAction = attributes.get<U16>("actionUp", 0u);
@@ -335,7 +244,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
 
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
-    read_xml(par.getParam<std::string>(_ID("scriptLocation")) + "/" + file.c_str(), pt);
+    read_xml(file.c_str(), pt);
 
     for(const ptree::value_type & f : pt.get_child("actions", empty_ptree()))
     {
@@ -393,14 +302,12 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     }
 }
 
-void loadScene(const stringImpl &sceneName, Scene* scene) {
+void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* scene) {
     ParamHandler &par = ParamHandler::instance();
     
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
-    std::string sceneLocation(
-        par.getParam<std::string>(_ID("scriptLocation")) + "/" +
-        par.getParam<std::string>(_ID("scenesLocation")) + "/" + sceneName.c_str());
+    std::string sceneLocation(scenePath + "/" + sceneName.c_str());
     std::string sceneDataFile(sceneLocation + ".xml");
 
     // A scene does not necessarily need external data files
@@ -856,23 +763,24 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     }
 }
 
-Material_ptr loadMaterial(GFXDevice& context, const stringImpl &file) {
-    ParamHandler &par = ParamHandler::instance();
-    stringImpl location = par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
-                          par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
-                          par.getParam<stringImpl>(_ID("currentScene")) +
+Material_ptr loadMaterial(PlatformContext& context, const stringImpl &file) {
+    const XMLEntryData& entryData = context.entryData();
+
+    stringImpl location = entryData.scriptLocation + "/" +
+                          entryData.scenesLocation + "/" +
+                          ParamHandler::instance().getParam<stringImpl>(_ID("currentScene")) +
                           "/materials/";
 
     return loadMaterialXML(context, location + file);
 }
 
-Material_ptr loadMaterialXML(GFXDevice& context, const stringImpl &matName, bool rendererDependent) {
-    ResourceCache& cache = context.parent().resourceCache();
+Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName, bool rendererDependent) {
+    ResourceCache& cache = context.gfx().parent().resourceCache();
 
     stringImpl materialFile(matName);
     if (rendererDependent) {
         materialFile +=
-            "-" + getRendererTypeName(context.getRenderer().getType()) +
+            "-" + getRendererTypeName(context.gfx().getRenderer().getType()) +
             ".xml";
     } else {
         materialFile += ".xml";
@@ -971,95 +879,95 @@ Material_ptr loadMaterialXML(GFXDevice& context, const stringImpl &matName, bool
 }
 
 //ToDo: Fix this one day .... -Ionut
-void dumpMaterial(GFXDevice& context, Material &mat) {
+void dumpMaterial(PlatformContext& context, Material &mat) {
     if (!mat.isDirty()) {
         return;
     }
 
-    ptree pt_writer;
+    
     ParamHandler &par = ParamHandler::instance();
     stringImpl file(mat.getName());
     file = file.substr(file.rfind("/") + 1, file.length());
 
-    stringImpl location(par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
-                        par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
+    const XMLEntryData& entryData = context.entryData();
+
+    stringImpl location(entryData.scriptLocation + "/" +
+                        entryData.scenesLocation + "/" +
                         par.getParam<stringImpl>(_ID("activeScene")) +
                         "/materials/");
 
     stringImpl fileLocation(
         location + file + "-" +
-        getRendererTypeName(context.getRenderer().getType()) + ".xml");
-    pt_writer.clear();
-    pt_writer.put("material.name", file);
-    pt_writer.put("material.diffuse.<xmlattr>.r",
+        getRendererTypeName(context.gfx().getRenderer().getType()) + ".xml");
+
+    PREPARE_FILE_FOR_WRITING(fileLocation.c_str());
+
+    pt.put("material.name", file);
+    pt.put("material.diffuse.<xmlattr>.r",
                   mat.getColourData()._diffuse.r);
-    pt_writer.put("material.diffuse.<xmlattr>.g",
+    pt.put("material.diffuse.<xmlattr>.g",
                   mat.getColourData()._diffuse.g);
-    pt_writer.put("material.diffuse.<xmlattr>.b",
+    pt.put("material.diffuse.<xmlattr>.b",
                   mat.getColourData()._diffuse.b);
-    pt_writer.put("material.diffuse.<xmlattr>.a",
+    pt.put("material.diffuse.<xmlattr>.a",
                   mat.getColourData()._diffuse.a);
-    pt_writer.put("material.specular.<xmlattr>.r",
+    pt.put("material.specular.<xmlattr>.r",
                   mat.getColourData()._specular.r);
-    pt_writer.put("material.specular.<xmlattr>.g",
+    pt.put("material.specular.<xmlattr>.g",
                   mat.getColourData()._specular.g);
-    pt_writer.put("material.specular.<xmlattr>.b",
+    pt.put("material.specular.<xmlattr>.b",
                   mat.getColourData()._specular.b);
-    pt_writer.put("material.specular.<xmlattr>.a",
+    pt.put("material.specular.<xmlattr>.a",
                   mat.getColourData()._specular.a);
-    pt_writer.put("material.shininess.<xmlattr>.v",
+    pt.put("material.shininess.<xmlattr>.v",
                   mat.getColourData()._shininess);
-    pt_writer.put("material.emissive.<xmlattr>.r",
+    pt.put("material.emissive.<xmlattr>.r",
                   mat.getColourData()._emissive.y);
-    pt_writer.put("material.emissive.<xmlattr>.g",
+    pt.put("material.emissive.<xmlattr>.g",
                   mat.getColourData()._emissive.z);
-    pt_writer.put("material.emissive.<xmlattr>.b",
+    pt.put("material.emissive.<xmlattr>.b",
                   mat.getColourData()._emissive.w);
-    pt_writer.put("material.doubleSided", mat.isDoubleSided());
+    pt.put("material.doubleSided", mat.isDoubleSided());
 
     std::weak_ptr<Texture> texture;
     if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::UNIT0)).expired()) {
-        saveTextureXML("diffuseTexture1", texture, pt_writer);
+        saveTextureXML("diffuseTexture1", texture, pt);
     }
 
     if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::UNIT1)).expired()) {
-        saveTextureXML("diffuseTexture2", texture, pt_writer,
+        saveTextureXML("diffuseTexture2", texture, pt,
                        getTextureOperationName(mat.getTextureOperation()));
     }
 
     if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::NORMALMAP)).expired()) {
-        saveTextureXML("bumpMap", texture, pt_writer);
-        pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
+        saveTextureXML("bumpMap", texture, pt);
+        pt.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
     }
 
     if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::OPACITY)).expired()) {
-        saveTextureXML("opacityMap", texture, pt_writer);
+        saveTextureXML("opacityMap", texture, pt);
     }
 
     if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::SPECULAR)).expired()) {
-        saveTextureXML("specularMap", texture, pt_writer);
+        saveTextureXML("specularMap", texture, pt);
     }
 
     ShaderProgram_ptr shaderProg = mat.getShaderInfo().getProgram();
     if (shaderProg) {
-        pt_writer.put("shaderProgram.effect", shaderProg->getName());
+        pt.put("shaderProgram.effect", shaderProg->getName());
     }
 
     shaderProg = mat.getShaderInfo(RenderStage::SHADOW).getProgram();
     if (shaderProg) {
-        pt_writer.put("shaderProgram.shadowEffect", shaderProg->getName());
+        pt.put("shaderProgram.shadowEffect", shaderProg->getName());
     }
 
     shaderProg = mat.getShaderInfo(RenderStage::Z_PRE_PASS).getProgram();
     if (shaderProg) {
-        pt_writer.put("shaderProgram.zPrePassEffect", shaderProg->getName());
+        pt.put("shaderProgram.zPrePassEffect", shaderProg->getName());
     }
 
-    FILE *xml = fopen(fileLocation.c_str(), "w");
-    fclose(xml);
-    write_xml(fileLocation.c_str(), pt_writer, std::locale(),
-              boost::property_tree::xml_writer_make_settings<ptree::key_type>(
-                  '\t', 1));
+    SAVE_FILE(fileLocation.c_str());
 }
 };  // namespace XML
 };  // namespace Divide

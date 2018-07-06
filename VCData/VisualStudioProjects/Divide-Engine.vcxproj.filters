@@ -566,6 +566,9 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\UnitComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Configuration.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1002,6 +1005,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\UnitComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\Configuration.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\XMLEntryData.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\XMLEntryData.cpp">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

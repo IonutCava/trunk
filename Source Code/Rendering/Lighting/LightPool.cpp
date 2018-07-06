@@ -23,7 +23,6 @@ std::array<U8, to_const_uint(ShadowType::COUNT)> LightPool::_shadowLocation = { 
 Light* LightPool::_currentShadowCastingLight = nullptr;
 
 bool LightPool::_previewShadowMaps = false;
-bool LightPool::_shadowMapsEnabled = true;
 
 LightPool::LightPool(Scene& parentScene, GFXDevice& context)
     : SceneComponent(parentScene),
@@ -162,14 +161,13 @@ bool LightPool::removeLight(I64 lightGUID, LightType type) {
 }
 
 void LightPool::idle() {
-    _shadowMapsEnabled = ParamHandler::instance().getParam<bool>(_ID("rendering.enableShadows"));
 }
 
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
 bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState) {
-    if (!_shadowMapsEnabled) {
+    if (context.shadowDetailLevel() == RenderDetailLevel::OFF) {
         return true;
     }
 
@@ -195,8 +193,9 @@ bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRe
 void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (!_shadowMapsEnabled || context.getRenderStage() != RenderStage::DISPLAY) {
+    if (context.shadowDetailLevel() == RenderDetailLevel::OFF || context.getRenderStage() != RenderStage::DISPLAY) {
         ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), false);
+        _previewShadowMaps = false;
     } else {
         ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
     }
@@ -208,7 +207,7 @@ void LightPool::previewShadowMaps(Light* light) {
     }
 
     // Stop if we have shadows disabled
-    if (!_shadowMapsEnabled || !_previewShadowMaps || _lights.empty() ||
+    if (!_previewShadowMaps || _lights.empty() ||
         _context.getRenderStage() != RenderStage::DISPLAY) {
         return;
     }
@@ -237,15 +236,11 @@ void LightPool::previewShadowMaps(Light* light) {
 void LightPool::bindShadowMaps(GFXDevice& context) {
     // Skip applying shadows if we are rendering to depth map, or we have
     // shadows disabled
-    if (!_shadowMapsEnabled) {
+    if (context.shadowDetailLevel() == RenderDetailLevel::OFF) {
         return;
     }
 
     ShadowMap::bindShadowMaps(context);
-}
-
-bool LightPool::shadowMappingEnabled() {
-    return _shadowMapsEnabled;
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {

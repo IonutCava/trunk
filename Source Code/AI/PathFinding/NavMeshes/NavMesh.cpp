@@ -3,6 +3,7 @@
 #include "../Headers/DivideRecast.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -22,8 +23,10 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
       _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::instance();
-    stringImpl path(par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
-                    par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
+    const XMLEntryData& entryData = context.entryData();
+
+    stringImpl path(entryData.scriptLocation + "/" +
+                    entryData.scenesLocation + "/" +
                     par.getParam<stringImpl>(_ID("currentScene")));
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());

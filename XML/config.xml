@@ -1,8 +1,7 @@
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
-	<!-- logFile / memFile: file names that the application should use to write output / memory allocation info -->
+	<!-- memFile: file name that the application should use to write  memory allocation info -->
 	<!-- leave empty for none! -->
-	<logFile>console.log</logFile>
 	<memFile>mem.log</memFile>
 	<mesh>
 		<playAnimations>true</playAnimations>
@@ -35,8 +34,9 @@
 	<CEGUI>
 		<ExtraStates>false</ExtraStates>
 		<SkipRendering>false</SkipRendering>
+        <defaultGUIScheme>GWEN</defaultGUIScheme>
 	</CEGUI>
-	<defaultGUIScheme>GWEN</defaultGUIScheme>
+	
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
 	<editorLayoutFile>editor.layout</editorLayoutFile>
 </GUI>
@@ -56,7 +56,6 @@
 	<fogColour r="0.5" g="0.5" b="0.55"/>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>
-	<enableNoise>false</enableNoise>
 	<enableDepthOfField>false</enableDepthOfField>
 	<enableBloom>true</enableBloom>
 	<bloomFactor>0.8</bloomFactor>

@@ -1,6 +1,7 @@
 #include "Headers/Scene.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 
@@ -605,7 +606,7 @@ U16 Scene::registerInputActions() {
 }
 
 void Scene::loadKeyBindings() {
-    XML::loadDefaultKeybindings("keyBindings.xml", this);
+    XML::loadDefaultKeybindings(_context.entryData().scriptLocation + "keyBindings.xml", this);
 }
 
 void Scene::loadBaseCamera() {

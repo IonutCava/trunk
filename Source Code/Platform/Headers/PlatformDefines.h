@@ -920,6 +920,9 @@ inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
 
 };  // namespace MemoryManager
 
+
+bool createFileIfNotExist(const char* file);
+
 /// Wrapper that allows usage of atomic variables in containers
 /// Copy is not atomic! (e.g. push/pop from containers is not threadsafe!)
 /// ref: http://stackoverflow.com/questions/13193484/how-to-declare-a-vector-of-atomic-in-c

@@ -144,10 +144,11 @@ enum class PrimitiveType : U32 {
 };
 
 enum class RenderDetailLevel : U32 {
-    LOW = 0,
-    MEDIUM = 1,
-    HIGH = 2,
-    ULTRA = 3,
+    OFF = 0,
+    LOW = 1,
+    MEDIUM = 2,
+    HIGH = 3,
+    ULTRA = 4,
     COUNT
 };
 

@@ -10,7 +10,8 @@ PXDevice::PXDevice(Kernel& parent)
     : KernelComponent(parent), 
       PhysicsAPIWrapper(),
       _API_ID(PhysicsAPI::COUNT),
-      _api(nullptr)
+      _api(nullptr),
+      _simulationSpeed(1.0f)
 {
 }
 
@@ -19,7 +20,7 @@ PXDevice::~PXDevice()
     assert(_api == nullptr);
 }
 
-ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
+ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
     DIVIDE_ASSERT(_api == nullptr,
                 "PXDevice error: initPhysicsAPI called twice!");
     switch (_API_ID) {
@@ -33,8 +34,8 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
             return ErrorCode::PFX_NON_SPECIFIED;
         } break;
     };
-
-    return _api->initPhysicsAPI(targetFrameRate);
+    _simulationSpeed = simSpeed;
+    return _api->initPhysicsAPI(targetFrameRate, _simulationSpeed);
 }
 
 bool PXDevice::closePhysicsAPI() { 
@@ -49,8 +50,8 @@ bool PXDevice::closePhysicsAPI() {
     return state;
 }
 
-void PXDevice::updateTimeStep(U8 timeStepFactor) {
-    _api->updateTimeStep(timeStepFactor);
+void PXDevice::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
+    _api->updateTimeStep(timeStepFactor, simSpeed);
 }
 
 void PXDevice::update(const U64 deltaTime) {

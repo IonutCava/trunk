@@ -74,7 +74,6 @@ struct LoopTimingData {
     U64 _nextGameTick;
 };
 
-
 namespace Attorney {
     class KernelApplication;
 };

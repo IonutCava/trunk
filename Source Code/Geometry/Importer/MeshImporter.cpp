@@ -301,7 +301,7 @@ namespace Import {
 
         Material_ptr tempMaterial;
         if (!DISABLE_MAT_FROM_FILE) {
-            tempMaterial = XML::loadMaterial(context.gfx(), importData._name);
+            tempMaterial = XML::loadMaterial(context, importData._name);
             if (tempMaterial) {
                 return tempMaterial;
             }

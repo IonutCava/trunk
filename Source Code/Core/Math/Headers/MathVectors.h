@@ -339,6 +339,9 @@ class vec2 {
             T width, height;
         };
         struct {
+            T w, h;
+        };
+        struct {
             T min, max;
         };
         T _v[2];
@@ -713,9 +716,9 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     {
     }
 
-    vec4(const simd_vector<T>& reg) noexcept: _reg(reg)
-    {
-    }
+    //vec4(const simd_vector<T>& reg) noexcept: _reg(reg)
+    //{
+    //}
 
     vec4(T value) noexcept : vec4(value, value, value, value)
     {
@@ -1080,7 +1083,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
             T width, height, depth, key;
         };
         T _v[4];
-        simd_vector<T> _reg;
+        //simd_vector<T> _reg;
     };
 };
 //#pragma pack(pop)

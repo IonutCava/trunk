@@ -59,6 +59,28 @@ bool preAssert(const bool expression, const char* failMessage) {
     return !Config::Assert::CONTINUE_ON_ASSERT;
 }
 
+bool createFileIfNotExist(const char* file) {
+    bool fileCreated = false;
+#if 1
+    if (fopen(file, "rb+") == NULL)
+    {
+        fclose(fopen(file, "wb"));
+        fileCreated = true;
+    }
+#else
+    std::fstream fileHandler;
+    fileHandler.open(file, std::fstream::in | std::fstream::out | std::fstream::app);
+
+    if (!fileHandler) {
+        fileHandler.open(file, std::fstream::in | std::fstream::out | std::fstream::trunc);
+        fileHandler.close();
+        fileCreated = true;
+    }
+#endif
+
+    return fileCreated;
+}
+
 };  // namespace Divide
 
 #if defined(_DEBUG)

@@ -4,6 +4,7 @@
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/ScenePool.h"
@@ -131,9 +132,8 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
         // Load default material
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
         _defaultMaterial = XML::loadMaterialXML(_platformContext->gfx(),
-            ParamHandler::instance().getParam<stringImpl>(_ID("scriptLocation")) +
-            "/defaultMaterial",
-            false);
+                                                _platformContext->entryData().scriptLocation + "/defaultMaterial",
+                                                false);
         _defaultMaterial->dumpToFile(false);
         _sceneData = MemoryManager_NEW SceneShaderData(platformContext.gfx());
         _renderPassCuller = MemoryManager_NEW RenderPassCuller();
@@ -177,7 +177,8 @@ Scene* SceneManager::load(stringImpl sceneName) {
     bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
     if (sceneNotLoaded) {
-        XML::loadScene(sceneName, loadingScene);
+        const XMLEntryData& entryData = _platformContext->entryData();
+        XML::loadScene(entryData.scriptLocation + "/" + entryData.scenesLocation, sceneName, loadingScene);
         state = Attorney::SceneManager::load(*loadingScene, sceneName);
         if (state) {
             Attorney::SceneManager::postLoad(*loadingScene);
@@ -400,7 +401,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
     _sceneData->setRendererFlag(_platformContext->gfx().getRenderer().getFlag());
 
-    _sceneData->toggleShadowMapping(lightPool->shadowMappingEnabled());
+    _sceneData->toggleShadowMapping(_platformContext->gfx().shadowDetailLevel() != RenderDetailLevel::OFF);
 
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();

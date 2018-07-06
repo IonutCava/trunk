@@ -39,7 +39,8 @@ PhysX::PhysX()
       _targetScene(nullptr),
       _accumulator(0.0f),
       _timeStepFactor(0),
-      _timeStep(0.0f)
+      _timeStep(0.0f),
+      _simulationSpeed(1.0f)
 {
 }
 
@@ -48,9 +49,10 @@ PhysX::~PhysX()
     assert(_gPhysicsSDK == nullptr);
 }
 
-ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
+ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
     Console::printfn(Locale::get(_ID("START_PHYSX_API")));
 
+    _simulationSpeed = simSpeed;
     // create foundation object with default error and allocator callbacks.
     _foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
                                      _gDefaultAllocatorCallback,
@@ -108,7 +110,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
         MemoryManager::DELETE(cookparams);
     }
 
-    updateTimeStep(targetFrameRate);
+    updateTimeStep(targetFrameRate, _simulationSpeed);
     Console::printfn(Locale::get(_ID("START_PHYSX_API_OK")));
 
     return ErrorCode::NO_ERR;
@@ -141,11 +143,11 @@ bool PhysX::closePhysicsAPI() {
     return true;
 }
 
-inline void PhysX::updateTimeStep(U8 timeStepFactor) {
+inline void PhysX::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
     CLAMP<U8>(timeStepFactor, 1, timeStepFactor);
     _timeStepFactor = timeStepFactor;
     _timeStep = 1.0f / _timeStepFactor;
-    _timeStep *= ParamHandler::instance().getParam<F32>(_ID("simSpeed"));
+    _timeStep *= simSpeed;
 }
 
 /// Process results

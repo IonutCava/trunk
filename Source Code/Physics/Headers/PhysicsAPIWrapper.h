@@ -59,7 +59,7 @@ class NOINITVTABLE PhysicsAPIWrapper {
     friend class PXDevice;
     virtual ErrorCode initPhysicsAPI(U8 targetFrameRate) = 0;
     virtual bool closePhysicsAPI() = 0;
-    virtual void updateTimeStep(U8 timeStepFactor) = 0;
+    virtual void updateTimeStep(U8 timeStepFactor, F32 simSpeed) = 0;
     virtual void update(const U64 deltaTime) = 0;
     virtual void process(const U64 deltaTime) = 0;
     virtual void idle() = 0;

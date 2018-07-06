@@ -171,7 +171,7 @@ void GUIEditor::UpdateControls() {
         toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_SKELETONS)->setEnabled(true);
-        toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->setEnabled(LightPool::shadowMappingEnabled());
+        toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->setEnabled(_context.gfx().shadowDetailLevel() != RenderDetailLevel::OFF);
     }
 
     if (!hasValidTransform) {

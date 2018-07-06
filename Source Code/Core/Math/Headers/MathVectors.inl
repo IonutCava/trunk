@@ -595,7 +595,7 @@ inline vec4<Type> Random(const vec4<Type>& min, const vec4<Type>& max) {
     return vec4<Type>(Random(min.x, max.x), Random(min.y, max.y),
                       Random(min.z, max.z), Random(min.w, max.w));
 }
-
+/*
 template<>
 const vec4<F32> vec4<F32>::operator-(F32 _f) const {
     return vec4<F32>(simd_vector<F32>(_mm_sub_ps(this->_reg._reg, _mm_set1_ps(_f))));
@@ -668,6 +668,6 @@ template<>
 inline void vec4<F32>::setV(const F32 *v) {
     this->_reg._reg = _mm_load_ps(v);
 }
-
+*/
 };  // namespace Divide
 #endif
