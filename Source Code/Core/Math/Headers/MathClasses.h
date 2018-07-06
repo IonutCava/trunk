@@ -133,7 +133,7 @@ public:
 
 	void set(F32 _x,F32 _y) { this->x = _x; this->y = _y; }
 	void reset(void) { this->x = this->y = 0; }
-	F32 length(void) const { return Util::square_root(this->x * this->x + this->y * this->y); }
+	F32 length(void) const { return Util::square_root_f(this->x * this->x + this->y * this->y); }
 	F32 normalize(void) {
 		F32 inv,l = this->length();
 		if(l < EPSILON) return 0.0f;
@@ -215,9 +215,9 @@ public:
 
 	void set(F32 _x,F32 _y,F32 _z) { this->x = _x; this->y = _y; this->z = _z; }
 	void reset(void) { this->x = this->y = this->z = 0; }
-	D32 length(void) const { 
+	F32 length(void) const { 
 		//return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z); 
-		return Util::square_root(this->x * this->x + this->y * this->y + this->z * this->z);
+		return Util::square_root_f(this->x * this->x + this->y * this->y + this->z * this->z);
 	}
 	F32 normalize(void) {
 		F32 inv,l = this->length();
@@ -245,7 +245,7 @@ public:
 
 	F32 dot(const vec3 &v) { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); }
 	bool compare(const vec3 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi); }
-	F32 distance(const vec3 &_v) {return Util::square_root(((_v.x - this->x)*(_v.x - this->x)) + ((_v.y - this->y)*(_v.y - this->y)) + ((_v.z - this->z)*(_v.z - this->z)));}
+	F32 distance(const vec3 &_v) {return Util::square_root_f(((_v.x - this->x)*(_v.x - this->x)) + ((_v.y - this->y)*(_v.y - this->y)) + ((_v.z - this->z)*(_v.z - this->z)));}
 	/// Returns the angle in radians between '*this' and 'v'
 	F32 angle(vec3 &v) { 
 		F32 angle = (F32)fabs(acos(this->dot(v)/(this->length()*v.length())));
@@ -520,7 +520,7 @@ public:
 		DegToRad(angle);
 		F32 c = (F32)cos(angle);
 		F32 s = (F32)sin(angle);
-		D32 l = Util::square_root(x * x + y * y + z * z);
+		F32 l = Util::square_root_f(x * x + y * y + z * z);
 		if(l < EPSILON) l = 1.0f;
 		else l = 1.0f / l;
 		x *= l;

@@ -1,5 +1,5 @@
 #include "Headers/Light.h"
-#include "Headers/LightImpostor.h"
+#include "Dynamics/Entities/Headers/Impostor.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Managers/Headers/SceneManager.h"
 
@@ -47,28 +47,27 @@ bool Light::unload(){
 	_lightProperties_v.clear();
 	_lightProperties_f.clear();
 	LightManager::getInstance().removeLight(getId());
-	SAFE_DELETE(_impostor);
-	_lightSGN->removeNode(_impostorSGN);
+	if(_impostor){
+		_lightSGN->removeNode(_impostorSGN);
+		SAFE_DELETE(_impostor);
+	}
 	return SceneNode::unload();
 }
 
 bool Light::load(const std::string& name){
 	setName(name);
-	_impostor = New LightImpostor(name,_radius);	
-
 	return true;
 }
 
 void Light::postLoad(SceneGraphNode* const sgn) {
 	//Hold a pointer to the light's location in the SceneGraph
 	_lightSGN = sgn;
-	_impostorSGN = _lightSGN->addNode(_impostor->getDummy()); 
 }	
 
 void Light::updateState(bool force){
 	if(_dirty || force){
 		_lightSGN->getTransform()->setPosition(_lightProperties_v[LIGHT_POSITION]);
-		if(_drawImpostor){
+		if(_drawImpostor && _impostor){
 			_impostor->getDummy()->getMaterial()->setDiffuse(getDiffuseColor());
 			_impostor->getDummy()->getMaterial()->setAmbient(getDiffuseColor());
 			_impostorSGN->getTransform()->setPosition(_lightProperties_v[LIGHT_POSITION]);
@@ -102,11 +101,17 @@ void Light::setLightProperties(const LIGHT_F_PROPERTIES& propName, F32 value){
 
 void Light::render(SceneGraphNode* const sgn){
 	///The isInView call should stop impostor rendering if needed
+	if(!_impostor){
+		_impostor = New Impostor(_name,_radius);	
+		_impostorSGN = _lightSGN->addNode(_impostor->getDummy()); 
+	}
 	_impostor->render(_impostorSGN);
 }
 
 void  Light::setRadius(F32 radius) {
 	_dirty = true;
 	_radius = radius;
-	_impostor->setRadius(radius);
+	if(_impostor){
+		_impostor->setRadius(radius);
+	}
 }

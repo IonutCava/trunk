@@ -24,7 +24,8 @@
 #ifndef _MATH_HELPER_H_
 #define _MATH_HELPER_H_
 
-#include "resource.h"
+#include "Hardware/Platform/PlatformDefines.h"
+#include <string>
 #include <xmmintrin.h>
 #include <boost/crc.hpp>
 
@@ -334,9 +335,11 @@ namespace Util {
 #else
 
 	inline D32 square_root(D32 n){
+		return sqrt(n);
+	}
+	inline F32 square_root_f(F32 n){
 		return sqrtf(n);
 	}
-
 	namespace Mat4{
 		inline void mmul(const float *a, const float *b, float *r){
 			for (int i=0; i<16; i+=4){

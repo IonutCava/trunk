@@ -19,6 +19,7 @@
 #define _FRUSTUM_H_
 
 #include "Core/Math/Headers/MathClasses.h"
+#include "Core/Headers/Singleton.h"
 
 #define FRUSTUM_OUT			0
 #define FRUSTUM_IN			1

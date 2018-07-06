@@ -74,8 +74,8 @@
 
 <cylinder>
 	<model>models/cylinder.obj</model>
-	<scale x="1" y="1" z="1" />
-	<position x="0" y="3" z="0" />
+	<scale x="5" y="5" z="5" />
+	<position x="-15" y="0" z="-15" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 </Sponza>

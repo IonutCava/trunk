@@ -21,15 +21,17 @@
 #include "resource.h"
 #include "Utility/Headers/BoundingBox.h"
 
-#define CHILD_NW	0
-#define CHILD_NE	1
-#define CHILD_SW	2
-#define CHILD_SE	3
-
-#define CHUNK_BIT_TESTCHILDREN		0x1
-#define CHUNK_BIT_WATERREFLECTION	0x2
-#define CHUNK_BIT_DEPTHMAP			0x3
-
+enum CHILD_POSITION{
+	CHILD_NW = 0,
+	CHILD_NE = 1,
+	CHILD_SW = 2,
+	CHILD_SE = 3
+};
+enum CHUNK_BIT{
+	CHUNK_BIT_TESTCHILDREN	  = toBit(1),
+	CHUNK_BIT_WATERREFLECTION = toBit(2),
+	CHUNK_BIT_DEPTHMAP		  = toBit(3)
+};
 
 class Frustum;
 class TerrainChunk;

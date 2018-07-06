@@ -70,7 +70,7 @@ public:
 	}
 
 	void translate(const vec3& position){
-		_translation   += position;
+		_translation  += position;
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}

@@ -18,17 +18,22 @@
 #ifndef _GFX_ENUMS_H
 #define _GFX_ENUMS_H
 
+/// no need to include the entire resource header for one define
+#ifndef toBit
+#define toBit(X) (1 << (X))
+#endif 
+
 enum RENDER_STAGE {
-    DEFERRED_STAGE   = 0x2,
-    SHADOW_STAGE     = 0x4,
-    REFLECTION_STAGE = 0x8,
-    SSAO_STAGE       = 0x10,
-    BLOOM_STAGE      = 0x20,
-    FINAL_STAGE      = 0x40,
-    DEPTH_STAGE      = 0x80,
-	ENVIRONMENT_MAPPING_STAGE     = 0x160,
+    DEFERRED_STAGE			   = toBit(1),
+    SHADOW_STAGE			   = toBit(2),
+    REFLECTION_STAGE		   = toBit(3),
+    SSAO_STAGE				   = toBit(4),
+    BLOOM_STAGE                = toBit(5),
+    FINAL_STAGE				   = toBit(6),
+    DEPTH_STAGE				   = toBit(7),
+	ENVIRONMENT_MAPPING_STAGE  = toBit(8),
 	//Place all stages above this
-	INVALID_STAGE = 0x400
+	INVALID_STAGE		       = toBit(10)
 };
 
 enum FBO_TYPE {

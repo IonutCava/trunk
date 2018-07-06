@@ -24,12 +24,16 @@
 #include "Geometry/Material/Headers/Material.h"
 
 enum SCENE_NODE_TYPE{
-	TYPE_ROOT = 0,
-	TYPE_OBJECT3D,
-	TYPE_TERRAIN,
-	TYPE_WATER,
-	TYPE_LIGHT,
-	TYPE_PLACEHOLDER
+	TYPE_ROOT             = toBit(1),
+	TYPE_OBJECT3D         = toBit(2),
+	TYPE_TERRAIN          = toBit(3),
+	TYPE_WATER            = toBit(4),
+	TYPE_LIGHT            = toBit(5),
+	TYPE_TRIGGER          = toBit(6),
+	TYPE_PARTICLE_EMITTER = toBit(7),
+
+	///Place types above
+	TYPE_PLACEHOLDER      = toBit(10)
 };
 
 class Scene;

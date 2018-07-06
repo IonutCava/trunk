@@ -20,6 +20,7 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 #include "RenderAPIEnums.h"
+#include <boost/function.hpp>
 ///Simple frustum representation
 struct frustum{
 

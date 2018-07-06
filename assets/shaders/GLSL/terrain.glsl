@@ -580,4 +580,4 @@ float filterFinalShadow(sampler2DShadow depthMap,vec3 vPosInDM, float resolution
 		fShadow = 1.0;
 	}
 	return fShadow;
-}>>>>>>> .r102
+}

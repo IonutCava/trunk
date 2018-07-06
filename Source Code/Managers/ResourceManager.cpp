@@ -6,6 +6,7 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Environment/Water/Headers/Water.h"
+#include "Dynamics/Entities/Triggers/Headers/Trigger.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
@@ -213,6 +214,25 @@ Light* ResourceManager::loadResource<Light>(const ResourceDescriptor& descriptor
 
 		//descriptor ID is not the same as light ID. This is the light's slot!!
 		ptr = New Light(descriptor.getId());
+
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+		ptr->useDefaultMaterial(false);
+		ptr->setMaterial(NULL);
+		add(descriptor.getName(),ptr);
+	}
+	return ptr;
+}
+
+template<>
+Trigger* ResourceManager::loadResource<Trigger>(const ResourceDescriptor& descriptor){
+
+	Trigger* ptr = dynamic_cast<Trigger*>(loadResource(descriptor.getName()));
+
+	if(!ptr){
+
+		//descriptor ID is not the same as light ID. This is the light's slot!!
+		ptr = New Trigger();
 
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;

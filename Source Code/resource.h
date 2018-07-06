@@ -29,17 +29,6 @@
 #pragma warning(disable:4244)
 #pragma warning(disable:4996) ///< strcpy
  
-#define GETTIME()   Framerate::getInstance().getElapsedTime()/1000
-#define GETMSTIME() Framerate::getInstance().getElapsedTime()
-
-//#define CLAMP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
-
-template <class T>
-inline void CLAMP(T& n, T& min, T& max){
-	((n)<(min))?(min):(((n)>(max))?(max):(n))
-}
-
-#define BIT(x) (1 << (x))
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -58,7 +47,6 @@ inline void CLAMP(T& n, T& min, T& max){
 #include <sstream>
 #include <assert.h>
 #include <memory.h>
-#include <string.h>
 #include <memory.h>
 #include <malloc.h>
 #include <map>
@@ -68,6 +56,7 @@ inline void CLAMP(T& n, T& min, T& max){
 #include <list>
 #include <typeinfo.h>
 #include <time.h>
+
 #if defined(UNORDERED_MAP_IMP) && UNORDERED_MAP_IMP == 0
 
 #include <boost/unordered_map.hpp>
@@ -103,5 +92,33 @@ void operator delete(void * pxData ,char* zFile, int nLine);
 
 #define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
+
+#define GETTIME()   Framerate::getInstance().getElapsedTime()/1000
+#define GETMSTIME() Framerate::getInstance().getElapsedTime()
+
+/// Clamps value n between min and max
+template <class T>
+inline void CLAMP(T& n, T& min, T& max){
+	((n)<(min))?(min):(((n)>(max))?(max):(n))
+}
+
+/// Converts an arbitrary positive integer value to a bitwise value used for masks
+#define toBit(X) (1 << (X))
+
+/// Converts a point from world coordinates to projection coordinates
+///(from Y = depth, Z = up to Y = up, Z = depth)
+inline void projectPoint(const vec3& position,vec3& output){
+	output.x = position.x;
+	output.y = position.z;
+	output.z = position.y;
+}
+/// Converts a point from world coordinates to projection coordinates
+///(from Y = depth, Z = up to Y = up, Z = depth)
+inline void projectPoint(const ivec3& position, ivec3& output){
+	output.x = position.x;
+	output.y = position.z;
+	output.z = position.y;
+}
+
 
 #endif

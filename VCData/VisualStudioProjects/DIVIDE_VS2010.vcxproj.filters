@@ -287,6 +287,51 @@
     <Filter Include="Rendering\RenderPass\Headers">
       <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Dynamics\Entities">
+      <UniqueIdentifier>{e20f910d-6cf3-4a3e-8005-bcb00eb411f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Headers">
+      <UniqueIdentifier>{c400503a-9adb-4d03-b563-78b7cb9aca3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Particles">
+      <UniqueIdentifier>{701be10b-6915-439f-ba56-c8dcddc29900}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Particles\Headers">
+      <UniqueIdentifier>{85f8cfb5-faf8-4fbe-9339-7fd4fa7d2492}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Triggers">
+      <UniqueIdentifier>{2f705d45-ede7-4a45-b8db-a9da42128672}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Triggers\Headers">
+      <UniqueIdentifier>{a945359b-4978-40d9-aeb7-886d29d566eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Units">
+      <UniqueIdentifier>{04e3cf87-82b0-432e-b181-60035e0a5ea7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Units\Headers">
+      <UniqueIdentifier>{883415a9-8fd6-403f-99f5-4c62b299c3a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem">
+      <UniqueIdentifier>{156b2816-44f7-4e25-915d-3da60f5e42a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Ammunition">
+      <UniqueIdentifier>{ba7a98b3-9bd7-4274-820a-989acb4c37a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Ammunition\Headers">
+      <UniqueIdentifier>{05c62935-0798-4c01-a0da-b1c5954c6d9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Projectile">
+      <UniqueIdentifier>{d52d802d-594c-4845-be29-2b815130bf18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Projectile\Headers">
+      <UniqueIdentifier>{700c44d2-acee-4143-bdd4-59c202d4b576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Weapons">
+      <UniqueIdentifier>{2ff73972-fd13-4321-91b0-235011164d66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Weapons\Headers">
+      <UniqueIdentifier>{0401b4d0-9646-40f3-aa9c-e287cfae52c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -476,9 +521,6 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\main.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightImpostor.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp">
       <Filter>Graphs</Filter>
     </ClCompile>
@@ -580,6 +622,42 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp">
       <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp">
+      <Filter>Dynamics\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Character.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\NPC.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Player.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Unit.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Vehicle.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp">
+      <Filter>Dynamics\Entities\Triggers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp">
+      <Filter>Dynamics\Entities\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp">
+      <Filter>Dynamics\Entities\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Ammunition.cpp">
+      <Filter>Dynamics\WeaponSystem\Ammunition</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp">
+      <Filter>Dynamics\WeaponSystem\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Projectile.cpp">
+      <Filter>Dynamics\WeaponSystem\Projectile</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -875,9 +953,6 @@
     <ClInclude Include="..\..\Source Code\readme.h" />
     <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\SceneList.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightImpostor.h">
-      <Filter>Rendering\Lighting\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
@@ -982,6 +1057,42 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.h">
       <Filter>Hardware\Video\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h">
+      <Filter>Dynamics\Entities\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Character.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\NPC.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Player.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Unit.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Vehicle.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Triggers\Headers\Trigger.h">
+      <Filter>Dynamics\Entities\Triggers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\Particle.h">
+      <Filter>Dynamics\Entities\Particles\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h">
+      <Filter>Dynamics\Entities\Particles\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h">
+      <Filter>Dynamics\WeaponSystem\Ammunition\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h">
+      <Filter>Dynamics\WeaponSystem\Weapons\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h">
+      <Filter>Dynamics\WeaponSystem\Projectile\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

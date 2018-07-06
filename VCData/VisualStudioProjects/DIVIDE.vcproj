@@ -312,10 +312,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Rendering\Lighting\LightImpostor.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp"
 					>
 				</File>
@@ -324,10 +320,6 @@
 					>
 					<File
 						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\Light.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\LightImpostor.h"
 						>
 					</File>
 				</Filter>
@@ -418,6 +410,162 @@
 						RelativePath="..\..\Source Code\Dynamics\Physics\Headers\PXDevice.h"
 						>
 					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Entities"
+				>
+				<File
+					RelativePath="..\..\Source Code\Dynamics\Entities\Impostor.cpp"
+					>
+				</File>
+				<Filter
+					Name="Units"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Units\Character.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Units\NPC.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Units\Player.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Units\Unit.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Units\Vehicle.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Units\Headers\Character.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Units\Headers\NPC.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Units\Headers\Player.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Units\Headers\Unit.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Units\Headers\Vehicle.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Triggers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Triggers\Headers\Trigger.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Particles"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Particles\Headers\Particle.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="WeaponSystem"
+				>
+				<Filter
+					Name="Weapons"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Ammunition"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Ammunition.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Projectile"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Projectile.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>

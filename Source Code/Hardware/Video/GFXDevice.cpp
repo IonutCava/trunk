@@ -152,7 +152,7 @@ void GFXDevice::processRenderQueue(){
 			///Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
 			if(sn->getDrawState(getRenderStage())){
 				///Transform the Object (Rot, Trans, Scale)
-				if(sn->getType() != TYPE_LIGHT){
+				if(!excludeFromStateChange(sn->getType())){ ///< only if the node is not in the exclusion mask
 					setObjectState(t);
 				}
 				///setup materials and render the node
@@ -186,7 +186,7 @@ void GFXDevice::processRenderQueue(){
 						break;
 				}
 				///Drop all applied transformations so that they do not affect the next node
-				if(sn->getType() != TYPE_LIGHT){
+				if(!excludeFromStateChange(sn->getType())){
 					releaseObjectState(t);
 				}
 			}
@@ -317,4 +317,9 @@ void GFXDevice::updateStates(bool force) {
    }
    ///Verify lights
    LightManager::getInstance().update();
+}
+
+bool GFXDevice::excludeFromStateChange(SCENE_NODE_TYPE currentType){
+	U8 exclusionMask = TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER;
+	return (exclusionMask & currentType) == currentType ? true : false;
 }

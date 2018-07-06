@@ -22,6 +22,8 @@
 #include "Direct3D\DXWrapper.h"
 
 enum RENDER_STAGE;
+enum SCENE_NODE_TYPE;
+
 class Object3D;
 class Framerate;
 class Light;
@@ -96,8 +98,10 @@ public:
 	inline void setPrevTextureId(const U32& id) {_prevTextureId = id;}
 	inline const U32& getPrevTextureId() {return _prevTextureId;}
 
+	/// Get all items from the renderQueue, update their states and set materials
 	void processRenderQueue();
-
+	/// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
+	bool excludeFromStateChange(SCENE_NODE_TYPE currentType);
 	/*Render State Management */
 	///Creates a new API dependend stateblock based on the received description
 	///Calls newRenderStateBlock and also saves the new block in the state block map

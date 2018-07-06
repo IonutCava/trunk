@@ -45,7 +45,7 @@ enum LIGHT_F_PROPERTIES{
 	LIGHT_QUAD_ATT
 };
 
-class LightImpostor;
+class Impostor;
 class FrameBufferObject;
 ///A light object placed in the scene at a certain position
 class Light : public SceneNode {
@@ -107,16 +107,14 @@ public:
 	///See LIGHT_TYPE enum
 	inline LIGHT_TYPE getLightType() {return _type;}
 	///Get a pointer to the light's imposter
-	inline LightImpostor* getImpostor() {return _impostor;}
-	
+	inline Impostor* getImpostor() {return _impostor;}
+	//Checks if this light needs and update
+	void updateState(bool force = false);
+
 	///Dummy function from SceneNode;
 	void onDraw() {};
 
 	///SceneNode concrete implementations
-
-	///Checks if this light needs and update
-	void updateState(bool force = false);
-
 	bool load(const std::string& name);
 	bool unload();
 	void postLoad(SceneGraphNode* const sgn);	
@@ -150,7 +148,7 @@ private:
 	U32  _id;
 	F32  _radius;
 	bool _drawImpostor, _castsShadows;
-	LightImpostor* _impostor; ///< Used for debug rendering -Ionut
+	Impostor* _impostor; ///< Used for debug rendering -Ionut
 	SceneGraphNode *_lightSGN, *_impostorSGN;
 	boost::function0<void> _callback;
 
