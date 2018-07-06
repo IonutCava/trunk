@@ -465,14 +465,17 @@ public:
 		return ret;
 	}
 
-    bool operator == (mat4& B){
-        for (I32 i = 0; i < 16; i++){
-            if (!FLOAT_COMPARE(this->mat[i],B[i])) return false;
-        }
+    inline bool operator == (mat4& B) const {
+        for (U8 i = 0; i < 16; i++)
+            if (!FLOAT_COMPARE(this->mat[i],B.mat[i])) 
+				return false;
+        
         return true;
     }
 
-    bool operator != (mat4& B){ return !(*this == B);}
+    inline bool operator != (mat4& B) const { 
+		return !(*this == B);
+	}
 
 	inline void set(T m0, T m1, T m2, T m3,
 			        T m4, T m5, T m6, T m7,

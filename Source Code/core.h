@@ -26,7 +26,7 @@
 #ifdef HIDE_DEBUG_CONSOLE
 	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
-/*
+
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
 #define NEW_DECL , char* zFile, int nLine
@@ -35,8 +35,9 @@ void* operator new(size_t t ,char* zFile, int nLine);
 void operator delete(void * pxData ,char* zFile, int nLine);
 void * malloc_simd(const size_t bytes);
 void free_simd(void * pxData);
-*/
-#define New new //NEW_PARAM
+
+#define New new NEW_PARAM
+#define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -62,14 +63,12 @@ void free_simd(void * pxData);
 #include "Utility/Headers/UnorderedMap.h"
 #include "Utility/Headers/Vector.h"
 
-#define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
-
-inline U32 GETTIME() {
-	return getMsToSec(Framerate::getInstance().getElapsedTime());
-}
-
 inline U32 GETMSTIME() {
 	return Framerate::getInstance().getElapsedTime();
+}
+
+inline U32 GETTIME() {
+	return getMsToSec(GETMSTIME());
 }
 
 template <class T>

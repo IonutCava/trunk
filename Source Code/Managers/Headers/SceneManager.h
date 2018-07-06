@@ -40,7 +40,10 @@ public:
 	bool   init();
 
 	/*Base Scene Operations*/
+	void preRender();
 	void render(const RenderStage& stage);
+	void postRender();
+
 	inline void idle()                                 { _activeScene->idle(); }
 	inline bool unloadCurrentScene()                   { return _activeScene->unload(); }
 	bool load(const std::string& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
@@ -54,8 +57,7 @@ public:
 	/// Update animations, network data, sounds, triggers etc.
 	inline void updateCameras()                           { _activeScene->updateCameras();}
 	inline void updateSceneState(const U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
-	inline void preRender()       { _activeScene->preRender(); }
-    inline void postRender()      { _activeScene->postRender(); }
+    
 	///Gather input events and process them in the current scene
 	inline void processInput()                      { _activeScene->processInput(); }
 	inline void processTasks(const U32 time)        { _activeScene->processTasks(time); }

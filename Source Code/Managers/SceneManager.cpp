@@ -64,6 +64,10 @@ bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
 	return true;
 }
 
+void SceneManager::preRender() {
+	_activeScene->preRender(); 
+}
+
 void SceneManager::render(const RenderStage& stage) {
 	assert(_activeScene != NULL);
 
@@ -82,9 +86,13 @@ void SceneManager::render(const RenderStage& stage) {
 	if(bitCompare(stage,FINAL_STAGE) || bitCompare(stage,DEFERRED_STAGE)){
 		// Draw bounding boxes, skeletons, axis gizmo, etc.
 		GFX.debugDraw();
-		// Preview depthmaps if needed
-		LightManager::getInstance().previewShadowMaps();
 		// Show navmeshes
 		AIManager::getInstance().debugDraw(false);
 	}
+}
+
+void SceneManager::postRender(){
+	// Preview depthmaps if needed
+	LightManager::getInstance().previewShadowMaps();
+	_activeScene->postRender();
 }

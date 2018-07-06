@@ -30,8 +30,6 @@
 ///The result FBO contains AO ambient values that should be added to the final fragment's ambient lighting value
 class ShaderProgram;
 class Quad3D;
-class Texture;
-typedef Texture Texture2D;
 class FrameBufferObject;
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
@@ -42,11 +40,8 @@ public:
 	void reshape(I32 width, I32 height);
 
 private:
-	ShaderProgram* _stage1Shader;
-	ShaderProgram* _stage2Shader;
+	ShaderProgram* _ssaoShader;
 	FrameBufferObject* _outputFBO;
-	FrameBufferObject* _normalsFBO;
-	Texture2D*		   _colorNoise;
 };
 
 #endif

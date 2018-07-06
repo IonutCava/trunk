@@ -12,7 +12,10 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
 																	             _outputFBO(result)
 {
 	_samplerCopy = GFX_DEVICE.newFBO(FBO_2D_COLOR);
-	TextureDescriptor fxaaDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
+	TextureDescriptor fxaaDescriptor(TEXTURE_2D, 
+		                             RGBA,
+									 RGBA8,
+									 UNSIGNED_BYTE);
 	fxaaDescriptor.setSampler(*_internalSampler);
 
 	_samplerCopy->AddAttachment(fxaaDescriptor,TextureDescriptor::Color0);
@@ -29,6 +32,7 @@ FXAAPreRenderOperator::~FXAAPreRenderOperator(){
 void FXAAPreRenderOperator::reshape(I32 width, I32 height){
 	_samplerCopy->Create(width,height);
 }
+
 ///This is tricky as we use our screen as both input and output
 void FXAAPreRenderOperator::operation(){
 	if(!_enabled) return;

@@ -41,6 +41,7 @@ public:
 private:
 	ShaderProgram* _dofShader;
 	FrameBufferObject* _outputFBO;
+	FrameBufferObject* _samplerCopy;
 };
 
 #endif

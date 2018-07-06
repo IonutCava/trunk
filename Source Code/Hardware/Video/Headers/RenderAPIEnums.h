@@ -318,8 +318,9 @@ enum GFXDataFormat{
 	SIGNED_BYTE      = 0x0003,
 	SIGNED_SHORT     = 0x0004,
 	SIGNED_INT       = 0x0005,
-	FLOAT_32         = 0x0006,
-	GDF_PLACEHOLDER  = 0x0007
+	FLOAT_16         = 0x0006,
+	FLOAT_32         = 0x0008,
+	GDF_PLACEHOLDER
 };
 
 enum GPUVendor {

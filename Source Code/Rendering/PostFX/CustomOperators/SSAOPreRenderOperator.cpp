@@ -12,74 +12,47 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 											 SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,target,resolution,sampler),
 																		         _outputFBO(result)
 {
-	F32 width = _resolution.width;
-	F32 height = _resolution.height;
-	ParamHandler& par = ParamHandler::getInstance();
-	ResourceDescriptor colorNoiseTexture("noiseTexture");
-	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images/noise.png");
-	_colorNoise = CreateResource<Texture>(colorNoiseTexture);
 
-	TextureDescriptor normalsDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	normalsDescriptor.setSampler(*_internalSampler);
-	_normalsFBO->AddAttachment(normalsDescriptor,TextureDescriptor::Color0);
-	_normalsFBO->toggleDepthBuffer(false);
-
-	_normalsFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
-	_normalsFBO->Create(width,height);
-
-	TextureDescriptor outputDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
+	TextureDescriptor outputDescriptor(TEXTURE_2D, 
+		                               RGB,
+									   RGB8,
+									   UNSIGNED_BYTE);
 	outputDescriptor.setSampler(*_internalSampler);
 	_outputFBO->AddAttachment(outputDescriptor,TextureDescriptor::Color0);
-	_outputFBO->Create(width, height);
-	_stage1Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass1"));
-	_stage2Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
+	_outputFBO->Create(_resolution.width, _resolution.height);
+	_ssaoShader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass"));
+	_ssaoShader->UniformTexture("texScreen", 0);
+	_ssaoShader->UniformTexture("texDepth", 1);
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator(){
-	RemoveResource(_stage1Shader);
-	RemoveResource(_stage2Shader);
-	RemoveResource(_colorNoise);
-	SAFE_DELETE(_normalsFBO);
+	RemoveResource(_ssaoShader);
 }
 
 void SSAOPreRenderOperator::reshape(I32 width, I32 height){
-	if(_normalsFBO){
-		_normalsFBO->Create(width,height);
-	}
 	_outputFBO->Create(width, height);
 }
 
 void SSAOPreRenderOperator::operation(){
-	if(!_enabled) return;
-	if(!_renderQuad) return;
+	if(!_enabled || !_renderQuad) return;
+
 	GFXDevice& gfx = GFX_DEVICE;
 
-	_normalsFBO->Begin();
-		_stage1Shader->bind();
+	gfx.toggle2D(true);
 
-				SceneManager::getInstance().render(SSAO_STAGE);
-
-	_normalsFBO->End();
+	_ssaoShader->bind();
+	_renderQuad->setCustomShader(_ssaoShader);
 
 	_outputFBO->Begin();
-		_stage2Shader->bind();
-			_normalsFBO->Bind(0);
-			_colorNoise->Bind(1);
-			_stage2Shader->UniformTexture("normalMap",0);
-			_stage2Shader->UniformTexture("rnm",1);
-			_stage2Shader->Uniform("totStrength",  1.38f);
-			_stage2Shader->Uniform("strength", 0.07f);
-			_stage2Shader->Uniform("offset", 18.0f);
-			_stage2Shader->Uniform("falloff", 0.000002f);
-			_stage2Shader->Uniform("rad", 0.006f);
+		_inputFBO[0]->Bind(0); // screen
+		_inputFBO[1]->Bind(1); // depth
 
-			gfx.toggle2D(true);
-            _renderQuad->setCustomShader(_stage2Shader);
 			gfx.renderInstance(_renderQuad->renderInstance());
-			gfx.toggle2D(false);
 
-			_colorNoise->Unbind(1);
-			_normalsFBO->Unbind(0);
+		_inputFBO[1]->Unbind(1);
+		_inputFBO[0]->Unbind(0);
 
 	_outputFBO->End();
+
+	gfx.toggle2D(false);
 }

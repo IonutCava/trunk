@@ -28,6 +28,7 @@
 ///Always bind a shader, even a dummy one when rendering geometry. No more fixed matrix API means no more VBOs or VAs
 ///One VAO contains: one VBO for data, one IBO for indices and uploads to the shader vertex attribs for:
 ///- Vertex Data  bound to location Divide::GL::VERTEX_POSITION_LOCATION
+///- Colors       bound to location Divide::GL::VERTEX_COLOR_LOCATION
 ///- Normals      bound to location Divide::GL::VERTEX_NORMAL_LOCATION
 ///- TexCoords    bound to location Divide::GL::VERTEX_TEXCOORD_LOCATION
 ///- Tangents     bound to location Divide::GL::VERTEX_TANGENT_LOCATION

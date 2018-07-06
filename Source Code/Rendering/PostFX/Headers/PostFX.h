@@ -28,29 +28,35 @@
 #define FBO_BLOOM_SAMPLES 1
 
 class GFXDevice;
-class Texture;
-typedef Texture Texture2D;
 class Quad3D;
 class Camera;
 class ShaderProgram;
 class FrameBufferObject;
+class PreRenderOperator;
+
+class Texture;
+typedef Texture Texture2D;
+
 DEFINE_SINGLETON( PostFX )
 
 public:
 	FrameBufferObject* _screenFBO;
 	FrameBufferObject* _depthFBO;
 
-	/// Depth of Field
-	FrameBufferObject* _depthOfFieldFBO;
-
-	/// Anaglyph
-	FrameBufferObject* _anaglyphFBO[2];
+	/// Anaglyph (a second "screen" fbo, for the other "eye")
+	FrameBufferObject* _anaglyphFBO;
 
 	/// Bloom
 	FrameBufferObject* _bloomFBO;
 
-	///SSAO
+	/// SSAO
 	FrameBufferObject* _SSAO_FBO;
+
+	/// FXAA 
+	PreRenderOperator* _fxaaOP;
+
+	/// DoF
+	PreRenderOperator* _dofOP;
 
 	/// Screen Border
 	Texture2D*	_screenBorder;
@@ -85,7 +91,6 @@ private:
 	bool _enableSSAO;
 	bool _enableFXAA;
     bool _enableHDR;
-	bool _FXAAinit;
 	bool _underwater;
 
 public:

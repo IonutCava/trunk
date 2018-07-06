@@ -22,16 +22,18 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 
 	if(_prevTime <= 0) 
 		_prevTime = GETMSTIME();
-	// Get current time in ms
+	// get current time in ms
 	U32 currentTime = GETMSTIME();
 	// figure out how many milliseconds have elapsed since last move time
     U32 timeDif = currentTime - _prevTime;
 	CLAMP<U32>(timeDif, 0, timeDif);
+	// update previous time
+	_prevTime = currentTime;
 	// 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
 	// distance = timeDif * 0.001 * moveSpeed
 	F32 moveDistance = _moveSpeed * (getMsToSec(timeDif));
 	CLAMP<F32>(moveDistance, EPSILON, _moveSpeed);
-	// apply framerate varyance
+	// apply framerate variance
 	moveDistance *= FRAME_SPEED_FACTOR;
 	
     F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
@@ -40,12 +42,15 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 
     bool returnValue = IS_ZERO(_moveSpeed);
 	if(!returnValue){
+		bool xTolerance = IS_TOLERANCE(xDelta, _moveTolerance);
+		bool yTolerance = IS_TOLERANCE(yDelta, _moveTolerance);
+		bool zTolerance = IS_TOLERANCE(zDelta, _moveTolerance);
 		// Compute the destination point for current frame step
 		vec3<F32> interpPosition;
-		if(!IS_TOLERANCE(yDelta,_moveTolerance) && !IS_ZERO( yDelta ) )
+		if(!yTolerance && !IS_ZERO( yDelta ) )
 			interpPosition.y = ( _currentPosition.y > _currentTargetPosition.y ? -moveDistance : moveDistance );
 	
-		if((!IS_TOLERANCE(xDelta,_moveTolerance) || !IS_TOLERANCE(zDelta,_moveTolerance))) {
+		if((!xTolerance || !zTolerance)) {
 			// Update target
 			if( IS_ZERO( xDelta ) ){
 				interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
@@ -62,12 +67,8 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 			}
 			// commit transformations
 			_node->getTransform()->translate(interpPosition);
-			// Update current position
-			_currentPosition = _node->getTransform()->getPosition();
 		}
     }
-    // update previous time
-	_prevTime = currentTime;
 
     return returnValue;
 }

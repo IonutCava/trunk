@@ -210,30 +210,29 @@ public:
 
 	void Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat){
 		//UpgradableReadLock ur_lock(_lock);
-		if(_oldMatrix == mat){
+		if(_oldMatrix == mat)
 			return;
-		}else{
-			_oldMatrix = mat;
+		
+		_oldMatrix = mat;
 
-			F32 a, b;
-			vec3<F32> old_min = initialBoundingBox.getMin();
-			vec3<F32> old_max = initialBoundingBox.getMax();
+		const F32* oldMin = &initialBoundingBox._min[0];
+		const F32* oldMax = &initialBoundingBox._max[0];
 
-			//UpgradeToWriteLock uw_lock(ur_lock);
-			_min = _max =  vec3<F32>(mat[12],mat[13],mat[14]);
-
-			for (U8 i = 0; i < 3; ++i)		{
-				for (U8 j = 0; j < 3; ++j)			{
-					a = mat.element(i,j,false) * old_min[j];
-					b = mat.element(i,j,false) * old_max[j]; /// Transforms are usually row major
-
-					if (a < b) {
-						_min[i] += a;
-						_max[i] += b;
-					} else {
-						_min[i] += b;
-						_max[i] += a;
-					}
+		//UpgradeToWriteLock uw_lock(ur_lock);
+		_min = _max =  vec3<F32>(mat[12],mat[13],mat[14]);
+		
+		F32 a, b;
+		for (U8 i = 0; i < 3; ++i)		{
+			for (U8 j = 0; j < 3; ++j)			{
+				a = mat.m[j][i] * oldMin[j];
+				b = mat.m[j][i] * oldMax[j]; /// Transforms are usually row major
+				
+				if (a < b) {
+					_min[i] += a;
+					_max[i] += b;
+				} else {
+					_min[i] += b;
+					_max[i] += a;
 				}
 			}
 		}

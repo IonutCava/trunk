@@ -349,7 +349,7 @@ public:
 	  PRINT_FN(Locale::get("INPUT_CREATE_OK"),_pInputInterface->inputSystemName().c_str());
 
 	  // Create the event handler.
-	  _pEventHdlr = new EventHandler(this,kernel);
+	  _pEventHdlr = New EventHandler(this,kernel);
 
 	  try{
 		// Create a simple keyboard
@@ -376,7 +376,7 @@ public:
 			  }
 
 			// Create the joystick manager.
-			_pJoystickInterface = new JoystickInterface(_pInputInterface, _pEventHdlr);
+			_pJoystickInterface = New JoystickInterface(_pInputInterface, _pEventHdlr);
 			if( !_pJoystickInterface->wasFFDetected() )	{
 				PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
 				SAFE_DELETE(_pJoystickInterface);

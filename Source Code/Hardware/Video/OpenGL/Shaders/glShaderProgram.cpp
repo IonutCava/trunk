@@ -247,6 +247,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 	vertexProperties += shaderProperties;
     GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_POSITION_LOCATION ,"inVertexData"));
 	GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_NORMAL_LOCATION   ,"inNormalData"));
+	GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_COLOR_LOCATION    ,"inColorData"));
 	GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TEXCOORD_LOCATION ,"inTexCoordData"));
 	GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TANGENT_LOCATION  ,"inTangentData"));
     GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BITANGENT_LOCATION,"inBiTangentData"));

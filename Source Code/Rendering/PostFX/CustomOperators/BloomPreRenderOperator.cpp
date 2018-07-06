@@ -16,19 +16,22 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
 	F32 height = _resolution.height;
 	_tempBloomFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 
-	TextureDescriptor tempBloomDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
+	TextureDescriptor tempBloomDescriptor(TEXTURE_2D, 
+		                                  RGB,
+										  RGB8,
+										  UNSIGNED_BYTE);
 	tempBloomDescriptor.setSampler(*_internalSampler);
 
 	_tempBloomFBO->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
 	_tempBloomFBO->Create(width/4,height/4);
-
-	TextureDescriptor outputBloomDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
-	outputBloomDescriptor.setSampler(*_internalSampler);
-
-	_outputFBO->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
+	_outputFBO->AddAttachment(tempBloomDescriptor, TextureDescriptor::Color0);
 	_outputFBO->Create(width, height);
 	_bright = CreateResource<ShaderProgram>(ResourceDescriptor("bright"));
 	_blur = CreateResource<ShaderProgram>(ResourceDescriptor("blur"));
+
+	_bright->UniformTexture("texScreen", 0);
+	_blur->UniformTexture("texScreen", 0);
+	_blur->Uniform("kernelSize", 10);
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator(){
@@ -38,68 +41,59 @@ BloomPreRenderOperator::~BloomPreRenderOperator(){
 }
 
 void BloomPreRenderOperator::reshape(I32 width, I32 height){
-	I32 w = width/4;
-	I32 h = height/4;
-	if(_tempBloomFBO)
-		_tempBloomFBO->Create(w,h);
+	assert(_tempBloomFBO);
+	I32 w = width / 4;
+	I32 h = height / 4;
+
+	_tempBloomFBO->Create(w,h);
 	_outputFBO->Create(w, h);
 }
 
 void BloomPreRenderOperator::operation(){
-	if(!_enabled) return;
-	if(!_renderQuad) return;
+	if(!_enabled || !_renderQuad) return;
+
 	if(_inputFBO.empty()){
 		ERROR_FN(Locale::get("ERROR_BLOOM_INPUT_FBO"));
+		assert(!_inputFBO.empty());
 	}
 	GFXDevice& gfx = GFX_DEVICE;
+	RenderInstance* quadRI = _renderQuad->renderInstance();
 
 	gfx.toggle2D(true);
+	
+	_bright->bind();
+	_renderQuad->setCustomShader(_bright);
+	
+	// render all of the "bright spots"
 	_outputFBO->Begin();
-
-		_bright->bind();
-        _renderQuad->setCustomShader(_bright);
-			//screen FBO
-			_inputFBO[0]->Bind(0);
-
-				_bright->UniformTexture("texScreen", 0);
-
-				gfx.renderInstance(_renderQuad->renderInstance());
-
-			_inputFBO[0]->Unbind(0);
-
+        //screen FBO
+		_inputFBO[0]->Bind(0);
+			gfx.renderInstance(quadRI);
+		_inputFBO[0]->Unbind(0);
 	_outputFBO->End();
+
+	_blur->bind();
+	_blur->Uniform("size", vec2<F32>((F32)_outputFBO->getWidth(), (F32)_outputFBO->getHeight()));
+	_blur->Uniform("horizontal", true);
+	_renderQuad->setCustomShader(_blur);
 
 	//Blur horizontally
 	_tempBloomFBO->Begin();
-
-		_blur->bind();
-		_renderQuad->setCustomShader(_blur);
-			_outputFBO->Bind(0);
-				_blur->UniformTexture("texScreen", 0);
-				_blur->Uniform("size", vec2<F32>((F32)_outputFBO->getWidth(), (F32)_outputFBO->getHeight()));
-				_blur->Uniform("horizontal", true);
-				_blur->Uniform("kernel_size", 10);
-
-				gfx.renderInstance(_renderQuad->renderInstance());
-
-			_outputFBO->Unbind(0);
-
+	    //bright spots
+		_outputFBO->Bind(0);
+			gfx.renderInstance(quadRI);
+		_outputFBO->Unbind(0);
 	_tempBloomFBO->End();
+
+	_blur->Uniform("size", vec2<F32>((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
+	_blur->Uniform("horizontal", false);
 
 	//Blur vertically
 	_outputFBO->Begin();
-		_blur->bind();
-
-			_tempBloomFBO->Bind(0);
-
-				_blur->UniformTexture("texScreen", 0);
-				_blur->Uniform("size", vec2<F32>((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
-				_blur->Uniform("horizontal", false);
-
-				gfx.renderInstance(_renderQuad->renderInstance());
-
-			_tempBloomFBO->Unbind(0);
-
+		//horizontally blurred bright spots
+		_tempBloomFBO->Bind(0);
+			gfx.renderInstance(quadRI);
+		_tempBloomFBO->Unbind(0);
 	_outputFBO->End();
 
 	gfx.toggle2D(false);

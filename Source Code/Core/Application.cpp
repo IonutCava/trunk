@@ -5,6 +5,7 @@
 
 Application::Application() : _kernel(NULL),
 							 _mainWindowId(-1),
+							 _totalMemoryOcuppied(0),
 							 _requestShutdown(false)
 {
     _threadId = boost::this_thread::get_id();
@@ -48,4 +49,17 @@ void Application::run(){
 
 void Application::Deinitialize(){
 	_kernel->Shutdown();
+	if(_totalMemoryOcuppied != 0)
+		ERROR_FN(Locale::get("ERROR_MEMORY_NEW_DELETE_MISMATCH"), _totalMemoryOcuppied);
+}
+
+
+void Application::logMemoryOperation(bool allocation, const char* logMsg, size_t size)  {
+	if(_memLogBuffer.is_open())
+		_memLogBuffer << logMsg;
+
+	if(!allocation) 
+		_totalMemoryOcuppied -= size;
+	else
+		_totalMemoryOcuppied += size;
 }

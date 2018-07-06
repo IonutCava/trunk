@@ -21,9 +21,4 @@ void glDepthArrayBufferObject::Bind(GLubyte unit, GLubyte texture) const {
 	FrameBufferObject::Bind(unit);
     GL_API::setActiveTextureUnit(unit);
 	GLCheck(glBindTexture(_textureType, _depthId));
-	if(texture > 0){ ///Hack for previewing shadow maps
-		GLCheck(glTexParameteri( _textureType, GL_TEXTURE_COMPARE_MODE, GL_NONE));
-	}else{
-		GLCheck(glTexParameteri( _textureType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE));
-	}
 }

@@ -675,8 +675,7 @@
     <None Include="..\..\assets\shaders\GLSL\lighting.glsl" />
     <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl" />
     <None Include="..\..\assets\shaders\GLSL\sky.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\SSAOPass1.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\SSAOPass2.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl" />
     <None Include="..\..\assets\shaders\GLSL\terrain.glsl" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert" />

@@ -3,29 +3,42 @@
 #include "core.h"
 #include "Core/Headers/Application.h"
 
-U32 maxAlloc = 0;
-char* zMaxFile = "";
-I16 nMaxLine = 0;
-/*
+namespace Divide {
+	namespace Memory {
+		char outputLogBuffer[512];
+		U32 maxAlloc = 0;
+		char* zMaxFile = "";
+		I16 nMaxLine = 0;
+	};
+};
+
 void* operator new(size_t t ,char* zFile, I32 nLine){
 #ifdef _DEBUG
-	if (t > maxAlloc)	{
-		maxAlloc = t;
-		zMaxFile = zFile;
-		nMaxLine = nLine;
+	if (t > Divide::Memory::maxAlloc)	{
+		Divide::Memory::maxAlloc = t;
+		Divide::Memory::zMaxFile = zFile;
+		Divide::Memory::nMaxLine = nLine;
 	}
 
-	std::stringstream ss;
-	ss << "[ "<< GETTIME() << " ] : New allocation: " << t << " IN: \""
-	   << zFile << "\" at line: " << nLine << "." << std::endl
-	   << "\t Max Allocation: ["  << maxAlloc << "] in file: \""
-	   << zMaxFile << "\" at line: " << nMaxLine  << std::endl << std::endl;
-	Application::getInstance().logMemoryAllocation(ss);
+	sprintf(Divide::Memory::outputLogBuffer, 
+		    "[ %d ] : New allocation [ %d ] in: \"%s\" at line: %d.\n\t Max allocation: [ %d ] in file \"%s\" at line: %d\n\n",
+			GETTIME(), t, zFile, nLine, Divide::Memory::maxAlloc, Divide::Memory::zMaxFile, Divide::Memory::nMaxLine);
+
+	Application::getInstance().logMemoryOperation(true, Divide::Memory::outputLogBuffer, t);
 #endif
+
 	return malloc(t);
 }
 
 void operator delete(void * pxData ,char* zFile, I32 nLine){
+
+#ifdef _DEBUG
+ 	sprintf(Divide::Memory::outputLogBuffer, 
+		    "[ %d ] : New deallocation [ %d ] in: \"%s\" at line: %d.\n\n",
+			GETTIME(), sizeof(pxData), zFile, nLine);
+	Application::getInstance().logMemoryOperation(false, Divide::Memory::outputLogBuffer, sizeof(pxData));
+#endif
+
 	 free(pxData);
 }
 
@@ -58,4 +71,3 @@ void free_simd(void * pxData){
 	free(p);
 #endif
 }
-*/

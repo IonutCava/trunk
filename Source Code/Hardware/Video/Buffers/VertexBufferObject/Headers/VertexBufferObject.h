@@ -82,6 +82,7 @@ public:
 	inline void setIndicesDelimiter(U32 delimiterValue)      {_indexDelimiter = delimiterValue;}
 	inline void computeTriangles(bool state = true)          {_computeTriangles = state;}
 	inline void reservePositionCount(U32 size)  {_dataPosition.reserve(size);}
+	inline void reserveColourCount(U32 size)    {_dataColor.reserve(size);}
 	inline void reserveNormalCount(U32 size)    {_dataNormal.reserve(size);}
 	inline void reserveTangentCount(U32 size)   {_dataTangent.reserve(size);}
 	inline void reserveBiTangentCount(U32 size) {_dataBiTangent.reserve(size);}
@@ -89,6 +90,10 @@ public:
 
 	inline void resizePositionCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))  {
 		_dataPosition.resize(size,defaultValue);
+	}
+
+	inline void resizeColoCount(U32 size, const vec3<U8>& defaultValue = vec3<U8>())           {
+		_dataColor.resize(size,defaultValue);
 	}
 
 	inline void resizeNormalCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))    {
@@ -112,6 +117,7 @@ public:
 	inline const vec3<F32>&         getMaxPosition() {return _maxPosition;}
 
 	inline const vectorImpl<vec3<F32> >&  getPosition()	 const {return _dataPosition;}
+	inline const vectorImpl<vec3<U8>  >&  getColor()     const {return _dataColor;}
 	inline const vectorImpl<vec3<F32> >&  getNormal()	 const {return _dataNormal;}
 	inline const vectorImpl<vec3<F32> >&  getTangent()	 const {return _dataTangent;}
 	inline const vectorImpl<vec3<F32> >&  getBiTangent() const {return _dataBiTangent;}
@@ -145,6 +151,11 @@ public:
 		_positionDirty  = true;
 	}
 
+	inline void addColor(const vec3<U8>& col){
+		_dataColor.push_back(col);
+		_colorDirty = true;
+	}
+
 	inline void addNormal(const vec3<F32>& norm){
 		_dataNormal.push_back(norm);
 		_normalDirty = true;
@@ -169,6 +180,12 @@ public:
 		assert(index < _dataPosition.size());
 		_dataPosition[index] = newValue;
 		_positionDirty = true;
+	}
+
+	inline void modifyColorValue(U32 index, const vec3<U8>& newValue) {
+		assert(index < _dataColor.size());
+		_dataColor[index] = newValue;
+		_colorDirty = true;
 	}
 
 	inline void modifyNormalValue(U32 index, const vec3<F32>& newValue)  {
@@ -196,10 +213,11 @@ public:
 
 	inline void Reset() {
 		_created = false;  
-		_VBOoffsetPosition = _VBOoffsetNormal = _VBOoffsetTexcoord = _VBOoffsetTangent = 0;
+		_VBOoffsetPosition = _VBOoffsetColor = _VBOoffsetNormal = _VBOoffsetTexcoord = _VBOoffsetTangent = 0;
 		_VBOoffsetBiTangent = _VBOoffsetBoneIndices = _VBOoffsetBoneWeights = 0;
         _VBOoffsetBoneIndicesDEPTH = _VBOoffsetBoneWeightsDEPTH = 0;
 		_dataPosition.clear();
+		_dataColor.clear();
 		_dataNormal.clear();
 		_dataTexcoord.clear();
 		_dataTangent.clear();
@@ -210,7 +228,8 @@ public:
 		_hardwareIndicesS.clear();
 		_dataTriangles.clear();
 		_indiceLimits.resize(Config::SCENE_NODE_LOD, vec2<U32>(0,0));
-		_positionDirty = _normalDirty = _texcoordDirty = _tangentDirty = _bitangentDirty = _indicesDirty = _weightsDirty = true;
+		_positionDirty = _colorDirty = _normalDirty = _texcoordDirty = true;
+		_tangentDirty = _bitangentDirty = _indicesDirty = _weightsDirty = true;
 		_minPosition = vec3<F32>(10000.0f);
 		_maxPosition = vec3<F32>(-10000.0f);
 	}
@@ -235,6 +254,7 @@ protected:
 	///An index value that separates ojects (OGL: primitive restart index)
 	U32         _indexDelimiter;
 	ptrdiff_t	_VBOoffsetPosition;
+	ptrdiff_t   _VBOoffsetColor;
 	ptrdiff_t	_VBOoffsetNormal;
 	ptrdiff_t	_VBOoffsetTexcoord;
 	ptrdiff_t	_VBOoffsetTangent, _VBOoffsetBiTangent;
@@ -246,6 +266,7 @@ protected:
 	vectorImpl<U32>        _hardwareIndicesL;
 	vectorImpl<U16>        _hardwareIndicesS;
 	vectorImpl<vec3<F32> > _dataPosition;
+	vectorImpl<vec3<U8>  > _dataColor;
 	vectorImpl<vec3<F32> > _dataNormal;
 	vectorImpl<vec2<F32> > _dataTexcoord;
 	vectorImpl<vec3<F32> > _dataTangent;
@@ -261,7 +282,8 @@ protected:
 	///Some objects need triangle data in order for other parts of the engine to take advantage of direct data (physics, navmeshes, etc)
 	bool _computeTriangles;
 	/// Cache system to update only required data
-	bool _positionDirty, _normalDirty, _texcoordDirty, _tangentDirty, _bitangentDirty, _indicesDirty, _weightsDirty;
+	bool _positionDirty, _colorDirty, _normalDirty, _texcoordDirty;
+	bool _tangentDirty, _bitangentDirty, _indicesDirty, _weightsDirty;
     ///Store position and animation data in different VBO so rendering to depth is faster (it skips tex coords, tangent and bitangent data upload to GPU mem)
     ///Set this to FALSE if you need bump/normal/parallax mapping in depth pass (normal mapped object casts correct shadows)
     bool _optimizeForDepth;

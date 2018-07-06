@@ -51,8 +51,9 @@ public:
 
 	inline const boost::thread::id&  getMainThreadId()               const {return _threadId;}
 	inline bool isMainThread()                                       const {return (_threadId == boost::this_thread::get_id());}
-	inline void setMemoryLogFile(const std::string& fileName)              {memLogBuffer.open(fileName.c_str());}
-	inline void logMemoryAllocation(const std::stringstream& buffer)       {if(memLogBuffer.is_open()){ memLogBuffer << buffer.str();}}
+	inline void setMemoryLogFile(const std::string& fileName)              {_memLogBuffer.open(fileName.c_str());}
+	///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
+	void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
 
 protected:
 	friend class InputInterface;
@@ -63,13 +64,17 @@ private:
 	~Application();
 
 private:
-	bool _requestShutdown;
-	I8 _mainWindowId;
+	I8        _mainWindowId; 
+	bool      _requestShutdown;
+	/// size in bytes of currently allocated memory by the "New" override (delete calls are taken in consideration)
+	size_t    _totalMemoryOcuppied;
 	vec2<U16> _resolution;
-	Kernel* _kernel;
+	Kernel*   _kernel;
 	///buffer to register all of the memory allocations recorded via "New"
-	std::ofstream memLogBuffer;
+	std::ofstream _memLogBuffer;
+	///Main application thread id
     boost::thread::id _threadId;
+	
 END_SINGLETON
 
 #endif
