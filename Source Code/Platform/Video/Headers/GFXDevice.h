@@ -235,6 +235,7 @@ public:  // GPU interface
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
     bool restoreViewport();
 
+    inline F32 renderingAspectRatio() const;
     inline const vec2<U16>& renderingResolution() const;
 
     void setSceneZPlanes(const vec2<F32>& zPlanes);
@@ -377,6 +378,7 @@ protected:
 
     void drawText(const TextElementBatch& batch);
 
+    void fitViewportInWindow(U16 w, U16 h);
 
     void onSizeChange(const SizeChangeParams& params);
 

@@ -163,7 +163,6 @@ protected:
     stringImpl _defaultGUIScheme;
     CEGUI::GUIContext* _ceguiContext;
     CEGUI::TextureTarget* _ceguiRenderTextureTarget;
-    TextureData _ceguiTextureData;
 
 private:
     bool _init;              //< Set to true when the GUI has finished loading

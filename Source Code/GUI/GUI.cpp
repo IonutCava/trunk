@@ -57,9 +57,6 @@ GUI::GUI(Kernel& parent)
 {
     // 500ms
     _ceguiInput.setInitialDelay(0.500f);
-
-    // Should we cache this or request it every time?
-    _ceguiTextureData = getCEGUIRenderTextureData();
 }
 
 GUI::~GUI()

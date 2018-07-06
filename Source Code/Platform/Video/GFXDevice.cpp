@@ -434,11 +434,28 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->setProjection(vec4<F32>(0, to_F32(w), to_F32(h), 0), vec2<F32>(-1, 1));
     }
 
-    F32 currentAspectRatio = to_F32(_renderingResolution.width) / _renderingResolution.height;
-    I32 newWidth = to_I32(std::round(h * currentAspectRatio));
-    I32 newHeight = to_I32(std::round(w / currentAspectRatio));
-    I32 left = to_I32(std::round((w - newWidth) * 0.5f));
-    I32 bottom = to_I32(std::round((h - newHeight) * 0.5f));
+    fitViewportInWindow(w, h);
+}
+
+void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
+    F32 currentAspectRatio = renderingAspectRatio();
+
+    I32 left = 0, bottom = 0;
+    I32 newWidth = w;
+    I32 newHeight = h;
+
+    I32 tempWidth = to_I32(h * currentAspectRatio);
+    I32 tempHeight = to_I32(w / currentAspectRatio);
+
+    F32 newAspectRatio = to_F32(tempWidth) / tempHeight;
+
+    if (newAspectRatio <= currentAspectRatio) {
+        newWidth = tempWidth;
+        left = to_I32((w - newWidth) * 0.5f);
+    } else {
+        newHeight = tempHeight;
+        bottom = to_I32((h - newHeight) * 0.5f);
+    }
     setBaseViewport(vec4<I32>(left, bottom, newWidth, newHeight));
 }
 
