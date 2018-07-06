@@ -66,13 +66,17 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
 
 // Order: luminance calc -> bloom -> tonemap
 void BloomPreRenderOperator::execute() {
-    size_t defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
 
      // Step 1: generate bloom
     _hdrTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //screen
     // render all of the "bright spots"
     _bloomOutput->begin(RenderTarget::defaultPolicy());
-        GFX_DEVICE.drawTriangle(defaultStateHash, _bloomCalc);
+        triangleCmd.shaderProgram(_bloomCalc);
+        GFX_DEVICE.draw(triangleCmd);
     _bloomOutput->end();
 
     // Step 2: blur bloom
@@ -81,14 +85,16 @@ void BloomPreRenderOperator::execute() {
     _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
     _bloomOutput->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
     _bloomBlurBuffer[0]->begin(RenderTarget::defaultPolicy());
-        GFX_DEVICE.drawTriangle(defaultStateHash, _blur);
+        triangleCmd.shaderProgram(_blur);
+        GFX_DEVICE.draw(triangleCmd);
     _bloomBlurBuffer[0]->end();
 
     // Blur vertically (recycle the render target. We have a copy)
     _blur->SetSubroutine(ShaderType::FRAGMENT, _vertBlur);
     _bloomBlurBuffer[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
     _bloomBlurBuffer[1]->begin(RenderTarget::defaultPolicy());
-        GFX_DEVICE.drawTriangle(defaultStateHash, _blur);
+        triangleCmd.shaderProgram(_blur);
+        GFX_DEVICE.draw(triangleCmd);
     _bloomBlurBuffer[1]->end();
         
     // Step 3: apply bloom
@@ -96,7 +102,8 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //Screen
     _bloomBlurBuffer[1]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0); //Bloom
     _hdrTarget->begin(_screenOnlyDraw);
-        GFX_DEVICE.drawTriangle(defaultStateHash, _bloomApply);
+        triangleCmd.shaderProgram(_bloomApply);
+        GFX_DEVICE.draw(triangleCmd);
     _hdrTarget->end();
 }
 

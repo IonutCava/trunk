@@ -332,7 +332,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
 
     RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState());
     PostFX::instance().apply();
-
+     
     Attorney::GFXDeviceKernel::flushDisplay();
 
     frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_START, evt);

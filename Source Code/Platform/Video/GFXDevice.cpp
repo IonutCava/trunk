@@ -625,6 +625,23 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 void GFXDevice::constructHIZ() {
+    static bool firstRun = true;
+    static RTDrawDescriptor depthOnlyTarget;
+
+    if (firstRun) {
+        // We use a special shader that downsamples the buffer
+        // We will use a state block that disables colour writes as we will render only a depth image,
+        // disables depth testing but allows depth writes
+        // Set the depth buffer as the currently active render target
+        depthOnlyTarget._clearColourBuffersOnBind = false;
+        depthOnlyTarget._clearDepthBufferOnBind = false;
+        depthOnlyTarget._changeViewport = false;
+        depthOnlyTarget._drawMask.disableAll();
+        depthOnlyTarget._drawMask.enabled(RTAttachment::Type::Depth, 0);
+
+        firstRun = false;
+    }
+
     auto setAndGetHalfViewport = [](vec4<I32>& viewportIn) -> vec4<I32>& {
         viewportIn /= 2;
         // Ensure that the viewport size is always at least 1x1
@@ -639,16 +656,7 @@ void GFXDevice::constructHIZ() {
     U16 height = screenTarget->getHeight();
     // Bind the depth texture to the first texture unit
     screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
-    // We use a special shader that downsamples the buffer
-    // We will use a state block that disables colour writes as we will render only a depth image,
-    // disables depth testing but allows depth writes
-    // Set the depth buffer as the currently active render target
-    RTDrawDescriptor depthOnlyTarget;
-    depthOnlyTarget._clearColourBuffersOnBind = false;
-    depthOnlyTarget._clearDepthBufferOnBind = false;
-    depthOnlyTarget._changeViewport = false;
-    depthOnlyTarget._drawMask.disableAll();
-    depthOnlyTarget._drawMask.enabled(RTAttachment::Type::Depth, 0);
+
 
     screenTarget->begin(depthOnlyTarget);
     // Calculate the number of mipmap levels we need to generate
@@ -657,6 +665,13 @@ void GFXDevice::constructHIZ() {
     // Store the current width and height of each mip
     vec4<I32> currentViewport(0, 0, width, height);
     vec4<I32> previousViewport(_viewport.top());
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(_stateDepthOnlyRenderingHash);
+    triangleCmd.shaderProgram(_HIZConstructProgram);
+
     // We skip the first level as that's our full resolution image
     for (U16 i = 1; i < numLevels; ++i) {
         // Calculate next viewport size
@@ -665,8 +680,9 @@ void GFXDevice::constructHIZ() {
         // Bind next mip level for rendering but first restrict fetches only to previous level
         screenTarget->setMipLevel(i - 1, i - 1, i, RTAttachment::Type::Depth, 0);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
-        drawTriangle(_stateDepthOnlyRenderingHash, _HIZConstructProgram);
+        draw(triangleCmd);
     }
+
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
     screenTarget->resetMipLevel(RTAttachment::Type::Depth, 0);

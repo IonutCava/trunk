@@ -301,8 +301,7 @@ DEFINE_SINGLETON(GFXDevice)
     IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
     void debugDraw(const SceneRenderState& sceneRenderState);
 
-    void drawPoints(U32 numPoints, size_t stateHash, const ShaderProgram_ptr& shaderProgram);
-    void drawTriangle(size_t stateHash, const ShaderProgram_ptr& shaderProgram);
+    void draw(const GenericDrawCommand& cmd);
 
     void addToRenderQueue(U32 queueIndex, const RenderPackage& package);
     void flushRenderQueues();
@@ -489,18 +488,6 @@ DEFINE_SINGLETON(GFXDevice)
 
   protected:
     void setBaseViewport(const vec4<I32>& viewport);
-
-    inline void drawPoints(U32 numPoints) { 
-        uploadGPUBlock();
-        _api->drawPoints(numPoints); 
-        registerDrawCall();
-    }
-
-    inline void drawTriangle() {
-        uploadGPUBlock();
-        _api->drawTriangle();
-        registerDrawCall();
-    }
 
     inline void drawText(const TextLabel& text,
                          size_t stateHash,

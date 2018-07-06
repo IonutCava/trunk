@@ -120,6 +120,11 @@ void PreRenderBatch::execute(U32 filterMask) {
     OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
 
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
@@ -127,7 +132,8 @@ void PreRenderBatch::execute(U32 filterMask) {
         _previousLuminance->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
 
         _currentLuminance->begin(RenderTarget::defaultPolicy());
-            GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _luminanceCalc);
+            triangleCmd.shaderProgram(_luminanceCalc);
+            GFX_DEVICE.draw(triangleCmd);
         _currentLuminance->end();
 
         // Use previous luminance to control adaptive exposure
@@ -149,8 +155,8 @@ void PreRenderBatch::execute(U32 filterMask) {
     }
 
     _postFXOutput->begin(RenderTarget::defaultPolicy());
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
-                                _adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
+        triangleCmd.shaderProgram(_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
+        GFX_DEVICE.draw(triangleCmd);
     _postFXOutput->end();
 
     // Execute all LDR based operators

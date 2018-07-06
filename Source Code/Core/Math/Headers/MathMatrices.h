@@ -228,7 +228,6 @@ public:
     void zero();
     void identity();
     bool isIdentity() const;
-    void bias();
     void swap(mat2 &B);
 
     T det() const;
@@ -375,7 +374,6 @@ class mat3 {
     void zero();
     void identity();
     bool isIdentity() const;
-    void bias();
     void swap(mat3 &B);
 
     T det() const;
@@ -552,7 +550,6 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     void zero();
     void identity();
     bool isIdentity() const;
-    void bias();
     void swap(mat4 &B);
 
     T det() const;
@@ -649,6 +646,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         vec4<T> _vec[4];
     };
 };
+
+extern mat2<F32> MAT2_BIAS;
+extern mat3<F32> MAT3_BIAS;
+extern mat4<F32> MAT4_BIAS;
 
 };  // namespace Divide
 

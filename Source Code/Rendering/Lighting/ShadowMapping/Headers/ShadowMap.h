@@ -95,7 +95,6 @@ class NOINITVTABLE ShadowMap {
     Camera* _shadowCamera;
     ParamHandler& _par;
     bool _init;
-    mat4<F32> _bias;
 };
 
 class ShadowMapInfo {

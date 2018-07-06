@@ -144,7 +144,12 @@ void PostFX::apply() {
     _screenBorder->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
     _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_postFXTarget);
-        _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), _postProcessingShader);
+        GenericDrawCommand triangleCmd;
+        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+        triangleCmd.drawCount(1);
+        triangleCmd.stateHash(_gfx->getDefaultStateBlock(true));
+        triangleCmd.shaderProgram(_postProcessingShader);
+        _gfx->draw(triangleCmd);
     _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->end();
 }
 

@@ -214,9 +214,9 @@ void CascadedShadowMaps::applyFrustumSplits() {
         vec3<F32> testPoint = _shadowMatrices[pass].transformHomogeneous(VECTOR3_ZERO) * halfShadowMapSize;
         vec3<F32> testPointRounded(testPoint);
         testPointRounded.round();
-        vec3<F32> rounding = (testPointRounded - testPoint) / halfShadowMapSize;
+        _shadowMatrices[pass].translate(vec3<F32>(((testPointRounded - testPoint) / halfShadowMapSize).xy(), 0.0f));
 
-        _light->setShadowVPMatrix(pass, viewMatrix * _shadowCamera->getProjectionMatrix()/*mat4<F32>(rounding.x, rounding.y, 0.0f) * _shadowMatrices[pass] * _bias*/);
+        _light->setShadowVPMatrix(pass, _shadowMatrices[pass] * MAT4_BIAS);
         _light->setShadowLightPos(pass, currentEye);
     }
 }
@@ -227,18 +227,24 @@ void CascadedShadowMaps::postRender() {
     }
     _blurDepthMapShader->bind();
 
+    GenericDrawCommand pointsCmd;
+    pointsCmd.primitiveType(PrimitiveType::API_POINTS);
+    pointsCmd.drawCount(1);
+    pointsCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    pointsCmd.shaderProgram(_blurDepthMapShader);
+
     // Blur horizontally
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer->begin(RenderTarget::defaultPolicy());
     getDepthMap()->bind(0, RTAttachment::Type::Colour, 0, false);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
+        GFX_DEVICE.draw(pointsCmd);
     getDepthMap()->end();
 
     // Blur vertically
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     getDepthMap()->begin(RenderTarget::defaultPolicy());
     _blurBuffer->bind(0, RTAttachment::Type::Colour, 0);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
+        GFX_DEVICE.draw(pointsCmd);
     getDepthMap()->end();
 }
 
@@ -247,15 +253,20 @@ void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
         return;
     }
 
-    const vec4<I32> viewport = getViewportForRow(rowIndex);
 
-    size_t stateHash = GFX_DEVICE.getDefaultStateBlock(true);
     getDepthMap()->bind(0, RTAttachment::Type::Colour, 0);
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.shaderProgram(_previewDepthMapShader);
+
+    const vec4<I32> viewport = getViewportForRow(rowIndex);
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i + _arrayOffset);
-
         GFX::ScopedViewport sViewport(viewport.x * i, viewport.y, viewport.z, viewport.w);
-        GFX_DEVICE.drawTriangle(stateHash, _previewDepthMapShader);
+        GFX_DEVICE.draw(triangleCmd);
     }
 }
 };

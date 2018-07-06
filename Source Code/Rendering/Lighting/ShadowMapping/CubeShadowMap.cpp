@@ -45,10 +45,17 @@ void CubeShadowMap::previewShadowMaps(U32 rowIndex) {
 
     getDepthMap()->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
     _previewDepthMapShader->Uniform("layer", _arrayOffset);
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.shaderProgram(_previewDepthMapShader);
+
     for (U32 i = 0; i < 6; ++i) {
         _previewDepthMapShader->Uniform("face", i);
         GFX::ScopedViewport sViewport(viewport.x * i, viewport.y, viewport.z, viewport.w);
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _previewDepthMapShader);
+        GFX_DEVICE.draw(triangleCmd);
     }
 }
 

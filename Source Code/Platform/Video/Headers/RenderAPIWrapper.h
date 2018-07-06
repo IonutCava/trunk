@@ -94,11 +94,11 @@ struct IndirectDrawCommand {
     {
     }
 
-    U32 indexCount;
-    U32 primCount;
-    U32 firstIndex;
-    U32 baseVertex;
-    U32 baseInstance;
+    U32 indexCount;    // 4  bytes
+    U32 primCount;     // 8  bytes
+    U32 firstIndex;    // 12 bytes
+    U32 baseVertex;    // 20 bytes
+    U32 baseInstance;  // 24 bytes
 
     inline void set(const IndirectDrawCommand& other) {
         indexCount = other.indexCount;
@@ -122,20 +122,24 @@ struct GenericDrawCommand {
     enum class RenderOptions : U32 {
         RENDER_GEOMETRY = toBit(1),
         RENDER_WIREFRAME = toBit(2),
-        RENDER_BOUNDS = toBit(3)
+        RENDER_BOUNDS = toBit(3),
+        COUNT = 3
     };
 
    private:
-    U8 _lodIndex;
-    U16 _drawCount;
-    U32 _renderOptions;
-    U32 _drawToBuffer;
-    size_t _stateHash;
-    U32 _commandOffset;
-    PrimitiveType _type;
-    IndirectDrawCommand _cmd;
-    VertexDataInterface* _sourceBuffer;
-    ShaderProgram_ptr _shaderProgram;
+    // order is important to avoid padding for alignment reasons
+    // state hash is not size_t to avoid any platform specific awkward typedefing
+    U8 _lodIndex;                            // 1  bytes
+    U8 _drawToBuffer;                        // 2  bytes
+    U16 _drawCount;                          // 4  bytes
+    U32 _renderOptions;                      // 8  bytes
+    U32 _commandOffset;                      // 12 bytes
+    U64 _stateHash;                          // 20 bytes
+    PrimitiveType _type;                     // 24 bytes
+    VertexDataInterface* _sourceBuffer;      // 32 bytes
+    ShaderProgram* _shaderProgram;           // 40 bytes
+    IndirectDrawCommand _cmd;                // 60 bytes
+    U32 __padding__reserved__;               // 64 bytes
 
    public:
 
@@ -148,10 +152,10 @@ struct GenericDrawCommand {
     }
 
     inline void stateHash(size_t hashValue) {
-        _stateHash = hashValue;
+        _stateHash = static_cast<U64>(hashValue);
     }
 
-    inline void drawToBuffer(U32 index) {
+    inline void drawToBuffer(U8 index) {
         _drawToBuffer = index;
     }
 
@@ -171,7 +175,7 @@ struct GenericDrawCommand {
     }
 
     inline void shaderProgram(const ShaderProgram_ptr& program) {
-        _shaderProgram = program;
+        _shaderProgram = program.get();
     }
 
     inline void sourceBuffer(VertexDataInterface* const sourceBuffer) {
@@ -188,8 +192,8 @@ struct GenericDrawCommand {
 
     inline U8 LoD() const { return _lodIndex; }
     inline U16 drawCount() const { return _drawCount; }
-    inline size_t stateHash() const { return _stateHash; }
-    inline U32 drawToBuffer() const { return _drawToBuffer; }
+    inline size_t stateHash() const { return static_cast<size_t>(_stateHash); }
+    inline U8  drawToBuffer() const { return _drawToBuffer; }
     inline U32 commandOffset() const { return _commandOffset; }
 
     inline bool renderWireframe() const {
@@ -210,7 +214,7 @@ struct GenericDrawCommand {
         return _cmd;
     }
 
-    inline const ShaderProgram_ptr& shaderProgram() const { return _shaderProgram; }
+    inline ShaderProgram* shaderProgram() const { return _shaderProgram; }
     inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
     inline PrimitiveType primitiveType() const { return _type; }
 
@@ -228,12 +232,15 @@ struct GenericDrawCommand {
     	  _type(type),
           _commandOffset(0),
           _shaderProgram(nullptr),
-          _sourceBuffer(nullptr)
+          _sourceBuffer(nullptr),
+          __padding__reserved__(0)
     {
         SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
         _cmd.indexCount = indexCount;
         _cmd.firstIndex = firstIndex;
         _cmd.primCount = primCount;
+
+        static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
     }
 
     inline void set(const GenericDrawCommand& base) {
@@ -422,8 +429,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void activateStateBlock(const RenderStateBlock& newBlock,
                                     const RenderStateBlock& oldBlock) const = 0;
 
-    virtual void drawPoints(U32 numPoints) = 0;
-    virtual void drawTriangle() = 0;
+    virtual void draw(const GenericDrawCommand& cmd) = 0;
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;

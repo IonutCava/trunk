@@ -705,17 +705,23 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
     // glPopDebugGroup();
 }
 
-/// Rendering points is universally useful, so we have a function, and a VAO,
-/// dedicated to this process
-void GL_API::drawPoints(GLuint numPoints) {
-    GL_API::setActiveVAO(_dummyVAO);
-    glDrawArrays(GL_POINTS, 0, numPoints);
+void GL_API::draw(const GenericDrawCommand& cmd) {
+    if (cmd.sourceBuffer() == nullptr) {
+        GL_API::setActiveVAO(_dummyVAO);
+        
+        U32 indexCount = 0;
+        switch(cmd.primitiveType()) {
+            case PrimitiveType::TRIANGLES : indexCount = cmd.drawCount() * 3; break;
+            case PrimitiveType::API_POINTS: indexCount = cmd.drawCount(); break;
+            default: indexCount = cmd.cmd().indexCount; break;
+        }
+
+        glDrawArrays(GLUtil::glPrimitiveTypeTable[to_uint(cmd.primitiveType())], cmd.cmd().firstIndex, indexCount);
+    } else {
+        cmd.sourceBuffer()->draw(cmd, false);
+    }
 }
 
-void GL_API::drawTriangle() {
-    GL_API::setActiveVAO(_dummyVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-}
 
 void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
     _indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();

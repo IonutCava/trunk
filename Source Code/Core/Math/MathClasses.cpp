@@ -27,4 +27,17 @@ vec3<I32> iWORLD_X_NEG_AXIS = vec3<I32>(-1, 0, 0);
 vec3<I32> iWORLD_Y_NEG_AXIS = vec3<I32>(0, -1, 0);
 vec3<I32> iWORLD_Z_NEG_AXIS = vec3<I32>(0, 0, -1);
 
+
+mat2<F32> MAT2_BIAS(0.5, 0.0,
+                    0.0, 0.5);
+
+mat3<F32> MAT3_BIAS(0.5, 0.0, 0.0,
+                    0.0, 0.5, 0.0,
+                    0.0, 0.0, 0.5);
+
+mat4<F32> MAT4_BIAS(0.5, 0.0, 0.0, 0.0,
+                    0.0, 0.5, 0.0, 0.0,
+                    0.0, 0.0, 0.5, 0.0,
+                    0.5, 0.5, 0.5, 1.0);
+
 };  // namespace Divide

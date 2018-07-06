@@ -122,6 +122,11 @@ void SSAOPreRenderOperator::execute() {
      const GFXDevice::DisplaySettings& settings = 
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._renderSettings;
 
+     GenericDrawCommand triangleCmd;
+     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+     triangleCmd.drawCount(1);
+     triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+
     _ssaoGenerateShader->Uniform("projectionMatrix", settings._projectionMatrix);
     _ssaoGenerateShader->Uniform("invProjectionMatrix", settings._projectionMatrix.getInverse());
 
@@ -130,13 +135,15 @@ void SSAOPreRenderOperator::execute() {
     _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP), RTAttachment::Type::Colour, 1);  // normals
     
     _ssaoOutput->begin(RenderTarget::defaultPolicy());
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoGenerateShader);
+        triangleCmd.shaderProgram(_ssaoGenerateShader);
+        GFX_DEVICE.draw(triangleCmd);
     _ssaoOutput->end();
 
 
     _ssaoOutput->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // AO texture
     _ssaoOutputBlurred->begin(RenderTarget::defaultPolicy());
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoBlurShader);
+        triangleCmd.shaderProgram(_ssaoBlurShader);
+        GFX_DEVICE.draw(triangleCmd);
     _ssaoOutputBlurred->end();
     
     _samplerCopy->blitFrom(_hdrTarget);
@@ -144,7 +151,8 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutputBlurred->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);  // AO texture
 
     _hdrTarget->begin(_screenOnlyDraw);
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoApplyShader);
+        triangleCmd.shaderProgram(_ssaoApplyShader);
+        GFX_DEVICE.draw(triangleCmd);
     _hdrTarget->end();
     
 }

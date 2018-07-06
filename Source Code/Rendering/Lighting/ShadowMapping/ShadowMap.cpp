@@ -147,8 +147,6 @@ ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type)
       _arrayOffset(0),
       _par(ParamHandler::instance())
 {
-    _bias.bias();
-
     _arrayOffset = findDepthMapLayer(_shadowMapType);
     commitDepthMapLayer(_shadowMapType, _arrayOffset);
 }

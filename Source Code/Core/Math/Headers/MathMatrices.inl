@@ -398,12 +398,6 @@ bool mat2<T>::isIdentity() const {
 }
 
 template<typename T>
-void mat2<T>::bias() {
-    set(0.5, 0.0,
-        0.0, 0.5);
-}
-
-template<typename T>
 void mat2<T>::swap(mat2 &B) {
     std::swap(m[0][0], B.m[0][0]);
     std::swap(m[0][1], B.m[0][1]);
@@ -892,13 +886,6 @@ bool mat3<T>::isIdentity() const {
     return (COMPARE(mat[0], 1) && IS_ZERO(mat[1])    && IS_ZERO(mat[2]) &&
             IS_ZERO(mat[3])    && COMPARE(mat[4], 1) && IS_ZERO(mat[5]) &&
             IS_ZERO(mat[6])    && IS_ZERO(mat[7])    && COMPARE(mat[8], 1));
-}
-
-template<typename T>
-void mat3<T>::bias() {
-    set(0.5, 0.0, 0.0,
-        0.0, 0.5, 0.0,
-        0.0, 0.0, 0.5);
 }
 
 template<typename T>
@@ -1678,14 +1665,6 @@ bool mat4<T>::isIdentity() const {
             IS_ZERO(mat[4])    && COMPARE(mat[5], 1) && IS_ZERO(mat[6])     && IS_ZERO(mat[7])
             IS_ZERO(mat[8])    && IS_ZERO(mat[9])    && COMPARE(mat[10], 1) && IS_ZERO(mat[11]),
             IS_ZERO(mat[12])   && IS_ZERO(mat[13])   && IS_ZERO(mat[14])    && COMPARE(mat[15], 1));
-}
-
-template<typename T>
-void mat4<T>::bias() {
-    set(0.5, 0.0, 0.0, 0.0,
-        0.0, 0.5, 0.0, 0.0,
-        0.0, 0.0, 0.5, 0.0,
-        0.5, 0.5, 0.5, 1.0);
 }
 
 template<typename T>

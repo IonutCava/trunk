@@ -348,7 +348,15 @@ void LightPool::drawLightImpostors() const {
     const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
     if (totalLightCount > 0) {
         _lightIconsTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
-        GFX_DEVICE.drawPoints(totalLightCount, GFX_DEVICE.getDefaultStateBlock(false), _lightImpostorShader);
+
+
+        GenericDrawCommand pointsCmd;
+        pointsCmd.primitiveType(PrimitiveType::API_POINTS);
+        pointsCmd.drawCount(to_ushort(totalLightCount));
+        pointsCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+        pointsCmd.shaderProgram(_lightImpostorShader);
+
+        GFX_DEVICE.draw(pointsCmd);
     }
 }
 

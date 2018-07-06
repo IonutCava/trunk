@@ -45,9 +45,7 @@ void DX_API::updateClipPlanes() {}
 
 void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {}
 
-void DX_API::drawPoints(U32 numPoints) {}
-
-void DX_API::drawTriangle() {}
+void DX_API::draw(const GenericDrawCommand& cmd) {}
 
 bool DX_API::initShaders() { return true; }
 

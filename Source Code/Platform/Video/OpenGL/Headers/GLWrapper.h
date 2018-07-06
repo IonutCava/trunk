@@ -170,12 +170,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextLabel& textLabel, const vec2<F32>& position) override;
-    /// Rendering points is universally useful, so we have a function, and a VAO,
-    /// dedicated to this process
-    void drawPoints(U32 numPoints) override;
-    /// Renderinga single triangle is also universally useful, 
-    /// so we have a function dedicated to this process
-    void drawTriangle() override;
+    void draw(const GenericDrawCommand& cmd) override;
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is
     /// checked every 20 ms

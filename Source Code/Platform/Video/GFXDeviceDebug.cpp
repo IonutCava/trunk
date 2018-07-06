@@ -36,6 +36,12 @@ void GFXDevice::previewDepthBuffer() {
         return;
     }
 
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(_defaultStateNoDepthHash);
+    triangleCmd.shaderProgram(_previewDepthMapShader);
+
     U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth(), to_const_ushort(768));
     RenderTarget* rt = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
     rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
@@ -44,13 +50,13 @@ void GFXDevice::previewDepthBuffer() {
         _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
                                                              (rt->getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1)));
         GFX::ScopedViewport viewport(screenWidth - 256, 0, 256, 256);
-        drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
+        draw(triangleCmd);
     }
     {
         //Depth preview
         _previewDepthMapShader->Uniform("lodLevel", to_float(0));
         GFX::ScopedViewport viewport(screenWidth - 512, 0, 256, 256);
-        drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
+        draw(triangleCmd);
     }
     {
         //Normals preview
@@ -60,7 +66,8 @@ void GFXDevice::previewDepthBuffer() {
 
         GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
         _renderTargetDraw->Uniform("linearSpace", false);
-        drawTriangle(_defaultStateNoDepthHash, _renderTargetDraw);
+        triangleCmd.shaderProgram(_renderTargetDraw);
+        draw(triangleCmd);
     }
 #endif
 }

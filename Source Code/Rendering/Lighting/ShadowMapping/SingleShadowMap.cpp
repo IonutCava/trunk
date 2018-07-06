@@ -55,7 +55,14 @@ void SingleShadowMap::previewShadowMaps(U32 rowIndex) {
     _previewDepthMapShader->Uniform("layer", _arrayOffset);
 
     GFX::ScopedViewport sViewport(viewport);
-    GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _previewDepthMapShader);
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    triangleCmd.shaderProgram(_previewDepthMapShader);
+
+    GFX_DEVICE.draw(triangleCmd);
 }
 
 };

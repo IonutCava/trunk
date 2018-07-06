@@ -38,7 +38,12 @@ void DoFPreRenderOperator::execute() {
     _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
         
     _hdrTarget->begin(_screenOnlyDraw);
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
+        GenericDrawCommand triangleCmd;
+        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+        triangleCmd.drawCount(1);
+        triangleCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+        triangleCmd.shaderProgram(_dofShader);
+        GFX_DEVICE.draw(triangleCmd);
     _hdrTarget->end();
     */
 }

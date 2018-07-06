@@ -50,7 +50,13 @@ void PostAAPreRenderOperator::execute() {
 
     // Apply FXAA/SMAA to the specified render target
     _ldrTarget->begin(RenderTarget::defaultPolicy());
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _useSMAA ? _smaa : _fxaa);
+        GenericDrawCommand pointsCmd;
+        pointsCmd.primitiveType(PrimitiveType::API_POINTS);
+        pointsCmd.drawCount(1);
+        pointsCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+        pointsCmd.shaderProgram(_useSMAA ? _smaa : _fxaa);
+
+        GFX_DEVICE.draw(pointsCmd);
     _ldrTarget->end();
 }
 

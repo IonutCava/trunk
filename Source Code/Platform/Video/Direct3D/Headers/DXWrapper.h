@@ -108,8 +108,7 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void toggleRasterization(bool state) override;
 
     void drawText(const TextLabel& textLabel, const vec2<F32>& position) override;
-    void drawPoints(U32 numPoints) override;
-    void drawTriangle() override;
+    void draw(const GenericDrawCommand& cmd);
     void updateClipPlanes() override;
     void syncToThread(std::thread::id threadID) override;
 

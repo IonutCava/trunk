@@ -375,46 +375,29 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
     return false;
 }
 
-/// This is just a short-circuit system (hack) to send a list of points to the shader
-/// It's used, mostly, to draw full screen quads using geometry shaders
-void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, const ShaderProgram_ptr& shaderProgram) {
-    static const char* msgUnderflow = Locale::get(_ID("ERROR_GFX_POINTS_UNDERFLOW"));
-    static const char* msgOverflow = Locale::get(_ID("ERROR_GFX_POINTS_OVERFLOW"));
-    // We need a valid amount of points. Check lower limit
-    DIVIDE_ASSERT(numPoints > 0, msgUnderflow);
-    // Also check upper limit
-    DIVIDE_ASSERT(numPoints <= Config::MAX_POINTS_PER_BATCH, msgOverflow);
-
-    // We require a state hash value to set proper states
-    _defaultDrawCmd.stateHash(stateHash);
-    // We also require a shader program (although it may already be bound.
-    // Better safe ...)
-    _defaultDrawCmd.shaderProgram(shaderProgram);
-    // If the draw command was successfully parsed
-    if (setBufferData(_defaultDrawCmd)) {
-        // Tell the rendering API to upload the needed number of points
-        drawPoints(numPoints);
+void GFXDevice::draw(const GenericDrawCommand& cmd) {
+    if (setBufferData(cmd)) {
+        uploadGPUBlock();
+        _api->draw(cmd);
+        if (cmd.renderGeometry()) {
+            registerDrawCall();
+        }
+        if (cmd.renderWireframe()) {
+            registerDrawCall();
+        }
     }
 }
 
-/// This is just a short-circuit system (hack) to quickly send 3 vertices to the shader
-/// It's used, mostly, to draw full screen quads using vertex shaders
-void GFXDevice::drawTriangle(size_t stateHash, const ShaderProgram_ptr& shaderProgram) {
-    // We require a state hash value to set proper states
-    _defaultDrawCmd.stateHash(stateHash);
-    // We also require a shader program (although it may already be bound. Better safe ...)
-    _defaultDrawCmd.shaderProgram(shaderProgram);
-    // If the draw command was successfully parsed
-    if (setBufferData(_defaultDrawCmd)) {
-        // Tell the rendering API to upload the needed number of points
-        drawTriangle();
-    }
-
-}
 
 void GFXDevice::flushDisplay() {
     activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
-    drawTriangle(getDefaultStateBlock(true), _displayShader);
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.stateHash(getDefaultStateBlock(true));
+    triangleCmd.shaderProgram(_displayShader);
+    draw(triangleCmd);
 }
 
 };
