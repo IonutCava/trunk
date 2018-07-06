@@ -34,7 +34,9 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
 glGenericVertexData::~glGenericVertexData() {
     if (!_bufferObjects.empty()) {
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
-            _lockManagers[i]->WaitForLockedRange(0, _elementCount[i] * _elementSize[i] * _sizeFactor[i], true);
+            if (_persistentMapped) {
+                _lockManagers[i]->WaitForLockedRange(0, _elementCount[i] * _elementSize[i] * _sizeFactor[i], true);
+            }
             GLUtil::freeBuffer(_bufferObjects[i]._id, _bufferPersistentData[i]);
         }
     }
