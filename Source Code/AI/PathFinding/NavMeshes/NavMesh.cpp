@@ -173,8 +173,18 @@ namespace Navigation {
 		_fileName.append(".nm");
         PRINT_FN(Locale::get("NAV_MESH_GENERATION_START"),nodeName.c_str());
 
-		NavModelData data = NavigationMeshLoader::parseNode(_sgn,nodeName);
-		data.isValid(true);
+		NavModelData data;
+		std::string geometrySaveFile(_fileName);
+		Util::replaceStringInPlace(geometrySaveFile,".nm",".ig");
+				
+		data.clear(false);
+		data.setName(nodeName);
+
+		if(!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())){
+			if(!NavigationMeshLoader::parse(_sgn->getBoundingBox(), data, _sgn)){
+				ERROR_FN(Locale::get("ERROR_NAV_PARSE_FAILED"), nodeName.c_str());
+			}
+		}
 
 		// Check for no geometry
 		if(!data.getVertCount()){
@@ -252,7 +262,9 @@ namespace Navigation {
 		    return false;
         }
 
-		return data.isValid();
+		data.isValid(true);
+		
+		return NavigationMeshLoader::saveMeshFile(data, geometrySaveFile.c_str());//input geometry;
 	}
 
 	bool NavigationMesh::createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx){

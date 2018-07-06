@@ -254,26 +254,21 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 	U32 highestInd = 0;
 	vec3<U32> triangleTemp;
 
+	tempSubMesh->getGeometryVBO()->useLargeIndices((source->mNumFaces * 3)+1 > std::numeric_limits<U16>::max());
+
 	for(U32 k = 0; k < source->mNumFaces; k++){
-		U32 indiceCount = source->mFaces[k].mNumIndices;
-		if(indiceCount == 3){
-			triangleTemp.set(source->mFaces[k].mIndices[0],source->mFaces[k].mIndices[1],source->mFaces[k].mIndices[2]);
-			tempSubMesh->getGeometryVBO()->getTriangles().push_back(triangleTemp);
-		}
+		assert(source->mFaces[k].mNumIndices == 3);
 
-		bool smallIndice = true;
-		if(indiceCount+1 > std::numeric_limits<U16>::max()){
-			smallIndice = false;
-		}
-		tempSubMesh->getGeometryVBO()->useLargeIndices(!smallIndice);
-
-		for(U32 m = 0; m < indiceCount; m++){
+		for(U32 m = 0; m < 3; m++){
 			currentIndice = source->mFaces[k].mIndices[m];
 			tempSubMesh->getGeometryVBO()->addIndex(currentIndice);
+			triangleTemp[m] = currentIndice;
 
 			if(currentIndice < lowestInd)  lowestInd  = currentIndice;
 			if(currentIndice > highestInd) highestInd = currentIndice;
 		}
+
+		tempSubMesh->getGeometryVBO()->getTriangles().push_back(triangleTemp);
 	}
 
 	tempSubMesh->getGeometryVBO()->setIndiceLimits(vec2<U32>(lowestInd,highestInd), tempSubMesh->getLODcount() - 1);

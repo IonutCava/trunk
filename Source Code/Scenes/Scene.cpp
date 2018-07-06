@@ -124,6 +124,9 @@ bool Scene::loadModel(const FileData& data){
     if(data.navigationUsage){
         meshNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
     }
+	if(data.useHighDetailNavMesh){
+		meshNode->setNavigationDetailOverride(true);
+	}
 	return true;
 }
 
@@ -173,6 +176,9 @@ bool Scene::loadGeometry(const FileData& data){
     if(data.navigationUsage){
         thisObjSGN->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
     }
+	if(data.useHighDetailNavMesh){
+		thisObjSGN->setNavigationDetailOverride(true);
+	}
 	return true;
 }
 

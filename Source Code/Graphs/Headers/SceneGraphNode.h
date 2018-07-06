@@ -147,11 +147,12 @@ public:
 	inline void incChildQueue()       {_childQueue++;}
 	inline void decChildQueue()       {_childQueue--;}
 
-	inline const UsageContext&      getUsageContext()      const {return _usageContext;}
-	inline const NavigationContext& getNavigationContext() const {return _navigationContext;}
-
+	inline const UsageContext&      getUsageContext()          const {return _usageContext;}
+	inline const NavigationContext& getNavigationContext()     const {return _navigationContext;}
+	inline       bool               getNavMeshDetailOverride() const {return _overrideNavMeshDetail;}
 	inline void  setUsageContext(const UsageContext& newContext)           {_usageContext = newContext;}
 	       void  setNavigationContext(const NavigationContext& newContext);
+		   void  setNavigationDetailOverride(const bool detailOverride);
 	
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
@@ -194,7 +195,7 @@ private:
 
     UsageContext _usageContext;
     NavigationContext _navigationContext;
-
+	bool              _overrideNavMeshDetail;
 	///Animations
 	vectorImpl<mat4<F32> > _animationTransforms;
 };

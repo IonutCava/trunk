@@ -25,7 +25,8 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
 												  _childQueue(0),
                                                   _bbAddExclusionList(0),
                                                   _usageContext(NODE_DYNAMIC),
-                                                  _navigationContext(NODE_IGNORE)
+                                                  _navigationContext(NODE_IGNORE),
+												  _overrideNavMeshDetail(false)
 {
 	_animationTransforms.clear();
 }
@@ -286,5 +287,12 @@ void SceneGraphNode::setNavigationContext(const NavigationContext& newContext) {
 	_navigationContext = newContext;
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->setNavigationContext(_navigationContext);
+	}
+}
+
+void  SceneGraphNode::setNavigationDetailOverride(const bool detailOverride){
+	_overrideNavMeshDetail = detailOverride;
+	for_each(NodeChildren::value_type& it, _children){
+		it.second->setNavigationDetailOverride(detailOverride);
 	}
 }

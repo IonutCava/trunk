@@ -20,6 +20,7 @@
 	<version>1.0</version>
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
 </Net>
 
 
@@ -86,4 +87,5 @@
 	<version>1.0</version>
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
 </cylinder>

@@ -267,6 +267,11 @@ namespace XML {
             }else{
                 model.navigationUsage = false;
             }
+			if(boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")){
+                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
+            }else{
+                model.useHighDetailNavMesh = false;
+            }
 			scene->addModel(model);
 		}
 
@@ -298,6 +303,11 @@ namespace XML {
                 model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
             }else{
                 model.navigationUsage = false;
+            }
+			if(boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")){
+                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
+            }else{
+                model.useHighDetailNavMesh = false;
             }
 			scene->addModel(model);
 		}
@@ -346,6 +356,11 @@ namespace XML {
                 model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
             }else{
                 model.navigationUsage = false;
+            }
+			if(boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")){
+                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
+            }else{
+                model.useHighDetailNavMesh = false;
             }
 			scene->addModel(model);
 		}

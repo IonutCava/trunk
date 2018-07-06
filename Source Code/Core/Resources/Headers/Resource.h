@@ -114,6 +114,7 @@ struct FileData {
 	F32 version;
     bool staticUsage; //<Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
     bool navigationUsage; //< Used to determine if the object should be added to the nav mesh generation process or not
+	bool useHighDetailNavMesh; //< Used to force a geometry level parsing for nav mesh creation instead of the default bounding-box level
 };
 
 struct TerrainInfo {

@@ -65,7 +65,7 @@ namespace Navigation {
         case DU_DRAW_QUADS:  _primType = QUADS;
       }
 
-      _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,255));
+      _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,128));
       _primitive->begin(_primType);
    }
 
@@ -79,6 +79,7 @@ namespace Navigation {
       vec4<U8> colorVec;
       vec3<F32> vert(x,y,z);
       rcCol(color, colorVec.r, colorVec.g, colorVec.b, colorVec.a);
+	  colorVec.a = 64;
       _primitive->attribute4ub("inColorData",colorVec);
       _primitive->vertex(vert);
    }

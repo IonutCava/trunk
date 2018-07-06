@@ -119,22 +119,20 @@ namespace Navigation {
 
 		enum MeshDetailLevel {
 			DETAIL_ABSOLUTE    = 0,
-			DETAIL_HIGH        = 1,
-			DETAIL_MEDIUM      = 2,
-			DETAIL_LOW         = 3,
-			DETAIL_BOUNDINGBOX = 4
+			DETAIL_BOUNDINGBOX = 1
 		};
 
-		NavModelData loadMeshFile(const char* fileName);
-		bool         saveMeshFile(const NavModelData& data, const char* filename, const std::string& activeSceneName = "");
-
+		///Load the input geometry from file (Wavefront OBJ format) and save it in 'outData'
+		bool loadMeshFile(NavModelData& outData, const char* fileName);
+		///Save the navigation input geometry in Wavefront OBJ format
+		bool saveMeshFile(const NavModelData& inData, const char* filename);
+		///Merge the data from two navigation geometry sources
 		NavModelData mergeModels(NavModelData& a,NavModelData& b, bool delOriginals = false);
+		///Parsing method that calls itself recursively untill all geometry has been parsed
+		bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn);
 
-		        NavModelData parseNode(SceneGraphNode* sgn = NULL, const std::string& navMeshName = "");
-
-		NavModelData parse(const BoundingBox& box, NavModelData& data, SceneGraphNode* set = NULL);
 		void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
-		void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
+		void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, U32 triangleIndexOffset = 0, const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
 		char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
 		I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
 	};
