@@ -80,6 +80,13 @@ void Application::stop() {
             cbk();
         }
 
+        _windowManager.close();
+        ParamHandler::destroyInstance();
+        MemoryManager::DELETE(_kernel);
+        Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
+        Time::ApplicationTimer::destroyInstance();
+        _isInitialized = false;
+
         if (Config::Build::IS_DEBUG_BUILD) {
             MemoryManager::MemoryTracker::Ready = false;
             bool leakDetected = false;
@@ -95,13 +102,6 @@ void Application::stop() {
             memLog << allocLog;
             memLog.close();
         }
-
-        _windowManager.close();
-        ParamHandler::destroyInstance();
-        MemoryManager::DELETE(_kernel);
-        Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
-        Time::ApplicationTimer::destroyInstance();
-        _isInitialized = false;
     }
 }
 
