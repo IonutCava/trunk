@@ -55,6 +55,8 @@ namespace Input {
 //////////// Event handler class declaration
 ///////////////////////////////////////////////////
 DEFINE_SINGLETON(InputInterface)
+    friend class InputInterfaceEventAttorney;
+
   public:
     U8 init(Kernel* const kernel, const stringImpl& windowTitle);
 
@@ -102,7 +104,6 @@ DEFINE_SINGLETON(InputInterface)
     }
 
   protected:
-    friend class EventHandler;
     inline KeyEvent& getKeyRef(U32 index) { return _keys[index]; }
 
   private:
@@ -150,6 +151,16 @@ DEFINE_SINGLETON(InputInterface)
     KeyEvent _keys[KeyCode_PLACEHOLDER];
 
 END_SINGLETON
+
+class InputInterfaceEventAttorney {
+   private:
+    static KeyEvent& getKeyRef(U32 index) {
+        return InputInterface::getInstance().getKeyRef(index);
+    }
+
+    friend class EventHandler;
+};
+
 };  // namespace Input
 };  // namespace Divide
 #endif

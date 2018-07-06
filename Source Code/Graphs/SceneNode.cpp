@@ -75,7 +75,7 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
 
 Material* const SceneNode::getMaterialTpl() {
     // UpgradableReadLock ur_lock(_materialLock);
-    if (_materialTemplate == nullptr && !_renderState._noDefaultMaterial) {
+    if (_materialTemplate == nullptr && _renderState.useDefaultMaterial()) {
         // UpgradeToWriteLock uw_lock(ur_lock);
         _materialTemplate = CreateResource<Material>(
             ResourceDescriptor("defaultMaterial_" + getName()));

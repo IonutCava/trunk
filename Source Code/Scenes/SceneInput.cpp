@@ -227,7 +227,7 @@ bool Scene::onKeyUp(const Input::KeyEvent& key) {
             renderState().toggleBoundingBoxes();
         } break;
         case KeyCode::KC_F8: {
-            renderState().drawDebugLines(!renderState()._debugDrawLines);
+            renderState().drawDebugLines(!renderState().drawDebugLines());
         } break;
 #ifdef _DEBUG
         case KeyCode::KC_F9: {

@@ -73,6 +73,7 @@ class PhysicsSceneInterface;
 /// states:
 /// one for game information and one for rendering information
 class Scene : public Resource, public Input::InputAggregatorInterface {
+    friend class SceneManagerAttorney;
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 #ifdef _DEBUG
@@ -131,7 +132,8 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     SceneGraphNode* addSky(Sky* const skyItem);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
-        _sceneState.getRenderState().cachedResolution(newResolution);
+        SceneRenderStateSceneAttorney::cachedResolution(
+            _sceneState.getRenderState(), newResolution);
     }
 
     /// Object picking
@@ -205,7 +207,6 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
 
    protected:
-    friend class SceneManager;
     virtual bool frameStarted();
     virtual bool frameEnded();
     /// Description in SceneManager
@@ -302,10 +303,38 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
 #endif
 };
 
+class SceneManagerAttorney {
+   private:
+    static bool updateCameraControls(Scene& scene) {
+        return scene.updateCameraControls();
+    }
+    static bool checkLoadFlag(Scene& scene) { return scene.checkLoadFlag(); }
+    static bool initializeAI(Scene& scene, bool continueOnErrors) {
+        return scene.initializeAI(continueOnErrors);
+    }
+    static bool deinitializeAI(Scene& scene, bool continueOnErrors) {
+        return scene.deinitializeAI(continueOnErrors);
+    }
+    static void onCameraChange(Scene& scene) { scene.onCameraChange(); }
+    static bool frameStarted(Scene& scene) { return scene.frameStarted(); }
+    static bool frameEnded(Scene& scene) { return scene.frameEnded(); }
+    static bool load(Scene& scene, const stringImpl& name,
+                     GUI* const guiInterface) {
+        return scene.load(name, guiInterface);
+    }
+    static bool unload(Scene& scene) { return scene.unload(); }
+    /// Draw debug entities
+    static void debugDraw(Scene& scene, const RenderStage& stage) {
+        scene.debugDraw(stage);
+    }
+
+    friend class SceneManager;
+};
+
 };  // namespace Divide
 
 /// usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
-///                                      -B is the name used to refer to that
+///                                    -B is the name used to refer to that
 ///                                      scene in the XML files
 /// Call this function after each scene declaration
 #define REGISTER_SCENE_W_NAME(scene, sceneName) \

@@ -58,36 +58,29 @@ void AIManager::update() {
     }
     r_lock.unlock();
 
-    processInput(_deltaTime);  // sensors
-    processData(_deltaTime);  // think
-    updateEntities(_deltaTime);  // react
+    {
+        ReadLock r_lock(_updateMutex);
+        processInput(_deltaTime);  // sensors
+        processData(_deltaTime);  // think
+        updateEntities(_deltaTime);  // react
+    }
     _updating = false;
     return;
 }
 
-void AIManager::signalInit() {
-    ReadLock r_lock(_updateMutex);
-    for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->init();
-    }
-}
-
 void AIManager::processInput(const U64 deltaTime) {  // sensors
-    ReadLock r_lock(_updateMutex);
     for (AITeamMap::value_type& team : _aiTeams) {
         team.second->processInput(deltaTime);
     }
 }
 
 void AIManager::processData(const U64 deltaTime) {  // think
-    ReadLock r_lock(_updateMutex);
     for (AITeamMap::value_type& team : _aiTeams) {
         team.second->processData(deltaTime);
     }
 }
 
 void AIManager::updateEntities(const U64 deltaTime) {  // react
-    ReadLock r_lock(_updateMutex);
     for (AITeamMap::value_type& team : _aiTeams) {
         team.second->update(deltaTime);
     }

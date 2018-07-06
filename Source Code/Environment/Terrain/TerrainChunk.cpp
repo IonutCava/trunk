@@ -25,7 +25,8 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain,
 
     _terrainVB = parentTerrain->getGeometryVB();
 
-    VegetationDetails vegDetails = parentTerrain->_vegDetails;
+    VegetationDetails& vegDetails =
+        TerrainChunkAttorney::vegetationDetails(*parentTerrain);
     vegDetails.name += "_chunk_" + Util::toString(_chunkID);
     _vegetation = MemoryManager_NEW Vegetation(
         vegDetails);  //<Deleted by the sceneGraph on "unload"
@@ -85,7 +86,7 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,
 
     _vegetation->initialize(this);
 
-    terrain->registerTerrainChunk(this);
+    TerrainChunkAttorney::registerTerrainChunk(*terrain, this);
 }
 
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,

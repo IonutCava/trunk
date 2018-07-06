@@ -61,8 +61,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     // force all lights to update on camera change (to keep them still actually)
     _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(
         &LightManager::onCameraChange, &LightManager::getInstance()));
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(
-        &SceneManager::onCameraChange, &SceneManager::getInstance()));
+    _cameraMgr->addCameraUpdateListener(
+        DELEGATE_BIND(&SceneManagerKernelAttorney::onCameraChange));
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread
     // so how many threads do we allocate for tasks? That's up to the programmer
@@ -415,7 +415,7 @@ void Kernel::firstLoop() {
 #if defined(_DEBUG) || defined(_PROFILE)
     Time::ApplicationTimer::getInstance().benchmark(true);
 #endif
-    SceneManager::getInstance().initPostLoadState();
+    SceneManagerKernelAttorney::initPostLoadState();
 
     _currentTime = _nextGameTick = Time::ElapsedMicroseconds();
 }

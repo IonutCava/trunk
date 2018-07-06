@@ -83,14 +83,14 @@ void Scene::onCameraChange() {
 
 void Scene::postRender() {
 #ifdef _DEBUG
-    if (renderState()._debugDrawLines) {
+    if (renderState().drawDebugLines()) {
         if (!_lines[DEBUG_LINE_RAY_PICK].empty()) {
             GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],
                                  mat4<F32>(), vec4<I32>(), false, false);
         }
     }
     if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() &&
-        renderState()._debugDrawTargetLines) {
+        renderState().drawDebugTargetLines()) {
         GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET], mat4<F32>(),
                              vec4<I32>(), false, false);
     }
@@ -391,7 +391,6 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 void Scene::clearPhysics() { PHYSICS_DEVICE.setPhysicsScene(nullptr); }
 
 bool Scene::initializeAI(bool continueOnErrors) {
-    AI::AIManager::getInstance().signalInit();
     _aiTask->startTask();
     return true;
 }

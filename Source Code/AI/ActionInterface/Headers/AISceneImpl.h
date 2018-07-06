@@ -44,7 +44,10 @@ enum AIMsg : I32;
 /// Provides a scene-level AI implementation
 class AISceneImpl : private NonCopyable {
    public:
-    AISceneImpl() : _entity(nullptr), _activeGoal(nullptr), _currentStep(-1) {}
+    AISceneImpl() : _entity(nullptr), _activeGoal(nullptr), _currentStep(-1)
+    {
+        _init = false;
+    }
 
     virtual ~AISceneImpl() { _goals.clear(); }
 
@@ -215,7 +218,15 @@ class AISceneImpl : private NonCopyable {
     virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
     virtual void processMessage(AIEntity* sender, AIMsg msg,
                                 const cdiggins::any& msg_content) = 0;
-    virtual void init() = 0;
+    void init() {
+        if (_init) {
+            return;
+        }
+        initInternal();
+        _init = true;
+    }
+
+    virtual void initInternal() = 0;
 
    protected:
     AIEntity* _entity;
@@ -228,6 +239,7 @@ class AISceneImpl : private NonCopyable {
 
     vectorImpl<GOAPGoal> _goals;
     vectorImpl<GOAPGoal*> _activeGoals;
+    std::atomic_bool _init;
 };
 
 };  // namespace AI

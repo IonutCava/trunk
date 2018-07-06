@@ -119,9 +119,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void drawPoints(U32 numPoints) override;
 
     void updateClipPlanes() override;
-    friend class GFXDevice;
-    typedef void (*callback)();
-    void dxCommand(callback f) { (*f)(); };
 
     void threadedLoadCallback() override;
 

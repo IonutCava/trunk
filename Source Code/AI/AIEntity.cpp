@@ -104,10 +104,10 @@ bool AIEntity::addSensor(SensorType type) {
     Sensor* sensor = nullptr;
     switch (type) {
         case AUDIO_SENSOR: {
-            sensor = MemoryManager_NEW AudioSensor(this);
+            sensor = AudioSensorConstructorAttorney::construct(this);
         } break;
         case VISUAL_SENSOR: {
-            sensor = MemoryManager_NEW VisualSensor(this);
+            sensor = VisualSensorConstructorAttorney::construct(this);
         } break;
     };
 
@@ -136,6 +136,7 @@ bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl) {
 void AIEntity::processInput(const U64 deltaTime) {
     ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
+        _AISceneImpl->init();
         _AISceneImpl->processInput(deltaTime);
     }
 }
@@ -159,13 +160,6 @@ void AIEntity::update(const U64 deltaTime) {
         }
     }
     updatePosition(deltaTime);
-}
-
-void AIEntity::init() {
-    DIVIDE_ASSERT(
-        _AISceneImpl != nullptr,
-        "AIEntity error: Can't init entity without a proper AISceneImpl");
-    _AISceneImpl->init();
 }
 
 I32 AIEntity::getTeamID() const {

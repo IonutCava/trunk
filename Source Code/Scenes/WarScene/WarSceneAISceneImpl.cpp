@@ -39,7 +39,7 @@ WarSceneAISceneImpl::~WarSceneAISceneImpl() {
 
 void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
     WarSceneAction* const warAction = static_cast<WarSceneAction*>(action);
-    warAction->setParentAIScene(this);
+    WarSceneActionWarAISceneAttorney::setParentAIScene(*warAction, this);
 
     switch (warAction->actionType()) {
         case ACTION_APPROACH_FLAG:
@@ -75,11 +75,11 @@ void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
     AISceneImpl::registerAction(MemoryManager_NEW WarSceneAction(*warAction));
 }
 
-void WarSceneAISceneImpl::init() {
+void WarSceneAISceneImpl::initInternal() {
     _visualSensor =
         dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
     //_audioSensor =
-    //dynamic_cast<AudioSensor*>(_entity->getSensor(AUDIO_SENSOR));
+    // dynamic_cast<AudioSensor*>(_entity->getSensor(AUDIO_SENSOR));
     DIVIDE_ASSERT(_visualSensor != nullptr,
                   "WarSceneAISceneImpl error: No visual sensor found for "
                   "current AI entity!");

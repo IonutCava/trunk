@@ -83,27 +83,13 @@ class Singleton {
 template <typename T>
 T* Singleton<T>::_instance = 0;
 
-#define DEFINE_SINGLETON(class_name)                  \
-    class class_name : public Singleton<class_name> { \
-        friend class Singleton<class_name>;
-
 #define DEFINE_SINGLETON_W_SPECIFIER(class_name, specifier)     \
     class class_name specifier : public Singleton<class_name> { \
-        friend class Singleton<class_name>;
-
-#define DEFINE_SINGLETON_EXT1(class_name, base_class)                    \
-    class class_name : public Singleton<class_name>, public base_class { \
         friend class Singleton<class_name>;
 
 #define DEFINE_SINGLETON_EXT1_W_SPECIFIER(class_name, base_class, specifier) \
     class class_name specifier : public Singleton<class_name>,               \
                                  public base_class {                         \
-        friend class Singleton<class_name>;
-
-#define DEFINE_SINGLETON_EXT2(class_name, base_class1, base_class2) \
-    class class_name : public Singleton<class_name>,                \
-                       public base_class1,                          \
-                       public base_class2 {                         \
         friend class Singleton<class_name>;
 
 #define DEFINE_SINGLETON_EXT2_W_SPECIFIER(class_name, base_class1, \
@@ -113,9 +99,17 @@ T* Singleton<T>::_instance = 0;
                                  public base_class2 {              \
         friend class Singleton<class_name>;
 
-#define END_SINGLETON \
-    }                 \
-    ;
+#define DEFINE_SINGLETON(class_name) \
+    DEFINE_SINGLETON_W_SPECIFIER(class_name, )
+
+#define DEFINE_SINGLETON_EXT1(class_name, base_class) \
+    DEFINE_SINGLETON_EXT1_W_SPECIFIER(class_name, base_class, )
+
+#define DEFINE_SINGLETON_EXT2(class_name, base_class1, base_class2) \
+    DEFINE_SINGLETON_EXT2_W_SPECIFIER(class_name, base_class1, base_class2, )
+
+#define END_SINGLETON  \
+    };
 
 };  // namespace Divide
 

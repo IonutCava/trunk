@@ -37,13 +37,14 @@ DivideDtCrowd::DivideDtCrowd(NavigationMesh* navMesh)
     _agentDebug.idx = -1;
     _agentDebug.vod = _vod;
 
-    dtNavMesh* nav = navMesh->getNavigationMesh();
+    dtNavMesh* nav = NavigationMeshCrowdAttorney::getNavigationMesh(*_recast);
     assert(nav);
 
     dtCrowd* crowd = _crowd;
 
     if (nav && crowd && crowd->getAgentCount() == 0) {
-        crowd->init(MAX_AGENTS, navMesh->getConfigParams().getAgentRadius(),
+        crowd->init(MAX_AGENTS, NavigationMeshCrowdAttorney::getConfigParams(
+                                    *navMesh).getAgentRadius(),
                     nav);
         // Make polygons with 'disabled' flag invalid.
         crowd->getEditableFilter(0)->setExcludeFlags(SAMPLE_POLYFLAGS_DISABLED);
@@ -88,7 +89,7 @@ DivideDtCrowd::~DivideDtCrowd() {
 }
 
 void DivideDtCrowd::update(const U64 deltaTime) {
-    dtNavMesh* nav = _recast->getNavigationMesh();
+    dtNavMesh* nav = NavigationMeshCrowdAttorney::getNavigationMesh(*_recast);
 
     if (!nav || !_crowd) return;
     // TimeVal startTime = getPerfTime();

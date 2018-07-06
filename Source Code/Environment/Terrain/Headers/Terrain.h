@@ -95,7 +95,8 @@ class SamplerDescriptor;
 class TerrainDescriptor;
 
 class Terrain : public Object3D {
-    friend class TerrainLoader;
+    friend class TerrainChunkAttorney;
+    friend class TerrainLoaderAttorney;
 
    public:
     Terrain();
@@ -110,8 +111,8 @@ class Terrain : public Object3D {
     vec3<F32> getPosition(F32 x_clampf, F32 z_clampf) const;
     vec3<F32> getNormal(F32 x_clampf, F32 z_clampf) const;
     vec3<F32> getTangent(F32 x_clampf, F32 z_clampf) const;
-    vec2<F32> getDimensions() {
-        return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);
+    const vec2<F32> getDimensions() {
+        return vec2<F32>((F32)_terrainDimensions.x, (F32)_terrainDimensions.y);
     }
 
     void terrainSmooth(F32 k);
@@ -135,33 +136,14 @@ class Terrain : public Object3D {
     void buildQuadtree();
     void postLoad(SceneGraphNode* const sgn);
 
-    inline void setUnderwaterDiffuseScale(F32 diffuseScale) {
-        _underwaterDiffuseScale = diffuseScale;
-    }
-
     bool isInView(const SceneRenderState& sceneRenderState,
                   SceneGraphNode* const sgn, const bool distanceCheck = true);
-
-    /// Per terrain albedo sampler
-    const SamplerDescriptor& getAlbedoSampler() const {
-        return *_albedoSampler;
-    }
-    const SamplerDescriptor& getNormalSampler() const {
-        return *_normalSampler;
-    }
-
-   protected:
-    friend class TerrainChunk;
-    void registerTerrainChunk(TerrainChunk* const chunk) {
-        _terrainChunks.push_back(chunk);
-    }
 
    protected:
     VegetationDetails _vegDetails;
 
     U8 _lightCount;
-    U16 _terrainWidth;
-    U16 _terrainHeight;
+    vec2<U16> _terrainDimensions;
     U32 _chunkSize;
     Quadtree _terrainQuadtree;
 
@@ -188,6 +170,62 @@ class Terrain : public Object3D {
     size_t _terrainReflectionRenderStateHash;
 };
 
+class TerrainChunkAttorney {
+   private:
+    static VegetationDetails& vegetationDetails(Terrain& terrain) {
+        return terrain._vegDetails;
+    }
+    static void registerTerrainChunk(Terrain& terrain,
+                                     TerrainChunk* const chunk) {
+        terrain._terrainChunks.push_back(chunk);
+    }
+    friend class TerrainChunk;
+};
+
+class TerrainLoaderAttorney {
+   private:
+    static void setUnderwaterDiffuseScale(Terrain& terrain, F32 diffuseScale) {
+        terrain._underwaterDiffuseScale = diffuseScale;
+    }
+    /// Per terrain albedo sampler
+    static const SamplerDescriptor& getAlbedoSampler(Terrain& terrain) {
+        return *terrain._albedoSampler;
+    }
+    static const SamplerDescriptor& getNormalSampler(Terrain& terrain) {
+        return *terrain._normalSampler;
+    }
+    static void addTextureLayer(Terrain& terrain,
+                                TerrainTextureLayer* textureLayer) {
+        terrain._terrainTextures.push_back(textureLayer);
+    }
+    static U32 textureLayerCount(Terrain& terrain) {
+        return static_cast<U32>(terrain._terrainTextures.size());
+    }
+    static void setRenderStateHashes(Terrain& terrain, size_t normalStateHash,
+                                     size_t reflectionStateHash,
+                                     size_t depthStateHash) {
+        terrain._terrainRenderStateHash = normalStateHash;
+        terrain._terrainReflectionRenderStateHash = reflectionStateHash;
+        terrain._terrainDepthRenderStateHash = depthStateHash;
+    }
+    static VegetationDetails& vegetationDetails(Terrain& terrain) {
+        return terrain._vegDetails;
+    }
+    static void buildQuadtree(Terrain& terrain) { terrain.buildQuadtree(); }
+    static BoundingBox& boundingBox(Terrain& terrain) {
+        return terrain._boundingBox;
+    }
+    static F32& farPlane(Terrain& terrain) { return terrain._farPlane; }
+    static Quad3D* plane(Terrain& terrain) { return terrain._plane; }
+    static vec2<U16>& dimensions(Terrain& terrain) {
+        return terrain._terrainDimensions;
+    }
+    static vec2<F32>& scaleFactor(Terrain& terrain) {
+        return terrain._terrainScaleFactor;
+    }
+    static U32& chunkSize(Terrain& terrain) { return terrain._chunkSize; }
+    friend class TerrainLoader;
+};
 };  // namespace Divide
 
 #endif

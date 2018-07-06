@@ -49,7 +49,10 @@ typedef hashMapImpl<I64, vec3<F32> > NodePositions;
 typedef hashMapImpl<U32, NodePositions> NodePositionsMap;
 
 class VisualSensor : public Sensor {
+    friend class VisualSensorConstructorAttorney;
    public:
+     ~VisualSensor();
+
     void update(const U64 deltaTime);
     void followSceneGraphNode(U32 containerID, SceneGraphNode* const node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
@@ -65,14 +68,23 @@ class VisualSensor : public Sensor {
     SceneGraphNode* const getClosestNode(U32 containerID);
 
    protected:
-    friend class AIEntity;
     VisualSensor(AIEntity* const parentEntity);
-    ~VisualSensor();
+
 
    protected:
     NodeContainerMap _nodeContainerMap;
     NodePositionsMap _nodePositionsMap;
 };
+
+class VisualSensorConstructorAttorney {
+   private:
+    static VisualSensor* construct(AIEntity* const parentEntity) {
+        return MemoryManager_NEW VisualSensor(parentEntity);
+    }
+
+    friend class AIEntity;
+};
+
 };  // namespace AI
 };  // namespace Divide
 

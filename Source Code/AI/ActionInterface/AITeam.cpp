@@ -22,7 +22,7 @@ AITeam::~AITeam() {
     {
         WriteLock w2_lock(_updateMutex);
         for (AITeam::TeamMap::value_type& entity : _team) {
-            entity.second->setTeamPtr(nullptr);
+            AIEntityAITeamAttorney::setTeamPtr(*entity.second, nullptr);
         }
         _team.clear();
     }
@@ -54,28 +54,21 @@ void AITeam::update(const U64 deltaTime) {
     r_lock.unlock();
     WriteLock w_lock(_updateMutex);
     for (AITeam::TeamMap::value_type& entity : _team) {
-        entity.second->update(deltaTime);
+        AIEntityAITeamAttorney::update(*entity.second, deltaTime);
     }
 }
 
 void AITeam::processInput(const U64 deltaTime) {
     WriteLock w_lock(_updateMutex);
     for (AITeam::TeamMap::value_type& entity : _team) {
-        entity.second->processInput(deltaTime);
+        AIEntityAITeamAttorney::processInput(*entity.second, deltaTime);
     }
 }
 
 void AITeam::processData(const U64 deltaTime) {
     WriteLock w_lock(_updateMutex);
     for (AITeam::TeamMap::value_type& entity : _team) {
-        entity.second->processData(deltaTime);
-    }
-}
-
-void AITeam::init() {
-    WriteLock w_lock(_updateMutex);
-    for (AITeam::TeamMap::value_type& entity : _team) {
-        entity.second->init();
+        AIEntityAITeamAttorney::processData(*entity.second, deltaTime);
     }
 }
 
@@ -97,7 +90,7 @@ bool AITeam::addTeamMember(AIEntity* entity) {
     }
     UpgradeToWriteLock uw_lock(ur_lock);
     hashAlg::emplace(_team, entity->getGUID(), entity);
-    entity->setTeamPtr(this);
+    AIEntityAITeamAttorney::setTeamPtr(*entity, this);
     return true;
 }
 

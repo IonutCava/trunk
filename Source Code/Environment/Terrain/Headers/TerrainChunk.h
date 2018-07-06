@@ -46,6 +46,8 @@ class QuadtreeNode;
 struct FileData;
 
 class TerrainChunk {
+    friend class TerrainChunkTerrainAttorney;
+
    public:
     TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode);
     ~TerrainChunk();
@@ -68,7 +70,6 @@ class TerrainChunk {
     U8 getLoD() const;
 
    protected:
-    friend class Terrain;
     Vegetation* const getVegetation() const { return _vegetation; }
 
    private:
@@ -89,6 +90,14 @@ class TerrainChunk {
     QuadtreeNode* _parentNode;
     Vegetation* _vegetation;
     static U32 _chunkID;
+};
+
+class TerrainChunkTerrainAttorney {
+   private:
+    static Vegetation* const getVegetation(TerrainChunk& chunk) {
+        return chunk.getVegetation();
+    }
+    friend class Terrain;
 };
 
 };  // namespace Divide

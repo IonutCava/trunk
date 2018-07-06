@@ -77,7 +77,10 @@ enum ActionType {
     ACTION_RETURN_TO_BASE = 6
 };
 
+class WarSceneAISceneImpl;
 class WarSceneAction : public GOAPAction {
+    friend class WarSceneActionWarAISceneAttorney;
+
    public:
     inline ActionType actionType() const { return _type; }
 
@@ -90,14 +93,18 @@ class WarSceneAction : public GOAPAction {
     virtual ~WarSceneAction();
 
    protected:
-    friend class WarSceneAISceneImpl;
-    inline void setParentAIScene(WarSceneAISceneImpl* const scene) {
-        _parentScene = scene;
-    }
-
-   protected:
     WarSceneAISceneImpl* _parentScene;
     ActionType _type;
+};
+
+class WarSceneActionWarAISceneAttorney {
+   private:
+    static void setParentAIScene(WarSceneAction& action,
+                                 WarSceneAISceneImpl* const scene) {
+        action._parentScene = scene;
+    }
+
+    friend class WarSceneAISceneImpl;
 };
 
 class ApproachFlag : public WarSceneAction {

@@ -163,7 +163,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                                   RenderStage renderStage) {
     SceneNode* const node = _parentSGN->getNode();
     // Perform any post draw operations regardless of the draw state
-    node->postDraw(_parentSGN, renderStage);
+    SceneNodeRenderAttorney::postDraw(*node, _parentSGN, renderStage);
 
 #ifdef _DEBUG
     if (sceneRenderState.gizmoState() == SceneRenderState::ALL_GIZMO) {
@@ -207,8 +207,8 @@ void RenderingComponent::render(const SceneRenderState& sceneRenderState,
     if (getMaterialInstance()) {
         getMaterialInstance()->bindTextures();
     }
-    _parentSGN->getNode()->render(_parentSGN, sceneRenderState,
-                                  currentRenderStage);
+    SceneNodeRenderAttorney::render(*_parentSGN->getNode(), _parentSGN,
+                                    sceneRenderState, currentRenderStage);
 
     postDraw(sceneRenderState, currentRenderStage);
 }

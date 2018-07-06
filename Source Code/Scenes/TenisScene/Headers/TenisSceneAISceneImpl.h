@@ -56,7 +56,7 @@ class TenisSceneAISceneImpl : public AISceneImpl {
 
    private:
     void updatePositions();
-    void init(void) {}
+    void initInternal() {}
     F32 distanceToBall(const vec3<F32>& entityPosition,
                        const vec3<F32> ballPosition);
     bool performActionStep(GOAPAction::operationsIterator step) { return true; }

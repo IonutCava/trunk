@@ -60,11 +60,12 @@ enum SceneNodeType {
 class SceneState;
 class SceneRenderState;
 class ShaderProgram;
+class SceneGraphNode;
 enum RenderStage : I32;
 
 class SceneNode : public Resource {
-    friend class SceneGraphNode;
-    friend class RenderQueue;
+    friend class SceneNodeRenderAttorney;
+    friend class SceneNodeGraphAttorney;
 
    public:
     SceneNode(const SceneNodeType& type);
@@ -108,10 +109,6 @@ class SceneNode : public Resource {
     inline U8 getLODcount() const { return _LODcount; }
 
    protected:
-    friend class RenderBin;
-    friend class RenderPass;
-    friend class SceneGraph;
-    friend class RenderingComponent;
     /// Perform any post-draw operations (this is after releasing object and
     /// shadow states)
     virtual void postDraw(SceneGraphNode* const sgn,
@@ -144,6 +141,37 @@ class SceneNode : public Resource {
     SceneNodeType _type;
     bool _hasSGNParent;
     Material* _materialTemplate;
+};
+
+class SceneNodeRenderAttorney {
+   private:
+    static void postDraw(SceneNode& node, SceneGraphNode* const sgn,
+                         const RenderStage& currentStage) {
+        node.postDraw(sgn, currentStage);
+    }
+    static void render(SceneNode& node, SceneGraphNode* const sgn,
+                       const SceneRenderState& sceneRenderState,
+                       const RenderStage& currentRenderStage) {
+        node.render(sgn, sceneRenderState, currentRenderStage);
+    }
+
+    friend class RenderingComponent;
+};
+
+class SceneNodeGraphAttorney {
+   private:
+    static bool hasSGNParent(SceneNode& node) { return node.hasSGNParent(); }
+    static void postLoad(SceneNode& node, SceneGraphNode* const sgn) {
+        node.postLoad(sgn);
+    }
+    static void onCameraChange(SceneNode& node, SceneGraphNode* const sgn) {
+        node.onCameraChange(sgn);
+    }
+    static void sceneUpdate(SceneNode& node, const U64 deltaTime,
+                            SceneGraphNode* const sgn, SceneState& sceneState) {
+        node.sceneUpdate(deltaTime, sgn, sceneState);
+    }
+    friend class SceneGraphNode;
 };
 
 };  // namespace Divide

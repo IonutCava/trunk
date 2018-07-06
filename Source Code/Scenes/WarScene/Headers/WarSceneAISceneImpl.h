@@ -134,6 +134,8 @@ class WarSceneOrder : public Order {
 };
 
 class WarSceneAISceneImpl : public AISceneImpl {
+    friend class WarAISceneWarActionAttorney;
+
    public:
     WarSceneAISceneImpl();
     ~WarSceneAISceneImpl();
@@ -152,7 +154,6 @@ class WarSceneAISceneImpl : public AISceneImpl {
     }
 
    protected:
-    friend class WarSceneAction;
     bool preAction(ActionType type, const WarSceneAction* warAction);
     bool postAction(ActionType type, const WarSceneAction* warAction);
     bool checkCurrentActionComplete(const GOAPAction* planStep);
@@ -164,7 +165,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     bool performActionStep(GOAPAction::operationsIterator step);
     bool printActionStats(const GOAPAction* planStep) const;
     void printWorkingMemory() const;
-    void init();
+    void initInternal();
 
    private:
     U16 _tickCount;
@@ -175,6 +176,20 @@ class WarSceneAISceneImpl : public AISceneImpl {
     AudioSensor* _audioSensor;
     WorkingMemory _workingMemory;
     static vec3<F32> _initialFlagPositions[2];
+};
+
+class WarAISceneWarActionAttorney {
+   private:
+    static bool preAction(WarSceneAISceneImpl& aiScene, ActionType type,
+                          const WarSceneAction* warAction) {
+        return aiScene.preAction(type, warAction);
+    }
+    static bool postAction(WarSceneAISceneImpl& aiScene, ActionType type,
+                           const WarSceneAction* warAction) {
+        return aiScene.postAction(type, warAction);
+    }
+
+    friend class WarSceneAction;
 };
 
 };  // namespace AI

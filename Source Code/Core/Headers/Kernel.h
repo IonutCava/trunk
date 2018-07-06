@@ -63,6 +63,8 @@ class GUI;
 ///-scene manager
 ///-etc
 class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
+    friend class KernelSceneAttorney;
+
    public:
     Kernel(I32 argc, char** argv, Application& parentApp);
     ~Kernel();
@@ -136,7 +138,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void threadPoolCompleted(U64 onExitTaskID);
 
    private:
-    friend class SceneManager;
     void submitRenderCall(const RenderStage& stage,
                           const SceneRenderState& sceneRenderState,
                           const DELEGATE_CBK<>& sceneRenderCallback) const;
@@ -177,6 +178,17 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     // Command line arguments
     I32 _argc;
     char** _argv;
+};
+
+class KernelSceneAttorney {
+   private:
+    static void submitRenderCall(const Kernel& kernel, const RenderStage& stage,
+                                 const SceneRenderState& sceneRenderState,
+                                 const DELEGATE_CBK<>& sceneRenderCallback) {
+        kernel.submitRenderCall(stage, sceneRenderState, sceneRenderCallback);
+    }
+
+    friend class SceneManager;
 };
 
 };  // namespace Divide

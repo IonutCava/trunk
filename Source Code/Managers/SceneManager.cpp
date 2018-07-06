@@ -67,7 +67,7 @@ bool SceneManager::load(const stringImpl& sceneName,
         return false;
     }
     cacheResolution(resolution);
-    return _activeScene->load(sceneName, _GUI);
+    return SceneManagerAttorney::load(*_activeScene, sceneName, _GUI);
 }
 
 Scene* SceneManager::createScene(const stringImpl& name) {
@@ -87,7 +87,7 @@ Scene* SceneManager::createScene(const stringImpl& name) {
 bool SceneManager::unloadCurrentScene() {
     AI::AIManager::getInstance().pauseUpdate(true);
     RemoveResource(_defaultMaterial);
-    return _activeScene->unload();
+    return SceneManagerAttorney::unload(*_activeScene);
 }
 
 void SceneManager::initPostLoadState() {
@@ -96,13 +96,14 @@ void SceneManager::initPostLoadState() {
 }
 
 bool SceneManager::deinitializeAI(bool continueOnErrors) {
-    bool state = _activeScene->deinitializeAI(continueOnErrors);
+    bool state =
+        SceneManagerAttorney::deinitializeAI(*_activeScene, continueOnErrors);
     AI::AIManager::getInstance().destroyInstance();
     return state;
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {
-    return _activeScene->frameStarted();
+    return SceneManagerAttorney::frameStarted(*_activeScene);
 }
 
 bool SceneManager::framePreRenderStarted(const FrameEvent& evt) { return true; }
@@ -113,7 +114,7 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
     if (_loadPreRenderComplete) {
         Material::unlockShaderQueue();
     }
-    return _activeScene->frameEnded();
+    return SceneManagerAttorney::frameEnded(*_activeScene);
 }
 
 void SceneManager::preRender() { _activeScene->preRender(); }
@@ -143,16 +144,19 @@ void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
     }
 
     _activeScene->renderState().getCamera().renderLookAt();
-    kernel.submitRenderCall(stage, _activeScene->renderState(), renderFunction);
-    _activeScene->debugDraw(stage);
+    KernelSceneAttorney::submitRenderCall(
+        kernel, stage, _activeScene->renderState(), renderFunction);
+    SceneManagerAttorney::debugDraw(*_activeScene, stage);
 }
 
 void SceneManager::postRender() { _activeScene->postRender(); }
 
-void SceneManager::onCameraChange() { _activeScene->onCameraChange(); }
+void SceneManager::onCameraChange() {
+    SceneManagerAttorney::onCameraChange(*_activeScene);
+}
 
 ///--------------------------Input
-///Management-------------------------------------///
+/// Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
     if (!_processInput) {

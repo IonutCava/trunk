@@ -16,11 +16,11 @@ WarSceneAction::WarSceneAction(ActionType type, const stringImpl& name,
 WarSceneAction::~WarSceneAction() {}
 
 bool WarSceneAction::preAction() const {
-    return _parentScene->preAction(_type, this);
+    return WarAISceneWarActionAttorney::preAction(*_parentScene, _type, this);
 }
 
 bool WarSceneAction::postAction() const {
-    return _parentScene->postAction(_type, this);
+    return WarAISceneWarActionAttorney::postAction(*_parentScene, _type, this);
 }
 
 ApproachFlag::ApproachFlag(const stringImpl& name, F32 cost)

@@ -65,9 +65,8 @@ class GUIButton : public GUIElement {
     vec3<F32> _color;
     bool _pressed;
     bool _highlight;
-    ButtonCallback
-        _callbackFunction; /* A pointer to a function to call if the button is
-                              pressed */
+    /// A pointer to a function to call if the button is pressed
+    ButtonCallback _callbackFunction;
     CEGUI::Window* _btnWindow;
 };
 

@@ -124,7 +124,6 @@ class AITeam : public GUIDWrapper {
     void processInput(const U64 deltaTime);
     void processData(const U64 deltaTime);
     void update(const U64 deltaTime);
-    void init();
     void addCrowd(AIEntity::PresetAgentRadius radius,
                   Navigation::NavigationMesh* crowd);
     void removeCrowd(AIEntity::PresetAgentRadius radius);

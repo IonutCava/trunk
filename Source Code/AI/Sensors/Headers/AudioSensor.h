@@ -38,13 +38,25 @@ namespace Divide {
 namespace AI {
 
 class AudioSensor : public Sensor {
+    friend class AudioSensorConstructorAttorney;
+
    public:
     void update(const U64 deltaTime);
+    ~AudioSensor();
 
    protected:
-    friend class AIEntity;
     AudioSensor(AIEntity* const parentEntity);
 };
+
+class AudioSensorConstructorAttorney {
+   private:
+    static AudioSensor* construct(AIEntity* const parentEntity) {
+        return MemoryManager_NEW AudioSensor(parentEntity);
+    }
+
+    friend class AIEntity;
+};
+
 };  // namespace AI
 };  // namespace Divide
 

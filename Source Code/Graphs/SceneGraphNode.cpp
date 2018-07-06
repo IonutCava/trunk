@@ -161,7 +161,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,
         "SceneGraphNode: This add/create node system is an ugly HACK so it "
         "should probably be removed soon! -Ionut")
 
-    if (node->hasSGNParent()) {
+    if (SceneNodeGraphAttorney::hasSGNParent(*node)) {
         node->AddRef();
     }
     return createNode(node, name);
@@ -183,7 +183,7 @@ SceneGraphNode* SceneGraphNode::createNode(SceneNode* const node,
     // Do all the post load operations on the SceneNode
     // Pass a reference to the newly created SceneGraphNode in case we need
     // transforms or bounding boxes
-    node->postLoad(sceneGraphNode);
+    SceneNodeGraphAttorney::postLoad(*node, sceneGraphNode);
     // return the newly created node
     return sceneGraphNode;
 }
@@ -283,7 +283,7 @@ void SceneGraphNode::onCameraChange() {
     for (NodeChildren::value_type& it : _children) {
         it.second->onCameraChange();
     }
-    _node->onCameraChange(this);
+    SceneNodeGraphAttorney::onCameraChange(*_node, this);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
@@ -330,7 +330,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     getComponent<PhysicsComponent>()->transformUpdated(false);
 
-    _node->sceneUpdate(deltaTime, this, sceneState);
+    SceneNodeGraphAttorney::sceneUpdate(*_node, deltaTime, this, sceneState);
 
     if (_shouldDelete) {
         GET_ACTIVE_SCENEGRAPH().addToDeletionQueue(this);

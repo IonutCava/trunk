@@ -96,7 +96,7 @@ struct NavMeshTileHeader {
 class NavMeshDebugDraw;
 
 class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
-    friend class DivideRecast;
+    friend class NavigationMeshCrowdAttorney;
 
    protected:
     enum RenderMode {
@@ -149,13 +149,6 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
 
     NavigationMesh();
     ~NavigationMesh();
-
-   protected:
-    friend class DivideDtCrowd;
-    dtNavMesh* getNavigationMesh() const { return _navMesh; }
-    const NavigationMeshConfig& getConfigParams() const {
-        return _configParams;
-    }
 
    private:
     /// Initiates the build process in a separate thread.
@@ -225,6 +218,19 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     /// DebugDraw interface
     std::unique_ptr<NavMeshDebugDraw> _debugDrawInterface;
 };
+
+class NavigationMeshCrowdAttorney {
+   private:
+    static dtNavMesh* getNavigationMesh(NavigationMesh& navMesh) {
+        return navMesh._navMesh;
+    }
+    static const NavigationMeshConfig& getConfigParams(
+        NavigationMesh& navMesh) {
+        return navMesh._configParams;
+    }
+    friend class DivideDtCrowd;
+};
+
 };  // namespace Navigation
 };  // namespace AI
 };  // namespace Divide

@@ -18,6 +18,7 @@ class SceneNodeRenderState {
     ~SceneNodeRenderState();
 
     inline void useDefaultMaterial(bool state) { _noDefaultMaterial = !state; }
+    inline bool useDefaultMaterial() const { return !_noDefaultMaterial; }
     inline void setDrawState(bool state) { _drawState = state; }
     bool getDrawState() const { return _drawState; }
     bool getDrawState(const RenderStage& currentStage) const;
@@ -27,7 +28,6 @@ class SceneNodeRenderState {
     size_t getShadowStateBlock();
 
    protected:
-    friend class SceneNode;
     bool _hasWaterReflection;
     bool _isVisible;
     bool _drawState;

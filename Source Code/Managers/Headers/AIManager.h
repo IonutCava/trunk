@@ -102,10 +102,6 @@ DEFINE_SINGLETON(AIManager)
     ~AIManager();
 
   protected:
-    friend class Scene;
-    void signalInit();
-
-  protected:
     friend class AITeam;
     /// Register an AI Team
     void registerTeam(AITeam* const team);

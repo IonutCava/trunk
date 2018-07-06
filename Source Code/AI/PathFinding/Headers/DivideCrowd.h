@@ -181,14 +181,16 @@ class DivideDtCrowd {
     /// determined by the agent height parameter with which the navmesh is
     /// build.
     inline D32 getAgentHeight() const {
-        return _recast->getConfigParams().getAgentHeight();
+        return NavigationMeshCrowdAttorney::getConfigParams(*_recast)
+            .getAgentHeight();
     }
     /// The radius of agents in this crowd. All agents in a crowd have the same
     /// radius, and radius
     /// determined by the agent radius parameter with which the navmesh is
     /// build.
     inline D32 getAgentRadius() const {
-        return _recast->getConfigParams().getAgentRadius();
+        return NavigationMeshCrowdAttorney::getConfigParams(*_recast)
+            .getAgentRadius();
     }
     /// The number of (active) agents in this crowd.
     inline I32 getNbAgents() const { return _activeAgents; }

@@ -56,6 +56,7 @@ class DivideDtCrowd;
 
 /// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
+    friend class AIEntityAITeamAttorney;
    public:
     enum PresetAgentRadius {
         AGENT_RADIUS_SMALL = 0,
@@ -173,12 +174,10 @@ class AIEntity : public GUIDWrapper {
     void setDestination(const vec3<F32>& destination);
 
    protected:
-    friend class AITeam;
     void setTeamPtr(AITeam* const teamPtr);
     void processInput(const U64 deltaTime);
     void processData(const U64 deltaTime);
     void update(const U64 deltaTime);
-    void init();
 
    private:
     stringImpl _name;
@@ -218,6 +217,23 @@ class AIEntity : public GUIDWrapper {
     U64 _moveWaitTimer;
     /// True if this character is stopped.
     bool _stopped;
+};
+
+class AIEntityAITeamAttorney {
+   private:
+    static void setTeamPtr(AIEntity& entity, AITeam* const teamPtr) {
+        entity.setTeamPtr(teamPtr);
+    }
+    static void processInput(AIEntity& entity, const U64 deltaTime) {
+        entity.processInput(deltaTime);
+    }
+    static void processData(AIEntity& entity, const U64 deltaTime) {
+        entity.processData(deltaTime);
+    }
+    static void update(AIEntity& entity, const U64 deltaTime) {
+        entity.update(deltaTime);
+    }
+    friend class AITeam;
 };
 
 };  // namespace AI

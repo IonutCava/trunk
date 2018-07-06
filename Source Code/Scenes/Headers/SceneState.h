@@ -58,6 +58,8 @@ struct FogDescriptor {
 /// Contains all the information needed to render the scene: camera position,
 /// render state, etc
 class SceneRenderState {
+    friend class SceneRenderStateSceneAttorney;
+
    public:
     enum GizmoState {
         NO_GIZMO = toBit(0),
@@ -80,8 +82,12 @@ class SceneRenderState {
     inline void drawDebugLines(bool visibility) {
         _debugDrawLines = visibility;
     }
+    inline bool drawDebugLines() const { return _debugDrawLines; }
     inline void drawDebugTargetLines(bool visibility) {
         _debugDrawTargetLines = visibility;
+    }
+    inline bool drawDebugTargetLines() const {
+        return _debugDrawTargetLines;
     }
     inline GizmoState gizmoState() const { return _gizmoState; }
     inline void gizmoState(GizmoState newState) { _gizmoState = newState; }
@@ -108,7 +114,6 @@ class SceneRenderState {
     inline vec2<U16>& cachedResolution() { return _cachedResolution; }
 
    protected:
-    friend class Scene;
     inline void cachedResolution(const vec2<U16>& resolution) {
         return _cachedResolution.set(resolution);
     }
@@ -124,6 +129,16 @@ class SceneRenderState {
     CameraManager* _cameraMgr;
     /// cached resolution
     vec2<U16> _cachedResolution;
+};
+
+class SceneRenderStateSceneAttorney {
+   private:
+    static void cachedResolution(SceneRenderState& sceneRenderState,
+                                 const vec2<U16>& resolution) {
+        sceneRenderState.cachedResolution(resolution);
+    }
+
+    friend class Scene;
 };
 
 class SceneState {
@@ -181,7 +196,6 @@ class SceneState {
     MusicPlaylist _backgroundMusic;
 
    protected:
-    friend class Scene;
     FogDescriptor _fog;
     /// saves all the rendering information for the scene (camera position,
     /// light info, draw states)

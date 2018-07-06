@@ -76,8 +76,7 @@ namespace AI {
 namespace Navigation {
 
 DEFINE_SINGLETON(DivideRecast)
-  protected:
-    friend class NavigationMesh;
+  public:
     /**
      * Find a path beween start point and end point and, if possible, generates a
     *list of lines in a path.
@@ -138,11 +137,10 @@ DEFINE_SINGLETON(DivideRecast)
     * Returns true if such a point is found (returned as resultPt), returns false
     * if no point is found. When false is returned, resultPt is not altered.
     **/
-    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh,
-                                                 const vec3<F32>& position,
-                                                 const vec3<F32>& extents,
-                                                 F32 delta, vec3<F32>& resultPt,
-                                                 dtPolyRef& resultPoly);
+    bool findNearestPointOnNavmesh(const NavigationMesh& navMesh,
+                                   const vec3<F32>& position,
+                                   const vec3<F32>& extents, F32 delta,
+                                   vec3<F32>& resultPt, dtPolyRef& resultPoly);
 
     bool findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
                                   const vec3<F32>& position,

@@ -42,7 +42,7 @@ class RenderPassCuller;
 
 DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                       Input::InputAggregatorInterface)
-
+    friend class SceneManagerKernelAttorney;
   public:
     /// Lookup the factory methods table and return the pointer to a newly
     /// constructed scene bound to that name
@@ -68,13 +68,17 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool unloadCurrentScene();
     bool load(const stringImpl& name, const vec2<U16>& resolution);
     /// Check if the scene was loaded properly
-    inline bool checkLoadFlag() const { return _activeScene->checkLoadFlag(); }
+    inline bool checkLoadFlag() const {
+        return SceneManagerAttorney::checkLoadFlag(*_activeScene);
+    }
     /// Create AI entities, teams, NPC's etc
     inline bool initializeAI(bool continueOnErrors) {
-        return _activeScene->initializeAI(continueOnErrors);
+        return SceneManagerAttorney::initializeAI(*_activeScene,
+                                                  continueOnErrors);
     }
     /// Destroy all AI entities, teams, NPC's createa in "initializeAI"
-    /// AIEntities are deleted automatically by the AIManager if they are not freed
+    /// AIEntities are deleted automatically by the AIManager if they are not
+    /// freed
     /// in "deinitializeAI"
     bool deinitializeAI(bool continueOnErrors);
     /// Update animations, network data, sounds, triggers etc.
@@ -85,7 +89,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Gather input events and process them in the current scene
     inline void processInput(const U64 deltaTime) {
         _activeScene->processInput(deltaTime);
-        _activeScene->updateCameraControls();
+        SceneManagerAttorney::updateCameraControls(*_activeScene);
     }
 
     inline void processTasks(const U64 deltaTime) {
@@ -129,7 +133,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                              Input::MouseButton button);
 
   protected:
-    friend class Kernel;
     void initPostLoadState();
     void onCameraChange();
 
@@ -166,7 +169,18 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
 END_SINGLETON
 
-/// Return a pointer to the currently active scene
+class SceneManagerKernelAttorney {
+   private:
+    static void initPostLoadState() {
+        SceneManager::getInstance().initPostLoadState();
+    }
+    static void onCameraChange() {
+        SceneManager::getInstance().onCameraChange();
+    }
+    friend class Kernel;
+};
+
+    /// Return a pointer to the currently active scene
 inline Scene* GET_ACTIVE_SCENE() {
     return SceneManager::getInstance().getActiveScene();
 }
