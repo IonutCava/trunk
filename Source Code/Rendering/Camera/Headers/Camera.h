@@ -370,7 +370,7 @@ class Camera : public Resource {
     // Camera pool
     public:
        static void update(const U64 deltaTimeUS);
-       static void initPool(const vec2<U16>& renderResolution);
+       static void initPool();
        static void destroyPool();
 
        static Camera* utilityCamera(UtilityCamera type);

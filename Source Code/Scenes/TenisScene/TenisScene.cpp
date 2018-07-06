@@ -389,7 +389,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
 }
 
 void TenisScene::postLoadMainThread() {
-    const vec2<U16>& resolution = _GUI->getDisplayResolution();
+    const vec2<U16>& resolution = _context.gfx().renderingResolution();
 
     GUIElement* btn = _GUI->addButton(
         _ID("Serve"), "Serve",

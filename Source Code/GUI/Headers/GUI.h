@@ -59,7 +59,7 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 #define CEGUI_DEFAULT_CTX CEGUI::System::getSingleton().getDefaultGUIContext()
 
 class Scene;
-
+struct SizeChangeParams;
 /// Graphical User Interface
 
 class SceneGUIElements;
@@ -79,7 +79,7 @@ public:
 
     void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const;
 
-    void onChangeResolution(U16 w, U16 h) override;
+    void onSizeChange(const SizeChangeParams& params) override;
     void onChangeScene(Scene* newScene);
     void onUnloadScene(Scene* scene);
 

@@ -260,8 +260,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
     bool setCursorPosition(I32 x, I32 y) const;
     /// Update all engine components that depend on the current screen size
-    void onChangeWindowSize(U16 w, U16 h);
-    void onChangeRenderResolution(U16 w, U16 h) const;
+    void onSizeChange(const SizeChangeParams& params) const;
 
    private:
     std::unique_ptr<ResourceCache>     _resCache;
@@ -304,12 +303,8 @@ namespace Attorney {
             kernel.shutdown();
         }
 
-        static void onChangeWindowSize(Kernel& kernel, U16 w, U16 h) {
-            kernel.onChangeWindowSize(w, h);
-        }
-
-        static void onChangeRenderResolution(Kernel& kernel, U16 w, U16 h) {
-            kernel.onChangeRenderResolution(w, h);
+        static void onSizeChange(Kernel& kernel, const SizeChangeParams& params) {
+            kernel.onSizeChange(params);
         }
 
         static void warmup(Kernel& kernel) {

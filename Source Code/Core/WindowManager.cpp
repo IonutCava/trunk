@@ -400,20 +400,22 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
             _focusedWindowGUID = winGUID;
         } break;
         case WindowEvent::RESIZED: {
-            if (_mainWindowGUID == winGUID) {
-                // Only if rendering window
-                _context->app().onChangeWindowSize(to_U16(data1), to_U16(data2));
-            }
+            U16 width = to_U16(data1);
+            U16 height = to_U16(data2);
             if (flag) {
-                getWindow(winGUID).setDimensions(to_U16(data1),
-                                                 to_U16(data2));
+                getWindow(winGUID).setDimensions(width, height);
             }
-        } break;
-        case WindowEvent::RESOLUTION_CHANGED: {
-            // Only if rendering window
+
             if (_mainWindowGUID == winGUID) {
-                _context->app().onChangeRenderResolution(to_U16(data1), to_U16(data2));
+                SizeChangeParams params;
+                params.width = width;
+                params.height = height;
+                params.window = true;
+                params.isFullScreen = getWindow(winGUID).fullscreen();
+                // Only if rendering window
+                _context->app().onSizeChange(params);
             }
+            
         } break;
         case WindowEvent::APP_LOOP: {
             //Nothing ... already handled

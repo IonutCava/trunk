@@ -47,11 +47,10 @@ public:
     typedef DELEGATE_CBK<void, I64> ButtonCallback;
 
 public:
-    explicit GUIInterface(GUI& context, const vec2<U16>& resolution);
+    explicit GUIInterface(GUI& context);
     virtual ~GUIInterface();
 
-    virtual void onChangeResolution(U16 w, U16 h);
-    virtual const vec2<U16>& getDisplayResolution() const;
+    virtual void onSizeChange(const SizeChangeParams& params);
 
     virtual void onLanguageChange(const char* newLanguage);
 
@@ -115,8 +114,6 @@ protected:
     GUI* _context;
 
     std::array<GUIMap, to_base(GUIType::COUNT)> _guiElements;
-
-    vec2<U16> _resolutionCache;
 };
 
 }; //namespace Divide

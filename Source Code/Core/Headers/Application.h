@@ -45,6 +45,16 @@ namespace Attorney {
     class ApplicationTask;
 };
 
+struct SizeChangeParams {
+    /// The new width and height
+    U16 width = 0u;
+    U16 height = 0u;
+    /// Is it a window size change or a rendering resolution change?
+    bool window = false;
+    /// Is the window that fired the event fullscreen?
+    bool isFullScreen = false;
+};
+
 /// Lightweight singleton class that manages our application's kernel and window
 /// information
 class Application {
@@ -80,8 +90,9 @@ class Application {
     inline bool mainLoopPaused() const;
     inline void mainLoopPaused(bool state);
 
-    void onChangeWindowSize(U16 w, U16 h) const;
-    void onChangeRenderResolution(U16 w, U16 h) const;
+    // Whenever the host window or the rendering resolution is changed, call this
+    // Use "window" to determine if the window changed size or if the resolution did
+    void onSizeChange(const SizeChangeParams& params) const;
 
     inline void throwError(ErrorCode err);
     inline ErrorCode errorCode() const;

@@ -42,7 +42,7 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
 }
 
 GUI::GUI(Kernel& parent)
-    : GUIInterface(*this, vec2<U16>(1, 1)), //<dangerous, but better than a Singleton
+  : GUIInterface(*this),
     KernelComponent(parent),
     _ceguiInput(*this),
     _init(false),
@@ -163,8 +163,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
         return false;
     }
 
-    onChangeResolution(renderResolution.width, renderResolution.height);
-
     _console = MemoryManager_NEW GUIConsole(context, cache);
 
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -211,9 +209,11 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _rootSheet->setMousePassThroughEnabled(true);
     CEGUI_DEFAULT_CTX.setRootWindow(_rootSheet);
     CEGUI_DEFAULT_CTX.setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
-    
+
     _rootSheet->setPixelAligned(false);
     assert(_console);
+    
+
     //_console->CreateCEGUIWindow();
 
     _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
@@ -223,6 +223,10 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     g_assertMsgBox = _defaultMsgBox;
 
     GUIButton::soundCallback([&context](const AudioDescriptor_ptr& sound) { context.sfx().playSound(sound); });
+
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(renderResolution.width, renderResolution.height));
+    }
 
     _init = true;
     return true;
@@ -257,21 +261,21 @@ void GUI::destroy() {
     }
 }
 
-void GUI::onChangeResolution(U16 w, U16 h) {
+void GUI::onSizeChange(const SizeChangeParams& params) {
     if (parent().platformContext().config().gui.cegui.enabled) {
-        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(params.width, params.height));
     }
-
-    GUIInterface::onChangeResolution(w, h);
 
     ReadLock r_lock(_guiStackLock);
     if (!_guiStack.empty()) {
         // scene specific
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
-            it->second->onChangeResolution(w, h);
+            it->second->onSizeChange(params);
         }
     }
+
+    GUIInterface::onSizeChange(params);
 }
 
 void GUI::selectionChangeCallback(Scene* const activeScene, PlayerIndex idx) {

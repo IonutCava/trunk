@@ -98,8 +98,11 @@ public:
     vec2<U16> getFullscreenResolution() const;
 
 protected:
-    U32 createAPIFlags(RenderAPI api);
+    friend class DisplayWindow;
     void pollSDLEvents();
+
+protected:
+    U32 createAPIFlags(RenderAPI api);
 
 protected:
     U32 _apiFlags;

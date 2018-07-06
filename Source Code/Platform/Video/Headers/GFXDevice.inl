@@ -48,6 +48,11 @@ GFXDevice::renderingData() const {
     return _gpuBlock._data;
 }
 
+inline const vec2<U16>& 
+GFXDevice::renderingResolution() const {
+    return _renderingResolution;
+}
+
 inline bool
 GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
     return setViewport(vec4<I32>(x, y, width, height));

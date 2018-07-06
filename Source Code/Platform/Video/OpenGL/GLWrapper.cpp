@@ -808,7 +808,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
                         });
 
     GL_API::setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
-    I32 height = _context.getCurrentViewport().sizeY;
+    I32 height = _context.renderingResolution().h;
         
     vectorAlg::vecSize drawCount = 0;
 

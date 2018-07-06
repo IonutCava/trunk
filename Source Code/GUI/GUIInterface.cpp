@@ -10,14 +10,14 @@
 #include "Headers/GUIMessageBox.h"
 
 #include "Scenes/Headers/Scene.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
-GUIInterface::GUIInterface(GUI& context, const vec2<U16>& resolution)
-    : _context(&context),
-      _resolutionCache(resolution)
+GUIInterface::GUIInterface(GUI& context)
+    : _context(&context)
 {
     Locale::addChangeLanguageCallback([this](const char* newLanguage) { 
         onLanguageChange(newLanguage);
@@ -33,13 +33,12 @@ GUIInterface::~GUIInterface()
     }
 }
 
-void GUIInterface::onChangeResolution(U16 w, U16 h) {
+void GUIInterface::onSizeChange(const SizeChangeParams& params) {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-            guiStackIterator.second.first->onChangeResolution(w, h);
+            guiStackIterator.second.first->onSizeChange(params);
         }
     }
-    _resolutionCache.set(w, h);
 }
 
 void GUIInterface::onLanguageChange(const char* newLanguage) {
@@ -157,7 +156,7 @@ GUIButton* GUIInterface::addButton(U64 guiID,
                                    const stringImpl& rootSheetID) {
     assert(getGUIElement(guiID) == nullptr);
 
-    const vec2<U16>& resolution = getDisplayResolution();
+    const vec2<U16>& resolution = _context->parent().platformContext().gfx().renderingResolution();
 
     vec2<F32> relOffset((position.x * 100.0f) / resolution.width,
                         (position.y * 100.0f) / resolution.height);
@@ -249,10 +248,6 @@ GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text) {
     textElement->text(text);
 
     return textElement;
-}
-
-const vec2<U16>& GUIInterface::getDisplayResolution() const {
-    return _resolutionCache;
 }
 
 }; //namespace Divide

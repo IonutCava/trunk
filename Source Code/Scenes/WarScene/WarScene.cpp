@@ -723,7 +723,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
 }
 
 void WarScene::postLoadMainThread() {
-    const vec2<U16>& resolution = _GUI->getDisplayResolution();
+    const vec2<U16>& resolution = _context.gfx().renderingResolution();
 
     _GUI->addButton(_ID("Simulate"), "Simulate",
         vec2<I32>(resolution.width - 220, 60),

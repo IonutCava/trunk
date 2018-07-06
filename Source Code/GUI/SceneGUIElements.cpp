@@ -16,7 +16,7 @@
 namespace Divide {
 
 SceneGUIElements::SceneGUIElements(Scene& parentScene, GUI& context)
-    : GUIInterface(context, context.getDisplayResolution()),
+    : GUIInterface(context),
       SceneComponent(parentScene)
 {
 }

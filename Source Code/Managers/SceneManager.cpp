@@ -308,7 +308,13 @@ void SceneManager::initPostLoadState() {
     _processInput = true;
 }
 
-void SceneManager::onChangeResolution(U16 w, U16 h) {
+void SceneManager::onSizeChange(const SizeChangeParams& params) {
+    if (params.window) {
+        return;
+    }
+    U16 w = params.width;
+    U16 h = params.height;
+
     F32 aspectRatio = to_F32(w) / h;
 
     if (_init) {

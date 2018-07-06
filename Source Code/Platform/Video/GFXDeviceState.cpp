@@ -376,14 +376,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _textRenderPipeline = &newPipeline(descriptor);
 
 
-    // Create initial buffers, cameras etc for this resolution. It should match window size
-    WindowManager& winMgr = _parent.platformContext().app().windowManager();
-    winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
-                             winMgr.getActiveWindow().getGUID(),
-                             to_I32(renderResolution.width),
-                             to_I32(renderResolution.height));
-    setBaseViewport(vec4<I32>(0, 0, to_I32(renderResolution.width), to_I32(renderResolution.height)));
-
+    SizeChangeParams params;
+    params.width = renderResolution.width;
+    params.height = renderResolution.height;
+    params.window = false;
+    context().app().onSizeChange(params);
 
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
@@ -456,7 +453,17 @@ void GFXDevice::beginFrame() {
             _renderDocManager->StartFrameCapture();
         }
     }
+    if (_resolutionChangeQueued.second) {
+        WindowManager& winManager = _parent.platformContext().app().windowManager();
 
+        SizeChangeParams params;
+        params.window = false;
+        params.isFullScreen = winManager.getActiveWindow().fullscreen();
+        params.width = _resolutionChangeQueued.first.width;
+        params.height = _resolutionChangeQueued.first.height;
+        context().app().onSizeChange(params);
+        _resolutionChangeQueued.second = false;
+    }
     _api->beginFrame();
     _api->setStateBlock(_defaultStateBlockHash);
     setViewport(_baseViewport);

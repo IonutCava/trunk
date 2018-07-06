@@ -69,16 +69,15 @@ enum class WindowEvent : U32 {
     LOST_FOCUS = 5,
     GAINED_FOCUS = 6,
     RESIZED = 7,
-    RESOLUTION_CHANGED = 8,
-    MOVED = 9,
-    APP_LOOP = 10,
-    CLOSE_REQUESTED = 11,
-    KEY_PRESS = 12,
-    MOUSE_MOVE = 13,
-    MOUSE_BUTTON = 14,
-    MOUSE_WHEEL = 15,
-    TEXT = 16,
-    APP_QUIT = 17,
+    MOVED = 8,
+    APP_LOOP = 9,
+    CLOSE_REQUESTED = 10,
+    KEY_PRESS = 11,
+    MOUSE_MOVE = 12,
+    MOUSE_BUTTON = 13,
+    MOUSE_WHEEL = 14,
+    TEXT = 15,
+    APP_QUIT = 16,
     COUNT
 };
 
@@ -156,8 +155,9 @@ public:
     inline vec4<F32>& originalClearColour();
     inline const vec4<F32>& originalClearColour() const;
 
-    void setDimensions(U16 dimensionX, U16 dimensionY);
-    void setDimensions(const vec2<U16>& dimensions);
+    /// dimensionX and dimensionY get adjusted to the closest supported value
+    void setDimensions(U16& dimensionX, U16& dimensionY);
+    void setDimensions(vec2<U16>& dimensions);
 
     vec2<U16> getDimensions() const;
     vec2<U16> getPreviousDimensions() const;
@@ -196,7 +196,7 @@ public:
 private:
     void restore();
     /// Internally change window size
-    void setDimensionsInternal(U16 w, U16 h);
+    void setDimensionsInternal(U16& w, U16& h);
     /// Window positioning is handled by SDL
     void setPositionInternal(I32 w, I32 h);
     /// Centering is also easier via SDL

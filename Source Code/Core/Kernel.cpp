@@ -100,6 +100,10 @@ Kernel::~Kernel()
 }
 
 void Kernel::startSplashScreen() {
+    if (s_splashScreenUpdating) {
+        return;
+    }
+
     s_splashScreenUpdating = true;
     Configuration& config = _platformContext->config();
     GUISplash splash(*_resCache, "divideLogo.jpg", config.runtime.splashScreen);
@@ -657,12 +661,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
 
+    Camera::initPool();
     // Match initial rendering resolution to window/screen size
     const DisplayWindow& mainWindow  = winManager.getActiveWindow();
     vec2<U16> renderResolution(mainWindow.getDimensions());
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
 
-    Camera::initPool(renderResolution);
     Camera::addUpdateListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraUpdate(_platformContext->gfx(), cam); });
     Camera::addChangeListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraChange(_platformContext->gfx(), cam); });
     // If we could not initialize the graphics device, exit
@@ -714,7 +718,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                     vec4<U8>(255,  50, 0, 255),                    // Colour
                                     "PROFILE DATA",                                // Text
                                     12);                                           // Font size
-   
+
     ShadowMap::initShadowMaps(_platformContext->gfx());
     _sceneManager->init(*_platformContext, *_resCache);
     if (!_sceneManager->switchScene(entryData.startupScene, true, false)) {
@@ -766,17 +770,16 @@ void Kernel::shutdown() {
     Camera::destroyPool();
 }
 
-void Kernel::onChangeWindowSize(U16 w, U16 h) {
-    Attorney::GFXDeviceKernel::onChangeWindowSize(_platformContext->gfx(), w, h);
-    _platformContext->gui().onChangeResolution(w, h);
-}
+void Kernel::onSizeChange(const SizeChangeParams& params) const {
+    Attorney::GFXDeviceKernel::onSizeChange(_platformContext->gfx(), params);
+    _platformContext->gui().onSizeChange(params);
 
-void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
-    Attorney::GFXDeviceKernel::onChangeRenderResolution(_platformContext->gfx(), w, h);
-    _platformContext->gui().onChangeResolution(w, h);
-    _sceneManager->onChangeResolution(w, h);
-    if (Config::USE_ANT_TWEAK_BAR) {
-        TwWindowSize(to_I32(w), to_I32(h));
+    if (params.window) {
+        if (Config::USE_ANT_TWEAK_BAR) {
+            TwWindowSize(to_I32(params.width), to_I32(params.height));
+        }
+    } else {
+        _sceneManager->onSizeChange(params);
     }
 }
 

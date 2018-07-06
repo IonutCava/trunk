@@ -133,7 +133,7 @@ public:
         getActiveScene().processGUI(deltaTimeUS);
     }
 
-    void onChangeResolution(U16 w, U16 h);
+    void onSizeChange(const SizeChangeParams& params);
 
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
 

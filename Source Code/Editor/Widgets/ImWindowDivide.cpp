@@ -128,7 +128,8 @@ void ImwWindowDivide::Show(bool bShow) {
 void ImwWindowDivide::SetSize(int iWidth, int iHeight)
 {
     if (_pWindow != nullptr) {
-        _pWindow->setDimensions(to_U16(iWidth), to_U16(iHeight));
+        vec2<U16> dimensions(iWidth, iHeight);
+        _pWindow->setDimensions(dimensions);
     }
 }
 

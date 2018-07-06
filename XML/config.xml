@@ -17,7 +17,7 @@
   <targetDisplay>0</targetDisplay>
   <!-- set to true to start the application in windowed mode -->
   <windowedMode>true</windowedMode>
-  <windowResizable>false</windowResizable>
+  <windowResizable>true</windowResizable>
   <!-- cap framerate. Set to 0 or less to disable -->
   <frameRateLimit>0</frameRateLimit>
   <!-- toggle Vsync on or off. This can be overridden by the display driver! -->

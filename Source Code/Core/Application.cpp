@@ -112,8 +112,10 @@ void Application::warmup(const Configuration& config) {
     vec2<U16> previousDimensions = window.getPreviousDimensions();
     Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
     //Make sure we are displaying a splash screen
-    window.setDimensions(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
+    vec2<U16> splashDimensions(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
+    window.setDimensions(splashDimensions);
     window.changeType(WindowType::SPLASH);
+    window.hidden(false);
     Attorney::KernelApplication::startSplashScreen(*_kernel);
     window.swapBuffers(false);
     Attorney::KernelApplication::warmup(*_kernel);
@@ -155,12 +157,8 @@ bool Application::onLoop() {
     return mainLoopActive();
 }
 
-void Application::onChangeWindowSize(U16 w, U16 h) const {
-    Attorney::KernelApplication::onChangeWindowSize(*_kernel, w, h);
-}
-
-void Application::onChangeRenderResolution(U16 w, U16 h) const {
-    Attorney::KernelApplication::onChangeRenderResolution(*_kernel, w, h);
+void Application::onSizeChange(const SizeChangeParams& params) const {
+    Attorney::KernelApplication::onSizeChange(*_kernel, params);
 }
 
 void Application::mainThreadTask(const DELEGATE_CBK<void>& task, bool wait) {

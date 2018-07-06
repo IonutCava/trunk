@@ -247,11 +247,7 @@ void DisplayWindow::handleEvent(SDL_Event event) {
     };
 }
 
-void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
-    if (_inputHandler->isInit()) {
-        _inputHandler->onChangeWindowSize(w, h);
-    }
-
+void DisplayWindow::setDimensionsInternal(U16& w, U16& h) {
     if (_externalResizeEvent && 
         (_type != WindowType::WINDOW &&
          _type != WindowType::SPLASH))
@@ -260,26 +256,21 @@ void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
     }
 
     if (_type == WindowType::FULLSCREEN) {
-        // Should never be true, but need to be sure
+        // Find a decent resolution close to our dragged dimensions
         SDL_DisplayMode mode, closestMode;
         SDL_GetCurrentDisplayMode(_parent.targetDisplay(), &mode);
         mode.w = w;
         mode.h = h;
         SDL_GetClosestDisplayMode(_parent.targetDisplay(), &mode, &closestMode);
+        w = to_U16(closestMode.w);
+        h = to_U16(closestMode.h);
         SDL_SetWindowDisplayMode(_sdlWindow, &closestMode);
     } else {
-        if (_externalResizeEvent) {
-            // Find a decent resolution close to our dragged dimensions
-            SDL_DisplayMode mode, closestMode;
-            SDL_GetCurrentDisplayMode(_parent.targetDisplay(), &mode);
-            mode.w = w;
-            mode.h = h;
-            SDL_GetClosestDisplayMode(_parent.targetDisplay(), &mode, &closestMode);
-            w = to_U16(closestMode.w);
-            h = to_U16(closestMode.h);
-        }
-
         SDL_SetWindowSize(_sdlWindow, w, h);
+    }
+
+    if (_inputHandler->isInit()) {
+        _inputHandler->onChangeWindowSize(w, h);
     }
 }
 
@@ -315,6 +306,7 @@ void DisplayWindow::setCursorPosition(I32 x, I32 y) const {
 void DisplayWindow::setCursorStyle(CursorStyle style) const {
     SDL_SetCursor(SDL_CreateSystemCursor(CursorToSDL(style)));
 }
+
 vec2<I32> DisplayWindow::getCursorPosition() const {
     I32 x = 0, y = 0;
     SDL_GetMouseState(&x, &y);
@@ -407,9 +399,7 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
 
     centerWindowPosition();
 
-    if (hidden()) {
-        hidden(false);
-    }
+    _parent.pollSDLEvents();
 }
 
 vec2<U16> DisplayWindow::getPreviousDimensions() const {
@@ -419,15 +409,17 @@ vec2<U16> DisplayWindow::getPreviousDimensions() const {
     return _prevDimensions;
 }
 
-void DisplayWindow::setDimensions(U16 dimensionX, U16 dimensionY) {
+void DisplayWindow::setDimensions(U16& dimensionX, U16& dimensionY) {
     if (!fullscreen()) {
+        setDimensionsInternal(dimensionX, dimensionY);
+
         _prevDimensions.set(_windowDimensions);
         _windowDimensions.set(dimensionX, dimensionY);
-        setDimensionsInternal(dimensionX, dimensionY);
+        _parent.pollSDLEvents();
     }
 }
 
-void DisplayWindow::setDimensions(const vec2<U16>& dimensions) {
+void DisplayWindow::setDimensions(vec2<U16>& dimensions) {
     setDimensions(dimensions.x, dimensions.y);
 }
 

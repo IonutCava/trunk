@@ -332,41 +332,48 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 }
 
 void GFXDevice::increaseResolution() {
-    WindowManager& winManager = _parent.platformContext().app().windowManager();
-    const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
-    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
-
-    vectorImpl<GPUState::GPUVideoMode>::const_reverse_iterator it;
-    for (it = std::rbegin(displayModes); it != std::rend(displayModes); ++it) {
-        const vec2<U16>& tempResolution = it->_resolution;
-
-        if (resolution.width < tempResolution.width &&
-            resolution.height < tempResolution.height) {
-            winManager.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
-                                         winManager.getActiveWindow().getGUID(),
-                                         to_I32(tempResolution.width),
-                                         to_I32(tempResolution.height));
-            return;
-        }
-    }
+    stepResolution(true);
 }
 
 void GFXDevice::decreaseResolution() {
+    stepResolution(false);
+}
+
+void GFXDevice::stepResolution(bool increment) {
+    auto compare = [](const vec2<U16>& a, const vec2<U16>& b) -> bool {
+        return a.x > b.x || a.y > b.y;
+    };
+
     WindowManager& winManager = _parent.platformContext().app().windowManager();
-    const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
-    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
-    
+
     vectorImpl<GPUState::GPUVideoMode>::const_iterator it;
-    for (it = std::begin(displayModes); it != std::end(displayModes); ++it) {
-        const vec2<U16>& tempResolution = it->_resolution;
-        if (resolution.width > tempResolution.width &&
-            resolution.height > tempResolution.height) {
-            winManager.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
-                                         winManager.getActiveWindow().getGUID(),
-                                         to_I32(tempResolution.width),
-                                         to_I32(tempResolution.height));
-            return;
+    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
+
+    bool found = false;
+    vec2<U16> foundRes;
+    if (increment) {
+        for (const GPUState::GPUVideoMode& mode : reverse(displayModes)) {
+            const vec2<U16>& res = mode._resolution;
+            if (compare(res, _renderingResolution)) {
+                found = true;
+                foundRes.set(res);
+                break;
+            }
         }
+    } else {
+        for (const GPUState::GPUVideoMode& mode : displayModes) {
+            const vec2<U16>& res = mode._resolution;
+            if (compare(_renderingResolution, res)) {
+                found = true;
+                foundRes.set(res);
+                break;
+            }
+        }
+    }
+    
+    if (found) {
+        _resolutionChangeQueued.first.set(foundRes);
+        _resolutionChangeQueued.second = true;
     }
 }
 
@@ -388,42 +395,51 @@ void GFXDevice::toggleFullScreen() {
 }
 
 /// The main entry point for any resolution change request
-void GFXDevice::onChangeResolution(U16 w, U16 h) {
-    RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    // Update resolution only if it's different from the current one.
-    // Avoid resolution change on minimize so we don't thrash render targets
-    if ((w == screenRT.getWidth() &&
-         h == screenRT.getHeight()) ||
-        !(w > 1 && h > 1)) {
-        return;
+void GFXDevice::onSizeChange(const SizeChangeParams& params) {
+    U16 w = params.width;
+    U16 h = params.height;
+
+    if (!params.window) {
+        // Update resolution only if it's different from the current one.
+        // Avoid resolution change on minimize so we don't thrash render targets
+        if (w < 1 || h < 1 || _renderingResolution == vec2<U16>(w, h)) {
+            return;
+        }
+
+        _renderingResolution.set(w, h);
+
+        // Update render targets with the new resolution
+        _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
+        if (Config::Build::ENABLE_EDITOR) {
+            _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
+        }
+
+        U16 reflectRes = std::max(w, h) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
+
+        _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_PLANAR, reflectRes, reflectRes);
+        _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_PLANAR, reflectRes, reflectRes);
+        _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_CUBE, reflectRes, reflectRes);
+        _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_CUBE, reflectRes, reflectRes);
+
+        for (Texture_ptr& tex : _prevDepthBuffers) {
+            tex->resize(NULL, vec2<U16>(w, h));
+        }
+
+        // Update post-processing render targets and buffers
+        PostFX::instance().updateResolution(w, h);
+
+        // Update the 2D camera so it matches our new rendering viewport
+        Camera::utilityCamera(Camera::UtilityCamera::_2D)->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1));
+        Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->setProjection(vec4<F32>(0, to_F32(w), to_F32(h), 0), vec2<F32>(-1, 1));
     }
 
-    // Update render targets with the new resolution
-    _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
-    _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
-    if (Config::Build::ENABLE_EDITOR) {
-        _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
-    }
-
-    U16 reflectRes = std::max(w, h) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
-
-    _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_PLANAR, reflectRes, reflectRes);
-    _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_PLANAR, reflectRes, reflectRes);
-    _rtPool->resizeTargets(RenderTargetUsage::REFLECTION_CUBE, reflectRes, reflectRes);
-    _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_CUBE, reflectRes, reflectRes);
-
-    for (Texture_ptr& tex : _prevDepthBuffers) {
-        tex->resize(NULL, vec2<U16>(w, h));
-    }
-
-    // Update post-processing render targets and buffers
-    PostFX::instance().updateResolution(w, h);
-
-    // Update the 2D camera so it matches our new rendering viewport
-    Camera::utilityCamera(Camera::UtilityCamera::_2D)->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1));
-    Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->setProjection(vec4<F32>(0, to_F32(w), to_F32(h), 0), vec2<F32>(-1, 1));
-    
-    setBaseViewport(vec4<I32>(0, 0, to_I32(w), to_I32(h)));
+    F32 currentAspectRatio = to_F32(_renderingResolution.width) / _renderingResolution.height;
+    I32 newWidth = to_I32(std::round(h * currentAspectRatio));
+    I32 newHeight = to_I32(std::round(w / currentAspectRatio));
+    I32 left = to_I32(std::round((w - newWidth) * 0.5f));
+    I32 bottom = to_I32(std::round((h - newHeight) * 0.5f));
+    setBaseViewport(vec4<I32>(left, bottom, newWidth, newHeight));
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it

@@ -4,6 +4,7 @@
 
 #include "Core/Headers/StringHelper.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -369,7 +370,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
 }
 
 void PingPongScene::postLoadMainThread() {
-    const vec2<U16>& resolution = _GUI->getDisplayResolution();
+    const vec2<U16>& resolution = _context.gfx().renderingResolution();
     // Buttons and text labels
     _GUI->addButton(_ID("Serve"), "Serve",
         vec2<I32>(to_I32(resolution.width - 120),

@@ -85,6 +85,7 @@ class SceneRenderState;
 class GenericVertexData;
 class ShaderComputeQueue;
 
+struct SizeChangeParams;
 struct ShaderBufferDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
@@ -234,6 +235,8 @@ public:  // GPU interface
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
     bool restoreViewport();
 
+    inline const vec2<U16>& renderingResolution() const;
+
     void setSceneZPlanes(const vec2<F32>& zPlanes);
 
     /// Switch between fullscreen rendering
@@ -365,10 +368,12 @@ protected:
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut);
     void drawText(const TextElementBatch& batch);
 
-    void onChangeResolution(U16 w, U16 h);
+    void onSizeChange(const SizeChangeParams& params);
 
     void renderDebugViews(GFX::CommandBuffer& bufferInOut);
     
+    void stepResolution(bool increment);
+
 protected:
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
@@ -434,6 +439,8 @@ protected:
     /* Rendering buffers.*/
     GFXRTPool* _rtPool;
 
+    std::pair<vec2<U16>, bool> _resolutionChangeQueued;
+
     U8 _historyIndex;
     vectorImpl<Texture_ptr> _prevDepthBuffers;
 
@@ -469,10 +476,13 @@ protected:
     
     SharedLock _graphicsResourceMutex;
     vectorImpl<I64> _graphicResources;
+
     /// Current viewport stack
     vec4<I32> _viewport;
     vec4<I32> _prevViewport;
     vec4<I32> _baseViewport;
+
+    vec2<U16> _renderingResolution;
 
     GFXShaderData _gpuBlock;
 
@@ -536,14 +546,10 @@ namespace Attorney {
             device.blitToRenderTarget(targetID, targetViewport);
         }
 
-        static void onChangeWindowSize(GFXDevice& device, U16 w, U16 h) {
-            device.setBaseViewport(vec4<I32>(0, 0, w, h));
+        static void onSizeChange(GFXDevice& device, const SizeChangeParams& params) {
+            device.onSizeChange(params);
         }
-
-        static void onChangeRenderResolution(GFXDevice& device, U16 w, U16 h) {
-            device.onChangeResolution(w, h);
-        }
-
+        
         friend class Divide::Kernel;
         friend class Divide::Attorney::KernelApplication;
     };

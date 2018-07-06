@@ -92,6 +92,7 @@ GUIType getTypeEnum() {
 
 class GFXDevice;
 class RenderStateBlock;
+struct SizeChangeParams;
 class GUIElement : public GUIDWrapper {
     friend class GUI;
 
@@ -121,7 +122,9 @@ class GUIElement : public GUIDWrapper {
     // Return true if input was consumed
     virtual bool onMouseDown(const GUIEvent& event) { return false; }
 
-    virtual void onChangeResolution(U16 w, U16 h) {}
+    virtual void onSizeChange(const SizeChangeParams& params) {
+        ACKNOWLEDGE_UNUSED(params);
+    }
 
    protected:
     GUIType _guiType;
