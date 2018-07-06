@@ -111,8 +111,9 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
 
 void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
     SceneGraphNode_ptr newNodePtr(newNode.shared_from_this());
+
     _allNodes.push_back(newNodePtr);
-    _nodesByType[to_base(newNodePtr->getNode()->getType())].emplace_back(newNodePtr);
+    _nodesByType[to_base(newNodePtr->getNode()->getType())].push_back(newNodePtr);
     
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);

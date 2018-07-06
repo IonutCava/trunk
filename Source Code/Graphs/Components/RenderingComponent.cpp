@@ -26,7 +26,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _lodLevel(0),
       _commandIndex(0),
       _commandOffset(0),
-      _preDrawPass(false),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
@@ -595,16 +594,23 @@ U32 RenderingComponent::renderMask(U32 baseMask) const {
     return baseMask;
 }
 
-void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
-    _preDrawPass = canDraw(renderStagePass) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass);
+void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
+                                    U32 cmdOffset,
+                                    U32 cmdIndex) {
+    commandOffset(cmdOffset);
+    commandIndex(cmdIndex);
+
+    RenderPackage& pkg = renderData(renderStagePass);
+    for (GenericDrawCommand& cmd : pkg._drawCommands) {
+        cmd.commandOffset(cmdOffset++);
+        cmd.cmd().baseInstance = cmdIndex;
+    }
 }
 
-RenderPackage&
-RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
+void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
     RenderPackage& pkg = renderData(renderStagePass);
     pkg.isRenderable(false);
-    if (_preDrawPass)
-    {
+    if (canDraw(renderStagePass) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass)) {
         PipelineDescriptor pipelineDescriptor;
         for (GenericDrawCommand& cmd : pkg._drawCommands) {
             cmd.renderMask(renderMask(cmd.renderMask()));
@@ -617,27 +623,27 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, con
 
         updateLoDLevel(*Camera::activeCamera(), renderStagePass);
 
-        U32 offset = commandOffset();
         bool sceneRenderWireframe = sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
         for (GenericDrawCommand& cmd : pkg._drawCommands) {
-            bool renderWireframe = cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME) ||
-                                   sceneRenderWireframe;
+            bool renderWireframe = cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME) || sceneRenderWireframe;
             cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME, renderWireframe);
-            cmd.commandOffset(offset++);
-            cmd.cmd().baseInstance = commandIndex();
             cmd.LoD(_lodLevel);
         }
-        
+
         pkg.isRenderable(!pkg._drawCommands.empty());
+
+        if (pkg.isRenderable()) {
+            setDrawIDs(renderStagePass, commandOffset(), commandIndex());
+        }
     }
-
-    return pkg;
 }
 
-RenderPackage& 
-RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
-    return renderData(renderStagePass);
+const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) const {
+    const RenderPackage& ret = renderData(renderStagePass);
+    //ToDo: Some validation? -Ionut
+    return ret;
 }
+
 
 void RenderingComponent::setActive(const bool state) {
     if (!state) {

@@ -106,7 +106,7 @@ void GL_API::beginFrame() {
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
     _context.registerDrawCall();
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, s_indirectDrawBuffer);
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     _previousStateBlockHash = 0;
 }
 
@@ -945,8 +945,8 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
 }
 
 void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
-    s_indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, s_indirectDrawBuffer);
+    GLuint bufferID = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, bufferID);
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

@@ -108,13 +108,15 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
 
-
     if (_particleShader != nullptr) {
-        const Material_ptr& mat = getMaterialTpl();
+        Material_ptr mat = CreateResource<Material>(_parentCache, ResourceDescriptor("Material_particles"));
+
         mat->setShaderProgram(_particleShader);
         mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW);
         mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::COLOUR_PASS);
         mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderPassType::DEPTH_PASS);
+        setMaterialTpl(mat);
+
         return true;
     }
 

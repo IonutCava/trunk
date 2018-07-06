@@ -50,7 +50,7 @@ ivec4 dvd_BufferIntegerValues(in uint index) {
 #endif
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
-#define dvd_lodLevel(X) dvd_BufferIntegerValues(X).z
+#define dvd_lodLevel dvd_BufferIntegerValues(VAR.dvd_instanceID).z
 #define dvd_customData dvd_Matrices[VAR.dvd_instanceID]._properties.w
 
 #if defined(FRAG_SHADER)

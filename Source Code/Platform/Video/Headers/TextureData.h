@@ -131,7 +131,7 @@ class TextureDataContainer {
 
       vectorImpl<TextureData>& textures();
       const vectorImpl<TextureData>& textures() const;
-      void clear(bool clearMemory);
+      void clear(bool clearMemory = false);
 
     private:
       vectorImpl<TextureData> _textures;

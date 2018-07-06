@@ -42,7 +42,7 @@ vec3 private_processedNormal = vec3(0.0, 0.0, 1.0);
 
 vec3 getProcessedNormal() {
 #   if defined (USE_DOUBLE_SIDED)
-    return processedNormal = mix(-processedNormal, processedNormal, gl_FrontFacing);
+    return mix(-private_processedNormal, private_processedNormal, gl_FrontFacing);
 #   else
     return private_processedNormal;
 #   endif

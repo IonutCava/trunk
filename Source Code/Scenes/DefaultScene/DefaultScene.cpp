@@ -148,8 +148,6 @@ void DefaultScene::processTasks(const U64 deltaTime) {
 }
 
 void DefaultScene::loadScene(I64 btnGUID) {
-    PostFX::instance().setFadeOutIn(vec4<U8>(0), 750, 1500, 2000);
-
     _sceneToLoad = _buttonToSceneMap[btnGUID];
     Console::d_printf("Loading scene [ %s ]", _sceneToLoad.c_str());
 

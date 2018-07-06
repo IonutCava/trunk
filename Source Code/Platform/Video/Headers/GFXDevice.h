@@ -442,7 +442,7 @@ private:
 
     ErrorCode createAPIInstance();
 
-    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex);
+    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex, bool isOcclusionCullable);
 
     mat4<F32>& getMatrixInternal(const MATRIX& mode);
     const mat4<F32>& getMatrixInternal(const MATRIX& mode) const;

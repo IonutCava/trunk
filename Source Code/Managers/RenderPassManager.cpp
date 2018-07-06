@@ -361,8 +361,9 @@ RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target
         // Step2: Composition pass
         TextureData accum = _context.renderTargetPool().renderTarget(oitCmd._renderTarget).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
         TextureData revealage = _context.renderTargetPool().renderTarget(oitCmd._renderTarget).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
-        accum.setHandleHigh(0);
-        revealage.setHandleHigh(1);
+        accum.setHandleLow(0);
+        revealage.setHandleLow(1);
+        compSubPass._textures.clear();
         compSubPass._textures.addTexture(accum);
         compSubPass._textures.addTexture(revealage);
 
@@ -396,8 +397,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
 
     commandBuffer.push_back(mainPass(params, target));
     std::pair<RenderPassCmd, RenderPassCmd> woit = woitPass(params, target);
-    commandBuffer.push_back(woit.first);
-    commandBuffer.push_back(woit.second);
+    //commandBuffer.push_back(woit.first);
+    //commandBuffer.push_back(woit.second);
     cleanCommandBuffer(commandBuffer);
     _context.flushCommandBuffer(commandBuffer);
 }

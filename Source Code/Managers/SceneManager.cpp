@@ -103,10 +103,12 @@ const Scene& SceneManager::getActiveScene() const {
 
 void SceneManager::idle() {
     if (_sceneSwitchTarget.isSet()) {
+        PostFX::instance().setFadeOut(vec4<U8>(0), 1000.0, 0.0);
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.loadInSeparateThread());
         WaitForAllTasks(getActiveScene().platformContext(), true, true, false);
+        PostFX::instance().setFadeIn(2750.0);
     } else {
         while (!_playerAddQueue.empty()) {
             std::pair<Scene*, SceneGraphNode_ptr>& playerToAdd = _playerAddQueue.front();

@@ -114,12 +114,12 @@ void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& p
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex) {
+GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex, bool isOcclusionCullable) {
     NodeData& dataOut = _matricesData[dataIndex];
 
     RenderingComponent* const renderable = node.get<RenderingComponent>();
-    AnimationComponent* const animComp = node.get<AnimationComponent>();
-    PhysicsComponent* const transform = node.get<PhysicsComponent>();
+    AnimationComponent* const animComp   = node.get<AnimationComponent>();
+    PhysicsComponent*   const transform  = node.get<PhysicsComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -148,6 +148,9 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
+
+    //set properties.w to -1 to skip occlusion culling for the node
+    dataOut._properties.w = isOcclusionCullable ? 1.0f : -1.0f;
 
     return dataOut;
 }
@@ -189,28 +192,23 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
         std::for_each(std::begin(queue), std::end(queue),
             [&](SceneGraphNode* node) -> void
             {
-                RenderingComponent* renderable = node->get<RenderingComponent>();
-                Attorney::RenderingCompGFXDevice::prepareDrawPackage(*renderable, sceneRenderState, currentStage);
+                RenderingComponent& renderable = *node->get<RenderingComponent>();
+                Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, sceneRenderState, currentStage);
             });
 
         std::for_each(std::begin(queue), std::end(queue),
             [&](SceneGraphNode* node) -> void
             {
-                RenderingComponent* renderable = node->get<RenderingComponent>();
-                RenderPackage& pkg = 
-                    Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
-                                                                     sceneRenderState,
-                                                                     currentStage,
-                                                                     refreshNodeData ? cmdCount
-                                                                                     : renderable->commandOffset(),
-                                                                     refreshNodeData ? nodeCount
-                                                                                     : renderable->commandIndex());
+                RenderingComponent& renderable = *node->get<RenderingComponent>();
+
+                const RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(renderable, currentStage);
                 if (pkg.isRenderable()) {
                     if (refreshNodeData) {
-                        NodeData& dataOut = processVisibleNode(*node, nodeCount);
-                        //set properties.w to -1 to skip occlusion culling for the node
-                        dataOut._properties.w = pkg.isOcclusionCullable() ? 1.0f : -1.0f;
-                        for (GenericDrawCommand& cmd : pkg._drawCommands) {
+                        Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, currentStage, cmdCount, nodeCount);
+
+                        processVisibleNode(*node, nodeCount, pkg.isOcclusionCullable());
+
+                        for (const GenericDrawCommand& cmd : pkg._drawCommands) {
                             for (U32 i = 0; i < cmd.drawCount(); ++i) {
                                 _drawCommandsCache[cmdCount++].set(cmd.cmd());
                             }

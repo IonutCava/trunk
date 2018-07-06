@@ -12,7 +12,6 @@
 
 #include "Utility/Headers/Localization.h"
 
-
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
@@ -387,11 +386,6 @@ void GL_API::closeRenderingAPI() {
     // Destroy the text rendering system
     deleteFonsContext();
     _fonts.clear();
-    // If we have an indirect draw buffer, delete it
-    if (s_indirectDrawBuffer > 0) {
-        glDeleteBuffers(1, &s_indirectDrawBuffer);
-        s_indirectDrawBuffer = 0;
-    }
     if (s_dummyVAO > 0) {
         glDeleteVertexArrays(1, &s_dummyVAO);
         s_dummyVAO = 0;

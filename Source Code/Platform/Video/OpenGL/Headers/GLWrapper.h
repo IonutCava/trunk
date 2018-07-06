@@ -269,8 +269,6 @@ private:
     static GLint s_lineWidthLimit;
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
     static GLuint s_dummyVAO;
-    /// Used to store all of the indirect draw commands
-    static GLuint s_indirectDrawBuffer;
     /// Preferred anisotropic filtering level
     static GLuint s_anisoLevel;
     /// A cache of all fonts used

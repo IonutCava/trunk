@@ -761,7 +761,7 @@ bool Scene::load(const stringImpl& name) {
             totalLoadingTasks = _loadingTasks;
             Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
         }
-        std::this_thread::yield();
+        idle();
     }
 
     _loadComplete = true;

@@ -56,7 +56,6 @@ namespace Attorney {
     class RenderingCompRenderPass;
     class RenderingCompGFXDevice;
     class RenderingCompRenderBin;
-    class RenderingCompSceneNode;
 };
 
 struct RenderCbkParams {
@@ -96,7 +95,6 @@ class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;
-    friend class Attorney::RenderingCompSceneNode;
 
    public:
     bool onRender(const RenderStagePass& renderStagePass) override;
@@ -178,10 +176,10 @@ class RenderingComponent : public SGNComponent {
 
     void prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
 
-    RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
-
-    RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
-
+    const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
+    void setDrawIDs(const RenderStagePass& renderStagePass,
+                    U32 cmdOffset,
+                    U32 cmdIndex);
 
     inline void commandIndex(U32 index) { _commandIndex = index; }
 
@@ -204,6 +202,10 @@ class RenderingComponent : public SGNComponent {
         return _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
     }
 
+    inline const RenderPackage& renderData(const RenderStagePass& stagePass) const {
+        return _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
+    }
+
    protected:
     GFXDevice& _context;
     Material_ptr _materialInstance;
@@ -212,7 +214,6 @@ class RenderingComponent : public SGNComponent {
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _commandIndex;
     U32 _commandOffset;
-    bool _preDrawPass;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderGeometry;
@@ -277,18 +278,6 @@ class RenderingCompRenderPass {
         friend class Divide::RenderPass;
 };
 
-class RenderingCompSceneNode {
-    private:
-        static RenderPackage& getDrawPackage(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
-            return renderable.getDrawPackage(renderStagePass);
-        }
-
-    friend class Divide::Sky;
-    friend class Divide::SubMesh;
-    friend class Divide::WaterPlane;
-    friend class Divide::ParticleEmitter;
-};
-
 class RenderingCompGFXDevice {
    private:
     static void prepareDrawPackage(RenderingComponent& renderable,
@@ -297,15 +286,19 @@ class RenderingCompGFXDevice {
         renderable.prepareDrawPackage(sceneRenderState, renderStagePass);
     }
 
-    static RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                         const SceneRenderState& sceneRenderState,
-                                         const RenderStagePass& renderStagePass,
-                                         U32 cmdOffset,
-                                         U32 cmdIndex) {
-        renderable.commandIndex(cmdIndex);
-        renderable.commandOffset(cmdOffset);
-        return renderable.getDrawPackage(sceneRenderState, renderStagePass);
+    static void setDrawIDs(RenderingComponent& renderable, 
+                           const RenderStagePass& renderStagePass,
+                           U32 cmdOffset,
+                           U32 cmdIndex)
+    {
+        renderable.setDrawIDs(renderStagePass, cmdOffset, cmdIndex);
     }
+
+    static const RenderPackage& getDrawPackage(RenderingComponent& renderable,
+                                               const RenderStagePass& renderStagePass) {
+        return renderable.getDrawPackage(renderStagePass);
+    }
+
 
     friend class Divide::GFXDevice;
 };

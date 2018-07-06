@@ -131,9 +131,11 @@ void GFXDevice::renderDebugViews() {
                 }
 
                 viewport.x -= viewportWidth;
-                viewIndex++;
+                if (viewIndex++ == viewCount) {
+                    return;
+                }
             }
-            viewport.y -= viewportHeight;
+            viewport.y += viewportHeight;
         }
     }
 }
