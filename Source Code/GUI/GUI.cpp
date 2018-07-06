@@ -11,6 +11,7 @@
 
 #include "Scenes/Headers/Scene.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -60,7 +61,7 @@ void GUI::onResize(const vec2<U16>& newResolution) {
     _cachedResolution = newResolution;
 }
 
-void GUI::draw2D() {
+void GUI::draw() const {
     if (!_init) {
         return;
     }
@@ -69,10 +70,21 @@ void GUI::draw2D() {
 
     GFXDevice& gfx = GFX_DEVICE;
     for (const guiMap::value_type& guiStackIterator : _guiStack) {
-        gfx.drawGUIElement(guiStackIterator.second);
+        GUIElement& element = *guiStackIterator.second;
+        // Skip hidden elements
+        if (element.isVisible()) {
+            // Set the elements render states
+            Attorney::GFXDeviceGUI::setStateBlock(gfx, element.getStateBlockHash());
+            element.draw();
+             // Update internal timer
+            element.lastDrawTimer(Time::ElapsedMicroseconds());
+        }
     }
+     
+    
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
+
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 }
 
@@ -164,7 +176,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     immediateModeShader.setThreadedLoading(false);
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
     _guiShader->Uniform("dvd_WorldMatrix", mat4<F32>());
-    GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this),
+    GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw, this),
                                    std::numeric_limits<U32>::max() - 1);
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();

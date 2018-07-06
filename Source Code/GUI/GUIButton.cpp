@@ -15,7 +15,8 @@ GUIButton::GUIButton(const stringImpl& id, const stringImpl& text,
       _callbackFunction(callback),
       _highlight(false),
       _pressed(false),
-      _btnWindow(nullptr) {
+      _btnWindow(nullptr)
+{
     _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(
         stringAlg::fromBase(guiScheme + "/Button"), stringAlg::fromBase(id));
     _btnWindow->setPosition(CEGUI::UVector2(
@@ -31,7 +32,14 @@ GUIButton::GUIButton(const stringImpl& id, const stringImpl& text,
     setActive(true);
 }
 
-GUIButton::~GUIButton() { _parent->removeChild(_btnWindow); }
+GUIButton::~GUIButton()
+{
+    _parent->removeChild(_btnWindow);
+}
+
+void GUIButton::draw() const {
+    //Nothing. CEGUI should handle this
+}
 
 void GUIButton::setTooltip(const stringImpl& tooltipText) {
     _btnWindow->setTooltipText(tooltipText.c_str());

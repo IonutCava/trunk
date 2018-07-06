@@ -50,6 +50,9 @@ enum class RenderStage : U32;
 enum class RendererType : U32;
 enum class SceneNodeType : U32;
 
+class GUI;
+class GUIText;
+
 class Light;
 class Camera;
 class PostFX;
@@ -63,9 +66,15 @@ namespace Time {
     class ProfileTimer;
 };
 
+namespace Attorney {
+    class GFXDeviceGUI;
+};
+
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
+    friend class Attorney::GFXDeviceGUI;
+
   protected:
     typedef hashMapImpl<size_t, RenderStateBlock*> RenderStateMap;
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > ViewportStack;
@@ -201,7 +210,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void drawPoints(U32 numPoints, size_t stateHash,
                     ShaderProgram* const shaderProgram);
-    void drawGUIElement(GUIElement* guiElement);
+    
     void submitRenderCommand(const GenericDrawCommand& cmd);
     void submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
     void submitIndirectRenderCommand(const GenericDrawCommand& cmd);
@@ -466,6 +475,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     ErrorCode createAPIInstance();
 
     void processVisibleNode(const RenderPassCuller::RenderableNode& node,
+                            U32 drawID,
                             NodeData& dataOut);
 
   private:
@@ -545,6 +555,21 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     GenericDrawCommand _defaultDrawCmd;
 END_SINGLETON
 
+namespace Attorney {
+    class GFXDeviceGUI {
+    private:
+        static void drawText(GFXDevice& gfxDevice, const TextLabel& text, const vec2<I32>& position) {
+            return gfxDevice.drawText(text, position);
+        }
+
+        static size_t setStateBlock(GFXDevice& gfxDevice, size_t stateBlockHash) {
+            return gfxDevice.setStateBlock(stateBlockHash);
+        }
+
+        friend class Divide::GUI;
+        friend class Divide::GUIText;
+    };
+};  // namespace Attorney
 };  // namespace Divide
 
 #include "GFXDevice.inl"

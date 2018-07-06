@@ -37,6 +37,10 @@
 #include "Scenes/WarScene/AESOPActions/Headers/WarSceneActions.h"
 #include <fstream>
 
+#ifndef PRINT_AI_TO_FILE
+//#define PRINT_AI_TO_FILE
+#endif
+
 namespace Divide {
 class Unit;
 
@@ -206,6 +210,13 @@ class WarSceneAISceneImpl : public AISceneImpl {
 
     AIEntity* getUnitForNode(U32 teamID, SceneGraphNode* node) const;
 
+    template <typename... T>
+    inline void PRINT(const char* format, T&&... args) const {
+        #if defined(PRINT_AI_TO_FILE)
+        Console::d_printfn(_WarAIOutputStream, format, std::forward<T>(args)...);
+        #endif
+    }
+
    private:
     AIType _type;
     U16 _tickCount;
@@ -220,8 +231,11 @@ class WarSceneAISceneImpl : public AISceneImpl {
     vectorImpl<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
     static GlobalWorkingMemory _globalWorkingMemory;
-    mutable std::ofstream _WarAIOutputStream;
     static vec3<F32> _initialFlagPositions[2];
+
+#if defined(PRINT_AI_TO_FILE)
+    mutable std::ofstream _WarAIOutputStream;
+#endif
 };
 
 namespace Attorney {

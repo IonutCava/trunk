@@ -206,6 +206,7 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 
 /// Prepare the list of visible nodes for rendering
 void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
+                                   U32 drawID,
                                    NodeData& dataOut) {
 
     RenderingComponent* const renderable =
@@ -260,7 +261,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
     Time::START_TIMER(_commandBuildTimer);
 
-    vectorAlg::vecSize nodeCount = visibleNodes.size();
     if (refreshNodeData) {
         // Pass the list of nodes to the renderer for a pre-render pass
         getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
@@ -268,6 +268,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         LightManager::getInstance().updateAndUploadLightData(
                 _gpuBlock._ViewMatrix);
     }
+
+    vectorAlg::vecSize nodeCount = visibleNodes.size();
     _renderQueue.reserve(nodeCount);
 
     _lastCmdCount = 0;
@@ -292,7 +294,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
             }
 
             if (refreshNodeData) {
-               processVisibleNode(node, _matricesData[_lastNodeCount]);
+               processVisibleNode(node, to_uint(_lastNodeCount), _matricesData[_lastNodeCount]);
             }
             _lastNodeCount += 1;
         }
@@ -361,34 +363,6 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
         // Tell the rendering API to upload the needed number of points
         drawPoints(numPoints);
     }
-}
-
-/// GUI specific elements, require custom handling by the rendering API
-void GFXDevice::drawGUIElement(GUIElement* guiElement) {
-    DIVIDE_ASSERT(guiElement != nullptr,
-                  "GFXDevice error: Invalid GUI element specified for the "
-                  "drawGUI command!");
-    // Skip hidden elements
-    if (!guiElement->isVisible()) {
-        return;
-    }
-    // Set the elements render states
-    setStateBlock(guiElement->getStateBlockHash());
-    // Choose the appropriate rendering path
-    switch (guiElement->getType()) {
-        case GUIType::GUI_TEXT: {
-            const GUIText& text = static_cast<GUIText&>(*guiElement);
-            drawText(text, text.getPosition());
-        } break;
-        case GUIType::GUI_FLASH: {
-            static_cast<GUIFlash*>(guiElement)->playMovie();
-        } break;
-        default: {
-            // not supported
-        } break;
-    };
-    // Update internal timer
-    guiElement->lastDrawTimer(Time::ElapsedMicroseconds());
 }
 
 /// Draw the outlines of a box defined by min and max as extents using the

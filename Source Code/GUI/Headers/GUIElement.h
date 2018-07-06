@@ -72,6 +72,8 @@ class GUIElement {
                const vec2<I32>& position);
     virtual ~GUIElement();
 
+    virtual void draw() const = 0;
+
     inline const stringImpl& getName() const { return _name; }
     inline const vec2<I32>& getPosition() const { return _position; }
     inline void setPosition(const vec2<I32>& pos) { _position = pos; }
@@ -80,7 +82,7 @@ class GUIElement {
     inline const bool isActive() const { return _active; }
     inline const bool isVisible() const { return _visible; }
 
-    inline void setName(const stringImpl& name) { _name = name; }
+    inline  void setName(const stringImpl& name) { _name = name; }
     virtual void setVisible(const bool visible) { _visible = visible; }
     virtual void setActive(const bool active) { _active = active; }
 
@@ -96,11 +98,7 @@ class GUIElement {
     virtual void mouseMoved(const GUIEvent& event){};
     virtual void onMouseUp(const GUIEvent& event){};
     virtual void onMouseDown(const GUIEvent& event){};
-    /*  virtual void onRightMouseUp(const GUIEvent &event);
-        virtual void onRightMouseDown(const GUIEvent &event);
-        virtual bool onKeyUp(const GUIEvent &event);
-        virtual bool onKeyDown(const GUIEvent &event);
-    */
+
    protected:
     vec2<I32> _position;
     GUIType _guiType;

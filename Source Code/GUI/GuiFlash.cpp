@@ -5,7 +5,16 @@
 
 namespace Divide {
 
-GUIFlash::~GUIFlash() {}
+GUIFlash::GUIFlash(CEGUI::Window* parent)
+        : GUIElement(parent, GUIType::GUI_FLASH, vec2<I32>(0, 0))
+{
+}
 
-void GUIFlash::playMovie() {}
+GUIFlash::~GUIFlash()
+{
+}
+
+void GUIFlash::draw() const {
+}
+
 };

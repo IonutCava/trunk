@@ -29,8 +29,9 @@ void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
     position = (transformMatrix[0] * position + transformMatrix[1] * position + 
                 transformMatrix[2] * position + transformMatrix[3] * position);
     
-    if (lod >= 2)
+    if (lod >= 2) {
         return;
+    }
 
     vec4 tempVec = vec4(normal, 0.0);
     normal = vec4(transformMatrix[0] * tempVec + transformMatrix[1] * tempVec + 

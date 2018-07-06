@@ -148,8 +148,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
   private:
     GUI();            //< Constructor
     ~GUI();           //< Destructor
-    void drawText();  //< TextLabel rendering
-    void draw2D();
+    void draw() const;
 
   private:
     bool _init;              //< Set to true when the GUI has finished loading

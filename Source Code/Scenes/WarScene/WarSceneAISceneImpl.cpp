@@ -20,6 +20,7 @@ static const U32 g_flagContainer = 2;
 vec3<F32> WarSceneAISceneImpl::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAISceneImpl::_globalWorkingMemory;
 
+
 WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
     : AISceneImpl(),
       _type(type),
@@ -35,13 +36,17 @@ WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
 
 WarSceneAISceneImpl::~WarSceneAISceneImpl()
 {
+#if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.close();
+#endif
 }
 
 void WarSceneAISceneImpl::initInternal() {
+#if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.open(
         Util::stringFormat("AILogs/%s_.txt", _entity->getName().c_str()),
         std::ofstream::out | std::ofstream::trunc);
+#endif
     _visualSensor =
         dynamic_cast<VisualSensor*>(
             _entity->getSensor(SensorType::VISUAL_SENSOR));
@@ -144,8 +149,7 @@ void WarSceneAISceneImpl::requestOrders() {
         U32 weight = 0;
         switch (orderID) {
             case WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG: {
-                if (!_localWorkingMemory._hasEnemyFlag.value() &&
-                    _globalWorkingMemory._flagCarriers[ownTeamID].value() == nullptr)
+                if (_globalWorkingMemory._flagCarriers[ownTeamID].value() == nullptr)
                 {
                     weight = 3;
                 }
@@ -209,8 +213,7 @@ void WarSceneAISceneImpl::requestOrders() {
     GOAPGoal* goal = findRelevantGoal();
 
     if (goal != nullptr) {
-        Console::d_printfn(_WarAIOutputStream, "Current goal: [ %s ]",
-                           goal->getName().c_str());
+        PRINT("Current goal: [ %s ]", goal->getName().c_str());
 
         // Hack to loop in idle
         if (goal->getID() == to_uint(WarSceneOrder::WarOrder::ORDER_IDLE)) {
@@ -218,16 +221,14 @@ void WarSceneAISceneImpl::requestOrders() {
         }
 
         if (replanGoal()) {
-            Console::d_printfn(_WarAIOutputStream,
-                               "The plan for goal [ %s ] involves [ %d ] actions.",
-                               goal->getName().c_str(),
-                               getActiveGoal()->getCurrentPlan().size());
+            PRINT("The plan for goal [ %s ] involves [ %d ] actions.",
+                  goal->getName().c_str(),
+                  getActiveGoal()->getCurrentPlan().size());
             printPlan();
         } else {
-            Console::d_printfn(_WarAIOutputStream, getPlanLog().c_str());
-            Console::printfn(_WarAIOutputStream,
-                             "Can't generate plan for goal [ %s ]",
-                             goal->getName().c_str());
+            PRINT("%s", getPlanLog().c_str());
+            PRINT("Can't generate plan for goal [ %s ]",
+                  goal->getName().c_str());
         }
     }
 }
@@ -243,25 +244,25 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
 
     switch (type) {
         case ActionType::ACTION_IDLE: {
-            Console::d_printfn(_WarAIOutputStream, "Starting idle action");
+            PRINT("Starting idle action");
             _entity->stop();
         } break;
         case ActionType::ACTION_APPROACH_FLAG: {
-            Console::d_printfn(_WarAIOutputStream, "Starting approach flag action");
+            PRINT("Starting approach flag action");
             _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value());
         } break;
         case ActionType::ACTION_CAPTURE_FLAG: {
-            Console::d_printfn(_WarAIOutputStream, "Starting capture flag action");
+            PRINT("Starting capture flag action");
         } break;
         case ActionType::ACTION_SCORE_FLAG: {
-            Console::d_printfn(_WarAIOutputStream, "Starting score action");
+            PRINT("Starting score action");
         } break;
         case ActionType::ACTION_RETURN_FLAG_TO_BASE: {
-            Console::d_printfn(_WarAIOutputStream, "Starting return flag to base action");
+            PRINT("Starting return flag to base action");
             _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[ownTeamID].value());
         } break;
         case ActionType::ACTION_ATTACK_ENEMY: {
-            Console::d_printfn(_WarAIOutputStream, "Starting attack enemy action");
+            PRINT("Starting attack enemy action");
             if (_localWorkingMemory._currentTarget.value() == nullptr &&
                 _globalWorkingMemory._teamAliveCount[g_enemyTeamContainer].value() > 0) {
                 SceneGraphNode* enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
@@ -290,10 +291,10 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
 
     switch (type) {
         case ActionType::ACTION_IDLE: {
-            Console::d_printfn(_WarAIOutputStream, "Idle action over");
+            PRINT("Idle action over");
         } break;
         case ActionType::ACTION_APPROACH_FLAG: {
-            Console::d_printfn(_WarAIOutputStream, "Approach flag action over");
+            PRINT("Approach flag action over");
         } break;
         case ActionType::ACTION_SCORE_FLAG: {
             if (_localWorkingMemory._hasEnemyFlag.value()) {
@@ -313,7 +314,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
             }
         } break;
         case ActionType::ACTION_CAPTURE_FLAG: {
-            Console::d_printfn(_WarAIOutputStream, "Capture flag action over");
+            PRINT("Capture flag action over");
             assert(!_localWorkingMemory._hasEnemyFlag.value());
             PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
                                       .value()->getComponent<PhysicsComponent>();
@@ -344,11 +345,11 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
             }
         } break;
         case ActionType::ACTION_RETURN_FLAG_TO_BASE: {
-            Console::printfn(_WarAIOutputStream, "Return flag to base action over");
+            PRINT("Return flag to base action over");
           
         } break;
         case ActionType::ACTION_ATTACK_ENEMY: {
-            Console::printfn(_WarAIOutputStream, "Attack enemy action over");
+            PRINT("Attack enemy action over");
             _localWorkingMemory._currentTarget.value(nullptr);
         } break;
         default: {
@@ -361,7 +362,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
         performActionStep(o);
     }
 
-    Console::printf(_WarAIOutputStream, "\n");
+    PRINT("\n");
 
     return advanceGoal();
 }
@@ -568,7 +569,7 @@ bool WarSceneAISceneImpl::performActionStep(
     GOAPValue newVal = step->second;
     GOAPValue oldVal = worldState().getVariable(crtFact);
     if (oldVal != newVal) {
-        Console::printfn(_WarAIOutputStream, "\t\t Changing \"%s\" from \"%s\" to \"%s\"",
+        PRINT("\t\t Changing \"%s\" from \"%s\" to \"%s\"",
                          WarSceneFactName(crtFact),
                          GOAPValueName(oldVal),
                          GOAPValueName(newVal));
@@ -578,17 +579,16 @@ bool WarSceneAISceneImpl::performActionStep(
 }
 
 bool WarSceneAISceneImpl::printActionStats(const GOAPAction& planStep) const {
-    Console::printfn(_WarAIOutputStream, "Action [ %s ]", planStep.name().c_str());
+    PRINT("Action [ %s ]", planStep.name().c_str());
     return true;
 }
 
 void WarSceneAISceneImpl::printWorkingMemory() const {
-    Console::printfn(_WarAIOutputStream,
-        "--------------- Working memory state BEGIN ----------------------------");
-    Console::printfn(_WarAIOutputStream, "        Current position: - [ %4.1f , %4.1f, %4.1f]",
+    PRINT("--------------- Working memory state BEGIN ----------------------------");
+    PRINT("        Current position: - [ %4.1f , %4.1f, %4.1f]",
                      _entity->getPosition().x, _entity->getPosition().y,
                      _entity->getPosition().z);
-    Console::printfn(_WarAIOutputStream,
+    PRINT(
         "        Flag Positions - 0 : [ %4.1f , %4.1f, %4.1f] | 1 : [ %4.1f , "
         "%4.1f, %4.1f]",
         _globalWorkingMemory._teamFlagPosition[0].value().x,
@@ -597,15 +597,13 @@ void WarSceneAISceneImpl::printWorkingMemory() const {
         _globalWorkingMemory._teamFlagPosition[1].value().x,
         _globalWorkingMemory._teamFlagPosition[1].value().y,
         _globalWorkingMemory._teamFlagPosition[1].value().z);
-    Console::printfn(_WarAIOutputStream, "        Has enemy flag: [ %s ]",
-                     _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false");
+    PRINT("        Has enemy flag: [ %s ]",
+          _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false");
     for (std::pair<GOAPFact, GOAPValue> var : worldState().vars_) {
-        Console::printfn(_WarAIOutputStream, "        World state fact [ %s ] : [ %s ]",
-                         WarSceneFactName(var.first),
-                         var.second ? "true" : "false");
+        PRINT("        World state fact [ %s ] : [ %s ]",
+              WarSceneFactName(var.first), var.second ? "true" : "false");
     }
-    Console::printfn(_WarAIOutputStream,
-        "--------------- Working memory state END ----------------------------");
+    PRINT("--------------- Working memory state END ----------------------------");
 }
 
 void WarSceneAISceneImpl::registerGOAPPackage(const GOAPPackage& package) {

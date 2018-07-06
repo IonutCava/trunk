@@ -38,11 +38,10 @@ namespace Divide {
 
 class GUIFlash : public GUIElement {
    public:
-    GUIFlash(CEGUI::Window* parent)
-        : GUIElement(parent, GUIType::GUI_FLASH, vec2<I32>(0, 0)){};
+    GUIFlash(CEGUI::Window* parent);
     ~GUIFlash();
 
-    void playMovie();
+    void draw() const;
 };
 
 };  // namespace Divide

@@ -54,6 +54,7 @@ class GUIButton : public GUIElement {
               CEGUI::Window* parent, ButtonCallback callback);
     ~GUIButton();
 
+    void draw() const;
     void setTooltip(const stringImpl& tooltipText);
     void setFont(const stringImpl& fontName, const stringImpl& fontFileName,
                  U32 size);

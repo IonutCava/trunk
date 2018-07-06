@@ -216,18 +216,24 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
             GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
             offset = (bufferPtr)(&command.cmd());
         }
+
+        U16 drawCount = command.drawCount();
+        GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
+
         if (command.renderGeometry()) {
             if (_indexBuffer > 0) {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-                glMultiDrawElementsIndirect(
-                    GLUtil::glPrimitiveTypeTable[to_uint(
-                        command.primitiveType())],
-                    GL_UNSIGNED_INT, offset, command.drawCount(), 0);
-
+                if (drawCount > 1) {
+                    glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset, drawCount, 0);
+                } else {
+                    glDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset);
+                }
             } else {
-                glMultiDrawArraysIndirect(GLUtil::glPrimitiveTypeTable[to_uint(
-                                              command.primitiveType())],
-                                          offset, command.drawCount(), 0);
+                if (drawCount > 1) {
+                    glMultiDrawArraysIndirect(mode, offset, drawCount, 0);
+                } else {
+                    glDrawArraysIndirect(mode, offset);
+                }
             }
             // Count the draw call
             GFX_DEVICE.registerDrawCall();
@@ -236,11 +242,17 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
         if (command.renderWireframe()) {
              if (_indexBuffer > 0) {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-                glMultiDrawElementsIndirect(GL_LINE_LOOP, GL_UNSIGNED_INT,
-                                            offset, command.drawCount(), 0);
+                if (drawCount > 1) {
+                    glMultiDrawElementsIndirect(GL_LINE_LOOP, GL_UNSIGNED_INT, offset, drawCount, 0);
+                } else {
+                    glDrawElementsIndirect(GL_LINE_LOOP, GL_UNSIGNED_INT, offset);
+                }
             } else {
-                glMultiDrawArraysIndirect(GL_LINE_LOOP, offset,
-                                          command.drawCount(), 0);
+                 if (drawCount > 1) {
+                     glMultiDrawArraysIndirect(GL_LINE_LOOP, offset, drawCount, 0);
+                 } else {
+                     glDrawArraysIndirect(GL_LINE_LOOP, offset);
+                 }
             }
             // Count the draw call
             GFX_DEVICE.registerDrawCall();

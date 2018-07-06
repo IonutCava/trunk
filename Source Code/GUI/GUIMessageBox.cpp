@@ -8,7 +8,8 @@ GUIMessageBox::GUIMessageBox(const stringImpl& id, const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre,
                              CEGUI::Window* parent)
-    : GUIElement(parent, GUIType::GUI_MESSAGE_BOX, offsetFromCentre) {
+    : GUIElement(parent, GUIType::GUI_MESSAGE_BOX, offsetFromCentre)
+{
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience
     // to reduce typing
     CEGUI::WindowManager* pWindowManager =
@@ -30,7 +31,14 @@ GUIMessageBox::GUIMessageBox(const stringImpl& id, const stringImpl& title,
     setVisible(false);
 }
 
-GUIMessageBox::~GUIMessageBox() { _parent->removeChild(_msgBoxWindow); }
+GUIMessageBox::~GUIMessageBox()
+{
+    _parent->removeChild(_msgBoxWindow);
+}
+
+void GUIMessageBox::draw() const {
+    // Nothing. CEGUI should handle this
+}
 
 bool GUIMessageBox::onConfirm(const CEGUI::EventArgs& /*e*/) {
     setActive(false);
