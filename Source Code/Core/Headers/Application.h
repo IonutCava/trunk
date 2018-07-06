@@ -50,7 +50,7 @@ struct SizeChangeParams {
     U16 width = 0u;
     U16 height = 0u;
     /// Is it a window size change or a rendering resolution change?
-    bool window = false;
+    bool isWindowResize = false;
     /// Is the window that fired the event fullscreen?
     bool isFullScreen = false;
 };

@@ -684,7 +684,7 @@ void Editor::OnFocus(bool bHasFocus) {
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
-    
+    ACKNOWLEDGE_UNUSED(params);
 }
 
 void Editor::OnSize(int iWidth, int iHeight) {

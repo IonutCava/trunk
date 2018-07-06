@@ -410,7 +410,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
                 SizeChangeParams params;
                 params.width = width;
                 params.height = height;
-                params.window = true;
+                params.isWindowResize = true;
                 params.isFullScreen = getWindow(winGUID).fullscreen();
                 // Only if rendering window
                 _context->app().onSizeChange(params);

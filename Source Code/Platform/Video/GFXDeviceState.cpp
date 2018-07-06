@@ -379,7 +379,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     SizeChangeParams params;
     params.width = renderResolution.width;
     params.height = renderResolution.height;
-    params.window = false;
+    params.isWindowResize = false;
     context().app().onSizeChange(params);
 
     // Everything is ready from the rendering point of view
@@ -466,7 +466,7 @@ void GFXDevice::beginFrame() {
         WindowManager& winManager = _parent.platformContext().app().windowManager();
 
         SizeChangeParams params;
-        params.window = false;
+        params.isWindowResize = false;
         params.isFullScreen = winManager.getActiveWindow().fullscreen();
         params.width = _resolutionChangeQueued.first.width;
         params.height = _resolutionChangeQueued.first.height;

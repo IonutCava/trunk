@@ -208,6 +208,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
 
     getCEGUIContext().setRootWindow(_rootSheet);
     getCEGUIContext().setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
+  
     _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
     assert(_console);
     
@@ -259,7 +260,7 @@ void GUI::destroy() {
 }
 
 void GUI::onSizeChange(const SizeChangeParams& params) {
-    if ((!params.window || params.isFullScreen) && parent().platformContext().config().gui.cegui.enabled) {
+    if ((params.isWindowResize || params.isFullScreen) && parent().platformContext().config().gui.cegui.enabled) {
         CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(params.width, params.height));
     }
 

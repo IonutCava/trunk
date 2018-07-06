@@ -399,7 +399,7 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
     U16 w = params.width;
     U16 h = params.height;
 
-    if (!params.window) {
+    if (!params.isWindowResize) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
         if (w < 1 || h < 1 || _renderingResolution == vec2<U16>(w, h)) {

@@ -312,7 +312,7 @@ void SceneManager::initPostLoadState() {
 }
 
 void SceneManager::onSizeChange(const SizeChangeParams& params) {
-    if (params.window) {
+    if (params.isWindowResize) {
         return;
     }
     U16 w = params.width;

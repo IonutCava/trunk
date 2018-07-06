@@ -40,10 +40,8 @@ MouseState MouseEvent::state(bool warped, bool viewportRelative) const {
     
     if (viewportRelative) {
         const Rect<I32>& rect = _parentWindow.renderingViewport();
-        if (rect.contains(stateIn.X.abs, stateIn.Y.abs)) {
-            adjust(ret.X, 0, _event.state.width, rect.x, rect.z);
-            adjust(ret.Y, 0, _event.state.height, rect.y, rect.w);
-        }
+        adjust(ret.X, 0, _event.state.width, rect.x, rect.z);
+        adjust(ret.Y, 0, _event.state.height, rect.y, rect.w);
     }
 
     return ret;
