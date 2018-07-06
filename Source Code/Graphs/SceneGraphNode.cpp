@@ -407,6 +407,20 @@ void SceneGraphNode::setActive(const bool state) {
     }
 }
 
+void SceneGraphNode::getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList) {
+    // Compute from leaf to root to ensure proper calculations
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).getOrderedNodeList(nodeList);
+    }
+
+    nodeList.push_back(this);
+}
+
+void SceneGraphNode::sgnUpdate(const U64 deltaTime, SceneState& sceneState) {
+    Attorney::SceneNodeSceneGraph::sgnUpdate(*_node, deltaTime, *this, sceneState);
+}
+
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     ResourceState nodeState = _node->getState();
@@ -415,12 +429,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     // Node is not fully loaded. Skip.
     if (nodeState == ResourceState::RES_LOADING) {
         return;
-    }
-
-    // Compute from leaf to root to ensure proper calculations
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        getChild(i, childCount).sceneUpdate(deltaTime, sceneState);
     }
 
     // update local time
@@ -436,6 +444,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     if (!_relationshipCache.isValid()) {
         _relationshipCache.rebuild();
     }
+
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
 }
 

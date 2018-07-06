@@ -142,7 +142,23 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
-    _root->sceneUpdate(deltaTime, sceneState);
+    // Gather all nodes in order
+    _orderedNodeList.resize(0);
+    _root->getOrderedNodeList(_orderedNodeList);
+    for (SceneGraphNode* node : _orderedNodeList) {
+        node->sceneUpdate(deltaTime, sceneState);
+        node->sgnUpdate(deltaTime, sceneState);
+    }
+
+    // Split updates into 2 passes to allow for better parallelism:
+    // - Start threaded tasks in the sceneUpdate pass
+    // - Wait on the results in the sgnUpdate pass
+    // - Allows, for example, to recompute bounding boxes in parallel
+    // First pass
+    //_root->sceneUpdate(deltaTime, sceneState);
+    // Second pass
+    //_root->sgnUpdate(deltaTime, sceneState);
+
     if (_loadComplete) {
         CreateTask(
             [this, deltaTime](const std::atomic_bool& stopRequested) mutable

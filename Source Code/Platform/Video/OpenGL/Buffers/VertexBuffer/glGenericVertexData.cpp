@@ -23,7 +23,6 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
     _vertexArray[to_const_uint(GVDUsage::FDBCK)] = 0;
     _feedbackQueries.fill(nullptr);
     _resultAvailable.fill(nullptr);
-    _invalidateAttributes = true;
 }
 
 glGenericVertexData::~glGenericVertexData() {
@@ -248,8 +247,6 @@ void glGenericVertexData::setBuffer(U32 buffer,
         GL_API::setActiveTransformFeedback(_transformFeedback);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, feedbackBindPoint(buffer), tempBuffer->bufferHandle());
     }
-
-    _invalidateAttributes = true;
 }
 
 /// Update the elementCount worth of data contained in the buffer starting from
@@ -264,12 +261,6 @@ void glGenericVertexData::updateBuffer(U32 buffer,
 void glGenericVertexData::setBufferBindOffset(U32 buffer, U32 elementCountOffset) {
     _bufferObjects[buffer]->setBindOffset(elementCountOffset);
 }
-
-void glGenericVertexData::incQueue() { 
-    RingBuffer::incQueue();
-    _invalidateAttributes = queueLength() > 1;
-}
-
 
 void glGenericVertexData::setBufferBindings(GLuint activeVAO) {
     if (!_bufferObjects.empty()) {
@@ -293,13 +284,12 @@ void glGenericVertexData::setAttributes(GLuint activeVAO, bool feedbackPass) {
     for (attributeMap::value_type& it : map) {
         setAttributeInternal(activeVAO, it.second);
     }
-    _invalidateAttributes = false;
 }
 
 /// Update internal attribute data
 void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescriptor& descriptor) {
     // Early out if the attribute didn't change
-    if (!descriptor.dirty() && !_invalidateAttributes) {
+    if (!descriptor.dirty()) {
         return;
     }
 

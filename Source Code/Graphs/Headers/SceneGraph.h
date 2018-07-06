@@ -111,6 +111,7 @@ class SceneGraph : private NonCopyable,
     std::atomic_bool _octreeUpdating;
     vectorImpl<SceneGraphNode_wptr> _allNodes;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
+    vectorImpl<SceneGraphNode*> _orderedNodeList;
 };
 
 namespace Attorney {

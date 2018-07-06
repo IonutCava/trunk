@@ -23,12 +23,9 @@ void glLockManager::Wait(bool blockClient) {
     }
 }
  
-void glLockManager::Lock(bool flushOnCall) {
+void glLockManager::Lock() {
     assert(_defaultSync == nullptr);
     _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
-    if (flushOnCall) {
-        glFlush();
-    }
 }
 
 void glLockManager::wait(GLsync* syncObj, bool blockClient) {

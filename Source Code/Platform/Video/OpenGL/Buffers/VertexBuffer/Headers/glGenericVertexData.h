@@ -123,8 +123,6 @@ class glGenericVertexData : public GenericVertexData {
 
     static bool setIfDifferentBindRange(GLuint activeVAO, GLuint bindIndex, const BufferBindConfig& bindConfig);
 
-    void incQueue() override;
-
    private:
     GLuint _indexBuffer;
     GLuint _indexBufferSize;
@@ -138,7 +136,6 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _currentReadQuery;
     vectorImpl<glGenericBuffer*> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
-    bool _invalidateAttributes;
 };
 
 };  // namespace Divide

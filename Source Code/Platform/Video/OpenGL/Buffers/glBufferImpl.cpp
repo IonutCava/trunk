@@ -147,7 +147,7 @@ void glPersistentBuffer::updateData(size_t offset, size_t range, const bufferPtr
 bool glPersistentBuffer::bindRange(GLuint bindIndex, size_t offset, size_t range)
 {
     if (glBufferImpl::bindRange(bindIndex, offset, range)) {
-        _lockManager->LockRange(offset, range, false);
+        _lockManager->LockRange(offset, range);
         return true;
     }
 
@@ -155,7 +155,7 @@ bool glPersistentBuffer::bindRange(GLuint bindIndex, size_t offset, size_t range
 }
 
 void glPersistentBuffer::lockRange(size_t offset, size_t range) {
-    _lockManager->LockRange(offset, range, true);
+    _lockManager->LockRange(offset, range);
 }
 
 }; //namespace Divide

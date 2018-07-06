@@ -44,8 +44,7 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::LockRange(size_t lockBeginBytes,
-                                    size_t lockLength,
-                                    bool flushOnCall) {
+                                    size_t lockLength) {
     BufferRange testRange = { lockBeginBytes, lockLength };
     {
         WriteLock w_lock(_lock);
@@ -59,10 +58,6 @@ void glBufferLockManager::LockRange(size_t lockBeginBytes,
         _bufferLocks.push_back({testRange,
                                 glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT)
                                });
-    }
-
-    if (flushOnCall) {
-        glFlush();
     }
 }
 

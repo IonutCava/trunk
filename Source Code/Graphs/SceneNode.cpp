@@ -47,8 +47,12 @@ SceneNode::~SceneNode()
 
 void SceneNode::sceneUpdate(const U64 deltaTime,
                             SceneGraphNode& sgn,
-                            SceneState& sceneState)
-{
+                            SceneState& sceneState) {
+}
+
+void SceneNode::sgnUpdate(const U64 deltaTime,
+                          SceneGraphNode& sgn,
+                          SceneState& sceneState) {
     vectorImpl<SceneNode::SGNParentData>::iterator it;
     it = getSGNData(sgn.getGUID());
     assert(it != std::cend(_sgnParents));

@@ -135,7 +135,9 @@ class NOINITVTABLE SceneNode : public Resource {
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
-
+    /// Called as a second pass after sceneUpdate
+    virtual void sgnUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+                           SceneState& sceneState);
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
     virtual void updateBoundsInternal(SceneGraphNode& sgn);
@@ -189,6 +191,11 @@ class SceneNodeSceneGraph {
         node.sceneUpdate(deltaTime, sgn, sceneState);
     }
 
+    static void sgnUpdate(SceneNode& node, const U64 deltaTime,
+                          SceneGraphNode& sgn, SceneState& sceneState) {
+        node.sgnUpdate(deltaTime, sgn, sceneState);
+    }
+    
     static void registerSGNParent(SceneNode& node, I64 sgnGUID) {
         // prevent double add
         vectorImpl<SceneNode::SGNParentData>::const_iterator it;

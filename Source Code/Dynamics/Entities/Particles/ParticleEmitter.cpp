@@ -18,11 +18,11 @@ namespace Divide {
 namespace {
     // 3 should always be enough for round-robin GPU updates to avoid stalls:
     // 1 in ram, 1 in driver and 1 in VRAM
-    static const U32 g_particleBufferSizeFactor = 1;
+    static const U32 g_particleBufferSizeFactor = 3;
     static const U32 g_particleGeometryBuffer = 0;
     static const U32 g_particlePositionBuffer = g_particleGeometryBuffer + 1;
     static const U32 g_particleColourBuffer = g_particlePositionBuffer* + 2;
-    static const bool g_usePersistentlyMappedBuffers = false;
+    static const bool g_usePersistentlyMappedBuffers = true;
 
     static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
@@ -207,6 +207,7 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
                                       RenderStage renderStage,
                                       const SceneRenderState& sceneRenderState,
                                       vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+
     const Camera& camera = sceneRenderState.getCameraConst();
 
     vec3<F32> up(camera.getUpDir());
@@ -254,71 +255,68 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     _updating = false;
     /*if (_lastUpdateTimer < g_updateInterval) {
         _lastUpdateTimer += deltaTime;
-    } else */{
+    } else */
+    {
         _lastUpdateTimer = 0;
 
         if (_enabled) {
         
             WAIT_FOR_CONDITION_TIMEOUT(!_updating,
                                        Time::MicrosecondsToMilliseconds<D64>(Config::SKIP_TICKS));
-            // timeout expired
-            if (_updating) {
-                return;
+            // timeout not expired
+            if (!_updating) {
+
+                _updating = true;
+
+                U32 aliveCount = getAliveParticleCount();
+                renderState().setDrawState(aliveCount > 0);
+
+                PhysicsComponent* transform = sgn.get<PhysicsComponent>();
+                const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
+
+                const vec3<F32>& pos = transform->getPosition();
+                const Quaternion<F32>& rot = transform->getOrientation();
+
+                F32 averageEmitRate = 0;
+                for (std::shared_ptr<ParticleSource>& source : _sources) {
+                    source->updateTransform(pos, rot);
+                    source->emit(g_updateInterval, _particles);
+                    averageEmitRate += source->emitRate();
+                }
+
+                averageEmitRate /= _sources.size();
+
+                aliveCount = getAliveParticleCount();
+
+                for (U32 i = 0; i < aliveCount; ++i) {
+                    _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
+                    _particles->_position[i].w = _particles->_misc[i].z;
+                    _particles->_acceleration[i].set(0.0f);
+                }
+
+                ParticleData& data = *_particles;
+                for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
+                    up->update(g_updateInterval, data);
+                }
+
+                CreateTask(
+                    [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
+                        // invalidateCache means that the existing particle data is no longer partially sorted
+                        _particles->sort(true);
+
+                        _tempBB.reset();
+                        for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
+                            _tempBB.add(_particles->_renderingPositions[i]);
+                        }
+                        setFlag(UpdateFlag::BOUNDS_CHANGED);
+                        _updating = false;
+                    },
+                    [this, aliveCount](){
+                        _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
+                        _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
+                        _particleGPUBuffer->incQueue();
+                    })._task->startTask(Task::TaskPriority::HIGH, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
             }
-
-            _updating = true;
-
-            U32 aliveCount = getAliveParticleCount();
-            bool validCount = aliveCount > 0;
-            renderState().setDrawState(validCount);
-
-            PhysicsComponent* transform = sgn.get<PhysicsComponent>();
-            const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
-
-            const vec3<F32>& pos = transform->getPosition();
-            const Quaternion<F32>& rot = transform->getOrientation();
-
-            F32 averageEmitRate = 0;
-            for (std::shared_ptr<ParticleSource>& source : _sources) {
-                source->updateTransform(pos, rot);
-                source->emit(g_updateInterval, _particles);
-                averageEmitRate += source->emitRate();
-            }
-
-            averageEmitRate /= _sources.size();
-
-            U32 count = _particles->totalCount();
-
-            for (U32 i = 0; i < count; ++i) {
-                _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
-                _particles->_position[i].w = _particles->_misc[i].z;
-                _particles->_acceleration[i].set(0.0f);
-            }
-
-            ParticleData& data = *_particles;
-            for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
-                up->update(g_updateInterval, data);
-            }
-
-            // const vec3<F32>& origin = transform->getPosition();
-            // const Quaternion<F32>& orientation = transform->getOrientation();
-            aliveCount = to_uint(_particles->_renderingPositions.size());
-            //CreateTask(
-              //  [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
-                    // invalidateCache means that the existing particle data is no longer partially sorted
-                    _particles->sort(true);
-
-                    _boundingBox.reset();
-
-                    for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
-                        _boundingBox.add(_particles->_position[i]);
-                    }
-
-                    _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
-                    _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
-                    _particleGPUBuffer->incQueue();
-                    _updating = false;
-                //})._task->startTask(Task::TaskPriority::DONT_CARE, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
         }
     }
 
@@ -335,21 +333,9 @@ U32 ParticleEmitter::getAliveParticleCount() const {
 void ParticleEmitter::updateBoundsInternal(SceneGraphNode& sgn) {
     U32 aliveCount = getAliveParticleCount();
     if (aliveCount > 2) {
-
-        F32 averageEmitRate = 0;
-        for (std::shared_ptr<ParticleSource>& source : _sources) {
-            averageEmitRate += source->emitRate();
-        }
-        averageEmitRate /= _sources.size();
-
-        _boundingBox.reset();
-
-        U32 step = std::max(aliveCount, to_uint(averageEmitRate) / 4);
-        for (U32 i = 0; i < aliveCount; i += step) {
-            _boundingBox.add(_particles->_position[i]);
-        }
+        _boundingBox.set(_tempBB);
     } else {
-        _boundingBox.set(VECTOR3_ZERO, VECTOR3_ZERO);
+        _boundingBox.set(-VECTOR3_UNIT, VECTOR3_UNIT);
     }
 
     SceneNode::updateBoundsInternal(sgn);

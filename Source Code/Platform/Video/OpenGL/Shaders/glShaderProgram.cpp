@@ -263,7 +263,7 @@ void glShaderProgram::threadedLoad() {
     _shaderProgramID = _shaderProgramIDTemp;
     // Pass the rest of the loading steps to the parent class
     if (_lockManager) {
-        _lockManager->Lock(_asyncLoad);
+        _lockManager->Lock();
     }
     ShaderProgram::load();
 }

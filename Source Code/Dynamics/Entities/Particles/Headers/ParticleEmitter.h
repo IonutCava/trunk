@@ -110,6 +110,7 @@ class ParticleEmitter : public SceneNode {
     ShaderProgram_ptr _particleShader;
     ShaderProgram_ptr _particleDepthShader;
     Texture_ptr _particleTexture;
+    BoundingBox _tempBB;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(ParticleEmitter);

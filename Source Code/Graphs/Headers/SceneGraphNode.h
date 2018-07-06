@@ -290,6 +290,10 @@ class SceneGraphNode : public GUIDWrapper,
         _updateFlags[to_uint(flag)] = true;
     }
 
+    void sgnUpdate(const U64 deltaTime, SceneState& sceneState);
+
+    void getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList);
+
    protected:
     friend class Octree;
     void onCollision(SceneGraphNode_cwptr collider);
