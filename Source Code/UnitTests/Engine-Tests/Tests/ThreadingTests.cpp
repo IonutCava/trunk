@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Defines.h"
+#include "Core/Headers/Console.h"
 #include "Core/Headers/TaskPool.h"
 
 #include <atomic>
@@ -13,6 +14,8 @@ namespace {
 
 TEST(TaskPoolContructionTest)
 {
+    Console::toggleErrorStream(false);
+
     for (U8 i = 0; i < to_U8(TaskPool::TaskPoolType::COUNT); ++i) {
         TaskPool test(g_TestTaskPoolSize);
         bool init = test.init(0, static_cast<TaskPool::TaskPoolType>(i));
@@ -27,6 +30,8 @@ TEST(TaskPoolContructionTest)
 
 TEST(ParallelForTest)
 {
+    Console::toggleErrorStream(false);
+
     for (U8 i = 0; i < to_U8(TaskPool::TaskPoolType::COUNT); ++i) {
         TaskPool test(g_TestTaskPoolSize * 4);
         bool init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));

@@ -588,7 +588,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread so how many threads do we allocate for tasks?
     // That's up to the programmer to decide for each app.
-    if (!_taskPool.init(HARDWARE_THREAD_COUNT(), TaskPool::TaskPoolType::PRIORITY_QUEUE, "DIVIDE_WORKER_THREAD_")) {
+
+    STUBBED("ToDo: Boost prio pool stopped working with Boost libraries 1.65. Falling back to FIFO for now. Fix This! - Ionut");
+    if (!_taskPool.init(HARDWARE_THREAD_COUNT(), TaskPool::TaskPoolType::FIFO_QUEUE/*PRIORITY_QUEUE*/, "DIVIDE_WORKER_THREAD_")) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 

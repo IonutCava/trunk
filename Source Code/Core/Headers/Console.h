@@ -40,8 +40,15 @@ constexpr int MAX_CONSOLE_ENTRIES = 128;
 class Console : private NonCopyable {
     typedef std::function<void(const char*, bool)> ConsolePrintCallback;
 
+   public:
     struct OutputEntry {
         OutputEntry() : _error(false)
+        {
+        }
+
+        OutputEntry(const stringImplBest& text, bool error)
+            : _text(text),
+             _error(error)
         {
         }
 
@@ -95,8 +102,12 @@ class Console : private NonCopyable {
 
     static bool threadIDEnabled() { return _threadID; }
     static void togglethreadID(const bool state) { _threadID = state; }
+
+    static bool enabled() { return _enabled; }
     static void toggle(const bool state) { _enabled = state; }
 
+    static bool errorStreamEnabled() { return _errorStreamEnabled; }
+    static void toggleErrorStream(const bool state) { _errorStreamEnabled = state; }
     static void bindConsoleOutput(const ConsolePrintCallback& guiConsoleCallback) {
         _guiConsoleCallback = guiConsoleCallback;
     }
@@ -109,17 +120,14 @@ class Console : private NonCopyable {
     static void outThread();
 
    private:
-    //static std::condition_variable _entryEnqueCV;
-    //static std::mutex _entryEnqueMutex;
-    //static std::atomic_bool _entryAdded;
-
     static ConsolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
     static bool _threadID;
     static bool _enabled;
+    static bool _errorStreamEnabled;
+
     static std::atomic_bool _running;
     static std::thread _printThread;
-    static moodycamel::ConcurrentQueue<OutputEntry> _outputBuffer;
 };
 
 };  // namespace Divide

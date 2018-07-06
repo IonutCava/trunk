@@ -13,17 +13,36 @@ namespace Divide {
 bool Console::_timestamps = false;
 bool Console::_threadID = false;
 bool Console::_enabled = true;
+bool Console::_errorStreamEnabled = true;
 
 std::thread Console::_printThread;
-//std::condition_variable Console::_entryEnqueCV;
-//std::mutex Console::_entryEnqueMutex;
-//std::atomic_bool Console::_entryAdded;
 std::atomic_bool Console::_running = false;
 Console::ConsolePrintCallback Console::_guiConsoleCallback;
 
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
-moodycamel::ConcurrentQueue<Console::OutputEntry> Console::_outputBuffer(MAX_CONSOLE_ENTRIES);
+namespace {
+    std::mutex& condMutex() {
+        static std::mutex condMutex;
+        return condMutex;
+    }
+
+    std::condition_variable& entryEnqueCV() {
+        static std::condition_variable entryEnqueCV;
+        return entryEnqueCV;
+    }
+
+    std::atomic_bool& entryAdded() {
+        static std::atomic_bool entryAdded;
+        return entryAdded;
+    }
+
+    moodycamel::ConcurrentQueue<Console::OutputEntry>& outBuffer() {
+        static moodycamel::ConcurrentQueue<Console::OutputEntry> outputBuffer(MAX_CONSOLE_ENTRIES);
+        return outputBuffer;
+    }
+
+};
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
@@ -87,30 +106,27 @@ void Console::output(const char* text, const bool newline, const bool error) {
         stringstreamImplBest outStream;
         decorate(outStream, text, newline, error);
 
-        OutputEntry entry;
-        entry._error = error;
-        entry._text = outStream.str();
+        OutputEntry entry(outStream.str() , error);
 
-        //std::unique_lock<std::mutex> lk(_entryEnqueMutex);
-        //moodycamel::ProducerToken ptok(_outputBuffer);
-        WAIT_FOR_CONDITION_TIMEOUT(_outputBuffer.enqueue(/*ptok, */entry),
+        //moodycamel::ProducerToken ptok(outBuffer());
+        WAIT_FOR_CONDITION_TIMEOUT(outBuffer().enqueue(/*ptok, */entry),
                                    Time::SecondsToMilliseconds(1.0));
-        //_entryAdded = true;
-        //_entryEnqueCV.notify_one();
+
+        std::unique_lock<std::mutex> lk(condMutex());
+        entryAdded() = true;
+        entryEnqueCV().notify_one();
     }
 }
 
 void Console::outThread() {
-    //moodycamel::ConsumerToken ctok(_outputBuffer);
+    //moodycamel::ConsumerToken ctok(outBuffer());
     while (_running) {
-        {
-            //std::unique_lock<std::mutex> lk(_entryEnqueMutex);
-            //_entryEnqueCV.wait(lk, [] {return _entryAdded == true; });
-        }
+        std::unique_lock<std::mutex> lk(condMutex());
+        entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
 
         OutputEntry entry;
-        if (_outputBuffer.try_dequeue(/*ctok, */entry)) {
-            (entry._error ? std::cerr : std::cout) << entry._text.c_str();
+        if (outBuffer().try_dequeue(/*ctok, */entry)) {
+            ((entry._error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 
             if (_guiConsoleCallback) {
                 _guiConsoleCallback(entry._text.c_str(), entry._error);

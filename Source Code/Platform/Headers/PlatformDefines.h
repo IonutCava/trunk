@@ -34,7 +34,7 @@
 
 #include "Core/Headers/ErrorCodes.h"
 
-#if defined(_DEBUG) && !defined(IS_UNIT_TEST)
+#if defined(_DEBUG)
 
 #define STUBBED(x)                                  \
 do {                                                \

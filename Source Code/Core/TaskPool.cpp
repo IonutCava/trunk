@@ -33,12 +33,10 @@ bool TaskPool::init(U32 threadCount, TaskPoolType type, const stringImpl& worker
 
     _workerThreadCount = threadCount - 1;
 
-     STUBBED("ToDo: Boost prio pool stopped working with Boost libraries 1.65. Falling back to FIFO for now. Fix This! - Ionut");
-
     switch (type) {
         case TaskPoolType::PRIORITY_QUEUE:
-            //_mainTaskPool = std::make_unique<ThreadPoolBoostPrio>(_workerThreadCount);
-            //break;
+            _mainTaskPool = std::make_unique<ThreadPoolBoostPrio>(_workerThreadCount);
+            break;
         case TaskPoolType::FIFO_QUEUE:
             _mainTaskPool = std::make_unique<ThreadPoolBoostFifo>(_workerThreadCount);
             break;
