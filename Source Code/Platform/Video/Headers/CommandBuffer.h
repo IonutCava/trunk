@@ -32,199 +32,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _COMMAND_BUFFER_H_
 #define _COMMAND_BUFFER_H_
 
-#include "GenericDrawCommand.h"
-#include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Commands.h"
 
 namespace Divide {
 
 namespace GFX {
-
-enum class CommandType : U8 {
-    BEGIN_RENDER_PASS = 0,
-    END_RENDER_PASS,
-    BEGIN_PIXEL_BUFFER,
-    END_PIXEL_BUFFER,
-    BEGIN_RENDER_SUB_PASS,
-    END_RENDER_SUB_PASS,
-    SET_VIEWPORT,
-    SET_SCISSOR,
-    BLIT_RT,
-    SET_CAMERA,
-    SET_CLIP_PLANES,
-    BIND_PIPELINE,
-    BIND_DESCRIPTOR_SETS,
-    SEND_PUSH_CONSTANTS,
-    DRAW_COMMANDS,
-    DRAW_TEXT,
-    DISPATCH_COMPUTE,
-    BEGIN_DEBUG_SCOPE,
-    END_DEBUG_SCOPE,
-    COUNT
-};
-
-struct Command {
-    explicit Command(CommandType type)
-        : _type(type)
-    {
-    }
-
-    CommandType _type = CommandType::COUNT;
-};
-
-struct BindPipelineCommand : Command {
-    BindPipelineCommand() : Command(CommandType::BIND_PIPELINE)
-    {
-    }
-
-    Pipeline _pipeline;
-};
-
-struct SendPushConstantsCommand : Command {
-    SendPushConstantsCommand() : Command(CommandType::SEND_PUSH_CONSTANTS)
-    {
-    }
-
-    PushConstants _constants;
-};
-
-struct DrawCommand : Command {
-    DrawCommand() : Command(CommandType::DRAW_COMMANDS)
-    {
-    }
-
-    vectorImpl<GenericDrawCommand> _drawCommands;
-};
-
-struct SetViewportCommand : Command {
-    SetViewportCommand() : Command(CommandType::SET_VIEWPORT)
-    {
-    }
-
-    vec4<I32> _viewport;
-};
-
-struct BeginRenderPassCommand : Command {
-    BeginRenderPassCommand() : Command(CommandType::BEGIN_RENDER_PASS)
-    {
-    }
-
-    RenderTargetID _target;
-    RTDrawDescriptor _descriptor;
-};
-
-struct EndRenderPassCommand : Command {
-    EndRenderPassCommand() : Command(CommandType::END_RENDER_PASS)
-    {
-    }
-};
-
-struct BeginPixelBufferCommand : Command {
-    BeginPixelBufferCommand() : Command(CommandType::BEGIN_PIXEL_BUFFER)
-    {
-    }
-
-    PixelBuffer* _buffer = nullptr;
-    DELEGATE_CBK<void, bufferPtr> _command;
-};
-
-struct EndPixelBufferCommand : Command {
-    EndPixelBufferCommand() : Command(CommandType::END_PIXEL_BUFFER)
-    {
-    }
-};
-
-struct BeginRenderSubPassCommand : Command {
-    BeginRenderSubPassCommand() : Command(CommandType::BEGIN_RENDER_SUB_PASS)
-    {
-    }
-
-    U16 _mipWriteLevel = 0u;
-};
-
-struct EndRenderSubPassCommand : Command {
-    EndRenderSubPassCommand() : Command(CommandType::END_RENDER_SUB_PASS)
-    {
-    }
-};
-
-struct BlitRenderTargetCommand : Command {
-    BlitRenderTargetCommand() : Command(CommandType::BLIT_RT)
-    {
-    }
-
-    bool _blitColour = true;
-    bool _blitDepth = false;
-    RenderTargetID _source;
-    RenderTargetID _destination;
-};
-
-struct SetScissorCommand : Command {
-    SetScissorCommand() : Command(CommandType::SET_SCISSOR)
-    {
-    }
-
-    vec4<I32> _rect;
-};
-
-struct SetCameraCommand : Command {
-    SetCameraCommand() : Command(CommandType::SET_CAMERA)
-    {
-    }
-
-    Camera* _camera = nullptr;
-};
-
-struct SetClipPlanesCommand : Command {
-    SetClipPlanesCommand()
-        : Command(CommandType::SET_CLIP_PLANES),
-          _clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
-    {
-    }
-
-    ClipPlaneList _clippingPlanes;
-};
-
-
-struct BindDescriptorSetsCommand : Command {
-    BindDescriptorSetsCommand() : Command(CommandType::BIND_DESCRIPTOR_SETS)
-    {
-    }
-
-    DescriptorSet _set;
-};
-
-struct BeginDebugScopeCommand : Command {
-    BeginDebugScopeCommand() : Command(CommandType::BEGIN_DEBUG_SCOPE)
-    {
-    }
-
-    stringImpl _scopeName;
-    I32 _scopeID = -1;
-};
-
-
-struct EndDebugScopeCommand : Command {
-    EndDebugScopeCommand() : Command(CommandType::END_DEBUG_SCOPE)
-    {
-    }
-};
-
-struct DrawTextCommand : Command {
-    DrawTextCommand() : Command(CommandType::DRAW_TEXT)
-    {
-    }
-
-    TextElementBatch _batch;
-};
-
-struct DispatchComputeCommand : Command {
-    DispatchComputeCommand() : Command(CommandType::DISPATCH_COMPUTE)
-    {
-    }
-
-    ComputeParams _params;
-};
 
 struct CommandEntry {
     U32 _idx = 0;
@@ -232,8 +44,16 @@ struct CommandEntry {
 };
 
 class CommandBuffer {
-   public:
+    template<size_t N>
+    friend class CommandBufferPool;
+    template<class _Ty, size_t _Size>
+    friend class std::array;
+
+   protected:
     CommandBuffer();
+
+   public:
+    ~CommandBuffer();
 
     template<typename T>
     inline void add(const T& command);
@@ -261,6 +81,8 @@ class CommandBuffer {
     void rebuildCaches();
 
     protected:
+    size_t _poolEntryIndex = std::numeric_limits<size_t>::max();
+
     vectorImpl<std::shared_ptr<Command>> _data;
 
     vectorImpl<Pipeline*> _pipelineCache;
@@ -308,6 +130,7 @@ void EndDebugScope(CommandBuffer& buffer, const EndDebugScopeCommand& cmd);
 void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd);
 void AddDrawTextCommand(CommandBuffer& buffer, const DrawTextCommand& cmd);
 void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd);
+
 }; //namespace GFX
 }; //namespace Divide
 

@@ -191,7 +191,10 @@
 ////   The following sections allow you to supply alternate definitions
 ////   of C library functions used by stb_truetype.
 
+#include "Platform/Headers/PlatformDefines.h"
+
 #ifdef STB_TRUETYPE_IMPLEMENTATION
+
    // #define your own (u)stbtt_int8/16/32 before including to override this
    #ifndef stbtt_uint8
    typedef unsigned char   stbtt_uint8;
@@ -623,10 +626,10 @@ enum { // languageID for STBTT_PLATFORM_ID_MAC
 
 #else
 
-   stbtt_uint16 ttUSHORT(const stbtt_uint8 *p) { return p[0]*256 + p[1]; }
-   stbtt_int16 ttSHORT(const stbtt_uint8 *p)   { return p[0]*256 + p[1]; }
-   stbtt_uint32 ttULONG(const stbtt_uint8 *p)  { return (p[0]<<24) + (p[1]<<16) + (p[2]<<8) + p[3]; }
-   stbtt_int32 ttLONG(const stbtt_uint8 *p)    { return (p[0]<<24) + (p[1]<<16) + (p[2]<<8) + p[3]; }
+   FORCE_INLINE stbtt_uint16 ttUSHORT(const stbtt_uint8 *p) { return p[0]*256 + p[1]; }
+   FORCE_INLINE stbtt_int16 ttSHORT(const stbtt_uint8 *p)   { return p[0]*256 + p[1]; }
+   FORCE_INLINE stbtt_uint32 ttULONG(const stbtt_uint8 *p)  { return (p[0]<<24) + (p[1]<<16) + (p[2]<<8) + p[3]; }
+   FORCE_INLINE stbtt_int32 ttLONG(const stbtt_uint8 *p)    { return (p[0]<<24) + (p[1]<<16) + (p[2]<<8) + p[3]; }
 
 #endif
 

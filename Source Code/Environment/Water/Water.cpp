@@ -138,7 +138,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params.pass = renderParams._passIndex;
     params.clippingPlanes._planes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
     params.clippingPlanes._active[to_U32(g_refractionClipID)] = true;
-    bufferInOut.add(renderParams._context.parent().renderPassManager().doCustomPass(params));
+    renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
 }
 
 /// Update water reflections
@@ -166,7 +166,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params.pass = renderParams._passIndex;
     params.clippingPlanes._planes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
     params.clippingPlanes._active[to_U32(g_reflectionClipID)] = true;
-    bufferInOut.add(renderParams._context.parent().renderPassManager().doCustomPass(params));
+    renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {

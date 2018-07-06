@@ -130,7 +130,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 #       endif
     }
 
-    virtual GFX::CommandBuffer toCommandBuffer() const = 0;
+    virtual GFX::CommandBuffer& toCommandBuffer() const = 0;
 
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,
@@ -146,6 +146,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
                    const vec4<I32>& viewport,  //<only for ortho mode
                    const bool inViewport);
    protected:
+   GFX::CommandBuffer* _cmdBuffer = nullptr;
+
     IMPrimitive(GFXDevice& context);
 #ifdef _DEBUG
     stringImpl _name;

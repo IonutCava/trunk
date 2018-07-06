@@ -21,6 +21,8 @@
 
 #define FONS_INVALID -1
 
+#include "Platform/Headers/PlatformDefines.h"
+
 enum FONSflags {
     FONS_ZERO_TOPLEFT = 1,
     FONS_ZERO_BOTTOMLEFT = 2,
@@ -140,6 +142,7 @@ static void fons__tmpfree(void* ptr, void* up);
 #    define FONS_MAX_STATES 20
 #endif
 
+FORCE_INLINE
 static unsigned int fons__hashint(unsigned int a)
 {
     a += ~(a<<15);

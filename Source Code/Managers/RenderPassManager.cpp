@@ -100,19 +100,17 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
     return getPassForStage(renderStage)->getBufferData(bufferIndex);
 }
 
-GFX::CommandBuffer RenderPassManager::prePass(const PassParams& params, const RenderTarget& target) {
+void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     static const vectorImpl<RenderBinType> depthExclusionList
     {
         RenderBinType::RBT_DECAL,
         RenderBinType::RBT_TRANSLUCENT
     };
 
-    GFX::CommandBuffer buffer;
-
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 0;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage));
-    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
+    GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
 
     // PrePass requires a depth buffer
     bool doPrePass = params.doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
@@ -133,7 +131,7 @@ GFX::CommandBuffer RenderPassManager::prePass(const PassParams& params, const Re
                 GFX::BeginRenderPassCommand beginRenderPassCommand;
                 beginRenderPassCommand._target = params.target;
                 beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
-                GFX::BeginRenderPass(buffer, beginRenderPassCommand);
+                GFX::BeginRenderPass(bufferInOut, beginRenderPassCommand);
             }
 
             for (U32 i = 0; i < to_U32(RenderBinType::COUNT); ++i) {
@@ -142,25 +140,23 @@ GFX::CommandBuffer RenderPassManager::prePass(const PassParams& params, const Re
                     RenderBinType::_from_integral(i)) == std::cend(depthExclusionList))
                 {
                     if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
-                        _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), buffer);
+                        _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), bufferInOut);
                     }
                 }
             }
 
-            Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, buffer);
+            Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, bufferInOut);
 
             if (params.bindTargets) {
                 GFX::EndRenderPassCommand endRenderPassCommand;
-                GFX::EndRenderPass(buffer, endRenderPassCommand);
+                GFX::EndRenderPass(bufferInOut, endRenderPassCommand);
             }
         }
         
     }
-
-    return buffer;
 }
 
-GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderTarget& target) {
+void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     static const vectorImpl<RenderBinType> shadowExclusionList
     {
         RenderBinType::RBT_DECAL,
@@ -169,12 +165,10 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
     };
     constexpr U32 binCount = to_U32(RenderBinType::COUNT);
 
-    GFX::CommandBuffer buffer;
-
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage));
-    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
+    GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
 
     SceneManager& sceneManager = parent().sceneManager();
 
@@ -187,7 +181,7 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
     if (params.target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
         if (params.stage != RenderStage::SHADOW) {
-            Attorney::SceneManagerRenderPass::preRender(sceneManager, *params.camera, target, buffer);
+            Attorney::SceneManagerRenderPass::preRender(sceneManager, *params.camera, target, bufferInOut);
             if (params.doPrePass) {
                 drawToDepth = Config::DEBUG_HIZ_CULLING;
             }
@@ -207,7 +201,7 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
                 bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
             }
 
-            GFX::BindDescriptorSets(buffer, bindDescriptorSets);
+            GFX::BindDescriptorSets(bufferInOut, bindDescriptorSets);
         }
 
         RTDrawDescriptor& drawPolicy = 
@@ -221,7 +215,7 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
             GFX::BeginRenderPassCommand beginRenderPassCommand;
             beginRenderPassCommand._target = params.target;
             beginRenderPassCommand._descriptor = drawPolicy;
-            GFX::BeginRenderPass(buffer, beginRenderPassCommand);
+            GFX::BeginRenderPass(bufferInOut, beginRenderPassCommand);
         }
 
         if (params.stage == RenderStage::SHADOW) {
@@ -231,38 +225,36 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
                                RenderBinType::_from_integral(i)) == std::cend(shadowExclusionList))
                 {
                     if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
-                        _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), buffer);
+                        _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), bufferInOut);
                     }
                 }
             }
         } else {
             for (U32 i = 0; i < binCount; ++i) {
                 if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
-                    _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), buffer);
+                    _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), bufferInOut);
                 }
             }
         }
 
-        Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, buffer);
+        Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, bufferInOut);
 
         if (params.stage == RenderStage::DISPLAY) {
             /// These should be OIT rendered as well since things like debug nav meshes have translucency
-            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, *params.camera, buffer);
+            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, *params.camera, bufferInOut);
         }
 
         if (params.bindTargets) {
             GFX::EndRenderPassCommand endRenderPassCommand;
-            GFX::EndRenderPass(buffer, endRenderPassCommand);
+            GFX::EndRenderPass(bufferInOut, endRenderPassCommand);
         }
     }
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EndDebugScope(buffer, endDebugScopeCmd);
-
-    return buffer;
+    GFX::EndDebugScope(bufferInOut, endDebugScopeCmd);
 }
 
-GFX::CommandBuffer RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target) {
+void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     static bool init = false;
     static GFX::DrawCommand drawCmd;
     static RTDrawDescriptor noClearPolicy;
@@ -270,7 +262,6 @@ GFX::CommandBuffer RenderPassManager::woitPass(const PassParams& params, const R
     static GFX::BeginRenderPassCommand beginRenderPassOitCmd, beginRenderPassCompCmd;
     static GFX::EndRenderPassCommand endRenderPassOitCmd, endRenderPassCompCmd;
 
-    GFX::CommandBuffer buffer;
     // Weighted Blended Order Independent Transparency
     if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT) > 0) {
         if (!init) {
@@ -312,54 +303,48 @@ GFX::CommandBuffer RenderPassManager::woitPass(const PassParams& params, const R
         }
 
         // Step1: Draw translucent items into the accumulation and revealage buffers
-        GFX::BeginRenderPass(buffer, beginRenderPassOitCmd);
-        _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, buffer);
-        GFX::EndRenderPass(buffer, endRenderPassOitCmd);
+        GFX::BeginRenderPass(bufferInOut, beginRenderPassOitCmd);
+        _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, bufferInOut);
+        GFX::EndRenderPass(bufferInOut, endRenderPassOitCmd);
 
         // Step2: Composition pass
-        GFX::BeginRenderPass(buffer, beginRenderPassCompCmd);
-        GFX::BindPipeline(buffer, bindPipelineCmd);
+        GFX::BeginRenderPass(bufferInOut, beginRenderPassCompCmd);
+        GFX::BindPipeline(bufferInOut, bindPipelineCmd);
         TextureData accum = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
         TextureData revealage = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.addTexture(accum, 0u);
         descriptorSetCmd._set._textureData.addTexture(revealage, 1u);
-        GFX::BindDescriptorSets(buffer, descriptorSetCmd);
-        GFX::AddDrawCommands(buffer, drawCmd);
-        GFX::EndRenderPass(buffer, endRenderPassCompCmd);
+        GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+        GFX::AddDrawCommands(bufferInOut, drawCmd);
+        GFX::EndRenderPass(bufferInOut, endRenderPassCompCmd);
     }
-
-    return buffer;
 }
 
-GFX::CommandBuffer RenderPassManager::doCustomPass(PassParams& params) {
-    GFX::CommandBuffer commandBuffer;
-
+void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = params.camera;
-    GFX::SetCamera(commandBuffer, setCameraCommand);
+    GFX::SetCamera(bufferInOut, setCameraCommand);
 
     GFX::SetClipPlanesCommand setClipPlanesCommand;
     setClipPlanesCommand._clippingPlanes = params.clippingPlanes;
-    GFX::SetClipPlanes(commandBuffer, setClipPlanesCommand);
+    GFX::SetClipPlanes(bufferInOut, setClipPlanesCommand);
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params.target);
-    commandBuffer.add(prePass(params, target));
+    prePass(params, target, bufferInOut);
 
     if (params.occlusionCull) {
-        _context.constructHIZ(params.target, commandBuffer);
-        _context.occlusionCull(getBufferData(params.stage, params.pass), target.getAttachment(RTAttachmentType::Depth, 0).texture(), commandBuffer);
+        _context.constructHIZ(params.target, bufferInOut);
+        _context.occlusionCull(getBufferData(params.stage, params.pass), target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
     }
 
-    commandBuffer.add(mainPass(params, target));
+    mainPass(params, target, bufferInOut);
     if (false) {
-        commandBuffer.add(woitPass(params, target));
+        woitPass(params, target, bufferInOut);
     }
     
-
-    return commandBuffer;
 }
 
 };

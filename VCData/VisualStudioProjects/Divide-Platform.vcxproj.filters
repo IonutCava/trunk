@@ -380,6 +380,12 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ClipPlanes.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\CommandBufferPool.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\Commands.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -582,9 +588,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTDrawDescriptor.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\GenericCommandPool.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\GenericBuffer\GenericVertexData.cpp">
       <Filter>Video\Buffers\VertexBuffer\GenericBuffer</Filter>
     </ClCompile>
@@ -669,6 +672,12 @@
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\CommandBuffer.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\GenericCommandPool.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\RenderPackageQueue.cpp">
       <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1162,6 +1171,9 @@
       <Filter>Video\Headers</Filter>
     </None>
     <None Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.inl">
+      <Filter>Video\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\Platform\Video\Headers\CommandBufferPool.inl">
       <Filter>Video\Headers</Filter>
     </None>
   </ItemGroup>

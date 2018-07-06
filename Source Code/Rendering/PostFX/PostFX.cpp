@@ -141,7 +141,10 @@ void PostFX::updateResolution(U16 width, U16 height) {
 }
 
 void PostFX::apply() {
-    GFX::CommandBuffer buffer;
+
+    ScopedCommandBuffer sBuffer = _gfx->allocateScopedCommandBuffer();
+
+    GFX::CommandBuffer& buffer = sBuffer();
 
     if (_filtersDirty) {
         _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];

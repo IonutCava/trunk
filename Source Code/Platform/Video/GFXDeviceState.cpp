@@ -101,6 +101,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
+    _textCmdBuffer = &allocateCommandBuffer();
+    _flushDisplayBuffer = &allocateCommandBuffer();
+
     // Create general purpose render state blocks
     RenderStateBlock::init();
     RenderStateBlock defaultState;
@@ -359,9 +362,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     setBaseViewport(vec4<I32>(0, 0, to_I32(renderResolution.width), to_I32(renderResolution.height)));
 
 
-    for (RenderPackageQueue& queue : _renderQueues) {
-        queue.reserve(Config::MAX_VISIBLE_NODES);
-    }
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }
@@ -378,6 +378,9 @@ void GFXDevice::closeRenderingAPI() {
     // Delete the renderer implementation
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
     RenderStateBlock::clear();
+
+    deallocateCommandBuffer(*_flushDisplayBuffer);
+    deallocateCommandBuffer(*_textCmdBuffer);
 
     EnvironmentProbe::onShutdown(*this);
     MemoryManager::DELETE(_rtPool);

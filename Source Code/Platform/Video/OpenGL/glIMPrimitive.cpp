@@ -93,9 +93,10 @@ void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
     resetStates();
 }
 
-GFX::CommandBuffer glIMPrimitive::toCommandBuffer() const {
-    GFX::CommandBuffer buffer;
+GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
     if (!paused()) {
+        _cmdBuffer->clear();
+
         DIVIDE_ASSERT(_pipeline.shaderProgram() != nullptr,
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
@@ -110,25 +111,25 @@ GFX::CommandBuffer glIMPrimitive::toCommandBuffer() const {
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _pipeline;
-        GFX::BindPipeline(buffer, pipelineCommand);
+        GFX::BindPipeline(*_cmdBuffer, pipelineCommand);
         
         GFX::SendPushConstantsCommand pushConstantsCommand;
         pushConstantsCommand._constants = pushConstants;
-        GFX::SendPushConstants(buffer, pushConstantsCommand);
+        GFX::SendPushConstants(*_cmdBuffer, pushConstantsCommand);
 
         if (_texture) {
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
             descriptorSetCmd._set._textureData.addTexture(_texture->getData(),
                                                           to_U8(ShaderProgram::TextureUsage::UNIT0));
-            GFX::BindDescriptorSets(buffer, descriptorSetCmd);
+            GFX::BindDescriptorSets(*_cmdBuffer, descriptorSetCmd);
         }
 
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
-        GFX::AddDrawCommands(buffer, drawCommand);
+        GFX::AddDrawCommands(*_cmdBuffer, drawCommand);
     }
 
-    return buffer;
+    return *_cmdBuffer;
 }
 
 };

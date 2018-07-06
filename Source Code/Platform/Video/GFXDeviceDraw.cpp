@@ -35,7 +35,7 @@ void GFXDevice::uploadGPUBlock() {
 }
 
 void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& subPassCmd) {
-    RenderPackageQueue& renderQueue = _renderQueues[queueType._to_integral()];
+    RenderPackageQueue& renderQueue = *_renderQueues[queueType._to_integral()].get();
 
     assert(renderQueue.locked() == false);
     if (!renderQueue.empty()) {
@@ -49,22 +49,22 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuff
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     _api->flushCommandBuffer(commandBuffer);
+    commandBuffer.clear();
 }
 
 void GFXDevice::lockQueue(RenderBinType type) {
-    _renderQueues[type._to_integral()].lock();
+    _renderQueues[type._to_integral()]->lock();
 }
 
 void GFXDevice::unlockQueue(RenderBinType type) {
-    _renderQueues[type._to_integral()].unlock();
+    _renderQueues[type._to_integral()]->unlock();
 }
 
 U32 GFXDevice::renderQueueSize(RenderBinType queueType) {
     U32 queueIndex = queueType._to_integral();
-    assert(_renderQueues[queueIndex].locked() == false);
-    const RenderPackageQueue& queue = _renderQueues[queueIndex];
+    assert(_renderQueues[queueIndex]->locked() == false);
 
-    return queue.size();
+    return _renderQueues[queueIndex]->size();
 }
 
 void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& package) {
@@ -74,9 +74,9 @@ void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& p
 
     U32 queueIndex = queueType._to_integral();
 
-    assert(_renderQueues[queueIndex].locked() == true);
+    assert(_renderQueues[queueIndex]->locked() == true);
 
-    _renderQueues[queueIndex].push_back(package);
+    _renderQueues[queueIndex]->push_back(package);
 }
 
 /// Prepare the list of visible nodes for rendering
@@ -279,13 +279,16 @@ void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& buff
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch) {
-    static GFX::CommandBuffer buffer;
+    GFX::CommandBuffer& buffer = *_textCmdBuffer;
+
+    buffer.clear();
     drawText(batch, buffer);
     flushCommandBuffer(buffer);
 }
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
-    GFX::CommandBuffer buffer;
+    GFX::CommandBuffer& buffer = *_flushDisplayBuffer;
+    buffer.clear();
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = get2DStateBlock();

@@ -55,7 +55,7 @@ void SingleShadowMap::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     params.drawPolicy = &RenderTarget::defaultPolicy();
     params.pass = passIdx;
 
-    bufferInOut.add(passMgr.doCustomPass(params));
+    passMgr.doCustomPass(params, bufferInOut);
 }
 
 };

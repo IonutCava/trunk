@@ -107,6 +107,8 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\BlendingProperties.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ClipPlanes.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\CommandBufferPool.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\Commands.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\DescriptorSets.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.h" />
@@ -273,6 +275,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Textures\glTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Pipeline.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderPackage.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\RenderPackageQueue.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\TextureData.cpp" />
@@ -353,6 +356,7 @@
     <None Include="..\..\Source Code\Platform\File\Headers\FileManagement.inl" />
     <None Include="..\..\Source Code\Platform\Headers\DisplayWindow.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.inl" />
+    <None Include="..\..\Source Code\Platform\Video\Headers\CommandBufferPool.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXShaderData.inl" />

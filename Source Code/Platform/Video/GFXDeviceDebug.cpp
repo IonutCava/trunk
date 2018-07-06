@@ -20,7 +20,6 @@ namespace Divide {
 
 void GFXDevice::renderDebugViews() {
     static DebugView* HiZPtr;
-    static GFX::CommandBuffer buffer;
 
     // As this is touched once per frame, we'll only enable it in debug builds
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -122,6 +121,9 @@ void GFXDevice::renderDebugViews() {
         GFX::BindDescriptorSetsCommand bindDescriptorSets;
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(triangleCmd);
+
+        ScopedCommandBuffer sBuffer = allocateScopedCommandBuffer();
+        GFX::CommandBuffer& buffer = sBuffer();
 
         I32 viewIndex = 0;
         for (U8 i = 0; i < rowCount; ++i) {

@@ -51,7 +51,8 @@ void GUISplash::render(GFXDevice& context) {
     pipelineDescriptor._stateHash = context.get2DStateBlock();
     pipelineDescriptor._shaderProgram = _splashShader;
 
-    GFX::CommandBuffer buffer;
+    ScopedCommandBuffer sBuffer = context.allocateScopedCommandBuffer();
+    GFX::CommandBuffer& buffer = sBuffer();
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = context.newPipeline(pipelineDescriptor);

@@ -142,7 +142,7 @@ void RenderPass::generateDrawCommands() {
 }
 
 void RenderPass::render(SceneRenderState& renderState) {
-    GFX::CommandBuffer commandBuffer;
+    GFX::CommandBuffer& commandBuffer = _context.allocateCommandBuffer();
 
     if (_stageFlag != RenderStage::SHADOW) {
         LightPool::bindShadowMaps(_context, commandBuffer);
@@ -165,7 +165,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.pass = 0;
             params.doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
             params.occlusionCull = true;
-            commandBuffer.add(_parent.doCustomPass(params));
+            _parent.doCustomPass(params, commandBuffer);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
             GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
@@ -300,6 +300,7 @@ void RenderPass::render(SceneRenderState& renderState) {
     };
 
     _context.flushCommandBuffer(commandBuffer);
+    _context.deallocateCommandBuffer(commandBuffer);
 }
 
 // This is very hackish but should hold up fine

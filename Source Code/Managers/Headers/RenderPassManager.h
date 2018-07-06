@@ -95,13 +95,13 @@ public:
     RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex);
     const RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex) const;
 
-    GFX::CommandBuffer doCustomPass(PassParams& params);
+    void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
 
 private:
 
-    GFX::CommandBuffer prePass(const PassParams& params, const RenderTarget& target);
-    GFX::CommandBuffer mainPass(const PassParams& params, RenderTarget& target);
-    GFX::CommandBuffer woitPass(const PassParams& params, const RenderTarget& target);
+    void prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
 
     RenderPass* getPassForStage(RenderStage renderStage) const;
 

@@ -78,6 +78,19 @@ namespace TypeUtil {
         return RenderPassType::COUNT;
     }
 };
+
+ScopedCommandBuffer::ScopedCommandBuffer(GFXDevice& context, bool useSecondaryBuffers)
+    : _context(context),
+      _useSecondaryBuffers(useSecondaryBuffers),
+      _buffer(_context.allocateCommandBuffer(useSecondaryBuffers))
+{
+}
+
+ScopedCommandBuffer::~ScopedCommandBuffer()
+{
+    _context.deallocateCommandBuffer(_buffer, _useSecondaryBuffers);
+}
+
 D64 GFXDevice::s_interpolationFactor = 1.0;
 
 GPUVendor GFXDevice::_GPUVendor = GPUVendor::COUNT;
@@ -88,6 +101,8 @@ GFXDevice::GFXDevice(Kernel& parent)
     _api(nullptr),
     _renderer(nullptr),
     _shaderComputeQueue(nullptr),
+    _textCmdBuffer(nullptr),
+    _flushDisplayBuffer(nullptr),
     _commandPool(Config::MAX_DRAW_COMMANDS_IN_FLIGHT),
     _renderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS),
     _prevRenderStagePass(RenderStage::COUNT, RenderPassType::COLOUR_PASS),
@@ -147,6 +162,12 @@ GFXDevice::GFXDevice(Kernel& parent)
     AttribFlags flags;
     flags.fill(true);
     VertexBuffer::setAttribMasks(flags);
+
+    std::generate(
+        std::begin(_renderQueues),
+        std::end(_renderQueues),
+        [this]() { return std::make_unique<RenderPackageQueue>(*this, Config::MAX_VISIBLE_NODES); }
+    );
 
     // Don't (currently) need these for shadow passes
     flags[to_base(VertexAttribute::ATTRIB_COLOR)] = false;
@@ -245,7 +266,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
         params.pass = passIndex + i;
-        bufferInOut.add(passMgr.doCustomPass(params));
+        passMgr.doCustomPass(params, bufferInOut);
     }
 
     // Resolve our render target
@@ -319,7 +340,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
             // And generated required matrices
             // Pass our render function to the renderer
             params.pass = passIndex + i;
-            bufferInOut.add(passMgr.doCustomPass(params));
+            passMgr.doCustomPass(params, bufferInOut);
         }
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
@@ -740,6 +761,25 @@ ShaderComputeQueue& GFXDevice::shaderComputeQueue() {
 const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
     assert(_shaderComputeQueue != nullptr);
     return *_shaderComputeQueue;
+}
+
+ScopedCommandBuffer GFXDevice::allocateScopedCommandBuffer(bool useSecondaryBuffers) {
+    return ScopedCommandBuffer(*this, useSecondaryBuffers);
+}
+
+GFX::CommandBuffer& GFXDevice::allocateCommandBuffer(bool useSecondaryBuffers) {
+    if (useSecondaryBuffers) {
+        return _secondaryCommandBufferPool.allocateBuffer();
+    }
+    return _commandBufferPool.allocateBuffer();
+}
+
+void GFXDevice::deallocateCommandBuffer(GFX::CommandBuffer& buffer, bool useSecondaryBuffers) {
+    if (useSecondaryBuffers) {
+        return _secondaryCommandBufferPool.deallocateBuffer(buffer);
+    }
+
+    _commandBufferPool.deallocateBuffer(buffer);
 }
 
 /// Extract the pixel data from the main render target's first colour attachment and save it as a TGA image

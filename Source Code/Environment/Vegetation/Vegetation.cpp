@@ -342,7 +342,8 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         _cullDrawCommand.sourceBuffer(buffer);
         buffer->incQueryQueue();
 
-        GFX::CommandBuffer cmdBuffer;
+        ScopedCommandBuffer sBuffer = _context.allocateScopedCommandBuffer();
+        GFX::CommandBuffer& cmdBuffer = sBuffer();
 
         Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
@@ -363,6 +364,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(_cullDrawCommand);
         GFX::AddDrawCommands(cmdBuffer, drawCmd);
+
         _context.flushCommandBuffer(cmdBuffer);
 
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);

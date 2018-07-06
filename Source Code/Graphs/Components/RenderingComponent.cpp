@@ -58,8 +58,14 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
             }
         }
 
-        for (RenderPackage& pkg : _renderData[pass]) {
-            pkg.isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
+        std::generate(
+            std::begin(_renderData[pass]),
+            std::end(_renderData[pass]),
+            [&context]() { return std::make_unique<RenderPackage>(context, true); }
+        );
+
+        for (const std::unique_ptr<RenderPackage>& pkg : _renderData[pass]) {
+            pkg->isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
         }
     }
 

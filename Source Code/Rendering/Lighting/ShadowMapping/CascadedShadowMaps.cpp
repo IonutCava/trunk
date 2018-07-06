@@ -147,7 +147,7 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     for (U8 i = 0; i < _numSplits; ++i) {
         target.drawToLayer(RTAttachmentType::Colour, 0, to_U16(i + getArrayOffset()));
         params.camera = _shadowCameras[i];
-        bufferInOut.add(_context.parent().renderPassManager().doCustomPass(params));
+        _context.parent().renderPassManager().doCustomPass(params, bufferInOut);
     }
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EndRenderPass(bufferInOut, endRenderPassCmd);

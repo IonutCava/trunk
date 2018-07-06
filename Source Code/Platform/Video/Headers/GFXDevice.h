@@ -38,6 +38,7 @@
 #include "GFXRTPool.h"
 #include "GFXShaderData.h"
 #include "RenderPackage.h"
+#include "CommandBufferPool.h"
 #include "GenericCommandPool.h"
 #include "Core/Math/Headers/Line.h"
 #include "Core/Math/Headers/MathMatrices.h"
@@ -110,6 +111,25 @@ namespace TypeUtil {
 
 struct GFXConfig {
     bool _enableDebugMsgGroups = true;
+};
+
+class ScopedCommandBuffer {
+  public:
+    ~ScopedCommandBuffer();
+    inline GFX::CommandBuffer& operator()() {
+        return _buffer;
+    }
+    inline const GFX::CommandBuffer& operator()() const {
+        return _buffer;
+    }
+  protected:
+    friend class GFXDevice;
+    ScopedCommandBuffer(GFXDevice& context, bool useSecondaryBuffers);
+
+  private:
+    GFXDevice& _context;
+    GFX::CommandBuffer& _buffer;
+    bool _useSecondaryBuffers;
 };
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
@@ -334,6 +354,10 @@ public:  // Accessors and Mutators
 
     void addDebugView(const std::shared_ptr<DebugView>& view);
 
+    ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
+    GFX::CommandBuffer& allocateCommandBuffer(bool useSecondaryBuffers = false);
+    void deallocateCommandBuffer(GFX::CommandBuffer& buffer, bool useSecondaryBuffers = false);
+
 public:
     IMPrimitive*       newIMP() const;
     VertexBuffer*      newVB() const;
@@ -490,7 +514,7 @@ protected:
 
     vectorImpl<DebugView_ptr> _debugViews;
 
-    std::array<RenderPackageQueue, to_base(RenderBinType::COUNT)> _renderQueues;
+    std::array<std::unique_ptr<RenderPackageQueue>, to_base(RenderBinType::COUNT)> _renderQueues;
 
     mutable SharedLock _GFXLoadQueueLock;
     std::deque<DELEGATE_CBK<void, const Task&>> _GFXLoadQueue;
@@ -498,7 +522,13 @@ protected:
     ShaderBuffer* _gfxDataBuffer;
     GenericDrawCommand _defaultDrawCmd;
 
+    GFX::CommandBuffer* _textCmdBuffer;
+    GFX::CommandBuffer* _flushDisplayBuffer;
     GenericCommandPool  _commandPool;
+
+    GFX::CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE> _commandBufferPool;
+    GFX::CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE * 2> _secondaryCommandBufferPool;
+
     Time::ProfileTimer& _commandBuildTimer;
 
     GFXConfig _config;

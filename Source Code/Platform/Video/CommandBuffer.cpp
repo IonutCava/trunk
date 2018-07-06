@@ -66,7 +66,10 @@ void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd)
 
 CommandBuffer::CommandBuffer()
 {
+}
 
+CommandBuffer::~CommandBuffer()
+{
 }
 
 void CommandBuffer::rebuildCaches() {

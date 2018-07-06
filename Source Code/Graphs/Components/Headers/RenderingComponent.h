@@ -199,11 +199,11 @@ class RenderingComponent : public SGNComponent {
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
     inline RenderPackage& renderData(const RenderStagePass& stagePass) {
-        return _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
+        return *_renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())].get();
     }
 
     inline const RenderPackage& renderData(const RenderStagePass& stagePass) const {
-        return _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
+        return *_renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())].get();
     }
 
    protected:
@@ -216,7 +216,7 @@ class RenderingComponent : public SGNComponent {
     U32 _commandOffset;
     U32 _renderMask;
     TextureDataContainer _textureDependencies;
-    std::array<RenderPackage, to_base(RenderStage::COUNT)> _renderData[to_base(RenderPassType::COUNT)];
+    std::array<std::unique_ptr<RenderPackage>, to_base(RenderStage::COUNT)> _renderData[to_base(RenderPassType::COUNT)];
     
     bool _renderPackagesDirty;
     PushConstants _globalPushConstants;
