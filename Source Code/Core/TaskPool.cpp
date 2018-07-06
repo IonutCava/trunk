@@ -50,18 +50,17 @@ bool TaskPool::enqueue(const PoolTask& task) {
     return true;
 }
 
-void TaskPool::runCbkAndClearTask(size_t taskIdentifier) {
+void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
     DELEGATE_CBK<void>& cbk = _taskCallbacks[taskIdentifier];
     if (cbk) {
         cbk();
-        cbk = DELEGATE_CBK<void>();
+        cbk = 0;
     }
 }
 
 
-void TaskPool::flushCallbackQueue()
-{
-    size_t taskIndex = 0;
+void TaskPool::flushCallbackQueue() {
+    U32 taskIndex = 0;
     while (_threadedCallbackBuffer.pop(taskIndex)) {
         runCbkAndClearTask(taskIndex);
     }
@@ -88,7 +87,7 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
 }
 
 
-void TaskPool::taskCompleted(size_t taskIndex, bool runCallback) {
+void TaskPool::taskCompleted(U32 taskIndex, bool runCallback) {
     if (runCallback) {
         runCbkAndClearTask(taskIndex);
     } else {
@@ -114,7 +113,7 @@ Task* TaskPool::createTask(Task* parentTask,
     task->_unfinishedJobs = 1;
 
     if (task->_id == 0) {
-        static size_t id = 1;
+        static U32 id = 1;
         task->_id = id++;
     }
 

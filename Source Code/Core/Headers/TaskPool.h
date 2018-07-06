@@ -65,20 +65,20 @@ class TaskPool {
     friend void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags);
     friend bool StopRequested(const Task *task);
 
-    void taskCompleted(size_t taskIndex, bool runCallback);
+    void taskCompleted(U32 taskIndex, bool runCallback);
     
     bool enqueue(const PoolTask& task);
     bool stopRequested() const;
 
     void nameThreadpoolWorkers(const char* name);
-    void runCbkAndClearTask(size_t taskIdentifier);
+    void runCbkAndClearTask(U32 taskIdentifier);
 
   private:
     std::unique_ptr<boost::asio::thread_pool> _mainTaskPool;
-    boost::lockfree::queue<size_t> _threadedCallbackBuffer;
-    std::atomic_size_t _runningTaskCount;
+    boost::lockfree::queue<U32> _threadedCallbackBuffer;
+    std::atomic_uint _runningTaskCount;
     std::atomic_bool _stopRequested = false;
-    hashMap<size_t, DELEGATE_CBK<void>> _taskCallbacks;
+    hashMap<U32, DELEGATE_CBK<void>> _taskCallbacks;
     U32 _workerThreadCount;
 };
 

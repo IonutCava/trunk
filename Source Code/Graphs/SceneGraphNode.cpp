@@ -118,7 +118,6 @@ SceneGraphNode::~SceneGraphNode()
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
 
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
-        assert(_node.unique());
         _node.reset();
     }
 }
@@ -205,18 +204,18 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
-    if (descriptor._node->getState() == ResourceState::RES_LOADED) {
+    if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
         // Do all the post load operations on the SceneNode
         // Pass a reference to the newly created SceneGraphNode in case we need
         // transforms or bounding boxes
-        Attorney::SceneNodeSceneGraph::postLoad(*descriptor._node, *sceneGraphNode);
+        Attorney::SceneNodeSceneGraph::postLoad(*sceneGraphNode->_node, *sceneGraphNode);
         invalidateRelationshipCache();
-    } else if (descriptor._node->getState() == ResourceState::RES_LOADING) {
+    } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
         setUpdateFlag(UpdateFlag::THREADED_LOAD);
 
         SceneGraphNode* callbackPtr = sceneGraphNode;
 
-        descriptor._node->setStateCallback(ResourceState::RES_LOADED,
+        sceneGraphNode->_node->setStateCallback(ResourceState::RES_LOADED,
             [this, callbackPtr](Resource_wptr res) {
                 Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(callbackPtr));
                 invalidateRelationshipCache();

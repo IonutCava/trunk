@@ -16,11 +16,11 @@ namespace {
     const bool g_DebugTaskStartStop = false;
 };
 
-typedef DELEGATE_CBK<void, size_t> OnFinishCbk;
+typedef DELEGATE_CBK<void, U32> OnFinishCbk;
 
 void finish(Task* task) {
     if (task->_unfinishedJobs.fetch_sub(1) == 1) {
-        //task->_taskDoneCV.notify_one();
+        //task->_taskDoneCV.notify_all();
         if (task->_parent != nullptr) {
            finish(task->_parent);
         }
@@ -36,6 +36,7 @@ void run(Task* task, const OnFinishCbk& onFinish) {
 
     if (task->_callback) {
         task->_callback(*task);
+        task->_callback = 0;
     }
 
     onFinish(task->_id);
@@ -45,9 +46,9 @@ void run(Task* task, const OnFinishCbk& onFinish) {
 
 
 void runTaskWithDebugInfo(Task* task, const OnFinishCbk& onFinish) {
-    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id.load(), std::this_thread::get_id());
+    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id, std::this_thread::get_id());
     run(task, onFinish);
-    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), task->_id.load(), std::this_thread::get_id());
+    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), task->_id, std::this_thread::get_id());
 }
 
 PoolTask getRunTask(Task* task, const OnFinishCbk& onFinish, TaskPriority priority, U32 taskFlags) {
@@ -72,7 +73,7 @@ void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags) {
     }
 
     bool runCallback = priority == TaskPriority::REALTIME;
-    OnFinishCbk onFinish = [&pool, runCallback](size_t index) {
+    OnFinishCbk onFinish = [&pool, runCallback](U32 index) {
         pool.taskCompleted(index, runCallback);
     };
 
@@ -89,7 +90,10 @@ void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags) {
 
 void Wait(const Task* task) {
     /*UniqueLock lk(task->_taskDoneMutex);
-    task->_taskDoneCV.wait(lk, [task]() -> bool { return task->_unfinishedJobs.load() == 0; });*/
+    task->_taskDoneCV.wait(lk, [task]() -> bool {
+        return Finished(task);
+    });*/
+
     while (!Finished(task)) {
         std::this_thread::yield();
     }

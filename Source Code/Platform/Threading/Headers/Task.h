@@ -53,10 +53,13 @@ enum class TaskFlags : U8 {
 };
 
 struct alignas(64) Task {
+    //mutable std::mutex _taskDoneMutex;
+    //mutable std::condition_variable _taskDoneCV;
+
+    U32 _id;
     Task* _parent = nullptr;
     TaskPool* _parentPool = nullptr;
-    std::atomic_size_t _id;
-    std::atomic_size_t _unfinishedJobs;
+    std::atomic_ushort _unfinishedJobs;
     std::atomic_bool _stopRequested = false;
     DELEGATE_CBK<void, const Task&> _callback;
 };

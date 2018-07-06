@@ -154,7 +154,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     /// Always use the level of redirection needed to reduce virtual function overhead
     /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
     template <typename T = SceneNode>
-    inline const std::shared_ptr<T>& getNode() const {
+    inline std::shared_ptr<T> getNode() const {
         static_assert(std::is_base_of<SceneNode, T>::value, "SceneGraphNode::getNode error: Invalid target node type!");
         return std::static_pointer_cast<T>(_node);
     }
