@@ -12,12 +12,12 @@
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Utility/Headers/Localization.h"
 
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
 
 namespace {
-    const stringImpl g_parsedAssetLocation("parsed");
     const stringImpl g_parsedAssetGeometryExt("DVDGeom");
     const stringImpl g_parsedAssetAnimationExt("DVDAnim");
 };
@@ -179,14 +179,14 @@ namespace Import {
         stringImpl path = dataOut._modelPath.substr(0, dataOut._modelPath.find_last_of('/'));
 
         bool success = false;
-        if (!dataOut.loadFromFile(context, path + "/" + g_parsedAssetLocation + "/" + modelName)) {
+        if (!dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation + modelName)) {
             Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), modelName.c_str());
 
             DVDConverter converter(context, dataOut, dataOut._modelPath, success);
             if (success) {
                 dataOut._modelName = modelName;
                 dataOut._modelPath = path;
-                if (dataOut.saveToFile(context, path + "/" + g_parsedAssetLocation + "/" + modelName)) {
+                if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation + modelName)) {
                     Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), modelName.c_str());
                 } else {
                     Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), modelName.c_str());
@@ -215,8 +215,8 @@ namespace Import {
 
             ByteBuffer tempBuffer;
             animator.reset(new SceneAnimator());
-            if (tempBuffer.loadFromFile(dataIn._modelPath + "/" + 
-                                        g_parsedAssetLocation + "/" +
+            if (tempBuffer.loadFromFile(Paths::g_cacheLocation + 
+                                        Paths::g_geometryCacheLocation +
                                         dataIn._modelName + "." +
                                         g_parsedAssetAnimationExt)) {
                 animator->load(context, tempBuffer);
@@ -225,8 +225,8 @@ namespace Import {
                     Attorney::SceneAnimatorMeshImporter::registerAnimations(*animator, dataIn._animations);
                     animator->init(context, dataIn._skeleton, dataIn._bones);
                     animator->save(context, tempBuffer);
-                    if (!tempBuffer.dumpToFile(dataIn._modelPath + "/" + 
-                                               g_parsedAssetLocation + "/" +
+                    if (!tempBuffer.dumpToFile(Paths::g_cacheLocation + 
+                                               Paths::g_geometryCacheLocation +
                                                dataIn._modelName + "." +
                                                g_parsedAssetAnimationExt)) {
                         //handle error

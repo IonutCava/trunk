@@ -40,6 +40,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+enum class CacheType : U8 {
+    SHADER_TEXT = 0,
+    SHADER_BIN,
+    TERRAIN,
+    MODELS,
+    COUNT
+};
+
+struct SysInfo;
 class PlatformContext;
 namespace Paths {
     extern stringImpl g_exePath;
@@ -57,7 +66,10 @@ namespace Paths {
     extern stringImpl g_GUILocation;
     extern stringImpl g_fontsPath;
     extern stringImpl g_localisationPath;
-    
+    extern stringImpl g_cacheLocation;
+    extern stringImpl g_terrainCacheLocation;
+    extern stringImpl g_geometryCacheLocation;
+
     namespace Editor {
         extern stringImpl g_saveLocation;
         extern stringImpl g_tabLayoutFile;
@@ -108,12 +120,13 @@ namespace Paths {
     
     void initPaths(const SysInfo& info);
     void updatePaths(const PlatformContext& context);
-};
+}; //namespace Paths
 
 
 bool pathExists(const char* filePath);
 bool fileExists(const char* filePathAndName);
 bool createFile(const char* filePathAndName, bool overwriteExisting);
+bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 
 template<typename T /*requirement: has_assign<T> == true*/>
 bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType);
@@ -123,6 +136,9 @@ bool writeFile(const stringImpl& filePath, const bufferPtr content, size_t lengt
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension);
 
 FileWithPath splitPathToNameAndLocation(const stringImpl& input);
+
+bool clearCache();
+bool clearCache(CacheType type);
 
 }; //namespace Divide
 

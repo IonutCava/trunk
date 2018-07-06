@@ -22,6 +22,9 @@ namespace Paths {
     stringImpl g_GUILocation;
     stringImpl g_fontsPath;
     stringImpl g_localisationPath;
+    stringImpl g_cacheLocation;
+    stringImpl g_terrainCacheLocation;
+    stringImpl g_geometryCacheLocation;
 
     namespace Editor {
         stringImpl g_saveLocation;
@@ -86,6 +89,10 @@ namespace Paths {
         g_fontsPath = stringImpl("fonts/");
         g_soundsLocation = stringImpl("sounds/");
         g_localisationPath = stringImpl("localisation/");
+        g_cacheLocation = stringImpl("cache/");
+        g_terrainCacheLocation = stringImpl("terrain/");
+        g_geometryCacheLocation = stringImpl("geometry/");
+
         Scripts::g_scriptsLocation = stringImpl(g_assetsLocation + "scripts/");
         Scripts::g_scriptsAtomsLocation = stringImpl(Scripts::g_scriptsLocation + "atoms/");
 

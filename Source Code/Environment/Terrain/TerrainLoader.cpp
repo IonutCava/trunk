@@ -305,7 +305,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
     vectorImpl<VertexBuffer::Vertex> testVerts;
 
-    stringImpl cacheLocation(terrainMapLocation + terrainRawFile + ".cache");
+    stringImpl cacheLocation(Paths::g_cacheLocation + Paths::g_terrainCacheLocation + terrainRawFile + ".cache");
     ByteBuffer terrainCache;
     if (terrainCache.loadFromFile(cacheLocation)) {
         terrainCache >> terrain->_physicsVerts;

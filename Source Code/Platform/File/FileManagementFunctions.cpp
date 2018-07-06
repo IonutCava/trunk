@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "Headers/FileManagement.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/StringHelper.h"
 
@@ -62,6 +63,57 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension) {
     stringImpl ext("." + extension);
     return Util::CompareIgnoreCase(Util::GetTrailingCharacters(filePath, ext.length()), ext);
+}
+
+bool deleteAllFiles(const char* filePath, const char* extension) {
+    bool ret = false;
+
+    boost::filesystem::path p(filePath);
+    if (boost::filesystem::exists(p) && boost::filesystem::is_directory(p)) {
+        boost::filesystem::directory_iterator end;
+        for (boost::filesystem::directory_iterator it(p); it != end; ++it) {
+            try {
+                if (boost::filesystem::is_regular_file(it->status())) {
+                    if (!extension || (extension != nullptr && it->path().extension() == extension)) {
+                        if (boost::filesystem::remove(it->path())) {
+                            ret = true;
+                        }
+                    }
+                }
+            } catch (const std::exception &ex)
+            {
+                ex;
+            }
+        }
+    }
+
+    return ret;
+}
+
+bool clearCache() {
+    for (U8 i = 0; i < to_U8(CacheType::COUNT); ++i) {
+        if (!clearCache(static_cast<CacheType>(i))) {
+            return false;
+        }
+    }
+}
+
+bool clearCache(CacheType type) {
+    switch (type) {
+        case CacheType::SHADER_TEXT:
+           return deleteAllFiles((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText).c_str());
+       
+        case CacheType::SHADER_BIN:
+            return deleteAllFiles((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str());
+
+        case CacheType::TERRAIN:
+            return deleteAllFiles((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str());
+
+        case CacheType::MODELS:
+            return deleteAllFiles((Paths::g_cacheLocation + Paths::g_geometryCacheLocation).c_str());
+    }
+
+    return false;
 }
 
 }; //namespace Divide

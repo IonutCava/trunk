@@ -88,5 +88,6 @@ inline bool readFile(const stringImpl& filePath, vectorImpl<Byte>& contentOut, F
 
     return fileSize > 0;
 }
-}; //namespace divide
+}; //namespace Divide
+
 #endif //_PLATFORM_FILE_FILE_MANAGEMENT_INL_

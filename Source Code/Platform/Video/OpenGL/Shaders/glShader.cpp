@@ -98,7 +98,7 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-        ShaderProgram::shaderFileWrite(Paths::Shaders::g_cacheLocationText + getName(), src);
+        ShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText + getName(), src);
     }
 
     _compiled = false;
