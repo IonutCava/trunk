@@ -1,6 +1,6 @@
 #include "Headers/Impostor.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
 

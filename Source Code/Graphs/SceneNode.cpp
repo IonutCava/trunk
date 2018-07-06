@@ -1,7 +1,7 @@
 #include "Headers/SceneNode.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Mesh.h" 
 #include "Geometry/Shapes/Headers/SubMesh.h"

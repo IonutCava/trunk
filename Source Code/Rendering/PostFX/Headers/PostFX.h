@@ -19,7 +19,7 @@
 #define _POST_EFFECTS_H
 
 #include "core.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 #define FBO_BLOOM_SAMPLES 1
 

@@ -4,12 +4,12 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Quadtree/Headers/Quadtree.h"
 #include "Quadtree/Headers/QuadtreeNode.h"
-#include "Hardware/Video/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 #include "Environment/Sky/Headers/Sky.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 #define COORD(x,y,w)	((y)*(w)+(x))
 

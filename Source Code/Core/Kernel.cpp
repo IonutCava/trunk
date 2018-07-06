@@ -10,7 +10,7 @@
 #include "Managers/Headers/ShaderManager.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Managers/Headers/FrameListenerManager.h"

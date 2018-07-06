@@ -1,5 +1,5 @@
 #include "Headers/SceneGraph.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Utility/Headers/Event.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"

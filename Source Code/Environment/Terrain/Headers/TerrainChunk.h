@@ -19,7 +19,7 @@
 #define _TERRAIN_CHUNK_H
 
 #include "core.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 #define TERRAIN_CHUNKS_LOD 3
 

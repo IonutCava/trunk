@@ -1,7 +1,7 @@
 #include "Headers/RenderQueue.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 RenderQueueItem::RenderQueueItem(P32 sortKey, SceneGraphNode *node ) : _node( node ),
 																	   _sortKey( sortKey ) {

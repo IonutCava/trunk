@@ -1,6 +1,6 @@
 #include "Headers/AnimationEvaluator.h"
 #include "Headers/AnimationUtils.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation. 

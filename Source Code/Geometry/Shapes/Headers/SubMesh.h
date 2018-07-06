@@ -34,7 +34,7 @@ and a name.
 */
 
 #include "core.h"
-#include "Hardware/Video/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 class Mesh;
 class SceneAnimator;

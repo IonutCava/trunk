@@ -1,10 +1,10 @@
 #include "Headers/LightManager.h"
 
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/Headers/Light.h"
-#include "Hardware/Video/FrameBufferObject.h"
+#include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 LightManager::LightManager() : _previewDepthMaps(false){

@@ -1,7 +1,7 @@
 #include "Headers/ShaderManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Hardware/Video/Shader.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Shaders/Headers/Shader.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 ShaderManager::ShaderManager() : _nullShader(NULL)
 {

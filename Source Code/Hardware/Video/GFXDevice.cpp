@@ -1,7 +1,8 @@
-#include "GFXDevice.h"
+#include "Headers/GFXDevice.h"
+#include "Headers/RenderStateBlock.h"
+
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
-#include "RenderStateBlock.h"
 #include "Core/Headers/Application.h"
 
 #include "Managers/Headers/SceneManager.h"

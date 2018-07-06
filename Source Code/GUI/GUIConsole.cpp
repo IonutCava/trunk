@@ -1,6 +1,6 @@
 #include "Headers/GUIConsole.h"
 #include "Core/Headers/Application.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"

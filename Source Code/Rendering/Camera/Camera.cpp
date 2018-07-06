@@ -1,7 +1,7 @@
 #include "Headers/Camera.h"
 
 #include "Rendering/Headers/Frustum.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
 
 void Camera::SaveCamera(){

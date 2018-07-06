@@ -18,7 +18,7 @@
 #ifndef _FRAMERATE_H_
 #define _FRAMERATE_H_
 
-#include "Hardware/Platform/PlatformDefines.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/Singleton.h"
 
 #if defined( __WIN32__ ) || defined( _WIN32 )

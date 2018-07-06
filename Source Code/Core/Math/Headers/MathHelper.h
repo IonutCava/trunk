@@ -24,7 +24,7 @@
 #ifndef _MATH_HELPER_H_
 #define _MATH_HELPER_H_
 
-#include "Hardware/Platform/PlatformDefines.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <string>
 #include <xmmintrin.h>
 #include <boost/crc.hpp>

@@ -1,9 +1,9 @@
 #include "Headers/Material.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/ShaderManager.h"
-#include "Hardware/Video/Texture.h"
-#include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Textures/Headers/Texture.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 
 Material::Material() : Resource(),

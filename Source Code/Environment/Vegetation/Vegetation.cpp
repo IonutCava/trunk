@@ -4,10 +4,10 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
-#include "Hardware/Video/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 Vegetation::~Vegetation(){
 	PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getNode<Terrain>()->getName().c_str());

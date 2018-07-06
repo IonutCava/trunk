@@ -1,5 +1,5 @@
 #include "Headers/AnimationUtils.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 namespace AnimUtils {
 

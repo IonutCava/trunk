@@ -4,8 +4,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "bstrlib.h"
-#include "glsw.h"
+#include "Headers/bstrlib.h"
+#include "Headers/glsw.h"
 
 #ifdef WIN32
 #pragma warning(disable:4996) // allow "fopen"

@@ -1,5 +1,5 @@
-#include "glResources.h"
-#include "glEnumTable.h"
+#include "Headers/glResources.h"
+#include "Headers/glEnumTable.h"
  
 GLenum glBlendTable[BLEND_PROPERTY_PLACEHOLDER];
 GLenum glBlendOpTable[BLEND_OPERATION_PLACEHOLDER];

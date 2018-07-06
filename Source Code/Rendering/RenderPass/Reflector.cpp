@@ -1,5 +1,5 @@
 #include "Headers/Reflector.h"
-#include "Hardware/Video/GFXDevice.h" 
+#include "Hardware/Video/Headers/GFXDevice.h" 
 
 Reflector::Reflector(REFLECTOR_TYPE type, const vec2<U16>& resolution) : FrameListener(),
 																	 _type(type),

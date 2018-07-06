@@ -1,6 +1,6 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Environment/Water/Headers/Water.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
 

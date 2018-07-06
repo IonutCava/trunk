@@ -19,7 +19,7 @@
 #define _OBJECT_3D_H_
 
 #include "core.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
 enum PrimitiveType {

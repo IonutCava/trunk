@@ -20,7 +20,7 @@
 
 #include "SceneState.h"
 #include "Utility/Headers/Event.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/LightManager.h"

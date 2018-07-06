@@ -8,8 +8,8 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
-#include "Hardware/Video/RenderStateBlock.h"
-#include "Hardware/Video/FrameBufferObject.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 PostFX::PostFX(): _underwaterTexture(NULL),

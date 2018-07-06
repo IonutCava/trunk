@@ -19,8 +19,8 @@
 #define _SCENE_STATE_H_
 
 #include "core.h"
-#include "Hardware/Audio/SFXDevice.h"
-#include "Hardware/Audio/AudioDescriptor.h"
+#include "Hardware/Audio/Headers/SFXDevice.h"
+#include "Hardware/Audio/Headers/AudioDescriptor.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 ///This class contains all the variables that define each scene's "unique"-ness:
 ///background music, wind information, visibility settings, camera movement,

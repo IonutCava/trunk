@@ -39,7 +39,7 @@
 
 #include "core.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Hardware/Video/Texture.h"
+#include "Hardware/Video/Textures/Headers/Texture.h"
 #include <assimp/types.h>
 
 class  Mesh;

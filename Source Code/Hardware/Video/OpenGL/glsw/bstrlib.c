@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "bstrlib.h"
+#include "Headers/bstrlib.h"
 
 #ifdef WIN32
 #pragma warning(disable:4996)

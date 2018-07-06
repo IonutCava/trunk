@@ -1,4 +1,4 @@
-#include "DXWrapper.h"
+#include "Headers/DXWrapper.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"

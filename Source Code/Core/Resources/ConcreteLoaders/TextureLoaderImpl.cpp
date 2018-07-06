@@ -1,6 +1,6 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
-#include "Hardware/Video/Texture.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Textures/Headers/Texture.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 Texture* ImplResourceLoader<Texture>::operator()(){
 

@@ -18,7 +18,7 @@
 #ifndef SINGLETON_H_
 #define SINGLETON_H_
 
-#include "Hardware/Platform/Mutex.h"
+#include "Hardware/Platform/Headers/Mutex.h"
 
 template <class T>
 class Singleton{

@@ -1,6 +1,6 @@
 #include "Headers/Quadtree.h"
 #include "Headers/QuadtreeNode.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
  
 void Quadtree::DrawGround(bool drawInReflection) {
 	assert(_root);

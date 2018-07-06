@@ -1,5 +1,5 @@
 #include "Headers/AnimationController.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 using namespace boost;
 
 

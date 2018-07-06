@@ -2,7 +2,7 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(2048,2048)), 
 						   _plane(NULL),_texture(NULL), _shader(NULL),_planeTransform(NULL),

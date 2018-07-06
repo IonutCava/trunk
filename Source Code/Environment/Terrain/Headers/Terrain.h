@@ -19,7 +19,6 @@
 #define _TERRAIN_H_
 
 #include "Utility/Headers/BoundingBox.h"
-#include "Hardware/Video/FrameBufferObject.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Graphs/Headers/SceneNode.h"

@@ -19,7 +19,7 @@
 #define _SCENE_GRAPH_NODE_H_
 
 #include "SceneNode.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 class SceneGraph;
 class SceneRoot : public SceneNode{

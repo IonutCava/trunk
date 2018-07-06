@@ -1,7 +1,7 @@
 #include "Headers/Light.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Hardware/Video/GFXDevice.h" 
+#include "Hardware/Video/Headers/GFXDevice.h" 
 
 ///Shadow mapping callback is the function that draws the scene when we generate our shadow map
 ///Everything drawn in the callback will be rendered from the light's view and written to the depth buffer

@@ -1,4 +1,4 @@
-#include "d3dEnumTable.h"
+#include "Headers/d3dEnumTable.h"
 unsigned int d3dTextureTypeTable[TEXTURE_TYPE_PLACEHOLDER];
 
 namespace D3D_ENUM_TABLE {

@@ -1,6 +1,6 @@
-#include "glRenderStateBlock.h"
-#include "glResources.h"
-#include "glEnumTable.h"
+#include "Headers/glRenderStateBlock.h"
+#include "Headers/glResources.h"
+#include "Headers/glEnumTable.h"
 #include "Core\Headers\Console.h"
 
 void GLCheckError(const std::string& File, unsigned int Line, char* operation);

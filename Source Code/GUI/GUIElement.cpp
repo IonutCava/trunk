@@ -1,6 +1,6 @@
 #include "Headers/GUIElement.h"
-#include "Hardware/Video/RenderStateBlock.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 GUIElement::GUIElement() : _guiType(GUI_PLACEHOLDER),
 						   _parent(NULL),

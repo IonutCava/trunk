@@ -1,6 +1,7 @@
-#include "glResources.h"
-#include "GLWrapper.h"
-#include "glRenderStateBlock.h"
+#include "Headers/glResources.h"
+#include "Headers/GLWrapper.h"
+#include "Headers/glRenderStateBlock.h"
+
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"

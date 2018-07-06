@@ -1,5 +1,5 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
-#include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
 
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){

@@ -5,8 +5,8 @@
 #include "Headers/GUIText.h"
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
-#include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 void GUI::onResize(const vec2<U16>& newResolution){
 

@@ -1,5 +1,5 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
-#include "Hardware/Audio/AudioDescriptor.h"
+#include "Hardware/Audio/Headers/AudioDescriptor.h"
 
 template<>
 AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()(){

@@ -4,8 +4,8 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/LightManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
-#include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 Sky::Sky() : _skyShader(NULL), _skybox(NULL), _init(false), _exclusionMask(0){}
