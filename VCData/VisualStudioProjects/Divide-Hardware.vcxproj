@@ -278,6 +278,116 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Textures\Texture.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\blur.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\bright.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\DepthOfField.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\depthPass.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fboPreview.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\FXAA.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\grass.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\sky.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\terrain.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\water.glsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -169,6 +169,33 @@
     <Filter Include="Platform\Headers">
       <UniqueIdentifier>{781a960e-9e7a-4b98-b66d-694737f320f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{338834d5-47e4-43f3-ac3a-2ec18c7ef022}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\GLSL">
+      <UniqueIdentifier>{02095ca8-50fc-426e-87dd-76d5509be93e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\GLSL\fragmentAtoms">
+      <UniqueIdentifier>{748133da-4313-4c55-883a-397c9991dc6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\GLSL\vertexAtoms">
+      <UniqueIdentifier>{64f6b1e3-af5d-46e0-98a8-700c6210a5a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\GLSL\geometryAtoms">
+      <UniqueIdentifier>{66bbf3c3-58f4-4d47-9d19-75cd89f1a9f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\HLSL">
+      <UniqueIdentifier>{76e3affd-5735-4307-9e8f-1a46d52f92e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\HLSL\high">
+      <UniqueIdentifier>{3db7ba64-0ae5-46a1-9349-059561d58067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\HLSL\medium">
+      <UniqueIdentifier>{ea84b8d1-b601-40cf-ac5e-9ce7868c63fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\HLSL\low">
+      <UniqueIdentifier>{f46e46a2-2c7e-4cbc-90fb-a45860e6f42b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Hardware\Audio\fmod\Headers\FmodWrapper.h">
@@ -530,5 +557,115 @@
     <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\blur.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\bright.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\DepthOfField.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\depthPass.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fboPreview.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\FXAA.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\grass.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\sky.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\terrain.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\water.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom">
+      <Filter>shaders\GLSL\geometryAtoms</Filter>
+    </None>
   </ItemGroup>
 </Project>

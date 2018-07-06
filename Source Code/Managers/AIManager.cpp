@@ -1,5 +1,5 @@
 #include "Headers/AIManager.h"
-#include "AI/PathFinding/Headers/NavigationPath.h"
+#include "AI/PathFinding/Headers/DivideRecast.h"
 
 AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _deltaTimeMS(0)
 {

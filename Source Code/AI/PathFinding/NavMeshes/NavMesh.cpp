@@ -1,6 +1,6 @@
 #include "Headers/NavMesh.h"
 #include "Headers/NavMeshDebugDraw.h"
-#include "../Headers/NavigationPath.h"
+#include "../Headers/DivideRecast.h"
 
 #include <SimpleIni.h>
 #include "Core/Headers/ParamHandler.h"
@@ -49,6 +49,7 @@ namespace Navigation {
             dtFreeNavMeshQuery(_navQuery);
             _navQuery = 0 ;
         }
+        SAFE_DELETE(_debugDrawInterface);
     }
 
     void NavigationMesh::freeIntermediates(bool freeAll){

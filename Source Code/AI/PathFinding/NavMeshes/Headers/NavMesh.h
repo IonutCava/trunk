@@ -82,7 +82,7 @@ namespace Navigation {
     class NavMeshDebugDraw;
 
     class NavigationMesh : public GUIDWrapper/*,public SceneObject */{
-          friend class NavigationPath;
+          friend class DivideRecast;
     protected:
 
          enum RenderMode {
@@ -120,9 +120,9 @@ namespace Navigation {
         ~NavigationMesh();
 
     protected:
-
-        dtNavMesh const* getNavigationMesh() { return _navMesh; }
-
+        friend class DivideDtCrowd;
+        dtNavMesh*            getNavigationMesh() { return _navMesh; }
+        NavigationMeshConfig& getConfigParams()   { return _configParams; }
     private:
 
         /// Initiates the build process in a separate thread.

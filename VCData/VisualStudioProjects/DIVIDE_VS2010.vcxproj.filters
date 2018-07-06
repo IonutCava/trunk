@@ -161,24 +161,6 @@
     <Filter Include="Geometry\Shapes\Headers\Predefined">
       <UniqueIdentifier>{6d5ae7f0-298b-4c07-92c0-af148eb8eff7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="shaders">
-      <UniqueIdentifier>{34231dd6-d490-47b4-93b6-fe29bae4e2f1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\GLSL">
-      <UniqueIdentifier>{a91eda31-1458-42e6-9bf6-46dcd5390add}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\HLSL">
-      <UniqueIdentifier>{f93561ec-0220-4f87-a273-dbf71e175fe0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\HLSL\high">
-      <UniqueIdentifier>{0b6ea519-dd8e-4f30-8ceb-d18a597716b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\HLSL\medium">
-      <UniqueIdentifier>{7b31807e-2d9f-4f0c-99e5-67b5ef811182}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\HLSL\low">
-      <UniqueIdentifier>{b603021b-1413-434e-9547-da61120f9ba7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphs">
       <UniqueIdentifier>{017cb9d0-2540-4f7a-8d02-9290c1d4d28c}</UniqueIdentifier>
     </Filter>
@@ -238,12 +220,6 @@
     </Filter>
     <Filter Include="Dynamics\Physics\PhysX\Headers">
       <UniqueIdentifier>{719e71b7-3874-4e2f-a0f7-0cefea42350d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\GLSL\fragmentAtoms">
-      <UniqueIdentifier>{7227fcef-ee04-4ec6-9e67-b2096ccb09eb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\GLSL\vertexAtoms">
-      <UniqueIdentifier>{1d032943-932c-4c32-a112-6120f9f95590}</UniqueIdentifier>
     </Filter>
     <Filter Include="Rendering\RenderPass">
       <UniqueIdentifier>{1aee5e88-bfca-4386-a563-03dc6103e32e}</UniqueIdentifier>
@@ -379,9 +355,6 @@
     </Filter>
     <Filter Include="Core\Math\BoundingVolumes\Headers">
       <UniqueIdentifier>{eac76e15-e963-4180-9ceb-58070627d139}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\GLSL\geometryAtoms">
-      <UniqueIdentifier>{8034d24d-b5ab-4a01-b443-d74118655719}</UniqueIdentifier>
     </Filter>
     <Filter Include="GUI\CEGUIAddons">
       <UniqueIdentifier>{4be1cd0d-9f4a-4a71-809a-789dee5399f8}</UniqueIdentifier>
@@ -839,9 +812,6 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshLoader.cpp">
       <Filter>AI\PathFinding\NavMeshes</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp">
       <Filter>AI\PathFinding\NavMeshes</Filter>
     </ClCompile>
@@ -871,6 +841,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp">
       <Filter>Core\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideRecast.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp">
+      <Filter>AI\PathFinding</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1352,9 +1328,6 @@
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h">
       <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h">
-      <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h">
       <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
     </ClInclude>
@@ -1376,118 +1349,16 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideRecast.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\blur.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\bright.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\grass.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\sky.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\terrain.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\water.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
     <None Include="..\..\localisation\enGB.ini">
       <Filter>Languages</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom">
-      <Filter>shaders\GLSL\geometryAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\FXAA.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\DepthOfField.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\depthPass.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
-      <Filter>shaders\GLSL\vertexAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert">
-      <Filter>shaders\GLSL\vertexAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
-      <Filter>shaders\GLSL\vertexAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert">
-      <Filter>shaders\GLSL\vertexAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fboPreview.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">
-      <Filter>shaders\GLSL\vertexAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl">
-      <Filter>shaders\GLSL</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -200,7 +200,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideRecast.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -358,7 +359,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideRecast.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMesh.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h" />
@@ -529,42 +531,6 @@
     <ClInclude Include="..\..\Source Code\SceneList.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\blur.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\bright.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\DepthOfField.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\depthPass.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\fboPreview.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag" />
-    <None Include="..\..\assets\shaders\GLSL\FXAA.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom" />
-    <None Include="..\..\assets\shaders\GLSL\grass.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\lighting.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\sky.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\terrain.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert" />
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert" />
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert" />
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert" />
-    <None Include="..\..\assets\shaders\GLSL\water.glsl" />
     <None Include="..\..\localisation\enGB.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
