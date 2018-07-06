@@ -309,13 +309,13 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         GLCheck(glEnable(GL_MULTISAMPLE));
     }
 
-	if(Config::USE_HARDWARE_AA_LINES){
-		GLCheck(glEnable(GL_LINE_SMOOTH));
-		GLCheck(glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, &_lineWidthLimit));
-	}else{
-		GLCheck(glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, &_lineWidthLimit));
-		
-	}
+    if(Config::USE_HARDWARE_AA_LINES){
+        GLCheck(glEnable(GL_LINE_SMOOTH));
+        GLCheck(glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, &_lineWidthLimit));
+    }else{
+        GLCheck(glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, &_lineWidthLimit));
+        
+    }
 
     glfwSwapInterval(par.getParam<bool>("runtime.enableVSync",false) ? 1 : 0);
     GLint numberOfDisplayModes;
@@ -326,25 +326,25 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     _closeLoadingThread = false;
     _loaderThread = New boost::thread(&GL_API::loadInContextInternal, DELEGATE_REF(GL_API::getInstance()));
 
-	_anisotropySupported = (glewIsSupported("GL_EXT_texture_filter_anisotropic") == GL_TRUE);
-	_texCompressionSupported = (glewIsSupported("GL_EXT_texture_compression_s3tc") == GL_TRUE);
-	if(!_anisotropySupported || !_texCompressionSupported){
-		//check manually as GLEW has some issues with 3.0+
-		GLint num = 0;
-		GLCheck(glGetIntegerv(GL_NUM_EXTENSIONS, &num));
-		while(0 < --num) {
-			std::string ext((const char*) glGetStringi(GL_EXTENSIONS, num-1));
-			if(!_anisotropySupported && ext.compare("GL_EXT_texture_filter_anisotropic") == 0) _anisotropySupported = true;
-			if(!_texCompressionSupported && ext.compare("GL_EXT_texture_compression_s3tc") == 0) _texCompressionSupported = true;	
-		}
-	}
+    _anisotropySupported = (glewIsSupported("GL_EXT_texture_filter_anisotropic") == GL_TRUE);
+    _texCompressionSupported = (glewIsSupported("GL_EXT_texture_compression_s3tc") == GL_TRUE);
+    if(!_anisotropySupported || !_texCompressionSupported){
+        //check manually as GLEW has some issues with 3.0+
+        GLint num = 0;
+        GLCheck(glGetIntegerv(GL_NUM_EXTENSIONS, &num));
+        while(0 < --num) {
+            std::string ext((const char*) glGetStringi(GL_EXTENSIONS, num-1));
+            if(!_anisotropySupported && ext.compare("GL_EXT_texture_filter_anisotropic") == 0) _anisotropySupported = true;
+            if(!_texCompressionSupported && ext.compare("GL_EXT_texture_compression_s3tc") == 0) _texCompressionSupported = true;	
+        }
+    }
 
-	if(!_anisotropySupported){
-		ERROR_FN(Locale::get("ERROR_NO_ANISO_SUPPORT"));
-	}
-	if(!_texCompressionSupported){
-		ERROR_FN(Locale::get("ERROR_NO_S3TC_SUPPORT"));
-	}
+    if(!_anisotropySupported){
+        ERROR_FN(Locale::get("ERROR_NO_ANISO_SUPPORT"));
+    }
+    if(!_texCompressionSupported){
+        ERROR_FN(Locale::get("ERROR_NO_S3TC_SUPPORT"));
+    }
 
     //OpenGL is up and ready
     Divide::GL::_contextAvailable = true;
@@ -363,11 +363,27 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 */
     _queryBackBuffer = 0;
     _queryFrontBuffer = 1;
+    for(U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i)
+        for(U8 j = 0; PERFORMANCE_COUNTERS < 1; ++j)
+            _queryID[i][j] = 0;
+
     GLCheck(glGenQueries(PERFORMANCE_COUNTERS, _queryID[_queryBackBuffer]));
     GLCheck(glGenQueries(PERFORMANCE_COUNTERS, _queryID[_queryFrontBuffer]));
- 
+#ifdef _DEBUG
+    for(U8 i = 0; i < PERFORMANCE_COUNTERS; ++i){
+        assert(_queryID[_queryBackBuffer] != 0);
+        assert(_queryID[_queryFrontBuffer] != 0);
+    }
+#endif
     // dummy query to prevent OpenGL errors from popping out
-    GLCheck(glQueryCounter(_queryID[_queryFrontBuffer][0], GL_TIMESTAMP));
+    //GLCheck(glQueryCounter(_queryID[_queryFrontBuffer][0], GL_TIMESTAMP));
+    GLCheck(glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryFrontBuffer][0]));
+    GLCheck(glEndQuery(GL_TIME_ELAPSED));
+    // wait until the results are available
+    GLint stopTimerAvailable = 0;
+    while (!stopTimerAvailable) {
+        glGetQueryObjectiv(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
+    }
 
     for(GLuint index = 0; index < Config::MAX_CLIP_PLANES; ){
         _activeClipPlanes[index++] = false;
@@ -407,17 +423,17 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     GFX_DEVICE.changeResolution(resolution.width,resolution.height);
 
      _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
-	if (_fonsContext == NULL) {
-		ERROR_FN(Locale::get("ERROR_FONT_INIT"));
-		return GLFW_WINDOW_INIT_ERROR;
-	}
-	NS_GLIM::glim.SetVertexAttribLocation(Divide::GL::VERTEX_POSITION_LOCATION);
+    if (_fonsContext == NULL) {
+        ERROR_FN(Locale::get("ERROR_FONT_INIT"));
+        return GLFW_WINDOW_INIT_ERROR;
+    }
+    NS_GLIM::glim.SetVertexAttribLocation(Divide::GL::VERTEX_POSITION_LOCATION);
     return 0;
 }
 
 void GL_API::exitRenderLoop(bool killCommand) {
-	glfonsDelete(_fonsContext);
-	_fonsContext = NULL;
+    glfonsDelete(_fonsContext);
+    _fonsContext = NULL;
     Divide::GL::_applicationClosing = true;
     glfwSetWindowShouldClose(Divide::GL::_mainWindow,true);
     glfwSetWindowShouldClose(Divide::GL::_loaderWindow,true);

@@ -235,7 +235,7 @@ public:
            void popWorldMatrix(const bool force = false); 
            void cleanMatrices();
 
-	inline void setViewDirty(const bool state)        { _VDirty = state; }
+    inline void setViewDirty(const bool state)        { _VDirty = state; }
     inline void setProjectionDirty(const bool state)  {_PDirty = state;}
 
     inline U64 getFrameDurationGPU() const { return _api.getFrameDurationGPU(); }

@@ -114,15 +114,16 @@ public:
     void start();
     void stop();
     void print() const;
-
     void reset();
 
     inline const char* name() const {return _name;}
     inline D32         get()  const {return _timer;}
     inline bool        init() const {return _init;}
+    inline void pause(const bool state) {_paused = state;}
 
 protected:
     const char*        _name;
+    boost::atomic_bool _paused;
     boost::atomic_bool _init;
     boost::atomic<D32> _timer;
     boost::atomic<D32> _timerAverage;
@@ -151,7 +152,10 @@ protected:
     }
 
 #else
-    class ProfileTimer {};
+    class ProfileTimer { 
+        public:
+            inline void pause(const bool state) {}
+    };
     inline ProfileTimer* ADD_TIMER(const char* timerName) {return NULL;}
     inline void START_TIMER(ProfileTimer* const timer)  {}
     inline void STOP_TIMER(ProfileTimer* const timer)   {}

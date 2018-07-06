@@ -26,60 +26,60 @@
 template <class T>
 class Singleton{
 public :
-	inline static T& getOrCreateInstance() {
-		if (!_instance){
-			_instance = new T;
-		}
+    inline static T& getOrCreateInstance() {
+        if (!_instance){
+            _instance = new T;
+        }
 
-		return *_instance;
-	}
+        return *_instance;
+    }
 
     inline static bool hasInstance() {
         return _instance != NULL;
     }
 
-	inline static T& getInstance() {
-		return *_instance;
-	}
+    inline static T& getInstance() {
+        return *_instance;
+    }
 
-	inline static void createInstance() {
-		if (!_instance)
-			_instance = new T;
-	}
+    inline static void createInstance() {
+        if (!_instance)
+            _instance = new T;
+    }
 
-	inline static void destroyInstance() {
-		if(_instance){
-			delete _instance;
-			_instance = 0;
-		}
-	}
+    inline static void destroyInstance() {
+        if(_instance){
+            delete _instance;
+            _instance = 0;
+        }
+    }
 
 protected :
-	Singleton() {}
-	virtual ~Singleton() {}
+    Singleton() {}
+    virtual ~Singleton() {}
 
 private :
-	///C++11 standard assures a static instance should be thread safe:
-	//"if control enters the declaration concurrently while the variable is being initialized,
-	//the concurrent execution shall wait for completion of the initialization."
-	static T* _instance;
-	Singleton(Singleton&);
-	void operator =(Singleton&);
+    ///C++11 standard assures a static instance should be thread safe:
+    //"if control enters the declaration concurrently while the variable is being initialized,
+    //the concurrent execution shall wait for completion of the initialization."
+    static T* _instance;
+    Singleton(Singleton&);
+    void operator =(Singleton&);
 };
 
 template <class T> T* Singleton<T>::_instance = 0;
 
 #define DEFINE_SINGLETON(class_name) \
-	class class_name : public Singleton<class_name> { \
-		friend class Singleton<class_name>;
+    class class_name : public Singleton<class_name> { \
+        friend class Singleton<class_name>;
 
 #define DEFINE_SINGLETON_EXT1(class_name, base_class) \
-	class class_name : public Singleton<class_name> , public base_class{ \
-		friend class Singleton<class_name>;
+    class class_name : public Singleton<class_name> , public base_class{ \
+        friend class Singleton<class_name>;
 
 #define DEFINE_SINGLETON_EXT2(class_name, base_class1, base_class2) \
-	class class_name : public Singleton<class_name> , public base_class1, public base_class2{ \
-		friend class Singleton<class_name>;
+    class class_name : public Singleton<class_name> , public base_class1, public base_class2{ \
+        friend class Singleton<class_name>;
 
 #define END_SINGLETON };
 

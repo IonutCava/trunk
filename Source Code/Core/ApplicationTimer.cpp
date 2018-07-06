@@ -7,7 +7,7 @@
 #pragma message("Use apropriate conversion in time sensitive code (see core.h)")
 
 #if defined(_DEBUG) || defined(_PROFILE)
-ProfileTimer::ProfileTimer() : _init(false), _timer(0.0), _timerAverage(0.0), _timerCounter(0)
+ProfileTimer::ProfileTimer() : _init(false), _paused(false), _timer(0.0), _timerAverage(0.0), _timerCounter(0)
 {
 }
 
@@ -27,6 +27,10 @@ void ProfileTimer::start(){
 }
 
 void ProfileTimer::stop(){
+    if(_paused) {
+        reset();
+        return;
+    }
     _timer = getUsToMs(ApplicationTimer::getInstance().getElapsedTime(true)) - _timer;
     _timerAverage = _timerAverage + _timer;
     _timerCounter++;

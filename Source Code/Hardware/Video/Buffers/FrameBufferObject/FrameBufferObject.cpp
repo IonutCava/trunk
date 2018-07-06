@@ -23,18 +23,18 @@ FrameBufferObject::~FrameBufferObject()
 
 bool FrameBufferObject::AddAttachment(const TextureDescriptor& descriptor,
                                       TextureDescriptor::AttachmentType slot){
-	bool invalidAtt = false;
+    bool invalidAtt = false;
     //Validation
     switch(_fboType){
-		case FBO_2D_COLOR_MS: { // will convert to TEXTURE_2D_MULTISAMPLE if needed later
-			if(descriptor._type != TEXTURE_2D && descriptor._type != TEXTURE_2D_MS){
-				invalidAtt = true;
-			}
-		}break;
+        case FBO_2D_COLOR_MS: { // will convert to TEXTURE_2D_MULTISAMPLE if needed later
+            if(descriptor._type != TEXTURE_2D && descriptor._type != TEXTURE_2D_MS){
+                invalidAtt = true;
+            }
+        }break;
         case FBO_2D_DEFERRED:
         case FBO_2D_DEPTH: {
             if(descriptor._type != TEXTURE_2D){
-				invalidAtt = true;
+                invalidAtt = true;
             }
         }break;
         case FBO_2D_COLOR:
@@ -57,10 +57,10 @@ bool FrameBufferObject::AddAttachment(const TextureDescriptor& descriptor,
         }break;
     };
 
-	if(invalidAtt){
-		ERROR_FN(Locale::get("ERROR_FBO_ATTACHEMENT_DIFFERENT"),(I32) slot);
+    if(invalidAtt){
+        ERROR_FN(Locale::get("ERROR_FBO_ATTACHEMENT_DIFFERENT"),(I32) slot);
         return false;
-	}
+    }
 
     _attachementDirty[slot] = true;
     _attachement[slot] = descriptor;

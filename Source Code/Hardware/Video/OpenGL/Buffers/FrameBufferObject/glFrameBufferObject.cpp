@@ -33,10 +33,10 @@ glFrameBufferObject::glFrameBufferObject(FBOType type) : FrameBufferObject(type)
     if(type == FBO_CUBE_DEPTH || type == FBO_2D_ARRAY_DEPTH || type == FBO_CUBE_DEPTH_ARRAY || type == FBO_2D_DEPTH){
         toggleColorWrites(false);
     }
-	// if MSAA is disabled, this will be a simple color buffer
-	if(type == FBO_2D_COLOR_MS && !GL_API::useMSAA()){
-		_textureType = GL_TEXTURE_2D;
-	}
+    // if MSAA is disabled, this will be a simple color buffer
+    if(type == FBO_2D_COLOR_MS && !GL_API::useMSAA()){
+        _textureType = GL_TEXTURE_2D;
+    }
 }
 
 glFrameBufferObject::~glFrameBufferObject()
@@ -50,11 +50,11 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
     //If it changed
     if(_attachementDirty[type]){
         U8 slot = type;
-		TextureType currentType = texDescriptor._type;
-		// convert to proper type if we are using msaa
-		if(type == FBO_2D_COLOR_MS && GL_API::useMSAA() && currentType == TEXTURE_2D){
-			currentType = TEXTURE_2D_MS;
-		}
+        TextureType currentType = texDescriptor._type;
+        // convert to proper type if we are using msaa
+        if(_fboType == FBO_2D_COLOR_MS && GL_API::useMSAA() && currentType == TEXTURE_2D){
+            currentType = TEXTURE_2D_MS;
+        }
         //And get the image formats and data type
         if(_textureType != glTextureTypeTable[currentType]){
             ERROR_FN(Locale::get("ERROR_FBO_ATTACHEMENT_DIFFERENT"), (I32)slot);
@@ -72,8 +72,8 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
 
         //generate a new texture attachement
         //anisotrophic filtering is only added to color attachements
-		if (sampler.anisotropyLevel() > 1 && _mipMapEnabled[slot] && type != TextureDescriptor::Depth && GL_API::_anisotropySupported) {
-	       U8 anisoLevel = std::min<I32>((I32)sampler.anisotropyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
+        if (sampler.anisotropyLevel() > 1 && _mipMapEnabled[slot] && type != TextureDescriptor::Depth && GL_API::_anisotropySupported) {
+           U8 anisoLevel = std::min<I32>((I32)sampler.anisotropyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
            GLCheck(glTexParameteri(_textureType, GL_TEXTURE_MAX_ANISOTROPY_EXT,anisoLevel));
         }
 
@@ -105,7 +105,11 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
                                         _width,        0, format,
                                         dataType, NULL));
             }break;
-            case GL_TEXTURE_2D_MULTISAMPLE:
+            case GL_TEXTURE_2D_MULTISAMPLE:{
+                GLubyte samples = ParamHandler::getInstance().getParam<GLubyte>("rendering.FSAAsamples",2);
+                 GLCheck(glTexImage2DMultisample(_textureType,samples, internalFormat,
+                                                 _width, _height,GL_TRUE));
+            }break;
             case GL_TEXTURE_2D:{
                 GLCheck(glTexImage2D(_textureType,    0, internalFormat,
                                         _width, _height, 0, format,
@@ -155,7 +159,9 @@ void glFrameBufferObject::AddDepthBuffer(){
     TextureType texType = (_textureType == GL_TEXTURE_2D_ARRAY || 
                            _textureType == GL_TEXTURE_CUBE_MAP_ARRAY) ? 
                            TEXTURE_2D_ARRAY : TEXTURE_2D;
-
+    if(_fboType == FBO_2D_COLOR_MS && GL_API::useMSAA() && texType == TEXTURE_2D){
+        texType = TEXTURE_2D_MS;
+    }
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
     screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);

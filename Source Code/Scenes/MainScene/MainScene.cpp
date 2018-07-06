@@ -30,7 +30,6 @@ bool MainScene::updateLights(){
 }
 
 void MainScene::preRender(){
-    updateLights();
 }
 
 void MainScene::postRender(){
@@ -112,6 +111,7 @@ void MainScene::processInput(const U64 deltaTime){
 }
 
 void MainScene::processTasks(const U64 deltaTime){
+    updateLights();
     D32 SunDisplay = getSecToMs(1.50);
     D32 FpsDisplay = getSecToMs(0.5);
     D32 TimeDisplay = getSecToMs(1.0);

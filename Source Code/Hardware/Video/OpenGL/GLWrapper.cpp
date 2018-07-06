@@ -30,7 +30,7 @@ namespace IMPrimitiveValidation{
 }
 
 void GL_API::beginFrame(){
-    //GLCheck(glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]));
+    GLCheck(glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]));
     GLCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     SET_DEFAULT_STATE_BLOCK();
@@ -55,8 +55,8 @@ void GL_API::endFrame(){
     clearStates(false,false,false,true);
 
     glfwSwapBuffers(Divide::GL::_mainWindow);
-    //GLCheck(glEndQuery(GL_TIME_ELAPSED));
-    //GLCheck(glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &_frameDurationGPU));
+    GLCheck(glEndQuery(GL_TIME_ELAPSED));
+    GLCheck(glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &_frameDurationGPU));
 
     if (_queryBackBuffer) {
         _queryBackBuffer = 0;
@@ -196,7 +196,7 @@ void GL_API::releaseLineState(const bool ortho){
 void GL_API::drawDebugAxisInternal(){
     if(!GFX_DEVICE.drawDebugAxis()) return;
 
-	if(_axisPointsA.empty()){
+    if(_axisPointsA.empty()){
         vec3<GLfloat> ORG(0,0,0);
         vec3<GLfloat> XP(1,0,0);
         vec3<GLfloat> YP(0,1,0);
@@ -238,7 +238,7 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
                        const bool orthoMode,
                        const bool disableDepth){
     // We need a perfect pair of point A's to point B's
-	// We need a color for each line, even if it is the same one
+    // We need a color for each line, even if it is the same one
     if(pointsA.size() != pointsB.size() || pointsA.size() != colors.size()) return;
     
 

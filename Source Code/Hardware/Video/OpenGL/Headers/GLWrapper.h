@@ -56,7 +56,7 @@ private:
                _prevSizeNode(0),
                _prevSizeString(0),
                _frameDurationGPU(0),
-			   _lineWidthLimit(1)
+               _lineWidthLimit(1)
     {
     }
 
@@ -82,7 +82,7 @@ private:
     void flush();
     void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll);
 
-	void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
+    void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
 
     FrameBufferObject*  newFBO(const FBOType& type);
     VertexBufferObject* newVBO(const PrimitiveType& type);
@@ -147,7 +147,7 @@ protected:
     friend class glFrameBufferObject;
     friend class glDeferredBufferObject;
     friend class glTextureArrayBufferObject;
-	inline static bool useMSAA() {return _useMSAA; }
+    inline static bool useMSAA() {return _useMSAA; }
            static void restoreViewport();
            static vec4<GLuint> setViewport(const vec4<GLuint>& viewport, bool force = false);
            static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
@@ -209,8 +209,8 @@ private: //OpenGL specific:
     RenderStateBlock*     _defaultStateNoDepth; //<The default render state buth with GL_DEPTH_TEST false
     bool                  _2DRendering;
 
-	// line width limit
-	GLint _lineWidthLimit;
+    // line width limit
+    GLint _lineWidthLimit;
     vectorImpl<vec3<GLfloat> > _pointsA, _axisPointsA;
     vectorImpl<vec3<GLfloat> > _pointsB, _axisPointsB;
     vectorImpl<vec4<GLubyte> > _colors, _axisColors;
@@ -224,17 +224,17 @@ private: //OpenGL specific:
     ///2D GUI-like text (bitmap fonts) go in this
     FontCache  _fonts;
 
-	mat4<F32> _ViewProjectionCacheMatrix;
+    mat4<F32> _ViewProjectionCacheMatrix;
     static glslopt_ctx* _GLSLOptContex;
     static glShaderProgram* _activeShaderProgram;
     static GLuint _activeVAOId;
     static GLuint _activeTextureUnit;
     static vec4<GLfloat> _prevClearColor;
-	static bool _viewportForced;
-	static bool _viewportUpdateGL;
-	static bool _useMSAA;
-	static bool _anisotropySupported;
-	static bool _texCompressionSupported;
+    static bool _viewportForced;
+    static bool _viewportUpdateGL;
+    static bool _useMSAA;
+    static bool _anisotropySupported;
+    static bool _texCompressionSupported;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
 
     /// performance counters

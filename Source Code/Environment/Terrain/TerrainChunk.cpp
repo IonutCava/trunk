@@ -10,7 +10,7 @@
 
 void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize){
     for(U8 i=0; i < Config::TERRAIN_CHUNKS_LOD; i++) 
-		ComputeIndicesArray(i, depth, pos, HMsize);
+        ComputeIndicesArray(i, depth, pos, HMsize);
 
     _grassData._grassVisibility = GET_ACTIVE_SCENE()->state().getGrassVisibility();
 }
@@ -62,7 +62,7 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
     if(lod>0) lod--;
 
     program->Uniform("LODFactor", 1.0f / (lod+1));
-	
+    
     vbo->setFirstElement(&(_indice[lod][0]));
     vbo->setRangeCount(_indice[lod].size());
     GFX_DEVICE.renderBuffer(vbo);

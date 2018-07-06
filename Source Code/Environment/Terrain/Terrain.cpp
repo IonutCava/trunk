@@ -53,7 +53,7 @@ Terrain::~Terrain()
 }
 
 void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-    ///Query shadow state every "_stateRefreshInterval" microseconds
+    //Query shadow state every "_stateRefreshInterval" microseconds
     if (_stateRefreshIntervalBuffer >= _stateRefreshInterval){
         _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
 
@@ -68,18 +68,18 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
 
 #pragma message("ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut")
 void Terrain::prepareMaterial(SceneGraphNode* const sgn){
-    ///Transform the Object (Rot, Trans, Scale)
+    //Transform the Object (Rot, Trans, Scale)
     if(!GFX_DEVICE.excludeFromStateChange(getType())){ ///< only if the node is not in the exclusion mask
         _terrainTransform = sgn->getTransform();
     }
 
-    ///Prepare the main light (directional light only, sun) for now.
+    //Prepare the main light (directional light only, sun) for now.
     if(!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
-        ///Find the most influental light for the terrain. Usually the Sun
+        //Find the most influental light for the terrain. Usually the Sun
         _lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
-        ///Update lights for this node
+        //Update lights for this node
         LightManager::getInstance().update();
-        ///Only 1 shadow map for terrains
+        //Only 1 shadow map for terrains
     }
     CLAMP<U8>(_lightCount, 0, 1);
     if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
@@ -184,7 +184,6 @@ void Terrain::drawInfinitePlain(){
 
 void Terrain::drawGround() const{
     assert(_groundVBO);
-    _groundVBO->currentShader()->uploadNodeMatrices();
     _terrainQuadtree->DrawGround(_drawReflected);
 }
 

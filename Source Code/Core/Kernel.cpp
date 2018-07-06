@@ -138,7 +138,7 @@ void Kernel::mainLoopApp(){
     static I32 count = 0;
     count++;
     if(count > 600){
-        PRINT_FN("GPU: [ %llu ]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()));
+        PRINT_FN("GPU: [ %5.5f ]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()));
         count = 0;
     }
 #endif

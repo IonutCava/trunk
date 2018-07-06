@@ -95,6 +95,7 @@ void LightManager::idle(){
     F32 worldDepth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getDepth();
     _worldHalfExtent = std::max(worldWidth, worldDepth) * 0.5f;
     CLAMP<F32>(_worldHalfExtent, 1.0f, (F32)Config::DIRECTIONAL_LIGHT_DISTANCE);
+    s_shadowPassTimer->pause(!_shadowMapsEnabled);
 }
 
 ///Check light properties for every light (this is bound to the camera change listener group

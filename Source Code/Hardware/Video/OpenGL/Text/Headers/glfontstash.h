@@ -45,6 +45,7 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
     glBindTexture(GL_TEXTURE_2D, gl->tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
     return 1;
 }
 
@@ -61,6 +62,7 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
     glPixelStorei(GL_UNPACK_SKIP_PIXELS, rect[0]);
     glPixelStorei(GL_UNPACK_SKIP_ROWS, rect[1]);
     glTexSubImage2D(GL_TEXTURE_2D, 0, rect[0], rect[1], w, h, GL_RED, GL_UNSIGNED_BYTE, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 static void glfons__renderDraw(void* userPtr, const float* verts, const float* tcoords, const unsigned char* colors, int nverts)
@@ -88,7 +90,9 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
 
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 static void glfons__renderDelete(void* userPtr)

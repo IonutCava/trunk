@@ -194,7 +194,7 @@ void GFXDevice::renderBuffer(VertexBufferObject* const vbo, Transform* const vbo
         updateStates();
      
     if(vboTransform){
-         pushWorldMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
+        pushWorldMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
     }
          
     vbo->currentShader()->uploadNodeMatrices();
