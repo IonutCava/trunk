@@ -33,10 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TASK_POOL_H_
 #define _TASK_POOL_H_
 
-#if !defined(USE_BOOST_ASIO_THREADPOOL)
-#include <Threadpool/ThreadPool.h>
-#endif
-
 #include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {
@@ -47,7 +43,7 @@ class TaskPool : public GUIDWrapper {
     explicit TaskPool();
     ~TaskPool();
     
-    bool init(U32 threadCount,const stringImpl& workerName = "DVD_WORKER");
+    bool init(U8 threadCount, bool lockFree, const stringImpl& workerName = "DVD_WORKER");
     void shutdown();
 
     void flushCallbackQueue();
@@ -55,7 +51,7 @@ class TaskPool : public GUIDWrapper {
 
     Task* createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction);
 
-    inline U32 workerThreadCount() const noexcept {
+    inline U8 workerThreadCount() const noexcept {
         return _workerThreadCount;
     }
 
@@ -93,7 +89,7 @@ class TaskPool : public GUIDWrapper {
     std::atomic_uint _runningTaskCount;
     std::atomic_bool _stopRequested = false;
     hashMap<U32, DELEGATE_CBK<void>> _taskCallbacks;
-    U32 _workerThreadCount;
+    U8 _workerThreadCount;
 };
 
 TaskHandle CreateTask(TaskPool& pool,

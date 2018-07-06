@@ -657,6 +657,9 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\DescriptorSets.cpp">
       <Filter>Video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Threading\ThreadPool.cpp">
+      <Filter>Threading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

@@ -37,6 +37,61 @@ namespace Divide {
 
 typedef std::function<void()> PoolTask;
 
+// Dead simple ThreadPool class
+class ThreadPool
+{
+public:
+
+    explicit ThreadPool(const U8 threadCount);
+    virtual ~ThreadPool();
+
+    // Add a new task to the pool's queue
+    virtual void addTask(const PoolTask& job) = 0;
+
+    // Join all of the threads and block until all running tasks have completed.
+    void join();
+
+    // Wait for all running jobs to finish
+    void wait();
+
+    // Get all of the threads for external usage (e.g. setting affinity)
+    eastl::vector<std::thread>& threads();
+
+protected:
+    bool _isRunning = false;;
+    std::atomic_int _tasksLeft;
+    eastl::vector<std::thread> _threads;
+};
+
+
+class BlockingThreadPool final : public ThreadPool
+{
+public:
+
+    explicit BlockingThreadPool(const U8 threadCount);
+    ~BlockingThreadPool();
+
+    // Add a new task to the pool's queue
+    void addTask(const PoolTask& job) override;
+
+private:
+    moodycamel::BlockingConcurrentQueue<PoolTask> _queue;
+};
+
+
+class LockFreeThreadPool final : public ThreadPool
+{
+public:
+
+    explicit LockFreeThreadPool(const U8 threadCount);
+    ~LockFreeThreadPool();
+
+    // Add a new task to the pool's queue
+    void addTask(const PoolTask& job) override;
+
+private:
+    moodycamel::ConcurrentQueue<PoolTask> _queue;
+};
 }; //namespace Divide
 
 #endif //_PLATFORM_TASK_POOL_H_

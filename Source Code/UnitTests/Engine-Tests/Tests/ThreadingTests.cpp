@@ -16,15 +16,15 @@ TEST(TaskPoolContructionTest)
     TaskPool test;
 
     // Not enough workers
-    bool init = test.init(0);
+    bool init = test.init(0, false);
     CHECK_FALSE(init);
 
     // Valid
-    init = test.init(1);
+    init = test.init(1, false);
     CHECK_TRUE(init);
 
     // Double init
-    init = test.init(HARDWARE_THREAD_COUNT());
+    init = test.init(HARDWARE_THREAD_COUNT(), false);
     CHECK_FALSE(init);
 }
 
@@ -33,7 +33,7 @@ TEST(ParallelForTest)
     Console::toggleErrorStream(false);
 
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT());
+    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
     CHECK_TRUE(init);
 
     const U32 partitionSize = 4;
@@ -58,7 +58,7 @@ TEST(ParallelForTest)
 TEST(TaskCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT());
+    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
     CHECK_TRUE(init);
 
     std::atomic_bool testValue = false;
@@ -113,7 +113,7 @@ namespace {
 TEST(TaskClassMemberCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT());
+    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
     CHECK_TRUE(init);
 
     ThreadedTest testObj;
@@ -136,37 +136,66 @@ TEST(TaskClassMemberCallbackTest)
 TEST(TaskSpeedTest)
 {
     
-    TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT());
-    CHECK_TRUE(init);
+    {
+        TaskPool test;
+        bool init = test.init(HARDWARE_THREAD_COUNT(), false);
+        CHECK_TRUE(init);
 
-    Time::ProfileTimer timer;
+        Time::ProfileTimer timer;
 
-    timer.start();
-    TaskHandle job = CreateTask(test, 
-        [](const Task& parentTask) {
+        timer.start();
+        TaskHandle job = CreateTask(test,
+            [](const Task& parentTask) {
             // NOP
         }
-    );
+        );
 
-    for (std::size_t i = 0; i < 60 * 1000; ++i)
-    {
-        CreateTask(test, &job,
-            [](const Task& parentTask) {
+        for (std::size_t i = 0; i < 60 * 1000; ++i)
+        {
+            CreateTask(test, &job,
+                [](const Task& parentTask) {
                 // NOP
             }
-        ).startTask();
-    }
+            ).startTask();
+        }
 
-    job.startTask().wait();
-    F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
-    std::cout << "Threading speed test: 60K tasks completed in: " << durationMS << " ms." << std::endl;
+        job.startTask().wait();
+        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        std::cout << "Threading speed test (blocking): 60K tasks completed in: " << durationMS << " ms." << std::endl;
+    }
+    {
+        TaskPool test;
+        bool init = test.init(HARDWARE_THREAD_COUNT(), true);
+        CHECK_TRUE(init);
+
+        Time::ProfileTimer timer;
+
+        timer.start();
+        TaskHandle job = CreateTask(test,
+            [](const Task& parentTask) {
+            // NOP
+        }
+        );
+
+        for (std::size_t i = 0; i < 60 * 1000; ++i)
+        {
+            CreateTask(test, &job,
+                [](const Task& parentTask) {
+                // NOP
+            }
+            ).startTask();
+        }
+
+        job.startTask().wait();
+        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        std::cout << "Threading speed test (lockfree): 60K tasks completed in: " << durationMS << " ms." << std::endl;
+    }
 }
 
 TEST(TaskPriorityTest)
 {
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT());
+    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
     CHECK_TRUE(init);
 
     U32 callbackValue = 0;

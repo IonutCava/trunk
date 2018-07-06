@@ -26,7 +26,7 @@ TaskPool::~TaskPool()
     shutdown();
 }
 
-bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
+bool TaskPool::init(U8 threadCount, bool lockFree, const stringImpl& workerName) {
     if (threadCount == 0 || _mainTaskPool != nullptr) {
         return false;
     }
@@ -35,7 +35,12 @@ bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
 #if defined(USE_BOOST_ASIO_THREADPOOL)
     _mainTaskPool = std::make_unique<boost::asio::thread_pool>(_workerThreadCount);
 #else
-    _mainTaskPool = std::make_unique<ThreadPool>(_workerThreadCount);
+    if (lockFree) {
+        _mainTaskPool = std::make_unique<LockFreeThreadPool>(_workerThreadCount);
+    } else {
+        _mainTaskPool = std::make_unique<BlockingThreadPool>(_workerThreadCount);
+    }
+
 #endif
     _stopRequested.store(false);
     nameThreadpoolWorkers(workerName.c_str());
@@ -55,7 +60,7 @@ bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
 #if defined(USE_BOOST_ASIO_THREADPOOL)
         boost::asio::post(*_mainTaskPool, task);
 #else
-        _mainTaskPool->AddJob(task);
+        _mainTaskPool->addTask(task);
 #endif
     } else {
         task();
@@ -101,8 +106,8 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     _mainTaskPool->stop();
     _mainTaskPool->join();
 #else
-    _mainTaskPool->WaitAll();
-    _mainTaskPool->JoinAll();
+    _mainTaskPool->wait();
+    _mainTaskPool->join();
 #endif
 }
 
@@ -156,9 +161,9 @@ void TaskPool::nameThreadpoolWorkers(const char* name) {
     std::mutex mutex;
     std::condition_variable condition;
     bool predicate = false;
-    std::atomic_size_t count = 0;
+    std::atomic<U8> count = 0;
     UniqueLock lock(mutex);
-    for (std::size_t i = 0; i < _workerThreadCount; ++i) {
+    for (U8 i = 0; i < _workerThreadCount; ++i) {
         enqueue([i, &name, &mutex, &condition, &predicate, &count]() {
             UniqueLock lock(mutex);
             while (!predicate) {

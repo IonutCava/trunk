@@ -608,7 +608,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // That's up to the programmer to decide for each app.
     U32 hardwareThreads = HARDWARE_THREAD_COUNT();
     if (!_platformContext->taskPool().init(
-        std::max(hardwareThreads, 5u) - 3, //at least two worker threads
+        static_cast<U8>(std::max(hardwareThreads, 5u) - 3), //at least two worker threads(what if we have a system with >260 threads?)
+        false,
         "DIVIDE_WORKER_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
