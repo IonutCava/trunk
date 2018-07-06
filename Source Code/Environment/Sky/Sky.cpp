@@ -119,8 +119,8 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     }
 
     GenericDrawCommand cmd;
-    cmd.sourceBuffer(_sky->getGeometryVB());
-    cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
+    cmd._sourceBuffer = _sky->getGeometryVB();
+    cmd._cmd.indexCount = _sky->getGeometryVB()->getIndexCount();
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);

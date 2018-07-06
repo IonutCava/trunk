@@ -42,18 +42,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 struct ImDrawData;
 
-namespace CEGUI {
-    class GUIContext;
-    class TextureTarget;
-};
-
 namespace Divide {
 namespace GFX {
-
-
-// beware of macros!
-#define REGISTER_COMMAND(Type, PoolSize)
-#define TYPE_HANDLER(T) const std::type_info& type() override { return typeid(T); }
 
 enum class CommandType : U8 {
     BEGIN_RENDER_PASS = 0,
@@ -83,278 +73,137 @@ enum class CommandType : U8 {
 
 class CommandBuffer;
 
-struct Command {
-    explicit Command(CommandType type)
-        : _type(type)
-    {
-    }
+struct CommandBase {
+    CommandBase() : CommandBase(CommandType::COUNT, "null") {}
+    CommandBase(CommandType type, const char* typeName) : _type(type), _typeName(typeName) {}
+
+    virtual ~CommandBase() = default;
+
+    virtual const std::type_info& type() const = 0;
+    virtual bool onBufferAdd(CommandBuffer& buffer) const = 0;
+
+    virtual const char* toString() const { return _typeName; }
+
+    CommandType _type;
+    const char* _typeName = nullptr;;
+};
+
+template<typename T, CommandType enumVal>
+struct Command : public CommandBase {
+    Command() : CommandBase(enumVal, TO_STRING(enumVal)) { }
+    
     virtual ~Command() = default;
 
-    virtual const std::type_info& type() = 0;
-    virtual void onAdd(CommandBuffer& buffer) { ACKNOWLEDGE_UNUSED(buffer); }
+    bool onBufferAdd(CommandBuffer& buffer) const override {
+        return buffer.registerType<T>();
+    }
 
-    CommandType _type = CommandType::COUNT;
+    const std::type_info& type() const override { return typeid (T); };
 };
 
-struct BindPipelineCommand final : Command {
-    BindPipelineCommand() : Command(CommandType::BIND_PIPELINE)
-    {
-    }
-
-    TYPE_HANDLER(BindPipelineCommand);
-    void onAdd(CommandBuffer& buffer) override {
-        ACKNOWLEDGE_UNUSED(buffer);
-        assert(_pipeline != nullptr);
-        if (_pipeline->shaderProgramHandle() == 0) {
-            int a;
-            a = 5;
-        }
-    }
-
+struct BindPipelineCommand final : Command<BindPipelineCommand, CommandType::BIND_PIPELINE> {
     const Pipeline* _pipeline = nullptr;
 };
-REGISTER_COMMAND(BindPipelineCommand, 1024);
 
-struct SendPushConstantsCommand final : Command {
-    SendPushConstantsCommand() : Command(CommandType::SEND_PUSH_CONSTANTS)
-    {
-    }
-
-    TYPE_HANDLER(SendPushConstantsCommand);
-
+struct SendPushConstantsCommand final : Command<SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS> {
     PushConstants _constants;
 };
-REGISTER_COMMAND(SendPushConstantsCommand, 1024);
 
-struct DrawCommand final : Command {
-    DrawCommand() : Command(CommandType::DRAW_COMMANDS)
-    {
-    }
-
-    TYPE_HANDLER(DrawCommand);
-
+struct DrawCommand final : Command<DrawCommand, CommandType::DRAW_COMMANDS> {
     vectorEASTL<GenericDrawCommand> _drawCommands;
 };
-REGISTER_COMMAND(DrawCommand, 16384);
 
-struct SetViewportCommand final : Command {
-    SetViewportCommand() : Command(CommandType::SET_VIEWPORT)
-    {
-    }
-
-    TYPE_HANDLER(SetViewportCommand);
-
+struct SetViewportCommand final : Command<SetViewportCommand, CommandType::SET_VIEWPORT> {
     Rect<I32> _viewport;
-};
-REGISTER_COMMAND(SetViewportCommand, 256);
 
-struct BeginRenderPassCommand final : Command {
-    BeginRenderPassCommand() : Command(CommandType::BEGIN_RENDER_PASS)
-    {
+    const char* toString() const override {
+        return (_typeName + Util::StringFormat("[%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w)).c_str();
     }
+};
 
-    TYPE_HANDLER(BeginRenderPassCommand);
-
+struct BeginRenderPassCommand final : Command<BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS> {
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
     eastl::fixed_string<char, 128 + 1, true> _name;
-};
-REGISTER_COMMAND(BeginRenderPassCommand, 256);
 
-struct EndRenderPassCommand final : Command {
-    EndRenderPassCommand() : Command(CommandType::END_RENDER_PASS)
-    {
+    const char* toString() const override {
+        return (stringImpl(_typeName) + _name.c_str()).c_str();
     }
-
-    TYPE_HANDLER(BeginRenderPassCommand);
-
 };
-REGISTER_COMMAND(EndRenderPassCommand, 256);
 
-struct BeginPixelBufferCommand final : Command {
-    BeginPixelBufferCommand() : Command(CommandType::BEGIN_PIXEL_BUFFER)
-    {
-    }
+struct EndRenderPassCommand final : Command<EndRenderPassCommand, CommandType::END_RENDER_PASS> {
+};
 
-    TYPE_HANDLER(EndRenderPassCommand);
-
+struct BeginPixelBufferCommand final : Command<BeginPixelBufferCommand, CommandType::BEGIN_PIXEL_BUFFER> {
     PixelBuffer* _buffer = nullptr;
     DELEGATE_CBK<void, bufferPtr> _command;
 };
-REGISTER_COMMAND(BeginPixelBufferCommand, 128);
 
-struct EndPixelBufferCommand final : Command {
-    EndPixelBufferCommand() : Command(CommandType::END_PIXEL_BUFFER)
-    {
-    }
-
-    TYPE_HANDLER(BeginPixelBufferCommand);
-
+struct EndPixelBufferCommand final : Command<EndPixelBufferCommand, CommandType::END_PIXEL_BUFFER> {
 };
-REGISTER_COMMAND(EndPixelBufferCommand, 128);
 
-struct BeginRenderSubPassCommand final : Command {
-    BeginRenderSubPassCommand() : Command(CommandType::BEGIN_RENDER_SUB_PASS)
-    {
-    }
-
-    TYPE_HANDLER(EndPixelBufferCommand);
-
+struct BeginRenderSubPassCommand final : Command<BeginRenderSubPassCommand, CommandType::BEGIN_RENDER_SUB_PASS> {
     U16 _mipWriteLevel = 0u;
 };
-REGISTER_COMMAND(BeginRenderSubPassCommand, 512);
 
-struct EndRenderSubPassCommand final : Command {
-    EndRenderSubPassCommand() : Command(CommandType::END_RENDER_SUB_PASS)
-    {
-    }
-
-    TYPE_HANDLER(BeginRenderSubPassCommand);
-
+struct EndRenderSubPassCommand final : Command<EndRenderSubPassCommand, CommandType::END_RENDER_SUB_PASS> {
 };
-REGISTER_COMMAND(EndRenderSubPassCommand, 512);
 
-struct BlitRenderTargetCommand final : Command {
-    BlitRenderTargetCommand() : Command(CommandType::BLIT_RT)
-    {
-    }
-
-    TYPE_HANDLER(EndRenderSubPassCommand);
-
+struct BlitRenderTargetCommand final : Command<BlitRenderTargetCommand, CommandType::BLIT_RT> {
     bool _blitColour = true;
     bool _blitDepth = false;
     RenderTargetID _source;
     RenderTargetID _destination;
 };
-REGISTER_COMMAND(BlitRenderTargetCommand, 128);
 
-struct SetScissorCommand final : Command {
-    SetScissorCommand() : Command(CommandType::SET_SCISSOR)
-    {
-    }
-
-    TYPE_HANDLER(BlitRenderTargetCommand);
-
+struct SetScissorCommand final : Command<SetScissorCommand, CommandType::SET_SCISSOR> {
     Rect<I32> _rect;
 };
-REGISTER_COMMAND(SetScissorCommand, 128);
 
-struct SetBlendCommand final : Command {
-    SetBlendCommand() : Command(CommandType::SET_BLEND)
-    {
-    }
-
-    TYPE_HANDLER(SetScissorCommand);
-
+struct SetBlendCommand final : Command<SetBlendCommand, CommandType::SET_BLEND> {
     bool _enabled = true;
     BlendingProperties _blendProperties;
 };
-REGISTER_COMMAND(SetBlendCommand, 256);
 
-struct SetCameraCommand final : Command {
-    SetCameraCommand() : Command(CommandType::SET_CAMERA)
-    {
-    }
-
-    TYPE_HANDLER(SetBlendCommand);
-
+struct SetCameraCommand final : Command<SetCameraCommand, CommandType::SET_CAMERA> {
     Camera* _camera = nullptr;
 };
-REGISTER_COMMAND(SetCameraCommand, 512);
 
-struct SetClipPlanesCommand final : Command {
-    SetClipPlanesCommand() : Command(CommandType::SET_CLIP_PLANES),
-        _clippingPlanes(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
-    {
-    }
-
-    TYPE_HANDLER(SetCameraCommand);
-
+struct SetClipPlanesCommand final : Command<SetClipPlanesCommand, CommandType::SET_CLIP_PLANES> {
     FrustumClipPlanes _clippingPlanes;
 };
-REGISTER_COMMAND(SetClipPlanesCommand, 512);
 
-struct BindDescriptorSetsCommand final : Command {
-    BindDescriptorSetsCommand() : Command(CommandType::BIND_DESCRIPTOR_SETS)
-    {
-    }
-
-    TYPE_HANDLER(BindDescriptorSetsCommand);
-
-    void onAdd(CommandBuffer& buffer) override { 
-        ACKNOWLEDGE_UNUSED(buffer);
-        assert(_set != nullptr);
-    }
-
+struct BindDescriptorSetsCommand final : Command<BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS> {
     DescriptorSet_ptr _set = nullptr;
 };
-REGISTER_COMMAND(BindDescriptorSetsCommand, 1024);
 
-struct BeginDebugScopeCommand final : Command {
-    BeginDebugScopeCommand() : Command(CommandType::BEGIN_DEBUG_SCOPE)
-    {
-    }
-
-    TYPE_HANDLER(BeginDebugScopeCommand);
-
+struct BeginDebugScopeCommand final : Command<BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE> {
     eastl::fixed_string<char, 128 + 1, true> _scopeName;
     I32 _scopeID = -1;
-};
-REGISTER_COMMAND(BeginDebugScopeCommand, 4096);
 
-struct EndDebugScopeCommand final : Command {
-    EndDebugScopeCommand() : Command(CommandType::END_DEBUG_SCOPE)
-    {
+    const char* toString() const override { 
+        return (stringImpl(_typeName) + _scopeName.c_str()).c_str();
     }
-
-    TYPE_HANDLER(EndDebugScopeCommand);
-
 };
-REGISTER_COMMAND(EndDebugScopeCommand, 4096);
 
-struct DrawTextCommand final : Command {
-    DrawTextCommand() : Command(CommandType::DRAW_TEXT)
-    {
-    }
+struct EndDebugScopeCommand final : Command<EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE> {
+};
 
-    TYPE_HANDLER(DrawTextCommand);
-
+struct DrawTextCommand final : Command<DrawTextCommand, CommandType::DRAW_TEXT> {
     TextElementBatch _batch;
 };
-REGISTER_COMMAND(DrawTextCommand, 1024);
 
-struct DrawIMGUICommand final : Command {
-    DrawIMGUICommand() : Command(CommandType::DRAW_IMGUI)
-    {
-    }
-
-    TYPE_HANDLER(DrawIMGUICommand);
-
+struct DrawIMGUICommand final : Command<DrawIMGUICommand, CommandType::DRAW_IMGUI> {
     ImDrawData* _data = nullptr;
 };
-REGISTER_COMMAND(DrawIMGUICommand, 64);
 
-struct DispatchComputeCommand final : Command {
-    DispatchComputeCommand() : Command(CommandType::DISPATCH_COMPUTE)
-    {
-    }
-
-    TYPE_HANDLER(DispatchComputeCommand);
-
+struct DispatchComputeCommand final : Command<DispatchComputeCommand, CommandType::DISPATCH_COMPUTE> {
     ComputeParams _params;
 };
-REGISTER_COMMAND(DispatchComputeCommand, 128);
 
-struct SwitchWindowCommand final : Command {
-    SwitchWindowCommand() : Command(CommandType::SWITCH_WINDOW)
-    {
-    }
-
-    TYPE_HANDLER(SwitchWindowCommand);
-
+struct SwitchWindowCommand final : Command<SwitchWindowCommand, CommandType::SWITCH_WINDOW> {
     I64 windowGUID = -1;
 };
-REGISTER_COMMAND(SwitchWindowCommand, 64);
 
 }; //namespace GFX
 }; //namespace Divide

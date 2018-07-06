@@ -52,7 +52,7 @@ class Camera;
 class Material;
 class ShaderBuffer;
 class PushConstants;
-class GenericDrawCommand;
+struct GenericDrawCommand;
 
 enum class FileUpdateEvent : U8;
 

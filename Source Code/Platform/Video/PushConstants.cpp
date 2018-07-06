@@ -23,20 +23,10 @@ PushConstants::~PushConstants()
     //clear();
 }
 
-PushConstants::PushConstants(const PushConstants& other) 
-    : _data(other._data)
-{
-}
-
-PushConstants& PushConstants::operator=(const PushConstants& other) {
-    _data = other._data;
-    return *this;
-}
-
 void PushConstants::set(const GFX::PushConstant& constant) {
     for (GFX::PushConstant& iter : _data) {
         if (iter._bindingHash == constant._bindingHash) {
-            iter.assign(constant);
+            iter = constant;
             return;
         }
     }

@@ -115,9 +115,9 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    const RenderStagePass& renderStagePass,
                                    RenderPackage& pkgInOut) {
     GenericDrawCommand cmd;
-    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.sourceBuffer(_plane->getGeometryVB());
-    cmd.cmd().indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
+    cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
+    cmd._sourceBuffer = _plane->getGeometryVB();
+    cmd._cmd.indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);

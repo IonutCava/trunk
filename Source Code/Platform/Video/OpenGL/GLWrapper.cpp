@@ -794,7 +794,7 @@ void GL_API::drawIMGUI(ImDrawData* data) {
             U32 vertCount = to_U32(cmd_list->VtxBuffer.size());
             assert(vertCount < MAX_IMGUI_VERTS);
 
-            cmd.cmd().firstIndex = 0;
+            cmd._cmd.firstIndex = 0;
 
             idxBuffer.smallIndices = sizeof(ImDrawIdx) == 2;
             idxBuffer.count = to_U32(cmd_list->IdxBuffer.Size);
@@ -816,11 +816,11 @@ void GL_API::drawIMGUI(ImDrawData* data) {
                                        (I32)(pcmd->ClipRect.z - pcmd->ClipRect.x),
                                        (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
-                    cmd.cmd().indexCount = to_U32(pcmd->ElemCount);
+                    cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
                     _IMGUIBuffer->draw(cmd);
                 }
 
-                cmd.cmd().firstIndex += pcmd->ElemCount;
+                cmd._cmd.firstIndex += pcmd->ElemCount;
             }
         }
     }
@@ -918,19 +918,19 @@ void GL_API::dispatchCompute(const ComputeParams& computeParams) {
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd) {
-    if (cmd.sourceBuffer() == nullptr) {
+    if (cmd._sourceBuffer == nullptr) {
         GL_API::setActiveVAO(s_dummyVAO);
 
         U32 indexCount = 0;
-        switch (cmd.primitiveType()) {
-            case PrimitiveType::TRIANGLES: indexCount = cmd.drawCount() * 3; break;
-            case PrimitiveType::API_POINTS: indexCount = cmd.drawCount(); break;
-            default: indexCount = cmd.cmd().indexCount; break;
+        switch (cmd._primitiveType) {
+            case PrimitiveType::TRIANGLES: indexCount = cmd._drawCount * 3; break;
+            case PrimitiveType::API_POINTS: indexCount = cmd._drawCount; break;
+            default: indexCount = cmd._cmd.indexCount; break;
         }
 
-        glDrawArrays(GLUtil::glPrimitiveTypeTable[to_U32(cmd.primitiveType())], cmd.cmd().firstIndex, indexCount);
+        glDrawArrays(GLUtil::glPrimitiveTypeTable[to_U32(cmd._primitiveType)], cmd._cmd.firstIndex, indexCount);
     } else {
-        cmd.sourceBuffer()->draw(cmd);
+        cmd._sourceBuffer->draw(cmd);
     }
 
     return true;
@@ -1059,10 +1059,10 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 const vectorEASTL<GenericDrawCommand>& drawCommands = commandBuffer.getCommand<GFX::DrawCommand>(cmd)._drawCommands;
                 for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                     if (draw(currentDrawCommand)) {
-                        if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
+                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
                             drawCallCount++;
                         }
-                        if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
                             drawCallCount++;
                         }
                     }

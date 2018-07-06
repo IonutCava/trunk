@@ -337,9 +337,9 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          GLenum internalFormat,
                          GLuint indexBuffer) {
 
-    bool queryPrimitives = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);
-    bool querySampleCount = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_SAMPLE_COUNT);
-    bool querySamplePassed = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_ANY_SAMPLE_RENDERED);
+    bool queryPrimitives = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_PRIMITIVE_COUNT);
+    bool querySampleCount = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_SAMPLE_COUNT);
+    bool querySamplePassed = isEnabledOption(drawCommand, CmdRenderOptions::QUERY_ANY_SAMPLE_RENDERED);
 
     glHardwareQueryRing* primitiveQuery = nullptr;
     glHardwareQueryRing* sampleCountQuery = nullptr;
@@ -360,35 +360,35 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
-        if (drawCommand.drawCount() > 1) {
-            submitMultiIndirectCommand(drawCommand.commandOffset(), drawCommand.drawCount(), mode, internalFormat, indexBuffer);
-        } else if (drawCommand.drawCount() == 1) {
-            submitIndirectCommand(drawCommand.commandOffset(), mode, internalFormat, indexBuffer);
+        if (drawCommand._drawCount > 1) {
+            submitMultiIndirectCommand(drawCommand._commandOffset, drawCommand._drawCount, mode, internalFormat, indexBuffer);
+        } else if (drawCommand._drawCount == 1) {
+            submitIndirectCommand(drawCommand._commandOffset, mode, internalFormat, indexBuffer);
         }
     } else {
-        if (drawCommand.drawCount() > 1) {
-            submitDirectMultiCommand(drawCommand.cmd(), drawCommand.drawCount(), mode, internalFormat, indexBuffer);
-        } else if (drawCommand.drawCount() == 1) {
-            sumitDirectCommand(drawCommand.cmd(), mode, internalFormat, indexBuffer);
+        if (drawCommand._drawCount > 1) {
+            submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, indexBuffer);
+        } else if (drawCommand._drawCount == 1) {
+            sumitDirectCommand(drawCommand._cmd, mode, internalFormat, indexBuffer);
         }
     }
 
     if (queryPrimitives) {
-        U64& result = GenericDrawCommandResults::g_queryResults[drawCommand.sourceBuffer()->getGUID()]._primitivesGenerated;
+        U64& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer->getGUID()]._primitivesGenerated;
         glEndQuery(GL_PRIMITIVES_GENERATED);
         glGetQueryObjectui64v(primitiveQuery->readQuery().getID(),
                               GL_QUERY_RESULT,
                               &result);
     }
     if (querySampleCount) {
-        U32& result = GenericDrawCommandResults::g_queryResults[drawCommand.sourceBuffer()->getGUID()]._samplesPassed;
+        U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer->getGUID()]._samplesPassed;
         glEndQuery(GL_PRIMITIVES_GENERATED);
         glGetQueryObjectuiv(sampleCountQuery->readQuery().getID(),
                             GL_QUERY_RESULT,
                             &result);
     }
     if (querySamplePassed) {
-        U32& result = GenericDrawCommandResults::g_queryResults[drawCommand.sourceBuffer()->getGUID()]._anySamplesPassed;
+        U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer->getGUID()]._anySamplesPassed;
         glEndQuery(GL_PRIMITIVES_GENERATED);
         glGetQueryObjectuiv(anySamplesQuery->readQuery().getID(),
                             GL_QUERY_RESULT,
@@ -407,16 +407,16 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         return;
     }
 
-    DIVIDE_ASSERT(drawCommand.primitiveType() != PrimitiveType::COUNT,
+    DIVIDE_ASSERT(drawCommand._primitiveType != PrimitiveType::COUNT,
                   "GLUtil::submitRenderCommand error: Draw command's type is not valid!");
     
-    GL_API::toggleRasterization(!drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_NO_RASTERIZE));
+    GL_API::toggleRasterization(!isEnabledOption(drawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE));
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    if (drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-        GLenum mode = glPrimitiveTypeTable[to_U32(drawCommand.primitiveType())];
+    if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
+        GLenum mode = glPrimitiveTypeTable[to_U32(drawCommand._primitiveType)];
         submitRenderCommand(drawCommand, mode, useIndirectBuffer, internalFormat, indexBuffer);
     }
-    if (drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+    if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
         submitRenderCommand(drawCommand, GL_LINE_LOOP, useIndirectBuffer, internalFormat, indexBuffer);
     }
 }

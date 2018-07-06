@@ -109,8 +109,13 @@ public:
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
  
 protected:
-    // Return true if the command buffer was reconstructed
-    bool buildCommandBuffer();
+    
+    inline GFX::CommandBuffer& buildAndGetCommandBuffer() {
+        bool cacheMiss = false;
+        return buildAndGetCommandBuffer(cacheMiss);
+    }
+
+    GFX::CommandBuffer& buildAndGetCommandBuffer(bool cacheMiss);
     GFX::DrawCommand& drawCommand(I32 cmdIdx);
     DescriptorSet_ptr& descriptorSet(I32 index);
 
@@ -147,7 +152,9 @@ namespace Attorney {
 
         // Return true if the command buffer was reconstructed
         static bool buildCommandBuffer(RenderPackage& pkg) {
-            return pkg.buildCommandBuffer();
+            bool cacheMiss = false;
+            pkg.buildAndGetCommandBuffer(cacheMiss);
+            return cacheMiss;
         }
 
         static GFX::DrawCommand& drawCommand(RenderPackage& pkg, I32 cmdIdx) {
@@ -159,13 +166,9 @@ namespace Attorney {
 
     class RenderPackageRenderPackageQueue {
         private:
-        static GFX::CommandBuffer* commands(const RenderPackage& pkg) {
-            return pkg._commands;
-        }
-
         // Return true if the command buffer was reconstructed
-        static bool buildCommandBuffer(RenderPackage& pkg) {
-            return pkg.buildCommandBuffer();
+        static GFX::CommandBuffer& buildAndGetCommandBuffer(RenderPackage& pkg, bool cacheMiss) {
+            return pkg.buildAndGetCommandBuffer(cacheMiss);
         }
 
         friend class Divide::RenderPackageQueue;

@@ -58,8 +58,8 @@ void DoFPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._shaderProgramHandle = _dofShader->getID();
 
     GenericDrawCommand pointsCmd;
-    pointsCmd.primitiveType(PrimitiveType::API_POINTS);
-    pointsCmd.drawCount(1);
+    pointsCmd._primitiveType = PrimitiveType::API_POINTS;
+    pointsCmd._drawCount = 1;
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);

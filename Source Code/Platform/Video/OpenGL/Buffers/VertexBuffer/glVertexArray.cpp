@@ -363,7 +363,7 @@ bool glVertexArray::createInternal() {
 
 /// Render the current buffer data using the specified command
 void glVertexArray::draw(const GenericDrawCommand& command) {
-    bool useCmdBuffer = command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
+    bool useCmdBuffer = isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT);
 
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
@@ -395,8 +395,8 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
                              _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                              _effectiveEntrySize);
 
-    if (command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED)) {
-        GL_API::setPatchVertexCount(command.patchVertexCount());
+    if (isEnabledOption(command, CmdRenderOptions::RENDER_TESSELLATED)) {
+        GL_API::setPatchVertexCount(command._patchVertexCount);
     }
 
     GLUtil::submitRenderCommand(command, useCmdBuffer, _formatInternal, _IBid);

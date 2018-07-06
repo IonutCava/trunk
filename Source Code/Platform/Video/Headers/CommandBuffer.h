@@ -51,7 +51,7 @@ class CommandBuffer : protected NonCopyable {
     ~CommandBuffer();
 
     template<typename T>
-    inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
+    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
     add(T& command);
 
     bool validate() const;
@@ -63,10 +63,11 @@ class CommandBuffer : protected NonCopyable {
     void batch();
 
     // Return true if merge is successful
-    bool tryMergeCommands(GFX::Command* prevCommand, GFX::Command* crtCommand) const;
+    template<typename T>
+    bool tryMergeCommands(T* prevCommand, T* crtCommand) const;
 
-    template<typename T = Command>
-    typename std::enable_if<std::is_base_of<Command, T>::value, const T&>::type
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
     getCommand(const CommandEntry& commandEntry) const;
 
     inline vectorEASTL<CommandEntry>& operator()();
@@ -80,29 +81,32 @@ class CommandBuffer : protected NonCopyable {
     stringImpl toString() const;
 
   protected:
-    void toString(const GFX::Command& cmd, I32& crtIndent, stringImpl& out) const;
+    template<typename T, CommandType enumVal>
+    friend struct Command;
+
+    void toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const;
     bool resetMerge(GFX::CommandType type) const;
 
     const std::type_info& getType(GFX::CommandType type) const;
-    void registerType(GFX::CommandType type);
 
-    template<typename T = Command>
-    typename std::enable_if<std::is_base_of<Command, T>::value, T*>::type
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     getCommandInternal(const CommandEntry& commandEntry);
 
     template<typename T>
-    void registerType();
+    bool registerType();
 
   protected:
-      vectorEASTL<CommandEntry> _commandOrder;
-      boost::base_collection<GFX::Command, dvd_allocator<GFX::Command>> _commands;
+    vectorEASTL<CommandEntry> _commandOrder;
+    boost::base_collection<GFX::CommandBase, dvd_allocator<GFX::CommandBase>> _commands;
 };
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 EnqueueCommand(CommandBuffer& buffer, T& cmd) {
-    buffer.add(cmd);
-    cmd.onAdd(buffer);
+    if (cmd.onBufferAdd(buffer)) {
+        buffer.add(cmd);
+    }
 }
 
 }; //namespace GFX

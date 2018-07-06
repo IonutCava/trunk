@@ -110,8 +110,8 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         pipelineDesc._stateHash = _defaultStateBlockHash;
 
         GenericDrawCommand triangleCmd;
-        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-        triangleCmd.drawCount(1);
+        triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+        triangleCmd._drawCount = 1;
 
         vectorFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 

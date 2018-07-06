@@ -126,8 +126,8 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::draw(const GenericDrawCommand& command) {
 
-    bool useCmdBuffer = command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
-    U32 drawBufferID = command.drawToBuffer();
+    bool useCmdBuffer = isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT);
+    U32 drawBufferID = command._drawToBuffer;
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (drawBufferID > 0 && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we requested
@@ -143,7 +143,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     // Activate transform feedback if needed
     if (feedbackActive) {
         GL_API::setActiveTransformFeedback(_transformFeedback);
-        glBeginTransformFeedback(GLUtil::glPrimitiveTypeTable[to_U32(command.primitiveType())]);
+        glBeginTransformFeedback(GLUtil::glPrimitiveTypeTable[to_U32(command._primitiveType)]);
         // Count the number of primitives written to the buffer
         glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][drawBufferID]);
     }
@@ -156,7 +156,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
         // Mark the current query as completed and ready to be retrieved
-        _resultAvailable[_currentWriteQuery][command.drawToBuffer()] = true;
+        _resultAvailable[_currentWriteQuery][command._drawToBuffer] = true;
     }
 
     vec_size bufferCount = _bufferObjects.size();

@@ -53,29 +53,6 @@ FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
 /// IMPrimitive replaces immediate mode calls to VB based rendering
 class NOINITVTABLE IMPrimitive : public VertexDataInterface {
    public:
-    inline void setRenderStates(const DELEGATE_CBK<void>& setupStatesCallback,
-                                const DELEGATE_CBK<void>& releaseStatesCallback) {
-        _setupStates = setupStatesCallback;
-        _resetStates = releaseStatesCallback;
-    }
-
-    inline void clearRenderStates() {
-        _setupStates = nullptr;
-        _resetStates = nullptr;
-    }
-
-    inline void setupStates() {
-        if (_setupStates) {
-            _setupStates();
-        }
-    }
-
-    inline void resetStates() {
-        if (_resetStates) {
-            _resetStates();
-        }
-    }
-
     inline const Pipeline* pipeline() const {
         return _pipeline;
     }
@@ -118,15 +95,16 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     inline bool paused() const { return _paused; }
     inline void forceWireframe(bool state) { _forceWireframe = state; }
     inline bool forceWireframe() const { return _forceWireframe; }
-    inline bool hasRenderStates() const {
-        return (!_setupStates && !_resetStates);
-    }
 
     inline const mat4<F32>& worldMatrix() const { return _worldMatrix; }
     inline void worldMatrix(const mat4<F32>& worldMatrix) {
         _worldMatrix.set(worldMatrix);
+        _cmdBufferDirty = true;
     }
-    inline void resetWorldMatrix() { _worldMatrix.identity(); }
+    inline void resetWorldMatrix() {
+        _worldMatrix.identity();
+        _cmdBufferDirty = true;
+    }
 
     inline void name(const stringImpl& name) {
 #       ifdef _DEBUG
@@ -152,7 +130,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
                    const Rect<I32>& viewport,  //<only for ortho mode
                    const bool inViewport);
    protected:
-   GFX::CommandBuffer* _cmdBuffer = nullptr;
+    mutable bool _cmdBufferDirty = true;
+    GFX::CommandBuffer* _cmdBuffer = nullptr;
 
     IMPrimitive(GFXDevice& context);
 #ifdef _DEBUG
@@ -168,14 +147,12 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     // render in wireframe mode
     bool _forceWireframe;
     DescriptorSet_ptr _descriptorSet;
+    Rect<I32> _viewport;
 
    private:
     /// If _pause is true, rendering for the current primitive is skipped and
     /// nothing is modified (e.g. zombie counters)
     bool _paused;
-    /// 2 functions used to setup or reset states
-    DELEGATE_CBK<void> _setupStates;
-    DELEGATE_CBK<void> _resetStates;
     /// The transform matrix for this element
     mat4<F32> _worldMatrix;
 };

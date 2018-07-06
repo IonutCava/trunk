@@ -110,8 +110,8 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
      pipelineDescriptor._stateHash = context.get2DStateBlock();
      pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getID();
 
-     _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
-     _drawCommand.drawCount(1);
+     _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
+     _drawCommand._drawCount = 1;
      _drawPipeline = context.newPipeline(pipelineDescriptor);
 
      _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));

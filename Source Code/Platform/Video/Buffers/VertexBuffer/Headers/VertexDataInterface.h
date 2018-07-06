@@ -38,7 +38,7 @@
 
 namespace Divide {
 
-class GenericDrawCommand;
+struct GenericDrawCommand;
 class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsResource {
     USE_CUSTOM_ALLOCATOR
    public:

@@ -192,8 +192,8 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
                     for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
                         const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
                         for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
-                            for (U32 i = 0; i < drawCmd.drawCount(); ++i) {
-                                _drawCommandsCache[cmdCount++].set(drawCmd.cmd());
+                            for (U32 i = 0; i < drawCmd._drawCount; ++i) {
+                                _drawCommandsCache[cmdCount++] = drawCmd._cmd;
                             }
                         }
                     }
@@ -320,8 +320,8 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     pipelineDescriptor._shaderProgramHandle = _displayShader->getID();
 
     GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 123456332;

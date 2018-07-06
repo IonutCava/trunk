@@ -112,15 +112,15 @@ namespace NS_GLIM
         bWireframe |= GLIM_Interface::s_bForceWireframe;
 
         Divide::GenericDrawCommand cmd;
-        cmd.cmd().primCount = iInstances;
+        cmd._cmd.primCount = iInstances;
 
         if (!bWireframe)
         {
             // render all triangles
             if (m_Data.m_uiTriangleElements > 0)
             {
-                cmd.primitiveType(Divide::PrimitiveType::TRIANGLES);
-                cmd.cmd().indexCount = m_Data.m_uiTriangleElements;
+                cmd._primitiveType = Divide::PrimitiveType::TRIANGLES;
+                cmd._cmd.indexCount = m_Data.m_uiTriangleElements;
                 Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Triangles);
             }
         }
@@ -129,8 +129,8 @@ namespace NS_GLIM
             // render all triangles
             if (m_Data.m_uiWireframeElements > 0)
             {
-                cmd.primitiveType(Divide::PrimitiveType::LINES);
-                cmd.cmd().indexCount = m_Data.m_uiWireframeElements;
+                cmd._primitiveType = Divide::PrimitiveType::LINES;
+                cmd._cmd.indexCount = m_Data.m_uiWireframeElements;
                 Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Wireframe);
             }
         }
@@ -138,16 +138,16 @@ namespace NS_GLIM
         // render all lines
         if (m_Data.m_uiLineElements > 0)
         {
-            cmd.primitiveType(Divide::PrimitiveType::LINES);
-            cmd.cmd().indexCount = m_Data.m_uiLineElements;
+            cmd._primitiveType = Divide::PrimitiveType::LINES;
+            cmd._cmd.indexCount = m_Data.m_uiLineElements;
             Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Lines);
         }
 
         // render all points
         if (m_Data.m_uiPointElements > 0)
         {
-            cmd.primitiveType(Divide::PrimitiveType::API_POINTS);
-            cmd.cmd().indexCount = m_Data.m_uiPointElements;
+            cmd._primitiveType = Divide::PrimitiveType::API_POINTS;
+            cmd._cmd.indexCount = m_Data.m_uiPointElements;
             Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Points);
         }
 

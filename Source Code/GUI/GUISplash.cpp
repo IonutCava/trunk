@@ -69,8 +69,8 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
     GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
 
     GFX::DrawCommand drawCmd;
     drawCmd._drawCommands.push_back(triangleCmd);

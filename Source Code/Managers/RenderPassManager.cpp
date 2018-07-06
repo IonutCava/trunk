@@ -311,8 +311,8 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
         GFX::DrawCommand drawCmd;
         GenericDrawCommand drawCommand;
-        drawCommand.primitiveType(PrimitiveType::TRIANGLES);
-        drawCommand.drawCount(1);
+        drawCommand._primitiveType = PrimitiveType::TRIANGLES;
+        drawCommand._drawCount = 1;
         drawCmd._drawCommands.push_back(drawCommand);
 
         GFX::EndRenderPassCommand endRenderPassOitCmd, endRenderPassCompCmd;

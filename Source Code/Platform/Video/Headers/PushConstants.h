@@ -37,14 +37,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 class PushConstants {
-    public:
+  public:
     PushConstants();
     PushConstants(const GFX::PushConstant& constant);
     PushConstants(const vectorEASTL<GFX::PushConstant>& data);
     ~PushConstants();
 
-    PushConstants(const PushConstants& other);
-    PushConstants& operator=(const PushConstants& other);
+    PushConstants(const PushConstants& other) = default;
+    PushConstants& operator=(const PushConstants& other) = default;
+
+    PushConstants(PushConstants&& other) = default;
+    PushConstants& operator=(PushConstants&& other) = default;
 
     void set(const GFX::PushConstant& constant);
 
@@ -65,7 +68,7 @@ class PushConstants {
         U64 bindingID = _ID_RT(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant.assign({ binding, type, values, flag });
+                constant = GFX::PushConstant{ binding, type, values, flag };
                 return;
             }
         }
@@ -82,7 +85,7 @@ class PushConstants {
         U64 bindingID = _ID_RT(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant.assign({ binding, type, values, flag });
+                constant = GFX::PushConstant{ binding, type, values, flag };
                 return;
             }
         }

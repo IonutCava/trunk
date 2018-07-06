@@ -48,6 +48,10 @@ namespace Divide {
 
     template<size_t N>
     struct ClipPlaneList {
+        ClipPlaneList() : ClipPlaneList(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
+        {
+        }
+
         ClipPlaneList(const Plane<F32>& defaultValue)
         {
             _planes.fill(defaultValue);

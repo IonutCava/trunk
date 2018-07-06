@@ -34,8 +34,8 @@ bool RenderPackageQueue::empty() const {
 const GFX::CommandBuffer& RenderPackageQueue::getCommandBuffer(U32 idx) {
     assert(idx < _currentCount);
     RenderPackage& pkg = *_packages[idx];
-    Attorney::RenderPackageRenderPackageQueue::buildCommandBuffer(pkg);
-    return *Attorney::RenderPackageRenderPackageQueue::commands(pkg);
+    bool cacheMiss = false;
+    return Attorney::RenderPackageRenderPackageQueue::buildAndGetCommandBuffer(pkg, cacheMiss);
 }
 
 RenderPackage& RenderPackageQueue::back() {

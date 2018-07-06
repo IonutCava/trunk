@@ -95,8 +95,8 @@ void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GenericDrawCommand pointsCmd;
-    pointsCmd.primitiveType(PrimitiveType::API_POINTS);
-    pointsCmd.drawCount(1);
+    pointsCmd._primitiveType = PrimitiveType::API_POINTS;
+    pointsCmd._drawCount = 1;
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _fxaaConstants;

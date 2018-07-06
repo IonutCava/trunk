@@ -144,7 +144,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     }
     {
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-        cmd.drawCount(tessellator.renderDepth());
+        cmd._drawCount = tessellator.renderDepth();
         pkg.drawCommand(0, 0, cmd);
     }
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
@@ -158,7 +158,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
         // draw infinite plane
-        assert(pkg.drawCommand(1, 0).drawCount() == 1u);
+        assert(pkg.drawCommand(1, 0)._drawCount == 1u);
 
         const Pipeline* pipeline = pkg.pipeline(1);
         PipelineDescriptor descriptor = pipeline->descriptor();
@@ -172,7 +172,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         U16 state = _drawBBoxes ? 1 : 0;
         for (I32 i = 2; i < pkg.drawCommandCount(); ++i) {
             GenericDrawCommand cmd = pkg.drawCommand(i, 0);
-            cmd.drawCount(state);
+            cmd._drawCount = state;
             pkg.drawCommand(i, 0, cmd);
         }
     }
@@ -202,11 +202,11 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addClipPlanesCommand(clipPlanesCommand);
 
     GenericDrawCommand cmd;
-    cmd.primitiveType(PrimitiveType::PATCH);
-    cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
-    cmd.sourceBuffer(getGeometryVB());
-    cmd.patchVertexCount(4);
-    cmd.cmd().indexCount = getGeometryVB()->getIndexCount();
+    cmd._primitiveType = PrimitiveType::PATCH;
+    cmd._sourceBuffer = getGeometryVB();
+    cmd._patchVertexCount = 4;
+    cmd._cmd.indexCount = getGeometryVB()->getIndexCount();
+    enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
     {
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
@@ -226,11 +226,11 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         }
         //infinite plane
         GenericDrawCommand planeCmd;
-        planeCmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-        planeCmd.cmd().firstIndex = 0;
-        planeCmd.cmd().indexCount = _plane->getGeometryVB()->getIndexCount();
-        planeCmd.LoD(0);
-        planeCmd.sourceBuffer(_plane->getGeometryVB());
+        planeCmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
+        planeCmd._cmd.firstIndex = 0;
+        planeCmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
+        planeCmd._lodIndex = 0;
+        planeCmd._sourceBuffer = _plane->getGeometryVB();
 
         {
             GFX::DrawCommand drawCommand;

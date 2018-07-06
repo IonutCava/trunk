@@ -187,8 +187,8 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
 
     TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
 

@@ -52,82 +52,61 @@ namespace GenericDrawCommandResults {
 };
 
 struct IndirectDrawCommand {
-    IndirectDrawCommand();
-    void set(const IndirectDrawCommand& other);
-    bool operator==(const IndirectDrawCommand &other) const;
-
-    U32 indexCount;    // 4  bytes
-    U32 primCount;     // 8  bytes
-    U32 firstIndex;    // 12 bytes
-    U32 baseVertex;    // 16 bytes
-    U32 baseInstance;  // 20 bytes
+    U32 indexCount = 0;    // 4  bytes
+    U32 primCount = 1;     // 8  bytes
+    U32 firstIndex = 0;    // 12 bytes
+    U32 baseVertex = 0;    // 16 bytes
+    U32 baseInstance = 0;  // 20 bytes
 };
 
-class GenericDrawCommand {
-public:
-    enum class RenderOptions : U16 {
-        RENDER_GEOMETRY = toBit(1),
-        RENDER_WIREFRAME = toBit(2),
-        RENDER_NO_RASTERIZE = toBit(3),
-        RENDER_INDIRECT = toBit(4),
-        RENDER_TESSELLATED = toBit(5),
-        QUERY_PRIMITIVE_COUNT = toBit(6),
-        QUERY_SAMPLE_COUNT = toBit(7),
-        QUERY_ANY_SAMPLE_RENDERED = toBit(8),
-        COUNT = 8
-    };
+enum class CmdRenderOptions : U16 {
+    RENDER_GEOMETRY = toBit(1),
+    RENDER_WIREFRAME = toBit(2),
+    RENDER_NO_RASTERIZE = toBit(3),
+    RENDER_INDIRECT = toBit(4),
+    RENDER_TESSELLATED = toBit(5),
+    QUERY_PRIMITIVE_COUNT = toBit(6),
+    QUERY_SAMPLE_COUNT = toBit(7),
+    QUERY_ANY_SAMPLE_RENDERED = toBit(8),
+    COUNT = 8
+};
 
-private:
+struct GenericDrawCommand {
+  public: //Data
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    IndirectDrawCommand _cmd;           // 45 bytes
-    VertexDataInterface* _sourceBuffer; // 25 bytes
-    U32 _commandOffset;                 // 17 bytes
-    U32 _renderOptions;                 // 13 bytes
-    U32 _patchVertexCount;              // 9  bytes
-    U16 _drawCount;                     // 5  bytes
-    U8  _drawToBuffer;                  // 3  bytes
-    U8  _lodIndex;                      // 2  bytes
-    PrimitiveType _type;                // 1  bytes
-public:
+    IndirectDrawCommand _cmd;                                        // 45 bytes
+    VertexDataInterface* _sourceBuffer = nullptr;                    // 25 bytes
+    U32 _commandOffset = 0;                                          // 17 bytes
+    U32 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 13 bytes
+    U32 _patchVertexCount = 4;                                       // 9  bytes
+    U16 _drawCount = 1;                                              // 5  bytes
+    U8  _drawToBuffer = 0;                                           // 3  bytes
+    U8  _lodIndex = 0;                                               // 2  bytes
+    PrimitiveType _primitiveType = PrimitiveType::COUNT;             // 1  bytes
+
+  public: //Rule of five
+
     GenericDrawCommand();
     GenericDrawCommand(PrimitiveType type,
                        U32 firstIndex,
                        U32 indexCount,
                        U32 primCount = 1);
+    ~GenericDrawCommand() = default;
+    GenericDrawCommand(const GenericDrawCommand& other) = default;
+    GenericDrawCommand& operator=(const GenericDrawCommand& other) = default;
+    GenericDrawCommand(GenericDrawCommand&& other) = default;
+    GenericDrawCommand& operator=(GenericDrawCommand&& other) = default;
 
-    GenericDrawCommand(const GenericDrawCommand& other);
-
-    const GenericDrawCommand& operator= (const GenericDrawCommand& other);
-
-    void reset();
-    bool compatible(const GenericDrawCommand& other) const;
-
-    bool isEnabledOption(RenderOptions option) const;
-    void enableOption(RenderOptions option);
-    void disableOption(RenderOptions option);
-    void toggleOption(RenderOptions option);
-    void toggleOption(RenderOptions option, const bool state);
-
-    inline U32  renderMask() const;
-
-    inline void LoD(U8 lod);
-    inline void drawCount(U16 count);
-    inline void drawToBuffer(U8 index);
-    inline void commandOffset(U32 offset);
-    inline void patchVertexCount(U32 vertexCount);
-    inline void primitiveType(PrimitiveType type);
-    inline void sourceBuffer(VertexDataInterface* sourceBuffer);
-
-    inline U8 LoD() const;
-    inline U16 drawCount() const;
-    inline U8  drawToBuffer() const;
-    inline U32 commandOffset() const;
-    inline U32 patchVertexCount() const;
-    inline IndirectDrawCommand& cmd();
-    inline PrimitiveType primitiveType() const;
-    inline VertexDataInterface* sourceBuffer() const;
-    inline const IndirectDrawCommand& cmd() const;
+    
 };
+
+bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option);
+void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
+void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
+void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option);
+void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state);
+
+bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs);
 
 }; //namespace Divide
 

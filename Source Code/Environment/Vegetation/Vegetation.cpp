@@ -358,10 +358,10 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = _cullShader->getID();
 
-        _cullDrawCommand.cmd().primCount = _instanceCountGrass;
-        _cullDrawCommand.enableOption(GenericDrawCommand::RenderOptions::RENDER_NO_RASTERIZE);
-        _cullDrawCommand.drawToBuffer(to_U8(queryID));
-        _cullDrawCommand.sourceBuffer(buffer);
+        _cullDrawCommand._cmd.primCount = _instanceCountGrass;
+        _cullDrawCommand._drawToBuffer = to_U8(queryID);
+        _cullDrawCommand._sourceBuffer = buffer;
+        enableOption(_cullDrawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE);
         buffer->incQueryQueue();
 
         GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
@@ -400,10 +400,10 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderPackage& pkgInOut) {
 
     GenericDrawCommand cmd;
-    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.cmd().firstIndex = 0;
-    cmd.cmd().indexCount = 12 * 3;
-    cmd.LoD(1);
+    cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
+    cmd._cmd.firstIndex = 0;
+    cmd._cmd.indexCount = 12 * 3;
+    cmd._lodIndex = 1;
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
@@ -440,8 +440,8 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
     buffer->attribDescriptor(instLocation).strideInBytes(sizeof(I32) * _instanceCountGrass * queryID);
 
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
-    cmd.sourceBuffer(buffer);
+    cmd._cmd.primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
+    cmd._sourceBuffer = buffer;
     pkg.drawCommand(0, 0, cmd);
     
     _staticDataUpdated = false;

@@ -9,10 +9,12 @@ namespace Divide {
 
 IMPrimitive::IMPrimitive(GFXDevice& context)
     : VertexDataInterface(context),
+      _viewport(-1),
       _forceWireframe(false),
       _paused(true),
       _pipeline(nullptr),
-      _texture(nullptr)
+      _texture(nullptr),
+      _cmdBufferDirty(true)
 {
     _cmdBuffer = GFX::allocateCommandBuffer();
     _descriptorSet = context.newDescriptorSet();
@@ -25,10 +27,11 @@ IMPrimitive::~IMPrimitive()
 }
 
 void IMPrimitive::clear() {
-    clearRenderStates();
     _worldMatrix.identity();
     _texture = nullptr;
     _descriptorSet->_textureData.clear();
+    _cmdBufferDirty = true;
+    _viewport.set(-1);
 }
 
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour& colour) {
@@ -153,13 +156,8 @@ void IMPrimitive::fromLines(const vector<Line>& lines,
         // draw functions to set up the
         // needed viewport rendering (e.g. axis lines)
         if (inViewport) {
-            setRenderStates(
-                [&, viewport]() {
-                _context.setViewport(viewport);
-            },
-                [&]() {
-                _context.restoreViewport();
-            });
+            _viewport.set(viewport);
+            _cmdBufferDirty = true;
         }
         // Create the object containing all of the lines
         beginBatch(true, to_U32(lines.size()) * 2 * 14, 1);
@@ -201,11 +199,13 @@ void IMPrimitive::fromLines(const vector<Line>& lines,
 
 void IMPrimitive::pipeline(const Pipeline& pipeline) {
     _pipeline = &pipeline;
+    _cmdBufferDirty = true;
 }
 
 void IMPrimitive::texture(const Texture& texture) {
     _texture = &texture;
     _descriptorSet->_textureData.clear();
     _descriptorSet->_textureData.addTexture(_texture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    _cmdBufferDirty = true;
 }
 };

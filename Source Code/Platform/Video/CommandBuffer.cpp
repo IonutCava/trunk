@@ -6,16 +6,22 @@
 #include <boost/poly_collection/algorithm.hpp>
 
 namespace Divide {
+
 namespace GFX {
 
 CommandBuffer::CommandBuffer()
 {
+    // Most common command buffer elements
+    _commands.register_types<BindPipelineCommand,
+                             SendPushConstantsCommand,
+                             BindDescriptorSetsCommand,
+                             DrawCommand>();
+    _commands.reserve(4);
 }
 
 CommandBuffer::~CommandBuffer()
 {
 }
-
 
 const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
     switch (type) {
@@ -45,42 +51,11 @@ const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
     return typeid(DrawCommand);
 }
 
-void CommandBuffer::registerType(GFX::CommandType type) {
-    switch (type) {
-        case GFX::CommandType::BEGIN_RENDER_PASS:     registerType<BeginRenderPassCommand>(); return;
-        case GFX::CommandType::END_RENDER_PASS:       registerType<EndRenderPassCommand>(); return;
-        case GFX::CommandType::BEGIN_PIXEL_BUFFER:    registerType<BeginPixelBufferCommand>(); return;
-        case GFX::CommandType::END_PIXEL_BUFFER:      registerType<EndPixelBufferCommand>(); return;
-        case GFX::CommandType::BEGIN_RENDER_SUB_PASS: registerType<BeginRenderSubPassCommand>(); return;
-        case GFX::CommandType::END_RENDER_SUB_PASS:   registerType<EndRenderSubPassCommand>(); return;
-        case GFX::CommandType::BLIT_RT:               registerType<BlitRenderTargetCommand>(); return;
-        case GFX::CommandType::BIND_DESCRIPTOR_SETS:  registerType<BindDescriptorSetsCommand>(); return;
-        case GFX::CommandType::BIND_PIPELINE:         registerType<BindPipelineCommand>(); return;
-        case GFX::CommandType::SEND_PUSH_CONSTANTS:   registerType<SendPushConstantsCommand>(); return;
-        case GFX::CommandType::SET_SCISSOR:           registerType<SetScissorCommand>(); return;
-        case GFX::CommandType::SET_BLEND:             registerType<SetBlendCommand>(); return;
-        case GFX::CommandType::SET_VIEWPORT:          registerType<SetViewportCommand>(); return;
-        case GFX::CommandType::SET_CAMERA:            registerType<SetCameraCommand>(); return;
-        case GFX::CommandType::SET_CLIP_PLANES:       registerType<SetClipPlanesCommand>(); return;
-        case GFX::CommandType::BEGIN_DEBUG_SCOPE:     registerType<BeginDebugScopeCommand>(); return;
-        case GFX::CommandType::END_DEBUG_SCOPE:       registerType<EndDebugScopeCommand>(); return;
-        case GFX::CommandType::DRAW_TEXT:             registerType<DrawTextCommand>(); return;
-        case GFX::CommandType::DRAW_IMGUI:            registerType<DrawIMGUICommand>(); return;
-        case GFX::CommandType::DISPATCH_COMPUTE:      registerType<DispatchComputeCommand>(); return;
-        case GFX::CommandType::SWITCH_WINDOW:         registerType<SwitchWindowCommand>(); return;
-    };
-
-    registerType<DrawCommand>();
-}
-
 void CommandBuffer::add(const CommandBuffer& other) {
     if (!other.empty()) {
         for (const CommandEntry& cmd : other._commandOrder) {
-            const std::type_info& typeInfo = getType(cmd.first);
-
-            registerType(cmd.first);
-            _commands.insert(*(other._commands.begin(typeInfo) + cmd.second));
-            _commandOrder.emplace_back(cmd.first, _commands.size(getType(cmd.first)) - 1);
+            const CommandBase& baseCommand = *(other._commands.begin(getType(cmd.first)) + cmd.second);
+            add(baseCommand);
         }
     }
 }
@@ -88,7 +63,7 @@ void CommandBuffer::add(const CommandBuffer& other) {
 void CommandBuffer::batch() {
     clean();
 
-    std::array<Command*, to_base(GFX::CommandType::COUNT)> prevCommands;
+    std::array<CommandBase*, to_base(GFX::CommandType::COUNT)> prevCommands;
     vectorEASTL<CommandEntry>::iterator it;
 
     bool tryMerge = true;
@@ -105,8 +80,8 @@ void CommandBuffer::batch() {
                 prevCommands.fill(nullptr);
             }
 
-            Command* crtCommand = getCommandInternal(cmd);
-            Command* prevCommand = prevCommands[to_U16(cmd.first)];
+            CommandBase* crtCommand = getCommandInternal<CommandBase>(cmd);
+            CommandBase* prevCommand = prevCommands[to_U16(cmd.first)];
             
             if (prevCommand != nullptr && prevCommand->_type == cmd.first) {
                 if (tryMergeCommands(prevCommand, crtCommand)) {
@@ -188,7 +163,7 @@ void CommandBuffer::clean() {
                 cmds.erase(eastl::remove_if(eastl::begin(cmds),
                                           eastl::end(cmds),
                                           [](const GenericDrawCommand& cmd) -> bool {
-                                              return cmd.drawCount() == 0;
+                                              return cmd._drawCount == 0;
                                           }),
                            eastl::end(cmds));
 
@@ -358,85 +333,13 @@ bool CommandBuffer::validate() const {
     return valid;
 }
 
-bool CommandBuffer::tryMergeCommands(GFX::Command* prevCommand, GFX::Command* crtCommand) const {
-    assert(prevCommand != nullptr && crtCommand != nullptr && prevCommand->_type == crtCommand->_type);
-    switch (crtCommand->_type) {
-        case GFX::CommandType::DRAW_COMMANDS : {
-            DrawCommand* crtDrawCommand = static_cast<DrawCommand*>(crtCommand);
-            DrawCommand* prevDrawCommand = static_cast<DrawCommand*>(prevCommand);
-
-            prevDrawCommand->_drawCommands.insert(eastl::cend(prevDrawCommand->_drawCommands),
-                                                  eastl::cbegin(crtDrawCommand->_drawCommands),
-                                                  eastl::cend(crtDrawCommand->_drawCommands));
-
-            auto batch = [](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
-                if (previousIDC.compatible(currentIDC) &&
-                    // Batchable commands must share the same buffer
-                    previousIDC.sourceBuffer()->getGUID() == currentIDC.sourceBuffer()->getGUID())
-                    {
-                        U32 prevCount = previousIDC.drawCount();
-                        if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
-                            return false;
-                        }
-                        // If the rendering commands are batchable, increase the draw count for the previous one
-                        previousIDC.drawCount(to_U16(prevCount + currentIDC.drawCount()));
-                        // And set the current command's draw count to zero so it gets removed from the list later on
-                        currentIDC.drawCount(0);
-
-                        return true;
-                    }
-
-                return false;
-            };
-
-            
-            vectorEASTL<GenericDrawCommand>& commands = prevDrawCommand->_drawCommands;
-            vec_size previousCommandIndex = 0;
-            vec_size currentCommandIndex = 1;
-            const vec_size commandCount = commands.size();
-            for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-                GenericDrawCommand& previousCommand = commands[previousCommandIndex];
-                GenericDrawCommand& currentCommand = commands[currentCommandIndex];
-                if (!batch(previousCommand, currentCommand))
-                {
-                    previousCommandIndex = currentCommandIndex;
-                }
-            }
-
-            commands.erase(eastl::remove_if(eastl::begin(commands),
-                                          eastl::end(commands),
-                                          [](const GenericDrawCommand& cmd) -> bool {
-                                              return cmd.drawCount() == 0;
-                                          }),
-                          eastl::end(commands));
-            return true;
-        }break;
-
-        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-            BindDescriptorSetsCommand* crtBindCommand = static_cast<BindDescriptorSetsCommand*>(crtCommand);
-            BindDescriptorSetsCommand* prevBindCommand = static_cast<BindDescriptorSetsCommand*>(prevCommand);
-            return prevBindCommand->_set->merge(*crtBindCommand->_set);
-
-        } break;
-
-        case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-            SendPushConstantsCommand* crtPushConstants = static_cast<SendPushConstantsCommand*>(crtCommand);
-            SendPushConstantsCommand* prevPushConstants = static_cast<SendPushConstantsCommand*>(prevCommand);
-            return prevPushConstants->_constants.merge(crtPushConstants->_constants);
-        } break;
-        
-    };
-
-    return false;
-}
-
 bool CommandBuffer::resetMerge(GFX::CommandType type) const {
     return type != GFX::CommandType::DRAW_COMMANDS &&
            type != GFX::CommandType::BIND_DESCRIPTOR_SETS &&
            type != GFX::CommandType::SEND_PUSH_CONSTANTS;
 }
 
-void CommandBuffer::toString(const GFX::Command& cmd, I32& crtIndent, stringImpl& out) const {
+void CommandBuffer::toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const {
     auto append = [](stringImpl& target, const stringImpl& text, I32 indent) {
         for (I32 i = 0; i < indent; ++i) {
             target.append("    ");
@@ -445,82 +348,22 @@ void CommandBuffer::toString(const GFX::Command& cmd, I32& crtIndent, stringImpl
     };
 
     switch (cmd._type) {
-        case GFX::CommandType::BEGIN_RENDER_PASS: {
-            const GFX::BeginRenderPassCommand& crtCmd = static_cast<const GFX::BeginRenderPassCommand&>(cmd);
-            append(out, "BEGIN_RENDER_PASS: " + stringImpl(crtCmd._name.c_str()), crtIndent);
+        case GFX::CommandType::BEGIN_RENDER_PASS:
+        case GFX::CommandType::BEGIN_PIXEL_BUFFER:
+        case GFX::CommandType::BEGIN_RENDER_SUB_PASS: 
+        case GFX::CommandType::BEGIN_DEBUG_SCOPE : {
+            append(out, cmd.toString(), crtIndent);
             ++crtIndent;
         }break;
-        case GFX::CommandType::END_RENDER_PASS: {
-            --crtIndent;
-            append(out, "END_RENDER_PASS", crtIndent);
-        }break;
-        case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
-            append(out, "BEGIN_PIXEL_BUFFER", crtIndent);
-            ++crtIndent;
-        }break;
-        case GFX::CommandType::END_PIXEL_BUFFER: {
-            --crtIndent;
-            append(out, "END_PIXEL_BUFFER", crtIndent);
-        }break;
-        case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
-            append(out, "BEGIN_RENDER_SUB_PASS", crtIndent);
-            ++crtIndent;
-        }break;
-        case GFX::CommandType::END_RENDER_SUB_PASS: {
-            --crtIndent;
-            append(out, "END_RENDER_SUB_PASS", crtIndent);
-        }break;
-        case GFX::CommandType::BLIT_RT: {
-            append(out, "BLIT_RT", crtIndent);
-        }break;
-        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-            append(out, "BIND_DESCRIPTOR_SETS", crtIndent);
-        }break;
-        case GFX::CommandType::BIND_PIPELINE: {
-            append(out, "BIND_PIPELINE", crtIndent);
-        } break;
-        case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-            append(out, "SEND_PUSH_CONSTANTS", crtIndent);
-        } break;
-        case GFX::CommandType::SET_SCISSOR: {
-            append(out, "SET_SCISSOR", crtIndent);
-        }break;
-        case GFX::CommandType::SET_BLEND: {
-            append(out, "SET_BLEND", crtIndent);
-        }break;
-        case GFX::CommandType::SET_VIEWPORT: {
-            Rect<I32> viewport = static_cast<const GFX::SetViewportCommand&>(cmd)._viewport;
-            append(out, "SET_VIEWPORT: " + Util::StringFormat("[%d, %d, %d, %d]", viewport.x, viewport.y, viewport.z, viewport.w), crtIndent);
-        }break;
-        case GFX::CommandType::SET_CAMERA: {
-            append(out, "SET_CAMERA", crtIndent);
-        }break;
-        case GFX::CommandType::SET_CLIP_PLANES: {
-            append(out, "SET_CLIP_PLANES", crtIndent);
-        }break;
-        case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
-            const GFX::BeginDebugScopeCommand& crtCmd = static_cast<const GFX::BeginDebugScopeCommand&>(cmd);
-            append(out, "BEGIN_DEBUG_SCOPE: " + stringImpl(crtCmd._scopeName.c_str()), crtIndent);
-            ++crtIndent;
-        } break;
+        case GFX::CommandType::END_RENDER_PASS:
+        case GFX::CommandType::END_PIXEL_BUFFER:
+        case GFX::CommandType::END_RENDER_SUB_PASS:
         case GFX::CommandType::END_DEBUG_SCOPE: {
             --crtIndent;
-            append(out, "END_DEBUG_SCOPE", crtIndent);
-        } break;
-        case GFX::CommandType::DRAW_TEXT: {
-            append(out, "DRAW_TEXT", crtIndent);
+            append(out, cmd.toString(), crtIndent);
         }break;
-        case GFX::CommandType::DRAW_COMMANDS: {
-            append(out, "DRAW_COMMANDS", crtIndent);
-        }break;
-        case GFX::CommandType::DRAW_IMGUI: {
-            append(out, "DRAW_IMGUI", crtIndent);
-        }break;
-        case GFX::CommandType::DISPATCH_COMPUTE: {
-            append(out, "DISPATCH_COMPUTE", crtIndent);
-        }break;
-        case GFX::CommandType::SWITCH_WINDOW: {
-            append(out, "SWITCH_WINDOW", crtIndent);
+        default: {
+            append(out, cmd.toString(), crtIndent);
         }break;
     }
 }
@@ -529,7 +372,7 @@ stringImpl CommandBuffer::toString() const {
     I32 crtIndent = 0;
     stringImpl out = "\n\n\n\n";
     for (const CommandEntry& cmd : _commandOrder) {
-        toString(getCommand(cmd), crtIndent, out);
+        toString(getCommand<CommandBase>(cmd), crtIndent, out);
         out.append("\n");
     }
     out.append("\n\n\n\n");

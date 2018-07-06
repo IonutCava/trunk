@@ -247,8 +247,8 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
 
     GenericDrawCommand pointsCmd;
-    pointsCmd.primitiveType(PrimitiveType::API_POINTS);
-    pointsCmd.drawCount(1);
+    pointsCmd._primitiveType = PrimitiveType::API_POINTS;
+    pointsCmd._drawCount = 1;
     
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);

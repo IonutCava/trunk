@@ -245,7 +245,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     if (_debugView) {
         pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 4);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-        cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
+        cmd._sourceBuffer = _renderQuads[1]->getGeometryVB();
         {
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
@@ -253,7 +253,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
         }
         pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 1);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-        cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
+        cmd._sourceBuffer = _renderQuads[2]->getGeometryVB();
         {
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
@@ -261,7 +261,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
         }
         pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 2);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-        cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
+        cmd._sourceBuffer = _renderQuads[3]->getGeometryVB();
         {
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
@@ -275,7 +275,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
     pushConstantsCommand._constants.set("lightCount", GFX::PushConstantType::INT, (I32)_cachedLightCount);
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-    cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
+    cmd._sourceBuffer = _renderQuads[_debugView ? 4 : 0]->getGeometryVB();
     {
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(cmd);

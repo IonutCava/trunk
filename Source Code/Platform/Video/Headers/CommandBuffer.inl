@@ -29,6 +29,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
+
 #ifndef _COMMAND_BUFFER_INL_
 #define _COMMAND_BUFFER_INL_
 
@@ -36,7 +38,7 @@ namespace Divide {
 namespace GFX {
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 CommandBuffer::add(T& command) {
     GFX::CommandType type = command._type;
     _commands.insert(command);
@@ -44,27 +46,28 @@ CommandBuffer::add(T& command) {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<Command, T>::value, T*>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::getCommandInternal(const CommandEntry& commandEntry) {
     const std::type_info& typeInfo = getType(commandEntry.first);
-    assert(typeid(T) == typeid(Command) || typeInfo == typeid(T));
     return static_cast<T*>(&(*(_commands.begin(typeInfo) + commandEntry.second)));
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<Command, T>::value, const T&>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
 CommandBuffer::getCommand(const CommandEntry& commandEntry) const {
     const std::type_info& typeInfo = getType(commandEntry.first);
-    assert(typeid(T) == typeid(Command) || typeInfo == typeid(T));
     return static_cast<const T&>(*(_commands.begin(typeInfo) + commandEntry.second));
 }
+
 template<typename T>
-inline void CommandBuffer::registerType() {
+inline bool CommandBuffer::registerType() {
     if (!_commands.is_registered<T>()) {
         _commands.register_types<T>();
-        _commands.reserve(typeid(T), 10);
     }
+
+    return true;
 }
+
 inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
     return _commandOrder;
 }
@@ -80,6 +83,84 @@ inline void CommandBuffer::clear() {
 
 inline bool CommandBuffer::empty() const {
     return _commandOrder.empty();
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawCommand* crtCommand) const {
+
+    prevCommand->_drawCommands.insert(eastl::cend(prevCommand->_drawCommands),
+        eastl::cbegin(crtCommand->_drawCommands),
+        eastl::cend(crtCommand->_drawCommands));
+
+    auto batch = [](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
+        if (compatible(previousIDC, currentIDC) &&
+            // Batchable commands must share the same buffer
+            previousIDC._sourceBuffer->getGUID() == currentIDC._sourceBuffer->getGUID())
+        {
+            U32 prevCount = previousIDC._drawCount;
+            if (previousIDC._cmd.baseInstance + prevCount != currentIDC._cmd.baseInstance) {
+                return false;
+            }
+            // If the rendering commands are batchable, increase the draw count for the previous one
+            previousIDC._drawCount = to_U16(prevCount + currentIDC._drawCount);
+            // And set the current command's draw count to zero so it gets removed from the list later on
+            currentIDC._drawCount = 0;
+
+            return true;
+        }
+
+        return false;
+    };
+
+    vectorEASTL<GenericDrawCommand>& commands = prevCommand->_drawCommands;
+    vec_size previousCommandIndex = 0;
+    vec_size currentCommandIndex = 1;
+    const vec_size commandCount = commands.size();
+    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+        GenericDrawCommand& previousCommand = commands[previousCommandIndex];
+        GenericDrawCommand& currentCommand = commands[currentCommandIndex];
+        if (!batch(previousCommand, currentCommand))
+        {
+            previousCommandIndex = currentCommandIndex;
+        }
+    }
+
+    commands.erase(eastl::remove_if(eastl::begin(commands),
+                                    eastl::end(commands),
+                                    [](const GenericDrawCommand& cmd) -> bool {
+                                    return cmd._drawCount == 0;
+                                }),
+                  eastl::end(commands));
+    return true;
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand) const {
+    return prevCommand->_set->merge(*crtCommand->_set);
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand) const {
+    return prevCommand->_constants.merge(crtCommand->_constants);
+}
+
+template<typename T>
+inline bool CommandBuffer::tryMergeCommands(T* prevCommand, T* crtCommand) const {
+    return false;
+}
+
+template<>
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandBase* prevCommand, GFX::CommandBase* crtCommand) const {
+    assert(prevCommand != nullptr && crtCommand != nullptr);
+    switch (prevCommand->_type) {
+    case GFX::CommandType::DRAW_COMMANDS:
+        return tryMergeCommands(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand));
+    case GFX::CommandType::BIND_DESCRIPTOR_SETS:
+        return tryMergeCommands(static_cast<BindDescriptorSetsCommand*>(prevCommand), static_cast<BindDescriptorSetsCommand*>(crtCommand));
+    case GFX::CommandType::SEND_PUSH_CONSTANTS:
+        return tryMergeCommands(static_cast<SendPushConstantsCommand*>(prevCommand), static_cast<SendPushConstantsCommand*>(crtCommand));
+    }
+    return false;
 }
 
 }; //namespace GFX

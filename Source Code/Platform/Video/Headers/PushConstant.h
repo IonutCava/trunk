@@ -151,14 +151,14 @@ namespace GFX {
             }
         }
 
-        PushConstant(const PushConstant& other);
-        PushConstant& operator=(const PushConstant& other);
-        PushConstant& assign(const PushConstant& other);
-
         ~PushConstant();
 
-        void clear();
+        PushConstant(const PushConstant& other) = default;
+        PushConstant& operator=(const PushConstant& other) = default;
+        PushConstant(PushConstant&& other) = default;
+        PushConstant& operator=(PushConstant&& other) = default;
 
+        void clear();
 
         inline bool operator==(const PushConstant& rhs) const {
             return _bindingHash == rhs._bindingHash &&

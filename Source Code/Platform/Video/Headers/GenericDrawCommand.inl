@@ -34,25 +34,29 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-inline U32  GenericDrawCommand::renderMask()                              const { return _renderOptions; }
+    inline bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option) {
+        return BitCompare(cmd._renderOptions, to_U32(option));
+    }
 
-inline void GenericDrawCommand::LoD(U8 lod)                                     { _lodIndex = lod; }
-inline void GenericDrawCommand::drawCount(U16 count)                            { _drawCount = count; }
-inline void GenericDrawCommand::drawToBuffer(U8 index)                          { _drawToBuffer = index; }
-inline void GenericDrawCommand::commandOffset(U32 offset)                       { _commandOffset = offset; }
-inline void GenericDrawCommand::patchVertexCount(U32 vertexCount)               { _patchVertexCount = vertexCount; }
-inline void GenericDrawCommand::primitiveType(PrimitiveType type)               { _type = type; }
-inline void GenericDrawCommand::sourceBuffer(VertexDataInterface* sourceBuffer) { _sourceBuffer = sourceBuffer; }
+    inline void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
+        SetBit(cmd._renderOptions, to_U32(option));
+    }
 
-inline U8 GenericDrawCommand::LoD()                            const { return _lodIndex; }
-inline U16 GenericDrawCommand::drawCount()                     const { return _drawCount; }
-inline U8  GenericDrawCommand::drawToBuffer()                  const { return _drawToBuffer; }
-inline U32 GenericDrawCommand::commandOffset()                 const { return _commandOffset; }
-inline U32 GenericDrawCommand::patchVertexCount()              const { return _patchVertexCount; }
-inline IndirectDrawCommand& GenericDrawCommand::cmd()                { return _cmd; }
-inline PrimitiveType GenericDrawCommand::primitiveType()       const { return _type; }
-inline VertexDataInterface* GenericDrawCommand::sourceBuffer() const { return _sourceBuffer; }
-inline const IndirectDrawCommand& GenericDrawCommand::cmd()    const { return _cmd; }
+    inline void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
+        ClearBit(cmd._renderOptions, to_U32(option));
+    }
+
+    inline void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
+        setOption(cmd, option, !isEnabledOption(cmd, option));
+    }
+
+    inline void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state) {
+        if (state) {
+            enableOption(cmd, option);
+        } else {
+            disableOption(cmd, option);
+        }
+    }
 
 }; //namespace Divide
 #endif //_GENERIC_DRAW_COMMAND_INL

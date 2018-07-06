@@ -89,8 +89,8 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
 
     RenderTargetHandle screen = _parent.inputRT();
 

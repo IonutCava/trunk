@@ -147,8 +147,8 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
 
     _ssaoGenerateConstants.set("projectionMatrix", GFX::PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache);
     _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());

@@ -505,9 +505,9 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
     for (I32 cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
         GFX::DrawCommand& cmd = Attorney::RenderPackageRenderingComponent::drawCommand(*pkg, cmdIdx);
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
-            drawCmd.commandOffset(cmdOffset++);
-            drawCmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT, true);
-            drawCmd.cmd().baseInstance = cmdIndex;
+            drawCmd._commandOffset = cmdOffset++;
+            drawCmd._cmd.baseInstance = cmdIndex;
+            setOption(drawCmd, CmdRenderOptions::RENDER_INDIRECT, true);
         }
     }
 }
@@ -536,13 +536,13 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             for (I32 cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
                 GFX::DrawCommand& cmd = Attorney::RenderPackageRenderingComponent::drawCommand(*pkg, cmdIdx);
                 for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
-                    drawCmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
-                                         renderGeometry || drawCmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+                    setOption(drawCmd, CmdRenderOptions::RENDER_GEOMETRY,
+                              renderGeometry || isEnabledOption(drawCmd, CmdRenderOptions::RENDER_GEOMETRY));
 
-                    drawCmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
-                                         renderWireframe || drawCmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+                    setOption(drawCmd, CmdRenderOptions::RENDER_WIREFRAME,
+                              renderWireframe || isEnabledOption(drawCmd, CmdRenderOptions::RENDER_WIREFRAME));
 
-                    drawCmd.LoD(_lodLevel);
+                    drawCmd._lodIndex = _lodLevel;
                 }
             }
 

@@ -215,9 +215,12 @@ const GFX::CommandBuffer& RenderPackage::commands() const {
     return *_commands;
 }
 
-bool RenderPackage::buildCommandBuffer() {
+GFX::CommandBuffer& RenderPackage::buildAndGetCommandBuffer(bool cacheMiss) {
+    cacheMiss = false;
     //ToDo: Try to rebuild only the affected bits and pieces. That's why we have multiple dirty flags -Ionut
     if (_commands == nullptr || _dirtyFlags != 0) {
+        cacheMiss = true;
+
         if (_commands == nullptr) {
             _commands = GFX::allocateCommandBuffer(_secondaryCommandPool);
         }
@@ -251,9 +254,9 @@ bool RenderPackage::buildCommandBuffer() {
         }
 
         _dirtyFlags = to_base(CommandType::NONE);
-        return true;
     }
-    return false;
+
+    return *_commands;
 }
 
 }; //namespace Divide

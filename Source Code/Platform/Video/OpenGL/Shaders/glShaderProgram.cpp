@@ -674,7 +674,7 @@ I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
         if (it->second == constant) {
             return -1;
         } else {
-            it->second.assign(constant);
+            it->second = constant;
         }
     } else {
         hashAlg::emplace(_uniformsByNameHash._shaderVars, locationHash, constant);

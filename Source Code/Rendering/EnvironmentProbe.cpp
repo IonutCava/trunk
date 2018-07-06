@@ -178,7 +178,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, pushConstants);
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
-    cmd.sourceBuffer(vb);
+    cmd._sourceBuffer = vb;
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);

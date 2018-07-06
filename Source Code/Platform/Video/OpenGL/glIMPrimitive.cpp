@@ -69,24 +69,20 @@ void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
         return;
     }
 
-    setupStates();
+    _imInterface->RenderBatchInstanced(cmd._cmd.primCount, 
+                                       _forceWireframe || isEnabledOption(cmd, CmdRenderOptions::RENDER_WIREFRAME));
 
-    _imInterface->RenderBatchInstanced(cmd.cmd().primCount,
-                                       cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
-
-    // Call any "postRender" function the primitive may have attached
-    resetStates();
 }
 
 GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
-    if (!paused()) {
+    if (!paused() && _cmdBufferDirty) {
         _cmdBuffer->clear();
 
         DIVIDE_ASSERT(_pipeline->shaderProgramHandle() != 0,
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
         GenericDrawCommand cmd;
-        cmd.sourceBuffer(const_cast<glIMPrimitive*>(this));
+        cmd._sourceBuffer = const_cast<glIMPrimitive*>(this);
 
         PushConstants pushConstants;
         // Inform the shader if we have (or don't have) a texture
@@ -108,9 +104,17 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
             GFX::EnqueueCommand(*_cmdBuffer, descriptorSetCmd);
         }
 
+        if (_viewport != vec4<I32>(-1)) {
+            GFX::SetViewportCommand setViewportCmd;
+            setViewportCmd._viewport = _viewport;
+            GFX::EnqueueCommand(*_cmdBuffer, setViewportCmd);
+        }
+
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
         GFX::EnqueueCommand(*_cmdBuffer, drawCommand);
+
+        _cmdBufferDirty = false;
     }
 
     return *_cmdBuffer;

@@ -600,8 +600,8 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
         pipelineDesc._stateHash = HiZState.getHash();
         pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getID();
 
-        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-        triangleCmd.drawCount(1);
+        triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+        triangleCmd._drawCount = 1;
         pipeline = newPipeline(pipelineDesc);
         firstRun = false;
     }

@@ -713,7 +713,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext->gui().init(*_platformContext, *_resCache, renderResolution);
     _platformContext->gui().addText("ProfileData",                                 // Unique ID
                                     RelativePosition2D(RelativeValue(0.75f, 0.0f),
-                                                       RelativeValue(0.1f, 0.0f)), // Position
+                                                       RelativeValue(0.2f, 0.0f)), // Position
                                     Font::DROID_SERIF_BOLD,                        // Font
                                     UColour(255,  50, 0, 255),                     // Colour
                                     "PROFILE DATA",                                // Text
