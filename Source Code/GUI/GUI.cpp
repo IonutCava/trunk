@@ -181,12 +181,7 @@ bool GUI::onKeyDown(const Input::KeyEvent& key) {
         return true;
     }
 
-    if (_ceguiInput.onKeyDown(key)) {
-        return (!_console->isVisible() &&
-                !GUIEditor::getInstance().isVisible());
-    }
-
-    return false;
+    return !_ceguiInput.onKeyDown(key);
 }
 
 bool GUI::onKeyUp(const Input::KeyEvent& key) {
@@ -205,12 +200,7 @@ bool GUI::onKeyUp(const Input::KeyEvent& key) {
     }
 #endif
 
-    if (_ceguiInput.onKeyUp(key)) {
-        return (!_console->isVisible() &&
-                !GUIEditor::getInstance().isVisible());
-    }
-
-    return false;
+    return !_ceguiInput.onKeyUp(key);
 }
 
 bool GUI::mouseMoved(const Input::MouseEvent& arg) {
@@ -226,7 +216,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
         guiStackIterator.second->mouseMoved(event);
     }
 
-    return _ceguiInput.mouseMoved(arg);
+    return !_ceguiInput.mouseMoved(arg);
 }
 
 bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
@@ -235,7 +225,8 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
         return true;
     }
 
-    if (_ceguiInput.mouseButtonPressed(arg, button)) {
+    bool processed = false;
+    if (!_ceguiInput.mouseButtonPressed(arg, button)) {
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 0;
@@ -243,10 +234,10 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
                 guiStackIterator.second->onMouseDown(event);
             }
         }
+        processed = true;
     }
 
-    return !_console->isVisible() &&
-           !GUIEditor::getInstance().wasControlClick();
+    return processed;
 }
 
 bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
@@ -255,7 +246,8 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
         return true;
     }
 
-    if (_ceguiInput.mouseButtonReleased(arg, button)) {
+    bool processed = false;
+    if (!_ceguiInput.mouseButtonReleased(arg, button)) {
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 1;
@@ -263,36 +255,36 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
                 guiStackIterator.second->onMouseUp(event);
             }
         }
+        processed = true;
     }
 
-    return !_console->isVisible() &&
-           !GUIEditor::getInstance().wasControlClick();
+    return processed;
 }
 
 bool GUI::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    return _ceguiInput.joystickAxisMoved(arg, axis);
+    return !_ceguiInput.joystickAxisMoved(arg, axis);
 }
 
 bool GUI::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
-    return _ceguiInput.joystickPovMoved(arg, pov);
+    return !_ceguiInput.joystickPovMoved(arg, pov);
 }
 
 bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button) {
-    return _ceguiInput.joystickButtonPressed(arg, button);
+    return !_ceguiInput.joystickButtonPressed(arg, button);
 }
 
 bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg,
                                  Input::JoystickButton button) {
-    return _ceguiInput.joystickButtonReleased(arg, button);
+    return !_ceguiInput.joystickButtonReleased(arg, button);
 }
 
 bool GUI::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    return _ceguiInput.joystickSliderMoved(arg, index);
+    return !_ceguiInput.joystickSliderMoved(arg, index);
 }
 
 bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    return _ceguiInput.joystickVector3DMoved(arg, index);
+    return !_ceguiInput.joystickVector3DMoved(arg, index);
 }
 
 GUIButton* GUI::addButton(const stringImpl& ID,

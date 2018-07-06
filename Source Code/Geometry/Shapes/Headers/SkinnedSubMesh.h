@@ -38,7 +38,7 @@ namespace Divide {
 
 class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
-    typedef hashMapImpl<U32 /*frame index*/, BoundingBox> boundingBoxPerFrame;
+    typedef vectorImpl<BoundingBox> boundingBoxPerFrame;
     typedef hashMapImpl<U32 /*animation ID*/, boundingBoxPerFrame>
         boundingBoxPerAnimation;
     typedef hashMapImpl<U32 /*animation ID*/, std::atomic_bool /*computed BBs*/>

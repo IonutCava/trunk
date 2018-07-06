@@ -104,12 +104,18 @@ namespace Divide {
                 _vertexBuffer = nullptr;
                 _hasAnimations = false;
                 _skeleton = nullptr;
+                _loadedFromFile = false;
             }
             ~ImportData();
 
             bool saveToFile(const stringImpl& fileName);
             bool loadFromFile(const stringImpl& fileName);
 
+            // Was it loaded from file, or just created?
+            bool _loadedFromFile;
+            // Name and path
+            stringImpl _modelName;
+            stringImpl _modelPath;
             // Geometry
             VertexBuffer* _vertexBuffer;
             // Submeshes
@@ -127,7 +133,8 @@ namespace Divide {
     class Material;
     DEFINE_SINGLETON(MeshImporter)
         public:
-            Mesh* loadMesh(const stringImpl& meshFilePath);
+            bool loadMeshDataFromFile(const stringImpl& meshFilePath, Import::ImportData& dataOut);
+            Mesh* loadMesh(const Import::ImportData& dataIn);
 
         protected:
             Material* loadSubMeshMaterial(const Import::MaterialData& importData,

@@ -68,22 +68,20 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
     currentBBComputing = true;
     currentBBStatus = false;
 
-    std::shared_ptr<AnimEvaluator> currentAnimation = animComp->getAnimationByIndex(animationIndex);
+    const vectorImpl<vectorImpl<mat4<F32>>>& currentAnimation = 
+        animComp->getAnimationByIndex(animationIndex)->transforms();
 
     boundingBoxPerFrame& currentBBs = _boundingBoxes[animationIndex];
-    // We might need to recompute BBs so clear any possible old values
-    currentBBs.clear();
-
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
+
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = parentVB->getPartitionIndexCount(_geometryPartitionID);
-                         
-    U32 frameCount = to_uint(animComp->frameCount(animationIndex));
+    currentBBs.resize(animComp->frameCount(animationIndex));
 
-    for (U32 i = 0; i < frameCount; ++i) {
-        BoundingBox& bb = currentBBs[i];
-
-        const vectorImpl<mat4<F32> >& transforms = currentAnimation->transforms(i);
+    U32 i = 0;
+    for (BoundingBox& bb : currentBBs) {
+        bb.reset();
+        const vectorImpl<mat4<F32> >& transforms = currentAnimation[i++];
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
             U32 idx = parentVB->getIndex(j + partitionOffset);
@@ -133,7 +131,7 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     boundingBoxPerAnimation::const_iterator it3 = _boundingBoxes.find(animationIndex);
     // If the BBs are computed, set the BB for the current frame as the node BB
     if (it3 != std::end(_boundingBoxes)) {
-        sgn.setInitialBoundingBox(it3->second.find(animComp->frameIndex())->second);
+        sgn.setInitialBoundingBox(it3->second.at(std::max(animComp->frameIndex(), 0)));
     }
 
     return true;

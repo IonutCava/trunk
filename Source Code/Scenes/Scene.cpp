@@ -129,27 +129,38 @@ void Scene::addPatch(vectorImpl<FileData>& data) {
 }
 
 void Scene::loadXMLAssets(bool singleStep) {
+    //vectorImpl<FileData> models;
     while (!_modelDataArray.empty()) {
         const FileData& it = _modelDataArray.top();
         // vegetation is loaded elsewhere
         if (it.type == GeometryType::VEGETATION) {
             _vegetationDataArray.push_back(it);
+        } else  if (it.type == GeometryType::PRIMITIVE) {
+            loadGeometry(it);
         } else {
             loadModel(it);
+            //models.push_back(it);
         }
         _modelDataArray.pop();
 
         if (singleStep) {
-            return;
+            break;
         }
     }
+
+    /*vectorImpl<std::future<void>> futures;
+    for (FileData& model : models) {
+        futures.push_back(std::async(std::launch::async, [this, &model]() {
+            loadModel(model);
+        }));
+    }
+
+    for (std::future<void>& future : futures) {
+        future.get();
+    }*/
 }
 
 bool Scene::loadModel(const FileData& data) {
-    if (data.type == GeometryType::PRIMITIVE) {
-        return loadGeometry(data);
-    }
-
     ResourceDescriptor model(data.ModelName);
     model.setResourceLocation(data.ModelName);
     model.setFlag(true);

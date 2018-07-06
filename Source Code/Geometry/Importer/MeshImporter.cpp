@@ -27,6 +27,8 @@ namespace Import {
         ByteBuffer tempBuffer;
         assert(_vertexBuffer != nullptr);
         tempBuffer << stringImpl("BufferEntryPoint");
+        tempBuffer << _modelName;
+        tempBuffer << _modelPath;
         _vertexBuffer->serialize(tempBuffer);
         tempBuffer << to_uint(_subMeshData.size());
         for (const SubMeshData& subMesh : _subMeshData) {
@@ -47,6 +49,8 @@ namespace Import {
             if (signature.compare("BufferEntryPoint") != 0) {
                 return false;
             }
+            tempBuffer >> _modelName;
+            tempBuffer >> _modelPath;
             _vertexBuffer = GFX_DEVICE.newVB();
             _vertexBuffer->deserialize(tempBuffer);
             U32 subMeshCount = 0;
@@ -59,6 +63,7 @@ namespace Import {
                 }
             }
             tempBuffer >> _hasAnimations;
+            _loadedFromFile = true;
             return true;
         }
         return false;
@@ -160,54 +165,63 @@ namespace Import {
         return true;
     }
 };
-    Mesh* MeshImporter::loadMesh(const stringImpl& meshFilePath) {
-
-        stringImpl modelName = meshFilePath.substr(meshFilePath.find_last_of('/') + 1);
-
+    bool MeshImporter::loadMeshDataFromFile(const stringImpl& meshFilePath, Import::ImportData& dataOut) {
         D32 start = 0.0;
         D32 elapsed = 0.0;
-        start = Time::ElapsedMilliseconds();
+        start = Time::ElapsedMilliseconds(true);
+        stringImpl modelName = meshFilePath.substr(meshFilePath.find_last_of('/') + 1);
+        stringImpl path = meshFilePath.substr(0, meshFilePath.find_last_of('/'));
 
-        stringImpl path = meshFilePath.substr(0 , meshFilePath.find_last_of('/') );
-        bool loadedFromFile = false;
-        Import::ImportData importData;
-        if (!importData.loadFromFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
+        bool success = false;
+        if (!dataOut.loadFromFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
             Console::printfn(Locale::get("MESH_NOT_LOADED_FROM_FILE"), modelName.c_str());
 
-            DVDConverter::getInstance().load(importData, meshFilePath);
-            if (importData.saveToFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
-                Console::printfn(Locale::get("MESH_SAVED_TO_FILE"), modelName.c_str());
-            } else {
-                Console::printfn(Locale::get("MESH_NOT_SAVED_TO_FILE"), modelName.c_str());
+            DVDConverter converter(dataOut, meshFilePath, success);
+            if (success) {
+                dataOut._modelName = modelName;
+                dataOut._modelPath = path;
+                if (dataOut.saveToFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
+                    Console::printfn(Locale::get("MESH_SAVED_TO_FILE"), modelName.c_str());
+                } else {
+                    Console::printfn(Locale::get("MESH_NOT_SAVED_TO_FILE"), modelName.c_str());
+                }
             }
         } else {
             Console::printfn(Locale::get("MESH_LOADED_FROM_FILE"), modelName.c_str());
-            loadedFromFile = true;
+            success = true;
         }
 
-        elapsed = Time::ElapsedMilliseconds() - start;
-
+        elapsed = Time::ElapsedMilliseconds(true) - start;
         Console::d_printfn(Locale::get("LOAD_MESH_TIME"), modelName.c_str(), Time::MillisecondsToSeconds(elapsed));
 
+        return success;
+    }
+
+    Mesh* MeshImporter::loadMesh(const Import::ImportData& dataIn) {
+
+        D32 start = 0.0;
+        D32 elapsed = 0.0;
+        start = Time::ElapsedMilliseconds(true);
+
         SceneAnimator* animator = nullptr;
-        if (importData._hasAnimations) {
+        if (dataIn._hasAnimations) {
             ByteBuffer tempBuffer;
             animator = MemoryManager_NEW SceneAnimator();
-            if (tempBuffer.loadFromFile(path + "/" + 
+            if (tempBuffer.loadFromFile(dataIn._modelPath + "/" + 
                                         g_parsedAssetLocation + "/" +
-                                        modelName + "." +
+                                        dataIn._modelName + "." +
                                         g_parsedAssetAnimationExt)) {
                 animator->load(tempBuffer);
             } else {
-                if (!loadedFromFile) {
-                    for (std::shared_ptr<AnimEvaluator>& animation : importData._animations) {
+                if (!dataIn._loadedFromFile) {
+                    for (const std::shared_ptr<AnimEvaluator>& animation : dataIn._animations) {
                         animator->registerAnimation(animation);
                     }
-                    animator->init(importData._skeleton, importData._bones);
+                    animator->init(dataIn._skeleton, dataIn._bones);
                     animator->save(tempBuffer);
-                    if (!tempBuffer.dumpToFile(path + "/" + 
+                    if (!tempBuffer.dumpToFile(dataIn._modelPath + "/" + 
                                                g_parsedAssetLocation + "/" +
-                                               modelName + "." +
+                                               dataIn._modelName + "." +
                                                g_parsedAssetAnimationExt)) {
                         //handle error
                         assert(false);
@@ -218,22 +232,22 @@ namespace Import {
                 }
             }
         }
-        start = Time::ElapsedMilliseconds(true);
-        Mesh* mesh = MemoryManager_NEW Mesh(importData._hasAnimations
+
+        Mesh* mesh = MemoryManager_NEW Mesh(dataIn._hasAnimations
                                                 ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
                                                 : Object3D::ObjectFlag::OBJECT_FLAG_NONE);
-        if (importData._hasAnimations) {
+        if (dataIn._hasAnimations) {
             mesh->setAnimator(animator);
             animator = nullptr;
         }
 
-        mesh->setName(modelName);
-        mesh->setResourceLocation(meshFilePath);
+        mesh->setName(dataIn._modelName);
+        mesh->setResourceLocation(dataIn._modelPath);
         mesh->renderState().setDrawState(true);
-        mesh->getGeometryVB()->fromBuffer(*importData._vertexBuffer);
+        mesh->getGeometryVB()->fromBuffer(*dataIn._vertexBuffer);
 
         SubMesh* tempSubMesh = nullptr;
-        for (Import::SubMeshData subMeshData : importData._subMeshData) {
+        for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {
             // Submesh is created as a resource when added to the scenegraph
             ResourceDescriptor submeshdesc(subMeshData._name);
             submeshdesc.setFlag(true);
@@ -246,7 +260,7 @@ namespace Import {
             if (!tempSubMesh) {
                 continue;
             }
-            // it may be already loaded
+            // it may already be loaded
             if (!tempSubMesh->getParentMesh()) {
                 for (const vec3<U32>& triangle : subMeshData._triangles) {
                     tempSubMesh->addTriangle(triangle);
@@ -267,7 +281,7 @@ namespace Import {
         mesh->getGeometryVB()->create(!mesh->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         
         elapsed = Time::ElapsedMilliseconds(true) - start;
-        Console::d_printfn(Locale::get("PARSE_MESH_TIME"), modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
+        Console::d_printfn(Locale::get("PARSE_MESH_TIME"), dataIn._modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
 
         return mesh;
     }

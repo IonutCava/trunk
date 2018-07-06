@@ -9,8 +9,16 @@ DEFAULT_LOADER_IMPL(Mesh)
 
 template<>
 Mesh* ImplResourceLoader<Mesh>::operator()() {
-    Mesh* ptr =
-        MeshImporter::getInstance().loadMesh(_descriptor.getResourceLocation());
+    MeshImporter& importer = MeshImporter::getInstance();
+
+    Mesh* ptr = nullptr;
+    Import::ImportData tempMeshData;
+    if (importer.loadMeshDataFromFile(_descriptor.getResourceLocation(), tempMeshData)) {
+        ptr = importer.loadMesh(tempMeshData);
+    } else {
+        //handle error
+        assert(false);
+    }
 
     if (!load(ptr, _descriptor.getName()) || !ptr) {
         MemoryManager::DELETE(ptr);

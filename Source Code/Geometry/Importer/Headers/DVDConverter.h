@@ -66,14 +66,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
-struct aiScene;
 struct aiMesh;
 struct aiMaterial;
-struct aiNode;
-
-namespace Assimp {
-class Importer;
-};
 
 namespace Divide {
 
@@ -84,13 +78,15 @@ namespace Import {
 };
 
 class SubMesh;
-DEFINE_SINGLETON(DVDConverter)
+class DVDConverter {
   public:
-    bool load(Import::ImportData& target, const stringImpl& file);
 
-  private:
-    DVDConverter();
+    explicit DVDConverter();
+    explicit DVDConverter(Import::ImportData& target, const stringImpl& file, bool& result);
     ~DVDConverter();
+
+    bool load(Import::ImportData& target, const stringImpl& file);
+   private:
 
     void loadSubMeshGeometry(const aiMesh* source, 
                              VertexBuffer* targetBuffer,
@@ -105,21 +101,15 @@ DEFINE_SINGLETON(DVDConverter)
                              bool skinned);
 
   private:
-    struct vertexWeight {
-        U8 _boneID;
-        F32 _boneWeight;
-        vertexWeight(U8 ID, F32 weight) : _boneID(ID), _boneWeight(weight) {}
-    };
+    static hashMapImpl<U32, TextureWrap> fillTextureWrapMap();
+    static hashMapImpl<U32, Material::ShadingMode> fillShadingModeMap();
+    static hashMapImpl<U32, Material::TextureOperation> fillTextureOperationMap();
 
-    Assimp::Importer* importer;
-
-    const aiScene* _aiScenePointer;
-    U32 _ppsteps;
-
-    hashMapImpl<U32, Material::ShadingMode> aiShadingModeInternalTable;
-    hashMapImpl<U32, TextureWrap> aiTextureMapModeTable;
-    hashMapImpl<U32, Material::TextureOperation> aiTextureOperationTable;
-END_SINGLETON
+  private:
+    static hashMapImpl<U32, TextureWrap> aiTextureMapModeTable;
+    static hashMapImpl<U32, Material::ShadingMode> aiShadingModeInternalTable;
+    static hashMapImpl<U32, Material::TextureOperation> aiTextureOperationTable;
+};
 
 };  // namespace Divide
 

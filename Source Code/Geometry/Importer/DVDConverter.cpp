@@ -16,68 +16,108 @@
 #include "Geometry/Animations/Headers/AnimationUtils.h"
 
 namespace Divide {
+    namespace {
+        static const bool g_removeLinesAndPoints = true;
 
-namespace {
+        struct vertexWeight {
+            U8 _boneID;
+            F32 _boneWeight;
+            vertexWeight(U8 ID, F32 weight) : _boneID(ID), _boneWeight(weight) {}
+        };
 
-    /// Recursively creates an internal node structure matching the current scene and animation.
-    Bone* createBoneTree(aiNode* pNode, Bone* parent) {
-        Bone* internalNode = MemoryManager_NEW Bone(pNode->mName.data);
-        // set the parent; in case this is the root node, it will be null
-        internalNode->_parent = parent;
+        /// Recursively creates an internal node structure matching the current scene and animation.
+        Bone* createBoneTree(aiNode* pNode, Bone* parent) {
+            Bone* internalNode = MemoryManager_NEW Bone(pNode->mName.data);
+            // set the parent; in case this is the root node, it will be null
+            internalNode->_parent = parent;
 
-        internalNode->_localTransform = pNode->mTransformation;
-        if (!Config::USE_OPENGL_RENDERING) {
-            internalNode->_localTransform.Transpose();
+            internalNode->_localTransform = pNode->mTransformation;
+            if (!Config::USE_OPENGL_RENDERING) {
+                internalNode->_localTransform.Transpose();
+            }
+
+            internalNode->_originalLocalTransform = internalNode->_localTransform;
+            calculateBoneToWorldTransform(internalNode);
+
+            // continue for all child nodes and assign the created internal nodes as our
+            // children recursively call this function on all children
+            for (U32 i = 0; i < pNode->mNumChildren; ++i) {
+                internalNode->_children.push_back(
+                    createBoneTree(pNode->mChildren[i], internalNode));
+            }
+
+            return internalNode;
         }
 
-        internalNode->_originalLocalTransform = internalNode->_localTransform;
-        calculateBoneToWorldTransform(internalNode);
+    };
 
-        // continue for all child nodes and assign the created internal nodes as our
-        // children recursively call this function on all children
-        for (U32 i = 0; i < pNode->mNumChildren; ++i) {
-            internalNode->_children.push_back(
-                createBoneTree(pNode->mChildren[i], internalNode));
-        }
-
-        return internalNode;
+    hashMapImpl<U32, TextureWrap> DVDConverter::fillTextureWrapMap() {
+        hashMapImpl<U32, TextureWrap> wrapMap;
+        wrapMap[aiTextureMapMode_Wrap] = TextureWrap::CLAMP;
+        wrapMap[aiTextureMapMode_Clamp] = TextureWrap::CLAMP_TO_EDGE;
+        wrapMap[aiTextureMapMode_Mirror] = TextureWrap::REPEAT;
+        wrapMap[aiTextureMapMode_Decal] = TextureWrap::DECAL;
+        return wrapMap;
     }
 
-};
+    hashMapImpl<U32, Material::ShadingMode> DVDConverter::fillShadingModeMap() {
+        hashMapImpl<U32, Material::ShadingMode> shadingMap;
+        shadingMap[aiShadingMode_Fresnel] = Material::ShadingMode::COOK_TORRANCE;
+        shadingMap[aiShadingMode_NoShading] = Material::ShadingMode::FLAT;
+        shadingMap[aiShadingMode_CookTorrance] = Material::ShadingMode::COOK_TORRANCE;
+        shadingMap[aiShadingMode_Minnaert] = Material::ShadingMode::OREN_NAYAR;
+        shadingMap[aiShadingMode_OrenNayar] = Material::ShadingMode::OREN_NAYAR;
+        shadingMap[aiShadingMode_Toon] = Material::ShadingMode::TOON;
+        shadingMap[aiShadingMode_Blinn] = Material::ShadingMode::BLINN_PHONG;
+        shadingMap[aiShadingMode_Phong] = Material::ShadingMode::PHONG;
+        shadingMap[aiShadingMode_Gouraud] = Material::ShadingMode::BLINN_PHONG;
+        shadingMap[aiShadingMode_Flat] = Material::ShadingMode::FLAT;
+        return shadingMap;
+    }
+
+    hashMapImpl<U32, Material::TextureOperation> DVDConverter::fillTextureOperationMap() {
+        hashMapImpl<U32, Material::TextureOperation> operationMap;
+        operationMap[aiTextureOp_Multiply] = Material::TextureOperation::MULTIPLY;
+        operationMap[aiTextureOp_Add] = Material::TextureOperation::ADD;
+        operationMap[aiTextureOp_Subtract] = Material::TextureOperation::SUBTRACT;
+        operationMap[aiTextureOp_Divide] = Material::TextureOperation::DIVIDE;
+        operationMap[aiTextureOp_SmoothAdd] = Material::TextureOperation::SMOOTH_ADD;
+        operationMap[aiTextureOp_SignedAdd] = Material::TextureOperation::SIGNED_ADD;
+        operationMap[/*aiTextureOp_Replace*/ 7] = Material::TextureOperation::REPLACE;
+        return operationMap;
+    }
+
+
+    hashMapImpl<U32, TextureWrap>
+    DVDConverter::aiTextureMapModeTable = DVDConverter::fillTextureWrapMap();
+    hashMapImpl<U32, Material::ShadingMode>
+    DVDConverter::aiShadingModeInternalTable = DVDConverter::fillShadingModeMap();
+    hashMapImpl<U32, Material::TextureOperation>
+    DVDConverter::aiTextureOperationTable = DVDConverter::fillTextureOperationMap();
 
 DVDConverter::DVDConverter()
 {
-    aiTextureMapModeTable[aiTextureMapMode_Wrap] = TextureWrap::CLAMP;
-    aiTextureMapModeTable[aiTextureMapMode_Clamp] = TextureWrap::CLAMP_TO_EDGE;
-    aiTextureMapModeTable[aiTextureMapMode_Decal] = TextureWrap::DECAL;
-    aiTextureMapModeTable[aiTextureMapMode_Mirror] = TextureWrap::REPEAT;
-    aiShadingModeInternalTable[aiShadingMode_Fresnel] = Material::ShadingMode::COOK_TORRANCE;
-    aiShadingModeInternalTable[aiShadingMode_NoShading] =  Material::ShadingMode::FLAT;
-    aiShadingModeInternalTable[aiShadingMode_CookTorrance] = Material::ShadingMode::COOK_TORRANCE;
-    aiShadingModeInternalTable[aiShadingMode_Minnaert] = Material::ShadingMode::OREN_NAYAR;
-    aiShadingModeInternalTable[aiShadingMode_OrenNayar] = Material::ShadingMode::OREN_NAYAR;
-    aiShadingModeInternalTable[aiShadingMode_Toon] = Material::ShadingMode::TOON;
-    aiShadingModeInternalTable[aiShadingMode_Blinn] = Material::ShadingMode::BLINN_PHONG;
-    aiShadingModeInternalTable[aiShadingMode_Phong] = Material::ShadingMode::PHONG;
-    aiShadingModeInternalTable[aiShadingMode_Gouraud] = Material::ShadingMode::BLINN_PHONG;
-    aiShadingModeInternalTable[aiShadingMode_Flat] = Material::ShadingMode::FLAT;
-    aiTextureOperationTable[aiTextureOp_Multiply] = Material::TextureOperation::MULTIPLY;
-    aiTextureOperationTable[aiTextureOp_Add] = Material::TextureOperation::ADD;
-    aiTextureOperationTable[aiTextureOp_Subtract] = Material::TextureOperation::SUBTRACT;
-    aiTextureOperationTable[aiTextureOp_Divide] = Material::TextureOperation::DIVIDE;
-    aiTextureOperationTable[aiTextureOp_SmoothAdd] = Material::TextureOperation::SMOOTH_ADD;
-    aiTextureOperationTable[aiTextureOp_SignedAdd] = Material::TextureOperation::SIGNED_ADD;
-    aiTextureOperationTable[/*aiTextureOp_Replace*/ 7] =  Material::TextureOperation::REPLACE;
+}
 
-    importer = MemoryManager_NEW Assimp::Importer();
+DVDConverter::DVDConverter(Import::ImportData& target, const stringImpl& file, bool& result) {
+    result = load(target, file);
+}
 
-    static const bool removeLinesAndPoints = true;
-    importer->SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
-                                 removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT
-                                                      : 0);
-    importer->SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
-    importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
-    _ppsteps =
+DVDConverter::~DVDConverter()
+{
+}
+
+bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
+    Assimp::Importer importer;
+
+    importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
+                                g_removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT
+                                                       : 0);
+
+    importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
+    importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
+
+    U32 ppsteps =
         aiProcess_TransformUVCoords |  // preprocess UV transformations
                                        // (scaling, translation ...)
         aiProcess_FindInstances |      // search for instanced meshes and remove
@@ -93,31 +133,24 @@ DVDConverter::DVDConverter()
         aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;
 
     if (!Config::USE_OPENGL_RENDERING) {
-        _ppsteps |= aiProcess_ConvertToLeftHanded;
+        ppsteps |= aiProcess_ConvertToLeftHanded;
     }
-}
 
-DVDConverter::~DVDConverter()
-{
-    MemoryManager::DELETE(importer);
-}
+    const aiScene* aiScenePointer = importer.ReadFile(file.c_str(), ppsteps);
 
-bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
-    _aiScenePointer = importer->ReadFile(file.c_str(), _ppsteps);
-
-    if (!_aiScenePointer) {
+    if (!aiScenePointer) {
         Console::errorfn(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(),
-                         importer->GetErrorString());
+                         importer.GetErrorString());
         return nullptr;
     }
 
-    target._hasAnimations = _aiScenePointer->HasAnimations();
+    target._hasAnimations = aiScenePointer->HasAnimations();
     if (target._hasAnimations) {
-        target._skeleton = createBoneTree(_aiScenePointer->mRootNode, nullptr);
+        target._skeleton = createBoneTree(aiScenePointer->mRootNode, nullptr);
         target._bones.reserve(to_int(target._skeleton->hierarchyDepth()));
 
-        for (U16 meshPointer = 0; meshPointer < _aiScenePointer->mNumMeshes; ++meshPointer) {
-            const aiMesh* mesh = _aiScenePointer->mMeshes[meshPointer];
+        for (U16 meshPointer = 0; meshPointer < aiScenePointer->mNumMeshes; ++meshPointer) {
+            const aiMesh* mesh = aiScenePointer->mMeshes[meshPointer];
             for (U32 n = 0; n < mesh->mNumBones; ++n) {
                 const aiBone* bone = mesh->mBones[n];
 
@@ -129,8 +162,8 @@ bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
             }
         }
 
-        for (size_t i(0); i < _aiScenePointer->mNumAnimations; i++) {
-            aiAnimation* animation = _aiScenePointer->mAnimations[i];
+        for (size_t i(0); i < aiScenePointer->mNumAnimations; i++) {
+            aiAnimation* animation = aiScenePointer->mAnimations[i];
             if (animation->mDuration > 0.0f) {
                 target._animations.push_back(std::make_shared<AnimEvaluator>(animation, to_uint(i)));
             }
@@ -138,8 +171,8 @@ bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
     }
     
     U32 vertCount = 0;
-    for (U16 n = 0; n < _aiScenePointer->mNumMeshes; ++n) {
-        vertCount += _aiScenePointer->mMeshes[n]->mNumVertices;
+    for (U16 n = 0; n < aiScenePointer->mNumMeshes; ++n) {
+        vertCount += aiScenePointer->mMeshes[n]->mNumVertices;
     }
 
     target._vertexBuffer = GFX_DEVICE.newVB();
@@ -148,11 +181,11 @@ bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
 
     U8 submeshBoneOffset = 0;
     U32 previousOffset = 0;
-    U32 numMeshes = _aiScenePointer->mNumMeshes;
+    U32 numMeshes = aiScenePointer->mNumMeshes;
     target._subMeshData.reserve(numMeshes);
 
     for (U16 n = 0; n < numMeshes; ++n) {
-        aiMesh* currentMesh = _aiScenePointer->mMeshes[n];
+        aiMesh* currentMesh = aiScenePointer->mMeshes[n];
         // Skip points and lines ... for now -Ionut
         if (currentMesh->mNumVertices == 0) {
             continue;
@@ -176,7 +209,7 @@ bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
                             previousOffset);
 
         loadSubMeshMaterial(subMeshTemp._material,
-                            _aiScenePointer->mMaterials[currentMesh->mMaterialIndex],
+                            aiScenePointer->mMaterials[currentMesh->mMaterialIndex],
                             subMeshTemp._name + "_material",
                             file,
                             subMeshTemp._boneCount > 0);

@@ -1,19 +1,15 @@
 #include "Headers/ResourceCache.h"
 #include "Core/Headers/ParamHandler.h"
 
-#include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Environment/Terrain/Headers/TerrainLoader.h"
 
 namespace Divide {
 
 ResourceCache::ResourceCache()
 {
-    DVDConverter::createInstance();
 }
 
 ResourceCache::~ResourceCache() {
-    DVDConverter::destroyInstance();
-
     Destroy();
     // DELETE(_loadingPool);
     Console::printfn(Locale::get("RESOURCE_CACHE_DELETE"));

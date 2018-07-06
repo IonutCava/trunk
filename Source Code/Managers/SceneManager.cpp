@@ -33,8 +33,6 @@ SceneManager::~SceneManager()
     Console::printfn(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
     MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE(_renderPassCuller);
-    // Destroy the model loader;
-    DVDConverter::destroyInstance();
 }
 
 bool SceneManager::init(GUI* const gui) {
