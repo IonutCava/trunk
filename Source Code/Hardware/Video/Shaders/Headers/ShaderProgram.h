@@ -75,6 +75,8 @@ public:
     virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
     virtual void SetSubroutine(ShaderType type, U32 index) const = 0;
     virtual U32  GetSubroutineIndex(ShaderType type, const std::string& name) const = 0;
+    virtual U32  GetSubroutineUniformIndex(ShaderType type, const std::string& name) const = 0;
+    virtual U32  GetSubroutineUniformCount(ShaderType type) const = 0;
     ///Attribute+Uniform+UniformTexture implementation
     virtual void Attribute(I32 location, D32 value) const = 0;
     virtual void Attribute(I32 location, F32 value) const = 0;

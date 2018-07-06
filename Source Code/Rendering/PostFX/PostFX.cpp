@@ -57,19 +57,11 @@ void PostFX::init(const vec2<U16>& resolution){
     _enableSSAO = par.getParam<bool>("postProcessing.enableSSAO");
     _enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
+    _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
     _enableFXAA = _gfx->FXAAEnabled();
 
     if (_gfx->postProcessingEnabled()){
         ResourceDescriptor postFXShader("postProcessing");
-        std::stringstream ss;
-        if(_enableBloom) ss << "POSTFX_ENABLE_BLOOM,";
-        if(_enableSSAO)  ss << "POSTFX_ENABLE_SSAO,";
-#ifdef _DEBUG
-        ss << "USE_DEPTH_PREVIEW,";
-#endif
-        ss << "DEFINE_PLACEHOLDER";
-
-        postFXShader.setPropertyList(ss.str());
         postFXShader.setThreadedLoading(false);
         _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
 
@@ -87,6 +79,17 @@ void PostFX::init(const vec2<U16>& resolution){
         _postProcessingShader->UniformTexture("texNoise", TEX_BIND_POINT_NOISE);
         _postProcessingShader->UniformTexture("texVignette", TEX_BIND_POINT_BORDER);
         _postProcessingShader->UniformTexture("texWaterNoiseNM", TEX_BIND_POINT_UNDERWATER);
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "Vignette")); //0
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "Noise"));    //1
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "Bloom"));    //2
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "SSAO"));     //3
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "screenUnderwater")); //4
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "screenNormal"));     //5
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "ColorPassThrough")); //6
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "outputScreen"));     //7
+        _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "outputDepth"));      //8
+        _shaderFunctionSelection.resize(_postProcessingShader->GetSubroutineUniformCount(FRAGMENT_SHADER), 0);
+    
     }
 
     _timer = 0;
@@ -160,48 +163,34 @@ void PostFX::updateResolution(I32 width, I32 height){
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->reshape(width,height);
 }
 
-void PostFX::displaySceneAnaglyph(){
-    _anaglyphShader->bind();
-    _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_RIGHT_EYE); //right eye buffer
-    _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Bind(TEX_BIND_POINT_LEFT_EYE); //left eye buffer
-
-    _gfx->drawPoints(1);
-}
-
 void PostFX::displayScene(){
     if (!_gfx->postProcessingEnabled())
          return;
 
-    if (_gfx->anaglyphEnabled()){
-        displaySceneAnaglyph();
-        return;
-    }
 
     _gfx->toggle2D(true);
-
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->execute();
 
-    _postProcessingShader->bind();
-#ifdef _DEBUG
-    if (_depthPreview) _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(TEX_BIND_POINT_SCREEN, TextureDescriptor::Depth);
-    else               _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_SCREEN, TextureDescriptor::Color0);
+    if (_gfx->anaglyphEnabled()){
+        _anaglyphShader->bind();
+        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_RIGHT_EYE); //right eye buffer
+        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Bind(TEX_BIND_POINT_LEFT_EYE); //left eye buffer
+    }else{
+        _postProcessingShader->bind();
+        _postProcessingShader->SetSubroutines(FRAGMENT_SHADER, _shaderFunctionSelection);
 
-    _postProcessingShader->Uniform("enable_depth_preview", _depthPreview);
-#else
-    _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_SCREEN);
-#endif
+    #ifdef _DEBUG
+        _gfx->getRenderTarget(_depthPreview ? GFXDevice::RENDER_TARGET_DEPTH : GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_SCREEN, _depthPreview ? TextureDescriptor::Depth : TextureDescriptor::Color0);
+    #else
+        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_SCREEN);
+    #endif
 
-    bool underwater = (_underwater && _underwaterTexture);   
-
-    _postProcessingShader->Uniform("enable_underwater", underwater);
-    
-    if (underwater)  _underwaterTexture->Bind(TEX_BIND_POINT_UNDERWATER);
-    if(_enableBloom) _bloomFB->Bind(TEX_BIND_POINT_BLOOM);
-    if(_enableSSAO)  _SSAO_FB->Bind(TEX_BIND_POINT_SSAO);
-    if(_enableNoise){
-        _noise->Bind(TEX_BIND_POINT_NOISE);
-        _screenBorder->Bind(TEX_BIND_POINT_BORDER);
-    }
+        if(_underwaterTexture) _underwaterTexture->Bind(TEX_BIND_POINT_UNDERWATER);
+        if(_noise)             _noise->Bind(TEX_BIND_POINT_NOISE);
+        if(_screenBorder)     _screenBorder->Bind(TEX_BIND_POINT_BORDER);
+        if(_bloomFB) _bloomFB->Bind(TEX_BIND_POINT_BLOOM);
+        if(_SSAO_FB) _SSAO_FB->Bind(TEX_BIND_POINT_SSAO);
+    }    
 
     _gfx->drawPoints(1);
     _gfx->toggle2D(false);
@@ -224,6 +213,7 @@ void PostFX::idle(){
     _underwater = GET_ACTIVE_SCENE()->state()._cameraUnderwater;
     _enableDOF  = par.getParam<bool>("postProcessing.enableDepthOfField");
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
+    _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
     _enableFXAA = _gfx->FXAAEnabled();
 
     if(_enableBloom != par.getParam<bool>("postProcessing.enableBloom")){
@@ -257,13 +247,8 @@ void PostFX::idle(){
         _postProcessingShader->UniformTexture("texWaterNoiseNM", TEX_BIND_POINT_UNDERWATER);
     }
 
-    _postProcessingShader->bind();
-
     if(_enableBloom)
         _postProcessingShader->Uniform("bloomFactor", par.getParam<F32>("postProcessing.bloomFactor"));
-
-    _postProcessingShader->Uniform("enableVignette",_enableNoise);
-    _postProcessingShader->Uniform("enableNoise",   _enableNoise);
 
     if(_enableNoise){
         _timer += GETMSTIME();
@@ -277,5 +262,10 @@ void PostFX::idle(){
         _postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
     }
 
-    _postProcessingShader->unbind();
+    _shaderFunctionSelection[0] = _enableVignette ? _shaderFunctionList[0] : _shaderFunctionList[6];
+    _shaderFunctionSelection[1] = _enableNoise    ? _shaderFunctionList[1] : _shaderFunctionList[6];
+    _shaderFunctionSelection[2] = _enableBloom    ? _shaderFunctionList[2] : _shaderFunctionList[6];
+    _shaderFunctionSelection[3] = _enableSSAO     ? _shaderFunctionList[3] : _shaderFunctionList[6];
+    _shaderFunctionSelection[4] = _underwater     ? _shaderFunctionList[4] : _shaderFunctionList[5];
+    _shaderFunctionSelection[5] = _depthPreview   ? _shaderFunctionList[0] : _shaderFunctionList[7];
 }

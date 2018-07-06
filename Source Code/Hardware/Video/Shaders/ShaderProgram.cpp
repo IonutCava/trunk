@@ -164,7 +164,8 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
     _zPlanesLoc          = this->cachedLoc("dvd_zPlanes");
     _sceneZPlanesLoc     = this->cachedLoc("dvd_sceneZPlanes");
-    _screenDimensionLoc  = this->cachedLoc("screenDimension");
+    _screenDimensionLoc  = this->cachedLoc("dvd_screenDimension");
+    _invScreenDimension  = this->cachedLoc("dvd_invScreenDimension");
     _fogColorLoc         = this->cachedLoc("fogColor");
     _fogDensityLoc       = this->cachedLoc("fogDensity");
 

@@ -42,6 +42,8 @@ public:
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const;
     void SetSubroutine(ShaderType type, U32 index) const;
     U32  GetSubroutineIndex(ShaderType type, const std::string& name) const;
+    U32  GetSubroutineUniformIndex(ShaderType type, const std::string& name) const;
+    U32  GetSubroutineUniformCount(ShaderType type) const;
     //Attributes
     void Attribute(GLint location, GLdouble value) const;
     void Attribute(GLint location, GLfloat value) const;

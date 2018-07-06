@@ -408,6 +408,21 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
     }
 }
 
+U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
+    DIVIDE_ASSERT(_linked, "glShaderProgram error: tried to query subroutines on an unlinked program!");
+    
+    I32 subroutineCount = 0;
+    glGetProgramStageiv(_shaderProgramId, _shaderStageTable[type], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
+
+    return std::max(subroutineCount, 0);
+}
+
+U32 glShaderProgram::GetSubroutineUniformIndex(ShaderType type, const std::string& name) const {
+    DIVIDE_ASSERT(_linked, "glShaderProgram error: tried to query subroutines on an unlinked program!");
+
+    return glGetSubroutineUniformLocation(_shaderProgramId, _shaderStageTable[type], name.c_str());
+}
+
 U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const std::string& name) const {
     DIVIDE_ASSERT(_linked, "glShaderProgram error: tried to query subroutines on an unlinked program!");
 

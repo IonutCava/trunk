@@ -40,7 +40,6 @@ private:
     ~PostFX();
     PostFX();
     void createOperators();
-    void displaySceneAnaglyph();
 
 public:
 
@@ -56,6 +55,7 @@ private:
     bool _enableBloom;
     bool _enableDOF;
     bool _enableNoise;
+    bool _enableVignette;
     bool _enableSSAO;
     bool _enableFXAA;
     bool _underwater;
@@ -85,7 +85,7 @@ private:
     PreRenderOperator* _dofOP;
 
     /// Screen Border
-    Texture*	_screenBorder;
+    Texture* _screenBorder;
 
     /// Noise
     Texture*	_noise;
@@ -98,6 +98,8 @@ private:
     Texture*       _underwaterTexture;
     GFXDevice* _gfx;
     vec2<U16>  _resolutionCache;
+    vectorImpl<U32> _shaderFunctionSelection;
+    vectorImpl<I32> _shaderFunctionList;
 END_SINGLETON
 
 #endif

@@ -42,67 +42,70 @@ uniform sampler2D texVignette;
 uniform sampler2D texWaterNoiseNM;
 
 uniform sampler2D texNoise;
-
-uniform bool enable_underwater;
-
-#ifdef USE_DEPTH_PREVIEW
 uniform vec2 dvd_sceneZPlanes;
-uniform bool enable_depth_preview;
-#endif
 
 uniform float _noiseTile;
 uniform float _noiseFactor;
 uniform float dvd_time;
 
-#if defined(POSTFX_ENABLE_BLOOM)
 uniform sampler2D texBloom;
 uniform float bloomFactor;
-#endif
 
-#if defined(POSTFX_ENABLE_SSAO)
 uniform sampler2D texSSAO;
-#endif
 
-uniform bool  enableVignette;
-uniform bool  enableNoise;
 uniform float randomCoeffNoise;
 uniform float randomCoeffFlash;
 
-#if defined(POSTFX_ENABLE_SSAO)
-vec4 SSAO(in vec4 color){
-	float ssaoFilter = texture(texSSAO, _texCoord).r;
-	if(ssaoFilter > 0){
-		color.rgb = color.rgb * ssaoFilter;
-	}
-	return color;
-}
-#endif
+subroutine vec4 VignetteRoutineType(in vec4 colorIn);
+subroutine vec4 NoiseRoutineType(in vec4 colorIn);
+subroutine vec4 BloomRoutineType(in vec4 colorIn);
+subroutine vec4 SSAORoutineType(in vec4 colorIn);
+subroutine vec4 ScreenRoutineType();
+subroutine void OutputRoutineType();
 
-#if defined(POSTFX_ENABLE_BLOOM)
-vec4 Bloom(in vec4 colorIn) {
-	return colorIn + bloomFactor * texture(texBloom, _texCoord);
-}
-#endif
+layout(location = 0) subroutine uniform VignetteRoutineType VignetteRoutine;
+layout(location = 1) subroutine uniform NoiseRoutineType NoiseRoutine;
+layout(location = 2) subroutine uniform BloomRoutineType BloomRoutine;
+layout(location = 3) subroutine uniform SSAORoutineType SSAORoutine;
+layout(location = 4) subroutine uniform ScreenRoutineType ScreenRoutine;
+layout(location = 5) subroutine uniform OutputRoutineType OutputRoutine;
 
 vec4 LevelOfGrey(in vec4 colorIn) {
-
 	return vec4(colorIn.r * 0.299, colorIn.g * 0.587, colorIn.b * 0.114, colorIn.a);
 }
 
-vec4 NoiseEffect(in vec4 colorIn) {
 
-	return mix(texture(texNoise, _texCoord + vec2(randomCoeffNoise, randomCoeffNoise)), 
-		       vec4(1,1,1,1),
-			   randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colorIn) / 3.0;
-}
-
-vec4 VignetteEffect(in vec4 colorIn) {
-
+subroutine(VignetteRoutineType)
+vec4 Vignette(in vec4 colorIn){
 	vec4 colorOut = colorIn - (vec4(1,1,1,2) - texture(texVignette, _texCoord));
 	return vec4(clamp(colorOut.rgb,0.0,1.0), colorOut.a);
 }
 
-vec4 UnderWater() {
+
+subroutine(NoiseRoutineType)
+vec4 Noise(in vec4 colorIn){
+	return mix(texture(texNoise, _texCoord + vec2(randomCoeffNoise, randomCoeffNoise)), 
+		       vec4(1.0), randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colorIn) / 3.0;
+}
+
+
+subroutine(BloomRoutineType)
+vec4 Bloom(in vec4 colorIn){
+	return colorIn + bloomFactor * texture(texBloom, _texCoord);
+}
+
+
+subroutine(SSAORoutineType)
+vec4 SSAO(in vec4 colorIn){
+	float ssaoFilter = texture(texSSAO, _texCoord).r;
+	if(ssaoFilter > 0){
+		colorIn.rgb = colorIn.rgb * ssaoFilter;
+	}
+	return colorIn;
+}
+
+subroutine(ScreenRoutineType)
+vec4 screenUnderwater(){
 	float time2 = dvd_time*0.0001;
 	vec2 noiseUV = _texCoord * _noiseTile;
     vec2 uvNormal0 = noiseUV + time2;
@@ -117,36 +120,28 @@ vec4 UnderWater() {
     return clamp(texture(texScreen, _texCoord + _noiseFactor * normal.st), vec4(0.0), vec4(1.0));
 }
 
+subroutine(ScreenRoutineType)
+vec4 screenNormal(){
+	return texture(texScreen, _texCoord);
+}
+
+subroutine(SSAORoutineType, BloomRoutineType, NoiseRoutineType, VignetteRoutineType)
+vec4 ColorPassThrough(in vec4 colorIn){
+	return colorIn;
+}
+
+subroutine(OutputRoutineType)
+void outputScreen(){
+    _colorOut = VignetteRoutine(NoiseRoutine(BloomRoutine(SSAORoutine(ScreenRoutine()))));
+}
+
+subroutine(OutputRoutineType)
+void outputDepth(){
+	float near = dvd_sceneZPlanes.x;
+	float far = dvd_sceneZPlanes.y;
+    _colorOut = vec4(vec3((2 * near) / (far + near - texture(texScreen, _texCoord).r * (far - near))), 1.0);
+}
 
 void main(void){
-
-#if defined(USE_DEPTH_PREVIEW)
-    if(enable_depth_preview){
-        float z = (2 * dvd_sceneZPlanes.x) / (dvd_sceneZPlanes.y +dvd_sceneZPlanes.x - texture(texScreen, _texCoord).r * (dvd_sceneZPlanes.y - dvd_sceneZPlanes.x));
-        _colorOut = vec4(z, z, z, 1.0);
-    }else{
-#endif
-
-    if(enable_underwater)
-		_colorOut = UnderWater();
-	else 
-        _colorOut = texture(texScreen, _texCoord);
-
-#if defined(POSTFX_ENABLE_SSAO)
-	_colorOut = SSAO(_colorOut);
-#endif
-
-#if defined(POSTFX_ENABLE_BLOOM)
-	_colorOut = Bloom(_colorOut);
-#endif
-
-	if(enableNoise)
-		_colorOut = NoiseEffect(_colorOut);
-	
-	if(enableVignette)
-		_colorOut = VignetteEffect(_colorOut);
-   
-#if defined(USE_DEPTH_PREVIEW)
-    }
-#endif
+    OutputRoutine();
 }

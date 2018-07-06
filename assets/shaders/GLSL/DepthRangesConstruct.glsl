@@ -56,8 +56,8 @@ void main() {
  */
 /****************************************************************************/
 uniform mat4 dvd_ProjectionMatrixInverse;
-uniform vec2 invScreenDimension;
-uniform ivec2 screenDimension;
+uniform vec2 dvd_invScreenDimension;
+uniform ivec2 dvd_screenDimension;
 uniform sampler2D depthTex;
 
 out vec2 resultMinMax;
@@ -71,7 +71,7 @@ vec3 unProject(vec2 fragmentPos, float fragmentDepth)
 
 vec3 fetchPosition(vec2 p, float d)
 {
-  vec2 fragmentPos = vec2(p.x * invScreenDimension.x, p.y * invScreenDimension.y);
+  vec2 fragmentPos = vec2(p.x * dvd_invScreenDimension.x, p.y * dvd_invScreenDimension.y);
   return unProject(fragmentPos, d);
 }
 
@@ -79,7 +79,7 @@ void main()
 {
     vec2 minMax = vec2(1.0f, -1.0f);
     ivec2 offset = ivec2(gl_FragCoord.xy) * ivec2(LIGHT_GRID_TILE_DIM_X, LIGHT_GRID_TILE_DIM_Y);
-    ivec2 end = min(screenDimension, offset + ivec2(LIGHT_GRID_TILE_DIM_X, LIGHT_GRID_TILE_DIM_Y));
+    ivec2 end = min(dvd_screenDimension, offset + ivec2(LIGHT_GRID_TILE_DIM_X, LIGHT_GRID_TILE_DIM_Y));
 
     // Note: with large tiles and many samples this shader makes very poor use of 
     // graphics hardware paralellism. A few shader threads will perform a lot of sequential 

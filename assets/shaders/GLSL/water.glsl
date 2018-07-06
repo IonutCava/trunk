@@ -44,8 +44,8 @@ uniform sampler2D texWaterNoiseDUDV;
 uniform mat4  material;
 uniform float dvd_time;
 uniform mat3  dvd_NormalMatrix[MAX_INSTANCES];
-uniform ivec2 screenDimension;
-uniform ivec2 invScreenDimension;
+uniform ivec2 dvd_screenDimension;
+uniform ivec2 dvd_invScreenDimension;
 #include "lightInput.cmn"
 #include "lightingDefaults.frag"
 #include "shadowMapping.frag"

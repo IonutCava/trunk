@@ -31,7 +31,10 @@ FXAAPreRenderOperator::~FXAAPreRenderOperator(){
 
 void FXAAPreRenderOperator::reshape(I32 width, I32 height){
     _samplerCopy->Create(width,height);
-    _fxaa->Uniform("size", vec2<F32>(_outputFB->getWidth(), _outputFB->getHeight()));
+    _fxaa->Uniform("dvd_fxaaSpanMax", 8.0f);
+    _fxaa->Uniform("dvd_fxaaReduceMul", 1.0f / 8.0f);
+    _fxaa->Uniform("dvd_fxaaReduceMin", 1.0f / 128.0f);
+    _fxaa->Uniform("dvd_fxaaSubpixShift", 1.0f / 4.0f);
 }
 
 ///This is tricky as we use our screen as both input and output
@@ -44,7 +47,7 @@ void FXAAPreRenderOperator::operation(){
     
     //Copy current screen
     _samplerCopy->BlitFrom(_inputFB[0]);
-    ///Apply FXAA to the output screen using the sampler copy as the texture input
+    //Apply FXAA to the output screen using the sampler copy as the texture input
     _outputFB->Begin(FrameBuffer::defaultPolicy());
     _samplerCopy->Bind(0);
     _fxaa->bind();
