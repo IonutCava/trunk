@@ -97,20 +97,22 @@ bool glShaderProgram::update(const U64 deltaTime) {
             // and fill the buffer with the binary code
             glGetProgramBinary(_shaderProgramID, binaryLength, NULL,
                                &_binaryFormat, binary);
-            // dump the buffer to file
-            stringImpl outFileName("shaderCache/Binary/" + getName() + ".bin");
-            FILE* outFile = fopen(outFileName.c_str(), "wb");
-            if (outFile != NULL) {
-                fwrite(binary, binaryLength, 1, outFile);
-                fclose(outFile);
-            }
-            // dump the format to a separate file (highly non-optimised. Should
-            // dump formats to a database instead)
-            outFileName += ".fmt";
-            outFile = fopen(outFileName.c_str(), "wb");
-            if (outFile != NULL) {
-                fwrite((void*)&_binaryFormat, sizeof(GLenum), 1, outFile);
-                fclose(outFile);
+            if (_binaryFormat != GL_ZERO && _binaryFormat != GL_NONE) {
+                // dump the buffer to file
+                stringImpl outFileName("shaderCache/Binary/" + getName() + ".bin");
+                FILE* outFile = fopen(outFileName.c_str(), "wb");
+                if (outFile != NULL) {
+                    fwrite(binary, binaryLength, 1, outFile);
+                    fclose(outFile);
+                }
+                // dump the format to a separate file (highly non-optimised. Should
+                // dump formats to a database instead)
+                outFileName += ".fmt";
+                outFile = fopen(outFileName.c_str(), "wb");
+                if (outFile != NULL) {
+                    fwrite((void*)&_binaryFormat, sizeof(GLenum), 1, outFile);
+                    fclose(outFile);
+                }
             }
             // delete our local code buffer
             free(binary);
@@ -335,7 +337,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             // binary code as it's useless without a proper format
             inFile = nullptr;
         }
-        if (inFile) {
+        if (inFile && _binaryFormat != GL_ZERO && _binaryFormat != GL_NONE) {
             // Jump to the end of the file
             fseek(inFile, 0, SEEK_END);
             // And get the file's content size
@@ -346,8 +348,6 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             fseek(inFile, 0, SEEK_SET);
             // Read the contents from the file and save them locally
             fread(binary, binaryLength, 1, inFile);
-            // Close the file
-            fclose(inFile);
             // Allocate a new handle
             _shaderProgramIDTemp = glCreateProgram();
             // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
@@ -366,6 +366,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
                 _threadedLoading = false;
             }
         }
+        // Close the file
+        fclose(inFile);
     }
 #endif
     // The program wasn't loaded from binary, so process shaders

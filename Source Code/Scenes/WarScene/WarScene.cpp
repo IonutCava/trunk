@@ -140,11 +140,11 @@ void WarScene::processTasks(const U64 deltaTime) {
 
     if (_taskTimers[0] >= SunTimer) {
         if (!g_direction) {
-            //g_sunAngle.y += 0.005f;
-            //g_sunAngle.x += 0.005f;
+            g_sunAngle.y += 0.00025f;
+            g_sunAngle.x += 0.00025f;
         } else {
-            //g_sunAngle.y -= 0.005f;
-            //g_sunAngle.x -= 0.005f;
+            g_sunAngle.y -= 0.00025f;
+            g_sunAngle.x -= 0.00025f;
         }
 
         if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
@@ -396,37 +396,37 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
 
     std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
-    boxGenerator->_maxStartPosOffset.set(1.0f, 1.0f, 1.0f, 1.0f);
+    boxGenerator->_maxStartPosOffset.set(0.3f, 0.0f, 0.3f, 1.0f);
     particleSource->addGenerator(boxGenerator);
 
     std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
-    colGenerator->_minStartCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f)));
-    colGenerator->_maxStartCol.set(Util::ToByteColor(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f)));
-    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.2f, 0.6f, 0.0f)));
-    colGenerator->_maxEndCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.5f, 1.0f, 0.0f)));
+    colGenerator->_minStartCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.4f, 0.4f, 1.0f)));
+    colGenerator->_maxStartCol.set(Util::ToByteColor(vec4<F32>(1.0f, 0.8f, 0.8f, 1.0f)));
+    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.2f, 0.2f, 0.0f)));
+    colGenerator->_maxEndCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.5f, 0.5f, 0.0f)));
     particleSource->addGenerator(colGenerator);
 
     std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
-    velGenerator->_minStartVel.set(-0.25f, 0.22f, -0.25f, 0.0f);
-    velGenerator->_maxStartVel.set(1.05f, 5.45f, 1.05f, 0.0f);
+    velGenerator->_minStartVel.set(-1.0f, 0.22f, -1.0f, 0.0f);
+    velGenerator->_maxStartVel.set(1.0f, 3.45f, 1.0f, 0.0f);
     particleSource->addGenerator(velGenerator);
 
     std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
-    timeGenerator->_minTime = 2.5f;
-    timeGenerator->_maxTime = 80.5f;
+    timeGenerator->_minTime = 8.5f;
+    timeGenerator->_maxTime = 20.5f;
     particleSource->addGenerator(timeGenerator);
 
     SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
 
     ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
-    testSGN->getComponent<PhysicsComponent>()->translateY(5);
+    testSGN->getComponent<PhysicsComponent>()->translateY(10);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     test->addSource(particleSource);
     boxGenerator->_pos.set(testSGN->getComponent<PhysicsComponent>()->getPosition());
 
     std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
-    eulerUpdater->_globalAcceleration.set(0.0f, -12.0f, 0.0f);
+    eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
     test->addUpdater(eulerUpdater);
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
