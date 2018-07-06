@@ -60,7 +60,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock oitDescriptor(stateDescriptor);
-    oitDescriptor.setZRead(false);
+    oitDescriptor.setZRead(true);
 
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
