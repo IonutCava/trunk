@@ -5,30 +5,54 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
-// possibly keep per submesh vbs and use them only for data manipulation and not for rendering
-#pragma message("TODO (Prio 1): - Use only 1 VB per mesh and use per submesh offset to said VB")
-#pragma message("               - Use texture atlas to store all textures in one (or a few) files in the Mesh class")
-#pragma message("               - Ionut")
+SubMesh::SubMesh(const std::string& name, ObjectFlag flag) : Object3D(name, SUBMESH, PrimitiveType_PLACEHOLDER, flag),
+                                                             _visibleToNetwork(true),
+                                                             _render(true),
+                                                             _id(0),
+                                                             _geometryPartitionId(0),
+                                                             _parentMesh(nullptr),
+                                                             _parentMeshSGN(nullptr)
+{
+}
 
-SubMesh::~SubMesh(){
+SubMesh::~SubMesh()
+{
 }
 
 bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
-	BoundingBox& bb = sgn->getBoundingBox();
-	if(bb.isComputed())
-		return true;
+    BoundingBox& bb = sgn->getBoundingBox();
+    if(bb.isComputed())
+        return true;
 
-	bb.set(getGeometryVB()->getMinPosition(),getGeometryVB()->getMaxPosition());
+    bb.set(_importBB);
     bb.setComputed(true);
 
-	return SceneNode::computeBoundingBox(sgn);
+    return SceneNode::computeBoundingBox(sgn);
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SubMesh::postLoad(SceneGraphNode* const sgn){
-	//sgn->getTransform()->setTransforms(_localMatrix);
-	/// If the mesh has animation data, use dynamic VB's if we use software skinning
-	getGeometryVB()->Create();
-	Object3D::postLoad(sgn);
+    //sgn->getTransform()->setTransforms(_localMatrix);
+    /// If the mesh has animation data, use dynamic VB's if we use software skinning
+    _renderInstance->buffer(_parentMesh->getGeometryVB());
+
+    Object3D::postLoad(sgn);
+}
+
+void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
+    assert(_parentMesh != nullptr);
+    VertexBuffer* vb = _parentMesh->getGeometryVB();
+    VertexBuffer::DeferredDrawCommand drawCmd;
+    drawCmd._cmd.count = vb->getPartitionCount(_geometryPartitionId);
+    drawCmd._cmd.firstIndex = vb->getPartitionOffset(_geometryPartitionId);
+
+    _parentMesh->addDrawCommand(drawCmd, _drawShader);
+
+    if (!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
+        _renderInstance->transform(sgn->getTransform());
+    }
+
+    GFX_DEVICE.renderInstanceCmd(_renderInstance, drawCmd);
 }

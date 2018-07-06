@@ -15,6 +15,7 @@ SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resource(name),
                                                              _material(nullptr),
                                                              _customShader(nullptr),
+                                                             _drawShader(nullptr),
                                                              _refreshMaterialData(true),
                                                              _nodeReady(false),
                                                              _type(type),
@@ -136,7 +137,7 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     else
         SET_STATE_BLOCK(_material->getRenderStateBlock(FINAL_STAGE));
 
-    ShaderProgram* s = _material->getShaderProgram();
+    _drawShader = _material->getShaderProgram();
     Scene* activeScene = GET_ACTIVE_SCENE();
     LightManager& lightMgr = LightManager::getInstance();
 
@@ -147,28 +148,28 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         }
     }
 
-    if(!s->bind())
+    if (!_drawShader->bind())
         return false;
 
-    s->ApplyMaterial(_material);
-    s->SetLOD(getCurrentLOD());
-    s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
-    s->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
-    s->Uniform("dvd_lightIndex",          lightMgr.getLightIndicesForCurrentNode());
-    s->Uniform("dvd_lightType",           lightMgr.getLightTypesForCurrentNode());
-    s->Uniform("dvd_lightCount",          lightMgr.getLightCountForCurrentNode());
-    s->Uniform("dvd_lightCastsShadows",   lightMgr.getShadowCastingLightsForCurrentNode());
+    _drawShader->ApplyMaterial(_material);
+    _drawShader->SetLOD(getCurrentLOD());
+    _drawShader->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
+    _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
+    _drawShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
+    _drawShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
+    _drawShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
+    _drawShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
 
-    s->Uniform("windDirection",vec2<F32>(activeScene->state().getWindDirX(),activeScene->state().getWindDirZ()));
-    s->Uniform("windSpeed", activeScene->state().getWindSpeed());
+    _drawShader->Uniform("windDirection", vec2<F32>(activeScene->state().getWindDirX(), activeScene->state().getWindDirZ()));
+    _drawShader->Uniform("windSpeed", activeScene->state().getWindSpeed());
 
     AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();
     if (animComponent){
         const vectorImpl<mat4<F32> >& boneTransforms = animComponent->animationTransforms();
-        s->Uniform("dvd_hasAnimations", !boneTransforms.empty());
-        s->Uniform("boneTransforms", boneTransforms);
+        _drawShader->Uniform("dvd_hasAnimations", !boneTransforms.empty());
+        _drawShader->Uniform("boneTransforms", boneTransforms);
     }else{
-        s->Uniform("dvd_hasAnimations", false);
+        _drawShader->Uniform("dvd_hasAnimations", false);
     }
 
     return true;
@@ -189,14 +190,14 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     }
     SET_STATE_BLOCK(_material->getRenderStateBlock(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
 
-    ShaderProgram* s = _material->getShaderProgram(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE);
-    assert(s != nullptr);
+    _drawShader = _material->getShaderProgram(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE);
+    assert(_drawShader != nullptr);
 
-    if (!s->bind())
+    if (!_drawShader->bind())
         return false;
 
-    s->ApplyMaterial(_material);
-    s->SetLOD(getCurrentLOD());
+    _drawShader->ApplyMaterial(_material);
+    _drawShader->SetLOD(getCurrentLOD());
     if (_material->isTranslucent()){
         if (_material->getTexture(Material::TEXTURE_OPACITY)) 
             _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);
@@ -207,11 +208,10 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();
     if (animComponent){
         const vectorImpl<mat4<F32> >& boneTransforms = animComponent->animationTransforms();
-        s->Uniform("dvd_hasAnimations", !boneTransforms.empty());
-        s->Uniform("boneTransforms", boneTransforms);
-    }
-    else{
-        s->Uniform("dvd_hasAnimations", false);
+        _drawShader->Uniform("dvd_hasAnimations", !boneTransforms.empty());
+        _drawShader->Uniform("boneTransforms", boneTransforms);
+    }else{
+        _drawShader->Uniform("dvd_hasAnimations", false);
     }
 
     return true;

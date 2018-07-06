@@ -80,11 +80,11 @@ void AnimationComponent::onDraw(RenderStage currentStage) {
     _animationTransforms = _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
 }
 
-U32 AnimationComponent::frameIndex() const {
+I32 AnimationComponent::frameIndex() const {
     return _animator->GetFrameIndex(_currentAnimIndex);
 }
 
-U32 AnimationComponent::frameCount() const {
+I32 AnimationComponent::frameCount() const {
     return _animator->GetFrameCount(_currentAnimIndex);
 }
 

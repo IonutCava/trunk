@@ -23,11 +23,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SGN_COMPONENT_H_
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+#include <boost/noncopyable.hpp>
 
 /// A generic component for the SceneGraphNode class
 enum RenderStage;
 class SceneGraphNode;
-class SGNComponent {
+class SGNComponent : private boost::noncopyable {
 public:
     enum ComponentType {
         SGN_COMP_ANIMATION = 0,

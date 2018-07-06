@@ -28,7 +28,7 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 	D_PRINT_FN(Locale::get("CREATE_ANIMATION_END"), _name.c_str());
 }
 
-U32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime){
+I32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime){
 	// get a [0.f ... 1.f) value by allowing the percent to wrap around 1
 	D32 ptime = elapsedTime * _ticksPerSecond;
 
@@ -41,7 +41,7 @@ U32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime){
 	if(!_playAnimationForward)
         percent= (percent-1.0f)*-1.0f;// this will invert the percent so the animation plays backwards
 
-	_lastFrameIndex = static_cast<U32>(_transforms.size() * percent);
+	_lastFrameIndex = static_cast<I32>(_transforms.size() * percent);
 
 	return _lastFrameIndex;
 }

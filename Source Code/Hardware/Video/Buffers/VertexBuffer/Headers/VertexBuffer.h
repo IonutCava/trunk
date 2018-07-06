@@ -47,6 +47,17 @@ protected:
         U32  baseInstance;
     };
 
+    enum VertexAttribute{
+        ATTRIB_POSITION = 0,
+        ATTRIB_COLOR = 1,
+        ATTRIB_NORMAL = 2,
+        ATTRIB_TEXCOORD = 3,
+        ATTRIB_TANGENT = 4,
+        ATTRIB_BITANGENT = 5,
+        ATTRIB_BONE_WEIGHT = 6,
+        ATTRIB_BONE_INDICE = 7,
+        VertexAttribute_PLACEHOLDER = 8
+    };
 public:
     struct DeferredDrawCommand {
         DeferredDrawCommand() : _signedData(0), _unsignedData(0), _floatData(0.0f) {}
@@ -129,20 +140,18 @@ public:
         _dataBiTangent.resize(size,defaultValue);
     }
 
-    inline vectorImpl<vec2<F32> >&  getTexcoord()    { _texcoordDirty  = true; return _dataTexcoord;}
-    inline vectorImpl<vec4<U8>  >&  getBoneIndices() { _indicesDirty   = true; return _boneIndices;}
-    inline vectorImpl<vec4<F32> >&  getBoneWeights() { _weightsDirty   = true; return _boneWeights;}
+    inline vectorImpl<vec2<F32> >&  getTexcoord()    { _attribDirty[ATTRIB_TEXCOORD] = true; return _dataTexcoord; }
+    inline vectorImpl<vec4<U8>  >&  getBoneIndices() { _attribDirty[ATTRIB_BONE_INDICE] = true; return _boneIndices; }
+    inline vectorImpl<vec4<F32> >&  getBoneWeights() { _attribDirty[ATTRIB_BONE_WEIGHT] = true; return _boneWeights; }
 
-    inline vectorImpl<vec3<U32> >&  getTriangles()   {return _dataTriangles;}
-    inline const vec3<F32>&         getMinPosition() {return _minPosition;}
-    inline const vec3<F32>&         getMaxPosition() {return _maxPosition;}
-
-    inline const vectorImpl<vec3<F32> >&  getPosition()	 const {return _dataPosition;}
-    inline const vectorImpl<vec3<U8>  >&  getColor()     const {return _dataColor;}
-    inline const vectorImpl<vec3<F32> >&  getNormal()	 const {return _dataNormal;}
-    inline const vectorImpl<vec3<F32> >&  getTangent()	 const {return _dataTangent;}
-    inline const vectorImpl<vec3<F32> >&  getBiTangent() const {return _dataBiTangent;}
-
+    inline const vectorImpl<vec3<U32> >&  getTriangles()   const {return _dataTriangles;}
+    inline const vec3<F32>&               getMinPosition() const {return _minPosition;}
+    inline const vec3<F32>&               getMaxPosition() const {return _maxPosition;}
+    inline const vectorImpl<vec3<F32> >&  getPosition()	   const {return _dataPosition;}
+    inline const vectorImpl<vec3<U8>  >&  getColor()       const {return _dataColor;}
+    inline const vectorImpl<vec3<F32> >&  getNormal()	   const {return _dataNormal;}
+    inline const vectorImpl<vec3<F32> >&  getTangent()	   const {return _dataTangent;}
+    inline const vectorImpl<vec3<F32> >&  getBiTangent()   const {return _dataBiTangent;}
     inline const vec3<F32>&               getPosition(U32 index)  const {return _dataPosition[index];}
     inline const vec3<F32>&               getNormal(U32 index)    const {return _dataNormal[index];}
     inline const vec3<F32>&               getTangent(U32 index)   const {return _dataTangent[index];}
@@ -154,12 +163,41 @@ public:
     inline U32  getIndexCount()     const { return (U32)(_largeIndices ? _hardwareIndicesL.size() : _hardwareIndicesS.size());}
     inline U32  getIndex(U32 index) const { return _largeIndices ? _hardwareIndicesL[index] : _hardwareIndicesS[index];}
 
-    inline void addIndex(U32 index){
-        if(_largeIndices){
-            _hardwareIndicesL.push_back(index);
-        }else{
-            _hardwareIndicesS.push_back(static_cast<U16>(index));
+
+    inline U32 addBuffer(const VertexBuffer& buf){
+        U32 currentOffset = getIndexCount();
+
+        _largeIndices = buf._largeIndices;
+
+        for (U32 index : buf._hardwareIndicesL) _hardwareIndicesL.push_back(index);
+        for (U16 index : buf._hardwareIndicesS) _hardwareIndicesS.push_back(index);
+        
+        for (const vec3<F32>& pos   : buf._dataPosition)  _dataPosition.push_back(pos);
+        for (const vec2<F32>& coord : buf._dataTexcoord)  _dataTexcoord.push_back(coord);
+        for (const vec3<U8>&  col   : buf._dataColor)     _dataColor.push_back(col);
+        for (const vec3<F32>& norm  : buf._dataNormal)    _dataNormal.push_back(norm);
+        for (const vec3<F32>& tan   : buf._dataTangent)   _dataTangent.push_back(tan);
+        for (const vec3<F32>& biTan : buf._dataBiTangent) _dataBiTangent.push_back(biTan);
+        for (const vec4<U8>&  idx   : buf._boneIndices)   _boneIndices.push_back(idx);
+        for (const vec4<F32>& wgh   : buf._boneWeights)   _boneWeights.push_back(wgh);
+        for (const vec3<U32>& tri   : buf._dataTriangles) _dataTriangles.push_back(tri);
+
+        setMinMaxPosition(buf.getMinPosition());
+        setMinMaxPosition(buf.getMaxPosition());
+
+        for (U8 i = 0; i < Config::SCENE_NODE_LOD; ++i){
+            vec2<U32>& limits = _indiceLimits[i];
+            limits.y = std::max(buf._indiceLimits[i].y, limits.y);
+            limits.x = std::min(buf._indiceLimits[i].x, limits.x);
         }
+
+        memset(_attribDirty, true, VertexAttribute_PLACEHOLDER * sizeof(bool));
+
+        return currentOffset;
+    }
+
+    inline void addIndex(U32 index){
+        _largeIndices ? addIndexL(index) : addIndexS(static_cast<U16>(index));
     }
 
     inline void addIndexL(U32 index){
@@ -172,76 +210,89 @@ public:
 
     inline void addRestartIndex(){
         _primitiveRestartEnabled = true;
-        if (_largeIndices){
-            _hardwareIndicesL.push_back(Config::PRIMITIVE_RESTART_INDEX_L);
-        }else{
-            _hardwareIndicesS.push_back(Config::PRIMITIVE_RESTART_INDEX_S);
-        }
+        addIndex(_largeIndices ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S);
     }
+
+    inline void addTriangle(const vec3<U32>& tri){
+        _dataTriangles.push_back(tri);
+    }
+
     inline void addPosition(const vec3<F32>& pos){
-        if(pos.x > _maxPosition.x)	_maxPosition.x = pos.x;
-        if(pos.x < _minPosition.x)	_minPosition.x = pos.x;
-        if(pos.y > _maxPosition.y)	_maxPosition.y = pos.y;
-        if(pos.y < _minPosition.y)	_minPosition.y = pos.y;
-        if(pos.z > _maxPosition.z)	_maxPosition.z = pos.z;
-        if(pos.z < _minPosition.z)	_minPosition.z = pos.z;
+        setMinMaxPosition(pos);
         _dataPosition.push_back(pos);
-        _positionDirty  = true;
+        _attribDirty[ATTRIB_POSITION] = true;
     }
 
     inline void addColor(const vec3<U8>& col){
         _dataColor.push_back(col);
-        _colorDirty = true;
+        _attribDirty[ATTRIB_COLOR] = true;
+    }
+
+    inline void addTexCoord(const vec2<F32>& texCoord){
+        _dataTexcoord.push_back(texCoord);
+        _attribDirty[ATTRIB_TEXCOORD] = true;
     }
 
     inline void addNormal(const vec3<F32>& norm){
         _dataNormal.push_back(norm);
-        _normalDirty = true;
+        _attribDirty[ATTRIB_NORMAL] = true;
     }
 
     inline void addTangent(const vec3<F32>& tangent){
         _dataTangent.push_back(tangent);
-        _tangentDirty = true;
+        _attribDirty[ATTRIB_TANGENT] = true;
     }
 
     inline void addBiTangent(const vec3<F32>& bitangent){
         _dataBiTangent.push_back(bitangent);
-        _bitangentDirty = true;
+        _attribDirty[ATTRIB_BITANGENT] = true;
+    }
+
+    inline void addBoneIndex(const vec4<U8>& idx){
+        _boneIndices.push_back(idx);
+        _attribDirty[ATTRIB_BONE_INDICE] = true;
+    }
+
+    inline void addBoneWeight(const vec4<F32>& idx){
+        _boneWeights.push_back(idx);
+        _attribDirty[ATTRIB_BONE_WEIGHT] = true;
     }
 
     inline void setIndiceLimits(const vec2<U32>& indiceLimits, U8 LODindex = 0) {
         assert(LODindex < _indiceLimits.size());
-       _indiceLimits[LODindex] = indiceLimits;
+        vec2<U32>& limits = _indiceLimits[LODindex];
+        limits.y = std::max(indiceLimits.y, limits.y);
+        limits.x = std::min(indiceLimits.x, limits.x);
     }
 
     inline void modifyPositionValue(U32 index, const vec3<F32>& newValue){
         assert(index < _dataPosition.size());
         _dataPosition[index] = newValue;
-        _positionDirty = true;
+        _attribDirty[ATTRIB_POSITION] = true;
     }
 
     inline void modifyColorValue(U32 index, const vec3<U8>& newValue) {
         assert(index < _dataColor.size());
         _dataColor[index] = newValue;
-        _colorDirty = true;
+        _attribDirty[ATTRIB_COLOR] = true;
     }
 
     inline void modifyNormalValue(U32 index, const vec3<F32>& newValue)  {
         assert(index < _dataNormal.size());
         _dataNormal[index] = newValue;
-        _normalDirty = true;
+        _attribDirty[ATTRIB_NORMAL] = true;
     }
 
     inline void modifyTangentValue(U32 index, const vec3<F32>& newValue)  {
         assert(index < _dataTangent.size());
         _dataTangent[index] = newValue;
-        _tangentDirty = true;
+        _attribDirty[ATTRIB_TANGENT] = true;
     }
 
     inline void modifyBiTangentValue(U32 index, const vec3<F32>& newValue)  {
         assert(index < _dataBiTangent.size());
         _dataBiTangent[index] = newValue;
-        _bitangentDirty = true;
+        _attribDirty[ATTRIB_BITANGENT] = true;
     }
 
     inline void optimizeForDepth(bool state = true,bool force = false) {
@@ -249,12 +300,30 @@ public:
         _forceOptimizeForDepth = force;
     }
 
+    inline size_t partitionBuffer(U32 currentIndexCount){
+        _partitions.push_back(std::make_pair(getIndexCount() - currentIndexCount, currentIndexCount));
+        return _partitions.size() - 1;
+    }
+
+    inline U32 getPartitionCount(U16 partitionIdx){
+        assert(partitionIdx < _partitions.size());
+        return _partitions[partitionIdx].second;
+    }
+
+    inline U32 getPartitionOffset(U16 partitionIdx){
+        assert(partitionIdx < _partitions.size());
+        return _partitions[partitionIdx].first;
+    }
+
+    inline U32 getLastPartitionOffset(){
+        if (_partitions.empty()) return 0;
+        return getPartitionOffset((U16)(_partitions.size() - 1));
+    }
+
     inline void Reset() {
         _created = false;
         _primitiveRestartEnabled = false;
-        _VBoffsetPosition = _VBoffsetColor = _VBoffsetNormal = _VBoffsetTexcoord = _VBoffsetTangent = 0;
-        _VBoffsetBiTangent = _VBoffsetBoneIndices = _VBoffsetBoneWeights = 0;
-        _VBoffsetBoneIndicesDEPTH = _VBoffsetBoneWeightsDEPTH = 0;
+        _partitions.clear();
         _dataPosition.clear();
         _dataColor.clear();
         _dataNormal.clear();
@@ -266,9 +335,9 @@ public:
         _hardwareIndicesL.clear();
         _hardwareIndicesS.clear();
         _dataTriangles.clear();
-        _indiceLimits.resize(Config::SCENE_NODE_LOD, vec2<U32>(0,0));
-        _positionDirty = _colorDirty = _normalDirty = _texcoordDirty = true;
-        _tangentDirty = _bitangentDirty = _indicesDirty = _weightsDirty = true;
+        _indiceLimits.resize(Config::SCENE_NODE_LOD, vec2<U32>(std::numeric_limits<U32>::max(), 0));
+        memset(_attribDirty, true, VertexAttribute_PLACEHOLDER * sizeof(bool));
+        memset(_VBoffset, 0, VertexAttribute_PLACEHOLDER * sizeof(ptrdiff_t));
         _minPosition = vec3<F32>(10000.0f);
         _maxPosition = vec3<F32>(-10000.0f);
     }
@@ -278,6 +347,14 @@ protected:
     virtual bool Refresh() = 0;
     virtual bool CreateInternal() = 0;
 
+    inline void setMinMaxPosition(const vec3<F32>& pos){
+        if (pos.x > _maxPosition.x)	_maxPosition.x = pos.x;
+        if (pos.x < _minPosition.x)	_minPosition.x = pos.x;
+        if (pos.y > _maxPosition.y)	_maxPosition.y = pos.y;
+        if (pos.y < _minPosition.y)	_minPosition.y = pos.y;
+        if (pos.z > _maxPosition.z)	_maxPosition.z = pos.z;
+        if (pos.z < _minPosition.z)	_minPosition.z = pos.z;
+    }
 protected:
 
     ///Number of LOD nodes in this buffer
@@ -290,14 +367,10 @@ protected:
     U32         _instanceCount;
     ///An index value that separates ojects (OGL: primitive restart index)
     U32         _indexDelimiter;
-    ptrdiff_t	_VBoffsetPosition;
-    ptrdiff_t   _VBoffsetColor;
-    ptrdiff_t	_VBoffsetNormal;
-    ptrdiff_t	_VBoffsetTexcoord;
-    ptrdiff_t	_VBoffsetTangent, _VBoffsetBiTangent;
-    ptrdiff_t   _VBoffsetBoneIndices, _VBoffsetBoneWeights;
-    ptrdiff_t   _VBoffsetBoneIndicesDEPTH, _VBoffsetBoneWeightsDEPTH;
-
+    ptrdiff_t	_VBoffset[VertexAttribute_PLACEHOLDER];
+        
+    // first: offset, second: count
+    vectorImpl<std::pair<U32, U32> >   _partitions;
     vectorImpl<vec2<U32> > _indiceLimits;
     ///Used for creating an "IB". If it's empty, then an outside source should provide the indices
     vectorImpl<U32>        _hardwareIndicesL;
@@ -312,14 +385,12 @@ protected:
     vectorImpl<vec4<F32> > _boneWeights;
     vectorImpl<vec3<U32> > _dataTriangles;	//< 3 indices, pointing to position values, that form a triangle in the mesh.
     vec3<F32> _minPosition,  _maxPosition;
-    ///Use ither U32 or U16 indices. Always prefer the later
+    ///Use either U32 or U16 indices. Always prefer the later
     bool _largeIndices;
     ///Some objects need triangle data in order for other parts of the engine to take advantage of direct data (physics, navmeshes, etc)
     bool _computeTriangles;
     /// Cache system to update only required data
-    bool _positionDirty, _colorDirty, _normalDirty, _texcoordDirty;
-    bool _tangentDirty, _bitangentDirty, _indicesDirty, _weightsDirty;
-    ///Store position and animation data in different VB so rendering to depth is faster (it skips tex coords, tangent and bitangent data upload to GPU mem)
+    bool _attribDirty[VertexAttribute_PLACEHOLDER];
     ///Set this to FALSE if you need bump/normal/parallax mapping in depth pass (normal mapped object casts correct shadows)
     bool _optimizeForDepth;
     bool _forceOptimizeForDepth; //<Override vb requirements for optimization

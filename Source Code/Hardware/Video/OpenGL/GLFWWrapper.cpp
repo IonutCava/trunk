@@ -273,7 +273,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), max_texture_units, GFX_DEVICE._maxTextureSlots);
     PRINT_FN(Locale::get("GL_MAX_VERSION"),major,maxMinor);
     PRINT_FN(Locale::get("GL_GLSL_SUPPORT"),glslVersionSupported);
-    PRINT_FN(Locale::get("GL_VENDOR_STRING"),gpuVendorByte.c_str(), glGetString(GL_RENDERER));
+    PRINT_FN(Locale::get("GL_VENDOR_STRING"), gpuVendorByte.c_str(), glGetString(GL_RENDERER), glGetString(GL_VERSION));
     PRINT_FN(Locale::get("GL_MULTI_SAMPLE_INFO"),samplesEffective,buffers);
     PRINT_FN(Locale::get("GL_UBO_INFO"),maxUBOBindings, maxUBOBlockSize);
     PRINT_FN(Locale::get("GL_SUBROUTINE_INFO"), maxSubroutines, maxSubroutineUniforms);

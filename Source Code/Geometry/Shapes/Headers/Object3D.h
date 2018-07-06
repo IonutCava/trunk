@@ -24,10 +24,11 @@
 #define _OBJECT_3D_H_
 
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 class BoundingBox;
 class RenderInstance;
-class VertexBuffer;
+
 class Object3D : public SceneNode {
 public:
     enum ObjectType {

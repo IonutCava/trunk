@@ -59,12 +59,12 @@ public:
 	void Evaluate(const D32 dt, Unordered_map<std::string, Bone*>& bones);
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
-	U32 GetFrameIndexAt(const D32 elapsedTime);
+	I32 GetFrameIndexAt(const D32 elapsedTime);
 
-	inline U32 GetFrameIndex() const {return _lastFrameIndex;}
+	inline I32 GetFrameIndex() const {return _lastFrameIndex;}
 	inline U32 GetFrameCount() const {return (U32)_transforms.size();}
 	inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime) {
-        U32 frameIndex = GetFrameIndexAt(elapsedTime);
+        I32 frameIndex = GetFrameIndexAt(elapsedTime);
         assert(frameIndex < _transforms.size());
          return _transforms[frameIndex];
     }
@@ -85,7 +85,7 @@ protected:
 
 private:
 
-	U32 _lastFrameIndex;
+	I32 _lastFrameIndex;
 	vectorImpl<vec3<U32> > _lastPositions;
 	///vector that holds all bone channels
 	vectorImpl<AnimationChannel> _channels;

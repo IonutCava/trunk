@@ -65,11 +65,11 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     _groundVB->Create();
     _terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), _chunkSize, _groundVB, this, sgn);
 
-    ShaderProgram* s = getMaterial()->getShaderProgram();
-    s->UniformTexture("texWaterCaustics", 0);
-    s->UniformTexture("texUnderwaterAlbedo", 1);
-    s->UniformTexture("texUnderwaterDetail", 2);
-    s->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
+    _drawShader = getMaterial()->getShaderProgram();
+    _drawShader->UniformTexture("texWaterCaustics", 0);
+    _drawShader->UniformTexture("texUnderwaterAlbedo", 1);
+    _drawShader->UniformTexture("texUnderwaterDetail", 2);
+    _drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
     U8 textureOffset = 3;
     U8 layerOffset = 0;
     std::string layerIndex;
@@ -77,14 +77,14 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
         layerOffset = i * 2 + textureOffset;
         layerIndex = Util::toString(i);
         TerrainTextureLayer* textureLayer = _terrainTextures[i];
-        s->UniformTexture("texBlend["      + layerIndex + "]", layerOffset);
-        s->UniformTexture("texTileMaps["   + layerIndex + "]", layerOffset + 1);
+        _drawShader->UniformTexture("texBlend[" + layerIndex + "]", layerOffset);
+        _drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);
         
-        s->Uniform("diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales());
-        s->Uniform("detailScale["  + layerIndex + "]", textureLayer->getDetailScales());
+        _drawShader->Uniform("diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales());
+        _drawShader->Uniform("detailScale[" + layerIndex + "]", textureLayer->getDetailScales());
 
     }
-    _groundVB->setShaderProgram(s);
+    _groundVB->setShaderProgram(_drawShader);
 
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true); //No default material
@@ -137,33 +137,33 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
 
     SET_STATE_BLOCK(*(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderState : _terrainRenderState));
 
-    ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
-    terrainShader->ApplyMaterial(getMaterial());
-    terrainShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
-    terrainShader->Uniform("bbox_min", _boundingBox.getMin());
-    terrainShader->Uniform("bbox_extent", _boundingBox.getExtent());
-    terrainShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
-    terrainShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
-    terrainShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
-    terrainShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
-    terrainShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
+    _drawShader = getMaterial()->getShaderProgram();
+    _drawShader->ApplyMaterial(getMaterial());
+    _drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
+    _drawShader->Uniform("bbox_min", _boundingBox.getMin());
+    _drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
+    _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
+    _drawShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
+    _drawShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
+    _drawShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
+    _drawShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
 
-    _groundVB->setShaderProgram(terrainShader);
-    _plane->setCustomShader(terrainShader);
+    _groundVB->setShaderProgram(_drawShader);
+    _plane->setCustomShader(_drawShader);
 
-    return terrainShader->bind();
+    return _drawShader->bind();
 }
 
 bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
     bool depthPrePass = GFX_DEVICE.isDepthPrePass();
 
     SET_STATE_BLOCK(*(depthPrePass ? _terrainRenderState : _terrainDepthRenderState));
-    ShaderProgram* terrainShader = getMaterial()->getShaderProgram(depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE);
+    _drawShader = getMaterial()->getShaderProgram(depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE);
 
-    _groundVB->setShaderProgram(terrainShader);
-    _plane->setCustomShader(terrainShader);
+    _groundVB->setShaderProgram(_drawShader);
+    _plane->setCustomShader(_drawShader);
 
-    return terrainShader->bind();
+    return _drawShader->bind();
 }
 
 void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){

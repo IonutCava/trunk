@@ -125,6 +125,7 @@ public:
            void drawPoints(U32 numPoints);
     ///Useful to perform pre-draw operations on the model if it's drawn outside the scenegraph
     void renderInstance(RenderInstance* const instance);
+    void renderInstanceCmd(RenderInstance* const instance, const VertexBuffer::DeferredDrawCommand& cmd);
     ///The render callback must update all visual information and populate the "RenderBin"'s!
     void render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState);
     ///Sets the current render stage.

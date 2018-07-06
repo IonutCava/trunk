@@ -68,7 +68,7 @@ public:
 private:
     DVDConverter();
     ~DVDConverter();
-    SubMesh* loadSubMeshGeometry(const aiMesh* source, U16 count);
+    SubMesh* loadSubMeshGeometry(const aiMesh* source, Mesh* parentMesh, U16 count);
     Material* loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName);
 
 private:

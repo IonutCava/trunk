@@ -4,24 +4,18 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
-Object3D::Object3D(const ObjectType& type,const PrimitiveType& vbType,const ObjectFlag& flag) :
-                                          SceneNode(TYPE_OBJECT3D),
-                                          _update(false),
-                                          _geometryType(type),
-                                          _geometryFlag(flag),
-                                          _geometry(GFX_DEVICE.newVB(vbType))
+Object3D::Object3D(const ObjectType& type, const PrimitiveType& vbType, const ObjectFlag& flag) : Object3D("", type, vbType, flag)
 
 {
-    _renderInstance = New RenderInstance(this);
 }
 
-Object3D::Object3D(const std::string& name,const ObjectType& type,const PrimitiveType& vbType,const ObjectFlag& flag) :
-                                                                    SceneNode(name,TYPE_OBJECT3D),
-                                                                    _update(false),
-                                                                    _geometryType(type),
-                                                                    _geometryFlag(flag),
-                                                                    _geometry(GFX_DEVICE.newVB(vbType))
+Object3D::Object3D(const std::string& name, const ObjectType& type, const PrimitiveType& vbType, const ObjectFlag& flag) : SceneNode(name,TYPE_OBJECT3D),
+                                                                                                                           _update(false),
+                                                                                                                           _geometryType(type),
+                                                                                                                           _geometryFlag(flag),
+                                                                                                                           _geometry(GFX_DEVICE.newVB(vbType))
 {
+    _geometry = vbType != PrimitiveType_PLACEHOLDER ? GFX_DEVICE.newVB(vbType) : nullptr;
     _renderInstance = New RenderInstance(this);
 }
 
@@ -51,21 +45,26 @@ bool Object3D::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage
         return false;
 
     //check if we need to update vb shader
-    if(getMaterial()){
-        ShaderProgram* stageShader = getMaterial()->getShaderProgram(bitCompare(SHADOW_STAGE,currentStage) ? SHADOW_STAGE : (bitCompare(FINAL_STAGE,currentStage) ? FINAL_STAGE : Z_PRE_PASS_STAGE));
-        assert(stageShader != nullptr);
-        _geometry->setShaderProgram(stageShader);
+    //custom shaders ALWAYS override material shaders
+    if (_customShader){
+        _drawShader = _customShader;
+    } else {
+        if (!getMaterial())
+            return false;
+
+        bool isDepthPass = bitCompare(DEPTH_STAGE, currentStage);
+        _drawShader = isDepthPass ? getMaterial()->getShaderProgram(bitCompare(currentStage, SHADOW_STAGE) ? SHADOW_STAGE : Z_PRE_PASS_STAGE) : getMaterial()->getShaderProgram();
     }
 
-    //custom shaders ALWAYS override material shaders
-    if(_customShader){
-       _geometry->setShaderProgram(_customShader);
-    }
+    assert(_drawShader != nullptr);
+    if(_geometry) _geometry->setShaderProgram(_drawShader);
 
     return true;
 }
 
 void Object3D::computeNormals() {
+    if (!_geometry) return;
+
     vec3<F32> v1 , v2, normal;
     //Code from http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
 
@@ -104,6 +103,8 @@ void Object3D::computeNormals() {
 }
 
 void Object3D::computeTangents(){
+    if (!_geometry) return;
+
     //Code from: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#header-1
     // inputs
     const vectorImpl<vec2<F32> > & uvs      = _geometry->getTexcoord();

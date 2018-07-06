@@ -315,6 +315,10 @@ public:
         _pointsDirty = true;
     }
 
+    inline void set(const BoundingBox& bb){
+        set(bb._min, bb._max);
+    }
+
     inline void set(const vec3<F32>& min, const vec3<F32>& max)  {
         /*WriteLock w_lock(_lock);*/
         _min = min;

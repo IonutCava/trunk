@@ -120,7 +120,10 @@ protected:
     virtual void postLoad(SceneGraphNode* const sgn) { _nodeReady = (sgn != nullptr); }; 
 
 protected:
+    /// A custom shader will always override the material shader for the current stage
     ShaderProgram*        _customShader;
+    /// This is the currently active shader at the time onDraw() / render() is called
+    ShaderProgram*        _drawShader;
     ///The various states needed for rendering
     SceneNodeRenderState  _renderState;
     ///Attach a physics asset to the node to make it physics enabled

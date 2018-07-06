@@ -231,11 +231,11 @@ void GFXDevice::drawPoints(U32 numPoints) {
     _api.drawPoints(numPoints); 
 }
 
-void GFXDevice::renderInstance(RenderInstance* const instance){
+void GFXDevice::renderInstanceCmd(RenderInstance* const instance, const VertexBuffer::DeferredDrawCommand& cmd){
     //All geometry is stored in VB format
     assert(instance->object3D() != nullptr);
     Object3D* model = instance->object3D();
- 
+
     if (model->getType() == Object3D::OBJECT_3D_PLACEHOLDER || model->getType() == Object3D::TEXT_3D){
         ERROR_FN(Locale::get("ERROR_GFX_INVALID_OBJECT_TYPE"), model->getName().c_str());
         //Text3D* text = dynamic_cast<Text3D*>(model);
@@ -245,27 +245,41 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     }
 
     if (instance->preDraw()){
-        if(!model->onDraw(nullptr, getRenderStage()))
+        if (!model->onDraw(nullptr, getRenderStage()))
             return;
     }
 
     updateStates();
 
     Transform* transform = instance->transform();
-    if(transform) {
+    if (transform) {
         Transform* prevTransform = instance->prevTransform();
-        if(_interpolationFactor < 0.99 && prevTransform) {
+        if (_interpolationFactor < 0.99 && prevTransform) {
             pushWorldMatrix(transform->interpolate(prevTransform, _interpolationFactor), transform->isUniformScaled());
-        }else{
+        }
+        else{
             pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
         }
     }
 
-    assert(model->getGeometryVB() != nullptr);
-    //Render our current vertex array object
-    model->getGeometryVB()->Draw(false, model->getCurrentLOD());
+    VertexBuffer* modelVB = instance->buffer();
+    if(!modelVB) modelVB = model->getGeometryVB();
 
-    if(transform) popWorldMatrix();
+    assert(modelVB != nullptr);
+    if (cmd._cmd.count == 0){
+        //Render our current vertex array object
+        modelVB->Draw(false, model->getCurrentLOD());
+    }else{
+        modelVB->setRangeCount(cmd._cmd.count);
+        modelVB->setFirstElement(cmd._cmd.firstIndex);
+        modelVB->DrawRange();
+    }
+
+    if (transform) popWorldMatrix();
+}
+
+void GFXDevice::renderInstance(RenderInstance* const instance){
+    renderInstanceCmd(instance, VertexBuffer::DeferredDrawCommand());
 }
 
 void GFXDevice::render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState){

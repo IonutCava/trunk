@@ -50,7 +50,6 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
     virtual void postLoad(SceneGraphNode* const sgn);
-    inline  void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){};
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
@@ -59,8 +58,11 @@ public:
     inline bool playAnimations()                 const { return _playAnimations; }
 
 protected:
+    friend class SubMesh;
+    void addDrawCommand(const VertexBuffer::DeferredDrawCommand& cmd, ShaderProgram* const shaderProgram);
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
 
 protected:
 
@@ -70,6 +72,8 @@ protected:
     bool _visibleToNetwork;
     bool _playAnimations;
     bool _playAnimationsCurrent;
+
+    vectorImpl<VertexBuffer::DeferredDrawCommand >  _drawCommands[Config::SCENE_NODE_LOD];
 
     vectorImpl<std::string > _subMeshes;
     subMeshRefMap            _subMeshRefMap;

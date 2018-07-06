@@ -39,49 +39,47 @@ and a name.
 */
 
 #include "core.h"
-#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Mesh.h"
 
-class Mesh;
 class SubMesh : public Object3D {
 public:
-	SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE) :
-									   Object3D(name,SUBMESH,TRIANGLES,flag),
-									   _visibleToNetwork(true),
-									   _render(true),
-									   _id(0),
-									   _parentMesh(nullptr),
-                                       _parentMeshSGN(nullptr)
-	{
-	}
+    SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE);
 
-	virtual ~SubMesh();
+    virtual ~SubMesh();
 
-	bool unload() { return SceneNode::unload(); }
+    bool unload() { return SceneNode::unload(); }
 
-	bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode* const sgn);
 
-	inline U32  getId() {return _id;}
-	/// When loading a submesh, the ID is the node index from the imported scene
-	/// scene->mMeshes[n] == (SubMesh with _id == n)
-	inline void setId(U32 id) {_id = id;}
-	virtual void postLoad(SceneGraphNode* const sgn);
-	inline Mesh* getParentMesh() {return _parentMesh;}
-	inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }
+    inline U32  getId() {return _id;}
+    /// When loading a submesh, the ID is the node index from the imported scene
+    /// scene->mMeshes[n] == (SubMesh with _id == n)
+    inline void setId(U32 id) {_id = id;}
+    virtual void postLoad(SceneGraphNode* const sgn);
+    inline Mesh* getParentMesh() {return _parentMesh;}
+    inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }
 
 protected:
-	friend class Mesh;
-	inline void setParentMesh(Mesh* const parentMesh) {_parentMesh = parentMesh;}
+    friend class Mesh;
+    inline void setParentMesh(Mesh* const parentMesh) { _parentMesh = parentMesh; }
     inline void setParentMeshSGN(SceneGraphNode* const meshSGN) { _parentMeshSGN = meshSGN; }
 
-	friend class DVDConverter;
-	mat4<F32> _sceneRootMatrix;
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+
+    friend class DVDConverter;
+    mat4<F32> _sceneRootMatrix;
     
+    inline void setGeometryPartitionId(size_t idx) { _geometryPartitionId = (U32)idx; }
+    inline void setGeometryLimits(const vec3<F32>& min, const vec3<F32>& max) { _importBB.set(min, max);}
+
 protected:
-	bool _visibleToNetwork;
-	bool _render;
-	U32 _id;
-	Mesh* _parentMesh;
+    bool _visibleToNetwork;
+    bool _render;
+    U32 _id;
+    U32 _geometryPartitionId;
+    Mesh* _parentMesh;
     SceneGraphNode* _parentMeshSGN;
+    BoundingBox     _importBB;
 };
 
 #endif

@@ -303,18 +303,18 @@ bool Vegetation::setMaterialInternal(SceneGraphNode* const sgn) {
     bool depthPrePass = GFX_DEVICE.isDepthPrePass();
 
     LightManager& lightMgr = LightManager::getInstance();
-    ShaderProgram* grassShader = getMaterial()->getShaderProgram(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE);
+    _drawShader = getMaterial()->getShaderProgram(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE);
     if (!depthPass){
-        grassShader->ApplyMaterial(getMaterial());
-        grassShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
-        grassShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
-        grassShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
-        grassShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
-        grassShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
+        _drawShader->ApplyMaterial(getMaterial());
+        _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
+        _drawShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
+        _drawShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
+        _drawShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
+        _drawShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
     }
-    if (grassShader->bind()){
-        grassShader->SetLOD(1);
-        grassShader->uploadNodeMatrices();
+    if (_drawShader->bind()){
+        _drawShader->SetLOD(1);
+        _drawShader->uploadNodeMatrices();
         return true;
     }
     return false;

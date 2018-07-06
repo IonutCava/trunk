@@ -76,8 +76,8 @@ void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minH
             firstTri.set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
             // Bottom triangle (T1)
             secondTri.set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
-            groundVB->getTriangles().push_back(firstTri);
-            groundVB->getTriangles().push_back(secondTri);
+            groundVB->addTriangle(firstTri);
+            groundVB->addTriangle(secondTri);
         }
     }
 }

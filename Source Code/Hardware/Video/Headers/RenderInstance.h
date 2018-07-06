@@ -28,11 +28,12 @@
 
 class Object3D;
 class Transform;
-
+class VertexBuffer;
 ///Wraps geometry with transform and additional rendering params. Pass to the rendering API for presenting to screen
 class RenderInstance : private boost::noncopyable{
 public:
-    RenderInstance(Object3D* const geometry) : _geometry(geometry),
+    RenderInstance(Object3D* const geometry) : _model(geometry),
+                                               _buffer(nullptr),
                                                _transform(nullptr),
                                                _prevTransform(nullptr),
                                                _preDraw(false)
@@ -41,7 +42,8 @@ public:
 
     ~RenderInstance()
     {
-        _geometry = nullptr;
+        _model = nullptr;
+        _buffer = nullptr;
     }
 
     ///Model transform manipulation
@@ -50,18 +52,23 @@ public:
     Transform* prevTransform()                           const {return _prevTransform;}
     void       prevTransform(Transform* const transform)       {_prevTransform = transform;}
     ///Geometry manipulation
-    Object3D* const object3D()                         const {return _geometry;}
-    void            object3D(Object3D* const geometry)       {_geometry = geometry;}
+    Object3D* const object3D()                         const { return _model; }
+    void            object3D(Object3D* const geometry)       { _model = geometry; }
+    ///Buffer Data
+    VertexBuffer* const buffer()                           const { return _buffer; }
+    void                buffer(VertexBuffer* const buffer)       { _buffer = buffer; }
     ///PreDraw checks
     bool preDraw()                   const {return _preDraw;}
     void preDraw(const bool preDraw)       {_preDraw = preDraw;}
 
 private:
     ///The actual geometry wrapper
-    Object3D*  _geometry;
+    Object3D*  _model;
+    ///A custom, override vertex buffer
+    VertexBuffer* _buffer;
     ///The geometry's transformation information
     Transform* _transform;
-    ///The geoemtry's previous transformation information. Used for interpolation purposes
+    ///The geometry's previous transformation information. Used for interpolation purposes
     Transform* _prevTransform;
     ///Perform a preDraw operation on the model
     bool       _preDraw;

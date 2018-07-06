@@ -186,8 +186,10 @@ void LightManager::togglePreviewShadowMaps() {
     if (!_shadowMapsEnabled || !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
         return;
 
-    FOR_EACH(LightMap::value_type& it, _lights)
+    FOR_EACH(LightMap::value_type& it, _lights){
+        assert(it.second->getShadowMapInfo() && it.second->getShadowMapInfo()->getShadowMap());
         it.second->getShadowMapInfo()->getShadowMap()->togglePreviewShadowMaps(_previewShadowMaps);
+    }
 }
 
 void LightManager::previewShadowMaps(Light* light) {

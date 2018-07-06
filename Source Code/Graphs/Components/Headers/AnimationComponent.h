@@ -26,7 +26,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 
 #include "Utility/Headers/Vector.h"
+#include "Utility/Headers/UnorderedMap.h"
 #include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 class Bone;
 class SceneAnimator;
@@ -34,6 +36,9 @@ class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
 
 public:
+    typedef Unordered_map<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
+    typedef Unordered_map<U32 /*animation ID*/, boundingBoxPerFrame> boundingBoxPerAnimation;
+
     AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN);
     ~AnimationComponent();
     void onDraw(RenderStage currentStage);
@@ -49,8 +54,8 @@ public:
     bool playNextAnimation();
     
    
-    U32 frameIndex() const;
-    U32 frameCount() const;
+    I32 frameIndex() const;
+    I32 frameCount() const;
     const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const;
     const mat4<F32>& currentBoneTransform(const std::string& name);
     Bone* getBoneByName(const std::string& bname) const;
@@ -61,6 +66,8 @@ public:
 
     inline I32  animationIndex() const { return _currentAnimIndex; }
     inline const vectorImpl<mat4<F32> >& animationTransforms() const { return _animationTransforms; }
+
+    inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationId) { return _boundingBoxes[animationId]; }
 
 protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
@@ -80,6 +87,10 @@ protected:
     bool _skeletonAvailable; 
     /// Animation playback toggle
     bool _playAnimations;
+    ///BoundingBoxes for every frame
+    boundingBoxPerFrame _bbsPerFrame;
+    ///store a map of bounding boxes for every animation at every frame
+    boundingBoxPerAnimation _boundingBoxes;
 };
 
 #endif

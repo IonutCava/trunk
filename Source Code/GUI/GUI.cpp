@@ -32,7 +32,7 @@ GUI::~GUI()
 
 void GUI::onResize(const vec2<U16>& newResolution){
     //CEGUI handles it's own init checks
-    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(newResolution.width,newResolution.height));
+    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(newResolution.width, newResolution.height));
 
     if (!_init || _cachedResolution == newResolution)
         return;

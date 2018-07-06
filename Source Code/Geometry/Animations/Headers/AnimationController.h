@@ -67,7 +67,7 @@ public:
     /// get the transforms needed to pass to the vertex shader. This will wrap the dt value passed, so it is safe to pass 50000000 as a valid number
     inline vectorImpl<mat4<F32> >& GetTransforms(I32 animationIndex, const D32 dt){ return _animations[animationIndex].GetTransforms(dt); }
     inline vectorImpl<mat4<F32> >& GetTransformsByIndex(I32 animationIndex, U32 index){ return _animations[animationIndex]._transforms[index]; }
-    inline U32 GetFrameIndex(I32 animationIndex) const { return _animations[animationIndex].GetFrameIndex(); }
+    inline I32 GetFrameIndex(I32 animationIndex) const { return _animations[animationIndex].GetFrameIndex(); }
     inline U32 GetFrameCount(I32 animationIndex) const { return _animations[animationIndex].GetFrameCount(); }
     inline const vectorImpl<AnimEvaluator>& GetAnimations() const { return _animations; }
     inline const std::string& GetAnimationName(I32 animationIndex) const { return _animations[animationIndex]._name; }

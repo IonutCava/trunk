@@ -24,6 +24,7 @@
 #define _SKINNED_SUBMESH_H_
 
 #include "SubMesh.h"
+
 class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
 public:
@@ -44,14 +45,7 @@ private:
 private:
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;
-    bool _softwareSkinning;
     /// Animation player to animate the mesh if necessary
     SceneAnimator* _animator;
-
-    ///BoundingBoxes for every frame
-    typedef Unordered_map<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
-    boundingBoxPerFrame _bbsPerFrame;
-    ///store a map of bounding boxes for every animation at every frame
-    Unordered_map<U32 /*animation ID*/, boundingBoxPerFrame> _boundingBoxes;
 };
 #endif

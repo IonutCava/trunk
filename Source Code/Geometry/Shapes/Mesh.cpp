@@ -52,6 +52,8 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
         s->setParentMeshSGN(sgn);
     }
 
+    _geometry->Create();
+
     Object3D::postLoad(sgn);
 }
 
@@ -69,4 +71,30 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
     }
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+}
+
+
+void Mesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) {
+    /*if (!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
+        GFX_DEVICE.pushWorldMatrix(sgn->getTransform()->getGlobalMatrix(), sgn->getTransform()->isUniformScaled());
+        GFX_DEVICE.updateStates();
+    }*/
+    //_geometry->SetActive();
+
+    for (U8 i = 0; i < Config::SCENE_NODE_LOD; ++i){
+        if (!_drawCommands[i].empty()){
+        //    _geometry->currentShader()->SetLOD(i);
+      //      _geometry->DrawCommands(_drawCommands[i], true);
+            _drawCommands[i].resize(0);
+        }
+    }
+
+    /*if (!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
+        GFX_DEVICE.popWorldMatrix();
+    }*/
+}
+
+void Mesh::addDrawCommand(const VertexBuffer::DeferredDrawCommand& cmd, ShaderProgram* const shaderProgram){
+    _drawCommands[cmd._signedData].push_back(cmd); 
+    _geometry->setShaderProgram(shaderProgram);
 }

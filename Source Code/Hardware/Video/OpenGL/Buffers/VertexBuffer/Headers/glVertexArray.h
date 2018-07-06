@@ -63,26 +63,16 @@ protected:
     /// Internally create the VB
     bool CreateInternal();
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
-    void Upload_VB_Attributes();
-    void Upload_VB_Depth_Attributes();
+    void Upload_VB_Attributes(bool depthPass = false);
     /// Integrity checks
     void checkStatus();
 
 protected:
-    typedef  struct {
-        GLuint  count;
-        GLuint  instanceCount;
-        GLuint  first;
-        GLuint  baseInstance;
-    } DrawArraysIndirectCommand;
-
     GLenum _formatInternal;
     GLenum _typeInternal;
     GLuint _IBid;
     GLuint _VBid;
-    GLuint _DepthVBid;
-    GLuint _VAOid;
-    GLuint _DepthVAOid;
+    GLuint _VAOid[2];
     GLuint _usage;
     bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
     bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that
@@ -90,14 +80,7 @@ protected:
     vectorImpl<vec4<GLshort> > _tangentSmall;
     vectorImpl<vec4<GLshort> > _bitangentSmall;
 
-    GLsizei _prevSizePosition;
-    GLsizei _prevSizeColor;
-    GLsizei _prevSizeNormal;
-    GLsizei _prevSizeTexcoord;
-    GLsizei _prevSizeTangent;
-    GLsizei _prevSizeBiTangent;
-    GLsizei _prevSizeBoneWeights;
-    GLsizei _prevSizeBoneIndices;
+    GLsizei _prevSize[VertexAttribute_PLACEHOLDER];
     GLsizei _prevSizeIndices;
 
     const static U32 MAX_DRAW_COMMANDS = 128 * 8;

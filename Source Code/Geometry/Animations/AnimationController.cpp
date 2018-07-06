@@ -187,7 +187,7 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 
 ///Renders the current skeleton pose at time index dt
 I32 SceneAnimator::RenderSkeleton(I32 animationIndex, const D32 dt){
-    U32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
+    I32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
 
     if (_pointsA.find(animationIndex) == _pointsA.end()){
         pointMap pointsA;

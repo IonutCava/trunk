@@ -135,14 +135,31 @@ Mesh* DVDConverter::load(const std::string& file){
     tempMesh->setResourceLocation(_fileLocation);
 
     SubMesh* tempSubMesh = nullptr;
-    
+    U32 vertCount = 0;
+    bool skinned = false;
+    for (U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
+        vertCount += _aiScenePointer->mMeshes[n]->mNumVertices;
+        if (_aiScenePointer->mMeshes[n]->HasBones()) skinned = true;
+    }
+
+    VertexBuffer* vb = tempMesh->getGeometryVB();
+    vb->useLargeIndices(vertCount + 1 > std::numeric_limits<U16>::max());
+    vb->reservePositionCount(vertCount);
+    vb->reserveNormalCount(vertCount);
+    vb->reserveTangentCount(vertCount);
+    vb->reserveBiTangentCount(vertCount);
+    vb->getTexcoord().reserve(vertCount);
+    if (skinned){
+        vb->getBoneIndices().reserve(vertCount);
+        vb->getBoneWeights().reserve(vertCount);
+    }
     for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
         aiMesh* currentMesh = _aiScenePointer->mMeshes[n];
         //Skip points and lines ... for now -Ionut
         if (currentMesh->mNumVertices == 0)
             continue;
 
-        tempSubMesh = loadSubMeshGeometry(currentMesh, n);
+        tempSubMesh = loadSubMeshGeometry(currentMesh, tempMesh, n);
 
         if (tempSubMesh){
             if(!tempSubMesh->getMaterial()){
@@ -164,7 +181,7 @@ Mesh* DVDConverter::load(const std::string& file){
 ///If we are loading a LOD variant of a submesh, find it first, append LOD geometry,
 ///but do not return the mesh again as it will be duplicated in the Mesh parent object
 ///instead, return nullptr and mesh and material creation for this instance will be skipped.
-SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, U16 count){
+SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMesh, U16 count){
     ///VERY IMPORTANT: default submesh, LOD0 should always be created first!!
     ///an assert is added in the LODn, where n >= 1, loading code to make sure the LOD0 submesh exists first
     bool baseMeshLoading = false;
@@ -196,21 +213,15 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, U16 count){
         tempSubMesh = CreateResource<SubMesh>(submeshdesc);
         if(!tempSubMesh) return nullptr;
         //it may be already loaded
-        if(!tempSubMesh->getGeometryVB()->getPosition().empty()){
+        if(tempSubMesh->getParentMesh()){
             return tempSubMesh;
         }
         baseMeshLoading = true;
     }
 
-    VertexBuffer* vb = tempSubMesh->getGeometryVB();
-
-    vb->reservePositionCount(source->mNumVertices);
-    vb->reserveNormalCount(source->mNumVertices);
     vectorImpl< vectorImpl<vertexWeight> > weightsPerVertex(source->mNumVertices);
 
     if(skinned){
-        vb->getBoneIndices().reserve(source->mNumVertices);
-        vb->getBoneWeights().reserve(source->mNumVertices);
         assert(source->mNumBones < 256); ///<Fit in U8
         for(U8 a = 0; a < source->mNumBones; a++){
             const aiBone* bone = source->mBones[a];
@@ -224,22 +235,24 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, U16 count){
     if(!source->mTangents){
         processTangents = false;
         D_PRINT_FN(Locale::get("SUBMESH_NO_TANGENT"), tempSubMesh->getName().c_str());
-    }else{
-        vb->reserveTangentCount(source->mNumVertices);
-        vb->reserveBiTangentCount(source->mNumVertices);
     }
+
+    BoundingBox importBB;
+
+    VertexBuffer* vb = parentMesh->getGeometryVB();
+    U32 previousOffset = (U32)vb->getPosition().size();
 
     vec3<F32> position, normal, tangent, bitangent;
     vec4<U8>  boneIndices;
     vec4<F32> boneWeights;
-
+    
     for(U32 j = 0; j < source->mNumVertices; j++){
         position.setV(&source->mVertices[j].x);
         normal.setV(&source->mNormals[j].x);
 
         vb->addPosition(position);
         vb->addNormal(normal);
-
+        importBB.Add(position);
         if(processTangents){
             tangent.setV(&source->mTangents[j].x);
             bitangent.setV(&source->mBitangents[j].x);
@@ -258,10 +271,12 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, U16 count){
                 boneWeights[a] = weightsPerVertex[j][a]._boneWeight;
             }
 
-            vb->getBoneIndices().push_back(boneIndices);
-            vb->getBoneWeights().push_back(boneWeights);
+            vb->addBoneIndex(boneIndices);
+            vb->addBoneWeight(boneWeights);
         }
     }//endfor
+
+    tempSubMesh->setGeometryLimits(importBB.getMin(), importBB.getMax());
 
     if(_aiScenePointer->HasAnimations() && skinned){
         // create animator from current scene and current submesh pointer in that scene
@@ -269,37 +284,39 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, U16 count){
     }
 
     if(source->mTextureCoords[0] != nullptr){
-        vb->getTexcoord().reserve(source->mNumVertices);
         vec2<F32> texCoord;
         for(U32 j = 0; j < source->mNumVertices; j++){
             texCoord.set(source->mTextureCoords[0][j].x, source->mTextureCoords[0][j].y);
-            vb->getTexcoord().push_back(texCoord);
+            vb->addTexCoord(texCoord);
         }//endfor
     }//endif
 
+
+    U32 idxCount = 0;
     U32 currentIndice  = 0;
-    U32 lowestInd = 0;
+    U32 lowestInd  = std::numeric_limits<U32>::max();
     U32 highestInd = 0;
     vec3<U32> triangleTemp;
-
-    vb->useLargeIndices((source->mNumFaces * 3) + 1 > std::numeric_limits<U16>::max());
 
     for(U32 k = 0; k < source->mNumFaces; k++){
         assert(source->mFaces[k].mNumIndices == 3);
 
         for(U32 m = 0; m < 3; m++){
-            currentIndice = source->mFaces[k].mIndices[m];
+            currentIndice = source->mFaces[k].mIndices[m] + previousOffset;
             vb->addIndex(currentIndice);
+            idxCount++;
             triangleTemp[m] = currentIndice;
 
             if(currentIndice < lowestInd)  lowestInd  = currentIndice;
             if(currentIndice > highestInd) highestInd = currentIndice;
         }
 
-        vb->getTriangles().push_back(triangleTemp);
+        vb->addTriangle(triangleTemp);
     }
 
     vb->setIndiceLimits(vec2<U32>(lowestInd, highestInd), tempSubMesh->getLODcount() - 1);
+
+    tempSubMesh->setGeometryPartitionId(vb->partitionBuffer(idxCount));
 
     if(baseMeshLoading)	return tempSubMesh;
     else  		        return nullptr;
