@@ -248,8 +248,13 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     par.setParam<I32>("rendering.maxRenderTargetOutputs",
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
-    stringImpl gpuVendorByte(
-        reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+    stringImpl gpuVendorByte;
+    const char* gpuVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+    if (gpuVendor != nullptr) {
+        gpuVendorByte = gpuVendor;
+    } else {
+        gpuVendorByte = "unknown";
+    }
     if (!gpuVendorByte.empty()) {
         if (gpuVendorByte.compare(0, 5, "Intel") == 0) {
             GFX_DEVICE.setGPUVendor(GPUVendor::INTEL);

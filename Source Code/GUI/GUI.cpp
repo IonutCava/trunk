@@ -371,7 +371,7 @@ GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;
     char* text = MemoryManager_NEW char[len];
-    vsprintf_s(text, len, format, args);
+    vsprintf(text, format, args);
     fmt_text.append(text);
     MemoryManager::DELETE_ARRAY(text);
     va_end(args);
@@ -411,7 +411,7 @@ GUIText* GUI::modifyText(const stringImpl& id, const char* format, ...) {
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;
     char* text = MemoryManager_NEW char[len];
-    vsprintf_s(text, len, format, args);
+    vsprintf(text, format, args);
     fmt_text.append(text);
     MemoryManager::DELETE_ARRAY(text);
     va_end(args);

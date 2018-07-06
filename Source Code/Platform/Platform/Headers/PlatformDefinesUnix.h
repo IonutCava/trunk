@@ -32,8 +32,6 @@
 #ifndef _PLATFORM_DEFINES_UNIX_H_
 #define _PLATFORM_DEFINES_UNIX_H_
 
-#define _UNIX
-
 #ifndef NOINITVTABLE
 #define NOINITVTABLE
 #endif  //NOINITVTABLE
@@ -43,8 +41,9 @@
 #endif //FORCE_INLINE
 
 #include <sys/time.h>
-#include <limits>
 #include <X11/Xlib.h>
+#include <strings.h>
+#include <iterator>
 
 #ifdef None
 #undef None
@@ -77,18 +76,23 @@ namespace Divide {
         int _systemResolutionHeight;
     };
 
-typedef timeval TimeValue;
+typedef long int TimeValue;
 }; //namespace Divide
 
 template<typename T>
 inline bool isfinite(T val) {
-	return std::isfinite(val);
+	return isfinite(val);
 }
 
-inline void fopen_s (FILE ** file,  const char * filename, const char * mode ) {
-	*file = fopen(filename, mode);
+
+inline int _strnicmp(const char* str1, const char* str2, unsigned long int n) {
+    return strncasecmp(str1, str2, n);
 }
 
+inline int _stricmp(const char* str1, const char* str2) {
+    return strcasecmp(str1, str2);
+}
+/*
 inline int vsprintf_s(char * s, unsigned int maxlen, const char * format, va_list arg) {
 	return vsprintf(s, format, arg);
 }
@@ -96,14 +100,19 @@ inline int vsprintf_s(char * s, unsigned int maxlen, const char * format, va_lis
 inline int vsnprintf_s(char * s, unsigned long maxlen, const char * format, va_list arg) {
     return vsnprintf(s, maxlen, format, arg);
 }
-
-inline int _vscprintf(const char *format, va_list argptr) {
-    return(vsnprintf(0, 0, format, argptr));
+*/
+inline int _vscprintf (const char * format, va_list pargs) {
+    int retval;
+    va_list argcopy;
+    va_copy(argcopy, pargs);
+    retval = vsnprintf(NULL, 0, format, argcopy);
+    va_end(argcopy);
+    return retval;
 }
 
-inline int _vscwprintf(const wchar_t *format, va_list argptr) {
+/*inline int _vscwprintf(const wchar_t *format, va_list argptr) {
     return(vswprintf(0, 0, format, argptr));
-}
+}*/
 
 // HACK FOR MISSING C++1y features:
 namespace std {

@@ -18,7 +18,7 @@
 					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1532515237." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.780984212" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1828475368" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
-							<builder buildPath="${workspace_loc:/Divide-Game}/Debug" id="cdt.managedbuild.target.gnu.builder.exe.debug.1881778965" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="3" stopOnErr="true" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+							<builder buildPath="${workspace_loc:/Divide-Game}/Debug" id="cdt.managedbuild.target.gnu.builder.exe.debug.1881778965" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" stopOnErr="true" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1003394966" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.211347417" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1544473069" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
@@ -46,7 +46,7 @@
 									<listOptionValue builtIn="false" value="${EngineLibraries}/glbinding/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/assimp/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/cegui-deps/include"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/sdl/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/SDL2"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.51902549" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -std=c++1y" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1209571119" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
@@ -62,10 +62,59 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.322362943" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1669099499" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+								<option id="gnu.cpp.link.option.paths.347786315" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/boost/lib&quot;"/>
+								</option>
+								<option id="gnu.cpp.link.option.libs.39884622" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dl"/>
+									<listOptionValue builtIn="false" value="freetype"/>
+									<listOptionValue builtIn="false" value="SILLY"/>
+									<listOptionValue builtIn="false" value="GLEW"/>
+									<listOptionValue builtIn="false" value="GL"/>
+									<listOptionValue builtIn="false" value="expat"/>
+									<listOptionValue builtIn="false" value="pcre"/>
+									<listOptionValue builtIn="false" value="Xrandr"/>
+									<listOptionValue builtIn="false" value="Xext"/>
+									<listOptionValue builtIn="false" value="X11"/>
+									<listOptionValue builtIn="false" value="IL"/>
+									<listOptionValue builtIn="false" value="ILU"/>
+									<listOptionValue builtIn="false" value="SDL2"/>
+									<listOptionValue builtIn="false" value="SDL2_mixer"/>
+									<listOptionValue builtIn="false" value="alut"/>
+									<listOptionValue builtIn="false" value="openal"/>
+									<listOptionValue builtIn="false" value="boost_system"/>
+									<listOptionValue builtIn="false" value="boost_serialization"/>
+									<listOptionValue builtIn="false" value="boost_thread"/>
+									<listOptionValue builtIn="false" value="boost_chrono"/>
+									<listOptionValue builtIn="false" value="boost_date_time"/>
+									<listOptionValue builtIn="false" value="boost_regex"/>
+									<listOptionValue builtIn="false" value="pthread"/>
+								</option>
+								<option id="gnu.cpp.link.option.flags.78588184" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="--verbose" valueType="string"/>
+								<option id="gnu.cpp.link.option.userobjs.1405161917" name="Other objects" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs">
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/glbinding/lib/glbindingd.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/assimp/lib/assimp_d.so&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/OIS/lib/OIS_static_d.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/linux64/libPhysX3DEBUG_x64.so&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/linux64/libPhysXProfileSDKDEBUG.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/linux64/libPhysX3CommonDEBUG_x64.so&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/linux64/libPxTaskDEBUG.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/linux64/libPhysX3ExtensionsDEBUG.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/linux64/libPhysX3CookingDEBUG_x64.so&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/linux64/libPhysXVisualDebuggerSDKDEBUG.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/CEGUIOpenGLRenderer-0_Static_d.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/CEGUIBase-0_Static_d.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/CEGUICoreWindowRendererSet_Static_d.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/CEGUIExpatParser_Static_d.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/CEGUILuaScriptModule-0_Static_d.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/CEGUISILLYImageCodec_Static_d.a&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/CEGUICommonDialogs-0_Static_d.a&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.792760019" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
+								<outputType id="cdt.managedbuild.tool.gnu.cpp.linker.output.40370832" outputPrefix="/home/ionut/Custom/Divide/trunk/" superClass="cdt.managedbuild.tool.gnu.cpp.linker.output"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.329620785" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.247420427" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
@@ -136,6 +185,16 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.814049670" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.399018563" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release">
+								<option id="gnu.cpp.link.option.paths.1606929127" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/sdl/lib/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/cegui/lib/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/assimp/lib/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/boost/lib/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/glbinding/lib/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/OIS/lib/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/OpenAL/libs/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${EngineLibraries}/physx/Lib/&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.999249353" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

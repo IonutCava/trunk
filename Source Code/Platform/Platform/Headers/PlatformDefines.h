@@ -42,13 +42,32 @@
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES
 #include <cmath>
-
 #include <functional>
 #include <atomic>
 #include <type_traits>
 #include <array>
 #include <memory>
 #include <bitset>
+#include <limits>
+#include <strings.h>
+#include <stdarg.h>
+#include <cmath>
+#include <cstdio>
+
+namespace Divide {
+/// Data Types
+typedef uint8_t U8;
+typedef uint16_t U16;
+typedef uint32_t U32;
+typedef uint64_t U64;
+typedef int8_t I8;
+typedef int16_t I16;
+typedef int32_t I32;
+typedef int64_t I64;
+typedef float F32;
+typedef double D32;
+typedef void* bufferPtr;
+}; //namespace Divide
 
 #if defined(_WIN32)
 #include "PlatformDefinesWindows.h"
@@ -152,15 +171,10 @@ D32 to_double(const T value) {
 
 struct SysInfo;
 
-void addTimeValue(TimeValue& timeInOut, const U64 value);
-void subtractTimeValue(TimeValue& timeInOut, const U64 value);
-void divideTimeValue(TimeValue& timeInOut, const U64 value);
-void assignTimeValue(TimeValue& timeInOut, const U64 value);
-U64 getUsTimeValue(const TimeValue& timeIn);
-void getCurrentTime(TimeValue& timeOut);
+extern void getCurrentTime(TimeValue& timeOut);
+extern void getTicksPerSecond(TimeValue& ticksPerSecond);
+extern void getWindowHandle(void* window, SysInfo& info);
 
-void getTicksPerSecond(TimeValue& ticksPerSecond);
-void getWindowHandle(void* window, SysInfo& info);
 TimeValue getTickDifference(const TimeValue& end, const TimeValue& begin);
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks

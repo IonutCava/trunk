@@ -57,8 +57,7 @@ const char* Console::formatText(const char* format, ...) {
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
+    vsprintf(textBuffer, format, args);
     va_end(args);
     return textBuffer;
 }

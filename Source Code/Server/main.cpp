@@ -3,7 +3,7 @@
 #include "Utility/Headers/OutputBuffer.h"
 
 using namespace Divide;
-
+/*
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
                      const char* pName, int flags, unsigned int debugFlags,
                      const char* file, int line) {
@@ -35,13 +35,13 @@ int Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
 }
 
 int main() {
-    /*Console output redirect*/
+    //Console output redirect
     std::ofstream stdConsole(SERVER_LOG_FILE,
         std::ofstream::out | std::ofstream::trunc);
-    /*Console output redirect*/
+    //Console output redirect
     std::cout.rdbuf(stdConsole.rdbuf());
 
     stringImpl address("127.0.0.1");
     Server::getInstance().init(((U16)443), address, true);
     return 0;
-}
+}*/

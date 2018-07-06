@@ -59,7 +59,7 @@ namespace Divide {
         int _systemResolutionHeight;
     };
 
-    typedef timeval TimeValue;
+    typedef long int TimeValue;
 }; //namespace Divide
 
 #endif //_PLATFORM_DEFINES_APPLE_H_

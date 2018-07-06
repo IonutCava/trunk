@@ -239,7 +239,7 @@ class AIEntityAITeam {
     static bool update(AIEntity& entity, const U64 deltaTime) {
         return entity.update(deltaTime);
     }
-    friend class AITeam;
+    friend class Divide::AI::AITeam;
 };
 };  // namespace Attorney
 };  // namespace AI

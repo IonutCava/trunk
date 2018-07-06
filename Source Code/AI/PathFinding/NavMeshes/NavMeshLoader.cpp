@@ -180,15 +180,11 @@ bool saveMeshFile(const NavModelData& inData, const char* filename) {
         return false;
 
     // Create the file if it doesn't exists
-    FILE* fp = nullptr;
-    fopen_s(&fp, filename, "w");
-    if (fp)
-        fclose(fp);
-
     std::ofstream myfile;
-    myfile.open(filename);
-    if (!myfile.is_open())
+    myfile.open(filename, std::fstream::out);
+    if (!myfile.is_open()) {
         return false;
+    }
 
     F32* vstart = inData._vertices;
     I32* tstart = inData._triangles;

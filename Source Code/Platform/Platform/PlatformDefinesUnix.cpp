@@ -1,8 +1,10 @@
-#if defined(_UNIX)
+#if !defined(_WIN32) && !defined(__APPLE_CC__)
 
 #include "Headers/PlatformDefinesUnix.h"
 
 #include <SDL_syswm.h>
+#include <malloc.h>
+#include <unistd.h>
 
 void* malloc_aligned(const size_t size, size_t alignment) {
 	return memalign(alignment, size);
@@ -14,9 +16,9 @@ void  malloc_free(void*& ptr) {
 
 namespace Divide {
 
-    bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {
+    bool CheckMemory(const unsigned int physicalRAMNeeded, SysInfo& info) {
         long pages = sysconf(_SC_PHYS_PAGES);
-        long page_size = sysconf(_SC_PAGE_SIZE);
+        long page_size = sysconf(_SC_PAGESIZE);
         info._availableRam = pages * page_size;
         return info._availableRam > physicalRAMNeeded;
     }
@@ -26,31 +28,17 @@ namespace Divide {
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
 
-        info._windowHandle = wmInfo.info.x11.display;
+        info._windowHandle = wmInfo.info.x11.window;
     }
 
     void getTicksPerSecond(TimeValue& ticksPerSecond) {
         ticksPerSecond = 1;
     }
 
-    void addTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec += static_cast<long int>(value);
-    }
-
-    void subtractTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec -= static_cast<long int>(value);
-    }
-
-    void divideTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec /= static_cast<long int>(value);
-    }
-
-    void assignTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec = static_cast<long int>(value);
-    }
-
-    U64 getUsTimeValue(const TimeValue& timeIn) {
-    	return static_cast<U64>(timeIn.tv_usec);
+    void getCurrentTime(TimeValue& timeOut) {
+        timeval time;
+        gettimeofday(&time, nullptr);
+        timeOut = time.tv_usec;
     }
 }; //namespace Divide
 

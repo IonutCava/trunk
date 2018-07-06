@@ -12,7 +12,7 @@
 namespace Divide {
 namespace XML {
 using boost::property_tree::ptree;
-ptree pt;
+static ptree pt;
 
 namespace {
 const char *getFilterName(TextureFilter filter) {

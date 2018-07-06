@@ -32,7 +32,7 @@
 #ifndef _WRAPPER_SDL_H_
 #define _WRAPPER_SDL_H_
 
-#include "SDL_mixer.h"
+#include <SDL_mixer.h>
 #include "Platform/Audio/Headers/AudioAPIWrapper.h"
 
 namespace Divide {

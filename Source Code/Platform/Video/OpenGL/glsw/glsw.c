@@ -203,7 +203,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
             bconcat(effectFile, gc->PathSuffix);
 
             // Attempt to open the file
-            fopen_s(&fp, (const char*) effectFile->data, "rb");
+            fp = fopen((const char*) effectFile->data, "rb");
             if (!fp)
             {
                 bdestroy(gc->ErrorMessage);

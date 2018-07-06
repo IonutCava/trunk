@@ -40,28 +40,11 @@ namespace Divide {
     }
 
     void getCurrentTime(TimeValue& timeOut) {
-        gettimeofday(&timeOut, nullptr);
+        timeval time;
+        gettimeofday(&time, nullptr);
+        timeOut = time.tv_usec;
     }
 
-    void addTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec += static_cast<long int>(value);
-    }
-
-    void subtractTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec -= static_cast<long int>(value);
-    }
-
-    void divideTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec /= static_cast<long int>(value);
-    }
-
-    void assignTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.tv_usec = static_cast<long int>(value);
-    }
-
-    U64 getUsTimeValue(const TimeValue& timeIn) {
-    	return static_cast<U64>(timeIn.tv_usec);
-    }
 }; //namespace Divide
 
 #endif //defined(__APPLE_CC__)

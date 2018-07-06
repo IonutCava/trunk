@@ -72,6 +72,7 @@
 
 #ifdef WIN32_LEAN_AND_MEAN
 #undef WIN32_LEAN_AND_MEAN
+#define SDL_VIDEO_DRIVER_WINDOWS
 // SDL redefines WIN32_LEAN_AND_MEAN
 #include <SDL_syswm.h>
 #endif
@@ -124,26 +125,6 @@ namespace Divide {
     void getCurrentTime(TimeValue& timeOut) {
         QueryPerformanceCounter(&g_time);
         timeOut = g_time.QuadPart;
-    }
-
-    void addTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.QuadPart += value;
-    }
-
-    void subtractTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.QuadPart -= value;
-    }
-
-    void divideTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.QuadPart /= value;
-    }
-
-    void assignTimeValue(TimeValue& timeInOut, const U64 value) {
-    	timeInOut.QuadPart = value;
-    }
-
-    U64 getUsTimeValue(const TimeValue& timeIn) {
-    	return timeIn.QuadPart;
     }
 
 }; //namespace Divide

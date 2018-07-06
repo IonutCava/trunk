@@ -66,6 +66,8 @@
 
 */
 
+#if 0
+
 #ifndef _DIVIDE_TILE_CACHE_H_
 #define _DIVIDE_TILE_CACHE_H_
 #include "Platform/Platform/Headers/PlatformDefines.h"
@@ -739,4 +741,5 @@ class DivideTileCache {
 };  // namespace Navigation
 };  // namespace Divide
 
+#endif
 #endif

@@ -208,7 +208,7 @@ class DivideDtCrowd {
     vectorImpl<I32> getActiveAgentIDs(void);
     /// The last set destination for the crowd.
     /// This is the destination that will be assigned to newly added agents.
-    inline vec3<F32> DivideDtCrowd::getLastDestination() const {
+    inline vec3<F32> getLastDestination() const {
         return vec3<F32>(_targetPos);
     }
     /// Reference to the DetourCrowd object that is wrapped.

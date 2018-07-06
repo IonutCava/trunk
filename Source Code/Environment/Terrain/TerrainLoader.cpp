@@ -279,8 +279,7 @@ bool TerrainLoader::loadThreadedResources(
                                      terrainRawFile.length()).compare(".raw") ==
                0);
         // Read File Data
-        FILE* terrainFile = nullptr;
-        fopen_s(&terrainFile, terrainRawFile.c_str(), "rb");
+        FILE* terrainFile = fopen(terrainRawFile.c_str(), "rb");
         assert(terrainFile);
         U32 lCurPos = ftell(terrainFile);
         fseek(terrainFile, 0, SEEK_END);
