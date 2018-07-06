@@ -67,8 +67,8 @@ private:
 	SceneGraphNode* _node;
 	AICoordination* _coordination;
 	ActionList*     _actionProcessor;
-	mutable Lock    _updateMutex;
-	mutable Lock    _managerQueryMutex;
+	mutable SharedLock    _updateMutex;
+	mutable SharedLock    _managerQueryMutex;
 
 	CommunicationInterface*             _comInterface;
 	Unordered_map<SensorType, Sensor*> _sensorList;

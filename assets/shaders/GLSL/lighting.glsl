@@ -55,7 +55,7 @@ void main(void){
 	gl_Position = projectionMatrix  * _vertexMV;
 }
 
--- Vertex.Bump.WithBones
+-- Vertex.WithBones.Bump
 
 #include "vboInputData.vert"
 #include "lightingDefaults.vert"

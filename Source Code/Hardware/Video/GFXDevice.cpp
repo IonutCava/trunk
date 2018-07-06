@@ -3,6 +3,7 @@
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Headers/Renderer.h"

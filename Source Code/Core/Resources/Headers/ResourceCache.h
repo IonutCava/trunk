@@ -61,7 +61,7 @@ protected:
 	///unload a single resource and pend deletion
 	bool remove(Resource* const resource,bool force);
 	///multithreaded resource creation
-	Lock _creationMutex;
+	SharedLock _creationMutex;
 
 	typedef Unordered_map<std::string, Resource*> ResourceMap;
 	ResourceMap _resDB;

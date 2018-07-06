@@ -19,7 +19,6 @@
 #define _WATER_PLANE_H_
 
 #include "core.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"

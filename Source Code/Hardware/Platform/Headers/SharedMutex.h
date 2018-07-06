@@ -15,17 +15,17 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MUTEX_X_
-#define _MUTEX_X_
+#ifndef _SHARED_MUTEX_X_
+#define _SHARED_MUTEX_X_
 
 #include "Thread.h"
 
 ///Thread safety optimised for multiple-reades, single write
-typedef boost::shared_mutex Lock;
-typedef boost::unique_lock< Lock > WriteLock;
-typedef boost::shared_lock< Lock > ReadLock;
-typedef boost::upgrade_lock< Lock > UpgradableReadLock; 
-typedef boost::upgrade_to_unique_lock< Lock > UpgradeToWriteLock; 
+typedef boost::shared_mutex SharedLock;
+typedef boost::unique_lock< SharedLock > WriteLock;
+typedef boost::shared_lock< SharedLock > ReadLock;
+typedef boost::upgrade_lock< SharedLock > UpgradableReadLock; 
+typedef boost::upgrade_to_unique_lock< SharedLock > UpgradeToWriteLock; 
 
 
 template<typename T> struct synchronized
@@ -43,7 +43,7 @@ public:
   }
 private:
   T value;
-  Lock mutex;
+  SharedLock mutex;
 };
 
 #endif

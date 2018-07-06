@@ -1,6 +1,7 @@
 #include <networking/ASIO.h>
 #include "Headers/NetworkScene.h"
 
+#include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 
 REGISTER_SCENE(NetworkScene); 

@@ -18,7 +18,7 @@
 #ifndef SINGLETON_H_
 #define SINGLETON_H_
 
-#include "Hardware/Platform/Headers/Mutex.h"
+#include "Hardware/Platform/Headers/SharedMutex.h"
 
 template <class T>
 class Singleton{
@@ -51,11 +51,11 @@ private :
 
 	Singleton(Singleton&);
 	void operator =(Singleton&);
-	static Lock _singletonMutex;
+	static SharedLock _singletonMutex;
 };
 
 template <class T> T* Singleton<T>::_instance = 0;
-template <class T> Lock Singleton<T>::_singletonMutex;
+template <class T> SharedLock Singleton<T>::_singletonMutex;
 
 #define DEFINE_SINGLETON(class_name) \
 	class class_name : public Singleton<class_name> { \

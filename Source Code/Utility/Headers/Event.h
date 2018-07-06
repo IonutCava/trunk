@@ -21,7 +21,7 @@
 #include <boost/any.hpp>
 #include <boost/function.hpp>  
 #include <boost/enable_shared_from_this.hpp> 
-#include "Hardware/Platform/Headers/Mutex.h"
+#include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 using boost::any_cast;
@@ -93,7 +93,6 @@ private:
 	F32 _tickInterval;
 	U32 _numberOfTicks;
 	std::tr1::shared_ptr<boost::thread> _thisThread;
-	Lock _mutex; ///< Do we need a lock for the end flag?
 	volatile bool _end;
 	boost::function0<void> _callback;
 

@@ -77,7 +77,7 @@ public:
   inline F32    getSpeedfactor(){ReadLock r_lock(_speedLockMutex); return _speedfactor;}
   inline F32    getElapsedTime(){if(!_init) return 0.0f; QueryPerformanceCounter(&_currentticks); return (F32)(_currentticks.QuadPart-_startupTime.QuadPart) *1000/(F32)_tickspersecond.QuadPart;}
   void          benchmark();
-  mutable Lock  _speedLockMutex;
+  mutable SharedLock _speedLockMutex;
 END_SINGLETON
 
 #define FRAME_SPEED_FACTOR  Framerate::getInstance().getSpeedfactor()

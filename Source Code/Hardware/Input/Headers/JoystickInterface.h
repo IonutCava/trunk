@@ -52,14 +52,22 @@ class JoystickInterface {
 																					  _dMasterGain(0.5),
 																					  _bAutoCenter(true)  {
 	  _bFFFound = false;
-	  for( U8 nJoyInd = 0; nJoyInd < pInputInterface->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd ) 
-	  {
-		//Create the stick
-		OIS::JoyStick* pJoy = (OIS::JoyStick*)pInputInterface->createInputObject( OIS::OISJoyStick, true );
-		PRINT_FN(Locale::get("INPUT_CREATE_BUFF_JOY"),nJoyInd,pJoy->vendor(),pJoy->getID());
+	  for( U8 nJoyInd = 0; nJoyInd < pInputInterface->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd )  {
+		OIS::JoyStick* pJoy = NULL;
+		try{
+			pJoy = (OIS::JoyStick*)pInputInterface->createInputObject( OIS::OISJoyStick, true );
+			if(pJoy){
+				PRINT_FN(Locale::get("INPUT_CREATE_BUFF_JOY"),nJoyInd, pJoy->vendor().empty() ? "unknown vendor" : pJoy->vendor().c_str(),pJoy->getID());
+			}
+		}catch(OIS::Exception &ex){
+		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),ex.eText);
+		}
 		
 		// Check for FF, and if so, keep the joy and dump FF info
-		OIS::ForceFeedback* pFFDev = (OIS::ForceFeedback*)pJoy->queryInterface(OIS::Interface::ForceFeedback );
+		OIS::ForceFeedback* pFFDev = NULL;
+		if(pJoy){
+			pFFDev = (OIS::ForceFeedback*)pJoy->queryInterface(OIS::Interface::ForceFeedback );
+		}
 		if( pFFDev )
 		{
 		  _bFFFound = true;

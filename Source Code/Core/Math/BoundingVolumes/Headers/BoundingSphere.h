@@ -38,7 +38,7 @@ public:
 	}
 
 	BoundingSphere(const BoundingSphere& s){
-		WriteLock w_lock(_lock);
+		//WriteLock w_lock(_lock);
 		this->_computed = s._computed;
 		this->_visibility = s._visibility;
 		this->_dirty = s._dirty;
@@ -47,7 +47,7 @@ public:
 	}
 
 	void operator=(const BoundingSphere& s){
-		WriteLock w_lock(_lock);
+		//WriteLock w_lock(_lock);
 		this->_computed = s._computed;
 		this->_visibility = s._visibility;
 		this->_dirty = s._dirty;
@@ -67,7 +67,7 @@ private:
 	bool _computed, _visibility,_dirty;
 	vec3<F32> _center;
 	F32 _radius;
-	mutable Lock _lock;
+	mutable SharedLock _lock;
 };
 
 #endif

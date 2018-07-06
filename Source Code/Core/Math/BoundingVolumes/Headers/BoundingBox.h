@@ -44,7 +44,7 @@ public:
 	}
 
 	BoundingBox(const BoundingBox& b){
-		WriteLock w_lock(_lock);
+		//WriteLock w_lock(_lock);
 		this->_computed = b._computed;
 		this->_visibility = b._visibility;
 		this->_dirty = b._dirty;
@@ -61,7 +61,7 @@ public:
 	}
 
 	void operator=(const BoundingBox& b){
-		WriteLock w_lock(_lock);
+		//WriteLock w_lock(_lock);
 		this->_computed = b._computed;
 		this->_visibility = b._visibility;
 		this->_dirty = b._dirty;
@@ -78,13 +78,13 @@ public:
 	}
 
 	inline bool ContainsPoint(const vec3<F32>& point) const	{
-		const ReadLock r_lock(_lock);
+		//const ReadLock r_lock(_lock);
 		return (point.x>=_min.x && point.y>=_min.y && point.z>=_min.z && point.x<=_max.x && point.y<=_max.y && point.z<=_max.z);
 	};
 
 	inline bool  Collision(const BoundingBox& AABB2) {
 
-		ReadLock r_lock(_lock);
+		//ReadLock r_lock(_lock);
 
 		if(this->_max.x < AABB2._min.x) return false;
 		if(this->_max.y < AABB2._min.y) return false;
@@ -97,11 +97,11 @@ public:
         return true;
 	}
 
-	inline bool Compare(const BoundingBox& bb) {return _guid == bb._guid;}
+	inline bool Compare(const BoundingBox& bb) {/*ReadLock r_lock(_lock);*/ return _guid == bb._guid;}
 
 	/// Optimized method
 	inline bool Intersect(const Ray &r, F32 t0, F32 t1) const {
-		ReadLock r_lock(_lock);
+		//ReadLock r_lock(_lock);
 
 		F32 t_min, t_max, ty_min, ty_max, tz_min, tz_max;
 		vec3<F32> bounds[2];
@@ -134,7 +134,7 @@ public:
 	}
 	
 	inline void Add(const vec3<F32>& v)	{
-		WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock); 
 		if(v.x > _max.x)	_max.x = v.x;
 		if(v.x < _min.x)	_min.x = v.x;
 		if(v.y > _max.y)	_max.y = v.y;
@@ -145,7 +145,7 @@ public:
 	};
 
 	inline void Add(const BoundingBox& bb)	{
-		WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock); 
 		if(bb._max.x > _max.x)	_max.x = bb._max.x;
 		if(bb._min.x < _min.x)	_min.x = bb._min.x;
 		if(bb._max.y > _max.y)	_max.y = bb._max.y;
@@ -156,21 +156,21 @@ public:
 	}
 
 	inline void Translate(const vec3<F32>& v) {
-		WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock); 
 		_min += v;
 		_max += v;
 		_dirty = true;
 	}
 
 	inline void Multiply(F32 factor){
-		WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock); 
 		_min *= factor;
 		_max *= factor;
 		_dirty = true;
 	}
 
 	inline void Multiply(const vec3<F32>& v){
-		WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock); 
 		_min.x *= v.x;
 		_min.y *= v.y;
 		_min.z *= v.z;
@@ -181,7 +181,7 @@ public:
 	}
 
 	inline void MultiplyMax(const vec3<F32>& v){
-		WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock); 
 		_max.x *= v.x;
 		_max.y *= v.y;
 		_max.z *= v.z;
@@ -189,37 +189,25 @@ public:
 	}
 
 	inline void MultiplyMin(const vec3<F32>& v){
-		WriteLock w_lock(_lock); 
+		//WriteLock w_lock(_lock); 
 		_min.x *= v.x;
 		_min.y *= v.y;
 		_min.z *= v.z;
 		_dirty = true;
 	}
 
-	void ComputePoints()  {
-		_points[0].set(_min.x, _min.y, _min.z);
-		_points[1].set(_max.x, _min.y, _min.z);
-		_points[2].set(_max.x, _max.y, _min.z);
-		_points[3].set(_min.x, _max.y, _min.z);
-		_points[4].set(_min.x, _min.y, _max.z);
-		_points[5].set(_max.x, _min.y, _max.z);
-		_points[6].set(_max.x, _max.y, _max.z);
-		_points[7].set(_min.x, _max.y, _max.z);
-	}
-
 	void Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat){
-		UpgradableReadLock ur_lock(_lock); 
+		//UpgradableReadLock ur_lock(_lock); 
 		if(_oldMatrix == mat){
 			return;
 		}else{
 			_oldMatrix = mat;
-			UpgradeToWriteLock uw_lock(ur_lock);
 
 			F32 a, b;
 			vec3<F32> old_min = initialBoundingBox.getMin();
 			vec3<F32> old_max = initialBoundingBox.getMax();
 
-		
+			//UpgradeToWriteLock uw_lock(ur_lock);		
 			_min = _max =  vec3<F32>(mat[12],mat[13],mat[14]);
 
 			for (U8 i = 0; i < 3; ++i)		{
@@ -241,16 +229,16 @@ public:
 	}
 
 
-	inline bool& isComputed()		    {ReadLock r_lock(_lock); return _computed;}
-	inline bool  getVisibility()		{ReadLock r_lock(_lock); return _visibility;}
+	inline bool& isComputed()		    {/*ReadLock r_lock(_lock);*/ return _computed;}
+	inline bool  getVisibility()		{/*ReadLock r_lock(_lock);*/ return _visibility;}
 
-	inline vec3<F32>  getMin()	     const	{ReadLock r_lock(_lock); return _min;}
-	inline vec3<F32>  getMax()		 const	{ReadLock r_lock(_lock); return _max;}
+	inline vec3<F32>  getMin()	     const	{/*ReadLock r_lock(_lock);*/ return _min;}
+	inline vec3<F32>  getMax()		 const	{/*ReadLock r_lock(_lock);*/ return _max;}
 	
 	void clean(){
-		UpgradableReadLock ur_lock(_lock);
+		//UpgradableReadLock ur_lock(_lock);
 		if(!_dirty) return;
-		UpgradeToWriteLock uw_lock(ur_lock);
+		//UpgradeToWriteLock uw_lock(ur_lock);
 		_extent = (_max-_min);
 		_center = (_max+_min)*0.5f;
 		ComputePoints();
@@ -259,27 +247,27 @@ public:
 
 	inline vec3<F32>  getCenter()  {
 		clean();
-		ReadLock r_lock(_lock);
+		//ReadLock r_lock(_lock);
 		return _center;
 	}
 
 	inline vec3<F32>  getExtent()  {
 		clean();
-		ReadLock r_lock(_lock);
+		//ReadLock r_lock(_lock);
 		return _extent;
 	}
 
 	inline vec3<F32>  getHalfExtent() {return getExtent() * 0.5f;}
 
-	inline F32   getWidth()  const {ReadLock r_lock(_lock); return _max.x - _min.x;}
-	inline F32   getHeight() const {ReadLock r_lock(_lock); return _max.y - _min.y;}
-	inline F32   getDepth()  const {ReadLock r_lock(_lock); return _max.z - _min.z;}
+	inline F32   getWidth()  const {/*ReadLock r_lock(_lock);*/ return _max.x - _min.x;}
+	inline F32   getHeight() const {/*ReadLock r_lock(_lock);*/ return _max.y - _min.y;}
+	inline F32   getDepth()  const {/*ReadLock r_lock(_lock);*/ return _max.z - _min.z;}
 	
 
-	inline void setVisibility(bool visibility) {_visibility = visibility;}
-	inline void setMin(const vec3<F32>& min)   {WriteLock w_lock(_lock); _min = min; _dirty = true;}
-	inline void setMax(const vec3<F32>& max)   {WriteLock w_lock(_lock); _max = max; _dirty = true;}
-	inline void set(const vec3<F32>& min, const vec3<F32>& max)  {WriteLock w_lock(_lock); _min = min; _max = max; _dirty = true;}
+	inline void setVisibility(bool visibility) {/*WriteLock w_lock(_lock);*/ _visibility = visibility;}
+	inline void setMin(const vec3<F32>& min)   {/*WriteLock w_lock(_lock);*/ _min = min; _dirty = true;}
+	inline void setMax(const vec3<F32>& max)   {/*WriteLock w_lock(_lock);*/ _max = max; _dirty = true;}
+	inline void set(const vec3<F32>& min, const vec3<F32>& max)  {/*WriteLock w_lock(_lock);*/ _min = min; _max = max; _dirty = true;}
 
 	inline F32 nearestDistanceFromPoint( const vec3<F32> &pos){
 		const vec3<F32>& center = getCenter() ;
@@ -293,6 +281,18 @@ public:
 		return nearestVec.length();
 	}
 
+protected:
+	void ComputePoints()  {
+		_points[0].set(_min.x, _min.y, _min.z);
+		_points[1].set(_max.x, _min.y, _min.z);
+		_points[2].set(_max.x, _max.y, _min.z);
+		_points[3].set(_min.x, _max.y, _min.z);
+		_points[4].set(_min.x, _min.y, _max.z);
+		_points[5].set(_max.x, _min.y, _max.z);
+		_points[6].set(_max.x, _max.y, _max.z);
+		_points[7].set(_min.x, _max.y, _max.z);
+	}
+
 private:
 	bool _computed, _visibility,_dirty;
 	vec3<F32> _min, _max;
@@ -300,7 +300,7 @@ private:
 	mat4<F32> _oldMatrix;
 	vectorImpl<vec3<F32> > _points;
 	U32 _guid;
-	mutable Lock _lock;
+	mutable SharedLock _lock;
 };
 
 #endif

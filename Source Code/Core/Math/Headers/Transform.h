@@ -209,7 +209,7 @@ private:
 	mat4<F32> _globalMatrix; /// world * parent
 	mat4<F32> _scaleMatrix,_rotationMatrix,_translationMatrix;
 	bool _dirty;
-	mutable Lock _lock;
+	mutable SharedLock _lock;
 };
 
 #endif

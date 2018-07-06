@@ -252,7 +252,8 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 		}
 		light->setScore( luminace * weight * dist );
 		///Use type filter
-		if(typeFilter != LIGHT_TYPE_PLACEHOLDER && light->getLightType() == typeFilter){
+		if((typeFilter != LIGHT_TYPE_PLACEHOLDER && light->getLightType() == typeFilter) ||
+			typeFilter == LIGHT_TYPE_PLACEHOLDER){
 			tempLights.push_back(light);
 		}
 	}

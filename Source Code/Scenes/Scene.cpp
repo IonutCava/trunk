@@ -3,6 +3,7 @@
 #include <networking/ASIO.h>
 #include "GUI/Headers/GUI.h"
 
+#include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Environment/Sky/Headers/Sky.h"

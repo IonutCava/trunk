@@ -128,7 +128,6 @@
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp" />
@@ -327,6 +326,7 @@
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h" />
     <ClInclude Include="..\..\Source Code\core.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h" />
@@ -380,8 +380,9 @@
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputInterface.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputVariables.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Mutex.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SharedMutex.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Thread.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\Headers\FrameBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\PixelBufferObject\Headers\PixelBufferObject.h" />

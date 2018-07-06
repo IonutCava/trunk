@@ -1,5 +1,6 @@
 #include "Headers/MainScene.h"
 
+#include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Water/Headers/Water.h"

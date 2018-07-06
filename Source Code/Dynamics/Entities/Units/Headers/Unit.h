@@ -78,7 +78,7 @@ private:
 	vec3<F32> _currentTargetPosition;
 	/// SceneGraphNode the unit is managing (used for updating positions and checking collisions
 	SceneGraphNode* _node;
-	mutable Lock _unitUpdateMutex;
+	mutable SharedLock _unitUpdateMutex;
 };
 
 #endif

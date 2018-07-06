@@ -30,7 +30,6 @@ class TerrainDescriptor;
   to make them available in every scene source file. To reduce compile times, forward declare the "Scene" class instead
 */
 //Core files
-#include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Rendering/Camera/Headers/Camera.h"
 //Managers

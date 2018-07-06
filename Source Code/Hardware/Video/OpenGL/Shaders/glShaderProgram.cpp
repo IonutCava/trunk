@@ -113,9 +113,9 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 		}
 	}
 	///Split the shader name to get the effect file name and the effect properties 
-	std::string shaderName = name.substr(0,name.find_first_of("."));
+	std::string shaderName = name.substr(0,name.find_first_of(".,"));
 	std::string shaderProperties;
-	///Vertex Properties work in revers order. All the text after "|" goes first.
+	///Vertex Properties work in revers order. All the text after "," goes first.
 	///The rest of the shader properties are added later
 	size_t propPositionVertex = name.find_first_of(",");
 	size_t propPosition = name.find_first_of(".");

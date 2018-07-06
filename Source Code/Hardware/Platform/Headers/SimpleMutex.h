@@ -15,34 +15,12 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AI_MANAGER_H_
-#define _AI_MANAGER_G_
+#ifndef _SIMPLE_MUTEX_X_
+#define _SIMPLE_MUTEX_X_
 
-#include "core.h"
-#include "AI/Headers/AIEntity.h"
+#include "Thread.h"
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
-DEFINE_SINGLETON(AIManager)
-	typedef Unordered_map<U32, AIEntity*> AIEntityMap;
-
-public:
-	U8 tick();
-	///Add an AI Entity from the manager
-	bool addEntity(AIEntity* entity);
-	///Remove an AI Entity from the manager
-	void destroyEntity(U32 guid);
-	/// Destroy all entities
-	void Destroy();
-
-private:
-	void processInput();  ///< sensors
-	void processData();   ///< think
-	void updateEntities();///< react
-
-private:
-	///ToDo: Maybe create the "Unit" class and agregate it with AIEntity? -Ionut
-	AIEntityMap _aiEntities;
-	mutable SharedLock _updateMutex;
-
-END_SINGLETON
-
+typedef boost::mutex SimpleMutex;
+ 
 #endif

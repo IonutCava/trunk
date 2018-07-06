@@ -962,15 +962,15 @@
 				RelativePath="..\..\Source Code\Core\Kernel.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\Source Code\Core\ParamHandler.cpp"
-				>
-			</File>
 			<Filter
 				Name="Headers"
 				>
 				<File
 					RelativePath="..\..\Source Code\Core\Headers\Application.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Core\Headers\cdigginsAny.h"
 					>
 				</File>
 				<File
@@ -2029,11 +2029,15 @@
 					Name="Headers"
 					>
 					<File
-						RelativePath="..\..\Source Code\Hardware\Platform\Headers\Mutex.h"
+						RelativePath="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h"
+						RelativePath="..\..\Source Code\Hardware\Platform\Headers\SharedMutex.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h"
 						>
 					</File>
 					<File

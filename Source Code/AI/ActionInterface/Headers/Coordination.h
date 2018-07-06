@@ -44,7 +44,7 @@ private:
 	teamMap _enemyTeam;
 	/// Container with data per team member. For example a map of distances
 	memberVariable _memberVariable;
-	mutable Lock _updateMutex;
+	mutable SharedLock _updateMutex;
 };
 
 #endif

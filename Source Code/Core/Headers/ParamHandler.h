@@ -20,32 +20,38 @@
 
 #include "core.h"
 #include <boost/any.hpp>
+#include "cdigginsAny.h"
 
 DEFINE_SINGLETON (ParamHandler)
-typedef Unordered_map<std::string, boost::any> ParamMap;
-
+//typedef Unordered_map<std::string, boost::any> ParamMap;
+typedef Unordered_map<std::string, cdiggins::any> ParamMap;
+typedef cdiggins::anyimpl::bad_any_cast BadAnyCast;
 public:
 
 	template <class T>	
 	T getParam(const std::string& name,T defaultValue = T()){
 		ReadLock r_lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
+#ifdef _DEBUG
 		if(it != _params.end()){
 			try	{
-				return boost::any_cast<T>(it->second);
-			}catch(const boost::bad_any_cast &){
+				return it->second.cast<T>();
+			}catch(BadAnyCast){
 				ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
 			}
 		}
+#else
+	if(it != _params.end()){
+		return it->second.cast<T>();
+	}
+#endif
 		return defaultValue; ///integrals will be 0, string will be empty, etc;
 	}
 
-	void setParam(const std::string& name, const boost::any& value){
+	void setParam(const std::string& name, const cdiggins::any& value){
 		WriteLock w_lock(_mutex);
 		std::pair<ParamMap::iterator, bool> result = _params.insert(std::make_pair(name,value));
 		if(!result.second) (result.first)->second = value;
-		if (_logState) printOutput(name,value,result.second);
-
 	}
 
 	inline void delParam(const std::string& name){
@@ -58,13 +64,11 @@ public:
 
 	inline int getSize(){ReadLock r_lock(_mutex); return _params.size();}
 
-private: 
-	void printOutput(const std::string& name, const boost::any& value,bool inserted);
 
 private:
 	bool _logState;
 	ParamMap _params;
-	mutable Lock _mutex;
+	mutable SharedLock _mutex;
  
 END_SINGLETON
 

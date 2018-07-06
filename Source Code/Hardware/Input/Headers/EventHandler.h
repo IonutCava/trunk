@@ -19,7 +19,7 @@
 #define _INPUT_EVENT_HANDLER_H_
 
 #include "OIS.h"
-#include "Hardware/Platform/Headers/Mutex.h"
+#include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 class InputInterface;

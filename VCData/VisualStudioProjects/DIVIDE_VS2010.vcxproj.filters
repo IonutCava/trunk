@@ -731,9 +731,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp">
       <Filter>Rendering\PostFX</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\pxSimpleShapes.cpp">
       <Filter>Dynamics\Physics\PhysX\Actors</Filter>
     </ClCompile>
@@ -1568,9 +1565,6 @@
     <ClInclude Include="..\..\Source Code\Libs\includes\networking\OPCodes.h">
       <Filter>Hardware\Network\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Mutex.h">
-      <Filter>Hardware\Platform\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h">
       <Filter>Hardware\Platform\Headers</Filter>
     </ClInclude>
@@ -1849,6 +1843,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h">
       <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SharedMutex.h">
+      <Filter>Hardware\Platform\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h">
+      <Filter>Hardware\Platform\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
+      <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

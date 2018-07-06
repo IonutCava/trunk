@@ -1,4 +1,5 @@
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 

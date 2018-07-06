@@ -81,7 +81,7 @@ public:
 
 	inline const RenderBinType&  getType() {return _rbType;}
 private:
-	mutable Lock _renderBinGetMutex; 
+	mutable SharedLock _renderBinGetMutex; 
 	D32 _drawKey;
 	RenderBinType _rbType;
 	RenderBinStack _renderBinStack;

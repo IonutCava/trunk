@@ -433,6 +433,7 @@ namespace XML {
 		Texture* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
 		if(bumpTexture){
 			saveTextureXML("bumpMap",mat->getTextureOperation(Material::TEXTURE_BUMP), bumpTexture);
+			pt.put("bumpMap.method",mat->getBumpMethod());
 		}
 		Texture* opacityMap = mat->getTexture(Material::TEXTURE_OPACITY);
 		if(opacityMap){
