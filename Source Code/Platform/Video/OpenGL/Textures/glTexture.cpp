@@ -111,11 +111,12 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
     GLenum glInternalFormat = _descriptor._internalFormat == GFXImageFormat::DEPTH_COMPONENT
                             ? GL_DEPTH_COMPONENT32
                             : GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)];
+    GLuint handle = _textureData.getHandleHigh();
 
     switch (_textureData._textureType) {
         case TextureType::TEXTURE_1D: {
             glTextureStorage1D(
-                _textureData.getHandleHigh(),
+                handle,
                 _mipMaxLevel,
                 glInternalFormat,
                 _width);
@@ -123,7 +124,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         } break;
         case TextureType::TEXTURE_2D: {
             glTextureStorage2D(
-                _textureData.getHandleHigh(),
+                handle,
                 _mipMaxLevel,
                 glInternalFormat,
                 _width,
@@ -131,7 +132,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         } break;
         case TextureType::TEXTURE_2D_MS: {
             glTextureStorage2DMultisample(
-                _textureData.getHandleHigh(), 
+                handle,
                 ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0),
                 glInternalFormat,
                 _width,
@@ -140,7 +141,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         } break;
         case TextureType::TEXTURE_2D_ARRAY_MS: {
             glTextureStorage3DMultisample(
-                _textureData.getHandleHigh(),
+                handle,
                 ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0),
                 glInternalFormat,
                 _width,
@@ -158,7 +159,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
                 numFaces = 6;
             }
             glTextureStorage3D(
-                _textureData.getHandleHigh(),
+                handle,
                 _mipMaxLevel,
                 glInternalFormat,
                 _width,
@@ -342,6 +343,12 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
     }
 
     updateMipMaps();
+
+    if (!Config::USE_GPU_THREADED_LOADING) {
+
+        STUBBED("WHYYYYY do we need to flush texture uploads in single-thread mode???? I should investigate this, but multi-threaded is the default so it's low prio -Ionut");
+        glFlush();
+    }
 }
 
 bool glTexture::flushTextureState() {

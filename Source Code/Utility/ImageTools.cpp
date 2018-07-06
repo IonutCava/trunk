@@ -86,12 +86,13 @@ bool ImageData::create(const stringImpl& filename) {
     // most formats do not have an alpha channel
     _alpha = comp % 2 == 0;
     _compressed = false;
-    image._size = static_cast<size_t>(std::ceil(width * height * (_bpp / 8.0f)));
+    image._size = width * height * _bpp / 8;
+
     if (isHDR) {
-        image.setData(dataf);
+        image.setData(dataf, image._size / 4);
         stbi_image_free(dataf);
     } else {
-        image.setData(data);
+        image.setData(data, image._size);
         stbi_image_free(data);
     }
 
@@ -292,7 +293,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
                          image.get_height(),
                          image.get_depth());
     base._size = image.get_size();
-    base.setData(image);
+    base.setData(image, base._dimensions.width * base._dimensions.height);
 
     for (U8 i = 0; i < numMips; ++i) {
         ImageLayer& layer = _data[i + 1];
@@ -302,7 +303,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
                               mipMap.get_height(),
                               mipMap.get_depth());
         layer._size = mipMap.get_size();
-        layer.setData(mipMap);
+        layer.setData(mipMap, layer._dimensions.width * layer._dimensions.height);
     }
 
     image.clear();

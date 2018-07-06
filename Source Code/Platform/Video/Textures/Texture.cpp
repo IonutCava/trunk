@@ -225,9 +225,9 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     if (!_descriptor._compressed) {
         if (_descriptor._samplerDescriptor.generateMipMaps() && mipMaxLevel <= 1) {
             mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
-        } else {
-            mipMaxLevel += 1;
         }
+         
+        mipMaxLevel += 1;
     }
     // Uploading to the GPU dependents on the rendering API
     loadData(info,
