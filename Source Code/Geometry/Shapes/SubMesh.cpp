@@ -7,6 +7,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 
 namespace Divide {
 

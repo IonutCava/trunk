@@ -13,6 +13,7 @@
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 

@@ -7,6 +7,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Physics/Headers/PXDevice.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 
 namespace Divide {
 

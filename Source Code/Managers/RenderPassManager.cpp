@@ -19,8 +19,8 @@ namespace Divide {
 
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
-      _context(context),
-      _renderQueue(context)
+     _renderQueue(parent),
+     _context(context)
 {
     ResourceDescriptor shaderDesc("OITComposition");
     _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
@@ -135,6 +135,49 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
     return getPassForStage(renderStage).getBufferData(bufferIndex);
 }
 
+void RenderPassManager::processVisibleNodes(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
+    RenderQueue::SortedQueues queues = getQueue().getSortedQueues(stagePass);
+
+    GFXDevice::BuildDrawCommandsParams gfxParams;
+    gfxParams._sortedQueues = &queues;
+    gfxParams._sceneRenderState = &parent().sceneManager().getActiveScene().renderState();
+    gfxParams._bufferData = &getBufferData(stagePass._stage, params._pass);
+    gfxParams._renderStagePass = stagePass;
+    gfxParams._camera = params._camera;
+    gfxParams._refreshNodeData = refreshNodeData;
+
+    _context.buildDrawCommands(gfxParams, bufferInOut);
+}
+
+void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
+
+    SceneManager& sceneManager = parent().sceneManager();
+
+    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(sceneManager, stagePass, *params._camera, params._pass)
+                                                                            : sceneManager.getVisibleNodesCache(params._stage);
+
+    RenderQueue& queue = getQueue();
+    queue.refresh(stagePass);
+    const vec3<F32>& eyePos = params._camera->getEye();
+    for (const RenderPassCuller::VisibleNode& node : visibleNodes) {
+        queue.addNodeToQueue(*node._node, stagePass, eyePos);
+    }
+    // Sort all bins
+    queue.sort(stagePass);
+
+    vectorEASTL<RenderPackage*>& packageQueue = _renderQueues[to_base(stagePass._stage)];
+    packageQueue.resize(0);
+    packageQueue.reserve(Config::MAX_VISIBLE_NODES);
+
+    queue.populateRenderQueues(stagePass,
+                               stagePass._passType == RenderPassType::OIT_PASS
+                                                   ? RenderBinType::RBT_TRANSLUCENT
+                                                   : RenderBinType::RBT_COUNT,
+                               packageQueue);
+
+    processVisibleNodes(stagePass, params, refreshNodeData, bufferInOut);
+}
+
 void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 0;
@@ -144,40 +187,26 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
     // PrePass requires a depth buffer
     bool doPrePass = params._doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
 
-    if (doPrePass) {
-        SceneManager& sceneManager = parent().sceneManager();
-
+    if (doPrePass && params._target._usage != RenderTargetUsage::COUNT) {
         RenderStagePass stagePass(params._stage, RenderPassType::DEPTH_PASS);
+        prepareRenderQueues(stagePass, params, true, bufferInOut);
 
-        Attorney::SceneManagerRenderPass::populateRenderQueue(sceneManager,
-                                                              stagePass,
-                                                              *params._camera,
-                                                              true,
-                                                              params._pass,
-                                                              bufferInOut);
-
-        if (params._target._usage != RenderTargetUsage::COUNT) {
-           
-            if (params._bindTargets) {
-                GFX::BeginRenderPassCommand beginRenderPassCommand;
-                beginRenderPassCommand._target = params._target;
-                beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
-                beginRenderPassCommand._name = "DO_PRE_PASS";
-                GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
-            }
-
-            for (RenderBinType type : RenderBinType::_values()) {
-                 _context.renderQueueToSubPasses(type, bufferInOut);
-            }
-
-            Attorney::SceneManagerRenderPass::postRender(sceneManager, stagePass, *params._camera, bufferInOut);
-
-            if (params._bindTargets) {
-                GFX::EndRenderPassCommand endRenderPassCommand;
-                GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
-            }
+        if (params._bindTargets) {
+            GFX::BeginRenderPassCommand beginRenderPassCommand;
+            beginRenderPassCommand._target = params._target;
+            beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
+            beginRenderPassCommand._name = "DO_PRE_PASS";
+            GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
         }
-        
+
+        renderQueueToSubPasses(stagePass, bufferInOut);
+
+        Attorney::SceneManagerRenderPass::postRender(parent().sceneManager(), stagePass, *params._camera, bufferInOut);
+
+        if (params._bindTargets) {
+            GFX::EndRenderPassCommand endRenderPassCommand;
+            GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
+        }
     }
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
@@ -185,12 +214,6 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
 }
 
 void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    static const vector<RenderBinType> shadowExclusionList
-    {
-        RenderBinType::RBT_DECAL,
-        RenderBinType::RBT_SKY
-    };
-
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params._stage)).c_str();
@@ -199,12 +222,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
     SceneManager& sceneManager = parent().sceneManager();
 
     RenderStagePass stagePass(params._stage, RenderPassType::COLOUR_PASS);
-    Attorney::SceneManagerRenderPass::populateRenderQueue(sceneManager,
-                                                          stagePass,
-                                                          *params._camera,
-                                                          !params._doPrePass,
-                                                          params._pass,
-                                                          bufferInOut);
+    prepareRenderQueues(stagePass, params, !params._doPrePass, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
@@ -247,21 +265,8 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
         }
 
-        if (params._stage == RenderStage::SHADOW) {
-            for (RenderBinType type : RenderBinType::_values()) {
-                if (std::find(std::begin(shadowExclusionList),
-                              std::end(shadowExclusionList),
-                              type) == std::cend(shadowExclusionList))
-                {
-                    // We try and render translucent items in the shadow pass and due some alpha-discard tricks
-                    _context.renderQueueToSubPasses(type, bufferInOut);
-                }
-            }
-        } else {
-            for (RenderBinType type : RenderBinType::_values()) {
-               _context.renderQueueToSubPasses(type, bufferInOut);
-            }
-        }
+        // We try and render translucent items in the shadow pass and due some alpha-discard tricks
+        renderQueueToSubPasses(stagePass, bufferInOut);
 
         Attorney::SceneManagerRenderPass::postRender(sceneManager, stagePass, *params._camera, bufferInOut);
 
@@ -285,20 +290,14 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
     pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
     Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
-    SceneManager& sceneManager = parent().sceneManager();
 
     RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS);
-    Attorney::SceneManagerRenderPass::populateRenderQueue(sceneManager,
-                                                          stagePass,
-                                                          *params._camera,
-                                                          false,
-                                                          params._pass,
-                                                          bufferInOut);
+    prepareRenderQueues(stagePass, params, false, bufferInOut);
 
     // Weighted Blended Order Independent Transparency
     for (U8 i = 0; i < /*2*/1; ++i) {
         //RenderPackage::MinQuality quality = i == 0 ? RenderPackage::MinQuality::FULL : RenderPackage::MinQuality::LOW;
-        if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT/*, quality*/) > 0) {
+        if (renderQueueSize(stagePass) > 0) {
             RenderTargetUsage rtUsage = i == 0 ? RenderTargetUsage::OIT_FULL_RES : RenderTargetUsage::OIT_QUARTER_RES;
 
             RenderTarget& oitTarget = _context.renderTargetPool().renderTarget(RenderTargetID(rtUsage));
@@ -325,7 +324,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             beginRenderPassOitCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
             GFX::EnqueueCommand(bufferInOut, beginRenderPassOitCmd);
 
-            _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT/*, quality*/, bufferInOut);
+            renderQueueToSubPasses(stagePass, bufferInOut/*, quality*/);
 
             GFX::EndRenderPassCommand endRenderPassOitCmd;
             GFX::EnqueueCommand(bufferInOut, endRenderPassOitCmd);
@@ -397,6 +396,41 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     mainPass(params, target, bufferInOut);
     woitPass(params, target, bufferInOut);
+}
+
+
+// TEMP
+U32 RenderPassManager::renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement) const {
+    const vectorEASTL<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
+    if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
+        return to_U32(queue.size());
+    }
+
+    U32 size = 0;
+    for (const RenderPackage* item : queue) {
+        if (item->qualityRequirement() == qualityRequirement) {
+            ++size;
+        }
+    }
+
+    return size;
+}
+
+void RenderPassManager::renderQueueToSubPasses(RenderStagePass stagePass, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement) const {
+    const vectorEASTL<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
+
+    bool cacheMiss = false;
+    if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
+        for (RenderPackage* item : queue) {
+            commandsInOut.add(Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, cacheMiss));
+        }
+    } else {
+        for (RenderPackage* item : queue) {
+            if (item->qualityRequirement() == qualityRequirement) {
+                commandsInOut.add(Attorney::RenderPackageRenderPassManager::buildAndGetCommandBuffer(*item, cacheMiss));
+            }
+        }
+    }
 }
 
 };

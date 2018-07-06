@@ -308,7 +308,7 @@ class RenderingCompGFXDevice {
 
 class RenderingCompRenderBin {
    private:
-    static const RenderPackage& getRenderData(RenderingComponent& renderable, RenderStagePass renderStagePass) {
+    static RenderPackage& getRenderData(RenderingComponent& renderable, RenderStagePass renderStagePass) {
         return renderable.getDrawPackage(renderStagePass);
     }
 

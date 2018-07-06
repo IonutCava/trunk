@@ -82,12 +82,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         }
     }
 
-    std::generate(
-        std::begin(_renderQueues),
-        std::end(_renderQueues),
-        [this]() { return std::make_unique<RenderPackageQueue>(*this, Config::MAX_VISIBLE_NODES); }
-    );
-
     ResourceCache& cache = parent().resourceCache();
     _rtPool = MemoryManager_NEW GFXRTPool(*this);
 
@@ -432,10 +426,6 @@ void GFXDevice::closeRenderingAPI() {
     _textRenderShader = nullptr;
 
     _prevDepthBuffers.clear();
-
-    for (RenderBinType type : RenderBinType::_values()) {
-        clearRenderQueue(type);
-    }
 
     MemoryManager::DELETE(_renderer);
 

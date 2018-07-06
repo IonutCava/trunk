@@ -11,11 +11,12 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Managers/Headers/RenderPassManager.h"
 
 namespace Divide {
 
-RenderQueue::RenderQueue(GFXDevice& context)
-    : _context(context)
+RenderQueue::RenderQueue(Kernel& parent)
+    : KernelComponent(parent)
 {
     _renderBins.fill(nullptr);
     _activeBins.reserve(RenderBinType::_size_constant);
@@ -81,7 +82,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
         return temp;
     }
 
-    temp = MemoryManager_NEW RenderBin(_context, rbType);
+    temp = MemoryManager_NEW RenderBin(rbType);
     // Bins are sorted by their type
     _renderBins[rbType._to_integral()] = temp;
     
@@ -146,10 +147,17 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass stagePass) {
-    for (RenderBin* renderBin : _activeBins) {
-        if (!renderBin->empty(stagePass)) {
-            renderBin->populateRenderQueue(stagePass);
+void RenderQueue::populateRenderQueues(RenderStagePass stagePass, RenderBinType rbType, vectorEASTL<RenderPackage*>& queueInOut) {
+    if (rbType._value == RenderBinType::RBT_COUNT) {
+        for (RenderBin* renderBin : _activeBins) {
+            renderBin->populateRenderQueue(stagePass, queueInOut);
+        }
+    } else {
+        for (RenderBin* renderBin : _activeBins) {
+            if (renderBin->getType() == rbType) {
+                renderBin->populateRenderQueue(stagePass, queueInOut);
+                break;
+            }
         }
     }
 }
@@ -164,7 +172,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
     static const U16 threadBias = 32;
 
-    TaskPool& pool = _context.context().taskPool();
+    TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty(stagePass)) {

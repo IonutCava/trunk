@@ -36,7 +36,7 @@
 #include "Core/Headers/KernelComponent.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "Platform/Threading/Headers/Task.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 
 namespace Divide {
 
@@ -89,6 +89,13 @@ private:
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;
+    void processVisibleNodes(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+
+private: //TEMP
+    friend class RenderBin;
+    U32  renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
+    void renderQueueToSubPasses(RenderStagePass stagePass, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
 
 private:
     GFXDevice& _context;
@@ -98,6 +105,8 @@ private:
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
 
     ShaderProgram_ptr _OITCompositionShader;
+
+    std::array<vectorEASTL<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
 };
 
 };  // namespace Divide

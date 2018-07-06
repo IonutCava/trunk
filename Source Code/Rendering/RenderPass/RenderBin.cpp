@@ -8,6 +8,7 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Managers/Headers/RenderPassManager.h"
 
 namespace Divide {
 
@@ -64,9 +65,7 @@ struct RenderQueueDistanceFrontToBack {
     }
 };
 
-RenderBin::RenderBin(GFXDevice& context, RenderBinType rbType)
-    : _context(context),
-      _rbType(rbType)
+RenderBin::RenderBin(RenderBinType rbType) : _rbType(rbType)
 {
     for (RenderBinStack& stack : _renderBinStack) {
         stack.reserve(AVERAGE_BIN_SIZE);
@@ -150,15 +149,13 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
                                              *renderable);
 }
 
-void RenderBin::populateRenderQueue(RenderStagePass stagePass) {
-    // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
-    RenderBinType type = getType();
-    _context.lockQueue(type);
-    _context.clearRenderQueue(type);
+void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const {
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
-        _context.addToRenderQueue(type, Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, stagePass));
+       RenderPackage& pkg = Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, stagePass);
+       if (pkg.isRenderable()) {
+           queueInOut.push_back(&pkg);
+       }
     }
-    _context.unlockQueue(type);
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {

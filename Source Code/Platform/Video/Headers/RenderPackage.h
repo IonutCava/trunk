@@ -37,16 +37,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class RenderPackageQueue;
 class RenderingComponent;
+class RenderPassManager;
+
 namespace Attorney {
     class RenderPackageRenderingComponent;
-    class RenderPackageRenderPackageQueue;
+    class RenderPackageRenderPassManager;
 };
 
 class RenderPackage {
     friend class Attorney::RenderPackageRenderingComponent;
-    friend class Attorney::RenderPackageRenderPackageQueue;
+    friend class Attorney::RenderPackageRenderPassManager;
 
 public:
     enum class MinQuality : U8 {
@@ -73,7 +74,7 @@ private:
     };
 
 public:
-    explicit RenderPackage(GFXDevice& context, bool useSecondaryBuffers);
+    explicit RenderPackage(bool useSecondaryBuffers);
     ~RenderPackage();
 
     void clear();
@@ -116,7 +117,7 @@ public:
     void addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants);
     void addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets);
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
- 
+
 protected:
     
     inline GFX::CommandBuffer& buildAndGetCommandBuffer() {
@@ -129,7 +130,6 @@ protected:
     DescriptorSet_ptr& descriptorSet(I32 index);
 
 private:
-    GFXDevice& _context;
     bool _isRenderable;
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
@@ -174,14 +174,14 @@ namespace Attorney {
         friend class Divide::RenderingComponent;
     };
 
-    class RenderPackageRenderPackageQueue {
+    class RenderPackageRenderPassManager {
         private:
         // Return true if the command buffer was reconstructed
         static GFX::CommandBuffer& buildAndGetCommandBuffer(RenderPackage& pkg, bool cacheMiss) {
             return pkg.buildAndGetCommandBuffer(cacheMiss);
         }
 
-        friend class Divide::RenderPackageQueue;
+        friend class Divide::RenderPassManager;
     };
 }; // namespace Attorney
 }; // namespace Divide

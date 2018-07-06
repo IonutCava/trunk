@@ -5,6 +5,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"

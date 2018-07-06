@@ -33,6 +33,7 @@
 #define _RENDER_QUEUE_H_
 
 #include "RenderBin.h"
+#include "Core/Headers/KernelComponent.h"
 
 namespace Divide {
 
@@ -43,16 +44,16 @@ FWD_DECLARE_MANAGED_CLASS(Material);
 FWD_DECLARE_MANAGED_CLASS(SceneNode);
 
 /// This class manages all of the RenderBins and renders them in the correct order
-class RenderQueue {
+class RenderQueue : public KernelComponent {
    public:
     typedef std::array<RenderBin*, RenderBinType::_size_constant> RenderBinArray;
     typedef std::array<vectorEASTL<SceneGraphNode*>, RenderBinType::_size_constant> SortedQueues;
 
   public:
-    RenderQueue(GFXDevice& context);
+    RenderQueue(Kernel& parent);
     ~RenderQueue();
 
-    void populateRenderQueues(RenderStagePass stagePass);
+    void populateRenderQueues(RenderStagePass stagePass, RenderBinType rbType, vectorEASTL<RenderPackage*>& queueInOut);
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass);
     void refresh(RenderStagePass stagePass);
@@ -81,7 +82,6 @@ class RenderQueue {
     RenderBin* getOrCreateBin(RenderBinType rbType);
 
   private:
-    GFXDevice& _context;
     RenderBinArray _renderBins;
     vector<RenderBin*> _activeBins;
 };

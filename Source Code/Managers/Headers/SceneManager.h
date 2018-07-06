@@ -194,6 +194,7 @@ protected:
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
     void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
+
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
@@ -202,8 +203,8 @@ protected:
     void preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
-    bool populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex, GFX::CommandBuffer& bufferInOut);
-
+    const RenderPassCuller::VisibleNodeList& cullScene(RenderStagePass stagePass, const Camera& camera, U32 passIndex);
+    void prepareLightData(RenderStagePass stagePass, const Camera& camera);
     bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
 
     Camera* playerCamera() const;
@@ -351,13 +352,17 @@ class SceneManagerCameraAccessor {
 
 class SceneManagerRenderPass {
    private:
-    static bool populateRenderQueue(Divide::SceneManager& mgr,
-                                    RenderStagePass stagePass,
-                                    const Camera& camera,
-                                    bool doCulling,
-                                    U32 passIndex,
-                                    GFX::CommandBuffer& bufferInOut) {
-        return mgr.populateRenderQueue(stagePass, camera, doCulling, passIndex, bufferInOut);
+    static const RenderPassCuller::VisibleNodeList& cullScene(Divide::SceneManager& mgr,
+                                                              RenderStagePass stagePass,
+                                                              const Camera& camera,
+                                                              U32 passIndex) {
+        return mgr.cullScene(stagePass, camera, passIndex);
+    }
+
+    static void prepareLightData(Divide::SceneManager& mgr,
+                                 RenderStagePass stagePass,
+                                 const Camera& camera) {
+        mgr.prepareLightData(stagePass, camera);
     }
 
     static void preRender(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {

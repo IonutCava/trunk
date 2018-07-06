@@ -79,16 +79,20 @@ struct RenderingOrder {
     };
 };
 
-//Bins can sold certain node types. This is also the order in which nodes will be rendered!
+//Bins can hold certain node types. This is also the order in which nodes will be rendered!
 BETTER_ENUM(RenderBinType, U32,
     RBT_TERRAIN = 0, //< Terrains should occupy most of the screen and be balanced fill/geometry cost
     RBT_OPAQUE,      //< Opaque geometry will be occluded by terrain but will often occlude most of the sky (e.g.: indoors)
     RBT_SKY,         //< Sky needs to be drawn after ALL opque geometry to save on fillrate
     RBT_TRANSLUCENT, //< Translucent items use a [0.0...1.0] alpha values supplied via an opacity map or the albedo's alpha channel
     RBT_DECAL,       //< Decals are drawn over everything
-    RBT_IMPOSTOR)    //< Impostors should be overlayed over everything since they are a debugging tool
+    RBT_IMPOSTOR,    //< Impostors should be overlayed over everything since they are a debugging tool
+    RBT_COUNT);
 
+class RenderPackage;
 class SceneRenderState;
+class RenderPassManager;
+
 struct RenderStagePass;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
@@ -99,12 +103,12 @@ class RenderBin {
 
     friend class RenderQueue;
 
-    explicit RenderBin(GFXDevice& context, RenderBinType rbType);
+    explicit RenderBin(RenderBinType rbType);
     ~RenderBin();
 
     void sort(RenderStagePass stagePass, RenderingOrder::List renderOrder);
     void sort(RenderStagePass stagePass, RenderingOrder::List renderOrder, const Task& parentTask);
-    void populateRenderQueue(RenderStagePass stagePass);
+    void populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const;
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void refresh(RenderStagePass stagePass);
 
@@ -123,7 +127,6 @@ class RenderBin {
     inline RenderBinType getType() const { return _rbType; }
 
    private:
-    GFXDevice& _context;
     RenderBinType _rbType;
 
     std::array<RenderBinStack, to_base(RenderStage::COUNT)> _renderBinStack;

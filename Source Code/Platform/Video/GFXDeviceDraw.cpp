@@ -34,34 +34,6 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
-void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& commandsInOut) {
-    RenderPackageQueue& renderQueue = *_renderQueues[queueType._to_integral()].get();
-
-    assert(renderQueue.locked() == false);
-    if (!renderQueue.empty()) {
-        U32 queueSize = renderQueue.size();
-        for (U32 idx = 0; idx < queueSize; ++idx) {
-            commandsInOut.add(renderQueue.getCommandBuffer(idx));
-        }
-    }
-}
-
-void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, RenderPackage::MinQuality quality, GFX::CommandBuffer& commandsInOut) {
-    RenderPackageQueue& renderQueue = *_renderQueues[queueType._to_integral()].get();
-
-    assert(renderQueue.locked() == false);
-    if (!renderQueue.empty()) {
-        U32 queueSize = renderQueue.size(quality);
-        for (U32 idx = 0; idx < queueSize; ++idx) {
-            commandsInOut.add(renderQueue.getCommandBuffer(quality, idx));
-        }
-    }
-}
-
-void GFXDevice::clearRenderQueue(RenderBinType queueType) {
-    _renderQueues[queueType._to_integral()]->clear();
-}
-
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     commandBuffer.batch();
     if (commandBuffer.validate()) {
@@ -77,39 +49,6 @@ void GFXDevice::flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     commandBuffer.clear();
 }
 
-void GFXDevice::lockQueue(RenderBinType type) {
-    _renderQueues[type._to_integral()]->lock();
-}
-
-void GFXDevice::unlockQueue(RenderBinType type) {
-    _renderQueues[type._to_integral()]->unlock();
-}
-
-U32 GFXDevice::renderQueueSize(RenderBinType queueType) {
-    U32 queueIndex = queueType._to_integral();
-    assert(_renderQueues[queueIndex]->locked() == false);
-
-    return _renderQueues[queueIndex]->size();
-}
-
-U32 GFXDevice::renderQueueSize(RenderBinType queueType, RenderPackage::MinQuality qualityRequirement) {
-    U32 queueIndex = queueType._to_integral();
-    assert(_renderQueues[queueIndex]->locked() == false);
-
-    return _renderQueues[queueIndex]->size(qualityRequirement);
-}
-
-void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& package) {
-    if (!package.isRenderable()) {
-        return;
-    }
-
-    U32 queueIndex = queueType._to_integral();
-
-    assert(_renderQueues[queueIndex]->locked() == true);
-
-    _renderQueues[queueIndex]->push_back(package);
-}
 
 /// Prepare the list of visible nodes for rendering
 GFXDevice::NodeData GFXDevice::processVisibleNode(const VisibleNodeProcessParams& state) const {

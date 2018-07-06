@@ -10,6 +10,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -61,7 +62,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(RenderStagePass::pass(i))][to_base(RenderStagePass::stage(i))];
-        pkg = std::make_unique<RenderPackage>(_context, true);
+        pkg = std::make_unique<RenderPackage>(true);
         pkg->isOcclusionCullable(_parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
 
         STUBBED("ToDo: Use quality requirements for rendering packages! -Ionut");

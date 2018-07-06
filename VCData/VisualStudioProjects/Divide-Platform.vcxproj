@@ -101,7 +101,6 @@
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderAPIWrapper.h" />
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderPackage.h" />
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderPackageQueue.h" />
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderStagePass.h" />
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderStateBlock.h" />
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\TextureData.h" />
@@ -248,7 +247,6 @@
     <ClCompile Include="..\../Source Code/Platform\Video\OpenGL\Textures\glTexture.cpp" />
     <ClCompile Include="..\../Source Code/Platform\Video\Pipeline.cpp" />
     <ClCompile Include="..\../Source Code/Platform\Video\RenderPackage.cpp" />
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderPackageQueue.cpp" />
     <ClCompile Include="..\../Source Code/Platform\Video\RenderStateBlock.cpp" />
     <ClCompile Include="..\../Source Code/Platform\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\../Source Code/Platform\Video\TextureData.cpp" />

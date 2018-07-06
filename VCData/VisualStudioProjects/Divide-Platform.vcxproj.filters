@@ -341,9 +341,6 @@
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\Commands.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderPackageQueue.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWatcherManager.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
@@ -633,9 +630,6 @@
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Platform\Video\CommandBuffer.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Video\RenderPackageQueue.cpp">
       <Filter>Video</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Platform\Video\CommandBufferPool.cpp">

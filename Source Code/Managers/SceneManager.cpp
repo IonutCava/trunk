@@ -593,6 +593,13 @@ namespace {
     // Return true if this node should be removed from a shadow pass
     bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
         if (stage == RenderStage::SHADOW) {
+            SceneNodeType type = node.getNode()->getType();
+            if (type == SceneNodeType::TYPE_SKY) {
+                return true;
+            }
+            if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::DECAL) {
+                return true;
+            }
             RenderingComponent* rComp = node.get<RenderingComponent>();
             assert(rComp != nullptr);
             return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
@@ -645,7 +652,6 @@ RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStag
 }
 
 void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNodeData, U32 pass, GFX::CommandBuffer& bufferInOut) {
-    GFXDevice& gfx = _platformContext->gfx();
     RenderPassManager& mgr = parent().renderPassManager();
     RenderQueue& queue = mgr.getQueue();
 
@@ -659,49 +665,18 @@ void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNod
             queue.addNodeToQueue(*node._node, stagePass, eyePos);
         }
     }
-    
-    // Sort all bins
-    queue.sort(stagePass);
-
-    // Prepare draw buffers
-    RenderPass::BufferData& bufferData = mgr.getBufferData(stagePass._stage, pass);
-
-    // Get all of the sorted render bins
-    SceneRenderState& renderState = getActiveScene().renderState();
-    RenderQueue::SortedQueues sortedQueues = queue.getSortedQueues(stagePass);
-
-    GFXDevice::BuildDrawCommandsParams params;
-    params._sortedQueues = &sortedQueues;
-    params._sceneRenderState = &renderState;
-    params._bufferData = &bufferData;
-    params._renderStagePass = stagePass;
-    params._camera = playerCamera();
-    params._refreshNodeData = refreshNodeData;
-
-    gfx.buildDrawCommands(params, bufferInOut);
 }
 
-bool SceneManager::populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex, GFX::CommandBuffer& bufferInOut) {
-
+void SceneManager::prepareLightData(RenderStagePass stagePass, const Camera& camera) {
     if (stagePass._passType == RenderPassType::COLOUR_PASS) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
         lightPool->prepareLightData(stagePass, camera.getEye(), camera.getViewMatrix());
     }
+}
 
-    if (doCulling) {
-        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stagePass._passType)][to_U32(stagePass._stage)]);
-        cullSceneGraph(stagePass);
-    }
-
-    updateVisibleNodes(stagePass, doCulling, passIndex, bufferInOut);
-
-    RenderQueue& queue = parent().renderPassManager().getQueue();
-    if (getActiveScene().renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
-        queue.populateRenderQueues(stagePass);
-    }
-
-    return queue.getRenderQueueStackSize(stagePass) > 0;
-
+const RenderPassCuller::VisibleNodeList& SceneManager::cullScene(RenderStagePass stagePass, const Camera& camera, U32 passIndex) {
+    Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stagePass._passType)][to_U32(stagePass._stage)]);
+    return cullSceneGraph(stagePass);
 }
 
 void SceneManager::onLostFocus() {

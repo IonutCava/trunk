@@ -6,6 +6,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/File/Headers/FileManagement.h"
+#include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 
