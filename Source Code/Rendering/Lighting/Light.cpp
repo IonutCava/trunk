@@ -45,7 +45,7 @@ bool Light::load(const stringImpl& name) {
     setName(name);
     _shadowCamera =
         Application::getInstance()
-        .getKernel()
+        .kernel()
         .getCameraMgr()
         .createCamera(name + "_shadowCamera", Camera::CameraType::FREE_FLY);
 

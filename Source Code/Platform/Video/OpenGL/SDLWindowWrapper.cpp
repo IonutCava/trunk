@@ -60,7 +60,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // values
     GLUtil::fillEnumTables();
 
-    const DisplayWindow& window = Application::getInstance().getWindowManager().getActiveWindow();
+    const DisplayWindow& window = Application::getInstance().windowManager().getActiveWindow();
     ErrorCode errorState = createGLContext(window);
     if (errorState != ErrorCode::NO_ERR) {
         return errorState;
@@ -295,7 +295,7 @@ void GL_API::closeRenderingAPI() {
 void GL_API::threadedLoadCallback() {
     glbinding::ContextHandle glCtx = glbinding::getCurrentContext();
     if (glCtx == 0) {
-        const DisplayWindow& window = Application::getInstance().getWindowManager().getActiveWindow();
+        const DisplayWindow& window = Application::getInstance().windowManager().getActiveWindow();
         SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glSecondaryContexts.front());
         glbinding::Binding::initialize(false);
     // Enable OpenGL debug callbacks for this context as well

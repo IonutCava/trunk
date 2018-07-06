@@ -1,5 +1,5 @@
 #include "Headers/ParticleData.h"
-#include "Core/Headers/Kernel.h"
+#include "Core/Headers/TaskPool.h"
 
 namespace Divide {
 
@@ -95,10 +95,9 @@ void ParticleData::sort(bool invalidateCache) {
         }
     };
     
-    Kernel& kernel = Application::getInstance().getKernel();
-    TaskHandle updateTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
-    updateTask.addChildTask(kernel.AddTask(parsePositions)._task)->startTask(Task::TaskPriority::HIGH);
-    updateTask.addChildTask(kernel.AddTask(parseColors)._task)->startTask(Task::TaskPriority::HIGH);
+    TaskHandle updateTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
+    updateTask.addChildTask(CreateTask(parsePositions)._task)->startTask(Task::TaskPriority::HIGH);
+    updateTask.addChildTask(CreateTask(parseColors)._task)->startTask(Task::TaskPriority::HIGH);
     updateTask.startTask(Task::TaskPriority::HIGH);
     updateTask.wait();
 

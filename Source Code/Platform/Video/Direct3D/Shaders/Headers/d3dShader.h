@@ -41,18 +41,13 @@ class d3dShader : public Shader {
     d3dShader(GFXDevice& context, 
               const stringImpl& name,
               const ShaderType& type,
-              const bool optimise = false)
-        : Shader(context, name, type, optimise)
-    {
-    }
+              const bool optimise = false);
 
-    ~d3dShader()
-    {
-    }
+    ~d3dShader();
 
-    bool load(const stringImpl& source) { return true; }
-    bool compile() { return true; }
-    void validate() {}
+    bool load(const stringImpl& source);
+    bool compile();
+    void validate();
 };
 
 };  // namespace Divide

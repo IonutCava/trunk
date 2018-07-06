@@ -69,30 +69,6 @@ Kernel::~Kernel()
 {
 }
 
-TaskHandle Kernel::getTaskHandle(I64 taskGUID) {
-    return _taskPool.getTaskHandle(taskGUID);
-}
-
-TaskHandle Kernel::AddTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
-                           const DELEGATE_CBK<>& onCompletionFunction) {
-    return AddTask(-1, threadedFunction, onCompletionFunction);                            
-}
-
-TaskHandle Kernel::AddTask(I64 jobIdentifier,
-                           const DELEGATE_CBK_PARAM<bool>& threadedFunction,
-                           const DELEGATE_CBK<>& onCompletionFunction) {
-
-    Task& freeTask = _taskPool.getAvailableTask();
-    TaskHandle handle(&freeTask, jobIdentifier);
-
-    freeTask.threadedCallback(threadedFunction, jobIdentifier);
-    if (onCompletionFunction) {
-        _taskPool.setTaskCallback(handle, onCompletionFunction);
-    }
-
-    return handle;
-}
-
 void Kernel::idle() {
     GFX_DEVICE.idle();
     PHYSICS_DEVICE.idle();
@@ -202,7 +178,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     // Update camera
     _cameraMgr->update(deltaTime);
 
-    if (_APP.getWindowManager().getActiveWindow().minimized()) {
+    if (_APP.windowManager().getActiveWindow().minimized()) {
         idle();
         return true;
     }
@@ -254,7 +230,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     _GFX.setInterpolation(Config::USE_FIXED_TIMESTEP ? interpolationFactor : 1.0);
     
     // Get input events
-    if (_APP.getWindowManager().getActiveWindow().hasFocus()) {
+    if (_APP.windowManager().getActiveWindow().hasFocus()) {
         _input.update(_timingData._currentTimeDelta);
     } else {
         _sceneMgr.onLostFocus();
@@ -362,7 +338,7 @@ void Kernel::warmup() {
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
-    SysInfo& systemInfo = Application::getInstance().getSysInfo();
+    SysInfo& systemInfo = Application::getInstance().sysInfo();
     if (!CheckMemory(Config::REQUIRED_RAM_SIZE, systemInfo)) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
@@ -397,7 +373,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     I32 targetDisplay = par.getParam<I32>(_ID("runtime.targetDisplay"), 0);
     bool startFullScreen = par.getParam<bool>(_ID("runtime.startFullScreen"), true);
-    WindowManager& winManager = _APP.getWindowManager();
+    WindowManager& winManager = _APP.windowManager();
 
     ErrorCode initError = winManager.init(_GFX.getAPI(), initRes, startFullScreen, targetDisplay);
     if (initError != ErrorCode::NO_ERR) {

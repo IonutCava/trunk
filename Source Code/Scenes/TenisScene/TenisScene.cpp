@@ -84,12 +84,12 @@ void TenisScene::resetGame() {
 
 void TenisScene::startGame() {
     resetGame();
-    Kernel& kernel = Application::getInstance().getKernel();
-    TaskHandle newGame(kernel.AddTask(getGUID(),
-                                      DELEGATE_BIND(&TenisScene::playGame, this,
-                                                    std::placeholders::_1,
-                                                    rand() % 5,
-                                                    CallbackParam::TYPE_INTEGER)));
+
+    TaskHandle newGame(CreateTask(getGUID(),
+                               DELEGATE_BIND(&TenisScene::playGame, this,
+                                             std::placeholders::_1,
+                                             rand() % 5,
+                                             CallbackParam::TYPE_INTEGER)));
     newGame.startTask(Task::TaskPriority::HIGH);
     registerTask(newGame);
 }
@@ -409,7 +409,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ballSGN.lock()->setSelectable(true);
 
     const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getActiveWindow().getDimensions();
+        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
 
     GUIElement* btn = _GUI->addButton(
         "Serve", "Serve",

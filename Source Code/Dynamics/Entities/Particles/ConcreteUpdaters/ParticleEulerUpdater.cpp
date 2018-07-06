@@ -1,7 +1,5 @@
 #include "Headers/ParticleEulerUpdater.h"
-#include "Core/Headers/Kernel.h"
-
-#include <future>
+#include "Core/Headers/TaskPool.h"
 
 namespace Divide {
 
@@ -35,22 +33,20 @@ void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData& p) {
     U32 partitionCount = endID / crtPartitionSize;
     U32 remainder = endID % crtPartitionSize;
     
-    const U32 half = endID / 2u;
-    Kernel& kernel = Application::getInstance().getKernel();
-    TaskHandle updateTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+    TaskHandle updateTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     for (U32 i = 0; i < partitionCount; ++i) {
         U32 start = i * crtPartitionSize;
         U32 end = start + crtPartitionSize;
-        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange,
-                                                             std::placeholders::_1,
-                                                             start,
-                                                             end))._task)->startTask(Task::TaskPriority::HIGH);
+        updateTask.addChildTask(CreateTask(DELEGATE_BIND(parseRange,
+                                                      std::placeholders::_1,
+                                                      start,
+                                                      end))._task)->startTask(Task::TaskPriority::HIGH);
     }
     if (remainder > 0) {
-        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange,
-                                                             std::placeholders::_1,
-                                                             endID - remainder,
-                                                             endID))._task)->startTask(Task::TaskPriority::HIGH);
+        updateTask.addChildTask(CreateTask(DELEGATE_BIND(parseRange,
+                                                      std::placeholders::_1,
+                                                      endID - remainder,
+                                                      endID))._task)->startTask(Task::TaskPriority::HIGH);
     }
     updateTask.startTask(Task::TaskPriority::HIGH);
     updateTask.wait();

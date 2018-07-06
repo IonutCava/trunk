@@ -84,12 +84,12 @@ DEFINE_SINGLETON(Application)
     inline void CancelShutdown();
     inline bool ShutdownRequested() const;
 
-    inline Kernel& getKernel() const;
-    inline WindowManager& getWindowManager();
-    inline const WindowManager& getWindowManager() const;
+    inline Kernel& kernel() const;
+    inline WindowManager& windowManager();
+    inline const WindowManager& windowManager() const;
 
     inline bool isMainThread() const;
-    inline const std::thread::id& getMainThreadID() const;
+    inline const std::thread::id& mainThreadID() const;
     inline void setMemoryLogFile(const stringImpl& fileName);
 
     inline bool mainLoopActive() const;
@@ -107,8 +107,8 @@ DEFINE_SINGLETON(Application)
     inline void throwError(ErrorCode err);
     inline ErrorCode errorCode() const;
 
-    inline SysInfo& getSysInfo();
-    inline const SysInfo& getSysInfo() const;
+    inline SysInfo& sysInfo();
+    inline const SysInfo& sysInfo() const;
     /// Add a list of callback functions that should be called when the application
     /// instance is destroyed
     /// (release hardware, file handlers, etc)

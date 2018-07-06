@@ -134,7 +134,7 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _root->sceneUpdate(deltaTime, sceneState);
     if (_loadComplete) {
-        Application::getInstance().getKernel().AddTask(
+        CreateTask(
             [this, deltaTime](const std::atomic_bool& stopRequested) mutable
             {
                 _octreeUpdating = true;

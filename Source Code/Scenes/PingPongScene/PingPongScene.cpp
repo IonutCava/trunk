@@ -80,12 +80,11 @@ void PingPongScene::serveBall() {
 
     removeTask(getGUID());
 
-    Kernel& kernel = Application::getInstance().getKernel();
-    TaskHandle newGame(kernel.AddTask(getGUID(),
-                                      DELEGATE_BIND(&PingPongScene::test, this,
-                                      std::placeholders::_1,
-                                      rand() % 5,
-                                      CallbackParam::TYPE_INTEGER)));
+    TaskHandle newGame(CreateTask(getGUID(),
+                               DELEGATE_BIND(&PingPongScene::test, this,
+                               std::placeholders::_1,
+                               rand() % 5,
+                               CallbackParam::TYPE_INTEGER)));
     newGame.startTask(Task::TaskPriority::HIGH);
     registerTask(newGame);
 }
@@ -326,7 +325,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     light->setPosition(vec3<F32>(0, 6, 2));
     */
     const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getActiveWindow().getDimensions();
+        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
     // Buttons and text labels
     _GUI->addButton("Serve", "Serve",
                     vec2<I32>(to_int(resolution.width - 120),

@@ -283,10 +283,9 @@ Light* LightManager::getLight(I64 lightGUID, LightType type) {
 
 void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     // Sort all lights (Sort in parallel by type)   
-    Kernel& kernel = Application::getInstance().getKernel();
-    TaskHandle cullTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+    TaskHandle cullTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     for (Light::LightList& lights : _lights) {
-        cullTask.addChildTask(kernel.AddTask(
+        cullTask.addChildTask(CreateTask(
             [&eyePos, &lights](const std::atomic_bool& stopRequested) mutable
             {
                 std::sort(std::begin(lights), std::end(lights),

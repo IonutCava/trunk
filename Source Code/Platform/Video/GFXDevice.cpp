@@ -157,7 +157,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
                               vec3<F32>(pos.x, pos.y, pos.z + 1.0f),
                               vec3<F32>(pos.x, pos.y, pos.z - 1.0f)};
 
-    Kernel& kernel = Application::getInstance().getKernel();
+    Kernel& kernel = Application::getInstance().kernel();
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the cube camera as the currently active one
@@ -212,7 +212,7 @@ void GFXDevice::generateDualParaboloidMap(Framebuffer& targetBuffer,
         Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_INVALID_FB_DP")));
         return;
     }
-    Kernel& kernel = Application::getInstance().getKernel();
+    Kernel& kernel = Application::getInstance().kernel();
     // Set a 90 degree vertical FoV perspective projection
     _dualParaboloidCamera->setProjection(1.0f, 180.0f, zPlanes);
     // Set the cube camera as the currently active one
@@ -293,7 +293,7 @@ const RenderStateBlock& GFXDevice::getRenderStateBlock(U32 renderStateBlockHash)
 }
 
 void GFXDevice::increaseResolution() {
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
+    const WindowManager& winManager = Application::getInstance().windowManager();
     const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
 
@@ -303,7 +303,7 @@ void GFXDevice::increaseResolution() {
 
         if (resolution.width < tempResolution.width &&
             resolution.height < tempResolution.height) {
-            WindowManager& winMgr = Application::getInstance().getWindowManager();
+            WindowManager& winMgr = Application::getInstance().windowManager();
             winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
                                      winMgr.getActiveWindow().getGUID(),
                                      to_int(tempResolution.width),
@@ -314,7 +314,7 @@ void GFXDevice::increaseResolution() {
 }
 
 void GFXDevice::decreaseResolution() {
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
+    const WindowManager& winManager = Application::getInstance().windowManager();
     const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
     
@@ -323,7 +323,7 @@ void GFXDevice::decreaseResolution() {
         const vec2<U16>& tempResolution = it->_resolution;
         if (resolution.width > tempResolution.width &&
             resolution.height > tempResolution.height) {
-            WindowManager& winMgr = Application::getInstance().getWindowManager();
+            WindowManager& winMgr = Application::getInstance().windowManager();
             winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
                                      winMgr.getActiveWindow().getGUID(),
                                      to_int(tempResolution.width),
@@ -334,7 +334,7 @@ void GFXDevice::decreaseResolution() {
 }
 
 void GFXDevice::toggleFullScreen() {
-    WindowManager& winManager = Application::getInstance().getWindowManager();
+    WindowManager& winManager = Application::getInstance().windowManager();
     switch (winManager.getActiveWindow().type()) {
         case WindowType::WINDOW:
         case WindowType::SPLASH:
@@ -593,7 +593,7 @@ void GFXDevice::toggle2D(bool state) {
     if (state == _2DRendering) {
         return;
     }
-    Kernel& kernel = Application::getInstance().getKernel();
+    Kernel& kernel = Application::getInstance().kernel();
     _2DRendering = state;
     // If we need to enable 2D rendering
     if (state) {

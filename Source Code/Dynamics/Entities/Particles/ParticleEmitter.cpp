@@ -1,6 +1,6 @@
 #include "Headers/ParticleEmitter.h"
 
-#include "Core/Headers/Kernel.h"
+#include "Core/Headers/TaskPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/ParamHandler.h"
@@ -287,7 +287,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         // const vec3<F32>& origin = transform->getPosition();
         // const Quaternion<F32>& orientation = transform->getOrientation();
 
-        Application::getInstance().getKernel().AddTask(
+        CreateTask(
             [this](const std::atomic_bool& stopRequested) {
                 // invalidateCache means that the existing particle data is no longer partially sorted
                 _particles->sort(true);

@@ -1,6 +1,6 @@
 #include "Headers/RenderPassCuller.h"
 
-#include "Core/Headers/Kernel.h"
+#include "Core/Headers/TaskPool.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -75,7 +75,6 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 {
     VisibleNodeList& nodeCache = getNodeCache(stage);
     nodeCache.resize(0);
-    Kernel& kernel = Application::getInstance().getKernel();
     const SceneRenderState& renderState = sceneState.renderState();
     if (renderState.drawGeometry()) {
         _cullingFunction = cullingFunction;
@@ -86,19 +85,19 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         _perThreadNodeList.resize(childCount);
         const Camera& camera = renderState.getCameraConst();
         F32 cullMaxDistance = sceneState.generalVisibility();
-        TaskHandle cullTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+        TaskHandle cullTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
         for (U32 i = 0; i < childCount; ++i) {
             const SceneGraphNode& child = root.getChild(i, childCount);
-            cullTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderPassCuller::frustumCullNode,
-                                                               this,
-                                                               std::placeholders::_1,
-                                                               std::cref(child),
-                                                               std::cref(camera),
-                                                               stage,
-                                                               cullMaxDistance,
-                                                               i,
-                                                               true)
-                                                 )._task)->startTask(Task::TaskPriority::MAX);
+            cullTask.addChildTask(CreateTask(DELEGATE_BIND(&RenderPassCuller::frustumCullNode,
+                                                        this,
+                                                        std::placeholders::_1,
+                                                        std::cref(child),
+                                                        std::cref(camera),
+                                                        stage,
+                                                        cullMaxDistance,
+                                                        i,
+                                                        true)
+                                  )._task)->startTask(Task::TaskPriority::MAX);
         }
         cullTask.startTask(Task::TaskPriority::MAX);
         cullTask.wait();

@@ -182,7 +182,7 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
     if(length)
     {
       /* create literal copy only */
-      *op++ = length-1;
+      *op++ = (flzuint8)(length-1);
       ip_bound++;
       while(ip <= ip_bound)
         *op++ = *ip++;
@@ -231,7 +231,7 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
     ref = htab[hval];
 
     /* calculate distance to the match */
-    distance = anchor - ref;
+    distance = (flzuint32)(anchor - ref);
 
     /* update hash table */
     *hslot = anchor;
@@ -291,7 +291,7 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
     /* if we have copied something, adjust the copy count */
     if(copy)
       /* copy is biased, '0' means 1 byte copy */
-      *(op-copy-1) = copy-1;
+      *(op-copy-1) = (flzuint8)(copy-1);
     else
       /* back, to overwrite the copy count */
       op--;
@@ -301,7 +301,7 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
 
     /* length is biased, '1' means a match of 3 bytes */
     ip -= 3;
-    len = ip - anchor;
+    len = (flzuint32)(ip - anchor);
 
     /* encode the match */
 #if FASTLZ_LEVEL==2
@@ -309,15 +309,15 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
     {
       if(len < 7)
       {
-        *op++ = (len << 5) + (distance >> 8);
+        *op++ = (flzuint8)((len << 5) + (distance >> 8));
         *op++ = (distance & 255);
       }
       else
       {
-        *op++ = (7 << 5) + (distance >> 8);
+        *op++ = (flzuint8)((7 << 5) + (distance >> 8));
         for(len-=7; len >= 255; len-= 255)
           *op++ = 255;
-        *op++ = len;
+        *op++ = (flzuint8)(len);
         *op++ = (distance & 255);
       }
     }
@@ -327,9 +327,9 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
       if(len < 7)
       {
         distance -= MAX_DISTANCE;
-        *op++ = (len << 5) + 31;
+        *op++ = (flzuint8)((len << 5) + 31);
         *op++ = 255;
-        *op++ = distance >> 8;
+        *op++ = (flzuint8)(distance >> 8);
         *op++ = distance & 255;
       }
       else
@@ -338,9 +338,9 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
         *op++ = (7 << 5) + 31;
         for(len-=7; len >= 255; len-= 255)
           *op++ = 255;
-        *op++ = len;
+        *op++ = (flzuint8)(len);
         *op++ = 255;
-        *op++ = distance >> 8;
+        *op++ = (flzuint8)(distance >> 8);
         *op++ = distance & 255;
       }
     }
@@ -349,7 +349,7 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
     if(FASTLZ_UNEXPECT_CONDITIONAL(len > MAX_LEN-2))
       while(len > MAX_LEN-2)
       {
-        *op++ = (7 << 5) + (distance >> 8);
+        *op++ = (flzuint8)((7 << 5) + (distance >> 8));
         *op++ = MAX_LEN - 2 - 7 -2; 
         *op++ = (distance & 255);
         len -= MAX_LEN-2;
@@ -357,13 +357,13 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
 
     if(len < 7)
     {
-      *op++ = (len << 5) + (distance >> 8);
+      *op++ = (flzuint8)((len << 5) + (distance >> 8));
       *op++ = (distance & 255);
     }
     else
     {
-      *op++ = (7 << 5) + (distance >> 8);
-      *op++ = len - 7;
+      *op++ = (flzuint8)((7 << 5) + (distance >> 8));
+      *op++ = (flzuint8)(len - 7);
       *op++ = (distance & 255);
     }
 #endif
@@ -405,7 +405,7 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
 
   /* if we have copied something, adjust the copy length */
   if(copy)
-    *(op-copy-1) = copy-1;
+    *(op-copy-1) = (flzuint8)(copy-1);
   else
     op--;
 
@@ -414,7 +414,7 @@ static FASTLZ_INLINE int FASTLZ_COMPRESSOR(const void* input, int length, void* 
   *(flzuint8*)output |= (1 << 5);
 #endif
 
-  return op - (flzuint8*)output;
+  return (int)(op - (flzuint8*)output);
 }
 
 static FASTLZ_INLINE int FASTLZ_DECOMPRESSOR(const void* input, int length, void* output, int maxout)
@@ -545,7 +545,7 @@ static FASTLZ_INLINE int FASTLZ_DECOMPRESSOR(const void* input, int length, void
   }
   while(FASTLZ_EXPECT_CONDITIONAL(loop));
 
-  return op - (flzuint8*)output;
+  return (int)(op - (flzuint8*)output);
 }
 
 #endif /* !defined(FASTLZ_COMPRESSOR) && !defined(FASTLZ_DECOMPRESSOR) */

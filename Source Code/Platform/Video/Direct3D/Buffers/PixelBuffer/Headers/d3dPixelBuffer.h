@@ -38,33 +38,25 @@ namespace Divide {
 
 class d3dPixelBuffer : public PixelBuffer {
    public:
-    d3dPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(context, type)
-    {
-    }
-
-    ~d3dPixelBuffer()
-    {
-        Destroy();
-    }
+    d3dPixelBuffer(GFXDevice& context, PBType type);
+    ~d3dPixelBuffer();
 
     bool Create(U16 width, U16 height, U16 depth = 0,
                 GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
-                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) {
-        return true;
-    }
+                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32);
 
-    void Destroy(){};
+    void Destroy();
 
-    void* Begin() const { return 0; };
-    void End() const {}
+    void* Begin() const;
+    void End() const;
 
-    void Bind(U8 unit = 0) const {}
+    void Bind(U8 unit = 0) const;
 
-    void updatePixels(const F32* const pixels, U32 pixelCount) {}
+    void updatePixels(const F32* const pixels, U32 pixelCount);
 
    private:
-    bool checkStatus() { return true; }
+    bool checkStatus();
 };
 
 };  // namespace Divide

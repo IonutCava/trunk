@@ -70,53 +70,31 @@ class NOINITVTABLE Resource : public TrackedObject {
     friend class ImplResourceLoader;
 
    public:
-    explicit Resource(const stringImpl& name)
-        : TrackedObject(),
-          _name(name),
-          _resourceState(ResourceState::RES_CREATED)
-    {
-    }
+    explicit Resource(const stringImpl& name);
 
-    virtual ~Resource() {}
+    virtual ~Resource();
 
     /// Loading and unloading interface
-    virtual bool load() { 
-        setState(ResourceState::RES_LOADED);
-        return true;
-    }
+    virtual bool load();
 
-    virtual bool unload() { 
-        return true;
-    }
+    virtual bool unload();
 
     /// Name management
-    const stringImpl& getName() const { return _name; }
+    const stringImpl& getName() const;
 
-    inline void setName(const stringImpl& name) { _name = name; }
+    void setName(const stringImpl& name);
 
     /// Physical file location
-    const stringImpl& getResourceLocation() const { return _resourceLocation; }
+    const stringImpl& getResourceLocation() const;
 
-    void setResourceLocation(const stringImpl& resourceLocation) {
-        _resourceLocation = resourceLocation;
-    }
+    void setResourceLocation(const stringImpl& resourceLocation);
 
-    inline ResourceState getState() const { return _resourceState; }
+    ResourceState getState() const;
 
-    inline void setStateCallback(ResourceState targetState, DELEGATE_CBK<void> cbk) {
-        std::lock_guard<std::mutex> lock(_callbackLock);
-        _loadingCallbacks[to_uint(targetState)] = cbk;
-    }
+    void setStateCallback(ResourceState targetState, DELEGATE_CBK<void> cbk);
 
    protected:
-    inline void setState(ResourceState currentState) {
-        _resourceState = currentState;
-        std::lock_guard<std::mutex> lock(_callbackLock);
-        DELEGATE_CBK<void>& cbk = _loadingCallbacks[to_uint(currentState)];
-        if (cbk) {
-            cbk();
-        }
-    }
+    void setState(ResourceState currentState);
 
    protected:
     stringImpl _name;

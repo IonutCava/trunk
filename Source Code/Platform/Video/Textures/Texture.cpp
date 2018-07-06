@@ -1,5 +1,6 @@
 #include "Headers/Texture.h"
 
+#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
@@ -130,34 +131,46 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     U16 height = img.dimensions().height;
     // If we have an alpha channel, we must check for translucency
     if (img.alpha()) {
+
         // Each pixel is independent so this is a brilliant place to parallelize work
-        I32 i = 0;
-        ACKNOWLEDGE_UNUSED(i);
+        // should this be atomic? At most, we run an extra task -Ionut
         bool abort = false;
-#       pragma omp parallel for
-        for (i = 0; i < width; ++i) {
-#           pragma omp flush(abort)
-            if (!abort) {
-                // We process one column per thread
+
+        auto findAlpha = [&abort, &img, height](const std::atomic_bool& stopRequested, U16 start, U16 end) {
+            U8 tempR, tempG, tempB, tempA;
+            for (U16 i = start; i < end; ++i) {
                 for (I32 j = 0; j < height; ++j) {
-#                  pragma omp flush(abort)
                     if (!abort) {
-                        // Check alpha value
-                        U8 tempR, tempG, tempB, tempA;
                         img.getColor(i, j, tempR, tempG, tempB, tempA);
-                        // If the pixel is transparent, toggle translucency flag
-#                       pragma omp critical
-                        {
-                            // Should be thread-safe
-                            if (tempA < 250) {
-                               abort = true;
-#                              pragma omp flush(abort)
-                            }
+                        if (tempA < 250) {
+                            abort = true;
                         }
                     }
                 }
             }
+        };
+
+        static const U16 partitionSize = 128;
+        U16 crtPartitionSize = std::min(partitionSize, width);
+        U16 partitionCount = width / crtPartitionSize;
+        U16 remainder = width % crtPartitionSize;
+
+        TaskHandle alphaTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
+        for (U16 i = 0; i < partitionCount; ++i) {
+            U16 start = i * crtPartitionSize;
+            U16 end = start + crtPartitionSize;
+            alphaTask.addChildTask(CreateTask(
+                DELEGATE_BIND(findAlpha, std::placeholders::_1, start, end)
+            )._task)->startTask(Task::TaskPriority::HIGH);
         }
+        if (remainder > 0) {
+            alphaTask.addChildTask(CreateTask(
+                DELEGATE_BIND(findAlpha, std::placeholders::_1, width - remainder, width)
+            )._task)->startTask(Task::TaskPriority::HIGH);
+        }
+        alphaTask.startTask(Task::TaskPriority::HIGH);
+        alphaTask.wait();
+
         _hasTransparency = abort;
     }
 

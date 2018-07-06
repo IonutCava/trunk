@@ -68,7 +68,7 @@ bool NavigationMesh::unload() {
 
 void NavigationMesh::stopThreadedBuild() {
     if (_buildJobGUID != -1){
-        TaskHandle buildThread = Application::getInstance().getKernel().getTaskHandle(_buildJobGUID);
+        TaskHandle buildThread = GetTaskHandle(_buildJobGUID);
         assert(buildThread._task);
         if (buildThread._task->jobIdentifier() == getGUID()) {
             buildThread._task->stopTask();
@@ -182,10 +182,12 @@ bool NavigationMesh::build(SceneGraphNode& sgn,
 bool NavigationMesh::buildThreaded() {
     stopThreadedBuild();
 
-    Application::getInstance().getKernel()
-                              .AddTask(getGUID(),
-                                       DELEGATE_BIND(&NavigationMesh::buildInternal, this, std::placeholders::_1))
-                              .startTask(Task::TaskPriority::HIGH);
+    CreateTask(getGUID(),
+            DELEGATE_BIND(&NavigationMesh::buildInternal,
+                          this,
+                          std::placeholders::_1))
+            .startTask(Task::TaskPriority::HIGH);
+
     return true;
 }
 

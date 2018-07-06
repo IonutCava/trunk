@@ -600,7 +600,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     }
 
     Application::getInstance()
-        .getKernel()
+        .kernel()
         .getCameraMgr()
         .getActiveCamera()
         .setHorizontalFoV(110);
@@ -674,7 +674,7 @@ void WarScene::toggleCamera() {
 
 bool WarScene::loadResources(bool continueOnErrors) {
     const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getActiveWindow().getDimensions();
+        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
 
     _GUI->addButton("Simulate", "Simulate",
                     vec2<I32>(resolution.width - 220, 60),

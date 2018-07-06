@@ -144,19 +144,19 @@ inline bool Application::ShutdownRequested() const {
     return _requestShutdown;
 }
 
-inline Kernel& Application::getKernel() const {
+inline Kernel& Application::kernel() const {
     return *_kernel;
 }
 
-inline WindowManager& Application::getWindowManager() {
+inline WindowManager& Application::windowManager() {
     return _windowManager;
 }
 
-inline const WindowManager& Application::getWindowManager() const {
+inline const WindowManager& Application::windowManager() const {
     return _windowManager;
 }
 
-inline const std::thread::id& Application::getMainThreadID() const {
+inline const std::thread::id& Application::mainThreadID() const {
     return _threadID;
 }
 
@@ -201,11 +201,11 @@ inline void Application::registerShutdownCallback(const DELEGATE_CBK<>& cbk) {
     _shutdownCallback.push_back(cbk);
 }
 
-inline SysInfo& Application::getSysInfo() {
+inline SysInfo& Application::sysInfo() {
     return _sysInfo;
 }
 
-inline const SysInfo& Application::getSysInfo() const {
+inline const SysInfo& Application::sysInfo() const {
     return _sysInfo;
 }
 

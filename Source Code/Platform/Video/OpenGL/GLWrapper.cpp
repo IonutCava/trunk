@@ -111,7 +111,7 @@ void GL_API::beginFrame() {
 /// Finish rendering the current frame
 void GL_API::endFrame(bool swapBuffers) {
     DisplayWindow& win = Application::getInstance()
-                         .getWindowManager()
+                         .windowManager()
                          .getActiveWindow();
     // Revert back to the default OpenGL states
     clearStates();

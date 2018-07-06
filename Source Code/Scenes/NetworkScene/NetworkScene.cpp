@@ -103,7 +103,7 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
     const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getActiveWindow().getDimensions();
+        = Application::getInstance().windowManager().getActiveWindow().getDimensions();
 
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position

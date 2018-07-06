@@ -38,7 +38,7 @@ ErrorCode DisplayWindow::destroyWindow() {
 ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, ResolutionByType initialResolutions) {
     ParamHandler& par = ParamHandler::getInstance();
     Application& app = Application::getInstance();
-    WindowManager& wManager = app.getWindowManager();
+    WindowManager& wManager = app.windowManager();
 
     _type = initialType;
 
@@ -69,7 +69,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, Resolutio
 
 void DisplayWindow::update() {
     Application& app = Application::getInstance();
-    WindowManager& wManager = app.getWindowManager();
+    WindowManager& wManager = app.windowManager();
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -164,7 +164,7 @@ void DisplayWindow::update() {
 }
 
 void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
-    WindowManager& winManager = Application::getInstance().getWindowManager();
+    WindowManager& winManager = Application::getInstance().windowManager();
 
     if (_externalResizeEvent && 
         (_type != WindowType::WINDOW &&
@@ -206,7 +206,7 @@ void DisplayWindow::setPositionInternal(I32 w, I32 h) {
 /// Centering is also easier via SDL
 void DisplayWindow::centerWindowPosition() {
     _internalMoveEvent = true;
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
+    const WindowManager& winManager = Application::getInstance().windowManager();
     I32 winX = SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay());
     I32 winY = SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay());
     setPosition(type(), winX, winY);

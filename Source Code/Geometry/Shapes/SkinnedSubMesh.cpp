@@ -107,18 +107,16 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
 
     if (_boundingBoxesAvailable.at(animationIndex) == false) {
         if (_boundingBoxesComputing.at(animationIndex) == false) {
-            Application::getInstance()
-                        .getKernel()
-                        .AddTask(DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
-                                                this,
-                                                std::placeholders::_1,
-                                                animationIndex,
-                                                animComp),
-                                    DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
-                                                this,
-                                                animationIndex))
-                        .startTask(MULTITHREADED_BOUNDING_BOX_CALCULATION ? Task::TaskPriority::DONT_CARE
-                                                                          : Task::TaskPriority::REALTIME);
+            CreateTask(DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                  this,
+                                  std::placeholders::_1,
+                                  animationIndex,
+                                  animComp),
+                      DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
+                                    this,
+                                    animationIndex))
+            .startTask(MULTITHREADED_BOUNDING_BOX_CALCULATION ? Task::TaskPriority::DONT_CARE
+                                                              : Task::TaskPriority::REALTIME);
         }
     }
 }

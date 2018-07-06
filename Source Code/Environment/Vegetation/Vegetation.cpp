@@ -123,10 +123,9 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
 
-    Application::getInstance().getKernel()
-                              .AddTask(DELEGATE_BIND(&Vegetation::generateGrass, this, std::placeholders::_1),
-                                       DELEGATE_BIND(&Vegetation::uploadGrassData, this))
-                              .startTask(Task::TaskPriority::LOW);
+    CreateTask(DELEGATE_BIND(&Vegetation::generateGrass, this, std::placeholders::_1),
+            DELEGATE_BIND(&Vegetation::uploadGrassData, this))
+            .startTask(Task::TaskPriority::LOW);
     setState(ResourceState::RES_LOADED);
 }
 
@@ -432,9 +431,8 @@ void Vegetation::generateTrees(const std::atomic_bool& stopRequested) {
 }
 
 void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
-    return;
-
-    const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
+    
+    //const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
     const vec2<F32>& chunkSize = _terrainChunk->getOffsetAndSize().zw();
     const F32 waterLevel = GET_ACTIVE_SCENE().state().waterLevel() + 1.0f;
     const I32 currentCount = std::min((I32)_billboardCount, 4);
@@ -495,6 +493,7 @@ void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
         }
     }
     */
+    /*
     _grassPositions.reserve(grassElements);
     F32 densityFactor = 1.0f / _grassDensity;
 #pragma omp parallel for
@@ -528,13 +527,13 @@ void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
                 }
 #pragma omp critical
                 {
-                    /*position.set(P);
-                    mat4<F32> matRot1;
-                    matRot1.scale(vec3<F32>(grassScale));
-                    mat4<F32> matRot2;
-                    matRot2.rotate_y(Random(360.0f));
-                    _grassMatricesTemp.push_back(matRot1 * matRot2 *
-                    rotationFromVToU(WORLD_Y_AXIS, N).getMatrix());*/
+                    position.set(P);
+                    //mat4<F32> matRot1;
+                    //matRot1.scale(vec3<F32>(grassScale));
+                    //mat4<F32> matRot2;
+                    //matRot2.rotate_y(Random(360.0f));
+                    //_grassMatricesTemp.push_back(matRot1 * matRot2 *
+                    //rotationFromVToU(WORLD_Y_AXIS, N).getMatrix());
 
                     _grassPositions.push_back(vec4<F32>(P, to_float(index)));
                     _grassScales.push_back(((map_color + 1) / 256.0f));
@@ -543,7 +542,7 @@ void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
             }
         }
     }
-
+    */
     Console::printfn(Locale::get(_ID("CREATE_GRASS_END")));
 }
 };

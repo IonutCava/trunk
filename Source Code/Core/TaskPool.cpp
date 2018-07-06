@@ -1,4 +1,5 @@
 #include "Headers/TaskPool.h"
+#include "Headers/Kernel.h"
 
 namespace Divide {
 
@@ -91,6 +92,61 @@ Task& TaskPool::getAvailableTask() {
     task->reset();
 
     return *task;
+}
+
+TaskHandle GetTaskHandle(I64 taskGUID) {
+    return GetTaskHandle(Application::getInstance()
+                                     .kernel()
+                                     .taskPool(),
+                         taskGUID);
+}
+
+TaskHandle GetTaskHandle(TaskPool& pool, I64 taskGUID) {
+    return pool.getTaskHandle(taskGUID);
+}
+
+TaskHandle CreateTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                   const DELEGATE_CBK<>& onCompletionFunction)
+{
+    return CreateTask(-1, threadedFunction, onCompletionFunction);
+}
+
+TaskHandle CreateTask(TaskPool& pool,
+                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                   const DELEGATE_CBK<>& onCompletionFunction)
+{
+    return CreateTask(pool, -1, threadedFunction, onCompletionFunction);
+}
+
+/**
+* @brief Creates a new Task that runs in a separate thread
+* @param jobIdentifier A unique identifier that gets reset when the job finishes.
+*                      Used to check if the local task handle is still valid
+* @param threadedFunction The callback function to call in a separate thread = the job to execute
+* @param onCompletionFunction The callback function to call when the thread finishes
+*/
+TaskHandle CreateTask(I64 jobIdentifier,
+                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                   const DELEGATE_CBK<>& onCompletionFunction)
+{
+    TaskPool& pool = Application::getInstance().kernel().taskPool();
+    return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
+}
+
+TaskHandle CreateTask(TaskPool& pool,
+                   I64 jobIdentifier,
+                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                   const DELEGATE_CBK<>& onCompletionFunction)
+{
+    Task& freeTask = pool.getAvailableTask();
+    TaskHandle handle(&freeTask, jobIdentifier);
+
+    freeTask.threadedCallback(threadedFunction, jobIdentifier);
+    if (onCompletionFunction) {
+        pool.setTaskCallback(handle, onCompletionFunction);
+    }
+
+    return handle;
 }
 
 };

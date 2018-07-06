@@ -1,7 +1,7 @@
 #include "Headers/RenderQueue.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
+#include "Core/Headers/TaskPool.h"
 #include "Utility/Headers/Localization.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
@@ -125,14 +125,13 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, c
 }
 
 void RenderQueue::populateRenderQueues(RenderStage renderStage) {
-    Kernel& kernel = Application::getInstance().getKernel();
-    TaskHandle populateTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+    TaskHandle populateTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
-            populateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::populateRenderQueue,
-                                                                    renderBin,
-                                                                    std::placeholders::_1,
-                                                                    renderStage))._task)->startTask(Task::TaskPriority::HIGH);      
+            populateTask.addChildTask(CreateTask(DELEGATE_BIND(&RenderBin::populateRenderQueue,
+                                                            renderBin,
+                                                            std::placeholders::_1,
+                                                            renderStage))._task)->startTask(Task::TaskPriority::HIGH);      
         }
     }
     populateTask.startTask(Task::TaskPriority::MAX);
@@ -152,13 +151,12 @@ void RenderQueue::sort(RenderStage renderStage) {
         index += renderBin->getBinSize();
     }
 
-    Kernel& kernel = Application::getInstance().getKernel();
-    TaskHandle sortTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+    TaskHandle sortTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     for (RenderBin* renderBin : _activeBins) {
-        sortTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::sort,
-                                                            renderBin,
-                                                            std::placeholders::_1,
-                                                            renderStage))._task)->startTask(Task::TaskPriority::HIGH);
+        sortTask.addChildTask(CreateTask(DELEGATE_BIND(&RenderBin::sort,
+                                                    renderBin,
+                                                    std::placeholders::_1,
+                                                    renderStage))._task)->startTask(Task::TaskPriority::HIGH);
     }
     sortTask.startTask(Task::TaskPriority::MAX);
     sortTask.wait();

@@ -217,7 +217,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
     CLAMP<I32>(FoV, 40, 140);
 
     Application::getInstance()
-        .getKernel()
+        .kernel()
         .getCameraMgr()
         .getActiveCamera()
         .setHorizontalFoV(to_float(FoV));

@@ -122,6 +122,7 @@ namespace Divide {
 
 static constexpr ULL basis = 14695981039346656037ULL;
 static constexpr ULL prime = 1099511628211ULL;
+
 constexpr ULL hash_one(char c, const char* remain, ULL value)
 {
     return c == 0 ? value : hash_one(remain[0], remain + 1, (value ^ c) * prime);

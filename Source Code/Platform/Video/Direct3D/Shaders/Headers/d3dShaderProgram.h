@@ -38,99 +38,86 @@ namespace Divide {
 
 class d3dShaderProgram final : public ShaderProgram {
    public:
-    d3dShaderProgram(GFXDevice& context, bool asyncLoad) : 
-        ShaderProgram(context, asyncLoad)
-    {
-    }
+    d3dShaderProgram(GFXDevice& context, bool asyncLoad);
 
-    ~d3dShaderProgram()
-    {
-    }
+    ~d3dShaderProgram();
 
-    bool unload() override {
-        return ShaderProgram::unload();
-    }
+    bool unload() override;
 
-    bool bind() override { return false; }
+    bool bind() override;
 
-    bool isBound() const override { return false; }
-    bool isValid() const override { return false; }
+    bool isBound() const override;
+    bool isValid() const override;
 
-    void attachShader(Shader* const shader, const bool refresh = false) override {}
-    void detachShader(Shader* const shader)  override {}
+    void attachShader(Shader* const shader, const bool refresh = false) override;
+    void detachShader(Shader* const shader)  override;
     
     // Subroutines
-    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override {}
-    void SetSubroutine(ShaderType type, U32 index) const override {}
+    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;
+    void SetSubroutine(ShaderType type, U32 index) const override;
 
-    U32 GetSubroutineIndex(ShaderType type, const char* name) const override {
-        return 0;
-    }
+    U32 GetSubroutineIndex(ShaderType type, const char* name) const override;
 
-    U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override {
-        return 0;
-    }
+    U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
 
-    U32 GetSubroutineUniformCount(ShaderType type) const override { return 0; }
+    U32 GetSubroutineUniformCount(ShaderType type) const override;
     // Uniforms
-    void Uniform(const char* ext, U32 value) override {}
-    void Uniform(const char* ext, I32 value) override {}
-    void Uniform(const char* ext, F32 value) override {}
-    void Uniform(const char* ext, const vec2<F32>& value) override {}
-    void Uniform(const char* ext, const vec2<I32>& value) override {}
-    void Uniform(const char* ext, const vec3<F32>& value) override {}
-    void Uniform(const char* ext, const vec3<I32>& value) override {}
-    void Uniform(const char* ext, const vec4<F32>& value) override {}
-    void Uniform(const char* ext, const vec4<I32>& value) override {}
+    void Uniform(const char* ext, U32 value) override;
+    void Uniform(const char* ext, I32 value) override;
+    void Uniform(const char* ext, F32 value) override;
+    void Uniform(const char* ext, const vec2<F32>& value) override;
+    void Uniform(const char* ext, const vec2<I32>& value) override;
+    void Uniform(const char* ext, const vec3<F32>& value) override;
+    void Uniform(const char* ext, const vec3<I32>& value) override;
+    void Uniform(const char* ext, const vec4<F32>& value) override;
+    void Uniform(const char* ext, const vec4<I32>& value) override;
     void Uniform(const char* ext,
                  const mat3<F32>& value,
-                 bool transpose = false) override {}
+                 bool transpose = false) override;
     void Uniform(const char* ext,
                  const mat4<F32>& value,
-                 bool transpose = false) override {}
-    void Uniform(const char* ext, const vectorImpl<I32>& values) override {}
-    void Uniform(const char* ext, const vectorImpl<F32>& values) override {}
-    void Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) override {}
-    void Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) override {}
-    void Uniform(const char* ext, const vectorImpl<vec4<F32> >& values) override {}
+                 bool transpose = false) override;
+    void Uniform(const char* ext, const vectorImpl<I32>& values) override;
+    void Uniform(const char* ext, const vectorImpl<F32>& values) override;
+    void Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) override;
+    void Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) override;
+    void Uniform(const char* ext, const vectorImpl<vec4<F32> >& values) override;
     void Uniform(const char* ext,
                  const vectorImpl<mat3<F32> >& values,
-                 bool transpose = false) override {}
+                 bool transpose = false) override;
     void Uniform(const char* ext,
                  const vectorImpl<mat4<F32> >& values,
-                 bool transpose = false) override {}
+                 bool transpose = false) override;
 
-    void Uniform(I32 location, U32 value) override {}
-    void Uniform(I32 location, I32 value) override {}
-    void Uniform(I32 location, F32 value) override {}
-    void Uniform(I32 location, const vec2<F32>& value) override {}
-    void Uniform(I32 location, const vec2<I32>& value) override {}
-    void Uniform(I32 location, const vec3<F32>& value) override {}
-    void Uniform(I32 location, const vec3<I32>& value) override {}
-    void Uniform(I32 location, const vec4<F32>& value) override {}
-    void Uniform(I32 location, const vec4<I32>& value) override {}
-    void Uniform(I32 location, const mat3<F32>& value, bool transpose = false) override {}
-    void Uniform(I32 location, const mat4<F32>& value, bool transpose = false) override {}
-    void Uniform(I32 location, const vectorImpl<I32>& values) override {}
-    void Uniform(I32 location, const vectorImpl<F32>& values) override {}
-    void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) override {}
-    void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) override {}
-    void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) override {}
+    void Uniform(I32 location, U32 value) override;
+    void Uniform(I32 location, I32 value) override;
+    void Uniform(I32 location, F32 value) override;
+    void Uniform(I32 location, const vec2<F32>& value) override;
+    void Uniform(I32 location, const vec2<I32>& value) override;
+    void Uniform(I32 location, const vec3<F32>& value) override;
+    void Uniform(I32 location, const vec3<I32>& value) override;
+    void Uniform(I32 location, const vec4<F32>& value) override;
+    void Uniform(I32 location, const vec4<I32>& value) override;
+    void Uniform(I32 location, const mat3<F32>& value, bool transpose = false) override;
+    void Uniform(I32 location, const mat4<F32>& value, bool transpose = false) override;
+    void Uniform(I32 location, const vectorImpl<I32>& values) override;
+    void Uniform(I32 location, const vectorImpl<F32>& values) override;
+    void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) override;
+    void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) override;
+    void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) override;
     void Uniform(I32 location,
                  const vectorImpl<mat3<F32> >& values,
-                 bool transpose = false) override {}
+                 bool transpose = false) override;
     void Uniform(I32 location,
                  const vectorImpl<mat4<F32> >& values,
-                 bool transpose = false) override {}
-    I32 getUniformLocation(const char* name) override { return -1; }
-    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override {}
+                 bool transpose = false) override;
+    I32 getUniformLocation(const char* name) override;
+    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
 
-    void SetMemoryBarrier(MemoryBarrierType type) override {}
+    void SetMemoryBarrier(MemoryBarrierType type) override;
 
    protected:
-    inline bool load() override {
-        return ShaderProgram::load();
-    }
+    bool load() override;
 };
 
 };  // namespace Divide

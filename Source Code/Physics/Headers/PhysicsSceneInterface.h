@@ -42,7 +42,7 @@ class PhysicsAsset;
 class SceneGraphNode;
 class NOINITVTABLE PhysicsSceneInterface {
    public:
-    PhysicsSceneInterface(Scene* parentScene) : _parentScene(parentScene) {}
+    PhysicsSceneInterface(Scene* parentScene);
 
     virtual ~PhysicsSceneInterface() {}
     /// Pre PHYSICS_DEVICE initialisation call
@@ -56,7 +56,7 @@ class NOINITVTABLE PhysicsSceneInterface {
     /// Custom process step
     virtual void process(const U64 deltaTime) = 0;
 
-    inline Scene* getParentScene() { return _parentScene; }
+    Scene* getParentScene();
 
    protected:
     Scene* _parentScene;

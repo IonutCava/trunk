@@ -274,14 +274,12 @@ bool MainScene::loadResources(bool continueOnErrors) {
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
-    Kernel& kernel = Application::getInstance().getKernel();
-
-    TaskHandle boxMove(kernel.AddTask(getGUID(),
-                                      DELEGATE_BIND(&MainScene::test,
-                                      this,
-                                      std::placeholders::_1,
-                                      stringImpl("test"),
-                                      CallbackParam::TYPE_STRING)));
+    TaskHandle boxMove(CreateTask(getGUID(),
+                               DELEGATE_BIND(&MainScene::test,
+                               this,
+                               std::placeholders::_1,
+                               stringImpl("test"),
+                               CallbackParam::TYPE_STRING)));
     boxMove.startTask();
     registerTask(boxMove);
 

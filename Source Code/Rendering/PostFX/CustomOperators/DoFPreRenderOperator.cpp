@@ -32,8 +32,8 @@ void DoFPreRenderOperator::reshape(U16 width, U16 height) {
 }
 
 void DoFPreRenderOperator::execute() {
-    return;
     // Copy current screen
+    /*
     _samplerCopy->blitFrom(_hdrTarget);
     _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));  // screenFB
     _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1),
@@ -42,5 +42,6 @@ void DoFPreRenderOperator::execute() {
     _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
     _hdrTarget->end();
+    */
 }
 };

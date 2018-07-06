@@ -6,6 +6,9 @@
 #include <EASTL/src/fixed_pool.cpp>
 #include <EASTL/src/hashtable.cpp>
 #include <EASTL/src/red_black_tree.cpp>
+#else
+#include <assert.h>
+#endif
 
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
                      const char* pName, int flags, unsigned int debugFlags,
@@ -19,6 +22,8 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
 
     // this allocator doesn't support alignment
     assert(alignment <= 8);
+    ACKNOWLEDGE_UNUSED(alignment);
+
     return malloc(size);
 }
 
@@ -37,4 +42,3 @@ int Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
                va_list arguments) {
     return vsnprintf(pDestination, n, pFormat, arguments);
 }
-#endif

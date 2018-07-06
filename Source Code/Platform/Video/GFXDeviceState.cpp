@@ -103,7 +103,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     // Utility cameras
-    CameraManager& cameraMgr = Application::getInstance().getKernel().getCameraMgr();
+    CameraManager& cameraMgr = Application::getInstance().kernel().getCameraMgr();
     _2DCamera = cameraMgr.createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
     _2DCamera->lockView(true);
     _cubeCamera = cameraMgr.createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
@@ -236,7 +236,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     assert(_framebufferDraw != nullptr);
 
     // Create initial buffers, cameras etc for this resolution. It should match window size
-    WindowManager& winMgr = Application::getInstance().getWindowManager();
+    WindowManager& winMgr = Application::getInstance().windowManager();
     winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
                              winMgr.getActiveWindow().getGUID(),
                              to_int(renderResolution.width),
