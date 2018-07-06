@@ -90,8 +90,8 @@
     <ClCompile Include="..\..\Source Code\Environment\Vegetation\Vegetation.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Water\Water.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\AStar.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Node.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Planner.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.cpp" />
     <ClCompile Include="..\..\Source Code\main.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp" />
@@ -168,8 +168,8 @@
     <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h" />
     <ClInclude Include="..\..\Source Code\Environment\Water\Headers\Water.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\AStar.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Node.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Planner.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.h" />
     <ClInclude Include="..\..\Source Code\SceneList.h" />
     <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h" />

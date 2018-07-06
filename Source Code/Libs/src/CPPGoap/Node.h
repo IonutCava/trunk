@@ -2,8 +2,8 @@
  * @class Node
  * @brief A node is any point on the path between staring point and ending point (inclusive)
  *
- * @date July 2015
- * @copyright (c) 2015 Prylis Inc. All rights reserved.
+ * @date July 2014
+ * @copyright (c) 2014 Prylis Inc. All rights reserved.
  */
 
 #pragma once
@@ -30,12 +30,12 @@ namespace goap {
             return g_ + h_;
         }
 
-        /**
-         Less-than operator, needed for keeping Nodes sorted.
-         @param other the other node to compare against
-         @return true if this node is less than the other (using F)
-         */
-        bool operator<(const Node& other);
+//        /**
+//         Less-than operator, needed for keeping Nodes sorted.
+//         @param other the other node to compare against
+//         @return true if this node is less than the other (using F)
+//         */
+//        bool operator<(const Node& other);
 
         // A friend function of a class is defined outside that class' scope but it has the
         // right to access all private and protected members of the class. Even though the
@@ -44,6 +44,8 @@ namespace goap {
         friend std::ostream& operator<<(std::ostream& out, const Node& n);
     };
 
+    bool operator<(const Node& lhs, const Node& rhs);
+    
     inline std::ostream& operator<<(std::ostream& out, const Node& n) {
         out << "Node { id:" << n.id_ << " parent:" << n.parent_id_ << " F:" << n.f() << " G:" << n.g_ << " H:" << n.h_;
         out << ", " << n.ws_ << "}";

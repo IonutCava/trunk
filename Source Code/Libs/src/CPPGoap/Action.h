@@ -2,8 +2,8 @@
  * @class Action
  * @brief Operates on the world state.
  *
- * @date  July 2015
- * @copyright (c) 2015 Prylis Inc.. All rights reserved.
+ * @date  July 2014
+ * @copyright (c) 2014 Prylis Inc.. All rights reserved.
  */
 
 #pragma once
@@ -41,8 +41,8 @@ namespace goap {
         bool eligibleFor(const goap::WorldState& ws) const;
 
         /**
-         Act on the given worldstate. Still runs if inelgible, but no
-         effects will be applied.
+         Act on the given worldstate. Will not check for "eligiblity" and will happily
+         act on whatever worldstate you provide it.
          @param the worldstate to act on
          @return a copy worldstate, with effects applied
          */

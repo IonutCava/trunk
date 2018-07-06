@@ -41,6 +41,7 @@ enum class Fact : U32 {
     AtEnemyFlagLoc = 0,
     AtHomeFlagLoc = 1,
     HasEnemyFlag = 2,
+    Idling = 3,
     COUNT
 };
 
@@ -52,6 +53,8 @@ inline const char* WarSceneFactName(GOAPFact fact) {
             return "At home location";
         case Fact::HasEnemyFlag:
             return "Has enemy flag";
+        case Fact::Idling:
+            return "Idling";
     };
     return GOAPFactName(fact);
 };
@@ -60,7 +63,7 @@ enum class ActionType : U32 {
     ACTION_APPROACH_FLAG = 0,
     ACTION_CAPTURE_FLAG = 1,
     ACTION_SCORE_FLAG = 2,
-    ACTION_RETURN_TO_BASE = 3,
+    ACTION_RETURN_FLAG_TO_BASE = 3,
     ACTION_IDLE = 4,
     COUNT
 };
@@ -119,10 +122,10 @@ class CaptureFlag : public WarSceneAction {
     CaptureFlag(WarSceneAction const& other) : WarSceneAction(other) {}
 };
 
-class ReturnHome : public WarSceneAction {
+class ReturnFlagHome : public WarSceneAction {
    public:
-    ReturnHome(const stringImpl& name, F32 cost = 1.0f);
-    ReturnHome(WarSceneAction const& other) : WarSceneAction(other) {}
+    ReturnFlagHome(const stringImpl& name, F32 cost = 1.0f);
+    ReturnFlagHome(WarSceneAction const& other) : WarSceneAction(other) {}
 };
 
 class ScoreFlag : public WarSceneAction {

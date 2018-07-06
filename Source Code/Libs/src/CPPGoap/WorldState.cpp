@@ -1,7 +1,7 @@
 #include "WorldState.h"
 
-goap::WorldState::WorldState() : priority_(0) {
-
+goap::WorldState::WorldState(const std::string name) : priority_(0), name_(name) {
+    //nop
 }
 
 void goap::WorldState::setVariable(const int var_id, const bool value) {
@@ -18,7 +18,7 @@ bool goap::WorldState::operator==(const WorldState& other) const {
 }
 
 bool goap::WorldState::meetsGoal(const WorldState& goal_state) const {
-    for (const std::pair<int, bool>& kv : goal_state.vars_) {
+    for (const auto& kv : goal_state.vars_) {
         try {
             if (vars_.at(kv.first) != kv.second) {
                 return false;
@@ -34,8 +34,8 @@ bool goap::WorldState::meetsGoal(const WorldState& goal_state) const {
 int goap::WorldState::distanceTo(const WorldState& goal_state) const {
     int result = 0;
 
-    for (const std::pair<int, bool>& kv : goal_state.vars_) {
-        std::map<int, bool>::const_iterator itr = vars_.find(kv.first);
+    for (const auto& kv : goal_state.vars_) {
+        auto itr = vars_.find(kv.first);
         if (itr == end(vars_) || itr->second != kv.second) {
             ++result;
         }

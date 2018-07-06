@@ -41,8 +41,8 @@ CaptureFlag::CaptureFlag(const stringImpl& name, F32 cost)
 {
 }
 
-ReturnHome::ReturnHome(const stringImpl& name, F32 cost)
-    : WarSceneAction(ActionType::ACTION_RETURN_TO_BASE, name, cost)
+ReturnFlagHome::ReturnFlagHome(const stringImpl& name, F32 cost)
+    : WarSceneAction(ActionType::ACTION_RETURN_FLAG_TO_BASE, name, cost)
 {
 }
 

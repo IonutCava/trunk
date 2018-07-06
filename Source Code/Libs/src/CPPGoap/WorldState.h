@@ -2,13 +2,14 @@
  * @class WorldState
  * @brief A way of describing the "world" at any point in time.
  *
- * @date  July 2015
- * @copyright (c) 2015 Prylis Inc.. All rights reserved.
+ * @date  July 2014
+ * @copyright (c) 2014 Prylis Inc.. All rights reserved.
  */
 
 #pragma once
 
 #include <ostream>
+#include <string>
 #include <map>
 
 namespace goap {
@@ -17,7 +18,7 @@ namespace goap {
         std::string name_; // the human-readable name of the state
         std::map<int, bool> vars_; // the variables that in aggregate describe a worldstate
 
-        WorldState();
+        WorldState(const std::string name="");
 
         /**
          Set a world state variable, e.g. "gunLoaded" / true
@@ -40,7 +41,7 @@ namespace goap {
          @param other the state you are testing as having met this goal state
          @return true if it meets this goal state, false otherwise
          */
-        bool WorldState::meetsGoal(const WorldState& goal_state) const;
+        bool meetsGoal(const WorldState& goal_state) const;
 
         /**
          Given the other state -- and what 'matters' to the other state -- how many
@@ -66,11 +67,11 @@ namespace goap {
 
     inline std::ostream& operator<<(std::ostream& out, const WorldState& n) {
         out << "WorldState { ";
-        for (const std::pair<const int, bool>& kv : n.vars_) {
+        for (const auto& kv : n.vars_) {
             out << kv.second << " ";
         }
         out << "}";
         return out;
     }
 
-};
+}

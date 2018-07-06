@@ -490,10 +490,14 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                                       AI::GOAPValue(false));
     approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                                       AI::GOAPValue(false));
+    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::Idling),
+                                      AI::GOAPFact(true));
     approachEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
                                 AI::GOAPValue(true));
     approachEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
                                 AI::GOAPValue(false));
+    approachEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::Idling),
+                                AI::GOAPFact(false));
 
     AI::CaptureFlag captureEnemyFlag("CaptureEnemyFlag");
     captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
@@ -501,23 +505,29 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                                      AI::GOAPValue(false));
     captureEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                AI::GOAPValue(true));
+                               AI::GOAPValue(true));
 
-    AI::ReturnHome returnToBase("ReturnToBase");
+    AI::ReturnFlagHome returnToBase("ReturnFlagToBase");
     returnToBase.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
                                  AI::GOAPValue(false));
+    returnToBase.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                                 AI::GOAPValue(true));
     returnToBase.setEffect(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
                            AI::GOAPValue(true));
 
     AI::ScoreFlag scoreEnemyFlag("ScoreEnemyFlag");
-    returnToBase.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                                 AI::GOAPValue(true));
-    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                     AI::GOAPValue(true));
-    captureEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                               AI::GOAPValue(false));
+    scoreEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                                   AI::GOAPValue(true));
+    scoreEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                                   AI::GOAPValue(true));
+    scoreEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                             AI::GOAPValue(false));
 
     AI::Idle idleAction("Idle");
+    idleAction.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                               AI::GOAPValue(true));
+    idleAction.setEffect(AI::GOAPFact(AI::Fact::Idling),
+                         AI::GOAPFact(true));
 
     AI::GOAPGoal captureFlag(
         "Capture enemy flag",
@@ -533,7 +543,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                           AI::GOAPValue(false));
 
     AI::GOAPGoal idle("Idle", to_uint(AI::WarSceneOrder::WarOrder::ORDER_IDLE));
-    idle.setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+    idle.setVariable(AI::GOAPFact(AI::Fact::Idling),
                      AI::GOAPValue(true));
 
     for (I32 k = 0; k < 2; ++k) {
@@ -598,12 +608,14 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                 MemoryManager_NEW AI::WarSceneAISceneImpl(type);
 
             // GOAP
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                                            AI::GOAPValue(true));
             brain->worldState().setVariable(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
                                             AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                                            AI::GOAPValue(true));
             brain->worldState().setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                                             AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::Idling),
+                                            AI::GOAPValue(true));
 
             brain->registerAction(&approachEnemyFlag);
             brain->registerAction(&captureEnemyFlag);

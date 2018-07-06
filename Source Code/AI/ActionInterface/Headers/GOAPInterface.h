@@ -33,7 +33,7 @@
 
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
 
-#include <CPPGoap/AStar.h>
+#include <CPPGoap/Planner.h>
 #include <CPPGOAP/Action.h>
 #include <CPPGoap/WorldState.h>
 
@@ -43,7 +43,7 @@ namespace AI {
 typedef I32 GOAPFact;
 typedef bool GOAPValue;
 typedef goap::Action GOAPAction;
-typedef vectorImpl<GOAPAction*> GOAPActionSet;
+typedef vectorImpl<const GOAPAction*> GOAPActionSet;
 typedef goap::WorldState GOAPWorldState;
 typedef vectorImpl<const GOAPAction*> GOAPPlan;
 
@@ -69,10 +69,21 @@ class GOAPGoal : public goap::WorldState {
 
     const GOAPPlan& getCurrentPlan() const;
 
+    stringImpl getOpenList() const {
+        stringImpl ret;
+        _planner.printOpenList(ret);
+        return ret;
+    }
+
+    stringImpl getClosedList() const {
+        stringImpl ret;
+        _planner.printClosedList(ret);
+        return ret;
+    }
    protected:
     U32 _ID;
     F32 _relevancy;
-    goap::AStar _planner;
+    goap::Planner _planner;
     GOAPPlan _currentPlan;
 };
 };

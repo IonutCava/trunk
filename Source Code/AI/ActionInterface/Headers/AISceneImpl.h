@@ -158,6 +158,11 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
                 advanceGoal();
                 return true;
             } else {
+                _planLog = "Plan Log: \n";
+                _planLog.append("\t OpenList: \n");
+                _planLog.append(_activeGoal->getOpenList());
+                _planLog.append("\t ClosedList: \n");
+                _planLog.append(_activeGoal->getClosedList());
                 invalidateCurrentPlan();
             }
         }
@@ -211,6 +216,8 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
 
     inline GOAPGoal* const getActiveGoal() { return _activeGoal; }
 
+    inline const stringImpl& getPlanLog() const { return _planLog; }
+
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
     virtual bool performAction(const GOAPAction* planStep) = 0;
     virtual bool printActionStats(const GOAPAction* planStep) const {
@@ -243,6 +250,8 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
     vectorImpl<GOAPGoal> _goals;
     vectorImpl<GOAPGoal*> _activeGoals;
     std::atomic_bool _init;
+
+    stringImpl _planLog;
 };
 
 };  // namespace AI

@@ -35,6 +35,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 #include "Core/Math/Headers/Transform.h"
 
+#include <stack>
+
 namespace Divide {
 
 class Transform;
@@ -117,6 +119,9 @@ class PhysicsComponent : public SGNComponent {
     /// Return the orientation quaternion
     const Quaternion<F32>& getOrientation(const bool local = false);
 
+    void pushTransforms();
+    void popTransforms();
+
    protected:
     friend class SceneGraphNode;
     void useDefaultTransform(const bool state);
@@ -135,6 +140,8 @@ class PhysicsComponent : public SGNComponent {
     Transform* _transform;
     TransformValues _prevTransformValues;
 
+    typedef std::stack<TransformValues> TransformStack;
+    TransformStack _transformStack;
     bool _transformUpdated;
     /// Transform cache values
     mat4<F32> _worldMatrix;

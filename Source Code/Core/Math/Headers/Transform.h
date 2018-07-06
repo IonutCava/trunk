@@ -166,7 +166,7 @@ class Transform : public GUIDWrapper, private NonCopyable {
     /// translate/rotate/scale functions
     /// Set an uniform scale on all three axis
     inline void setScale(const F32 scale) {
-        this->setScale(vec3<F32>(scale, scale, scale));
+        this->setScale(vec3<F32>(scale));
     }
     /// Set the scaling factor on the X axis
     inline void setScaleX(const F32 scale) {
@@ -329,16 +329,20 @@ class Transform : public GUIDWrapper, private NonCopyable {
     }
     /// Set all of the internal values to match those of the specified transform
     inline void clone(Transform* const transform) {
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._scale.set(transform->getScale());
-        this->_transformValues._translation.set(transform->getPosition());
-        this->_transformValues._orientation.set(transform->getOrientation());
-        setDirty();
-        w_lock.unlock();
+        this->setValues(transform->getValues());
     }
     /// Extract the 3 transform values (position, scale, rotation) from the
     /// current instance
     inline const TransformValues& getValues() const { return _transformValues; }
+    /// Set position, scale and rotation based on the specified transform values
+    inline void setValues(const TransformValues& values) {
+        WriteLock w_lock(this->_lock);
+        this->_transformValues._scale.set(values._scale);
+        this->_transformValues._translation.set(values._translation);
+        this->_transformValues._orientation.set(values._orientation);
+        setDirty();
+        w_lock.unlock();
+    }
     /// Compares 2 transforms
     bool operator==(const Transform& other) const {
         ReadLock r_lock(_lock);

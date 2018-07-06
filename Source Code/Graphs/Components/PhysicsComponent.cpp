@@ -29,6 +29,9 @@ void PhysicsComponent::reset() {
     _prevTransformValues._translation.set(0.0f);
     _prevTransformValues._scale.set(1.0f);
     _prevTransformValues._orientation.identity();
+    while (!_transformStack.empty()) {
+        _transformStack.pop();
+    }
 }
 
 void PhysicsComponent::useDefaultTransform(const bool state) {
@@ -308,6 +311,21 @@ void PhysicsComponent::setPositionY(const F32 positionY) {
 void PhysicsComponent::setPositionZ(const F32 positionZ) {
     if (_transform) {
         _transform->setPositionZ(positionZ);
+        setTransformDirty();
+    }
+}
+
+void PhysicsComponent::pushTransforms() {
+    if (_transform) {
+        _transformStack.push(_transform->getValues());
+    }
+}
+
+void PhysicsComponent::popTransforms() {
+    assert(!_transformStack.empty());
+    if (_transform) {
+        _transform->setValues(_transformStack.top());
+        _transformStack.pop();
         setTransformDirty();
     }
 }

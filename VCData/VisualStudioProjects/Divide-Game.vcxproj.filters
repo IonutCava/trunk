@@ -331,9 +331,6 @@
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\AStar.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Node.cpp">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
@@ -435,6 +432,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp">
       <Filter>Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Planner.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -565,9 +565,6 @@
     <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\AStar.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Node.h">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
@@ -666,6 +663,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h">
       <Filter>Scenes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Planner.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
