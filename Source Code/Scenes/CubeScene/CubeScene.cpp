@@ -94,7 +94,7 @@ bool CubeScene::load(const stringImpl& name, GUI* const gui) {
 bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
 
-    for (U8 row = 0; row < 3; row++)
+    for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < 10; col++) {
             U8 lightID = to_ubyte(row * 10 + col);
             std::stringstream ss;
@@ -104,10 +104,10 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
             light->setRange(30.0f);
-            light->setCastShadows(false);  
+            light->setCastShadows(false);
             _sceneGraph->getRoot()->addNode(*light);
-            addLight(*light, _sceneGraph->getRoot());
         }
+    }
 
     _taskTimers.push_back(0.0);
 

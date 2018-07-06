@@ -261,12 +261,6 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
     return parentNode->addNode(*emitter);
 }
 
-SceneGraphNode_ptr Scene::addLight(Light& lightItem,
-                                SceneGraphNode_ptr parentNode) {
-    lightItem.setCastShadows(lightItem.getLightType() != LightType::POINT);
-
-    return parentNode->addNode(lightItem);
-}
 
 SceneGraphNode_ptr Scene::addLight(LightType type,
                                 SceneGraphNode_ptr parentNode) {
@@ -288,7 +282,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
         std::to_string(LightManager::getInstance().getLights(type).size()));
 
     defaultLight.setEnumValue(to_uint(type));
-    return addLight(*CreateResource<Light>(defaultLight), parentNode);
+    return parentNode->addNode(*CreateResource<Light>(defaultLight));
 }
 
 SceneGraphNode_ptr Scene::addSky() {

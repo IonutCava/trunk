@@ -126,8 +126,6 @@ class NOINITVTABLE Scene : public Resource {
     }
     void addPatch(vectorImpl<FileData>& data);
 
-    SceneGraphNode_ptr addLight(Light& lightItem,
-                             SceneGraphNode_ptr parentNode);
     SceneGraphNode_ptr addLight(LightType type,
                              SceneGraphNode_ptr parentNode);
     SceneGraphNode_ptr addSky();

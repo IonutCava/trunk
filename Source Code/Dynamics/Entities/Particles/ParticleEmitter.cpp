@@ -244,9 +244,9 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
     cmd.stateHash(_particleStateBlockHash);
     cmd.cmd().primCount = particleCount;
 
-    cmd.shaderProgram(renderStage == RenderStage::DISPLAY
-                                  ? _particleShader
-                                  : _particleDepthShader);
+    cmd.shaderProgram(GFX_DEVICE.isDepthStage()
+                                  ? _particleDepthShader
+                                  : _particleShader);
 
     return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }

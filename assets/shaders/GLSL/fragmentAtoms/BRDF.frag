@@ -12,11 +12,11 @@
 layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
 #endif
 
-void getBRDFFactors(const in LightPropertiesFrag lightProp, inout MaterialProperties materialProp) {
+void getBRDFFactors(const in LightPropertiesFrag lightProp, inout MaterialProperties materialProp, in vec3 normal) {
 #if defined(USE_SHADING_PHONG)
-    Phong(lightProp, materialProp);
+    Phong(lightProp, materialProp, normal);
 #elif defined(USE_SHADING_BLINN_PHONG)
-    Phong(lightProp, materialProp);
+    Phong(lightProp, materialProp, normal);
 #elif defined(USE_SHADING_TOON)
 #elif defined(USE_SHADING_OREN_NAYAR)
 #else //if defined(USE_SHADING_COOK_TORRANCE)
@@ -68,8 +68,9 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
 #else
     // Apply all lighting contributions
     for (uint i = 0; i < _lightCount; i++){
-        getBRDFFactors(getLightProperties(i, normal), materialProp);
+        getBRDFFactors(getLightProperties(i, normal), materialProp, normal);
     }
+
 #endif
     vec3 color = (materialProp.ambient + dvd_lightInfo.rgb * dvd_MatAmbient) + 
                  (materialProp.diffuse * textureColor.rgb) + 

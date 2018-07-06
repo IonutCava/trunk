@@ -39,8 +39,7 @@ Light::Light(const F32 range, const LightType& type)
     _properties._options.y = 0;
     _properties._options.z = -1;
     _properties._direction.w = 0.0f;
-    _properties._attenuation =
-        vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f);  // constAtt, linearAtt, quadAtt
+    _properties._range = 1.0f;
 
     _enabled = true;
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
@@ -142,7 +141,7 @@ void Light::setDiffuseColor(const vec3<F32>& newDiffuseColor) {
 }
 
 void Light::setRange(F32 range) {
-    _properties._attenuation.w = range;
+    _properties._range = range;
     _placementDirty = true;
 }
 
@@ -210,7 +209,7 @@ bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     if (!_impostor) {
         _impostor =
             CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
-        _impostor->setRadius(_properties._attenuation.w);
+        _impostor->setRadius(_properties._range);
         _impostor->renderState().setDrawState(true);
         _impostorSGN = _lightSGN->addNode(*_impostor);
         _impostorSGN.lock()->setActive(true);

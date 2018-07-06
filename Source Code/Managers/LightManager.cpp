@@ -189,11 +189,14 @@ bool LightManager::generateShadowMaps() {
     }
 
     Time::ScopedTimer timer(*s_shadowPassTimer);
+    SceneRenderState& state = GET_ACTIVE_SCENE().renderState();
     // generate shadowmaps for each light
     for (Light::LightList& lights : _lights) {
         for (Light* light : lights) {
-            _currentShadowCastingLight = light;
-            light->generateShadowMaps(GET_ACTIVE_SCENE().renderState());
+            if (light->castsShadows()) {
+                _currentShadowCastingLight = light;
+                light->generateShadowMaps(state);
+            }
         }
     }
 

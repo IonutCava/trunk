@@ -35,8 +35,7 @@
 #include "Renderer.h"
 #include "Rendering/Lighting/Headers/LightGrid.h"
 /// This class implements the forward plus renderer that creates a list of all
-/// important lights
-/// in screen space
+/// important lights in screen space
 /// Details:
 /// http://mynameismjp.wordpress.com/2012/03/31/light-indexed-deferred-rendering/
 

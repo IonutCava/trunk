@@ -61,22 +61,20 @@ enum class LightMode : U32 {
 struct LightProperties {
     /// rgb = diffuse,  w = ambientFactor;
     vec4<F32> _diffuse;
-    /// x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
-    vec4<F32> _attenuation;
     /// Position is a direction for directional lights. w = reserved
     vec4<F32> _position;
     /// xyz = Used by spot lights, w = spotExponent
     vec4<F32> _direction;
-    /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts
-    /// shadows, zw - reserved;
+    /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, zw - reserved;
     vec4<I32> _options;
+    F32       _range;
 
     inline void set(const LightProperties& other) {
         _diffuse.set(other._diffuse);
-        _attenuation.set(other._attenuation);
         _position.set(other._position);
         _direction.set(other._direction);
         _options.set(other._options);
+        _range = other._range;
     }
 };
 
@@ -123,7 +121,7 @@ class Light : public SceneNode {
         return _shadowProperties;
     }
 
-    inline F32 getRange() const { return _properties._attenuation.w; }
+    inline F32 getRange() const { return _properties._range; }
 
     void setRange(F32 range);
 

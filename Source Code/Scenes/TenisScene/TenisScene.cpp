@@ -278,7 +278,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     //    ResourceDescriptor tempLight1("Light omni");
     //    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
     //    light1 = CreateResource<Light>(tempLight1);
-    //    addLight(*light1);
+    //    _sceneGraph->getRoot()->addNode(*light1);
 
     // Position camera
     // renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));

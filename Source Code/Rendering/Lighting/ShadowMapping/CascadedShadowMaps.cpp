@@ -283,7 +283,6 @@ void CascadedShadowMaps::previewShadowMaps() {
     _depthMap->bind();
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);
-        _previewDepthMapShader->Uniform("dvd_zPlanes", _splitDepths[i]);
 
         GFX::ScopedViewport viewport(256 * i, 1, 256, 256);
         GFX_DEVICE.drawTriangle(stateHash, _previewDepthMapShader);

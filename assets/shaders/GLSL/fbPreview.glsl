@@ -100,7 +100,7 @@ out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform uint layer;
-uniform float lodLevel = 0;
+uniform float lodLevel = 0.0;
 
 #if !defined(USE_SCENE_ZPLANES)
 uniform vec2 dvd_zPlanes;

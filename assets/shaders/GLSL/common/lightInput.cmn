@@ -9,10 +9,10 @@ const int LIGHT_SPOT = 2;
 
 struct Light {
     vec4   _color;       //< rgb = color,  w = ambientCoef;
-    vec4   _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
     vec4   _position;    //< xyz = Position is a direction for directional lights; w = spot cutoff
     vec4   _direction;   //< xyz = Used by spot lights, w = spotExponent
     ivec4  _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, z = shadow block index, w = reserved
+    float  _range;
 };
 
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent readonly buffer dvd_LightBlock

@@ -138,6 +138,7 @@ void WarScene::processTasks(const U64 deltaTime) {
     D32 SunTimer = Time::Milliseconds(10);
     D32 AnimationTimer1 = Time::SecondsToMilliseconds(5);
     D32 AnimationTimer2 = Time::SecondsToMilliseconds(10);
+    D32 updateLights = Time::SecondsToMilliseconds(0.15);
 
     if (_taskTimers[0] >= SunTimer) {
         if (!g_direction) {
@@ -182,8 +183,32 @@ void WarScene::processTasks(const U64 deltaTime) {
         _taskTimers[2] = 0.0;
     }
 
+    if (_taskTimers[3] >= updateLights) {
+        Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
+        for (U8 row = 0; row < 3; row++)
+            for (U8 col = 0; col < lights.size() / 3.0f; col++) {
+                F32 x = col * 150.0f - 5.0f +  cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *   0.008f) * 200.0f;
+                F32 y = cos(to_float(Time::ElapsedSeconds()) * (col - row + 2) * 0.01f) * 200.0f +  20;
+                F32 z = row * 500.0f - 500.0f - cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) * 0.009f) * 200.0f + 10;
+                F32 r = 1.0f - (col / 3.0f);
+                F32 g = 1.0f - (row / 3.0f);
+                F32 b = col / (lights.size() / 3.0f);
+
+                lights[row * 10 + col]->setPosition(vec3<F32>(x, y, z));
+                lights[row * 10 + col]->setDiffuseColor(vec3<F32>(r, g, b));
+            }
+
+        _taskTimers[3] = 0.0;
+    }
+
     Scene::processTasks(deltaTime);
 }
+
+namespace {
+    F32 phi = 0.0f;
+    vec3<F32> initPos;
+    bool initPosSet = false;
+};
 
 void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     if (!_sceneReady) {
@@ -196,12 +221,24 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     }
 
     SceneGraphNode_ptr particles = _particleEmitter.lock();
+    const F32 radius = 20;
+    
     if (particles.get()) {
+        phi += 0.01f;
+        if (phi > 360.0f) {
+            phi = 0.0f;
+        }
+
         PhysicsComponent* pComp = particles->getComponent<PhysicsComponent>();
-        pComp->translateY(0.001);
-        pComp->translateZ(0.005);
-        pComp->translateX(0.025);
-        pComp->rotate(vec3<F32>(0.3, 0.4, 0.5), 0.75, true);
+        if (!initPosSet) {
+            initPos.set(pComp->getPosition());
+            initPosSet = true;
+        }
+
+        pComp->setPositionX(radius * std::cos(phi) + initPos.x);
+        pComp->setPositionZ(radius * std::sin(phi) + initPos.z);
+        pComp->setPositionY((radius * 0.5f) * std::sin(phi) + initPos.y);
+        pComp->rotateY(phi);
     }
 
     if (!AI::AIManager::getInstance().getNavMesh(
@@ -242,8 +279,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LightType::DIRECTIONAL,
-        GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
+    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
     // Add a skybox
     _currentSky = addSky();
     // Position camera
@@ -390,7 +426,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     });
     
 #ifdef _DEBUG
-    const U32 particleCount = 750;
+    const U32 particleCount = 1750;
 #else
     const U32 particleCount = 20000;
 #endif
@@ -447,6 +483,19 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
     
     state().generalVisibility(state().generalVisibility() * 2);
+
+
+    for (U8 row = 0; row < 3; row++) {
+        for (U8 col = 0; col < 10; col++) {
+            ResourceDescriptor tempLight("Light_point_" + std::to_string(to_uint(row * 10 + col)));
+            tempLight.setEnumValue(to_uint(LightType::POINT));
+            Light* light = CreateResource<Light>(tempLight);
+            light->setDrawImpostor(true);
+            light->setRange(5.0f);
+            light->setCastShadows(false);
+            _sceneGraph->getRoot()->addNode(*light);
+        }
+    }
 
     Application::getInstance()
         .getKernel()
@@ -556,6 +605,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
     _taskTimers.push_back(0.0); // Sun animation
     _taskTimers.push_back(0.0); // animation team 1
     _taskTimers.push_back(0.0); // animation team 2
+    _taskTimers.push_back(0.0); // light timer
     return true;
 }
 

@@ -10,16 +10,13 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     : Renderer(RendererType::RENDERER_FORWARD_PLUS) {
     _opaqueGrid.reset(new LightGrid());
     _transparentGrid.reset(new LightGrid());
-    /// Initialize our depth ranges construction shader (see LightManager.cpp
-    /// for more documentation)
+    /// Initialize our depth ranges construction shader (see LightManager.cpp for more documentation)
     ResourceDescriptor rangesDesc("DepthRangesConstruct");
 
     stringImpl gridDim("LIGHT_GRID_TILE_DIM_X ");
-    gridDim.append(
-        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_X));
+    gridDim.append(std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_X));
     gridDim.append(",LIGHT_GRID_TILE_DIM_Y ");
-    gridDim.append(
-        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
+    gridDim.append(std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
     rangesDesc.setPropertyList(gridDim);
 
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
@@ -33,22 +30,16 @@ ForwardPlusRenderer::ForwardPlusRenderer()
                                             GFXImageFormat::RGBA32F,
                                             GFXDataFormat::FLOAT_32);
     depthRangesDescriptor.setSampler(depthRangesSampler);
-    // The down-sampled depth buffer is used to cull screen space lights for our
-    // Forward+ rendering algorithm.
+    // The down-sampled depth buffer is used to cull screen space lights for our Forward+ rendering algorithm.
     // It's only updated on demand.
     _depthRanges = GFX_DEVICE.newFB(false);
-    _depthRanges->addAttachment(depthRangesDescriptor,
-                                TextureDescriptor::AttachmentType::Color0);
+    _depthRanges->addAttachment(depthRangesDescriptor, TextureDescriptor::AttachmentType::Color0);
     _depthRanges->toggleDepthBuffer(false);
     _depthRanges->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
-    vec2<U16> screenRes =
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-            ->getResolution();
-    vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
-                       Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
+    vec2<U16> screenRes = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->getResolution();
+    vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
     vec2<U16> resTemp(screenRes + tileSize);
-    _depthRanges->create(resTemp.x / tileSize.x - 1,
-                         resTemp.y / tileSize.y - 1);
+    _depthRanges->create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
 }
 
 ForwardPlusRenderer::~ForwardPlusRenderer() {
@@ -57,7 +48,7 @@ ForwardPlusRenderer::~ForwardPlusRenderer() {
 }
 
 void ForwardPlusRenderer::preRender() {
-    buildLightGrid();
+    //buildLightGrid();
 }
 
 void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
@@ -68,18 +59,11 @@ void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
 void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                        Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
-    vec2<U16> resTemp(
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-            ->getResolution() +
-        tileSize);
-    _depthRanges->create(resTemp.x / tileSize.x - 1,
-                         resTemp.y / tileSize.y - 1);
+    vec2<U16> resTemp(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->getResolution() + tileSize);
+    _depthRanges->create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
 }
 
 bool ForwardPlusRenderer::buildLightGrid() {
-    if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
-        return true;
-    }
     const vec2<F32>& zPlanes = GFX_DEVICE.getCurrentZPlanes();
     const vec4<I32>& viewport = GFX_DEVICE.getCurrentViewport();
     Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
@@ -150,26 +134,19 @@ bool ForwardPlusRenderer::buildLightGrid() {
     return false;
 }
 
-/// Extract the depth ranges and store them in a different render target used to
-/// cull lights against
-void ForwardPlusRenderer::downSampleDepthBuffer(
-    vectorImpl<vec2<F32>>& depthRanges) {
+/// Extract the depth ranges and store them in a different render target used to cull lights against
+void ForwardPlusRenderer::downSampleDepthBuffer(vectorImpl<vec2<F32>>& depthRanges) {
     depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());
 
     _depthRanges->begin(Framebuffer::defaultPolicy());
     {
-        _depthRangesConstructProgram->Uniform("dvd_ProjectionMatrixInverse",
-                                              GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
+        _depthRangesConstructProgram->Uniform("dvd_ProjectionMatrixInverse", GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
 
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-            ->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                   TextureDescriptor::AttachmentType::Depth);
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0), TextureDescriptor::AttachmentType::Depth);
 
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
-                                _depthRangesConstructProgram);
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _depthRangesConstructProgram);
 
-        _depthRanges->readData(GFXImageFormat::RG, GFXDataFormat::FLOAT_32,
-                               &depthRanges[0]);
+        _depthRanges->readData(GFXImageFormat::RG, GFXDataFormat::FLOAT_32, &depthRanges[0]);
     }
     _depthRanges->end();
 }
