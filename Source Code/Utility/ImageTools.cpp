@@ -99,37 +99,43 @@ bool ImageData::create(const stringImpl& filename) {
 }
 
 bool ImageData::loadDDS_IL(const stringImpl& filename) {
-    static const bool USE_UNCOMPRESSED_DATA = true;
-
     U32 ilTexture = 0;
     ilInit();
+    ilGenImages(1, &ilTexture);
+    ilBindImage(ilTexture);
+
+
     ilEnable(IL_TYPE_SET);
     ilEnable(IL_ORIGIN_SET);
     ilOriginFunc(_flip ? IL_ORIGIN_LOWER_LEFT : IL_ORIGIN_UPPER_LEFT);
-
-    if (!USE_UNCOMPRESSED_DATA) {
-        ilSetInteger(IL_KEEP_DXTC_DATA, IL_TRUE);
-    }
-
+    ilSetInteger(IL_KEEP_DXTC_DATA, IL_TRUE);
     ilTypeFunc(IL_UNSIGNED_BYTE);
-    ilGenImages(1, &ilTexture);
-    ilBindImage(ilTexture);
+
     if (ilLoadImage(filename.c_str()) == IL_FALSE) {
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         ilDeleteImage(ilTexture);
         return false;
     }
-    I32 format = ilGetInteger(IL_IMAGE_FORMAT);
-    I32 numMips = ilGetInteger(IL_NUM_MIPMAPS);
+
+    I32 numMips = ilGetInteger(IL_NUM_MIPMAPS) + 1;
+    assert(ilGetInteger(IL_IMAGE_TYPE) == IL_UNSIGNED_BYTE);
+
     I32 dxtc = ilGetInteger(IL_DXTC_DATA_FORMAT);
     _bpp = to_const_ubyte(ilGetInteger(IL_IMAGE_BPP));
-    bool compressed = false;
 
-    if (!USE_UNCOMPRESSED_DATA) {
-        if ((dxtc == IL_DXT1) || (dxtc == IL_DXT2) || (dxtc == IL_DXT3) || (dxtc == IL_DXT4) || (dxtc == IL_DXT5)){
-            compressed = true;  
-        }
+    if (ilGetInteger(IL_IMAGE_CUBEFLAGS) > 0) {
+        _compressedTextureType = TextureType::TEXTURE_CUBE_MAP;
+    } else {
+        _compressedTextureType = ilGetInteger(IL_IMAGE_DEPTH) > 1
+                                     ? TextureType::TEXTURE_3D
+                                     : TextureType::TEXTURE_2D;
     }
+
+    bool compressed = ((dxtc == IL_DXT1) || 
+                       (dxtc == IL_DXT2) ||
+                       (dxtc == IL_DXT3) ||
+                       (dxtc == IL_DXT4) ||
+                       (dxtc == IL_DXT5));
 
     if (compressed) {
         switch (dxtc) {
@@ -146,9 +152,14 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
             case IL_DXT5: {
                 _format = GFXImageFormat::COMPRESSED_RGBA_DXT5;
             } break;
+            default: {
+                assert(false && "unsupported compressed format!");
+                ilDeleteImage(ilTexture);
+                return false;
+            }
         };
     } else {
-        switch (format) {
+        switch (ilGetInteger(IL_IMAGE_FORMAT)) {
             case IL_BGR: {
                 _format = GFXImageFormat::BGR;
             } break;
@@ -167,60 +178,44 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
             case IL_LUMINANCE_ALPHA: {
                 _format = GFXImageFormat::LUMINANCE_ALPHA;
             } break;
-            default:
+            default: {
                 assert(false && "unsupported image format");
-                break;
+                ilDeleteImage(ilTexture);
+                return false;
+            }
         };
     }
 
-    _data.reserve(numMips + 1);
-    _data.emplace_back();
-
-    ImageLayer& base = _data[0];
-    base._dimensions.set(ilGetInteger(IL_IMAGE_WIDTH),
-                         ilGetInteger(IL_IMAGE_HEIGHT),
-                         ilGetInteger(IL_IMAGE_DEPTH));
-                         
-    if (compressed) {
-        base._size = ilGetDXTCData(NULL, 0, dxtc);
-        base._data.resize(base._size);
-        ilGetDXTCData(&base._data[0], base._size, dxtc);
-    } else {
-        base._size = static_cast<size_t>(base._dimensions.width * 
-                                         base._dimensions.height * 
-                                         base._dimensions.depth *
-                                         _bpp);
-        base.setData(ilGetData());
-    }
-
-    for (U8 i = 1; i < numMips; ++i) {
-        if (compressed) {
-            ilSetInteger(IL_KEEP_DXTC_DATA, IL_TRUE);
-        }
+    _data.resize(numMips);
+    for (U8 i = 0; i < numMips; ++i) {
+        ilBindImage(ilTexture);
         ilActiveMipmap(i);
-        _data.emplace_back();
+
+        ILint width = ilGetInteger(IL_IMAGE_WIDTH);
+        ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
+        ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
+
         ImageLayer& layer = _data[i];
-        layer._dimensions.set(ilGetInteger(IL_IMAGE_WIDTH),
-                                ilGetInteger(IL_IMAGE_HEIGHT),
-                                ilGetInteger(IL_IMAGE_DEPTH));
+        layer._dimensions.set(width, height, depth);
 
-        if (compressed) {
-            layer._size = ilGetDXTCData(NULL, 0, dxtc);
-            layer._data.resize(layer._size);
-            ilGetDXTCData(&layer._data[0], layer._size, dxtc);
-        } else {
-            layer._size = static_cast<size_t>(layer._dimensions.width *
-                                              layer._dimensions.height *
-                                              layer._dimensions.depth *
-                                              _bpp);
-            layer.setData(ilGetData());
-        }
+        I32 size = compressed ? ilGetDXTCData(NULL, 0, dxtc)
+                              : width * height * depth * _bpp;
 
-        if (layer._dimensions.width <= 1 &&
-            layer._dimensions.height <= 1 &&
-            layer._dimensions.depth <= 1)
-        {
-            break;
+        I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
+        layer._size = size * numImagePasses;
+        layer._data.resize(layer._size);
+
+        for (I32 j = 0, offset = 0; j < numImagePasses; ++j, offset += size) {
+            if (_compressedTextureType == TextureType::TEXTURE_CUBE_MAP) {
+                ilBindImage(ilTexture);
+                ilActiveImage(j);
+                ilActiveMipmap(i);
+            }
+            if (compressed) {
+                ilGetDXTCData(&layer._data[0] + offset, size, dxtc);
+            } else {
+                memcpy(&layer._data[0] + offset, ilGetData(), size);
+            }
         }
     }
     

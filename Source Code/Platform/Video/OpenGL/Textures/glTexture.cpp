@@ -302,15 +302,14 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                 assert(false && "unsupported texture format");
         }
     };
+    _mipMapsDirty = true;
 
     if (numMips == 1) {
-        glGenerateTextureMipmap(_textureData.getHandleHigh());
+        updateMipMaps();
     }
-    _mipMapsDirty = false;
 }
 
 void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data) {
-    bool generateMipMaps = false;
     if (data) {
         GL_API::setPixelPackUnpackAlignment();
         switch (_textureData._textureType) {
@@ -323,7 +322,7 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
                     GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
                     GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
                     data);
-                generateMipMaps = true;
+                _mipMapsDirty = true;
             } break;
             case TextureType::TEXTURE_2D:
             case TextureType::TEXTURE_2D_MS: {
@@ -337,7 +336,7 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
                     GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
                     GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
                     data);
-                generateMipMaps = true;
+                _mipMapsDirty = true;
             } break;
 
             case TextureType::TEXTURE_3D:
@@ -357,15 +356,12 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
                     GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
                     GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
                     data);
-                generateMipMaps = info._layerIndex == _numLayers;
+                _mipMapsDirty = info._layerIndex == _numLayers;
             } break;
         }
     }
 
-    if (generateMipMaps) {
-        glGenerateTextureMipmap(_textureData.getHandleHigh());
-        _mipMapsDirty = false;
-    }
+    updateMipMaps();
 }
 
 bool glTexture::flushTextureState() {
