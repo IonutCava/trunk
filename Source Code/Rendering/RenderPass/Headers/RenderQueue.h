@@ -46,7 +46,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneNode);
 class RenderQueue {
    public:
     typedef std::array<RenderBin*, RenderBinType::_size_constant> RenderBinArray;
-    typedef std::array<vector<SceneGraphNode*>, RenderBinType::_size_constant> SortedQueues;
+    typedef std::array<vectorEASTL<SceneGraphNode*>, RenderBinType::_size_constant> SortedQueues;
 
   public:
     RenderQueue(GFXDevice& context);

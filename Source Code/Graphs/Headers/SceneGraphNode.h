@@ -332,10 +332,10 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     friend class RenderPassCuller;
     // Returns true if the node should be culled (is not visible for the current stage)
     bool cullNode(const Camera& currentCamera,
-                  F32 maxDistanceFromCamera,
+                  F32 maxDistanceFromCameraSq,
                   RenderStage currentStage,
                   Frustum::FrustCollision& collisionTypeOut,
-                  F32& distanceSqToAABBCenter) const;
+                  F32& minDistanceSq) const;
 
    protected:
     friend class RenderingComponent;

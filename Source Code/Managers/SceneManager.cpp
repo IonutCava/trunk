@@ -613,16 +613,21 @@ namespace {
 
 const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStagePass stage) {
     Scene& activeScene = getActiveScene();
+    SceneState& sceneState = activeScene.state();
 
     RenderStage renderStage = stage._stage;
 
     RenderPassCuller::CullParams cullParams;
     cullParams._context = &activeScene.context();
     cullParams._sceneGraph = &activeScene.sceneGraph();
-    cullParams._sceneState = &activeScene.state();
+    cullParams._sceneState = &sceneState;
     cullParams._stage = renderStage;
     cullParams._camera = playerCamera();
-
+    if (renderStage == RenderStage::SHADOW) {
+        cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
+    } else {
+        cullParams._visibilityDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
+    }
     // Cull everything except 3D objects
     cullParams._cullFunction = [renderStage](const SceneGraphNode& node) -> bool {
         if (generatesDrawCommands(node.getNode()->getType())) {

@@ -70,6 +70,7 @@ class RenderPassCuller {
         Camera* _camera = nullptr;
         SceneState* _sceneState = nullptr;
         RenderStage _stage = RenderStage::COUNT;
+        F32 _visibilityDistanceSq = 0.0f;
         CullingFunction _cullFunction;
     };
 
@@ -94,7 +95,7 @@ class RenderPassCuller {
                          const SceneGraphNode& node,
                          const Camera& currentCamera,
                          RenderStage stage,
-                         F32 cullMaxDistance,
+                         F32 cullMaxDistanceSq,
                          VisibleNodeList& nodes,
                          bool clearList) const;
 
@@ -106,7 +107,7 @@ class RenderPassCuller {
    protected:
     std::array<CullingFunction, to_base(RenderStage::COUNT)> _cullingFunction;
     std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;
-    std::array<vector<VisibleNodeList>, to_base(RenderStage::COUNT)> _perThreadNodeList;
+    std::array<vectorEASTL<VisibleNodeList>, to_base(RenderStage::COUNT)> _perThreadNodeList;
 };
 
 };  // namespace Divide

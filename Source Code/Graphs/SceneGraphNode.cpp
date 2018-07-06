@@ -498,14 +498,7 @@ void SceneGraphNode::onCameraUpdate(const U64 cameraNameHash,
     forEachChild([cameraNameHash, &cameraEye, &cameraView](SceneGraphNode& child) {
         child.onCameraUpdate(cameraNameHash, cameraEye, cameraView);
     });
-
-    if (_lockToCamera == cameraNameHash) {
-        TransformComponent* tComp = get<TransformComponent>();
-        if (tComp) {
-            //tComp->setOffset(true, cameraView.getInverse());
-        }
-    }
-
+    
     Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraNameHash, cameraEye, cameraView);
 }
 
@@ -522,43 +515,53 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 
 
 bool SceneGraphNode::cullNode(const Camera& currentCamera,
-                              F32 maxDistanceFromCamera,
+                              F32 maxDistanceFromCameraSq,
                               RenderStage currentStage,
                               Frustum::FrustCollision& collisionTypeOut,
-                              F32& distanceSqToAABBCenter) const {
+                              F32& minDistanceSq) const {
 
+    // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
     if (getFlag(UpdateFlag::THREADED_LOAD)) {
         return true;
     }
 
-    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
+    // Some nodes should always render for ... reasons
     if (visibilityLocked()) {
+        collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
         return false;
     }
 
-    bool distanceCheck = currentStage != RenderStage::SHADOW;
-    const BoundingBox& boundingBox = get<BoundsComponent>()->getBoundingBox();
-    const BoundingSphere& sphere = get<BoundsComponent>()->getBoundingSphere();
+    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_OUT;
 
+    // Use the bounding primitives to do camera/frustum checks
+    BoundsComponent* bComp = get<BoundsComponent>();
+    const BoundingBox& boundingBox = bComp->getBoundingBox();
+    const BoundingSphere& sphere = bComp->getBoundingSphere();
+
+    // Get camera info
     F32 radius = sphere.getRadius();
+    F32 radiusSq = SQUARED(radius);
     const vec3<F32>& eye = currentCamera.getEye();
+    
+    // Check distance to sphere edge (center - radius)
     const vec3<F32>& center = sphere.getCenter();
-    F32 visibilityDistanceSq = std::pow(maxDistanceFromCamera + radius, 2);
-
-    distanceSqToAABBCenter = center.distanceSquared(eye);
-    if (distanceCheck && distanceSqToAABBCenter > visibilityDistanceSq) {
-        if (boundingBox.nearestDistanceFromPointSquared(eye) >
-            std::min(visibilityDistanceSq, std::pow(currentCamera.getZPlanes().y, 2))) {
-            return true;
-        }
+    minDistanceSq = center.distanceSquared(eye) - radiusSq;
+    if (minDistanceSq > maxDistanceFromCameraSq) {
+        return true;
     }
 
+    // Sphere is in range, so check bounds primitives againts the frustum
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frust = currentCamera.getFrustum();
+        // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast
         collisionTypeOut = frust.ContainsSphere(center, radius, _frustPlaneCache);
         if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+            // If the sphere is not completely in the frustum, check the AABB
             collisionTypeOut = frust.ContainsBoundingBox(boundingBox, _frustPlaneCache);
         }
+    } else {
+        // We are inside the AABB. So ... intersect?
+        collisionTypeOut = Frustum::FrustCollision::FRUSTUM_INTERSECT;
     }
 
     return collisionTypeOut == Frustum::FrustCollision::FRUSTUM_OUT;

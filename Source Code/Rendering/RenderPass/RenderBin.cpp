@@ -108,7 +108,7 @@ void RenderBin::sort(RenderingOrder::List renderOrder, const Task& parentTask) {
     sort(renderOrder);
 }
 
-void RenderBin::getSortedNodes(vector<SceneGraphNode*>& nodes) const {
+void RenderBin::getSortedNodes(vectorEASTL<SceneGraphNode*>& nodes) const {
     nodes.resize(0);
     for (const RenderBinItem& item : _renderBinStack) {
         nodes.push_back(&(item._renderable->getSGN()));

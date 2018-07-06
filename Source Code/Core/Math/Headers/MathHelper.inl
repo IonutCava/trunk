@@ -295,6 +295,12 @@ T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max,
 }
 
 template <typename T>
+T SQUARED(T input) {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be squared!");
+    return input * input;
+}
+
+template <typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) {
     return IS_IN_RANGE_INCLUSIVE(input_x, rect_x, rect_z) &&
            IS_IN_RANGE_INCLUSIVE(input_y, rect_y, rect_w);

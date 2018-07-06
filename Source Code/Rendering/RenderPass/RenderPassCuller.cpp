@@ -66,21 +66,20 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
     const SceneState& sceneState = *params._sceneState;
     const SceneGraph& sceneGraph = *params._sceneGraph;
     const Camera& camera = *params._camera;
-
+    F32 cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(camera.getZPlanes().y));
+    
     const SceneRenderState& renderState = sceneState.renderState();
     if (renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         _cullingFunction[to_U32(stage)] = params._cullFunction;
 
-        F32 cullMaxDistance = renderState.generalVisibility();
-
         const SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
-        vector<VisibleNodeList>& nodes = _perThreadNodeList[to_U32(stage)];
+        vectorEASTL<VisibleNodeList>& nodes = _perThreadNodeList[to_U32(stage)];
         nodes.resize(childCount);
 
-        auto cullIterFunction = [this, &root, &camera, &nodes, &stage, cullMaxDistance](const Task& parentTask, U32 start, U32 end) {
-            auto perChildCull = [this, &parentTask, &camera, &nodes, start, &stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
-                frustumCullNode(parentTask, child, camera, stage, cullMaxDistance, nodes[i], true);
+        auto cullIterFunction = [this, &root, &camera, &nodes, &stage, cullMaxDistanceSq](const Task& parentTask, U32 start, U32 end) {
+            auto perChildCull = [this, &parentTask, &camera, &nodes, start, &stage, cullMaxDistanceSq](const SceneGraphNode& child, I32 i) {
+                frustumCullNode(parentTask, child, camera, stage, cullMaxDistanceSq, nodes[i], true);
             };
             root.forEachChild(perChildCull, start, end);
         };
@@ -105,7 +104,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
                                        const SceneGraphNode& currentNode,
                                        const Camera& currentCamera,
                                        RenderStage stage,
-                                       F32 cullMaxDistance,
+                                       F32 cullMaxDistanceSq,
                                        VisibleNodeList& nodes,
                                        bool clearList) const
 {
@@ -116,19 +115,23 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     if (!currentNode.isActive()) {
         return;
     }
-
-    bool isVisible = !_cullingFunction[to_U32(stage)](currentNode);
+    // If it fails thhe culling test, stop
+    if (_cullingFunction[to_U32(stage)](currentNode)) {
+        return;
+    }
 
     F32 distanceSqToCamera = 0.0f;
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
-    isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, stage, collisionResult, distanceSqToCamera);
+
+    // Internal node cull (check against camera frustum and all that ...)
+    bool isVisible = !currentNode.cullNode(currentCamera, cullMaxDistanceSq, stage, collisionResult, distanceSqToCamera);
 
     if (isVisible && !StopRequested(&parentTask)) {
         nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
-            auto childCull = [this, &parentTask, &currentCamera, &nodes, &stage, cullMaxDistance](const SceneGraphNode& child) {
-                frustumCullNode(parentTask, child, currentCamera, stage, cullMaxDistance, nodes, false);
+            auto childCull = [this, &parentTask, &currentCamera, &nodes, &stage, cullMaxDistanceSq](const SceneGraphNode& child) {
+                frustumCullNode(parentTask, child, currentCamera, stage, cullMaxDistanceSq, nodes, false);
             };
 
             currentNode.forEachChild(childCull);

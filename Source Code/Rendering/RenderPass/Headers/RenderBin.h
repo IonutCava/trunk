@@ -116,7 +116,7 @@ class RenderBin {
         return _renderBinStack[index];
     }
 
-    void getSortedNodes(vector<SceneGraphNode*>& nodes) const;
+    void getSortedNodes(vectorEASTL<SceneGraphNode*>& nodes) const;
 
     inline U16 getBinSize() const { return (U16)_renderBinStack.size(); }
 

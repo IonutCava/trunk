@@ -185,7 +185,7 @@ void RenderQueue::refresh() {
 
 const RenderQueue::SortedQueues& RenderQueue::getSortedQueues() {
     for (RenderBin* renderBin : _activeBins) {
-        vector<SceneGraphNode*>& nodes = _sortedQueues[renderBin->getType()._to_integral()];
+        vectorEASTL<SceneGraphNode*>& nodes = _sortedQueues[renderBin->getType()._to_integral()];
         renderBin->getSortedNodes(nodes);
     }
 

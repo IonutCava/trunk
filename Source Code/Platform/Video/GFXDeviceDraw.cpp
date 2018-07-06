@@ -170,7 +170,7 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params)
     U32 cmdCount = 0;
 
     const RenderQueue::SortedQueues& sortedQueues = *params._sortedQueues;
-    for (const vector<SceneGraphNode*>& queue : sortedQueues) {
+    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
             Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, *params._camera, *params._sceneRenderState, params._renderStagePass);
