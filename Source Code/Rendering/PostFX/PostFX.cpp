@@ -199,7 +199,7 @@ void PostFX::createOperators(){
 }
 
 void PostFX::reshapeFBO(I32 width , I32 height){
-	if(!_enablePostProcessing || width == 0 || height == 0) return;
+	if(!_enablePostProcessing || width <= 0 || height <= 0) return;
 	if(width == _screenFBO->getWidth() && height == _screenFBO->getHeight()) return;
 	_screenFBO->Create(width, height);
 	_depthFBO->Create(width, height);

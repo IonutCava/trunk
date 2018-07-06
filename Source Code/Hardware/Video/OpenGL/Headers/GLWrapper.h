@@ -68,9 +68,7 @@ private:
 	GLbyte initHardware(const vec2<GLushort>& resolution, I32 argc, char **argv);
 	void closeRenderingApi();
 	void initDevice(GLuint targetFrameRate);
-	void changeResolution(GLushort w, GLushort h);
-	///Change the window size without reshaping window data
-	void setWindowSize(U16 w, U16 h);
+	inline void changeResolution(GLushort w, GLushort h) {changeResolutionInternal(w,h);}
 	///Change the window's position
 	void setWindowPos(U16 w, U16 h);
 	void lookAt(const vec3<GLfloat>& eye,
@@ -180,7 +178,7 @@ private:
     void drawDebugAxisInternal();
 	void setupLineStateViewPort(const OffsetMatrix& mat);
 	void releaseLineStateViewPort();
-
+	void changeResolutionInternal(U16 w, U16 h);
 private: //OpenGL specific:
 
 	///Text Rendering

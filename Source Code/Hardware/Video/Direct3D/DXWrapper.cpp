@@ -27,10 +27,6 @@ void DX_API::changeResolution(U16 w, U16 h)
 {
 }
 
-void DX_API::setWindowSize(U16 w, U16 h)
-{
-}
-
 void DX_API::setWindowPos(U16 w, U16 h)
 {
 }

@@ -41,8 +41,6 @@ private:
 	void closeRenderingApi();
 	void initDevice(U32 targetFrameRate);
 	void changeResolution(U16 w, U16 h);
-	///Change the window size without reshaping window data
-	void setWindowSize(U16 w, U16 h);
 	///Change the window's position
 	void setWindowPos(U16 w, U16 h);
 	void lookAt(const vec3<F32>& eye,

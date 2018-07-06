@@ -59,10 +59,6 @@ GLXEWContext* glxewGetContext(){ return _GLXEWContextPtr.get(); }
 
 namespace Divide{
 	namespace GL{
-		void glfw_window_resize_callback(GLFWwindow* window, I32 w, I32 h) {
-			GFX_DEVICE.changeResolution(w,h);
-		}
-
 		void initGlew(){
 #ifdef GLEW_MX
 			GLEWContext * currentGLEWContextsPtr =  _GLEWContextPtr.get();
@@ -232,7 +228,6 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 
 	I32 height = return_struct->height;
 	I32 width = return_struct->width;
-	glfwSetWindowSizeCallback(Divide::GL::_mainWindow, Divide::GL::glfw_window_resize_callback);
 	glfwSetWindowPos(Divide::GL::_mainWindow, (width - resolution.width)*0.5f,(height - resolution.height)*0.5f);
 
 #if defined( __WIN32__ ) || defined( _WIN32 )
@@ -489,15 +484,9 @@ bool GL_API::deInitShaders(){
 	return (glswShutdown() == 1);
 }
 
-void GL_API::setWindowSize(U16 w, U16 h) {
+void GL_API::changeResolutionInternal(U16 w, U16 h){
 	glfwSetWindowSize(Divide::GL::_mainWindow,w,h);
-}
 
-void GL_API::setWindowPos(U16 w, U16 h){
-	glfwSetWindowPos(Divide::GL::_mainWindow,w,h);
-}
-
-void GL_API::changeResolution(GLushort w, GLushort h){
 	ParamHandler& par = ParamHandler::getInstance();
 	GLfloat zNear  = par.getParam<GLfloat>("runtime.zNear");
 	GLfloat zFar   = par.getParam<GLfloat>("runtime.zFar");
@@ -521,6 +510,10 @@ void GL_API::changeResolution(GLushort w, GLushort h){
 	Frustum::getInstance().setZPlanes(vec2<GLfloat>(zNear, zFar));
 	//Inform the Kernel
 	Kernel::updateResolutionCallback(w,h);
+}
+
+void GL_API::setWindowPos(GLushort w, GLushort h){
+	glfwSetWindowPos(Divide::GL::_mainWindow,w,h);
 }
 
 void GL_API::idle(){

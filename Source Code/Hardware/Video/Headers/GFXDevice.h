@@ -47,7 +47,6 @@ public:
 	inline void registerKernel(Kernel* const kernel)     {_kernel = kernel;}
 	inline void initDevice(U32 targetFrameRate)          {_api.initDevice(targetFrameRate);}
 	inline void changeResolution(U16 w, U16 h)           {_api.changeResolution(w,h);}
-	inline void setWindowSize(U16 w, U16 h)              {_api.setWindowSize(w,h);}
 	inline void setWindowPos(U16 w, U16 h)               {_api.setWindowPos(w,h);}
 
 	inline void exitRenderLoop(const bool killCommand = false) {_api.exitRenderLoop(killCommand);}

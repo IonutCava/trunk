@@ -134,8 +134,6 @@ protected:
 
 	///Change the resolution and reshape all graphics data
 	virtual void changeResolution(U16 w, U16 h) = 0;
-	///Change the window size without reshaping window data
-	virtual void setWindowSize(U16 w, U16 h) = 0;
 	///Change the window's position
 	virtual void setWindowPos(U16 w, U16 h) = 0;
 

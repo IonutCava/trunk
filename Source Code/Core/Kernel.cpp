@@ -128,8 +128,8 @@ void Kernel::FirstLoop(){
 	Framerate::getInstance().benchmark(true);
 	//Hide splash screen
 	ParamHandler& par = ParamHandler::getInstance();
-	GFX_DEVICE.setWindowSize(par.getParam<U16>("runtime.resolutionWidth"),
-							 par.getParam<U16>("runtime.resolutionHeight"));
+	GFX_DEVICE.changeResolution(par.getParam<U16>("runtime.resolutionWidth"),
+							    par.getParam<U16>("runtime.resolutionHeight"));
 	GFX_DEVICE.setWindowPos(10,50);
 	//Bind main render loop
 	_mainLoopCallback = DELEGATE_REF(Kernel::MainLoopApp);
@@ -217,8 +217,8 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 
     _GFX.setRenderStage(FINAL_STAGE);
 	//Load the splash screen
-    _GFX.setWindowSize(resolution.width/2,resolution.height/2);
-	GUISplash splashScreen("divideLogo.jpg",resolution/2);
+    _GFX.changeResolution(400,300);
+	GUISplash splashScreen("divideLogo.jpg",vec2<U16>(400,300));
 	_GFX.beginFrame();
 	splashScreen.render();
 	_GFX.endFrame();
