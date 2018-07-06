@@ -89,28 +89,12 @@ class CommandBuffer : protected NonCopyable {
       boost::base_collection<GFX::Command> _commands;
 };
 
-void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd);
-void EndRenderPass(CommandBuffer& buffer, const EndRenderPassCommand& cmd);
-void BeginPixelBuffer(CommandBuffer& buffer, const BeginPixelBufferCommand& cmd);
-void EndPixelBuffer(CommandBuffer& buffer, const EndPixelBufferCommand& cmd);
-void BeginRenderSubPass(CommandBuffer& buffer, const BeginRenderSubPassCommand& cmd);
-void EndRenderSubPass(CommandBuffer& buffer, const EndRenderSubPassCommand& cmd);
-void BlitRenderTarget(CommandBuffer& buffer, const BlitRenderTargetCommand& cmd);
-void SetViewPort(CommandBuffer& buffer, const SetViewportCommand& cmd);
-void SetScissor(CommandBuffer& buffer, const SetScissorCommand& cmd);
-void SetBlend(CommandBuffer& buffer, const SetBlendCommand& cmd);
-void SetCamera(CommandBuffer& buffer, const SetCameraCommand& cmd);
-void SetClipPlanes(CommandBuffer& buffer, const SetClipPlanesCommand& cmd);
-void BindPipeline(CommandBuffer& buffer, const BindPipelineCommand& cmd);
-void SendPushConstants(CommandBuffer& buffer, const SendPushConstantsCommand& cmd);
-void BindDescriptorSets(CommandBuffer& buffer, const BindDescriptorSetsCommand& cmd);
-void BeginDebugScope(CommandBuffer& buffer, const BeginDebugScopeCommand& cmd);
-void EndDebugScope(CommandBuffer& buffer, const EndDebugScopeCommand& cmd);
-void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd);
-void AddDrawTextCommand(CommandBuffer& buffer, const DrawTextCommand& cmd);
-void AddDrawIMGUICommand(CommandBuffer& buffer, const DrawIMGUICommand& cmd);
-void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd);
-void AddSwitchWindow(CommandBuffer& buffer, const SwitchWindowCommand& cmd);
+template<typename T>
+inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
+inline void EnqueueCommand(CommandBuffer& buffer, const T& cmd) {
+    buffer.add(T);
+}
+
 }; //namespace GFX
 }; //namespace Divide
 

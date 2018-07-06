@@ -284,12 +284,10 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
 
     inline bool getFlag(UpdateFlag flag) const {
-        ReadLock r_lock(_updateFlagLock);
-        return BitCompare(_updateFlags, to_base(flag));
+        return BitCompare(_updateFlags, to_U32(flag));
     }
 
     inline void clearUpdateFlag(UpdateFlag flag) {
-        WriteLock w_lock(_updateFlagLock);
         ClearBit(_updateFlags, to_base(flag));
     }
 
@@ -355,7 +353,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void onNetworkSend(U32 frameCount);
 
     inline void setUpdateFlag(UpdateFlag flag) {
-        WriteLock w_lock(_updateFlagLock);
         SetBit(_updateFlags, to_base(flag));
     }
 
@@ -428,9 +425,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     mutable SharedLock _childLock;
     std::atomic_bool _active;
     std::atomic_bool _visibilityLocked;
-
-    mutable SharedLock _updateFlagLock;
-    U32 _updateFlags;
+    std::atomic_uint _updateFlags;
 
     bool _isSelectable;
     SelectionFlag _selectionFlag;

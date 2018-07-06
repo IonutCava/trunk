@@ -59,13 +59,14 @@ void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
 }
 
 vector<AIEntity*> AITeam::getEntityList() const {
-    vector<AIEntity*> entities;
+    //ToDo: Cache this? -Ionut
     ReadLock r2_lock(_updateMutex);
-    entities.reserve(_team.size());
+
+    U32 i = 0;
+    vector<AIEntity*> entities(_team.size(), nullptr);
     for (const AITeam::TeamMap::value_type& entity : _team) {
-        entities.push_back(entity.second);
+        entities[i++] = entity.second;
     }
-    r2_lock.unlock();
 
     return entities;
 }

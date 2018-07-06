@@ -18,6 +18,8 @@ namespace {
     bool g_timersInit = false;
 };
 
+bool ProfileTimer::s_enabled = true;
+
 ScopedTimer::ScopedTimer(ProfileTimer& timer) 
     : _timer(timer)
 {
@@ -44,13 +46,13 @@ ProfileTimer::~ProfileTimer()
 }
 
 void ProfileTimer::start() {
-    if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
+    if (Config::Profile::ENABLE_FUNCTION_PROFILING && timersEnabled()) {
         _timer = _appTimer.getElapsedTime(true);
     }
 }
 
 void ProfileTimer::stop() {
-    if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
+    if (Config::Profile::ENABLE_FUNCTION_PROFILING && timersEnabled()) {
         _timerAverage += _appTimer.getElapsedTime(true) - _timer;
         _timerCounter++;
     }
@@ -124,11 +126,22 @@ U64 ProfileTimer::overhead() {
     static const U8 overheadLoopCount = 3;
     U64 overhead = 0;
     ProfileTimer test;
+    bool prevState = timersEnabled();
+
+    if (!prevState) {
+        enableTimers();
+    }
+
     for (U8 i = 0; i < overheadLoopCount; ++i) {
         test.start();
         test.stop();
         overhead += test.get();
     }
+
+    if (!prevState) {
+        disableTimers();
+    }
+
     return overhead / overheadLoopCount;
 }
 
@@ -178,6 +191,18 @@ void ProfileTimer::removeTimer(ProfileTimer& timer) {
     if (timer._parent < Config::Profile::MAX_PROFILE_TIMERS) {
         g_profileTimers[timer._parent].removeChildTimer(timer);
     }
+}
+
+bool ProfileTimer::timersEnabled() {
+    return s_enabled;
+}
+
+void ProfileTimer::enableTimers() {
+    s_enabled = true;
+}
+
+void ProfileTimer::disableTimers() {
+    s_enabled = false;
 }
 
 };  // namespace Time

@@ -59,6 +59,10 @@ class ProfileTimer {
 
     static U64 overhead();
 
+    static bool timersEnabled();
+    static void enableTimers();
+    static void disableTimers();
+
    // time data
    protected:
     stringImpl _name;
@@ -76,6 +80,8 @@ class ProfileTimer {
      vector<U32> _children;
      U32 _parent;
      ApplicationTimer& _appTimer;
+
+     static bool s_enabled;
 };
 
 class ScopedTimer : private NonCopyable {

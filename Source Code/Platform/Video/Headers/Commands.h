@@ -37,6 +37,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
+#include <MemoryPool/C-11/MemoryPool.h>
+
 struct ImDrawData;
 
 namespace CEGUI {
@@ -46,6 +48,13 @@ namespace CEGUI {
 
 namespace Divide {
 namespace GFX {
+
+
+#define REGISTER_COMMAND(Type, PoolSize) \
+    bool g_isRegistered_##Type = true; \
+    /*MemoryPool<Type, PoolSize> ##Type_pool;*/ \
+    //struct Type
+
 
 enum class CommandType : U8 {
     BEGIN_RENDER_PASS = 0,
@@ -81,6 +90,10 @@ struct Command {
     virtual ~Command() = default;
 
     CommandType _type = CommandType::COUNT;
+
+protected:
+    friend class CommandBuffer;
+    virtual void onAdd(CommandBuffer* buffer) { ACKNOWLEDGE_UNUSED(buffer); }
 };
 
 struct BindPipelineCommand : Command {
@@ -90,6 +103,7 @@ struct BindPipelineCommand : Command {
 
     const Pipeline* _pipeline = nullptr;
 };
+REGISTER_COMMAND(BindPipelineCommand, 1024);
 
 struct SendPushConstantsCommand : Command {
     SendPushConstantsCommand() : Command(CommandType::SEND_PUSH_CONSTANTS)
@@ -98,6 +112,7 @@ struct SendPushConstantsCommand : Command {
 
     PushConstants _constants;
 };
+REGISTER_COMMAND(SendPushConstantsCommand, 1024);
 
 struct DrawCommand : Command {
     DrawCommand() : Command(CommandType::DRAW_COMMANDS)
@@ -106,6 +121,7 @@ struct DrawCommand : Command {
 
     vectorEASTL<GenericDrawCommand> _drawCommands;
 };
+REGISTER_COMMAND(DrawCommand, 16384);
 
 struct SetViewportCommand : Command {
     SetViewportCommand() : Command(CommandType::SET_VIEWPORT)
@@ -114,6 +130,7 @@ struct SetViewportCommand : Command {
 
     Rect<I32> _viewport;
 };
+REGISTER_COMMAND(SetViewportCommand, 256);
 
 struct BeginRenderPassCommand : Command {
     BeginRenderPassCommand() : Command(CommandType::BEGIN_RENDER_PASS)
@@ -124,12 +141,14 @@ struct BeginRenderPassCommand : Command {
     RTDrawDescriptor _descriptor;
     stringImpl _name;
 };
+REGISTER_COMMAND(BeginRenderPassCommand, 256);
 
 struct EndRenderPassCommand : Command {
     EndRenderPassCommand() : Command(CommandType::END_RENDER_PASS)
     {
     }
 };
+REGISTER_COMMAND(EndRenderPassCommand, 256);
 
 struct BeginPixelBufferCommand : Command {
     BeginPixelBufferCommand() : Command(CommandType::BEGIN_PIXEL_BUFFER)
@@ -139,12 +158,14 @@ struct BeginPixelBufferCommand : Command {
     PixelBuffer* _buffer = nullptr;
     DELEGATE_CBK<void, bufferPtr> _command;
 };
+REGISTER_COMMAND(BeginPixelBufferCommand, 128);
 
 struct EndPixelBufferCommand : Command {
     EndPixelBufferCommand() : Command(CommandType::END_PIXEL_BUFFER)
     {
     }
 };
+REGISTER_COMMAND(EndPixelBufferCommand, 128);
 
 struct BeginRenderSubPassCommand : Command {
     BeginRenderSubPassCommand() : Command(CommandType::BEGIN_RENDER_SUB_PASS)
@@ -153,12 +174,14 @@ struct BeginRenderSubPassCommand : Command {
 
     U16 _mipWriteLevel = 0u;
 };
+REGISTER_COMMAND(BeginRenderSubPassCommand, 512);
 
 struct EndRenderSubPassCommand : Command {
     EndRenderSubPassCommand() : Command(CommandType::END_RENDER_SUB_PASS)
     {
     }
 };
+REGISTER_COMMAND(EndRenderSubPassCommand, 512);
 
 struct BlitRenderTargetCommand : Command {
     BlitRenderTargetCommand() : Command(CommandType::BLIT_RT)
@@ -170,6 +193,7 @@ struct BlitRenderTargetCommand : Command {
     RenderTargetID _source;
     RenderTargetID _destination;
 };
+REGISTER_COMMAND(BlitRenderTargetCommand, 128);
 
 struct SetScissorCommand : Command {
     SetScissorCommand() : Command(CommandType::SET_SCISSOR)
@@ -178,6 +202,7 @@ struct SetScissorCommand : Command {
 
     Rect<I32> _rect;
 };
+REGISTER_COMMAND(SetScissorCommand, 128);
 
 struct SetBlendCommand : Command {
     SetBlendCommand() : Command(CommandType::SET_BLEND)
@@ -188,6 +213,7 @@ struct SetBlendCommand : Command {
     bool _enabled = true;
     BlendingProperties _blendProperties;
 };
+REGISTER_COMMAND(SetBlendCommand, 256);
 
 struct SetCameraCommand : Command {
     SetCameraCommand() : Command(CommandType::SET_CAMERA)
@@ -196,6 +222,7 @@ struct SetCameraCommand : Command {
 
     Camera* _camera = nullptr;
 };
+REGISTER_COMMAND(SetCameraCommand, 512);
 
 struct SetClipPlanesCommand : Command {
     SetClipPlanesCommand() : Command(CommandType::SET_CLIP_PLANES),
@@ -205,7 +232,7 @@ struct SetClipPlanesCommand : Command {
 
     FrustumClipPlanes _clippingPlanes;
 };
-
+REGISTER_COMMAND(SetClipPlanesCommand, 512);
 
 struct BindDescriptorSetsCommand : Command {
     BindDescriptorSetsCommand() : Command(CommandType::BIND_DESCRIPTOR_SETS)
@@ -214,6 +241,7 @@ struct BindDescriptorSetsCommand : Command {
 
     DescriptorSet _set;
 };
+REGISTER_COMMAND(BindDescriptorSetsCommand, 1024);
 
 struct BeginDebugScopeCommand : Command {
     BeginDebugScopeCommand() : Command(CommandType::BEGIN_DEBUG_SCOPE)
@@ -223,13 +251,14 @@ struct BeginDebugScopeCommand : Command {
     stringImpl _scopeName;
     I32 _scopeID = -1;
 };
-
+REGISTER_COMMAND(BeginDebugScopeCommand, 4096);
 
 struct EndDebugScopeCommand : Command {
     EndDebugScopeCommand() : Command(CommandType::END_DEBUG_SCOPE)
     {
     }
 };
+REGISTER_COMMAND(EndDebugScopeCommand, 4096);
 
 struct DrawTextCommand : Command {
     DrawTextCommand() : Command(CommandType::DRAW_TEXT)
@@ -238,6 +267,7 @@ struct DrawTextCommand : Command {
 
     TextElementBatch _batch;
 };
+REGISTER_COMMAND(DrawTextCommand, 1024);
 
 struct DrawIMGUICommand : Command {
     DrawIMGUICommand() : Command(CommandType::DRAW_IMGUI)
@@ -246,6 +276,7 @@ struct DrawIMGUICommand : Command {
 
     ImDrawData* _data = nullptr;
 };
+REGISTER_COMMAND(DrawIMGUICommand, 64);
 
 struct DispatchComputeCommand : Command {
     DispatchComputeCommand() : Command(CommandType::DISPATCH_COMPUTE)
@@ -254,6 +285,7 @@ struct DispatchComputeCommand : Command {
 
     ComputeParams _params;
 };
+REGISTER_COMMAND(DispatchComputeCommand, 128);
 
 struct SwitchWindowCommand : Command {
     SwitchWindowCommand() : Command(CommandType::SWITCH_WINDOW)
@@ -262,6 +294,8 @@ struct SwitchWindowCommand : Command {
 
     I64 windowGUID = -1;
 };
+REGISTER_COMMAND(SwitchWindowCommand, 64);
+
 }; //namespace GFX
 }; //namespace Divide
 

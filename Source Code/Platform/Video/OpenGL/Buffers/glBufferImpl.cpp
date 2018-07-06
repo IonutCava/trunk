@@ -40,18 +40,21 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
       _mappedBuffer(nullptr),
       _lockManager(MemoryManager_NEW glBufferLockManager())
 {
-
-    _usage = _target == GL_TRANSFORM_FEEDBACK
-                        ? _updateFrequency == BufferUpdateFrequency::ONCE
-                                            ? GL_STATIC_COPY
-                                            : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
-                                                                ? GL_DYNAMIC_COPY
-                                                                : GL_STREAM_COPY
-                        : _updateFrequency == BufferUpdateFrequency::ONCE
-                                            ? GL_STATIC_DRAW
-                                            : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
-                                                                ? GL_DYNAMIC_DRAW
-                                                                : GL_STREAM_DRAW;
+    if (_target == GL_ATOMIC_COUNTER_BUFFER) {
+        _usage = GL_STATIC_COPY;
+    } else {
+        _usage = _target == GL_TRANSFORM_FEEDBACK
+                            ? _updateFrequency == BufferUpdateFrequency::ONCE
+                                                ? GL_STATIC_COPY
+                                                : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
+                                                                    ? GL_DYNAMIC_COPY
+                                                                    : GL_STREAM_COPY
+                            : _updateFrequency == BufferUpdateFrequency::ONCE
+                                                ? GL_STATIC_DRAW
+                                                : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
+                                                                    ? GL_DYNAMIC_DRAW
+                                                                    : GL_STREAM_DRAW;
+    }
 
     bool usePersistentMapping = !Config::Profile::DISABLE_PERSISTENT_BUFFER && 
                                 _alignedSize > g_persistentMapSizeThreshold;

@@ -205,7 +205,7 @@ U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEvent
     }
 
     EventTimeMap::const_iterator it = std::cbegin(times);
-    EventTimeMap::iterator end = std::end(times) - 2;
+    EventTimeMap::const_iterator end = std::cend(times) - 2;
 
     while (it != end) {
         if (currentTimeUS - *it > 0) {
@@ -216,7 +216,6 @@ U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEvent
     }
 
     times.erase(std::cbegin(times), it);
-    U64 diff = times.back() - times.front();
-    return diff;
+    return (times.back() - times.front());
 }
 };

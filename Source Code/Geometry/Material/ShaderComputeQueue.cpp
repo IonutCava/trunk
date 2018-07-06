@@ -45,8 +45,7 @@ bool ShaderComputeQueue::stepQueue() {
         UpgradeToWriteLock w_lock(r_lock);
         const ShaderQueueElement& currentItem = _shaderComputeQueue.front();
         ShaderProgramInfo& info = *currentItem._shaderData;
-        info._shaderRef = CreateResource<ShaderProgram>(_cache,
-                                                        currentItem._shaderDescriptor);
+        info._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
         info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
         _shaderComputeQueue.pop_front();
         return true;

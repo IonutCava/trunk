@@ -164,10 +164,6 @@ void Kernel::onLoop() {
    
         // Update time at every render loop
         _timingData.update(Time::ElapsedMicroseconds());
-        {
-            Time::ScopedTimer timer2(_appIdleTimer);
-            idle();
-        }
         FrameEvent evt;
         FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
@@ -264,11 +260,16 @@ void Kernel::onLoop() {
 
     // Cap FPS
     I16 frameLimit = _platformContext->config().runtime.frameRateLimit;
-    if (frameLimit > 0) {
-        F32 deltaMilliseconds = Time::MicrosecondsToMilliseconds<F32>(_timingData.currentTimeDeltaUS());
-        F32 targetFrametime = 1000.0f / frameLimit;
+    F32 deltaMilliseconds = Time::MicrosecondsToMilliseconds<F32>(_timingData.currentTimeDeltaUS());
+    F32 targetFrametime = 1000.0f / frameLimit;
 
-        if (deltaMilliseconds < targetFrametime) {
+    if (deltaMilliseconds < targetFrametime) {
+        {
+            Time::ScopedTimer timer2(_appIdleTimer);
+            idle();
+        }
+
+        if (frameLimit > 0) {
             //Sleep the remaining frame time 
             std::this_thread::sleep_for(std::chrono::milliseconds(to_I32(std::floorf(targetFrametime - deltaMilliseconds))));
         }

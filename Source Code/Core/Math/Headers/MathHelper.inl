@@ -369,7 +369,7 @@ inline bool AnyCompare(const std::atomic_uint bitMask, const U32 checkMask) noex
     return ((bitMask & checkMask) != 0);
 }
 
-inline bool BitCompare(const std::atomic_uint bitMask, const U32 bit) noexcept {
+inline bool BitCompare(const std::atomic_uint& bitMask, const U32 bit) noexcept {
     return ((bitMask & bit) == bit);
 }
 

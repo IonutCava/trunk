@@ -2,6 +2,7 @@
 
 #include "Headers/PreferencesWindow.h"
 #include "Widgets/Headers/PanelManager.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 
 namespace Divide {
     PreferencesWindow::PreferencesWindow(PanelManager& parent)
@@ -19,6 +20,11 @@ namespace Divide {
         ImGui::PanelManager& mgr = _parent.ImGuiPanelManager();
 
         ImGui::DragFloat("Window Alpha##WA1", &mgr.getDockedWindowsAlpha(), 0.005f, -0.01f, 1.0f, mgr.getDockedWindowsAlpha() < 0.0f ? "(default)" : "%.3f");
+
+        bool profileTimers = Time::ProfileTimer::timersEnabled();
+        if (ImGui::Checkbox("Enable profile timers", &profileTimers)) {
+            profileTimers ? Time::ProfileTimer::enableTimers() : Time::ProfileTimer::disableTimers();
+        }
 
         bool noTitleBar = mgr.getDockedWindowsNoTitleBar();
         if (ImGui::Checkbox("No Window TitleBars", &noTitleBar)) mgr.setDockedWindowsNoTitleBar(noTitleBar);

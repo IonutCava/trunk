@@ -216,7 +216,7 @@ void FlushFloatEvents() {
         vec = new vectorFast<GlobalFloatEvent>();
         _globalFloatEvents.reset(vec);
     }
-    vec->clear();
+    vec->resize(0);
 }
 
 void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp) {

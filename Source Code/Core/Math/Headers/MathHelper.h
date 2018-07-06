@@ -140,7 +140,7 @@ template<typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(std::atomic_uint& bitMask, const Type bit);
 
-bool BitCompare(const std::atomic_uint bitMask, const U32 bit) noexcept;
+bool BitCompare(const std::atomic_uint& bitMask, const U32 bit) noexcept;
 void SetBit(std::atomic_uint& bitMask, const U32 bit) noexcept;
 void ClearBit(std::atomic_uint& bitMask, const U32 bit) noexcept;
 void ToggleBit(std::atomic_uint& bitMask, const U32 bit) noexcept;
@@ -375,9 +375,14 @@ namespace Util {
 struct GraphPlot2D;
 struct GraphPlot3D;
 struct GlobalFloatEvent {
-    explicit GlobalFloatEvent(const char* name,
-                              const F32 eventValue,
-                              const U64 timeStamp)
+    GlobalFloatEvent() : GlobalFloatEvent("default", 0.0f, 0)
+    {
+
+    }
+
+    GlobalFloatEvent(const char* name,
+                     const F32 eventValue,
+                     const U64 timeStamp)
         : _eventName(name),
           _eventValue(eventValue),
           _timeStamp(timeStamp)

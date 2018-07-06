@@ -41,6 +41,7 @@ CommandBuffer::add(const T& command) {
     GFX::CommandType type = command._type;
     _commands.insert(command);
     _commandOrder.emplace_back(type, _commands.size(getType(type)) - 1);
+    command.onAdd(this);
 }
 
 inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {

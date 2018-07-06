@@ -429,10 +429,7 @@ void SceneGraphNode::getOrderedNodeList(vector<SceneGraphNode*>& nodeList) {
         }
     }
 
-    const SceneNode_ptr& node = getNode();
-    if (!node || node->getState() == ResourceState::RES_LOADED) {
-        nodeList.push_back(this);
-    }
+    nodeList.push_back(this);
 }
 
 void SceneGraphNode::processDeleteQueue(vector<vec_size>& childList) {
