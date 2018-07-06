@@ -38,7 +38,7 @@ bool Sky::load() {
 
 	_skybox =  ResourceManager::getInstance().loadResource<TextureCubemap>(skyboxTextures);
 	ResourceDescriptor skyShaderDescriptor("sky");
-	_skyShader = ResourceManager::getInstance().loadResource<Shader>(skyShaderDescriptor);
+	_skyShader = ResourceManager::getInstance().loadResource<ShaderProgram>(skyShaderDescriptor);
 	assert(_skyShader);
 	Console::getInstance().printfn("Generated sky cubemap and sun OK!");
 	//The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
@@ -85,7 +85,7 @@ void Sky::drawSkyAndSun() const {
 		GFXDevice::getInstance().renderModel(_sky);
 		GFXDevice::getInstance().releaseObjectState(_skyNode->getTransform());
 	
-	_skyShader->unbind();
+	//_skyShader->unbind();
 	_skybox->Unbind(0);
 	GFXDevice::getInstance().ignoreStateChanges(false);
 	
@@ -109,7 +109,7 @@ void Sky::drawSky() const {
 		GFXDevice::getInstance().renderModel(_sky);
 		GFXDevice::getInstance().releaseObjectState(_skyNode->getTransform());
 	
-	_skyShader->unbind();
+	//_skyShader->unbind();
 	_skybox->Unbind(0);
 	
 	GFXDevice::getInstance().ignoreStateChanges(false);
@@ -136,12 +136,12 @@ void Sky::drawSun() const {
 
 
 void Sky::removeFromRenderExclusionMask(U8 stageMask) {
-	assert(stageMask & ~(INVALID_STAGE-1) == 0);
+	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask &= ~stageMask;
 }
 
 void Sky::addToRenderExclusionMask(U8 stageMask) {
-	assert(stageMask & ~(INVALID_STAGE-1) == 0);
+	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask |= static_cast<RENDER_STAGE>(stageMask);
 }
 

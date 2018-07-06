@@ -24,9 +24,9 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-class Shader;
-class WaterPlane : public SceneNode
-{
+class ShaderProgram;
+class WaterPlane : public SceneNode{
+
 public:
 	WaterPlane();
 	~WaterPlane(){}
@@ -41,13 +41,14 @@ public:
 	void   postLoad(SceneGraphNode* const node);
 	void   prepareMaterial(SceneGraphNode* const sgn);
 	void   releaseMaterial();
+	void   onDraw();
 private:
 	bool computeBoundingBox(SceneGraphNode* const node);
 
 private:
 	Quad3D*			   _plane;
 	Texture2D*		   _texture;
-	Shader*		  	   _shader;
+	ShaderProgram* 	   _shader;
 	F32				   _farPlane;
 	FrameBufferObject* _reflectionFBO;
 	Transform*         _planeTransform;

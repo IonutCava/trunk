@@ -126,7 +126,7 @@ bool Terrain::load(const string& name){
 	U8 d;
 	U32 t, id;
 	U8* data = ImageTools::OpenImage(terrain->getVariable("heightmap"), _terrainWidth, _terrainHeight, d, t, id);
-	Console::getInstance().printfn("Terrain width: %d and height: %d",_terrainWidth, _terrainHeight);
+	Console::getInstance().d_printfn("Terrain width: %d and height: %d",_terrainWidth, _terrainHeight);
 	assert(data);
 
 	U32 nIMGWidth  = _terrainWidth;
@@ -234,7 +234,7 @@ bool Terrain::load(const string& name){
 		getMaterial()->setDiffuse(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		getMaterial()->setSpecular(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		getMaterial()->setShininess(50.0f);
-		getMaterial()->setShader("terrain_ground");
+		getMaterial()->setShaderProgram("terrain_ground");
 		Console::getInstance().printfn("Loading Terrain OK");
 	}else{
 		Console::getInstance().errorfn("Loading Terrain NOT OK");
@@ -251,7 +251,7 @@ void Terrain::postLoad(SceneGraphNode* const node){
 	_planeSGN->setActive(false);
 	_planeTransform = _planeSGN->getTransform();
 	computeBoundingBox(node);
-	Shader* s = getMaterial()->getShader();
+	ShaderProgram* s = getMaterial()->getShaderProgram();
 	s->bind();
 		s->Uniform("alphaTexture", _alphaTexturePresent);
 		s->Uniform("detail_scale", 120.0f);
@@ -297,56 +297,59 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 }
 
 void Terrain::prepareMaterial(SceneGraphNode* const sgn){
-	changeSortKey(-1);
+	if(GFXDevice::getInstance().getRenderStage() == SHADOW_STAGE){
+		return;
+	}
+	ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
+		
+
+	_terrainDiffuseMap->Bind(0);
+	_terrainTextures[0]->Bind(1); //Normal Map
+	_terrainTextures[1]->Bind(2); //Water Caustics
+	_terrainTextures[2]->Bind(3); //AlphaMap: RED
+	_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
+	_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
+
+	terrainShader->bind();
+
+	terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
+	terrainShader->UniformTexture("texDiffuseMap", 0);
+	terrainShader->UniformTexture("texNormalHeightMap", 1);
+	terrainShader->UniformTexture("texWaterCaustics", 2);
+	terrainShader->UniformTexture("texDiffuse0", 3);
+	terrainShader->UniformTexture("texDiffuse1", 4);
+	terrainShader->UniformTexture("texDiffuse2", 5);
+	if(_alphaTexturePresent){
+		_terrainTextures[5]->Bind(6); //AlphaMap: Alpha
+		terrainShader->UniformTexture("texDiffuse3",6);
+	}
 }
 
 void Terrain::releaseMaterial(){
+	if(GFXDevice::getInstance().getRenderStage() == SHADOW_STAGE){
+		return;
+	}
+	//getMaterial()->getShaderProgram()->unbind();
+	if(_alphaTexturePresent) _terrainTextures[5]->Unbind(6);
+	_terrainTextures[4]->Unbind(5);
+	_terrainTextures[3]->Unbind(4);
+	_terrainTextures[2]->Unbind(3);
+	_terrainTextures[1]->Unbind(2);
+	_terrainTextures[0]->Unbind(1);
+	_terrainDiffuseMap->Unbind(0);
 }
 
 void Terrain::render(SceneGraphNode* const node){
 
 	if(GFXDevice::getInstance().getRenderStage() != SHADOW_STAGE){
-
-		Shader* terrainShader = getMaterial()->getShader();
-		
-
-		_terrainDiffuseMap->Bind(0);
-		_terrainTextures[0]->Bind(1); //Normal Map
-		_terrainTextures[1]->Bind(2); //Water Caustics
-		_terrainTextures[2]->Bind(3); //AlphaMap: RED
-		_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
-		_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
-
-		terrainShader->bind();
-			terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
-			terrainShader->UniformTexture("texDiffuseMap", 0);
-			terrainShader->UniformTexture("texNormalHeightMap", 1);
-			terrainShader->UniformTexture("texWaterCaustics", 2);
-			terrainShader->UniformTexture("texDiffuse0", 3);
-			terrainShader->UniformTexture("texDiffuse1", 4);
-			terrainShader->UniformTexture("texDiffuse2", 5);
-			if(_alphaTexturePresent){
-				_terrainTextures[5]->Bind(6); //AlphaMap: Alpha
-				terrainShader->UniformTexture("texDiffuse3",6);
-			}
-
-			drawGround();
-			drawInfinitePlain();
-
-		terrainShader->unbind();
-
-		if(_alphaTexturePresent) _terrainTextures[5]->Unbind(6);
-		_terrainTextures[4]->Unbind(5);
-		_terrainTextures[3]->Unbind(4);
-		_terrainTextures[2]->Unbind(3);
-		_terrainTextures[1]->Unbind(2);
-		_terrainTextures[0]->Unbind(1);
-		_terrainDiffuseMap->Unbind(0);
+		drawGround();
+		drawInfinitePlain();
 	}
-
-	_veg->draw(_drawInReflection);
 }
 
+void Terrain::postDraw(){
+	_veg->draw(_drawInReflection);
+}
 
 void Terrain::drawInfinitePlain(){
 	if(_drawInReflection) return;

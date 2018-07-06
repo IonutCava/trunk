@@ -19,19 +19,20 @@
 #define _SHADER_HANDLER_H_
 
 #include "Core/Headers/BaseClasses.h"
-
-class Shader : public Resource {
+class Shader;
+enum SHADER_TYPE;
+class ShaderProgram : public Resource {
 
 public:
-    virtual void init(const std::string &vsFile, const std::string &fsFile) = 0;
 	virtual bool load(const std::string& name);
-    virtual bool loadVertOnly(const std::string& name) = 0;
-	virtual bool loadFragOnly(const std::string& name) = 0;
-
+	
 	virtual void bind();
 	virtual void unbind() = 0;
 	
-	virtual U16 getId() = 0;
+	inline U32 getId() { return _shaderProgramId; }
+
+	virtual void attachShader(Shader* shader) = 0;
+	std::vector<Shader* > getShaders(SHADER_TYPE type);
 	//Attributes
 	virtual void Attribute(const std::string& ext, D32 value) = 0;
 	virtual void Attribute(const std::string& ext, F32 value) = 0 ;
@@ -50,24 +51,23 @@ public:
 	//Uniform Texture
 	virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
 
-	//Legacy
-	virtual void Uniform(I32 location, const vec4& value) = 0;
-	virtual ~Shader(){}
-	inline const std::string& getFragName() {return _fragName;}
-	inline const std::string& getVertName() {return _vertName;}
+	virtual ~ShaderProgram();
 	virtual void createCopy() {incRefCount();}
 	virtual void removeCopy() {decRefCount();}
 
-protected:
-	virtual char* shaderFileRead(const std::string &fn) = 0;
-	virtual I8   shaderFileWrite(char *fn, char *s) = 0;
-	Shader() : Resource() {}
-protected:
-	U32 _shaderId;
-	U32 _shaderVP;
-	U32 _shaderFP;
-	std::string _fragName, _vertName;
+	inline void commit() {if(!_compiled) {link(); validate();}}
 
+protected:
+	virtual void validate() = 0;
+	virtual void link() = 0;
+	ShaderProgram() : Resource(), _compiled(false) {}
+	
+	static bool checkBinding(U32 newShaderProgramId);
+protected:
+	bool _compiled;
+	U32 _shaderProgramId;
+	std::vector<Shader* > _shaders;
+	static U32 _prevShaderProgramId;
 };
 
 

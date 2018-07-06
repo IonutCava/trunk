@@ -5,6 +5,7 @@
 #include "Managers/Headers/ResourceManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/FrameBufferObject.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 LightManager::LightManager(){
 }
@@ -97,34 +98,55 @@ void LightManager::generateShadowMaps(){
 	GFXDevice::getInstance().setRenderStage(prev);
 }
 
+void LightManager::previewDepthMaps(){
+	GFXDevice::getInstance().renderInViewport(vec4(0,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,0));
+	GFXDevice::getInstance().renderInViewport(vec4(260,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,1));
+	GFXDevice::getInstance().renderInViewport(vec4(520,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,2));
+}
+
+void LightManager::drawDepthMap(U8 light, U8 index){
+	Quad3D renderQuad;
+	std::stringstream ss;
+	ss << "Light " << (U32)light << " viewport " << (U32)index;
+	renderQuad.setName(ss.str());
+	renderQuad.setDimensions(vec4(0,0,_lights[0]->getDepthMaps()[index]->getWidth(),_lights[0]->getDepthMaps()[index]->getHeight()));
+	_lights[0]->getDepthMaps()[index]->Bind(0);
+	GFXDevice::getInstance().toggle2D(true);
+	GFXDevice::getInstance().renderModel(&renderQuad);
+	GFXDevice::getInstance().toggle2D(false);
+	_lights[0]->getDepthMaps()[index]->Unbind(0);
+}
+
 //If we have computed shadowmaps, bind them before rendering any geomtry;
 //Always bind shadowmaps to slots 8, 9 and 8;
 void LightManager::bindDepthMaps(){
 	//Skip applying shadows if we are rendering to depth map, or we have shadows disabled
 	//For deferred rendering, we need another approach
 	if(!ParamHandler::getInstance().getParam<bool>("enableShadows")) return;
-
+	U8 lightCount = 0;
 	for_each(LightMap::value_type& light, _lights){
 		std::vector<FrameBufferObject* >& depthMaps = light.second->getDepthMaps();
 		for(U8 i = 0; i < depthMaps.size(); ++i){
 			if(depthMaps[i]){
-				depthMaps[i]->Bind(8+i);
+				depthMaps[i]->Bind(/*(depthMaps.size()*lightCount)+*/8+i);
 			}
 		}
+		lightCount++;
 	}
 }
 
 
 void LightManager::unbindDepthMaps(){
 	if(!ParamHandler::getInstance().getParam<bool>("enableShadows")) return;
-
+	U8 lightCount = 0;
 	for_each(LightMap::value_type& light, _lights){
 		std::vector<FrameBufferObject* >& depthMaps = light.second->getDepthMaps();
 		for(I8 i = depthMaps.size() - 1; i >= 0; --i){
 			if(depthMaps[i]){
-				depthMaps[i]->Unbind(8+i);
+				depthMaps[i]->Unbind(/*(depthMaps.size()*lightCount)+*/8+i);
 			}
 		}
+		lightCount++;
 	}
 }
 

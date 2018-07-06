@@ -22,7 +22,7 @@
 
 class VertexBufferObject;
 class Terrain;
-class Shader;
+class ShaderProgram;
 class Texture;
 typedef Texture Texture2D;
 class FrameBufferObject;
@@ -58,7 +58,7 @@ private:
 	F32 _windX, _windZ, _windS, _time;
 	ImageTools::ImageData _map;  //Dispersion map for vegetation placement
 	std::vector<Texture2D*>	_grassBillboards;
-	Shader*				    _grassShader;
+	ShaderProgram*		    _grassShader;
 
 	bool generateTrees();			   //True = Everything OK, False = Error. Check _errorCode
 	bool generateGrass(U32 index);     //index = current grass type (billboard, vbo etc)

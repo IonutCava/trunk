@@ -43,6 +43,10 @@
 #define OUTPUT_LOG_FILE "console.log"
 #endif //OUTPUT_LOG_FILE
 
+#ifndef ERROR_LOG_FILE
+#define ERROR_LOG_FILE "errors.log"
+#endif //ERROR_LOG_FILE
+
 //Show log timestamps
 #ifndef SHOW_LOG_TIMESTAMPS
 #define SHOW_LOG_TIMESTAMPS
@@ -62,11 +66,13 @@
 //#define USE_MATH_SSE
 #endif //USE_MATH_SSE
 
+
 //Use boost or std::tr1 unordered_map
-#ifndef UNORDERED_MAP
-#define UNORDERED_MAP BOOST
-//#define UNORDERED_MAP TR1
-#endif //UNORDERED_MAP
+//0 = BOOST
+//1 = TR1
+#ifndef UNORDERED_MAP_IMP
+#define UNORDERED_MAP_IMP 0
+#endif //UNORDERED_MAP_IMP
 
 //Use boost or std for_each
 #ifndef FOR_EACH_IMPLEMENTATION

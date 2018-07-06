@@ -1,12 +1,6 @@
 #include "Headers/Framerate.h"
 #include "Core/Headers/Console.h"
 
-F32 max(const F32& a, const F32& b){
-	return (a<b) ? b : a;
-}
-F32 min(const F32& a, const F32& b){
-	return (a<b) ? a : b;
-}
 void Framerate::Init(F32 tfps){
   _targetFps = tfps;
    
@@ -51,8 +45,8 @@ void Framerate::benchmark(){
 
 	//Min/Max FPS (after ~50 rendered frames)
 	if(_count > 50){
-		_maxFps = max(_maxFps, _fps);
-		_minFps = min(_minFps, _fps);
+		_maxFps = Util::max(_maxFps, _fps);
+		_minFps = Util::min(_minFps, _fps);
 	}
 	
 	//Average FPS

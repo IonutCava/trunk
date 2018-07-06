@@ -8,7 +8,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 
-BloomPreRenderOperator::BloomPreRenderOperator(Shader* const bloomShader, Quad3D* target, FrameBufferObject* result) : PreRenderOperator(BLOOM_STAGE,target),
+BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader, Quad3D* target, FrameBufferObject* result) : PreRenderOperator(BLOOM_STAGE,target),
 												_blur(bloomShader),
 												_outputFBO(result)
 {
@@ -17,7 +17,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(Shader* const bloomShader, Quad3D
 	I32 w = width/4, h = height/4;
 	_tempBloomFBO = GFXDevice::getInstance().newFBO();
 	_tempBloomFBO->Create(FrameBufferObject::FBO_2D_COLOR,w,h);
-	_bright = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("bright"));
+	_bright = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("bright"));
 
 }
 
@@ -59,7 +59,7 @@ void BloomPreRenderOperator::operation(){
 
 			_inputFBO[0]->Unbind(0);
 
-		_bright->unbind();
+		//_bright->unbind();
 
 	_outputFBO->End();
 
@@ -77,7 +77,7 @@ void BloomPreRenderOperator::operation(){
 
 				gfx.renderModel(_renderQuad);
 
-			_outputFBO->Unbind(0);
+			//_outputFBO->Unbind(0);
 		
 		_blur->unbind();
 		
@@ -98,7 +98,7 @@ void BloomPreRenderOperator::operation(){
 
 			_tempBloomFBO->Unbind(0);
 		
-		_blur->unbind();
+		//_blur->unbind();
 		
 	_outputFBO->End();
 

@@ -2,12 +2,13 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Headers/XMLParser.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "PhysX/Headers/PhysX.h"
+#include "Dynamics/Physics/Headers/PXDevice.h"
 
 using namespace std;
 
 void Guardian::LoadApplication(const string& entryPoint){
 	Application& app = Application::getInstance();
+	//Target FPS is 60. So all movement is capped around that value
 	Framerate::getInstance().Init(60);
 	Console::getInstance().printCopyrightNotice();
 	Console::getInstance().printfn("Starting the application!");
@@ -37,12 +38,12 @@ void Guardian::TerminateApplication(){
 
 	Console::getInstance().printfn("Closing application!");
 	PostFX::getInstance().DestroyInstance();
-	PhysX::getInstance().exitNx();
+	PXDevice::getInstance().exitPhysics();
 	SceneManager::getInstance().DestroyInstance();
 	ResourceManager::getInstance().DestroyInstance();
 	Console::getInstance().printfn("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
-	GFXDevice::getInstance().DestroyInstance();
 	GFXDevice::getInstance().closeRenderingApi();
+	GFXDevice::getInstance().DestroyInstance();
 	SFXDevice::getInstance().closeAudioApi();
 	SFXDevice::getInstance().DestroyInstance();
 	Console::getInstance().printfn("Application shutdown complete!");

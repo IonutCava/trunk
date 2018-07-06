@@ -208,7 +208,7 @@ class EffectManager{
 	  // Print details about playable effects
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  Console::getInstance().printfn("InputManager: The device can't play any effect of the test set");
+		  Console::getInstance().d_printfn("InputManager: The device can't play any effect of the test set");
 	  }
 	  else
 	  {
@@ -227,14 +227,14 @@ class EffectManager{
 	  // Nothing to do if no joystick currently selected
 	  if (!_pJoystickMgr->getCurrentFFDevice())
 	  {
-		  Console::getInstance().printfn("InputManager: No Joystick selected.");  
+		  Console::getInstance().d_printfn("InputManager: No Joystick selected.");  
 		return;
 	  }
 
 	  // Nothing to do if joystick cannot play any effect
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  Console::getInstance().printfn("InputManager: No playable effects."); 
+		  Console::getInstance().d_printfn("InputManager: No playable effects."); 
 		return;
 	  }
 

@@ -10,11 +10,10 @@ using namespace std;
 #undef main
 #endif 
 
-I32 main(I32 argc, char **argv)
-{
-	//Target FPS is 60. So all movement is capped around that value
+I32 main(I32 argc, char **argv){
+
 	freopen(OUTPUT_LOG_FILE, "w", stdout);
-	freopen(OUTPUT_LOG_FILE, "w", stderr);
+	freopen(ERROR_LOG_FILE, "w", stderr);
 	ParamHandler::getInstance().setDebugOutput(false);
 	Guardian::getInstance().LoadApplication("main.xml");   
 	return 0;

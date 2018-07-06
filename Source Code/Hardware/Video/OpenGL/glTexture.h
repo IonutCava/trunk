@@ -30,8 +30,8 @@ public:
 	bool load(const std::string& name);
 	bool unload() {Destroy(); return true;}
 
-	void Bind(U16 unit) ;
-	void Unbind(U16 unit) ;
+	void Bind(U16 unit);
+	void Unbind(U16 unit);
 
 	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d);
 

@@ -112,8 +112,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\pxSimpleShapes.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\PhysX.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\PhysXSceneInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glShaderProgram.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Shader.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderProgram.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
@@ -123,9 +136,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
-    <ClCompile Include="..\..\Source Code\PhysX\PhysX.cpp" />
-    <ClCompile Include="..\..\Source Code\PhysX\PhysXSceneInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIFlash.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp" />
@@ -156,11 +166,9 @@
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Texture.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glFrameBufferObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glVertexBufferObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp" />
@@ -190,6 +198,20 @@
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsSceneInterface.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PXDevice.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysX.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysXSceneInterface.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glShaderProgram.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Shader.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderProgram.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h" />
@@ -202,8 +224,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Framerate.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Frustum.h" />
-    <ClInclude Include="..\..\Source Code\PhysX\PhysX.h" />
-    <ClInclude Include="..\..\Source Code\PhysX\PhysXSceneInterface.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h" />
     <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
@@ -250,13 +270,11 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\GFXDevice.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\PixelBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\RenderAPIWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderHandler.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Texture.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\VertexBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glFrameBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glResources.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glTexture.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glVertexBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.h" />

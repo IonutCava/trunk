@@ -7,7 +7,6 @@ SceneNode::SceneNode() : Resource(),
 						 _material(NULL),
 						 _renderState(true),
 						 _noDefaultMaterial(false),
-						 _sortKey(0),
 						 _exclusionMask(0),
 						 _selected(false)
 {}
@@ -16,7 +15,6 @@ SceneNode::SceneNode(std::string name) : Resource(name),
 								        _material(NULL),
 										_renderState(true),
 										_noDefaultMaterial(false),
-										_sortKey(0),
 										_exclusionMask(0),
 										_selected(false)
 {}
@@ -42,6 +40,10 @@ void SceneNode::onDraw(){
 	if(mat){
 		mat->computeLightShaders();
 	}
+}
+
+void SceneNode::postDraw(){
+	//Nothing yet
 }
 
 bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
@@ -86,19 +88,17 @@ Material* SceneNode::getMaterial(){
 void SceneNode::setMaterial(Material* m){
 	if(m){ //If we need to update the material
 		if(_material){ //If we had an old material
-			if(_material->getMaterialId() != m->getMaterialId()){ //if the old material isn't the same as the new one
+			if(_material->getMaterialId().i != m->getMaterialId().i){ //if the old material isn't the same as the new one
 				Console::getInstance().printfn("Replacing material [ %s ] with material  [ %s ]",_material->getName().c_str(),m->getName().c_str());
 				RemoveResource(_material);			//remove the old material
 			}
 		}
-		_material = m;						//set the new material
-		_sortKey = m->getMaterialId(); //and uptade the sort key
+		_material = m;				   //set the new material
 	}else{ //if we receive a null material, the we need to remove this node's material
 		if(_material){
 			Console::getInstance().printfn("Removing material [ %s ]",_material->getName().c_str());
 			RemoveResource(_material);
 		}
-		_sortKey = 0;
 	}
 }
 
@@ -108,12 +108,10 @@ void SceneNode::clearMaterials(){
 
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	if(!_material/* || !sgn*/) return;
-
 	GFXDevice& gfx = GFXDevice::getInstance();
 	gfx.setRenderState(_material->getRenderState());
 	gfx.setMaterial(_material);
-
-	Shader* s = _material->getShader();
+	ShaderProgram* s = _material->getShaderProgram();
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
 
 	Texture2D* baseTexture = NULL;
@@ -143,55 +141,51 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	if(opacityMap)	opacityMap->Bind(3);
 	if(specularMap) specularMap->Bind(4);
 	
-	if(s){
-		s->bind();
 
-		//The idea here is simple. Stop using glMultMatrixf for transforms
-		//Move transformation calculations to shader. If no transform matrix is available,
-		//revert to a legacy mode or legacy shader. 
-		//ToDo: implement and test this! -Ionut
+	s->bind();
+	//The idea here is simple. Stop using glMultMatrixf for transforms
+	//Move transformation calculations to shader. If no transform matrix is available,
+	//revert to a legacy mode or legacy shader. 
+	//ToDo: implement and test this! -Ionut
 
-		/*Transform* t = sgn->getTransform();
-		if(t){
-			s->Uniform("transformMatrix",t->getMatrix());
-			s->Uniform("parentTransformMatrix",t->getParentMatrix());
-		}else{
-			s->Uniform("legacyMode",true);
-		}*/
-		if(baseTexture)   s->UniformTexture("texDiffuse0",0);
-		if(secondTexture) s->UniformTexture("texDiffuse1",1);
-		if(bumpTexture){
-			s->UniformTexture("texBump",2);
-			s->Uniform("mode", 1);
-		}else{
-			s->Uniform("mode",0);
-		}
-		if(opacityMap){
-			s->UniformTexture("opacityMap",3);
-			s->Uniform("hasOpacity", true);
-		}else{
-			s->Uniform("hasOpacity", false);
-		}
-		if(specularMap){
-			s->UniformTexture("texSpecular",4);
-			s->Uniform("hasSpecular",true);
-		}else{
-			s->Uniform("hasSpecular",false);
-		}
-		s->Uniform("material",_material->getMaterialMatrix());
-		s->Uniform("textureCount",count);
-		s->Uniform("parallax_factor", 1.f);
-		s->Uniform("relief_factor", 1.f);
-		s->Uniform("tile_factor", 1.0f);
-		if(LightManager::getInstance().shadowMappingEnabled()){
-			s->Uniform("enable_shadow_mapping",_material->getReceivesShadows());
-		}else{
-			s->Uniform("enable_shadow_mapping",0);
-		}
-		s->Uniform("windDirectionX", activeScene->getWindDirX());
-		s->Uniform("windDirectionZ", activeScene->getWindDirZ());
-		s->Uniform("windSpeed", activeScene->getWindSpeed());
+	/*Transform* t = sgn->getTransform();
+	if(t){
+		s->Uniform("transformMatrix",t->getMatrix());
+		s->Uniform("parentTransformMatrix",t->getParentMatrix());
+	}*/
+	if(baseTexture)   s->UniformTexture("texDiffuse0",0);
+	if(secondTexture) s->UniformTexture("texDiffuse1",1);
+	if(bumpTexture){
+		s->UniformTexture("texBump",2);
+		s->Uniform("mode", 1);
+	}else{
+		s->Uniform("mode",0);
 	}
+	if(opacityMap){
+		s->UniformTexture("opacityMap",3);
+		s->Uniform("hasOpacity", true);
+	}else{
+		s->Uniform("hasOpacity", false);
+	}
+	if(specularMap){
+		s->UniformTexture("texSpecular",4);
+		s->Uniform("hasSpecular",true);
+	}else{
+		s->Uniform("hasSpecular",false);
+	}
+	s->Uniform("material",_material->getMaterialMatrix());
+	s->Uniform("textureCount",count);
+	s->Uniform("parallax_factor", 1.f);
+	s->Uniform("relief_factor", 1.f);
+	s->Uniform("tile_factor", 1.0f);
+	if(LightManager::getInstance().shadowMappingEnabled()){
+		s->Uniform("enable_shadow_mapping",_material->getReceivesShadows());
+	}else{
+		s->Uniform("enable_shadow_mapping",0);
+	}
+	s->Uniform("windDirectionX", activeScene->getWindDirX());
+	s->Uniform("windDirectionZ", activeScene->getWindDirZ());
+	s->Uniform("windSpeed", activeScene->getWindSpeed());
 }
 
 void SceneNode::releaseMaterial(){
@@ -216,10 +210,7 @@ void SceneNode::releaseMaterial(){
 	if(bumpTexture) bumpTexture->Unbind(2);
 	if(secondTexture) secondTexture->Unbind(1);
 	if(baseTexture) baseTexture->Unbind(0);
-
-	if(_material->getShader()){
-		_material->getShader()->unbind();
-	}
+	//_material->getShaderProgram()->unbind();
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const node) {
@@ -236,12 +227,12 @@ bool SceneNode::unload(){
 }
 
 void SceneNode::removeFromRenderExclusionMask(U8 stageMask) {
-	assert(stageMask & ~(INVALID_STAGE-1) == 0);
+	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask &= ~stageMask;
 }
 
 void SceneNode::addToRenderExclusionMask(U8 stageMask) {
-	assert(stageMask & ~(INVALID_STAGE-1) == 0);
+	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask |= static_cast<RENDER_STAGE>(stageMask);
 }
 

@@ -5,22 +5,22 @@
 //The intermidiate FBO contains each object's normals in the "rgb" components, and the linear depth in the "a" component
 //The intermidiate FBO is then passed as a 2D sampler in the second stage shader, processed and produces a full screen texure as a result
 //The result FBO contains AO ambient values that should be added to the final fragment's ambient lighting value
-class Shader;
+class ShaderProgram;
 class Quad3D;
 class Texture;
 typedef Texture Texture2D;
 class FrameBufferObject;
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
-	SSAOPreRenderOperator(Shader* const SSAOShader, Quad3D* const target, FrameBufferObject* result);
+	SSAOPreRenderOperator(ShaderProgram* const SSAOShader, Quad3D* const target, FrameBufferObject* result);
 	~SSAOPreRenderOperator();
 
 	void operation();
 	void reshape(I32 width, I32 height);
 
 private:
-	Shader* _stage1Shader;
-	Shader* _stage2Shader;
+	ShaderProgram* _stage1Shader;
+	ShaderProgram* _stage2Shader;
 	FrameBufferObject* _outputFBO;
 	FrameBufferObject* _normalsFBO;
 	Texture2D*		   _colorNoise;

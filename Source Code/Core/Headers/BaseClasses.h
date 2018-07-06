@@ -20,6 +20,7 @@
 
 #include "resource.h"
 
+
 class ResourceDescriptor{
 public:
 	ResourceDescriptor(const std::string& name = "default", 

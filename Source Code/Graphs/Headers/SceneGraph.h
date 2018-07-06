@@ -35,7 +35,9 @@ class SceneGraph  {
 	}
 
 	SceneGraphNode* getRoot(){ return _root; }
-
+	std::vector<BoundingBox >& getBBoxes(){
+		return _root->getBBoxes(_boundingBoxes);
+	}
 	SceneGraphNode* findNode(const std::string& name,bool sceneNodeName = false){
 		return _root->findNode(name,sceneNodeName);
 	}
@@ -44,10 +46,12 @@ class SceneGraph  {
 	void update();
 	void print();
 	void startUpdateThread();
+
 private:
 	boost::mutex    _rootAccessMutex; 
 	SceneGraphNode* _root;
 	Scene*          _scene;
 	bool            _updateRunning;
+	std::vector<BoundingBox> _boundingBoxes;
 };
 #endif

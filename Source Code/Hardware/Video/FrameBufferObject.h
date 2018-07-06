@@ -36,8 +36,10 @@ public:
 	virtual void Bind(U8 unit=0, U8 texture = 0) = 0;		
 	virtual void Unbind(U8 unit=0) = 0;	
 
-	inline U16 getWidth() const			{return _width;}
-	inline U16 getHeight() const		{return _height;}
+	inline U16 getWidth()  const	{return _width;}
+	inline U16 getHeight() const	{return _height;}
+	inline U8  getType()   const	{return _fboType;}
+
 	virtual ~FrameBufferObject(){};
 	FrameBufferObject() : _frameBufferHandle(0),
 						  _depthBufferHandle(0),

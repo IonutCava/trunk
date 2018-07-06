@@ -107,14 +107,14 @@ void Camera::TranslateStrafe(F32 factor)	{
 }
 
 
-void Camera::MoveAnaglyph(F32 factor)
-{
+void Camera::MoveAnaglyph(F32 factor){
+
 	vEye += vLeftDir * factor;
 	vCenter += vLeftDir * factor;
 }
 
-void Camera::RenderLookAtToCubeMap(const vec3& eye, U8 nFace)
-{
+void Camera::RenderLookAtToCubeMap(const vec3& eye, U8 nFace){
+
 	assert(nFace < 6);
 
 	vec3 TabCenter[6] = {	vec3(eye.x+1.0f,	eye.y,		eye.z),

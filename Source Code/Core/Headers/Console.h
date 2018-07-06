@@ -12,9 +12,13 @@ public:
 	void printf(char* format, ...);
 	void errorfn(char* format, ...);
 	void errorf(char* format, ...);
+	void d_printfn(char* format, ...);
+	void d_printf(char* format, ...);
+	void d_errorfn(char* format, ...);
+	void d_errorf(char* format, ...);
 	void toggleTimeStamps(bool state){_timestamps = state;}
 private:
-	void output(const std::string& text);
+	void output(const std::string& text,bool error = false);
 	boost::mutex io_mutex;
 	bool _timestamps;
 END_SINGLETON

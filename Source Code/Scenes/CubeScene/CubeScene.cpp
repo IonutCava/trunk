@@ -32,7 +32,7 @@ void CubeScene::render(){
 		_deferredBuffer->Unbind(2);
 		_deferredBuffer->Unbind(1);
 		_deferredBuffer->Unbind(0);
-	_deferredShader->unbind();
+	//_deferredShader->unbind();
 
 	if(_showTextures){
 
@@ -192,7 +192,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 			addLight(light);
 	}
 	ResourceDescriptor deferred("DeferredShadingPass2");
-	_deferredShader = _resManager.loadResource<Shader>(deferred);
+	_deferredShader = _resManager.loadResource<ShaderProgram>(deferred);
 
 	_deferredBuffer->Create(FrameBufferObject::FBO_2D_DEFERRED,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y);
 	_lightTexture->Create(2,LightManager::getInstance().getLights().size());

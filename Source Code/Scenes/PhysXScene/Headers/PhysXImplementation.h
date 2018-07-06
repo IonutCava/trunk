@@ -18,15 +18,15 @@
 #ifndef _PHYSX_PROCESSOR_H_
 #define _PHYSX_PROCESSPR_H_
 
-#include "PhysX/Headers/PhysX.h"
-#include "PhysX/Headers/PhysxSceneInterface.h"
+#include "Dynamics/Physics/Headers/PXDevice.h"
+#include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
 
-class PhysXImplementation : public PhysXSceneInterface {
+class PhysXImplementation : public PhysicsSceneInterface {
 public:
-	PhysXImplementation(Scene* currentScene) : PhysXSceneInterface(currentScene){init();}
-	~PhysXImplementation(){exit();}
-	bool exit() {return true;}
-	void idle() {}
+	PhysXImplementation(Scene* currentScene);
+	~PhysXImplementation();
+	//This is a dummy class to show a demo implementation
+	//With a class like this you could override any of the idle/process/update and so forth subroutines for the physics interface;
 };
 
 #endif

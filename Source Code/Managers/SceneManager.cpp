@@ -42,6 +42,21 @@ Scene* SceneManager::loadScene(const string& name){
 	return scene;
 }
 
+void SceneManager::registerScene(Scene* scenePointer){
+	assert(scenePointer != NULL);
+	std::pair<unordered_map<std::string, Scene*>::iterator, bool > result;
+	//try and add the new scene
+	result = _sceneMap.insert(std::make_pair(scenePointer->getName(), scenePointer));
+	//if we fail ...
+	if(!result.second){
+		//unload and delete the old scene with the same name
+		(result.first)->second->unload();
+		delete (result.first)->second;
+		//and register the new one
+		(result.first)->second = scenePointer;
+	}
+}
+
 void SceneManager::toggleBoundingBoxes(){
 	if(!_scene->drawBBox() && _scene->drawObjects())	{
 		_scene->drawBBox(true);

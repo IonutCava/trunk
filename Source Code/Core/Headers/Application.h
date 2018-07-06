@@ -39,6 +39,8 @@ private:
 	SceneManager& _scene;
 	Camera*       _camera;
 	GUI&          _gui;
+	bool          _previewDepthMaps;
+	static bool   _keepAlive;
 
 public:
 	const vec2& getWindowDimensions() const {return _dimensions;}
@@ -55,7 +57,7 @@ public:
 
 	inline I8 const&  getMainWindowId() {return mainWindowId;}
 	inline void setMainWindowId(U8 id)  {mainWindowId = id;}
-
+	void   togglePreviewDepthMaps() {_previewDepthMaps = !_previewDepthMaps;}
 private:
 	void DrawScene();
    END_SINGLETON

@@ -16,4 +16,16 @@
 #define F32 float
 #define D32 double
 
+typedef struct packed_int {
+		 U8 b0;
+		 U8 b1;
+		 U8 b2;
+		 U8 b3;
+} packed_int;
+
+typedef union {
+	U32 i;
+	packed_int b;
+} P32;
+
 #endif

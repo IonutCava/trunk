@@ -35,6 +35,13 @@ namespace Util {
 		s << data;
 		return s.str();
 	}
+	inline F32 max(const F32& a, const F32& b){
+		return (a<b) ? b : a;
+	}
+
+	inline F32 min(const F32& a, const F32& b){
+		return (a<b) ? a : b;
+	}
 
 #if defined  USE_MATH_SSE		
 	static const __m128 one = _mm_set_ps1(1.0f);

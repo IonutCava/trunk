@@ -67,6 +67,7 @@ vec4  Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN);
 vec4  NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParallax);
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB);
 vec4  ReliefMapping(vec2 uv);
+vec4  applyFog(in vec4 color);
 
 const float LOG2 = 1.442695;
 
@@ -78,7 +79,7 @@ void main (void){
 	vec4 color;
 	//Else, use appropriate lighting / bump mapping / relief mapping / normal mapping
 	if(mode == MODE_PHONG)
-		color = Phong(texCoord[0].st*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
+		color = Phong(texCoord[0].st*tile_factor, vNormalMV, vPixToEyeTBN, vPixToLightTBNcurrent);
 	else if(mode == MODE_RELIEF)
 		color = ReliefMapping(texCoord[0].st*tile_factor);
 	else if(mode == MODE_BUMP)
@@ -93,15 +94,7 @@ void main (void){
 		if(color.a < 0.2) discard;	
 	}
 	if(enableFog){
-		float z = gl_FragCoord.z / gl_FragCoord.w;
-		float fogFactor = exp2( -gl_Fog.density * 
-					   gl_Fog.density * 
-					   z * 
-					   z * 
-					LOG2 );
-		fogFactor = clamp(fogFactor, 0.0, 1.0);
-
-		color = mix(gl_Fog.color, color, fogFactor );
+		color = applyFog(color);
 	}
 	gl_FragData[0] = color;
 }
@@ -289,7 +282,7 @@ float ShadowMapping(out vec3 vPixPosInDepthMap){
 	float fShadow = 1.0;
 			
 	float tOrtho[3];
-	tOrtho[0] = 2.0;
+	tOrtho[0] = 5.0;
 	tOrtho[1] = 10.0;
 	tOrtho[2] = 50.0;
 	bool ok = false;
@@ -305,7 +298,7 @@ float ShadowMapping(out vec3 vPixPosInDepthMap){
 				id = i;
 				ok = true;
 				posInDM = vPixPosInDepthMap;
-				break; // no need to continue
+				//break; // no need to continue
 			}
 		}
 	}
@@ -329,42 +322,35 @@ float ShadowMapping(out vec3 vPixPosInDepthMap){
 
 
 float filterFinalShadow(sampler2DShadow depthMap,vec3 vPosInDM, float resolution){
-	float fShadow = 0.0;
-						
-	vec2 tOffset[3*3];
-	tOffset[0] = vec2(-1.0, -1.0); tOffset[1] = vec2(0.0, -1.0); tOffset[2] = vec2(1.0, -1.0);
-	tOffset[3] = vec2(-1.0,  0.0); tOffset[4] = vec2(0.0,  0.0); tOffset[5] = vec2(1.0,  0.0);
-	tOffset[6] = vec2(-1.0,  1.0); tOffset[7] = vec2(0.0,  1.0); tOffset[8] = vec2(1.0,  1.0);
-
+	// Gaussian 3x3 filter
 	vec4 vDepthMapColor = shadow2D(depthMap, vPosInDM);
-	
-	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPosInDM.z)
-	{
-		fShadow = 0.0;
-		
-		// Soft Shadows for nearby textures
-		if( length(vVertexMV.xyz) < 15.0 )
-		{
-			for(int i=0; i<9; i++)
-			{
-				vec2 offset = tOffset[i] / resolution;
-				// Couleur du pixel sur la depth map
-				vec4 vDepthMapColor = shadow2D(depthMap, vPosInDM + vec3(offset.s, offset.t, 0.0));
-		
-				if((vDepthMapColor.z+Z_TEST_SIGMA) < vPosInDM.z) {
-					fShadow += 0.0;
-				}
-				else {
-					fShadow += 1.0 / 9.0;
-				}
-			}
-		}
-	}
-	else
-	{
+	float fShadow = 0.0;
+	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPosInDM.z){
+		fShadow = shadow2D(depthMap, vPosInDM).x * 0.25;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, -1)).x * 0.0625;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, 0)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, 1)).x * 0.0625;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 0, -1)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 0, 1)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, -1)).x * 0.0625;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, 0)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, 1)).x * 0.0625;
+
+		fShadow = clamp(fShadow, 0.0, 1.0);
+	}else{
 		fShadow = 1.0;
 	}
-
-	fShadow = clamp(fShadow, 0.0, 1.0);
 	return fShadow;
+}
+
+vec4 applyFog(in vec4 color){
+	float z = gl_FragCoord.z / gl_FragCoord.w;
+	float fogFactor = exp2( -gl_Fog.density * 
+					   gl_Fog.density * 
+					   z * 
+					   z * 
+					LOG2 );
+	fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+	return mix(gl_Fog.color, color, fogFactor );
 }

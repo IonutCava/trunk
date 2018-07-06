@@ -1,6 +1,7 @@
 #include "Headers/Material.h"
 #include "Hardware/Video/Texture.h"
 #include "Managers/Headers/ResourceManager.h"
+#include "Managers/Headers/ShaderManager.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Utility/Headers/XMLParser.h"
 
@@ -16,15 +17,15 @@ Material::Material() : Resource(),
 					   _twoSided(false),
 					   _castsShadows(true),
 					   _receiveShadows(true),
-					   _state(New RenderState())
+					   _state(New RenderState()),
+					   _shaderRef(NULL)
 {
    _textures[TEXTURE_BASE] = NULL;
    _textures[TEXTURE_BUMP] = NULL;
    _textures[TEXTURE_SECOND] = NULL;
    _textures[TEXTURE_OPACITY] = NULL;
    _textures[TEXTURE_SPECULAR] = NULL;
-   _matId = GFXDevice::getInstance().getPrevMaterialId() + 1;
-   GFXDevice::getInstance().setPrevMaterialId(_matId);
+   _matId.i = 0;
 }
 
 
@@ -58,36 +59,75 @@ void Material::createCopy(){
 //bump = bump map
 void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture) {
 	if(_textures[textureUsage]){
-			RemoveResource(_textures[textureUsage]);
+		RemoveResource(_textures[textureUsage]);
 	}else{
 		//if we add a new type of texture
 		_computedLightShaders = false; //recompute shaders on texture change
 	}
 	_textures[textureUsage] = texture;
-	
+
 	_dirty = true;
+}
+
+ShaderProgram* Material::setShaderProgram(const std::vector<std::string >& pixelShaders, 
+								  		  const std::vector<std::string >& vertexShaders, 
+							 			  const std::vector<std::string >& geometryShaders){
+	std::string shaderString = "";
+	if(!pixelShaders.empty()){
+		shaderString+= pixelShaders[0];
+	}
+	if(!vertexShaders.empty()){
+		shaderString += "," + vertexShaders[0];
+	}
+	if(!geometryShaders.empty()){
+		shaderString+= "," + geometryShaders[0];
+	}
+	
+	_shaderRef = setShaderProgram(shaderString);
+
+	if(_shaderRef){
+		for(U8 i = 1; i < pixelShaders.size(); i++){
+			_shaderRef->attachShader(ShaderManager::getInstance().loadShader(pixelShaders[i]+".frag", _shaderRef->getResourceLocation()));
+		}
+		for(U8 i = 1; i < vertexShaders.size(); i++){
+			_shaderRef->attachShader(ShaderManager::getInstance().loadShader(vertexShaders[i]+".vert", _shaderRef->getResourceLocation()));
+		}
+		for(U8 i = 1; i < geometryShaders.size(); i++){
+			_shaderRef->attachShader(ShaderManager::getInstance().loadShader(geometryShaders[i]+".geom", _shaderRef->getResourceLocation()));
+		}
+		_shaderRef->commit();
+	}
+	_dirty = true;
+	_computedLightShaders = true;
+	return _shaderRef;
 }
 
 //Here we set the shader's name
-void Material::setShader(const std::string& shader){
+ShaderProgram* Material::setShaderProgram(const std::string& shader){
 	//if we already had a shader assigned ...
 	if(!_shader.empty()){
 		//and we are trying to assing the same one again, return.
-		if(_shader.compare(shader) == 0) return;
-		else Console::getInstance().printfn("Replacing shader [ %s ] with shader  [ %s ]",_shader.c_str(),shader.c_str());
+		if(_shader.compare(shader) == 0){
+			_shaderRef = static_cast<ShaderProgram* >(ResourceManager::getInstance().find(_shader));
+			return _shaderRef;
+		}else{
+			Console::getInstance().printfn("Replacing shader [ %s ] with shader  [ %s ]",_shader.c_str(),shader.c_str());
+		}
 	}
 
-	_shader = shader;
-	if(!ResourceManager::getInstance().find(_shader) && !_shader.empty()){
-		ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor(_shader));
+	(!shader.empty()) ? _shader = shader : _shader = "NULL";
+
+	_shaderRef = static_cast<ShaderProgram* >(ResourceManager::getInstance().find(_shader));
+	if(!_shaderRef){
+		_shaderRef = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor(_shader));
 	}
-	dumpToXML();
 	_dirty = true;
 	_computedLightShaders = true;
+	return _shaderRef;
 }
 
-Shader* const Material::getShader(){
-	return dynamic_cast<Shader*>(ResourceManager::getInstance().find(_shader));
+ShaderProgram* const Material::getShaderProgram(){
+	return _shaderRef;
 }
 
 Texture2D* const  Material::getTexture(TextureUsage textureUsage)  {
@@ -102,26 +142,22 @@ void Material::computeLightShaders(){
 		//if(GFXDevice::getInstance().getRenderStage() == DEFERRED_STAGE){
 		if(GFXDevice::getInstance().getDeferredRendering()){
 			if(_textures[TEXTURE_BASE]){
-				setShader("DeferredShadingPass1");
+				setShaderProgram("DeferredShadingPass1");
 			}else{
-				setShader("DeferredShadingPass1_color.frag,DeferredShadingPass1.vert");
+				setShaderProgram("DeferredShadingPass1_color.frag,DeferredShadingPass1.vert");
 			}
 		}else{
 			if(_textures[TEXTURE_BASE]){
 				if(_textures[TEXTURE_BUMP]){
-					setShader("lighting_bump.frag,lighting.vert");
+					setShaderProgram("lighting_bump.frag,lighting.vert");
 				}else{
-					setShader("lighting_texture.frag,lighting.vert");
+					setShaderProgram("lighting_texture.frag,lighting.vert");
 				}
 			}else{
-				setShader("lighting_noTexture.frag,lighting.vert");
+				setShaderProgram("lighting_noTexture.frag,lighting.vert");
 			}
 		}
 	}
-	if(getName().compare("defaultMaterial") != 0){
-		dumpToXML();
-	}
-	_computedLightShaders = true;
 }
 
 bool Material::unload(){
@@ -135,10 +171,29 @@ bool Material::unload(){
 }
 
 void Material::dumpToXML(){
+	if(getName().compare("defaultMaterial") == 0) return;
 	XML::dumpMaterial(this);
-	_dirty = false;
 }
 
 void Material::setTwoSided(bool state) {
 	state ? _state->cullingEnabled() = false : _state->cullingEnabled() = true;
+	_dirty = true;
+}
+
+bool Material::isTranslucent(){
+	bool state = false;
+	if(_textures[TEXTURE_BASE]){
+		if(_textures[TEXTURE_BASE]->hasTransparency()) state = true;
+	}
+	if(!_state->cullingEnabled() && _state->blendingEnabled()) state = true;
+	return state;
+}
+
+P32 Material::getMaterialId(){
+	if(_dirty){
+		(_shaderRef != NULL) ? _matId.i = _shaderRef->getId() :  _matId.i = 0;
+		dumpToXML();
+		_dirty = false;
+	}
+	return _matId;
 }

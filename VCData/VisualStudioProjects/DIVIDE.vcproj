@@ -292,6 +292,10 @@
 				Name="Headers"
 				>
 				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\FrameListener.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\Rendering\Headers\Framerate.h"
 					>
 				</File>
@@ -330,37 +334,67 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="PhysX"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			Name="Dynamics"
 			>
-			<File
-				RelativePath="..\..\Source Code\PhysX\PhysX.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\PhysX\PhysXSceneInterface.cpp"
-				>
-			</File>
 			<Filter
-				Name="Actors"
+				Name="Physics"
 				>
-				<File
-					RelativePath="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp"
+				<Filter
+					Name="PhysX"
 					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Headers"
-				>
-				<File
-					RelativePath="..\..\Source Code\PhysX\PhysX.h"
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Physics\PhysX\PhysX.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Physics\PhysX\PhysXSceneInterface.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysX.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysXSceneInterface.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="Actors"
+						>
+						<File
+							RelativePath="..\..\Source Code\Dynamics\Physics\PhysX\Actors\pxSimpleShapes.cpp"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="ODE"
 					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\PhysX\PhysXSceneInterface.h"
+				</Filter>
+				<Filter
+					Name="Bullet"
 					>
-				</File>
+				</Filter>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAPIWrapper.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Physics\Headers\PhysicsSceneInterface.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Physics\Headers\PXDevice.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -544,6 +578,10 @@
 			</File>
 			<File
 				RelativePath="..\..\Source Code\Core\Console.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Core\ParamHandler.cpp"
 				>
 			</File>
 			<Filter
@@ -798,11 +836,27 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Hardware\Video\ShaderHandler.cpp"
+					RelativePath="..\..\Source Code\Hardware\Video\Shader.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Hardware\Video\ShaderHandler.h"
+					RelativePath="..\..\Source Code\Hardware\Video\Shader.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\ShaderGenerator.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\ShaderGenerator.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\ShaderProgram.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\ShaderProgram.h"
 					>
 				</File>
 				<File
@@ -849,6 +903,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glShaderProgram.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glShaderProgram.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glTexture.cpp"
 						>
 					</File>
@@ -872,6 +934,26 @@
 						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.h"
 						>
 					</File>
+					<Filter
+						Name="glsw"
+						>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="Direct3D"
@@ -959,6 +1041,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Managers\FrameListenerManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Managers\LightManager.cpp"
 				>
 			</File>
@@ -974,6 +1060,10 @@
 				RelativePath="..\..\Source Code\Managers\SceneManager.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\ShaderManager.cpp"
+				>
+			</File>
 			<Filter
 				Name="Headers"
 				>
@@ -983,6 +1073,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Managers\Headers\CameraManager.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Managers\Headers\FrameListenerManager.h"
 					>
 				</File>
 				<File
@@ -999,6 +1093,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Managers\Headers\SceneManager.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Managers\Headers\ShaderManager.h"
 					>
 				</File>
 			</Filter>
@@ -1197,11 +1295,27 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\assets\shaders\GLSL\high\objectViewer.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\high\objectViewer.vert"
+						>
+					</File>
+					<File
 						RelativePath="..\..\assets\shaders\GLSL\high\postProcessing.frag"
 						>
 					</File>
 					<File
 						RelativePath="..\..\assets\shaders\GLSL\high\postProcessing.vert"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\high\shadow_filter_4tap_bil.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\high\shadow_filter_gaussian.frag"
 						>
 					</File>
 					<File

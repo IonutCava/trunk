@@ -34,7 +34,6 @@
 
 #define CLAMP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
 #define BIT(x) (1 << (x))
-
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -61,15 +60,18 @@
 #include <vector>
 #include <deque>
 #include <list>
+#include <typeinfo.h>
 #include <time.h>
+#if defined(UNORDERED_MAP_IMP) && UNORDERED_MAP_IMP == 0
 
-#if defined UNORDERED_MAP == BOOST
 #include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>
 #define unordered_map boost::unordered_map
 #define for_each         BOOST_FOREACH
 #define reverse_for_each BOOST_REVERSE_FOREACH
+
 #else
+
 #include <unordered_map>
 #include <algorithm>
 #define unordered_map std::tr1::unordered_map
@@ -77,6 +79,8 @@
 #include <boost/foreach.hpp>
 #define for_each BOOST_FOREACH 
 #define reverse_for_each BOOST_REVERSE_FOREACH
+
+
 #endif
 
 #include "Hardware/Platform/PlatformDefines.h" //For data types

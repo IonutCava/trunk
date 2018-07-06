@@ -90,8 +90,6 @@ WaterPlane* ResourceManager::loadResource<WaterPlane>(const ResourceDescriptor& 
 		ptr = New WaterPlane();
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
-		ptr->useDefaultMaterial(false);
-		ptr->setMaterial(NULL);
 
 		add(descriptor.getName(),ptr);
 	}
@@ -128,12 +126,12 @@ Texture* ResourceManager::loadResource<Texture>(const ResourceDescriptor& descri
 }
 
 template<>
-Shader* ResourceManager::loadResource<Shader>(const ResourceDescriptor& descriptor){
+ShaderProgram* ResourceManager::loadResource<ShaderProgram>(const ResourceDescriptor& descriptor){
 
-	Shader* ptr = dynamic_cast<Shader*>(loadResource(descriptor.getName()));
+	ShaderProgram* ptr = dynamic_cast<ShaderProgram*>(loadResource(descriptor.getName()));
 	if(!ptr){
 		ParamHandler& par = ParamHandler::getInstance();
-		ptr = GFXDevice::getInstance().newShader();
+		ptr = GFXDevice::getInstance().newShaderProgram();
 
 		if(descriptor.getResourceLocation().compare("default") == 0)
 			ptr->setResourceLocation(par.getParam<string>("assetsLocation") + "/" + par.getParam<string>("shaderLocation"));
@@ -159,7 +157,7 @@ Material* ResourceManager::loadResource<Material>(const ResourceDescriptor& desc
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
 		if(descriptor.getFlag()) {
-			ptr->setShader("");
+			ptr->setShaderProgram("");
 		}
 
 		add(descriptor.getName(),ptr);

@@ -67,7 +67,9 @@ void DX_API::releaseModelView()
 void DX_API::setOrthoProjection(const vec4& rect, const vec2& planes)
 {
 }
-
+void DX_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes)
+{
+}
 void DX_API::drawTextToScreen(Text* text)
 {
 }
@@ -85,6 +87,9 @@ void DX_API::drawFlash(GuiFlash* flash)
 }
 void DX_API::drawBox3D(vec3 min, vec3 max)
 {
+}
+
+void DX_API::renderInViewport(const vec4& rect, boost::function0<void> callback){
 }
 
 void DX_API::renderModel(Object3D* const model)
@@ -147,4 +152,9 @@ void DX_API::setObjectState(Transform* const transform)
 
 void DX_API::releaseObjectState(Transform* const transform)
 {
+}
+
+F32 DX_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph)
+{
+	return 0;
 }

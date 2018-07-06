@@ -25,6 +25,40 @@ void Console::printCopyrightNotice(){
 	std::cout << std::endl;
 	_timestamps = true;
 }
+void Console::d_printfn(char* format, ...){
+#ifdef _DEBUG
+	va_list args;
+	std::string fmt_text;
+	va_start(args, format);
+	I32 len = _vscprintf(format, args) + 1;
+	char *text = new char[len];
+	vsprintf_s(text, len, format, args);
+	fmt_text.append(text);
+	fmt_text.append("\n");
+	delete[] text;
+	text = NULL;
+	va_end(args);
+	output(fmt_text);
+	fmt_text.empty();
+#endif
+}
+
+void Console::d_printf(char* format, ...){
+#ifdef _DEBUG
+	va_list args;
+	std::string fmt_text;
+	va_start(args, format);
+	I32 len = _vscprintf(format, args) + 1;
+	char *text = new char[len];
+	vsprintf_s(text, len, format, args);
+	fmt_text.append(text);
+	delete[] text;
+	text = NULL;
+	va_end(args);
+	output(fmt_text);
+	fmt_text.empty();
+#endif
+}
 
 void Console::printfn(char* format, ...){
 	va_list args;
@@ -56,6 +90,42 @@ void Console::printf(char* format, ...){
 	output(fmt_text);
 	fmt_text.empty();
 }
+void Console::d_errorfn(char* format, ...){
+#ifdef _DEBUG
+	va_list args;
+	std::string fmt_text;
+	va_start(args, format);
+	I32 len = _vscprintf(format, args) + 1;
+	char *text = new char[len];
+	vsprintf_s(text, len, format, args);
+	fmt_text.append("Error: ");
+	fmt_text.append(text);
+	fmt_text.append("\n");
+	delete[] text;
+	text = NULL;
+	va_end(args);
+	output(fmt_text,true);
+	fmt_text.empty();
+#endif
+}
+
+void Console::d_errorf(char* format, ...){
+#ifdef _DEBUG
+	va_list args;
+	std::string fmt_text;
+	va_start(args, format);
+	I32 len = _vscprintf(format, args) + 1;
+	char *text = new char[len];
+	vsprintf_s(text, len, format, args);
+	fmt_text.append("Error: ");
+	fmt_text.append(text);
+	delete[] text;
+	text = NULL;
+	va_end(args);
+	output(fmt_text,true);
+	fmt_text.empty();
+#endif
+}
 
 void Console::errorfn(char* format, ...){
 	va_list args;
@@ -70,7 +140,7 @@ void Console::errorfn(char* format, ...){
 	delete[] text;
 	text = NULL;
 	va_end(args);
-	output(fmt_text);
+	output(fmt_text,true);
 	fmt_text.empty();
 }
 
@@ -86,16 +156,25 @@ void Console::errorf(char* format, ...){
 	delete[] text;
 	text = NULL;
 	va_end(args);
-	output(fmt_text);
+	output(fmt_text,true);
 	fmt_text.empty();
 }
 
-void Console::output(const std::string& output){
+void Console::output(const std::string& output,bool error){
 	boost::mutex::scoped_lock  lock(io_mutex);
 	if(_timestamps){
-		std::cout << "[ " << std::setprecision(4) << GETTIME() << " ] " << output << std::flush;
+		if(error){
+			std::cerr << "[ " << std::setprecision(4) << GETTIME() << " ] " << output << std::flush;
+		}else{
+			std::cout << "[ " << std::setprecision(4) << GETTIME() << " ] " << output << std::flush;
+		}
 	}else{
-		std::cout << output << std::flush;
+		if(error){
+			std::cerr << output << std::flush;
+		}else{
+			std::cout << output << std::flush;
+		}
+		
 	}
 	//GUI::getInstance().printConsole(output);
 }

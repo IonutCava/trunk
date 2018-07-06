@@ -306,17 +306,22 @@ namespace XML
 			mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML(pt.get("specularMap.file","none")));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("shader")){
-			std::string fragShader = pt.get<string>("shader.pixelShader","none");
-			std::string vertShader = pt.get<string>("shader.vertexShader","none");
-			if(fragShader.compare("none") != 0 && vertShader.compare("none") != 0){
-				mat->setShader(fragShader+","+vertShader);
-			}else if(fragShader.compare("none") != 0 && vertShader.compare("none") == 0){
-				mat->setShader(fragShader);
-			}else if(fragShader.compare("none") == 0 && vertShader.compare("none") != 0){
-				mat->setShader(vertShader);
-			}else{
-				mat->setShader("");
+			std::vector<std::string > pix;
+			std::vector<std::string > vert;
+			std::vector<std::string > geom;
+			ptree::iterator it;
+			for (it = pt.get_child("shader").begin(); it != pt.get_child("shader").end(); ++it ){
+				std::string shaderType = it->first.data();
+				std::string shaderValue = it->second.data();
+				if(shaderType.compare("pixelShader") == 0){
+					pix.push_back(shaderValue);
+				}else if(shaderType.compare("vertexShader") == 0){
+					vert.push_back(shaderValue);
+				}else{
+					geom.push_back(shaderValue);
+				}
 			}
+			mat->setShaderProgram(pix,vert,geom);
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("renderState")){
 			RenderState& renderState = mat->getRenderState();
@@ -408,10 +413,21 @@ namespace XML
 			pt.put("specularMap.mipFilter",true);
 		}
 		
-		Shader* s = mat->getShader();
+		ShaderProgram* s = mat->getShaderProgram();
 		if(s){
-			pt.put("shader.vertexShader",s->getVertName());
-			pt.put("shader.pixelShader",s->getFragName());
+			std::vector<Shader* >& fragShaders = s->getShaders(FRAGMENT_SHADER);
+			std::vector<Shader* >& vertShaders = s->getShaders(VERTEX_SHADER);
+			std::vector<Shader* >& geomShaders = s->getShaders(GEOMETRY_SHADER);
+			for_each(Shader* s, fragShaders){
+				pt.put("shader.pixelShader",s->getName());
+			}
+			for_each(Shader* s, vertShaders){
+				pt.put("shader.vertexShader",s->getName());
+			}
+			for_each(Shader* s, geomShaders){
+				pt.put("shader.geometryShader",s->getName());
+			}
+
 		}
 		RenderState& state = mat->getRenderState();
 		pt.put("renderState.cullingEnabled", state.cullingEnabled());

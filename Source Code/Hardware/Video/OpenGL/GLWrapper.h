@@ -24,6 +24,7 @@
 #include "glFrameBufferObject.h"
 #include "glVertexBufferObject.h"
 #include "glPixelBufferObject.h"
+#include "glShaderProgram.h"
 #include "glShader.h"
 #include "glTexture.h"
 
@@ -52,8 +53,8 @@ private:
 	Texture2D*          newTexture2D(bool flipped = false){return New glTexture(0x0DE1/*GL_TEXTURE_2D*/,flipped);}
 	TextureCubemap*     newTextureCubemap(bool flipped = false){return New glTexture(0x8513/*GL_TEXTURE_CUBEMAP*/,flipped);}
 
-	Shader* newShader(const char *vsFile, const char *fsFile){return New glShader(vsFile,fsFile); }
-	Shader* newShader(){return New glShader(); }
+	ShaderProgram* newShaderProgram(){return New glShaderProgram(); }
+	Shader*        newShader(const std::string& name, SHADER_TYPE type)       {return New glShader(name,type); }
 
 	typedef void (*callback)();	void glCommand(callback f){f();}
 
@@ -67,6 +68,7 @@ private:
 	void releaseModelView();
 
 	void setOrthoProjection(const vec4& rect, const vec2& planes);
+	void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes);
 
 	void toggle2D(bool state);
 
@@ -76,6 +78,8 @@ private:
 	void drawFlash(GuiFlash* flash);
 
 	void drawBox3D(vec3 min, vec3 max);
+
+	void renderInViewport(const vec4& rect, boost::function0<void> callback);
 
 	void renderModel(Object3D* const model);
 	void renderElements(Type t, Format f, U32 count, const void* first_element);
@@ -96,6 +100,8 @@ private:
 
 	void setObjectState(Transform* const transform);
 	void releaseObjectState(Transform* const transform);
+
+	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph);
 private: //OpenGL specific:
 
 	

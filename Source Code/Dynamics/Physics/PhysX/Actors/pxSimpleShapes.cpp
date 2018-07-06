@@ -1,10 +1,11 @@
-#include "PhysX/Headers/PhysX.h"
-#include "PhysX/Headers/PhysXSceneInterface.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Dynamics/Physics/Headers/PXDevice.h"
+#include "Dynamics/Physics/PhysX/Headers/PhysXSceneInterface.h"
 
 using namespace physx;
 
-bool PhysX::createPlane(PhysXSceneInterface* targetScene,const vec3& position,U32 size){
+bool PhysX::createPlane(PhysicsSceneInterface* targetScene,const vec3& position,U32 size){
+	assert(targetScene != NULL);
 	PxTransform pose = PxTransform(PxVec3(position.x,position.y,position.z),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
 	PxRigidStatic* plane = _gPhysicsSDK->createRigidStatic(pose);
 	if (!plane){
@@ -16,11 +17,11 @@ bool PhysX::createPlane(PhysXSceneInterface* targetScene,const vec3& position,U3
 		Console::getInstance().errorfn("PhysX: error creating shape for plane!");
 		return false;
 	}
-	targetScene->addRigidStaticActor(plane);
+	static_cast<PhysXSceneInterface* >(targetScene)->addRigidStaticActor(plane);
 	return true;
 }
 
-bool PhysX::createBox(PhysXSceneInterface* targetScene,const vec3& position, F32 size){
+bool PhysX::createBox(PhysicsSceneInterface* targetScene,const vec3& position, F32 size){
 	PxReal density = 1.0f;
 	PxTransform transform(PxVec3(position.x,position.y,position.z), PxQuat::createIdentity());
 	PxVec3 dimensions(size ,size ,size );
@@ -36,6 +37,6 @@ bool PhysX::createBox(PhysXSceneInterface* targetScene,const vec3& position, F32
 		Console::getInstance().errorfn("PhysX: error creating box!");
 		return false;
 	}
-	targetScene->addRigidDynamicActor(actor);
+	static_cast<PhysXSceneInterface* >(targetScene)->addRigidDynamicActor(actor);
 	return true;
 }

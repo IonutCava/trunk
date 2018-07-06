@@ -80,6 +80,7 @@ inline       void             setGrandParent(SceneGraphNode* grandParent) {_gran
 inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){_initialBoundingBox = initialBoundingBox;}
 inline const BoundingBox&     getInitialBoundingBox()		  {return _initialBoundingBox;}
 inline       BoundingBox&	  getBoundingBox()                {return _boundingBox;}
+std::vector<BoundingBox >&    getBBoxes(std::vector<BoundingBox >& boxes );
 /*Bounding Box Management*/
 
 /*Transform management*/

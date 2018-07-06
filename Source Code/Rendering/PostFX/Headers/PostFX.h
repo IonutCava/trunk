@@ -26,7 +26,7 @@
 class Texture;
 typedef Texture Texture2D;
 class Quad3D;
-class Shader;
+class ShaderProgram;
 class FrameBufferObject;
 DEFINE_SINGLETON( PostFX )
 
@@ -59,11 +59,11 @@ public:
 	F32 _eyeOffset;
 
 	Quad3D*	_renderQuad;
-	Shader* _anaglyphShader;
-	Shader* _postProcessingShader;
-	Shader* _blurShader;
-	Shader* _bloomShader;
-	Shader* _SSAOShaderPass1;
+	ShaderProgram* _anaglyphShader;
+	ShaderProgram* _postProcessingShader;
+	ShaderProgram* _blurShader;
+	ShaderProgram* _bloomShader;
+	ShaderProgram* _SSAOShaderPass1;
 	Texture2D* _underwaterTexture;
 	GFXDevice& _gfx;
 

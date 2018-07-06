@@ -15,6 +15,8 @@ void Manager::Destroy(){
 	ResourceMap::iterator& it = _resDB.begin();
 	for_each(ResourceMap::value_type& it, _resDB){
 		remove(it.second, true);
+		delete it.second;
+		it.second = NULL;
 	}
 	_resDB.clear();
 }

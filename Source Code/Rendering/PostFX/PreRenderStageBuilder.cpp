@@ -14,12 +14,12 @@ PreRenderStageBuilder::~PreRenderStageBuilder(){
 	}
 }
 
-PreRenderOperator*  PreRenderStageBuilder::addSSAOOperator(Shader* const SSAOShader, Quad3D* target, bool& state, FrameBufferObject* result) {
+PreRenderOperator*  PreRenderStageBuilder::addSSAOOperator(ShaderProgram* const SSAOShader, Quad3D* target, bool& state, FrameBufferObject* result) {
 	SSAOPreRenderOperator* ssao = New SSAOPreRenderOperator(SSAOShader,target,result);
 	return addToStage(ssao, state);
 }
 
-PreRenderOperator*  PreRenderStageBuilder::addBloomOperator(Shader* const bloomShader, Quad3D* target, bool& state, FrameBufferObject* result) {
+PreRenderOperator*  PreRenderStageBuilder::addBloomOperator(ShaderProgram* const bloomShader, Quad3D* target, bool& state, FrameBufferObject* result) {
 	BloomPreRenderOperator* bloom = New BloomPreRenderOperator(bloomShader,target,result);
 	return addToStage(bloom, state);
 }

@@ -38,6 +38,15 @@ SceneGraphNode::~SceneGraphNode(){
 	_children.clear();
 
 }
+std::vector<BoundingBox >&  SceneGraphNode::getBBoxes(std::vector<BoundingBox >& boxes ){
+	//Unload every sub node recursively
+	for_each(NodeChildren::value_type& it, _children){
+		it.second->getBBoxes(boxes);
+	}
+	boxes.push_back(getBoundingBox());
+	return boxes;
+}
+
 //When unloading the current graph node
 bool SceneGraphNode::unload(){
 	//Unload every sub node recursively
@@ -76,9 +85,9 @@ void SceneGraphNode::print(){
 		//Get the material's name
 		material = mat->getName();
 		//If we have a shader
-		if(mat->getShader()){
+		if(mat->getShaderProgram()){
 			//Get the shader's name
-			shader = mat->getShader()->getName();
+			shader = mat->getShaderProgram()->getName();
 		}
 	}
 	//Print our current node's information

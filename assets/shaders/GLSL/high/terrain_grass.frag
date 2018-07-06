@@ -45,7 +45,7 @@ float ShadowMapping(out vec3 vPixPosInDepthMap){
 	float fShadow = 1.0;
 			
 	float tOrtho[3];
-	tOrtho[0] = 2.0;
+	tOrtho[0] = 5.0;
 	tOrtho[1] = 10.0;
 	tOrtho[2] = 50.0;
 	bool ok = false;
@@ -83,49 +83,27 @@ float ShadowMapping(out vec3 vPixPosInDepthMap){
 	return fShadow;
 }
 
-
 float filterFinalShadow(sampler2DShadow depthMap,vec3 vPosInDM, float resolution){
-	float fShadow = 0.0;
-						
-	vec2 tOffset[3*3];
-	tOffset[0] = vec2(-1.0, -1.0); tOffset[1] = vec2(0.0, -1.0); tOffset[2] = vec2(1.0, -1.0);
-	tOffset[3] = vec2(-1.0,  0.0); tOffset[4] = vec2(0.0,  0.0); tOffset[5] = vec2(1.0,  0.0);
-	tOffset[6] = vec2(-1.0,  1.0); tOffset[7] = vec2(0.0,  1.0); tOffset[8] = vec2(1.0,  1.0);
-
+	// Gaussian 3x3 filter
 	vec4 vDepthMapColor = shadow2D(depthMap, vPosInDM);
-	
-	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPosInDM.z)
-	{
-		fShadow = 0.0;
-		
-		// Soft Shadows for nearby textures
-		if( length(vVertexMV.xyz) < 15.0 )
-		{
-			for(int i=0; i<9; i++)
-			{
-				vec2 offset = tOffset[i] / resolution;
-				// Couleur du pixel sur la depth map
-				vec4 vDepthMapColor = shadow2D(depthMap, vPosInDM + vec3(offset.s, offset.t, 0.0));
-		
-				if((vDepthMapColor.z+Z_TEST_SIGMA) < vPosInDM.z) {
-					fShadow += 0.0;
-				}
-				else {
-					fShadow += 1.0 / 9.0;
-				}
-			}
-		}
-	}
-	else
-	{
+	float fShadow = 0.0;
+	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPosInDM.z){
+		fShadow = shadow2D(depthMap, vPosInDM).x * 0.25;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, -1)).x * 0.0625;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, 0)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, 1)).x * 0.0625;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 0, -1)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 0, 1)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, -1)).x * 0.0625;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, 0)).x * 0.125;
+		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, 1)).x * 0.0625;
+
+		fShadow = clamp(fShadow, 0.0, 1.0);
+	}else{
 		fShadow = 1.0;
 	}
-
-	fShadow = clamp(fShadow, 0.0, 1.0);
 	return fShadow;
 }
-
-
 
 
 

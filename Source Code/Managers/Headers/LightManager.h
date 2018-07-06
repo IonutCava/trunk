@@ -44,11 +44,12 @@ public:
 	//since every light has the exact same number of depth maps ...
 	I8 getDepthMapPerLightCount();
 	//shadow mapping
+	void previewDepthMaps();
 private:
 	LightManager();
 	~LightManager();
 	bool checkId(U32 value);
-
+	void drawDepthMap(U8 light, U8 index);
 private:
 	LightMap _lights;
 

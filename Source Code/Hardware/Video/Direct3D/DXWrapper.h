@@ -35,13 +35,13 @@ private:
 	void getModelViewMatrix(mat4& mvMat);
 	void getProjectionMatrix(mat4& projMat);
 
-	FrameBufferObject* newFBO(){return /*new dxFrameBufferObject();*/ NULL; }
+	FrameBufferObject*  newFBO(){return /*new dxFrameBufferObject();*/ NULL; }
 	VertexBufferObject* newVBO(){return /*new dxVertexBufferObject();*/ NULL; }
 	PixelBufferObject*  newPBO(){return /*new dxPixelBufferObject();*/ NULL;}
 	Texture2D*          newTexture2D(bool flipped = false){return /*new dxTexture2D();*/ NULL;}
 	TextureCubemap*     newTextureCubemap(bool flipped = false){return /*new dxTextureCubemap();*/ NULL;}
-	Shader* newShader(const char *vsFile, const char *fsFile){return /*new dxShader();*/ NULL;}
-	Shader* newShader(){return /*new dxShader();*/ NULL;}
+	ShaderProgram*      newShaderProgram(){return /*new dxShaderProgram();*/ NULL;}
+	Shader*             newShader(const std::string& name, SHADER_TYPE type) {return /*new dxShader(name,type);*/ NULL;}
 	
 	void clearBuffers(U8 buffer_mask);
 	void swapBuffers();
@@ -52,6 +52,7 @@ private:
 	void lockModelView();
 	void releaseModelView();
 	void setOrthoProjection(const vec4& rect, const vec2& planes);
+	void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes);
 
 	void toggle2D(bool _2D);
 
@@ -64,6 +65,8 @@ private:
 
 	void renderModel(Object3D* const model);
 	void renderElements(Type t, Format f, U32 count, const void* first_element);
+
+	void renderInViewport(const vec4& rect, boost::function0<void> callback);
 
 	void setMaterial(Material* mat);
 
@@ -83,6 +86,8 @@ private:
 
 	void setObjectState(Transform* const transform);
 	void releaseObjectState(Transform* const transform);
+
+	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph);
 END_SINGLETON
 
 #endif

@@ -82,7 +82,7 @@ public:
    
    inline U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
    inline std::vector<TerrainDescriptor*>& getTerrainInfoArray() {return TerrainInfoArray;}
-   inline Shader*                           getDeferredShaders() {return _deferredShader;}
+   inline ShaderProgram*                   getDeferredShaders() {return _deferredShader;}
    
    inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
    inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
@@ -128,7 +128,7 @@ protected:
 	//Deferred rendering
 	FrameBufferObject* _deferredBuffer;
 	PixelBufferObject* _lightTexture;
-	Shader*			   _deferredShader;
+	ShaderProgram*	   _deferredShader;
 	SceneGraph*        _sceneGraph;
 	F32			       _grassVisibility,_treeVisibility,_generalVisibility,
 				 	   _windSpeed,_windDirX, _windDirZ, _waterHeight, _waterDepth;

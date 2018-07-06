@@ -84,7 +84,7 @@ class JoystickManager
 			Console::getInstance().printf("\n");//Double new line - Ionut
 		  }
 		  else
-			  Console::getInstance().printfn("Warning: no supported effect found !");
+			  Console::getInstance().d_printfn("Warning: no supported effect found !");
 		}
 		/*else
 		{

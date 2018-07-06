@@ -21,7 +21,7 @@
 #include "resource.h"
 #include "Core/Headers/BaseClasses.h"
 
-class Shader;
+class ShaderProgram;
 class Texture;
 typedef Texture Texture2D;
 class RenderState;
@@ -52,10 +52,11 @@ public:
   bool unload();
   inline U8              getTextureCount() {return _textures.size();}
   Texture2D*	 const   getTexture(TextureUsage textureUsage);
-  Shader*        const   getShader();
+  ShaderProgram* const   getShaderProgram();
   inline bool            isDirty() {return _dirty;}
   void setTexture(TextureUsage textureUsage, Texture2D* const texture);
-  void setShader(const std::string& shader);
+  ShaderProgram* setShaderProgram(const std::string& shader);
+  ShaderProgram* setShaderProgram(const std::vector<std::string >& pixelShaders, const std::vector<std::string >& vertexShaders, const std::vector<std::string >& geometryShaders);
   void setTwoSided(bool state);
   bool isTwoSided() {return _twoSided;}
   RenderState& getRenderState() const {return *_state;}
@@ -69,11 +70,10 @@ public:
   inline void setReceivesShadows(bool state) {_receiveShadows = state;}
 
   inline mat4& getMaterialMatrix()  {return _materialMatrix;}
-  inline I32   getMaterialId()      {return _matId;}
+  P32   getMaterialId();
   inline bool  getCastsShadows()    {return _castsShadows;}
   inline bool  getReceivesShadows() {return _receiveShadows;}
-
-
+  bool  isTranslucent();
 
   void computeLightShaders(); //Set shaders;
   void createCopy();
@@ -91,12 +91,13 @@ private:
   textureMap _textures;
   std::string _shader; /*shader name*/
   bool _computedLightShaders;
-  I32  _matId;
+  P32  _matId;
   bool _dirty;
   bool _twoSided;
   bool _castsShadows;
   bool _receiveShadows;
   RenderState* _state;
+  ShaderProgram* _shaderRef;
 };
 
 #endif

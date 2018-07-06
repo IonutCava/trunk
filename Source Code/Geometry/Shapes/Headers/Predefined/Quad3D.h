@@ -20,9 +20,9 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 
-class Shader;
-class Quad3D : public Object3D
-{
+class ShaderProgram;
+class Quad3D : public Object3D {
+
 public:
 	Quad3D() :  Object3D(QUAD_3D){
 

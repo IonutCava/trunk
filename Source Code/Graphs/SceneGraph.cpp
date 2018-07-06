@@ -16,6 +16,7 @@ void SceneGraph::update(){
 	_root->updateVisualInformation();
 }
 
+//Update, cull and draw
 void SceneGraph::render(){
 	GFXDevice& gfx = GFXDevice::getInstance();
 

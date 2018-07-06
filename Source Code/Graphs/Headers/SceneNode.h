@@ -52,6 +52,7 @@ public:
 	virtual	void            releaseMaterial();
 	virtual	bool    computeBoundingBox(SceneGraphNode* const node);
 	virtual void    onDraw();
+	virtual void    postDraw();
 	virtual void    postLoad(SceneGraphNode* const node) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
 	
@@ -60,7 +61,6 @@ public:
 	inline	bool    isSelected()	const	 {return _selected;}
 	virtual void    createCopy();
 	virtual void    removeCopy();
-	virtual void    changeSortKey(I32 key) {_sortKey = key;}
 
 protected:
 	U8          _exclusionMask;
@@ -72,7 +72,6 @@ private:
 	bool		_renderState;
 	bool        _noDefaultMaterial;
 	bool        _selected;
-	I32         _sortKey;
 };
 
 #endif

@@ -21,7 +21,7 @@
 #include "resource.h"
 
 class Sphere3D;
-class Shader;
+class ShaderProgram;
 class Texture;
 class SceneGraphNode;
 enum RENDER_STAGE;
@@ -41,7 +41,7 @@ private:
 
 private:
 	bool			  _init,_invert,_drawSky,_drawSun;
-	Shader*			  _skyShader;
+	ShaderProgram*	  _skyShader;
 	TextureCubemap*	  _skybox;
 	vec3			  _sunVect,	_eyePos;
 	Sphere3D          *_sky,*_sun;

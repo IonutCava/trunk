@@ -51,15 +51,17 @@ public:
 	void deleteSelection();
 
 	inline void clean(){_scene->clean();}
-
+	void registerScene(Scene* scenePointer);
 private:
 
 	SceneManager();
 	~SceneManager();
 	Scene* _scene;
     Object3D* _currentSelection;
+	unordered_map<std::string, Scene*> _sceneMap;
 
 END_SINGLETON
 
+#define REGISTER_SCENE(X) SceneManager::getInstance().registerScene(X);
 #endif
 

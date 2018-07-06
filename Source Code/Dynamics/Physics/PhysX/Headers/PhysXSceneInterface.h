@@ -19,32 +19,33 @@
 #define _PHYSX_SCENE_INTERFACE_H_
 
 #include "PhysX.h"
+#include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
+
 class Scene;
 class Transform;
-class PhysXSceneInterface{
+class PhysXSceneInterface : public PhysicsSceneInterface{
 public:
-	PhysXSceneInterface(Scene* parentScene) : _gScene(NULL),
-											  _timeStep(1.0f/60.0f),
-											  _parentScene(parentScene){}
-	~PhysXSceneInterface(){}
+	PhysXSceneInterface(Scene* parentScene) : PhysicsSceneInterface(parentScene),
+											  _gScene(NULL),
+											  _timeStep(1.0f/60.0f){}
+	virtual ~PhysXSceneInterface(){exit();}
 
 	virtual bool init();
-	virtual bool exit() = 0;
-	virtual void idle() = 0;
+	virtual bool exit();
+	virtual void idle();
 	virtual void release();
 	virtual void update();
 	virtual void process();
 
-	virtual void addRigidStaticActor(physx::PxRigidStatic* actor);
-	virtual void addRigidDynamicActor(physx::PxRigidDynamic * actor);
+	void addRigidStaticActor(physx::PxRigidStatic* actor);
+	void addRigidDynamicActor(physx::PxRigidDynamic* actor);
 
 protected:
-	virtual void updateActor(physx::PxRigidActor* actor);
-	virtual void updateShape(physx::PxShape* shape,Transform* t);
-	virtual void addToSceneGraph(physx::PxRigidActor* actor);
+	void updateActor(physx::PxRigidActor* actor);
+	void updateShape(physx::PxShape* shape,Transform* t);
+	void addToSceneGraph(physx::PxRigidActor* actor);
 
 private:
-	Scene*          _parentScene;
 	physx::PxScene* _gScene;
 	physx::PxReal   _timeStep;
 	std::vector<physx::PxRigidStatic* > _sceneRigidStaticActors;

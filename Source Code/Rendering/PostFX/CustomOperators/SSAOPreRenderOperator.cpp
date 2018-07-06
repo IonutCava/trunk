@@ -8,7 +8,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 
-SSAOPreRenderOperator::SSAOPreRenderOperator(Shader* const SSAOShader, Quad3D* target, FrameBufferObject* result) : PreRenderOperator(SSAO_STAGE,target),
+SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader, Quad3D* target, FrameBufferObject* result) : PreRenderOperator(SSAO_STAGE,target),
 												_stage1Shader(SSAOShader),
 												_outputFBO(result)
 {
@@ -20,7 +20,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Shader* const SSAOShader, Quad3D* t
 	_colorNoise = ResourceManager::getInstance().loadResource<Texture>(colorNoiseTexture);
 	_normalsFBO = GFXDevice::getInstance().newFBO();
 	_normalsFBO->Create(FrameBufferObject::FBO_2D_COLOR, width,height);
-	_stage2Shader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("SSAOPass2"));
+	_stage2Shader = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
 
 }
 
@@ -50,7 +50,7 @@ void SSAOPreRenderOperator::operation(){
 
 				SceneManager::getInstance().render(SSAO_STAGE);
 
-		_stage1Shader->unbind();
+		//_stage1Shader->unbind();
 
 	_normalsFBO->End();
 
@@ -73,6 +73,6 @@ void SSAOPreRenderOperator::operation(){
 
 			_colorNoise->Unbind(1);
 			_normalsFBO->Unbind(0);
-		_stage2Shader->unbind();
+		//_stage2Shader->unbind();
 	_outputFBO->End();
 }

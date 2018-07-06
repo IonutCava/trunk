@@ -22,6 +22,7 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
 	if(tempTree){
 		stringstream ss; ss << "_" << tempTree->getRefCount();
 		std::string treeName(tempTree->getName()+ss.str());
+		ss.clear();
 		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
 		Console::getInstance().printfn("Added tree [ %s ]",treeNode->getName().c_str());
 		Transform* treeTransform = treeNode->getTransform();
@@ -32,7 +33,7 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
 			assert(it.second);
 			Material* m = (it.second)->getNode()->getMaterial();
 			if(m){
-				m->setShader("terrain_tree.vert,lighting_texture.frag");
+				m->setShaderProgram("terrain_tree.vert,lighting_texture.frag");
 			}
 		}
 		

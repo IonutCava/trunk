@@ -10,16 +10,13 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 using namespace std;
 
-vec4 _lightPosition(0,6,6,1.0);
+//vec4 _lightPosition(0,16,6,0.0);
 
 //begin copy-paste: randarea scenei
 void PingPongScene::render(){
-
 	Sky& sky = Sky::getInstance();
-	//set a placeholder sun for estethic reasons
-	vec2 sunAngle(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y),0.0f );
-	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),_sunVector, false,true,true);
+
+	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();
@@ -27,15 +24,14 @@ void PingPongScene::render(){
 //end copy-paste
 
 //begin copy-paste: Desenam un cer standard
-bool _switchLightUpDown = true;
 void PingPongScene::preRender(){
-	Light* light = LightManager::getInstance().getLight(0);
-	//_GFX.getActiveRenderState().lightingEnabled() = false;
-	_switchLightUpDown ? _lightPosition.y += 0.01f : _lightPosition.y -= 0.01f;
-	if(_lightPosition.y >= 10 ) _switchLightUpDown = false;
-	if(_lightPosition.y <= 1 ) _switchLightUpDown = true;
-	light->setLightProperties("position",_lightPosition);
-	light->setLightProperties("spotDirection",-_lightPosition);
+	vec2 _sunAngle = vec2(0.0f, RADIANS(45.0f));
+	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+						-cosf(_sunAngle.y),
+						-sinf(_sunAngle.x) * sinf(_sunAngle.y),
+						0.0f );
+
+	LightManager::getInstance().getLight(0)->setLightProperties(string("position"),_sunVector);
 }
 //<<end copy-paste
 
@@ -223,9 +219,6 @@ bool PingPongScene::load(const string& name){
 	bool state = false;
 	//Adaugam o lumina
 	Light* light = addDefaultLight();
-	light->setRadius(0.1f);
-	light->setDrawImpostor(false);
-	light->setLightType(LIGHT_SPOT);
 	//Incarcam resursele scenei
 	state = loadResources(true);	
 	state = loadEvents(true);

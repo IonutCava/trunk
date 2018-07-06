@@ -114,24 +114,24 @@ void PostFX::init(){
 	_renderQuad->setDimensions(vec4(0,0,width,height));
 
 	if(_enablePostProcessing){
-		_postProcessingShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("postProcessing"));
+		_postProcessingShader = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("postProcessing"));
 		if(_enableAnaglyph){
 			_anaglyphFBO[0] = _gfx.newFBO();
 			_anaglyphFBO[1] = _gfx.newFBO();
-			_anaglyphShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("anaglyph"));
+			_anaglyphShader = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("anaglyph"));
 			_eyeOffset = par.getParam<F32>("anaglyphOffset");
 		}
 		if(_enableBloom){
 			_bloomFBO = _gfx.newFBO();
 			if(!_blurShader){
-				_blurShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("blur"));
+				_blurShader = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("blur"));
 			}
 			PreRenderOperator* bloomOp = PreRenderStageBuilder::getInstance().addBloomOperator(_blurShader, _renderQuad,_enableBloom,_bloomFBO);
 			bloomOp->addInputFBO(_screenFBO);
 		}
 		if(_enableSSAO){
 			_SSAO_FBO = _gfx.newFBO();
-			_SSAOShaderPass1 = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("SSAOPass1"));
+			_SSAOShaderPass1 = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("SSAOPass1"));
 			PreRenderOperator* ssaOp = PreRenderStageBuilder::getInstance().addSSAOOperator(_SSAOShaderPass1, _renderQuad,_enableSSAO, _SSAO_FBO);
 		}
 
@@ -139,7 +139,7 @@ void PostFX::init(){
 			_depthOfFieldFBO = _gfx.newFBO();
 			_tempDepthOfFieldFBO = _gfx.newFBO();
 			if(!_blurShader){
-				_blurShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("blur"));
+				_blurShader = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("blur"));
 			}
 		}
 		if(_enableNoise){
@@ -227,7 +227,7 @@ void PostFX::displaySceneWithAnaglyph(void){
 		_anaglyphFBO[1]->Unbind(1);
 		_anaglyphFBO[0]->Unbind(0);
 	}
-	_anaglyphShader->unbind();
+	//_anaglyphShader->unbind();
 
 }
 
@@ -327,7 +327,7 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 			_depthOfFieldFBO->Unbind(--id);
 		}
 		
-	_postProcessingShader->unbind();
+	//_postProcessingShader->unbind();
 	
 }
 
@@ -388,7 +388,7 @@ void PostFX::generateDepthOfFieldTexture(){
 			_depthFBO->Unbind(1);
 			_screenFBO->Unbind(0);
 		
-		_blurShader->unbind();
+		//_blurShader->unbind();
 				
 	
 	_tempDepthOfFieldFBO->End();
@@ -411,7 +411,7 @@ void PostFX::generateDepthOfFieldTexture(){
 			_depthFBO->Unbind(1);
 			_tempDepthOfFieldFBO->Unbind(0);
 				
-		_blurShader->unbind();
+		//_blurShader->unbind();
 				
 	_depthOfFieldFBO->End();
 }

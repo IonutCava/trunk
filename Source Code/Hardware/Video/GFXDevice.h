@@ -29,6 +29,7 @@ enum RENDER_STAGE {
     BLOOM_STAGE      = 0x20,
     FINAL_STAGE      = 0x40,
     DEPTH_STAGE      = 0x80,
+	ENVIRONMENT_MAPPING_STAGE     = 0x160,
 	//Place all stages above this
 	INVALID_STAGE    = 0x400
 };
@@ -59,9 +60,8 @@ public:
 
 	inline Texture2D*          newTexture2D(bool flipped = false){return _api.newTexture2D(flipped);}
 	inline TextureCubemap*     newTextureCubemap(bool flipped = false){return _api.newTextureCubemap(flipped);}
-
-	inline Shader* newShader(const char *vsFile, const char *fsFile){return _api.newShader(vsFile,fsFile); }
-	inline Shader* newShader(){return _api.newShader(); }
+	inline ShaderProgram* newShaderProgram(){return _api.newShaderProgram(); }
+	inline Shader*        newShader(const std::string& name, SHADER_TYPE type) {return _api.newShader(name,type); }
 
 
 	inline void clearBuffers(U8 buffer_mask){_api.clearBuffers(buffer_mask);}
@@ -75,6 +75,7 @@ public:
 	inline void lockModelView(){_api.lockModelView();}
 	inline void releaseModelView(){_api.releaseModelView();}
 	inline void setOrthoProjection(const vec4& rect, const vec2& planes){_api.setOrthoProjection(rect,planes);}
+	inline void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes){_api.setPerspectiveProjection(FoV,aspectRatio,planes);}
 
 	inline void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
 	inline void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
@@ -83,6 +84,8 @@ public:
 
 	
 	inline void drawBox3D(vec3 min, vec3 max){_api.drawBox3D(min,max);}
+
+	void renderInViewport(const vec4& rect, boost::function0<void> callback);
 
 	void renderModel(Object3D* const model);
 	inline void renderElements(Type t, Format f, U32 count, const void* first_element){_api.renderElements(t,f,count,first_element);}
@@ -109,8 +112,6 @@ public:
 	inline void setPrevTextureId(const U32& id) {_prevTextureId = id;}
 	inline const U32& getPrevTextureId() {return _prevTextureId;}
 
-	inline void setPrevMaterialId(const I32& id) {_prevMaterialId = id;}
-	inline const I32& getPrevMaterialId() {return _prevMaterialId;}
 	void processRenderQueue();
 
 
@@ -127,6 +128,12 @@ public:
 	
 	void setObjectState(Transform* const transform){_api.setObjectState(transform); }
 	void releaseObjectState(Transform* const transform){_api.releaseObjectState(transform); }
+	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph){return _api.applyCropMatrix(f,sceneGraph); }
+
+	//Generate a cubemap from the given position
+	//It renders the entire scene graph (with culling) as default
+	//use the callback param to override the draw function
+	void  generateCubeMap(FrameBufferObject& cubeMap, const vec3& pos, boost::function0<void> callback = 0);
 
 public:
 	enum BufferType
@@ -146,7 +153,6 @@ private:
 		   _wireframeMode = false;
 		   _prevShaderId = 0;
 		   _prevTextureId = 0;
-		   _prevMaterialId = 0;
 		   _deferredRendering = false;
 	   }
 	RenderAPIWrapper& _api;
@@ -155,7 +161,6 @@ private:
 	RENDER_STAGE _renderStage;
 	mat4 _currentLightProjectionMatrix;
     U32  _prevShaderId, _prevTextureId;
-	I32  _prevMaterialId;
 END_SINGLETON
 
 #endif

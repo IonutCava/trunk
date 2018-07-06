@@ -24,7 +24,7 @@
 #include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Graphs/Headers/SceneNode.h"
 
-class Shader;
+class ShaderProgram;
 class Quadtree;
 class VertexBufferObject;
 class Quadtree;
@@ -43,6 +43,7 @@ public:
 	void drawGround() const;
 	void drawInfinitePlain();
 	void render(SceneGraphNode* const node);
+	void postDraw();
 	void terrainSetParameters(const vec3& pos,const vec2& scale);
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();

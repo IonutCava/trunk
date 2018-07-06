@@ -19,6 +19,15 @@
 #define _RENDER_API_H
 
 #include "Core/Math/Headers/MathClasses.h"
+//Simple frustum representation
+struct frustum{
+
+	F32 neard;
+	F32 fard;
+	F32 fov;
+	F32 ratio;
+	vec3 point[8];
+};
 
 class RenderState {
 
@@ -59,7 +68,7 @@ enum RenderAPI {
 	Direct3D8,
 	Direct3D9,
 	Direct3D10,
-	PLACEHOLDER
+	GFX_PLACEHOLDER
 };
 
 enum Type {
@@ -99,6 +108,7 @@ enum DetailLevel{
 class Object3D;
 class Text;
 class Shader;
+class ShaderProgram;
 class Button;
 class GuiFlash;
 class SubMesh;
@@ -114,15 +124,17 @@ class Quad3D;
 class Text3D;
 class mat4;
 class Material;
+class SceneGraph;
 class SceneGraphNode;
 class Transform;
 enum LIGHT_TYPE;
+enum SHADER_TYPE;
 //Renderer Programming Interface
 class RenderAPIWrapper
 {
 
 protected:
-	RenderAPIWrapper() : _apiId(PLACEHOLDER){}
+	RenderAPIWrapper() : _apiId(GFX_PLACEHOLDER){}
 
 	friend class GFXDevice;
 	
@@ -140,8 +152,8 @@ protected:
 	virtual PixelBufferObject*  newPBO() = 0;
 	virtual Texture2D*          newTexture2D(bool flipped = false) = 0;
 	virtual TextureCubemap*     newTextureCubemap(bool flipped = false) = 0;
-	virtual Shader*             newShader(const char *vsFile, const char *fsFile) = 0;
-	virtual Shader*             newShader() = 0;
+	virtual ShaderProgram*      newShaderProgram() = 0;
+	virtual Shader*             newShader(const std::string& name, SHADER_TYPE type) = 0;
 	
 	virtual void initHardware() = 0;
 	virtual void closeRenderingApi() = 0;
@@ -155,6 +167,7 @@ protected:
 
 	/*State Matrix Manipulation*/
 	virtual void setOrthoProjection(const vec4& rect, const vec2& planes) = 0;
+	virtual void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes) = 0;
 	virtual void lockProjection() = 0;
 	virtual void releaseProjection() = 0;
 	virtual void lockModelView() = 0;
@@ -169,6 +182,10 @@ protected:
 	virtual void drawButton(Button*) = 0;
 	virtual void drawFlash(GuiFlash* flash) = 0;
 	/*GUI Rendering*/
+
+	/*Object viewing*/
+	virtual void renderInViewport(const vec4& rect, boost::function0<void> callback) = 0;
+	/*Object viewing*/
 
 	/*Primitives Rendering*/
 	virtual void drawBox3D(vec3 min, vec3 max) = 0;
@@ -195,6 +212,8 @@ protected:
 	virtual ~RenderAPIWrapper(){};
 	virtual void setObjectState(Transform* const transform) = 0;
 	virtual void releaseObjectState(Transform* const transform) = 0;
+
+	virtual F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph) = 0;
 public: //RenderAPIWrapper global
 	
 	virtual void setRenderState(RenderState& state,bool force = false) = 0;
@@ -202,6 +221,7 @@ public: //RenderAPIWrapper global
 
 private:
 	RenderAPI _apiId;
+
 protected:
 	RenderState _defaultRenderState, _currentRenderState, _previousRenderState;
 };

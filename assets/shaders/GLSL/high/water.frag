@@ -86,7 +86,7 @@ float ShadowMapping()
 	float fShadow = 0.0;
 						
 	float tOrtho[3];
-	tOrtho[0] = 2.0;
+	tOrtho[0] = 5.0;
 	tOrtho[1] = 10.0;
 	tOrtho[2] = 50.0;
 

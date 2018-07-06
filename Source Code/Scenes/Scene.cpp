@@ -350,6 +350,9 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 		case OIS::KC_SUBTRACT:
 			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
 			break;
+		case OIS::KC_F10:
+			Application::getInstance().togglePreviewDepthMaps();
+			break;
 		case OIS::KC_F12:
 			GFXDevice::getInstance().Screenshot("screenshot_",vec4(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
 			break;

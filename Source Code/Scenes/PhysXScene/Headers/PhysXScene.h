@@ -19,7 +19,7 @@
 #define _PHYSX_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
-
+//For this scene, we will be using PhysX, so name members accordingly for more readable code
 class PhysXImplementation;
 class PhysXScene : public Scene {
 

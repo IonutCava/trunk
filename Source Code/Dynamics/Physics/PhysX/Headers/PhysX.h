@@ -32,6 +32,8 @@
 #include < PxSimpleFactory.h>
 //PhysX includes //
 
+#include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
+
 //PhysX libraries
 #pragma comment(lib, "PhysX3_x86.lib")
 #pragma comment(lib, "PxTask.lib")
@@ -40,25 +42,27 @@
 #pragma comment(lib, "GeomUtils.lib") 
 //PhysX libraries //
 
+class SceneGraphNode;
 class PhysXSceneInterface;
-DEFINE_SINGLETON( PhysX )
+DEFINE_SINGLETON_EXT1( PhysX,PhysicsAPIWrapper)
 
 private:
-
 	PhysX(); 
 
 public:
 	
-   bool initNx();  
-   bool exitNx(); 
+   bool initPhysics();  
+   bool exitPhysics(); 
    void update();
    void process();
    void idle();
 
-//Default Shapes:
-   bool createPlane(PhysXSceneInterface* targetScene,const vec3& position = vec3(0,0,0), U32 size = 1);
-   bool createBox(PhysXSceneInterface* targetScene,const vec3& position = vec3(0,0,0), F32 size = 1);
+   PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
+  //Default Shapes:
+   bool createPlane(PhysicsSceneInterface* targetScene,const vec3& position = vec3(0,0,0), U32 size = 1);
+   bool createBox(PhysicsSceneInterface* targetScene,const vec3& position = vec3(0,0,0), F32 size = 1);
+   bool createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node, PhysicsActorMask mask,PhysicsCollisionGroup group);
    void registerActiveScene(PhysXSceneInterface* activeScene) {_currentScene = activeScene;}
    physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
    const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}

@@ -4,6 +4,7 @@
 #include "GUI/Headers/GUIFlash.h"
 #include "Utility/Headers/Guardian.h"
 #include "Core/Headers/Application.h"
+#include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
@@ -14,7 +15,7 @@
 using namespace std;
 
 #define USE_FREEGLUT
-void GLCheckError(const std::string& File, unsigned int Line) {
+void GLCheckError(const std::string& File, U32 Line) {
 
     // Get the last error
     GLenum ErrorCode = glGetError();
@@ -191,7 +192,7 @@ void GL_API::initHardware(){
 	Console::getInstance().printfn("Max Combined Texture Units supported: %d",max_texture_units); 
 	Console::getInstance().printfn("Hardware acceleration up to OpenGL %d.%d supported!",major,minor);
 	//Set the clear color to a nice blue
-	glClearColor(0.1f,0.1f,0.8f,0.2f);
+	glClearColor(0.1f,0.1f,0.8f,1);
 	//Use depth testing!
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL); 
@@ -251,6 +252,7 @@ void GL_API::initHardware(){
 }
 
 void GL_API::closeApplication(){
+	//glutLeaveMainLoop();
 	Guardian::getInstance().TerminateApplication();
 	
 }
@@ -462,11 +464,14 @@ void GL_API::toggleDepthMapRendering(bool state) {
 		GLCheck(glCullFace(GL_FRONT));
 		glShadeModel(GL_FLAT);
 		glColorMask(0, 0, 0, 0);
+		glPolygonOffset( 1.0f, 4096.0f);
+		glEnable(GL_POLYGON_OFFSET_FILL);
 		if(_currentRenderState.lightingEnabled()) GLCheck(glDisable(GL_LIGHTING));
 	}else{
 		GLCheck(glCullFace(GL_BACK));
 		glShadeModel(GL_SMOOTH);
 		glColorMask(1, 1, 1, 1);
+		glDisable(GL_POLYGON_OFFSET_FILL);
 		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
 	}
 }
@@ -522,6 +527,17 @@ void GL_API::setMaterial(Material* mat){
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f));
 }
  
+void GL_API::renderInViewport(const vec4& rect, boost::function0<void> callback){
+	
+	glPushAttrib(GL_VIEWPORT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+    glViewport(rect.x, rect.y, rect.z, rect.w);
+	callback();
+	glPopAttrib();
+
+}
+
 void GL_API::drawBox3D(vec3 min, vec3 max){
 	glPushAttrib(GL_COLOR_BUFFER_BIT);
 	glColor3i(0,0,0);
@@ -627,7 +643,6 @@ void GL_API::toggle2D(bool state){
 		}else{
 			_depthTestWasEnabled = false;
 		}
-		GLCheck(glDisable(GL_LIGHTING));
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
@@ -640,9 +655,7 @@ void GL_API::toggle2D(bool state){
 		glPopMatrix(); //2 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
-		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
 		if(glIsEnabled(GL_DEPTH_TEST) == GL_FALSE && _depthTestWasEnabled){
-			//GLCheck(glEnable(GL_DEPTH_TEST));
 			glEnable(GL_DEPTH_TEST);
 		}
 	}
@@ -653,8 +666,6 @@ void GL_API::setAmbientLight(const vec4& light){
 }
 
 void GL_API::setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type){
-	GLCheck(glEnable(GL_LIGHTING));
-	GLCheck(glEnable(GL_LIGHT0+slot));
 	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties_v["position"]);
 	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties_v["ambient"]);
 	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  properties_v["diffuse"]);
@@ -668,10 +679,6 @@ void GL_API::setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,uno
 		glLightf(GL_LIGHT0+slot, GL_CONSTANT_ATTENUATION,properties_f["constAtt"]);
 		glLightf(GL_LIGHT0+slot, GL_LINEAR_ATTENUATION,properties_f["linearAtt"]);
 		glLightf(GL_LIGHT0+slot, GL_QUADRATIC_ATTENUATION,properties_f["quadAtt"]);
-	}
-
-	if(!_currentRenderState.lightingEnabled() || GFXDevice::getInstance().getDeferredRendering()){
-		GLCheck(glDisable(GL_LIGHTING));
 	}
 }
 
@@ -728,6 +735,19 @@ void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
 	glMatrixMode(GL_MODELVIEW);
 }
 
+//Setting perspective projection:
+// -sets the current matrix to GL_PRJECTION
+// -resets it to identity
+// -sets a perspective projection based on the input FoV, aspect ration and limits
+// -and sets the matrix mode back to GL_MODELVIEW
+void GL_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes){
+	glMatrixMode (GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity ();
+	gluPerspective(FoV, aspectRatio, planes.x, planes.y);
+	glMatrixMode (GL_MODELVIEW);
+}
+
 //Save the area designated by the rectangle "rect" to a TGA file
 void GL_API::Screenshot(char *filename, const vec4& rect){
 	// compute width and heidth of the image
@@ -740,4 +760,89 @@ void GL_API::Screenshot(char *filename, const vec4& rect){
 	glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
 	//save to file
 	ImageTools::SaveSeries(filename,w,h,32,imageData);
+}
+
+// this function builds a projection matrix for rendering from the shadow's POV.
+// First, it computes the appropriate z-range and sets an orthogonal projection.
+// Then, it translates and scales it, so that it exactly captures the bounding box
+// of the current frustum slice
+F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
+	F32 shad_modelview[16];
+	F32 shad_proj[16];
+	F32 maxX = -1000.0f;
+    F32 maxY = -1000.0f;
+	F32 maxZ;
+    F32 minX =  1000.0f;
+    F32 minY =  1000.0f;
+	F32 minZ;
+
+	mat4 nv_mvp;
+	vec4 transf;	
+	
+	// find the z-range of the current frustum as seen from the light
+	// in order to increase precision
+	glGetFloatv(GL_MODELVIEW_MATRIX, nv_mvp.mat);
+	
+	// note that only the z-component is need and thus
+	// the multiplication can be simplified
+	// transf.z = shad_modelview[2] * f.point[0].x + shad_modelview[6] * f.point[0].y + shad_modelview[10] * f.point[0].z + shad_modelview[14];
+	transf = nv_mvp*vec4(f.point[0], 1.0f);
+	minZ = transf.z;
+	maxZ = transf.z;
+	for(U8 i=1; i<8; i++){
+		transf = nv_mvp*vec4(f.point[i], 1.0f);
+		if(transf.z > maxZ) maxZ = transf.z;
+		if(transf.z < minZ) minZ = transf.z;
+	}
+	// make sure all relevant shadow casters are included
+	// note that these here are dummy objects at the edges of our scene
+		//Unload every sub node recursively
+
+	for_each(BoundingBox& b, sceneGraph->getBBoxes()){
+		transf = nv_mvp*vec4(b.getCenter(), 1.0f);
+		if(transf.z + b.getHalfExtent().z > maxZ) maxZ = transf.z + b.getHalfExtent().z;
+	//	if(transf.z - b.radius < minZ) minZ = transf.z - b.radius;
+	}
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	// set the projection matrix with the new z-bounds
+	// note the inversion because the light looks at the neg. z axis
+	// gluPerspective(LIGHT_FOV, 1.0, maxZ, minZ); // for point lights
+	glOrtho(-1.0, 1.0, -1.0, 1.0, -maxZ, -minZ);
+	glGetFloatv(GL_PROJECTION_MATRIX, shad_proj);
+	glPushMatrix();
+	glMultMatrixf(shad_modelview);
+	glGetFloatv(GL_PROJECTION_MATRIX, nv_mvp.mat);
+	glPopMatrix();
+
+	// find the extends of the frustum slice as projected in light's homogeneous coordinates
+	for(U8 i=0; i<8; i++){
+		transf = nv_mvp*vec4(f.point[i], 1.0f);
+
+		transf.x /= transf.w;
+		transf.y /= transf.w;
+
+		if(transf.x > maxX) maxX = transf.x;
+		if(transf.x < minX) minX = transf.x;
+		if(transf.y > maxY) maxY = transf.y;
+		if(transf.y < minY) minY = transf.y;
+	}
+
+	F32 scaleX = 2.0f/(maxX - minX);
+	F32 scaleY = 2.0f/(maxY - minY);
+	F32 offsetX = -0.5f*(maxX + minX)*scaleX;
+	F32 offsetY = -0.5f*(maxY + minY)*scaleY;
+
+	// apply a crop matrix to modify the projection matrix we got from glOrtho.
+	nv_mvp.identity();
+	nv_mvp.element(0,0) = scaleX;
+	nv_mvp.element(1,1) = scaleY;
+	nv_mvp.element(0,3) = offsetX;
+	nv_mvp.element(1,3) = offsetY;
+	nv_mvp.transpose();
+	glLoadMatrixf(nv_mvp.mat);
+	glMultMatrixf(shad_proj);
+
+	return minZ;
 }

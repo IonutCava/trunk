@@ -25,7 +25,7 @@ Vegetation::~Vegetation(){
 
 void Vegetation::initialize(const string& grassShader,const string& terrainName)
 {
-	_grassShader  = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor(grassShader));
+	_grassShader  = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor(grassShader));
 	_grassDensity = _grassDensity/_billboardCount;
 	_terrain = SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(terrainName);
 	assert(_terrain);
@@ -67,7 +67,7 @@ void Vegetation::draw(bool drawInReflection){
 
 			_grassBillboards[index]->Unbind(0);
 		}
-	_grassShader->unbind();
+	//_grassShader->unbind();
 	GFXDevice::getInstance().ignoreStateChanges(false);
 	
 }

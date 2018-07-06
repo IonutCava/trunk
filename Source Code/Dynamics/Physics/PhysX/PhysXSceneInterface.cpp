@@ -7,6 +7,10 @@ using namespace physx;
 
 bool PhysXSceneInterface::init(){
 	//Create the scene
+	if(!PhysX::getInstance().getSDK()){
+		Console::getInstance().errorfn("PhysX SDK not initialized!");
+		return false;
+	}
 	PxSceneDesc sceneDesc(PhysX::getInstance().getSDK()->getTolerancesScale());
 	sceneDesc.gravity=PxVec3(0.0f, -9.8f, 0.0f);
 	if(!sceneDesc.cpuDispatcher) {
@@ -32,6 +36,14 @@ bool PhysXSceneInterface::init(){
 	return true;
 }
 
+bool PhysXSceneInterface::exit(){
+	Console::getInstance().d_printfn("Shuting down PhysXSceneInterface");
+	return true;
+}
+
+void PhysXSceneInterface::idle(){
+}
+
 void PhysXSceneInterface::release(){
 	if(!_gScene){
 		Console::getInstance().errorfn("PhysX: trying to close invalid scene!");
@@ -49,7 +61,6 @@ void PhysXSceneInterface::update(){
 	}
 	for_each(PxRigidStatic* actor, _sceneRigidStaticActors){
 		updateActor(actor);
-		
 	}
 }
 
@@ -86,13 +97,21 @@ void PhysXSceneInterface::process(){
 }
 
 void PhysXSceneInterface::addRigidStaticActor(physx::PxRigidStatic* actor) {
+	Console::getInstance().printfn("CALLED1");
 	if(!PhysX::getInstance().getSDK()) return;
+	Console::getInstance().printfn("CALLED2");
 	if(!_gScene) return;
+	Console::getInstance().printfn("CALLED3");
 	_creationMutex.lock();
+	Console::getInstance().printfn("CALLED4");
 	_sceneRigidStaticActors.push_back(actor);
+	Console::getInstance().printfn("CALLED5");
 	_creationMutex.unlock();
+	Console::getInstance().printfn("CALLED6");
 	_gScene->addActor(*actor);
+	Console::getInstance().printfn("CALLED7");
 	addToSceneGraph(actor);
+	Console::getInstance().printfn("CALLED8");
 }
 
 void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* actor) {
@@ -106,14 +125,16 @@ void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* actor) {
 }
 
 void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
+	Console::getInstance().printfn("CALLEDA");
 	if(!actor) return;
+	Console::getInstance().printfn("CALLEDB");
 	U32 nbActors = _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC | PxActorTypeSelectionFlag::eRIGID_STATIC);
 	std::stringstream ss;
 	PxShape** shapes=New PxShape*[actor->getNbShapes()];
 	actor->getShapes(shapes, actor->getNbShapes());   
 	//ToDo: Only 1 shape per actor for now. Fix This! -Ionut
 	Object3D* actorGeometry = NULL;
-	
+	Console::getInstance().printfn("CALLEDC");
 	switch(shapes[0]->getGeometryType()){
 		 case PxGeometryType::eBOX: {
 			ss << "BoxActor_" << nbActors;

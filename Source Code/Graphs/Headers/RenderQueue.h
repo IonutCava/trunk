@@ -24,10 +24,10 @@ class SceneGraphNode;
 struct RenderQueueItem{
 
 	SceneGraphNode  *_node;
-	I32         _sortKey;
+	P32              _sortKey;
 
 	RenderQueueItem() : _node(NULL){}
-	RenderQueueItem(I32 sortKey, SceneGraphNode *node ) : _node( node ), _sortKey( sortKey ) {}
+	RenderQueueItem(P32 sortKey, SceneGraphNode *node ) : _node( node ), _sortKey( sortKey ) {}
 };
 
 struct RenderingOrder{
@@ -39,15 +39,6 @@ struct RenderingOrder{
 	};
 };
 
-struct RenderingPriority{
-	enum Priority{
-		FIRST = 0,
-		SECOND = 1,
-		ANY = 2,
-		BEFORE_LAST = 3,
-		LAST = 4
-	};
-};
 DEFINE_SINGLETON( RenderQueue )
 	typedef std::vector< RenderQueueItem > RenderQueueStack;
 public:
@@ -55,17 +46,18 @@ public:
 	void refresh();
 	void addNodeToQueue(SceneGraphNode* const node);
 	U32  getRenderQueueStackSize();
-	I32  setPriority(RenderingPriority::Priority priority);
 	const RenderQueueItem& RenderQueue::getItem(I32 index);
 
 private:
 	RenderQueue() {
-		_renderQueue.reserve(750);
+		_renderQueue.reserve(250);
 		_order = RenderingOrder::BACK_TO_FRONT;
 		_lowestKey = 0;
 		_highestKey = 0;
 	}
 	boost::mutex _renderQueueMutex; 
+	RenderQueueStack _opaqueStack;
+	RenderQueueStack _translucentStack;
 	RenderQueueStack _renderQueue;
 	RenderingOrder::List _order;
 	I32 _lowestKey;

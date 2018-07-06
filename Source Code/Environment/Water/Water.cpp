@@ -18,11 +18,18 @@ bool WaterPlane::load(const std::string& name){
 	ResourceDescriptor waterPlane("waterPlane");
 	waterTexture.setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/terrain_water_NM.jpg");
 	waterPlane.setFlag(true); //No default material
-
+	//The material is responsible for the destruction of the textures and shaders it receives!!!!
 	_texture = ResourceManager::getInstance().loadResource<Texture2D>(waterTexture);
-	_shader = ResourceManager::getInstance().loadResource<Shader>(waterShader);
+	_shader = ResourceManager::getInstance().loadResource<ShaderProgram>(waterShader);
 	_plane = ResourceManager::getInstance().loadResource<Quad3D>(waterPlane);
 	if(!_texture && !_shader && !_plane) return false;
+	ResourceDescriptor waterMaterial("waterMaterial");
+	setMaterial(ResourceManager::getInstance().loadResource<Material>(waterMaterial));
+	assert(getMaterial() != NULL);
+	getMaterial()->setTexture(Material::TEXTURE_BASE, _texture);
+	getMaterial()->setShaderProgram(_shader->getName());
+	getMaterial()->getRenderState().cullingEnabled() = false;
+	getMaterial()->getRenderState().blendingEnabled() = true;
 	_name = name; //optional
 
 	_shader->bind();
@@ -73,27 +80,11 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode* const node){
 
 bool WaterPlane::unload(){
 	bool state = false;
-	if(_shader)  RemoveResource(_shader);
-	if(_texture) RemoveResource(_texture);
 	if(_reflectionFBO) {
 		delete _reflectionFBO;
 		_reflectionFBO = NULL;
 	}
-	if(!_shader && !_texture && !_reflectionFBO) 
-		state = SceneNode::unload();
-
-	if(state) 
-		Console::getInstance().printfn("Water unloaded");
-	else{
-		Console::getInstance().errorfn("Water not unloaded");
-		if(_texture)
-			Console::getInstance().errorfn("Water texture not unloaded");
-		if(_shader)
-			Console::getInstance().errorfn("Water shader not unloaded");
-		if(_reflectionFBO)
-			Console::getInstance().errorfn("Water reflection FBO not unloaded");
-	}
-
+	state = SceneNode::unload();
 	return state;
 }
 
@@ -108,39 +99,36 @@ void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 tr
 	_shader->unbind();
 }
 
+void WaterPlane::onDraw(){
+	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
+	BoundingBox& bb = _node->getBoundingBox();
+	_planeTransform->setPosition(vec3(eyePos.x,bb.getMax().y,eyePos.z));
+}
+
 void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
+	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
 	GFXDevice::getInstance().ignoreStateChanges(true);
-	RenderState s = GFXDevice::getInstance().getActiveRenderState();
-	s.blendingEnabled() = true;
-	s.cullingEnabled() = false;
-	GFXDevice::getInstance().setRenderState(s);
+	GFXDevice::getInstance().setRenderState(getMaterial()->getRenderState());
+	_reflectionFBO->Bind(0);
+	_texture->Bind(1);	
+	_shader->bind();
+	_shader->UniformTexture("texWaterReflection", 0);
+	_shader->UniformTexture("texWaterNoiseNM", 1);
 }
 
 void WaterPlane::releaseMaterial(){
+	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
+	//_shader->unbind();
+	_texture->Unbind(1);
+	_reflectionFBO->Unbind(0);
 	GFXDevice::getInstance().ignoreStateChanges(false);	
 	GFXDevice::getInstance().restoreRenderState();
 }
 
 void WaterPlane::render(SceneGraphNode* const node){
 	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
-	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
-	BoundingBox& bb = node->getBoundingBox();
-
-	_planeTransform->setPosition(vec3(eyePos.x,bb.getMax().y,eyePos.z));
-	changeSortKey(RenderQueue::getInstance().setPriority(RenderingPriority::LAST));
-
-	_reflectionFBO->Bind(0);
-	_texture->Bind(1);	
-	_shader->bind();
-
-		_shader->UniformTexture("texWaterReflection", 0);
-		_shader->UniformTexture("texWaterNoiseNM", 1);	
-
-		GFXDevice::getInstance().setObjectState(_planeTransform);
-		GFXDevice::getInstance().renderModel(_plane);
-		GFXDevice::getInstance().releaseObjectState(_planeTransform);
-
-	_shader->unbind();
-	_texture->Unbind(1);
-	_reflectionFBO->Unbind(0);
+	
+	GFXDevice::getInstance().setObjectState(_planeTransform);
+	GFXDevice::getInstance().renderModel(_plane);
+	GFXDevice::getInstance().releaseObjectState(_planeTransform);
 }

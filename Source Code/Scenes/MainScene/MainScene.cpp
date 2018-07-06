@@ -137,9 +137,9 @@ bool MainScene::load(const string& name){
 		SceneGraphNode* terrainNode = _sceneGraph->findNode(TerrainInfoArray[i]->getVariable("terrainName"));
 		if(terrainNode){ //We might have an unloaded terrain in the Array, and thus, not present in the graph
 			Terrain* tempTerrain = terrainNode->getNode<Terrain>();
-			Console::getInstance().printfn("Found terrain:  %s!", tempTerrain->getName().c_str());
+			Console::getInstance().d_printfn("Found terrain:  %s!", tempTerrain->getName().c_str());
 			if(terrainNode->isActive()){
-				Console::getInstance().printfn("Previous found terrain is active!");
+				Console::getInstance().d_printfn("Previous found terrain is active!");
 				_visibleTerrains.push_back(tempTerrain);
 				if(computeWaterHeight){
 					F32 tempMin = terrainNode->getBoundingBox().getMin().y;

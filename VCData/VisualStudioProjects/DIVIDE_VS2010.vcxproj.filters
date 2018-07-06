@@ -20,16 +20,6 @@
     <Filter Include="Rendering\Headers">
       <UniqueIdentifier>{f0e034d9-4625-44b8-aff3-1947d679ccf3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PhysX">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="PhysX\Actors">
-      <UniqueIdentifier>{7ab7ed53-e942-43ff-8d28-c8394c90876e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PhysX\Headers">
-      <UniqueIdentifier>{ae68944f-8814-4865-a5d0-86793d4e818b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GUI">
       <UniqueIdentifier>{48835e6c-5970-4c6e-9ec7-6cfd31e84fe2}</UniqueIdentifier>
     </Filter>
@@ -267,6 +257,33 @@
     <Filter Include="Rendering\PostFX\CustomOperators\Headers">
       <UniqueIdentifier>{4fbdb892-cf43-46c2-9b6c-84ae8efd4eb3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Dynamics">
+      <UniqueIdentifier>{ac8ba3a7-4d5f-4c79-8ec7-78e19d864c52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Physics">
+      <UniqueIdentifier>{d0b8ecfb-9e07-4f12-83e2-a01d06b7b9d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Physics\Bullet">
+      <UniqueIdentifier>{06edb53e-42fd-41eb-a47e-62e02ac47120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Physics\Headers">
+      <UniqueIdentifier>{2f386895-5def-4f7a-a6f8-f11cb24e4a81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Physics\ODE">
+      <UniqueIdentifier>{fd365b49-84b2-4977-a65d-bffbe406f2bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Physics\PhysX">
+      <UniqueIdentifier>{79101247-5c09-4da1-af59-108d04ad42da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Physics\PhysX\Actors">
+      <UniqueIdentifier>{dae634bc-605b-4c63-9bc8-d8b79faad574}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Physics\PhysX\Headers">
+      <UniqueIdentifier>{719e71b7-3874-4e2f-a0f7-0cefea42350d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hardware\Video\OpenGL\glsw">
+      <UniqueIdentifier>{2ffc7374-ca5b-44f6-adf7-2aefc209185c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -280,15 +297,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp">
       <Filter>Rendering\PostFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\PhysX\PhysX.cpp">
-      <Filter>PhysX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\PhysX\PhysXSceneInterface.cpp">
-      <Filter>PhysX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp">
-      <Filter>PhysX\Actors</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp">
       <Filter>GUI</Filter>
@@ -374,9 +382,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp">
       <Filter>Hardware\Video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp">
-      <Filter>Hardware\Video</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\Texture.cpp">
       <Filter>Hardware\Video</Filter>
     </ClCompile>
@@ -384,9 +389,6 @@
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.cpp">
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glTexture.cpp">
@@ -495,6 +497,45 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp">
       <Filter>Rendering\PostFX</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\pxSimpleShapes.cpp">
+      <Filter>Dynamics\Physics\PhysX\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\PhysX.cpp">
+      <Filter>Dynamics\Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\PhysXSceneInterface.cpp">
+      <Filter>Dynamics\Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c">
+      <Filter>Hardware\Video\OpenGL\glsw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c">
+      <Filter>Hardware\Video\OpenGL\glsw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glShaderProgram.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Shader.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderGenerator.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderProgram.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -520,12 +561,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Frustum.h">
       <Filter>Rendering\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\PhysX\PhysX.h">
-      <Filter>PhysX\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\PhysX\PhysXSceneInterface.h">
-      <Filter>PhysX\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h">
       <Filter>GUI\Headers</Filter>
@@ -656,9 +691,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\RenderAPIWrapper.h">
       <Filter>Hardware\Video</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderHandler.h">
-      <Filter>Hardware\Video</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Texture.h">
       <Filter>Hardware\Video</Filter>
     </ClInclude>
@@ -672,9 +704,6 @@
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glResources.h">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.h">
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glTexture.h">
@@ -821,6 +850,48 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h">
       <Filter>Rendering\PostFX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAPIWrapper.h">
+      <Filter>Dynamics\Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsSceneInterface.h">
+      <Filter>Dynamics\Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PXDevice.h">
+      <Filter>Dynamics\Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysX.h">
+      <Filter>Dynamics\Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysXSceneInterface.h">
+      <Filter>Dynamics\Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.h">
+      <Filter>Hardware\Video\OpenGL\glsw</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.h">
+      <Filter>Hardware\Video\OpenGL\glsw</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.h">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glShaderProgram.h">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Shader.h">
+      <Filter>Hardware\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderGenerator.h">
+      <Filter>Hardware\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderProgram.h">
+      <Filter>Hardware\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h">
+      <Filter>Managers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h">
+      <Filter>Managers\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

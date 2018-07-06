@@ -197,7 +197,7 @@ public:
 	
 	void clean(){
 		_extent = (_max-_min);
-		_center = (_max+_min)/2.0f;
+		_center = (_max+_min)*0.5f;
 		_dirty = false;
 	}
 
@@ -215,7 +215,7 @@ public:
 		return _extent;
 	}
 
-	inline vec3  getHalfExtent()   {return getExtent()/2.0f;}
+	inline vec3  getHalfExtent()   {return getExtent() * 0.5f;}
 
 		   F32   getWidth()  const {return _max.x - _min.x;}
 		   F32   getHeight() const {return _max.y - _min.y;}
@@ -227,6 +227,17 @@ public:
 	inline void setMax(const vec3& max)			    {_max = max; _dirty = true;}
 	inline void set(const vec3& min, const vec3& max)  {_min = min; _max = max; _dirty = true;}
 
+	inline F32 nearestDistanceFromPoint( const vec3 &pos){
+		const vec3& center = getCenter() ;
+		const vec3& hextent = getHalfExtent();
+		
+		vec3 nearestVec;
+		nearestVec.x = Util::max( 0, fabsf( pos.x - center.x ) - hextent.x );
+		nearestVec.y = Util::max( 0, fabsf( pos.y - center.y ) - hextent.y );
+		nearestVec.z = Util::max( 0, fabsf( pos.z - center.z ) - hextent.z );
+		
+		return nearestVec.length();
+	}
 
 private:
 	bool _computed, _visibility,_dirty;

@@ -128,6 +128,58 @@ void Light::setCameraToLightViewSpot(){
 									spotTarget);  //the light's target
 }
 
+float split_weight = 0.75f;
+I8 cur_num_splits = 3;
+// updateSplitDist computes the near and far distances for every frustum slice
+// in camera eye space - that is, at what distance does a slice start and end
+// Compute the 8 corner points of the current view frustum
+void updateFrustumPoints(frustum &f, vec3 &center, vec3 &view_dir){
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 view_dir_temp = view_dir;
+	view_dir_temp.cross(up);
+	vec3 right = view_dir_temp;
+	right.normalize();
+	vec3 right_temp = right;
+	vec3 fc = center + view_dir*f.fard;
+	vec3 nc = center + view_dir*f.neard;
+
+	
+	right_temp.cross(view_dir);
+	up = right_temp;
+	up.normalize();
+
+	// these heights and widths are half the heights and widths of
+	// the near and far plane rectangles
+	F32 near_height = tan(f.fov/2.0f) * f.neard;
+	F32 near_width = near_height * f.ratio;
+	F32 far_height = tan(f.fov/2.0f) * f.fard;
+	F32 far_width = far_height * f.ratio;
+
+	f.point[0] = nc - up*near_height - right*near_width;
+	f.point[1] = nc + up*near_height - right*near_width;
+	f.point[2] = nc + up*near_height + right*near_width;
+	f.point[3] = nc - up*near_height + right*near_width;
+
+	f.point[4] = fc - up*far_height - right*far_width;
+	f.point[5] = fc + up*far_height - right*far_width;
+	f.point[6] = fc + up*far_height + right*far_width;
+	f.point[7] = fc - up*far_height + right*far_width;
+}
+
+void updateSplitDist(frustum f[3], F32 nd, F32 fd){
+	F32 lambda = split_weight;
+	F32 ratio = fd/nd;
+	f[0].neard = nd;
+
+	for(U8 i=1; i<cur_num_splits; i++){
+		F32 si = i / (F32)cur_num_splits;
+
+		f[i].neard = lambda*(nd*powf(ratio, si)) + (1-lambda)*(nd + (fd - nd)*si);
+		f[i-1].fard = f[i].neard * 1.005f;
+	}
+	f[cur_num_splits-1].fard = fd;
+}
+
 void Light::setCameraToLightViewDirectional(){
 	//Trim the w parameter from the position
 	vec3 lightPosition = vec3(_lightProperties_v["position"]);
@@ -190,7 +242,7 @@ void Light::renderFromLightViewSpot(U8 depthPass){
 void Light::renderFromLightViewDirectional(U8 depthPass){
 	ParamHandler& par = ParamHandler::getInstance();
 	//Some ortho values to create closer and closer light views
-	D32 lightOrtho[3] = {2.0, 10.0, 50.0};
+	D32 lightOrtho[3] = {5.0, 10.0, 50.0};
 	//ToDo: Near and far planes. Should optimize later! -Ionut
 	_zPlanes = vec2(par.getParam<F32>("zNear"),par.getParam<F32>("zFar"));
 	//Set the current projection depending on the current depth pass
