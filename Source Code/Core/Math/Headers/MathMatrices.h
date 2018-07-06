@@ -118,201 +118,116 @@ namespace Divide {
 *********************************/
 template <typename T>
 class mat2 {
+    // m0  m1
+    // m2  m3
     static_assert(std::is_arithmetic<T>::value &&
         !std::is_same<T, bool>::value,
         "non-arithmetic matrix type");
 public:
-    mat2() { this->identity(); }
+    mat2();
+    template<typename U>
+    mat2(U m0, U m1,
+         U m2, U m3);
+    template<typename U>
+    mat2(const U *m);
+    template<typename U>
+    mat2(const mat2<U> &m);
+    template<typename U>
+    mat2(const mat3<U> &m);
+    template<typename U>
+    mat2(const mat4<U> &m);
 
-    // Line 1 (m0, m1), Line 2 (m2, m3)
-    mat2(T m0, T m1, T m2, T m3) {
-        this->mat[0] = m0;
-        this->mat[1] = m1;
-        this->mat[2] = m2;
-        this->mat[3] = m3;
-    }
+    template<typename U>
+    vec2<T> operator*(const vec2<U> &v) const;
+    template<typename U>
+    vec3<T> operator*(const vec3<U> &v) const;
+    template<typename U>
+    vec4<T> operator*(const vec4<U> &v) const;
 
-    mat2(const T *m) { this->set(m); }
+    template<typename U>
+    mat2 operator*(const mat2<U> &m) const;
+    template<typename U>
+    mat2 operator/(const mat2<U> &m) const;
+    template<typename U>
+    mat2 operator+(const mat2<U> &m) const;
+    template<typename U>
+    mat2 operator-(const mat2<U> &m) const;
 
-    mat2(const mat2 &m) : mat2(m.mat) {}
+    template<typename U>
+    mat2 &operator*=(const mat2<U> &m);
+    template<typename U>
+    mat2 &operator/=(const mat2<U> &m);
+    template<typename U>
+    mat2 &operator+=(const mat2<U> &m);
+    template<typename U>
+    mat2 &operator-=(const mat2<U> &m);
 
-    mat2(const mat3<T> &m) { this->set(m); }
+    template<typename U>
+    mat2 operator*(U f) const;
+    template<typename U>
+    mat2 operator/(U f) const;
+    template<typename U>
+    mat2 operator+(U f) const;
+    template<typename U>
+    mat2 operator-(U f) const;
 
-    mat2(const mat4<T> &m) { this->set(m); }
+    template<typename U>
+    mat2 &operator*=(U f);
+    template<typename U>
+    mat2 &operator/=(U f);
+    template<typename U>
+    mat2 &operator+=(U f);
+    template<typename U>
+    mat2 &operator-=(U f);
 
-    vec2<T> operator*(const vec2<T> &v) const {
-        return vec2<T>(
-            this->mat[0] * v[0] + this->mat[1] * v[1],
-            this->mat[2] * v[0] + this->mat[3] * v[1]);
-    }
+    template<typename U>
+    bool operator==(const mat2<U> &B) const;
+    template<typename U>
+    bool operator!=(const mat2<U> &B) const;
 
-    vec4<T> operator*(const vec4<T> &v) const {
-        return vec4<T>(
-            this->mat[0] * v[0] + this->mat[1] * v[1],
-            this->mat[2] * v[0] + this->mat[3] * v[1],
-            v[2],
-            v[3]);
-    }
+    operator T *();
+    operator const T *() const;
 
-    mat2 operator*(T f) const {
-        return mat2(this->mat[0] * f, this->mat[1] * f,
-                    this->mat[2] * f, this->mat[3] * f);
-    }
+    T &operator[](I32 i);
+    const T operator[](I32 i) const;
 
-    mat2 operator*(const mat2 &m) const {
-        return mat2(this->mat[0] * m.mat[0] + this->mat[1] * m.mat[2], this->mat[0] * m.mat[1] + this->mat[1] * m.mat[3],
-                    this->mat[2] * m.mat[0] + this->mat[3] * m.mat[2], this->mat[2] * m.mat[1] + this->mat[3] * m.mat[3]);
-    }
+    T &element(I8 row, I8 column);
+    const T &element(I8 row, I8 column) const;
 
-    mat2 operator+(const mat2 &m) const {
-        return mat2(
-            this->mat[0] + m[0], this->mat[1] + m[1],
-            this->mat[2] + m[2], this->mat[3] + m[3]);
-    }
+    template<typename U>
+    void set(U m0, U m1, U m2, U m3);
+    template<typename U>
+    void set(const U *matrix);
+    template<typename U>
+    void set(const mat2<U> &matrix);
+    template<typename U>
+    void set(const mat3<U> &matrix);
+    template<typename U>
+    void set(const mat4<U> &matrix);
 
-    mat2 operator-(const mat2 &m) const {
-        return mat2(
-            this->mat[0] - m[0], this->mat[1] - m[1],
-            this->mat[2] - m[2], this->mat[3] - m[3]);
-    }
+    void zero();
+    void identity();
+    bool isIdentity() const;
+    void swap(mat2 &B);
 
-    mat2 &operator*=(T f) { return *this = *this * f; }
-    mat2 &operator*=(const mat2 &m) { return *this = *this * m; }
-    mat2 &operator+=(const mat2 &m) { return *this = *this + m; }
-    mat2 &operator-=(const mat2 &m) { return *this = *this - m; }
+    T det() const;
+    void inverse();
+    void transpose();
+    void inverseTranspose();
 
-    inline bool operator==(const mat2 &B) const {
-        if (!COMPARE(this->m[0][0], B.m[0][0]) ||
-            !COMPARE(this->m[0][1], B.m[0][1])) {
-            return false;
-        }
-        if (!COMPARE(this->m[1][0], B.m[1][0]) ||
-            !COMPARE(this->m[1][1], B.m[1][1])) {
-            return false;
-        }
+    mat2 getInverse() const;
+    void getInverse(mat2 &ret) const;
 
-        return true;
-    }
+    mat2 getTranspose() const;
+    void getTranspose(mat2 &ret) const;
 
-    inline bool operator!=(const mat2 &B) const { return !(*this == B); }
-
-    operator T *() { return this->mat; }
-    operator const T *() const { return this->mat; }
-
-    T &operator[](I32 i) { return this->mat[i]; }
-    const T operator[](I32 i) const { return this->mat[i]; }
-
-    inline T &element(I8 row, I8 column) {
-        return this->m[row][column];
-    }
-
-    inline const T &element(I8 row, I8 column) const {
-        return this->m[row][column];
-    }
-
-    inline void set(T m0, T m1, T m2, T m3) {
-        this->mat[0] = m0;
-        this->mat[3] = m3;
-        this->mat[1] = m1;
-        this->mat[2] = m2;
-    }
-
-    inline void set(const T *matrix) {
-        memcpy(this->mat, matrix, sizeof(T) * 4);
-    }
-
-    inline void set(const mat2<T> &matrix) {
-        this->set(matrix.mat);
-    }
-
-    inline void set(const mat3<T> &matrix) {
-        this->mat[0] = matrix[0];
-        this->mat[1] = matrix[1];
-        this->mat[2] = matrix[3];
-        this->mat[3] = matrix[4];
-    }
-
-    inline void set(const mat4<T> &matrix) {
-        this->mat[0] = matrix[0];
-        this->mat[1] = matrix[1];
-        this->mat[2] = matrix[4];
-        this->mat[3] = matrix[5];
-    }
-
-    inline mat2 getInverse() const {
-        mat2 ret(this->mat);
-        ret.inverse();
-        return ret;
-    }
-
-    inline void getInverse(mat2 &ret) const { ret.set(this->getInverse()); }
-
-    inline mat2 getTranspose() const {
-        mat2 ret(this->mat);
-        ret.transpose();
-        return ret;
-    }
-
-    inline void getTranspose(mat2 &ret) const { ret.set(this->getTranspose()); }
-
-    inline mat2 getInverseTranspose() const {
-        return this->getInverse().getTranspose();
-    }
-
-    inline void getInverseTranspose(mat2 &ret) const {
-        ret.set(this);
-        ret.inverseTranspose();
-    }
-
-    inline void inverseTranspose() {
-        this->inverse();
-        this->transpose();
-    }
-
-    inline void transpose() {
-        this->set(this->mat[0], this->mat[2],
-                  this->mat[1], this->mat[3]);
-    }
-
-    inline T det() const {
-        return (this->mat[0] * this->mat[3] - this->mat[1] * this->mat[2]);
-    }
-
-    inline void inverse() {
-        T idet = this->det();
-        assert(!IS_ZERO(idet));
-        idet = static_cast<T>(1) / idet;
-
-        this->set(this->mat[3] * idet, -this->mat[1] * idet,
-                  -this->mat[2] * idet, this->mat[0] * idet);
-    }
-
-    inline void zero() { memset(this->mat, 0, 4 * sizeof(T)); }
-
-    inline void identity() {
-        this->mat[0] = static_cast<T>(1);
-        this->mat[3] = static_cast<T>(1);
-        this->mat[1] = static_cast<T>(0);
-        this->mat[2] = static_cast<T>(0);
-    }
-
-    inline bool isIdentity() const {
-        return (COMPARE(this->mat[0], static_cast<T>(1)) && IS_ZERO(this->mat[1]) &&
-                IS_ZERO(this->mat[2]) && COMPARE(this->mat[3], static_cast<T>(1)));
-    }
-
-    inline void swap(mat2 &B) {
-        std::swap(this->m[0][0], B.m[0][0]);
-        std::swap(this->m[0][1], B.m[0][1]);
-
-        std::swap(this->m[1][0], B.m[1][0]);
-        std::swap(this->m[1][1], B.m[1][1]);
-    }
+    mat2 getInverseTranspose() const;
+    void getInverseTranspose(mat2 &ret) const;
 
     union {
         struct {
-            T _11, _12;  // standard names for components
-            T _21, _22;  // standard names for components
+            T _11, _12;
+            T _21, _22;
         };
         T mat[4];
         T m[2][2];
@@ -324,365 +239,133 @@ public:
  *********************************/
 template <typename T>
 class mat3 {
+    // m0 m1 m2
+    // m3 m4 m5
+    // m7 m7 m8
     static_assert(std::is_arithmetic<T>::value && 
                   !std::is_same<T, bool>::value,
                   "non-arithmetic matrix type");
    public:
-    mat3() { this->identity(); }
+    mat3();
+    template<typename U>
+    mat3(U m0, U m1, U m2,
+         U m3, U m4, U m5,
+         U m6, U m7, U m8);
+    template<typename U>
+    mat3(const U *m);
+    template<typename U>
+    mat3(const mat2<U> &m);
+    template<typename U>
+    mat3(const mat3<U> &m);
+    template<typename U>
+    mat3(const mat4<U> &m);
 
-    mat3(T m0, T m1, T m2, T m3, T m4, T m5, T m6, T m7, T m8) {
-        this->mat[0] = m0;
-        this->mat[1] = m1;
-        this->mat[2] = m2;
-        this->mat[3] = m3;
-        this->mat[4] = m4;
-        this->mat[5] = m5;
-        this->mat[6] = m6;
-        this->mat[7] = m7;
-        this->mat[8] = m8;
-    }
+    template<typename U>
+    vec2<U> operator*(const vec2<U> &v) const;
+    template<typename U>
+    vec3<U> operator*(const vec3<U> &v) const;
+    template<typename U>
+    vec4<U> operator*(const vec4<U> &v) const; 
 
-    mat3(const T *m) { this->set(m); }
+    template<typename U>
+    mat3 operator*(const mat3<U> &m) const;
+    template<typename U>
+    mat3 operator/(const mat3<U> &m) const;
+    template<typename U>
+    mat3 operator+(const mat3<U> &m) const;
+    template<typename U>
+    mat3 operator-(const mat3<U> &m) const;
 
-    mat3(const mat3 &m) : mat3(m.mat) {}
+    template<typename U>
+    mat3 &operator*=(const mat3<U> &m);
+    template<typename U>
+    mat3 &operator/=(const mat3<U> &m);
+    template<typename U>
+    mat3 &operator+=(const mat3<U> &m);
+    template<typename U>
+    mat3 &operator-=(const mat3<U> &m);
 
-    mat3(const mat4<T> &m) { this->set(m); }
+    template<typename U>
+    mat3 operator*(U f) const;
+    template<typename U>
+    mat3 operator/(U f) const;
+    template<typename U>
+    mat3 operator+(U f) const;
+    template<typename U>
+    mat3 operator-(U f) const;
 
-    vec3<T> operator*(const vec3<T> &v) const {
-        return vec3<T>(
-            this->mat[0] * v[0] + this->mat[3] * v[1] + this->mat[6] * v[2],
-            this->mat[1] * v[0] + this->mat[4] * v[1] + this->mat[7] * v[2],
-            this->mat[2] * v[0] + this->mat[5] * v[1] + this->mat[8] * v[2]);
-    }
+    template<typename U>
+    mat3 &operator*=(U f);
+    template<typename U>
+    mat3 &operator/=(U f);
+    template<typename U>
+    mat3 &operator+=(U f);
+    template<typename U>
+    mat3 &operator-=(U f);
 
-    vec4<T> operator*(const vec4<T> &v) const {
-        return vec4<T>(
-            this->mat[0] * v[0] + this->mat[3] * v[1] + this->mat[6] * v[2],
-            this->mat[1] * v[0] + this->mat[4] * v[1] + this->mat[7] * v[2],
-            this->mat[2] * v[0] + this->mat[5] * v[1] + this->mat[8] * v[2],
-            v[3]);
-    }
+    template<typename U>
+    bool operator==(const mat3<U> &B) const;
 
-    mat3 operator*(T f) const {
-        return mat3(this->mat[0] * f, this->mat[1] * f, this->mat[2] * f,
-                    this->mat[3] * f, this->mat[4] * f, this->mat[5] * f,
-                    this->mat[6] * f, this->mat[7] * f, this->mat[8] * f);
-    }
+    template<typename U>
+    bool operator!=(const mat3<U> &B) const;
 
-    mat3 operator*(const mat3 &m) const {
-        return mat3(
-            this->mat[0] * m[0] + this->mat[3] * m[1] + this->mat[6] * m[2],
-            this->mat[1] * m[0] + this->mat[4] * m[1] + this->mat[7] * m[2],
-            this->mat[2] * m[0] + this->mat[5] * m[1] + this->mat[8] * m[2],
-            this->mat[0] * m[3] + this->mat[3] * m[4] + this->mat[6] * m[5],
-            this->mat[1] * m[3] + this->mat[4] * m[4] + this->mat[7] * m[5],
-            this->mat[2] * m[3] + this->mat[5] * m[4] + this->mat[8] * m[5],
-            this->mat[0] * m[6] + this->mat[3] * m[7] + this->mat[6] * m[8],
-            this->mat[1] * m[6] + this->mat[4] * m[7] + this->mat[7] * m[8],
-            this->mat[2] * m[6] + this->mat[5] * m[7] + this->mat[8] * m[8]);
-    }
+    operator T *();
+    operator const T *() const;
 
-    mat3 operator+(const mat3 &m) const {
-        return mat3(
-            this->mat[0] + m[0], this->mat[1] + m[1], this->mat[2] + m[2],
-            this->mat[3] + m[3], this->mat[4] + m[4], this->mat[5] + m[5],
-            this->mat[6] + m[6], this->mat[7] + m[7], this->mat[8] + m[8]);
-    }
+    T &operator[](I32 i);
+    const T operator[](I32 i) const;
 
-    mat3 operator-(const mat3 &m) const {
-        return mat3(
-            this->mat[0] - m[0], this->mat[1] - m[1], this->mat[2] - m[2],
-            this->mat[3] - m[3], this->mat[4] - m[4], this->mat[5] - m[5],
-            this->mat[6] - m[6], this->mat[7] - m[7], this->mat[8] - m[8]);
-    }
+    T &element(I8 row, I8 column);
+    const T &element(I8 row, I8 column) const;
 
-    mat3 &operator*=(T f) { return *this = *this * f; }
-    mat3 &operator*=(const mat3 &m) { return *this = *this * m; }
-    mat3 &operator+=(const mat3 &m) { return *this = *this + m; }
-    mat3 &operator-=(const mat3 &m) { return *this = *this - m; }
+    template<typename U>
+    void set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8);
+    template<typename U>
+    void set(const U *matrix);
+    template<typename U>
+    void set(const mat2<U> &matrix);
+    template<typename U>
+    void set(const mat3<U> &matrix);
+    template<typename U>
+    void set(const mat4<U> &matrix);
 
-    inline bool operator==(const mat3 &B) const {
-        if (!COMPARE(this->m[0][0], B.m[0][0]) ||
-            !COMPARE(this->m[0][1], B.m[0][1]) ||
-            !COMPARE(this->m[0][2], B.m[0][2])) {
-            return false;
-        }
-        if (!COMPARE(this->m[1][0], B.m[1][0]) ||
-            !COMPARE(this->m[1][1], B.m[1][1]) ||
-            !COMPARE(this->m[1][2], B.m[1][2])) {
-            return false;
-        }
-        if (!COMPARE(this->m[2][0], B.m[2][0]) ||
-            !COMPARE(this->m[2][1], B.m[2][1]) ||
-            !COMPARE(this->m[2][2], B.m[2][2])) {
-            return false;
-        }
-        return true;
-    }
+    void zero();
+    void identity();
+    bool isIdentity() const;
+    void swap(mat3 &B);
 
-    inline bool operator!=(const mat3 &B) const { return !(*this == B); }
+    T det() const;
+    void inverse();
+    void transpose();
+    void inverseTranspose();
 
-    operator T *() { return this->mat; }
-    operator const T *() const { return this->mat; }
+    mat3 getInverse() const;
+    void getInverse(mat3 &ret) const;
 
-    T &operator[](I32 i) { return this->mat[i]; }
-    const T operator[](I32 i) const { return this->mat[i]; }
+    mat3 getTranspose() const;
+    void getTranspose(mat3 &ret) const;
 
-    inline T &element(I8 row, I8 column) {
-        return this->m[row][column];
-    }
+    mat3 getInverseTranspose() const;
+    void getInverseTranspose(mat3 &ret) const;
 
-    inline const T &element(I8 row, I8 column) const {
-        return this->m[row][column];
-    }
+    template<typename U>
+    void fromRotation(const vec3<U> &v, U angle, bool inDegrees = true);
+    template<typename U>
+    void fromRotation(U x, U y, U z, U angle, bool inDegrees = true);
+    template<typename U>
+    void fromXRotation(U angle, bool inDegrees = true);
+    template<typename U>
+    void fromYRotation(U angle, bool inDegrees = true);
+    template<typename U>
+    void fromZRotation(U angle, bool inDegrees = true);
 
-    inline void set(T m0, T m1, T m2, T m3, T m4, T m5, T m6, T m7, T m8) {
-        this->mat[0] = m0;
-        this->mat[3] = m3;
-        this->mat[6] = m6;
-        this->mat[1] = m1;
-        this->mat[4] = m4;
-        this->mat[7] = m7;
-        this->mat[2] = m2;
-        this->mat[5] = m5;
-        this->mat[8] = m8;
-    }
+    // setScale replaces the main diagonal!
+    template<typename U>
+    inline void setScale(U x, U y, U z);
+    template<typename U>
+    void setScale(const vec3<U> &v);
 
-    inline void set(const T *matrix) { 
-        memcpy(this->mat, matrix, sizeof(T) * 9);
-    }
-
-    inline void set(const mat3<T> &matrix) {
-        this->set(matrix.mat);
-    }
-
-    inline void set(const mat4<T> &matrix) {
-        this->mat[0] = matrix[0];
-        this->mat[3] = matrix[4];
-        this->mat[6] = matrix[8];
-        this->mat[1] = matrix[1];
-        this->mat[4] = matrix[5];
-        this->mat[7] = matrix[9];
-        this->mat[2] = matrix[2];
-        this->mat[5] = matrix[6];
-        this->mat[8] = matrix[10];
-    }
-
-    inline mat3 getInverse() const {
-        mat3 ret(this->mat);
-        ret.inverse();
-        return ret;
-    }
-
-    inline void getInverse(mat3 &ret) const { ret.set(this->getInverse()); }
-
-    inline mat3 getTranspose() const {
-        mat3 ret(this->mat);
-        ret.transpose();
-        return ret;
-    }
-
-    inline void getTranspose(mat3 &ret) const { ret.set(this->getTranspose()); }
-
-    inline mat3 getInverseTranspose() const {
-        return this->getInverse().getTranspose();
-    }
-
-    inline void getInverseTranspose(mat3 &ret) const {
-        ret.set(this);
-        ret.inverseTranspose();
-    }
-
-    inline void inverseTranspose() {
-        this->inverse();
-        this->transpose();
-    }
-
-    inline void transpose() {
-        this->set(this->mat[0], this->mat[3], this->mat[6],
-                  this->mat[1], this->mat[4], this->mat[7],
-                  this->mat[2], this->mat[5], this->mat[8]);
-    }
-
-    inline T det() const {
-        return ((this->mat[0] * this->mat[4] * this->mat[8]) +
-                (this->mat[3] * this->mat[7] * this->mat[2]) +
-                (this->mat[6] * this->mat[1] * this->mat[5]) -
-                (this->mat[6] * this->mat[4] * this->mat[2]) -
-                (this->mat[3] * this->mat[1] * this->mat[8]) -
-                (this->mat[0] * this->mat[7] * this->mat[5]));
-    }
-
-    inline void inverse() {
-        T idet = this->det();
-        assert(!IS_ZERO(idet));
-        idet = static_cast<T>(1) / idet;
-
-        this->set(
-            (this->mat[4] * this->mat[8] - this->mat[7] * this->mat[5]) * idet,
-            -(this->mat[1] * this->mat[8] - this->mat[7] * this->mat[2]) * idet,
-            (this->mat[1] * this->mat[5] - this->mat[4] * this->mat[2]) * idet,
-            -(this->mat[3] * this->mat[8] - this->mat[6] * this->mat[5]) * idet,
-            (this->mat[0] * this->mat[8] - this->mat[6] * this->mat[2]) * idet,
-            -(this->mat[0] * this->mat[5] - this->mat[3] * this->mat[2]) * idet,
-            (this->mat[3] * this->mat[7] - this->mat[6] * this->mat[4]) * idet,
-            -(this->mat[0] * this->mat[7] - this->mat[6] * this->mat[1]) * idet,
-            (this->mat[0] * this->mat[4] - this->mat[3] * this->mat[1]) * idet);
-    }
-
-    inline void zero() { memset(this->mat, 0, 9 * sizeof(T)); }
-
-    inline void identity() {
-        this->zero();
-        this->mat[0] = static_cast<T>(1);
-        this->mat[4] = static_cast<T>(1);
-        this->mat[8] = static_cast<T>(1);
-    }
-
-    inline bool isIdentity() const {
-        return (COMPARE(this->mat[0], static_cast<T>(1)) && IS_ZERO(this->mat[1]) &&
-                IS_ZERO(this->mat[2]) && IS_ZERO(this->mat[3]) &&
-                COMPARE(this->mat[4], static_cast<T>(1)) && IS_ZERO(this->mat[5]) &&
-                IS_ZERO(this->mat[6]) && IS_ZERO(this->mat[7]) &&
-                COMPARE(this->mat[8], static_cast<T>(1)));
-    }
-
-    inline void rotate(const vec3<T> &v, T angle, bool inDegrees = true) {
-        this->rotate(v.x, v.y, v.z, angle, inDegrees);
-    }
-
-    void rotate(T x, T y, T z, T angle, bool inDegrees = true) {
-        if (inDegrees) {
-            DegToRad(angle);
-        }
-
-        T c = static_cast<T>(std::cos(angle));
-        T s = static_cast<T>(std::sin(angle));
-        T l =
-            static_cast<T>(std::sqrt(static_cast<D64>(x * x + y * y + z * z)));
-
-        l = l < EPSILON_F32 ? 1 : 1 / l;
-        x *= l;
-        y *= l;
-        z *= l;
-
-        T xy = x * y;
-        T yz = y * z;
-        T zx = z * x;
-        T xs = x * s;
-        T ys = y * s;
-        T zs = z * s;
-        T c1 = 1 - c;
-
-        this->mat[0] = c1 * x * x + c;
-        this->mat[3] = c1 * xy - zs;
-        this->mat[6] = c1 * zx + ys;
-        this->mat[1] = c1 * xy + zs;
-        this->mat[4] = c1 * y * y + c;
-        this->mat[7] = c1 * yz - xs;
-        this->mat[2] = c1 * zx - ys;
-        this->mat[5] = c1 * yz + xs;
-        this->mat[8] = c1 * z * z + c;
-    }
-
-    inline void rotate_x(T angle, bool inDegrees = true) {
-        if (inDegrees) {
-            DegToRad(angle);
-        }
-
-        T c = (T)std::cos(angle);
-        T s = (T)std::sin(angle);
-
-        this->mat[0] = 1;
-        this->mat[3] = 0;
-        this->mat[6] = 0;
-        this->mat[1] = 0;
-        this->mat[4] = c;
-        this->mat[7] = -s;
-        this->mat[2] = 0;
-        this->mat[5] = s;
-        this->mat[8] = c;
-    }
-
-    inline void rotate_y(T angle, bool inDegrees = true) {
-        if (inDegrees) {
-            angle = Angle::DegreesToRadians(angle);
-        }
-
-        T c = (T)std::cos(angle);
-        T s = (T)std::sin(angle);
-
-        this->mat[0] = c;
-        this->mat[3] = 0;
-        this->mat[6] = s;
-        this->mat[1] = 0;
-        this->mat[4] = 1;
-        this->mat[7] = 0;
-        this->mat[2] = -s;
-        this->mat[5] = 0;
-        this->mat[8] = c;
-    }
-
-    inline void rotate_z(T angle, bool inDegrees = true) {
-        if (inDegrees) {
-            DegToRad(angle);
-        }
-
-        T c = (T)std::cos(angle);
-        T s = (T)std::sin(angle);
-
-        this->mat[0] = c;
-        this->mat[3] = -s;
-        this->mat[6] = 0;
-        this->mat[1] = s;
-        this->mat[4] = c;
-        this->mat[7] = 0;
-        this->mat[2] = 0;
-        this->mat[5] = 0;
-        this->mat[8] = 1;
-    }
-
-    inline void setScale(T x, T y, T z) {
-        this->mat[0] = x;
-        this->mat[4] = y;
-        this->mat[8] = z;
-    }
-
-    inline void setScale(const vec3<T> &v) { this->scale(v.x, v.y, v.z); }
-
-    void orthonormalize(void) {
-        vec3<T> x(mat[0], mat[1], mat[2]);
-        x.normalize();
-        vec3<T> y(mat[3], mat[4], mat[5]);
-        vec3<T> z(cross(x, y));
-        z.normalize();
-        y.cross(z, x);
-        y.normalize();
-
-        this->mat[0] = x.x;
-        this->mat[3] = y.x;
-        this->mat[6] = z.x;
-        this->mat[1] = x.y;
-        this->mat[4] = y.y;
-        this->mat[7] = z.y;
-        this->mat[2] = x.z;
-        this->mat[5] = y.z;
-        this->mat[8] = z.z;
-    }
-
-    inline void swap(mat3 &B) {
-        std::swap(this->m[0][0], B.m[0][0]);
-        std::swap(this->m[0][1], B.m[0][1]);
-        std::swap(this->m[0][2], B.m[0][2]);
-
-        std::swap(this->m[1][0], B.m[1][0]);
-        std::swap(this->m[1][1], B.m[1][1]);
-        std::swap(this->m[1][2], B.m[1][2]);
-
-        std::swap(this->m[2][0], B.m[2][0]);
-        std::swap(this->m[2][1], B.m[2][1]);
-        std::swap(this->m[2][2], B.m[2][2]);
-    }
+    void orthonormalize();
 
     union {
         struct {
@@ -700,97 +383,150 @@ class mat3 {
  ***************/
 template <typename T>
 class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
+    // m0  m1  m2  m3
+    // m4  m5  m6  m7
+    // m8  m9  m10 m11
+    // m12 m13 m14 m15
     static_assert(std::is_arithmetic<T>::value &&
                   !std::is_same<T, bool>::value,
                   "non-arithmetic matrix type");
    public:
-    mat4() { this->identity(); }
-
-    mat4(T m0, T m1, T m2, T m3, T m4, T m5, T m6, T m7, T m8, T m9, T m10,
-         T m11, T m12, T m13, T m14, T m15) {
-        mat[0] = m0;
-        mat[4] = m4;
-        mat[8] = m8;
-        mat[12] = m12;
-
-        mat[1] = m1;
-        mat[5] = m5;
-        mat[9] = m9;
-        mat[13] = m13;
-
-        mat[2] = m2;
-        mat[6] = m6;
-        mat[10] = m10;
-        mat[14] = m14;
-
-        mat[3] = m3;
-        mat[7] = m7;
-        mat[11] = m11;
-        mat[15] = m15;
+    mat4() 
+        : mat4(1, 0, 0, 0,
+               0, 1, 0, 0,
+               0, 0, 1, 0,
+               0, 0, 0, 1)
+    {
     }
 
-    mat4(const T *m) { this->set(m); }
-
-    mat4(const mat4 &m) : mat4(m.mat) {}
-
-    mat4(const vec3<T> &translation, const vec3<T> &scale) : mat4(translation) {
-        this->setScale(scale);
+    template<typename U>
+    mat4(U m0,  U m1,  U m2,  U m3,
+         U m4,  U m5,  U m6,  U m7,
+         U m8,  U m9,  U m10, U m11,
+         U m12, U m13, U m14, U m15)
+        : mat{ static_cast<T>(m0),  static_cast<T>(m1),  static_cast<T>(m2),  static_cast<T>(m3),
+               static_cast<T>(m4),  static_cast<T>(m5),  static_cast<T>(m6),  static_cast<T>(m7),
+               static_cast<T>(m8),  static_cast<T>(m9),  static_cast<T>(m10), static_cast<T>(m11),
+               static_cast<T>(m12), static_cast<T>(m13), static_cast<T>(m14), static_cast<T>(m15)}
+    {
     }
 
-    mat4(const vec3<T> &translation, const vec3<T> &scale, const mat4<T>& rotation) : mat4() {
-        this->setScale(scale);
-        this->set(*this * rotation);
-        this->setTranslation(translation);
+    template<typename U>
+    mat4(const U *m)
+        : mat4(m[0],  m[1],  m[2],  m[3],
+               m[4],  m[5],  m[6],  m[7],
+               m[8],  m[9],  m[10], m[11],
+               m[12], m[13], m[14], m[15])
+    {
     }
 
-    mat4(const vec3<T> &translation)
-        : mat4(translation.x, translation.y, translation.z) {}
-
-    mat4(T translationX, T translationY, T translationZ) : mat4() {
-        this->setTranslation(translationX, translationY, translationZ);
+    template<typename U>
+    mat4(const mat2<U> &m)
+        : mat4(m[0],              m[1],              static_cast<U>(0), static_cast<U>(0),
+               m[2],              m[3],              static_cast<U>(0), static_cast<U>(0),
+               static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+               static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) //maybe m[15] should be 1?
+    {
     }
 
-    mat4(const vec3<T> &axis, T angle, bool inDegrees = true)
-        : mat4(axis.x, axis.y, axis.z, angle, inDegrees) {}
-
-    mat4(T x, T y, T z, T angle, bool inDegrees = true) : mat4() {
-        this->rotate(x, y, z, angle, inDegrees);
+    template<typename U>
+    mat4(const mat3<U> &m)
+        : mat4(m[0],              m[1],              m[2],              static_cast<U>(0),
+               m[3],              m[4],              m[5]               static_cast<U>(0),
+               m[6],              m[7],              m[8],              static_cast<U>(0),
+               static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) //maybe m[15] should be 1?
+    {
     }
 
-    mat4(const vec3<T> &eye, const vec3<T> &target, const vec3<T> &up)
-        : mat4() {
-        this->lookAt(eye, target, up);
+    mat4(const mat4 &m) : mat4(m.mat)
+    {
     }
 
-    mat4(const mat3<T> &m) { this->set(m); }
+    template<typename U>
+    mat4(const mat4<U> &m) : mat4(m.mat)
+    {
+    }
 
-    inline vec3<T> transform(const vec3<T> &v, bool homogeneous) const {
+    template<typename U>
+    mat4(const vec3<U> &translation, const vec3<U> &scale)
+        : mat4(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+               static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0), 
+               static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0), 
+               translation.x,     translation.y,     translation.z,     static_cast<U>(1))
+    {
+    }
+
+    template<typename U>
+    mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) 
+        : mat4(scale.x, static_cast<U>(0), static_cast<U>(0),           static_cast<U>(0),
+               static_cast<U>(0), scale.y, static_cast<U>(0),           static_cast<U>(0),
+               static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
+               static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(1))
+    {
+        set(*this * rotation);
+        setTranslation(translation);
+    }
+
+    template<typename U>
+    mat4(const vec3<U> &translation)
+        : mat4(translation.x, translation.y, translation.z)
+    {
+    }
+
+    template<typename U>
+    mat4(U translationX, U translationY, U translationZ)
+        : mat4(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+               static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+               static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+               translation.x,     translation.y,     translation.z,     static_cast<U>(1))
+    {
+    }
+
+    template<typename U>
+    mat4(const vec3<U> &axis, U angle, bool inDegrees = true)
+        : mat4(axis.x, axis.y, axis.z, angle, inDegrees)
+    {
+    }
+
+    template<typename U>
+    mat4(U x, U y, U z, U angle, bool inDegrees = true) 
+        : mat4()
+    {
+        rotate(x, y, z, angle, inDegrees);
+    }
+
+    template<typename U>
+    mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up)
+        : mat4()
+    {
+        lookAt(eye, target, up);
+    }
+
+    template<typename U>
+    inline vec3<U> transform(const vec3<U> &v, bool homogeneous) const {
         return  homogeneous ? transformHomogeneous(v)
                             : transformNonHomogeneous(v);
     }
-    /*Transforms the given 3-D vector by the matrix, projecting the result back
-     * into <i>w</i> = 1. (OGRE reference)*/
-    inline vec3<T> transformHomogeneous(const vec3<T> &v) const {
+
+    /*Transforms the given 3-D vector by the matrix, projecting the result back into <i>w</i> = 1. (OGRE reference)*/
+    template<typename U>
+    inline vec3<U> transformHomogeneous(const vec3<U> &v) const {
         F32 fInvW = 1.0f / (this->m[0][3] * v.x + this->m[1][3] * v.y +
                             this->m[2][3] * v.z + this->m[3][3]);
 
-        return vec3<T>((this->m[0][0] * v.x + this->m[1][1] * v.y +
-                        this->m[2][0] * v.z + this->m[3][0]) *
-                           fInvW,
-                       (this->m[0][1] * v.x + this->m[1][1] * v.y +
-                        this->m[2][1] * v.z + this->m[3][1]) *
-                           fInvW,
-                       (this->m[0][2] * v.x + this->m[1][2] * v.y +
-                        this->m[2][2] * v.z + this->m[3][2]) *
-                           fInvW);
+        return vec3<U>((this->m[0][0] * v.x + this->m[1][1] * v.y + this->m[2][0] * v.z + this->m[3][0]) * fInvW,
+                       (this->m[0][1] * v.x + this->m[1][1] * v.y + this->m[2][1] * v.z + this->m[3][1]) * fInvW,
+                       (this->m[0][2] * v.x + this->m[1][2] * v.y + this->m[2][2] * v.z + this->m[3][2]) * fInvW);
     }
 
-    inline vec3<T> transformNonHomogeneous(const vec3<T> &v) const {
-        return *this * vec4<T>(v, (T)0);
+    template<typename U>
+    inline vec3<U> transformNonHomogeneous(const vec3<U> &v) const {
+        return *this * vec4<U>(v, static_cast<U>(0));
     }
 
-    vec3<T> operator*(const vec3<T> &v) const {
-        return vec3<T>(this->mat[0]  * v.x + this->mat[4] * v.y +
+    template<typename U>
+    vec3<U> operator*(const vec3<U> &v) const {
+        return vec3<U>(this->mat[0]  * v.x + this->mat[4] * v.y +
                        this->mat[8]  * v.z + this->mat[12],
                        this->mat[1]  * v.x + this->mat[5] * v.y +
                        this->mat[9]  * v.z + this->mat[13],
@@ -798,8 +534,9 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                        this->mat[10] * v.z + this->mat[14]);
     }
 
-    vec4<T> operator*(const vec4<T> &v) const {
-        return vec4<T>(this->mat[0]  * v.x + this->mat[4]  * v.y +
+    template<typename U>
+    vec4<U> operator*(const vec4<U> &v) const {
+        return vec4<U>(this->mat[0]  * v.x + this->mat[4]  * v.y +
                        this->mat[8]  * v.z + this->mat[12] * v.w,
                        this->mat[1]  * v.x + this->mat[5]  * v.y +
                        this->mat[9]  * v.z + this->mat[13] * v.w,
@@ -809,13 +546,22 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                        this->mat[11] * v.z + this->mat[15] * v.w);
     }
 
-    mat4<T> operator*(T f) const {
+    template<typename U>
+    mat4<T> operator*(U f) const {
         mat4<T> retValue;
         Util::Mat4::MultiplyScalar(this->mat, f, retValue.mat);
         return retValue;
     }
 
-    mat4<T> operator*(const mat4& matrix) const {
+    template<typename U>
+    mat4<T> operator/(U f) const {
+        mat4<T> retValue;
+        Util::Mat4::DivideScalar(this->mat, f, retValue.mat);
+        return retValue;
+    }
+
+    template<typename U>
+    mat4<T> operator*(const mat4<U>& matrix) const {
         mat4<T> retValue;
         Util::Mat4::Multiply(this->mat, matrix.mat, retValue.mat);
         return retValue;
@@ -828,7 +574,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                this->mat[12] + this->mat[13] + this->mat[14] + this->mat[15];
     }
 
-    inline bool operator==(const mat4 &B) const {
+    template<typename U>
+    inline bool operator==(const mat4<U>& B) const {
         // Add a small epsilon value to avoid 0.0 != 0.0
         if (!COMPARE(this->elementSum() + EPSILON_F32,
                      B.elementSum() + EPSILON_F32)) {
@@ -863,93 +610,112 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         return true;
     }
 
-    inline bool operator!=(const mat4 &B) const { return !(*this == B); }
+    template<typename U>
+    inline bool operator!=(const mat4<U> &B) const { return !(*this == B); }
 
-    inline void set(T m0, T m1, T m2, T m3, T m4, T m5, T m6, T m7, T m8, T m9,
-                    T m10, T m11, T m12, T m13, T m14, T m15) {
-        this->mat[0] = m0;
-        this->mat[4] = m4;
-        this->mat[8] = m8;
-        this->mat[12] = m12;
-        this->mat[1] = m1;
-        this->mat[5] = m5;
-        this->mat[9] = m9;
-        this->mat[13] = m13;
-        this->mat[2] = m2;
-        this->mat[6] = m6;
-        this->mat[10] = m10;
-        this->mat[14] = m14;
-        this->mat[3] = m3;
-        this->mat[7] = m7;
-        this->mat[11] = m11;
-        this->mat[15] = m15;
+    template<typename U>
+    inline void set(U m0,  U m1,  U m2,  U m3,
+                    U m4,  U m5,  U m6,  U m7,
+                    U m8,  U m9,  U m10, U m11,
+                    U m12, U m13, U m14, U m15) {
+        this->mat[0] = static_cast<T>(m0);
+        this->mat[4] = static_cast<T>(m4);
+        this->mat[8] = static_cast<T>(m8);
+        this->mat[12] = static_cast<T>(m12);
+
+        this->mat[1] = static_cast<T>(m1);
+        this->mat[5] = static_cast<T>(m5);
+        this->mat[9] = static_cast<T>(m9);
+        this->mat[13] = static_cast<T>(m13);
+
+        this->mat[2] = static_cast<T>(m2);
+        this->mat[6] = static_cast<T>(m6);
+        this->mat[10] = static_cast<T>(m10);
+        this->mat[14] = static_cast<T>(m14);
+
+        this->mat[3] = static_cast<T>(m3);
+        this->mat[7] = static_cast<T>(m7);
+        this->mat[11] = static_cast<T>(m11);
+        this->mat[15] = static_cast<T>(m15);
     }
 
-    inline void set(T const *matrix) {
-        std::memcpy(this->mat, matrix, sizeof(T) * 16);
+    template<typename U>
+    inline void set(U const *matrix) {
+        static_assert(sizeof(T) == sizeof(U), "unsupported data type");
+
+        std::memcpy(this->mat, matrix, sizeof(U) * 16);
     }
 
-    inline void set(const mat4 &matrix) { this->set(matrix.mat); }
+    template<typename U>
+    inline void set(const mat2<U> &matrix) {
+        const U zero = static_cast<U>(0);
 
-    inline void set(const mat3<T> &matrix) {
-        this->mat[0] = matrix.mat[0];
-        this->mat[4] = matrix.mat[3];
-        this->mat[8] = matrix.mat[6];
-        this->mat[12] = (T)0;
-
-        this->mat[1] = matrix.mat[1];
-        this->mat[5] = matrix.mat[4];
-        this->mat[9] = matrix.mat[7];
-        this->mat[13] = (T)0;
-
-        this->mat[2] = matrix.mat[2];
-        this->mat[6] = matrix.mat[5];
-        this->mat[10] = matrix.mat[8];
-        this->mat[14] = (T)0;
-
-        this->mat[3] = (T)0;
-        this->mat[7] = (T)0;
-        this->mat[11] = (T)0;
-        this->mat[15] = (T)0;
+        set(matrix[0], matrix[1], zero, zero,
+            matrix[2], matrix[3], zero, zero,
+            zero,      zero,      zero, zero,
+            zero,      zero,      zero, zero);
     }
 
-    inline void setRow(I32 index, const T value) {
+    template<typename U>
+    inline void set(const mat3<U> &matrix) {
+        const U zero = static_cast<U>(0);
+
+        set(matrix[0], matrix[1], matrix[2], zero,
+            matrix[3], matrix[4], matrix[5], zero,
+            matrix[6], matrix[7], matrix[8], zero,
+            zero,      zero,      zero,      zero);
+    }
+
+    template<typename U>
+    inline void set(const mat4<U> &matrix) {
+        this->set(matrix.mat);
+    }
+
+    template<typename U>
+    inline void setRow(I32 index, const U value) {
         this->_vec[index].set(value);
     }
 
-    inline void setRow(I32 index, const vec4<T> &value) {
+    template<typename U>
+    inline void setRow(I32 index, const vec4<U> &value) {
         this->_vec[index].set(value);
     }
 
-    inline void setRow(I32 index, const T x, const T y, const T z, const T w) {
+    template<typename U>
+    inline void setRow(I32 index, const U x, const U y, const U z, const U w) {
         this->_vec[index].set(x, y, z, w);
     }
 
-    inline void setCol(I32 index, const vec4<T> &value) {
+    template<typename U>
+    inline void setCol(I32 index, const vec4<U> &value) {
         this->setCol(index, value.x, value.y, value.z, value.w);
     }
 
-    inline void setCol(I32 index, const T value) {
-        this->m[0][index] = value;
-        this->m[1][index] = value;
-        this->m[2][index] = value;
-        this->m[3][index] = value;
+    template<typename U>
+    inline void setCol(I32 index, const U value) {
+        this->m[0][index] = static_cast<T>(value);
+        this->m[1][index] = static_cast<T>(value);
+        this->m[2][index] = static_cast<T>(value);
+        this->m[3][index] = static_cast<T>(value);
     }
 
-    inline void setCol(I32 index, const T x, const T y, const T z, const T w) {
-        this->m[0][index] = x;
-        this->m[1][index] = y;
-        this->m[2][index] = z;
-        this->m[3][index] = w;
+    template<typename U>
+    inline void setCol(I32 index, const U x, const U y, const U z, const U w) {
+        this->m[0][index] = static_cast<T>(x);
+        this->m[1][index] = static_cast<T>(y);
+        this->m[2][index] = static_cast<T>(z);
+        this->m[3][index] = static_cast<T>(w);
     }
 
-    mat4 operator+(const mat4 &matrix) const {
+    template<typename U>
+    mat4 operator+(const mat4<U> &matrix) const {
         mat4<T> retValue;
         Util::Mat4::Add(this->mat, matrix.mat, retValue.mat);
         return retValue;
     }
 
-    mat4 operator-(const mat4 &matrix) const {
+    template<typename U>
+    mat4 operator-(const mat4<U> &matrix) const {
         mat4<T> retValue;
         Util::Mat4::Subtract(this->mat, matrix.mat, retValue.mat);
         return retValue;
@@ -963,22 +729,32 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         return this->m[row][column];
     }
 
-    mat4 &operator*=(T f) {
+    template<typename U>
+    mat4 &operator*=(U f) {
         Util::Mat4::MultiplyScalar(this->mat, f, this->mat);
         return *this;
     }
 
-    mat4 &operator*=(const mat4 &matrix) {
+    template<typename U>
+    mat4 &operator/=(U f) {
+        Util::Mat4::MultiplyScalar(this->mat, 1/f, this->mat);
+        return *this;
+    }
+
+    template<typename U>
+    mat4 &operator*=(const mat4<U> &matrix) {
         this->set(*this * matrix);
         return *this;
     }
 
-    mat4 &operator+=(const mat4 &matrix) {
+    template<typename U>
+    mat4 &operator+=(const mat4<U> &matrix) {
         Util::Mat4::Add(this->mat, matrix.mat, this->mat);
         return *this;
     }
 
-    mat4 &operator-=(const mat4 &matrix) {
+    template<typename U>
+    mat4 &operator-=(const mat4<U> &matrix) {
         Util::Mat4::Subtract(this->mat, matrix.mat, this->mat);
         return *this;
     }
@@ -989,10 +765,14 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     T &operator[](I32 i) { return this->mat[i]; }
     const T &operator[](I32 i) const { return this->mat[i]; }
 
-    mat4 &operator=(const mat4 other) { this->set(other); return *this; }
+    mat4 &operator=(const mat4& other) { this->set(other); return *this; }
 
-    inline vec3<T> getTranslation() const {
-        return vec3<T>(mat[12], mat[13], mat[14]);
+    template<typename U>
+    mat4 &operator=(const mat4<U>& other) { this->set(other); return *this; }
+
+    template<typename U>
+    inline vec3<U> getTranslation() const {
+        return vec3<U>(mat[12], mat[13], mat[14]);
     }
 
     inline mat4 getRotation(void) const {
@@ -1015,7 +795,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                   this->mat[12], this->mat[13], this->mat[14], this->mat[15]);
     }
 
-    inline void getTranspose(mat4 &out) const { out.set(this->getTranspose()); }
+    template<typename U>
+    inline void getTranspose(mat4<U> &out) const {
+        out.set(this->getTranspose());
+    }
 
     inline mat4 getTranspose() const {
         return mat4(this->mat[0], this->mat[4], this->mat[8], this->mat[12],
@@ -1054,11 +837,14 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     inline mat4 getInverseTranspose() const {
-        return this->getInverse().getTranspose();
+        mat4 ret(getInverse());
+        ret.transpose();
+        return ret;
     }
 
     inline void inverseTranspose(mat4 &ret) const {
-        ret.set(this->getInverseTranspose());
+        ret.set(getInverse());
+        ret.transpose();
     }
 
     inline void inverseTranspose() {
@@ -1067,247 +853,249 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     inline void identity() {
-        this->zero();
-        this->mat[0] = (T)1;
-        this->mat[5] = (T)1;
-        this->mat[10] = (T)1;
-        this->mat[15] = (T)1;
+        set(1, 0, 0, 0,
+            0, 1, 0, 0, 
+            0, 0, 1, 0,
+            0, 0, 0, 1);
     }
 
     inline void bias() {
-        this->set(0.5, 0.0, 0.0, 0.0,
-                  0.0, 0.5, 0.0, 0.0,
-                  0.0, 0.0, 0.5, 0.0,
-                  0.5, 0.5, 0.5, 1.0);
+        set(0.5, 0.0, 0.0, 0.0,
+            0.0, 0.5, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.0,
+            0.5, 0.5, 0.5, 1.0);
     }
 
-    inline void setTranslation(const vec3<T> &v) {
+    template<typename U>
+    inline void setTranslation(const vec3<U> &v) {
         this->setTranslation(v.x, v.y, v.z);
     }
 
-    inline void setScale(const vec3<T> &v) { this->setScale(v.x, v.y, v.z); }
+    template<typename U>
+    inline void setScale(const vec3<U> &v) { this->setScale(v.x, v.y, v.z); }
 
-    inline void scale(const vec3<T> &v) { this->scale(v.x, v.y, v.z); }
+    template<typename U>
+    inline void scale(const vec3<U> &v) { this->scale(v.x, v.y, v.z); }
 
-    inline void translate(const vec3<T> &v) { this->translate(v.x, v.y, v.z); }
+    template<typename U>
+    inline void translate(const vec3<U> &v) { this->translate(v.x, v.y, v.z); }
 
-    inline void rotate(const vec3<T> &axis, T angle, bool inDegrees = true) {
+    template<typename U>
+    inline void rotate(const vec3<U> &axis, U angle, bool inDegrees = true) {
         this->rotate(axis.x, axis.y, axis.z, angle, inDegrees);
     }
 
-    inline void rotate(T x, T y, T z, T angle, bool inDegrees = true) {
+    template<typename U>
+    inline void rotate(U x, U y, U z, U angle, bool inDegrees = true) {
         if (inDegrees) {
-            DegToRad(angle);
+            angle = Angle::DegreesToRadians(angle);
         }
 
-        vec3<T> v(x, y, z);
+        vec3<U> v(x, y, z);
         v.normalize();
 
-        T c = (T)std::cos(angle);
-        T s = (T)std::sin(angle);
+        U c = std::cos(angle);
+        U s = std::sin(angle);
 
-        T xx = v.x * v.x;
-        T yy = v.y * v.y;
-        T zz = v.z * v.z;
-        T xy = v.x * v.y;
-        T yz = v.y * v.z;
-        T zx = v.z * v.x;
-        T xs = v.x * s;
-        T ys = v.y * s;
-        T zs = v.z * s;
+        U xx = v.x * v.x;
+        U yy = v.y * v.y;
+        U zz = v.z * v.z;
+        U xy = v.x * v.y;
+        U yz = v.y * v.z;
+        U zx = v.z * v.x;
+        U xs = v.x * s;
+        U ys = v.y * s;
+        U zs = v.z * s;
 
-        this->mat[0] = (1 - c) * xx + c;
-        this->mat[4] = (1 - c) * xy - zs;
-        this->mat[8] = (1 - c) * zx + ys;
-        this->mat[1] = (1 - c) * xy + zs;
-        this->mat[5] = (1 - c) * yy + c;
-        this->mat[9] = (1 - c) * yz - xs;
-        this->mat[2] = (1 - c) * zx - ys;
-        this->mat[6] = (1 - c) * yz + xs;
-        this->mat[10] = (1 - c) * zz + c;
+        set((1 - c) * xx + c,        (1 - c) * xy + zs,       (1 - c) * zx - ys,       static_cast<U>(mat[3]),
+            (1 - c) * xy - zs,       (1 - c) * yy + c,        (1 - c) * yz + xs,       static_cast<U>(mat[7]),
+            (1 - c) * zx + ys,       (1 - c) * yz - xs,       (1 - c) * zz + c,        static_cast<U>(mat[11]),
+            static_cast<U>(mat[12]), static_cast<U>(mat[13]), static_cast<U>(mat[14]), static_cast<U>(mat[15]))
     }
 
-    inline void rotate_x(T angle, bool inDegrees = true) {
+    template<typename U>
+    inline void rotate_x(U angle, bool inDegrees = true) {
         if (inDegrees) {
-            DegToRad(angle);
+            angle = Angle::DegreesToRadians(angle);
         }
 
-        T c = (T)std::cos(angle);
-        T s = (T)std::sin(angle);
+        U c = std::cos(angle);
+        U s = std::sin(angle);
 
-        this->mat[5] = c;
-        this->mat[9] = -s;
-        this->mat[6] = s;
-        this->mat[10] = c;
+        this->mat[5] = static_cast<T>(c);
+        this->mat[9] = static_cast<T>(-s);
+        this->mat[6] = static_cast<T>(s);
+        this->mat[10] = static_cast<T>(c);
     }
 
-    inline void rotate_y(T angle, bool inDegrees = true) {
+    template<typename U>
+    inline void rotate_y(U angle, bool inDegrees = true) {
         if (inDegrees) {
-            DegToRad(angle);
+            angle = Angle::DegreesToRadians(angle);
         }
 
-        T c = (T)std::cos(angle);
-        T s = (T)std::sin(angle);
+        U c = std::cos(angle);
+        U s = std::sin(angle);
 
-        this->mat[0] = c;
-        this->mat[8] = s;
-        this->mat[2] = -s;
-        this->mat[10] = c;
+        this->mat[0] = static_cast<T>(c);
+        this->mat[8] = static_cast<T>(s);
+        this->mat[2] = static_cast<T>(-s);
+        this->mat[10] = static_cast<T>(c);
     }
 
-    inline void rotate_z(T angle, bool inDegrees = true) {
+    template<typename U>
+    inline void rotate_z(U angle, bool inDegrees = true) {
         if (inDegrees) {
-            DegToRad(angle);
+            angle = Angle::DegreesToRadians(angle);
         }
 
-        T c = (T)std::cos(angle);
-        T s = (T)std::sin(angle);
+        U c = std::cos(angle);
+        U s = std::sin(angle);
 
-        this->mat[0] = c;
-        this->mat[4] = -s;
-        this->mat[1] = s;
-        this->mat[5] = c;
+        this->mat[0] = static_cast<T>(c);
+        this->mat[4] = static_cast<T>(-s);
+        this->mat[1] = static_cast<T>(s);
+        this->mat[5] = static_cast<T>(c);
     }
 
-    inline void setScale(T x, T y, T z) {
-        this->mat[0] = x;
-        this->mat[5] = y;
-        this->mat[10] = z;
+    template<typename U>
+    inline void setScale(U x, U y, U z) {
+        this->mat[0] = static_cast<T>(x);
+        this->mat[5] = static_cast<T>(y);
+        this->mat[10] = static_cast<T>(z);
     }
 
-    inline void scale(T x, T y, T z) {
-        this->mat[0] *= x;
-        this->mat[4] *= y;
-        this->mat[8] *= z;
-        this->mat[1] *= x;
-        this->mat[5] *= y;
-        this->mat[9] *= z;
-        this->mat[2] *= x;
-        this->mat[6] *= y;
-        this->mat[10] *= z;
-        this->mat[3] *= x;
-        this->mat[7] *= y;
-        this->mat[11] *= z;
+    template<typename U>
+    inline void scale(U x, U y, U z) {
+        this->mat[0] *= static_cast<T>(x);
+        this->mat[4] *= static_cast<T>(y);
+        this->mat[8] *= static_cast<T>(z);
+        this->mat[1] *= static_cast<T>(x);
+        this->mat[5] *= static_cast<T>(y);
+        this->mat[9] *= static_cast<T>(z);
+        this->mat[2] *= static_cast<T>(x);
+        this->mat[6] *= static_cast<T>(y);
+        this->mat[10] *= static_cast<T>(z);
+        this->mat[3] *= static_cast<T>(x);
+        this->mat[7] *= static_cast<T>(y);
+        this->mat[11] *= static_cast<T>(z);
     }
 
-    inline void setTranslation(T x, T y, T z) {
-        this->mat[12] = x;
-        this->mat[13] = y;
-        this->mat[14] = z;
+    template<typename U>
+    inline void setTranslation(U x, U y, U z) {
+        this->mat[12] = static_cast<T>(x);
+        this->mat[13] = static_cast<T>(y);
+        this->mat[14] = static_cast<T>(z);
     }
 
-    inline void translate(T x, T y, T z) {
-        this->mat[12] += x;
-        this->mat[13] += y;
-        this->mat[14] += z;
+    template<typename U>
+    inline void translate(U x, U y, U z) {
+        this->mat[12] += static_cast<T>(x);
+        this->mat[13] += static_cast<T>(y);
+        this->mat[14] += static_cast<T>(z);
     }
 
-    void reflect(const Plane<T> &plane) {
-        const vec4<T> &eq = plane.getEquation();
+    template<typename U>
+    void reflect(const Plane<U> &plane) {
+        const U zero = static_cast<U>(0);
+        const U one = static_cast<U>(1);
 
-        T x = eq.x;
-        T y = eq.y;
-        T z = eq.z;
-        T w = eq.w;
-        T x2 = x * 2.0f;
-        T y2 = y * 2.0f;
-        T z2 = z * 2.0f;
+        const vec4<U> &eq = plane.getEquation();
 
-        this->mat[0] = 1 - x * x2;
-        this->mat[4] = -y * x2;
-        this->mat[8] = -z * x2;
-        this->mat[12] = -w * x2;
-        this->mat[1] = -x * y2;
-        this->mat[5] = 1 - y * y2;
-        this->mat[9] = -z * y2;
-        this->mat[13] = -w * y2;
-        this->mat[2] = -x * z2;
-        this->mat[6] = -y * z2;
-        this->mat[10] = 1 - z * z2;
-        this->mat[14] = -w * z2;
-        this->mat[3] = 0;
-        this->mat[7] = 0;
-        this->mat[11] = 0;
-        this->mat[15] = 1;
+        U x = eq.x;
+        U y = eq.y;
+        U z = eq.z;
+        U w = eq.w;
+        U x2 = x * 2.0f;
+        U y2 = y * 2.0f;
+        U z2 = z * 2.0f;
+
+        set( 1 - x * x2, -x * y2,     -x * z2,     zero,
+            -y * x2,      1 - y * y2, -y * z2,     zero,
+            -z * x2,     -z * y2,      1 - z * z2, zero,
+            -w * x2,     -w * y2,     -w * z2,     one);
     }
 
-    void lookAt(const vec3<T> &eye, const vec3<T> &target, const vec3<T> &up) {
-        vec3<T> zAxis(eye - target);
+    template<typename U>
+    void lookAt(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) {
+        vec3<U> zAxis(eye - target);
         zAxis.normalize();
-        vec3<T> xAxis(Cross(up, zAxis));
+        vec3<U> xAxis(Cross(up, zAxis));
         xAxis.normalize();
-        vec3<T> yAxis(Cross(zAxis, xAxis));
+        vec3<U> yAxis(Cross(zAxis, xAxis));
         yAxis.normalize();
 
-        this->m[0][0] = xAxis.x;
-        this->m[1][0] = xAxis.y;
-        this->m[2][0] = xAxis.z;
-        this->m[3][0] = -xAxis.dot(eye);
+        this->m[0][0] = static_cast<T>(xAxis.x);
+        this->m[1][0] = static_cast<T>(xAxis.y);
+        this->m[2][0] = static_cast<T>(xAxis.z);
+        this->m[3][0] = static_cast<T>(-xAxis.dot(eye));
 
-        this->m[0][1] = yAxis.x;
-        this->m[1][1] = yAxis.y;
-        this->m[2][1] = yAxis.z;
-        this->m[3][1] = -yAxis.dot(eye);
+        this->m[0][1] = static_cast<T>(yAxis.x);
+        this->m[1][1] = static_cast<T>(yAxis.y);
+        this->m[2][1] = static_cast<T>(yAxis.z);
+        this->m[3][1] = static_cast<T>(-yAxis.dot(eye));
 
-        this->m[0][2] = zAxis.x;
-        this->m[1][2] = zAxis.y;
-        this->m[2][2] = zAxis.z;
-        this->m[3][2] = -zAxis.dot(eye);
+        this->m[0][2] = static_cast<T>(zAxis.x);
+        this->m[1][2] = static_cast<T>(zAxis.y);
+        this->m[2][2] = static_cast<T>(zAxis.z);
+        this->m[3][2] = static_cast<T>(-zAxis.dot(eye));
     }
 
-    void ortho(T left, T right, T bottom, T top, T zNear, T zFar) {
-        this->identity();
-
-        this->m[0][0] = static_cast<T>(2) / (right - left);
-        this->m[1][1] = static_cast<T>(2) / (top - bottom);
-        this->m[2][2] = -T(2) / (zFar - zNear);
-        this->m[3][0] = -(right + left) / (right - left);
-        this->m[3][1] = -(top + bottom) / (top - bottom);
-        this->m[3][2] = -(zFar + zNear) / (zFar - zNear);
+    template<typename U>
+    void ortho(U left, U right, U bottom, U top, U zNear, U zFar) {
+        this->m[0][0] = static_cast<T>(2 / (right - left));
+        this->m[1][1] = static_cast<T>(2 / (top - bottom));
+        this->m[2][2] = -static_cast<T>(2 / (zFar - zNear));
+        this->m[3][0] = -static_cast<T>((right + left) / (right - left));
+        this->m[3][1] = -static_cast<T>((top + bottom) / (top - bottom));
+        this->m[3][2] = -static_cast<T>((zFar + zNear) / (zFar - zNear));
     }
 
-    void perspective(T fovyRad, T aspect, T zNear, T zFar) {
+    template<typename U>
+    void perspective(U fovyRad, U aspect, U zNear, U zFar) {
         assert(!IS_ZERO(aspect));
         assert(zFar > zNear);
 
-        T tanHalfFovy = std::tan(fovyRad / static_cast<T>(2));
+        U tanHalfFovy = static_cast<U>(std::tan(fovyRad * 0.5f));
 
         this->zero();
 
-        this->m[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
-        this->m[1][1] = static_cast<T>(1) / (tanHalfFovy);
-        this->m[2][2] = -(zFar + zNear) / (zFar - zNear);
+        this->m[0][0] = static_cast<T>(1 / (aspect * tanHalfFovy));
+        this->m[1][1] = static_cast<T>(1 / (tanHalfFovy));
+        this->m[2][2] = -static_cast<T>((zFar + zNear) / (zFar - zNear));
         this->m[2][3] = -static_cast<T>(1);
-        this->m[3][2] = -(static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
+        this->m[3][2] = -static_cast<T>((2 * zFar * zNear) / (zFar - zNear));
     }
 
-    void frustum(T left, T right, T bottom, T top, T nearVal, T farVal) {
+    template<typename U>
+    void frustum(U left, U right, U bottom, U top, U nearVal, U farVal) {
         this->zero();
 
-        this->m[0][0] = (static_cast<T>(2) * nearVal) / (right - left);
-        this->m[1][1] = (static_cast<T>(2) * nearVal) / (top - bottom);
-        this->m[2][0] = (right + left) / (right - left);
-        this->m[2][1] = (top + bottom) / (top - bottom);
-        this->m[2][2] = -(farVal + nearVal) / (farVal - nearVal);
+        this->m[0][0] = static_cast<T>((2 * nearVal) / (right - left));
+        this->m[1][1] = static_cast<T>((2 * nearVal) / (top - bottom));
+        this->m[2][0] = static_cast<T>((right + left) / (right - left));
+        this->m[2][1] = static_cast<T>((top + bottom) / (top - bottom));
+        this->m[2][2] = -static_cast<T>((farVal + nearVal) / (farVal - nearVal));
         this->m[2][3] = static_cast<T>(-1);
-        this->m[3][2] =
-            -(static_cast<T>(2) * farVal * nearVal) / (farVal - nearVal);
+        this->m[3][2] = -static_cast<T>((2 * farVal * nearVal) / (farVal - nearVal));
     }
 
-    inline void reflect(T x, T y, T z, T w) {
-        this->reflect(Plane<T>(x, y, z, w));
+    template<typename U>
+    inline void reflect(U x, U y, U z, U w) {
+        this->reflect(Plane<U>(x, y, z, w));
     }
 
-    inline void extractMat3(mat3<T> &matrix3) const {
-        matrix3.m[0][0] = this->m[0][0];
-        matrix3.m[0][1] = this->m[0][1];
-        matrix3.m[0][2] = this->m[0][2];
-        matrix3.m[1][0] = this->m[1][0];
-        matrix3.m[1][1] = this->m[1][1];
-        matrix3.m[1][2] = this->m[1][2];
-        matrix3.m[2][0] = this->m[2][0];
-        matrix3.m[2][1] = this->m[2][1];
-        matrix3.m[2][2] = this->m[2][2];
+    template<typename U>
+    inline void extractMat3(mat3<U> &matrix3) const {
+        matrix3.m[0][0] = static_cast<U>(this->m[0][0]);
+        matrix3.m[0][1] = static_cast<U>(this->m[0][1]);
+        matrix3.m[0][2] = static_cast<U>(this->m[0][2]);
+        matrix3.m[1][0] = static_cast<U>(this->m[1][0]);
+        matrix3.m[1][1] = static_cast<U>(this->m[1][1]);
+        matrix3.m[1][2] = static_cast<U>(this->m[1][2]);
+        matrix3.m[2][0] = static_cast<U>(this->m[2][0]);
+        matrix3.m[2][1] = static_cast<U>(this->m[2][1]);
+        matrix3.m[2][2] = static_cast<U>(this->m[2][2]);
     }
 
     inline void swap(mat4 &B) {
@@ -1416,13 +1204,6 @@ inline T Lerp(const T v1, const T v2, const U t) {
     return v1 + (v2 - v1 * t);
 }
 
-template<>
-mat4<F32> mat4<F32>::operator*(const mat4<F32>& matrix) const {
-    mat4<F32> retValue;
-    Util::Mat4::Multiply(*this, matrix, retValue);
-    return retValue;
-}
-
 namespace Util {
     namespace Mat4 {
         FORCE_INLINE void Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
@@ -1439,3 +1220,5 @@ namespace Util {
 };  // namespace Divide
 
 #endif //_MATH_MATRICES_H_
+
+#include "MathMatrices.inl"

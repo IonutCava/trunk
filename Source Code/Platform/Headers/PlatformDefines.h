@@ -476,6 +476,11 @@ inline bool COMPARE_TOLERANCE(D64 X, D64 Y, D64 TOLERANCE) {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
+template<typename T, typename U>
+inline bool COMPARE(T X, U Y) {
+    return COMPARE(X, static_cast<T>(Y));
+}
+
 template<typename T>
 inline bool COMPARE(T X, T Y) {
     return X == Y;

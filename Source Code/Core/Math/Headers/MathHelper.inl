@@ -400,8 +400,8 @@ inline void Inverse(const T* in, T* out) {
     out[15] = (m02 * a3 - m12 * a1 + m22 * a0) * idet;
 }
 
-template <typename T>
-FORCE_INLINE void Add(const T* a, const T* b, T* r) {
+template <typename T, typename U>
+FORCE_INLINE void Add(const T* a, const U* b, T* r) {
     T rTemp[] = {
         a[0]  + b[0],  a[1]  + b[1],  a[2]  + b[2],  a[3]  + b[3],
         a[4]  + b[4],  a[5]  + b[5],  a[6]  + b[6],  a[7]  + b[7],
@@ -411,8 +411,8 @@ FORCE_INLINE void Add(const T* a, const T* b, T* r) {
     memcpy(r, rTemp, 16 * sizeof(T));
 }
 
-template <typename T>
-FORCE_INLINE void Subtract(const T* a, const T* b, T* r) {
+template <typename T, typename U>
+FORCE_INLINE void Subtract(const T* a, const U* b, T* r) {
     T rTemp[] = {
         a[0]  - b[0],  a[1]  - b[1],  a[2]  - b[2],  a[3]  - b[3],
         a[4]  - b[4],  a[5]  - b[5],  a[6]  - b[6],  a[7]  - b[7],
@@ -422,8 +422,8 @@ FORCE_INLINE void Subtract(const T* a, const T* b, T* r) {
     memcpy(r, rTemp, 16 * sizeof(T));
 }
 
-template <typename T>
-FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const T* _RESTRICT_ b, T* _RESTRICT_ r) {
+template <typename T, typename U>
+FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const U* _RESTRICT_ b, T* _RESTRICT_ r) {
     T rTemp[] = 
         {(a[0]  * b[0]) + (a[1]  * b[4]) + (a[2]  * b[8] ) + (a[3]  * b[12]),
          (a[0]  * b[1]) + (a[1]  * b[5]) + (a[2]  * b[9] ) + (a[3]  * b[13]),
@@ -445,16 +445,24 @@ FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const T* _RESTRICT_ b, T* _RES
     memcpy(r, rTemp, 16 * sizeof(T));
 }
 
-template <typename T>
-FORCE_INLINE void MultiplyScalar(const T* a, T b, T* r){
-    T rTemp[] = { (a[0]  * b), (a[1]  * b), (a[2]  * b), (a[3]  * b),
-                  (a[4]  * b), (a[5]  * b), (a[6]  * b), (a[7]  * b),
-                  (a[8]  * b), (a[9]  * b), (a[10] * b), (a[11] * b),
-                  (a[12] * b), (a[13] * b), (a[14] * b), (a[15] * b) };
+template <typename T, typename U>
+FORCE_INLINE void MultiplyScalar(const T* a, U b, T* r){
+    T rTemp[] = { static_cast<T>(a[0]  * b), static_cast<T>(a[1]  * b), static_cast<T>(a[2]  * b), static_cast<T>(a[3]  * b),
+                  static_cast<T>(a[4]  * b), static_cast<T>(a[5]  * b), static_cast<T>(a[6]  * b), static_cast<T>(a[7]  * b),
+                  static_cast<T>(a[8]  * b), static_cast<T>(a[9]  * b), static_cast<T>(a[10] * b), static_cast<T>(a[11] * b),
+                  static_cast<T>(a[12] * b), static_cast<T>(a[13] * b), static_cast<T>(a[14] * b), static_cast<T>(a[15] * b) };
 
    memcpy(r, rTemp, 16 * sizeof(T));
 }
+template <typename T, typename U>
+FORCE_INLINE void DivideScalar(const T* a, U b, T* r) {
+    T rTemp[] = { static_cast<T>(a[0]  / b), static_cast<T>(a[1]  / b), static_cast<T>(a[2]  / b), static_cast<T>(a[3]  / b),
+                  static_cast<T>(a[4]  / b), static_cast<T>(a[5]  / b), static_cast<T>(a[6]  / b), static_cast<T>(a[7]  / b),
+                  static_cast<T>(a[8]  / b), static_cast<T>(a[9]  / b), static_cast<T>(a[10] / b), static_cast<T>(a[11] / b),
+                  static_cast<T>(a[12] / b), static_cast<T>(a[13] / b), static_cast<T>(a[14] / b), static_cast<T>(a[15] / b) };
 
+    memcpy(r, rTemp, 16 * sizeof(T));
+}
 };  // namespace Mat4
 };  // namespace Util
 };  // namespace Divide

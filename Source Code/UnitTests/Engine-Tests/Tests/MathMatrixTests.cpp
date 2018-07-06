@@ -2,6 +2,8 @@
 #include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
+// make sure mat4 test include separe floating point and integer calls
+// floating point mat4 uses SSE for performance reasons and results might differ
 
 TEST(matNSizeTest)
 {
@@ -260,6 +262,99 @@ TEST_MEMBER_FUNCTION(matN, transpose, NA)
     CHECK_TRUE(input3 == result5);
     input3.transpose();
     CHECK_TRUE(input3 == result6);
+}
+
+TEST_MEMBER_FUNCTION(matN, multiplyOperator, scalar)
+{
+    const mat2<I32> input1(-2, -1,
+                            1,  2);
+
+    const mat2<I32> result1(-4, -2,
+                             2,  4);
+
+    CHECK_FALSE(input1 == result1);
+    CHECK_TRUE((input1 * 2) == result1);
+
+
+    const mat3<F32> input2(-5.0f, -4.0f, -3.0f, 
+                           -2.0f, -1.0f,  1.0f,
+                            2.0f,  3.0f,  4.0f);
+    const mat3<F32> result2( 2.5f,  2.0f,  1.5f,
+                             1.0f,  0.5f, -0.5f,
+                            -1.0f, -1.5f, -2.0f);
+
+    CHECK_FALSE(input2 == result2);
+    CHECK_TRUE((input2 * (-0.5f)) == result2);
+
+
+    const mat4<I32> input3(1, 2, 3, 4,
+                           5, 6, 7, 8,
+                           9, 8, 7, 6,
+                           5, 4, 3, 2);
+    const mat4<I32> result3( 3,  6,  9, 12,
+                            15, 18, 21, 24,
+                            27, 24, 21, 18,
+                            15, 12,  9,  6);
+
+    CHECK_FALSE(input3 == result3);
+    CHECK_TRUE((input3 * 3) == result3);
+
+    const mat4<F32> input4(1.0f, 2.0f, 3.0f, 4.0f,
+                           5.0f, 6.0f, 7.0f, 8.0f,
+                           9.0f, 8.0f, 7.0f, 6.0f,
+                           5.0f, 4.0f, 3.0f, 2.0f);
+    const mat4<F32> result4( 3.0f,  6.0f,  9.0f, 12.0f,
+                            15.0f, 18.0f, 21.0f, 24.0f,
+                            27.0f, 24.0f, 21.0f, 18.0f,
+                            15.0f, 12.0f,  9.0f,  6.0f);
+
+    CHECK_FALSE(input4 == result4);
+    CHECK_TRUE((input4 * 3) == result4);
+}
+
+// this depends on multiply tests!
+TEST_MEMBER_FUNCTION(matN, divideOperator, scalar)
+{
+    const mat2<I32> input1(-2, -2,
+                            2,  2);
+    CHECK_FALSE((input1 / 2) == (input1 * 2));
+    CHECK_TRUE((input1 / 2) == (input1 * 0.5f));
+
+    const mat3<F32> input2(-5.0f, -4.0f, -3.0f,
+                           -2.0f, -1.0f, 1.0f,
+                            2.0f, 3.0f, 4.0f);
+    CHECK_FALSE((input2 / 2) == (input2 * 2));
+    CHECK_TRUE((input2 / 2) == (input2 * 0.5f));
+
+    const mat4<I32> input3(1, 2, 3, 4,
+                           5, 6, 7, 8,
+                           9, 8, 7, 6,
+                           5, 4, 3, 2);
+    CHECK_FALSE((input3 / 2) == (input3 * 2));
+
+    mat4<I32> temp1 = input3 / 2;
+    mat4<I32> temp2 = input3 * 0.5f;
+    for (U8 i = 0; i < 16; ++i) {
+        std::cout << temp1[i] << " - " << temp2[i] << std::endl;
+    }
+
+    CHECK_TRUE((input3 / 2) == (input3 * 0.5f));
+
+    const mat4<F32> input4(1.0f, 2.0f, 3.0f, 4.0f,
+                           5.0f, 6.0f, 7.0f, 8.0f,
+                           9.0f, 8.0f, 7.0f, 6.0f,
+                           5.0f, 4.0f, 3.0f, 2.0f);
+    CHECK_FALSE((input4 / 2) == (input4 * 2));
+    CHECK_TRUE((input4 / 2) == (input4 * 0.5f));
+}
+
+TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)
+{
+}
+
+TEST_MEMBER_FUNCTION(matN, inverse, NA)
+{
+
 }
 
 }; //namespace Divide

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <TestClass.cpp>
 
 int main(int argc, char **argv) {
     int state = 0;

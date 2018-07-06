@@ -333,15 +333,17 @@ inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
 }
 
 namespace Mat4 {
-template <typename T>
-FORCE_INLINE void Add(const T* a, const T* b, T* r);
-template <typename T>
-FORCE_INLINE void Subtract(const T* a, const T* b, T* r);
-template <typename T>
-FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const T* _RESTRICT_ b, T* _RESTRICT_ r);
+template <typename T, typename U>
+FORCE_INLINE void Add(const T* a, const U* b, T* r);
+template <typename T, typename U>
+FORCE_INLINE void Subtract(const T* a, const U* b, T* r);
+template <typename T, typename U>
+FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const U* _RESTRICT_ b, T* _RESTRICT_ r);
 FORCE_INLINE void Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret);
-template <typename T>
-FORCE_INLINE void MultiplyScalar(const T* a, T b, T* r);
+template <typename T, typename U>
+FORCE_INLINE void MultiplyScalar(const T* a, U b, T* r);
+template <typename T, typename U>
+FORCE_INLINE void DivideScalar(const T* a, U b, T* r);
 template <typename T>
 FORCE_INLINE T Det(const T* mat);
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
