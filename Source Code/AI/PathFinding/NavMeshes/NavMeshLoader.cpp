@@ -109,6 +109,7 @@ namespace Navigation {
 
 			return modelData;
 		}
+
 		bool saveMeshFile(const NavModelData& data, const char* filename, const std::string& activeSceneName/* = NULL*/) {
 			if(!data.getVertCount() || !data.getTriCount())	return false;
 

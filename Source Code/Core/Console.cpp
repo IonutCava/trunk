@@ -9,18 +9,25 @@
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
 void Console::printCopyrightNotice() const {
 	std::cout << "------------------------------------------------------------------------------" << std::endl;
-	std::cout << "“Copyright 2009-2013 DIVIDE-Studio”" << std::endl << std::endl;
-	std::cout << "This file is part of DIVIDE Framework." << std::endl;
-	std::cout << "DIVIDE Framework is free software: you can redistribute it and/or modify" << std::endl;
-	std::cout << "it under the terms of the GNU Lesser General Public License as published by" << std::endl;
-	std::cout << "the Free Software Foundation, either version 3 of the License, or" << std::endl;
-	std::cout << "(at your option) any later version." << std::endl << std::endl;
-	std::cout << "   DIVIDE Framework is distributed in the hope that it will be useful," << std::endl;
-	std::cout << "but WITHOUT ANY WARRANTY; without even the implied warranty of" << std::endl;
-	std::cout << "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the" << std::endl;
-	std::cout << "GNU Lesser General Public License for more details." << std::endl;
-	std::cout << "You should have received a copy of the GNU Lesser General Public License" << std::endl;
-	std::cout << "along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>." << std::endl << std::endl;
+    std::cout << "Copyright (c) 2013 DIVIDE-Studio" << std::endl;
+    std::cout << "Copyright (c) 2009 Ionut Cava" << std::endl;
+    std::cout << std::endl;
+    std::cout << "This file is part of DIVIDE Framework." << std::endl;
+    std::cout << std::endl;
+    std::cout << "Permission is hereby granted, free of charge, to any person obtaining a copy of this software" << std::endl;
+    std::cout << "and associated documentation files (the 'Software'), to deal in the Software without restriction," << std::endl;
+    std::cout << "including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense," << std::endl;
+    std::cout << "and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so," << std::endl;
+    std::cout << "subject to the following conditions:" << std::endl;
+    std::cout << std::endl;
+    std::cout << "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software." << std::endl;
+    std::cout << std::endl;
+    std::cout << "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED," << std::endl;
+    std::cout << "INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT." << std::endl;
+    std::cout << "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY," << std::endl;
+    std::cout << "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE" << std::endl;
+    std::cout << "OR THE USE OR OTHER DEALINGS IN THE SOFTWARE." << std::endl;
+    std::cout << std::endl;
 	std::cout << "For any problems or licensing issues I may have overlooked, please contact: " << std::endl;
 	std::cout << "E-mail: ionut.cava@divide-studio.com | Website: http://wwww.divide-studio.com" << std::endl;
 	std::cout << "-------------------------------------------------------------------------------" << std::endl;
