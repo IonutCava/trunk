@@ -3,7 +3,10 @@
 
 #include "GUI/Headers/GUI.h"
 #include "Environment/Sky/Headers/Sky.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
+
+REGISTER_SCENE(NetworkScene); 
 
 void NetworkScene::render(){
 
@@ -61,12 +64,12 @@ void NetworkScene::processEvents(F32 time){
 
 void NetworkScene::checkPatches(){
 
-	if(ModelDataArray.empty()) return;
+	if(_modelDataArray.empty()) return;
 	WorldPacket p(CMSG_GEOMETRY_LIST);
 	p << std::string("NetworkScene");
-	p << ModelDataArray.size();
+	p << _modelDataArray.size();
 
-	for(std::vector<FileData>::iterator _iter = ModelDataArray.begin(); _iter != ModelDataArray.end(); ++_iter)	{
+	for(std::vector<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)	{
 		p << (*_iter).ItemName;
 		p << (*_iter).ModelName;
 		p << (*_iter).version;
@@ -76,7 +79,7 @@ void NetworkScene::checkPatches(){
 
 bool NetworkScene::preLoad(){
 	_GFX.changeResolution(640,384);
-	return true;
+	return Scene::preLoad();
 }
 
 bool NetworkScene::load(const std::string& name){

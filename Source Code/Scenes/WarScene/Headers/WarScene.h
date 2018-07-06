@@ -35,7 +35,7 @@ public:
 		_scorTeam2 = 0;
 		_mousePressed = false;
 	}
-	~WarScene() {}
+
 	void render();
 	void preRender();
 

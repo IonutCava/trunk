@@ -54,7 +54,7 @@ Kernel::~Kernel(){
 }
 
 void Kernel::Idle(){
-	SceneManager::getInstance().clean();
+	SceneManager::getInstance().idle();
 	PostFX::getInstance().idle();
 	GFX_DEVICE.idle();
 	PHYSICS_DEVICE.idle();
@@ -129,13 +129,14 @@ bool Kernel::MainLoop(){
 
 I8 Kernel::Initialize(const std::string& entryPoint) {
 	I8 windowId = -1;
+	I8 returnCode = 0;
 	ParamHandler& par = ParamHandler::getInstance();
 	///Using OpenGL for rendering as default
 	_GFX.setApi(OpenGL);
 	///Target FPS is usually 60. So all movement is capped around that value
 	Framerate::getInstance().Init(_targetFrameRate);
 	///Load info from XML files
-	XML::loadScripts(entryPoint);
+	std::string startupScene = XML::loadScripts(entryPoint);
 	///Create mem log file
 	std::string mem = par.getParam<std::string>("memFile");
 	if(mem.compare("none") == 0) mem = "mem.log";
@@ -143,31 +144,36 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	PRINT_FN("Initializing the rendering interface");
 	vec2<U16> resolution(par.getParam<I32>("resolutionWidth"),par.getParam<I32>("resolutionHeight"));
 	windowId = _GFX.initHardware(resolution);
+	if(windowId < 0){
+		///If we could not initialize the graphics device, exit with code -2;
+		return windowId;
+	}
 	_GFX.registerKernel(this);
-	_GFX.enableFog(0.01f,vec4<F32>(0.2f, 0.2f, 0.4f, 1.0f));
 	PRINT_FN("Initializing the sound interface");
-	_SFX.initHardware();
+	returnCode = _SFX.initHardware();
+	if(returnCode < 0){
+		return returnCode;
+	}
 	PRINT_FN("Initializing the physics interface");
-	_PFX.initPhysics();
-	PRINT_FN("Initializing the post-processing interface");
+	returnCode =_PFX.initPhysics();
+	if(returnCode < 0) {
+		return returnCode;
+	}
 	PostFX::getInstance().init(resolution);
 	///Bind the kernel with the input interface
 	_inputInterface.initialize(this,par.getParam<std::string>("appTitle"));
-	PRINT_FN("Loading default material from XML");
 	///Load default material
+	PRINT_FN("Loading default material from XML");
 	XML::loadMaterialXML(par.getParam<std::string>("scriptLocation")+"/defaultMaterial");
-	PRINT_FN("Loading scene data ...");
-	_sceneMgr.cacheResolution(resolution); ///< Inform scenes of startup resolution
-	_sceneMgr.updateCamera(_camera);       ///< Set up the starting camera
- 	_sceneMgr.preLoad();                   ///< Perform any preload operations (that would affect loading, for exemaple enabling deffered mode)
-	_sceneMgr.load(std::string(""));       ///< Load the scene
+	if(!_sceneMgr.load(startupScene, resolution, _camera)){       ///< Load the scene with a default camera
+		ERROR_FN("There was an error loading scene [ %s ]",startupScene.c_str());
+		return MISSING_SCENE_DATA;
+	}
 	PRINT_FN("Initial data loaded ...");
 	PRINT_FN("Creating AI entities ...");
 	///Start the AIManager thread
 	_loadAI = _sceneMgr.initializeAI(true);
 	PRINT_FN("AI Entities created ...");
-	PRINT_FN("Adding default camera ...");
-	PRINT_FN("Creating console gui element ...");
 	_GUI.cacheResolution(resolution);
 	_GUI.createConsole();
 	return windowId;

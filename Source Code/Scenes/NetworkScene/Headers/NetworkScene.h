@@ -20,10 +20,10 @@
 
 #include "Scenes/Headers/Scene.h"
 
-class NetworkScene : public Scene
-{
+class NetworkScene : public Scene {
 
 public:
+	NetworkScene() : Scene() {} 
 	void render();
 	void preRender();
 

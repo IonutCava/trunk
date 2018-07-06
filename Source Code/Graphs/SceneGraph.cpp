@@ -15,6 +15,15 @@ void SceneGraph::update(){
 	_root->updateVisualInformation();
 }
 
+void SceneGraph::idle(){
+	typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
+	for_each(SceneGraphNode* it, _pendingDeletionNodes){
+		it->unload();
+		it->getParent()->removeNode(it);
+		SAFE_DELETE(it);
+	}
+}
+
 //Update, cull and draw
 void SceneGraph::render(){
 
@@ -43,4 +52,8 @@ void SceneGraph::startUpdateThread(){
 
 void SceneGraph::sceneUpdate(D32 sceneTime){
 	_root->sceneUpdate(sceneTime);
+}
+
+SceneGraphNode* SceneGraph::Intersect(const Ray& ray, F32 start, F32 end){
+	return _root->Intersect(ray,start,end);
 }

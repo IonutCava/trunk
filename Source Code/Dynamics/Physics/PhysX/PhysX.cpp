@@ -6,23 +6,23 @@ using namespace physx;
 
 PhysX::PhysX() : _currentScene(NULL), _gPhysicsSDK(NULL){}
 
-bool PhysX::initPhysics(){
+I8 PhysX::initPhysics(){
   _gDefaultFilterShader=physx::PxDefaultSimulationFilterShader;
   PRINT_FN("Initializing the PhysX engine!");
   _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, _gDefaultAllocatorCallback, _gDefaultErrorCallback, PxTolerancesScale() );
    if(_gPhysicsSDK == NULL) {
 	   ERROR_FN("Error creating PhysX device!");
-	 return false;
+	   return PHYSX_INIT_ERROR;
    }
    if(!PxInitExtensions(*_gPhysicsSDK)){
 	   ERROR_FN("PhysX: PxInitExtensions failed!");
-	   return false;
+	   return PHYSX_EXTENSION_ERROR;
    }
   PRINT_FN("PhysX engine initialized!");
 #ifdef _DEBUG
   PxExtensionVisualDebugger::connect(_gPhysicsSDK->getPvdConnectionManager(),"localhost",5425, 10000, true);
 #endif
-   return true;
+   return NO_ERR;
 }
 
 bool PhysX::exitPhysics(){

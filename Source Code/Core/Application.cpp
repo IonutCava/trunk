@@ -12,7 +12,7 @@ Application::~Application(){
 	SAFE_DELETE(_kernel);
 }
 
-void Application::Initialize(const std::string& entryPoint){   
+I8 Application::Initialize(const std::string& entryPoint){   
 	assert(!entryPoint.empty());
 	ParamHandler::getInstance().setDebugOutput(false);
 	///Print a copyright notice in the log file
@@ -23,6 +23,7 @@ void Application::Initialize(const std::string& entryPoint){
 	assert(_kernel != NULL);
 	///and load it via an XML file config
 	_mainWindowId = _kernel->Initialize(entryPoint);
+	return _mainWindowId;
 }
 
 void Application::run(){

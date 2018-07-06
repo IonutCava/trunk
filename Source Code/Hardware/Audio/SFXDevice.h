@@ -26,7 +26,7 @@ DEFINE_SINGLETON_EXT1(SFXDevice,AudioAPIWrapper)
 
 public:
 	
-	inline void initHardware()  {_api.initHardware();}
+	inline I8 initHardware()    {return _api.initHardware();}
 	inline void closeAudioApi() {_api.closeAudioApi();}
 	inline void initDevice()    {_api.initDevice();}
 

@@ -18,156 +18,125 @@
 #ifndef _SCENE_H
 #define _SCENE_H
 
-#include "core.h"
-#include "Graphs/Headers/SceneGraph.h"
+#include "SceneState.h"
 #include "Utility/Headers/Event.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Audio/SFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Rendering/Lighting/Headers/Light.h"
+#include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/LightManager.h"
-#include "Core/Resources/Headers/ResourceCache.h"
+#include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 
 class Light;
 class SceneGraph;
 class TerrainDescriptor;
 
-class Scene : public Resource{
+///The scene is a resource (to enforce load/unload and setName) and it has a state
+///SceneState is added as an ancestor for accesibility reasons
+class Scene : public Resource, public SceneState{
 
 public:
 	Scene() :  Resource(),
-	  _GFX(GFX_DEVICE),
-	  _paramHandler(ParamHandler::getInstance()),
-	  _drawBB(false),
-	  _drawSkeletons(false),
-	  _drawObjects(true),
-	  _lightTexture(NULL),
-	  _deferredBuffer(NULL),
-	  _deferredShader(NULL),
-	  _camera(NULL),
-	  _sceneGraph(New SceneGraph())
-	  {
-		  _white = vec4<F32>(1.0f,1.0f,1.0f,1.0f);
-		  _black = vec4<F32>(0.0f,0.0f,0.0f,0.0f);
-		  _moveFB = 0.0f;
-	      _moveLR = 0.0f;
-		  _angleUD = 0.0f;
-		  _angleLR = 0.0f;
-	  };
+			   SceneState(),
+			   _GFX(GFX_DEVICE),
+			   _paramHandler(ParamHandler::getInstance()),
+			   _lightTexture(NULL),
+			   _deferredBuffer(NULL),
+			   _deferredShader(NULL),
+			   _camera(NULL),
+			   _currentSelection(NULL),
+			   _sceneGraph(New SceneGraph()) {}
 
-	virtual ~Scene() {
-		
-	};
+	virtual ~Scene() {}
+
 	SceneGraphNode* addGeometry(Object3D* const object);
 	bool removeGeometry(SceneNode* node);
 
-	virtual bool unload();
-	virtual void render() = 0;
-	virtual void preRender() = 0;
-	virtual bool load(const std::string& name);
-	virtual bool preLoad() {return true;}
-
+	/**Begin scene logic loop*/
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
+	virtual void preRender() = 0;
+	virtual void render() = 0;
+	bool idle();
+	/**End scene logic loop*/
 
 	/// Update animations, network data, sounds, triggers etc.
 	virtual void updateSceneState(D32 sceneTime);
 	/// Update current camera (simple, fast, inlined poitner swap)
 	inline void updateCamera(Camera* const camera) {_camera = camera;}
 
-	inline F32&  getWindSpeed()         {return _windSpeed;}
-	inline F32&  getWindDirX()          {return _windDirX;}
-	inline F32&  getWindDirZ()          {return _windDirZ;}
-	inline F32&  getGrassVisibility()	{return _grassVisibility;}
-	inline F32&  getTreeVisibility()	{return _treeVisibility;}
-	inline F32&  getGeneralVisibility()	{return _generalVisibility;}
-	inline F32&  getWaterLevel()        {return _waterHeight;}
-	inline F32&  getWaterDepth()        {return _waterDepth;}
+	inline std::vector<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
+	inline std::vector<FileData>&           getModelDataArray()      {return _modelDataArray;}
+	inline std::vector<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}
+	inline std::vector<Event_ptr>&          getEvents()              {return _events;}
+	inline SceneGraph*						getSceneGraph()	         {return _sceneGraph;}
+	inline ShaderProgram*					getDeferredShaders()     {return _deferredShader;}
 
-   
-	inline U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
-	inline std::vector<TerrainDescriptor*>& getTerrainInfoArray() {return TerrainInfoArray;}
-	inline ShaderProgram*                   getDeferredShaders() {return _deferredShader;}
-   
-	inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
-	inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
-
-	inline std::vector<Event_ptr>& getEvents() {return _events;}
-
-	inline SceneGraph* getSceneGraph()	{return _sceneGraph;}
-	inline void   addEvent(Event_ptr eventItem) {_events.push_back(eventItem);}
-
-	inline void addModel(FileData& model) {ModelDataArray.push_back(model);}
-	inline void addTerrain(TerrainDescriptor* ter) {TerrainInfoArray.push_back(ter);}
-	void addPatch(std::vector<FileData>& data);
-	void addLight(Light* const lightItem);
-	bool clean();
-
-	inline bool drawBBox() {return _drawBB;}
-	inline void drawBBox(bool visibility) {_drawBB = visibility;}
-	inline bool drawSkeletons() {return  _drawSkeletons;}
-	inline void drawSkeletons(bool visibility) {_drawSkeletons = visibility;}
-	inline bool drawObjects() {return _drawObjects;}
-	inline void drawObjects(bool visibility) {_drawObjects=visibility;}
-
+	inline void addEvent(Event_ptr eventItem)          {_events.push_back(eventItem);}
+	inline void addModel(FileData& model)              {_modelDataArray.push_back(model);}
+	inline void addTerrain(TerrainDescriptor* ter)     {_terrainInfoArray.push_back(ter);}
+	       void addPatch(std::vector<FileData>& data);
+	       void addLight(Light* const lightItem);
+	
 	inline void cacheResolution(const vec2<U16>& newResolution) {_cachedResolution = newResolution;}
 
+	///Object picking
+	void findSelection(const vec3<F32>& camOrigin, U32 x, U32 y);
+	void deleteSelection();
+
 protected:
-
-	GFXDevice& _GFX;
+	///Global info
+	GFXDevice&    _GFX;
 	ParamHandler& _paramHandler;
+	Camera*       _camera;
+	SceneGraph*   _sceneGraph;
 
-	///Datablocks for models,vegetation and terrains
-	std::vector<FileData>           ModelDataArray;
-	std::vector<FileData>           VegetationDataArray;
-	std::vector<FileData>           PendingDataArray;
-	std::vector<TerrainDescriptor*> TerrainInfoArray;
+	///Datablocks for models,vegetation,terrains,events etc
+	std::vector<F32>                _eventTimers;
+	std::vector<FileData>           _modelDataArray;
+	std::vector<FileData>           _vegetationDataArray;
+	std::vector<FileData>           _pendingDataArray;
+	std::vector<TerrainDescriptor*> _terrainInfoArray;
 	
-	std::vector<F32> _eventTimers;
-
-	bool _drawBB,_drawObjects, _drawSkeletons;
-	boost::mutex _mutex;
-
-	vec4<F32> _white, _black;
-
 	///Deferred rendering
 	FrameBufferObject* _deferredBuffer;
 	PixelBufferObject* _lightTexture;
 	ShaderProgram*	   _deferredShader;
-
-	///Global info
-	Camera*            _camera;
-	SceneGraph*        _sceneGraph;
-	F32			       _grassVisibility,_treeVisibility,_generalVisibility,
-				 	   _windSpeed,_windDirX, _windDirZ, _waterHeight, _waterDepth;
-	F32 _moveFB;  ///< forward-back move change detected
-	F32 _moveLR;  ///< left-right move change detected
-	F32 _angleUD; ///< up-down angle change detected
-	F32 _angleLR; ///< left-right angle change detected
-   ///cached resolution
-   vec2<U16> _cachedResolution;
+ 
+	///cached resolution
+    vec2<U16> _cachedResolution;
+    ///Current selection
+    SceneGraphNode* _currentSelection;
 
 private: 
 	std::vector<Event_ptr> _events;
-	Event_ptr _aiEvent;
 
 protected:
 
 	friend class SceneManager;
-	///Description in SceneManager
-	virtual bool initializeAI(bool continueOnErrors)   {return true;}
-	///Description in SceneManager
-	virtual bool deinitializeAI(bool continueOnErrors) {return true;}
+	/**Begin loading and unloading logic*/
+	virtual bool preLoad() {_GFX.enableFog(_fogDensity,_fogColor);return true;}
+
 	///Description in SceneManager
 	virtual bool loadResources(bool continueOnErrors)  {return true;}
 	virtual bool loadEvents(bool continueOnErrors)     {return true;}
 	virtual void loadXMLAssets();
+	virtual bool load(const std::string& name);
+			bool loadModel(const FileData& data);
+			bool loadGeometry(const FileData& data);
+	virtual bool unload();
+	///Description in SceneManager
+	virtual bool initializeAI(bool continueOnErrors)   {return true;}
+	///Description in SceneManager
+	virtual bool deinitializeAI(bool continueOnErrors) {return true;}
+	///End all tasks
 	void clearEvents();
+	///Unload scenegraph
 	void clearObjects();
+	///Destroy lights
 	void clearLights();
-	bool loadModel(const FileData& data);
-	bool loadGeometry(const FileData& data);
+	/**End loading and unloading logic*/
+
 	Light* addDefaultLight();
 
 public: //Input
@@ -181,5 +150,12 @@ public: //Input
 	virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 };
+
+///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name 
+///									  -B is the name used to refer to that scene in the XML files
+///Call this function after each scene declaration
+#define REGISTER_SCENE_W_NAME(scene, sceneName) bool scene ## _registered = SceneManager::getInstance().registerScene<scene>(#sceneName);
+///same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
+#define REGISTER_SCENE(scene) bool scene ## _registered = SceneManager::getInstance().registerScene<scene>(#scene);
 
 #endif

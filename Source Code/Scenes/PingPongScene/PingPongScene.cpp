@@ -3,12 +3,13 @@
 #include "GUI/Headers/GUI.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Environment/Sky/Headers/Sky.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
-//vec4<F32> _lightPosition(0,16,6,0.0);
+REGISTER_SCENE(PingPongScene);
 
 //begin copy-paste: randarea scenei
 void PingPongScene::render(){

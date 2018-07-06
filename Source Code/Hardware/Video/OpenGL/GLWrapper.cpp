@@ -125,7 +125,7 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	if (GLEW_OK != err){
 		ERROR_FN("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
 		//No need to continue, as switching to DX should be set before launching the application!
-		exit(1);
+		return GLEW_INIT_ERROR;
 	}
 	//If we got here, let's figure out what capabilities we have available
 	I32 major = 0, minor = 0, max_frag_uniform = 0, max_varying_floats = 0;
@@ -145,7 +145,7 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 		ERROR_FN("Your current hardware does not support the OpenGL 2.0 extension set!");
 		PRINT_FN("Try switching to DX (version 9.0c required) or upgrade hardware.");
 		PRINT_FN("Application will now exit!");
-		exit(2);
+		return GLEW_OLD_HARDWARE;
 	}else if(major == 2){
 		//If we do start a 2.0 context, use only basic shaders
 		par.setParam("shaderDetailToken",std::string("low"));
@@ -326,8 +326,8 @@ void GL_API::enableFog(F32 density, F32* color){
 	glFogfv(GL_FOG_COLOR, color); 
 	glFogf (GL_FOG_DENSITY, density); 
 	glHint (GL_FOG_HINT, GL_NICEST); 
-	glFogf (GL_FOG_START,  3100.0f);
-	glFogf (GL_FOG_END,    8000.0f);
+	glFogf (GL_FOG_START,  310.0f);
+	glFogf (GL_FOG_END,    800.0f);
 }
 
 void GL_API::drawTextToScreen(GUIElement* const textElement){

@@ -328,7 +328,7 @@ public:
 	U8 initialize(Kernel* const kernel, const std::string& windowTitle)
     {
 		if(_bIsInitialized)
-			return 0;
+			return NO_ERR;
 		OIS::ParamList pl;
 #if defined OIS_WIN32_PLATFORM
 	  // Create OIS input manager

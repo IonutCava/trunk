@@ -49,6 +49,7 @@ void GUI::close(){
 }
 
 void GUI::createConsole() {
+	PRINT_FN("Creating console gui element ...");
 	if(_guiStack.find("console") == _guiStack.end()){
 		///Console is a default GUI element
 		_guiStack.insert(std::make_pair("console",&GUIConsole::getInstance()));

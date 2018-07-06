@@ -25,7 +25,7 @@ DEFINE_SINGLETON( Application )
 
 public:
 	///Startup and shutdown
-	void Initialize(const std::string& entryPoint);
+	I8 Initialize(const std::string& entryPoint);
 	void Deinitialize();
 	void run();
 

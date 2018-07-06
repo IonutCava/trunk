@@ -3,13 +3,14 @@
 #include "GUI/Headers/GUI.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Environment/Sky/Headers/Sky.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
-
+REGISTER_SCENE(MainScene);
 
 bool MainScene::updateLights(){
 	Light* light = LightManager::getInstance().getLight(0);
@@ -117,8 +118,8 @@ bool MainScene::load(const std::string& name){
 	///Load scene resources
 	state = loadResources(true);	
 	state = loadEvents(true);
-	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
-		SceneGraphNode* terrainNode = _sceneGraph->findNode(TerrainInfoArray[i]->getVariable("terrainName"));
+	for(U8 i = 0; i < _terrainInfoArray.size(); i++){
+		SceneGraphNode* terrainNode = _sceneGraph->findNode(_terrainInfoArray[i]->getVariable("terrainName"));
 		if(terrainNode){ //We might have an unloaded terrain in the Array, and thus, not present in the graph
 			Terrain* tempTerrain = terrainNode->getNode<Terrain>();
 			D_PRINT_FN("Found terrain:  %s!", tempTerrain->getName().c_str());
@@ -131,7 +132,7 @@ bool MainScene::load(const std::string& name){
 				}
 			}
 		}else{
-			ERROR_FN("Could not find terrain [ %s ] in scene graph!", TerrainInfoArray[i]->getVariable("terrainName"));
+			ERROR_FN("Could not find terrain [ %s ] in scene graph!", _terrainInfoArray[i]->getVariable("terrainName"));
 		}
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
@@ -147,7 +148,6 @@ bool MainScene::load(const std::string& name){
 bool MainScene::unload(){
 	SFX_DEVICE.stopMusic();
 	SFX_DEVICE.stopAllSounds();
-	RemoveResource(_backgroundMusic);
 	RemoveResource(_beep);
 	Sky::getInstance().DestroyInstance();
 	return Scene::unload();
@@ -238,7 +238,7 @@ bool MainScene::loadResources(bool continueOnErrors){
 	ResourceDescriptor beepSound("beep sound");
 	beepSound.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/sounds/beep.wav");
 	beepSound.setFlag(false);
-	_backgroundMusic = CreateResource<AudioDescriptor>(backgroundMusic);
+	_backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
 	_beep = CreateResource<AudioDescriptor>(beepSound);
 	PRINT_FN("Scene resources loaded OK");
 	return true;
@@ -283,7 +283,7 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
 		case OIS::KC_M:{
 			_playMusic = !_playMusic;
 			if(_playMusic){
-				SFX_DEVICE.playMusic(_backgroundMusic);
+				SFX_DEVICE.playMusic(_backgroundMusic["generalTheme"]);
 			}else{
 				SFX_DEVICE.stopMusic();
 			}

@@ -77,7 +77,7 @@ void ASIO::HandleGeometryAppendOpCode(WorldPacket& p){
 		p >> d.version;
 		patch.push_back(d);
 	}
-	SceneManager::getInstance().addPatch(patch);
+	GET_ACTIVE_SCENE()->addPatch(patch);
 }
 
 void ASIO::HandleHeartBeatOpCode(WorldPacket& p){

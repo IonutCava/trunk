@@ -20,8 +20,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
-class FlashScene : public Scene
-{
+class FlashScene : public Scene {
+
 public:
 	FlashScene() : Scene() {}
 	void render();

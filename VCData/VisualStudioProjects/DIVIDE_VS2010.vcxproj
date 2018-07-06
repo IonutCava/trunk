@@ -398,6 +398,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\BoundingBox.h" />

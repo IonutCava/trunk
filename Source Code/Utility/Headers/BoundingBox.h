@@ -87,23 +87,21 @@ public:
 
 		ReadLock r_lock(_lock);
 
-		if(_max.x < AABB2._min.x) return false;
-		if(_max.y < AABB2._min.y) return false;
-		if(_max.z < AABB2._min.z) return false;
+		if(this->_max.x < AABB2._min.x) return false;
+		if(this->_max.y < AABB2._min.y) return false;
+		if(this->_max.z < AABB2._min.z) return false;
 
-		if(_min.x > AABB2._max.x) return false;
-   		if(_min.y > AABB2._max.y) return false;
-		if(_min.z > AABB2._max.z) return false;
+		if(this->_min.x > AABB2._max.x) return false;
+   		if(this->_min.y > AABB2._max.y) return false;
+		if(this->_min.z > AABB2._max.z) return false;
 
-		PRINT_FN("COLLISON: [ %2.2f %2.2f %2.2f - %2.2f %2.2f %2.2f] with [ %2.2f %2.2f %2.2f - %2.2f %2.2f %2.2f]",
-				 _min.x,_min.y, _min.z, _max.x, _max.y, _max.z, AABB2._min.x, AABB2._min.y ,AABB2._min.z, AABB2._max.x , AABB2._max.y ,AABB2._max.z);
         return true;
 	}
 
 	inline bool Compare(const BoundingBox& bb) {return _guid == bb._guid;}
 
 	/// Optimized method
-	inline bool intersect(const Ray &r, F32 t0, F32 t1) const {
+	inline bool Intersect(const Ray &r, F32 t0, F32 t1) const {
 		ReadLock r_lock(_lock);
 
 		F32 t_min, t_max, ty_min, ty_max, tz_min, tz_max;

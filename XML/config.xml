@@ -26,6 +26,7 @@
 	<detailLevel>2</detailLevel>
 	<enableShadows>true</enableShadows>
 	<shadowDetailLevel>2</shadowDetailLevel>
+	<enableFog>true</enableFog>
 	<enablePostFX>true</enablePostFX>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>

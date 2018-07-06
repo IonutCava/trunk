@@ -25,7 +25,7 @@ public:
 	void setApi(PhysicsAPI api);
 	inline I8  getApi(){return _api.getId(); }
 
-	inline bool initPhysics() {return _api.initPhysics();}
+	inline I8   initPhysics() {return _api.initPhysics();}
 	inline bool exitPhysics() {return _api.exitPhysics();}
 	inline void update() {_api.update();}
 	inline void process() {_api.process();}

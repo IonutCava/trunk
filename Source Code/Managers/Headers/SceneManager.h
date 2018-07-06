@@ -20,69 +20,60 @@
 #define _SCENE_MANAGER_H
 #include "core.h"
 #include "Scenes/Headers/Scene.h"
+#include <boost/functional/factory.hpp>
 
 DEFINE_SINGLETON(SceneManager)
 
 public:
+	///Lookup the factory methods table and return the pointer to a newly constructed scene bound to that name
+	Scene* createScene(const std::string& name);
 
-	Scene* loadScene(const std::string& name);
-	void   registerScene(Scene* scenePointer);
-
-	inline Scene* getActiveScene()                   { return _scene; }
-	inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_scene, scene); }
+	inline Scene* getActiveScene()                   { return _activeScene; }
+	inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_activeScene, scene); }
 
 	/*Base Scene Operations*/
 	void render(RENDER_STAGE stage);
-	inline void clean()                               { _scene->clean(); }
-	inline bool unload()                              { return _scene->unload(); }
-	inline bool preLoad()							  { return _scene->preLoad();}
-	inline bool load(const std::string& name)         { _scene->loadXMLAssets(); return _scene->load(name); }
+	inline void idle()                                { _activeScene->idle(); }
+	//inline bool unload()                              { return _activeScene->unload(); }
+	bool load(const std::string& name, const vec2<U16>& resolution,  Camera* const camera);
 	///Create AI entities, teams, NPC's etc
-	inline bool initializeAI(bool continueOnErrors)   { return _scene->initializeAI(continueOnErrors); }
+	inline bool initializeAI(bool continueOnErrors)   { return _activeScene->initializeAI(continueOnErrors); }
 	///Destroy all AI entities, teams, NPC's createa in "initializeAI"
 	///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
-	inline bool deinitializeAI(bool continueOnErrors) { return _scene->deinitializeAI(continueOnErrors); }
+	inline bool deinitializeAI(bool continueOnErrors) { return _activeScene->deinitializeAI(continueOnErrors); }
 	/// Update animations, network data, sounds, triggers etc.
-	inline void updateCamera(Camera* const camera)  { _scene->updateCamera(camera); }
-	inline void updateSceneState(D32 sceneTime)     { _scene->updateSceneState(sceneTime); }
-	inline void preRender()                         { _scene->preRender(); }
+	inline void updateCamera(Camera* const camera)  { _activeScene->updateCamera(camera); }
+	inline void updateSceneState(D32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
+	inline void preRender()                         { _activeScene->preRender(); }
 	///Gather input events and process them in the current scene
-	inline void processInput()                      { _scene->processInput(); }
-	inline void processEvents(F32 time)             { _scene->processEvents(time); }
-	/*Base Scene Operations*/
-
-	inline U32 getNumberOfTerrains()                       { return _scene->getNumberOfTerrains(); }
-	inline std::vector<FileData>& getModelDataArray()      { return _scene->getModelDataArray(); }
-	inline std::vector<FileData>& getVegetationDataArray() { return _scene->getVegetationDataArray(); }
-   
+	inline void processInput()                      { _activeScene->processInput(); }
+	inline void processEvents(F32 time)             { _activeScene->processEvents(time); }
 	
-	inline void addModel(FileData& model)                    { _scene->addModel(model); }
-	inline void addTerrain(TerrainDescriptor* const  ter)    { _scene->addTerrain(ter); }
-	inline void addPatch(std::vector<FileData>& data)        { _scene->addPatch(data); }
-	inline void toggleSkeletons()                            { _scene->drawSkeletons(!_scene->drawSkeletons()); }
-		   void toggleBoundingBoxes();	
+	inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
 
-	void findSelection(const vec3<F32>& camOrigin, U32 x, U32 y);
-	void deleteSelection();
+	///Insert a new scene factory method for the give name
+	template<class DerivedScene>
+	inline bool registerScene(const std::string& sceneName) {
+		_sceneFactory[sceneName] = boost::factory<DerivedScene*>();	
+		return true;
+	}
 
-	inline void cacheResolution(const vec2<U16>& newResolution) {_cachedResolution = newResolution; _scene->cacheResolution(newResolution);}
 private:
+	typedef unordered_map<std::string, Scene*> SceneMap;
 
 	SceneManager();
 	~SceneManager();
-	Scene* _scene;
-    Object3D* _currentSelection;
-	typedef unordered_map<std::string, Scene*> SceneMap;
+
+	///Pointer to the currently active scene
+	Scene* _activeScene;
+	///Scene pool
 	SceneMap _sceneMap;
-   ///cached resolution
-   vec2<U16> _cachedResolution;
+	///Scene_Name -Scene_Factory table
+	unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
 
 END_SINGLETON
 
-inline void REGISTER_SCENE(Scene* const scene){
-	SceneManager::getInstance().registerScene(scene);
-}
-
+///Return a pointer to the currently active scene
 inline Scene* GET_ACTIVE_SCENE() {
 	return SceneManager::getInstance().getActiveScene();
 }

@@ -51,7 +51,7 @@ private:
 
 public:
 	
-   bool initPhysics();  
+   I8   initPhysics();  
    bool exitPhysics(); 
    void update();
    void process();

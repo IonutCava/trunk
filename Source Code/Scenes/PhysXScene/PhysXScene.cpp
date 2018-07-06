@@ -3,8 +3,11 @@
 
 #include "GUI/Headers/GUI.h"
 #include "Environment/Sky/Headers/Sky.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+
+REGISTER_SCENE(PhysXScene);
 
 //begin copy-paste: randarea scenei
 void PhysXScene::render(){

@@ -10,7 +10,7 @@ I8 DX_API::initHardware(const vec2<U16>& resolution){
 
 	PRINT_FN("Initializing Direct3D rendering API! ");
 	D3D_ENUM_TABLE::fill();
-	return -1;
+	return DX_INIT_ERROR;
 }
 
 void DX_API::exitRenderLoop(bool killCommand) 

@@ -48,7 +48,7 @@ protected:
 	inline void setId(PhysicsAPI api) {_apiId = api;}
 	inline PhysicsAPI getId() { return _apiId;}
 
-    virtual bool initPhysics() = 0;  
+    virtual I8 initPhysics() = 0;  
 	virtual bool exitPhysics() = 0;
     virtual void update() = 0;
     virtual void process() = 0;

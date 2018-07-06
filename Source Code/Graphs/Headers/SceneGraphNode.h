@@ -63,7 +63,8 @@ public:
 	///Find a node in the graph based on the SceneGraphNode's name
 	///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
 	SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false);
-
+	///Find the graph node whom's bounding box intersects the given ray
+	SceneGraphNode* Intersect(const Ray& ray, F32 start, F32 end);
 const  std::string& getName(){return _name;}
 /*Node Management*/
 
@@ -95,6 +96,7 @@ inline       void             silentDispose(bool state) {_silentDispose = state;
 inline   	 void             setActive(bool state) {_wasActive = _active; _active = state;}
 inline       bool             isActive() {return _active;}
 inline       void             restoreActive() {_active = _wasActive;}
+inline       void			  scheduleDeletion(){_shouldDelete = true;}
 /*Node State*/
 
 inline       U32              getChildQueue() {return _childQueue;}
@@ -114,6 +116,7 @@ private:
 	bool _sorted;
 	bool _silentDispose;
 	bool _updateBB;
+	bool _shouldDelete;
 	///_initialBoundingBox is a copy of the initialy calculate BB for transformation
 	///it should be copied in every computeBoungingBox call;
 	BoundingBox _initialBoundingBox;

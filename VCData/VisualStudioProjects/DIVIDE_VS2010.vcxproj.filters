@@ -1475,6 +1475,9 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h">
+      <Filter>Scenes\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">

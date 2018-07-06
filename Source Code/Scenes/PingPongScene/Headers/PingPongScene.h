@@ -19,6 +19,7 @@
 #define _PINGPONG_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
+
 class Sphere3D;
 
 class PingPongScene : public Scene {

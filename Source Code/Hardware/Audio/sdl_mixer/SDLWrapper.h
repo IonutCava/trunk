@@ -24,7 +24,7 @@
 DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 
 public:
-	void initHardware();
+	I8 initHardware();
 
 	void closeAudioApi(){
 		if(_music != NULL)

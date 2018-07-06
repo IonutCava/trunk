@@ -19,14 +19,19 @@
 #define _MAIN_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
+
 class Terrain;
 class WaterPlane;
 
 class MainScene : public Scene{
 
 public:
-	MainScene() : Scene(), _waterGraphNode(NULL), _water(NULL), _beep(NULL),
-				  _backgroundMusic(NULL), _mousePressed(false){}
+	MainScene() : Scene(), 
+				  _waterGraphNode(NULL),
+				  _water(NULL),
+				  _beep(NULL),
+				  _mousePressed(false){}
+
 	/*General Scene Requirement*/
 	void render();
 	void preRender();
@@ -55,11 +60,10 @@ private:
 	F32  _sun_cosy;
 	vec2<F32> _prevMouse;
 	bool _mousePressed;
-	AudioDescriptor* _backgroundMusic, *_beep;
+	AudioDescriptor* _beep;
 	std::vector<Terrain*> _visibleTerrains;
 	WaterPlane* _water;
 	SceneGraphNode* _waterGraphNode;
-
 };
 
 #endif;

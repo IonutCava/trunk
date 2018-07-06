@@ -19,7 +19,7 @@
 #define _SCENE_GRAPH_H_
 
 #include "SceneGraphNode.h"
-
+class Ray;
 class Scene;
 class SceneGraph  {
 	public:
@@ -56,11 +56,17 @@ class SceneGraph  {
 
 	void startUpdateThread();
 
+	void idle();
+
+	SceneGraphNode* Intersect(const Ray& ray, F32 start, F32 end);
+	void addToDeletionQueue(SceneGraphNode* node) {_pendingDeletionNodes.push_back(node);}
+
 private:
 	boost::mutex    _rootAccessMutex; 
 	SceneGraphNode* _root;
 	Scene*          _scene;
 	bool            _updateRunning;
-	std::vector<BoundingBox> _boundingBoxes;
+	std::vector<BoundingBox>        _boundingBoxes;
+	std::vector<SceneGraphNode* >   _pendingDeletionNodes;
 };
 #endif

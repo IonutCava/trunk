@@ -1,19 +1,21 @@
 #include "SDLWrapper.h"
 #include <stdexcept>
 
-void SDL_API::initHardware()
-{
+I8 SDL_API::initHardware() {
+
 	Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
 	_music = NULL;
 	_chunk = NULL;
         
-    if (-1 == Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096))
-        throw std::runtime_error("Can't open audio");
+	if (-1 == Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096)){
+		return SDL_AUDIO_INIT_ERROR;
+	}
+	return NO_ERR;
 
 }
 
-void SDL_API::playMusic(AudioDescriptor* musicFile)
-{
+void SDL_API::playMusic(AudioDescriptor* musicFile){
+
 	if(!musicFile) return;
 	_music = Mix_LoadMUS(musicFile->getName().c_str());
 	Mix_VolumeMusic(musicFile->getVolume());
@@ -25,8 +27,8 @@ void SDL_API::playMusic(AudioDescriptor* musicFile)
 
 }
 
-void SDL_API::playSound(AudioDescriptor* sound)
-{
+void SDL_API::playSound(AudioDescriptor* sound){
+
 	if(sound == NULL) return;
 
 	if(_chunk != NULL) Mix_FreeChunk(_chunk);

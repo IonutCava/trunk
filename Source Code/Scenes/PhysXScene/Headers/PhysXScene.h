@@ -19,13 +19,16 @@
 #define _PHYSX_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
+
 ///For this scene, we will be using PhysX, so name members accordingly for more readable code
 class PhysXImplementation;
 class PhysXScene : public Scene {
 
 public:
-	PhysXScene() : Scene(), _physx(NULL), _mousePressed(false){}
-	~PhysXScene() {}
+	PhysXScene() : Scene(),
+				  _physx(NULL),
+				  _mousePressed(false){}
+
 	void render();
 	void preRender();
 
@@ -39,8 +42,10 @@ public:
 	void onMouseMove(const OIS::MouseEvent& key);
 	void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+
 private:
 	void createStack();
+
 private:
 	std::vector<F32> _eventTimers;
 	vec4<F32> _sunVector;

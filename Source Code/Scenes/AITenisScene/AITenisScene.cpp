@@ -12,6 +12,7 @@
 #include "Rendering/Headers/Frustum.h"
 #include "GUI/Headers/GUI.h"
 
+REGISTER_SCENE(AITenisScene);
 
 //begin copy-paste: randarea scenei
 void AITenisScene::render(){

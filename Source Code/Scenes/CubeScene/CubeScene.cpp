@@ -2,7 +2,10 @@
 
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/Camera/Headers/Camera.h"
+#include "Managers/Headers/SceneManager.h"
 #include "GUI/Headers/GUI.h"
+
+REGISTER_SCENE(CubeScene);
 
 void CubeScene::render(){
 
@@ -150,7 +153,7 @@ void CubeScene::processInput(){
 
 bool CubeScene::preLoad(){
 	_GFX.setDeferredRendering(true);
-	return true;
+	return Scene::preLoad();
 }
 
 bool CubeScene::load(const std::string& name){	

@@ -1,7 +1,10 @@
 #include "Headers/FlashScene.h"
 
 #include "Rendering/Camera/Headers/Camera.h"
+#include "Managers/Headers/SceneManager.h"
 #include "GUI/Headers/GUI.h"
+
+REGISTER_SCENE(FlashScene);
 
 void FlashScene::render(){
 	

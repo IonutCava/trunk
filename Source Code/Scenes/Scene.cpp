@@ -3,7 +3,7 @@
 #include "ASIO.h"
 #include "GUI/Headers/GUI.h"
 #include "Utility/Headers/XMLParser.h"
-#include "Managers/Headers/SceneManager.h" //Object selection
+#include "Rendering/Headers/Frustum.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
@@ -12,14 +12,15 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
-bool Scene::clean(){ //Called when application is idle
+bool Scene::idle(){ //Called when application is idle
 	if(_sceneGraph){
 		if(_sceneGraph->getRoot()->getChildren().empty()) return false;
+		_sceneGraph->idle();
 	}
 
 	bool _updated = false;
-	if(!PendingDataArray.empty())
-	for(std::vector<FileData>::iterator iter = PendingDataArray.begin(); iter != PendingDataArray.end(); ++iter) {
+	if(!_pendingDataArray.empty())
+	for(std::vector<FileData>::iterator iter = _pendingDataArray.begin(); iter != _pendingDataArray.end(); ++iter) {
 
 		if(!loadModel(*iter)){
 
@@ -31,11 +32,11 @@ bool Scene::clean(){ //Called when application is idle
 			}
 		}else{
 			std::vector<FileData>::iterator iter2;
-			for(iter2 = ModelDataArray.begin(); iter2 != ModelDataArray.end(); ++iter2)	{
+			for(iter2 = _modelDataArray.begin(); iter2 != _modelDataArray.end(); ++iter2)	{
 				if((*iter2).ItemName.compare((*iter).ItemName) == 0){
-					ModelDataArray.erase(iter2);
-					ModelDataArray.push_back(*iter);
-					PendingDataArray.erase(iter);
+					_modelDataArray.erase(iter2);
+					_modelDataArray.push_back(*iter);
+					_pendingDataArray.erase(iter);
 					_updated = true;
 					break;
 				}
@@ -53,8 +54,7 @@ void Scene::addPatch(std::vector<FileData>& data){
 		for(unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
 			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
 			{
-				boost::mutex::scoped_lock l(_mutex);
-				PendingDataArray.push_back(*iter);
+				_pendingDataArray.push_back(*iter);
 				(iter2->second)->scheduleDeletion();
 				GeometryArray.erase(iter2);
 				break;
@@ -64,11 +64,11 @@ void Scene::addPatch(std::vector<FileData>& data){
 
 
 void Scene::loadXMLAssets(){
-	for(std::vector<FileData>::iterator it = ModelDataArray.begin(); it != ModelDataArray.end();){
+	for(std::vector<FileData>::iterator it = _modelDataArray.begin(); it != _modelDataArray.end();){
 		//vegetation is loaded elsewhere
 		if((*it).type == VEGETATION){
-			VegetationDataArray.push_back(*it);
-			it = ModelDataArray.erase(it);
+			_vegetationDataArray.push_back(*it);
+			it = _modelDataArray.erase(it);
 		}else{
 			loadModel(*it);
 			++it;
@@ -86,7 +86,7 @@ bool Scene::loadModel(const FileData& data){
 	model.setFlag(true);
 	Mesh *thisObj = CreateResource<Mesh>(model);
 	if (!thisObj){
-		ERROR_FN("SceneManager: Error loading model [ %s ]",  data.ModelName.c_str());
+		ERROR_FN("Scene: Error loading model [ %s ]",  data.ModelName.c_str());
 		return false;
 	}
 	SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj);
@@ -125,7 +125,7 @@ bool Scene::loadGeometry(const FileData& data){
 			dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
 			dynamic_cast<Text3D*>(thisObj)->getText() = data.data2;
 	}else{
-		ERROR_FN("SCENEMANAGER: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
+		ERROR_FN("Scene: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
 		return false;
 	}
 	Material* tempMaterial = XML::loadMaterial(data.ItemName+"_material");
@@ -180,15 +180,15 @@ bool Scene::removeGeometry(SceneNode* node){
 
 bool Scene::load(const std::string& name){
 	SceneGraphNode* root = _sceneGraph->getRoot();
-	if(TerrainInfoArray.empty()) return true;
-	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
-		ResourceDescriptor terrain(TerrainInfoArray[i]->getVariable("terrainName"));
+	if(_terrainInfoArray.empty()) return true;
+	for(U8 i = 0; i < _terrainInfoArray.size(); i++){
+		ResourceDescriptor terrain(_terrainInfoArray[i]->getVariable("terrainName"));
 		Terrain* temp = CreateResource<Terrain>(terrain);
 		SceneGraphNode* terrainTemp = root->addNode(temp);
 		terrainTemp->useDefaultTransform(false);
 		terrainTemp->setTransform(NULL);
-		terrainTemp->setActive(TerrainInfoArray[i]->getActive());
-		temp->initializeVegetation(TerrainInfoArray[i]);
+		terrainTemp->setActive(_terrainInfoArray[i]->getActive());
+		temp->initializeVegetation(_terrainInfoArray[i]);
 	}
 	return true;
 }
@@ -207,13 +207,13 @@ bool Scene::unload(){
 }
 
 void Scene::clearObjects(){
-	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
-		RemoveResource(TerrainInfoArray[i]);
+	for(U8 i = 0; i < _terrainInfoArray.size(); i++){
+		RemoveResource(_terrainInfoArray[i]);
 	}
-	TerrainInfoArray.clear();
-	ModelDataArray.clear();
-	VegetationDataArray.clear();
-	PendingDataArray.clear();
+	_terrainInfoArray.clear();
+	_modelDataArray.clear();
+	_vegetationDataArray.clear();
+	_pendingDataArray.clear();
 	assert(_sceneGraph);
 
 	SAFE_DELETE(_sceneGraph);
@@ -290,15 +290,15 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			_angleUD = speedFactor/5;
 			break;
 		case OIS::KC_END:
-			SceneManager::getInstance().deleteSelection();
+			deleteSelection();
 			break;
 		case OIS::KC_F2:{
-			PRINT_FN("Toggling Skeleton Visibility");
-			SceneManager::getInstance().toggleSkeletons();
+			D_PRINT_FN("Toggling Skeleton Visibility");
+			toggleSkeletons();
 			}break;
 		case OIS::KC_B:{
-			PRINT_FN("Toggling Bounding Boxes");
-			SceneManager::getInstance().toggleBoundingBoxes();
+			D_PRINT_FN("Toggling Bounding Boxes");
+			toggleBoundingBoxes();
 			}break;
 		case OIS::KC_ADD:
 			if (speedFactor < 10)  speedFactor += 0.1f;
@@ -331,9 +331,9 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 		case OIS::KC_F:
 			_paramHandler.setParam("enableDepthOfField", !_paramHandler.getParam<bool>("enableDepthOfField")); 
 			break;
-//		case OIS::KC_GRAVE: ///tilde
+		case OIS::KC_GRAVE: ///tilde
 //			GUI::getInstance().toggleConsole();
-//			break;
+			break;
 		default:
 			break;
 	}
@@ -362,4 +362,100 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 
 void Scene::updateSceneState(D32 sceneTime){
 	_sceneGraph->sceneUpdate(sceneTime);
+}
+
+void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
+    F32 value_fov = 0.7853f;    //this is 45 degrees converted to radians
+    F32 value_aspect = _paramHandler.getParam<F32>("aspectRatio");
+	F32 half_resolution_width = _cachedResolution.width / 2.0f;
+	F32 half_resolution_height = _cachedResolution.height / 2.0f;
+
+    F32 modifier_x, modifier_y;
+        //mathematical handling of the difference between
+        //your mouse position and the 'center' of the window
+
+    vec3<F32> point;
+        //the untransformed ray will be put here
+
+    F32 point_dist = _paramHandler.getParam<F32>("zFar");
+        //it'll be put this far on the Z plane
+
+    vec3<F32> camera_origin;
+        //this is where the camera sits, in 3dspace
+
+    vec3<F32> point_xformed;
+        //this is the transformed point
+
+    vec3<F32> final_point;
+    vec4<F32> color(0.0, 1.0, 0.0, 1.0);
+
+    //These lines are the biggest part of this function.
+    //This is where the mouse position is turned into a mathematical
+    //'relative' of 3d space. The conversion to an actual point
+    modifier_x = (F32)tan( value_fov * 0.5f )
+        * (( 1.0f - x / half_resolution_width ) * ( value_aspect ) );
+    modifier_y = (F32)tan( value_fov * 0.5f )
+        * -( 1.0f - y / half_resolution_height );
+
+    //These 3 take our modifier_x/y values and our 'casting' distance
+    //to throw out a point in space that lies on the point_dist plane.
+    //If we were using completely untransformed, untranslated space,
+    //this would be fine - but we're not :)
+    point.x = modifier_x * point_dist;
+    point.y = modifier_y * point_dist;
+    point.z = point_dist;
+
+    //Next we make an openGL call to grab our MODELVIEW_MATRIX -
+    //This is the matrix that rasters 3d points to 2d space - which is
+    //kinda what we're doing, in reverse
+	mat4<F32> temp = Frustum::getInstance().getModelviewMatrix();
+	
+    //Some folks would then invert the matrix - I invert the results.
+
+    //First, to get the camera_origin, we transform the 12, 13, 14
+    //slots of our pulledMatrix - this gets us the actual viewing
+    //position we are 'sitting' at when the function is called
+    camera_origin.x = -(
+        temp.mat[0] * temp.mat[12] +
+        temp.mat[1] * temp.mat[13] +
+        temp.mat[2] * temp.mat[14]);
+    camera_origin.y = -(
+        temp.mat[4] * temp.mat[12] +
+        temp.mat[5] * temp.mat[13] +
+        temp.mat[6] * temp.mat[14]);
+    camera_origin.z = -(
+        temp.mat[8] * temp.mat[12] +
+        temp.mat[9] * temp.mat[13] +
+        temp.mat[10] * temp.mat[14]);
+
+    //Second, we transform the position we generated earlier - the '3d'
+    //mouse position - by our viewing matrix.
+    point_xformed.x = -(
+        temp.mat[0] * point[0] +
+        temp.mat[1] * point[1] +
+        temp.mat[2] * point[2]);
+    point_xformed.y = -(
+        temp.mat[4] * point[0] +
+        temp.mat[5] * point[1] +
+        temp.mat[6] * point[2]);
+    point_xformed.z = -(
+        temp.mat[8] * point[0] +
+        temp.mat[9] * point[1] +
+        temp.mat[10] * point[2]);
+
+    final_point = point_xformed + camera_origin;
+
+	vec3<F32> origin(camOrigin);
+	vec3<F32> dir = origin.direction(final_point);
+	
+	Ray r(origin,dir);
+	_currentSelection = _sceneGraph->Intersect(r,_paramHandler.getParam<F32>("zNear"),
+												 _paramHandler.getParam<F32>("zFar")/2.0f);
+
+}
+
+void Scene::deleteSelection(){
+	if(_currentSelection != NULL){
+		_currentSelection->scheduleDeletion();
+	}
 }

@@ -118,4 +118,7 @@ void SceneGraphNode::sceneUpdate(D32 sceneTime) {
 	if(_node){
 		_node->sceneUpdate(sceneTime);
 	}
+	if(_shouldDelete){
+		_sceneGraph->addToDeletionQueue(this);
+	}
 }

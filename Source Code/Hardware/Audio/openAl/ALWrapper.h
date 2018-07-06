@@ -23,7 +23,7 @@
 DEFINE_SINGLETON_EXT1(AL_API,AudioAPIWrapper)
 
 public:
-	void initHardware(){}
+	I8 initHardware(){return OAL_INIT_ERROR;}
 	void closeAudioApi(){}
 	void initDevice(){}
 

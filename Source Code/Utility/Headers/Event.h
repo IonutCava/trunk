@@ -94,7 +94,7 @@ private:
 	F32 _tickInterval;
 	U32 _numberOfTicks;
 	std::tr1::shared_ptr<boost::thread> _thisThread;
-	//Lock _mutex; ///< Do we need a lock for the end flag?
+	Lock _mutex; ///< Do we need a lock for the end flag?
 	volatile bool _end;
 	boost::function0<void> _callback;
 

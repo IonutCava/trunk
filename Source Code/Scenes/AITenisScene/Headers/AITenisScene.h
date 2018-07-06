@@ -52,7 +52,7 @@ public:
 		_scoreTeam2 = 0;
 		_mousePressed = false;
 	}
-	~AITenisScene() {}
+
 	void render();
 	void preRender();
 
@@ -103,5 +103,4 @@ private: //Game stuff
 	boost::mutex _ballPositionQuery;
 	boost::mutex _ballPositionUpdate;
 };
-
 #endif

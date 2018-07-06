@@ -17,19 +17,22 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-class Material;
+
+class Scene;
 class Texture;
+class Material;
+class SceneManager;
 
 namespace XML {
 
 	///Parent Function
-	void loadScripts(const std::string &file);
+	std::string loadScripts(const std::string &file);
 
 	///Child Functions
 	void loadConfig(const std::string& file);
-	void loadScene(const std::string& sceneName);
-	void loadGeometry(const std::string& file);
-	void loadTerrain(const std::string& file);
+	void loadScene(const std::string& sceneName, SceneManager& sceneMgr);
+	void loadGeometry(const std::string& file, Scene* const scene);
+	void loadTerrain(const std::string& file, Scene* const scene);
 	Material* loadMaterial(const std::string &file);
 	void dumpMaterial(Material* const mat);
 	///ToDo: ....... Add more

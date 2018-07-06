@@ -50,7 +50,7 @@ protected:
 	inline AudioAPI getId() { return _apiId;}
 
 	
-	virtual void initHardware() = 0;
+	virtual I8 initHardware() = 0;
 	virtual void closeAudioApi() = 0;
 	virtual void initDevice() = 0;
 

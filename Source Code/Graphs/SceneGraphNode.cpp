@@ -17,6 +17,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 												  _sorted(false),
 												  _silentDispose(false),
 												  _updateBB(true),
+												  _shouldDelete(false),
 												  _updateTimer(GETMSTIME()),
 												  _childQueue(0)
 {
@@ -169,6 +170,10 @@ void SceneGraphNode::removeNode(SceneGraphNode* node){
 	if(it != _children.end()) {
 		//Remove it from the map
 		_children.erase(it);
+	}else{
+		for_each(NodeChildren::value_type& it, _children){
+			removeNode(node);
+		}
 	}
 	//Beware. Removing a node, does no unload it!
 	//Call delete on the SceneGraphNode's pointer to do that
@@ -210,6 +215,25 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
     // no children's name matches or there are no more children
     // so return NULL, indicating that the node was not found yet
     return NULL;
+}
+
+SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
+	//Null return value as default
+	SceneGraphNode* returnValue = NULL;
+	if(getBoundingBox().Intersect(ray,start,end)){
+		return this;
+	}
+
+	for_each(NodeChildren::value_type& it, _children){
+		returnValue = it.second->Intersect(ray,start,end);
+		if(returnValue != NULL){
+			// if it is not NULL it is the node we are looking for
+			// so just pass it through
+			return returnValue;
+		}
+	}
+
+	return returnValue;
 }
 
 //This updates the SceneGraphNode's transform by deleting the old one first

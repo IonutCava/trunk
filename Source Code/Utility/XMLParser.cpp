@@ -1,21 +1,20 @@
 #include "Headers/XMLParser.h"
+
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/Application.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
-#include "SceneList.h"
 
 namespace XML {
 
-	ParamHandler &par = ParamHandler::getInstance();
 	using boost::property_tree::ptree;
 	ptree pt;
-	std::string activeScene("MainScene");
 
-	void loadScripts(const std::string& file){
+	std::string loadScripts(const std::string& file){
 
+		ParamHandler &par = ParamHandler::getInstance();
 		PRINT_FN("XML: Loading Scripts!");
 		read_xml(file,pt);
+		std::string activeScene("MainScene");
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
 		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
@@ -25,12 +24,11 @@ namespace XML {
 		read_xml(par.getParam<std::string>("scriptLocation") + "/" +
 			     par.getParam<std::string>("scenesLocation") + "/Scenes.xml",pt);
 		activeScene = pt.get("MainScene",activeScene);
-		loadScene(activeScene); 
-		
+		return activeScene;
 	}
 
 	void loadConfig(const std::string& file) {
-
+		ParamHandler &par = ParamHandler::getInstance();
 		pt.clear();
 		PRINT_F("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
 		read_xml(file,pt);
@@ -52,7 +50,8 @@ namespace XML {
 		par.setParam("aspectRatio",1.0f * resWidth / resHeight);
 		par.setParam("resolutionWidth",resWidth);
 		par.setParam("resolutionHeight",resHeight);
-		
+		par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
+
 		Application::getInstance().setResolutionHeight(resHeight);
 		Application::getInstance().setResolutionWidth(resWidth);
 		bool postProcessing = pt.get("rendering.enablePostFX",false);
@@ -71,15 +70,14 @@ namespace XML {
 		par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
 	}
 
-	void loadScene(const std::string& sceneName) {
-
+	void loadScene(const std::string& sceneName, SceneManager& sceneMgr) {
+		ParamHandler &par = ParamHandler::getInstance();
 		pt.clear();
-		SceneManager& scnMGR = SceneManager::getInstance();
 		PRINT_F("XML: Loading scene [ %s ]\n", sceneName.c_str());
+		std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" + 
+				                    par.getParam<std::string>("scenesLocation") + "/" + sceneName;
 		try{
-			read_xml(par.getParam<std::string>("scriptLocation") + "/" +
-				     par.getParam<std::string>("scenesLocation") + "/" +
-					 sceneName + ".xml", pt);
+			read_xml(sceneLocation + ".xml", pt);
 		}catch(	boost::property_tree::xml_parser_error & e ){
 			ERROR_FN("Invalid Scene!. Could not find [ %s ]",sceneName.c_str());
 			std::string error = e.what();
@@ -87,14 +85,14 @@ namespace XML {
 			throw error.c_str();
 		}
 		par.setParam("currentScene",sceneName);
-		Scene* scene = scnMGR.loadScene(sceneName);
+		Scene* scene = sceneMgr.createScene(sceneName);
 
 		if(!scene)	{
-			ERROR_F("XML: Trying to load unsupported scene! Defaulting to default scene\n");
-			scene = New MainScene();
+			ERROR_FN("XML: Trying to load unsupported scene! Exiting ...");
+			return;
 		}
 
-		scnMGR.setActiveScene(scene);
+		sceneMgr.setActiveScene(scene);
 		scene->setName(sceneName);
 
 		scene->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
@@ -107,17 +105,15 @@ namespace XML {
 
 		scene->getWaterLevel() = pt.get("water.waterLevel",RAND_MAX);
 		scene->getWaterDepth() = pt.get("water.waterDepth",-75);
-		std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" + 
-				                    par.getParam<std::string>("scenesLocation") + "/" + sceneName + "/";
 
-		loadTerrain(sceneLocation   + pt.get("terrain","terrain.xml"));
-		loadGeometry(sceneLocation  + pt.get("assets","assets.xml"));
+		loadTerrain(sceneLocation + "/" + pt.get("terrain","terrain.xml"),scene);
+		loadGeometry(sceneLocation + "/" + pt.get("assets","assets.xml"),scene);
 	}
 
 
 
-	void loadTerrain(const std::string &file) {
-
+	void loadTerrain(const std::string &file, Scene* const scene) {
+		U8 count = 0;
 		pt.clear();
 		PRINT_F("XML: Loading terrain: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
@@ -158,13 +154,14 @@ namespace XML {
 
 			ter->setActive(pt.get<bool>(name + ".active"));
 			
-			SceneManager::getInstance().addTerrain(ter);
+			scene->addTerrain(ter);
+			count++;
 			
 		}
-		PRINT_F("XML: Number of terrains to load: %d\n",SceneManager::getInstance().getNumberOfTerrains());
+		PRINT_F("XML: Number of terrains to load: %d\n",count);
 	}
 
-	void loadGeometry(const std::string &file) 	{
+	void loadGeometry(const std::string &file, Scene* const scene) 	{
 
 		pt.clear();
 		PRINT_F("XML: Loading Geometry: [ %s ]\n",file.c_str());
@@ -191,7 +188,7 @@ namespace XML {
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = GEOMETRY;
 			model.version = pt.get<F32>(name + ".version");
-			SceneManager::getInstance().addModel(model);
+			scene->addModel(model);
 		}
 
 		if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation"))
@@ -214,7 +211,7 @@ namespace XML {
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = VEGETATION;
 			model.version = pt.get<F32>(name + ".version");
-			SceneManager::getInstance().addModel(model);
+			scene->addModel(model);
 		}
 
 		if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
@@ -252,12 +249,12 @@ namespace XML {
 			
 			model.type = PRIMITIVE;
 			model.version = pt.get<F32>(name + ".version");
-			SceneManager::getInstance().addModel(model);
+			scene->addModel(model);
 		}
 	}
 
 	Material* loadMaterial(const std::string &file){
-	
+		ParamHandler &par = ParamHandler::getInstance();
 		std::string location = par.getParam<std::string>("scriptLocation") + "/" + 
 				                    par.getParam<std::string>("scenesLocation") + "/" +
 									par.getParam<std::string>("currentScene") + "/materials/";
@@ -331,6 +328,7 @@ namespace XML {
 	}
 
 	void dumpMaterial(Material* const mat){
+		ParamHandler &par = ParamHandler::getInstance();
 		std::string file = mat->getName();
 		file = file.substr(file.rfind("/")+1,file.length());
 

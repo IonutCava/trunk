@@ -19,12 +19,16 @@
 #define _CUBE_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
+
 class Quad3D;
 class CubeScene : public Scene {
 
 public:
 	CubeScene() : Scene(), _renderQuad(NULL),
-						   _renderQuad2(NULL),_renderQuad3(NULL),_renderQuad4(NULL),_showTextures(false){}
+						   _renderQuad2(NULL),
+						   _renderQuad3(NULL),
+						   _renderQuad4(NULL),
+						   _showTextures(false){}
 	void render();
 	void preRender();
 	bool preLoad();

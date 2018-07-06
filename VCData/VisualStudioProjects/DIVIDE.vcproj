@@ -1131,6 +1131,10 @@
 					RelativePath="..\..\Source Code\Scenes\Headers\Scene.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\Source Code\Scenes\Headers\SceneState.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="WarScene"

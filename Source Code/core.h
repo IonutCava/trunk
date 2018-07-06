@@ -117,4 +117,18 @@ inline void CLAMP(T& n, T min, T max){
 #define toBit(X) (1 << (X))
 
 
+enum ERROR_CODES {
+	NO_ERR = 0,
+	MISSING_SCENE_DATA = -1,
+	GLEW_INIT_ERROR = -2,
+	GLEW_OLD_HARDWARE = -3,
+	DX_INIT_ERROR = -4,
+	DX_OLD_HARDWARE = -5,
+	SDL_AUDIO_INIT_ERROR = -6,
+	FMOD_AUDIO_INIT_ERROR = -7,
+	OAL_INIT_ERROR = -8,
+	PHYSX_INIT_ERROR = -9,
+	PHYSX_EXTENSION_ERROR = -10
+};
+
 #endif
