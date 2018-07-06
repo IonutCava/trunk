@@ -9,14 +9,15 @@ Material* ImplResourceLoader<Material>::operator()(){
     Material* ptr = New Material();
     assert(ptr != nullptr);
 
-    if(!load(ptr,_descriptor.getName())){
-       SAFE_DELETE(ptr);
-    }else{
-        if(_descriptor.getFlag()) {
-            ptr->setShaderProgram("");
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
+        if ( _descriptor.getFlag() ) {
+            ptr->setShaderProgram( "" );
         }
-        if(_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED)
-            ptr->setHardwareSkinning(true);
+        if ( _descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED ) {
+            ptr->setHardwareSkinning( true );
+        }
     }
 
     return ptr;

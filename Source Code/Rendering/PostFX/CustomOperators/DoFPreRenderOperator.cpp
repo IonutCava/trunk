@@ -24,9 +24,10 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
     _dofShader->UniformTexture("texDepth", 1);
 }
 
-DoFPreRenderOperator::~DoFPreRenderOperator() {
+DoFPreRenderOperator::~DoFPreRenderOperator()
+{
     RemoveResource(_dofShader);
-    SAFE_DELETE(_samplerCopy);
+    MemoryManager::SAFE_DELETE( _samplerCopy );
 }
 
 void DoFPreRenderOperator::reshape(I32 width, I32 height){

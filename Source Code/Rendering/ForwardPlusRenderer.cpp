@@ -36,9 +36,9 @@ ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS)
 
 ForwardPlusRenderer::~ForwardPlusRenderer()
 {
-    SAFE_DELETE(_depthRanges);
-    SAFE_DELETE(_opaqueGrid);
-    SAFE_DELETE(_transparentGrid);
+    MemoryManager::SAFE_DELETE( _depthRanges );
+    MemoryManager::SAFE_DELETE( _opaqueGrid );
+    MemoryManager::SAFE_DELETE( _transparentGrid );
     RemoveResource(_depthRangesConstructProgram);
 }
 
@@ -63,14 +63,14 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
     _omniLightList.clear();
     _omniLightList.reserve(static_cast<vectorAlg::vecSize>(lights.size()));
 
-	for (const Light::LightMap::value_type& it : lights) {
+    for ( const Light::LightMap::value_type it : lights ) {
         const Light& light = *it.second;
-        if (light.getLightType() == LIGHT_TYPE_POINT){
-            _omniLightList.push_back(LightGrid::make_light(light.getPosition(), light.getDiffuseColor(), light.getRange()));
+        if ( light.getLightType() == LIGHT_TYPE_POINT ) {
+            _omniLightList.push_back( LightGrid::make_light( light.getPosition(), light.getDiffuseColor(), light.getRange() ) );
         }
     }
 
-    if (!_omniLightList.empty()) {
+    if ( !_omniLightList.empty() ) {
         _transparentGrid->build(vec2<U16>(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y),
                                 vec2<U16>(gpuBlock._ViewPort.z, gpuBlock._ViewPort.w), //< render target resolution
                                 _omniLightList,

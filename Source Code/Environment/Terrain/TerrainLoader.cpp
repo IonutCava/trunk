@@ -4,6 +4,8 @@
 
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 namespace Divide {
 
@@ -23,8 +25,8 @@ TerrainLoader::TerrainLoader() : Singleton()
 
 TerrainLoader::~TerrainLoader()
 {
-	SAFE_DELETE(_albedoSampler);
-	SAFE_DELETE(_normalSampler);
+    MemoryManager::SAFE_DELETE( _albedoSampler );
+    MemoryManager::SAFE_DELETE( _normalSampler );
 }
 
 bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDescriptor){
@@ -183,6 +185,17 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
 }
 
 bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* terrainDescriptor){
+    ResourceDescriptor infinitePlane( "infinitePlane" );
+    infinitePlane.setFlag( true ); //No default material
+    terrain->_plane = CreateResource<Quad3D>( infinitePlane );
+    // our bottom plane is placed at the bottom of our water entity
+    F32 height = GET_ACTIVE_SCENE()->state().getWaterLevel() - GET_ACTIVE_SCENE()->state().getWaterDepth();
+    terrain->_farPlane = 2.0f * GET_ACTIVE_SCENE()->state().getRenderState().getCameraConst().getZPlanes().y;
+    terrain->_plane->setCorner( Quad3D::TOP_LEFT, vec3<F32>( -terrain->_farPlane * 1.5f, height, -terrain->_farPlane * 1.5f ) );
+    terrain->_plane->setCorner( Quad3D::TOP_RIGHT, vec3<F32>( terrain->_farPlane * 1.5f, height, -terrain->_farPlane * 1.5f ) );
+    terrain->_plane->setCorner( Quad3D::BOTTOM_LEFT, vec3<F32>( -terrain->_farPlane * 1.5f, height, terrain->_farPlane * 1.5f ) );
+    terrain->_plane->setCorner( Quad3D::BOTTOM_RIGHT, vec3<F32>( terrain->_farPlane * 1.5f, height, terrain->_farPlane * 1.5f ) );
+
     VertexBuffer* groundVB = terrain->getGeometryVB();
 
     terrain->_chunkSize = terrainDescriptor->getChunkSize();
@@ -197,38 +210,38 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
     U16 heightmapWidth = terrainDimensions.width;
     U16 heightmapHeight = terrainDimensions.height;
     vectorImpl<U16> heightValues;
-    if (terrainDescriptor->is16Bit()){
-        assert(heightmapWidth != 0 && heightmapHeight != 0);
-        stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
-        assert(terrainRawFile.substr(terrainRawFile.length() - 4, terrainRawFile.length()).compare(".raw") == 0); // only raw files for 16 bit support
+    if ( terrainDescriptor->is16Bit() ) {
+        assert( heightmapWidth != 0 && heightmapHeight != 0 );
+        stringImpl terrainRawFile( terrainDescriptor->getVariable( "heightmap" ) );
+        assert( terrainRawFile.substr( terrainRawFile.length() - 4, terrainRawFile.length() ).compare( ".raw" ) == 0 ); // only raw files for 16 bit support
         // Read File Data
         FILE* terrainFile = nullptr;
-        fopen_s(&terrainFile, terrainRawFile.c_str(), "rb");
-        assert(terrainFile);
-        U32 lCurPos = ftell(terrainFile);
-        fseek(terrainFile, 0, SEEK_END);
-        U32 positionCount = ftell(terrainFile);
-        fseek(terrainFile, lCurPos, SEEK_SET);
-        heightValues.reserve(positionCount / 2);
+        fopen_s( &terrainFile, terrainRawFile.c_str(), "rb" );
+        assert( terrainFile );
+        U32 lCurPos = ftell( terrainFile );
+        fseek( terrainFile, 0, SEEK_END );
+        U32 positionCount = ftell( terrainFile );
+        fseek( terrainFile, lCurPos, SEEK_SET );
+        heightValues.reserve( positionCount / 2 );
         U8* dataTemp = New U8[positionCount];
-        rewind(terrainFile);
-        assert(dataTemp);
-        fread(dataTemp, 1, positionCount, terrainFile);
-        fclose(terrainFile);
-        for (U32 i = 0; i < positionCount + 1; i += 2){
-            heightValues.push_back(((U8)dataTemp[i + 1] << 8) | (U8)dataTemp[i]);
+        rewind( terrainFile );
+        assert( dataTemp );
+        fread( dataTemp, 1, positionCount, terrainFile );
+        fclose( terrainFile );
+        for ( U32 i = 0; i < positionCount + 1; i += 2 ) {
+            heightValues.push_back( ( (U8)dataTemp[i + 1] << 8 ) | (U8)dataTemp[i] );
         }
-        SAFE_DELETE_ARRAY(dataTemp);
-    }else{
+        MemoryManager::SAFE_DELETE_ARRAY( dataTemp );
+    } else {
         ImageTools::ImageData img;
-        img.create(terrainDescriptor->getVariable("heightmap"));
-        assert(terrainDimensions == img.dimensions());
+        img.create( terrainDescriptor->getVariable( "heightmap" ) );
+        assert( terrainDimensions == img.dimensions() );
         //data will be destroyed when img gets out of scope
         const U8* data = img.data();
-        assert(data);
-        heightValues.reserve(heightmapWidth * heightmapWidth);
-        for (size_t i = 0; i < img.imageSize(); ++i){
-            heightValues.push_back(data[i]);
+        assert( data );
+        heightValues.reserve( heightmapWidth * heightmapWidth );
+        for ( size_t i = 0; i < img.imageSize(); ++i ) {
+            heightValues.push_back( data[i] );
         }
     }
 
@@ -361,6 +374,8 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
             groundVB->modifyTangentValue(idx0,normalData[idx1]);
         }
     }
+    groundVB->Create();
+    terrain->buildQaudtree();
 
     initializeVegetation(terrain, terrainDescriptor);
     PRINT_FN(Locale::get("TERRAIN_LOAD_END"), terrain->getName().c_str());

@@ -16,9 +16,9 @@ CameraManager::~CameraManager() {
     UNREGISTER_FRAME_LISTENER(this);
     PRINT_FN(Locale::get("CAMERA_MANAGER_DELETE"));
     PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
-	for (CameraPool::value_type& it : _cameraPool){
+    for ( CameraPool::value_type it : _cameraPool ) {
         it.second->unload();
-        SAFE_DELETE(it.second);
+        MemoryManager::SAFE_DELETE( it.second );
     }
     _cameraPool.clear();
     _cameraPoolGUID.clear();
@@ -29,12 +29,12 @@ bool CameraManager::frameStarted(const FrameEvent& evt){
 
     if (_addNewListener){
         Camera* cam = nullptr;
-		for (CameraPool::value_type& it : _cameraPool){
+        for ( CameraPool::value_type it : _cameraPool ) {
             cam = it.second;
             cam->clearListeners();
-			for (const DELEGATE_CBK<>& listener : _updateCameralisteners) {
-				cam->addUpdateListener(listener);
-			}
+            for ( const DELEGATE_CBK<>& listener : _updateCameralisteners ) {
+                cam->addUpdateListener( listener );
+            }
         }
         _addNewListener = false;
     }

@@ -70,7 +70,7 @@ public:
     /*//Rendering/Processing*/
 
     virtual	bool	  unload();
-    virtual bool	  isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
+    virtual bool	  isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true );
     virtual	void	  setMaterial(Material* const m);
     Material*   const getMaterial();
     virtual ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
@@ -88,16 +88,12 @@ public:
     inline void incLODcount() { _LODcount++; }
     inline void decLODcount() { _LODcount--; }
     inline U8   getLODcount()   const { return _LODcount; }
-    inline U8   getCurrentLOD() const { return (_lodLevel < (_LODcount - 1) ? _lodLevel : (_LODcount - 1)); }
 
 protected:
     friend class RenderBin;
     friend class RenderPass;
     friend class SceneGraph;
     friend class SceneGraphNode;
-    inline I8   getReferenceCount() const { return _sgnReferenceCount; }
-    inline void incReferenceCount()       { _sgnReferenceCount++; }
-    inline void decReferenceCount()       { _sgnReferenceCount--; }
 
     /// Perform any post-draw operations (this is after releasing object and shadow states)
     virtual void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {/*Nothing yet*/ }
@@ -112,21 +108,20 @@ protected:
     virtual	void bindTextures();
 
     // Post insertion calls (Use this to setup child objects during creation)
-    virtual void postLoad(SceneGraphNode* const sgn) { _nodeReady = (sgn != nullptr); }; 
+    virtual void postLoad( SceneGraphNode* const sgn ) { _hasSGNParent = ( sgn != nullptr ); };
+
+    inline bool hasSGNParent() const { return _hasSGNParent;  }
 
 protected:
     ///The various states needed for rendering
     SceneNodeRenderState  _renderState;
-    ///LOD level is updated at every visibility check (SceneNode::isInView(...));
-    U8                    _lodLevel; ///<Relative to camera distance
     U8                    _LODcount; ///<Maximum available LOD levels
-    I8                    _sgnReferenceCount;
 
 private:
     //mutable SharedLock _materialLock;
     Material*	  _material;
+    bool          _hasSGNParent;
     bool          _refreshMaterialData;
-    bool          _nodeReady; //< make sure postload was called with a valid SGN
     SceneNodeType _type;
 };
 

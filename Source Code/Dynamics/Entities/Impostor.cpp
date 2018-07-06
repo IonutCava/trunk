@@ -14,8 +14,6 @@ Impostor::Impostor(const stringImpl& name, F32 radius) : Sphere3D(radius, 8)
     RenderStateBlockDescriptor dummyDesc(GFX_DEVICE.getStateBlockDescriptor(getMaterial()->getRenderStateBlock(FINAL_STAGE)));
     dummyDesc.setFillMode(FILL_MODE_WIREFRAME);
     getMaterial()->setRenderStateBlock(dummyDesc, FINAL_STAGE);
-    setName(name);
-    setState(RES_LOADED);
 }
 
 Impostor::~Impostor()

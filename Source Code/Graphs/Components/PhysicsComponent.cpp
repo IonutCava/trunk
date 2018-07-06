@@ -12,23 +12,28 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode* const parentSGN) : SGNCompone
                                                                        _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
                                                                        _noDefaultTransform(false),
                                                                        _transformUpdated(true),
+                                                                       _transformQueried(true),
                                                                        _physicsAsset(nullptr),
                                                                        _transform(nullptr)
 {
+    _scaleCache.set( 1.0f );
+    _positionCache.set( 0.0f );
+    _prevTransformValues._translation.set( 0.0f );
+    _prevTransformValues._scale.set( 1.0f );
+    _prevTransformValues._orientation.identity();
 }
 
 PhysicsComponent::~PhysicsComponent()
 {
-    SAFE_DELETE(_transform);
+    MemoryManager::SAFE_DELETE( _transform );
 }
 
 //Get the node's transform
 Transform* PhysicsComponent::getTransform() {
     //A node does not necessarily have a transform. If this is the case, we can either create a default one or return nullptr.
     //When creating a node we can specify if we do not want a default transform
-    if(!_noDefaultTransform && !_transform){
+    if ( !_noDefaultTransform && !_transform ) {
         _transform = New Transform();
-        assert(_transform);
     }
     return _transform;
 }
@@ -43,281 +48,351 @@ void PhysicsComponent::physicsAsset(PhysicsAsset* const asset) {
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName){
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
-		for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()){
-        it.second->getComponent<PhysicsComponent>()->cookCollisionMesh(sceneName);
+    for ( SceneGraphNode::NodeChildren::value_type it : _parentSGN->getChildren() ) {
+        it.second->getComponent<PhysicsComponent>()->cookCollisionMesh( sceneName );
     }
 
     if (_parentSGN->getNode()->getType() == TYPE_OBJECT3D) {
         U32 obj3DExclussionMask = Object3D::TEXT_3D | Object3D::MESH | Object3D::FLYWEIGHT;
-        if (!bitCompare(obj3DExclussionMask, dynamic_cast<Object3D*>(_parentSGN->getNode())->getObjectType()))
-            PHYSICS_DEVICE.createActor(_parentSGN, sceneName,
-                    _parentSGN->usageContext() == SceneGraphNode::NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC,
-                    _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE :
-                    (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE));
+        if ( !bitCompare( obj3DExclussionMask, dynamic_cast<Object3D*>( _parentSGN->getNode() )->getObjectType() ) ) {
+            PHYSICS_DEVICE.createActor( _parentSGN, sceneName,
+                _parentSGN->usageContext() == SceneGraphNode::NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC,
+                _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE :
+                ( _physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE ) );
+        }
     }
 
 }
 
 void PhysicsComponent::setTransformDirty() {
-    if (_physicsAsset) {
-        _physicsAsset->resetTransforms(true);
+    if ( _physicsAsset ) {
+        _physicsAsset->resetTransforms( true );
     }
     _transformUpdated = true;
+    _transformQueried = false;
 }
 
 void PhysicsComponent::setPosition(const vec3<F32>& position) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setPosition(position);
+    if ( transform ) {
+        transform->setPosition( position );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setScale(const vec3<F32>& scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setScale(scale);
+    if ( transform ) {
+        transform->setScale( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setRotation(axis, degrees, inDegrees);
+    if ( transform ) {
+        transform->setRotation( axis, degrees, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setRotation(const vec3<F32>& euler, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setRotation(euler, inDegrees);
+    if ( transform ) {
+        transform->setRotation( euler, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setRotation(const Quaternion<F32>& quat) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setRotation(quat);
+    if ( transform ) {
+        transform->setRotation( quat );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::translate(const vec3<F32>& axisFactors) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->translate(axisFactors);
+    if ( transform ) {
+        transform->translate( axisFactors );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::scale(const vec3<F32>& axisFactors) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->scale(axisFactors);
+    if ( transform ) {
+        transform->scale( axisFactors );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->rotate(axis, degrees, inDegrees);
+    if ( transform ) {
+        transform->rotate( axis, degrees, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::rotate(const vec3<F32>& euler, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->rotate(euler, inDegrees);
+    if ( transform ) {
+        transform->rotate( euler, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::rotate(const Quaternion<F32>& quat) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->rotate(quat);
+    if ( transform ) {
+        transform->rotate( quat );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat, const D32 deltaTime) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->rotateSlerp(quat, deltaTime);
+    if ( transform ) {
+        transform->rotateSlerp( quat, deltaTime );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setScale(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setScale(scale);
+    if ( transform ) {
+        transform->setScale( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setScaleX(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setScaleX(scale);
+    if ( transform ) {
+        transform->setScaleX( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setScaleY(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setScaleY(scale);
+    if ( transform ) {
+        transform->setScaleY( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setScaleZ(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setScaleZ(scale);
+    if ( transform ) {
+        transform->setScaleZ( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::scale(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->scale(scale);
+    if ( transform ) {
+        transform->scale( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::scaleX(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->scaleX(scale);
+    if ( transform ) {
+        transform->scaleX( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::scaleY(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->scaleY(scale);
+    if ( transform ) {
+        transform->scaleY( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::scaleZ(const F32 scale) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->scaleZ(scale);
+    if ( transform ) {
+        transform->scaleZ( scale );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::rotateX(const F32 angle, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->rotateX(angle, inDegrees);
+    if ( transform ) {
+        transform->rotateX( angle, inDegrees );
         setTransformDirty();
     }
 }
+
 void PhysicsComponent::rotateY(const F32 angle, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->rotateY(angle, inDegrees);
+    if ( transform ) {
+        transform->rotateY( angle, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::rotateZ(const F32 angle, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->rotateZ(angle, inDegrees);
+    if ( transform ) {
+        transform->rotateZ( angle, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setRotationX(const F32 angle, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setRotationX(angle, inDegrees);
+    if ( transform ) {
+        transform->setRotationX( angle, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setRotationXEuler(const F32 angle, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setRotationXEuler(angle, inDegrees);
+    if ( transform ) {
+        transform->setRotationXEuler( angle, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setRotationY(const F32 angle, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setRotationY(angle, inDegrees);
+    if ( transform ) {
+        transform->setRotationY( angle, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setRotationZ(const F32 angle, bool inDegrees) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setRotationZ(angle, inDegrees);
+    if ( transform ) {
+        transform->setRotationZ( angle, inDegrees );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::translateX(const F32 positionX) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->translateX(positionX);
+    if ( transform ) {
+        transform->translateX( positionX );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::translateY(const F32 positionY) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->translateY(positionY);
+    if ( transform ) {
+        transform->translateY( positionY );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::translateZ(const F32 positionZ) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->translateZ(positionZ);
+    if ( transform ) {
+        transform->translateZ( positionZ );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setPositionX(const F32 positionX) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setPositionX(positionX);
+    if ( transform ) {
+        transform->setPositionX( positionX );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setPositionY(const F32 positionY) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setPositionY(positionY);
+    if ( transform ) {
+        transform->setPositionY( positionY );
         setTransformDirty();
     }
 }
 
 void PhysicsComponent::setPositionZ(const F32 positionZ) {
     Transform* transform = getTransform();
-    if (transform){
-        transform->setPositionZ(positionZ);
+    if ( transform ) {
+        transform->setPositionZ( positionZ );
         setTransformDirty();
     }
+}
+
+mat4<F32> PhysicsComponent::getWorldMatrix( D32 interpolationFactor, const bool local ) {
+    Transform* transform = getTransform();
+    if ( transform ) {
+        _worldMatrix.set( transform->interpolate( _prevTransformValues, interpolationFactor ) );
+        _prevTransformValues = transform->getValues();
+    }
+
+    if ( !local ) {
+        const SceneGraphNode* const parent = _parentSGN->getParent();
+        if ( parent ) {
+            PhysicsComponent* const parentPC = parent->getComponent<PhysicsComponent>();
+            return _worldMatrix * parentPC->getWorldMatrix( interpolationFactor, local );
+        }
+    }
+    return _worldMatrix;
+}
+
+mat4<F32> PhysicsComponent::getWorldMatrix( const bool local ) {
+    Transform* transform = getTransform();
+    if ( !local ) {
+        const SceneGraphNode* const parent = _parentSGN->getParent();
+        if ( parent ) {
+            PhysicsComponent* const parentPC = parent->getComponent <PhysicsComponent>();
+            return ( transform != nullptr ? transform->getMatrix() * parentPC->getWorldMatrix() : parentPC->getWorldMatrix() );
+        }
+    }
+
+    return transform != nullptr ? transform->getMatrix() : mat4<F32>();
+}
+
+/// Return the scale factor
+vec3<F32> PhysicsComponent::getScale( const bool local ) const {
+    if ( !local ) {
+        const SceneGraphNode* const parent = _parentSGN->getParent();
+        if ( parent ) {
+            const vec3<F32>& parentScale = parent->getComponent<PhysicsComponent>()->getScale( local );
+            return ( _transform != nullptr ? _transform->getScale() * parentScale : parentScale );
+        }
+    } 
+
+    return _transform != nullptr ? _transform->getScale() : _scaleCache;
+}
+/// Return the position
+vec3<F32> PhysicsComponent::getPosition( const bool local) const {
+    if ( !local ) {
+        const SceneGraphNode* const parent = _parentSGN->getParent();
+        if ( parent ) {
+            const vec3<F32>& parentPosition = parent->getComponent <PhysicsComponent>()->getPosition( local );
+            return ( _transform != nullptr ? _transform->getPosition() + parentPosition : parentPosition );
+        }
+    }
+
+    return _transform != nullptr ? _transform->getPosition() : _positionCache;
+}
+/// Return the orientation quaternion
+Quaternion<F32> PhysicsComponent::getOrientation( const bool local ) const {
+    if ( !local ) {
+        const SceneGraphNode* const parent = _parentSGN->getParent();
+        if ( parent ) {
+            const Quaternion<F32>& parentQuat = parent->getComponent<PhysicsComponent>()->getOrientation( local );
+            return ( _transform != nullptr ? parentQuat.inverse() * _transform->getOrientation() : parentQuat );
+        }
+    }
+
+    return _transform != nullptr ? _transform->getOrientation() : _orientationCache;
 }
 
 };

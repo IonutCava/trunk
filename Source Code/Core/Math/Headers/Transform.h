@@ -35,6 +35,23 @@ struct TransformValues {
     vec3<F32> _scale;
     ///All orientation/rotation info is stored in a Quaternion (because they are awesome and also have an internal mat4 if needed)
     Quaternion<F32> _orientation;
+
+    void operator=(const TransformValues& other) {
+        _translation.set( other._translation );
+        _scale.set( other._scale );
+        _orientation.set( other._orientation );
+    }
+
+    bool operator==( const TransformValues& other ) const {
+        return _scale.compare( other._scale ) &&
+               _orientation.compare( other._orientation ) &&
+               _translation.compare( other._translation );
+    }
+    bool operator!=( const TransformValues& other ) const {
+        return !_scale.compare( other._scale ) ||
+               !_orientation.compare( other._orientation ) ||
+               !_translation.compare( other._translation );
+    }
 };
 
 class Transform : public GUIDWrapper, private NonCopyable {
@@ -120,25 +137,10 @@ public:
         rebuildMatrix();
     }
 
-    /// If any transform value changed (either locally or in the parent transform), return true
-    inline bool isDirty() const {
-        if (hasParentTransform()) {
-            return this->_dirty || this->_parentTransform->isDirty();
-        }
-
-        return  this->_dirty;
-    }
-
     /// If a non-uniform scaling factor is currently set (either locally or in the parent transform), return false
     inline bool isUniformScaled() const {
-        if (hasParentTransform()) {
-            ReadLock r_lock(this->_parentLock);
-            return getLocalScale().isUniform() && this->_parentTransform->isUniformScaled();
-        }
-
-        return getLocalScale().isUniform();
+        return getScale().isUniform();
     }
-
 
     /// Transformation helper functions. These just call the normal translate/rotate/scale functions
     /// Set an uniform scale on all three axis
@@ -243,67 +245,23 @@ public:
                                     this->_transformValues._translation.y, 
                                     positionZ));
     }
-    /// Return the local scale factor
-    inline const vec3<F32>& getLocalScale() const {
+    /// Return the scale factor
+    inline const vec3<F32>& getScale() const {
         ReadLock r_lock(this->_lock); 
         return this->_transformValues._scale; 
     }
-    /// Return the local position
-    inline const vec3<F32>& getLocalPosition() const {
+    /// Return the position
+    inline const vec3<F32>& getPosition() const {
         ReadLock r_lock(this->_lock); 
         return this->_transformValues._translation; 
     }
-    /// Return the local orientation quaternion
-    inline const Quaternion<F32>& getLocalOrientation() const {
+    /// Return the orientation quaternion
+    inline const Quaternion<F32>& getOrientation() const {
         ReadLock r_lock(this->_lock);
         return this->_transformValues._orientation; 
     }
-    /// Return the global scale factor (entire hierarchy scale applied recursively)
-    inline vec3<F32> getScale() const {
-        if (hasParentTransform()) {
-            ReadLock r_lock(this->_parentLock);
-            vec3<F32> parentScale = this->_parentTransform->getScale();
-            r_lock.unlock();
-            return  parentScale * getLocalScale();
-        }
-
-        return getLocalScale();
-    }
-    /// Return the global position (entire hierarchy position applied recursively)
-    inline vec3<F32> getPosition() const {
-        if (hasParentTransform()) {
-            ReadLock r_lock(this->_parentLock);
-            vec3<F32> parentPos = this->_parentTransform->getPosition();
-            r_lock.unlock();
-            return parentPos + getLocalPosition();
-        }
-
-        return getLocalPosition();
-    }
-    /// Return the global orientation quaternion (entire hierarchy orientation applied recursively)
-    inline Quaternion<F32> getOrientation() const {
-         if (hasParentTransform()) {
-            ReadLock r_lock(this->_parentLock);
-            Quaternion<F32> parentOrientation = this->_parentTransform->getOrientation();
-            r_lock.unlock();
-            return parentOrientation.inverse() * getLocalOrientation();
-        }
-
-        return getLocalOrientation();
-    }
     /// Get the local transformation matrix
-    inline const mat4<F32>&  getMatrix() { 
-        return this->applyTransforms(); 
-    }
-    /// Get the parent's transformation matrix (if it exists)
-    inline mat4<F32> getParentMatrix() const {
-        if (hasParentTransform()) {
-            ReadLock r_lock(this->_parentLock);
-            return this->_parentTransform->getGlobalMatrix();
-        }
-        // Identity
-        return mat4<F32>();
-    }
+    const mat4<F32>& getMatrix();
     /// Sets the transform to match a certain transformation matrix.
     /// Scale, orientation and translation are extracted from the specified matrix
     inline void setTransforms(const mat4<F32>& transform) {
@@ -313,73 +271,38 @@ public:
                                          this->_transformValues._translation);
         setDirty();
     }
-    /// Get the parent's global transformation
-    inline Transform* const getParentTransform() const {
-        if (hasParentTransform()) {
-            ReadLock r_lock(this->_parentLock);
-            return this->_parentTransform;
-        }
-        return nullptr;
-    }
-    /// Set the parent's global transform (the parent's transform with its parent's transform applied and so on)
-    inline bool setParentTransform(Transform* transform) {
-        WriteLock w_lock(this->_parentLock);
-
-        if (!this->_parentTransform && !transform) {
-            return false;
-        }
-        // Avoid setting the same parent transform twice
-        if (this->_parentTransform && transform && 
-            this->_parentTransform->getGUID() == transform->getGUID()) {
-             return false;
-        }
-
-        this->_parentTransform = transform;
-        this->_hasParentTransform = (transform != nullptr);
-        return true;
-    }
     /// Set all of the internal values to match those of the specified transform
     inline void clone(Transform* const transform) {
         WriteLock w_lock(this->_lock);
-        this->_transformValues._scale.set(transform->getLocalScale());
-        this->_transformValues._translation.set(transform->getLocalPosition());
-        this->_transformValues._orientation.set(transform->getLocalOrientation());
+        this->_transformValues._scale.set(transform->getScale());
+        this->_transformValues._translation.set(transform->getPosition());
+        this->_transformValues._orientation.set(transform->getOrientation());
         setDirty();
         w_lock.unlock();
-        setParentTransform(transform->getParentTransform());
     }
     /// Interpolate the current transform values with the specified ones and return the resulting transformation matrix
-    mat4<F32> interpolate(const TransformValues& prevTransforms, const D32 factor);
+    const mat4<F32>& interpolate(const TransformValues& prevTransforms, const D32 factor);
     /// Extract the 3 transform values (position, scale, rotation) from the current instance
-    void getValues(TransformValues& transforms) const;
-    /// Creates the local transformation matrix using the position, scale and position values
-    const mat4<F32>& applyTransforms();
+    inline const TransformValues& getValues() const { return _transformValues; }
     /// Compares 2 transforms
-    bool compare(const Transform* const t);
+    bool operator==( const Transform& other ) const {
+        ReadLock r_lock( _lock );
+        return _transformValues == other._transformValues;
+    }
+    bool operator!=( const Transform& other ) const {
+        ReadLock r_lock( _lock );
+        return _transformValues != other._transformValues;
+    }
     ///Reset transform to identity
     void identity();
 
 private:
-    inline void clean() {
-        this->_dirty = false;
-        this->_rebuildMatrix = false; 
-    }
-
     inline void setDirty() {
         this->_dirty = true;
     }
 
     inline void rebuildMatrix() {
         this->_rebuildMatrix = true;
-    }
-
-    inline bool hasParentTransform() const {
-        assert(this->_hasParentTransform == (this->_parentTransform != nullptr));
-        return this->_hasParentTransform;
-    }
-    ///Get the absolute transformation matrix. The local matrix with the parent's transforms applied
-    inline mat4<F32>  getGlobalMatrix()  { 
-        return this->getMatrix() * this->getParentMatrix(); 
     }
 
 private:
@@ -391,10 +314,7 @@ private:
     std::atomic_bool _dirty;
     ///_rebuildMatrix is set to true only when a rotation or scale is applied to avoid rebuilding matrices on translation only
     std::atomic_bool _rebuildMatrix;
-    Transform*         _parentTransform;
-    std::atomic_bool _hasParentTransform;
     mutable SharedLock _lock;
-    mutable SharedLock _parentLock;
 };
 
 }; //namespace Divide

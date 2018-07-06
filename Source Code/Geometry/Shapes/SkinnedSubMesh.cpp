@@ -17,13 +17,12 @@ SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name) : SubMesh(name, Object3D:
 
 SkinnedSubMesh::~SkinnedSubMesh()
 {
-    SAFE_DELETE(_animator);
+    MemoryManager::SAFE_DELETE( _animator );
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
     sgn->setComponent(SGNComponent::SGN_COMP_ANIMATION, New AnimationComponent(_animator, sgn));
-
     SubMesh::postLoad(sgn);
 }
 

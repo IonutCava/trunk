@@ -57,14 +57,12 @@ public:
     /// When loading a submesh, the ID is the node index from the imported scene
     /// scene->mMeshes[n] == (SubMesh with _id == n)
     inline void setId(U32 id) {_id = id;}
-    virtual void postLoad(SceneGraphNode* const sgn);
     inline Mesh* getParentMesh() {return _parentMesh;}
     inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }
 
 protected:
     friend class Mesh;
 	void setParentMesh(Mesh* const parentMesh);
-    inline void setParentMeshSGN(SceneGraphNode* const meshSGN) { _parentMeshSGN = meshSGN; }
 
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
 
@@ -79,7 +77,6 @@ protected:
     U32 _id;
     Mesh* _parentMesh;
     BoundingBox     _importBB;
-    SceneGraphNode* _parentMeshSGN;
     GenericDrawCommand _drawCmd;
 };
 

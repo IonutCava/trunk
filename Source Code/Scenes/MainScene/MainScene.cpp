@@ -150,7 +150,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b){
     SceneGraphNode* boxNode = _sceneGraph->findNode("box");
     Object3D* box = nullptr;
     if(boxNode) box = boxNode->getNode<Object3D>();
-    if(box) pos = boxNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    if(box) pos = boxNode->getComponent<PhysicsComponent>()->getPosition();
 
     if(!switchAB){
         if(pos.x < 300 && pos.z == 0)		   pos.x++;

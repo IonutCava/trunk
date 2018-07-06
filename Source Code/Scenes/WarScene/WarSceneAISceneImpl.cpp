@@ -35,7 +35,7 @@ WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
 WarSceneAISceneImpl::~WarSceneAISceneImpl()
 {
     for(GOAPAction*& action : actionSetPtr()) {
-        SAFE_DELETE(action);
+        MemoryManager::SAFE_DELETE( action );
     }
     actionSetPtr().clear();
 }
@@ -68,19 +68,19 @@ void WarSceneAISceneImpl::init() {
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
-    for(const AITeam::TeamMap::value_type& member : teamAgents) {
-        _visualSensor->followSceneGraphNode(g_myTeamContainer, member.second->getUnitRef()->getBoundNode());
+    for ( const AITeam::TeamMap::value_type member : teamAgents ) {
+        _visualSensor->followSceneGraphNode( g_myTeamContainer, member.second->getUnitRef()->getBoundNode() );
     }
 
-    for(const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-        _visualSensor->followSceneGraphNode(g_enemyTeamContainer, enemy.second->getUnitRef()->getBoundNode());
+    for ( const AITeam::TeamMap::value_type enemy : enemyMembers ) {
+        _visualSensor->followSceneGraphNode( g_enemyTeamContainer, enemy.second->getUnitRef()->getBoundNode() );
     }
         
     _visualSensor->followSceneGraphNode(g_flagContainer, WorkingMemory::_flags[0].value());
     _visualSensor->followSceneGraphNode(g_flagContainer, WorkingMemory::_flags[1].value());
 
-    _initialFlagPositions[0].set(WorkingMemory::_flags[0].value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
-    _initialFlagPositions[1].set(WorkingMemory::_flags[1].value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+    _initialFlagPositions[0].set(WorkingMemory::_flags[0].value()->getComponent<PhysicsComponent>()->getPosition());
+    _initialFlagPositions[1].set(WorkingMemory::_flags[1].value()->getComponent<PhysicsComponent>()->getPosition());
 }
 
 void WarSceneAISceneImpl::requestOrders() {
@@ -215,21 +215,21 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
 
             U8 flag = 1 - currentTeam->getTeamID();
             PhysicsComponent* pComp = _workingMemory._flags[flag].value()->getComponent<PhysicsComponent>();
-            vec3<F32> prevScale(pComp->getConstTransform()->getScale());
+            vec3<F32> prevScale(pComp->getScale());
 
             SceneGraphNode* targetNode = _entity->getUnitRef()->getBoundNode();
             _workingMemory._flags[flag].value()->attachToNode(targetNode);
             pComp->setPosition(vec3<F32>(0.0f, 0.75f, 1.5f));
-            pComp->setScale(prevScale / targetNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale());
+            pComp->setScale(prevScale / targetNode->getComponent<PhysicsComponent>()->getScale());
 
 			_workingMemory._hasEnemyFlag.value(true);
-			for(const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
-				_entity->sendMessage(member.second, HAVE_FLAG, _entity);
-			}
+            for ( const AITeam::TeamMap::value_type member : currentTeam->getTeamMembers() ) {
+                _entity->sendMessage( member.second, HAVE_FLAG, _entity );
+            }
 			const AITeam* const enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
-			for(const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
-				_entity->sendMessage(enemy.second, ENEMY_HAS_FLAG, _entity);
-			}
+            for ( const AITeam::TeamMap::value_type enemy : enemyTeam->getTeamMembers() ) {
+                _entity->sendMessage( enemy.second, ENEMY_HAS_FLAG, _entity );
+            }
         } break;
 		case ACTION_RETURN_TO_BASE: {
 			PRINT_FN("Return to base action over [ %d ]", _entity->getGUID());
@@ -240,12 +240,12 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
 
             U8 flag = 1 - currentTeam->getTeamID();
             PhysicsComponent* pComp = _workingMemory._flags[flag].value()->getComponent<PhysicsComponent>();
-            vec3<F32> prevScale(pComp->getConstTransform()->getScale());
+            vec3<F32> prevScale(pComp->getScale());
 
             SceneGraphNode* targetNode = _workingMemory._flags[flag].value()->getParent();
             _workingMemory._flags[flag].value()->attachToRoot();
             pComp->setPosition(_initialFlagPositions[flag]);
-            pComp->setScale(prevScale * targetNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale());
+            pComp->setScale(prevScale * targetNode->getComponent<PhysicsComponent>()->getScale());
         } break;
 		case ACTION_PROTECT_FLAG_CARRIER: {
 			WorkingMemory::_flagProtectors[currentTeam->getTeamID()].value(WorkingMemory::_flagProtectors[currentTeam->getTeamID()].value() - 1);
@@ -302,7 +302,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction* planStep)
             const BoundingBox& ownFlagBB = ownFlag->getBoundingBoxConst();
             // Our flag is in its original position and the 2 flags are touching
             state = (enemyFlag->getBoundingBoxConst().Collision(ownFlagBB) && 
-                    ownFlag->getComponent<PhysicsComponent>()->getConstTransform()->getPosition().distanceSquared(_initialFlagPositions[currentTeam->getTeamID()]) < g_ATTACK_RADIUS);
+                    ownFlag->getComponent<PhysicsComponent>()->getPosition().distanceSquared(_initialFlagPositions[currentTeam->getTeamID()]) < g_ATTACK_RADIUS);
         } break;
 		case ACTION_PROTECT_FLAG_CARRIER: {
 			if (_entity->destinationReached()) {
@@ -358,7 +358,7 @@ void WarSceneAISceneImpl::updatePositions() {
     }
 
     if (_workingMemory._currentTargetEntity.value()) {
-        _workingMemory._currentTargetPosition.value( _workingMemory._currentTargetEntity.value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+        _workingMemory._currentTargetPosition.value( _workingMemory._currentTargetEntity.value()->getComponent<PhysicsComponent>()->getPosition());
     }
 }
 

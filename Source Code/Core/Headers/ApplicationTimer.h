@@ -149,7 +149,7 @@ protected:
     inline void PRINT_TIMER(ProfileTimer* const timer)  {}
 #endif //_DEBUG
 
-    inline void REMOVE_TIMER(ProfileTimer*& timer) { SAFE_DELETE(timer);  }
+    inline void REMOVE_TIMER(ProfileTimer*& timer) { MemoryManager::SAFE_DELETE(timer);  }
 
 }; //namespace Divide
 

@@ -37,9 +37,6 @@ class CameraManager;
 class ShaderProgram;
 class WaterPlane : public SceneNode, public Reflector{
 public:
-    WaterPlane();
-    ~WaterPlane(){}
-
     /// Resource inherited "unload"
     bool unload();
     /// General SceneNode stuff
@@ -63,6 +60,15 @@ public:
 	inline void setRefractionCallback(const DELEGATE_CBK<>& callback) { _refractionCallback = callback; }
 
 protected:
+    SET_SAFE_DELETE_FRIEND
+
+    template<typename T>
+    friend class ImplResourceLoader;
+
+    WaterPlane();
+    ~WaterPlane() 
+    {
+    }
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     void postLoad(SceneGraphNode* const sgn);
@@ -84,10 +90,10 @@ private:
     F32              _waterLevel;
     /// cached water depth
     F32             _waterDepth;
+    /// Last used orientation
+    Quaternion<F32> _orientation;
     /// the water's "geometry"
     Quad3D*			_plane;
-    SceneGraphNode* _node;
-    SceneGraphNode* _planeSGN;
     Framebuffer*    _refractionTexture;
     Plane<F32>      _refractionPlane;
 	DELEGATE_CBK<>  _refractionCallback;

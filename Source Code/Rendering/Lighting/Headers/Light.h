@@ -132,7 +132,7 @@ public:
     ///SceneNode concrete implementations
     bool unload();
     bool computeBoundingBox(SceneGraphNode* const sgn);
-    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
+    bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true );
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
     /*----------- Shadow Mapping-------------------*/

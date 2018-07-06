@@ -53,7 +53,7 @@ GUIConsole::~GUIConsole()
     if (_consoleWindow) {
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
     }
-    SAFE_DELETE(_cmdParser);
+    MemoryManager::SAFE_DELETE( _cmdParser );
 
     _outputBuffer.clear();
 }

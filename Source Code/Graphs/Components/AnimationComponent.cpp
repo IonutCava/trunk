@@ -32,8 +32,8 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* 
 
 AnimationComponent::~AnimationComponent()
 {
-    SAFE_DELETE(_boneTransformBuffer[0]);
-    SAFE_DELETE(_boneTransformBuffer[1]);
+    MemoryManager::SAFE_DELETE( _boneTransformBuffer[0] );
+    MemoryManager::SAFE_DELETE( _boneTransformBuffer[1] );
 }
 
 void AnimationComponent::update(const U64 deltaTime) {
@@ -100,7 +100,7 @@ void AnimationComponent::renderSkeleton(){
     // update possible animation
     const vectorImpl<Line >& skeletonLines = _animator->getSkeletonLines(_currentAnimIndex, _currentTimeStamp);
     // Submit skeleton to gpu
-    GFX_DEVICE.drawLines(skeletonLines, _parentSGN->getWorldMatrix(), vec4<I32>(), false, true);
+    GFX_DEVICE.drawLines(skeletonLines, _parentSGN->getComponent<PhysicsComponent>()->getWorldMatrix(), vec4<I32>(), false, true);
 }
 
 void AnimationComponent::onDraw(RenderStage currentStage) {
@@ -140,8 +140,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(const stringImpl& name) {
     assert(node != nullptr);
 
     if (node->getObjectType() != Object3D::SUBMESH || (node->getObjectType() == Object3D::SUBMESH && !bitCompare(node->getFlagMask(), Object3D::OBJECT_FLAG_SKINNED))){
-        assert(_parentSGN->getComponent<PhysicsComponent>()->getConstTransform());
-        return _parentSGN->getComponent<PhysicsComponent>()->getTransform()->getMatrix();
+        return _parentSGN->getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 
     return currentBoneTransform(name);

@@ -151,7 +151,7 @@ namespace Navigation {
         I32 size = _crowd->getActiveAgents(resultEntries,getMaxNbAgents());
 
         vectorImpl<dtCrowdAgent*> result(resultEntries, resultEntries + size);
-        SAFE_DELETE_ARRAY( resultEntries );
+        MemoryManager::SAFE_DELETE_ARRAY( resultEntries );
         return result;
     }
 

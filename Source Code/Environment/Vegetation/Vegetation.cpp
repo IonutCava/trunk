@@ -29,7 +29,6 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
     _success(false),
     _culledFinal(false),
     _shadowMapped(true),
-    _terrainSGN(nullptr),
     _terrainChunk(nullptr),
     _instanceCountGrass(0),
     _instanceCountTrees(0),
@@ -75,20 +74,19 @@ Vegetation::~Vegetation(){
     _grassPositions.clear();
     RemoveResource(_cullShader);
 
-    SAFE_DELETE(_grassGPUBuffer[0]);
-    SAFE_DELETE(_grassGPUBuffer[1]);
-    SAFE_DELETE(_treeGPUBuffer[0]);
-    SAFE_DELETE(_treeGPUBuffer[1]);
-    SAFE_DELETE(_grassMatrices);
+    MemoryManager::SAFE_DELETE( _grassGPUBuffer[0] );
+    MemoryManager::SAFE_DELETE( _grassGPUBuffer[1] );
+    MemoryManager::SAFE_DELETE( _treeGPUBuffer[0] );
+    MemoryManager::SAFE_DELETE( _treeGPUBuffer[1] );
+    MemoryManager::SAFE_DELETE( _grassMatrices );
     PRINT_FN(Locale::get("UNLOAD_VEGETATION_END"));
 }
 
-void Vegetation::initialize(TerrainChunk* const terrainChunk, SceneGraphNode* const terrainSGN) {
+void Vegetation::initialize( TerrainChunk* const terrainChunk ) {
     assert(terrainChunk);
     assert(_map.data() != nullptr);
 
     _terrainChunk = terrainChunk;
-    _terrainSGN = terrainSGN;
     
     _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
     _cullShader->UniformTexture("HiZBuffer", 0);

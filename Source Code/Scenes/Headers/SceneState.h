@@ -144,10 +144,11 @@ public:
         _fog._fogDensity = 0.01f;
     }
 
-    virtual ~SceneState(){
-		for (MusicPlaylist::value_type& it : _backgroundMusic){
-            if(it.second){
-                RemoveResource(it.second);
+    virtual ~SceneState()
+    {
+        for ( MusicPlaylist::value_type it : _backgroundMusic ) {
+            if ( it.second ) {
+                RemoveResource( it.second );
             }
         }
         _backgroundMusic.clear();

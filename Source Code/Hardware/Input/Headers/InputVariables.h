@@ -161,10 +161,11 @@ class VariableEffect
 
     ~VariableEffect()
     {
-      SAFE_DELETE(_pEffect);
+      MemoryManager::SAFE_DELETE( _pEffect );
       MapVariables::iterator iterVars;
-      for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
-          SAFE_DELETE(iterVars->second);
+      for ( iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars ) {
+          MemoryManager::SAFE_DELETE( iterVars->second );
+      }
     }
 
     inline void setActive(bool bActive = true) { reset(); _bActive = bActive; }

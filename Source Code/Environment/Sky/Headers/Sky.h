@@ -44,7 +44,7 @@ public:
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     void setSunVector(const vec3<F32>& sunVect);
     ///Skies are always visible (for now. Interiors will change that. Windows will require a occlusion query(?))
-    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) { return true; }
+    bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = false ) { return true; }
     void drawBoundingBox(SceneGraphNode* const sgn) const {}
 
 protected:
@@ -59,7 +59,6 @@ private:
     ShaderProgram*	_skyShader;
     Texture*   	    _skybox;
     Sphere3D        *_sky;
-    SceneGraphNode  *_skyGeom;
     U16				_exclusionMask;
     size_t          _skyboxRenderStateHash;
 	size_t          _skyboxRenderStateReflectedHash;

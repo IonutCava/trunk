@@ -26,9 +26,10 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
     reshape(resolution.width, resolution.height);
 }
 
-FXAAPreRenderOperator::~FXAAPreRenderOperator(){
+FXAAPreRenderOperator::~FXAAPreRenderOperator()
+{
     RemoveResource(_fxaa);
-    SAFE_DELETE(_samplerCopy);
+    MemoryManager::SAFE_DELETE( _samplerCopy );
 }
 
 void FXAAPreRenderOperator::reshape(I32 width, I32 height){

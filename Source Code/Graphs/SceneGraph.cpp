@@ -6,32 +6,34 @@
 
 namespace Divide {
 
-SceneGraph::SceneGraph() : _nodeCount(0) {
+SceneGraph::SceneGraph() 
+{
     SceneNode* root = New SceneRoot();
-    _root = New SceneGraphNode(this, root);
+    _root = New SceneGraphNode(this, root, "ROOT");
     _root->castsShadows(false);
     _root->receivesShadows(false);
     root->postLoad(_root);
     _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT | TYPE_TRIGGER |TYPE_PARTICLE_EMITTER|TYPE_VEGETATION_GRASS|TYPE_VEGETATION_TREES);
-    _updateRunning = false;
 }
 
-SceneGraph::~SceneGraph() {
+SceneGraph::~SceneGraph() 
+{
     D_PRINT_FN(Locale::get("DELETE_SCENEGRAPH"));
     _root->unload(); //< Should recursively call unload on the entire scene graph
     // Should recursively call delete on the entire scene graph
 	SceneNode* root = _root->getNode<SceneRoot>();
-    SAFE_DELETE(_root);
+    MemoryManager::SAFE_DELETE( _root );
 	// Delete the root scene node
-	SAFE_DELETE( root );
+    MemoryManager::SAFE_DELETE( root );
 }
 
-void SceneGraph::idle(){
-    for(SceneGraphNode*& it : _pendingDeletionNodes){
+void SceneGraph::idle() {
+    for ( SceneGraphNode*& it : _pendingDeletionNodes ) {
         it->unload();
-        it->getParent()->removeNode(it);
-        SAFE_DELETE(it);
+        it->getParent()->removeNode( it );
+        MemoryManager::SAFE_DELETE( it );
     }
+    _pendingDeletionNodes.clear();
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState){
@@ -42,10 +44,9 @@ void SceneGraph::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneG
     _root->Intersect(ray,start,end,selectionHits); 
 }
 
-void SceneGraph::print(){
+void SceneGraph::print() {
     PRINT_FN(Locale::get("SCENEGRAPH_TITLE"));
     Console::getInstance().toggleTimeStamps(false);
-    boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
     printInternal(_root);
     Console::getInstance().toggleTimeStamps(true);
 }
@@ -96,11 +97,11 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn){
         depthShader.c_str());
     //Repeat for each child, but prefix it with the appropriate number of dashes
     //Based on our ancestor counting earlier
-	for (SceneGraphNode::NodeChildren::value_type& it : parent->getChildren()){
-        for (U8 j = 0; j < i; j++){
-            PRINT_F("-");
+    for ( SceneGraphNode::NodeChildren::value_type it : parent->getChildren() ) {
+        for ( U8 j = 0; j < i; j++ ) {
+            PRINT_F( "-" );
         }
-        printInternal(it.second);
+        printInternal( it.second );
     }
 }
 

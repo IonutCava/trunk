@@ -19,8 +19,8 @@ AITeam::~AITeam()
 {
     AIManager::getInstance().unregisterTeam(this);
     WriteLock r_lock(_crowdMutex);
-    for(AITeamCrowd::value_type& it : _aiTeamCrowd) {
-        SAFE_DELETE(it.second);
+    for ( AITeamCrowd::value_type it : _aiTeamCrowd ) {
+        MemoryManager::SAFE_DELETE( it.second );
     }
     _aiTeamCrowd.clear();
 }
@@ -33,47 +33,47 @@ void AITeam::addCrowd(AIEntity::PresetAgentRadius radius, Navigation::Navigation
 void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
     AITeamCrowd::iterator it =  _aiTeamCrowd.find(radius);
     DIVIDE_ASSERT(it != _aiTeamCrowd.end(), "AITeam error: DtCrowd does not exist for specified navmesh!");
-    SAFE_DELETE(it->second);
+    MemoryManager::SAFE_DELETE( it->second );
     _aiTeamCrowd.erase(it);
 }
 
 void AITeam::update(const U64 deltaTime) {
     // Crowds
     ReadLock r_lock(_crowdMutex);
-    for(AITeamCrowd::value_type& it : _aiTeamCrowd) {
-        it.second->update(deltaTime);
+    for ( AITeamCrowd::value_type it : _aiTeamCrowd ) {
+        it.second->update( deltaTime );
     }
     r_lock.unlock();
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team){
-        entity.second->update(deltaTime);
+    for ( AITeam::TeamMap::value_type entity : _team ) {
+        entity.second->update( deltaTime );
     }
 }
 
 void AITeam::processInput(const U64 deltaTime) {
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team){
-        entity.second->processInput(deltaTime);
+    for ( AITeam::TeamMap::value_type entity : _team ) {
+        entity.second->processInput( deltaTime );
     }
 }
 
 void AITeam::processData(const U64 deltaTime){
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team){
-        entity.second->processData(deltaTime);
+    for ( AITeam::TeamMap::value_type entity : _team ) {
+        entity.second->processData( deltaTime );
     }
 }
 
 void AITeam::init() {
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team){
+    for ( AITeam::TeamMap::value_type entity : _team ) {
         entity.second->init();
     }
 }
 
 void AITeam::resetCrowd() {
     WriteLock w_lock(_updateMutex); 
-	for (AITeam::TeamMap::value_type& entity : _team){
+    for ( AITeam::TeamMap::value_type entity : _team ) {
         entity.second->resetCrowd();
     }
 }

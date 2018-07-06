@@ -86,18 +86,18 @@ void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args){
 }
 
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args){
-    if(args.empty()){
-        PRINT_FN(Locale::get("HELP_CONSOLE_COMMAND"));
-		for (CommandMap::value_type& it : _commandMap){
-            if(it.first.find("invalid") == stringImpl::npos){
-                PRINT_FN("/%s - %s",it.first.c_str(),_commandHelp[it.first]);
+    if ( args.empty() ) {
+        PRINT_FN( Locale::get( "HELP_CONSOLE_COMMAND" ) );
+        for ( CommandMap::value_type it : _commandMap ) {
+            if ( it.first.find( "invalid" ) == stringImpl::npos ) {
+                PRINT_FN( "/%s - %s", it.first.c_str(), _commandHelp[it.first] );
             }
         }
-    }else{
-        if(_commandHelp.find(args) != _commandHelp.end()){
-            PRINT_FN("%s", _commandHelp[args]);
-        }else{
-            PRINT_FN("%s",_commandHelp["invalidhelp"]);
+    } else {
+        if ( _commandHelp.find( args ) != _commandHelp.end() ) {
+            PRINT_FN( "%s", _commandHelp[args] );
+        } else {
+            PRINT_FN( "%s", _commandHelp["invalidhelp"] );
         }
     }
 }

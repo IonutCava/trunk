@@ -131,10 +131,10 @@ namespace ImageTools {
 		return setInternalData();
 	}
 
-	void ImageData::destroy(){
-		ilDeleteImages(1, &_ilTexture);
-		SAFE_DELETE_ARRAY(_data);
-	}
+    void ImageData::destroy() {
+        ilDeleteImages( 1, &_ilTexture );
+        MemoryManager::SAFE_DELETE_ARRAY( _data );
+    }
 
 	vec4<U8> ImageData::getColor(U16 x, U16 y) const {
 		I32 idx = (y * _dimensions.width + x) * _bpp;

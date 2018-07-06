@@ -16,21 +16,18 @@ SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 
 SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type) : Resource(name),
                                                              _material(nullptr),
+                                                             _hasSGNParent(false),
                                                              _refreshMaterialData(true),
-                                                             _nodeReady(false),
                                                              _type(type),
-                                                             _lodLevel(0),
-                                                             _LODcount(1), ///<Defaults to 1 LOD level
-                                                             _sgnReferenceCount(0)
+                                                             _LODcount(1) ///<Defaults to 1 LOD level
 {
 }
 
-SceneNode::~SceneNode() {
+SceneNode::~SceneNode()
+{
 }
 
 void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-    assert(_nodeReady);
-
     if (!_material) {
         return;
     }
@@ -47,35 +44,36 @@ bool SceneNode::getDrawState(const RenderStage& currentStage)  {
     return _renderState.getDrawState(currentStage); 
 }
 
-bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
-    assert(_nodeReady);
-    
+bool SceneNode::isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck ) {
+    const BoundingBox& boundingBox = sgn->getBoundingBoxConst();
+    const BoundingSphere& sphere = sgn->getBoundingSphereConst();
+
     const Camera& cam = sceneRenderState.getCameraConst();
     const vec3<F32>& eye = cam.getEye();
-    const vec3<F32>& center  = sphere.getCenter();
-    F32  cameraDistance = center.distance(eye);
+    const vec3<F32>& center = sphere.getCenter();
+    F32  cameraDistance = center.distance( eye );
     F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
-    if(distanceCheck && cameraDistance > visibilityDistance) {
-        if (boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y)) {
+    if ( distanceCheck && cameraDistance > visibilityDistance ) {
+        if ( boundingBox.nearestDistanceFromPointSquared( eye ) > std::min( visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y ) ) {
             return false;
         }
     }
 
-    if (!boundingBox.ContainsPoint(eye)) {
-        switch (cam.getFrustumConst().ContainsSphere(center, sphere.getRadius())) {
+    if ( !boundingBox.ContainsPoint( eye ) ) {
+        switch ( cam.getFrustumConst().ContainsSphere( center, sphere.getRadius() ) ) {
             case Frustum::FRUSTUM_OUT: {
                 return false;
             };
             case Frustum::FRUSTUM_INTERSECT:	{
-                if (!cam.getFrustumConst().ContainsBoundingBox(boundingBox)) {
+                if ( !cam.getFrustumConst().ContainsBoundingBox( boundingBox ) ) {
                     return false;
                 }
             };
         }
     }
 
-    _lodLevel = (cameraDistance > Config::SCENE_NODE_LOD0) ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1) : 0;
-    
+    sgn->lodLevel( ( cameraDistance > Config::SCENE_NODE_LOD0 ) ? ( ( cameraDistance > Config::SCENE_NODE_LOD1 ) ? 2 : 1 ) : 0 );
+
     return true;
 }
 
@@ -83,7 +81,7 @@ Material* const SceneNode::getMaterial() {
     //UpgradableReadLock ur_lock(_materialLock);
     if (_material == nullptr && !_renderState._noDefaultMaterial) {
         //UpgradeToWriteLock uw_lock(ur_lock);
-        _material = CreateResource<Material>(ResourceDescriptor("defaultMaterial"));
+        _material = CreateResource<Material>(ResourceDescriptor("defaultMaterial_"+getName()));
         REGISTER_TRACKED_DEPENDENCY(_material);
     }
     return _material;
@@ -96,8 +94,8 @@ void SceneNode::setMaterial(Material* const mat) {
             if (_material->getGUID() != mat->getGUID()) { //if the old material isn't the same as the new one
                 PRINT_FN(Locale::get("REPLACE_MATERIAL"),_material->getName().c_str(),mat->getName().c_str());
                 //UpgradeToWriteLock uw_lock(ur_lock);
-                RemoveResource(_material);			//remove the old material
                 UNREGISTER_TRACKED_DEPENDENCY(_material);
+                RemoveResource( _material );			//remove the old material
                 //ur_lock.lock();
             }
         }

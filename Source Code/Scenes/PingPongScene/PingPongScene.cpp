@@ -85,15 +85,15 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     bool updated = false;
     stringImpl message;
     PhysicsComponent* ballTransform = _ballSGN->getComponent<PhysicsComponent>();
-    vec3<F32> ballPosition  = ballTransform->getConstTransform()->getPosition();
+    vec3<F32> ballPosition  = ballTransform->getPosition();
 
     SceneGraphNode* table = _sceneGraph->findNode("table");
     SceneGraphNode* net = _sceneGraph->findNode("net");
     SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
     SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
-    vec3<F32> paddlePosition   = paddle->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-    vec3<F32> opponentPosition = opponent->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-    vec3<F32> tablePosition     = table->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> paddlePosition   = paddle->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> opponentPosition = opponent->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> tablePosition     = table->getComponent<PhysicsComponent>()->getPosition();
 
     //Is the ball coming towards us or towards the opponent?
     _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z += 0.11f;
@@ -105,7 +105,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     if(opponentPosition.x != ballPosition.x)
         opponent->getComponent<PhysicsComponent>()->translateX(ballPosition.x - opponentPosition.x);
 
-    ballTransform->translate(ballPosition - ballTransform->getConstTransform()->getPosition());
+    ballTransform->translate(ballPosition - ballTransform->getPosition());
 
     //Did we hit the table? Bounce then ...
     if(table->getBoundingBox().Collision(_ballSGN->getBoundingBox())){
@@ -166,7 +166,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     //Add a small chance that we win
     if(random(30) != 2)
     if(_ballSGN->getBoundingBox().Collision(opponent->getBoundingBox())){
-        _sideDrift = ballPosition.x - opponent->getComponent<PhysicsComponent>()->getConstTransform()->getPosition().x;
+        _sideDrift = ballPosition.x - opponent->getComponent<PhysicsComponent>()->getPosition().x;
         _directionTowardsAdversary = false;
     }
     //Add a spin effect to the ball
@@ -214,7 +214,7 @@ void PingPongScene::processInput(const U64 deltaTime){
 
     SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
-    vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getPosition();
 
     //Paddle movement is limited to the [-3,3] range except for Y-descent
     if(state()._moveFB){
@@ -254,7 +254,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     //Create a ball
     ResourceDescriptor minge("Ping Pong Ball");
     _ball = CreateResource<Sphere3D>(minge);
-    _ballSGN = addGeometry(_ball,"PingPongBallSGN");
+    _ballSGN = _sceneGraph->addNode(_ball, "PingPongBallSGN");
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
     _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2 ,2));

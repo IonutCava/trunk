@@ -153,7 +153,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
             glTexImage3D(_textureType, 0, _internalFormat, _width, _height,_depth, 0, _format, _dataType, pixels);
             break;
     };
-    SAFE_DELETE_ARRAY(pixels);
+    MemoryManager::SAFE_DELETE_ARRAY( pixels );
 
     glGenBuffers(1, &_pixelBufferHandle);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);

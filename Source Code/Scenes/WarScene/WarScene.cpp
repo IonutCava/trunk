@@ -50,7 +50,7 @@ void WarScene::processGUI(const U64 deltaTime){
         const Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
-        //const vec3<F32>& lampPos = _lampLightNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+        //const vec3<F32>& lampPos = _lampLightNode->getComponent<PhysicsComponent>()->getPosition();
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _GUI->modifyText("camPosition", "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
@@ -190,10 +190,10 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     totalTime += deltaTime;
 
     /*if(_lampLightNode && _bobNodeBody){
-        static mat4<F32> position = _lampLightNode->getComponent<PhysicsComponent>()->getConstTransform()->getMatrix(); 
+        static mat4<F32> position = _lampLightNode->getComponent<PhysicsComponent>()->getWorldMatrix(); 
         const mat4<F32>& fingerPosition = _bobNodeBody->getAnimationComponent()->getBoneTransform("fingerstip.R");
         mat4<F32> finalTransform(fingerPosition * position);
-        _lampLightNode->getComponent<PhysicsComponent>()->setTransforms(finalTransform.transpose());
+        _lampLightNode->getComponent<PhysicsComponent>()->setTransforms(finalTransform.getTranspose());
     }*/
     
 #ifdef _DEBUG
@@ -285,7 +285,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
         currentNode->getComponent<NavigationComponent>()->navigationContext(baseNode->getComponent<NavigationComponent>()->navigationContext());
         currentNode->getComponent<NavigationComponent>()->navigationDetailOverride(baseNode->getComponent<NavigationComponent>()->navMeshDetailOverride());
         
-        currentNode->getComponent<PhysicsComponent>()->setScale(baseNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale());
+        currentNode->getComponent<PhysicsComponent>()->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
         currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
     SceneGraphNode* baseFlagNode = cylinderNW;
@@ -294,7 +294,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     _flag[0]->usageContext(baseFlagNode->usageContext());
     _flag[0]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
     _flag[0]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
-    _flag[0]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    _flag[0]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
     _flag[0]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
 
@@ -303,7 +303,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     _flag[1]->usageContext(baseFlagNode->usageContext());
     _flag[1]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
     _flag[1]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
-    _flag[1]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    _flag[1]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
     _flag[1]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
     AI::WarSceneAISceneImpl::registerFlags(_flag[0], _flag[1]);
@@ -430,17 +430,17 @@ bool WarScene::initializeAI(bool continueOnErrors){
             U8 zFactor = 0;
             if(i < 5){
                 currentMesh = soldierMesh1;
-                currentScale = soldierNode1->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
+                currentScale = soldierNode1->getComponent<PhysicsComponent>()->getScale();
                 currentName = "Soldier_1_" + Util::toString((I32)k) + "_" + Util::toString((I32)i);
             }else if(i >= 5 && i < 10){
                 currentMesh = soldierMesh2;
-                currentScale = soldierNode2->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
+                currentScale = soldierNode2->getComponent<PhysicsComponent>()->getScale();
                 currentName = "Soldier_2_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%5);
                 speed = 5.75f;
                 zFactor = 1;
             }else{
                 currentMesh = soldierMesh3;
-                currentScale = soldierNode3->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
+                currentScale = soldierNode3->getComponent<PhysicsComponent>()->getScale();
                 currentName = "Soldier_3_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%10);
                 speed = 5.35f;
                 zFactor = 2;
@@ -460,7 +460,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
           
             currentNode->getComponent<PhysicsComponent>()->translateX(25 * side);
 
-            aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
+            aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getPosition(), currentNode->getName());
             aiSoldier->addSensor(AI::VISUAL_SENSOR);
             k == 0 ? currentNode->renderBoundingBox(true) : currentNode->renderSkeleton(true);
 
@@ -505,12 +505,10 @@ bool WarScene::initializeAI(bool continueOnErrors){
     if(state || continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
-    _sceneGraph->getRoot()->removeNode(soldierNode1);
-    _sceneGraph->getRoot()->removeNode(soldierNode2);
-    _sceneGraph->getRoot()->removeNode(soldierNode3);
-    SAFE_DELETE(soldierNode1);
-    SAFE_DELETE(soldierNode2);
-    SAFE_DELETE(soldierNode3);
+    _sceneGraph->getRoot()->deleteNode(soldierNode1);
+    _sceneGraph->getRoot()->deleteNode( soldierNode2 );
+    _sceneGraph->getRoot()->deleteNode( soldierNode3 );
+
     for (U8 i = 0; i < 2; ++i) {
         _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_FIND_ENEMY_FLAG));
         _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG));
@@ -529,20 +527,20 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
     }
     for (U8 i = 0; i < 2; ++i) {
         for(U8 j = 0; j < _armyNPCs[i].size(); ++j){
-            SAFE_DELETE(_armyNPCs[i][j]);
+            MemoryManager::SAFE_DELETE( _armyNPCs[i][j] );
         }
         _armyNPCs[i].clear();
 
         for(U8 j = 0; j < _army[i].size(); ++j) {
             AI::AIManager::getInstance().unregisterEntity(_army[i][j]);
-            SAFE_DELETE(_army[i][j]);
+            MemoryManager::SAFE_DELETE( _army[i][j] );
         }
         _army[i].clear();
     
-        SAFE_DELETE(_faction[i]);
+        MemoryManager::SAFE_DELETE( _faction[i] );
 
         for(AI::WarSceneOrder*& order : _orders[i]) {
-            SAFE_DELETE(order);
+            MemoryManager::SAFE_DELETE( order );
         }
         _orders[i].clear();
     }

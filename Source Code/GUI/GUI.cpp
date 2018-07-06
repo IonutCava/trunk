@@ -33,10 +33,10 @@ GUI::GUI() : _init(false),
 GUI::~GUI()
 {
     PRINT_FN(Locale::get("STOP_GUI"));
-    SAFE_DELETE(_console);
+    MemoryManager::SAFE_DELETE( _console );
     RemoveResource(_guiShader);
 	for (guiMap::value_type it : _guiStack) {
-        SAFE_DELETE(it.second);
+        MemoryManager::SAFE_DELETE( it.second );
     }
     _guiStack.clear();
 	_defaultMsgBox = nullptr;
@@ -46,14 +46,14 @@ void GUI::onResize(const vec2<U16>& newResolution) {
     //CEGUI handles it's own init checks
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(newResolution.width, newResolution.height));
 
-    if (!_init || _cachedResolution == newResolution) {
+    if ( !_init || _cachedResolution == newResolution ) {
         return;
     }
 
     vec2<I32> difDimensions((I32)_cachedResolution.width - newResolution.width, (I32)_cachedResolution.height - newResolution.height);
 
-	for (guiMap::value_type& guiStackIterator : _guiStack) {
-        guiStackIterator.second->onResize(difDimensions);
+    for ( guiMap::value_type guiStackIterator : _guiStack ) {
+        guiStackIterator.second->onResize( difDimensions );
     }
 
     _cachedResolution = newResolution;
@@ -67,8 +67,8 @@ void GUI::draw2D() {
     _guiShader->bind();
 
     GFXDevice& gfx = GFX_DEVICE;
-	for (guiMap::value_type& guiStackIterator : _guiStack) {
-        gfx.drawGUIElement(guiStackIterator.second);
+    for ( guiMap::value_type guiStackIterator : _guiStack ) {
+        gfx.drawGUIElement( guiStackIterator.second );
     }
     const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
@@ -195,7 +195,7 @@ bool GUI::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool GUI::mouseMoved(const Input::MouseEvent& arg) {
-    if (!_init) { 
+    if ( !_init ) {
         return true;
     }
 
@@ -203,24 +203,24 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     event.mousePoint.x = arg.state.X.abs;
     event.mousePoint.y = arg.state.Y.abs;
 
-	for (guiMap::value_type& guiStackIterator : _guiStack) {
-        guiStackIterator.second->mouseMoved(event);
+    for ( guiMap::value_type guiStackIterator : _guiStack ) {
+        guiStackIterator.second->mouseMoved( event );
     }
 
     return _ceguiInput.mouseMoved(arg);
 }
 
 bool GUI::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
-    if (!_init) {
+    if ( !_init ) {
         return true;
     }
 
-    if (_ceguiInput.mouseButtonPressed(arg, button) ) {
-        if (button == Input::MouseButton::MB_Left) {
+    if ( _ceguiInput.mouseButtonPressed( arg, button ) ) {
+        if ( button == Input::MouseButton::MB_Left ) {
             GUIEvent event;
             event.mouseClickCount = 0;
-			for (guiMap::value_type& guiStackIterator : _guiStack) {
-                guiStackIterator.second->onMouseDown(event);
+            for ( guiMap::value_type guiStackIterator : _guiStack ) {
+                guiStackIterator.second->onMouseDown( event );
             }
         }
     }
@@ -229,15 +229,16 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton bu
 }
 
 bool GUI::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
-    if (!_init) {
+    if ( !_init ) {
         return true;
     }
-    if (_ceguiInput.mouseButtonReleased(arg, button) ) {
-        if (button == Input::MouseButton::MB_Left) {
+
+    if ( _ceguiInput.mouseButtonReleased( arg, button ) ) {
+        if ( button == Input::MouseButton::MB_Left ) {
             GUIEvent event;
             event.mouseClickCount = 1;
-			for (guiMap::value_type& guiStackIterator : _guiStack) {
-                guiStackIterator.second->onMouseUp(event);
+            for ( guiMap::value_type guiStackIterator : _guiStack ) {
+                guiStackIterator.second->onMouseUp( event );
             }
         }
     }
@@ -282,7 +283,7 @@ GUIButton* GUI::addButton(const stringImpl& id, const stringImpl& text,
     GUIButton* btn = New GUIButton(id, text, _defaultGUIScheme,position,dimensions,color,parent,callback);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
-        SAFE_UPDATE(it->second, btn);
+        MemoryManager::SAFE_UPDATE( it->second, btn );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id,  btn));
     }
@@ -294,7 +295,7 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title, con
     GUIMessageBox* box = New GUIMessageBox(id, title, message, offsetFromCentre, _rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
-        SAFE_UPDATE(it->second, box);
+        MemoryManager::SAFE_UPDATE( it->second, box );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id,  box));
     }
@@ -311,13 +312,13 @@ GUIText* GUI::addText(const stringImpl& id,const vec2<I32> &position, const stri
     char *text = New char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-    SAFE_DELETE_ARRAY(text);
+    MemoryManager::SAFE_DELETE_ARRAY( text );
     va_end(args);
 
     GUIText *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
-        SAFE_UPDATE(it->second, t);
+        MemoryManager::SAFE_UPDATE( it->second, t );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id, t));
     }
@@ -331,7 +332,7 @@ GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>&
     GUIFlash *flash = New GUIFlash(_rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
-        SAFE_UPDATE(it->second, flash);
+        MemoryManager::SAFE_UPDATE( it->second, flash );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id, flash));
     }
@@ -349,7 +350,7 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
     char * text = New char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-	SAFE_DELETE_ARRAY(text);
+    MemoryManager::SAFE_DELETE_ARRAY( text );
     va_end(args);
 
     GUIElement* element = _guiStack[id];

@@ -32,7 +32,7 @@ class Ray;
 class Scene;
 class SceneState;
 
-class SceneGraph  {
+class SceneGraph : private NonCopyable {
 public:
 
     SceneGraph();
@@ -50,6 +50,9 @@ public:
         return _root->findNode(name,sceneNodeName);
     }
 
+    inline SceneGraphNode* addNode( SceneNode* const node, const stringImpl& nodeName ) {
+        return _root->addNode( node, nodeName );
+    }
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 
@@ -61,25 +64,11 @@ public:
         _pendingDeletionNodes.push_back(node);
     }
 
-    inline void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const {
-        casters.clear();
-        receivers.clear();
-        casters.reserve(_nodeCount);
-        receivers.reserve(_nodeCount);
-        _root->getShadowCastersAndReceivers(casters, receivers, visibleOnly);
-    }
-
 protected:
-    friend class SceneGraphNode;
-    inline void incNodeCount() { _nodeCount++; }
-    inline void decNodeCount() { _nodeCount--; }
     void printInternal(SceneGraphNode* const sgn);
 
 private:
-    I32             _nodeCount;
-    boost::mutex    _rootAccessMutex;
     SceneGraphNode* _root;
-    bool            _updateRunning;
     vectorImpl<BoundingBox>        _boundingBoxes;
     vectorImpl<SceneGraphNode* >   _pendingDeletionNodes;
 };

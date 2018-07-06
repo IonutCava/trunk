@@ -78,7 +78,7 @@ void PhysXSceneInterface::release() {
 	idle();
 	for ( RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it ) {
 		( *it )->_actor->release();
-		SAFE_DELETE( *it );
+        MemoryManager::SAFE_DELETE( *it );
 	}
 
 	_sceneRigidActors.clear();
@@ -123,8 +123,8 @@ void PhysXSceneInterface::updateActor(PhysXActor& actor){
     STUBBED("ToDo: Add a better synchronization method between SGN's transform and PhysXActor's pose!! -Ionut")
     if(actor.resetTransforms()){
 
-        const vec3<F32>& position = actor.getComponent()->getConstTransform()->getPosition();
-        const vec4<F32>& orientation = actor.getComponent()->getConstTransform()->getOrientation().asVec4();
+        const vec3<F32>& position = actor.getComponent()->getPosition();
+        const vec4<F32>& orientation = actor.getComponent()->getOrientation().asVec4();
 
         physx::PxTransform posePxTransform(PxVec3(position.x, position.y, position.z),
                                            PxQuat(orientation.x,orientation.y,orientation.z,orientation.w).getConjugate());
@@ -144,10 +144,9 @@ void PhysXSceneInterface::updateActor(PhysXActor& actor){
 }
 
 void PhysXSceneInterface::updateShape(PxShape* const shape, PhysXActor& actor){
-    Transform* t = actor.getComponent()->getTransform();
-
-    if(!t || !shape)
+    if ( !shape ) {
         return;
+    }
 
     PxTransform pT = PxShapeExt::getGlobalPose(*shape, *actor._actor);
     PxQuat pQ = pT.q.getConjugate();
@@ -155,8 +154,8 @@ void PhysXSceneInterface::updateShape(PxShape* const shape, PhysXActor& actor){
     if(actor._type == physx::PxGeometryType::ePLANE)
         std::swap(pQ.x,pQ.z);
        
-    t->setRotation(Quaternion<F32>(pQ.x,pQ.y,pQ.z,pQ.w));
-    t->setPosition(vec3<F32>(pT.p.x,pT.p.y,pT.p.z));
+    actor.getComponent()->setRotation( Quaternion<F32>( pQ.x, pQ.y, pQ.z, pQ.w ) );
+    actor.getComponent()->setPosition( vec3<F32>( pT.p.x, pT.p.y, pT.p.z ) );
 }
 
 void PhysXSceneInterface::process(const U64 deltaTime){
@@ -214,7 +213,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
 
             sgnName = stringAlg::toBase("BoxActor_" + Util::toString(nbActors));
 
-            if(sceneNode->getRefCount() == 1){
+            if(sceneNode->GetRef() == 1){
                 Material* boxMaterial = CreateResource<Material>(ResourceDescriptor("BoxActor_material"));
                 boxMaterial->setDiffuse(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
                 boxMaterial->setAmbient(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
@@ -246,19 +245,19 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
         }break;
     }
 
-    SAFE_DELETE_ARRAY(shapes);
+    MemoryManager::SAFE_DELETE_ARRAY( shapes );
 
     if(actor._type != PxGeometryType::eTRIANGLEMESH) {
         if(sceneNode){
             sceneNode->getSceneNodeRenderState().setDrawState(true);
-            outNode = _parentScene->addGeometry(sceneNode,sgnName);
+            outNode = _parentScene->getSceneGraph()->addNode(sceneNode, sgnName);
             outNode->castsShadows(shadowState);
         }
         if(!outNode){
             ERROR_FN(Locale::get("ERROR_ACTOR_CAST"), sgnName.c_str());
         }else{
             actor._actorName = sgnName;
-            actor.getComponent()->getTransform()->setScale(actor._userData);
+            actor.getComponent()->setScale(actor._userData);
         }
     }
 

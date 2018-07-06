@@ -94,10 +94,10 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
 
 EffectManager::~EffectManager()
 {
-    for (vectorImpl<VariableEffect*>::iterator iterEffs = _vecEffects.begin();
-        iterEffs != _vecEffects.end();
-        ++iterEffs)
-        SAFE_DELETE(*iterEffs);
+    for ( VariableEffect* iterEffs : _vecEffects ) {
+        MemoryManager::SAFE_DELETE( iterEffs );
+    }
+    _vecEffects.clear();
 }
 
 void EffectManager::updateActiveEffects() {

@@ -74,7 +74,7 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 
 Kernel::~Kernel()
 {
-    SAFE_DELETE(_mainTaskPool);
+    MemoryManager::SAFE_DELETE( _mainTaskPool );
     REMOVE_TIMER(s_appLoopTimer);
 }
 
@@ -486,7 +486,7 @@ void Kernel::shutdown() {
     } catch( ... ) { 
         D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); 
     }
-    SAFE_DELETE(_cameraMgr);
+    MemoryManager::SAFE_DELETE( _cameraMgr );
     LightManager::destroyInstance();
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
@@ -495,14 +495,14 @@ void Kernel::shutdown() {
     _SFX.closeAudioApi();
     _GFX.closeRenderingApi();
     _mainTaskPool->wait();
-    Input::InputInterface::destroyInstance();
-    SFXDevice::destroyInstance();
-    GFXDevice::destroyInstance();
-    Locale::clear();
+	Input::InputInterface::destroyInstance();
+	SFXDevice::destroyInstance();
+	GFXDevice::destroyInstance();
     ResourceCache::destroyInstance();
-    // Destroy the shader manager
-    ShaderManager::destroyInstance();
+	// Destroy the shader manager AFTER the resource cache
+	ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
+	Locale::clear();
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){

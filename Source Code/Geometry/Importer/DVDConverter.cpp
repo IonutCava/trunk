@@ -29,7 +29,8 @@ namespace {
     }
 };
 
-DVDConverter::DVDConverter() : _ppsteps(0){
+DVDConverter::DVDConverter() : _ppsteps(0)
+{
     aiTextureMapModeTable[aiTextureMapMode_Wrap] = TEXTURE_CLAMP;
     aiTextureMapModeTable[aiTextureMapMode_Clamp] = TEXTURE_CLAMP_TO_EDGE;
     aiTextureMapModeTable[aiTextureMapMode_Decal] = TEXTURE_DECAL;
@@ -56,8 +57,9 @@ DVDConverter::DVDConverter() : _ppsteps(0){
     importer = New Assimp::Importer();
 }
 
-DVDConverter::~DVDConverter(){
-    SAFE_DELETE(importer);
+DVDConverter::~DVDConverter()
+{
+    MemoryManager::SAFE_DELETE( importer );
 }
 
 bool DVDConverter::init(){
@@ -155,6 +157,7 @@ Mesh* DVDConverter::load(const stringImpl& file){
         vb->getBoneIndices().reserve(vertCount);
         vb->getBoneWeights().reserve(vertCount);
     }
+
     for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
         aiMesh* currentMesh = _aiScenePointer->mMeshes[n];
         //Skip points and lines ... for now -Ionut
@@ -171,9 +174,12 @@ Mesh* DVDConverter::load(const stringImpl& file){
             tempMesh->addSubMesh(tempSubMesh);
         }
     }
+
     assert(tempMesh != nullptr);
 
-    tempMesh->getSceneNodeRenderState().setDrawState(true);
+    tempMesh->getSceneNodeRenderState().setDrawState( true );
+    tempMesh->getGeometryVB()->Create();
+
     elapsed = GETMSTIME(true) - start;
     D_PRINT_FN(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
 

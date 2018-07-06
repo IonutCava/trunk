@@ -26,15 +26,15 @@ AIManager::~AIManager()
 void AIManager::Destroy() {
     {
         WriteLock w_lock(_updateMutex);
-		for (AITeamMap::value_type& entity : _aiTeams){
-            SAFE_DELETE(entity.second);
+        for ( AITeamMap::value_type entity : _aiTeams ) {
+            MemoryManager::SAFE_DELETE( entity.second );
         }
         _aiTeams.clear();
     }
     {
         WriteLock w_lock(_navMeshMutex);
-		for (NavMeshMap::value_type& it : _navMeshes){
-             SAFE_DELETE(it.second);
+        for ( NavMeshMap::value_type it : _navMeshes ) {
+            MemoryManager::SAFE_DELETE( it.second );
         }
         _navMeshes.clear();
 
@@ -68,29 +68,29 @@ void AIManager::update(){
 
 void AIManager::signalInit() {
     ReadLock r_lock(_updateMutex);
-	for (AITeamMap::value_type& team : _aiTeams){
+    for ( AITeamMap::value_type team : _aiTeams ) {
         team.second->init();
     }
 }
 
 void AIManager::processInput(const U64 deltaTime) {  //sensors
     ReadLock r_lock(_updateMutex);
-	for (AITeamMap::value_type& team : _aiTeams){
-        team.second->processInput(deltaTime);
+    for ( AITeamMap::value_type team : _aiTeams ) {
+        team.second->processInput( deltaTime );
     }
 }
 
 void AIManager::processData(const U64 deltaTime) {   //think
     ReadLock r_lock(_updateMutex);
-	for (AITeamMap::value_type& team :  _aiTeams){
-        team.second->processData(deltaTime);
+    for ( AITeamMap::value_type team : _aiTeams ) {
+        team.second->processData( deltaTime );
     }
 }
 
 void AIManager::updateEntities(const U64 deltaTime){//react
     ReadLock r_lock(_updateMutex);
-	for (AITeamMap::value_type& team : _aiTeams){
-        team.second->update(deltaTime);
+    for ( AITeamMap::value_type team : _aiTeams ) {
+        team.second->update( deltaTime );
     }
 }
 
@@ -103,8 +103,8 @@ bool AIManager::registerEntity(U32 teamId, AIEntity* entity) {
 }
 
 void AIManager::unregisterEntity(AIEntity* entity) { 
-	for (AITeamMap::value_type& team : _aiTeams) {
-        unregisterEntity(team.second->getTeamID(), entity);
+    for ( AITeamMap::value_type team : _aiTeams ) {
+        unregisterEntity( team.second->getTeamID(), entity );
     }
 }
 
@@ -126,8 +126,8 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::Navig
     w_lock.unlock();
 
     WriteLock w_lock2(_updateMutex);
-	for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->addCrowd(radius, navMesh);
+    for ( AITeamMap::value_type team : _aiTeams ) {
+        team.second->addCrowd( radius, navMesh );
     }
 
     return true;
@@ -137,13 +137,13 @@ void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     WriteLock w_lock(_navMeshMutex);
     NavMeshMap::iterator it = _navMeshes.find(radius);
     DIVIDE_ASSERT(it != _navMeshes.end(), "AIManager error: Can't destroy NavMesh for specified radius (NavMesh not found)!");
-    SAFE_DELETE(it->second);
+    MemoryManager::SAFE_DELETE( it->second );
     _navMeshes.erase(it);
     w_lock.unlock();
     
     WriteLock w_lock2(_updateMutex);
-	for (AITeamMap::value_type& team : _aiTeams) {
-        team.second->removeCrowd(radius);
+    for ( AITeamMap::value_type team : _aiTeams ) {
+        team.second->removeCrowd( radius );
     }
 }
 
@@ -165,8 +165,8 @@ void AIManager::unregisterTeam(AITeam* const team) {
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {
     WriteLock w_lock(_navMeshMutex);
-	for (NavMeshMap::value_type& it : _navMeshes){
-        it.second->debugDraw(state);
+    for ( NavMeshMap::value_type it : _navMeshes ) {
+        it.second->debugDraw( state );
     }
 
     _navMeshDebugDraw = state;
@@ -174,9 +174,9 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 
 void AIManager::debugDraw(bool forceAll) {
     WriteLock w_lock(_navMeshMutex);
-	for (NavMeshMap::value_type& it : _navMeshes){
-        it.second->update(_deltaTime);
-        if(forceAll || it.second->debugDraw()){
+    for ( NavMeshMap::value_type it : _navMeshes ) {
+        it.second->update( _deltaTime );
+        if ( forceAll || it.second->debugDraw() ) {
             it.second->render();
         }
     }

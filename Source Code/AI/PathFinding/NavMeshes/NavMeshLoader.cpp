@@ -128,7 +128,7 @@ namespace Navigation {
                 }
             }
 
-            SAFE_DELETE_ARRAY(buf);
+            MemoryManager::SAFE_DELETE_ARRAY( buf );
 
             // Calculate normals.
             outData._normals = New F32[outData._triangleCount*3];
@@ -244,9 +244,12 @@ namespace Navigation {
 
                 F32* nv = New F32[modelData->_vertexCapacity*3];
 
-                if(modelData->getVertCount())	memcpy(nv, modelData->getVerts(), modelData->getVertCount()*3*sizeof(F32));
-                if(modelData->getVerts() )	    SAFE_DELETE_ARRAY(modelData->_vertices);
-
+                if ( modelData->getVertCount() ) {
+                    memcpy( nv, modelData->getVerts(), modelData->getVertCount() * 3 * sizeof( F32 ) );
+                }
+                if ( modelData->getVerts() ) {
+                    MemoryManager::SAFE_DELETE_ARRAY( modelData->_vertices );
+                }
                 modelData->_vertices = nv;
             }
 
@@ -263,8 +266,12 @@ namespace Navigation {
                 modelData->_triangleCapacity = !modelData->_triangleCapacity ? 8 : modelData->_triangleCapacity*2;
                 I32* nv = New I32[modelData->_triangleCapacity*3];
 
-                if( modelData->getTriCount())	memcpy(nv, modelData->_triangles, modelData->getTriCount()*3*sizeof(I32));
-                if( modelData->getTris() )   	SAFE_DELETE_ARRAY(modelData->_triangles);
+                if ( modelData->getTriCount() ) {
+                    memcpy( nv, modelData->_triangles, modelData->getTriCount() * 3 * sizeof( I32 ) );
+                }
+                if ( modelData->getTris() ) {
+                    MemoryManager::SAFE_DELETE_ARRAY( modelData->_triangles );
+                }
                 modelData->_triangles = nv;
             }
 
@@ -345,7 +352,7 @@ namespace Navigation {
                 dynamic_cast<Object3D* >(sn)->computeTriangleList();
                 const vectorImpl<vec3<U32> >& triangles = dynamic_cast<Object3D* >(sn)->getTriangles();
                 if(nodeType != TYPE_OBJECT3D || (nodeType == TYPE_OBJECT3D && dynamic_cast<Object3D* >(sn)->getType() != Object3D::TERRAIN)){
-                    mat4<F32> nodeTransform = sgn->getWorldMatrix();
+                    mat4<F32> nodeTransform = sgn->getComponent<PhysicsComponent>()->getWorldMatrix();
                     for (U32 i = 0; i < vertices.size(); ++i ){
                         //Apply the node's transform and add the vertex to the NavMesh
                         addVertex(&outData, nodeTransform * (vertices[i]));
@@ -381,10 +388,10 @@ namespace Navigation {
 
             //although labels are bad, skipping here using them is the easiest solution to follow -Ionut
             next:;
-			for (SceneGraphNode::NodeChildren::value_type& it : sgn->getChildren()){
-				if (!parse(it.second->getBoundingBoxConst(), outData, it.second)) {
-					return false;
-				}
+            for ( SceneGraphNode::NodeChildren::value_type it : sgn->getChildren() ) {
+                if ( !parse( it.second->getBoundingBoxConst(), outData, it.second ) ) {
+                    return false;
+                }
             }
 
             return true;

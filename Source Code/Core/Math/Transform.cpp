@@ -11,19 +11,17 @@ Transform::Transform(const Quaternion<F32>& orientation,
 {
 	_dirty = true;
 	_rebuildMatrix = true; 
-	_hasParentTransform = false;
 	_transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
     _worldMatrix.identity();
-    _parentTransform = nullptr;
 }
 
 Transform::~Transform()
 {
 }
 
-const mat4<F32>& Transform::applyTransforms() {
+const mat4<F32>& Transform::getMatrix() {
     if (_dirty) {
         WriteLock w_lock(_lock);
         if (_rebuildMatrix) {
@@ -33,40 +31,27 @@ const mat4<F32>& Transform::applyTransforms() {
             _worldMatrix.setScale(_transformValues._scale);
             //    2. Rotate
             _worldMatrix *= Divide::getMatrix(_transformValues._orientation);
+            _rebuildMatrix = false;
         }
         //    3. Translate
         _worldMatrix.setTranslation(_transformValues._translation);
-
-        this->clean();
+        _dirty = false;
     }
 
     return _worldMatrix;
 }
 
-mat4<F32> Transform::interpolate(const TransformValues& prevTransforms, const D32 factor) {
+const mat4<F32>& Transform::interpolate(const TransformValues& prevTransforms, const D32 factor) {
    if (factor < 0.90) {
         _worldMatrixInterp.identity();
-        _worldMatrixInterp.setScale(lerp(prevTransforms._scale, getLocalScale(), (F32)factor));
-        _worldMatrixInterp *= Divide::getMatrix(slerp(prevTransforms._orientation, getLocalOrientation(), (F32)factor));
-        _worldMatrixInterp.setTranslation(lerp(prevTransforms._translation, getLocalPosition(), (F32)factor));
+        _worldMatrixInterp.setScale(lerp(prevTransforms._scale, getScale(), (F32)factor));
+        _worldMatrixInterp *= Divide::getMatrix(slerp(prevTransforms._orientation, getOrientation(), (F32)factor));
+        _worldMatrixInterp.setTranslation(lerp(prevTransforms._translation, getPosition(), (F32)factor));
 
-        return _worldMatrixInterp * getParentMatrix();
+        return _worldMatrixInterp;
     }
 
-    return getGlobalMatrix();
-}
-
-void Transform::getValues(TransformValues& transforms) const {
-    transforms._scale.set(getLocalScale());
-    transforms._orientation.set(getLocalOrientation());
-    transforms._translation.set(getLocalPosition());
-}
-
-bool Transform::compare(const Transform* const t) {
-    ReadLock r_lock(_lock);
-    return (_transformValues._scale.compare(t->_transformValues._scale) &&
-            _transformValues._orientation.compare(t->_transformValues._orientation) &&
-            _transformValues._translation.compare(t->_transformValues._translation));
+    return getMatrix();
 }
 
 void Transform::identity() {
@@ -75,7 +60,7 @@ void Transform::identity() {
     _transformValues._translation.reset();
     _transformValues._orientation.identity();
     _worldMatrix.identity();
-    clean();
+    _rebuildMatrix = _dirty = false;
 }
 
 }; //namespace Divide

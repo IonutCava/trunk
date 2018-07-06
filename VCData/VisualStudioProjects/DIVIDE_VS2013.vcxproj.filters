@@ -854,6 +854,9 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">

@@ -72,6 +72,27 @@ namespace Divide {
             PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
             PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));
         }
+		/// Release thread specific GLEW pointers
+		void destroyGlew() {
+#ifdef GLEW_MX
+			if ( _GLEWContextPtr.get() != nullptr ) {
+				_GLEWContextPtr.release();
+			}
+#   if defined( OS_WINDOWS )
+			/// Same as for normal GLEW initialization, but this time, init platform specific pointers
+			if ( _WGLEWContextPtr.get() != nullptr ) {
+				_WGLEWContextPtr.release();
+			}
+#	else //! OS_WINDOWS
+			/// Same as for normal GLEW initialization, but this time, init platform specific pointers
+			if ( _GLXEWContextPtr.get() != nullptr ) {
+				_GLXEWContextPtr.release();
+			}
+
+			err = glxewInit();
+#	endif //OS_WINDOWS
+#endif //GLEW_MX
+		}
 
         /// Glew needs extra data to be initialized if it's build with the MX flag        
         void initGlew() {

@@ -9,16 +9,16 @@ namespace Divide {
 Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
     Sphere3D* ptr = New Sphere3D(1,32);
 
-    if(_descriptor.getFlag()){
-        ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-        ptr->setMaterial(nullptr);
-    }else{
-        ResourceDescriptor sphere3DMaterial("Sphere3DMaterial");
-        ptr->setMaterial(CreateResource<Material>(sphere3DMaterial));
+    if ( _descriptor.getFlag() ) {
+        ptr->getSceneNodeRenderState().useDefaultMaterial( false );
+        ptr->setMaterial( nullptr );
+    } else {
+        ResourceDescriptor sphere3DMaterial( "Material_" + _descriptor.getName() );
+        ptr->setMaterial( CreateResource<Material>( sphere3DMaterial ) );
     }
 
     if(!load(ptr,_descriptor.getName())){
-        SAFE_DELETE(ptr);
+        MemoryManager::SAFE_DELETE( ptr );
     }
 
     return ptr;

@@ -15,7 +15,6 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
                                                                      _reflectedTexture(nullptr),
                                                                      _createdFB(false),
                                                                      _updateSelf(false),
-                                                                     _planeDirty(true),
                                                                      _excludeSelfReflection(true),
                                                                      _previewReflection(false)
 {
@@ -30,7 +29,7 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
 Reflector::~Reflector()
 {
     UNREGISTER_FRAME_LISTENER(this);
-    SAFE_DELETE(_reflectedTexture);
+    MemoryManager::SAFE_DELETE( _reflectedTexture );
     RemoveResource(_previewReflectionShader);
 }
 
@@ -52,11 +51,6 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
     assert(_reflectedTexture != nullptr);
     // mark ourselves as reflection target only if we do not wish to reflect ourself back
     _updateSelf = !_excludeSelfReflection;
-    // recompute the plane equation
-    if(_planeDirty) {
-        updatePlaneEquation();
-        _planeDirty = false;
-    }
     // generate reflection texture
     updateReflection();
     // unmark from reflection target

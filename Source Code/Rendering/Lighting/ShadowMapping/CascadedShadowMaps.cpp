@@ -79,8 +79,8 @@ CascadedShadowMaps::~CascadedShadowMaps()
 {
     RemoveResource(_previewDepthMapShader);
     RemoveResource(_blurDepthMapShader);
-    SAFE_DELETE(_blurBuffer);
-    SAFE_DELETE(_renderPolicy);
+    MemoryManager::SAFE_DELETE( _blurBuffer );
+    MemoryManager::SAFE_DELETE( _renderPolicy );
 }
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi){
@@ -186,19 +186,19 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
     // Create an orthographic camera for use as a shadow caster
     vec2<F32> clipPlanes;
     vec4<F32> clipRect;
-    if (_dirLight->csmStabilize()){
-        BoundingSphere frustumSphere(_frustumCornersLS);
-        clipPlanes.set(0.0f, frustumSphere.getDiameter());
+    if ( _dirLight->csmStabilize() ) {
+        BoundingSphere frustumSphere( _frustumCornersLS );
+        clipPlanes.set( 0.0f, frustumSphere.getDiameter() );
         clipPlanes += _nearClipOffset;
-        clipRect.set(UNIT_RECT * frustumSphere.getRadius());
-    }else{
+        clipRect.set( UNIT_RECT * frustumSphere.getRadius() );
+    } else {
         // Calculate an orthographic projection by sizing a bounding box to the frustum coordinates in light space
-        BoundingBox frustumBox(_frustumCornersLS);
+        BoundingBox frustumBox( _frustumCornersLS );
         vec3<F32> maxes = frustumBox.getMax();
-        vec3<F32> mins  = frustumBox.getMin();
-         // Create an orthographic camera for use as a shadow caster
-        clipPlanes.set(-maxes.z - _nearClipOffset, -mins.z);
-        clipRect.set(mins.x, maxes.x, mins.y, maxes.y);
+        vec3<F32> mins = frustumBox.getMin();
+        // Create an orthographic camera for use as a shadow caster
+        clipPlanes.set( -maxes.z - _nearClipOffset, -mins.z );
+        clipRect.set( mins.x, maxes.x, mins.y, maxes.y );
     }
 
     _shadowCamera->setProjection(clipRect, clipPlanes, true);

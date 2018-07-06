@@ -67,7 +67,6 @@ public:
 
     virtual bool  onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     virtual bool  updateAnimations(SceneGraphNode* const sgn) { return false; }
-
     inline void   setGeometryPartitionId(size_t idx) { _geometryPartitionId = (U32)idx; }
 
     inline const vectorImpl<vec3<U32> >& getTriangles() const { return _geometryTriangles; }
@@ -85,6 +84,7 @@ protected:
 	/// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
 	/// Please manually delete the old VB if available before replacing!
 	virtual void setGeometryVB(VertexBuffer* const vb);
+
 protected:
     bool		    _update;
     U32             _geometryFlagMask;

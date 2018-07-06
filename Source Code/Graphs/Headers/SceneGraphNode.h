@@ -37,7 +37,6 @@ namespace Divide {
 class Transform;
 class SceneGraph;
 class SceneState;
-struct TransformValues;
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
 public:
@@ -86,9 +85,6 @@ public:
         NODE_STATIC
     };
 
-    SceneGraphNode(SceneGraph* const sg, SceneNode* const node);
-    ~SceneGraphNode();
-
     bool unload();
     /// Draw the current scene graph node
     void render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
@@ -105,9 +101,15 @@ public:
     ///Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
     template<typename T = SceneNode>
     inline T* getNode() const {assert(_node != nullptr); return dynamic_cast<T*>(_node);}
-
-    SceneGraphNode* addNode(SceneNode* const node,const stringImpl& name = "");
+    ///Create node never increments the node's ref counter (used for scene loading)
+    SceneGraphNode* createNode( SceneNode* const node, const stringImpl& name = "" );
+    ///Add node increments the node's ref counter if the node was already added to the scene graph
+    SceneGraphNode* addNode(SceneNode* const node, const stringImpl& name = "");
     void			removeNode(SceneGraphNode* node);
+    inline void     deleteNode( SceneGraphNode*& node ) {
+        removeNode(node); 
+        MemoryManager::SAFE_DELETE( node );
+    }
     ///Find a node in the graph based on the SceneGraphNode's name
     ///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
     SceneGraphNode* findNode(const stringImpl& name, bool sceneNodeName = false);
@@ -156,7 +158,6 @@ public:
         getComponent<PhysicsComponent>()->useDefaultTransform(!state);
     }
 
-    const mat4<F32>& getWorldMatrix(D32 interpolationFactor = 1.0);
     /*Transform management*/
 
     /*Node State*/
@@ -182,8 +183,6 @@ public:
     bool castsShadows()    const;
     bool receivesShadows() const;
 
-    void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const;
-
     inline U32  getInstanceID() const {return _instanceID;}
     inline U32  getChildQueue() const {return _childQueue;}
     inline void incChildQueue()       {_childQueue++;}
@@ -197,7 +196,9 @@ public:
 
     inline U64 getElapsedTime() const {return _elapsedTime;}
 
-    inline void setComponent(SGNComponent::ComponentType type, SGNComponent* component) { SAFE_UPDATE(_components[type], component); }
+    inline void setComponent( SGNComponent::ComponentType type, SGNComponent* component ) { 
+        MemoryManager::SAFE_UPDATE( _components[type], component ); 
+    }
 
     template<typename T>
     inline T* getComponent() const { assert(false && "INVALID COMPONENT"); return nullptr; }
@@ -210,6 +211,9 @@ public:
     
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
+    inline U8   lodLevel() const { return ( _lodLevel < ( _node->getLODcount() - 1 ) ? _lodLevel : ( _node->getLODcount() - 1 ) ); }
+    inline void lodLevel( U8 LoD ) { _lodLevel = std::min( static_cast<U8>(_node->getLODcount() - 1), std::max( LoD, static_cast<U8>(0) ) ); }
+
     inline const mat4<F32>& getMaterialColorMatrix()    const { return _materialColorMatrix; }
     inline const mat4<F32>& getMaterialPropertyMatrix() const { return _materialPropertyMatrix; }
 
@@ -219,14 +223,18 @@ public:
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
-
-    inline bool compare(const SceneGraphNode* const other) const {
-        return *this == *other;
-    }
-
-    bool operator==(const SceneGraphNode &other) const { 
+    bool operator==(const SceneGraphNode& other) const { 
         return this->getGUID() == other.getGUID(); 
     }
+    bool operator!=( const SceneGraphNode& other ) const { 
+        return this->getGUID() != other.getGUID();
+    }
+protected:
+    SET_SAFE_DELETE_FRIEND
+    SET_SAFE_UPDATE_FRIEND
+    friend class SceneGraph;
+    explicit SceneGraphNode( SceneGraph* const sg, SceneNode* const node, const stringImpl& name);
+    ~SceneGraphNode();
 
 protected:
     friend class RenderPassCuller;
@@ -252,6 +260,8 @@ private:
     std::atomic<bool> _inView;
 	std::atomic<bool> _boundingBoxDirty;
     //Used to skip certain BB's (sky, lights, etc);
+    ///LOD level is updated at every visibility check (SceneNode::isInView(...));
+    U8  _lodLevel; ///<Relative to camera distance
     U32 _bbAddExclusionList;
     bool _selected;
     bool _isSelectable;
@@ -269,11 +279,6 @@ private:
     BoundingBox _initialBoundingBox, _initialBoundingBoxCache;
     BoundingBox _boundingBox;
     BoundingSphere _boundingSphere; ///<For faster visibility culling
-
-    TransformValues* _prevTransformValues;
-
-    ///The interpolated matrix cache. Represents an intermediate matrix between the current matrix and another, external matrix, interpolated by the given factor
-    mat4<F32> _worldMatrixInterp;
 
     U32 _instanceID;
     U32 _childQueue;

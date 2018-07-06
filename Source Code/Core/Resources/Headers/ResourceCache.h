@@ -57,7 +57,7 @@ public:
 
     Resource* const find(const stringImpl& name);
     void add(const stringImpl& name, Resource* const resource);
-    bool remove(Resource* res, bool force = false);
+    bool remove(Resource* res);
     bool load(Resource* const res, const stringImpl& name);
     bool loadHW(Resource* const res, const stringImpl& name);
 
@@ -69,7 +69,7 @@ protected:
     ///this method handles cache lookups and reference counting
     Resource* loadResource(const stringImpl& name);
     ///unload a single resource and pend deletion
-    bool removeInternal(Resource* const resource, bool force);
+    bool removeInternal(Resource* const resource);
     ///multithreaded resource creation
     SharedLock _creationMutex;
 
@@ -80,17 +80,15 @@ protected:
 END_SINGLETON
 
 template<typename T>
-inline bool RemoveResource(T*& resource, bool force = false){
-    DIVIDE_ASSERT(ResourceCache::hasInstance(), "ResourceCache error: RemoveResource called without a valid ResourceCache available!");
-    Resource* res = dynamic_cast<Resource*>(resource);
-    if (res != nullptr) {
-        if (ResourceCache::getInstance().remove(res, force)) {
-            resource = nullptr;
-			return true;
-		}
-	} else {
-		ERROR_FN(Locale::get("RESOURCE_CACHE_REMOVE_NOT_RESOURCE"));
+inline bool RemoveResource(T*& resource){
+    DIVIDE_ASSERT( ResourceCache::hasInstance(), Locale::get( "RESOURCE_CACHE_NOT_AVAILABLE" ) );
+    DIVIDE_ASSERT( dynamic_cast<Resource*>( resource ) != nullptr, Locale::get( "RESOURCE_CACHE_REMOVE_NOT_RESOURCE" ) );
+
+    if (ResourceCache::getInstance().remove(resource)) {
+       resource = nullptr;
+       return true;
 	}
+
 	return false;
 }
 

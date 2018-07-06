@@ -272,20 +272,21 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     GUIGLrenderer.enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
     CEGUI::System::create(GUIGLrenderer);
 
+	Application::getInstance().registerShutdownCallback( DELEGATE_BIND(&GLUtil::destroyGlew ) );
     return NO_ERR;
 }
 
 /// Clear everything that was setup in initRenderingApi()
-void GL_API::closeRenderingApi(){
+void GL_API::closeRenderingApi() {
     // Close the loading thread 
     _closeLoadingThread = true;
-    while(GFX_DEVICE.loadingThreadAvailable()){
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));//<Avoid burning the CPU - Ionut
+    while ( GFX_DEVICE.loadingThreadAvailable() ) {
+        std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );//<Avoid burning the CPU - Ionut
     }
 
     // Destroy sampler objects
-    for(samplerObjectMap::value_type& it : _samplerMap) {
-        SAFE_DELETE(it.second);
+    for ( samplerObjectMap::value_type it : _samplerMap ) {
+        MemoryManager::SAFE_DELETE( it.second );
     }
     _samplerMap.clear();
 
@@ -294,8 +295,8 @@ void GL_API::closeRenderingApi(){
     _fonts.clear();
 
     // Destroy application windows and close GLFW
-    glfwDestroyWindow(GLUtil::_loaderWindow);
-    glfwDestroyWindow(GLUtil::_mainWindow);
+    glfwDestroyWindow( GLUtil::_loaderWindow );
+    glfwDestroyWindow( GLUtil::_mainWindow );
     glfwTerminate();
 }
 

@@ -5,7 +5,7 @@ namespace Divide {
 
 PreRenderStage::~PreRenderStage(){
 	for(PreRenderOperator*& op : _operators){
-		SAFE_DELETE(op);
+        MemoryManager::SAFE_DELETE( op );
 	}
 }
 

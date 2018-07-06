@@ -29,7 +29,10 @@ namespace Divide {
 
 /// Renders a sphere at the parent node's position using the desired radius;
 class Impostor : public Sphere3D {
-public:
+    template<typename T>
+    friend class ImplResourceLoader;
+    SET_SAFE_DELETE_FRIEND
+protected:
 	Impostor(const stringImpl& name, F32 radius = 1.0f);
 	~Impostor();
 };

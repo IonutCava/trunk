@@ -14,10 +14,10 @@
 <runtime>
 	<!-- This value sets the y-position (height) of the "safety-net" for PhysX actors -->
 	<groundPos>-100</groundPos>
-	<!-- PhysX simulation speed multiplayer. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
+	<!-- PhysX simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
 	<simSpeed>0.0</simSpeed>
-	<resolutionWidth>800</resolutionWidth>
-	<resolutionHeight>600</resolutionHeight>
+	<resolutionWidth>1280</resolutionWidth>
+	<resolutionHeight>720</resolutionHeight>
 	<windowedMode>true</windowedMode>
 	<allowWindowResize>false</allowWindowResize>
 	<enableVSync>true</enableVSync>
@@ -44,18 +44,17 @@
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- detail level: off = 0, low = 1 (no blurring, 512x512 base resolution), medium = 2 (blurring, 512x512 base resolution) -->
 	<!--               high = 3 (blurring, 1024x1024 base resolution), ultra = 4 (blurring, 2048x2048 base resolution) -->
-	<shadowDetailLevel>2</shadowDetailLevel>
+	<shadowDetailLevel>0</shadowDetailLevel>
 	<enableFog>true</enableFog>
 	<fogDensity>0.0040</fogDensity>
 	<fogColor r="0.5" g="0.5" b="0.55"/>
-	<enablePostFX>true</enablePostFX>
+	<enablePostFX>false</enablePostFX>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>
 	<enableNoise>false</enableNoise>
 	<enableDepthOfField>false</enableDepthOfField>
 	<enableBloom>true</enableBloom>
 	<bloomFactor>0.8</bloomFactor>
-	<enableHDR>false</enableHDR>
 	<enableSSAO>false</enableSSAO>
 </rendering>
     

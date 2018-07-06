@@ -9,8 +9,8 @@ namespace Divide {
 
 Terrain* ImplResourceLoader<Terrain>::operator()() {
     Terrain* ptr = New Terrain();
-    if(!load(ptr,_descriptor.getName())){
-        SAFE_DELETE(ptr);
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
     }
 
     return ptr;
@@ -22,14 +22,14 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const stringImpl& nam
 
     PRINT_FN(Locale::get("TERRAIN_LOAD_START"),name.c_str());
     TerrainDescriptor* terrain = GET_ACTIVE_SCENE()->getTerrainInfo(name);
-    if(!terrain) 
+    if ( !terrain ) {
         return false;
-
+    }
     bool loadState = TerrainLoader::getInstance().loadTerrain(res, terrain);
 
-    if (!loadState)
-        ERROR_FN(Locale::get("ERROR_TERRAIN_LOAD"), name.c_str());
-
+    if ( !loadState ) {
+        ERROR_FN( Locale::get( "ERROR_TERRAIN_LOAD" ), name.c_str() );
+    }
     return loadState;
 }
 

@@ -310,13 +310,10 @@ private:
     ///Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash);
 	ErrorCode createAPIInstance();
-	void destroyAPIInstance();
 
 private:
     Camera*           _cubeCamera;
     Camera*           _2DCamera;
-    PostFX&           _postFX;
-    ShaderManager&    _shaderManager;
     RenderAPIWrapper* _api;
     RenderStage _renderStage;
     U32  _prevShaderId,  _prevTextureId;

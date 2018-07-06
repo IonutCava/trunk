@@ -43,9 +43,9 @@ AIEntity::~AIEntity()
     _agentID = -1;
     _agent = nullptr;
 
-    SAFE_DELETE(_AISceneImpl);
-	for (SensorMap::value_type& it : _sensorList) {
-        SAFE_DELETE(it.second);
+    MemoryManager::SAFE_DELETE( _AISceneImpl );
+    for ( SensorMap::value_type it : _sensorList ) {
+        MemoryManager::SAFE_DELETE( it.second );
     }
     _sensorList.clear();
 }
@@ -112,7 +112,7 @@ bool AIEntity::addSensor(SensorType type) {
     if (sensor) {
         SensorMap::iterator it = _sensorList.find(type);
         if (it != _sensorList.end()) {
-            SAFE_UPDATE(it->second, sensor);
+            MemoryManager::SAFE_UPDATE( it->second, sensor );
         } else {
             hashAlg::emplace(_sensorList, type, sensor);
         }
@@ -126,7 +126,7 @@ bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl) {
     assert(AISceneImpl);
 
     WriteLock w_lock(_updateMutex);
-    SAFE_UPDATE(_AISceneImpl, AISceneImpl);
+    MemoryManager::SAFE_UPDATE( _AISceneImpl, AISceneImpl );
     _AISceneImpl->addEntityRef(this);
     return true;
 }

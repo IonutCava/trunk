@@ -33,7 +33,7 @@ goap::Node& goap::AStar::popAndClose() {
 }
 
 bool goap::AStar::memberOfClosed(const WorldState& ws) const {
-    if (vectorAlg::find_if(closed_.begin(), closed_.end(), [&](const Node& n) { return n.ws_ == ws; }) == closed_.end()) {
+    if ( vectorAlg::find_if( closed_.begin(), closed_.end(), [&]( const Node& n )->bool { return n.ws_ == ws; } ) == closed_.end() ) {
         return false;
     } else {
         return true;
@@ -41,7 +41,7 @@ bool goap::AStar::memberOfClosed(const WorldState& ws) const {
 }
 
 vectorImpl<goap::Node>::iterator goap::AStar::memberOfOpen(const WorldState& ws) {
-    return vectorAlg::find_if(open_.begin(), open_.end(), [&](const Node& n) { return n.ws_ == ws; });
+    return vectorAlg::find_if( open_.begin(), open_.end(), [&]( const Node& n )->bool { return n.ws_ == ws; } );
 }
 
 bool goap::AStar::plan(const WorldState& start, const WorldState& goal, const vectorImpl<Action*>& actions, vectorImpl<const Action*>& plan) {

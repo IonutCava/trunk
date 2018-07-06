@@ -23,7 +23,7 @@ Object3D::Object3D(const stringImpl& name, const ObjectType& type, U32 flag) : S
 Object3D::~Object3D()
 {
 	if ( !bitCompare( _geometryFlagMask, OBJECT_FLAG_NO_VB ) ) {
-		SAFE_DELETE( _buffer );
+        MemoryManager::SAFE_DELETE( _buffer );
 	}
 }
 
@@ -96,7 +96,7 @@ void Object3D::computeNormals() {
 
         getGeometryVB()->modifyNormalValue(i, currentNormal);
     }
-    SAFE_DELETE_ARRAY(normal_buffer);
+    MemoryManager::SAFE_DELETE_ARRAY( normal_buffer );
 }
 
 void Object3D::computeTangents(){

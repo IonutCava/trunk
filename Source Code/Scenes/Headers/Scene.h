@@ -75,9 +75,6 @@ public:
     Scene();
     virtual ~Scene();
 
-    SceneGraphNode* addGeometry(SceneNode* const object,const stringImpl& sgnName = "");
-    bool removeGeometry(SceneNode* node);
-
     /**Begin scene logic loop*/
     virtual void processInput(const U64 deltaTime) = 0;  //<Get all input commands from the user
     virtual void processTasks(const U64 deltaTime); //<Update the scene based on the inputs

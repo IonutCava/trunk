@@ -38,8 +38,8 @@ public:
     ///Lookup the factory methods table and return the pointer to a newly constructed scene bound to that name
     Scene* createScene(const stringImpl& name);
 
-    inline Scene* getActiveScene()                   { return _activeScene; }
-    inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_activeScene, scene); }
+    inline Scene* getActiveScene()                     { return _activeScene; }
+    inline void   setActiveScene( Scene* const scene ) { MemoryManager::SAFE_UPDATE( _activeScene, scene ); }
 
     bool   init(GUI* const gui);
 

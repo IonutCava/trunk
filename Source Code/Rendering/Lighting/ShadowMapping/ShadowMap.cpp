@@ -23,20 +23,25 @@ ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type) : _ini
 
 ShadowMap::~ShadowMap()
 {
-    SAFE_DELETE(_depthMap);
+    MemoryManager::SAFE_DELETE( _depthMap );
 }
 
 ShadowMapInfo::ShadowMapInfo(Light* light) : _light(light),
                                              _shadowMap(nullptr)
 {
-     _resolution = 512;
-     if (GFX_DEVICE.shadowDetailLevel() == DETAIL_HIGH)  _resolution = 1024;
-     if (GFX_DEVICE.shadowDetailLevel() == DETAIL_ULTRA) _resolution = 2048;
+    if ( GFX_DEVICE.shadowDetailLevel() == DETAIL_ULTRA ) {
+         _resolution = 2048;
+    } else if ( GFX_DEVICE.shadowDetailLevel() == DETAIL_HIGH ) {
+         _resolution = 1024;
+     } else {
+         _resolution = 512;
+     }
      _numLayers = 1;
 }
 
-ShadowMapInfo::~ShadowMapInfo(){
-    SAFE_DELETE(_shadowMap);
+ShadowMapInfo::~ShadowMapInfo()
+{
+    MemoryManager::SAFE_DELETE( _shadowMap );
 }
 
 ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderState, Camera* shadowCamera){

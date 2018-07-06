@@ -36,12 +36,12 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 glShaderProgram::~glShaderProgram()
 {
     // remove shader stages
-    for(ShaderIdMap::value_type& it : _shaderIdMap) {
-        detachShader(it.second);
+    for ( ShaderIdMap::value_type it : _shaderIdMap ) {
+        detachShader( it.second );
     }
     // delete shader program
-    if(_shaderProgramId > 0 && _shaderProgramId != GLUtil::_invalidObjectID) {
-        glDeleteProgram(_shaderProgramId);
+    if ( _shaderProgramId > 0 && _shaderProgramId != GLUtil::_invalidObjectID ) {
+        glDeleteProgram( _shaderProgramId );
     }
 }
 

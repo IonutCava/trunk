@@ -141,53 +141,56 @@ template <typename T>
 class Quaternion;
 
 namespace Util {
-    inline void replaceStringInPlace(stringImpl& subject, const stringImpl& search, const stringImpl& replace) {
+    inline void replaceStringInPlace( stringImpl& subject, const stringImpl& search, const stringImpl& replace ) {
         stringAlg::stringSize pos = 0;
-        while((pos = subject.find(search, pos)) != stringImpl::npos) {
-             subject.replace(pos, search.length(), replace);
+        while ( ( pos = subject.find( search, pos ) ) != stringImpl::npos ) {
+            subject.replace( pos, search.length(), replace );
             pos += replace.length();
         }
     }
 
-    inline void swap(char* first, char* second){
+    inline void swap( char* first, char* second ) {
         char temp = *first;
-        *first  = *second;
+        *first = *second;
         *second = temp;
     }
 
-    inline void permute(char* input, U32 startingIndex, U32 stringLength, vectorImpl<stringImpl>& container){
-        if(startingIndex == stringLength -1){
-            container.push_back(input);
-        }else{
-            for(U32 i = startingIndex; i < stringLength; i++){
-                swap(&input[startingIndex], &input[i]);
-                permute(input,startingIndex+1,stringLength,container);
-                swap(&input[startingIndex], &input[i]);
+    inline void permute( char* input, U32 startingIndex, U32 stringLength, vectorImpl<stringImpl>& container ) {
+        if ( startingIndex == stringLength - 1 ) {
+            container.push_back( input );
+        } else {
+            for ( U32 i = startingIndex; i < stringLength; i++ ) {
+                swap( &input[startingIndex], &input[i] );
+                permute( input, startingIndex + 1, stringLength, container );
+                swap( &input[startingIndex], &input[i] );
             }
         }
     }
 
-    inline vectorImpl<stringImpl> getPermutations(const stringImpl& inputString){
-        vectorImpl<stringImpl> permutationContainer;
-        permute((char*)inputString.c_str(), 0, (U32)inputString.length()-1, permutationContainer);
-        return permutationContainer;
+    inline void getPermutations( const stringImpl& inputString, vectorImpl<stringImpl>& permutationContainer ) {
+        permutationContainer.clear();
+        permute( (char*)inputString.c_str(), 0, (U32)inputString.length() - 1, permutationContainer );
     }
 
     static std::stringstream _ssBuffer;
 
-    inline bool isNumber(const stringImpl& s) {
-        _ssBuffer.str("");
+    inline bool isNumber( const stringImpl& s ) {
+        _ssBuffer.str( "" );
         _ssBuffer << s.c_str();
         F32 number;
         _ssBuffer >> number;
-        if (_ssBuffer.good()) return false;
-        else if(number == 0 && s[0] != 0) return false;
+        if ( _ssBuffer.good() ) {
+            return false;
+        } 
+        if ( number == 0 && s[0] != 0 ) {
+            return false;
+        }
         return true;
     }
 
     template<typename T>
-    inline std::string toString(const T& data){
-        _ssBuffer.str("");
+    inline std::string toString( const T& data ) {
+        _ssBuffer.str( "" );
         _ssBuffer << data;
         return _ssBuffer.str();
     }
@@ -195,30 +198,32 @@ namespace Util {
     //U = to data type, T = from data type
     template<typename U, typename T>
     inline U convertData(const T& data){
-        std::istringstream  iStream(data);
-        U floatValue;
-        iStream >> floatValue;
-        return floatValue;
+        std::istringstream iStream(data);
+        U targetValue;
+        iStream >> targetValue;
+        return targetValue;
     }
+
     /// http://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
-	inline void split(const stringImpl& input, const char* delimiter, vectorImpl<stringImpl>& outputVector) {
-		stringAlg::stringSize delLen = static_cast<stringAlg::stringSize>(strlen(delimiter));
-		assert(!input.empty() && delLen > 0);
-		stringAlg::stringSize start = 0, end = 0;
-		while (end != stringImpl::npos) {
-			end = input.find(delimiter, start);
-			// If at end, use length=maxLength.  Else use length=end-start.
-			outputVector.push_back(input.substr(start, (end == stringImpl::npos) ? stringImpl::npos : end - start));
-			// If at end, use start=maxSize.  Else use start=end+delimiter.
-			start = ((end > (stringImpl::npos - delLen)) ? stringImpl::npos : end + delLen);
-		}
-	}
+    inline void split( const stringImpl& input, const char* delimiter, vectorImpl<stringImpl>& outputVector ) {
+        stringAlg::stringSize delLen = static_cast<stringAlg::stringSize>( strlen( delimiter ) );
+        assert( !input.empty() && delLen > 0 );
+
+        stringAlg::stringSize start = 0, end = 0;
+        while ( end != stringImpl::npos ) {
+            end = input.find( delimiter, start );
+            // If at end, use length=maxLength.  Else use length=end-start.
+            outputVector.push_back( input.substr( start, ( end == stringImpl::npos ) ? stringImpl::npos : end - start ) );
+            // If at end, use start=maxSize.  Else use start=end+delimiter.
+            start = ( ( end > ( stringImpl::npos - delLen ) ) ? stringImpl::npos : end + delLen );
+        }
+    }
 
 	/// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-	inline stringImpl& ltrim(stringImpl& s) {
-		s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-		return s;
-	}
+    inline stringImpl& ltrim( stringImpl& s ) {
+        s.erase( s.begin(), std::find_if( s.begin(), s.end(), std::not1( std::ptr_fun<int, int>( std::isspace ) ) ) );
+        return s;
+    }
 
 	inline stringImpl& rtrim(stringImpl& s) {
 		s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
@@ -253,54 +258,71 @@ namespace Util {
         template<typename T>
         void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position);
 
-        inline F32* Multiply(const F32 *a, const F32 *b, F32 *r = nullptr){
-            static F32 temp[16];
+        template<typename T>
+        inline T* Multiply( const T *a, const T *b, T *r = nullptr ) {
+            static T temp[16];
             r = temp;
-            U32 row, column, row_offset;
-            for (row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4){
-                for (column = 0; column < 4; ++column){
-                    r[row_offset + column] =
-                        (a[row_offset + 0] * b[column + 0]) +
-                        (a[row_offset + 1] * b[column + 4]) +
-                        (a[row_offset + 2] * b[column + 8]) +
-                        (a[row_offset + 3] * b[column + 12]);
-                }
+            U32 row, row_offset;
+            for ( row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4 ) {
+                r[row_offset + 0] = ( a[row_offset + 0] * b[0 + 0]  ) +
+                                    ( a[row_offset + 1] * b[0 + 4]  ) +
+                                    ( a[row_offset + 2] * b[0 + 8]  ) +
+                                    ( a[row_offset + 3] * b[0 + 12] );
+
+                r[row_offset + 1] = ( a[row_offset + 0] * b[1 + 0]  ) +
+                                    ( a[row_offset + 1] * b[1 + 4]  ) +
+                                    ( a[row_offset + 2] * b[1 + 8]  ) +
+                                    ( a[row_offset + 3] * b[1 + 12] );
+
+                r[row_offset + 2] = ( a[row_offset + 0] * b[2 + 0]  ) +
+                                    ( a[row_offset + 1] * b[2 + 4]  ) +
+                                    ( a[row_offset + 2] * b[2 + 8]  ) +
+                                    ( a[row_offset + 3] * b[2 + 12] );
+
+                r[row_offset + 3] = ( a[row_offset + 0] * b[3 + 0]  ) +
+                                    ( a[row_offset + 1] * b[3 + 4]  ) +
+                                    ( a[row_offset + 2] * b[3 + 8]  ) +
+                                    ( a[row_offset + 3] * b[3 + 12] );
             }
             return r;
         }
-        __forceinline F32 det(const F32* mat) {
-            return ((mat[0] * mat[5] * mat[10]) +
-                    (mat[4] * mat[9] * mat[2]) +
-                    (mat[8] * mat[1] * mat[6]) -
-                    (mat[8] * mat[5] * mat[2]) -
-                    (mat[4] * mat[1] * mat[10]) -
-                    (mat[0] * mat[9] * mat[6]));
+
+        template<typename T>
+        __forceinline T det( const T* mat ) {
+            return ( ( mat[0] * mat[5] * mat[10] ) +
+                     ( mat[4] * mat[9] * mat[2] ) +
+                     ( mat[8] * mat[1] * mat[6] ) -
+                     ( mat[8] * mat[5] * mat[2] ) -
+                     ( mat[4] * mat[1] * mat[10] ) -
+                     ( mat[0] * mat[9] * mat[6] ) );
         }
 
         // Copyright 2011 The Closure Library Authors. All Rights Reserved.
-        __forceinline void Inverse(const F32* in, F32* out){
-            F32 m00 = in[ 0], m10 = in[ 1], m20 = in[ 2], m30 = in[ 3];
-            F32 m01 = in[ 4], m11 = in[ 5], m21 = in[ 6], m31 = in[ 7];
-            F32 m02 = in[ 8], m12 = in[ 9], m22 = in[10], m32 = in[11];
-            F32 m03 = in[12], m13 = in[13], m23 = in[14], m33 = in[15];
+        template<typename T>
+        __forceinline void Inverse(const T* in, T* out){
+            T m00 = in[ 0], m10 = in[ 1], m20 = in[ 2], m30 = in[ 3];
+            T m01 = in[ 4], m11 = in[ 5], m21 = in[ 6], m31 = in[ 7];
+            T m02 = in[ 8], m12 = in[ 9], m22 = in[10], m32 = in[11];
+            T m03 = in[12], m13 = in[13], m23 = in[14], m33 = in[15];
 
-            F32 a0 = m00 * m11 - m10 * m01;
-            F32 a1 = m00 * m21 - m20 * m01;
-            F32 a2 = m00 * m31 - m30 * m01;
-            F32 a3 = m10 * m21 - m20 * m11;
-            F32 a4 = m10 * m31 - m30 * m11;
-            F32 a5 = m20 * m31 - m30 * m21;
-            F32 b0 = m02 * m13 - m12 * m03;
-            F32 b1 = m02 * m23 - m22 * m03;
-            F32 b2 = m02 * m33 - m32 * m03;
-            F32 b3 = m12 * m23 - m22 * m13;
-            F32 b4 = m12 * m33 - m32 * m13;
-            F32 b5 = m22 * m33 - m32 * m23;
+            T a0 = m00 * m11 - m10 * m01;
+            T a1 = m00 * m21 - m20 * m01;
+            T a2 = m00 * m31 - m30 * m01;
+            T a3 = m10 * m21 - m20 * m11;
+            T a4 = m10 * m31 - m30 * m11;
+            T a5 = m20 * m31 - m30 * m21;
+            T b0 = m02 * m13 - m12 * m03;
+            T b1 = m02 * m23 - m22 * m03;
+            T b2 = m02 * m33 - m32 * m03;
+            T b3 = m12 * m23 - m22 * m13;
+            T b4 = m12 * m33 - m32 * m13;
+            T b5 = m22 * m33 - m32 * m23;
 
-            F32 det = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
-            assert(!IS_ZERO(det));
+            T idet = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
+            assert(!IS_ZERO(idet));
                 
-            F32 idet = 1.0f / det;
+            idet = 1 / idet;
+
             out[ 0] = ( m11 * b5 - m21 * b4 + m31 * b3) * idet;
             out[ 1] = (-m10 * b5 + m20 * b4 - m30 * b3) * idet;
             out[ 2] = ( m13 * a5 - m23 * a4 + m33 * a3) * idet;

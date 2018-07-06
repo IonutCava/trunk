@@ -67,6 +67,8 @@ namespace Divide {
         void glfw_focus_callback(GLFWwindow *window, I32 focusState);
         /// This function is called if GLFW throws an error
         void glfw_error_callback(GLint error, const char* description);
+		/// Release thread specific GLEW pointers
+		void destroyGlew();
         /// Initialize GLEW and all needed data (GLEW_MX case handled here)
         void initGlew();
         /// Check the current operation for errors

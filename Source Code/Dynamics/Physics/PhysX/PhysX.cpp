@@ -87,7 +87,7 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
         PxCookingParams* cookparams = New PxCookingParams(PxTolerancesScale());
         cookparams->targetPlatform = PxPlatform::ePC;
         _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, *cookparams);
-        SAFE_DELETE(cookparams);
+        MemoryManager::SAFE_DELETE( cookparams );
     }
 
     updateTimeStep(targetFrameRate);
@@ -156,7 +156,7 @@ PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
 
 void PhysX::setPhysicsScene( PhysicsSceneInterface* const targetScene ) {
 	if ( _targetScene ) {
-		SAFE_DELETE( _targetScene );
+        MemoryManager::SAFE_DELETE( _targetScene );
 	}
 	_targetScene = targetScene;
 }
@@ -232,12 +232,11 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
 
 	PhysXActor* tempActor = targetScene->getOrCreateRigidActor( node->getName() );
 	assert( tempActor != nullptr );
-	assert( nodePhysics->getConstTransform() != nullptr );
     tempActor->setParent(nodePhysics);
 
     if (!tempActor->_actor) {
-        const vec3<F32>& position = nodePhysics->getConstTransform()->getPosition();
-        const vec4<F32>& orientation = nodePhysics->getConstTransform()->getOrientation().asVec4();
+        const vec3<F32>& position = nodePhysics->getPosition();
+        const vec4<F32>& orientation = nodePhysics->getOrientation().asVec4();
 
         physx::PxTransform posePxTransform(PxVec3(position.x, position.y, position.z),
                                            PxQuat(orientation.x,orientation.y,orientation.z,orientation.w).getConjugate());
@@ -250,7 +249,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
         }
 
         if (!tempActor->_actor) {
-            SAFE_DELETE(tempActor);
+            MemoryManager::SAFE_DELETE( tempActor );
             return false;
         }
 
@@ -269,7 +268,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
         return false;
     }
 
-    const vec3<F32>& scale = tempActor->getComponent()->getConstTransform()->getScale();
+    const vec3<F32>& scale = tempActor->getComponent()->getScale();
     PxTriangleMeshGeometry triangleGeometry(triangleMesh, PxMeshScale(PxVec3(scale.x,scale.y,scale.z), PxQuat(PxIdentity)));
 	tempActor->_actor->createShape(triangleGeometry, *_gPhysicsSDK->createMaterial( 0.7f, 0.7f, 1.0f ) );
 

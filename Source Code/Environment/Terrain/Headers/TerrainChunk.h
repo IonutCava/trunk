@@ -41,7 +41,7 @@ class TerrainChunk{
 public:
     TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode);
     ~TerrainChunk();
-    void Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, SceneGraphNode* const parentTerrainSGN);
+    void Load( U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, Terrain* const terrain );
     void Destroy();
 
     void CreateDrawCommand(I8 lod);
@@ -54,6 +54,10 @@ public:
     inline vec4<F32> getOffsetAndSize() const { return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);}
 
     U8 getLoD() const;
+
+protected:
+    friend class Terrain;
+    Vegetation* const getVegetation() const { return _vegetation; }
 
 private:
     void ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);

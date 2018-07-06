@@ -10,7 +10,7 @@ WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
     WaterPlane* ptr = New WaterPlane();
 
     if(!load(ptr, _descriptor.getName())){
-        SAFE_DELETE(ptr);
+        MemoryManager::SAFE_DELETE( ptr );
     }
 
     return ptr;
@@ -23,10 +23,10 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const stringImp
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TEXTURE_REPEAT);
     defaultSampler.toggleMipMaps(false);
-    ResourceDescriptor waterMaterial("waterMaterial");
-    ResourceDescriptor waterShader("water");
-    ResourceDescriptor waterTexture("waterTexture");
-    ResourceDescriptor waterTextureDUDV("waterTextureDUDV");
+    ResourceDescriptor waterMaterial("waterMaterial_"+name);
+    ResourceDescriptor waterShader( "water_" + name );
+    ResourceDescriptor waterTexture( "waterTexture_" + name );
+    ResourceDescriptor waterTextureDUDV( "waterTextureDUDV_" + name );
 	waterTexture.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
     waterTexture.setPropertyDescriptor(defaultSampler);
 	waterTextureDUDV.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/water_dudv.jpg");
@@ -36,6 +36,10 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const stringImp
     assert(waterNM != nullptr);
 
     ShaderProgram* waterShaderProgram = CreateResource<ShaderProgram>(waterShader);
+    waterShaderProgram->UniformTexture( "texWaterNoiseNM", 0 );
+    waterShaderProgram->UniformTexture( "texWaterReflection", 1 );
+    waterShaderProgram->UniformTexture( "texWaterRefraction", 2 );
+    waterShaderProgram->UniformTexture( "texWaterNoiseDUDV", 3 );
     assert(waterShaderProgram != nullptr);
 
     Material* waterMat = CreateResource<Material>(waterMaterial);

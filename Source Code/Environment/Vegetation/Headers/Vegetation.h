@@ -63,12 +63,12 @@ class Vegetation : public SceneNode {
 public:
     Vegetation(const VegetationDetails& details);
     ~Vegetation();
-    void postLoad(SceneGraphNode* const sgn) { SceneNode::postLoad(sgn); }
-    void initialize(TerrainChunk* const terrainChunk, SceneGraphNode* const terrainSGN);
+
+    void initialize(TerrainChunk* const terrainChunk);
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
-    inline bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) { return true; }
+    inline bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true ) { return true; }
 
 protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
@@ -94,7 +94,6 @@ private:
     bool _success;
 	std::atomic_bool _threadedLoadComplete;
 	std::atomic_bool _stopLoadingRequest;
-    SceneGraphNode* _terrainSGN;
     Terrain*        _terrain;
     TerrainChunk*   _terrainChunk;
     F32 _grassDensity, _treeDensity;

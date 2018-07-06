@@ -27,7 +27,7 @@ namespace Navigation {
 
     DivideRecast::~DivideRecast()
     {
-        SAFE_DELETE(_filter);
+        MemoryManager::SAFE_DELETE( _filter );
     }
 
     PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh, 

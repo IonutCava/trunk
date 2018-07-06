@@ -51,8 +51,6 @@ namespace {
 };
 
 GFXDevice::GFXDevice() : _api(nullptr),
-                         _postFX(PostFX::getOrCreateInstance()),
-                         _shaderManager(ShaderManager::getOrCreateInstance()),
                          _renderStage(INVALID_STAGE)
 {
    // Hash values
@@ -365,9 +363,9 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     // Inform the Kernel
     Kernel::updateResolutionCallback(w, h);
     // Update post-processing render targets and buffers
-    _postFX.updateResolution(w, h);
+    PostFX::getInstance().updateResolution(w, h);
     // Refresh shader programs
-    _shaderManager.refreshShaderData();
+	ShaderManager::getInstance().refreshShaderData();
     // Update the 2D camera so it matches our new rendering viewport
     _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
 }
@@ -380,7 +378,7 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color) {
     par.setParam("rendering.sceneState.fogColor.b", color.b);
     par.setParam("rendering.sceneState.fogDensity", density);
     // Shader programs will pick up the new values on the next update call
-    _shaderManager.refreshSceneData();
+	ShaderManager::getInstance().refreshSceneData();
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it
@@ -395,11 +393,11 @@ void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
     } else if (mode == TEXTURE_MATRIX) { 
         mat.set(_textureMatrix);                 
     } else if (mode == VIEW_INV_MATRIX) { 
-        _gpuBlock._ViewMatrix.inverse(mat);       
+        _gpuBlock._ViewMatrix.getInverse(mat);       
     } else if (mode == PROJECTION_INV_MATRIX) { 
-        _gpuBlock._ProjectionMatrix.inverse(mat);
+        _gpuBlock._ProjectionMatrix.getInverse(mat);
     } else if (mode == VIEW_PROJECTION_INV_MATRIX) { 
-        _gpuBlock._ViewProjectionMatrix.inverse(mat);
+        _gpuBlock._ViewProjectionMatrix.getInverse(mat);
     } else { 
         DIVIDE_ASSERT(mode == -1, "GFXDevice error: attempted to query an invalid matrix target!"); 
     }
@@ -540,7 +538,7 @@ void GFXDevice::postProcessingEnabled(const bool state) {
         // If we enable post-processing, we must call idle() once to make sure it pulled updated values
         if(state) {
             // If idle isn't called before rendering, outdated data may cause a crash or rendering artifacts
-            _postFX.idle();
+            PostFX::getInstance().idle();
         }
     }
 }
@@ -608,11 +606,11 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
         SceneGraphNode* const crtNode = visibleNodes[i];
         NodeData& temp = _matricesData[i + 1];
         // Extract transform data
-        const Transform* transform = crtNode->getComponent<PhysicsComponent>()->getConstTransform();
+        const PhysicsComponent* const transform = crtNode->getComponent<PhysicsComponent>();
         // If we have valid transform data ...
         if (transform) {
             // ... get the node's world matrix properly interpolated
-            temp._matrix[0].set(crtNode->getWorldMatrix(_interpolationFactor));
+            temp._matrix[0].set(crtNode->getComponent<PhysicsComponent>()->getWorldMatrix(_interpolationFactor));
             // Calculate the normal matrix (world * view)
             // If the world matrix is uniform scaled, inverseTranspose is a double transpose (no-op) so we can skip it
             temp._matrix[1].set(mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix));
@@ -818,7 +816,7 @@ void GFXDevice::Screenshot(char* filename){
     // Save to file
     ImageTools::SaveSeries(filename, vec2<U16>(resolution.width, resolution.height), 32, imageData);
     // Delete local buffers
-    SAFE_DELETE_ARRAY(imageData);
+    MemoryManager::SAFE_DELETE_ARRAY( imageData );
 }
 
 };

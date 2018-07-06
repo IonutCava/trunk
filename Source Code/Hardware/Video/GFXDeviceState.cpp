@@ -22,10 +22,11 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
         return hardwareState;
     }
     // Initialize the shader manager
-    ShaderManager::getInstance().init();
+    ShaderManager::getOrCreateInstance().init();
     // Create an immediate mode shader used for general purpose rendering (e.g. to mimic the fixed function pipeline)
     _imShader = ShaderManager::getInstance().getDefaultShader();
     DIVIDE_ASSERT(_imShader != nullptr, "GFXDevice error: No immediate mode emulation shader available!");
+	PostFX::createInstance();
     // Create a shader buffer to store the following info: ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
     // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping. (Many small updates with BufferSubData are recommended with the target usage of the buffer)
     _gfxDataBuffer = newSB(false, false);
@@ -105,7 +106,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
         _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width, resolution.height);
     }
     /// If render targets ready, we initialize our post processing system    
-    _postFX.init(resolution);
+    PostFX::getInstance().init(resolution);
     /// We also add a couple of useful cameras used by this class. One for rendering in 2D and one for generating cube maps
 	
     Application::getInstance().getKernel()->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
@@ -133,40 +134,55 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
 void GFXDevice::closeRenderingApi() {
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
-    // Destroy our post processing system
-    PRINT_FN(Locale::get("STOP_POST_FX"));
-    PostFX::destroyInstance();
+	// Destroy our post processing system
+	PRINT_FN( Locale::get( "STOP_POST_FX" ) );
+	PostFX::destroyInstance();
     // Delete the renderer implementation
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
-    SAFE_DELETE(_renderer);
-    // Close the rendering API
-    _api->closeRenderingApi();
-    // Wait for the loading thread to terminate
-    _loaderThread->join();
-    // And delete it
-    SAFE_DELETE(_loaderThread);
+    MemoryManager::SAFE_DELETE( _renderer );
     // Delete our default render state blocks
-    for(RenderStateMap::value_type& it : _stateBlockMap) {
-        SAFE_DELETE(it.second);
+    for ( RenderStateMap::value_type it : _stateBlockMap ) {
+        MemoryManager::SAFE_DELETE( it.second );
     }
     _stateBlockMap.clear();
     // Destroy all of the immediate mode emulation primitives created during runtime
-    for (IMPrimitive*& priv : _imInterfaces) {
-        SAFE_DELETE(priv);
+    for ( IMPrimitive*& priv : _imInterfaces ) {
+        MemoryManager::SAFE_DELETE( priv );
     }
     _imInterfaces.clear();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets
-    for (Framebuffer*& renderTarget : _renderTarget) {
-        SAFE_DELETE(renderTarget);
+    for ( Framebuffer*& renderTarget : _renderTarget ) {
+        MemoryManager::SAFE_DELETE( renderTarget );
     }
     // Delete our shader buffers
-    SAFE_DELETE(_gfxDataBuffer);
-    SAFE_DELETE(_nodeBuffer);
+    MemoryManager::SAFE_DELETE( _gfxDataBuffer );
+    MemoryManager::SAFE_DELETE( _nodeBuffer );
     // Close the shader manager
-    _shaderManager.destroy();
-	destroyAPIInstance();
+	ShaderManager::getInstance().destroy();
+	// Close the rendering API
+	_api->closeRenderingApi();
+	// Wait for the loading thread to terminate
+	_loaderThread->join();
+	// And delete it
+    MemoryManager::SAFE_DELETE( _loaderThread );
+
+	switch ( _apiId ) {
+		case RenderAPI::OpenGL:
+		case RenderAPI::OpenGLES: {
+			GL_API::destroyInstance();
+		} break;
+		case RenderAPI::Direct3D: {
+			DX_API::destroyInstance();
+		} break;
+		case RenderAPI::Mantle: {
+		}break;
+		case RenderAPI::None: {
+		}break;
+		default: {
+		}break;
+	};
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing
@@ -175,9 +191,9 @@ void GFXDevice::idle() {
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
     // Pass the idle call to the post processing system
-    _postFX.idle();
+    PostFX::getInstance().idle();
     // And to the shader manager
-    _shaderManager.idle();
+	ShaderManager::getInstance().idle();
 }
 
 void GFXDevice::beginFrame() {
@@ -206,7 +222,7 @@ void GFXDevice::endFrame() {
                                                                     });
         //2) For every zombie object, free the memory it's using
         for ( vectorImpl<IMPrimitive *>::iterator i = zombie ; i != _imInterfaces.end(); ++i ) {
-            SAFE_DELETE(*i);
+            MemoryManager::SAFE_DELETE( *i );
         }
         //3) Remove all the zombie objects once the memory is freed
         _imInterfaces.erase(zombie, _imInterfaces.end());
@@ -226,7 +242,7 @@ Renderer* GFXDevice::getRenderer() const {
 
 void GFXDevice::setRenderer(Renderer* const renderer) {
     DIVIDE_ASSERT(renderer != nullptr, "GFXDevice error: Tried to create an invalid renderer!"); 
-    SAFE_UPDATE(_renderer, renderer);
+    MemoryManager::SAFE_UPDATE( _renderer, renderer );
 }
 
 ErrorCode GFXDevice::createAPIInstance() {
@@ -258,21 +274,4 @@ ErrorCode GFXDevice::createAPIInstance() {
 	return NO_ERR;
 }
 
-void GFXDevice::destroyAPIInstance() {
-	switch (_apiId) {
-		case RenderAPI::OpenGL:
-		case RenderAPI::OpenGLES: {
-			GL_API::destroyInstance();
-		} break;
-		case RenderAPI::Direct3D: {
-			DX_API::destroyInstance();
-		} break;
-		case RenderAPI::Mantle: {
-		}break;
-		case RenderAPI::None: {
-		}break;
-		default: {
-		}break;
-	};
-}
 };

@@ -62,7 +62,7 @@ glFramebuffer::glFramebuffer(glFramebuffer* resolveBuffer) : Framebuffer(resolve
 
 glFramebuffer::~glFramebuffer()
 {
-    SAFE_DELETE(_resolveBuffer);
+    MemoryManager::SAFE_DELETE( _resolveBuffer );
     Destroy();
 }
 

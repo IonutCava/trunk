@@ -82,21 +82,21 @@ glGenericVertexData::~glGenericVertexData()
     if (_numQueries > 0) {
         for (U8 i = 0; i < 2; ++i) {
             glDeleteQueries(_numQueries, _feedbackQueries[i]);
-            SAFE_DELETE_ARRAY(_feedbackQueries[i]);
-            SAFE_DELETE_ARRAY(_resultAvailable[i]);
+            MemoryManager::SAFE_DELETE_ARRAY( _feedbackQueries[i] );
+            MemoryManager::SAFE_DELETE_ARRAY( _resultAvailable[i] );
         }
     }
 
     // Delete the rest of the data
-    SAFE_DELETE_ARRAY(_prevResult);
-    SAFE_DELETE_ARRAY(_bufferSet);
-    SAFE_DELETE_ARRAY(_bufferPersistent);
-    SAFE_DELETE_ARRAY(_elementCount);
-    SAFE_DELETE_ARRAY(_elementSize);
-    SAFE_DELETE_ARRAY(_sizeFactor);
-    SAFE_DELETE_ARRAY(_startDestOffset);
-    SAFE_DELETE_ARRAY(_readOffset);
-    SAFE_DELETE(_lockManager);
+    MemoryManager::SAFE_DELETE_ARRAY( _prevResult );
+    MemoryManager::SAFE_DELETE_ARRAY( _bufferSet );
+    MemoryManager::SAFE_DELETE_ARRAY( _bufferPersistent );
+    MemoryManager::SAFE_DELETE_ARRAY( _elementCount );
+    MemoryManager::SAFE_DELETE_ARRAY( _elementSize );
+    MemoryManager::SAFE_DELETE_ARRAY( _sizeFactor );
+    MemoryManager::SAFE_DELETE_ARRAY( _startDestOffset );
+    MemoryManager::SAFE_DELETE_ARRAY( _readOffset );
+    MemoryManager::SAFE_DELETE( _lockManager );
     if (_bufferPersistentData != nullptr) {
         free(_bufferPersistentData);
     }
@@ -309,8 +309,8 @@ void glGenericVertexData::SetAttributes(bool feedbackPass) {
     // Get the appropriate list of attributes
     attributeMap& map = feedbackPass ? _attributeMapFdbk : _attributeMapDraw;
     // And update them in turn
-    for(attributeMap::value_type& it : map) {
-        SetAttributeInternal(it.second);
+    for ( attributeMap::value_type it : map ) {
+        SetAttributeInternal( it.second );
     }
 }
 

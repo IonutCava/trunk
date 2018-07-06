@@ -5,8 +5,4 @@
 
 namespace Divide {
 
-	void Resource::refModifyCallback( bool increase ) {
-		TrackedObject::refModifyCallback( increase );
-	}
-
 }; //namespace Divide

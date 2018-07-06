@@ -23,16 +23,17 @@ SceneManager::SceneManager() : FrameListener(),
     AI::AIManager::createInstance();
 }
 
-SceneManager::~SceneManager(){
+SceneManager::~SceneManager()
+{
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
 
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
     //PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
     PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
-    for(SceneMap::value_type& it : _sceneMap){
-        SAFE_DELETE(it.second);
+    for ( SceneMap::value_type it : _sceneMap ) {
+        MemoryManager::SAFE_DELETE( it.second );
     }
-    SAFE_DELETE(_renderPassCuller);
+    MemoryManager::SAFE_DELETE( _renderPassCuller );
     _sceneMap.clear();
     //Destroy the model loader;
     DVDConverter::getInstance().destroyInstance();

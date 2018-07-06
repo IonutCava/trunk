@@ -80,6 +80,10 @@ public:
     inline void      throwError(ErrorCode err)       { _errorCode = err; }
     inline ErrorCode errorCode()               const { return _errorCode; }
 
+	/// Add a list of callback functions that should be called when the application instance is destroyed (release hardware, file handlers, etc)
+	inline void registerShutdownCallback( const DELEGATE_CBK<>& cbk ) {
+		_shutdownCallback.push_back( cbk );
+	}
 private:
     Application();
     ~Application();
@@ -102,7 +106,8 @@ private:
     stringImpl _memLogBuffer;
     ///Main application thread id
     std::thread::id _threadId;
-
+	///A list of callback functions that get called when the application instance is destroyed
+	vectorImpl<DELEGATE_CBK<> > _shutdownCallback;
 END_SINGLETON
 
 }; //namespace Divide

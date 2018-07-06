@@ -7,12 +7,12 @@ namespace Divide {
 Quad3D* ImplResourceLoader<Quad3D>::operator()(){
     Quad3D* ptr = New Quad3D(_descriptor.getMask().b.b0 == 0);
 
-    if(!load(ptr,_descriptor.getName())){
-        SAFE_DELETE(ptr);
-    }else{
-        if(_descriptor.getFlag()){
-            ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-            ptr->setMaterial(nullptr);
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
+        if ( _descriptor.getFlag() ) {
+            ptr->getSceneNodeRenderState().useDefaultMaterial( false );
+            ptr->setMaterial( nullptr );
         }
     }
 

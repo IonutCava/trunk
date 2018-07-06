@@ -21,7 +21,7 @@ ProfileTimer::ProfileTimer()
 ProfileTimer::~ProfileTimer()
 {
     ApplicationTimer::getInstance().removeTimer(this);
-    SAFE_DELETE(_name);
+    MemoryManager::SAFE_DELETE( _name );
 }
 
 void ProfileTimer::reset() {

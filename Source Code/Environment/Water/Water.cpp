@@ -9,7 +9,7 @@
 namespace Divide {
 
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)),
-                           _plane(nullptr), _node(nullptr), _planeSGN(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER), 
+                           _plane(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER), 
                            _reflectionPlaneID(ClipPlaneIndex_PLACEHOLDER), _reflectionRendering(false), _refractionRendering(false), _refractionTexture(nullptr), 
                            _dirty(true), _cameraUnderWater(false), _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
 {
@@ -21,60 +21,46 @@ WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,v
     waterPlane.setFlag(true); //No default material
     waterPlane.setBoolMask(quadMask);
     _plane = CreateResource<Quad3D>(waterPlane);
-    
+    _farPlane = 2.0f * GET_ACTIVE_SCENE()->state().getRenderState().getCameraConst().getZPlanes().y;
+    _plane->setCorner( Quad3D::TOP_LEFT, vec3<F32>( -_farPlane * 1.5f, 0, -_farPlane * 1.5f ) );
+    _plane->setCorner( Quad3D::TOP_RIGHT, vec3<F32>( _farPlane * 1.5f, 0, -_farPlane * 1.5f ) );
+    _plane->setCorner( Quad3D::BOTTOM_LEFT, vec3<F32>( -_farPlane * 1.5f, 0, _farPlane * 1.5f ) );
+    _plane->setCorner( Quad3D::BOTTOM_RIGHT, vec3<F32>( _farPlane * 1.5f, 0, _farPlane * 1.5f ) );
+    _plane->setNormal( Quad3D::CORNER_ALL, WORLD_Y_AXIS );
+    _plane->getSceneNodeRenderState().setDrawState( false );
+    //The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
+    getSceneNodeRenderState().addToDrawExclusionMask( SHADOW_STAGE );
+    PRINT_FN( Locale::get( "REFRACTION_INIT_FB" ), _resolution.x, _resolution.y );
+    SamplerDescriptor refractionSampler;
+    refractionSampler.setWrapMode( TEXTURE_CLAMP_TO_EDGE );
+    refractionSampler.toggleMipMaps( false );
+
+    TextureDescriptor refractionDescriptor( TEXTURE_2D, RGBA8, UNSIGNED_BYTE ); //Less precision for reflections
+    refractionDescriptor.setSampler( refractionSampler );
+
+    _refractionTexture = GFX_DEVICE.newFB();
+    _refractionTexture->AddAttachment( refractionDescriptor, TextureDescriptor::Color0 );
+    _refractionTexture->toggleDepthBuffer( true );
+    _refractionTexture->Create( _resolution.x, _resolution.y );
 }
 
 void WaterPlane::postLoad(SceneGraphNode* const sgn){
-    _node = sgn;
-
-    ShaderProgram* shader = getMaterial()->getShaderInfo(FINAL_STAGE).getProgram();
-
-    _farPlane = 2.0f * GET_ACTIVE_SCENE()->state().getRenderState().getCameraConst().getZPlanes().y;
-    _plane->setCorner(Quad3D::TOP_LEFT,     vec3<F32>(-_farPlane * 1.5f, 0, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::TOP_RIGHT,    vec3<F32>( _farPlane * 1.5f, 0, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::BOTTOM_LEFT,  vec3<F32>(-_farPlane * 1.5f, 0,  _farPlane * 1.5f));
-    _plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>( _farPlane * 1.5f, 0,  _farPlane * 1.5f));
-    _plane->setNormal(Quad3D::CORNER_ALL, WORLD_Y_AXIS);
-    _plane->getSceneNodeRenderState().setDrawState(false);
-    _planeSGN = _node->addNode(_plane);
-    //The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-    getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
-
-    shader->UniformTexture("texWaterNoiseNM", 0);
-    shader->UniformTexture("texWaterReflection", 1);
-    shader->UniformTexture("texWaterRefraction", 2);
-    shader->UniformTexture("texWaterNoiseDUDV", 3);
-    _dirty = true;
-
-    PRINT_FN(Locale::get("REFRACTION_INIT_FB"), _resolution.x, _resolution.y);
-    SamplerDescriptor refractionSampler;
-    refractionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    refractionSampler.toggleMipMaps(false);
-
-    TextureDescriptor refractionDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); //Less precision for reflections
-    refractionDescriptor.setSampler(refractionSampler);
-
-    _refractionTexture = GFX_DEVICE.newFB();
-    _refractionTexture->AddAttachment(refractionDescriptor, TextureDescriptor::Color0);
-    _refractionTexture->toggleDepthBuffer(true);
-    _refractionTexture->Create(_resolution.x, _resolution.y);
-
-    //getMaterial()->addCustomTexture(_refractionTexture->GetAttachment(TextureDescriptor::Color0), ShaderProgram::TEXTURE_UNIT1);
+    sgn->addNode(_plane);
     SceneNode::postLoad(sgn);
 }
 
 bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
-    BoundingBox& bb = _node->getBoundingBox();
+    BoundingBox& bb = sgn->getBoundingBox();
 
-    if(bb.isComputed())
+    if ( bb.isComputed() ) {
         return true;
-
+    }
+    SceneGraphNode* planeSGN = sgn->getChildren()[0];
     _waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel();
     _waterDepth = GET_ACTIVE_SCENE()->state().getWaterDepth();
-    _planeSGN->getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
-    _planeDirty = true;
+    planeSGN->getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
     bb.set(vec3<F32>(-_farPlane,_waterLevel - _waterDepth, -_farPlane), vec3<F32>(_farPlane, _waterLevel, _farPlane));
-    _planeSGN->getBoundingBox().Add(bb);
+    planeSGN->getBoundingBox().Add(bb);
     PRINT_FN(Locale::get("WATER_CREATE_DETAILS_1"), bb.getMax().y)
     PRINT_FN(Locale::get("WATER_CREATE_DETAILS_2"), bb.getMin().y);
     _dirty = true;
@@ -98,13 +84,17 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2
 void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     _cameraUnderWater = isPointUnderWater(sceneState.getRenderState().getCamera().getEye());
     if(_dirty){
-       _node->getBoundingSphere().fromBoundingBox(sgn->getBoundingBoxConst());
+       sgn->getBoundingSphere().fromBoundingBox(sgn->getBoundingBoxConst());
        _dirty = false;
     }
 }
 
 bool WaterPlane::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
-
+    const Quaternion<F32>& orientation = sgn->getComponent<PhysicsComponent>()->getOrientation();
+    if ( !_orientation.compare( orientation )) {
+        _orientation.set( orientation );
+        updatePlaneEquation();
+    }
     return true;
 }
 
@@ -119,8 +109,9 @@ void WaterPlane::render(SceneGraphNode* const sgn, const SceneRenderState& scene
 
     if(!depthPass){
         _reflectedTexture->Bind(1);
-        if (!_cameraUnderWater)
-            _refractionTexture->Bind(2);
+        if ( !_cameraUnderWater ) {
+            _refractionTexture->Bind( 2 );
+        }
     }
 
     ShaderProgram* drawShader = getDrawShader(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE);
@@ -195,10 +186,9 @@ void WaterPlane::updateReflection(){
 }
 
 void WaterPlane::updatePlaneEquation(){
-    const Quaternion<F32>& orientation = _planeSGN->getComponent<PhysicsComponent>()->getConstTransform()->getOrientation();
-    vec3<F32> reflectionNormal(orientation * WORLD_Y_AXIS);
+    vec3<F32> reflectionNormal( _orientation * WORLD_Y_AXIS );
     reflectionNormal.normalize();
-    vec3<F32> refractionNormal(orientation * WORLD_Y_NEG_AXIS);
+    vec3<F32> refractionNormal( _orientation * WORLD_Y_NEG_AXIS );
     refractionNormal.normalize();
     _reflectionPlane.set(reflectionNormal, -_waterLevel);
     _reflectionPlane.active(false);

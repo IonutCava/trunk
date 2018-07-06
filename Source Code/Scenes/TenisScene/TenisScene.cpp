@@ -116,12 +116,12 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
     SceneGraphNode* Player3 = _aiPlayer3->getUnitRef()->getBoundNode();
     SceneGraphNode* Player4 = _aiPlayer4->getUnitRef()->getBoundNode();
     //Store by copy (thread-safe) current ball position (getPosition()) should be threadsafe
-    vec3<F32> netPosition  = _net->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-    vec3<F32> ballPosition = _ballSGN->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-    vec3<F32> player1Pos   = Player1->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-    vec3<F32> player2Pos   = Player2->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-    vec3<F32> player3Pos   = Player3->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-    vec3<F32> player4Pos   = Player4->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> netPosition  = _net->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> ballPosition = _ballSGN->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player1Pos   = Player1->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player2Pos   = Player2->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player3Pos   = Player3->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> player4Pos   = Player4->getComponent<PhysicsComponent>()->getPosition();
     vec3<F32> netBBMax     = _net->getBoundingBox().getMax();
     vec3<F32> netBBMin     = _net->getBoundingBox().getMin();
 
@@ -262,7 +262,7 @@ bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
 
     //------------------------ Load up game elements -----------------------------///
     _net = _sceneGraph->findNode("Net");
-    //for(SceneGraphNode::NodeChildren::value_type& it : _net->getChildren()){
+    //for(SceneGraphNode::NodeChildren::value_type it : _net->getChildren()){
         //it.second->setReceivesShadows(false);
     //}
     _floor = _sceneGraph->findNode("Floor");
@@ -285,10 +285,10 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     player[2]->setSelectable(true);
     player[3]->setSelectable(true);
 
-    _aiPlayer1 = New AI::AIEntity(player[0]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player1");
-    _aiPlayer2 = New AI::AIEntity(player[1]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player2");
-    _aiPlayer3 = New AI::AIEntity(player[2]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player3");
-    _aiPlayer4 = New AI::AIEntity(player[3]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player4");
+    _aiPlayer1 = New AI::AIEntity(player[0]->getComponent<PhysicsComponent>()->getPosition(), "Player1");
+    _aiPlayer2 = New AI::AIEntity(player[1]->getComponent<PhysicsComponent>()->getPosition(), "Player2");
+    _aiPlayer3 = New AI::AIEntity(player[2]->getComponent<PhysicsComponent>()->getPosition(), "Player3");
+    _aiPlayer4 = New AI::AIEntity(player[3]->getComponent<PhysicsComponent>()->getPosition(), "Player4");
     _aiPlayer1->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer2->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer3->addSensor(AI::VISUAL_SENSOR);
@@ -338,16 +338,16 @@ bool TenisScene::deinitializeAI(bool continueOnErrors){
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer2);
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer3);
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer4);
-    SAFE_DELETE(_aiPlayer1);
-    SAFE_DELETE(_aiPlayer2);
-    SAFE_DELETE(_aiPlayer3);
-    SAFE_DELETE(_aiPlayer4);
-    SAFE_DELETE(_player1);
-    SAFE_DELETE(_player2);
-    SAFE_DELETE(_player3);
-    SAFE_DELETE(_player4);
-    SAFE_DELETE(_team1);
-    SAFE_DELETE(_team2);
+    MemoryManager::SAFE_DELETE( _aiPlayer1 );
+    MemoryManager::SAFE_DELETE( _aiPlayer2 );
+    MemoryManager::SAFE_DELETE( _aiPlayer3 );
+    MemoryManager::SAFE_DELETE( _aiPlayer4 );
+    MemoryManager::SAFE_DELETE( _player1 );
+    MemoryManager::SAFE_DELETE( _player2 );
+    MemoryManager::SAFE_DELETE( _player3 );
+    MemoryManager::SAFE_DELETE( _player4 );
+    MemoryManager::SAFE_DELETE( _team1 );
+    MemoryManager::SAFE_DELETE( _team2 );
     return Scene::deinitializeAI(continueOnErrors);
 }
 
@@ -355,7 +355,7 @@ bool TenisScene::loadResources(bool continueOnErrors){
     //Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(ballDescriptor);
-    _ballSGN = addGeometry(_ball,"TenisBallSGN");
+    _ballSGN = _sceneGraph->addNode( _ball, "TenisBallSGN" );
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
     _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));

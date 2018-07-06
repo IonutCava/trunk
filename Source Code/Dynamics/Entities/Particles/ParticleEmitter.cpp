@@ -25,7 +25,6 @@ ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
                                     _enabled(false),
                                     _uploaded(false),
                                     _created(false),
-                                    _impostorSGN(nullptr),
                                     _particleTexture(nullptr),
                                     _particleShader(nullptr),
 									_particleGPUBuffer(nullptr),
@@ -72,7 +71,10 @@ bool ParticleEmitter::initData(){
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
-    _impostor = New Impostor(_name + "_impostor");
+    _impostor = CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
+    _impostor->getSceneNodeRenderState().setDrawState( false );
+    _impostor->getMaterial()->setDiffuse( vec4<F32>( 0.0f, 0.0f, 1.0f, 1.0f ) );
+    _impostor->getMaterial()->setAmbient( vec4<F32>( 0.0f, 0.0f, 1.0f, 1.0f ) );
     _renderState.addToDrawExclusionMask(SHADOW_STAGE);
     return (_particleShader != nullptr);
 }
@@ -88,7 +90,7 @@ bool ParticleEmitter::unload(){
     RemoveResource(_particleShader);
     RemoveResource(_particleDepthShader);
    
-    SAFE_DELETE(_particleGPUBuffer);
+    MemoryManager::SAFE_DELETE( _particleGPUBuffer );
     
     _particles.clear();
     _particlePositionData.clear();
@@ -98,25 +100,14 @@ bool ParticleEmitter::unload(){
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode* const sgn){
-    ///Hold a pointer to the trigger's location in the SceneGraph
-    _particleEmitterSGN = sgn;
-    
-    _impostor->getSceneNodeRenderState().setDrawState(false);
-    _impostorSGN = _particleEmitterSGN->addNode(_impostor);
-    _impostorSGN->setActive(false);
-    _impostor->getMaterial()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-    _impostor->getMaterial()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-    
-    _updateParticleEmitterBB = true;
-
-    setState(RES_LOADED);
-
+    sgn->addNode(_impostor)->setActive(false);
     SceneNode::postLoad(sgn);
 }
 
 bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn){
-    if(!_enabled || !_created)
+    if ( !_enabled || !_created ) {
         return false;
+    }
 
     _updateParticleEmitterBB = true;
     sgn->getBoundingBox().set(vec3<F32>(-5), vec3<F32>(5));
@@ -223,15 +214,15 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
         return;
 
     if (_updateParticleEmitterBB) {
-        sgn->updateBoundingBoxTransform(sgn->getWorldMatrix());
+        sgn->updateBoundingBoxTransform(sgn->getComponent<PhysicsComponent>()->getWorldMatrix());
         _updateParticleEmitterBB = false;
     }
 
     F32 delta = getUsToSec(deltaTime);
 
     I32 newParticles = _descriptor._emissionInterval + random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
-    newParticles = (I32)(newParticles * delta) / (_lodLevel + 1);
-    const Transform* transform = sgn->getComponent<PhysicsComponent>()->getConstTransform();
+    newParticles = (I32)(newParticles * delta) / (sgn->lodLevel() + 1);
+    const PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
     const vec3<F32>& origin = transform->getPosition();
     const Quaternion<F32>& orientation = transform->getOrientation();

@@ -45,10 +45,17 @@ public:
     vectorImpl<Bone*> _children;
 
     //index in the current animation's channel array.
-    Bone(const stringImpl& name) : _name(name), _parent(0){}
-    Bone() : _parent(0){ }
-    ~Bone() {
-        SAFE_DELETE_VECTOR(_children); 
+    Bone(const stringImpl& name) : _name(name), _parent(0)
+    {
+    }
+
+    Bone() : Bone("")
+    {
+    }
+
+    ~Bone() 
+    {
+        MemoryManager::SAFE_DELETE_VECTOR( _children );
     }
 };
 

@@ -7,12 +7,12 @@ namespace Divide {
 Text3D* ImplResourceLoader<Text3D>::operator()(){
     Text3D* ptr = New Text3D(_descriptor.getName(),_descriptor.getResourceLocation());
 
-    if(!load(ptr,_descriptor.getName())){
-        SAFE_DELETE(ptr);
-    }else{
-        if(_descriptor.getFlag()){
-            ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-            ptr->setMaterial(nullptr);
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
+        if ( _descriptor.getFlag() ) {
+            ptr->getSceneNodeRenderState().useDefaultMaterial( false );
+            ptr->setMaterial( nullptr );
         }
         ptr->getText() = _descriptor.getPropertyListString();
     }

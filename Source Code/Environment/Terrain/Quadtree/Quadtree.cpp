@@ -13,7 +13,7 @@ Quadtree::Quadtree() : _root(nullptr),
 
 Quadtree::~Quadtree() 
 {
-    SAFE_DELETE(_root);
+    MemoryManager::SAFE_DELETE( _root );
 }
 
 void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
@@ -59,13 +59,12 @@ QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {
     return node;
 }
 
-void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minHMSize, SceneGraphNode* const parentTerrainSGN){
+void Quadtree::Build( BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minHMSize, Terrain* const terrain) {
     _root = New QuadtreeNode();
     _root->setBoundingBox(terrainBBox);
 
-    _root->Build(0, vec2<U32>(0, 0), HMsize, minHMSize, parentTerrainSGN, _chunkCount);
+    _root->Build(0, vec2<U32>(0, 0), HMsize, minHMSize, terrain, _chunkCount);
 
-    Terrain* terrain = parentTerrainSGN->getNode<Terrain>();
     // Generate index buffer
     const U32 terrainWidth = HMsize.x;
     const U32 terrainHeight = HMsize.y;

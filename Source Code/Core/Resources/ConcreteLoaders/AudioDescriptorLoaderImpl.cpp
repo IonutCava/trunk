@@ -9,9 +9,9 @@ AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()(){
     AudioDescriptor* ptr = New AudioDescriptor(_descriptor.getResourceLocation());
     assert(ptr != nullptr);
 
-    if(!load(ptr,_descriptor.getName())){
-        SAFE_DELETE(ptr);
-    }else{
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
         ptr->isLooping() = _descriptor.getFlag();
     }
 

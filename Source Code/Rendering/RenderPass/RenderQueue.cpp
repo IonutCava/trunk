@@ -18,16 +18,16 @@ RenderQueue::RenderQueue() : _renderQueueLocked(false), _isSorted(false)
 
 RenderQueue::~RenderQueue()
 {
-	for (RenderBinMap::value_type& renderBins : _renderBins){
-        SAFE_DELETE(renderBins.second);
+    for ( RenderBinMap::value_type renderBins : _renderBins ) {
+        MemoryManager::SAFE_DELETE( renderBins.second );
     }
     _renderBins.clear();
 }
 
 U16 RenderQueue::getRenderQueueStackSize() const {
     U16 temp = 0;
-	for (const RenderBinMap::value_type& renderBins : _renderBins) {
-        temp += (renderBins.second)->getBinSize();
+    for ( const RenderBinMap::value_type renderBins : _renderBins ) {
+        temp += ( renderBins.second )->getBinSize();
     }
     return temp;
 }
@@ -156,22 +156,24 @@ void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn, const vec3<F32>& eye
 }
 
 void RenderQueue::sort(const RenderStage& currentRenderStage){
-    /*if(_renderQueueLocked && _isSorted)
-        return;*/
+    /*if(_renderQueueLocked && _isSorted) {
+        return;
+    }*/
 
-	for (RenderBinMap::value_type& renderBin : _renderBins) {
-        assert(renderBin.second);
-        renderBin.second->sort(currentRenderStage);
+    for ( RenderBinMap::value_type renderBin : _renderBins ) {
+        assert( renderBin.second );
+        renderBin.second->sort( currentRenderStage );
     }
+
     _isSorted = true;
 }
 
 void RenderQueue::refresh(bool force){
-    if(_renderQueueLocked && !force) {
+    if ( _renderQueueLocked && !force ) {
         return;
     }
-	for (RenderBinMap::value_type& renderBin : _renderBins){
-        assert(renderBin.second);
+    for ( RenderBinMap::value_type renderBin : _renderBins ) {
+        assert( renderBin.second );
         renderBin.second->refresh();
     }
     _isSorted = false;
@@ -184,7 +186,9 @@ void RenderQueue::lock(){
 void RenderQueue::unlock(bool resetNodes){
     _renderQueueLocked = false;
 
-    if (resetNodes) refresh();
+    if ( resetNodes ) {
+        refresh();
+    }
 }
 
 };

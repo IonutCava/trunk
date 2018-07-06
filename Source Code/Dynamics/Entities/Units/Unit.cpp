@@ -16,7 +16,7 @@ Unit::Unit(UnitType type, SceneGraphNode* const node) : FrameListener(),
     DIVIDE_ASSERT(node != nullptr, "Unit error: Invalid parent node specified!");
     REGISTER_FRAME_LISTENER(this, 5);
 	_node->registerDeletionCallback( DELEGATE_BIND( &Unit::nodeDeleted, this ) );
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
 }
 
 Unit::~Unit()
@@ -33,7 +33,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     WriteLock w_lock(_unitUpdateMutex);
     // We receive move request every frame for now (or every task tick)
     // Start plotting a course from our current position
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
     _currentTargetPosition = targetPosition;
 
     if (_prevTime <= 0) {
@@ -97,7 +97,7 @@ bool Unit::moveToX(const F32 targetPosition) {
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
     w_lock.unlock();
     return moveTo(vec3<F32>(targetPosition,_currentPosition.y,_currentPosition.z));
 }
@@ -109,7 +109,7 @@ bool Unit::moveToY(const F32 targetPosition) {
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
     w_lock.unlock();
     return moveTo(vec3<F32>(_currentPosition.x,targetPosition,_currentPosition.z));
 }
@@ -121,7 +121,7 @@ bool Unit::moveToZ(const F32 targetPosition) {
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
     w_lock.unlock();
     return moveTo(vec3<F32>(_currentPosition.x,_currentPosition.y,targetPosition));
 }
@@ -141,11 +141,11 @@ bool Unit::teleportTo(const vec3<F32>& targetPosition) {
     }
     PhysicsComponent* nodePhysicsComponent = _node->getComponent<PhysicsComponent>();
     /// Start plotting a course from our current position
-    _currentPosition = nodePhysicsComponent->getConstTransform()->getPosition();
+    _currentPosition = nodePhysicsComponent->getPosition();
     /// teleport to desired position
     nodePhysicsComponent->setPosition(_currentTargetPosition);
     /// Update current position
-    _currentPosition = nodePhysicsComponent->getConstTransform()->getPosition();
+    _currentPosition = nodePhysicsComponent->getPosition();
     /// And check if we arrived
     if (_currentTargetPosition.compare(_currentPosition,0.0001f)) {
         return true; ///< yes

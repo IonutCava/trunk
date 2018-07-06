@@ -46,13 +46,14 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
     reshape(width, height);
 }
 
-BloomPreRenderOperator::~BloomPreRenderOperator(){
+BloomPreRenderOperator::~BloomPreRenderOperator()
+{
     RemoveResource(_bright);
     RemoveResource(_blur);
-    SAFE_DELETE(_tempBloomFB);
-    SAFE_DELETE(_luminaFB[0]);
-    SAFE_DELETE(_luminaFB[1]);
-    SAFE_DELETE(_tempHDRFB);
+    MemoryManager::SAFE_DELETE( _tempBloomFB );
+    MemoryManager::SAFE_DELETE( _luminaFB[0] );
+    MemoryManager::SAFE_DELETE( _luminaFB[1] );
+    MemoryManager::SAFE_DELETE( _tempHDRFB );
 }
 
 U32 nextPOW2(U32 n) {

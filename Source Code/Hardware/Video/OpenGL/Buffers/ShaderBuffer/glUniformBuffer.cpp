@@ -34,7 +34,7 @@ glUniformBuffer::~glUniformBuffer()
         _UBOid = 0;
     }
 
-    SAFE_DELETE(_lockManager);
+    MemoryManager::SAFE_DELETE( _lockManager );
 }
 
 void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {

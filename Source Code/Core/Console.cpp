@@ -17,7 +17,7 @@ Console::Console() : Singleton()
 
 Console::~Console()
 {
-    SAFE_DELETE_ARRAY(_textBuffer);
+    MemoryManager::SAFE_DELETE_ARRAY( _textBuffer );
 }
 
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio

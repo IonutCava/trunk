@@ -83,11 +83,11 @@ bool GUIEditor::Handle_ChangeSelection(SceneGraphNode* const newNode) {
 
 void GUIEditor::TrackSelection() {
     if (_currentSelection && !_pauseSelectionTracking) {
-        const Transform* selectionTransform = _currentSelection->getComponent<PhysicsComponent>()->getConstTransform();
-        const vec3<F32>& localPosition = selectionTransform->getLocalPosition();
-        const vec3<F32>& localScale = selectionTransform->getLocalScale();
+        const PhysicsComponent* const selectionTransform = _currentSelection->getComponent<PhysicsComponent>();
+        const vec3<F32>& localPosition = selectionTransform->getPosition();
+        const vec3<F32>& localScale = selectionTransform->getScale();
         vec3<F32> localOrientation;
-        selectionTransform->getLocalOrientation().getEuler(&localOrientation, true);
+        selectionTransform->getOrientation().getEuler(&localOrientation, true);
 
         _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] = localPosition.x;
         _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] = localPosition.y;
@@ -117,7 +117,7 @@ void GUIEditor::TrackSelection() {
 void GUIEditor::UpdateControls() {
     bool hasValidTransform = false;
     if (_currentSelection) {
-        hasValidTransform = (_currentSelection->getComponent<PhysicsComponent>()->getConstTransform() != nullptr);
+        hasValidTransform = (_currentSelection->getComponent<PhysicsComponent>() != nullptr);
         _toggleButtons[TOGGLE_WIREFRAME]->setEnabled(true);
         _toggleButtons[TOGGLE_BOUNDING_BOXES]->setEnabled(true);
         _toggleButtons[TOGGLE_SKELETONS]->setEnabled(true);

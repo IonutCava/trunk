@@ -16,7 +16,7 @@ glIMPrimitive::glIMPrimitive() : IMPrimitive()
 
 glIMPrimitive::~glIMPrimitive()
 {
-    SAFE_DELETE(_imInterface);
+    MemoryManager::SAFE_DELETE( _imInterface );
 }
 
 void glIMPrimitive::beginBatch() {

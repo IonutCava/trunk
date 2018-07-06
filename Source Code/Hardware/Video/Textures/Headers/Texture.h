@@ -36,9 +36,6 @@ class Texture : public HardwareResource {
 	friend class ImplResourceLoader;
 
 public:
-	Texture( TextureType type, const bool flipped = false );
-	virtual ~Texture();
-
     /// Bind the texture to the specified texture unit
     virtual void Bind(U16 slot) = 0;
     /// Change the texture's mip levels. This can be called at any time
@@ -79,6 +76,8 @@ public:
     inline void refreshMipMaps() { _mipMapsDirty = true; }
 
 protected:
+    SET_SAFE_DELETE_FRIEND
+
     /// Use DevIL to load a file into a Texture Object
     bool LoadFile(U32 target, const stringImpl& name);
     /// Load texture data using the specified file name
@@ -86,6 +85,8 @@ protected:
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
 
+    explicit Texture( TextureType type, const bool flipped = false );
+    virtual ~Texture();
 protected:
     U8 _bitDepth;
     U8 _numLayers;

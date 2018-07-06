@@ -20,7 +20,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 ca
 void FrameListenerManager::removeFrameListener(FrameListener* listener) {
     stringImpl name = listener->getName();
     vectorImpl<FrameListener* >::iterator it;
-    it = std::find_if(_listeners.begin(), _listeners.end(), [&name](FrameListener const* fl) { 
+    it = std::find_if( _listeners.begin(), _listeners.end(), [&name]( FrameListener const* fl )->bool {
                                                                 return fl->getName().compare(name) == 0; 
                                                             });
     if (it != _listeners.end()) {

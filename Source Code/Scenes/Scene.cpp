@@ -58,204 +58,196 @@ bool Scene::frameEnded() {
     return true;
 }
 
-bool Scene::idle(){ //Called when application is idle
-    if(_sceneGraph){
-        if(_sceneGraph->getRoot()->getChildren().empty()) return false;
+bool Scene::idle() { //Called when application is idle
+    if ( _sceneGraph ) {
+        if ( _sceneGraph->getRoot()->getChildren().empty() ) {
+            return false;
+        }
         _sceneGraph->idle();
     }
 
-    if(!_modelDataArray.empty())
-        loadXMLAssets(true);
+    if ( !_modelDataArray.empty() ) {
+        loadXMLAssets( true );
+    }
 
-    if (_cookCollisionMeshesScheduled && checkLoadFlag()){
-        if(GFX_DEVICE.getFrameCount() > 1){
-            _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh(_name);
+    if ( _cookCollisionMeshesScheduled && checkLoadFlag() ) {
+        if ( GFX_DEVICE.getFrameCount() > 1 ) {
+            _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh( _name );
             _cookCollisionMeshesScheduled = false;
         }
     }
     return true;
 }
 
-void Scene::onCameraChange(){
-	if ( _sceneGraph ) {
-		_sceneGraph->getRoot()->onCameraChange();
-	}
+void Scene::onCameraChange() {
+    if ( _sceneGraph ) {
+        _sceneGraph->getRoot()->onCameraChange();
+    }
 }
 
 void Scene::postRender(){
 #ifdef _DEBUG
-    if(renderState()._debugDrawLines) {
-        if (!_lines[DEBUG_LINE_RAY_PICK].empty()) {
-            GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
+    if ( renderState()._debugDrawLines ) {
+        if ( !_lines[DEBUG_LINE_RAY_PICK].empty() ) {
+            GFX_DEVICE.drawLines( _lines[DEBUG_LINE_OBJECT_TO_TARGET], mat4<F32>(), vec4<I32>(), false, false );
         }
     }
-    if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() && renderState()._debugDrawTargetLines) {
-        GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
+    if ( !_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() && renderState()._debugDrawTargetLines ) {
+        GFX_DEVICE.drawLines( _lines[DEBUG_LINE_OBJECT_TO_TARGET], mat4<F32>(), vec4<I32>(), false, false );
     }
 #endif
 }
 
-void Scene::addPatch(vectorImpl<FileData>& data){
+void Scene::addPatch( vectorImpl<FileData>& data ) {
 }
 
-void Scene::loadXMLAssets(bool singleStep){
-    while(!_modelDataArray.empty()){
-        FileData& it = _modelDataArray.top();
+void Scene::loadXMLAssets( bool singleStep ) {
+    while ( !_modelDataArray.empty() ) {
+        const FileData& it = _modelDataArray.top();
         //vegetation is loaded elsewhere
-        if(it.type == VEGETATION){
-            _vegetationDataArray.push_back(it);
-        }else{
-            loadModel(it);
+        if ( it.type == VEGETATION ) {
+            _vegetationDataArray.push_back( it );
+        } else {
+            loadModel( it );
         }
         _modelDataArray.pop();
-        
-        if(singleStep){
+
+        if ( singleStep ) {
             return;
         }
     }
 }
 
-bool Scene::loadModel(const FileData& data){
-    if(data.type == PRIMITIVE)	
-        return loadGeometry(data);
+bool Scene::loadModel( const FileData& data ) {
+    if ( data.type == PRIMITIVE ) {
+        return loadGeometry( data );
+    }
 
-    ResourceDescriptor model(data.ModelName);
-    model.setResourceLocation(data.ModelName);
-    model.setFlag(true);
-    Mesh *thisObj = CreateResource<Mesh>(model);
-    if (!thisObj){
-        ERROR_FN(Locale::get("ERROR_SCENE_LOAD_MODEL"),  data.ModelName.c_str());
+    ResourceDescriptor model( data.ModelName );
+    model.setResourceLocation( data.ModelName );
+    model.setFlag( true );
+    Mesh *thisObj = CreateResource<Mesh>( model );
+    if ( !thisObj ) {
+        ERROR_FN( Locale::get( "ERROR_SCENE_LOAD_MODEL" ), data.ModelName.c_str() );
         return false;
     }
-    
-    SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj, data.ItemName);
-    meshNode->castsShadows(data.castsShadows);
-    meshNode->receivesShadows(data.receivesShadows);
-    meshNode->getComponent<PhysicsComponent>()->setScale(data.scale);
-    meshNode->getComponent<PhysicsComponent>()->setRotation(data.orientation);
-    meshNode->getComponent<PhysicsComponent>()->setPosition(data.position);
-    if(data.staticUsage){
-        meshNode->usageContext(SceneGraphNode::NODE_STATIC);
+
+    SceneGraphNode* meshNode = _sceneGraph->getRoot()->createNode( thisObj, data.ItemName );
+    meshNode->castsShadows( data.castsShadows );
+    meshNode->receivesShadows( data.receivesShadows );
+    meshNode->getComponent<PhysicsComponent>()->setScale( data.scale );
+    meshNode->getComponent<PhysicsComponent>()->setRotation( data.orientation );
+    meshNode->getComponent<PhysicsComponent>()->setPosition( data.position );
+    if ( data.staticUsage ) {
+        meshNode->usageContext( SceneGraphNode::NODE_STATIC );
     }
-    if(data.navigationUsage){
-        meshNode->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_OBSTACLE);
+    if ( data.navigationUsage ) {
+        meshNode->getComponent<NavigationComponent>()->navigationContext( NavigationComponent::NODE_OBSTACLE );
     }
-    if(data.physicsUsage){
-        meshNode->getComponent<PhysicsComponent>()->physicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
+    if ( data.physicsUsage ) {
+        meshNode->getComponent<PhysicsComponent>()->physicsGroup( data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH );
     }
-    if(data.useHighDetailNavMesh){
-        meshNode->getComponent<NavigationComponent>()->navigationDetailOverride(true);
+    if ( data.useHighDetailNavMesh ) {
+        meshNode->getComponent<NavigationComponent>()->navigationDetailOverride( true );
     }
     return true;
 }
 
-bool Scene::loadGeometry(const FileData& data){
+bool Scene::loadGeometry( const FileData& data ) {
     Object3D* thisObj;
-    ResourceDescriptor item(data.ItemName);
-    item.setResourceLocation(data.ModelName);
-    if(data.ModelName.compare("Box3D") == 0) {
-            thisObj = CreateResource<Box3D>(item);
-            dynamic_cast<Box3D*>(thisObj)->setSize(data.data);
-    } else if(data.ModelName.compare("Sphere3D") == 0) {
-            thisObj = CreateResource<Sphere3D>(item);
-            dynamic_cast<Sphere3D*>(thisObj)->setRadius(data.data);
-    } else if(data.ModelName.compare("Quad3D") == 0)	{
-            vec3<F32> scale = data.scale;
-            vec3<F32> position = data.position;
-            P32 quadMask; quadMask.i = 0; quadMask.b.b0 = 1;
-            item.setBoolMask(quadMask);
-            thisObj = CreateResource<Quad3D>(item);
-            dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_LEFT,vec3<F32>(0,1,0));
-            dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_RIGHT,vec3<F32>(1,1,0));
-            dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_LEFT,vec3<F32>(0,0,0));
-            dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_RIGHT,vec3<F32>(1,0,0));
-    } else if(data.ModelName.compare("Text3D") == 0) {
-            ///set font file
-            item.setResourceLocation(data.data3);
-            item.setPropertyList(data.data2);
-            thisObj = CreateResource<Text3D>(item);
-            dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
-    }else{
-        ERROR_FN(Locale::get("ERROR_SCENE_UNSUPPORTED_GEOM"),data.ModelName.c_str());
+    ResourceDescriptor item( data.ItemName );
+    item.setResourceLocation( data.ModelName );
+    if ( data.ModelName.compare( "Box3D" ) == 0 ) {
+        thisObj = CreateResource<Box3D>( item );
+        dynamic_cast<Box3D*>( thisObj )->setSize( data.data );
+    } else if ( data.ModelName.compare( "Sphere3D" ) == 0 ) {
+        thisObj = CreateResource<Sphere3D>( item );
+        dynamic_cast<Sphere3D*>( thisObj )->setRadius( data.data );
+    } else if ( data.ModelName.compare( "Quad3D" ) == 0 ) {
+        vec3<F32> scale = data.scale;
+        vec3<F32> position = data.position;
+        P32 quadMask; quadMask.i = 0; quadMask.b.b0 = 1;
+        item.setBoolMask( quadMask );
+        thisObj = CreateResource<Quad3D>( item );
+        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::TOP_LEFT, vec3<F32>( 0, 1, 0 ) );
+        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::TOP_RIGHT, vec3<F32>( 1, 1, 0 ) );
+        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::BOTTOM_LEFT, vec3<F32>( 0, 0, 0 ) );
+        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::BOTTOM_RIGHT, vec3<F32>( 1, 0, 0 ) );
+    } else if ( data.ModelName.compare( "Text3D" ) == 0 ) {
+        ///set font file
+        item.setResourceLocation( data.data3 );
+        item.setPropertyList( data.data2 );
+        thisObj = CreateResource<Text3D>( item );
+        dynamic_cast<Text3D*>( thisObj )->getWidth() = data.data;
+    } else {
+        ERROR_FN( Locale::get( "ERROR_SCENE_UNSUPPORTED_GEOM" ), data.ModelName.c_str() );
         return false;
     }
-    Material* tempMaterial = XML::loadMaterial(stringAlg::fromBase(data.ItemName+"_material"));
-    if(!tempMaterial){
-        ResourceDescriptor materialDescriptor(data.ItemName+"_material");
-        tempMaterial = CreateResource<Material>(materialDescriptor);
-        tempMaterial->setDiffuse(data.color);
+    Material* tempMaterial = XML::loadMaterial( stringAlg::fromBase( data.ItemName + "_material" ) );
+    if ( !tempMaterial ) {
+        ResourceDescriptor materialDescriptor( data.ItemName + "_material" );
+        tempMaterial = CreateResource<Material>( materialDescriptor );
+        tempMaterial->setDiffuse( data.color );
     }
 
-    thisObj->setMaterial(tempMaterial);
-    SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->addNode(thisObj);
-    thisObjSGN->getComponent<PhysicsComponent>()->setScale(data.scale);
-    thisObjSGN->getComponent<PhysicsComponent>()->setRotation(data.orientation);
-    thisObjSGN->getComponent<PhysicsComponent>()->setPosition(data.position);
-    thisObjSGN->castsShadows(data.castsShadows);
-    thisObjSGN->receivesShadows(data.receivesShadows);
-    if(data.staticUsage){
-        thisObjSGN->usageContext(SceneGraphNode::NODE_STATIC);
+    thisObj->setMaterial( tempMaterial );
+    SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->createNode( thisObj );
+    thisObjSGN->getComponent<PhysicsComponent>()->setScale( data.scale );
+    thisObjSGN->getComponent<PhysicsComponent>()->setRotation( data.orientation );
+    thisObjSGN->getComponent<PhysicsComponent>()->setPosition( data.position );
+    thisObjSGN->castsShadows( data.castsShadows );
+    thisObjSGN->receivesShadows( data.receivesShadows );
+    if ( data.staticUsage ) {
+        thisObjSGN->usageContext( SceneGraphNode::NODE_STATIC );
     }
-    if(data.navigationUsage){
-        thisObjSGN->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_OBSTACLE);
+    if ( data.navigationUsage ) {
+        thisObjSGN->getComponent<NavigationComponent>()->navigationContext( NavigationComponent::NODE_OBSTACLE );
     }
-    if(data.physicsUsage){
-        thisObjSGN->getComponent<PhysicsComponent>()->physicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
+    if ( data.physicsUsage ) {
+        thisObjSGN->getComponent<PhysicsComponent>()->physicsGroup( data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH );
     }
-    if(data.useHighDetailNavMesh){
-        thisObjSGN->getComponent<NavigationComponent>()->navigationDetailOverride(true);
+    if ( data.useHighDetailNavMesh ) {
+        thisObjSGN->getComponent<NavigationComponent>()->navigationDetailOverride( true );
     }
     return true;
 }
 
-SceneGraphNode* const Scene::addParticleEmitter(const stringImpl& name, const ParticleEmitterDescriptor& descriptor, SceneGraphNode* parentNode) {
-	assert( parentNode != nullptr && !name.empty());
-    ResourceDescriptor particleEmitter(name);
-	particleEmitter.setPropertyDescriptor( descriptor );
-	return parentNode->addNode( CreateResource<ParticleEmitter>( particleEmitter ) );
+SceneGraphNode* const Scene::addParticleEmitter( const stringImpl& name, const ParticleEmitterDescriptor& descriptor, SceneGraphNode* parentNode ) {
+    assert( parentNode != nullptr && !name.empty() );
+
+    ResourceDescriptor particleEmitter( name );
+    particleEmitter.setPropertyDescriptor( descriptor );
+
+    return parentNode->addNode( CreateResource<ParticleEmitter>( particleEmitter ) );
 }
 
-SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const parentNode){
+SceneGraphNode* Scene::addLight( Light* const lightItem, SceneGraphNode* const parentNode ) {
     SceneGraphNode* returnNode = nullptr;
-	if ( parentNode ) {
-		returnNode = parentNode->addNode( lightItem );
-	} else {
-		returnNode = _sceneGraph->getRoot()->addNode( lightItem );
-	}
+    if ( parentNode ) {
+        returnNode = parentNode->addNode( lightItem );
+    } else {
+        returnNode = _sceneGraph->getRoot()->addNode( lightItem );
+    }
     return returnNode;
 }
 
-DirectionalLight* Scene::addDefaultLight(){
+DirectionalLight* Scene::addDefaultLight() {
     std::stringstream ss; ss << LightManager::getInstance().getLights().size();
-    ResourceDescriptor defaultLight(stringAlg::toBase("Default directional light "+ss.str()));
-    defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
-    defaultLight.setResourceLocation("root");
-    defaultLight.setEnumValue(LIGHT_TYPE_DIRECTIONAL);
-    DirectionalLight* l = dynamic_cast<DirectionalLight*>(CreateResource<Light>(defaultLight));
-    l->setCastShadows(true);
-    addLight(l);
-    vec3<F32> ambientColor(0.1f, 0.1f, 0.1f);
-    LightManager::getInstance().setAmbientLight(ambientColor);
+    ResourceDescriptor defaultLight( stringAlg::toBase( "Default directional light " + ss.str() ) );
+    defaultLight.setId( 0 ); //descriptor ID is not the same as light ID. This is the light's slot!!
+    defaultLight.setResourceLocation( "root" );
+    defaultLight.setEnumValue( LIGHT_TYPE_DIRECTIONAL );
+    DirectionalLight* l = dynamic_cast<DirectionalLight*>( CreateResource<Light>( defaultLight ) );
+    l->setCastShadows( true );
+    addLight( l );
+    vec3<F32> ambientColor( 0.1f, 0.1f, 0.1f );
+    LightManager::getInstance().setAmbientLight( ambientColor );
     return l;
 }
 
-void Scene::addDefaultSky(){
-    STUBBED("ToDo: load skyboxes from XML")
-	_skiesSGN.push_back( _sceneGraph->getRoot()->addNode( CreateResource<Sky>( ResourceDescriptor("Default Sky") ) ) );
-}
-
-SceneGraphNode* Scene::addGeometry(SceneNode* const object,const stringImpl& sgnName){
-    return _sceneGraph->getRoot()->addNode(object,sgnName);
-}
-
-bool Scene::removeGeometry(SceneNode* node){
-    if(!node) {
-        ERROR_FN(Locale::get("ERROR_SCENE_DELETE_NULL_NODE"));
-        return false;
-    }
-    SceneGraphNode* _graphNode = _sceneGraph->findNode(node->getName());
-
-    return SAFE_DELETE_CHECK(_graphNode);
+void Scene::addDefaultSky() {
+    STUBBED( "ToDo: load skyboxes from XML" )
+    _skiesSGN.push_back( _sceneGraph->getRoot()->createNode( CreateResource<Sky>( ResourceDescriptor( "Default Sky" ) ) ) );
 }
 
 bool Scene::preLoad() {
@@ -272,27 +264,27 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
     loadXMLAssets();
     SceneGraphNode* root = _sceneGraph->getRoot();
     //Add terrain from XML
-    if(!_terrainInfoArray.empty()){
-        for(U8 i = 0; i < _terrainInfoArray.size(); i++){
-            ResourceDescriptor terrain(_terrainInfoArray[i]->getVariable("terrainName"));
-            Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode* terrainTemp = root->addNode(temp);
-            terrainTemp->setActive(_terrainInfoArray[i]->getActive());
-            terrainTemp->usageContext(SceneGraphNode::NODE_STATIC);
-            terrainTemp->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_OBSTACLE);
-            terrainTemp->getComponent<PhysicsComponent>()->physicsGroup(_terrainInfoArray[i]->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH : PhysicsComponent::NODE_COLLIDE_IGNORE);
+    if ( !_terrainInfoArray.empty() ) {
+        for ( U8 i = 0; i < _terrainInfoArray.size(); i++ ) {
+            ResourceDescriptor terrain( _terrainInfoArray[i]->getVariable( "terrainName" ) );
+            Terrain* temp = CreateResource<Terrain>( terrain );
+            SceneGraphNode* terrainTemp = root->createNode( temp );
+            terrainTemp->setActive( _terrainInfoArray[i]->getActive() );
+            terrainTemp->usageContext( SceneGraphNode::NODE_STATIC );
+            terrainTemp->getComponent<NavigationComponent>()->navigationContext( NavigationComponent::NODE_OBSTACLE );
+            terrainTemp->getComponent<PhysicsComponent>()->physicsGroup( _terrainInfoArray[i]->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH : PhysicsComponent::NODE_COLLIDE_IGNORE );
         }
     }
     //Camera position is overridden in the scene's XML configuration file
-    if(ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride")){
+    if( ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride" )) {
         renderState().getCamera().setEye(vec3<F32>(_paramHandler.getParam<F32>("options.cameraStartPosition.x"),
                                                      _paramHandler.getParam<F32>("options.cameraStartPosition.y"),
                                                      _paramHandler.getParam<F32>("options.cameraStartPosition.z")));
         vec2<F32> camOrientation(_paramHandler.getParam<F32>("options.cameraStartOrientation.xOffsetDegrees"),
                                  _paramHandler.getParam<F32>("options.cameraStartOrientation.yOffsetDegrees"));
         renderState().getCamera().setGlobalRotation(camOrientation.y/*yaw*/,camOrientation.x/*pitch*/);
-    }else{
-        renderState().getCamera().setEye(vec3<F32>(0,50,0));
+    } else {
+        renderState().getCamera().setEye( vec3<F32>( 0, 50, 0 ) );
     }
 
     //Create an AI thread, but start it only if needed
@@ -305,13 +297,13 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
     return _loadComplete;
 }
 
-bool Scene::unload(){
+bool Scene::unload() {
     // prevent double unload calls
-	if ( !checkLoadFlag() ) {
-		return false;
-	}
+    if ( !checkLoadFlag() ) {
+        return false;
+    }
     clearTasks();
-	clearPhysics();
+    clearPhysics();
     clearObjects();
     clearLights();
     _loadComplete = false;
@@ -345,26 +337,28 @@ bool Scene::initializeAI(bool continueOnErrors) {
 }
 
 bool Scene::deinitializeAI(bool continueOnErrors) {	///Shut down AIManager thread
-    if(_aiTask.get()){
+    if ( _aiTask.get() ) {
         _aiTask->stopTask();
         _aiTask.reset();
     }
-    while(_aiTask.get()){};
+    while ( _aiTask.get() ) {
+    }
+
     return true;
 }
 
 void Scene::clearObjects(){
-    for(U8 i = 0; i < _terrainInfoArray.size(); ++i){
-        RemoveResource(_terrainInfoArray[i]);
+    for ( U8 i = 0; i < _terrainInfoArray.size(); ++i ) {
+        RemoveResource( _terrainInfoArray[i] );
     }
     _skiesSGN.clear(); //< Skies are cleared in the SceneGraph
     _terrainInfoArray.clear();
-	while ( !_modelDataArray.empty() ) {
-		_modelDataArray.pop();
-	}
+    while ( !_modelDataArray.empty() ) {
+        _modelDataArray.pop();
+    }
     _vegetationDataArray.clear();
 
-    SAFE_DELETE(_sceneGraph);
+    MemoryManager::SAFE_DELETE( _sceneGraph );
 }
 
 void Scene::clearLights(){
@@ -374,25 +368,25 @@ void Scene::clearLights(){
 bool Scene::updateCameraControls(){
     
     Camera& cam = renderState().getCamera();
-    switch (cam.getType()){
+    switch ( cam.getType() ) {
         default:
         case Camera::FREE_FLY:{
-            if (state()._angleLR) {
-                cam.rotateYaw(CLAMPED<I32>(state()._angleLR, -1, 1));
+            if ( state()._angleLR ) {
+                cam.rotateYaw( CLAMPED<I32>( state()._angleLR, -1, 1 ) );
             }
-            if (state()._angleUD) {
-                cam.rotatePitch(CLAMPED<I32>(state()._angleUD, -1, 1));
+            if ( state()._angleUD ) {
+                cam.rotatePitch( CLAMPED<I32>( state()._angleUD, -1, 1 ) );
             }
-            if (state()._roll) {
-                cam.rotateRoll(CLAMPED<I32>(state()._roll, -1, 1));
+            if ( state()._roll ) {
+                cam.rotateRoll( CLAMPED<I32>( state()._roll, -1, 1 ) );
             }
-            if (state()._moveFB) {
-                cam.moveForward(CLAMPED<I32>(state()._moveFB, -1, 1));
+            if ( state()._moveFB ) {
+                cam.moveForward( CLAMPED<I32>( state()._moveFB, -1, 1 ) );
             }
-            if (state()._moveLR)  {
-                cam.moveStrafe(CLAMPED<I32>(state()._moveLR, -1, 1));
+            if ( state()._moveLR ) {
+                cam.moveStrafe( CLAMPED<I32>( state()._moveLR, -1, 1 ) );
             }
-        }break;
+        } break;
     }
 
     state()._cameraUpdated =  (state()._moveFB || state()._moveLR || state()._angleLR || state()._angleUD || state()._roll);
@@ -406,7 +400,7 @@ void Scene::updateSceneState(const U64 deltaTime){
 }
 
 void Scene::deleteSelection(){
-    if(_currentSelection != nullptr){
+    if ( _currentSelection != nullptr ) {
         _currentSelection->scheduleDeletion();
     }
 }
@@ -415,71 +409,76 @@ void Scene::addTask(Task_ptr taskItem) {
     _tasks.push_back(taskItem);
 }
 
-void Scene::clearTasks(){
-    PRINT_FN(Locale::get("STOP_SCENE_TASKS"));
-    for(Task_ptr& task : _tasks){
+void Scene::clearTasks() {
+    PRINT_FN( Locale::get( "STOP_SCENE_TASKS" ) );
+    for ( Task_ptr task : _tasks ) {
         task->stopTask();
     }
     _tasks.clear();
 }
 
-void Scene::removeTask(Task_ptr taskItem){
+void Scene::removeTask( Task_ptr taskItem ) {
     taskItem->stopTask();
 
-    for(vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++){
-        if((*it)->getGUID() == taskItem->getGUID()){
-            _tasks.erase(it);
+    for ( vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++ ) {
+        if ( ( *it )->getGUID() == taskItem->getGUID() ) {
+            _tasks.erase( it );
             return;
         }
     }
 }
 
-void Scene::removeTask(U32 guid){
-    for(vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++){
-        if((*it)->getGUID() == guid){
-            (*it)->stopTask();
-            _tasks.erase(it);
+void Scene::removeTask( U32 guid ) {
+    for ( vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++ ) {
+        if ( ( *it )->getGUID() == guid ) {
+            ( *it )->stopTask();
+            _tasks.erase( it );
             return;
         }
     }
 }
 
-void Scene::processGUI(const U64 deltaTime){
-    for (U16 i = 0; i < _guiTimers.size(); ++i)
-        _guiTimers[i] += getUsToMs(deltaTime);
+void Scene::processGUI( const U64 deltaTime ) {
+    for ( U16 i = 0; i < _guiTimers.size(); ++i ) {
+        _guiTimers[i] += getUsToMs( deltaTime );
+    }
 }
 
-void Scene::processTasks(const U64 deltaTime){
-    for(U16 i = 0; i < _taskTimers.size(); ++i)
-        _taskTimers[i] += getUsToMs(deltaTime);
+
+void Scene::processTasks( const U64 deltaTime ) {
+    for ( U16 i = 0; i < _taskTimers.size(); ++i ) {
+        _taskTimers[i] += getUsToMs( deltaTime );
+    }
 }
 
-TerrainDescriptor* Scene::getTerrainInfo(const stringImpl& terrainName) {
-    for (U8 i = 0; i < _terrainInfoArray.size(); i++)
-    if (terrainName.compare(_terrainInfoArray[i]->getVariable("terrainName")) == 0)
-        return _terrainInfoArray[i];
+TerrainDescriptor* Scene::getTerrainInfo( const stringImpl& terrainName ) {
+    for ( U8 i = 0; i < _terrainInfoArray.size(); i++ ) {
+        if ( terrainName.compare( _terrainInfoArray[i]->getVariable( "terrainName" ) ) == 0 ) {
+            return _terrainInfoArray[i];
+        }
+    }
 
-    DIVIDE_ASSERT(false, "Scene error: INVALID TERRAIN NAME FOR INFO LOOKUP"); // not found;
+    DIVIDE_ASSERT( false, "Scene error: INVALID TERRAIN NAME FOR INFO LOOKUP" ); // not found;
     return _terrainInfoArray[0];
 }
 
-void Scene::debugDraw(const RenderStage& stage) {
-#ifdef _DEBUG
-    const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
+void Scene::debugDraw( const RenderStage& stage ) {
+#   ifdef _DEBUG
+        const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
-    GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::NO_GIZMO);
+        GFX_DEVICE.drawDebugAxis( currentGizmoState != SceneRenderState::NO_GIZMO );
 
-    if (currentGizmoState == SceneRenderState::SELECTED_GIZMO) {
-        if (_currentSelection != nullptr) {
-            _currentSelection->drawDebugAxis();
+        if ( currentGizmoState == SceneRenderState::SELECTED_GIZMO ) {
+            if ( _currentSelection != nullptr ) {
+                _currentSelection->drawDebugAxis();
+            }
         }
-    } 
-#endif
-    if (GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) {
+#   endif
+    if ( GFX_DEVICE.isCurrentRenderStage( DISPLAY_STAGE ) ) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
-        GFX_DEVICE.debugDraw(renderState());
+        GFX_DEVICE.debugDraw( renderState() );
         // Show NavMeshes
-        AI::AIManager::getInstance().debugDraw(false);
+        AI::AIManager::getInstance().debugDraw( false );
     }
 }
 

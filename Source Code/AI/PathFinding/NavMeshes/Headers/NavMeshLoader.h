@@ -73,17 +73,17 @@ namespace Divide {
             _triangleCapacity = _triangleCount = 0;
 
 			if (del) {
-				SAFE_DELETE_ARRAY(_vertices);
+                MemoryManager::SAFE_DELETE_ARRAY( _vertices );
 			} else {
 				_vertices = 0;
 			}
 			if (del) {
-				SAFE_DELETE_ARRAY(_triangles);
+                MemoryManager::SAFE_DELETE_ARRAY( _triangles );
 			} else {
 				_triangles = 0;
 			}
 			if (del) {
-				SAFE_DELETE_ARRAY(_normals);
+                MemoryManager::SAFE_DELETE_ARRAY( _normals );
 			} else {
 				_normals = 0;
 			}

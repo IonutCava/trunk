@@ -13,8 +13,8 @@ namespace Divide {
 bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     BoundingBox& bb = sgn->getBoundingBox();
     bb.reset();
-	for (SceneGraphNode::NodeChildren::value_type& s : sgn->getChildren()){
-        sgn->addBoundingBox(s.second->getBoundingBoxConst(), s.second->getNode()->getType());
+    for ( SceneGraphNode::NodeChildren::value_type s : sgn->getChildren() ) {
+        sgn->addBoundingBox( s.second->getBoundingBoxConst(), s.second->getNode()->getType() );
     }
     bb.setComputed(true);
     return SceneNode::computeBoundingBox(sgn);
@@ -22,43 +22,43 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
 
 void SceneGraphNode::setSelected(const bool state) {
     _selected = state;
-	for (NodeChildren::value_type& it : _children){
-        it.second->setSelected(_selected);
+    for ( NodeChildren::value_type it : _children ) {
+        it.second->setSelected( _selected );
     }
 }
 
 void SceneGraphNode::renderSkeleton(const bool state) {
     _renderSkeleton = state;
-	for (NodeChildren::value_type& it : _children){
-        it.second->renderSkeleton(_renderSkeleton);
+    for ( NodeChildren::value_type it : _children ) {
+        it.second->renderSkeleton( _renderSkeleton );
     }
 }
 
 void SceneGraphNode::renderWireframe(const bool state) {
     _renderWireframe = state;
-	for (NodeChildren::value_type& it : _children){
-        it.second->renderWireframe(_renderWireframe);
+    for ( NodeChildren::value_type it : _children ) {
+        it.second->renderWireframe( _renderWireframe );
     }
 }
 
 void SceneGraphNode::renderBoundingBox(const bool state) {
     _renderBoundingBox = state; 
-	for (NodeChildren::value_type& it : _children){
-        it.second->renderBoundingBox(_renderBoundingBox);
+    for ( NodeChildren::value_type it : _children ) {
+        it.second->renderBoundingBox( _renderBoundingBox );
     }
 }
 
 void SceneGraphNode::castsShadows(const bool state)    {
     _castsShadows = state;
-	for (NodeChildren::value_type& it : _children){
-        it.second->castsShadows(_castsShadows);
+    for ( NodeChildren::value_type it : _children ) {
+        it.second->castsShadows( _castsShadows );
     }
 }
 
 void SceneGraphNode::receivesShadows(const bool state) {
     _receiveShadows = state;
-	for (NodeChildren::value_type& it : _children){
-        it.second->receivesShadows(_receiveShadows);
+    for ( NodeChildren::value_type it : _children ) {
+        it.second->receivesShadows( _receiveShadows );
     }
 }
 
@@ -71,11 +71,12 @@ bool SceneGraphNode::receivesShadows() const {
 }
 
 bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
-    if (_boundingBox.Transform(_initialBoundingBox, transform, !_initialBoundingBox.Compare(_initialBoundingBoxCache))){
+    if ( _boundingBox.Transform( _initialBoundingBox, transform, !_initialBoundingBox.Compare( _initialBoundingBoxCache ) ) ) {
         _initialBoundingBoxCache = _initialBoundingBox;
-        _boundingSphere.fromBoundingBox(_boundingBox);
+        _boundingSphere.fromBoundingBox( _boundingBox );
         return true;
     }
+
     return false;
 }
 
@@ -88,52 +89,53 @@ void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox
 }
 
 void SceneGraphNode::onCameraChange() {
-	for (NodeChildren::value_type& it : _children) {
-		it.second->onCameraChange();
-	}
+    for ( NodeChildren::value_type it : _children ) {
+        it.second->onCameraChange();
+    }
     _node->onCameraChange(this);
 }
 
 ///Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     //Compute from leaf to root to ensure proper calculations
-	for (NodeChildren::value_type& it : _children) {
-        assert(it.second);
-        it.second->sceneUpdate(deltaTime, sceneState);
+    for ( NodeChildren::value_type it : _children ) {
+        assert( it.second );
+        it.second->sceneUpdate( deltaTime, sceneState );
     }
     // update local time
     _elapsedTime += deltaTime;
-    Transform* transform = getComponent<PhysicsComponent>()->getTransform();
+    //Transform* transform = getComponent<PhysicsComponent>()->getTransform();
     // update transform
-    if (transform) {
-        transform->setParentTransform(_parent ? _parent->getComponent<PhysicsComponent>()->getTransform() : nullptr);
-    }
+    /*if ( transform ) {
+        transform->setParentTransform( _parent ? _parent->getComponent<PhysicsComponent>()->getTransform() : nullptr );
+    }*/
     // update all of the internal components (animation, physics, etc)
-    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
-        if (_components[i]) {
-            _components[i]->update(deltaTime);
+    for ( U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i ) {
+        if ( _components[i] ) {
+            _components[i]->update( deltaTime );
         }
     }
-    if (getComponent<PhysicsComponent>()->transformUpdated()){
+
+    if ( getComponent<PhysicsComponent>()->transformUpdated() ) {
         _boundingBoxDirty = true;
-		for (NodeChildren::value_type& it : _children){
-            it.second->getComponent<PhysicsComponent>()->transformUpdated(true);
+        for ( NodeChildren::value_type it : _children ) {
+            it.second->getComponent<PhysicsComponent>()->transformUpdated( true );
         }
     }
     assert(_node->getState() == RES_LOADED);
     //Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
 
     //Compute the BoundingBox if it isn't already
-    if (!_boundingBox.isComputed()) {
-        _node->computeBoundingBox(this);
-        assert(_boundingBox.isComputed());
+    if ( !_boundingBox.isComputed() ) {
+        _node->computeBoundingBox( this );
+        assert( _boundingBox.isComputed() );
         _boundingBoxDirty = true;
     }
 
-    if (_boundingBoxDirty) {
-        if (updateBoundingBoxTransform(getWorldMatrix())) {
-            if (_parent) {
-                _parent->getBoundingBox().setComputed(false);
+    if ( _boundingBoxDirty ) {
+        if ( updateBoundingBoxTransform( getComponent<PhysicsComponent>()->getWorldMatrix() ) ) {
+            if ( _parent ) {
+                _parent->getBoundingBox().setComputed( false );
             }
         }
         _boundingBoxDirty = false;
@@ -144,21 +146,21 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _node->sceneUpdate(deltaTime, this, sceneState);
 
     Material* mat = _node->getMaterial();
-    if (mat) {
-        mat->update(deltaTime);
+    if ( mat ) {
+        mat->update( deltaTime );
     }
 
-    if (_shouldDelete) {
-        GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+    if ( _shouldDelete ) {
+        GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue( this );
     }
 }
 
 void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     // Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
     // Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
-    if (!onDraw(sceneRenderState, currentRenderStage)) {
+    if ( !onDraw( sceneRenderState, currentRenderStage ) ) {
         // If the SGN isn't ready for rendering, skip it this frame
-        return; 
+        return;
     }
     _node->bindTextures();
     _node->render(this, sceneRenderState, currentRenderStage);
@@ -167,35 +169,35 @@ void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const Rend
 }
 
 bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage){
-    if (_drawReset[renderStage]) {
+    if ( _drawReset[renderStage] ) {
         _drawReset[renderStage] = false;
-        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
-			for (SceneGraphNode::NodeChildren::value_type& it : getParent()->getChildren()) {
-                if (it.second->getComponent<AnimationComponent>()) {
+        if ( getParent() && !GFX_DEVICE.isCurrentRenderStage( DEPTH_STAGE ) ) {
+            for ( SceneGraphNode::NodeChildren::value_type it : getParent()->getChildren() ) {
+                if ( it.second->getComponent<AnimationComponent>() ) {
                     it.second->getComponent<AnimationComponent>()->resetTimers();
                 }
             }
         }
-            
     }
 
-    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
-        if (_components[i]) {
-            _components[i]->onDraw(renderStage);
+    for ( U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i ) {
+        if ( _components[i] ) {
+            _components[i]->onDraw( renderStage );
         }
     }
     //Call any pre-draw operations on the SceneNode (refresh VB, update materials, etc)
     Material* mat = _node->getMaterial();
-    if (mat){
-        if (mat->computeShader(renderStage)){
-            scheduleDrawReset(renderStage); //reset animation on next draw call
+    if ( mat ) {
+        if ( mat->computeShader( renderStage ) ) {
+            scheduleDrawReset( renderStage ); //reset animation on next draw call
             return false;
         }
     }
 
-    if (_node->onDraw(this, renderStage)) {
-        return _node->getDrawState(renderStage);
+    if ( _node->onDraw( this, renderStage ) ) {
+        return _node->getDrawState( renderStage );
     }
+
     return false;
 }
 
@@ -250,7 +252,7 @@ void SceneGraphNode::isInViewCallback(){
 #ifdef _DEBUG
 /// Draw the axis arrow gizmo
 void SceneGraphNode::drawDebugAxis() {
-    const Transform* transform = getComponent<PhysicsComponent>()->getConstTransform();
+    const PhysicsComponent* const transform = getComponent<PhysicsComponent>();
     if (transform) {
         mat4<F32> tempOffset(getMatrix(transform->getOrientation()));
         tempOffset.setTranslation(transform->getPosition());

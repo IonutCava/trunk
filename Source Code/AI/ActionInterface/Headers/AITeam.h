@@ -124,13 +124,13 @@ protected:
     inline vectorImpl<Order* >::iterator findOrder(Order* const order) {
         assert(order != nullptr);
         U32 orderId = order->getId();
-        return vectorAlg::find_if(_orders.begin(), _orders.end(), [&orderId](Order* const order) { 
+        return vectorAlg::find_if( _orders.begin(), _orders.end(), [&orderId]( Order* const order )->bool {
                                                                      return orderId == order->getId(); 
                                                                   });
     }
     inline vectorImpl<U32 >::iterator AITeam::findEnemyTeamEntry(U32 enemyTeamID) {
         ReadLock r_lock(_enemyTeamLock);
-        return vectorAlg::find_if(_enemyTeams.begin(), _enemyTeams.end(), [&enemyTeamID](U32 id) { 
+        return vectorAlg::find_if( _enemyTeams.begin(), _enemyTeams.end(), [&enemyTeamID]( U32 id )->bool {
                                                                             return id == enemyTeamID; 
                                                                            });
     }

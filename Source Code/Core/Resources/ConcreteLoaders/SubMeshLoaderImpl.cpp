@@ -7,20 +7,20 @@ namespace Divide {
 SubMesh* ImplResourceLoader<SubMesh>::operator()(){
     SubMesh* ptr = nullptr;
 
-    if(_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED){
-        ptr = New SkinnedSubMesh(_descriptor.getName());
-    }else{
-        ptr = New SubMesh(_descriptor.getName());
+    if ( _descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED ) {
+        ptr = New SkinnedSubMesh( _descriptor.getName() );
+    } else {
+        ptr = New SubMesh( _descriptor.getName() );
     }
 
-    if(!load(ptr,_descriptor.getName())){
-        SAFE_DELETE(ptr);
-    }else{
-        if(_descriptor.getFlag()){
-            ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-            ptr->setMaterial(nullptr);
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
+        if ( _descriptor.getFlag() ) {
+            ptr->getSceneNodeRenderState().useDefaultMaterial( false );
+            ptr->setMaterial( nullptr );
         }
-        ptr->setId(_descriptor.getId());
+        ptr->setId( _descriptor.getId() );
     }
     return ptr;
 }

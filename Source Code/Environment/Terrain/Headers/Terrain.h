@@ -111,16 +111,21 @@ protected:
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
+    void buildQaudtree();
     void postLoad(SceneGraphNode* const sgn);
 
     inline void setUnderwaterDiffuseScale(F32 diffuseScale) {_underwaterDiffuseScale = diffuseScale;}
 
     size_t getDrawStateHash(RenderStage renderStage);
     ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
-    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
+    bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true );
 
 protected:
     friend class TerrainChunk;
+    void registerTerrainChunk( TerrainChunk* const chunk ) {
+        _terrainChunks.push_back( chunk );
+    }
+protected:
     VegetationDetails _vegDetails;
 
     U8            _lightCount;
@@ -135,13 +140,13 @@ protected:
     bool _drawBBoxes;
     bool _terrainInView;
     bool _planeInView;
-    SceneGraphNode* _planeSGN;
     SceneGraphNode* _vegetationGrassNode;
     BoundingBox     _boundingBox;
     Quad3D*		    _plane;
     F32             _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer* > _terrainTextures;
 
+    vectorImpl<TerrainChunk* > _terrainChunks;
     ///Normal rendering state
     size_t _terrainRenderStateHash;
     ///Depth map rendering state

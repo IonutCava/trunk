@@ -62,7 +62,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
         _pJoystickInterface = New JoystickInterface(_pInputInterface, _pEventHdlr);
         if (!_pJoystickInterface->wasFFDetected())	{
             PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
-            SAFE_DELETE(_pJoystickInterface);
+            MemoryManager::SAFE_DELETE( _pJoystickInterface );
         } else{
             // Create force feedback effect manager.
             _pEffectMgr = New EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
@@ -150,15 +150,15 @@ void InputInterface::terminate() {
                 _pInputInterface->destroyInputObject(*it);
             }
             _pJoysticks.clear();
-            SAFE_DELETE(_pJoystickInterface);
+            MemoryManager::SAFE_DELETE( _pJoystickInterface );
         }
 
         OIS::InputManager::destroyInputSystem(_pInputInterface);
         _pInputInterface = nullptr;
     }
 
-    SAFE_DELETE(_pEffectMgr);
-    SAFE_DELETE(_pEventHdlr);
+    MemoryManager::SAFE_DELETE( _pEffectMgr );
+    MemoryManager::SAFE_DELETE( _pEventHdlr );
 
 #if defined OIS_LINUX_PLATFORM
     // Be nice to X and clean up the x window

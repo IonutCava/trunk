@@ -48,11 +48,11 @@ PostFX::~PostFX()
         }
 
         if (_enableBloom) {
-            SAFE_DELETE(_bloomFB);
+            MemoryManager::SAFE_DELETE( _bloomFB );
         }
 
         if (_enableSSAO) {
-            SAFE_DELETE(_SSAO_FB);
+            MemoryManager::SAFE_DELETE( _SSAO_FB );
         }
 
         if (_enableNoise) {

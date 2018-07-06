@@ -141,9 +141,9 @@ public:
     }
 
     inline const mat4<F32>&  getWorldMatrix() { 
-        if (updateViewMatrix())
-            _viewMatrix.inverse(_worldMatrix);
-
+        if ( updateViewMatrix() ) {
+            _viewMatrix.getInverse( _worldMatrix );
+        }
         return _worldMatrix; 
     }
 

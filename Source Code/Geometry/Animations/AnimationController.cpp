@@ -7,8 +7,8 @@
 namespace Divide {
 
 void SceneAnimator::Release(){// this should clean everything up
-	for (LineCollection::value_type& it : _skeletonLines){
-		for (LineMap::value_type& it2 : it.second){
+    for ( LineCollection::value_type it : _skeletonLines ) {
+        for ( LineMap::value_type it2 : it.second ) {
             it2.second.clear();
         }
     }
@@ -19,7 +19,7 @@ void SceneAnimator::Release(){// this should clean everything up
     _animationNameToId.clear();
     _transforms.clear();
     // This node will delete all children recursivly
-    SAFE_DELETE(_skeleton);
+    MemoryManager::SAFE_DELETE( _skeleton );
 }
 
 bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will build the skeleton based on the scene passed to it and CLEAR EVERYTHING

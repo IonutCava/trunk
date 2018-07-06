@@ -131,7 +131,9 @@ public:
     }
 
     virtual bool computeBoundingBox(SceneGraphNode* const sgn) {
-        if (sgn->getBoundingBoxConst().isComputed()) return true;
+        if ( sgn->getBoundingBoxConst().isComputed() ) {
+            return true;
+        }
         vec3<F32> min = getGeometryVB()->getPosition()[2];
         min.z = +0.0025f;//<add some depth padding for collision and nav meshes
         sgn->getBoundingBox().setMax(getGeometryVB()->getPosition()[1]);

@@ -24,11 +24,11 @@ Light* ImplResourceLoader<Light>::operator()(){
     };
     assert(ptr != nullptr);
 
-    if (!ptr->load(_descriptor.getName())){
-        SAFE_DELETE(ptr);
-    }else{
-        ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-        ptr->setMaterial(nullptr);
+    if ( !ptr->load( _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
+        ptr->getSceneNodeRenderState().useDefaultMaterial( false );
+        ptr->setMaterial( nullptr );
     }
 
     return ptr;

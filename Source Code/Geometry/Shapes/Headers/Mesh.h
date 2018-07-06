@@ -65,17 +65,14 @@ protected:
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) { }
 
 protected:
-
-    typedef hashMapImpl<stringImpl, SceneGraphNode*> childrenNodes;
-    typedef hashMapImpl<U32, SubMesh*> subMeshRefMap;
+    typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
 
     bool _visibleToNetwork;
     bool _playAnimations;
     bool _playAnimationsCurrent;
 
-    vectorImpl<stringImpl > _subMeshes;
-    subMeshRefMap            _subMeshRefMap;
-    BoundingBox              _maxBoundingBox;
+    SubMeshRefMap  _subMeshRefMap;
+    BoundingBox    _maxBoundingBox;
 };
 
 }; //namespace Divide

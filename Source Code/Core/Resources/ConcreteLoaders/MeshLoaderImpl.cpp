@@ -8,14 +8,14 @@ namespace Divide {
 Mesh* ImplResourceLoader<Mesh>::operator()(){
     Mesh* ptr = DVDConverter::getInstance().load(_descriptor.getResourceLocation());
 
-    if(!load(ptr,_descriptor.getName()) || !ptr){
-       SAFE_DELETE(ptr);
-    }else{
-        if(_descriptor.getFlag()){
-            ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-            ptr->setMaterial(nullptr);
+    if ( !load( ptr, _descriptor.getName() ) || !ptr ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
+        if ( _descriptor.getFlag() ) {
+            ptr->getSceneNodeRenderState().useDefaultMaterial( false );
+            ptr->setMaterial( nullptr );
         }
-        ptr->setResourceLocation(_descriptor.getResourceLocation());
+        ptr->setResourceLocation( _descriptor.getResourceLocation() );
     }
 
     return ptr;

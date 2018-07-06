@@ -15,7 +15,6 @@ Sky::Sky(const stringImpl& name) : SceneNode(name, TYPE_SKY),
 									_sky(nullptr),
                                     _skyShader(nullptr),
                                     _skybox(nullptr),
-                                    _skyGeom(nullptr),
                                     _exclusionMask(0)
 {
     //The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
@@ -72,15 +71,14 @@ bool Sky::load() {
     return true;
 }
 
-void Sky::postLoad(SceneGraphNode* const sgn){
-	if ( _sky == nullptr ) {
-		load();
-	}
-    _skyGeom = sgn->addNode(_sky);
-    _skyGeom->getComponent<PhysicsComponent>()->physicsGroup(PhysicsComponent::NODE_COLLIDE_IGNORE);
-    _sky->getSceneNodeRenderState().setDrawState(false);
+void Sky::postLoad( SceneGraphNode* const sgn ) {
+    if ( _sky == nullptr ) {
+        load();
+    }
+    _sky->getSceneNodeRenderState().setDrawState( false );
+    sgn->addNode( _sky )->getComponent<PhysicsComponent>()->physicsGroup( PhysicsComponent::NODE_COLLIDE_IGNORE );
 
-    SceneNode::postLoad(sgn);
+    SceneNode::postLoad( sgn );
 }
 
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {

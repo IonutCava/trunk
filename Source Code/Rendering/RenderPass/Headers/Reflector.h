@@ -89,8 +89,6 @@ protected:
     bool _updateSelf;
     /// Have we initialized our FB?
     bool _createdFB;
-    /// does the reflector plane need updating?
-    bool _planeDirty;
 };
 
 }; //namespace Divide

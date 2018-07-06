@@ -60,13 +60,12 @@ public:
 
     ///SceneNode concrete implementations
     bool unload();
-    void postLoad(SceneGraphNode* const sgn);
 
     ///When the SceneGraph calls the trigger's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
 
     ///SceneNode test
-    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {
+    bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = false ) {
         return _drawImpostor;
     }
 protected:
@@ -82,8 +81,6 @@ private:
     /// Draw the impostor?
     bool _drawImpostor;
     Impostor* _triggerImpostor; ///< used for debug rendering / editing - Ionut
-
-    SceneGraphNode *_triggerSGN, *_impostorSGN;
     bool _enabled;
 };
 

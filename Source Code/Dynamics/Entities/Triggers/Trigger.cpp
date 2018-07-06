@@ -1,5 +1,6 @@
 #include "Headers/Trigger.h"
 
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Hardware/Platform/Headers/Task.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
@@ -7,8 +8,10 @@
 
 namespace Divide {
 
-Trigger::Trigger() : SceneNode(TYPE_TRIGGER), _drawImpostor(false), _triggerImpostor(nullptr),
-                                              _enabled(true),		_impostorSGN(nullptr)
+Trigger::Trigger() : SceneNode(TYPE_TRIGGER),
+                     _drawImpostor(false),
+                     _triggerImpostor(nullptr),
+                     _enabled(true)
 {
 }
 
@@ -20,10 +23,6 @@ void Trigger::setParams( Task_ptr triggeredTask, const vec3<F32>& triggerPositio
     /// Check if position has changed
    if(!_triggerPosition.compare(triggerPosition)){
        _triggerPosition = triggerPosition;
-       if(_triggerImpostor){
-            /// update dummy position if it is so
-            _impostorSGN->getComponent<PhysicsComponent>()->setPosition(_triggerPosition);
-       }
    }
    /// Check if radius has changed
    if(!FLOAT_COMPARE(_radius,radius)){
@@ -38,28 +37,21 @@ void Trigger::setParams( Task_ptr triggeredTask, const vec3<F32>& triggerPositio
 }
 
 bool Trigger::unload(){
-    if(_triggerImpostor){
-        _triggerSGN->removeNode(_impostorSGN);
-    }
-    SAFE_DELETE(_triggerImpostor);
     return SceneNode::unload();
-}
-
-void Trigger::postLoad(SceneGraphNode* const sgn) {
-    //Hold a pointer to the trigger's location in the SceneGraph
-    _triggerSGN = sgn;
-
-    SceneNode::postLoad(sgn);
 }
 
 void Trigger::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     ///The isInView call should stop impostor rendering if needed
     if(!_triggerImpostor){
-        _triggerImpostor = New Impostor(_name,_radius);
-        _impostorSGN = _triggerSGN->addNode(_triggerImpostor);
+        ResourceDescriptor impostorDesc( _name + "_impostor" );
+        _triggerImpostor = CreateResource<Impostor>( impostorDesc );
+        sgn->addNode( _triggerImpostor );
     }
+    /// update dummy position if it is so
+    sgn->getChildren()[0]->getComponent<PhysicsComponent>()->setPosition( _triggerPosition );
+    _triggerImpostor->setRadius( _radius );
     _triggerImpostor->getSceneNodeRenderState().setDrawState(true);
-    _impostorSGN->setActive(true);
+    sgn->addNode( _triggerImpostor )->setActive( true );
 }
 
 bool Trigger::check(Unit* const unit,const vec3<F32>& camEyePos){

@@ -27,9 +27,9 @@ Texture* ImplResourceLoader<Texture>::operator()(){
 		ptr->setCurrentSampler( *_descriptor.getPropertyDescriptor<SamplerDescriptor>() );
     }
 
-    if(!load(ptr,_descriptor.getName())){
-        ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_FILE"),_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
-		SAFE_DELETE(ptr);
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        ERROR_FN( Locale::get( "ERROR_TEXTURE_LOADER_FILE" ), _descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str() );
+        MemoryManager::SAFE_DELETE( ptr );
     }
 
     return ptr;

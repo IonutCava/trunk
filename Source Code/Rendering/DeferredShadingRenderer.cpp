@@ -107,12 +107,12 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     RemoveResource(_renderQuads[3]);
     RemoveResource(_renderQuads[4]);
     _renderQuads.clear();
-    SAFE_DELETE(_deferredBuffer);
+    MemoryManager::SAFE_DELETE( _deferredBuffer );
     if(_deferredShader != nullptr){
         RemoveResource(_deferredShader);
     }
     RemoveResource(_previewDeferredShader);
-    SAFE_DELETE(_lightTexture);
+    MemoryManager::SAFE_DELETE( _lightTexture );
 }
 
 void DeferredShadingRenderer::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock) {

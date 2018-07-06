@@ -65,7 +65,7 @@ namespace Navigation {
         _navMesh = nullptr;
         _tempNavMesh = nullptr;
 
-        SAFE_DELETE(_debugDrawInterface);
+        MemoryManager::SAFE_DELETE( _debugDrawInterface );
         return true;
     }
 
@@ -391,7 +391,7 @@ namespace Navigation {
         rcRasterizeTriangles(ctx, data.getVerts(), data.getVertCount(), data.getTris(), areas, data.getTriCount(), *_heightField, cfg.walkableClimb);
 
         if (!_saveIntermediates) {
-            SAFE_DELETE_ARRAY(areas);
+            MemoryManager::SAFE_DELETE_ARRAY( areas );
         }
 
         // Filter out areas with low ceilings and other stuff

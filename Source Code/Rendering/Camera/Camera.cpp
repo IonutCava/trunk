@@ -47,7 +47,7 @@ Camera::Camera(const CameraType& type, const vec3<F32>& eye) :
 
 Camera::~Camera()
 {
-    SAFE_DELETE(_frustum);
+    MemoryManager::SAFE_DELETE( _frustum );
 }
 
 void Camera::fromCamera(const Camera& camera){

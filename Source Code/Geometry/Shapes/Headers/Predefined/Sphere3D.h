@@ -46,7 +46,10 @@ public:
         }
         clean();
     }
+    virtual ~Sphere3D() 
+    {
 
+    }
     inline F32	  getRadius()     {return _radius;}
     inline F32    getResolution() {return _resolution;}
     inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; getGeometryVB()->queueRefresh();}

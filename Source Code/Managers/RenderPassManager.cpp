@@ -11,9 +11,9 @@ RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPass
 
 RenderPassManager::~RenderPassManager()
 {
-    for(RenderPassItem& rpi : _renderPasses)
-        SAFE_DELETE(rpi._rp);
-    
+    for ( RenderPassItem& rpi : _renderPasses ) {
+        MemoryManager::SAFE_DELETE( rpi._rp );
+    }
     _renderPasses.clear();
     RenderQueue::destroyInstance();
 }
@@ -44,7 +44,7 @@ void RenderPassManager::removeRenderPass(RenderPass* const renderPass,bool delet
     for(vectorImpl<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++){
         if(it->_rp->getName().compare(renderPass->getName()) == 0){
             if(deleteRP){
-                SAFE_DELETE(it->_rp);
+                MemoryManager::SAFE_DELETE( it->_rp );
             }
             _renderPasses.erase(it);
             break;
@@ -52,13 +52,13 @@ void RenderPassManager::removeRenderPass(RenderPass* const renderPass,bool delet
     }
 }
 
-void RenderPassManager::removeRenderPass(const stringImpl& name,bool deleteRP) {
-    for(vectorImpl<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++){
-        if(it->_rp->getName().compare(name) == 0){
-            if(deleteRP)
-                SAFE_DELETE(it->_rp);
-            
-            _renderPasses.erase(it);
+void RenderPassManager::removeRenderPass( const stringImpl& name, bool deleteRP ) {
+    for ( vectorImpl<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++ ) {
+        if ( it->_rp->getName().compare( name ) == 0 ) {
+            if ( deleteRP ) {
+                MemoryManager::SAFE_DELETE( it->_rp );
+            }
+            _renderPasses.erase( it );
             break;
         }
     }

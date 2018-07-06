@@ -29,7 +29,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
 {
     //All lights default to fully dynamic for now.
     setLightMode(LIGHT_MODE_MOVABLE);
-    for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i){
+    for ( U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i ) {
         _shadowProperties._lightVP[i].identity();
     }
     _shadowProperties._floatValues.set(-1.0f);
@@ -62,16 +62,11 @@ bool Light::load(const stringImpl& name){
 }
 
 bool Light::unload(){
-    if(getState() != RES_LOADED && getState() != RES_LOADING)
+    if ( getState() != RES_LOADED && getState() != RES_LOADING ) {
         return true;
-
-    //SAFE_DELETE(_shadowCamera); <-- deleted by the camera manager
-
-    if(_impostor){
-        _lightSGN->removeNode(_impostorSGN);
-        SAFE_DELETE(_impostor);
     }
 
+    //SAFE_DELETE(_shadowCamera); <-- deleted by the camera manager
     LightManager::getInstance().removeLight(getGUID());
         
     removeShadowMapInfo();
@@ -81,6 +76,8 @@ bool Light::unload(){
 
 void Light::postLoad(SceneGraphNode* const sgn) {
     //Hold a pointer to the light's location in the SceneGraph
+    DIVIDE_ASSERT( _lightSGN == nullptr, "Light error: Lights can only be bound to a single SGN node!" );
+
     _lightSGN = sgn;
     _updateLightBB = true;
 
@@ -89,23 +86,25 @@ void Light::postLoad(SceneGraphNode* const sgn) {
 
 void Light::onCameraChange(){
     assert(_lightSGN != nullptr);
-    if (!getEnabled()) return;
-
-     _dirty[PROPERTY_TYPE_PHYSICAL] = true;
+    if ( !getEnabled() ) {
+        return;
+    }
+    
+    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
 
     if(_type != LIGHT_TYPE_DIRECTIONAL) {
 
         if(_mode == LIGHT_MODE_MOVABLE) {  
-            const vec3<F32>& newPosition = _lightSGN->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
-            if (_properties._position != newPosition){
-                _properties._position.set(newPosition);
+            const vec3<F32>& newPosition = _lightSGN->getComponent<PhysicsComponent>()->getPosition();
+            if ( _properties._position != newPosition ) {
+                _properties._position.set( newPosition );
             }
         } else {
             _lightSGN->getComponent<PhysicsComponent>()->setPosition(_properties._position);
         }
 
         if (_updateLightBB) {
-            _lightSGN->updateBoundingBoxTransform(_lightSGN->getWorldMatrix());
+            _lightSGN->updateBoundingBoxTransform(_lightSGN->getComponent<PhysicsComponent>()->getWorldMatrix());
         }
     }
 
@@ -115,8 +114,8 @@ void Light::onCameraChange(){
 
 void Light::setPosition(const vec3<F32>& newPosition){
     //Togglable lights can't be moved.
-    if(_mode == LIGHT_MODE_TOGGLABLE){
-        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(), "Light_Togglable","LIGHT_POSITION");
+    if ( _mode == LIGHT_MODE_TOGGLABLE ) {
+        ERROR_FN( Locale::get( "WARNING_ILLEGAL_PROPERTY" ), getGUID(), "Light_Togglable", "LIGHT_POSITION" );
         return;
     }
 
@@ -147,14 +146,14 @@ void Light::setRange(F32 range) {
 
 void Light::setDirection(const vec3<F32>& newDirection){
     //Togglable lights can't be moved.
-    if(_mode == LIGHT_MODE_TOGGLABLE){
-        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(), "Light_Togglable","LIGHT_DIRECTION");
+    if ( _mode == LIGHT_MODE_TOGGLABLE ) {
+        ERROR_FN( Locale::get( "WARNING_ILLEGAL_PROPERTY" ), getGUID(), "Light_Togglable", "LIGHT_DIRECTION" );
         return;
     }
-    if (_type == LIGHT_TYPE_SPOT){
-        _properties._direction = vec4<F32>(newDirection, 1.0f);
+    if ( _type == LIGHT_TYPE_SPOT ) {
+        _properties._direction = vec4<F32>( newDirection, 1.0f );
         _properties._direction.normalize();
-    }else{
+    } else {
         _properties._position = vec4<F32>(newDirection, 1.0f);
         _properties._position.normalize();
         _properties._position.w = _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f;
@@ -165,12 +164,15 @@ void Light::setDirection(const vec3<F32>& newDirection){
 }
 
 void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
-    if(_type == LIGHT_TYPE_DIRECTIONAL) return;
+    if ( _type == LIGHT_TYPE_DIRECTIONAL ) {
+        return;
+    }
 
     // Check if range changed
-    if (FLOAT_COMPARE(getRange(), sgn->getBoundingBoxConst().getMax().x))
+    if ( FLOAT_COMPARE( getRange(), sgn->getBoundingBoxConst().getMax().x ) ) {
         return;
-    
+    }
+
     sgn->getBoundingBox().setComputed(false);
     
     _updateLightBB = true;
@@ -179,13 +181,11 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneSta
 }
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
-    if(_type == LIGHT_TYPE_DIRECTIONAL){
+    if ( _type == LIGHT_TYPE_DIRECTIONAL ) {
         vec4<F32> directionalLightPosition = _properties._position * Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
-
-        sgn->getBoundingBox().set(directionalLightPosition.xyz() - vec3<F32>(10), 
-                                  directionalLightPosition.xyz() + vec3<F32>(10));
-    }else{
-        sgn->getBoundingBox().set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
+        sgn->getBoundingBox().set( directionalLightPosition.xyz() - vec3<F32>( 10 ), directionalLightPosition.xyz() + vec3<F32>( 10 ) );
+    } else {
+        sgn->getBoundingBox().set( vec3<F32>( -getRange() ), vec3<F32>( getRange() ) );
     }
 
     _updateLightBB = true;
@@ -193,40 +193,42 @@ bool Light::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-bool Light::isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
+bool Light::isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck ) {
     return ((_impostorSGN != nullptr) && _drawImpostor);
 }
 
 void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     // The isInView call should stop impostor rendering if needed
-    if (!_impostor){
-        _impostor = New Impostor(_name, _properties._attenuation.w);
-        _impostor->getSceneNodeRenderState().setDrawState(true);
-        _impostorSGN = _lightSGN->addNode(_impostor);
-        _impostorSGN->setActive(true);
+    if ( !_impostor ) {
+        _impostor = CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
+        _impostor->setRadius( _properties._attenuation.w );
+        _impostor->getSceneNodeRenderState().setDrawState( true );
+        _lightSGN->addNode( _impostor )->setActive( true );
     }
 
     _impostor->getMaterial()->setDiffuse(getDiffuseColor());
     _impostor->getMaterial()->setAmbient(getDiffuseColor());
 
     //Updating impostor range is expensive, so check if we need to
-    if (!FLOAT_COMPARE(getRange(), _impostor->getRadius()))
-        _impostor->setRadius(getRange());
+    if ( !FLOAT_COMPARE( getRange(), _impostor->getRadius() ) ) {
+        _impostor->setRadius( getRange() );
+    }
 }
 
 void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo){
-    SAFE_UPDATE(_shadowMapInfo, shadowMapInfo);
+    MemoryManager::SAFE_UPDATE( _shadowMapInfo, shadowMapInfo );
 }
 
 bool Light::removeShadowMapInfo(){
-    SAFE_DELETE(_shadowMapInfo);
+    MemoryManager::SAFE_DELETE( _shadowMapInfo );
     return true;
 }
 void Light::updateResolution(I32 newWidth, I32 newHeight){
     ShadowMap* sm = _shadowMapInfo->getShadowMap();
 
-    if (!sm)
+    if ( !sm ) {
         return;
+    }
 
     sm->updateResolution(newWidth, newHeight);
 }
@@ -234,8 +236,9 @@ void Light::updateResolution(I32 newWidth, I32 newHeight){
 void Light::generateShadowMaps(SceneRenderState& sceneRenderState){
     ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(sceneRenderState, _shadowCamera);
 
-    if (!sm)
+    if ( !sm ) {
         return;
+    }
 
     sm->render(sceneRenderState, _callback);
     sm->postRender();

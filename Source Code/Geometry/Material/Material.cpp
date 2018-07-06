@@ -53,7 +53,8 @@ Material::Material() : Resource("temp_material"),
     _computedShaderTextures = false;
 }
 
-Material::~Material(){
+Material::~Material()
+{
     _defaultRenderStates.clear();
 }
 
@@ -98,23 +99,23 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot, Texture*
 
     _textures[textureUsageSlot] = texture;
 
-    if(texture)
-        REGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
-    
+    if ( texture ) {
+        REGISTER_TRACKED_DEPENDENCY( _textures[textureUsageSlot] );
+    }
 
-    if(textureUsageSlot == ShaderProgram::TEXTURE_UNIT1)
+    if ( textureUsageSlot == ShaderProgram::TEXTURE_UNIT1 ) {
         _operation = op;
-
-    if(textureUsageSlot == ShaderProgram::TEXTURE_UNIT0 || textureUsageSlot == ShaderProgram::TEXTURE_UNIT1)
+    }
+    if ( textureUsageSlot == ShaderProgram::TEXTURE_UNIT0 || textureUsageSlot == ShaderProgram::TEXTURE_UNIT1 ) {
         texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
-
-    if(textureUsageSlot == ShaderProgram::TEXTURE_UNIT0 || textureUsageSlot == ShaderProgram::TEXTURE_OPACITY){
+    }
+    if ( textureUsageSlot == ShaderProgram::TEXTURE_UNIT0 || textureUsageSlot == ShaderProgram::TEXTURE_OPACITY ) {
         _translucencyCheck = false;
     }
    
-    if(computeShaders)
+    if ( computeShaders ) {
         recomputeShaders();
-       
+    }
     _dirty = true;
 }
 
@@ -132,6 +133,7 @@ void Material::setShaderProgramInternal(const stringImpl& shader, const RenderSt
         shaderReference = FindResourceImpl<ShaderProgram>(_shaderInfo[renderStage]._shader);
         if (_shaderInfo[renderStage]._shader.compare(shader) != 0){
             PRINT_FN(Locale::get("REPLACE_SHADER"), _shaderInfo[renderStage]._shader.c_str(), shader.c_str());
+            UNREGISTER_TRACKED_DEPENDENCY( shaderReference );
             RemoveResource(shaderReference);
         }
     }
@@ -153,10 +155,11 @@ void Material::setShaderProgramInternal(const stringImpl& shader, const RenderSt
     _computedShaderTextures = true;
     if (computeOnAdd){
         _shaderInfo[renderStage]._shaderRef = CreateResource<ShaderProgram>(shaderDescriptor);
-        _shaderInfo[renderStage]._computedShader = true;
+        REGISTER_TRACKED_DEPENDENCY(_shaderInfo[renderStage]._shaderRef); 
     }else{
         _shaderComputeQueue.push(std::make_pair(renderStage, shaderDescriptor));
     }
+    _shaderInfo[renderStage]._computedShader = true;
 }
 
 void Material::clean() {
@@ -168,10 +171,10 @@ void Material::clean() {
 }
 
 void Material::recomputeShaders() {
-	for (shaderInfoMap::value_type& it : _shaderInfo){
-        if(!it.second._isCustomShader){
+    for ( shaderInfoMap::value_type it : _shaderInfo ) {
+        if ( !it.second._isCustomShader ) {
             it.second._computedShader = false;
-            computeShader(it.first);
+            computeShader( it.first );
         }
     }
 }
@@ -179,12 +182,14 @@ void Material::recomputeShaders() {
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
 bool Material::computeShader(const RenderStage& renderStage){
-    if (_shaderInfo[renderStage]._computedShader)
+    if ( _shaderInfo[renderStage]._computedShader ) {
         return false;
+    }
 
-    if((_textures[ShaderProgram::TEXTURE_UNIT0]   && _textures[ShaderProgram::TEXTURE_UNIT0]->getState()   != RES_LOADED) ||
-       (_textures[ShaderProgram::TEXTURE_OPACITY] && _textures[ShaderProgram::TEXTURE_OPACITY]->getState() != RES_LOADED))
+    if ( ( _textures[ShaderProgram::TEXTURE_UNIT0] && _textures[ShaderProgram::TEXTURE_UNIT0]->getState() != RES_LOADED ) ||
+        ( _textures[ShaderProgram::TEXTURE_OPACITY] && _textures[ShaderProgram::TEXTURE_OPACITY]->getState() != RES_LOADED ) ) {
         return false;
+    }
 
     bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD_PLUS;
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
@@ -192,12 +197,12 @@ bool Material::computeShader(const RenderStage& renderStage){
     //the base shader is either for a Deferred Renderer or a Forward  one ...
     stringImpl shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
 
-    if(Config::Profile::DISABLE_SHADING)
+    if ( Config::Profile::DISABLE_SHADING ) {
         shader = "passThrough";
-
-    if (depthPassShader)
-        renderStage == Z_PRE_PASS_STAGE ? shader += ".PrePass" :  shader += ".Shadow";
- 
+    }
+    if ( depthPassShader ) {
+        renderStage == Z_PRE_PASS_STAGE ? shader += ".PrePass" : shader += ".Shadow";
+    }
     //What kind of effects do we need?
     if (_textures[ShaderProgram::TEXTURE_UNIT0]){
         //Bump mapping?
@@ -260,17 +265,16 @@ bool Material::computeShader(const RenderStage& renderStage){
 }
 
 void Material::computeShaderInternal(){
-    if (_shaderComputeQueue.empty()/* || Material::isShaderQueueLocked()*/)
+    if ( _shaderComputeQueue.empty()/* || Material::isShaderQueueLocked()*/ ) {
         return;
-
+    }
     //Material::lockShaderQueue();
 
-    std::pair<RenderStage, ResourceDescriptor> currentItem = _shaderComputeQueue.front();
+    const std::pair<RenderStage, ResourceDescriptor>& currentItem = _shaderComputeQueue.front();
 
     _dirty = true;
     _shaderInfo[currentItem.first]._shaderRef = CreateResource<ShaderProgram>(currentItem.second);
-    _shaderInfo[currentItem.first]._computedShader = true;
-
+    REGISTER_TRACKED_DEPENDENCY( _shaderInfo[currentItem.first]._shaderRef );
     _shaderComputeQueue.pop();
 }
 
@@ -325,24 +329,32 @@ bool Material::unload(){
         }
     }
     _customTextures.clear();
+    for ( shaderInfoMap::value_type it : _shaderInfo ) {
+        ShaderProgram* shader = FindResourceImpl<ShaderProgram>( it.second._shader );
+        if ( shader != nullptr ) {
+            UNREGISTER_TRACKED_DEPENDENCY( shader );
+            RemoveResource( shader );
+        }
+    }
+    _shaderInfo.clear();
     return true;
 }
 
 void Material::setDoubleSided(bool state, const bool useAlphaTest) {
-    if(_doubleSided == state && _useAlphaTest == useAlphaTest)
+    if ( _doubleSided == state && _useAlphaTest == useAlphaTest ) {
         return;
-    
+    }
     _doubleSided = state;
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
-    if(_doubleSided){
-		for (renderStateBlockMap::value_type& it : _defaultRenderStates){
-            RenderStateBlockDescriptor descriptor(GFX_DEVICE.getStateBlockDescriptor(it.second));
-            descriptor.setCullMode(CULL_MODE_NONE);
-			if (!_translucencySource.empty()) {
-				descriptor.setBlend(true);
-			}
-            setRenderStateBlock(descriptor, it.first);
+    if ( _doubleSided ) {
+        for ( renderStateBlockMap::value_type it : _defaultRenderStates ) {
+            RenderStateBlockDescriptor descriptor( GFX_DEVICE.getStateBlockDescriptor( it.second ) );
+            descriptor.setCullMode( CULL_MODE_NONE );
+            if ( !_translucencySource.empty() ) {
+                descriptor.setBlend( true );
+            }
+            setRenderStateBlock( descriptor, it.first );
         }
     }
 

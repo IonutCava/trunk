@@ -45,7 +45,7 @@ TerrainChunk::~TerrainChunk()
     _terrainVB = nullptr;
 }
 
-void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, SceneGraphNode* const parentTerrainSGN){
+void TerrainChunk::Load( U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, Terrain* const terrain ) {
 
     _chunkIndOffset = _terrainVB->getIndexCount();
 
@@ -63,14 +63,19 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec
     F32 tempMin = std::numeric_limits<F32>::max();
     F32 tempMax = std::numeric_limits<F32>::min();
     F32 height = 0.0f;
-    for(U32 i = 0; i < _lodIndCount[0]; ++i){
+    for ( U32 i = 0; i < _lodIndCount[0]; ++i ) {
         U32 idx = _indice[0][i];
-        if (idx == Config::PRIMITIVE_RESTART_INDEX_L) continue;
-
+        if ( idx == Config::PRIMITIVE_RESTART_INDEX_L ) {
+            continue;
+        }
         height = vertices[idx].y;
 
-        if(height > tempMax) tempMax = height;
-        if(height < tempMin) tempMin = height;
+        if ( height > tempMax ) {
+            tempMax = height;
+        }
+        if ( height < tempMin ) {
+            tempMin = height;
+        }
     }
 
     _heightBounds.set(tempMin, tempMax);
@@ -78,8 +83,10 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec
     for(U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++){
         _indice[i].clear();
     }
-    parentTerrainSGN->addNode(_vegetation);
-    _vegetation->initialize(this, parentTerrainSGN);
+
+    _vegetation->initialize( this );
+
+    terrain->registerTerrainChunk( this );
 }
 
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){

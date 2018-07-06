@@ -66,7 +66,6 @@ public:
 };
 
 class Texture;
-class Impostor;
 class GenericVertexData;
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
 class ParticleEmitter : public SceneNode {
@@ -92,9 +91,9 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
     ///SceneNode test
-    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {
+    bool isInView(const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = false) {
         if(_enabled && _impostor)
-            return _impostor->isInView(sceneRenderState, boundingBox, sphere, distanceCheck);
+            return _impostor->isInView(sceneRenderState, sgn, distanceCheck);
 
         return false;
     }
@@ -133,8 +132,6 @@ private:
     bool _updateParticleEmitterBB;
     /// used for debug rendering / editor
     Impostor* _impostor;
-    /// pointers to important scenegraph information
-    SceneGraphNode *_particleEmitterSGN, *_impostorSGN;
 
     GenericVertexData* _particleGPUBuffer;
 

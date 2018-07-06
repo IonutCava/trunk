@@ -7,11 +7,11 @@ namespace Divide {
 Trigger* ImplResourceLoader<Trigger>::operator()(){
     Trigger* ptr = New Trigger();
 
-    if(!load(ptr,_descriptor.getName())){
-        SAFE_DELETE(ptr);
-    }else{
-        ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-        ptr->setMaterial(nullptr);
+    if ( !load( ptr, _descriptor.getName() ) ) {
+        MemoryManager::SAFE_DELETE( ptr );
+    } else {
+        ptr->getSceneNodeRenderState().useDefaultMaterial( false );
+        ptr->setMaterial( nullptr );
     }
 
     return ptr;

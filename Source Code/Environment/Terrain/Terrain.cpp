@@ -11,8 +11,6 @@
 #include "Managers/Headers/SceneManager.h"
 
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
@@ -32,8 +30,7 @@ Terrain::Terrain() : Object3D(TERRAIN),
     _terrainDepthRenderStateHash(0),
     _terrainReflectionRenderStateHash(0),
     _terrainInView(false),
-    _planeInView(false),
-    _planeSGN(nullptr)
+    _planeInView(false)
 {
     getGeometryVB()->useLargeIndices(true);//<32bit indices
 }
@@ -42,84 +39,74 @@ Terrain::~Terrain()
 {
 }
 
-bool Terrain::unload(){
-    SAFE_DELETE(_terrainQuadtree);
+bool Terrain::unload() {
+    MemoryManager::SAFE_DELETE( _terrainQuadtree );
 
-    for (TerrainTextureLayer*& terrainTextures : _terrainTextures){
-        SAFE_DELETE(terrainTextures);
+    for ( TerrainTextureLayer*& terrainTextures : _terrainTextures ) {
+        MemoryManager::SAFE_DELETE( terrainTextures );
     }
     _terrainTextures.clear();
 
-    RemoveResource(_vegDetails.grassBillboards);
+    RemoveResource( _vegDetails.grassBillboards );
     return SceneNode::unload();
 }
 
 void Terrain::postLoad(SceneGraphNode* const sgn){
-    assert(getState() == RES_LOADED);
+    SceneGraphNode* planeSGN = sgn->addNode(_plane);
+    planeSGN->setActive(false);
+    _plane->computeBoundingBox(planeSGN);
+    computeBoundingBox(sgn);
+    for ( TerrainChunk* chunk : _terrainChunks ) {
+        sgn->addNode( chunk->getVegetation() );
+    }
+    SceneNode::postLoad(sgn);
+}
 
-    getGeometryVB()->Create();
-
-    reserveTriangleCount((_terrainWidth - 1) * (_terrainHeight - 1) * 2);
-    _terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), _chunkSize, sgn);
+void Terrain::buildQaudtree() {
+    reserveTriangleCount( ( _terrainWidth - 1 ) * ( _terrainHeight - 1 ) * 2 );
+    _terrainQuadtree->Build( _boundingBox, vec2<U32>( _terrainWidth, _terrainHeight ), _chunkSize, this);
+    //The terrain's final bounding box is the QuadTree's root bounding box
+    _boundingBox = _terrainQuadtree->computeBoundingBox();
 
     ShaderProgram* drawShader = getDrawShader();
-    drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
-    drawShader->Uniform("bbox_min", _boundingBox.getMin());
-    drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
-    drawShader->UniformTexture("texWaterCaustics",    ShaderProgram::TEXTURE_UNIT0);
-    drawShader->UniformTexture("texUnderwaterAlbedo", ShaderProgram::TEXTURE_UNIT1);
-    drawShader->UniformTexture("texUnderwaterDetail", ShaderProgram::TEXTURE_NORMALMAP);
-    drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
+    drawShader->Uniform( "dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel() );
+    drawShader->Uniform( "bbox_min", _boundingBox.getMin() );
+    drawShader->Uniform( "bbox_extent", _boundingBox.getExtent() );
+    drawShader->UniformTexture( "texWaterCaustics", ShaderProgram::TEXTURE_UNIT0 );
+    drawShader->UniformTexture( "texUnderwaterAlbedo", ShaderProgram::TEXTURE_UNIT1 );
+    drawShader->UniformTexture( "texUnderwaterDetail", ShaderProgram::TEXTURE_NORMALMAP );
+    drawShader->Uniform( "underwaterDiffuseScale", _underwaterDiffuseScale );
 
     U8 textureOffset = ShaderProgram::TEXTURE_NORMALMAP + 1;
     U8 layerOffset = 0;
     stringImpl layerIndex;
-    for (U32 i = 0; i < _terrainTextures.size(); ++i){
+    for ( U32 i = 0; i < _terrainTextures.size(); ++i ) {
         layerOffset = i * 3 + textureOffset;
-        layerIndex = stringAlg::toBase(Util::toString(i));
+        layerIndex = stringAlg::toBase( Util::toString( i ) );
         TerrainTextureLayer* textureLayer = _terrainTextures[i];
-        drawShader->UniformTexture("texBlend[" + layerIndex + "]",    layerOffset);
-        drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);
-		drawShader->UniformTexture("texNormalMaps[" + layerIndex + "]", layerOffset + 2);
+        drawShader->UniformTexture( "texBlend[" + layerIndex + "]", layerOffset );
+        drawShader->UniformTexture( "texTileMaps[" + layerIndex + "]", layerOffset + 1 );
+        drawShader->UniformTexture( "texNormalMaps[" + layerIndex + "]", layerOffset + 2 );
 
-        getMaterial()->addCustomTexture(textureLayer->blendMap(), layerOffset);
-        getMaterial()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
-		getMaterial()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
+        getMaterial()->addCustomTexture( textureLayer->blendMap(), layerOffset );
+        getMaterial()->addCustomTexture( textureLayer->tileMaps(), layerOffset + 1 );
+        getMaterial()->addCustomTexture( textureLayer->normalMaps(), layerOffset + 2 );
 
-        drawShader->Uniform("diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales());
-        drawShader->Uniform("detailScale["  + layerIndex + "]", textureLayer->getDetailScales());
+        drawShader->Uniform( "diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales() );
+        drawShader->Uniform( "detailScale[" + layerIndex + "]", textureLayer->getDetailScales() );
 
     }
-
-    ResourceDescriptor infinitePlane("infinitePlane");
-    infinitePlane.setFlag(true); //No default material
-    _plane = CreateResource<Quad3D>(infinitePlane);
-    // our bottom plane is placed at the bottom of our water entity
-    F32 height = GET_ACTIVE_SCENE()->state().getWaterLevel() - GET_ACTIVE_SCENE()->state().getWaterDepth();
-    _farPlane = 2.0f * GET_ACTIVE_SCENE()->state().getRenderState().getCameraConst().getZPlanes().y;
-    _plane->setCorner(Quad3D::TOP_LEFT,     vec3<F32>(-_farPlane * 1.5f, height, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::TOP_RIGHT,    vec3<F32>( _farPlane * 1.5f, height, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::BOTTOM_LEFT,  vec3<F32>(-_farPlane * 1.5f, height,  _farPlane * 1.5f));
-    _plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>( _farPlane * 1.5f, height,  _farPlane * 1.5f));
-    _planeSGN = sgn->addNode(_plane);
-    _planeSGN->setActive(false);
-    _plane->computeBoundingBox(_planeSGN);
-    computeBoundingBox(sgn);
-
-    SceneNode::postLoad(sgn);
 }
 
 bool Terrain::computeBoundingBox(SceneGraphNode* const sgn){
-    //The terrain's final bounding box is the QuadTree's root bounding box
-    _boundingBox = _terrainQuadtree->computeBoundingBox();
     //Inform the scenegraph of our new BB
     sgn->getBoundingBox() = _boundingBox;
     return  SceneNode::computeBoundingBox(sgn);
 }
 
-bool Terrain::isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
-    _terrainInView = SceneNode::isInView(sceneRenderState, boundingBox, sphere, distanceCheck);
-    _planeInView = _terrainInView ? false : _plane->isInView(sceneRenderState, _planeSGN->getBoundingBoxConst(), _planeSGN->getBoundingSphereConst(), distanceCheck);
+bool Terrain::isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck ) {
+    _terrainInView = SceneNode::isInView( sceneRenderState, sgn, distanceCheck );
+    _planeInView = _terrainInView ? false : _plane->isInView(sceneRenderState, sgn->getChildren()[0], distanceCheck);
 
     return _terrainInView || _planeInView;
 }

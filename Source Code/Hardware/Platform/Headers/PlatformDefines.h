@@ -155,11 +155,19 @@ inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff)
 static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 
+template<typename T>
+inline bool IS_ZERO( T X ) { return X == 0; }
+template<>
 inline bool IS_ZERO(F32 X) { return  (std::fabs(X) < EPSILON_F32); }
+template<>
 inline bool IS_ZERO(D32 X) { return  (std::fabs(X) < EPSILON_D32); }
 
-inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) { return (std::fabs(X) < TOLERANCE); }
-inline bool IS_TOLERANCE(D32 X, D32 TOLERANCE) { return (std::fabs(X) < TOLERANCE); }
+template<typename T>
+inline bool IS_TOLERANCE(T X, T TOLERANCE )      { return ( std::abs( X ) < TOLERANCE ); }
+template<>
+inline bool IS_TOLERANCE( F32 X, F32 TOLERANCE ) { return ( std::fabs( X ) < TOLERANCE ); }
+template<>
+inline bool IS_TOLERANCE( D32 X, D32 TOLERANCE ) { return ( std::fabs( X ) < TOLERANCE ); }
 
 inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE)  {  return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4); }
 inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) {  return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4); }
@@ -229,61 +237,74 @@ Divide::I32 Vsnprintf8( char* pDestination, size_t n, const char* pFormat, va_li
 #   define New new(__FILE__, __LINE__)
 #endif
 
-template<class T>
-inline void SAFE_DELETE(T*& ptr) {
-	if (ptr) {
-		delete ptr;
-		ptr = nullptr;
-	}
-}
+namespace Divide {
+    namespace MemoryManager {
 
-template<class T>
-inline void SAFE_DELETE_ARRAY(T*& ptr) {
-	if (ptr) {
-		delete [] ptr;
-		ptr = nullptr;
-	}
-}
+    template<class T>
+    /// Deletes and nullifies the specified pointer only if it's not null
+    inline void SAFE_DELETE( T*& ptr ) {
+        if ( ptr ) {
+            delete ptr;
+            ptr = nullptr;
+        }
+    }
+#   define SET_SAFE_DELETE_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE( T*& ptr );
+    template<class T>
+    /// Deletes and nullifies the specified array pointer only if it's not null
+    inline void SAFE_DELETE_ARRAY( T*& ptr ) {
+        if ( ptr ) {
+            delete[] ptr;
+            ptr = nullptr;
+        }
+    }
+#   define SET_SAFE_DELETE_ARRAY_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_ARRAY( T*& ptr );
+    template<class T>
+    /// Deletes and nullifies the specified pointer only if it's not null. Returns "true" if deletion was successful
+    inline bool SAFE_DELETE_CHECK( T*& ptr ) {
+        if ( ptr ) {
+            delete ptr;
+            ptr = nullptr;
+            return true;
+        }
+        return false;
+    }
+#   define SET_SAFE_DELETE_CHECK_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_CHECK( T*& ptr );
+    template<class T>
+    /// Deletes and nullifies the specified array pointer only if it's not null. Returns "true" if deletion was successful
+    inline bool SAFE_DELETE_ARRAY_CHECK( T*& ptr ) {
+        if ( ptr ) {
+            delete[] ptr;
+            ptr = nullptr;
+            return true;
+        }
+        return false;
+    }
+#   define SET_SAFE_DELETE_ARRAY_CHECK_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_ARRAY_CHECK( T*& ptr );
+    template<class T>
+    /// Deletes every element from the vector and clears it at the end
+    inline void SAFE_DELETE_VECTOR( vectorImpl<T*>& vec ) {
+        if ( !vec.empty() ) {
+            for ( T* iter : vec ) {
+                delete iter;
+            }
+            vec.clear();
+        }
+    }
+#   define SET_SAFE_DELETE_VECTOR_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_VECTOR( vectorImpl<T*>& vec );
+    template<class T, class U>
+    /// Deletes the object pointed to by "OLD" and redirects that pointer to the object pointed by "NEW"
+    /// "NEW" must be a derived (or same) class of OLD
+    inline void SAFE_UPDATE( T*& OLD, U* const NEW ) {
+        static_assert( std::is_base_of<T, U>::value, "SAFE_UPDATE error: T must be a descendant of U" );
+        if ( OLD ) {
+            delete OLD;
+        }
+        OLD = NEW;
+    }
+#   define SET_SAFE_UPDATE_FRIEND template<class T, class U> friend void MemoryManager::SAFE_UPDATE( T*& OLD, U* const NEW );
 
-template<class T>
-inline bool SAFE_DELETE_CHECK(T*& ptr) {
-	if (ptr) {
-		delete ptr;
-		ptr = nullptr;
-		return true;
-	}
-	return false;
-}
-
-template<class T>
-inline bool SAFE_DELETE_ARRAY_CHECK(T*& ptr) {
-	if (ptr) {
-		delete [] ptr;
-		ptr = nullptr;
-		return true;
-	}
-	return false;
-}
-
-template<class T>
-inline void SAFE_DELETE_VECTOR(vectorImpl<T*> vec) {
-	if (!vec.empty()) {
-		for (T* iter : vec) {
-			delete iter;
-		}
-		vec.clear();
-	}
-}
-
-template<class T, class U>
-inline void SAFE_UPDATE(T*& OLD, U* const NEW) {
-	static_assert(std::is_base_of<T, U>::value, "SAFE_UPDATE error: T must be a descendant of U" );
-	if (OLD) {
-		delete OLD;
-	}
-	OLD = NEW;
-}
-
+    }; //namespace MemoryManager
+}; //namespace Divide
 #if defined(_MSC_VER)
 
 #	pragma warning(disable:4103) ///<Boost alignment shouts

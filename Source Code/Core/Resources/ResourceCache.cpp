@@ -7,13 +7,15 @@
 
 namespace Divide {
 
-ResourceCache::ResourceCache(){
+ResourceCache::ResourceCache()
+{
     //_loadingPool = New boost::threadpool::pool(3);
     DVDConverter::createInstance();
     TerrainLoader::createInstance();
 }
 
-ResourceCache::~ResourceCache(){
+ResourceCache::~ResourceCache()
+{
     DVDConverter::destroyInstance();
     TerrainLoader::destroyInstance();
 
@@ -22,109 +24,108 @@ ResourceCache::~ResourceCache(){
     PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));
 }
 
-void ResourceCache::add(const stringImpl& name,Resource* const res){
-	DIVIDE_ASSERT( !name.empty(), "ResourceCache add error: Invalid resource name!" );
-    UpgradableReadLock ur_lock(_creationMutex);
-    if(res == nullptr) {
-        ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
+void ResourceCache::Destroy() {
+    WriteLock w_lock( _creationMutex );
+    if ( _resDB.empty() ) {
         return;
     }
-    UpgradeToWriteLock uw_lock(ur_lock);
-    res->setName(name);
-    hashAlg::insert(_resDB, hashAlg::makePair(name, res));
-}
 
-Resource* ResourceCache::loadResource(const stringImpl& name){
-    ReadLock r_lock(_creationMutex);
-    Resource* res = find(name);
-    if(res){
-        res = _resDB[name];
-        res->AddRef();
-        D_PRINT_FN(Locale::get("RESOURCE_CACHE_GET_RES_INC"),name.c_str(),res->getRefCount());
-    }else{
-        PRINT_FN(Locale::get("RESOURCE_CACHE_GET_RES"),name.c_str());
-    }
-    return res;
-}
+    PRINT_FN( Locale::get( "STOP_RESOURCE_CACHE" ) );
 
-void ResourceCache::Destroy(){
-	if ( _resDB.empty() ) {
-		return;
-	}
-    PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
-
-	for (ResourceMap::value_type it : _resDB){
-        if (removeInternal(it.second, true)) {
-            SAFE_DELETE(it.second);
+    for ( ResourceMap::value_type it : _resDB ) {
+        while ( it.second->GetRef() > 1 ) {
+            it.second->SubRef();
         }
+        removeInternal( it.second );
+        MemoryManager::SAFE_DELETE( it.second );
     }
     _resDB.clear();
 }
 
-Resource* const ResourceCache::find(const stringImpl& name){
+void ResourceCache::add( const stringImpl& name, Resource* const res ) {
+	DIVIDE_ASSERT( !name.empty(), "ResourceCache add error: Invalid resource name!" );
+    if(res == nullptr) {
+        ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
+        return;
+    }
+    res->setName(name);
+    WriteLock w_lock( _creationMutex );
+    hashAlg::insert(_resDB, hashAlg::makePair(name, res));
+}
+
+Resource* ResourceCache::loadResource(const stringImpl& name){
+    Resource* res = find(name);
+    if ( res ) {
+        res->AddRef();
+        D_PRINT_FN(Locale::get("RESOURCE_CACHE_GET_RES_INC"), name.c_str(), res->GetRef());
+    } else {
+        PRINT_FN( Locale::get( "RESOURCE_CACHE_GET_RES" ), name.c_str() );
+    }
+    return res;
+}
+
+Resource* const ResourceCache::find( const stringImpl& name ) {
     ///Search in our resource cache
-    ResourceMap::const_iterator resDBiter = _resDB.find(name);
-    if(resDBiter != _resDB.end()){
-        return resDBiter->second;
+    ReadLock r_lock( _creationMutex );
+    ResourceMap::const_iterator it = _resDB.find(name);
+    if(it != _resDB.end()){
+        return it->second;
     }
     return nullptr;
 }
 
-bool ResourceCache::remove(Resource* res, bool force){
-    if (res == nullptr) {
+bool ResourceCache::remove( Resource* resource ) {
+    if ( resource == nullptr ) {
         return false;
     }
-    if (_resDB.empty()) {
-        ERROR_FN(Locale::get("RESOURCE_CACHE_REMOVE_NO_DB"), res->getName().c_str());
-        return false;
-    }
-    ResourceMap::iterator resDBiter = _resDB.find(res->getName());
+    stringImpl nameCpy( resource->getName() );
     // If it's not in the resource database, it must've been created manually
-    if (resDBiter == _resDB.end()) {
+    ReadLock r_lock( _creationMutex );
+    if ( _resDB.empty() ) {
+        ERROR_FN( Locale::get( "RESOURCE_CACHE_REMOVE_NO_DB" ), nameCpy.c_str() );
         return false;
     }
+    r_lock.unlock();
     // If we can't remove it right now ...
-    if(removeInternal(res, force)){
-        _resDB.erase(resDBiter);
-        SAFE_DELETE(res);
-        return true;
+    if ( removeInternal( resource ) ) {
+        WriteLock w_lock( _creationMutex );
+        _resDB.erase( _resDB.find( nameCpy ) );
+        w_lock.unlock();
+        MemoryManager::SAFE_DELETE( resource );
+    } else {
+        return false;
     }
 
-    return force;
+    return true;
 }
 
-bool ResourceCache::removeInternal(Resource* const resource,bool force){
+bool ResourceCache::removeInternal(Resource* const resource){
     assert(resource != nullptr);
 
-    stringImpl name(resource->getName());
+    stringImpl nameCpy( resource->getName() );
+    DIVIDE_ASSERT( !nameCpy.empty(), Locale::get( "ERROR_RESOURCE_CACHE_INVALID_NAME" ) );
+    ResourceMap::iterator it = _resDB.find( nameCpy );
+	DIVIDE_ASSERT( it != _resDB.end(), Locale::get( "ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE" ) );
+    
+	U32 refCount = resource->GetRef();
+	if ( refCount > 1 ) {
+		resource->SubRef();
+        D_PRINT_FN( Locale::get( "RESOURCE_CACHE_REM_RES_DEC" ), nameCpy.c_str(), resource->GetRef() );
+		return false; //do not delete pointer
+	}
 
-    if(name.empty()){
-        ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_INVALID_NAME"));
-        return true; //delete pointer
-    }
-
-    if(_resDB.find(name) != _resDB.end()){
-        U32 refCount = resource->getRefCount();
-        if(refCount > 1 && !force) {
-            resource->SubRef();
-            D_PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES_DEC"),name.c_str(),resource->getRefCount());
-            return false; //do not delete pointer
-        }else{
-            PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES"),name.c_str());
-            resource->setState(RES_LOADING);
-            if(resource->unload()){
-                resource->setState(RES_CREATED);
-                return true;
-            }else{
-                ERROR_FN(Locale::get("ERROR_RESOURCE_REM"), name.c_str());
-                resource->setState(RES_UNKNOWN);
-                return force;
-            }
+	if (refCount == 1 ) {
+        PRINT_FN( Locale::get( "RESOURCE_CACHE_REM_RES" ), nameCpy.c_str() );
+        resource->setState(RES_LOADING);
+		if ( resource->unload() ) {
+			resource->setState(RES_CREATED);
+        } else {
+            ERROR_FN( Locale::get( "ERROR_RESOURCE_REM" ), nameCpy.c_str() );
+            resource->setState(RES_UNKNOWN);
         }
     }
 
-    ERROR_FN(Locale::get("ERROR_RESOURCE_REM_NOT_FOUND"),name.c_str());
-    return force;
+    return true;
 }
 
 bool ResourceCache::load(Resource* const res, const stringImpl& name) {
@@ -134,7 +135,7 @@ bool ResourceCache::load(Resource* const res, const stringImpl& name) {
 }
 
 bool ResourceCache::loadHW(Resource* const res, const stringImpl& name){
-    if(load(res,name)){
+    if ( load( res, name ) ) {
         HardwareResource* hwRes = dynamic_cast<HardwareResource* >(res);
         assert(hwRes);
         return hwRes->generateHWResource(name);

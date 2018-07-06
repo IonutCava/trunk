@@ -39,33 +39,30 @@ class TrackedObject : private NonCopyable, public GUIDWrapper {
       ///Increase reference count
       void AddRef();
       ///Decrease reference count
-      bool SubRef(bool recursive = true);
+      bool SubRef();
+	  ///How many references does this object belong to
+	  inline const long GetRef() const { return _refCount; }
       ///Add object dependency (dependent objects are ref counted with the parent object)
-      void addDependency(TrackedObject* const obj);
+      void REGISTER_TRACKED_DEPENDENCY( TrackedObject* const obj );
       ///Remove an object dependency
-      void removeDependency(TrackedObject* const obj);
-      ///How many references does this object belong to
-      inline const long getRefCount() const {return _refCount;}
+      void UNREGISTER_TRACKED_DEPENDENCY( TrackedObject* const obj );
       ///For memory consumption later on
       virtual const unsigned long size() const {return sizeof(*this);}
-
+      bool operator==( const TrackedObject& other ) const {
+          return this->getGUID() == other.getGUID();
+      }
+      bool operator!=( const TrackedObject& other ) const {
+          return this->getGUID() != other.getGUID();
+      }
     protected:
       TrackedObject();
       virtual ~TrackedObject();
-      ///A callback that's called when the ref count is modified. If increase is true, the ref count was incremented, else it was decremented
-      virtual void refModifyCallback(bool increase);
 
    private:
       //mutable SharedLock _dependencyLock;
       std::atomic<long> _refCount;
       std::list<TrackedObject* > _dependencyList;
 };
-//define a quickmacro to make things easier on derived classes
-#define AUTO_SIZE unsigned long size(){return sizeof(*this);}
-///Registering a dependency
-#define REGISTER_TRACKED_DEPENDENCY(X)   this->addDependency(X);
-#define UNREGISTER_TRACKED_DEPENDENCY(X) this->removeDependency(X);
-
 }; //namespace Divide
 
 #endif

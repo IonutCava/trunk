@@ -20,9 +20,9 @@ ShaderManager::~ShaderManager()
 
 /// Remove the NULL and IM shaders and destroy the API specific shader loading system
 void ShaderManager::destroy() {
-    GFX_DEVICE.deInitShaders();
     RemoveResource(_imShader);
     RemoveResource(_nullShader);
+	GFX_DEVICE.deInitShaders();
     _atoms.clear();
 }
 
@@ -53,7 +53,7 @@ void ShaderManager::registerShaderProgram(const stringImpl& name, ShaderProgram*
     ShaderProgramMap::iterator it = _shaderPrograms.find(name);
     // Either update an existing shader
     if (it != _shaderPrograms.end()) {
-        SAFE_UPDATE(it->second, shaderProgram);
+        MemoryManager::SAFE_UPDATE( it->second, shaderProgram );
     } else {
         // Or register a new one
         hashAlg::emplace(_shaderPrograms, name, shaderProgram);
@@ -75,8 +75,8 @@ void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
 /// Called once per frame
 bool ShaderManager::update(const U64 deltaTime) {
     // Pass the update call to all registered programs
-    for(ShaderProgramMap::value_type& it : _shaderPrograms) {
-        if (!it.second->update(deltaTime)) {
+    for ( ShaderProgramMap::value_type it : _shaderPrograms ) {
+        if ( !it.second->update( deltaTime ) ) {
             // If an update call fails, stop updating
             return false;
         }
@@ -88,19 +88,19 @@ bool ShaderManager::update(const U64 deltaTime) {
 bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
     bool state = false;
     // Find the shader program
-    for(ShaderProgramMap::value_type& it : _shaderPrograms) {
+    for ( ShaderProgramMap::value_type& it : _shaderPrograms ) {
         const stringImpl& shaderName = it.second->getName();
         // Check if the name matches any of the program's name components
-        if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
+        if ( shaderName.find( name ) != stringImpl::npos || shaderName.compare( name ) == 0 ) {
             // We process every partial match. So add it to the recompilation queue
-            _recompileQueue.push(it.second);
+            _recompileQueue.push( it.second );
             // Mark as found
             state = true;
         }
     }
     // If no shaders were found, show an error
-    if (!state) {
-        ERROR_FN(Locale::get("ERROR_SHADER_RECOMPILE_NOT_FOUND"),name.c_str());
+    if ( !state ) {
+        ERROR_FN( Locale::get( "ERROR_SHADER_RECOMPILE_NOT_FOUND" ), name.c_str() );
     }
 
     return state;
@@ -109,24 +109,24 @@ bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
 /// Called after a swap buffer request
 void ShaderManager::idle(){
     // If we don't have any shaders queued for recompilation, return early
-	if (!_recompileQueue.empty()) {
-		// Else, recompile the top program from the queue
-		_recompileQueue.top()->recompile(true, true, true, true, true);
-		_recompileQueue.pop();
-	}
+    if ( !_recompileQueue.empty() ) {
+        // Else, recompile the top program from the queue
+        _recompileQueue.top()->recompile( true, true, true, true, true );
+        _recompileQueue.pop();
+    }
     return;
 }
 
 /// Pass uniform data update call to every registered program
 void ShaderManager::refreshShaderData() {
-    for(ShaderProgramMap::value_type& it : _shaderPrograms) {
+    for ( ShaderProgramMap::value_type it : _shaderPrograms ) {
         it.second->refreshShaderData();
     }
 }
 
 /// Pass scene data update call to every registered program
 void ShaderManager::refreshSceneData() {
-   for(ShaderProgramMap::value_type& it : _shaderPrograms) {
+    for ( ShaderProgramMap::value_type it : _shaderPrograms ) {
         it.second->refreshSceneData();
     }
 }
@@ -160,7 +160,7 @@ const char* ShaderManager::shaderFileRead(const stringImpl &atomName, const stri
             retContent = strdup(content);
             // Add the code to the atom cache for future reference
             hashAlg::emplace(_atoms, atomName, retContent);
-            SAFE_DELETE_ARRAY(content);
+            MemoryManager::SAFE_DELETE_ARRAY( content );
         }
         fclose(fp);
     }
@@ -198,7 +198,7 @@ void ShaderManager::removeShader(Shader* s) {
         // Subtract one reference from it. 
         if (s->SubRef()) {
             // If the new reference count is 0, delete the shader
-            SAFE_DELETE(it->second);
+            MemoryManager::SAFE_DELETE( it->second );
             _shaderNameMap.erase(name);
         }
     }
@@ -212,7 +212,7 @@ Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
         if (!recompile) {
             // We don't need a ref count increase if we just recompile the shader
             it->second->AddRef();
-            D_PRINT_FN(Locale::get("SHADER_MANAGER_GET_SHADER_INC"),name.c_str(), it->second->getRefCount());
+            D_PRINT_FN(Locale::get("SHADER_MANAGER_GET_SHADER_INC"),name.c_str(), it->second->GetRef());
         }
         return it->second;
     }
@@ -235,7 +235,7 @@ Shader* ShaderManager::loadShader(const stringImpl& name, const stringImpl& sour
     // At this stage, we have a valid Shader object, so load the source code
     if (!shader->load(source)) {
         // If loading the source code failed, delete it
-        SAFE_DELETE(shader);
+        MemoryManager::SAFE_DELETE( shader );
     } else {
         // If we loaded the source code successfully, either update it (if we recompiled) or register it
         if(recompile) {

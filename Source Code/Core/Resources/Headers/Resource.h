@@ -77,7 +77,6 @@ public:
 
 protected:
     inline  void setState(const ResourceState& currentState) {_resourceState = currentState;}
-    virtual void refModifyCallback(bool increase);
 
 protected:
     stringImpl	 _name;

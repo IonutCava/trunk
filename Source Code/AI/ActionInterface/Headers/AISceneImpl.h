@@ -66,7 +66,7 @@ public:
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
         vectorImpl<GOAPGoal >::iterator it;
-        it = std::find_if(_goals.begin(), _goals.end(), [&goalName](const GOAPGoal& goal) { 
+        it = std::find_if( _goals.begin(), _goals.end(), [&goalName]( const GOAPGoal& goal )->bool {
                                                             return goal.getName().compare(goalName.c_str()) == 0; 
                                                         });
         if (it != _goals.end()) {

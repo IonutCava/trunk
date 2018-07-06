@@ -31,7 +31,7 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];
-    hashAlg::emplace(positions, node->getGUID(), node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+    hashAlg::emplace(positions, node->getGUID(), node->getComponent<PhysicsComponent>()->getPosition());
 }
 
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
@@ -50,34 +50,34 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
 }
 
 
-void VisualSensor::update(const U64 deltaTime) {
-    for(NodeContainerMap::value_type& container : _nodeContainerMap) {
+void VisualSensor::update( const U64 deltaTime ) {
+    for ( NodeContainerMap::value_type container : _nodeContainerMap ) {
         NodePositions& positions = _nodePositionsMap[container.first];
-        for(NodeContainer::value_type& entry : container.second){
-            positions[entry.first] = entry.second->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+        for ( NodeContainer::value_type entry : container.second ) {
+            positions[entry.first] = entry.second->getComponent<PhysicsComponent>()->getPosition();
         }
     }
 }
 
 SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
-    if (container != _nodeContainerMap.end()) {
+    if ( container != _nodeContainerMap.end() ) {
         NodePositions& positions = _nodePositionsMap[container->first];
         NPC* const unit = _parentEntity->getUnitRef();
-        if (unit) {
+        if ( unit ) {
             const vec3<F32>& currentPosition = unit->getCurrentPosition();
             U64 currentNearest = 0;
             U32 currentDistanceSq = 0;
-            for(NodePositions::value_type& entry : positions) {
-                U32 temp = currentPosition.distanceSquared(entry.second);           
-                if (temp < currentDistanceSq) {
+            for ( NodePositions::value_type entry : positions ) {
+                U32 temp = currentPosition.distanceSquared( entry.second );
+                if ( temp < currentDistanceSq ) {
                     currentDistanceSq = temp;
                     currentNearest = entry.first;
                 }
             }
-            if (currentNearest != 0) {
-                NodeContainer::const_iterator nodeEntry = container->second.find(currentNearest);
-                if (nodeEntry != container->second.end()) {
+            if ( currentNearest != 0 ) {
+                NodeContainer::const_iterator nodeEntry = container->second.find( currentNearest );
+                if ( nodeEntry != container->second.end() ) {
                     return nodeEntry->second;
                 }
             }

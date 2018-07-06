@@ -16,8 +16,8 @@ PreRenderStageBuilder::PreRenderStageBuilder(){
 }
 
 PreRenderStageBuilder::~PreRenderStageBuilder(){
-	SAFE_DELETE(_renderStage);
-	SAFE_DELETE(_screenSampler);
+    MemoryManager::SAFE_DELETE( _renderStage );
+    MemoryManager::SAFE_DELETE( _screenSampler );
 }
 
 PreRenderOperator* PreRenderStageBuilder::addToStage(PreRenderOperator* op, bool& state){
