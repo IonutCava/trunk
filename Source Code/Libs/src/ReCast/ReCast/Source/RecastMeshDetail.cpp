@@ -519,6 +519,7 @@ inline int prev(int i, int n)
 
 static void triangulateHull(const int nverts, const float* verts, const int nhull, const int* hull, rcIntArray& tris)
 {
+    (void)nverts;
     int start = 0, left = 1, right = nhull-1;
     
     // Start from an ear with shortest perimeter.

@@ -11,11 +11,11 @@
 // maintenance reasons
 // We can easily adjust them as needed. Same thing with PhysX libs
 #ifdef _DEBUG
-#pragma comment(lib, "CEGUIOpenGLRenderer_d.lib")
+#pragma comment(lib, "CEGUIOpenGLRenderer-0_Static_d.lib")
 #pragma comment(lib, "glew32sd.lib")
 #pragma comment(lib, "glbindingd.lib")
 #else  //_DEBUG
-#pragma comment(lib, "CEGUIOpenGLRenderer.lib")
+#pragma comment(lib, "CEGUIOpenGLRenderer-0_Static.lib")
 #pragma comment(lib, "glew32s.lib")
 #pragma comment(lib, "glbinding.lib")
 #endif  //_DEBUG

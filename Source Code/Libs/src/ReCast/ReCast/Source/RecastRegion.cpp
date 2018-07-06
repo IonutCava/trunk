@@ -1043,6 +1043,7 @@ static bool mergeAndFilterLayerRegions(rcContext* ctx, int minRegionArea,
                                        rcCompactHeightfield& chf,
                                        unsigned short* srcReg, rcIntArray& overlaps)
 {
+    (void)overlaps;
     const int w = chf.width;
     const int h = chf.height;
     

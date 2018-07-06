@@ -154,7 +154,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_SCL_SECURE=0;_DEBUG;_WIN32_WINNT=0x0601;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
