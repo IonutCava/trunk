@@ -4,15 +4,16 @@
 #include "Utility/Headers/BaseClasses.h"
 #include "Managers/SceneManager.h"
 
-	void ASIO::init()
+	void ASIO::init(std::string& address, std::string& port)
 	{
 		ParamHandler& par = ParamHandler::getInstance();
+
 		try
 		{
 			tcp::resolver r(io_service);
-			c = new client(io_service);
+			c = new client(io_service,_debugOutput);
 			work.reset(new boost::asio::io_service::work(io_service));
-		    c->start(r.resolve(tcp::resolver::query(par.getParam<string>("serverAdress"), "443")));
+			c->start(r.resolve(tcp::resolver::query(address, port.c_str())));
 			t = new boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
 		    io_service.poll();
 			_connected = true;
@@ -45,7 +46,7 @@
 		ParamHandler::getInstance().setParam("asioStatus",t);
 	}
 
-	void client::readPacket(WorldPacket& p)
+	void ASIO::handlePacket(WorldPacket& p)
 	{
 		switch(p.getOpcode())
 		{
@@ -68,7 +69,7 @@
 		};
 	}
 
-	void client::HandlePongOpCode(WorldPacket& p)
+	void ASIO::HandlePongOpCode(WorldPacket& p)
 	{
 
 		F32 time = 0;
@@ -78,7 +79,7 @@
 					Util::toString(floor(result+0.5f)) + string(" ms latency"));
 	}
 
-	void client::HandleDisconnectOpCode(WorldPacket& p)
+	void ASIO::HandleDisconnectOpCode(WorldPacket& p)
 	{
 		U8 code;
 		p >> code;
@@ -87,7 +88,7 @@
 		// else handleError(code);
 	}
 
-	void client::HandleGeometryAppendOpCode(WorldPacket& p)
+	void ASIO::HandleGeometryAppendOpCode(WorldPacket& p)
 	{
 		cout << "ASIO: received  [SMSG_GEOMETRY_APPEND]" << endl;
 		U32 size;
@@ -114,7 +115,7 @@
 		SceneManager::getInstance().addPatch(patch);
 	}
 
-	void client::HandleHeartBeatOpCode(WorldPacket& p)
+	void ASIO::HandleHeartBeatOpCode(WorldPacket& p)
 	{
 		//nothing. Heartbeats keep us alive \:D/
 	}

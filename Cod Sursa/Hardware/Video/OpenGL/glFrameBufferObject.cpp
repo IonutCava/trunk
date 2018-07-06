@@ -3,6 +3,15 @@
 
 glFrameBufferObject::glFrameBufferObject()
 {
+	if(!glewIsSupported("glBindFramebuffer"))
+	{
+		glBindFramebuffer = GLEW_GET_FUN(__glewBindFramebufferEXT);
+		glDeleteFramebuffers = GLEW_GET_FUN(__glewDeleteFramebuffersEXT);
+		glFramebufferTexture2D = GLEW_GET_FUN(__glewFramebufferTexture2DEXT);
+		glGenFramebuffers   = GLEW_GET_FUN(__glewGenFramebuffersEXT);
+		glCheckFramebufferStatus = GLEW_GET_FUN(__glewCheckFramebufferStatusEXT);
+
+	}
 	_frameBufferHandle=0;
 	_depthBufferHandle=0;
 	_textureId = 0;

@@ -120,7 +120,6 @@ void QuadtreeNode::DrawGrass(bool drawInReflexion)
 
 void QuadtreeNode::DrawTrees(bool drawInReflexion)
 {
-	//DrawBBox(true);
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )

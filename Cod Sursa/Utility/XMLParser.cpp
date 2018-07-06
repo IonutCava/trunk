@@ -19,7 +19,7 @@ namespace XML
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
 		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
-		par.setParam("serverAdress",pt.get("server","127.0.0.1"));
+		par.setParam("serverAddress",pt.get("server","127.0.0.1"));
 
 		loadConfig(par.getParam<string>("scriptLocation") + "/" + pt.get("config","config.xml"));
 

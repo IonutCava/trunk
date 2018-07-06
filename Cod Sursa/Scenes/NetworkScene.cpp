@@ -2,7 +2,7 @@
 #include "GUI/GUI.h"
 #include "Rendering/Framerate.h"
 #include "Rendering/common.h"
-#include "Hardware/Network/ASIO.h"
+#include "ASIO.h"
 #include "Rendering/Camera.h"
 
 void NetworkScene::render()
@@ -85,8 +85,9 @@ void NetworkScene::checkPatches()
 
 bool NetworkScene::load(const string& name)
 {
+	ParamHandler& par = ParamHandler::getInstance();
 	GFXDevice::getInstance().resizeWindow(640,384);
-	ASIO& asio = ASIO::getInstance();
+	ASIO::getInstance().init(par.getParam<string>("serverAddress"),string("443"));
 
 	checkPatches();
 	_box = new Box3D(40);
@@ -106,8 +107,9 @@ void NetworkScene::test()
 
 void NetworkScene::connect()
 {
+	ParamHandler& par = ParamHandler::getInstance();
 	GUI::getInstance().modifyText("statusText",(char*)string("Connecting to server ...").c_str());
-	ASIO::getInstance().connect();
+	ASIO::getInstance().connect(par.getParam<string>("serverAddress"),string("433"));
 }
 
 void NetworkScene::disconnect()

@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)\Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
+				AdditionalIncludeDirectories="&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)\Libs\includes\networking&quot;;&quot;$(OutDir)\Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/Y3"
-				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimpd.lib"
+				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-NetworkingD.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
 				AdditionalLibraryDirectories="&quot;$(OutDir)\Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib&quot;"
@@ -122,7 +122,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)\Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
+				AdditionalIncludeDirectories="&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)\Libs\includes\networking&quot;;&quot;$(OutDir)\Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -144,7 +144,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimp.lib"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
 				AdditionalLibraryDirectories="&quot;$(OutDir)\Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib&quot;"
 				IgnoreDefaultLibraryNames="LIBCMTD.lib"
@@ -660,31 +660,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Hardware\Network\ASIO.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Hardware\Network\ByteBuffer.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Hardware\Network\ByteConverter.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Hardware\Network\OPCodes.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Hardware\Network\Session.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Hardware\Network\Session.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Hardware\Network\WorldPacket.h"
+					RelativePath="..\Libs\includes\networking\OPCodes.h"
 					>
 				</File>
 			</Filter>
