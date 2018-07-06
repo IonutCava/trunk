@@ -1,7 +1,6 @@
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Utility/Headers/ImageTools.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include "Rendering/Headers/Renderer.h"

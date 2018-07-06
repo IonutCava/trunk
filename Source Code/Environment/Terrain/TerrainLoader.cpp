@@ -295,7 +295,8 @@ bool TerrainLoader::loadThreadedResources(
         const U8* data = (const U8*)img.data();
         assert(data);
         heightValues.reserve(heightmapWidth * heightmapWidth);
-        for (size_t i = 0; i < img.imageSize(); ++i) {
+        size_t size = img.imageLayers().front()._data.size();
+        for (size_t i = 0; i < size; ++i) {
             heightValues.push_back(data[i]);
         }
     }

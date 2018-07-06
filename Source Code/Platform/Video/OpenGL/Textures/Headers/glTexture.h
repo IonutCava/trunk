@@ -55,9 +55,13 @@ class glTexture final : public Texture {
 
     void loadData(const TextureLoadInfo& info,
                   const TextureDescriptor& descriptor,
-                  const bufferPtr ptr,
-                  const vec2<GLushort>& dimensions,
+                  const vectorImpl<ImageTools::ImageLayer>& imageLayers,
                   const vec2<GLushort>& mipLevels) override;
+    void loadData(const TextureLoadInfo& info,
+                  const TextureDescriptor& descriptor,
+                  const bufferPtr data,
+                  const vec2<U16>& dimensions,
+                  const vec2<U16>& mipLevels) override;
 
     bool flushTextureState() override;
 
@@ -67,6 +71,11 @@ class glTexture final : public Texture {
     void updateMipMaps();
     void updateSampler();
 
+    void loadDataCompressed(const TextureLoadInfo& info,
+                            const vectorImpl<ImageTools::ImageLayer>& imageLayers);
+
+    void loadDataUncompressed(const TextureLoadInfo& info,
+                              bufferPtr data);
    private:
     GLenum _type;
     std::atomic_bool _allocatedStorage;

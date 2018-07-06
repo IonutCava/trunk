@@ -38,7 +38,31 @@
 
 namespace Divide {
 enum class GFXImageFormat : U32;
+enum class TextureType : U32;
+
 namespace ImageTools {
+
+class ImageLayer {
+   public:
+    ImageLayer() : _size(0)
+    {
+        _dimensions.set(0, 0, 1);
+    }
+
+    inline void setData(U8* data) {
+        _data.assign(data, data + _size);
+    }
+
+    inline void setData(F32* data) {
+        _dataf.assign(data, data + _size);
+    }
+    /// the image data as it was read from the file / memory.
+    size_t _size;
+    vectorImpl<U8> _data;
+    vectorImpl<F32> _dataf;
+    /// with and height
+    vec3<U16> _dimensions;
+};
 
 class ImageData : private NonCopyable {
    public:
@@ -48,10 +72,19 @@ class ImageData : private NonCopyable {
     /// image origin information
     inline void flip(bool state) { _flip = state; }
     inline bool flip() const { return _flip; }
-    /// set and get the image's actual data
-    inline const bufferPtr data(U32 mipLevel = 0) const { return (bufferPtr)_data[mipLevel].data(); }
-    /// width * height * bpp
-    inline const U32 imageSize() const { return _imageSize; }
+    /// set and get the image's actual data 
+    inline const bufferPtr data(U32 mipLevel = 0) const { 
+        // triple data-ception
+        return (bufferPtr)_data[mipLevel]._data.data();
+    }
+
+    inline const vectorImpl<ImageLayer>& imageLayers() const {
+        return _data;
+    }
+    /// image width, height and depth
+    inline const vec3<U16>& dimensions(U32 mipLevel = 0) const { 
+        return _data[mipLevel]._dimensions;
+    }
     /// set and get the image's compression state
     inline bool compressed() const { return _compressed; }
     /// get the number of pre-loaded mip maps
@@ -60,54 +93,49 @@ class ImageData : private NonCopyable {
     inline bool alpha() const { return _alpha; }
     /// image depth information
     inline U8 bpp() const { return _bpp; }
-    /// image width and height
-    inline const vec2<U16>& dimensions() const { return _dimensions; }
     /// the filename from which the image is created
     inline const stringImpl& name() const { return _name; }
-    /// the image format as given by DevIL
+    /// the image format as given by STB/NV_DDS
     inline GFXImageFormat format() const { return _format; }
     /// get the texel color at the specified offset from the origin
     vec4<U8> getColor(I32 x, I32 y, U32 mipLevel = 0) const;
     void getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
 
+    inline TextureType compressedTextureType() const {
+        return _compressedTextureType;
+    }
+
   protected:
     friend class ImageDataInterface;
     /// creates this image instance from the specified data
     bool create(const stringImpl& fileName);
+    bool loadDDS_IL(const stringImpl& filename);
+    bool loadDDS_NV(const stringImpl& filename);
 
    private:
-    /// outputs a generic error and sets DevIL's image handle back to 0 so it
-    /// can be reused on the next "create" call
-    void throwLoadError(const stringImpl& fileName);
-
-   private:
-    /// the image data as it was read from the file / memory. Each entry is a separate mip map
-    vectorImpl<vectorImpl<U8>> _data;
-    /// is the image stored as a regular image or in a compressed format? (eg.
-    /// DXT1 / DXT3 / DXT5)
+    //Each entry is a separate mip map.
+    vectorImpl<ImageLayer> _data;
+    /// is the image stored as a regular image or in a compressed format? (eg. DXT1 / DXT3 / DXT5)
     bool _compressed;
     /// should we flip the image's origin on load?
     bool _flip;
     /// does the image have transparency?
     bool _alpha;
-    /// with and height
-    vec2<U16> _dimensions;
-    /// image's bits per pixel
-    U8 _bpp;
-    /// number of data elements (w * h * bpp)
-    U32 _imageSize;
     /// the image format
     GFXImageFormat _format;
+    /// used by compressed images to load 2D/3D/cubemap textures etc
+    TextureType _compressedTextureType;
     /// the actual image filename
     stringImpl _name;
+    /// image's bits per pixel
+    U8 _bpp;
 };
 
 class ImageDataInterface {
 public:
     static void CreateImageData(const stringImpl& filename, ImageData& imgOut);
 private:
-    /// used to lock DevIL in a sequential operating mode in a multithreaded
-    /// environment
+    /// used to lock image loader in a sequential operating mode in a multithreaded environment
     static std::mutex _loadingMutex;
 };
 

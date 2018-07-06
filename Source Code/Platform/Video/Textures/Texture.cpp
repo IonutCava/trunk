@@ -1,6 +1,5 @@
 #include "Headers/Texture.h"
 
-#include "Utility/Headers/ImageTools.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
@@ -105,7 +104,6 @@ void Texture::threadedLoad(const stringImpl& name) {
     Resource::load();
 }
 
-/// Use DevIL to load a file into a Texture Object
 bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     // Create a new imageData object
     ImageTools::ImageData img;
@@ -126,7 +124,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
             par.getParam<stringImpl>(_ID("defaultTextureLocation"), "textures") +
             "/" + "missing_texture.jpg", img);
     }
-
+    
     // Extract width, height and bitdepth
     U16 width = img.dimensions().width;
     U16 height = img.dimensions().height;
@@ -170,42 +168,66 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     bool srgb = _descriptor._samplerDescriptor.srgb();
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
     switch (img.format()) {
+        case GFXImageFormat::LUMINANCE:
+            _descriptor._internalFormat = GFXImageFormat::LUMINANCE;
+            break;
         case GFXImageFormat::RED:
             _descriptor._internalFormat = GFXImageFormat::RED8;
             break;
         case GFXImageFormat::RG:
             _descriptor._internalFormat = GFXImageFormat::RG8;
             break;
+        case GFXImageFormat::BGR:
         case GFXImageFormat::RGB:
             _descriptor._internalFormat =
                 srgb ? GFXImageFormat::SRGB8 : 
                        GFXImageFormat::RGB8;
             break;
+        case GFXImageFormat::BGRA:
         case GFXImageFormat::RGBA:
             _descriptor._internalFormat =
                 srgb ? GFXImageFormat::SRGBA8 : 
                        GFXImageFormat::RGBA8;
             break;
-        case GFXImageFormat::COMPRESSED_DXT1:
-        case GFXImageFormat::COMPRESSED_DXT3:
-        case GFXImageFormat::COMPRESSED_DXT5: {
-            _descriptor._internalFormat = img.format();
+        case GFXImageFormat::COMPRESSED_RGB_DXT1: {
+            _descriptor._internalFormat = 
+                srgb ? GFXImageFormat::COMPRESSED_SRGB_DXT1 :
+                       GFXImageFormat::COMPRESSED_RGB_DXT1;
             _descriptor._compressed = true;
-        }break;
+        } break;
+        case GFXImageFormat::COMPRESSED_RGBA_DXT1: {
+            _descriptor._internalFormat =
+                srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT1 :
+                       GFXImageFormat::COMPRESSED_RGBA_DXT1;
+            _descriptor._compressed = true;
+        } break;
+        case GFXImageFormat::COMPRESSED_RGBA_DXT3: {
+            _descriptor._internalFormat =
+                srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT3 :
+                       GFXImageFormat::COMPRESSED_RGBA_DXT3;
+            _descriptor._compressed = true;
+        } break;
+        case GFXImageFormat::COMPRESSED_RGBA_DXT5: {
+            _descriptor._internalFormat =
+                srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT5 :
+                       GFXImageFormat::COMPRESSED_RGBA_DXT5;
+            _descriptor._compressed = true;
+        } break;
     }
 
     U16 mipMaxLevel = to_ushort(img.mipCount());
     
     if (!_descriptor._compressed) {
-        if (_descriptor._samplerDescriptor.generateMipMaps()) {
+        if (_descriptor._samplerDescriptor.generateMipMaps() && mipMaxLevel == 0) {
             mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
+        } else {
+            mipMaxLevel += 1;
         }
     }
     // Uploading to the GPU dependents on the rendering API
     loadData(info,
              _descriptor,
-             img.data(),
-             img.dimensions(),
+             img.imageLayers(),
              vec2<U16>(0, mipMaxLevel));
 
     // We will always return true because we load the "missing_texture.jpg" in

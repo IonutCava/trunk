@@ -14,8 +14,6 @@ Texture* ImplResourceLoader<Texture>::operator()() {
            _descriptor.getEnumValue() < to_const_uint(TextureType::COUNT));
 
     bool threadedLoad = _descriptor.getThreaded();
-    //ToDo: Disable texture threaded load for now and find out why sync objects fail -Ionut
-    //threadedLoad = false;
 
     Texture* ptr = GFX_DEVICE.newTexture(static_cast<TextureType>(_descriptor.getEnumValue()), threadedLoad);
 

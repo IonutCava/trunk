@@ -188,6 +188,12 @@
     <Filter Include="Utility\SimpleINI\Headers">
       <UniqueIdentifier>{8c424791-e813-4a15-b2e0-4e799739e503}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility\NV_DDS">
+      <UniqueIdentifier>{27dd2825-0c2c-4c63-be19-c8a3f0275d4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\NV_DDS\Headers">
+      <UniqueIdentifier>{6fda3074-f21e-477a-8743-cf03399bde56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -529,6 +535,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\Components\RagdollComponent.cpp">
       <Filter>Graphs\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp">
+      <Filter>Utility\NV_DDS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -933,6 +942,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RagdollComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h">
+      <Filter>Utility\NV_DDS\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

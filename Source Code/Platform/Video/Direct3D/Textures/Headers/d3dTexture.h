@@ -63,10 +63,13 @@ class d3dTexture final : public Texture {
 
     void loadData(const TextureLoadInfo& info,
                   const TextureDescriptor& descriptor,
-                  const bufferPtr ptr,
+                  const vectorImpl<ImageTools::ImageLayer>& imageLayers,
+                  const vec2<U16>& mipLevels) override {}
+    void loadData(const TextureLoadInfo& info,
+                  const TextureDescriptor& descriptor,
+                  const bufferPtr data,
                   const vec2<U16>& dimensions,
                   const vec2<U16>& mipLevels) override {}
-
    private:
     U32 _type;
 };

@@ -108,6 +108,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
     GLenum glInternalFormat = _descriptor._internalFormat == GFXImageFormat::DEPTH_COMPONENT
                             ? GL_DEPTH_COMPONENT32
                             : GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)];
+
     switch (_textureData._textureType) {
         case TextureType::TEXTURE_1D: {
             glTextureStorage1D(
@@ -117,7 +118,6 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
                 _width);
 
         } break;
-        //case TextureType::TEXTURE_CUBE_MAP:
         case TextureType::TEXTURE_2D: {
             glTextureStorage2D(
                 _textureData.getHandleHigh(),
@@ -165,19 +165,56 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         default:
             return;
     };
-
+    
     _allocatedStorage = true;
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
                          const TextureDescriptor& descriptor,
-                         const bufferPtr ptr,
-                         const vec2<GLushort>& dimensions,
-                         const vec2<GLushort>& mipLevels) {
+                         const bufferPtr data,
+                         const vec2<U16>& dimensions,
+                         const vec2<U16>& mipLevels) {
+    // This should never be called for compressed textures                            
+    assert(!descriptor._compressed);
     _descriptor = descriptor;
 
-    GLenum glFormat = GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())];
-    GLenum dataType = GLUtil::glDataFormat[to_uint(_descriptor.dataType())];
+    if (info._layerIndex == 0) {
+
+        setMipMapRange(mipLevels.x, mipLevels.y);
+
+        if (Config::Profile::USE_2x2_TEXTURES) {
+            _width = _height = 2;
+        }
+        else {
+            _width = dimensions.width;
+            _height = dimensions.height;
+        }
+
+        assert(_width > 0 && _height > 0);
+    } else {
+        DIVIDE_ASSERT(
+            _width == dimensions.width &&
+            _height == dimensions.height,
+            "glTexture error: Invalid dimensions for texture array layer");
+    }
+
+    if (!_allocatedStorage) {
+        reserveStorage(info);
+    }
+    assert(_allocatedStorage);
+
+    loadDataUncompressed(info, data);
+
+    DIVIDE_ASSERT(_width > 0 && _height > 0,
+        "glTexture error: Invalid texture dimensions!");
+
+}
+
+void glTexture::loadData(const TextureLoadInfo& info,
+                         const TextureDescriptor& descriptor,
+                         const vectorImpl<ImageTools::ImageLayer>& imageLayers,
+                         const vec2<GLushort>& mipLevels) {
+    _descriptor = descriptor;
 
     if (info._layerIndex == 0) {
             
@@ -186,98 +223,149 @@ void glTexture::loadData(const TextureLoadInfo& info,
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
         } else {
-            _width = dimensions.width;
-            _height = dimensions.height;
+            _width = imageLayers[0]._dimensions.width;
+            _height = imageLayers[0]._dimensions.height;
         }
 
         assert(_width > 0 && _height > 0);
     } else {
         DIVIDE_ASSERT(
-            _width == dimensions.width && _height == dimensions.height,
+            _width == imageLayers[0]._dimensions.width && 
+            _height == imageLayers[0]._dimensions.height,
             "glTexture error: Invalid dimensions for texture array layer");
     }
 
     if (!_allocatedStorage) {
         reserveStorage(info);
     }
-
     assert(_allocatedStorage);
-    if (descriptor._compressed) {
-        I32 w = dimensions.width;
-        I32 h = dimensions.height;
-        I32 bpp = _descriptor.baseFormat() == GFXImageFormat::COMPRESSED_DXT1 
-                                            ? 8 
-                                            : 16;
-        I32 offset = 0;
-        I32 size = std::max(4, w) / 4 * std::max(4, h) / 4 * bpp;
-        for (I32 i = 0; i < _mipMaxLevel; ++i) {
-            glCompressedTextureSubImage2D(_textureData.getHandleHigh(), i, 0, 0, w, h, glFormat, size, (U8*)ptr + offset);
-            offset += size;
-            w = (w + 1) >> 1;
-            h = (h + 1) >> 1;
-            size = std::max(4, w) / 4 * std::max(4, h) / 4 * bpp;
-        }
+
+    if (_descriptor._compressed) {
+        loadDataCompressed(info, imageLayers);
     } else {
-        bool generateMipMaps = false;
-        if (ptr) {
-            GL_API::setPixelPackUnpackAlignment();
-            switch (_textureData._textureType) {
-                case TextureType::TEXTURE_1D: {
-                    glTextureSubImage1D(
-                        _textureData.getHandleHigh(),
-                        0,
-                        0,
-                        _width,
-                        glFormat,
-                        dataType,
-                        ptr);
-                    generateMipMaps = true;
-                } break;
-                case TextureType::TEXTURE_2D:
-                case TextureType::TEXTURE_2D_MS: {
-                    glTextureSubImage2D(
-                        _textureData.getHandleHigh(),
-                        0, 
-                        0,
-                        0,
-                        _width,
-                        _height,
-                        glFormat,
-                        dataType,
-                        ptr);
-                    generateMipMaps = true;
-                } break;
-
-                case TextureType::TEXTURE_3D:
-                case TextureType::TEXTURE_2D_ARRAY:
-                case TextureType::TEXTURE_2D_ARRAY_MS:
-                case TextureType::TEXTURE_CUBE_MAP:
-                case TextureType::TEXTURE_CUBE_ARRAY: {
-                    glTextureSubImage3D(
-                        _textureData.getHandleHigh(),
-                        0,
-                        0,
-                        0,
-                        (info._cubeMapCount * 6) + info._layerIndex,
-                        _width,
-                        _height,
-                        1,
-                        glFormat,
-                        dataType,
-                        ptr);
-                    generateMipMaps = info._layerIndex == _numLayers;
-                } break;
-            }
-        }
-
-        if (generateMipMaps) {
-            glGenerateTextureMipmap(_textureData.getHandleHigh());
-            _mipMapsDirty = false;
-        }
+        loadDataUncompressed(info, (bufferPtr)imageLayers[0]._data.data());
     }
 
     DIVIDE_ASSERT(_width > 0 && _height > 0,
                   "glTexture error: Invalid texture dimensions!");
+}
+
+void glTexture::loadDataCompressed(const TextureLoadInfo& info,
+                                   const vectorImpl<ImageTools::ImageLayer>& imageLayers) {
+    GLenum glFormat = GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())];
+    GLint numMips = static_cast<GLint>(imageLayers.size());
+
+    GL_API::setPixelPackUnpackAlignment();
+    for (GLint i = 0; i < numMips; ++i) {
+        const ImageTools::ImageLayer& layer = imageLayers[i];
+        switch (_textureData._textureType) {
+            case TextureType::TEXTURE_1D: {
+                glCompressedTextureSubImage1D(
+                    _textureData.getHandleHigh(),
+                    i,
+                    0,
+                    layer._dimensions.width,
+                    glFormat,
+                    static_cast<GLsizei>(layer._size),
+                    layer._data.data());
+            } break;
+            case TextureType::TEXTURE_2D: {
+                glCompressedTextureSubImage2D(
+                    _textureData.getHandleHigh(),
+                    i,
+                    0,
+                    0,
+                    layer._dimensions.width,
+                    layer._dimensions.height,
+                    glFormat,
+                    static_cast<GLsizei>(layer._size),
+                    layer._data.data());
+            } break;
+
+            case TextureType::TEXTURE_3D:
+            case TextureType::TEXTURE_CUBE_MAP:
+            case TextureType::TEXTURE_CUBE_ARRAY: {
+                glCompressedTextureSubImage3D(
+                    _textureData.getHandleHigh(),
+                    i,
+                    0,
+                    0,
+                    (info._cubeMapCount * 6) + info._layerIndex,
+                    layer._dimensions.width,
+                    layer._dimensions.height,
+                    layer._dimensions.depth,
+                    glFormat,
+                    static_cast<GLsizei>(layer._size),
+                    layer._data.data());
+            } break;
+            default:
+                assert(false && "unsupported texture format");
+        }
+    };
+
+    if (numMips == 1) {
+        glGenerateTextureMipmap(_textureData.getHandleHigh());
+    }
+    _mipMapsDirty = false;
+}
+
+void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data) {
+    bool generateMipMaps = false;
+    if (data) {
+        GL_API::setPixelPackUnpackAlignment();
+        switch (_textureData._textureType) {
+            case TextureType::TEXTURE_1D: {
+                glTextureSubImage1D(
+                    _textureData.getHandleHigh(),
+                    0,
+                    0,
+                    _width,
+                    GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
+                    GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
+                    data);
+                generateMipMaps = true;
+            } break;
+            case TextureType::TEXTURE_2D:
+            case TextureType::TEXTURE_2D_MS: {
+                glTextureSubImage2D(
+                    _textureData.getHandleHigh(),
+                    0,
+                    0,
+                    0,
+                    _width,
+                    _height,
+                    GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
+                    GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
+                    data);
+                generateMipMaps = true;
+            } break;
+
+            case TextureType::TEXTURE_3D:
+            case TextureType::TEXTURE_2D_ARRAY:
+            case TextureType::TEXTURE_2D_ARRAY_MS:
+            case TextureType::TEXTURE_CUBE_MAP:
+            case TextureType::TEXTURE_CUBE_ARRAY: {
+                glTextureSubImage3D(
+                    _textureData.getHandleHigh(),
+                    0,
+                    0,
+                    0,
+                    (info._cubeMapCount * 6) + info._layerIndex,
+                    _width,
+                    _height,
+                    1,
+                    GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
+                    GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
+                    data);
+                generateMipMaps = info._layerIndex == _numLayers;
+            } break;
+        }
+    }
+
+    if (generateMipMaps) {
+        glGenerateTextureMipmap(_textureData.getHandleHigh());
+        _mipMapsDirty = false;
+    }
 }
 
 bool glTexture::flushTextureState() {

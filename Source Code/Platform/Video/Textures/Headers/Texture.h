@@ -36,6 +36,8 @@
 #include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
+#include "Utility/Headers/ImageTools.h"
+
 namespace Divide {
 
 /// An API-independent representation of a texture
@@ -75,10 +77,13 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     // specified parameters
     virtual void loadData(const TextureLoadInfo& info,
                           const TextureDescriptor& descriptor,
-                          const bufferPtr ptr,
+                          const vectorImpl<ImageTools::ImageLayer>& imageLayers,
+                          const vec2<U16>& mipLevels) = 0;
+    virtual void loadData(const TextureLoadInfo& info,
+                          const TextureDescriptor& descriptor,
+                          const bufferPtr data,
                           const vec2<U16>& dimensions,
                           const vec2<U16>& mipLevels) = 0;
-
     /// Specify the sampler descriptor used to sample from this texture in the
     /// shaders
     inline void setCurrentSampler(const SamplerDescriptor& descriptor) {
@@ -104,9 +109,9 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     /// Set/Get the number of layers (used by texture arrays)
     inline void setNumLayers(U8 numLayers) { _numLayers = numLayers; }
     inline U8 getNumLayers() const { return _numLayers; }
-    /// Texture width as returned by DevIL
+    /// Texture width as returned by STB/DDS loader
     inline U16 getWidth() const { return _width; }
-    /// Texture height depth as returned by DevIL
+    /// Texture height depth as returned by STB/DDS loader
     inline U16 getHeight() const { return _height; }
     /// Texture min mip level
     inline U16 getMinMipLevel() const { return _mipMinLevel; }
@@ -136,7 +141,7 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
    protected:
     SET_DELETE_FRIEND
 
-    /// Use DevIL to load a file into a Texture Object
+    /// Use STB/NV_DDS to load a file into a Texture Object
     bool LoadFile(const TextureLoadInfo& info, const stringImpl& name);
     /// Load texture data using the specified file name
     virtual bool load() override;
