@@ -477,6 +477,7 @@ protected:
     /// Current viewport stack
     vec4<I32> _viewport;
     vec4<I32> _prevViewport;
+    vec4<I32> _baseViewport;
 
     GFXShaderData _gpuBlock;
 

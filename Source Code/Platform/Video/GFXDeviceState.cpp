@@ -436,6 +436,7 @@ void GFXDevice::beginFrame() {
 
     _api->beginFrame();
     _api->setStateBlock(_defaultStateBlockHash);
+    setViewport(_baseViewport);
 }
 
 void GFXDevice::endFrame() {
