@@ -33,6 +33,7 @@
 #define _UTILITY_TEXT_LABEL_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Core/Math/Headers/Dimension.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Hashable.h"
 
@@ -107,13 +108,13 @@ class TextLabelStyle : public Hashable {
 
 struct TextElement {
     TextElement(const TextLabelStyle& textLabelStyle,
-                const vec2<F32>& position)
+                const RelativePosition2D& position)
         : TextElement(textLabelStyle.getHash(), position)
     {
     }
 
     TextElement(size_t textLabelStyleHash,
-                const vec2<F32>& position)
+                const RelativePosition2D& position)
         : _textLabelStyleHash(textLabelStyleHash),
           _position(position)
     {
@@ -128,7 +129,7 @@ struct TextElement {
     }
 
     size_t _textLabelStyleHash;
-    vec2<F32> _position;
+    RelativePosition2D _position;
 
   private:
     vectorImplFast<stringImpl> _text;

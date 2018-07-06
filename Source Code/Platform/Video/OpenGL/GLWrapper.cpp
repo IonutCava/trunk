@@ -808,6 +808,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
                         });
 
     GL_API::setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
+    I32 width = _context.renderingResolution().w;
     I32 height = _context.renderingResolution().h;
         
     vectorAlg::vecSize drawCount = 0;
@@ -836,8 +837,10 @@ void GL_API::drawText(const TextElementBatch& batch) {
             previousStyle = entry._textLabelStyleHash;
         }
 
-        F32 textX = entry._position.x;
-        F32 textY = height - entry._position.y;
+        F32 textX = entry._position.d_x.d_scale * width + entry._position.d_x.d_offset;
+        F32 textY = entry._position.d_y.d_scale * height + entry._position.d_y.d_offset;
+
+        textY = height - textY;
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         

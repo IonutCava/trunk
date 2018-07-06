@@ -65,7 +65,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\ImguiExtras.cpp" />
-    <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Widgets\ApplicationOutput.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Widgets\PanelManager.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Widgets\PanelManagerPane.cpp" />
@@ -112,7 +111,6 @@
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.h" />
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.h" />
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.h" />
-    <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ApplicationOutput.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\PanelManager.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\PanelManagerPane.h" />
@@ -250,7 +248,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -299,7 +297,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -341,7 +339,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>

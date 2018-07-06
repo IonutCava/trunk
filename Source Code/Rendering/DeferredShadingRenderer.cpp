@@ -106,27 +106,37 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
 
     updateResolution(width, height);
 
+    RelativePosition2D position(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 60.0f));
+
     GUI& gui = _context.gui();
     gui.addText(_ID("PositionData"),                 // Unique ID
-                      vec2<I32>(60, 60),             // Position
+                      position,                      // Position
                       Font::DIVIDE_DEFAULT,          // Font
                       vec4<U8>(0, 64, 255, 255),     // Colour
                       "POSITION DATA");              // Text
+
+    position.d_x.d_offset = 60.0f + width / 2;
     gui.addText(_ID("NormalData"),                   // Unique ID
-                      vec2<I32>(60 + width / 2, 60), // Position
+                      position,                      // Position
                       Font::DIVIDE_DEFAULT,          // Font
                       vec4<U8>(0, 64, 255, 255),     // Colour
                       "NORMAL DATA");                // Text
+
+    position.d_x.d_offset = 60.0f;
+    position.d_y.d_offset = 60.0f + height/ 2;
     gui.addText(_ID("FinalImage"),                    // Unique ID
-                      vec2<I32>(60, 60 + height / 2), // Position
+                      position,                       // Position
                       Font::DIVIDE_DEFAULT,           // Font
                       vec4<U8>(0, 64, 255, 255),      // Colour
                       "FINAL IMAGE");                 // Text
-    gui.addText(_ID("LightTexture"),                               // Unique ID
-                      vec2<I32>(60 + width / 2, 60 + height / 2),  // Position
-                      Font::DIVIDE_DEFAULT,                        // Font
-                      vec4<U8>(0, 64, 255, 255),                   // Colour
-                      "LIGHT TEXTURE");                            // Text
+
+    position.d_x.d_offset = 60.0f + width / 2;
+    position.d_y.d_offset = 60.0f + height / 2;
+    gui.addText(_ID("LightTexture"),                  // Unique ID
+                      position,                       // Position
+                      Font::DIVIDE_DEFAULT,           // Font
+                      vec4<U8>(0, 64, 255, 255),      // Colour
+                      "LIGHT TEXTURE");               // Text
 }
 
 DeferredShadingRenderer::~DeferredShadingRenderer()

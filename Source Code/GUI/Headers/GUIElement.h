@@ -33,6 +33,7 @@
 #define _GUI_ELEMENT_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Core/Math/Headers/Dimension.h"
 
 namespace CEGUI {
     class Window;

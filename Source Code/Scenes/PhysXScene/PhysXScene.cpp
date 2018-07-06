@@ -121,11 +121,11 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
 
 void PhysXScene::postLoadMainThread() {
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-        vec2<I32>(60, 20),  // Position
+        pixelPosition(60, 20),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(0, 64, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
-    _GUI->addText(_ID("RenderBinCount"), vec2<I32>(60, 30), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("RenderBinCount"), pixelPosition(60, 30), Font::DIVIDE_DEFAULT,
         vec4<U8>(164, 64, 64, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 

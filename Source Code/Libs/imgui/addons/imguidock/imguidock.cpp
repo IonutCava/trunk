@@ -1,4 +1,3 @@
-#include "stdafx.h"
 // based on https://github.com/nem0/LumixEngine/blob/master/external/imgui/imgui_dock.h
 // Lumix Engine Dock. From: https://github.com/nem0/LumixEngine/blob/master/src/editor/imgui/imgui_dock.h
 /*
@@ -1091,7 +1090,7 @@ struct DockContext
                              opened,
                              dock.size,
                              -1.0f,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders | extra_flags);
+			     ImGuiWindowFlags_NoCollapse | extra_flags);
             m_end_action = EndAction_End;
             dock.pos = GetWindowPos();
             dock.size = GetWindowSize();

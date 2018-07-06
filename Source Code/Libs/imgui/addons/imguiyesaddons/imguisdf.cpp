@@ -1,6 +1,3 @@
-#include "stdafx.h"
-
-#include <glbinding/gl45/gl.h>
 
 //- Common Code For All Addons needed just to ease inclusion as separate files in user code ----------------------
 #include <imgui.h>

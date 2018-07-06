@@ -400,9 +400,6 @@ namespace ImWindow
         ImGui::SetNextWindowSize(oSize);
 		bool ret = ImGui::Begin(pTitle, NULL, oSize, fAlpha, eFlags);
 
-		if (!(pWindow->Flags & ImGuiWindowFlags_ShowBorders))
-			ImGui::GetCurrentWindow()->Flags &= ~ImGuiWindowFlags_ShowBorders;
-
 		return ret;
 	}
 

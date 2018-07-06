@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 /*
 MIT License
 
@@ -7103,8 +7101,6 @@ ImTextureID ImageEditor::getClonedImageTexID(bool useMipmapsIfPossible,bool wrap
     StbImage::GenerateOrUpdateTextureCb(texID,is->w,is->h,is->c,is->image,useMipmapsIfPossible,wraps,wrapt,minFilterNearest,magFilterNearest);
     return texID;
 }
-
-ImTextureID ImageEditor::CheckersTexID() { return CheckersTexID; }
 
 void ImageEditor::Destroy() {StbImage::Destroy();}
 

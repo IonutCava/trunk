@@ -182,7 +182,9 @@ public:
             //if (keepAButtonSelected) ImGui::SetNextWindowFocus(); // This line was originally enabled
         }
         else if (keepAButtonSelected && selectedButtonIndex==-1) selectedButtonIndex=0;
-        //
+        //        
+        const float oldWindowBorderSize = Style.WindowBorderSize;Style.WindowBorderSize=0.f;
+        const float oldFrameBorderSize = Style.FrameBorderSize;Style.FrameBorderSize=0.f;
         static const ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse|
                 ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoSavedSettings/*|ImGuiWindowFlags_Tooltip*/;
         const bool dontSkip = inWindowMode || ImGui::Begin(name,NULL,toolbarWindowSize,0,flags);
@@ -263,6 +265,8 @@ public:
         }
         if (!inWindowMode) ImGui::End();
         // restore old sizes
+        Style.FrameBorderSize = oldFrameBorderSize;
+        Style.WindowBorderSize = oldWindowBorderSize;
         Style.ItemSpacing = oldItemSpacing;     // Hack to fix vertical layout
         if (!inWindowMode) Style.WindowPadding = oldWindowPadding;
         if (inWindowMode) ImGui::PopID(); // this

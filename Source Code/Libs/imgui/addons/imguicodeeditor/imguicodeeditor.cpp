@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +19,18 @@
 */
 #include "imguicodeeditor.h"
 
-#undef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui_internal.h>
-
 #define IMGUICODEEDITOR_USE_UTF8HELPER_H    // speed opt ?
 #ifdef IMGUICODEEDITOR_USE_UTF8HELPER_H
 #   include "utf8helper.h"         // not sure if it's necessary to count UTF8 chars
 #endif //IMGUICODEEDITOR_USE_UTF8HELPER_H
 
-//#define STB_TEXTEDIT_IMPLEMENTATION
-//#include "stb_textedit.h"
 
 #define IMGUI_NEW(type)         IM_PLACEMENT_NEW (ImGui::MemAlloc(sizeof(type) ) ) type
 #define IMGUI_DELETE(type, obj) reinterpret_cast<type*>(obj)->~type(), ImGui::MemFree(obj)
 
 namespace ImGui {
 
-    namespace CodeEditorDrawListHelper {
+namespace CodeEditorDrawListHelper {
 // Extensions to ImDrawList:
 static void ImDrawListPathFillAndStroke(ImDrawList* dl,const ImU32& fillColor,const ImU32& strokeColor,bool strokeClosed=false, float strokeThickness = 1.0f, bool antiAliased = true)    {
     if (!dl) return;
@@ -2262,8 +2255,8 @@ void CodeEditor::render()   {
         window->FontWindowScale = new_font_scale;
 
         const ImVec2 offset = (g.IO.MousePos - window->Pos) * (1.0f - scale);
-        window->Pos = window->Pos + offset;
-        window->PosFloat = window->PosFloat + offset;
+        window->Pos += offset;
+        window->PosFloat += offset;
         // these two don't affect child windows AFAIK
         //window->Size *= scale;
         //window->SizeFull *= scale;
@@ -2784,7 +2777,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
         const int text_len = (int)(text_end - text);
         if (text_len > 0)   {
             ImGui::ImDrawListAddTextLine(window->DrawList,g.Font, g.FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), text, text_end);
-            if (g.LogEnabled) ImGui::LogRenderedText(&pos, text, text_end);
+            if (g.LogEnabled) LogRenderedText(&pos, text, text_end);
         }
         return;
     }
@@ -2802,7 +2795,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
                 const int text_len = (int)(text_end - text);
                 if (text_len > 0)   {
                     ImGui::ImDrawListAddTextLine(window->DrawList,const_cast<ImFont*>(ImFonts[style.font_syntax_highlighting[SH_COMMENT]]), g.FontSize, pos, style.color_syntax_highlighting[SH_COMMENT], text, text_end);
-                    if (g.LogEnabled) ImGui::LogRenderedText(&pos, text, text_end);
+                    if (g.LogEnabled) LogRenderedText(&pos, text, text_end);
                 }
                 return;
             }
@@ -2816,7 +2809,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
                 const int text_len = (int)(endCmt - text);
                 if (text_len > 0)   {
                     ImGui::ImDrawListAddTextLine(window->DrawList,const_cast<ImFont*>(ImFonts[style.font_syntax_highlighting[SH_COMMENT]]), g.FontSize, pos, style.color_syntax_highlighting[SH_COMMENT], text, endCmt);
-                    if (g.LogEnabled) ImGui::LogRenderedText(&pos, text, endCmt);
+                    if (g.LogEnabled) LogRenderedText(&pos, text, endCmt);
                 }
                 if (tk2 && endCmt<text_end) RenderTextLineWrappedWithSH(pos,endCmt,text_end);    // Draw after "*/"
                 return;
@@ -2838,7 +2831,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
                     // Draw String:
                     const ImVec2 oldPos = pos;
                     ImGui::ImDrawListAddTextLine(window->DrawList,const_cast<ImFont*>(ImFonts[style.font_syntax_highlighting[SH_STRING]]), g.FontSize, pos, style.color_syntax_highlighting[SH_STRING], tk, endStringSH);
-                    if (g.LogEnabled) ImGui::LogRenderedText(&pos, tk, endStringSH);
+                    if (g.LogEnabled) LogRenderedText(&pos, tk, endStringSH);
                     const float token_width = pos.x - oldPos.x;  //MyCalcTextWidth(tk,endStringSH);
                     // TEST: Mouse interaction on token (gIsCurlineHovered == true when CTRL is pressed)-------------------
                     if (gIsCurlineHovered) {
@@ -2880,7 +2873,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
     while (*s==sp || *s==tab)	{
     if (s+1==text_end)  {
         ImGui::ImDrawListAddTextLine(window->DrawList,g.Font, g.FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), text, text_end);
-        if (g.LogEnabled) ImGui::LogRenderedText(&pos, text, text_end);
+        if (g.LogEnabled) LogRenderedText(&pos, text, text_end);
         return;
     }
     ++s;
@@ -2888,7 +2881,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
     if (s>text)	{
         // Draw Tabs and spaces
         ImGui::ImDrawListAddTextLine(window->DrawList,g.Font, g.FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), text, s);
-        if (g.LogEnabled) ImGui::LogRenderedText(&pos, text, s);
+        if (g.LogEnabled) LogRenderedText(&pos, text, s);
         text=s;
     }
 
@@ -2928,7 +2921,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
                 if (sht==-1 && !shTypePunctuationMap.get(*ch,sht)) sht = -1;
                 if (sht>=0 && sht<SH_COUNT) ImGui::ImDrawListAddTextLine(window->DrawList,const_cast<ImFont*>(ImFonts[style.font_syntax_highlighting[sht]]), g.FontSize, pos, style.color_syntax_highlighting[sht], s+j, s+j+1);
                 else ImGui::ImDrawListAddTextLine(window->DrawList,g.Font, g.FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), s+j, s+j+1);
-                if (g.LogEnabled) ImGui::LogRenderedText(&pos, s+j, s+j+1);
+                if (g.LogEnabled) LogRenderedText(&pos, s+j, s+j+1);
             }
         }
         s+=offset;
@@ -2961,7 +2954,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
                 //fprintf(stderr,"Not Getting shTypeMap: \"%s\",%d\n",tok,sht);
                 ImGui::ImDrawListAddTextLine(window->DrawList,g.Font, g.FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), tok, tok+len_tok);
             }
-            if (g.LogEnabled) ImGui::LogRenderedText(&pos, tok, tok+len_tok);
+            if (g.LogEnabled) LogRenderedText(&pos, tok, tok+len_tok);
             const float token_width = pos.x - oldPos.x;//MyCalcTextWidth(tok,tok+len_tok);   // We'll use this later
             // TEST: Mouse interaction on token (gIsCurlineHovered == true when CTRL is pressed)-------------------
             if (gIsCurlineHovered) {
@@ -2996,7 +2989,7 @@ void CodeEditor::RenderTextLineWrappedWithSH(ImVec2& pos, const char* text, cons
             if (sht==-1 && !shTypePunctuationMap.get(*ch,sht)) sht = -1;
             if (sht>=0 && sht<SH_COUNT) ImGui::ImDrawListAddTextLine(window->DrawList,const_cast<ImFont*>(ImFonts[style.font_syntax_highlighting[sht]]), g.FontSize, pos, style.color_syntax_highlighting[sht], s+j, s+j+1);
             else ImGui::ImDrawListAddTextLine(window->DrawList,g.Font, g.FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), s+j, s+j+1);
-            if (g.LogEnabled) ImGui::LogRenderedText(&pos, s+j, s+j+1);
+            if (g.LogEnabled) LogRenderedText(&pos, s+j, s+j+1);
         }
     }
 
@@ -3555,8 +3548,8 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
         window->FontWindowScale = new_font_scale;
 
         const ImVec2 offset = (g.IO.MousePos - window->Pos) * (1.0f - scale);
-        window->Pos = window->Pos + offset;
-        window->PosFloat = window->PosFloat + offset;
+        window->Pos += offset;
+        window->PosFloat += offset;
         // these two don't affect child windows AFAIK
         //window->Size *= scale;
         //window->SizeFull *= scale;
@@ -3564,7 +3557,7 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
     //const float inputTextFontSize = window->FontWindowScale;
 
     draw_window = GetCurrentWindow();
-    draw_window->DC.CursorPos = draw_window->DC.CursorPos + style.FramePadding;
+    draw_window->DC.CursorPos += style.FramePadding;
     size.x -= draw_window->ScrollbarSizes.x;
     size.y -= (draw_window->ScrollbarSizes.y+style.WindowPadding.y);
 
@@ -3956,11 +3949,11 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
             if (searches_result_line_number[1] == -1) searches_result_line_number[1] = line_count;
 
             // Calculate 2d position by finding the beginning of the line and measuring distance
-            cursor_offset.x = ImGui::InputTextCalcTextSizeW(ImStrbolW(searches_input_ptr[0], text_begin), searches_input_ptr[0]).x;
+            cursor_offset.x = InputTextCalcTextSizeW(ImStrbolW(searches_input_ptr[0], text_begin), searches_input_ptr[0]).x;
             cursor_offset.y = searches_result_line_number[0] * textLineHeight;
             if (searches_result_line_number[1] >= 0)
             {
-                select_start_offset.x = ImGui::InputTextCalcTextSizeW(ImStrbolW(searches_input_ptr[1], text_begin), searches_input_ptr[1]).x;
+                select_start_offset.x = InputTextCalcTextSizeW(ImStrbolW(searches_input_ptr[1], text_begin), searches_input_ptr[1]).x;
                 select_start_offset.y = searches_result_line_number[1] * textLineHeight;
             }
 
@@ -4031,7 +4024,7 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
                 }
                 else
                 {
-                    ImVec2 rect_size = ImGui::InputTextCalcTextSizeW(p, text_selected_end, &p, NULL, true);
+                    ImVec2 rect_size = InputTextCalcTextSizeW(p, text_selected_end, &p, NULL, true);
                     if (rect_size.x <= 0.0f) rect_size.x = (float)(int)(g.Font->GetCharAdvance((unsigned short)' ') * 0.50f); // So we can see selected empty lines
                     ImRect rect(rect_pos + ImVec2(0.0f, bg_offy_up - textLineHeight), rect_pos +ImVec2(rect_size.x, bg_offy_dn));
                     rect.ClipWith(clip_rect);

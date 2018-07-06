@@ -120,22 +120,24 @@ void NetworkScene::postLoadMainThread() {
     const vec2<U16>& resolution = _context.app().windowManager().getActiveWindow().getDimensions();
 
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-        vec2<I32>(60, 60),  // Position
+        RelativePosition2D(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 60.0f)),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(0, 164, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
-    _GUI->addText(_ID("timeDisplay"), vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("timeDisplay"),
+        RelativePosition2D(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 70.0f)),
+        Font::DIVIDE_DEFAULT,
         vec4<U8>(164, 64, 64, 255),
         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
 
     _GUI->addText(_ID("serverMessage"),
-        vec2<I32>(resolution.width / 4,
+                  pixelPosition(resolution.width / 4,
             resolution.height / 1),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(128, 128, 64, 255),
         Util::StringFormat("Server says: %s", "<< nothing yet >>"));
     _GUI->addText(_ID("statusText"),
-        vec2<I32>(resolution.width / 3,
+                  pixelPosition(resolution.width / 3,
             resolution.height / 2),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(64, 128, 64, 255),
@@ -143,23 +145,23 @@ void NetworkScene::postLoadMainThread() {
 
     _GUI->addButton(
         _ID("getPing"), "ping me",
-        vec2<I32>(60, to_I32(resolution.height / 1.1f)),
-        vec2<U32>(100, 25),
+        pixelPosition(60, to_I32(resolution.height / 1.1f)),
+        pixelScale(100, 25),
         DELEGATE_BIND(&NetworkScene::test, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("disconnect"), "disconnect",
-        vec2<I32>(180, to_I32(resolution.height / 1.1f)),
-        vec2<U32>(100, 25),
+        pixelPosition(180, to_I32(resolution.height / 1.1f)),
+        pixelScale(100, 25),
         DELEGATE_BIND(&NetworkScene::disconnect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("connect"), "connect",
-        vec2<I32>(300, to_I32(resolution.height / 1.1f)),
-        vec2<U32>(100, 25),
+        pixelPosition(300, to_I32(resolution.height / 1.1f)),
+        pixelScale(100, 25),
         DELEGATE_BIND(&NetworkScene::connect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("patch"), "patch",
-        vec2<I32>(420, to_I32(resolution.height / 1.1f)),
-        vec2<U32>(100, 25),
+        pixelPosition(420, to_I32(resolution.height / 1.1f)),
+        pixelScale(100, 25),
         DELEGATE_BIND(&NetworkScene::checkPatches, this, std::placeholders::_1));
 
     Scene::postLoadMainThread();

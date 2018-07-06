@@ -1,6 +1,7 @@
-#include "stdafx.h"
-
 //- Common Code For All Addons needed just to ease inclusion as separate files in user code ----------------------
+#include <imgui.h>
+#undef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 //-----------------------------------------------------------------------------------------------------------------
 
@@ -550,8 +551,7 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
                 ImFormatString(name, IM_ARRAYSIZE(name), "##popup_%08x", id); // Not recycling, so we can close/open during the same frame
 
             bool is_open = ImGui::Begin(name, NULL, flags);
-            if (!(window->Flags & ImGuiWindowFlags_ShowBorders))
-                g.CurrentWindow->Flags &= ~ImGuiWindowFlags_ShowBorders;
+            //if (!(window->Flags & ImGuiWindowFlags_ShowBorders))    g.CurrentWindow->Flags &= ~ImGuiWindowFlags_ShowBorders;
             if (!is_open) // NB: is_open can be 'false' when the popup is completely clipped (e.g. zero size display)
                 ImGui::EndPopup();
 
@@ -3824,7 +3824,7 @@ bool PasswordDrawer(char *password, int passwordSize,ImGuiPasswordDrawerFlags fl
 	for (int i=0;i<4;i++) bgColors[i] = PasswordDrawerLighten(pColors[i],(pressed||held) ? 60 : 30);
 	window->DrawList->AddRectFilledMultiColor(bb.Min, bb.Max ,bgColors[0],bgColors[1],bgColors[3],bgColors[2]);
     }
-    if (border && (window->Flags & ImGuiWindowFlags_ShowBorders))   {
+    if (border && window->WindowBorderSize)   {
         window->DrawList->AddRect(bb.Min+ImVec2(1,1), bb.Max+ImVec2(1,1), GetColorU32(ImGuiCol_BorderShadow), style.FrameRounding);
         window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), style.FrameRounding);
     }
@@ -4143,7 +4143,7 @@ bool CheckboxStyled(const char* label, bool* v,const ImU32* pOptionalEightColors
             (GetColorU32((held || hovered) ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg));
         window->DrawList->AddRectFilled(innerFrame1.Min, innerFrame1.Max, fillColor1, rounding, t>0 ? 6 : 15);
     }
-    if (window->Flags & ImGuiWindowFlags_ShowBorders)   {
+    if (style.FrameBorderSize)   {
         ImRect innerFrame(innerFrame0.Min,innerFrame1.Max);
         window->DrawList->AddRect(innerFrame.Min+ImVec2(1,1), innerFrame.Max+ImVec2(1,1), GetColorU32(ImGuiCol_BorderShadow), rounding);
         window->DrawList->AddRect(innerFrame.Min, innerFrame.Max, GetColorU32(ImGuiCol_Border), rounding);

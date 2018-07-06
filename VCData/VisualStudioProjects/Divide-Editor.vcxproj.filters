@@ -158,7 +158,6 @@
     <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowManagerDivide.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
       <Filter>3rdParty/ImGUI\addons\imguifilesystem\minizip</Filter>
@@ -255,9 +254,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowManagerDivide.h">
       <Filter>Widgets\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h">
-      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_user.h">
       <Filter>3rdParty/ImGUI\addons</Filter>

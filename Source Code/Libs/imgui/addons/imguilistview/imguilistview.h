@@ -445,7 +445,7 @@ private:
         if (hasPrefix) {
             snprintf(&buf[bufid], pbufsz,"%s",prefix);
             bufid = strlen(buf);
-            pbufsz-= (int)bufid;
+            pbufsz-=bufid;
         }
 
         // value:
@@ -539,7 +539,7 @@ private:
         // suffix:
         if (hasSuffix)  {
             bufid = strlen(buf);
-            pbufsz-= (int)bufid;
+            pbufsz-=bufid;
             snprintf(&buf[bufid], pbufsz,"%s",suffix);
         }
 

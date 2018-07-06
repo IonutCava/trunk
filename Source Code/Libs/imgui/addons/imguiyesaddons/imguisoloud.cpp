@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 /*
 SoLoud audio engine
 Copyright (c) 2013-2015 Jari Komppa

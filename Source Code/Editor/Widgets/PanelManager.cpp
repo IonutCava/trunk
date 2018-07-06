@@ -280,10 +280,6 @@ namespace Divide {
 
                     ImGui::TextDisabled("%s", "These are also present in the \"Preferences\" Panel:");
                     ImGui::DragFloat("Window Alpha##WA2", &mgr->ImGuiPanelManager().getDockedWindowsAlpha(), 0.005f, -0.01f, 1.0f, mgr->ImGuiPanelManager().getDockedWindowsAlpha() < 0.0f ? "(default)" : "%.3f");
-                    ImGui::Spacing();
-                    bool border = mgr->ImGuiPanelManager().getDockedWindowsBorder();
-                    if (ImGui::Checkbox("Window Borders##WB2", &border)) mgr->ImGuiPanelManager().setDockedWindowsBorder(border); // Sets the window border to all the docked windows
-
 
 
                 } else ImGui::Text("Here is the content of tab label: \"%s\"\n", tab->getLabel());
@@ -1004,9 +1000,7 @@ namespace Divide {
                 Attorney::EditorPanelManager::drawOutputWindow(context().editor());
             } else if (strcmp(wd.name, "Preferences") == 0) {
                 ImGui::DragFloat("Window Alpha##WA1", &_manager->getDockedWindowsAlpha(), 0.005f, -0.01f, 1.0f, _manager->getDockedWindowsAlpha() < 0.0f ? "(default)" : "%.3f");
-                bool border = _manager->getDockedWindowsBorder();
-                if (ImGui::Checkbox("Window Borders", &border)) _manager->setDockedWindowsBorder(border); // Sets the window border to all the docked windows
-                ImGui::SameLine();
+
                 bool noTitleBar = _manager->getDockedWindowsNoTitleBar();
                 if (ImGui::Checkbox("No Window TitleBars", &noTitleBar)) _manager->setDockedWindowsNoTitleBar(noTitleBar);
                 if (_showCentralWindow) {
@@ -1055,7 +1049,7 @@ namespace Divide {
         } else {
             // Here we draw our toggle windows (in our case ToggleWindowNames) in the usual way:
             // We can use -1.f for alpha here, instead of mgr.getDockedWindowsAlpha(), that can be too low (but choose what you like)
-            if (ImGui::Begin(wd.name, &wd.open, wd.size, -1.f, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_ShowBorders)) {
+            if (ImGui::Begin(wd.name, &wd.open, wd.size, -1.f, ImGuiWindowFlags_NoSavedSettings)) {
                 if (strcmp(wd.name, ToggleWindowNames[0]) == 0) {
                     // Draw Toggle Window 1
                     ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x*0.15f, ImGui::GetIO().DisplaySize.y*0.24f), ImGuiSetCond_FirstUseEver);

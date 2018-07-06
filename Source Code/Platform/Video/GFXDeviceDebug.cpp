@@ -157,13 +157,13 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             viewport.y += viewportHeight;
         }
 
-        TextElement text(labelStyleHash, vec2<F32>(10.0f));
+        TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));
         for (const std::pair<stringImpl, vec4<I32>>& entry : labelStack) {
             // Draw labels at the end to reduce number of state changes
             setViewport._viewport.set(entry.second);
             GFX::SetViewPort(bufferInOut, setViewport);
 
-            text._position.y = entry.second.sizeY - 10.0f;
+            text._position.d_y.d_offset = entry.second.sizeY - 10.0f;
             text.text(entry.first);
             drawText(text, bufferInOut);
         }

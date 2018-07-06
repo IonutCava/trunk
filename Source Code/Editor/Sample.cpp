@@ -211,11 +211,6 @@ namespace Divide {
 
                 ImGui::TextDisabled("%s", "These are also present in the \"Preferences\" Panel:");
                 ImGui::DragFloat("Window Alpha##WA2", &mgr.getDockedWindowsAlpha(), 0.005f, -0.01f, 1.0f, mgr.getDockedWindowsAlpha() < 0.0f ? "(default)" : "%.3f");
-                ImGui::Spacing();
-                bool border = mgr.getDockedWindowsBorder();
-                if (ImGui::Checkbox("Window Borders##WB2", &border)) mgr.setDockedWindowsBorder(border); // Sets the window border to all the docked windows
-
-
 
             } else ImGui::Text("Here is the content of tab label: \"%s\"\n", tab->getLabel());
             ImGui::PopID();

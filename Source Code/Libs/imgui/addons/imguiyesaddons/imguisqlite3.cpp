@@ -1,6 +1,4 @@
-#include "stdafx.h"
-
-/*
+/* 
  CppSQLite was originally developed by Rob Groves on CodeProject:
  <http://www.codeproject.com/KB/database/CppSQLite.aspx>
  

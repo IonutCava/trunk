@@ -6,7 +6,7 @@
 namespace Divide {
 GUIText::GUIText(U64 guiID,
                  const stringImpl& text,
-                 const vec2<F32>& relativePosition,
+                 const RelativePosition2D& relativePosition,
                  const stringImpl& font,
                  const vec4<U8>& colour,
                  CEGUI::Window* parent,
@@ -22,8 +22,8 @@ void GUIText::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
     }
 }
 
-vec2<F32> GUIText::getPosition() const {
-    return vec2<F32>(_position.width, _position.height);
+const RelativePosition2D& GUIText::getPosition() const {
+    return _position;
 }
 
 // Return true if input was consumed

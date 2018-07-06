@@ -291,7 +291,7 @@ T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max,
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be mapped!");
 
     slopeOut = 1.0 * (out_max - out_min) / (in_max - in_min);
-    return static_cast<T>(out_min + std::round(slopeOut * (input - in_min)));
+    return static_cast<T>(out_min + (slopeOut * (input - in_min)));
 }
 
 template<typename Type>

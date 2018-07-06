@@ -373,32 +373,32 @@ void PingPongScene::postLoadMainThread() {
     const vec2<U16>& resolution = _context.gfx().renderingResolution();
     // Buttons and text labels
     _GUI->addButton(_ID("Serve"), "Serve",
-        vec2<I32>(to_I32(resolution.width - 120),
+                    pixelPosition(to_I32(resolution.width - 120),
             to_I32(resolution.height / 1.1f)),
-        vec2<U32>(100, 25),
+        pixelScale(100, 25),
         DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
 
     _GUI->addText(_ID("Score"),
-        vec2<I32>(to_I32(resolution.width - 120),
+                  pixelPosition(to_I32(resolution.width - 120),
             to_I32(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(255, 0, 0, 255),
         Util::StringFormat("Score: %d", 0));
 
     _GUI->addText(_ID("Message"),
-        vec2<I32>(to_I32(resolution.width - 120),
+                  pixelPosition(to_I32(resolution.width - 120),
             to_I32(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(255, 0, 0, 255),
         "");
     _GUI->addText(_ID("insults"),
-        vec2<I32>(resolution.width / 4,
+                  pixelPosition(resolution.width / 4,
             resolution.height / 3),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(0, 255, 0, 255),
         "");
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-        vec2<I32>(60, 60),  // Position
+                  pixelPosition(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(0, 50, 255, 255),// Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments

@@ -13,8 +13,8 @@ GUIButton::AudioCallback GUIButton::_soundCallback;
 GUIButton::GUIButton(U64 guiID,
                      const stringImpl& text,
                      const stringImpl& guiScheme,
-                     const vec2<F32>& relativeOffset,
-                     const vec2<F32>& relativeDimensions,
+                     const RelativePosition2D& offset,
+                     const RelativeScale2D& size,
                      CEGUI::Window* parent,
                      ButtonCallback callback,
                      AudioDescriptor_ptr onClickSound)
@@ -25,13 +25,16 @@ GUIButton::GUIButton(U64 guiID,
 {
     
     _btnWindow = CEGUI::WindowManager::getSingleton().createWindow((guiScheme + "/Button").c_str(), text.c_str());
-    _btnWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(relativeOffset.x / 100, 0.0f),
-                                            CEGUI::UDim(relativeOffset.y / 100, 0.0f)));
-    _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(relativeDimensions.x / 100, 0.0f),
-                                     CEGUI::UDim(relativeDimensions.y / 100, 0.0f)));
+
+    _btnWindow->setPosition(offset);
+
+    _btnWindow->setSize(size);
+
     _btnWindow->setText(text.c_str());
+
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventClicked,
                                CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
+
     _parent->addChild(_btnWindow);
     _btnWindow->setEnabled(true);
 

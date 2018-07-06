@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 // ImGui - binary_to_compressed_c.cpp
 // Helper tool to turn a file into a C array, if you want to embed font data in your source code.
 
@@ -19,7 +20,7 @@
 //   # binary_to_compressed_c.exe myfont.ttf MyFont > myfont.cpp
 //   # binary_to_compressed_c.exe -base85 myfont.ttf MyFont > myfont.cpp
 
-//#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

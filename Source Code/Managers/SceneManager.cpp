@@ -274,8 +274,8 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                     SceneGUIElements* gui = Attorney::SceneManager::gui(*loadedScene);
                     gui->addButton(_ID_RT("Back"),
                         "Back",
-                        vec2<I32>(15, 15),
-                        vec2<U32>(50, 25),
+                        pixelPosition(15, 15),
+                        pixelScale(50, 25),
                         [this](I64 btnGUID)
                     {
                         _sceneSwitchTarget.set(_scenePool->defaultScene().getName(), true, false);

@@ -415,5 +415,8 @@
     <ClInclude Include="..\../Source Code/Core\Headers\Hashable.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Dimension.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 /*
  _________
 /         \ tinyfiledialogs.c 

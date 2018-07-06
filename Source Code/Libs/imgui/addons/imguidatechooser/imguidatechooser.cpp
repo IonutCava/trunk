@@ -1,7 +1,5 @@
-#include "stdafx.h"
-
-
 //- Common Code For All Addons needed just to ease inclusion as separate files in user code ----------------------
+#include <imgui.h>
 #undef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
@@ -230,8 +228,10 @@ bool DateChooser(const char* label, tm& dateOut,const char* dateFormat,bool clos
         const ImRect popup_rect(ImVec2(frame_bb.Min.x+popup_off_x+ImGui::GetScrollX(), frame_bb.Max.y+ImGui::GetScrollY()), ImVec2(frame_bb.Max.x+popup_off_x + ImGui::GetScrollX(), frame_bb.Max.y + popup_height + ImGui::GetScrollY()));
         ImGui::SetCursorPos(popup_rect.Min - window->Pos);
 
-        const ImGuiWindowFlags flags = ImGuiWindowFlags_ComboBox | ((window->Flags & ImGuiWindowFlags_ShowBorders) ? ImGuiWindowFlags_ShowBorders : 0) | ImGuiWindowFlags_NoScrollbar;
+        const ImGuiWindowFlags flags = ImGuiWindowFlags_ComboBox | ImGuiWindowFlags_NoScrollbar;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, style.FramePadding);
+        const ImVec4& bgColor = style.Colors[ImGuiCol_ChildWindowBg].w<0.5f ? style.Colors[ImGuiCol_WindowBg] : style.Colors[ImGuiCol_ChildWindowBg];
+        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, bgColor);
         ImGui::BeginChild("#ComboBoxDateChooser", popup_rect.GetSize(), true, flags);
         ImGui::Spacing();
 
@@ -373,6 +373,7 @@ bool DateChooser(const char* label, tm& dateOut,const char* dateFormat,bool clos
         ImGui::PopStyleColor();
 
         ImGui::EndChild();
+        ImGui::PopStyleColor();
         ImGui::PopStyleVar();
         ImGui::SetCursorPos(backup_pos);
 

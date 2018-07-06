@@ -8,6 +8,7 @@
 enum ImGuiStyleEnum {
     ImGuiStyle_Default=0,
     ImGuiStyle_DefaultDark,
+    ImGuiStyle_DefaultLight,
     ImGuiStyle_Gray,        // This is the default theme of my main.cpp demo.
     ImGuiStyle_Light,
     ImGuiStyle_OSX,         // Posted by @itamago here: https://github.com/ocornut/imgui/pull/511 (hope I can use it)

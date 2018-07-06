@@ -31,6 +31,7 @@
 
 #ifndef _GUI_TEXT_H_
 #define _GUI_TEXT_H_
+
 #include "GUIElement.h"
 #include "Utility/Headers/TextLabel.h"
 
@@ -42,7 +43,7 @@ class GUIText : public GUIElement, public TextElement {
    public:
     GUIText(U64 guiID,
             const stringImpl& text,
-            const vec2<F32>& relativePosition,
+            const RelativePosition2D& relativePosition,
             const stringImpl& font,
             const vec4<U8>& colour,
             CEGUI::Window* parent,
@@ -56,7 +57,7 @@ class GUIText : public GUIElement, public TextElement {
     // Return true if input was consumed
     bool onMouseDown(const GUIEvent& event) override;
 
-    vec2<F32> getPosition() const;
+    const RelativePosition2D& getPosition() const;
 };
 
 };  // namespace Divide

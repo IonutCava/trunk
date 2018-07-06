@@ -102,7 +102,7 @@ typedef char GLchar;    // Is this needed for all GL bindings ?
 //-------------------------------------------------------------------------------
 #elif (defined(_WIN32) || defined(IMGUI_USE_WINAPI_BINDING))
 //-------------------------------------------------------------------------------
-/*#   if (!defined(IMGUI_USE_GLEW) && !defined(IMGUI_USE_GLAD) && !defined(IMGUI_USE_GL3W))
+#   if (!defined(IMGUI_USE_GLEW) && !defined(IMGUI_USE_GLAD) && !defined(IMGUI_USE_GL3W))
 //      I've never managed to make this branch work => when using Windows, ALWAYS use glew (on Linux it's much easier)
 #       define GL_GLEXT_PROTOTYPES
 #       ifdef __APPLE__   // or __MACOSX__ ?
@@ -115,7 +115,7 @@ typedef char GLchar;    // Is this needed for all GL bindings ?
 #       include <OpenGL/gl.h>       // guessing...
 #   else //__APPLE
 #       include <GL/gl.h>
-#   endif //__APPLE*/
+#   endif //__APPLE
 //--------------------------------------------------------------------------------
 #else // IMGUI_USE_SOME_BINDING
 #error: No IMGUI_USE_XXX_BINDING defined

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "imguiemscriptenpersistentfolder.h"
 #include <emscripten.h>
 

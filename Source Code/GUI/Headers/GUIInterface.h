@@ -72,7 +72,7 @@ public:
     }
 
     virtual GUIText* addText(U64 guiID,
-                             const vec2<I32>& position,
+                             const RelativePosition2D& position,
                              const stringImpl& font,
                              const vec4<U8>& colour,
                              const stringImpl& text,
@@ -88,15 +88,15 @@ public:
 
     virtual GUIButton* addButton(U64 guiID,
                                  const stringImpl& text,
-                                 const vec2<I32>& position,
-                                 const vec2<U32>& dimensions,
+                                 const RelativePosition2D& offset,
+                                 const RelativeScale2D& size,
                                  ButtonCallback callback,
                                  const stringImpl& rootSheetID = "");
 
     virtual GUIFlash* addFlash(U64 guiID,
                                stringImpl movie,
-                               const vec2<U32>& position,
-                               const vec2<U32>& extent);
+                               const RelativePosition2D& position,
+                               const RelativeScale2D& size);
 
     // Return true if input was consumed
     virtual bool mouseMoved(const GUIEvent& event);

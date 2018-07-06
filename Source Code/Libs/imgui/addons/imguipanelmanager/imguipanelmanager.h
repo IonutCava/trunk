@@ -144,8 +144,8 @@ struct PanelManager {
     mutable float innerQuadChangedTimer;
     mutable ImGuiWindowFlags dockedWindowsExtraFlags;
     public:
-    PanelManager(bool _visible=true,float _dockedWindowsAlpha=0.8f,bool showDockedWindowBorders=false) : paneLeft(NULL),paneRight(NULL),paneTop(NULL),paneBottom(NULL),visible(_visible),
-    innerBarQuadPos(0,0),innerBarQuadSize(-1,-1),innerQuadPos(0,0),innerQuadSize(-1,-1),dockedWindowsAlpha(_dockedWindowsAlpha),innerQuadChangedTimer(-1.f),dockedWindowsExtraFlags(showDockedWindowBorders?ImGuiWindowFlags_ShowBorders:0) {}
+    PanelManager(bool _visible=true,float _dockedWindowsAlpha=0.8f) : paneLeft(NULL),paneRight(NULL),paneTop(NULL),paneBottom(NULL),visible(_visible),
+    innerBarQuadPos(0,0),innerBarQuadSize(-1,-1),innerQuadPos(0,0),innerQuadSize(-1,-1),dockedWindowsAlpha(_dockedWindowsAlpha),innerQuadChangedTimer(-1.f),dockedWindowsExtraFlags(0) {}
     ~PanelManager() {clear();}
     void clear() {
         for (int i=0;i<panes.size();i++) panes[i].~Pane();
@@ -166,8 +166,6 @@ struct PanelManager {
     float getDockedWindowsAlpha() const {return dockedWindowsAlpha;}
     float& getDockedWindowsAlpha() {return dockedWindowsAlpha;}
 
-    void setDockedWindowsBorder(bool border) {if (border) dockedWindowsExtraFlags|=ImGuiWindowFlags_ShowBorders;else {dockedWindowsExtraFlags&=~ImGuiWindowFlags_ShowBorders;}}
-    bool getDockedWindowsBorder() const {return (dockedWindowsExtraFlags&ImGuiWindowFlags_ShowBorders);}
     void setDockedWindowsNoTitleBar(bool flag) {if (flag) dockedWindowsExtraFlags|=ImGuiWindowFlags_NoTitleBar;else {dockedWindowsExtraFlags&=~ImGuiWindowFlags_NoTitleBar;}}
     bool getDockedWindowsNoTitleBar() const {return (dockedWindowsExtraFlags&ImGuiWindowFlags_NoTitleBar);}
     int getDockedWindowsExtraFlags() const {return dockedWindowsExtraFlags;}    // Basically it handles ImGuiWindowFlags_ShowBorders and ImGuiWindowFlags_NoTitleBar together

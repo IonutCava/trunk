@@ -68,8 +68,8 @@ class GUIButton : public GUIElement {
     GUIButton(U64 guiID,
               const stringImpl& text,
               const stringImpl& guiScheme, 
-              const vec2<F32>& relativeOffset,
-              const vec2<F32>& relativeDimensions,
+              const RelativePosition2D& offset,
+              const RelativeScale2D& size,
               CEGUI::Window* parent,
               ButtonCallback callback,
               AudioDescriptor_ptr onClickSound);

@@ -121,6 +121,11 @@ T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max)
     return MAP(input, in_min, in_max, out_min, out_max, slope);
 }
 
+template <typename T>
+T NORMALIZE(T input, const T range_min, const T range_max) {
+    return MAP<T>(input, range_min, range_max, T(0), T(1));
+}
+
 U32 nextPOW2(U32 n);
 
 // Calculate the smalles NxN matrix that can hold the specified
@@ -367,6 +372,7 @@ void Hash_combine(size_t& seed, const T& v);
 // U = to data type, T = from data type
 template <typename U, typename T>
 U ConvertData(const T& data);
+
 
 /** Ogre3D
 @brief Normalise the selected rotations to be within the +/-180 degree range.
