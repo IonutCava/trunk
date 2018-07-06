@@ -64,7 +64,7 @@ bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
 
     _keyStateMap[arg._key] = InputState::PRESSED;
     PressReleaseActionCbks cbks;
-    if (!getKeyMapping(arg._key, cbks)) {
+    if (getKeyMapping(arg._key, cbks)) {
         if (getKeyState(Input::KeyCode::KC_LMENU) == InputState::PRESSED && cbks._onLAltPressAction) {
             cbks._onLAltPressAction();
             return true;
@@ -102,7 +102,7 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
 
     _keyStateMap[arg._key] = InputState::RELEASED;
     PressReleaseActionCbks cbks;
-    if (!getKeyMapping(arg._key, cbks)) {
+    if (getKeyMapping(arg._key, cbks)) {
         if (getKeyState(Input::KeyCode::KC_LMENU) == InputState::PRESSED && cbks._onLAltReleaseAction) {
             cbks._onLAltReleaseAction();
             return true;
@@ -136,7 +136,7 @@ bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
     _joystickStateMap[button] = InputState::PRESSED;
     PressReleaseActionCbks cbks;
-    if (!getJoystickMapping(button, cbks)) {
+    if (getJoystickMapping(button, cbks)) {
         if (getKeyState(Input::KeyCode::KC_LMENU) == InputState::PRESSED && cbks._onLAltPressAction) {
             cbks._onLAltPressAction();
             return true;
@@ -170,7 +170,7 @@ bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
     _joystickStateMap[button] = InputState::RELEASED;
     PressReleaseActionCbks cbks;
-    if (!getJoystickMapping(button, cbks)) {
+    if (getJoystickMapping(button, cbks)) {
         if (getKeyState(Input::KeyCode::KC_LMENU) == InputState::PRESSED && cbks._onLAltReleaseAction) {
             cbks._onLAltReleaseAction();
             return true;
@@ -315,7 +315,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
 
     _mouseStateMap[id] = InputState::PRESSED;
     PressReleaseActionCbks cbks;
-    if (!getMouseMapping(id, cbks)) {
+    if (getMouseMapping(id, cbks)) {
         if (getKeyState(Input::KeyCode::KC_LMENU) == InputState::PRESSED && cbks._onLAltPressAction) {
             cbks._onLAltPressAction();
             return true;
@@ -354,7 +354,7 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
 
     _mouseStateMap[id] = InputState::RELEASED;
     PressReleaseActionCbks cbks;
-    if (!getMouseMapping(id, cbks)) {
+    if (getMouseMapping(id, cbks)) {
         if (getKeyState(Input::KeyCode::KC_LMENU) == InputState::PRESSED && cbks._onLAltReleaseAction) {
             cbks._onLAltReleaseAction();
             return true;

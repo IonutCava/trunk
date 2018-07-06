@@ -162,7 +162,8 @@ class Scene : public Resource {
    protected:
     // returns the first available action ID
     virtual U16 registerInputActions();
-    
+    virtual void loadKeyBindings();
+
     void resetSelection();
     void findHoverTarget();
     void toggleFlashlight();
@@ -224,6 +225,7 @@ class Scene : public Resource {
         }
 
         registerInputActions();
+        loadKeyBindings();
 
         return true;
     }

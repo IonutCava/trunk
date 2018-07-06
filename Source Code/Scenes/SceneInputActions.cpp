@@ -42,7 +42,7 @@ InputActionList::InputActionList()
 }
 
 bool InputActionList::registerInputAction(U16 id, DELEGATE_CBK<> action) {
-    if (_inputActions.find(id) != std::cend(_inputActions)) {
+    if (_inputActions.find(id) == std::cend(_inputActions)) {
         hashAlg::emplace(_inputActions, id, action);
         return true;
     }

@@ -348,8 +348,6 @@ SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
 }
 
 U16 Scene::registerInputActions() {
-    XML::loadDefaultKeybindings("keyBindings.xml");
-
     _input->flushCache();
 
     auto none = []() {};
@@ -465,6 +463,42 @@ U16 Scene::registerInputActions() {
     return actionID;
 }
 
+void Scene::loadKeyBindings() {
+    XML::loadDefaultKeybindings("keyBindings.xml", this);
+
+    /// Input
+    /*_input->addMouseMapping(Input::MouseButton::MB_Left, PressReleaseActions(0u, 35u));
+    _input->addMouseMapping(Input::MouseButton::MB_Right, PressReleaseActions(36u, 37u));
+    _input->addKeyMapping(Input::KeyCode::KC_END, PressReleaseActions(0u, 1u));
+    _input->addKeyMapping(Input::KeyCode::KC_ADD, PressReleaseActions(2u, 0u, 0u, 4u));
+    _input->addKeyMapping(Input::KeyCode::KC_SUBTRACT, PressReleaseActions(3u, 0u, 0u, 5u));
+    _input->addKeyMapping(Input::KeyCode::KC_W, PressReleaseActions(6u, 8u));
+    _input->addKeyMapping(Input::KeyCode::KC_S, PressReleaseActions(7u, 8u));
+    _input->addKeyMapping(Input::KeyCode::KC_A, PressReleaseActions(9u, 11u));
+    _input->addKeyMapping(Input::KeyCode::KC_D, PressReleaseActions(10u, 11u));
+    _input->addKeyMapping(Input::KeyCode::KC_Q, PressReleaseActions(12u, 14u, 0u, 39u));
+    _input->addKeyMapping(Input::KeyCode::KC_E, PressReleaseActions(13u, 14u));
+    _input->addKeyMapping(Input::KeyCode::KC_LEFT, PressReleaseActions(15u, 17u));
+    _input->addKeyMapping(Input::KeyCode::KC_RIGHT, PressReleaseActions(16u, 17u));
+    _input->addKeyMapping(Input::KeyCode::KC_UP, PressReleaseActions(18u, 20u));
+    _input->addKeyMapping(Input::KeyCode::KC_DOWN, PressReleaseActions(19u, 20u));
+    _input->addKeyMapping(Input::KeyCode::KC_P, PressReleaseActions(0u, 21u));
+    _input->addKeyMapping(Input::KeyCode::KC_F2, PressReleaseActions(0u, 22u));
+    _input->addKeyMapping(Input::KeyCode::KC_F3, PressReleaseActions(0u, 23u));
+    _input->addKeyMapping(Input::KeyCode::KC_F4, PressReleaseActions(0u, 24u));
+    _input->addKeyMapping(Input::KeyCode::KC_F5, PressReleaseActions(0u, 25u));
+    _input->addKeyMapping(Input::KeyCode::KC_F6, PressReleaseActions(0u, 26u));
+    _input->addKeyMapping(Input::KeyCode::KC_F7, PressReleaseActions(0u, 27u));
+    _input->addKeyMapping(Input::KeyCode::KC_F8, PressReleaseActions(0u, 28u));
+    _input->addKeyMapping(Input::KeyCode::KC_B, PressReleaseActions(0u, 29u));
+    _input->addKeyMapping(Input::KeyCode::KC_F10, PressReleaseActions(0u, 30u));
+    _input->addKeyMapping(Input::KeyCode::KC_SYSRQ, PressReleaseActions(0u, 31u));
+    _input->addKeyMapping(Input::KeyCode::KC_RETURN, PressReleaseActions(0u, 0u, 0u, 0u, 0u, 0u, 0u, 32u));
+    _input->addKeyMapping(Input::KeyCode::KC_F, PressReleaseActions(0u, 33u));
+    _input->addKeyMapping(Input::KeyCode::KC_Y, PressReleaseActions(0u, 34u));
+    _input->addKeyMapping(Input::KeyCode::KC_T, PressReleaseActions(0u, 39u));*/
+}
+
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
@@ -517,38 +551,6 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::instance(), this));
-    /// Input
-    _input->addMouseMapping(Input::MouseButton::MB_Left, PressReleaseActions(0u, 35u));
-    _input->addMouseMapping(Input::MouseButton::MB_Right, PressReleaseActions(36u, 37u));
-    _input->addKeyMapping(Input::KeyCode::KC_END, PressReleaseActions(0u, 1u));
-    _input->addKeyMapping(Input::KeyCode::KC_ADD, PressReleaseActions(2u, 0u, 0u, 4u));
-    _input->addKeyMapping(Input::KeyCode::KC_SUBTRACT, PressReleaseActions(3u, 0u, 0u, 5u));
-    _input->addKeyMapping(Input::KeyCode::KC_W, PressReleaseActions(6u, 8u));
-    _input->addKeyMapping(Input::KeyCode::KC_S, PressReleaseActions(7u, 8u));
-    _input->addKeyMapping(Input::KeyCode::KC_A, PressReleaseActions(9u, 11u));
-    _input->addKeyMapping(Input::KeyCode::KC_D, PressReleaseActions(10u, 11u));
-    _input->addKeyMapping(Input::KeyCode::KC_Q, PressReleaseActions(12u, 14u, 0u, 39u));
-    _input->addKeyMapping(Input::KeyCode::KC_E, PressReleaseActions(13u, 14u));
-    _input->addKeyMapping(Input::KeyCode::KC_LEFT, PressReleaseActions(15u, 17u));
-    _input->addKeyMapping(Input::KeyCode::KC_RIGHT, PressReleaseActions(16u, 17u));
-    _input->addKeyMapping(Input::KeyCode::KC_UP, PressReleaseActions(18u, 20u));
-    _input->addKeyMapping(Input::KeyCode::KC_DOWN, PressReleaseActions(19u, 20u));
-    _input->addKeyMapping(Input::KeyCode::KC_P, PressReleaseActions(0u, 21u));
-    _input->addKeyMapping(Input::KeyCode::KC_F2, PressReleaseActions(0u, 22u));
-    _input->addKeyMapping(Input::KeyCode::KC_F3, PressReleaseActions(0u, 23u));
-    _input->addKeyMapping(Input::KeyCode::KC_F4, PressReleaseActions(0u, 24u));
-    _input->addKeyMapping(Input::KeyCode::KC_F5, PressReleaseActions(0u, 25u));
-    _input->addKeyMapping(Input::KeyCode::KC_F6, PressReleaseActions(0u, 26u));
-    _input->addKeyMapping(Input::KeyCode::KC_F7, PressReleaseActions(0u, 27u));
-    _input->addKeyMapping(Input::KeyCode::KC_F8, PressReleaseActions(0u, 28u));
-    _input->addKeyMapping(Input::KeyCode::KC_B, PressReleaseActions(0u, 29u));
-    _input->addKeyMapping(Input::KeyCode::KC_F10, PressReleaseActions(0u, 30u));
-    _input->addKeyMapping(Input::KeyCode::KC_SYSRQ, PressReleaseActions(0u, 31u));
-    _input->addKeyMapping(Input::KeyCode::KC_RETURN, PressReleaseActions(0u, 0u, 0u, 0u, 0u, 0u, 0u, 32u));
-    _input->addKeyMapping(Input::KeyCode::KC_F, PressReleaseActions(0u, 33u));
-    _input->addKeyMapping(Input::KeyCode::KC_Y, PressReleaseActions(0u, 34u));
-    _input->addKeyMapping(Input::KeyCode::KC_T, PressReleaseActions(0u, 39u));
-
     _loadComplete = true;
     return _loadComplete;
 }

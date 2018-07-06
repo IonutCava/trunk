@@ -1,8 +1,9 @@
-<actions>
 <!--
 #These actions are mapped in C++ code. Name is only provided as a hint. 
 #Action description could become desynchronized if XML is not updated according to the C++ code 
 -->
+
+<actions>
 <action id="0" name="none" />
 <action id="1" name="delete selection"/>
 <action id="2" name="increase camera speed"/>
@@ -45,27 +46,27 @@
 <action id="39" name="shutdown"/>
 </actions>
 
-<keys>
 <!--
 #provide at least one action per mapped key, even if said action is "0", otherwise skip key declaration entirely. Will assert.
 #do not duplicate action declarations. Will assert.
 #actionDown, actionUp = on button press / on button release action
 #action L/R Alt/Ctrl Up/Down = action to be performed on key down / key up when specified modifier (left alt, right alt, left control or right control) is held down
-<key actionDown="1", actionUp="2", actionLCtrlDown="3", actionLCtrlUp="4", actionRCtrlDown="5", actionRCtrlUp = "6", actionLAltDown="6", actionLAtlUp="7", actionRAltDown="8", actionRAltUp="9">KEY</key>
+<key actionDown="1" actionUp="2" actionLCtrlDown="3" actionLCtrlUp="4" actionRCtrlDown="5" actionRCtrlUp = "6" actionLAltDown="6" actionLAtlUp="7" actionRAltDown="8" actionRAltUp="9">KEY</key>
 -->
+<keys>
 <key actionUp="1">END</key>
-<key actionDown="2", actionLCtrlUp="4">ADD</key>
-<key actionDown="3", actionLCtrlUp="5">SUBTRACT</key>
-<key actionDown="6", actionUp="8">W</key>
-<key actionDown="7", actionUp="8">S</key>
-<key actionDown="9", actionUp="11">A</key>
-<key actionDown="10", actionUp="11">D</key>
-<key actionDown="12", actionUp="14", actionLCtrlUp="39">Q</key>
-<key actionDown="13", actionUp="14">E</key>
-<key actionDown="15", actionUp="17">LEFT</key>
-<key actionDown="16", actionUp="17">RIGHT</key>
-<key actionDown="18", actionUp="20">UP</key>
-<key actionDown="19", actionUp="20">DOWN</key>
+<key actionDown="2" actionLCtrlUp="4">ADD</key>
+<key actionDown="3" actionLCtrlUp="5">SUBTRACT</key>
+<key actionDown="6" actionUp="8">W</key>
+<key actionDown="7" actionUp="8">S</key>
+<key actionDown="9" actionUp="11">A</key>
+<key actionDown="10" actionUp="11">D</key>
+<key actionDown="12" actionUp="14" actionLCtrlUp="39">Q</key>
+<key actionDown="13" actionUp="14">E</key>
+<key actionDown="15" actionUp="17">LEFT</key>
+<key actionDown="16" actionUp="17">RIGHT</key>
+<key actionDown="18" actionUp="20">UP</key>
+<key actionDown="19" actionUp="20">DOWN</key>
 <key actionUp="21">P</key>
 <key actionUp="22">F2</key>
 <key actionUp="23">F3</key>
@@ -85,5 +86,9 @@
 
 <mouseButtons>
 <button actionUp="35">LEFT</button>
-<button actionDown="36", actionUp="37">RIGHT</button>
+<button actionDown="36" actionUp="37">RIGHT</button>
 </mouseButtons>
+
+<joystickButtons>
+</joystickButtons>
+

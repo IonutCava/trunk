@@ -41,8 +41,7 @@ namespace Input {
 namespace Attorney {
     class InputInterfaceEvent;
 };
-//////////// Event handler class declaration
-///////////////////////////////////////////////////
+//////////// Event handler class declaration ////////////////////////////////////////////////
 DEFINE_SINGLETON(InputInterface)
     friend class Attorney::InputInterfaceEvent;
   public:
@@ -81,6 +80,8 @@ DEFINE_SINGLETON(InputInterface)
         return _keys[to_uint(keyCode)];
     }
 
+    static KeyCode keyCodeByName(const stringImpl& keyName);
+
   protected:
     inline KeyEvent& getKeyRef(U32 index) { return _keys[index]; }
 
@@ -95,7 +96,7 @@ DEFINE_SINGLETON(InputInterface)
           _bMustStop(false),
           _bIsInitialized(false)
     {
-        for (U8 i = 0; i < KeyCode_PLACEHOLDER; ++i) {
+        for (U16 i = 0; i < KeyCode_PLACEHOLDER; ++i) {
             _keys[i]._key = static_cast<KeyCode>(i);
         }
     }
@@ -138,6 +139,7 @@ namespace Attorney {
         friend class Divide::Input::EventHandler;
     };
 };  // namespace Attorney
+
 
 };  // namespace Input
 };  // namespace Divide

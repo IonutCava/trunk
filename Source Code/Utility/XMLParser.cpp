@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Scenes/Headers/SceneInput.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -11,10 +12,15 @@
 
 namespace Divide {
 namespace XML {
+
 using boost::property_tree::ptree;
-static ptree pt;
 
 namespace {
+const ptree& empty_ptree() {
+    static ptree t;
+    return t;
+}
+
 const char *getFilterName(TextureFilter filter) {
     if (filter == TextureFilter::LINEAR) {
         return "LINEAR";
@@ -164,7 +170,8 @@ void saveTextureXML(const stringImpl &textureNode, Texture *texture,
 }
 
 Texture *loadTextureXML(const stringImpl &textureNode,
-                        const stringImpl &textureName) {
+                        const stringImpl &textureName,
+                        const ptree& pt) {
     stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
     stringImpl pathName(textureName.substr(0, textureName.rfind("/") + 1));
     std::string node(textureNode.c_str());
@@ -208,6 +215,7 @@ inline stringImpl getRendererTypeName(RendererType type) {
 }
 
 stringImpl loadScripts(const stringImpl &file) {
+    ptree pt;
     ParamHandler &par = ParamHandler::instance();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
     read_xml(file.c_str(), pt);
@@ -232,7 +240,7 @@ stringImpl loadScripts(const stringImpl &file) {
 
 void loadConfig(const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
-    pt.clear();
+    ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), file.c_str());
     read_xml(file.c_str(), pt);
     par.setParam(_ID("locale"), pt.get("language", "enGB"));
@@ -314,33 +322,50 @@ void loadConfig(const stringImpl &file) {
                  pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
 }
 
-void loadDefaultKeybindings(const stringImpl &file) {
+void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     ParamHandler &par = ParamHandler::instance();
-    pt.clear();
+
+    ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
     read_xml(par.getParam<std::string>(_ID("scriptLocation")) + "/" + file.c_str(), pt);
 
+    std::string name;
     ptree::iterator itActions;
-    for (itActions = std::begin(pt.get_child("actions"));
-         itActions != std::end(pt.get_child("actions"));
-         ++itActions)
+    for(const ptree::value_type & f : pt.get_child("actions", empty_ptree()))
     {
-        U16 id = pt.get<U16>(std::string(itActions->first.data()) + ".<xmlattr>.id", 0);
+        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        U16 id = attributes.get<U16>("id", 0);
+        name = attributes.get<std::string>("name", "");
+        
     }
 
+    Input::KeyCode key;
+    PressReleaseActions actions;
     ptree::iterator itKeys;
-    for (itKeys = std::begin(pt.get_child("keys"));
-        itKeys != std::end(pt.get_child("keys"));
-        ++itKeys)
+    for (const ptree::value_type & f : pt.get_child("keys", empty_ptree()))
     {
-        std::string name = itKeys->second.data();
-        std::string tag = itKeys->first.data();
+        key = Input::InputInterface::keyCodeByName(f.second.data().c_str());
+
+        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        actions._onPressAction = attributes.get<U16>("actionDown",0u);
+        actions._onReleaseAction = attributes.get<U16>("actionUp", 0u);
+        actions._onLCtrlPressAction = attributes.get<U16>("actionLCtrlDown", 0u);
+        actions._onLCtrlReleaseAction = attributes.get<U16>("actionLCtrlUp", 0u);
+        actions._onRCtrlPressAction = attributes.get<U16>("actionRCtrlDown", 0u);
+        actions._onRCtrlReleaseAction = attributes.get<U16>("actionRCtrlUp", 0u);
+        actions._onLAltPressAction = attributes.get<U16>("actionLAltDown", 0u);
+        actions._onLAltReleaseAction = attributes.get<U16>("actionLAtlUp", 0u);
+        actions._onRAltPressAction = attributes.get<U16>("actionRAltDown", 0u);
+        actions._onRAltReleaseAction = attributes.get<U16>("actionRAltUp", 0u);
+
+        scene->input().addKeyMapping(key, actions);
     }
 }
 
 void loadScene(const stringImpl &sceneName, Scene* scene) {
     ParamHandler &par = ParamHandler::instance();
-    pt.clear();
+    
+    ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
     std::string sceneLocation(
         par.getParam<std::string>(_ID("scriptLocation")) + "/" +
@@ -430,7 +455,7 @@ void loadScene(const stringImpl &sceneName, Scene* scene) {
 
 void loadTerrain(const stringImpl &file, Scene *const scene) {
     U8 count = 0;
-    pt.clear();
+    ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), file.c_str());
     read_xml(file.c_str(), pt);
     ptree::iterator itTerrain;
@@ -598,7 +623,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
 }
 
 void loadGeometry(const stringImpl &file, Scene *const scene) {
-    pt.clear();
+    ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
     read_xml(file.c_str(), pt);
     ptree::iterator it;
@@ -860,7 +885,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
         materialFile += ".xml";
     }
 
-    pt.clear();
+    ptree pt;
     std::ifstream inp;
     inp.open(materialFile.c_str(), std::ifstream::in);
 
@@ -913,14 +938,14 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
             pt.get_child_optional("diffuseTexture1")) {
         mat->setTexture(ShaderProgram::TextureUsage::UNIT0,
                         loadTextureXML("diffuseTexture1",
-                                       pt.get("diffuseTexture1.file", "none").c_str()));
+                                       pt.get("diffuseTexture1.file", "none").c_str(), pt));
     }
 
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture2")) {
         mat->setTexture(ShaderProgram::TextureUsage::UNIT1,
                         loadTextureXML("diffuseTexture2",
-                                       pt.get("diffuseTexture2.file", "none").c_str()),
+                                       pt.get("diffuseTexture2.file", "none").c_str(), pt),
                         getTextureOperation(
                             pt.get<stringImpl>("diffuseTexture2.operation",
                                                "TEX_OP_MULTIPLY")));
@@ -929,7 +954,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::NORMALMAP,
-            loadTextureXML("bumpMap", pt.get("bumpMap.file", "none").c_str()));
+            loadTextureXML("bumpMap", pt.get("bumpMap.file", "none").c_str(), pt));
         if (child = pt.get_child_optional("bumpMap.method")) {
             mat->setBumpMethod(getBumpMethod(
                 pt.get<stringImpl>("bumpMap.method", "NORMAL")));
@@ -939,13 +964,13 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     if (boost::optional<ptree &> child = pt.get_child_optional("opacityMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::OPACITY,
-            loadTextureXML("opacityMap", pt.get("opacityMap.file", "none").c_str()));
+            loadTextureXML("opacityMap", pt.get("opacityMap.file", "none").c_str(), pt));
     }
 
     if (boost::optional<ptree &> child = pt.get_child_optional("specularMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::SPECULAR,
-            loadTextureXML("specularMap", pt.get("specularMap.file", "none").c_str()));
+            loadTextureXML("specularMap", pt.get("specularMap.file", "none").c_str(), pt));
     }
 
     return mat;

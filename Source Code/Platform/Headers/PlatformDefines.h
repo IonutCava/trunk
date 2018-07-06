@@ -118,6 +118,11 @@ do {                                                \
 #define STUBBED(x)
 #endif
 
+#ifndef TO_STRING
+#define TO_STRING(X) TO_STRING_NAME(X)
+#define TO_STRING_NAME(X) #X
+#endif //TO_STRING
+
 namespace Divide {
 
 static constexpr ULL basis = 14695981039346656037ULL;

@@ -49,7 +49,7 @@ stringImpl loadScripts(const stringImpl& file);
 
 /// Child Functions
 void loadConfig(const stringImpl& file);
-void loadDefaultKeybindings(const stringImpl &file);
+void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
 void loadScene(const stringImpl& sceneName, Scene* scene);
 void loadGeometry(const stringImpl& file, Scene* const scene);
 void loadTerrain(const stringImpl& file, Scene* const scene);
