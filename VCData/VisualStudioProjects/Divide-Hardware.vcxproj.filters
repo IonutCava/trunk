@@ -425,9 +425,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c">
       <Filter>Video\OpenGL\glsw</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp">
-      <Filter>Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp">
       <Filter>Video\OpenGL\Buffers\FrameBufferObject</Filter>
     </ClCompile>

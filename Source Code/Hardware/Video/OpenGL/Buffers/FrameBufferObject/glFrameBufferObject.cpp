@@ -214,10 +214,6 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
     _height = height;
     _imageLayers = imageLayers;
 
-    if(_fboType == FBO_2D_DEFERRED){
-        return CreateDeferred();
-    }
-
     _clearBufferMask = 0;
     assert(!_attachement.empty());
                     
@@ -238,7 +234,7 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
     for_each(TextureAttachements::value_type& it, _attachement){
        InitAttachement(it.first, it.second);
        if(it.first != TextureDescriptor::Depth)
-           buffers.push_back((GL_COLOR_ATTACHMENT0 + it.first));
+           buffers.insert(buffers.begin(), GL_COLOR_ATTACHMENT0 + it.first);
     }
 
     if(!buffers.empty())
