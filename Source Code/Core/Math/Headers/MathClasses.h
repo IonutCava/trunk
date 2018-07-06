@@ -389,12 +389,12 @@ public:
 
     mat4(const vec3<T> &v)/* : mat(NULL)*/{
         allocateMem();
-        translate(v);
+        setTranslation(v);
     }
 
     mat4(T x,T y,T z)/* : mat(NULL)*/{
         allocateMem();
-        translate(x,y,z);
+        setTranslation(x,y,z);
     }
 
     mat4(const vec3<T> &axis,T angle)/* : mat(NULL)*/{
@@ -705,10 +705,20 @@ public:
         scale(vec3<T>(x,y,z));
     }
 
-    inline void translate(const vec3<T> &v) {
+    inline void setTranslation(const vec3<T> &v){
         this->mat[12] = v.x;
         this->mat[13] = v.y;
         this->mat[14] = v.z;
+    }
+
+    inline void setTranslation(T x, T y, T z) {
+        setTranslation(vec3<T>(x,y,z));
+    }
+
+    inline void translate(const vec3<T> &v) {
+        this->mat[12] += v.x;
+        this->mat[13] += v.y;
+        this->mat[14] += v.z;
     }
 
     inline void translate(T x,T y,T z) {
@@ -755,7 +765,7 @@ public:
         m0[1] = y.x; m0[5] = y.y; m0[9] = y.z; m0[13] = 0.0;
         m0[2] = z.x; m0[6] = z.y; m0[10] = z.z; m0[14] = 0.0;
         m0[3] = 0.0; m0[7] = 0.0; m0[11] = 0.0; m0[15] = 1.0;
-        m1.translate(-eye);
+        m1.setTranslation(-eye);
         *this = m0 * m1;
     }
 

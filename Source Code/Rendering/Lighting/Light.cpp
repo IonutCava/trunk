@@ -62,43 +62,45 @@ void Light::postLoad(SceneGraphNode* const sgn) {
 }
 
 void Light::updateState(){
-	assert(_lightSGN != NULL);
-	if(_type == LIGHT_TYPE_DIRECTIONAL) return;
+    assert(_lightSGN != NULL);
 
-	if(_mode == LIGHT_MODE_MOVABLE) {
-		_properties._position.set(_lightSGN->getTransform()->getPosition());
-		_dirty = true;
-	}
+    if(_type != LIGHT_TYPE_DIRECTIONAL) {
 
-    if(!_dirty) return;
-
-	if(_mode != LIGHT_MODE_MOVABLE)
-		_lightSGN->getTransform()->setPosition(_properties._position);
-
-    if(_drawImpostor){
-        Sphere3D* lightDummy = NULL;
-        if(!_impostor){
-            _impostor = New Impostor(_name,_properties._attenuation.w);
-            lightDummy = _impostor->getDummy();
-            lightDummy->getSceneNodeRenderState().setDrawState(false);
-            _impostorSGN = _lightSGN->addNode(lightDummy);
-            _impostorSGN->setActive(false);
+        if(_mode == LIGHT_MODE_MOVABLE) {
+            _properties._position.set(_lightSGN->getTransform()->getPosition());
+            _dirty = true;
         }
 
-        lightDummy = _impostor->getDummy();
+        if(!_dirty) return;
 
-        lightDummy->getMaterial()->setDiffuse(getDiffuseColor());
-        lightDummy->getMaterial()->setAmbient(getDiffuseColor());
+        if(_mode != LIGHT_MODE_MOVABLE)
+            _lightSGN->getTransform()->setPosition(_properties._position);
 
-        //Updating impostor range is expensive, so check if we need to
-        F32 range = _properties._attenuation.w;
+        if(_drawImpostor){
+            Sphere3D* lightDummy = NULL;
+            if(!_impostor){
+                _impostor = New Impostor(_name,_properties._attenuation.w);
+                lightDummy = _impostor->getDummy();
+                lightDummy->getSceneNodeRenderState().setDrawState(false);
+                _impostorSGN = _lightSGN->addNode(lightDummy);
+                _impostorSGN->setActive(false);
+            }
 
-        if(!FLOAT_COMPARE(range, lightDummy->getRadius()))
-            _impostor->getDummy()->setRadius(range);
+            lightDummy = _impostor->getDummy();
+
+            lightDummy->getMaterial()->setDiffuse(getDiffuseColor());
+            lightDummy->getMaterial()->setAmbient(getDiffuseColor());
+
+            //Updating impostor range is expensive, so check if we need to
+            F32 range = _properties._attenuation.w;
+
+            if(!FLOAT_COMPARE(range, lightDummy->getRadius()))
+                _impostor->getDummy()->setRadius(range);
+        }
     }
 
     //Do not set GL lights for deferred rendering
-    if(GFX_DEVICE.getRenderer()->getType() == RENDERER_FORWARD)
+    if(GFX_DEVICE.getRenderer()->getType() == RENDERER_FORWARD && _dirty)
         GFX_DEVICE.setLight(this);
 
     _dirty = false;
@@ -133,10 +135,14 @@ void Light::setPosition(const vec3<F32>& newPosition){
         return;
     }
     _properties._position = vec4<F32>(newPosition,_properties._position.w);
-    _dirty = true;
+
+    if(_mode == LIGHT_MODE_MOVABLE)
+        _lightSGN->getTransform()->setPosition(newPosition);
 
     if(_type == LIGHT_TYPE_DIRECTIONAL)
         _properties._direction = _properties._position;
+
+    _dirty = true;
 }
 
 void Light::setDirection(const vec3<F32>& newDirection){
@@ -146,7 +152,9 @@ void Light::setDirection(const vec3<F32>& newDirection){
         return;
     }
     _properties._direction = vec4<F32>(newDirection,1.0f);
+
     _dirty = true;
+
     if(_type == LIGHT_TYPE_DIRECTIONAL)
         _properties._position = _properties._direction;
 }
@@ -253,11 +261,7 @@ void Light::render(SceneGraphNode* const sgn){
     ///The isInView call should stop impostor rendering if needed
     if(!_impostor)
         return;
-	
-	vec3<F32> position, scale;
-	Quaternion<F32> quat;
-	mat4<F32> globalMat = _lightSGN->getTransform()->getGlobalMatrix();
-	Util::Mat4::decompose(globalMat.transpose(), scale, quat, position);
+
     _impostor->render(_lightSGN);
 }
 

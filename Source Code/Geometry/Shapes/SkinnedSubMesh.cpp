@@ -28,7 +28,7 @@ void SkinnedSubMesh::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn,
     Object3D::sceneUpdate(deltaTime,sgn,sceneState);
 }
 
-mat4<F32> SkinnedSubMesh::getCurrentBoneTransform(const std::string& name){
+const mat4<F32>& SkinnedSubMesh::getCurrentBoneTransform(const std::string& name){
 	return _animator->GetBoneTransform(_elapsedTime, name);
 }
 

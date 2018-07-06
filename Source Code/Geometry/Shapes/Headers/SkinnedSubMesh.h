@@ -51,7 +51,7 @@ public:
 	void preFrameDrawEnd(SceneGraphNode* const sgn);
 	void updateTransform(SceneGraphNode* const sgn);
 	SceneAnimator* const getAnimator() {return _animator;}
-	mat4<F32> getCurrentBoneTransform(const std::string& name);
+	const mat4<F32>& getCurrentBoneTransform(const std::string& name);
 
 private:
 	/// Animation player to animate the mesh if necessary

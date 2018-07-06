@@ -181,7 +181,6 @@ void GL_API::releaseLineState(const bool ortho){
     GFX_DEVICE.popWorldMatrix();
     if(ortho){
         restoreViewport();
-        GFX_DEVICE.popWorldMatrix();
         Divide::GL::_matrixMode(VIEW_MATRIX);
         Divide::GL::_popMatrix();
     }

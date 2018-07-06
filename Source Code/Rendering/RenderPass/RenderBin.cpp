@@ -161,7 +161,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
         //Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
         if(sn->getDrawState(currentRenderStage)) {
             U8 lightCount = 0;
-            if(!isDepthPass){
+            if(!isDepthPass && sn->getType() != TYPE_SKY){
                 //Find the most influental lights for this node.
                 //Use MAX_LIGHTS_PER_SCENE_NODE to allow more lights to affect this node
                 lightCount = lightMgr.findLightsForSceneNode(sgn);

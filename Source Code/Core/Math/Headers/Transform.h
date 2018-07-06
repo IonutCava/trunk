@@ -115,9 +115,8 @@ public:
     ///Scale, orientation and translation are extracted from the specified matrix
     inline void setTransforms(const mat4<F32>& transform) {
         WriteLock w_lock(_lock);
-        _worldMatrix = transform;
-        Util::Mat4::decompose(_worldMatrix, _scale, _orientation, _translation);
-        this->clean();
+        Util::Mat4::decompose(transform, _scale, _orientation, _translation);
+        setDirty();
     }
     ///Get the parent's global transformation
     inline Transform* const getParentTransform() const {

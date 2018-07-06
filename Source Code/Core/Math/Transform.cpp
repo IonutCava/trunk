@@ -43,7 +43,7 @@ const mat4<F32>& Transform::applyTransforms(){
 			_worldMatrix *= _orientation.getMatrix();
 		}
 		//    3. Translate
-		_worldMatrix.translate(_translation);
+		_worldMatrix.setTranslation(_translation);
 
 		this->clean();
 	}

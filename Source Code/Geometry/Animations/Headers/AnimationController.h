@@ -68,9 +68,9 @@ public:
     inline U32 GetAnimationIndex() const { return _currentAnimIndex; }
     inline std::string GetAnimationName() const { return _animations[_currentAnimIndex]._name;  }
     ///GetBoneTransform will return the matrix of the bone given its name and the time. be careful with this to make sure and send the correct dt. If the dt is different from what the model is currently at, the transform will be off
-    inline mat4<F32> GetBoneTransform(D32 dt, const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return mat4<F32>(); return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+    inline const mat4<F32>& GetBoneTransform(D32 dt, const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return _cacheIdentity; return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
     /// same as above, except takes the index
-    inline mat4<F32> GetBoneTransform(D32 dt, U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+    inline const mat4<F32>& GetBoneTransform(D32 dt, U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
     vectorImpl<AnimEvaluator> _animations;// a vector that holds each animation
 
 	///GetBoneIndex will return the index of the bone given its name. The index can be used to index directly into the vector returned from GetTransform
@@ -113,7 +113,7 @@ private:
     pointCollection _pointsA;
     pointCollection _pointsB;
     colorCollection _colors;
-
+    mat4<F32>  _cacheIdentity;
     mat4<F32>  _rootTransformRender;
 };
 
