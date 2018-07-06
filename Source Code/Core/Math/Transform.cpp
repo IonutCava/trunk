@@ -1,6 +1,7 @@
 #include "Headers/Transform.h"
 
-Transform::Transform()	: _dirty(true),
+Transform::Transform()	: GUIDWrapper(),
+                          _dirty(true),
                           _physicsDirty(true),
                           _rebuildMatrix(true),
                           _hasParentTransform(false),
@@ -10,13 +11,14 @@ Transform::Transform()	: _dirty(true),
 {
     _orientation.identity();
     _worldMatrix.identity();
-	WriteLock w_lock(_parentLock);
-	_parentTransform = NULL;
+    WriteLock w_lock(_parentLock);
+    _parentTransform = NULL;
 }
 
 Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation,
-                     const vec3<F32>& scale) :  _orientation(orientation),
+                     const vec3<F32>& scale) :  GUIDWrapper(),
+                                                _orientation(orientation),
                                                 _translation(translation),
                                                 _scale(scale),
                                                 _dirty(true),
@@ -25,8 +27,8 @@ Transform::Transform(const Quaternion<F32>& orientation,
                                                 _hasParentTransform(false)
 {
     _worldMatrix.identity();
-	WriteLock w_lock(_parentLock);
-	_parentTransform = NULL;
+    WriteLock w_lock(_parentLock);
+    _parentTransform = NULL;
 }
 
 Transform::~Transform()
@@ -35,22 +37,22 @@ Transform::~Transform()
 
 const mat4<F32>& Transform::applyTransforms(){
     if(_dirty){
-		WriteLock w_lock(_lock);
-		if(_rebuildMatrix){
-			// Ordering - a la Ogre:
-			_worldMatrix.identity();
-			//    1. Scale
-			_worldMatrix.setScale(_scale);
-			//    2. Rotate
-			_worldMatrix *= _orientation.getMatrix();
-		}
-		//    3. Translate
-		_worldMatrix.setTranslation(_translation);
+        WriteLock w_lock(_lock);
+        if(_rebuildMatrix){
+            // Ordering - a la Ogre:
+            _worldMatrix.identity();
+            //    1. Scale
+            _worldMatrix.setScale(_scale);
+            //    2. Rotate
+            _worldMatrix *= _orientation.getMatrix();
+        }
+        //    3. Translate
+        _worldMatrix.setTranslation(_translation);
 
-		this->clean();
-	}
+        this->clean();
+    }
 
-	return _worldMatrix;
+    return _worldMatrix;
 }
 
 const mat4<F32>& Transform::interpolate(Transform* const transform, const D32 factor){
@@ -81,10 +83,10 @@ bool Transform::compare(const Transform* const t){
 }
 
 void Transform::identity() {
-	WriteLock w_lock(_lock);
-	_scale = vec3<F32>(1.0f);
-	_translation.reset();
-	_orientation.identity();
-	_worldMatrix.identity();
-	clean();
+    WriteLock w_lock(_lock);
+    _scale = vec3<F32>(1.0f);
+    _translation.reset();
+    _orientation.identity();
+    _worldMatrix.identity();
+    clean();
 }

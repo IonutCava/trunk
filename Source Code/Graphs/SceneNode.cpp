@@ -273,14 +273,12 @@ void SceneNode::releaseDepthMaterial(){
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
-    BoundingBox& bb = sgn->getBoundingBox();
-    sgn->setInitialBoundingBox(bb);
-    bb.setComputed(true);
+    sgn->setInitialBoundingBox(sgn->getBoundingBox());
     return true;
 }
 
 void SceneNode::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-    sgn->updateBB(false);
+
 }
 
 bool SceneNode::unload(){

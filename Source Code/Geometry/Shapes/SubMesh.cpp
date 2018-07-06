@@ -34,15 +34,3 @@ void SubMesh::onDraw(const RenderStage& currentStage){
 void SubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
 	Object3D::sceneUpdate(deltaTime, sgn,sceneState);
 }
-
-void SubMesh::updateTransform(SceneGraphNode* const sgn){
-	Transform* parentTransform = sgn->getParent()->getTransform();
-	//a mesh should always have a transform
-	assert(parentTransform);
-	if(parentTransform->isDirty()){
-		sgn->updateBoundingBoxTransform(parentTransform->getGlobalMatrix());
-	}
-}
-
-void SubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-}

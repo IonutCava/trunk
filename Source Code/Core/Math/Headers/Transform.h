@@ -26,8 +26,9 @@
 #include <boost/atomic.hpp>
 #include <boost/noncopyable.hpp>
 #include "Quaternion.h"
-
-class Transform : private boost::noncopyable {
+#include "Utility/Headers/GUIDWrapper.h"
+   
+class Transform : public GUIDWrapper, private boost::noncopyable {
 public:
 
     Transform();
@@ -57,8 +58,14 @@ public:
     }
 
     ///Helper functions
-    inline bool isDirty()         const {return _dirty;}
-    inline bool isPhysicsDirty()  const {return _physicsDirty;}
+    inline bool isDirty()         const {
+        if(hasParentTransform())
+            return _dirty || _parentTransform->isDirty();
+
+        return  _dirty;
+    }
+
+    
     inline bool isUniformScaled() const {
         if(hasParentTransform()){
             ReadLock r_lock(_parentLock);
@@ -67,6 +74,8 @@ public:
 
         return getLocalScale().isUniform();
     }
+
+    inline bool isPhysicsDirty()  const {return _physicsDirty;}
     ///Transformation helper functions. These just call the normal translate/rotate/scale functions
     inline void scale(const F32 scale)            {this->scale(vec3<F32>(scale,scale,scale)); }
     inline void scaleX(const F32 scale)           {this->scale(vec3<F32>(scale,_scale.y,_scale.z));}
@@ -156,10 +165,15 @@ public:
         return NULL;
     }
     ///Set the parent's global transform (the parent's transform with its parent's transform applied and so on)
-    inline void setParentTransform(Transform* transform) {
+    inline bool setParentTransform(Transform* transform) {
         WriteLock w_lock(_parentLock);
+
+        if(!_parentTransform && !transform) return false;
+        if(_parentTransform && transform && _parentTransform->getGUID() == transform->getGUID()) return false;
+
         _parentTransform = transform;
         _hasParentTransform = (transform != NULL);
+        return true;
     }
 
     inline void clone(Transform* const transform){

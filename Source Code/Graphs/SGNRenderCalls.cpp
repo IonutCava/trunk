@@ -17,6 +17,21 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     return true;
 }
 
+//This function eats up a lot of processing power
+//It computes the BoundingBoxes of all transformed nodes and updates transforms
+void SceneGraphNode::updateTransforms(){
+    //Better version: move to new thread with DoubleBuffering?
+    //Get our transform and our parent's as well
+    if(getTransform()){
+        if(_transform->isDirty() || _transform->setParentTransform((_parent != NULL ? _parent->getTransform() : NULL)))
+            updateBoundingBoxTransform(_transform->getGlobalMatrix());
+    }
+
+    for_each(NodeChildren::value_type& it, _children){
+        it.second->updateTransforms();
+    }
+}
+
 ///Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::checkBoundingBoxes(){
     //Update order is very important!
@@ -30,13 +45,16 @@ void SceneGraphNode::checkBoundingBoxes(){
         return;
 
     //Compute the BoundingBox if it isn't already
-    if(!_boundingBox.isComputed()){
+    if(!_boundingBox.isComputed()) { 
         _node->computeBoundingBox(this);
-        _boundingSphere.fromBoundingBox(_boundingBox);
-        
-        if(_parent){
-           _parent->getBoundingBox().setComputed(false);
-        }
+        _boundingBox.setComputed(true);
+        _boundingBoxDirty = true;
+    }
+
+    if(_boundingBoxDirty){
+        updateBoundingBoxTransform(_transform->getGlobalMatrix());
+        if(_parent) _parent->getBoundingBox().setComputed(false);
+        _boundingBoxDirty = false;
     }
 
     //Recreate bounding boxes for current frame
@@ -49,30 +67,17 @@ void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
 
     //Transform the bounding box if we have a new transform
     WriteLock w_lock(_queryLock);
-    _boundingBox.Transform(_initialBoundingBox,transform);
+    _boundingBox.Transform(_initialBoundingBox, transform);
     //Update the bounding sphere
     _boundingSphere.fromBoundingBox(_boundingBox);
 }
 
-//This function eats up a lot of processing power
-//It computes the BoundingBoxes of all transformed nodes and updates transforms
-void SceneGraphNode::updateTransforms(){
-    //Better version: move to new thread with DoubleBuffering?
-    //Get our transform and our parent's as well
-    Transform* transform = getTransform();
-    Transform* parentTransform = NULL;
-    if(transform){
-        parentTransform = (_parent != NULL ? _parent->getTransform() : NULL);
-        transform->setParentTransform(parentTransform);
-        if(_transform->isDirty() || (parentTransform && parentTransform->isDirty()))
-            updateBoundingBoxTransform(_transform->getGlobalMatrix());
-    }
+void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox){
+    WriteLock w_lock(_queryLock);
 
-    _node->updateTransform(this);
-
-    for_each(NodeChildren::value_type& it, _children){
-        it.second->updateTransforms();
-    }
+    _initialBoundingBox = initialBoundingBox;
+    _initialBoundingBox.setComputed(true);
+    _boundingBoxDirty = true;
 }
 
 void SceneGraphNode::setSelected(bool state) {

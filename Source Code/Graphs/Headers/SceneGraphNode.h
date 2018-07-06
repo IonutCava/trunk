@@ -43,7 +43,6 @@ public:
     void render(SceneGraphNode* const sgn)             {return;}
     void postLoad(SceneGraphNode* const sgn)           {return;}
     void onDraw(const RenderStage& currentStage)       {return;}
-    void updateTransform(SceneGraphNode* const sgn)    {return;}
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -60,7 +59,6 @@ public:
     void render(SceneGraphNode* const sgn)             {return;}
     void postLoad(SceneGraphNode* const sgn)           {return;}
     void onDraw(const RenderStage& currentStage)       {return;}
-    void updateTransform(SceneGraphNode* const sgn)    {return;}
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
@@ -132,15 +130,9 @@ public:
     /*Parent <-> Children*/
 
     /*Bounding Box Management*/
-    inline void setInitialBoundingBox(const BoundingBox& initialBoundingBox){
-        WriteLock w_lock(_queryLock);
-        _initialBoundingBox = initialBoundingBox;
-    }
+    void setInitialBoundingBox(const BoundingBox& initialBoundingBox);
 
-    inline void updateBoundingBox(const BoundingBox& box) {
-        WriteLock w_lock(_queryLock);
-        _boundingBox = box;
-    }
+    inline void  setBoundingBoxDirty() {_boundingBoxDirty = true;}
 
            const BoundingBox&     getBoundingBoxTransformed();
     inline       BoundingBox&     getBoundingBox()               {ReadLock r_lock(_queryLock); return _boundingBox;}
@@ -148,8 +140,6 @@ public:
     inline const BoundingBox&     getInitialBoundingBox() const  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
 
     vectorImpl<BoundingBox >& getBBoxes(vectorImpl<BoundingBox >& boxes );
-    inline   void             updateBB(const bool state)        { _updateBB = state;}
-    inline   bool             updateBB()                 const  { return _updateBB;}
     inline   const BoundingSphere&  getBoundingSphere()  const  {ReadLock r_lock(_queryLock); return _boundingSphere;}
     /*Bounding Box Management*/
 
@@ -216,7 +206,7 @@ private:
     bool _noDefaultTransform;
     bool _sorted;
     bool _silentDispose;
-    boost::atomic<bool> _updateBB;
+    boost::atomic<bool> _boundingBoxDirty;
     boost::atomic<bool> _isReady; //<is created and has a valid transform
     bool _shouldDelete;
     ///_initialBoundingBox is a copy of the initialy calculate BB for transformation

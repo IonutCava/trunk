@@ -51,8 +51,6 @@ public:
     virtual ~Mesh() {}
 
     bool computeBoundingBox(SceneGraphNode* const sgn);
-    virtual void updateTransform(SceneGraphNode* const sgn);
-    virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);

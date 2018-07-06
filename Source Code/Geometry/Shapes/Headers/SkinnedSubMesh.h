@@ -50,7 +50,6 @@ public:
     void updateAnimations(const U64 timeIndex, SceneGraphNode* const sgn);
     void postLoad(SceneGraphNode* const sgn);
     void preFrameDrawEnd(SceneGraphNode* const sgn);
-    void updateTransform(SceneGraphNode* const sgn);
     SceneAnimator* const getAnimator() {return _animator;}
     const mat4<F32>& getCurrentBoneTransform(SceneGraphNode* const sgn, const std::string& name);
     Bone* getBoneByName(const std::string& bname) const;

@@ -39,8 +39,8 @@ enum SceneNodeType {
     TYPE_TRIGGER          = toBit(7), //< a scene trigger (perform action on contact)
     TYPE_PARTICLE_EMITTER = toBit(8), //< a particle emitter
     TYPE_SKY              = toBit(9), //< sky node
-	TYPE_VEGETATION_GRASS = toBit(10), //< grass node
-	TYPE_VEGETATION_TREES = toBit(11), //< trees node (to do later)
+    TYPE_VEGETATION_GRASS = toBit(10), //< grass node
+    TYPE_VEGETATION_TREES = toBit(11), //< trees node (to do later)
     ///Place types above
     TYPE_PLACEHOLDER      = toBit(12)
 };
@@ -88,7 +88,6 @@ public:
     virtual	bool computeBoundingBox(SceneGraphNode* const sgn);
     /// Special BB transforms may be required at a certain frame
     virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
-    virtual void updateTransform(SceneGraphNode* const sgn) {};
     /// Perform any pre-draw operations (this is after sort and transform updates)
     virtual void onDraw(const RenderStage& currentStage);
     /// Perform any post=draw operations (this is after releasing object and shadow states)

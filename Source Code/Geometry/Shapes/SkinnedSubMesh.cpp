@@ -116,17 +116,6 @@ void SkinnedSubMesh::updateAnimations(const U64 deltaTime, SceneGraphNode* const
     _geometry->queueRefresh();
 }
 
-void SkinnedSubMesh::updateTransform(SceneGraphNode* const sgn){
-    Transform* transform = sgn->getTransform();
-    //a submesh should always have a transform
-    assert(transform);
-    transform = sgn->getParent()->getTransform();
-    //a mesh should always have a transform
-    assert(transform);
-
-    sgn->updateBoundingBoxTransform(transform->getGlobalMatrix());
-}
-
 void SkinnedSubMesh::preFrameDrawEnd(SceneGraphNode* const sgn){
     renderSkeleton(sgn);
     SceneNode::preFrameDrawEnd(sgn);
@@ -192,8 +181,6 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
     const BoundingBox& bb1 = _boundingBoxes[_currentAnimationID][_currentFrameIndex];
     const BoundingBox& bb2 = sgn->getBoundingBox();
     if(!bb1.Compare(bb2)){
-        sgn->updateBoundingBox(bb1);
-        SceneNode::computeBoundingBox(sgn);
-        sgn->getParent()->updateBB(true);
+        sgn->setInitialBoundingBox(bb1);
     }
 }

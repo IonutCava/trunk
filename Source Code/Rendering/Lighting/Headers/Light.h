@@ -140,7 +140,6 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn);
     bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     void updateBBatCurrentFrame(SceneGraphNode* const sgn);
-	virtual void updateTransform(SceneGraphNode* const sgn) {}
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn);
 

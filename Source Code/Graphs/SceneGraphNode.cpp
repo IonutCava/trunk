@@ -14,7 +14,7 @@
 SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _parent(NULL),
                                                   _transform(NULL),
-												  _transformPrevious(NULL),
+                                                  _transformPrevious(NULL),
                                                   _wasActive(true),
                                                   _active(true),
                                                   _selected(false),
@@ -22,7 +22,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _noDefaultTransform(false),
                                                   _sorted(false),
                                                   _silentDispose(false),
-                                                  _updateBB(true),
+                                                  _boundingBoxDirty(true),
                                                   _shouldDelete(false),
                                                   _isReady(false),
                                                   _overrideNavMeshDetail(false),
@@ -50,8 +50,10 @@ SceneGraphNode::~SceneGraphNode(){
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& type) {
-    if(!bitCompare(_bbAddExclusionList, type))
+    if(!bitCompare(_bbAddExclusionList, type)){
         _boundingBox.Add(bb);
+        if(_parent) _parent->getBoundingBox().setComputed(false);
+    }
 }
 
 SceneGraphNode* SceneGraphNode::getRoot() const {
@@ -175,7 +177,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
     Transform* nodeTransform = sceneGraphNode->getTransform();
     //If the current node and the new node have transforms,
     //Update the relationship between the 2
-	Transform* currentTransform = getTransform();
+    Transform* currentTransform = getTransform();
     if(nodeTransform && currentTransform){
         //The child node's parent transform is our current transform matrix
         nodeTransform->setParentTransform(currentTransform);
@@ -275,12 +277,12 @@ const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
 
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
-	SAFE_UPDATE(_transform,t);
-	// Update children
-	for_each(NodeChildren::value_type& it, _children){
-		Transform* nodeTransform = it.second->getTransform();
-		if(nodeTransform)
-			nodeTransform->setParentTransform(_transform);
+    SAFE_UPDATE(_transform,t);
+    // Update children
+    for_each(NodeChildren::value_type& it, _children){
+        Transform* nodeTransform = it.second->getTransform();
+        if(nodeTransform)
+            nodeTransform->setParentTransform(_transform);
     }
 }
 

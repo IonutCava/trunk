@@ -59,7 +59,6 @@ public:
 	bool unload() { return SceneNode::unload(); }
 
 	bool computeBoundingBox(SceneGraphNode* const sgn);
-	virtual void updateTransform(SceneGraphNode* const sgn);
 
 	inline U32  getId() {return _id;}
 	/// When loading a submesh, the ID is the node index from the imported scene
@@ -70,7 +69,6 @@ public:
 
 	virtual void onDraw(const RenderStage& currentStage);
 	virtual void preFrameDrawEnd(SceneGraphNode* const sgn) {/*nothing yet*/}
-	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 	/// Called from SceneGraph "sceneUpdate"
 	virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 

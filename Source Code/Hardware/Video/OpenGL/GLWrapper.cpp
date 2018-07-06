@@ -173,8 +173,8 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
 }
 
 void GL_API::setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawState,const bool ortho){
-    GFX_DEVICE.pushWorldMatrix(mat, true);
-    SET_STATE_BLOCK(drawState,true);
+    GFX_DEVICE.pushWorldMatrix(mat,true);
+    SET_STATE_BLOCK(drawState);
 
     if(ortho){
         setViewport(vec4<U32>(_cachedResolution.width - 128, 0, 128, 128));
