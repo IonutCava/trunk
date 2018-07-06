@@ -39,11 +39,6 @@ namespace Divide {
 class SpotLight : public Light {
    public:
     explicit SpotLight(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, F32 range, LightPool& parentPool);
-
-   protected:
-     void initDebugViews(GFXDevice& context) override;
-     void updateDebugViews(bool state, U32 arrayOffset) override;
-     DebugView* _debugView;
 };
 
 };  // namespace Divide

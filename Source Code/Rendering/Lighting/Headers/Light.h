@@ -226,10 +226,6 @@ class Light : public SceneNode {
 
     void updateImpostor();
 
-
-    virtual void updateDebugViews(bool state, U32 arrayOffset) = 0;
-    virtual void initDebugViews(GFXDevice& context) = 0;
-
    protected:
     bool _spotPropertiesChanged;
     /// Used to generate spot light penumbra using D3D's dual-cone method

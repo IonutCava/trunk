@@ -112,16 +112,18 @@ namespace TypeUtil {
     RenderPassType stringToRenderPassType(const char* pass);
 };
 
-struct DebugView {
+struct DebugView : public GUIDWrapper {
     DebugView()
-        : _textureBindSlot(0)
+        : GUIDWrapper()
+        , _textureBindSlot(0)
         , _sortIndex(-1)
         , _enabled (true)
     {
     }
 
-    DebugView(U16 sortIndex)
-        : _textureBindSlot(0)
+    DebugView(I16 sortIndex)
+        : GUIDWrapper()
+        , _textureBindSlot(0)
         , _sortIndex(to_I16(sortIndex))
         , _enabled(true)
     {
@@ -290,6 +292,7 @@ public:  // Accessors and Mutators
     inline const Rect<I32>& getBaseViewport() const { return _baseViewport; }
 
     DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
+    bool removeDebugView(DebugView* view);
 
     static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }

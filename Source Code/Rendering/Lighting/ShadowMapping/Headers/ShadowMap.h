@@ -62,7 +62,10 @@ namespace GFX {
 
 class ShadowMapGenerator {
 protected:
+    SET_DELETE_FRIEND
+
     explicit ShadowMapGenerator(GFXDevice& context);
+    virtual ~ShadowMapGenerator();
 
     friend class ShadowMap;
     virtual void render(const Camera& playerCamera, Light& light, U32 passIdx, GFX::CommandBuffer& bufferInOut) = 0;
@@ -71,6 +74,7 @@ protected:
     GFXDevice& _context;
 };
 
+FWD_DECLARE_MANAGED_STRUCT(DebugView);
 /// All the information needed for a single light's shadowmap
 class NOINITVTABLE ShadowMap {
   public:
@@ -92,12 +96,18 @@ class NOINITVTABLE ShadowMap {
 
     static const RenderTargetHandle& getDepthMap(LightType type);
 
+    static void enableShadowDebugViewForLight(GFXDevice& context, Light& light);
+    static void disableShadowDebugViews(GFXDevice& context);
+
   protected:
     typedef vector<bool> LayerUsageMask;
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> s_depthMapUsage;
     static std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> s_shadowMapGenerators;
 
     static vector<RenderTargetHandle> s_shadowMaps;
+    static vector<DebugView_ptr> s_debugViews;
+
+    static Light* s_shadowPreviewLight;
 };
 
 };  // namespace Divide

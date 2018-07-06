@@ -123,9 +123,6 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     DirectionalLight& dirLight = static_cast<DirectionalLight&>(light);
 
     U8 numSplits = dirLight.csmSplitCount();
-    F32 splitLogFactor = dirLight.csmSplitLogFactor();
-    F32 nearClipOffset = dirLight.csmNearClipOffset();
-
     playerCamera.getFrustum().getCornersWorldSpace(frustumCornersWS);
     playerCamera.getFrustum().getCornersViewSpace(frustumCornersVS);
 
@@ -226,6 +223,8 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLight& light,
     std::array<vec3<F32>, 8> splitFrustumCornersVS;
     std::array<vec3<F32>, 8> frustumCornersLS;
 
+    F32 nearClipOffset = light.csmNearClipOffset();
+
     for (U8 pass = 0 ; pass < numSplits; ++pass) {
         F32 minZ = splitDepths[pass];
         F32 maxZ = splitDepths[pass + 1];
@@ -252,7 +251,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLight& light,
 
         // Position the shadow-caster camera so that it's looking at the centroid,
         // and backed up in the direction of the sunlight
-        F32 distFromCentroid = std::max((maxZ - minZ), splitFrustumCornersVS[4].distance(splitFrustumCornersVS[5])) + light.csmNearClipOffset();
+        F32 distFromCentroid = std::max((maxZ - minZ), splitFrustumCornersVS[4].distance(splitFrustumCornersVS[5])) + nearClipOffset;
     
         const vec3<F32>& lightPosition = light.getPosition();
         vec3<F32> currentEye = frustumCentroid - (lightPosition * distFromCentroid);
@@ -266,7 +265,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLight& light,
         mat4<F32> shadowMatrix = light.getShadowVPMatrix(pass);
 
         F32 frustumSphereRadius = BoundingSphere(frustumCornersLS).getRadius();
-        vec2<F32> clipPlanes(std::max(1.0f, minZ - light.csmNearClipOffset()), frustumSphereRadius * 2 + light.csmNearClipOffset() * 2);
+        vec2<F32> clipPlanes(std::max(1.0f, minZ - nearClipOffset), frustumSphereRadius * 2 + nearClipOffset * 2);
         const mat4<F32>& projMatrix = light.shadowCameras()[pass]->setProjection(UNIT_RECT * frustumSphereRadius, clipPlanes);
 
         mat4<F32>::Multiply(viewMatrix, projMatrix, shadowMatrix);

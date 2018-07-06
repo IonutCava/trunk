@@ -51,7 +51,8 @@ bool RTAttachment::isExternal() const {
 }
 
 bool RTAttachment::mipWriteLevel(U16 level) {
-    if (_mipWriteLevel != level) {
+    //ToDo: Investigate why this isn't working ... -Ionut
+    if (/*_descriptor._texDescriptor._mipLevels > level && */_mipWriteLevel != level) {
         _mipWriteLevel = level;
         return true;
     }
@@ -64,7 +65,7 @@ U16 RTAttachment::mipWriteLevel() const {
 }
 
 bool RTAttachment::writeLayer(U16 layer) {
-    if (_writeLayer != layer) {
+    if (_descriptor._texDescriptor._layerCount > layer && _writeLayer != layer) {
         _writeLayer = layer;
         return true;
     }

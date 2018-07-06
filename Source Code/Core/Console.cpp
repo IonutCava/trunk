@@ -23,6 +23,8 @@ vector<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
 namespace {
+    thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
+
     struct MyTraits : public moodycamel::ConcurrentQueueDefaultTraits
     {
         static const size_t BLOCK_SIZE = MAX_CONSOLE_ENTRIES;
@@ -80,7 +82,6 @@ void Console::printCopyrightNotice() {
 }
 
 const char* Console::formatText(const char* format, ...) noexcept {
-    static thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);

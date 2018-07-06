@@ -220,6 +220,24 @@ DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
     return view.get();
 }
 
+bool GFXDevice::removeDebugView(DebugView* view) {
+    if (view != nullptr) {
+        vector<std::shared_ptr<DebugView>>::iterator it;
+        it = std::find_if(std::begin(_debugViews),
+                          std::end(_debugViews),
+                         [view](const std::shared_ptr<DebugView>& entry) {
+                            return view->getGUID() == entry->getGUID();
+                         });
+
+        if (it != std::cend(_debugViews)) {
+            _debugViews.erase(it);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
     if (_debugFrustum != nullptr) {
         std::array<vec3<F32>, 8> corners;

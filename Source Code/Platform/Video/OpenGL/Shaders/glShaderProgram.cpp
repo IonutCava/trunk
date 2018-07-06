@@ -302,7 +302,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
 /// Linking a shader program also sets up all pre-link properties for the shader (varying locations, attrib bindings, etc)
 bool glShaderProgram::link() {
-    Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), name().c_str(), _shaderProgramIDTemp);
+    Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), name().c_str(), _shaderProgramIDTemp, getGUID());
 
     // Link the program
     glLinkProgram(_shaderProgramIDTemp);
@@ -319,10 +319,10 @@ bool glShaderProgram::link() {
     // If linking failed, show an error, else print the result in debug builds.
     // Same getLog() method is used
     if (linkStatus == GL_FALSE) {
-        Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), name().c_str(), getLog().c_str());
+        Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), name().c_str(), getLog().c_str(), getGUID());
         MemoryManager::SAFE_DELETE(_lockManager);
     } else {
-        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), name().c_str(), getLog().c_str());
+        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), name().c_str(), getLog().c_str(), getGUID());
         if (Config::ENABLE_GPU_VALIDATION) {
             glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, name().c_str());
         }

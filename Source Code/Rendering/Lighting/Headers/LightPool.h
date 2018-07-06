@@ -101,7 +101,11 @@ class LightPool : public SceneComponent {
     }
 
     bool clear();
-    inline Light::LightList& getLights(LightType type) { ReadLock r_lock(_lightLock);  return _lights[to_U32(type)]; }
+    inline Light::LightList& getLights(LightType type) { 
+        ReadLock r_lock(_lightLock); 
+        return _lights[to_U32(type)];
+    }
+
     Light* getLight(I64 lightGUID, LightType type);
 
     void prepareLightData(RenderStage stage,
@@ -116,7 +120,7 @@ class LightPool : public SceneComponent {
     static void idle();
     /// shadow mapping
     static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
-    static void togglePreviewShadowMaps(GFXDevice& context);
+    static void togglePreviewShadowMaps(GFXDevice& context, Light& light);
 
     /// Get the appropriate shadow bind slot for every light's shadow
     static U8 getShadowBindSlotOffset(ShadowType type) {

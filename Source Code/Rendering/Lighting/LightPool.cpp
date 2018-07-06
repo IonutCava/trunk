@@ -147,7 +147,6 @@ bool LightPool::addLight(Light& light) {
 
     UpgradeToWriteLock w_lock(ur_lock);
     _lights[lightTypeIdx].emplace_back(&light);
-    light.initDebugViews(_context);
 
     return true;
 }
@@ -188,13 +187,12 @@ bool LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 
     for (Light* light : sortedLights) {
         if (_sortedShadowProperties.size() >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-            light->updateDebugViews(false, 0);
-        } else {
-            U32 offset = shadowLightCount++ * Config::Lighting::MAX_SPLITS_PER_LIGHT;
-            ShadowMap::generateShadowMaps(playerCamera, *light, offset, bufferInOut);
-             _sortedShadowProperties.emplace_back(light->getShadowProperties());
-             light->updateDebugViews(true, offset);
-         }
+            break;
+        } 
+
+        U32 offset = shadowLightCount++ * Config::Lighting::MAX_SPLITS_PER_LIGHT;
+        ShadowMap::generateShadowMaps(playerCamera, *light, offset, bufferInOut);
+        _sortedShadowProperties.emplace_back(light->getShadowProperties());
     }
 
     vec_size lightShadowCount = std::min(_sortedShadowProperties.size(), static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
@@ -245,7 +243,7 @@ void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedSha
 
 }
 
-void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
+void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
     if (!context.parent().platformContext().config().rendering.shadowMapping.enabled) {
@@ -253,6 +251,11 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
     }
 
     ParamHandler::instance().setParam(_ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
+    if (_previewShadowMaps) {
+        ShadowMap::enableShadowDebugViewForLight(context, light);
+    } else {
+        ShadowMap::disableShadowDebugViews(context);
+    }
 }
 
 // If we have computed shadowmaps, bind them before rendering any geometry;

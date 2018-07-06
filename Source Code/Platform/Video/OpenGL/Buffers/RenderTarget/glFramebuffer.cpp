@@ -286,18 +286,18 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
         input = input->_resolveBuffer;
     }
 
-    ClearBufferMask clearMask = GL_NONE_BIT;
-    bool setDepthBlitFlag = !params._blitDepth.empty() && hasDepth();
-    if (setDepthBlitFlag) {
-        clearMask = GL_DEPTH_BUFFER_BIT;
-    }
-
     vec2<GLuint> inputDim(input->getWidth(), input->getHeight());
     vec2<GLuint> outputDim(this->getWidth(), this->getHeight());
 
     // This seems hacky but it is the most common blit case so it is a really good idea to add it as a fast path. -Ionut
     // If we just blit depth, or just the first colour attachment (layer 0) or both colour 0 (layer 0) + depth
     if (params._blitColours.empty() || (params._blitColours.size() == 1 && params._blitColours.front()._inputLayer == 0)) {
+        ClearBufferMask clearMask = GL_NONE_BIT;
+        bool setDepthBlitFlag = !params._blitDepth.empty() && hasDepth();
+        if (setDepthBlitFlag) {
+            clearMask = GL_DEPTH_BUFFER_BIT;
+        }
+
         GLenum colourAttIn = GL_NONE;
         GLenum colourAttOut = GL_NONE;
         if (!params._blitColours.empty() && hasColour()) {
@@ -311,6 +311,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
     }
 
     bool mipMapsDirty = false;
+    std::set<vec_size_eastl> blitDepthEntry;
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
     if (!params._blitColours.empty() && hasColour()) {
 
@@ -336,22 +337,54 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                 prevWriteAtt = crtWriteAtt;
             }
 
-            const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(crtReadAtt));
             if (inAtt->writeLayer(entry._inputLayer)) {
-                input->toggleAttachment(inAtt, inState._attState, true);
+                const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(crtReadAtt));
+                input->toggleAttachment(inAtt, inState._attState, entry._inputLayer > 0);
             }
 
-            const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(crtWriteAtt));
             if (outAtt->writeLayer(entry._outputLayer)) {
-                this->toggleAttachment(outAtt, outState._attState, true);
+                const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(crtWriteAtt));
+                this->toggleAttachment(outAtt, outState._attState, entry._outputLayer > 0);
             }
 
+            // If we change layers, then the depth buffer should match that ... I guess ... this sucks!
+            if (input->hasDepth()) {
+                const RTAttachment_ptr& inDepthAtt = input->_attachmentPool->get(RTAttachmentType::Depth, 0);
+                if (inDepthAtt->writeLayer(entry._inputLayer)) {
+                    const BindingState& inDepthState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
+                    input->toggleAttachment(inDepthAtt, inDepthState._attState, entry._inputLayer > 0);
+                }
+            }
+
+            if (this->hasDepth()) {
+                const RTAttachment_ptr& outDepthAtt = this->_attachmentPool->get(RTAttachmentType::Depth, 0);
+                if (outDepthAtt->writeLayer(entry._outputLayer)) {
+                    const BindingState& outDepthState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
+                    this->toggleAttachment(outDepthAtt, outDepthState._attState, entry._outputLayer > 0);
+                }
+            }
+
+            // We always change depth layers to satisfy whatever f**ked up completion requirements the OpenGL driver has (looking at you Nvidia)
+            bool shouldBlitDepth = false;
+            for (vec_size_eastl idx = 0; idx < params._blitDepth.size(); ++idx) {
+                const DepthBlitEntry& depthEntry = params._blitDepth[idx];
+                // MAYBE, we need to blit this combo of depth layers. 
+                if (depthEntry._inputLayer == entry._inputLayer && depthEntry._outputLayer == entry._outputLayer) {
+                    // If so, blit it now and skip it later. Hey ... micro-optimisation here :D
+                    blitDepthEntry.insert(idx);
+                    shouldBlitDepth = true;
+                    break;
+
+                }
+            }
+            
             glBlitNamedFramebuffer(input->_framebufferHandle, this->_framebufferHandle,
                                    0, 0,
                                    inputDim.w, inputDim.h,
                                    0, 0,
                                    outputDim.w, outputDim.h,
-                                   GL_COLOR_BUFFER_BIT,
+                                   shouldBlitDepth ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
+                                                   : GL_COLOR_BUFFER_BIT,
                                    GL_NEAREST);
             _context.registerDrawCall();
             mipMapsDirty = true;
@@ -360,18 +393,25 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
     }
 
     if (!params._blitDepth.empty() && hasDepth()) {
-        for (const DepthBlitEntry& entry : params._blitDepth) {
+        for (vec_size_eastl idx = 0; idx < params._blitDepth.size(); ++idx) {
+            // Already blitted
+            if (blitDepthEntry.find(idx) != std::cend(blitDepthEntry)) {
+                continue;
+            }
+
+            const DepthBlitEntry& entry = params._blitDepth[idx];
+        
             const RTAttachment_ptr& inDepthAtt = input->_attachmentPool->get(RTAttachmentType::Depth, 0);
             const RTAttachment_ptr& outDepthAtt = this->_attachmentPool->get(RTAttachmentType::Depth, 0);
 
             const BindingState& inState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
             if (inDepthAtt->writeLayer(entry._inputLayer)) {
-                input->toggleAttachment(inDepthAtt, inState._attState, true);
+                input->toggleAttachment(inDepthAtt, inState._attState, entry._inputLayer > 0);
             }
 
             const BindingState& outState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
             if (outDepthAtt->writeLayer(entry._outputLayer)) {
-                this->toggleAttachment(outDepthAtt, outState._attState, true);
+                this->toggleAttachment(outDepthAtt, outState._attState, entry._outputLayer > 0);
             }
 
             glBlitNamedFramebuffer(input->_framebufferHandle, this->_framebufferHandle,
@@ -382,9 +422,8 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                                    GL_DEPTH_BUFFER_BIT,
                                    GL_NEAREST);
             _context.registerDrawCall();
+            mipMapsDirty = true;
         }
-
-        mipMapsDirty = true;
     }
 
     if (mipMapsDirty) {

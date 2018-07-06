@@ -599,7 +599,7 @@ U16 Scene::registerInputActions() {
     auto toggleDebugLines = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES);};
     auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_AABB);};
     auto toggleShadowMapDepthBufferPreview = [this](InputParams param) {
-        LightPool::togglePreviewShadowMaps(_context.gfx());
+        LightPool::togglePreviewShadowMaps(_context.gfx(), *_lightPool->getLights(LightType::DIRECTIONAL)[0]);
 
         ParamHandler& par = ParamHandler::instance();
         par.setParam<bool>(_ID("rendering.previewDebugViews"),
