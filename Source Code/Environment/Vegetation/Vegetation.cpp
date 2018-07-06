@@ -250,19 +250,19 @@ void Vegetation::uploadGrassData() {
         buffer->setBuffer(to_const_uint(BufferUsage::CulledInstanceBuffer), _instanceCountGrass * 3,
                           sizeof(I32), true, NULL, true, false);
 
-        buffer->getDrawAttribDescriptor(posLocation)
+        buffer->attribDescriptor(posLocation)
             .set(to_const_uint(BufferUsage::CulledPositionBuffer), instanceDiv, 4, false, 0, 
                              GFXDataFormat::FLOAT_32);
-        buffer->getDrawAttribDescriptor(scaleLocation)
+        buffer->attribDescriptor(scaleLocation)
             .set(to_const_uint(BufferUsage::CulledSizeBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::FLOAT_32);
-        buffer->getDrawAttribDescriptor(instLocation)
+        buffer->attribDescriptor(instLocation)
             .set(to_const_uint(BufferUsage::CulledInstanceBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::SIGNED_INT);
-        buffer->getFdbkAttribDescriptor(posLocation)
+        buffer->fdbkAttribDescriptor(posLocation)
             .set(to_const_uint(BufferUsage::UnculledPositionBuffer), instanceDiv, 4, false, 0,
                  GFXDataFormat::FLOAT_32);
-        buffer->getFdbkAttribDescriptor(scaleLocation)
+        buffer->fdbkAttribDescriptor(scaleLocation)
             .set(to_const_uint(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::FLOAT_32);
 
@@ -395,9 +395,9 @@ bool Vegetation::getDrawCommands(SceneGraphNode& sgn,
     U32 queryID = getQueryID();
     // gpuCull();
 
-    buffer->getDrawAttribDescriptor(posLocation).offset(_instanceCountGrass * queryID);
-    buffer->getDrawAttribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
-    buffer->getDrawAttribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
+    buffer->attribDescriptor(posLocation).offset(_instanceCountGrass * queryID);
+    buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
+    buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);

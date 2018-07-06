@@ -45,16 +45,16 @@ class d3dGenericVertexData : public GenericVertexData {
 
     void create(U8 numBuffers = 1, U8 numQueries = 1) {}
 
-    void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) {}
+    void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream, const vectorImpl<U32>& indices) {}
     void updateIndexBuffer(const vectorImpl<U32>& indices) {}
 
     void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                   bool useRingBuffer, void* data, bool dynamic, bool stream,
+                   bool useRingBuffer, bufferPtr data, bool dynamic, bool stream,
                    bool persistentMapped = false) {}
     void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                  size_t elementCount) {}
     void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
-                      void* data) {}
+                      bufferPtr data) {}
     void setFeedbackBuffer(U32 buffer, U32 bindPoint) {}
     U32 getFeedbackPrimitiveCount(U8 queryID) { return 0; }
 

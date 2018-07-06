@@ -5,20 +5,20 @@
 namespace Divide {
 namespace {
 
-    typedef std::array<vec3<U32>, to_const_uint(ShaderBufferLocation::COUNT)> BindConfig;
+    typedef std::array<vec3<size_t>, to_const_uint(ShaderBufferLocation::COUNT)> BindConfig;
     BindConfig g_currentBindConfig;
 
     bool setIfDifferentBindRange(U32 UBOid,
-        U32 bindIndex,
-        U32 offset,
-        U32 range) {
+                                 U32 bindIndex,
+                                 size_t offset,
+                                 size_t range) {
 
-        vec3<U32>& crtConfig = g_currentBindConfig[bindIndex];
+        vec3<size_t>& crtConfig = g_currentBindConfig[bindIndex];
 
-        if (crtConfig.x != UBOid ||
+        if (crtConfig.x != static_cast<size_t>(UBOid) ||
             crtConfig.y != offset ||
             crtConfig.z != range) {
-            crtConfig.set(UBOid, offset, range);
+            crtConfig.set(static_cast<size_t>(UBOid), offset, range);
             return true;
         }
 
@@ -47,7 +47,7 @@ void glBufferImpl::create(BufferUpdateFrequency frequency, size_t size)
     DIVIDE_ASSERT(_UBOid == 0, "BufferImpl::Create error: Tried to double create current UBO");
 }
 
-bool glBufferImpl::bindRange(GLuint bindIndex, GLuint offset, GLuint range) {
+bool glBufferImpl::bindRange(GLuint bindIndex, size_t offset, size_t range) {
     DIVIDE_ASSERT(_UBOid != 0, "BufferImpl error: Tried to bind an uninitialized UBO");
 
     bool success = false;
@@ -60,7 +60,7 @@ bool glBufferImpl::bindRange(GLuint bindIndex, GLuint offset, GLuint range) {
     return success;
 }
 
-void glBufferImpl::lockRange(GLuint offset, GLuint range) {
+void glBufferImpl::lockRange(size_t offset, size_t range) {
 }
 
 glRegularBuffer::glRegularBuffer(GLenum target)
@@ -98,7 +98,7 @@ void glRegularBuffer::destroy()
     }
 }
 
-void glRegularBuffer::updateData(GLintptr offset, GLintptr range, const bufferPtr data)
+void glRegularBuffer::updateData(size_t offset, size_t range, const bufferPtr data)
 {
     //glInvalidateBufferSubData(_UBOid, offset, range);
     glNamedBufferSubData(_UBOid, offset, range, data);
@@ -136,14 +136,14 @@ void glPersistentBuffer::destroy()
     }
 }
 
-void glPersistentBuffer::updateData(GLintptr offset, GLintptr range, const bufferPtr data)
+void glPersistentBuffer::updateData(size_t offset, size_t range, const bufferPtr data)
 {
     DIVIDE_ASSERT(_mappedBuffer != nullptr, "PersistentBuffer::UpdateData error: was called for an unmapped buffer!");
     _lockManager->WaitForLockedRange(offset, range, true);
     memcpy((U8*)(_mappedBuffer)+offset, data, range);
 }
 
-bool glPersistentBuffer::bindRange(GLuint bindIndex, GLuint offset, GLuint range)
+bool glPersistentBuffer::bindRange(GLuint bindIndex, size_t offset, size_t range)
 {
     if (glBufferImpl::bindRange(bindIndex, offset, range)) {
         _lockManager->LockRange(offset, range, false);
@@ -153,7 +153,7 @@ bool glPersistentBuffer::bindRange(GLuint bindIndex, GLuint offset, GLuint range
     return false;
 }
 
-void glPersistentBuffer::lockRange(GLuint offset, GLuint range) {
+void glPersistentBuffer::lockRange(size_t offset, size_t range) {
     _lockManager->LockRange(offset, range, true);
 }
 

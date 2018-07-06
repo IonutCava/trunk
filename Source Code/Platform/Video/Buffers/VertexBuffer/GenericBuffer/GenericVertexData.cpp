@@ -19,13 +19,13 @@ void GenericVertexData::toggleDoubleBufferedQueries(const bool state) {
     _doubleBufferedQuery = state;
 }
 
-AttributeDescriptor& GenericVertexData::getDrawAttribDescriptor(U32 attribIndex) {
+AttributeDescriptor& GenericVertexData::attribDescriptor(U32 attribIndex) {
     AttributeDescriptor& desc = _attributeMapDraw[attribIndex];
     desc.attribIndex(attribIndex);
     return desc;
 }
 
-AttributeDescriptor& GenericVertexData::getFdbkAttribDescriptor(U32 attribIndex) {
+AttributeDescriptor& GenericVertexData::fdbkAttribDescriptor(U32 attribIndex) {
     AttributeDescriptor& desc = _attributeMapFdbk[attribIndex];
     desc.attribIndex(attribIndex);
     return desc;

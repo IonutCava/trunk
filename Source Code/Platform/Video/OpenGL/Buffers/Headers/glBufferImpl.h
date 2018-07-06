@@ -44,10 +44,10 @@ public:
     GLuint bufferID() const;
 
     virtual void create(BufferUpdateFrequency frequency, size_t size);
-    virtual bool bindRange(GLuint bindIndex, GLuint offset, GLuint range);
-    virtual void lockRange(GLuint offset, GLuint range);
+    virtual bool bindRange(GLuint bindIndex, size_t offset, size_t range);
+    virtual void lockRange(size_t offset, size_t range);
     virtual void destroy() = 0;
-    virtual void updateData(GLintptr offset, GLintptr range, const bufferPtr data) = 0;
+    virtual void updateData(size_t offset, size_t range, const bufferPtr data) = 0;
 protected:
     GLenum _target;
     GLuint _UBOid;
@@ -61,7 +61,7 @@ public:
 
     void create(BufferUpdateFrequency frequency, size_t size) override;
     void destroy() override;
-    void updateData(GLintptr offset, GLintptr range, const bufferPtr data) override;
+    void updateData(size_t offset, size_t range, const bufferPtr data) override;
 };
 
 class glPersistentBuffer : public glBufferImpl {
@@ -71,9 +71,9 @@ public:
 
     void create(BufferUpdateFrequency frequency, size_t size) override;
     void destroy() override;
-    void updateData(GLintptr offset, GLintptr range, const bufferPtr data) override;
-    bool bindRange(GLuint bindIndex, GLuint offset, GLuint range) override;
-    void lockRange(GLuint offset, GLuint range) override;
+    void updateData(size_t offset, size_t range, const bufferPtr data) override;
+    bool bindRange(GLuint bindIndex, size_t offset, size_t range) override;
+    void lockRange(size_t offset, size_t range) override;
 
 private:
     bufferPtr _mappedBuffer;

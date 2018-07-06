@@ -39,14 +39,42 @@ namespace Divide {
 class glBufferImpl;
 class glGenericBuffer {
   public:
-      glGenericBuffer(GLenum usage, bool persistentMapped);
+      glGenericBuffer(GLenum usage,
+                      bool persistentMapped,
+                      GLuint ringSizeFactor);
       ~glGenericBuffer();
 
+      inline glBufferImpl* impl() const { return _buffer; }
+      inline GLuint elementCount() const { return _elementCount; }
+      inline size_t elementSize() const { return _elementSize; }
+
+      GLuint bufferHandle() const;
+      
+
+      void create(GLuint elementCount, 
+                  size_t elementSize,
+                  BufferUpdateFrequency frequency,
+                  bufferPtr data);
+
+      void updateData(GLuint elementCount,
+                      GLuint elementOffset,
+                      GLuint ringWriteOffset,
+                      bufferPtr data);
+
+      void lockData(GLuint elementCount,
+                    GLuint elementOffset,
+                    GLuint ringReadOffset);
+                    
+       GLintptr bindOffset(GLuint descriptorOffset,
+                           GLuint ringReadOffset);
+                                                                        
   protected:
       GLuint _elementCount;
-      GLuint _elementSize;
-      GLint  _feedbackBindPoint;
+      size_t _elementSize;
+      // A flag to check if the buffer uses the RingBuffer system
       glBufferImpl* _buffer;
+
+      GLuint _ringSizeFactor;
 };
 
 }; //namespace Divide

@@ -24,10 +24,6 @@ bool glGenericVertexData::setIfDifferentBindRange(GLuint bindIndex, const Buffer
 
 glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength)
     : GenericVertexData(context, ringBufferLength),
-      _bufferSet(nullptr),
-      _bufferIsRing(nullptr),
-      _elementCount(nullptr),
-      _elementSize(nullptr),
       _prevResult(nullptr)
 {
     _numQueries = 0;
@@ -46,7 +42,6 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
 glGenericVertexData::~glGenericVertexData() {
     if (!_bufferObjects.empty()) {
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
-            _bufferObjects[i]->destroy();
             MemoryManager::DELETE(_bufferObjects[i]);
         }
     }
@@ -83,10 +78,6 @@ glGenericVertexData::~glGenericVertexData() {
     _indexBufferSize = 0;
     // Delete the rest of the data
     MemoryManager::DELETE_ARRAY(_prevResult);
-    MemoryManager::DELETE_ARRAY(_bufferSet);
-    MemoryManager::DELETE_ARRAY(_bufferIsRing);
-    MemoryManager::DELETE_ARRAY(_elementCount);
-    MemoryManager::DELETE_ARRAY(_elementSize);
 
     _bufferObjects.clear();
     _feedbackBuffers.clear();
@@ -123,18 +114,6 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Query results from the previous frame
     _prevResult = MemoryManager_NEW GLuint[_numQueries];
     memset(_prevResult, 0, sizeof(GLuint) * _numQueries);
-    // Flags to verify if each buffer was created
-    _bufferSet = MemoryManager_NEW bool[numBuffers];
-    memset(_bufferSet, false, numBuffers * sizeof(bool));
-    // The element count for each buffer
-    _elementCount = MemoryManager_NEW GLuint[numBuffers];
-    memset(_elementCount, 0, numBuffers * sizeof(GLuint));
-    // The element size for each buffer (in bytes)
-    _elementSize = MemoryManager_NEW size_t[numBuffers];
-    memset(_elementSize, 0, numBuffers * sizeof(size_t));
-    // A flag to check if the buffer uses the RingBuffer system
-    _bufferIsRing = MemoryManager_NEW bool[numBuffers];
-    memset(_bufferIsRing, false, numBuffers * sizeof(bool));
 }
 
 void glGenericVertexData::incQueryQueue() {
@@ -156,11 +135,13 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
                   "non-feedback buffer!");
 
     GL_API::setActiveTransformFeedback(_transformFeedback);
+
+    glGenericBuffer* buff = _bufferObjects[buffer];
     glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER,
-                      getBindPoint(_bufferObjects[buffer]->bufferID()),
-                      _bufferObjects[buffer]->bufferID(),
-                      elementCountOffset * _elementSize[buffer],
-                      elementCount * _elementSize[buffer]);
+                      feedbackBindPoint(buffer),
+                      buff->bufferHandle(),
+                      elementCountOffset * buff->elementSize(),
+                      elementCount * buff->elementSize());
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
@@ -197,16 +178,12 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, bool useCmdBuf
 
     vectorAlg::vecSize bufferCount = _bufferObjects.size();
     for (vectorAlg::vecSize i = 0; i < bufferCount; ++i) {
-        size_t range = _elementCount[i] * _elementSize[i];
-        size_t offset = 0;
-        if (_bufferIsRing[i]) {
-            offset += range * queueReadIndex();
-        }
-        _bufferObjects[i]->lockRange(static_cast<GLuint>(offset), static_cast<GLuint>(range));
+        glGenericBuffer* buffer = _bufferObjects[i];
+        buffer->lockData(buffer->elementCount(), 0, queueReadIndex());
     }
 }
 
-void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream) {
+void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream, const vectorImpl<U32>& indices) {
     if (indicesCount > 0) {
         DIVIDE_ASSERT(_indexBuffer == 0,
             "glGenericVertexData::SetIndexBuffer error: Tried to double create index buffer!");
@@ -218,7 +195,7 @@ void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool s
                 static_cast<GLsizeiptr>(indicesCount * sizeof(GLuint)),
                 _indexBufferUsage,
                 _indexBuffer,
-                NULL);
+                indices.empty() ? NULL : (bufferPtr)indices.data());
         _indexBufferSize = indicesCount;
         // Assert if the IB creation failed
         DIVIDE_ASSERT(_indexBuffer != 0, Locale::get(_ID("ERROR_IB_INIT")));
@@ -250,57 +227,41 @@ void glGenericVertexData::setBuffer(U32 buffer,
                                     U32 elementCount,
                                     size_t elementSize,
                                     bool useRingBuffer,
-                                    void* data,
+                                    bufferPtr data,
                                     bool dynamic,
                                     bool stream,
                                     bool persistentMapped) {
     // Make sure the buffer exists
     DIVIDE_ASSERT(buffer >= 0 && buffer < _bufferObjects.size(),
-                  "glGenericVertexData error: set buffer called for invalid "
-                  "buffer index!");
-    // glBufferData on persistentMapped buffers is not allowed
-    DIVIDE_ASSERT(!_bufferSet[buffer],
-                  "glGenericVertexData error: set buffer called for an already "
-                  "created buffer!");
+                  "glGenericVertexData error: set buffer called for invalid buffer index!");
     // Make sure we allow persistent mapping
     if (persistentMapped) {
         persistentMapped = !Config::Profile::DISABLE_PERSISTENT_BUFFER;
     }
 
-    // Remember the element count and size for the current buffer
-    _elementCount[buffer] = elementCount;
-    _elementSize[buffer] = elementSize;
-    _bufferIsRing[buffer] = useRingBuffer;
-
-    size_t bufferSize = elementCount * elementSize;
-    GLuint sizeFactor = useRingBuffer ? queueLength() : 1;
-    size_t totalSize = bufferSize * sizeFactor;
-
     assert(_bufferObjects[buffer] == nullptr &&
            "glGenericVertexData::setBuffer : buffer repurposing is not supported at the moment");
 
-    GLenum usage = isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK : GL_BUFFER;
-    if (persistentMapped) {
-        _bufferObjects[buffer] = MemoryManager_NEW glPersistentBuffer(usage);
-    } else {
-        _bufferObjects[buffer] = MemoryManager_NEW glRegularBuffer(usage);
-    }
-
-    glBufferImpl* bufferObj = _bufferObjects[buffer];
+    glGenericBuffer* tempBuffer =
+        MemoryManager_NEW glGenericBuffer(isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK
+                                                                   : GL_BUFFER,
+                                          persistentMapped,
+                                          useRingBuffer ? queueLength()
+                                                        : 1);
 
     BufferUpdateFrequency frequency = dynamic ? stream ? BufferUpdateFrequency::OFTEN 
                                                        : BufferUpdateFrequency::OCASSIONAL
                                               : BufferUpdateFrequency::ONCE;
-    bufferObj->create(frequency, totalSize);
 
-    // Create sizeFactor copies of the data and store them in the buffer
-    if (data != nullptr) {
-        for (U8 i = 0; i < sizeFactor; ++i) {
-            bufferObj->updateData(i * bufferSize, bufferSize, data);
-        }
+    tempBuffer->create(elementCount, elementSize, frequency, data);
+
+    _bufferObjects[buffer] = tempBuffer;
+
+    // if "setFeedbackBuffer" was called before "create"
+    if (isFeedbackBuffer(buffer)) {
+        GL_API::setActiveTransformFeedback(_transformFeedback);
+        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, feedbackBindPoint(buffer), tempBuffer->bufferHandle());
     }
-
-    _bufferSet[buffer] = true;
 }
 
 /// Update the elementCount worth of data contained in the buffer starting from
@@ -308,17 +269,8 @@ void glGenericVertexData::setBuffer(U32 buffer,
 void glGenericVertexData::updateBuffer(U32 buffer,
                                        U32 elementCount,
                                        U32 elementCountOffset,
-                                       void* data) {
-    // Calculate the size of the data that needs updating
-    size_t dataCurrentSize = elementCount * _elementSize[buffer];
-    // Calculate the offset in the buffer in bytes from which to start writing
-    size_t offset = elementCountOffset * _elementSize[buffer];
-
-    if (_bufferIsRing[buffer]) {
-        offset += _elementCount[buffer] * _elementSize[buffer] * queueWriteIndex();
-    }
-
-    _bufferObjects[buffer]->updateData(offset, dataCurrentSize, data);
+                                       bufferPtr data) {
+    _bufferObjects[buffer]->updateData(elementCount, elementCountOffset, queueWriteIndex(), data);
 }
 
 /// Update the appropriate attributes (either for drawing or for transform
@@ -336,14 +288,11 @@ void glGenericVertexData::setAttributes(bool feedbackPass) {
 void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) {
     U32 bufferIndex = descriptor.bufferIndex();
 
-    GLintptr offset = descriptor.offset() * _elementSize[bufferIndex];
-    if (_bufferIsRing[bufferIndex]) {
-        offset += _elementCount[bufferIndex] * _elementSize[bufferIndex] * queueReadIndex();
-    }
+    glGenericBuffer* buffer = _bufferObjects[bufferIndex];
 
-    BufferBindConfig crtConfig = BufferBindConfig(_bufferObjects[bufferIndex]->bufferID(),
-                                                  offset,
-                                                  static_cast<GLsizei>(_elementSize[bufferIndex]));
+    BufferBindConfig crtConfig = BufferBindConfig(buffer->bufferHandle(),
+                                                  buffer->bindOffset(descriptor.offset(), queueReadIndex()),
+                                                  0/*static_cast<GLsizei>(buffer->elementSize())*/);
 
     setIfDifferentBindRange(bufferIndex, crtConfig);
 
@@ -412,28 +361,32 @@ U32 glGenericVertexData::getFeedbackPrimitiveCount(U8 queryID) {
 
 void glGenericVertexData::setFeedbackBuffer(U32 buffer, U32 bindPoint) {
     if (!isFeedbackBuffer(buffer)) {
-        _feedbackBuffers.push_back(_bufferObjects[buffer]->bufferID());
-        _fdbkBindPoints.push_back(bindPoint);
+        _feedbackBuffers.emplace_back(std::make_pair(buffer, bindPoint));
     }
 
-    GL_API::setActiveTransformFeedback(_transformFeedback);
-    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]->bufferID());
+    // if "setFeedbackBuffer" was called after "create"
+    if (_bufferObjects[buffer] != nullptr) {
+        GL_API::setActiveTransformFeedback(_transformFeedback);
+        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]->bufferHandle());
+    }
 }
 
 bool glGenericVertexData::isFeedbackBuffer(U32 index) {
-    for (U32 handle : _feedbackBuffers)
-        if (handle == _bufferObjects[index]->bufferID()) {
+    for (std::pair<U32, U32>& entry : _feedbackBuffers) {
+        if (entry.first == index) {
             return true;
         }
+    }
+
     return false;
 }
 
-U32 glGenericVertexData::getBindPoint(U32 bufferHandle) {
-    for (U8 i = 0; i < _feedbackBuffers.size(); ++i) {
-        if (_feedbackBuffers[i] == bufferHandle) {
-            return _fdbkBindPoints[i];
+U32 glGenericVertexData::feedbackBindPoint(U32 buffer) {
+    for (std::pair<U32, U32>& entry : _feedbackBuffers) {
+        if (entry.first == buffer) {
+            return entry.second;
         }
     }
-    return _fdbkBindPoints[0];
+    return 0;
 }
 };

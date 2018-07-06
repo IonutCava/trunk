@@ -18,11 +18,11 @@ namespace Divide {
 namespace {
     // 3 should always be enough for round-robin GPU updates to avoid stalls:
     // 1 in ram, 1 in driver and 1 in VRAM
-    static const U32 g_particleBufferSizeFactor = 3;
+    static const U32 g_particleBufferSizeFactor = 1;
     static const U32 g_particleGeometryBuffer = 0;
     static const U32 g_particlePositionBuffer = 1;
     static const U32 g_particleColourBuffer = 2;
-    static const bool g_usePersistentlyMappedBuffers = true;
+    static const bool g_usePersistentlyMappedBuffers = false;
 
     static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
@@ -69,10 +69,14 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                                   false,
                                   false,
                                   g_usePersistentlyMappedBuffers);
-    AttributeDescriptor& descriptor = 
-        _particleGPUBuffer->getDrawAttribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
+    AttributeDescriptor& descriptor = _particleGPUBuffer->attribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
 
-    descriptor.set(g_particleGeometryBuffer, 0, 3, false, 0, GFXDataFormat::FLOAT_32);
+    descriptor.set(g_particleGeometryBuffer,
+                   0,
+                   3,
+                   false,
+                   0,
+                   GFXDataFormat::FLOAT_32);
 
     updateData(particleData);
 
@@ -116,7 +120,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
 
     _particleGPUBuffer->setBuffer(g_particlePositionBuffer,
                                   particleCount,
-                                  4 * sizeof(F32),
+                                  sizeof(vec4<F32>),
                                   true,
                                   NULL,
                                   true,
@@ -124,17 +128,17 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
                                   g_usePersistentlyMappedBuffers);
     _particleGPUBuffer->setBuffer(g_particleColourBuffer,
                                   particleCount,
-                                  4 * sizeof(U8),
+                                  sizeof(vec4<U8>),
                                   true,
                                   NULL,
                                   true,
                                   true,
                                   g_usePersistentlyMappedBuffers);
 
-    _particleGPUBuffer->getDrawAttribDescriptor(positionAttribLocation)
+    _particleGPUBuffer->attribDescriptor(positionAttribLocation)
         .set(g_particlePositionBuffer, 1, 4, false, 0, GFXDataFormat::FLOAT_32);
 
-    _particleGPUBuffer->getDrawAttribDescriptor(colourAttribLocation)
+    _particleGPUBuffer->attribDescriptor(colourAttribLocation)
         .set(g_particleColourBuffer, 1, 4, true, 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
@@ -190,7 +194,7 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
-    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 4, 1);
+    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 4);
     cmd.sourceBuffer(_particleGPUBuffer);
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         GFXDevice::RenderPackage& pkg = 
@@ -304,8 +308,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
             // const vec3<F32>& origin = transform->getPosition();
             // const Quaternion<F32>& orientation = transform->getOrientation();
             aliveCount = to_uint(_particles->_renderingPositions.size());
-            CreateTask(
-                [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
+            //CreateTask(
+              //  [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
                     // invalidateCache means that the existing particle data is no longer partially sorted
                     _particles->sort(true);
 
@@ -319,7 +323,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                     _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
                     _particleGPUBuffer->incQueue();
                     _updating = false;
-                })._task->startTask(Task::TaskPriority::DONT_CARE, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+                //})._task->startTask(Task::TaskPriority::DONT_CARE, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
         }
     }
 

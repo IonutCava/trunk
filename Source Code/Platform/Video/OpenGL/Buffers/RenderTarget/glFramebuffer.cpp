@@ -45,8 +45,8 @@ glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
 
     I32 maxColourAttachments = ParamHandler::instance().getParam<I32>(_ID("rendering.maxRenderTargetOutputs"), 32);
     assert(maxColourAttachments > RenderTarget::g_maxColourAttachments);
-
-
+    ACKNOWLEDGE_UNUSED(maxColourAttachments);
+    
     _attachments.init<glRTAttachment>(RenderTarget::g_maxColourAttachments);
 }
 
@@ -635,7 +635,7 @@ void glFramebuffer::resetMipLevel(RTAttachment::Type type, U8 index) {
 void glFramebuffer::readData(const vec4<U16>& rect,
                              GFXImageFormat imageFormat,
                              GFXDataFormat dataType,
-                             void* outData) {
+                             bufferPtr outData) {
     if (_resolveBuffer) {
         resolve();
         _resolveBuffer->readData(rect, imageFormat, dataType, outData);

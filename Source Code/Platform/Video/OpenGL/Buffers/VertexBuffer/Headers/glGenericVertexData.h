@@ -34,6 +34,7 @@
 
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
+#include "glGenericBuffer.h"
 #include "Core/Math/Headers/MathHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
@@ -41,7 +42,6 @@
 
 namespace Divide {
 
-class glBufferImpl;
 class glGenericVertexData : public GenericVertexData {
     USE_CUSTOM_ALLOCATOR
     enum class GVDUsage : U32 {
@@ -87,14 +87,14 @@ class glGenericVertexData : public GenericVertexData {
     void create(U8 numBuffers = 1, U8 numQueries = 1);
     U32 getFeedbackPrimitiveCount(U8 queryID);
 
-    void setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream);
+    void setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream, const vectorImpl<U32>& indices);
     void updateIndexBuffer(const vectorImpl<U32>& indices);
 
     void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                   bool useRingBuffer, void* data, bool dynamic, bool stream,
+                   bool useRingBuffer, bufferPtr data, bool dynamic, bool stream,
                    bool persistentMapped = false);
 
-    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,  void* data);
+    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, bufferPtr data);
 
     void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount);
 
@@ -110,7 +110,7 @@ class glGenericVertexData : public GenericVertexData {
     void setAttributeInternal(AttributeDescriptor& descriptor);
 
     bool isFeedbackBuffer(U32 index);
-    U32 getBindPoint(U32 bufferHandle);
+    U32 feedbackBindPoint(U32 buffer);
 
     void incQueryQueue() override;
 
@@ -122,17 +122,12 @@ class glGenericVertexData : public GenericVertexData {
     GLenum _indexBufferUsage;
     GLuint _transformFeedback;
     GLuint _numQueries;
-    bool* _bufferSet;
-    bool* _bufferIsRing;
-    GLuint* _elementCount;
-    size_t* _elementSize;
     GLuint* _prevResult;
     std::array<GLuint*, 2> _feedbackQueries;
     std::array<bool*, 2> _resultAvailable;
     GLuint _currentWriteQuery;
     GLuint _currentReadQuery;
-    vectorImpl<U32> _fdbkBindPoints;
-    vectorImpl<glBufferImpl*> _bufferObjects;
+    vectorImpl<glGenericBuffer*> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
 
     static hashMapImpl<GLuint, BufferBindConfig> _bindConfigs;

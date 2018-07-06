@@ -59,6 +59,5 @@ void main(){
     float d = texture(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw)).r - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 200.0 * d), 2.0);
     colour.a *= max(0.1, 1.0 - pow(softness, 2.0));
-
     normal = vec3(0.0, 0.0, 1.0);
 }

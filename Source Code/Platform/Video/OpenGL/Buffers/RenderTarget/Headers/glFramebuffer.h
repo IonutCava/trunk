@@ -76,7 +76,7 @@ class glFramebuffer : public RenderTarget {
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,
                   GFXDataFormat dataType,
-                  void* outData) override;
+                  bufferPtr outData) override;
 
     void blitFrom(RenderTarget* inputFB,
                   bool blitColour = true,

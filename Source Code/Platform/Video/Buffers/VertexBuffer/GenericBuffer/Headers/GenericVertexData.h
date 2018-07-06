@@ -49,7 +49,12 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     GenericVertexData(GFXDevice& context, const U32 ringBufferLength);
     virtual ~GenericVertexData();
 
-    virtual void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) = 0;
+    inline void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) {
+        vectorImpl<U32> indices;
+        setIndexBuffer(indicesCount, dynamic, stream);
+    }
+
+    virtual void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream, const vectorImpl<U32>& indices) = 0;
     virtual void updateIndexBuffer(const vectorImpl<U32>& indices) = 0;
     virtual void create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
     virtual void setFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
@@ -60,11 +65,11 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     /// approach and
     /// offset the reading and writing to multiple copies of the data
     virtual void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                           bool useRingBuffer, void* data, bool dynamic, bool stream,
+                           bool useRingBuffer, bufferPtr data, bool dynamic, bool stream,
                            bool persistentMapped = false) = 0;
 
     virtual void updateBuffer(U32 buffer, U32 elementCount,
-                              U32 elementCountOffset, void* data) = 0;
+                              U32 elementCountOffset, bufferPtr data) = 0;
 
     virtual void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                          size_t elementCount) = 0;
@@ -74,13 +79,13 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     virtual void incQueryQueue() = 0;
 
     void toggleDoubleBufferedQueries(const bool state);
-    AttributeDescriptor& getDrawAttribDescriptor(U32 attribIndex);
-    AttributeDescriptor& getFdbkAttribDescriptor(U32 attribIndex);
+    AttributeDescriptor& attribDescriptor(U32 attribIndex);
+    AttributeDescriptor& fdbkAttribDescriptor(U32 attribIndex);
 
    protected:
     typedef hashMapImpl<U32, AttributeDescriptor> attributeMap;
     bool _doubleBufferedQuery;
-    vectorImpl<U32> _feedbackBuffers;
+    vectorImpl<std::pair<U32 /*buffer*/, U32/*bind point*/>> _feedbackBuffers;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
 };
