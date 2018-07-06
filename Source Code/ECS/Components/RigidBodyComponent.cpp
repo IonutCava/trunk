@@ -9,7 +9,7 @@ namespace Divide {
         : SGNComponent(parentSGN),
           _physicsCollisionGroup(physicsGroup)
     {
-        _rigidBody.reset(context.createRigidActor(parentSGN));
+        _rigidBody.reset(context.createRigidActor(parentSGN, *this));
     }
 
     RigidBodyComponent::~RigidBodyComponent()

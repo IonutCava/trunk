@@ -180,8 +180,8 @@ void DefaultScene::loadScene(I64 btnGUID) {
     for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         if (btn->getGUID() != btnGUID) {
-            btn->setActive(false);
             btn->setVisible(false);
+            btn->setActive(false);
         }
     }
 }

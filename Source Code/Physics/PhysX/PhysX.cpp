@@ -301,7 +301,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     PhysXSceneInterface* targetScene =  dynamic_cast<PhysXSceneInterface*>(_targetScene);
     RigidBodyComponent* nodePhysics = node.get<RigidBodyComponent>();
 
-    PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName());
+    PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName(), *nodePhysics);
     assert(tempActor != nullptr);
     tempActor->setParent(nodePhysics);
 
@@ -365,12 +365,9 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
 };
 */
 
-PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode& node)
+PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp)
 {
-    RigidBodyComponent* pComp = node.get<RigidBodyComponent>();
-    assert(pComp != nullptr);
-
-    PhysXActor* newActor = new PhysXActor(*pComp);
+    PhysXActor* newActor = new PhysXActor(parentComp);
 
     // get node Geometry
     // create Shape from Geometry

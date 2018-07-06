@@ -66,7 +66,7 @@ public:
 
     PhysicsSceneInterface* NewSceneInterface(Scene& scene)  override;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
+    PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) override;
 
     inline PhysicsAPIWrapper& getImpl() { assert(_api != nullptr); return *_api; }
     inline const PhysicsAPIWrapper& getImpl() const { assert(_api != nullptr); return *_api; }

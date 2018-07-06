@@ -54,6 +54,7 @@ class PhysicsSceneInterface;
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 enum class ErrorCode;
+class RigidBodyComponent;
 
 class NOINITVTABLE PhysicsAPIWrapper {
    protected:
@@ -68,7 +69,7 @@ class NOINITVTABLE PhysicsAPIWrapper {
 
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
 
-    virtual PhysicsAsset* createRigidActor(const SceneGraphNode& node) = 0;
+    virtual PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) = 0;
 };
 
 };  // namespace Divide
