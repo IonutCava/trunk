@@ -63,8 +63,7 @@ class Mesh : public Object3D {
                   size_t descriptorHash,
                   const stringImpl& name,
                   const stringImpl& resourceName,
-                  const stringImpl& resourceLocation,
-                  ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
+                  const stringImpl& resourceLocation);
 
     virtual ~Mesh();
 

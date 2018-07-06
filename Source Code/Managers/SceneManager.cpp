@@ -544,125 +544,110 @@ SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCull
 
     RenderPassCuller::VisibleNodeList waterNodes;
     _tempNodesCache.resize(0);
-    _tempNodesCache.insert(std::begin(_tempNodesCache), std::cbegin(nodeCache), std::cend(nodeCache));
+    _tempNodesCache.insert(eastl::begin(_tempNodesCache), eastl::cbegin(nodeCache), eastl::cend(nodeCache));
 
     // Cull nodes that are not valid reflection targets
-    _tempNodesCache.erase(std::remove_if(std::begin(_tempNodesCache),
-                                         std::end(_tempNodesCache),
-                                         cullingFunction),
-                                         std::end(_tempNodesCache));
+    _tempNodesCache.erase(eastl::remove_if(eastl::begin(_tempNodesCache),
+                                          eastl::end(_tempNodesCache),
+                                          cullingFunction),
+                                          eastl::end(_tempNodesCache));
 
     // Sort the nodes from front to back
-    std::sort(std::begin(_tempNodesCache),
-              std::end(_tempNodesCache),
-              [](const RenderPassCuller::VisibleNode& a, const RenderPassCuller::VisibleNode& b) -> bool {
-                return a._distanceToCameraSq < b._distanceToCameraSq;
-              });
+    eastl::sort(eastl::begin(_tempNodesCache),
+                eastl::end(_tempNodesCache),
+                [](const RenderPassCuller::VisibleNode& a, const RenderPassCuller::VisibleNode& b) -> bool {
+                    return a._distanceToCameraSq < b._distanceToCameraSq;
+                });
 
     return _tempNodesCache;
 }
 
+// Enable just for water nodes for now (we should flag mirrors somehow):
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
+    STUBBED("ToDo: Currently, only water nodes have reflections. Add a specularity based cull function! -Ionut")
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node._node;
-        SceneNodeType type = sgnNode->getNode()->getType();
-        if (type != SceneNodeType::TYPE_OBJECT3D &&
-            type != SceneNodeType::TYPE_WATER) {
-            return true;
-        } else {
-            if (type == SceneNodeType::TYPE_OBJECT3D) {
-                if (sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT) {
-                    return true;
-                } else {
-                    if (sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::TERRAIN) {
-                        return true;
-                    }
-
-                    return sgnNode->get<RenderingComponent>()->getMaterialInstance() == nullptr;
-                }
-            }
-        }
-        // Enable just for water nodes for now (we should flag mirrors somehow):
-        return type != SceneNodeType::TYPE_WATER;
+        return  node._node->getNode()->getType() != SceneNodeType::TYPE_WATER;
     };
 
     return getSortedCulledNodes(cullingFunction);
 }
 
+// Enable just for water nodes for now (we should flag mirrors somehow):
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes() {
+    STUBBED("ToDo: Currently, only water nodes have refractions. Add a specularity based cull function! -Ionut")
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node._node;
-        SceneNodeType type = sgnNode->getNode()->getType();
-        if (type != SceneNodeType::TYPE_OBJECT3D && type != SceneNodeType::TYPE_WATER) {
-            return true;
-        } else {
-            if (type == SceneNodeType::TYPE_OBJECT3D) {
-                return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
-            }
-        }
-        //if (not refractive) {
-        //    return true;
-        //}
-        // Enable just for water nodes for now:
-        return type != SceneNodeType::TYPE_WATER;
+        return  node._node->getNode()->getType() != SceneNodeType::TYPE_WATER;
     };
 
     return getSortedCulledNodes(cullingFunction);
 }
 
+namespace {
+    // Return true if the node type is capable of generating draw commands
+    bool generatesDrawCommands(SceneNodeType nodeType) {
+        STUBBED("ToDo: Use some additional flag type for these! -Ionut");
+        return nodeType != SceneNodeType::TYPE_ROOT &&
+               nodeType != SceneNodeType::TYPE_TRANSFORM &&
+               nodeType != SceneNodeType::TYPE_LIGHT &&
+               nodeType != SceneNodeType::TYPE_TRIGGER;
+    }
+
+    // Return true if the node can't be drawn but contains command generating children but 
+    bool isParentNode(const RenderPassCuller::VisibleNode& node) {
+        const SceneGraphNode* sgn = node._node;
+        const SceneNode_ptr& sceneNode = sgn->getNode();
+        if (sceneNode->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            return sgn->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::MESH;
+        }
+        return false;
+    }
+
+    // Return true if this node should be removed from a shadow pass
+    bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
+        if (stage == RenderStage::SHADOW) {
+            RenderingComponent* rComp = node.get<RenderingComponent>();
+            assert(rComp != nullptr);
+            return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
+        }
+
+        return false;
+    }
+};
 
 const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const RenderStagePass& stage) {
     Scene& activeScene = getActiveScene();
 
-    auto cullingFunction = [](const SceneGraphNode& node) -> bool {
-        if (node.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType type = node.getNode<Object3D>()->getObjectType();
-            return (type == Object3D::ObjectType::FLYWEIGHT);
+    RenderStage renderStage = stage.stage();
+
+    RenderPassCuller::CullParams cullParams;
+    cullParams._context = &activeScene.context();
+    cullParams._sceneGraph = &activeScene.sceneGraph();
+    cullParams._sceneState = &activeScene.state();
+    cullParams._stage = renderStage;
+    cullParams._camera = playerCamera();
+
+    // Cull everything except 3D objects
+    cullParams._cullFunction = [renderStage](const SceneGraphNode& node) -> bool {
+        if (generatesDrawCommands(node.getNode()->getType())) {
+            // only checks nodes and can return true for a shadow stage
+            return doesNotCastShadows(renderStage, node);
         }
 
-        return node.getNode()->getType() == SceneNodeType::TYPE_TRANSFORM;
+        return true;
     };
 
-    auto meshCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node._node;
-        if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
-            return (type == Object3D::ObjectType::MESH);
-        }
-        return false;
-    };
-
-    auto shadowCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneNodeType type = node._node->getNode()->getType();
-        return type == SceneNodeType::TYPE_LIGHT || type == SceneNodeType::TYPE_TRIGGER;
-    };
-
-    _renderPassCuller->frustumCull(activeScene.context(),
-                                   activeScene.sceneGraph(),
-                                   activeScene.state(),
-                                   stage.stage(),
-                                   cullingFunction,
-                                   *playerCamera());
-    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage.stage());
-
-    visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
-                                      std::end(visibleNodes),
-                                      meshCullingFunction),
-                       std::end(visibleNodes));
-
-    if (stage.stage() == RenderStage::SHADOW) {
-        visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
-                                          std::end(visibleNodes),
-                                          shadowCullingFunction),
-                           std::end(visibleNodes));
-        
-    }
-
+    // Some nodes don't need to be rendered because they are an aggregate of their children (e.g. Mesh <-> SubMesh)
+    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->frustumCull(cullParams);
+    visibleNodes.erase(eastl::remove_if(eastl::begin(visibleNodes),
+                                        eastl::end(visibleNodes),
+                                        [](const RenderPassCuller::VisibleNode& node) -> bool {
+                                            return isParentNode(node);
+                                        }),
+                       eastl::end(visibleNodes));
     return visibleNodes;
 }
 
-RenderPassCuller::VisibleNodeList& 
-SceneManager::getVisibleNodesCache(RenderStage stage) {
+RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStage stage) {
     return _renderPassCuller->getNodeCache(stage);
 }
 
@@ -694,9 +679,7 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
     gfx.buildDrawCommands(sortedQueues, renderState, bufferData, *playerCamera(), refreshNodeData);
 }
 
-bool SceneManager::populateRenderQueue(const Camera& camera,
-                                       bool doCulling,
-                                       U32 passIndex) {
+bool SceneManager::populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex) {
 
     const RenderStagePass& stage = _platformContext->gfx().getRenderStage();
 

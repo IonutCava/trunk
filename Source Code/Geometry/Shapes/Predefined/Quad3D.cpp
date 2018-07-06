@@ -13,8 +13,7 @@ Quad3D::Quad3D(GFXDevice& context,
                 parentCache,
                 descriptorHash,
                 name,
-                ObjectType::QUAD_3D,
-                ObjectFlag::OBJECT_FLAG_NONE)
+                ObjectType::QUAD_3D)
 {
     U16 indices[] = { 2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3 };
 

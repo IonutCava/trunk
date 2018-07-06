@@ -182,9 +182,6 @@
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>

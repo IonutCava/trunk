@@ -11,9 +11,10 @@
 namespace Divide {
 
 SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
-    : SubMesh(context, parentCache, descriptorHash, name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
+    : SubMesh(context, parentCache, descriptorHash, name),
      _parentAnimatorPtr(nullptr)
 {
+    Object3D::setObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 }
 
 SkinnedSubMesh::~SkinnedSubMesh()

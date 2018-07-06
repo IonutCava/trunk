@@ -10,7 +10,6 @@
 #include "Geometry/Shapes/Predefined/Headers/Box3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
-#include "Geometry/Shapes/Predefined/Headers/Text3D.h"
 
 namespace Divide {
 

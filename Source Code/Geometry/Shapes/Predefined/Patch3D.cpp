@@ -13,8 +13,7 @@ Patch3D::Patch3D(GFXDevice& context,
                 parentCache,
                 descriptorHash,
                 name,
-                ObjectType::PATCH_3D,
-                ObjectFlag::OBJECT_FLAG_NONE),
+                ObjectType::PATCH_3D),
     _dimensions(dim)
 
 {

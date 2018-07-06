@@ -16,7 +16,7 @@ SubMesh::SubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descript
                descriptorHash,
                name,
                ObjectType::SUBMESH,
-               to_U32(flag) | to_base(ObjectFlag::OBJECT_FLAG_NO_VB)),
+               ObjectFlag::OBJECT_FLAG_NO_VB),
       _visibleToNetwork(true),
       _render(true),
       _ID(0),
@@ -29,8 +29,8 @@ SubMesh::~SubMesh()
 }
 
 void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
-                                     const RenderStagePass& renderStagePass,
-                                     RenderPackage& pkgInOut) {
+                                const RenderStagePass& renderStagePass,
+                                RenderPackage& pkgInOut) {
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLES,
         getGeometryVB()->getPartitionOffset(_geometryPartitionID),

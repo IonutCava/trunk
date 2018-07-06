@@ -19,7 +19,7 @@
 namespace Divide {
 
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
-    : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
+    : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _plane(nullptr),
       _shaderData(nullptr),
       _drawBBoxes(false),

@@ -14,20 +14,6 @@ namespace Divide {
 
 namespace {
     static const U32 g_nodesPerCullingPartition = 16u;
-
-    template <typename T>
-    constexpr T&&
-        wrap_lval(typename std::remove_reference<T>::type &&obj) noexcept
-    {
-        return static_cast<T&&>(obj);
-    }
-
-    template <typename T>
-    constexpr std::reference_wrapper<typename std::remove_reference<T>::type>
-        wrap_lval(typename std::remove_reference<T>::type &obj) noexcept
-    {
-        return std::ref(obj);
-    }
 };
 
 RenderPassCuller::RenderPassCuller() {
@@ -60,29 +46,34 @@ bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
     const VisibleNodeList& cache = getNodeCache(stage);
 
     VisibleNodeList::const_iterator it;
-    it = std::find_if(std::cbegin(cache), std::cend(cache),
+    it = eastl::find_if(eastl::cbegin(cache), eastl::cend(cache),
         [GUID](VisibleNode node) {
             const SceneGraphNode* nodePtr = node._node;
             return (nodePtr != nullptr && nodePtr->getGUID() == GUID);
         });
 
-    return it != std::cend(cache);
+    return it != eastl::cend(cache);
 }
 
-void RenderPassCuller::frustumCull(PlatformContext& context,
-                                   SceneGraph& sceneGraph,
-                                   const SceneState& sceneState,
-                                   RenderStage stage,
-                                   const CullingFunction& cullingFunction,
-                                   const Camera& camera)
+RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 {
+    RenderStage stage = params._stage;
+    VisibleNodeList& nodeCache = getNodeCache(stage);
+    if (!params._context || !params._sceneGraph || !params._camera || !params._sceneState) {
+        return nodeCache;
+    }
+
+    const SceneState& sceneState = *params._sceneState;
+    const SceneGraph& sceneGraph = *params._sceneGraph;
+    const Camera& camera = *params._camera;
+
     const SceneRenderState& renderState = sceneState.renderState();
     if (renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
-        _cullingFunction[to_U32(stage)] = cullingFunction;
+        _cullingFunction[to_U32(stage)] = params._cullFunction;
 
         F32 cullMaxDistance = renderState.generalVisibility();
 
-        SceneGraphNode& root = sceneGraph.getRoot();
+        const SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
         vector<VisibleNodeList>& nodes = _perThreadNodeList[to_U32(stage)];
         nodes.resize(childCount);
@@ -94,17 +85,18 @@ void RenderPassCuller::frustumCull(PlatformContext& context,
             root.forEachChild(perChildCull, start, end);
         };
 
-        parallel_for(context,
+        parallel_for(*params._context,
                      cullIterFunction,
                      childCount,
                      g_nodesPerCullingPartition);
 
-        VisibleNodeList& nodeCache = getNodeCache(stage);
         nodeCache.resize(0);
         for (const VisibleNodeList& nodeListEntry : nodes) {
-            nodeCache.insert(std::end(nodeCache), std::cbegin(nodeListEntry), std::cend(nodeListEntry));
+            nodeCache.insert(eastl::end(nodeCache), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
         }
     }
+
+    return nodeCache;
 }
 
 /// This method performs the visibility check on the given node and all of its
@@ -122,13 +114,6 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     }
     // Early out for inactive nodes
     if (!currentNode.isActive()) {
-        return;
-    }
-
-    // Early out for non-shadow casters during shadow pass
-    if (stage == RenderStage::SHADOW && !(currentNode.get<RenderingComponent>() &&
-                                          currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS)))
-    {
         return;
     }
 

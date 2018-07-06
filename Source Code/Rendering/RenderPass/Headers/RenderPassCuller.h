@@ -53,16 +53,25 @@ class vec3;
 
 class RenderPassCuller {
    public:
+    //Should return true if the node is not inside the frustum
+    typedef std::function<bool(const SceneGraphNode&)> CullingFunction;
+
     // draw order, node pointer
     struct VisibleNode {
         F32 _distanceToCameraSq = 0.0f;
         const SceneGraphNode* _node = nullptr;
     };
 
-    typedef vector<VisibleNode> VisibleNodeList;
+    typedef vectorEASTL<VisibleNode> VisibleNodeList;
 
-    //Should return true if the node is not inside the frustum
-    typedef std::function<bool(const SceneGraphNode&)> CullingFunction;
+    struct CullParams {
+        PlatformContext* _context = nullptr;
+        SceneGraph* _sceneGraph = nullptr;
+        Camera* _camera = nullptr;
+        SceneState* _sceneState = nullptr;
+        RenderStage _stage = RenderStage::COUNT;
+        CullingFunction _cullFunction;
+    };
 
    public:
     RenderPassCuller();
@@ -74,12 +83,7 @@ class RenderPassCuller {
     VisibleNodeList& getNodeCache(RenderStage stage);
     const VisibleNodeList& getNodeCache(RenderStage stage) const;
 
-    void frustumCull(PlatformContext& context,
-                     SceneGraph& sceneGraph,
-                     const SceneState& sceneState,
-                     RenderStage stage,
-                     const CullingFunction& cullingFunction,
-                     const Camera& camera);
+    RenderPassCuller::VisibleNodeList& frustumCull(const CullParams& params);
 
     bool wasNodeInView(I64 GUID, RenderStage stage) const;
 

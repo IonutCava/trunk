@@ -339,11 +339,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         }
 
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType crtType =
-                static_cast<Object3D*>(sn.get())->getObjectType();
-            if (crtType == Object3D::ObjectType::TEXT_3D ||
-                crtType == Object3D::ObjectType::MESH ||
-                crtType == Object3D::ObjectType::FLYWEIGHT) {
+            Object3D::ObjectType crtType = static_cast<Object3D*>(sn.get())->getObjectType();
+            if (crtType == Object3D::ObjectType::MESH) {
                 goto next;
             }
         }

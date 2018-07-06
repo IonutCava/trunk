@@ -25,7 +25,6 @@
 #include "Geometry/Shapes/Predefined/Headers/Box3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
-#include "Geometry/Shapes/Predefined/Headers/Text3D.h"
 
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
@@ -348,15 +347,8 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
         static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
         static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
         static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
-    } else if (data.ModelName.compare("Text3D") == 0) {
-        /// set font file
-        item.setResourceLocation(data.data3);
-        item.setPropertyList(data.data2);
-        thisObj = CreateResource<Text3D>(_resCache, item);
-        static_cast<Text3D*>(thisObj.get())->setWidth(data.data);
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")),
-                         data.ModelName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), data.ModelName.c_str());
         return false;
     }
     STUBBED("Load material from XML disabled for primitives! - Ionut")

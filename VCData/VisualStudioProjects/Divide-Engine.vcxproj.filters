@@ -474,9 +474,6 @@
     <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Sphere3D.cpp">
       <Filter>Geometry\Shapes\Predefined</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Text3D.cpp">
-      <Filter>Geometry\Shapes\Predefined</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\API.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
@@ -882,9 +879,6 @@
       <Filter>Geometry\Shapes\Predefined\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Sphere3D.h">
-      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Text3D.h">
       <Filter>Geometry\Shapes\Predefined\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContextComponent.h">

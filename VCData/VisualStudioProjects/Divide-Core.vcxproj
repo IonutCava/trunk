@@ -79,9 +79,6 @@
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
     </ClCompile>

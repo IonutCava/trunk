@@ -52,8 +52,6 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descri
         case ObjectType::TERRAIN :
             _rigidBodyShape = RigidBodyShape::SHAPE_HEIGHTFIELD;
             break;
-        case ObjectType::TEXT_3D :
-            _rigidBodyShape = RigidBodyShape::SHAPE_TRIANGLEMESH;
         case ObjectType::MESH: {
             STUBBED("ToDo: Add capsule and convex mesh support for 3D Objects! -Ionut");
             //if (true) { // general meshes? Maybe have a concave flag?
@@ -80,8 +78,7 @@ bool Object3D::isPrimitive() {
     return _geometryType == ObjectType::BOX_3D ||
            _geometryType == ObjectType::QUAD_3D ||
            _geometryType == ObjectType::PATCH_3D ||
-           _geometryType == ObjectType::SPHERE_3D ||
-           _geometryType == ObjectType::TEXT_3D;
+           _geometryType == ObjectType::SPHERE_3D;
 }
 
 void Object3D::postLoad(SceneGraphNode& sgn) {

@@ -70,7 +70,7 @@ class SubMesh : public Object3D {
                      ResourceCache& parentCache,
                      size_t descriptorHash,
                      const stringImpl& name,
-                     ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
+                     ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NO_VB);
 
     virtual ~SubMesh();
 

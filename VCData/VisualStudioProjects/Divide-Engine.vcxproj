@@ -380,7 +380,6 @@
     <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Patch3D.cpp" />
     <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Quad3D.cpp" />
     <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Sphere3D.cpp" />
-    <ClCompile Include="..\../Source Code/Geometry\Shapes\Predefined\Text3D.cpp" />
     <ClCompile Include="..\../Source Code/Geometry\Shapes\SkinnedSubMesh.cpp" />
     <ClCompile Include="..\../Source Code/Graphs\IntersectionRecord.cpp" />
     <ClCompile Include="..\../Source Code/Graphs\Octree.cpp" />
@@ -532,7 +531,6 @@
     <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Patch3D.h" />
     <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Quad3D.h" />
     <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Sphere3D.h" />
-    <ClInclude Include="..\../Source Code/Geometry\Shapes\Predefined\Headers\Text3D.h" />
     <ClInclude Include="..\../Source Code/Graphs\Headers\IntersectionRecord.h" />
     <ClInclude Include="..\../Source Code/Graphs\Headers\SceneNodeRenderState.h" />
     <ClInclude Include="..\../Source Code/Graphs\Headers\SGNRelationshipCache.h" />

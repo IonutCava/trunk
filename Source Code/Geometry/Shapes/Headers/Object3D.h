@@ -48,25 +48,21 @@ class Object3D : public SceneNode {
         BOX_3D = 1,
         QUAD_3D = 2,
         PATCH_3D = 3,
-        TEXT_3D = 4,
-        MESH = 5,
-        SUBMESH = 6,
-        TERRAIN = 7,
-        FLYWEIGHT = 8,
-        DECAL = 9,
+        MESH = 4,
+        SUBMESH = 5,
+        TERRAIN = 6,
+        DECAL = 7,
         COUNT
     };
 
     enum class ObjectFlag : U8 {
-        OBJECT_FLAG_NONE = toBit(1),
-        OBJECT_FLAG_SKINNED = toBit(2),
-        OBJECT_FLAG_NO_VB = toBit(3),
-        COUNT
+        OBJECT_FLAG_SKINNED = toBit(1),
+        OBJECT_FLAG_NO_VB = toBit(2)
     };
 
 
+    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectType type, U32 flagMask = 0);
     explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectType type, ObjectFlag flag);
-    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectType type, U32 flagMask);
     explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag);
     explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
 
