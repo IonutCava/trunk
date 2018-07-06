@@ -18,7 +18,7 @@
 #ifndef _TERRAIN_CHUNK_H
 #define _TERRAIN_CHUNK_H
 
-#include "resource.h"
+#include "core.h"
 #include "Hardware/Video/GFXDevice.h"
 
 using namespace std;

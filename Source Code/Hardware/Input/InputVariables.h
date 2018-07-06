@@ -18,7 +18,7 @@
 #ifndef _INPUT_VARIABLES_H_
 #define _INPUT_VARIABLES_H_
 
-#include "resource.h"
+#include "core.h"
 #include "EventHandler.h"
 
 //////////// Variable classes ////////////////////////////////////////////////////////

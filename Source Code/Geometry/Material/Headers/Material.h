@@ -18,8 +18,8 @@
 #ifndef _MATERIAL_H_
 #define _MATERIAL_H_
 
-#include "resource.h"
-#include "Core/Headers/BaseClasses.h"
+#include "core.h"
+#include "Core/Resources/Headers/Resource.h"
 
 
 class Texture;

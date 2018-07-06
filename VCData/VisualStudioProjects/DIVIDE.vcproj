@@ -808,10 +808,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Core\Headers\BaseClasses.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\Source Code\Core\Headers\Console.h"
 					>
 				</File>
@@ -860,6 +856,102 @@
 					</File>
 					<File
 						RelativePath="..\..\Source Code\Core\Math\Headers\Transform.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Resources"
+				>
+				<File
+					RelativePath="..\..\Source Code\Core\Resources\Resource.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Core\Resources\ResourceCache.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\Headers\Resource.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\Headers\ResourceCache.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\Headers\ResourceDescriptor.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\Headers\ResourceLoader.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="ConcreteLoaders"
+					>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainDescriptorLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp"
 						>
 					</File>
 				</Filter>
@@ -1436,11 +1528,11 @@
 				Name="Platform"
 				>
 				<File
-					RelativePath="..\..\Source Code\Hardware\Platform\PlatformDefines.h"
+					RelativePath="..\..\Source Code\Hardware\Platform\Mutex.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Hardware\Platform\Threading.h"
+					RelativePath="..\..\Source Code\Hardware\Platform\PlatformDefines.h"
 					>
 				</File>
 			</Filter>
@@ -1453,6 +1545,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Managers\BaseCache.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Managers\CameraManager.cpp"
 				>
 			</File>
@@ -1462,14 +1558,6 @@
 			</File>
 			<File
 				RelativePath="..\..\Source Code\Managers\LightManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Managers\Manager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Managers\ResourceManager.cpp"
 				>
 			</File>
 			<File
@@ -1488,6 +1576,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\Managers\Headers\BaseCache.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\Managers\Headers\CameraManager.h"
 					>
 				</File>
@@ -1497,14 +1589,6 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Managers\Headers\LightManager.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Managers\Headers\Manager.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Managers\Headers\ResourceManager.h"
 					>
 				</File>
 				<File
@@ -2126,15 +2210,15 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\Source Code\core.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\Source Code\main.cpp"
 			>
 		</File>
 		<File
 			RelativePath="..\..\Source Code\readme.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\Source Code\resource.h"
 			>
 		</File>
 		<File

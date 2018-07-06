@@ -15,7 +15,7 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "resource.h"
+#include "core.h"
 #ifndef _LIGHT_MANAGER_H_
 #define _LIGHT_MANAGER_H_
 

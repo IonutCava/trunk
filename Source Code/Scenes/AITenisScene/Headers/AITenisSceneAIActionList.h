@@ -22,8 +22,8 @@
 enum AI_MSG{
 	REQUEST_DISTANCE_TO_TARGET = 0,
 	RECEIVE_DISTANCE_TO_TARGET = 1,
-	LOVESTE_MINGEA = 2,
-	NU_LOVI_MINGEA = 3
+	ATTACK_BALL = 2,
+	DONT_ATTACK_BALL = 3
 };
 
 class AITenisSceneAIActionList : public ActionList{
@@ -37,13 +37,13 @@ public:
 
 private:
 	void updatePositions();
-	F32 distanceToBall(const vec3<F32>& pozitieEntitate, const vec3<F32> pozitieMinge);
+	F32 distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition);
 
 private:
 	SceneGraphNode* _node;
 	SceneGraphNode* _target;
-	vec3<F32> _pozitieMinge, _pozitieMingeAnterioara, _pozitieEntitate, _pozitieInitiala;
-	bool _atacaMingea, _mingeSpreEchipa2,_stopJoc;
+	vec3<F32> _ballPosition, _prevBallPosition, _entityPosition, _initialPosition;
+	bool _attackBall, _ballToTeam2,_gameStop;
 	U16 _tickCount;
 };
 

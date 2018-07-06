@@ -1,7 +1,7 @@
 #ifndef _PRE_RENDER_STAGE_H_
 #define _PRE_RENDER_STAGE_H_
 
-#include "resource.h"
+#include "core.h"
 
 //PreRenderStage is a class specialized in applying certain shaders and generating FBO results
 //

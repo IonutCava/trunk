@@ -18,7 +18,7 @@
 #ifndef _TRIGGER_H_
 #define _TRIGGER_H_
 
-#include "resource.h"
+#include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
 class Unit;

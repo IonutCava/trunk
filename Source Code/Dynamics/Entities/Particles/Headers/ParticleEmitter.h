@@ -18,7 +18,7 @@
 #ifndef _PARTICLE_EMITTER_H_
 #define _PARTICLE_EMITTER_H_
 
-#include "resource.h"
+#include "core.h"
 #include "Particle.h"
 #include "Graphs/Headers/SceneNode.h"
 

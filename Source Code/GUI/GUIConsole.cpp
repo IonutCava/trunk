@@ -1,7 +1,7 @@
 #include "Headers/GUIConsole.h"
 #include "Core/Headers/Application.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/RenderStateBlock.h"
 
 GUIConsole::GUIConsole() : GUIElement() , _consoleOpen(false), _animationRunning(false), _animationDuration(750.0f) {

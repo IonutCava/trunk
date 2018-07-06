@@ -19,7 +19,7 @@
 #define _WRAPPER_GL_H_
 
 #include "../RenderAPIWrapper.h"
-#include "resource.h"
+#include "core.h"
 #include "glFrameBufferObject.h"
 #include "glVertexBufferObject.h"
 #include "glPixelBufferObject.h"

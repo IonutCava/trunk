@@ -18,7 +18,7 @@
 #ifndef _APPLICATION_H_
 #define _APPLICATION_H_
 
-#include "resource.h"
+#include "core.h"
 
 class SceneManager;
 class GUI;

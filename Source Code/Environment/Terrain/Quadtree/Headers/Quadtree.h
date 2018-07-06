@@ -18,7 +18,7 @@
 #ifndef _QUAD_TREE
 #define _QUAD_TREE
 
-#include "resource.h"
+#include "core.h"
 
 class QuadtreeNode;
 class BoundingBox;

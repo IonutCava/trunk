@@ -19,7 +19,7 @@
 #define _VERTEX_BUFFER_OBJECT_H
 
 #include <iostream>
-#include "resource.h"
+#include "core.h"
 
 class ShaderProgram;
 /// Vertex Buffer Object interface class  to allow API-independent implementation of data

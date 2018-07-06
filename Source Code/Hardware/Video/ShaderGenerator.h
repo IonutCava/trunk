@@ -18,7 +18,7 @@
 #ifndef SHADER_GENERATOR_H_
 #define SHADER_GENERATOR_H_
 
-#include "resource.h"
+#include "core.h"
 struct ShaderStageDescriptor{
 	enum SHADER_STAGE{
 		SHADER_NUM_LIGHTS = 0,

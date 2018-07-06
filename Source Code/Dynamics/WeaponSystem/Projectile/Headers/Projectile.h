@@ -17,7 +17,7 @@
 
 #ifndef _PROJECTILE_H_
 #define _PROJECTILE_H_
-#include "resource.h" 
+#include "core.h" 
 
 /// Defines a projectile object (usually bullets or rockets)
 class Projectile {

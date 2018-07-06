@@ -1,7 +1,7 @@
 #ifndef _CONSOLE_H_
 #define _CONSOLE_H_
 
-#include "resource.h"
+#include "core.h"
 
 DEFINE_SINGLETON(Console)
 

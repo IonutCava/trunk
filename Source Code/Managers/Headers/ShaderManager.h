@@ -17,7 +17,7 @@
 
 #ifndef SHADER_MANAGER_H_
 #define SHADER_MANAGER_H_
-#include "resource.h"
+#include "core.h"
 
 class Shader;
 class ShaderProgram;

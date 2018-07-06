@@ -1,7 +1,7 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 
-#include "resource.h"
+#include "core.h"
 #include "WorldPacket.h"
 #include "OPCodes.h"
 

@@ -31,7 +31,7 @@ across the network and one that disables rendering alltogheter;
 Note: all transformations applied to the mesh affect every submesh that compose the mesh. 
 */
 
-#include "resource.h"
+#include "core.h"
 #include "Object3D.h"
 #include <assimp/anim.h>
 

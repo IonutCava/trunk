@@ -1,5 +1,5 @@
 #include "glResources.h"
-#include "resource.h"
+#include "core.h"
 #include "glVertexBufferObject.h"
 #include "Hardware/Video/GFXDevice.h"
 

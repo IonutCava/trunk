@@ -18,7 +18,7 @@
 #ifndef _UNIT_H_
 #define _UNIT_H_
 
-#include "resource.h"
+#include "core.h"
 
 class SceneGraphNode;
 ///Unit interface

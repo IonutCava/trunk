@@ -1,5 +1,4 @@
 #include "Headers/SceneGraphNode.h"
-#include "Core/Headers/BaseClasses.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Rendering/Lighting/Headers/Light.h"

@@ -15,8 +15,8 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RESOURCE_H_
-#define RESOURCE_H_
+#ifndef CORE_H_
+#define CORE_H_
 
 #ifdef HIDE_DEBUG_CONSOLE
 	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
@@ -28,7 +28,17 @@
 
 #pragma warning(disable:4244)
 #pragma warning(disable:4996) ///< strcpy
- 
+
+#define NEW_PARAM (__FILE__, __LINE__)
+#define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
+#define NEW_DECL , char* zFile, int nLine
+
+void* operator new(size_t t ,char* zFile, int nLine);
+void operator delete(void * pxData ,char* zFile, int nLine);
+
+#define New new NEW_PARAM
+
+
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -87,19 +97,11 @@
 
 #include <boost/function.hpp>                  //For callbacks and delegates
 #include "Hardware/Platform/PlatformDefines.h" //For data types
-#include "Hardware/Platform/Threading.h"       //For multi-threading
+#include "Hardware/Platform/Mutex.h"           //For multi-threading
 #include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
 #include "Rendering/Headers/Framerate.h"       //For time management
 #include "Core/Headers/Console.h"              //For printing to the standard output
 
-#define NEW_PARAM (__FILE__, __LINE__)
-#define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
-#define NEW_DECL , char* zFile, int nLine
-
-void* operator new(size_t t ,char* zFile, int nLine);
-void operator delete(void * pxData ,char* zFile, int nLine);
-
-#define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
 #define GETTIME()   Framerate::getInstance().getElapsedTime()/1000

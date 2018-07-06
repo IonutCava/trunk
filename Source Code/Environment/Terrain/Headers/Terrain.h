@@ -20,18 +20,17 @@
 
 #include "Utility/Headers/BoundingBox.h"
 #include "Hardware/Video/FrameBufferObject.h"
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Graphs/Headers/SceneNode.h"
 
-class ShaderProgram;
-class Quadtree;
-class VertexBufferObject;
-class Quadtree;
-class TerrainDescriptor;
 class Quad3D;
-class Terrain : public SceneNode
-{
+class Quadtree;
+class ShaderProgram;
+class TerrainDescriptor;
+class VertexBufferObject;
+
+class Terrain : public SceneNode {
 public:
 
 	Terrain();

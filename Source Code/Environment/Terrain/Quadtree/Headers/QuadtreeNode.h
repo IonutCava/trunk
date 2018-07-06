@@ -18,7 +18,7 @@
 #ifndef _QUAD_TREE_NODE
 #define _QUAD_TREE_NODE
 
-#include "resource.h"
+#include "core.h"
 #include "Utility/Headers/BoundingBox.h"
 
 enum CHILD_POSITION{

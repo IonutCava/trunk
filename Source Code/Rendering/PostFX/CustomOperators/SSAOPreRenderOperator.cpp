@@ -1,6 +1,6 @@
 #include "Headers/SSAOPreRenderOperator.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h" 

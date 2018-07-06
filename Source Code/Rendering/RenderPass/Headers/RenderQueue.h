@@ -18,7 +18,7 @@
 #ifndef _RENDER_QUEUE_H_
 #define _RENDER_QUEUE_H_
 
-#include "resource.h"
+#include "core.h"
 class SceneGraphNode;
 
 struct RenderQueueItem{

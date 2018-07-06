@@ -20,7 +20,7 @@
 #ifndef UTIL_CRC_H_
 #define UTIL_CRC_H_
 
-#include "resource.h"
+#include "core.h"
 
 namespace Util {
 

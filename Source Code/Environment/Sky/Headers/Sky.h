@@ -18,7 +18,7 @@
 #ifndef _SKY_H
 #define _SKY_H
 
-#include "resource.h"
+#include "core.h"
 
 class Texture;
 class Sphere3D;

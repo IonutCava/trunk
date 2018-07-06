@@ -45,168 +45,165 @@ void AITenisScene::processEvents(F32 time){
 	}
 }
 
-void AITenisScene::reseteazaJoc(){
+void AITenisScene::resetGame(){
 	getEvents().clear();
-	_directieEchipa1SpreEchipa2 = true;
-	_directieAscendenta = true;
-	_atinsTerenEchipa1 = false;
-	_atinsTerenEchipa2 = false;
-	_pierdutEchipa1 = false;
-	_aplicaImpulsLateral = false;
-	_impulsLateral = 0;
+	_directionTeam1ToTeam2 = true;
+	_upwardsDirection = true;
+	_touchedTerrainTeam1 = false;
+	_touchedTerrainTeam2 = false;
+	_lostTeam1 = false;
+	_applySideImpulse = false;
+	_sideImpulseFactor = 0;
 	_ballPositionUpdate.lock();
-	_mingeSGN->getTransform()->setPosition(vec3<F32>(3.0f, 0.2f ,7.0f));
+	_ballSGN->getTransform()->setPosition(vec3<F32>(3.0f, 0.2f ,7.0f));
 	_ballPositionUpdate.unlock();
 }
 
-void AITenisScene::startJoc(){
+void AITenisScene::startGame(){
 
-	reseteazaJoc();
+	resetGame();
 
-	if(getEvents().empty()){//Maxim un singur eveniment
+	if(getEvents().empty()){///A maximum of 1 events allowed
 		Event_ptr jocNou(New Event(12,true,false,boost::bind(&AITenisScene::procesareJoc,this,rand() % 5,TYPE_INTEGER)));
 		addEvent(jocNou);
 	}
 }
 
 
-//Echipa 1: Player1 + Player2
-//Echipa 2: Player3 + Player4
+//Team 1: Player1 + Player2
+//Team 2: Player3 + Player4
 void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 
 	if(getEvents().empty()) return;
 	bool updated = false;
 	string mesaj;
 
-	//Shortcut catre nodurile din graph aferente agentilor
+	///Shortcut to the scene graph nodes containing our agents
 	SceneGraphNode* Player1 = _sceneGraph->findNode("Player1");
 	SceneGraphNode* Player2 = _sceneGraph->findNode("Player2");
 	SceneGraphNode* Player3 = _sceneGraph->findNode("Player3");
 	SceneGraphNode* Player4 = _sceneGraph->findNode("Player4");
 
 
-	//Validarea pointerilor
+	///Santy checks
 	assert(Player1);assert(Player2);assert(Player3);assert(Player4);
-	assert(_fileu);assert(_podea);assert(_mingeSGN);
+	assert(_net);assert(_floor);assert(_ballSGN);
 
-	//Memoram (prin copie. thread-safe) pozitia actuala a mingii
+	///Store by copy (thread-safe) current ball position
 	_ballPositionQuery.lock();
-	Transform* mingeT = _mingeSGN->getTransform();
-	vec3<F32> pozitieMinge = mingeT->getPosition();
+	Transform* ballTransform = _ballSGN->getTransform();
+	vec3<F32> ballPosition = ballTransform->getPosition();
 	_ballPositionQuery.unlock();
-	vec3<F32> pozitieFileu  = _fileu->getTransform()->getPosition();
-	//Mingea se deplaseaza de la Echipa 1 la Echipa 2?
-	_directieEchipa1SpreEchipa2 ? pozitieMinge.z -= 0.123f : pozitieMinge.z += 0.123f;
-	//Mingea se deplaseaza de jos in sus sau e in cadere?
-	_directieAscendenta ? pozitieMinge.y += 0.066f : pozitieMinge.y -= 0.066f;
-	//In cazul unui impul lateral, modificam si pozitia mingii deasemenea
-	if(_aplicaImpulsLateral){
-		pozitieMinge.x += _impulsLateral*0.025f;
+	vec3<F32> netPosition  = _net->getTransform()->getPosition();
+	///Is the ball traveling from team 1 to team 2?
+	_directionTeam1ToTeam2 ? ballPosition.z -= 0.123f : ballPosition.z += 0.123f;
+	///Is the ball traveling upwards or is it falling?
+	_upwardsDirection ? ballPosition.y += 0.066f : ballPosition.y -= 0.066f;
+	///In case of a side drift, update accordingly
+	if(_applySideImpulse){
+		ballPosition.x += _sideImpulseFactor*0.025f;
 	}
-	//Dupa finalizarea calculelor de pozitie, aplicam transformarea
-	//ToDo: mutex aici!;
+	///After we finish our computations, apply the new transform
 	_ballPositionUpdate.lock();
 	_ballPositionQuery.lock();
-	mingeT->translate(pozitieMinge - mingeT->getPosition());
+	ballTransform->translate(ballPosition - ballTransform->getPosition());
 	_ballPositionQuery.unlock();
-	//Rotim mingea doar de efect ...
-	mingeT->rotateEuler(vec3<F32>(pozitieMinge.z,1,1));
+	///Add a spin to the ball just for fin ...
+	ballTransform->rotateEuler(vec3<F32>(ballPosition.z,1,1));
 	_ballPositionUpdate.unlock();
-	//----------------------COLIZIUNI------------------------------//
-	//z = adancime. Descendent spre orizont;
-	if(_podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
-		_aplicaImpulsLateral = true;
-		if(pozitieMinge.z > pozitieFileu.z){
-			_atinsTerenEchipa1 = true;
-			_atinsTerenEchipa2 = false;
+	//----------------------COLLISIONS------------------------------//
+	//z = depth. Descending to the horizon
+	if(_floor->getBoundingBox().Collision(_ballSGN->getBoundingBox())){
+		_applySideImpulse = true;
+		if(ballPosition.z > netPosition.z){
+			_touchedTerrainTeam1 = true;
+			_touchedTerrainTeam2 = false;
 		}else{
-			_atinsTerenEchipa1 = false;
-			_atinsTerenEchipa2 = true;
+			_touchedTerrainTeam1 = false;
+			_touchedTerrainTeam2 = true;
 		}
-		_directieAscendenta = true;
+		_upwardsDirection = true;
 	}
 
-	//Epuizam energia cinetica la acest punct
-	if(pozitieMinge.y > 3.5) _directieAscendenta = false;
+	///Where does the Kinetic  energy of the ball run out?
+	if(ballPosition.y > 3.5) _upwardsDirection = false;
 	
-	//Am atins un jucator?
-	bool coliziunePlayer1 = _mingeSGN->getBoundingBox().Collision(Player1->getBoundingBox());
-	bool coliziunePlayer2 = _mingeSGN->getBoundingBox().Collision(Player2->getBoundingBox());
-	bool coliziunePlayer3 = _mingeSGN->getBoundingBox().Collision(Player3->getBoundingBox());
-	bool coliziunePlayer4 = _mingeSGN->getBoundingBox().Collision(Player4->getBoundingBox());
+	///Did we hit a player?
+	bool collisionPlayer1 = _ballSGN->getBoundingBox().Collision(Player1->getBoundingBox());
+	bool collisionPlayer2 = _ballSGN->getBoundingBox().Collision(Player2->getBoundingBox());
+	bool collisionPlayer3 = _ballSGN->getBoundingBox().Collision(Player3->getBoundingBox());
+	bool collisionPlayer4 = _ballSGN->getBoundingBox().Collision(Player4->getBoundingBox());
 
-	bool coliziuneEchipa1 = coliziunePlayer1 || coliziunePlayer2;
-	bool coliziuneEchipa2 = coliziunePlayer3 || coliziunePlayer4;
+	bool collisionTeam1 = collisionPlayer1 || collisionPlayer2;
+	bool collisionTeam2 = collisionPlayer3 || collisionPlayer4;
 
-	//fiecare echipa are o sansa mica de a rata lovitura
-	if(coliziuneEchipa1){
-		F32 decalajLateral = 0;
-		coliziunePlayer1 ? decalajLateral = Player1->getTransform()->getPosition().x : decalajLateral = Player2->getTransform()->getPosition().x;
-		_impulsLateral = pozitieMinge.x - decalajLateral;
-		_directieEchipa1SpreEchipa2 = true;
+	if(collisionTeam1){
+		F32 sideDrift = 0;
+		collisionPlayer1 ? sideDrift = Player1->getTransform()->getPosition().x : sideDrift = Player2->getTransform()->getPosition().x;
+		_sideImpulseFactor = ballPosition.x - sideDrift;
+		_directionTeam1ToTeam2 = true;
 	}
 
-	if(coliziuneEchipa2){
-		F32 decalajLateral = 0;
-		coliziunePlayer3 ? decalajLateral = Player3->getTransform()->getPosition().x : decalajLateral = Player4->getTransform()->getPosition().x;
-		_impulsLateral = pozitieMinge.x - decalajLateral;
-		_directieEchipa1SpreEchipa2 = false;
+	if(collisionTeam2){
+		F32 sideDrift = 0;
+		collisionPlayer3 ? sideDrift = Player3->getTransform()->getPosition().x : sideDrift = Player4->getTransform()->getPosition().x;
+		_sideImpulseFactor = ballPosition.x - sideDrift;
+		_directionTeam1ToTeam2 = false;
 	}
 
-	//-----------------VALIDARI REZULTATE----------------------//
-	//A castigat Echipa 1 sau Echipa 2?
-	if(pozitieMinge.z >= Player1->getTransform()->getPosition().z &&
-	   pozitieMinge.z >= Player2->getTransform()->getPosition().z){
-
-		_pierdutEchipa1 = true;
+	//-----------------VALIDATING THE RESULTS----------------------//
+	///Which team won?
+	if(ballPosition.z >= Player1->getTransform()->getPosition().z &&
+	   ballPosition.z >= Player2->getTransform()->getPosition().z){
+		_lostTeam1 = true;
 		updated = true;
 	}
 
-	if(pozitieMinge.z <= Player3->getTransform()->getPosition().z &&
-	   pozitieMinge.z <= Player4->getTransform()->getPosition().z){
-		_pierdutEchipa1 = false;
+	if(ballPosition.z <= Player3->getTransform()->getPosition().z &&
+	   ballPosition.z <= Player4->getTransform()->getPosition().z){
+		_lostTeam1 = false;
 		updated = true;
 	}
 
-	//A lovit Echipa 1 sau Echipa 2 fileul?
-	if(_mingeSGN->getBoundingBox().Collision(_fileu->getBoundingBox())){
-		if(pozitieMinge.y < _fileu->getBoundingBox().getMax().y - 1){
-			if(_directieEchipa1SpreEchipa2){
-				_pierdutEchipa1 = true;
+	///Which team kicked the ball in the net?
+	if(_ballSGN->getBoundingBox().Collision(_net->getBoundingBox())){
+		if(ballPosition.y < _net->getBoundingBox().getMax().y - 1){
+			if(_directionTeam1ToTeam2){
+				_lostTeam1 = true;
 			}else{
-				_pierdutEchipa1 = false;
+				_lostTeam1 = false;
 			}
 			updated = true;
 		}
     }
-	if(pozitieMinge.x + 0.5f < _fileu->getBoundingBox().getMin().x || pozitieMinge.x + 0.5f > _fileu->getBoundingBox().getMax().x){
-		//Daca am lovit noi si am atins terenul adversarului
-		//Sau daca a lovit adversarul si nu a atins terenul nostru
-		if(_podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
-			if((_atinsTerenEchipa2 && _directieEchipa1SpreEchipa2) || (!_directieEchipa1SpreEchipa2 && !_atinsTerenEchipa1)){
-				_pierdutEchipa1 = false;
+	if(ballPosition.x + 0.5f < _net->getBoundingBox().getMin().x || ballPosition.x + 0.5f > _net->getBoundingBox().getMax().x){
+		///If hit the ball and it touched the opposing teams terrain
+		///Or if the opposing team hit the ball but it didn't land in our terrain
+		if(_floor->getBoundingBox().Collision(_ballSGN->getBoundingBox())){
+			if((_touchedTerrainTeam2 && _directionTeam1ToTeam2) || (!_directionTeam1ToTeam2 && !_touchedTerrainTeam1)){
+				_lostTeam1 = false;
 			}else{
-				_pierdutEchipa1 = true;
+				_lostTeam1 = true;
 			}
 			updated = true;
 		}
 	}
 	
-	//-----------------AFISARE REZULTATE---------------------//
+	//-----------------DISPLAY RESULTS---------------------//
 	if(updated){
 
-		if(_pierdutEchipa1)	{
-			mesaj = "Echipa 2 a punctat!";
-			_scorEchipa2++;
+		if(_lostTeam1)	{
+			mesaj = "Team 2 scored!";
+			_scoreTeam2++;
 		}else{
-			mesaj = "Echipa 1 a punctat!";
-			_scorEchipa1++;
+			mesaj = "Team 1 scored!";
+			_scoreTeam1++;
 		}
 		
-		GUI::getInstance().modifyText("ScorEchipa1","Scor Echipa 1: %d",_scorEchipa1);
-		GUI::getInstance().modifyText("ScorEchipa2","Scor Echipa 2: %d",_scorEchipa2);
-		GUI::getInstance().modifyText("Mesaj",(char*)mesaj.c_str());
-		reseteazaJoc();
+		GUI::getInstance().modifyText("Team1Score","Team 1 Score: %d",_scoreTeam1);
+		GUI::getInstance().modifyText("Team2Score","Team 1 Score: %d",_scoreTeam2);
+		GUI::getInstance().modifyText("Message",(char*)mesaj.c_str());
+		resetGame();
 	}
 
 }
@@ -232,24 +229,24 @@ bool AITenisScene::load(const string& name){
 	setInitialData();
 
 	bool state = false;
-	//Adaugam o lumina
+	//Add a light
 	Light* light = addDefaultLight();
 	light->setLightProperties(LIGHT_AMBIENT,_white);
 	light->setLightProperties(LIGHT_DIFFUSE,_white);
 	light->setLightProperties(LIGHT_SPECULAR,_white);
 												
-	//Incarcam resursele scenei
+	///Load scene resources
 	state = loadResources(true);	
 	
-	//Pozitionam camera
+	//Position camera
 	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(45));
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
 	
-	//------------------------ Restul elementelor jocului -----------------------------///
-	_fileu = _sceneGraph->findNode("Fileu");
-	_podea = _sceneGraph->findNode("Podea");
-	_podea->getNode()->getMaterial()->setCastsShadows(false);
+	//------------------------ Load up game elements -----------------------------///
+	_net = _sceneGraph->findNode("Net");
+	_floor = _sceneGraph->findNode("Floor");
+	_floor->getNode()->getMaterial()->setCastsShadows(false);
 
 	state = loadEvents(true);
 	return state;
@@ -257,7 +254,7 @@ bool AITenisScene::load(const string& name){
 
 bool AITenisScene::initializeAI(bool continueOnErrors){
 	bool state = false;
-	//----------------------------INTELIGENTA ARTIFICIALA------------------------------//
+	//----------------------------ARTIFICIAL INTELLIGENCE------------------------------//
     _aiPlayer1 = New AIEntity("Player1");
 	_aiPlayer2 = New AIEntity("Player2");
 	_aiPlayer3 = New AIEntity("Player3");
@@ -277,10 +274,10 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
 	_aiPlayer4->addSensor(VISUAL_SENSOR,New VisualSensor());
 	_aiPlayer4->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer4));
 
-	_aiPlayer1->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
-	_aiPlayer2->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
-	_aiPlayer3->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
-	_aiPlayer4->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
+	_aiPlayer1->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));
+	_aiPlayer2->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));
+	_aiPlayer3->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));
+	_aiPlayer4->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));
 
 	_team1 = New AICoordination(1);
 	_team2 = New AICoordination(2);
@@ -304,7 +301,7 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
 		state = AIManager::getInstance().addEntity(_aiPlayer4);
 	}
 	if(state || continueOnErrors){
-		//----------------------- Unitati ce vor fi controlate de AI ---------------------//
+		//----------------------- AI controlled units (NPC's) ---------------------//
 		_player1 = New NPC(_aiPlayer1);
 		_player2 = New NPC(_aiPlayer2);
 		_player3 = New NPC(_aiPlayer3);
@@ -330,35 +327,35 @@ bool AITenisScene::deinitializeAI(bool continueOnErrors){
 }
 
 bool AITenisScene::loadResources(bool continueOnErrors){
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;_scor = 0;
+	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 
-	//Cream o minge (Sa o facem din Chrome?)
-	ResourceDescriptor minge("Minge Tenis");
-	_minge = CreateResource<Sphere3D>(minge);
-	_mingeSGN = addGeometry(_minge);
-	_minge->setResolution(16);
-	_minge->setRadius(0.3f);
-	_mingeSGN->getTransform()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));
-	_minge->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.5f,0.5f,1.0f));
-	_minge->getMaterial()->setAmbient(vec4<F32>(0.5f,0.5f,0.5f,1.0f));
-	_minge->getMaterial()->setShininess(0.2f);
-	_minge->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
+	///Create our ball
+	ResourceDescriptor minge("Tenis Ball");
+	_ball = CreateResource<Sphere3D>(minge);
+	_ballSGN = addGeometry(_ball);
+	_ball->setResolution(16);
+	_ball->setRadius(0.3f);
+	_ballSGN->getTransform()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));
+	_ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.5f,0.5f,1.0f));
+	_ball->getMaterial()->setAmbient(vec4<F32>(0.5f,0.5f,0.5f,1.0f));
+	_ball->getMaterial()->setShininess(0.2f);
+	_ball->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
 
-	GUI::getInstance().addButton("Serveste", "Serveste", vec2<F32>(Application::getInstance().getWindowDimensions().width-220,
+	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(Application::getInstance().getWindowDimensions().width-220,
 															       Application::getInstance().getWindowDimensions().height/1.1f),
 													     vec2<F32>(100,25),
 														 vec3<F32>(0.65f,0.65f,0.65f),
-														 boost::bind(&AITenisScene::startJoc,this));
+														 boost::bind(&AITenisScene::startGame,this));
 
-	GUI::getInstance().addText("ScorEchipa1",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
+	GUI::getInstance().addText("Team1Score",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
 												       Application::getInstance().getWindowDimensions().height/1.3f, 0),
-											 BITMAP_8_BY_13,vec3<F32>(0,0.8f,0.8f), "Scor Echipa 1: %d",0);
+											 BITMAP_8_BY_13,vec3<F32>(0,0.8f,0.8f), "Team 1 Score:: %d",0);
 
-	GUI::getInstance().addText("ScorEchipa2",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
+	GUI::getInstance().addText("Team2Score",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
 													   Application::getInstance().getWindowDimensions().height/1.5f, 0),
-								             BITMAP_8_BY_13,vec3<F32>(0.2f,0.8f,0), "Scor Echipa 2: %d",0);
+								             BITMAP_8_BY_13,vec3<F32>(0.2f,0.8f,0), "Team 2 Score:: %d",0);
 
-	GUI::getInstance().addText("Mesaj",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
+	GUI::getInstance().addText("Message",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
 		                                         Application::getInstance().getWindowDimensions().height/1.7f, 0),
 									   BITMAP_8_BY_13,vec3<F32>(0,1,0), "");
 

@@ -15,26 +15,28 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MANAGER_H_
-#define _MANAGER_H_
+#ifndef RESOURCE_LOADER_H_
+#define RESOURCE_LOADER_H_
 
-#include "resource.h"
-#include "Core/Headers/BaseClasses.h"
+#include "ResourceDescriptor.h"
 
-class Manager {
+class Resource;
+class ResourceLoader : private boost::noncopyable {
+
+public:
+	ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor) {}
+	virtual Resource* operator()() = 0;
+	
 protected:
-	typedef unordered_map<std::string, Resource*> ResourceMap;
-	ResourceMap _resDB;
-	boost::mutex _managerMutex;
+	ResourceDescriptor _descriptor;
+};
 
-public: 
-	virtual void add(const std::string& name, Resource* const res);
-	virtual bool remove(Resource* const resource,bool force = false);
-	Resource* const find(const std::string& name);
-	virtual void eraseEntry(const std::string& name) {_resDB.erase(name);}
+template<typename ResourceType>
+class ImplResourceLoader : public ResourceLoader {
 
-	virtual void Destroy();
-	virtual ~Manager() {Destroy();} ///< Deleting any manager, will destroy it first
+public:
+	ImplResourceLoader(const ResourceDescriptor& descriptor)  : ResourceLoader(descriptor) {}
+	ResourceType* operator()();
 };
 
 #endif

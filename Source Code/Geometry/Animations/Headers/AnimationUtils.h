@@ -25,7 +25,7 @@
 #define ANIMATION_TICKS_PER_SECOND 20.0f
 #define MAXBONESPERMESH 60
 
-#include "resource.h"
+#include "core.h"
 #include <assimp/scene.h>
 namespace AnimUtils {
 

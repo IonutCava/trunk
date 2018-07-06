@@ -33,7 +33,7 @@ void Guardian::TerminateApplication(){
 
 	SceneManager::getInstance().deinitializeAI(true);
 	SceneManager::getInstance().DestroyInstance();
-	ResourceManager::getInstance().DestroyInstance();
+	ResourceCache::getInstance().DestroyInstance();
 	PRINT_FN("Application shutdown complete!");
 }
 

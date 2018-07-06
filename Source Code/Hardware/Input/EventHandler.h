@@ -19,7 +19,8 @@
 #define _INPUT_EVENT_HANDLER_H_
 
 #include "OIS.h"
-#include "Core/Headers/BaseClasses.h"
+#include "Hardware/Platform/Mutex.h"
+#include "Hardware/Platform/PlatformDefines.h"
 
 class InputManagerInterface;
 class JoystickManager;

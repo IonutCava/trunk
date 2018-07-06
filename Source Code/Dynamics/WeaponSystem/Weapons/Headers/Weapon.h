@@ -17,7 +17,7 @@
 
 #ifndef _WEAPON_H_
 #define _WEAPON_H_
-#include "resource.h" 
+#include "core.h" 
 
 ///Base class for defining a weapon
 class Weapon {

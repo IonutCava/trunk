@@ -18,7 +18,7 @@
 #ifndef _PARTICLE_H_
 #define _PARTICLE_H_
 
-#include "resource.h"
+#include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
 /// Number of states per particle

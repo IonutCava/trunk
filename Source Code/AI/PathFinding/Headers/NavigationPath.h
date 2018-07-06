@@ -23,7 +23,7 @@
 #ifndef _NAVIGATION_PATH_H_
 #define _NAVIGATION_PATH_H_
 
-#include "resource.h" 
+#include "core.h" 
 #include "NavigationMesh.h"
 #include "AI/PathFinding/Detour/Headers/DetourNavMeshQuery.h"
 

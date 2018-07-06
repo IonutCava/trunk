@@ -18,7 +18,7 @@
 #ifndef _AI_COORDINATION_H_
 #define _AI_COORDINATION_H_
 
-#include "resource.h"
+#include "core.h"
 
 class AIEntity;
 class AICoordination {

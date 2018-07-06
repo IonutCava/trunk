@@ -1,7 +1,7 @@
 #include "glResources.h"
 #include "glsw/glsw.h"
 
-#include "resource.h"
+#include "core.h"
 #include "glShaderProgram.h"
 #include "Hardware/Video/Shader.h"
 #include "Core/Headers/ParamHandler.h"

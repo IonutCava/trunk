@@ -18,8 +18,8 @@
 #ifndef _TEXTURE_H
 #define _TEXTURE_H
 
-#include "resource.h"
-#include "Core/Headers/BaseClasses.h"
+#include "core.h"
+#include "Core/Resources/Headers/Resource.h"
 
 class Texture : public Resource{
 

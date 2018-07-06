@@ -25,14 +25,14 @@ class PingPongScene : public Scene {
 
 public:
 	PingPongScene() : Scene() {
-		_miscareLaterala = 0;
-		_directieAdversar = true;
-		_directieSus = false;
-		_atinsTeren = false;
-		_atinsTerenAdversar = false;
-		_pierdut = false;
-		_mingeSGN = NULL;
-		_minge = NULL;
+		_sideDrift = 0;
+		_directionTowardsAdversary = true;
+		_upwardsDirection = false;
+		_touchedOwnTableHalf = false;
+		_touchedAdversaryTableHalf = false;
+		_lost = false;
+		_ballSGN = NULL;
+		_ball = NULL;
 	}
 
 	~PingPongScene() {}
@@ -52,24 +52,24 @@ public:
 	void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
 private:
 	void test(boost::any a, CallbackParam b);
-	void servesteMingea();
-	void reseteazaJoc();
+	void serveBall();
+	void resetGame();
 private:
 	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
 	I8 _scor;
 	std::vector<std::string> _quotes;
 	vec4<F32> _sunVector;
-	Sphere3D* _minge;
-	SceneGraphNode* _mingeSGN;
+	Sphere3D* _ball;
+	SceneGraphNode* _ballSGN;
 
-private: //JOC:
-	bool _directieAdversar;
-	bool _directieSus;
-	bool _atinsTeren;
-	bool _atinsTerenAdversar;
-	bool _pierdut;
-	F32 _miscareLaterala;
+private: //Game stuff:
+	bool _directionTowardsAdversary;
+	bool _upwardsDirection;
+	bool _touchedOwnTableHalf;
+	bool _touchedAdversaryTableHalf;
+	bool _lost;
+	F32 _sideDrift;
 };
 
 #endif

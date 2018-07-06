@@ -27,7 +27,7 @@
 #ifndef _NAVIGATION_MESH_H_
 #define _NAVIGATION_MESH_H_
 
-#include "resource.h"
+#include "core.h"
 #include "AI/PathFinding/ReCast/Headers/Recast.h"
 #include "AI/PathFinding/Detour/Headers/DetourNavMesh.h"
 #include "AI/PathFinding/Detour/Headers/DetourNavMeshBuilder.h"

@@ -2,7 +2,7 @@
 
 #include "Hardware/Video/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"

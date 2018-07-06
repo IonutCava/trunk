@@ -18,7 +18,7 @@
 #ifndef _AMMUNITION_H_
 #define _AMMUNITION_H_
 
-#include "resource.h"
+#include "core.h"
 ///Base class for ammunition
 class Ammunition {
 public:

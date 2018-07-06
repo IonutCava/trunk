@@ -28,7 +28,7 @@
 #ifndef _RAY_H_
 #define _RAY_H_
 
-#include "resource.h"
+#include "core.h"
 
 class Ray {
 	public:

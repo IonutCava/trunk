@@ -37,19 +37,19 @@ public:
 		_player2(NULL),
 		_player3(NULL),
 		_player4(NULL),
-		_podea(NULL),
-		_fileu(NULL),
-		_mingeSGN(NULL),
-		_minge(NULL){
-		_impulsLateral = 0;
-		_directieEchipa1SpreEchipa2 = true;
-		_directieAscendenta = true;
-		_atinsTerenEchipa1 = false;
-		_atinsTerenEchipa2 = false;
-		_pierdutEchipa1 = false;
-		_aplicaImpulsLateral = false;
-		_scorEchipa1 = 0;
-		_scorEchipa2 = 0;
+		_floor(NULL),
+		_net(NULL),
+		_ballSGN(NULL),
+		_ball(NULL){
+		_sideImpulseFactor = 0;
+		_directionTeam1ToTeam2 = true;
+		_upwardsDirection = true;
+		_touchedTerrainTeam1 = false;
+		_touchedTerrainTeam2 = false;
+		_lostTeam1 = false;
+		_applySideImpulse = false;
+		_scoreTeam1 = 0;
+		_scoreTeam2 = 0;
 		_mousePressed = false;
 	}
 	~AITenisScene() {}
@@ -71,31 +71,30 @@ public:
 
 private:
 	void procesareJoc(boost::any a, CallbackParam b);
-	void startJoc();
-	void reseteazaJoc();
+	void startGame();
+	void resetGame();
 
 private:
 	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
-	I8 _scor;
 	vec4<F32> _sunVector;
-	Sphere3D* _minge;
-	SceneGraphNode* _mingeSGN;
-	SceneGraphNode* _fileu;
-	SceneGraphNode* _podea;
+	Sphere3D* _ball;
+	SceneGraphNode* _ballSGN;
+	SceneGraphNode* _net;
+	SceneGraphNode* _floor;
 	vec2<F32> _prevMouse;
 	bool _mousePressed;
 
-private: //Joc
-	F32 _impulsLateral;
-	bool _directieEchipa1SpreEchipa2;
-	bool _directieAscendenta;
-	bool _atinsTerenEchipa1;
-	bool _atinsTerenEchipa2;
-	bool _pierdutEchipa1;
-	bool _aplicaImpulsLateral;
-	I8 _scorEchipa1;
-	I8 _scorEchipa2;
+private: //Game stuff
+	F32 _sideImpulseFactor;
+	bool _directionTeam1ToTeam2;
+	bool _upwardsDirection;
+	bool _touchedTerrainTeam1;
+	bool _touchedTerrainTeam2;
+	bool _lostTeam1;
+	bool _applySideImpulse;
+	I8 _scoreTeam1;
+	I8 _scoreTeam2;
 	///AIEntities are the "processors" behing the NPC's
 	AIEntity *_aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
 	///NPC's are the actual game entities

@@ -18,7 +18,7 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
-#include "resource.h"
+#include "core.h"
 #include <boost/any.hpp>
 
 using boost::any_cast;

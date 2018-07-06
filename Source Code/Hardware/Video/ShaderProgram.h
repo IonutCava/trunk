@@ -18,7 +18,7 @@
 #ifndef _SHADER_HANDLER_H_
 #define _SHADER_HANDLER_H_
 
-#include "Core/Headers/BaseClasses.h"
+#include "Core/Resources/Headers/Resource.h"
 #include <assimp/anim.h>
 class Shader;
 enum SHADER_TYPE;

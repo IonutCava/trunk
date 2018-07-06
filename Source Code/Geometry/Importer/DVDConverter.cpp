@@ -3,7 +3,7 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
@@ -188,11 +188,11 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const stri
 	/// See if the material already exists in a cooked state (XML file)
 	Material* tempMaterial = XML::loadMaterial(materialName);
 	if(tempMaterial) return tempMaterial;
-	/// If it's not defined in an XML File, see if it was previously loaded by the Resource Manager
+	/// If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
 	bool skip = false;
 	ResourceDescriptor tempMaterialDescriptor(materialName);
 	if(FindResource(materialName)) skip = true;
-	/// If we found it in the Resource Manager, return a copy of it
+	/// If we found it in the Resource Cache, return a copy of it
 	tempMaterial = CreateResource<Material>(tempMaterialDescriptor);
 	if(skip) return tempMaterial;
 

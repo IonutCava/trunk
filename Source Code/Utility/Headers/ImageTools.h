@@ -18,7 +18,7 @@
 #ifndef IMAGETOOLS_H
 #define IMAGETOOLS_H
 
-#include "resource.h"
+#include "core.h"
 
 namespace ImageTools {
 

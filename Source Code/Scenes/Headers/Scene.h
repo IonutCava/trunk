@@ -18,7 +18,7 @@
 #ifndef _SCENE_H
 #define _SCENE_H
 
-#include "resource.h"
+#include "core.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Hardware/Input/InputManager.h"
 #include "Utility/Headers/Event.h"
@@ -27,7 +27,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Managers/Headers/LightManager.h"
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 
 typedef std::tr1::shared_ptr<Event> Event_ptr;
 typedef unordered_map<std::string, Object3D*> Name_Object_map;

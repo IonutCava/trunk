@@ -18,11 +18,11 @@
 #ifndef _TERRAIN_DESCRIPTOR_H_
 #define _TERRAIN_DESCRIPTOR_H_
 
-#include "resource.h"
-#include "Core/Headers/BaseClasses.h"
+#include "core.h"
+#include "Core/Resources/Headers/Resource.h"
 
-class TerrainDescriptor : public Resource
-{
+class TerrainDescriptor : public Resource {
+
 public:
 	TerrainDescriptor() :  Resource(), _active(false){}
 	~TerrainDescriptor() {_variables.clear();}

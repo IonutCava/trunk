@@ -18,7 +18,7 @@
 #ifndef _WATER_PLANE_H_
 #define _WATER_PLANE_H_
 
-#include "resource.h"
+#include "core.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Object3D.h"

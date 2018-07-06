@@ -18,7 +18,7 @@
 #ifndef DIVIDE_LIGHT_H_
 #define DIVIDE_LIGHT_H_
 
-#include "resource.h"
+#include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
 ///The different types of lights supported

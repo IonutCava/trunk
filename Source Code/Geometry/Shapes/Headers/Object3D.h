@@ -18,8 +18,7 @@
 #ifndef _OBJECT_3D_H_
 #define _OBJECT_3D_H_
 
-#include "resource.h"
-#include "Core/Headers/BaseClasses.h"
+#include "core.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 

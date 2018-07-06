@@ -147,6 +147,23 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainDescriptorLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp" />
@@ -194,6 +211,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderGenerator.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderProgram.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\BaseCache.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp" />
@@ -249,8 +267,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Network\ASIO.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Managers\Manager.cpp" />
-    <ClCompile Include="..\..\Source Code\Managers\ResourceManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Material\Material.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Importer\DVDConverter.cpp" />
@@ -289,6 +305,11 @@
     <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\Recast.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h" />
+    <ClInclude Include="..\..\Source Code\core.h" />
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h" />
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h" />
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceDescriptor.h" />
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceLoader.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\Particle.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h" />
@@ -339,6 +360,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderGenerator.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderProgram.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\BaseCache.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
@@ -374,7 +396,6 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\XMLParser.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\BaseClasses.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ParamHandler.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Singleton.h" />
@@ -420,8 +441,6 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\AIManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h" />
-    <ClInclude Include="..\..\Source Code\Managers\Headers\Manager.h" />
-    <ClInclude Include="..\..\Source Code\Managers\Headers\ResourceManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h" />
@@ -445,7 +464,6 @@
     <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h" />
     <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\readme.h" />
-    <ClInclude Include="..\..\Source Code\resource.h" />
     <ClInclude Include="..\..\Source Code\SceneList.h" />
   </ItemGroup>
   <ItemGroup>

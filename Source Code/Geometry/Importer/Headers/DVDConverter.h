@@ -37,7 +37,7 @@
 #ifndef _DIVIDE_FORMAT_CONVERTER_H_
 #define _DIVIDE_FORMAT_CONVERTER_H_
 
-#include "resource.h"
+#include "core.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Hardware/Video/Texture.h"
 #include <assimp/types.h>

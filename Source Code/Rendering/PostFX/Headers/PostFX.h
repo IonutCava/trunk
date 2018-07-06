@@ -18,7 +18,7 @@
 #ifndef _POST_EFFECTS_H
 #define _POST_EFFECTS_H
 
-#include "resource.h"
+#include "core.h"
 #include "Hardware/Video/GFXDevice.h"
 
 #define FBO_BLOOM_SAMPLES 1

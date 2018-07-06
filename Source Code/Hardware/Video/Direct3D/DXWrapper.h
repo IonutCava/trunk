@@ -20,7 +20,7 @@
 
 #include "../RenderAPIWrapper.h"
 
-#include "resource.h"
+#include "core.h"
 #include "d3dFrameBufferObject.h"
 #include "d3dVertexBufferObject.h"
 #include "d3dPixelBufferObject.h"

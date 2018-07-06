@@ -6,9 +6,9 @@
 AITenisSceneAIActionList::AITenisSceneAIActionList(SceneGraphNode* target) : ActionList(),
 																			 _node(NULL),
 																			 _target(target),
-																			 _atacaMingea(false),
-																			 _mingeSpreEchipa2(true),
-																			 _stopJoc(true),
+																			 _attackBall(false),
+																			 _ballToTeam2(true),
+																			 _gameStop(true),
 																			 _tickCount(0)
 {
 }
@@ -18,7 +18,7 @@ void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
 	_entity = entity;
 	VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
 	if(visualSensor){
-		_pozitieInitiala = visualSensor->getSpatialPosition();
+		_initialPosition = visualSensor->getSpatialPosition();
 	}
 }
 
@@ -28,36 +28,36 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, cons
 	switch(msg){
 		case REQUEST_DISTANCE_TO_TARGET:
 				updatePositions();
-				_entity->sendMessage(sender, RECEIVE_DISTANCE_TO_TARGET, distanceToBall(_pozitieInitiala,_pozitieMinge));
+				_entity->sendMessage(sender, RECEIVE_DISTANCE_TO_TARGET, distanceToBall(_initialPosition,_ballPosition));
 			break;
 		case RECEIVE_DISTANCE_TO_TARGET:
 			assert(_entity->getTeam());
 			_entity->getTeam()->getMemberVariable()[sender] = boost::any_cast<F32>(msg_content);
 			break;
-		case LOVESTE_MINGEA:
+		case ATTACK_BALL:
 			currentTeam = _entity->getTeam();
 			assert(currentTeam);
 			for_each(AICoordination::teamMap::value_type const& member, currentTeam->getTeam()){
 				if(_entity->getGUID() != member.second->getGUID()){
-					_entity->sendMessage(member.second, NU_LOVI_MINGEA, 0);
+					_entity->sendMessage(member.second, DONT_ATTACK_BALL, 0);
 				}
 			}
-			if(_mingeSpreEchipa2){
+			if(_ballToTeam2){
 				if(_entity->getTeamID() == 2){
-					_atacaMingea = true;
+					_attackBall = true;
 				}else{
-					_atacaMingea = false;
+					_attackBall = false;
 				}
 			}else{
 				if(_entity->getTeamID() == 1){
-					_atacaMingea = true;
+					_attackBall = true;
 				}else{
-					_atacaMingea = false;
+					_attackBall = false;
 				}
 			}
 			break;
-		case NU_LOVI_MINGEA: 
-			_atacaMingea = false;
+		case DONT_ATTACK_BALL: 
+			_attackBall = false;
 			break;
 
 	};
@@ -68,30 +68,28 @@ void AITenisSceneAIActionList::updatePositions(){
 	if(visualSensor){
 		_tickCount++;
 		if(_tickCount == 128){
-			_pozitieMingeAnterioara = _pozitieMinge;
+			_prevBallPosition = _ballPosition;
 			_tickCount = 0;
 		}
-		_pozitieMinge = visualSensor->getPositionOfObject(_target);
-		_pozitieEntitate = visualSensor->getSpatialPosition();
-		if(_pozitieMingeAnterioara.z != _pozitieMinge.z){
-			_pozitieMingeAnterioara.z < _pozitieMinge.z ? _mingeSpreEchipa2 = false : _mingeSpreEchipa2 = true;
-			_stopJoc = false;
+		_ballPosition = visualSensor->getPositionOfObject(_target);
+		_entityPosition = visualSensor->getSpatialPosition();
+		if(_prevBallPosition.z != _ballPosition.z){
+			_prevBallPosition.z < _ballPosition.z ? _ballToTeam2 = false : _ballToTeam2 = true;
+			_gameStop = false;
 		}else{
-			_stopJoc = true;
+			_gameStop = true;
 		}
 	}
 }
 
-//Colectam toate datele necesare
-//Aflam pozitia noastra si pozitia mingii 
+///Collect all of the necessary information for this current update step
 void AITenisSceneAIActionList::processInput(){
 	updatePositions();
 	AICoordination* currentTeam = _entity->getTeam();
 	assert(currentTeam != NULL);
-	_entity->getTeam()->getMemberVariable()[_entity] = distanceToBall(_pozitieInitiala,_pozitieMinge);
+	_entity->getTeam()->getMemberVariable()[_entity] = distanceToBall(_initialPosition,_ballPosition);
 	for_each(AICoordination::teamMap::value_type& member, currentTeam->getTeam()){
-		//Cerem tuturor coechipierilor sa ne transmita pozitia lor actuala
-		//Pentru fiecare membru din echipa, ii trimitem un request sa ne returneze pozitia
+		///Ask all of our team-mates to send us their distance to the ball
 		if(_entity->getGUID() != member.second->getGUID()){
 			_entity->sendMessage(member.second, REQUEST_DISTANCE_TO_TARGET, 0);
 		}
@@ -99,16 +97,16 @@ void AITenisSceneAIActionList::processInput(){
 }
 
 void AITenisSceneAIActionList::processData(){
-	AIEntity* celMaiApropiat = _entity;
-	F32 distanta = _entity->getTeam()->getMemberVariable()[_entity];
+	AIEntity* nearestEntity = _entity;
+	F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
 	typedef unordered_map<AIEntity*, F32 > memberVariable;
 	for_each(memberVariable::value_type& member, _entity->getTeam()->getMemberVariable()){
-		if(member.second < distanta && member.first->getGUID() != _entity->getGUID()){
-			distanta = member.second;
-			celMaiApropiat = member.first;
+		if(member.second < distance && member.first->getGUID() != _entity->getGUID()){
+			distance = member.second;
+			nearestEntity = member.first;
 		}
 	}
-	_entity->sendMessage(celMaiApropiat, LOVESTE_MINGEA, distanta);
+	_entity->sendMessage(nearestEntity, ATTACK_BALL, distance);
 }
 
 void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
@@ -118,15 +116,15 @@ void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 	
 	updatePositions();
 
-	if(_atacaMingea && !_stopJoc){
-		/// Incearca sa interceptezi mingea
-		unitRef->moveToX(_pozitieMinge.x);
+	if(_attackBall && !_gameStop){
+		/// Try to intercept the ball
+		unitRef->moveToX(_ballPosition.x);
 	}else{
-		/// Incearca sa te intorci la pozitia originala
-		unitRef->moveToX(_pozitieInitiala.x);
+		/// Try to return to original position
+		unitRef->moveToX(_initialPosition.x);
 	}
 
-	/// Updateaza informatia senzorilor
+	/// Update sensor information
 	Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
 	if(visualSensor){
 		visualSensor->updatePosition(node->getTransform()->getPosition());
@@ -135,6 +133,6 @@ void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 
 
 ///Only X axis absolute value is important
-F32 AITenisSceneAIActionList::distanceToBall(const vec3<F32>& pozitieEntitate, const vec3<F32> pozitieMinge) {
-	return abs(pozitieMinge.x - pozitieEntitate.x);
+F32 AITenisSceneAIActionList::distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition) {
+	return abs(ballPosition.x - entityPosition.x);
 }

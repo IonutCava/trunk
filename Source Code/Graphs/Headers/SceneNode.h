@@ -18,7 +18,7 @@
 #ifndef _SCENE_NODE_H_
 #define _SCENE_NODE_H_
 
-#include "Core/Headers/BaseClasses.h"
+#include "Core/Resources/Headers/Resource.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Utility/Headers/BoundingBox.h"
 #include "Geometry/Material/Headers/Material.h"

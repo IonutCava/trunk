@@ -44,141 +44,138 @@ void PingPongScene::processEvents(F32 time){
 	}
 }
 
-void PingPongScene::reseteazaJoc(){
-	_directieAdversar = true;
-	_directieSus = false;
-	_atinsTerenAdversar = false;
-	_atinsTeren = false;
-	_pierdut = false;
-	_miscareLaterala = 0;
+void PingPongScene::resetGame(){
+	_directionTowardsAdversary = true;
+	_upwardsDirection = false;
+	_touchedAdversaryTableHalf = false;
+	_touchedOwnTableHalf = false;
+	_lost = false;
+	_sideDrift = 0;
 	getEvents().clear();
-	_mingeSGN->getTransform()->setPosition(vec3<F32>(0, 2 ,2));
+	_ballSGN->getTransform()->setPosition(vec3<F32>(0, 2 ,2));
 }
 
-void PingPongScene::servesteMingea(){
-	GUI::getInstance().modifyText("insulte","");
-	reseteazaJoc();
+void PingPongScene::serveBall(){
+	GUI::getInstance().modifyText("insults","");
+	resetGame();
 
-	if(getEvents().empty()){//Maxim un singur eveniment
-		Event_ptr jocNou(New Event(30,true,false,boost::bind(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
-		addEvent(jocNou);
+	if(getEvents().empty()){///A maximum of 1 events allowed
+		Event_ptr newGame(New Event(30,true,false,boost::bind(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
+		addEvent(newGame);
 	}
 }
 
 void PingPongScene::test(boost::any a, CallbackParam b){
 	if(getEvents().empty()) return;
 	bool updated = false;
-	string mesaj;
-	Transform* mingeT = _mingeSGN->getTransform();
-	vec3<F32> pozitieMinge  = mingeT->getPosition();
+	string message;
+	Transform* ballTransform = _ballSGN->getTransform();
+	vec3<F32> ballPosition  = ballTransform->getPosition();
 
 	
-	SceneGraphNode* masa = _sceneGraph->findNode("masa");
-	SceneGraphNode* plasa = _sceneGraph->findNode("plasa");
-	SceneGraphNode* perete = _sceneGraph->findNode("perete");
-	SceneGraphNode* paleta = _sceneGraph->findNode("paleta");
-	vec3<F32> pozitiePaleta   = paleta->getTransform()->getPosition();
-	vec3<F32> pozitieAdversar = perete->getTransform()->getPosition();
-	vec3<F32> pozitieMasa     = masa->getTransform()->getPosition();
-	//Miscare minge si detectie coliziuni
+	SceneGraphNode* table = _sceneGraph->findNode("table");
+	SceneGraphNode* net = _sceneGraph->findNode("net");
+	SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
+	SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
+	vec3<F32> paddlePosition   = paddle->getTransform()->getPosition();
+	vec3<F32> opponentPosition = opponent->getTransform()->getPosition();
+	vec3<F32> tablePosition     = table->getTransform()->getPosition();
 
+	///Is the ball coming towards us or towards the opponent?
+	_directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z += 0.11f;
+	///Up or down?
+	_upwardsDirection ? 	ballPosition.y += 0.084f : 	ballPosition.y -= 0.084f;
 
-	//Mergem spre adversar sau spre noi
-	_directieAdversar ? pozitieMinge.z -= 0.11f : pozitieMinge.z += 0.11f;
-	//Sus sau jos?
-	_directieSus ? 	pozitieMinge.y += 0.084f : 	pozitieMinge.y -= 0.084f;
+	///Is the ball moving to the right or to the left?
+	ballPosition.x += _sideDrift*0.15f;
+	if(opponentPosition.x != ballPosition.x)
+		opponent->getTransform()->translateX(ballPosition.x - opponentPosition.x);
 
+	ballTransform->translate(ballPosition - ballTransform->getPosition());
 
-	//Mingea se deplaseaza spre stanga sau spre dreapta?
-	pozitieMinge.x += _miscareLaterala*0.15f;
-	if(pozitieAdversar.x != pozitieMinge.x)
-		perete->getTransform()->translateX(pozitieMinge.x - pozitieAdversar.x);
-
-	mingeT->translate(pozitieMinge - mingeT->getPosition());
-
-
-	//Am lovit masa? Ricosam
-	if(masa->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
-		if(pozitieMinge.z > pozitieMasa.z){
-			_atinsTeren = true;
-			_atinsTerenAdversar = false;
+	///Did we hit the table? Bounce then ...
+	if(table->getBoundingBox().Collision(_ballSGN->getBoundingBox())){
+		if(ballPosition.z > tablePosition.z){
+			_touchedOwnTableHalf = true;
+			_touchedAdversaryTableHalf = false;
 		}else{
-			_atinsTeren = false;
-			_atinsTerenAdversar = true;
+			_touchedOwnTableHalf = false;
+			_touchedAdversaryTableHalf = true;
 		}
-		_directieSus = true;
+		_upwardsDirection = true;
 	}
-	//Epuizam energia cinetica la acest punct
-	if(pozitieMinge.y > 2.1f) _directieSus = false;
+	///Kinetic  energy depletion
+	if(ballPosition.y > 2.1f) _upwardsDirection = false;
 
-	//Am lovit paleta?
-	if(_mingeSGN->getBoundingBox().Collision(paleta->getBoundingBox())){
-		_miscareLaterala = pozitieMinge.x - pozitiePaleta.x;
-		//Dca am lovit cu partea de sus a paletei, mai atasam un mic impuls miscarii mingii
-		if(pozitieMinge.y >= pozitiePaleta.y) pozitieMinge.z -= 0.12f;
+	///Did we hit the paddle?
+	if(_ballSGN->getBoundingBox().Collision(paddle->getBoundingBox())){
+		_sideDrift = ballPosition.x - paddlePosition.x;
+		///If we hit the ball with the upper margin of the paddle, add a slight impuls to the ball
+		if(ballPosition.y >= paddlePosition.y) ballPosition.z -= 0.12f;
 
-		_directieAdversar = true;
+		_directionTowardsAdversary = true;
 	}
 
-	if(pozitieMinge.y + 0.75f < masa->getBoundingBox().getMax().y){
-		//Daca am lovit noi si am atins terenul adversarului
-		//Sau daca a lovit adversarul si nu a atins terenul nostrue
-		if((_atinsTerenAdversar && _directieAdversar) || (!_directieAdversar && !_atinsTeren))		
-			_pierdut = false;
+	if(ballPosition.y + 0.75f < table->getBoundingBox().getMax().y){
+		///If we hit the ball and it landed on the opponent's table half
+		///Or if the opponent hit the ball and it landed on our table half
+		if((_touchedAdversaryTableHalf && _directionTowardsAdversary) || 
+		   (!_directionTowardsAdversary && !_touchedOwnTableHalf))		
+			_lost = false;
 		else
-			_pierdut = true;
+			_lost = true;
 		
 		updated = true;
 	}
-	//Am castigat sau am pierdut?
-	if(pozitieMinge.z >= pozitiePaleta.z){
-		_pierdut = true;
+	///Did we win or lose?
+	if(ballPosition.z >= paddlePosition.z){
+		_lost = true;
 		updated = true;
 	}
-	if(pozitieMinge.z <= pozitieAdversar.z){
-		_pierdut = false;
+	if(ballPosition.z <= opponentPosition.z){
+		_lost = false;
 		updated = true;
 	}
 
-	if(_mingeSGN->getBoundingBox().Collision(plasa->getBoundingBox())){
-		if(_directieAdversar){
-			//Am lovit plasa?
-			_pierdut = true;
+	if(_ballSGN->getBoundingBox().Collision(net->getBoundingBox())){
+		if(_directionTowardsAdversary){
+			///Did we hit the net?
+			_lost = true;
 		}else{
-			//A lovit adversarul plasa
-			_pierdut = false;
+			///Did the opponent hit the net?
+			_lost = false;
 		}
 		updated = true;
 		
     }
 	
-	//Am lovit adversarul? Ne intoarcem ... DAR
-	//... adaugam o mica sansa sa castigam meciul .. dar mica ...
+	///Did we hit the opponent? Then change ball direction ... BUT ...
+	///Add a small chance that we win
 	if(random(30) != 2)
-	if(_mingeSGN->getBoundingBox().Collision(perete->getBoundingBox())){
-		_miscareLaterala = pozitieMinge.x - perete->getTransform()->getPosition().x;
-		_directieAdversar = false;
+	if(_ballSGN->getBoundingBox().Collision(opponent->getBoundingBox())){
+		_sideDrift = ballPosition.x - opponent->getTransform()->getPosition().x;
+		_directionTowardsAdversary = false;
 	}
-	//Rotim mingea doar de efect ...
-	mingeT->rotateEuler(vec3<F32>(pozitieMinge.z,1,1));
+	///Add a spin effect to the ball
+	ballTransform->rotateEuler(vec3<F32>(ballPosition.z,1,1));
 
 	if(updated){
-		if(_pierdut){
-			mesaj = "Ai pierdut!";
+		if(_lost){
+			message = "You lost!";
 			_scor--;
 
 			if(b == TYPE_INTEGER){
 				I32 quote = boost::any_cast<I32>(a);
-				if(_scor % 3 == 0 ) GUI::getInstance().modifyText("insulte",(char*)_quotes[quote].c_str());
+				if(_scor % 3 == 0 ) GUI::getInstance().modifyText("insults",(char*)_quotes[quote].c_str());
 			}
 		}else{
-			mesaj = "Ai castigat!";
+			message = "You won!";
 			_scor++;
 		}
 		
-		GUI::getInstance().modifyText("Scor","Scor: %d",_scor);
-		GUI::getInstance().modifyText("Mesaj",(char*)mesaj.c_str());
-		reseteazaJoc();
+		GUI::getInstance().modifyText("Score","Score: %d",_scor);
+		GUI::getInstance().modifyText("Message",(char*)message.c_str());
+		resetGame();
 	}
 }
 
@@ -186,44 +183,44 @@ void PingPongScene::processInput(){
 	Scene::processInput();
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	//Move FB = Forward/Back = sus/jos
-	//Move LR = Left/Right = stanga/dreapta
+	///Move FB = Forward/Back = up/down
+	///Move LR = Left/Right
 	moveFB  = Application::getInstance().moveFB;
 	moveLR  = Application::getInstance().moveLR;
 
-	//Miscarea camerei
+	///Camera controls
 	angleLR = Application::getInstance().angleLR;
 	angleUD = Application::getInstance().angleUD;
 
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
 
-	SceneGraphNode* paleta = _sceneGraph->findNode("paleta");
+	SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
-	vec3<F32> pos = paleta->getTransform()->getPosition();
+	vec3<F32> pos = paddle->getTransform()->getPosition();
 
-	//Miscarea pe ambele directii de deplasare este limitata in intervalul [-3,3] cu exceptia coborarii pe Y;
+	///Paddle movement is limited to the [-3,3] range except for Y-descent
 	if(moveFB){
 		if((moveFB > 0 && pos.y >= 3) || (moveFB < 0 && pos.y <= 0.5f)) return;
-		paleta->getTransform()->translateY((moveFB * Framerate::getInstance().getSpeedfactor())/6);
+		paddle->getTransform()->translateY((moveFB * Framerate::getInstance().getSpeedfactor())/6);
 	}
 
 	if(moveLR){
-		//Miscarea stanga dreapta necesita inversarea directiei de deplasare.
+		///Left/right movement is flipped for proper control
 		if((moveLR < 0 && pos.x >= 3) || (moveLR > 0 && pos.x <= -3)) return;
-		paleta->getTransform()->translateX((-moveLR * Framerate::getInstance().getSpeedfactor())/6);
+		paddle->getTransform()->translateX((-moveLR * Framerate::getInstance().getSpeedfactor())/6);
 	}
 }
 
 bool PingPongScene::load(const string& name){
 	setInitialData();
 	bool state = false;
-	//Adaugam o lumina
+	///Add a light
 	Light* light = addDefaultLight();
-	//Incarcam resursele scenei
+	///Load scene resources
 	state = loadResources(true);	
 	state = loadEvents(true);
-	//Pozitionam camera
+	///Position the camera
 	CameraManager::getInstance().getActiveCamera()->setAngleX(RADIANS(-90));
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,2.5f,6.5f));
 	
@@ -234,42 +231,42 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;_scor = 0;
 
-	//Cream o minge (Sa o facem din Chrome?)
-	ResourceDescriptor minge("Minge Ping Pong");
-	_minge = CreateResource<Sphere3D>(minge);
-	_mingeSGN = addGeometry(_minge);
-	_minge->setResolution(16);
-	_minge->setRadius(0.1f);
-	_mingeSGN->getTransform()->translate(vec3<F32>(0, 2 ,2));
-	_minge->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.4f,0.4f,1.0f));
-	_minge->getMaterial()->setAmbient(vec4<F32>(0.25f,0.25f,0.25f,1.0f));
-	_minge->getMaterial()->setShininess(36.8f);
-	_minge->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
+	///Create a ball
+	ResourceDescriptor minge("Ping Pong Ball");
+	_ball = CreateResource<Sphere3D>(minge);
+	_ballSGN = addGeometry(_ball);
+	_ball->setResolution(16);
+	_ball->setRadius(0.1f);
+	_ballSGN->getTransform()->translate(vec3<F32>(0, 2 ,2));
+	_ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.4f,0.4f,1.0f));
+	_ball->getMaterial()->setAmbient(vec4<F32>(0.25f,0.25f,0.25f,1.0f));
+	_ball->getMaterial()->setShininess(36.8f);
+	_ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
-	//Adaugam butoane si text labels
-	GUI::getInstance().addButton("Serveste", "Serveste", vec2<F32>(Application::getInstance().getWindowDimensions().width-120 ,
+	///Buttons and text labels
+	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(Application::getInstance().getWindowDimensions().width-120 ,
 															 Application::getInstance().getWindowDimensions().height/1.1f),
 													    	 vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
-															 boost::bind(&PingPongScene::servesteMingea,this));
+															 boost::bind(&PingPongScene::serveBall,this));
 
-	GUI::getInstance().addText("Scor",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.3f, 0),
-							   BITMAP_8_BY_13,vec3<F32>(1,0,0), "Scor: %d",0);
+	GUI::getInstance().addText("Score",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.3f, 0),
+							   BITMAP_8_BY_13,vec3<F32>(1,0,0), "Score: %d",0);
 
-	GUI::getInstance().addText("Mesaj",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.5f, 0),
+	GUI::getInstance().addText("Message",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.5f, 0),
 							   BITMAP_8_BY_13,vec3<F32>(1,0,0), "");
-	GUI::getInstance().addText("insulte",vec3<F32>(Application::getInstance().getWindowDimensions().width/4, Application::getInstance().getWindowDimensions().height/3, 0),
+	GUI::getInstance().addText("insults",vec3<F32>(Application::getInstance().getWindowDimensions().width/4, Application::getInstance().getWindowDimensions().height/3, 0),
 							   BITMAP_TIMES_ROMAN_24,vec3<F32>(0,1,0), "");
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec3<F32>(60,60,0),          //Position
 							   BITMAP_8_BY_13,    //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
-	//Cateva replici motivationale
-	_quotes.push_back("Ha ha ... pana si Odin rade de tine!");
-	_quotes.push_back("Daca tu esti jucator de ping-pong, eu sunt Jimmy Page");
-	_quotes.push_back("Ooolee, ole ole ole, uite mingea ... nu mai e");
-	_quotes.push_back("Ai noroc ca sala-i goala, ca eu unul as fi murit de rusine");
-	_quotes.push_back("Nu e atat de greu; si o maimuta poate juca jocul asta.");
+	///Add some taunts
+	_quotes.push_back("Ha ha ... even Odin's laughin'!");
+	_quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
+	_quotes.push_back("Ooolee, ole ole ole, see the ball? ... It's past your end");
+	_quotes.push_back("You're lucky the room's empty. I'd be so ashamed otherwise if I were you");
+	_quotes.push_back("It's not the hard. Even a monkey can do it.");
 	
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Light
@@ -349,5 +346,5 @@ void PingPongScene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 
 void PingPongScene::OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
 
-	if(button == 0)  servesteMingea();
+	if(button == 0)  serveBall();
 }

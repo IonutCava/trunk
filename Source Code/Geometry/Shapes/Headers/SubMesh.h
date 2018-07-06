@@ -33,7 +33,7 @@ The SubMesh is composed of a VBO object that contains vertx,normal and textcoord
 and a name.
 */
 
-#include "resource.h"
+#include "core.h"
 #include "Hardware/Video/VertexBufferObject.h"
 
 class Mesh;

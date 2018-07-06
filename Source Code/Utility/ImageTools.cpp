@@ -1,4 +1,4 @@
-#include "resource.h"
+#include "core.h"
 #include "Headers/ImageTools.h"
 
 #undef _UNICODE

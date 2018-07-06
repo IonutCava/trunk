@@ -18,8 +18,8 @@
 #ifndef _AUDIO_DESCRIPTOR_H_
 #define _AUDIO_DESCRIPTOR_H_
 
-#include "resource.h"
-#include "Core/Headers/BaseClasses.h"
+#include "core.h"
+#include "Core/Resources/Headers/Resource.h"
 
 class AudioDescriptor : public Resource{
 

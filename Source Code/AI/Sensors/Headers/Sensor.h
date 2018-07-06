@@ -18,7 +18,7 @@
 #ifndef _AI_SENSOR_H_
 #define _AI_SENSOR_H_
 
-#include "resource.h"
+#include "core.h"
 #include <boost/any.hpp>
 
 enum SENSOR_TYPE{

@@ -1,7 +1,7 @@
 #ifndef _PRE_RENDER_STAGE_BUILDER_H_
 #define _PRE_RENDER_STAGE_BUILDER_H_
 
-#include "resource.h" 
+#include "core.h" 
 ///inspired by ImageFilters in Pshyce http://www.codinglabs.net/psyche.aspx
 ///actual implementation and roll differs
 

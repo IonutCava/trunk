@@ -18,7 +18,7 @@
 #ifndef _FRAME_BUFFER_OBJECT_H
 #define _FRAME_BUFFER_OBJECT_H
 
-#include "resource.h"
+#include "core.h"
 #include "RenderAPIEnums.h"
 
 class FrameBufferObject {

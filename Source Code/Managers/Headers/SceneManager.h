@@ -15,13 +15,13 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "resource.h"
+#include "core.h"
 #ifndef _SCENE_MANAGER_H
 #define _SCENE_MANAGER_H
 
 #include "Scenes/Headers/Scene.h"
 
-DEFINE_SINGLETON_EXT1(SceneManager,Manager)
+DEFINE_SINGLETON_EXT1(SceneManager,BaseCache)
 
 public:
 	Scene* loadScene(const std::string& name);

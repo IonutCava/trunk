@@ -1,12 +1,13 @@
 #ifndef _DIVIDE_BOOST_ASIO_H_
 #define _DIVIDE_BOOST_ASIO_H_
 
-#include "resource.h"
+#include "core.h"
+#include "WorldPacket.h"
+#include "OPCodes.h"
 #include "Client.h"
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include "WorldPacket.h"
-#include "OPCodes.h"
+
 
 using namespace boost;
 using namespace boost::asio;

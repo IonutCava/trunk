@@ -18,7 +18,7 @@
 #ifndef _SHADER_H_
 #define _SHADER_H_
 
-#include "resource.h"
+#include "core.h"
 
 enum SHADER_TYPE {
 	FRAGMENT_SHADER,

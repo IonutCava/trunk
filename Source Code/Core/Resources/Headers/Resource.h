@@ -15,43 +15,14 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BASE_CLASS_H_
-#define BASE_CLASS_H_
+#ifndef RESOURCE_H_
+#define RESOURCE_H_
 
-#include "resource.h"
+#include "core.h"
 
-
-class ResourceDescriptor{
-public:
-	ResourceDescriptor(const std::string& name = "default", 
-					   const std::string& resourceLocation = "default",
-					   bool flag = false, U32 id = RAND_MAX) : _name(name),
-															  _resourceLocation(resourceLocation),
-															  _flag(flag),
-															  _id(id){}
-
-	const  std::string& getPropertyListString() const {return _properties;}
-	const  std::string& getResourceLocation()   const {return _resourceLocation;}
-	const  std::string& getName()			    const {return _name;}
-	inline bool getFlag()					    const {return _flag;}
-	inline U32  getId()						    const {return _id;}
-
-	inline void setPropertyList(const std::string& propertyListString)    {_properties = propertyListString;}
-	inline void setResourceLocation(const std::string& resourceLocation)  {_resourceLocation = resourceLocation;}
-	inline void setName(const std::string& name)					      {_name = name;}
-	inline void setFlag(bool flag)				                          {_flag = flag;}
-	inline void setId(U32 id)					                          {_id = id;}
-
-private:
-	std::string _name;			   ///< Item name
-	std::string _resourceLocation; ///< Physical file location
-	std::string _properties;       ///< Comma separated list of properties
-	bool        _flag;
-	U32         _id;
-};
 
 class Resource : private boost::noncopyable {
-	friend class Manager;
+	friend class BaseCache;
 public:
 	Resource() : _shouldDelete(false), _name("default"),_refCount(1){}
 	Resource(std::string name) : _shouldDelete(false), _name(name),_refCount(1){}
@@ -73,12 +44,11 @@ public:
 	/*ID management*/
 	const std::string& getName() {return _name;}
 	inline void setName(const std::string& name) {_name = name;}
-
-	const std::string& getResourceLocation() {return _resourceLocation;}
-	void setResourceLocation(const std::string& resourceLocation) {_resourceLocation = resourceLocation;}
 	/*//ID management*/
 	U32   getRefCount(){return _refCount;}
 
+	const std::string& getResourceLocation() {return _resourceLocation;}
+	void setResourceLocation(const std::string& resourceLocation) {_resourceLocation = resourceLocation;}
 private:  // emphasize the following members are private
 	  U32 _refCount;
 protected:
@@ -128,4 +98,5 @@ public:
 	bool   active;
 
 };
+
 #endif

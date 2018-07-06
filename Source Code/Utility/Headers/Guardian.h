@@ -15,7 +15,7 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "resource.h"
+#include "core.h"
 
 ///Simple class that initializes our app, read XML settings and frees resources on shutdown
 DEFINE_SINGLETON( Guardian )

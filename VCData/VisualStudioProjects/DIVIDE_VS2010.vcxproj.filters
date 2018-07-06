@@ -410,6 +410,15 @@
     <Filter Include="Hardware\Platform">
       <UniqueIdentifier>{42339953-c419-4eb8-8752-96c6e1e03820}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Resources">
+      <UniqueIdentifier>{a27eb18b-f72b-43c4-beb1-ab4290cac23d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Resources\Headers">
+      <UniqueIdentifier>{a5a2423f-742c-40d1-8d76-3da61c7ac931}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Resources\ConcreteLoaders">
+      <UniqueIdentifier>{15778bdd-402a-40b2-98a6-a2b2e3459b3f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -533,12 +542,6 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Managers\Manager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Managers\ResourceManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp">
@@ -851,6 +854,60 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp">
+      <Filter>Core\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainDescriptorLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp">
+      <Filter>Core\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Managers\BaseCache.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -917,9 +974,6 @@
       <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\Application.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\BaseClasses.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\Console.h">
@@ -1057,12 +1111,6 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\Manager.h">
-      <Filter>Managers\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\ResourceManager.h">
-      <Filter>Managers\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
@@ -1129,7 +1177,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h">
       <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\resource.h" />
     <ClInclude Include="..\..\Source Code\readme.h" />
     <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\SceneList.h" />
@@ -1384,6 +1431,22 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Threading.h">
       <Filter>Hardware\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h">
+      <Filter>Core\Resources\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceDescriptor.h">
+      <Filter>Core\Resources\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceLoader.h">
+      <Filter>Core\Resources\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\core.h" />
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h">
+      <Filter>Core\Resources\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Managers\Headers\BaseCache.h">
+      <Filter>Managers\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

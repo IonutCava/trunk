@@ -15,15 +15,15 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "resource.h"
+#include "core.h"
 #ifndef _CAMERA_MANAGER_H
 #define _CAMERA_MANAGER_H
 
-#include "Manager.h"
+#include "BaseCache.h"
 #include "Rendering/Camera/Headers/Camera.h"
 
 class FreeFlyCamera;
-DEFINE_SINGLETON_EXT1(CameraManager,Manager)
+DEFINE_SINGLETON_EXT1(CameraManager,BaseCache)
 
 public:
 	Camera* const getActiveCamera();

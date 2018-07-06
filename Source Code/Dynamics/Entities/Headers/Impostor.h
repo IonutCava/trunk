@@ -18,7 +18,7 @@
 #ifndef _IMPOSTOR_H_
 #define _IMPOSTOR_H_
 
-#include "resource.h"
+#include "core.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 class SceneGraphNode;

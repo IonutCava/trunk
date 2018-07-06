@@ -18,7 +18,7 @@
 #ifndef PHYSX_H_
 #define PHYSX_H_
 
-#include "resource.h"
+#include "core.h"
 
 //PhysX includes
 #include < PxPhysicsAPI.h> 

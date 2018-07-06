@@ -1,7 +1,7 @@
 #ifndef _PRE_RENDER_OPERATOR_H_
 #define _PRE_RENDER_OPERATOR_H_
 
-#include "resource.h"
+#include "core.h"
 
 enum RENDER_STAGE;
 class Quad3D;

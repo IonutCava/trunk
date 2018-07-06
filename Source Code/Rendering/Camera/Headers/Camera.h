@@ -18,8 +18,8 @@
 #ifndef _CAMERA_H
 #define _CAMERA_H
 
-#include "resource.h"
-#include "Core/Headers/BaseClasses.h"
+#include "core.h"
+#include "Core/Resources/Headers/Resource.h"
 
 class Camera : public Resource {
 

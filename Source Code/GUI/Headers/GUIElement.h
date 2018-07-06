@@ -17,7 +17,7 @@
 
 #ifndef _GUI_ELEMENT_H_
 #define _GUI_ELEMENT_H_
-#include "resource.h"
+#include "core.h"
 
 enum Font
 {

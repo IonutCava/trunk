@@ -18,7 +18,7 @@
 #ifndef _FRAME_LISTENER_MANAGER_H_
 #define _FRAME_LISTENER_MANAGER_H_
 
-#include "resource.h"
+#include "core.h"
 ///Add this include here so that any FrameListner derived class only needs to include the manager
 #include "Rendering/Headers/FrameListener.h"
 

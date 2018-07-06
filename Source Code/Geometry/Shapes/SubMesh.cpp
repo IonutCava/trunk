@@ -1,6 +1,6 @@
 #include "Headers/SubMesh.h"
 #include "Headers/Mesh.h"
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Animations/Headers/AnimationController.h"
 #include "Core/Headers/ParamHandler.h"
 

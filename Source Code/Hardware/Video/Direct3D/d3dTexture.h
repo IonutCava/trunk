@@ -18,7 +18,7 @@
 #ifndef _D3D_TEXTURE_H_
 #define _D3D_TEXTURE_H_
 
-#include "resource.h"
+#include "core.h"
 #include "../Texture.h"
 
 class d3dTexture : public Texture {

@@ -18,7 +18,7 @@
 #ifndef _GL_TEXTURE_H_
 #define _GL_TEXTURE_H_
 
-#include "resource.h"
+#include "core.h"
 #include "../Texture.h"
 
 class glTexture : public Texture {

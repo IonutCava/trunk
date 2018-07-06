@@ -1,6 +1,6 @@
 #include "Headers/Frustum.h"
 
-#include "resource.h"
+#include "core.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Utility/Headers/BoundingBox.h"
 

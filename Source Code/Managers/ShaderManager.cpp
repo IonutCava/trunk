@@ -1,5 +1,5 @@
 #include "Headers/ShaderManager.h"
-#include "Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/Shader.h"
 #include "Hardware/Video/GFXDevice.h"
 

@@ -14,7 +14,7 @@ void WarSceneAIActionList::addEntityRef(AIEntity* entity){
 	_entity = entity;
 	VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
 	if(visualSensor){
-		//_pozitieInitiala = visualSensor->getSpatialPosition();
+		//_initialPosition = visualSensor->getSpatialPosition();
 	}
 }
 

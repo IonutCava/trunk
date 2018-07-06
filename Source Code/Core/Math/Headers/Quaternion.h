@@ -22,7 +22,7 @@
 http://gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation
 Quaternion class based on code from " OpenGL:Tutorials:Using Quaternions to represent rotation "
 */
-#include "resource.h"
+#include "core.h"
 
 #define TOLERANCE 0.00001f
 

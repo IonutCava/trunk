@@ -1,7 +1,7 @@
-#include "Headers/Manager.h"
+#include "Headers/BaseCache.h"
 using namespace std;
 
-void Manager::add(const std::string& name, Resource* const res){
+void BaseCache::add(const std::string& name, Resource* const res){
 	boost::lock_guard<boost::mutex> lock(_managerMutex);
 	std::pair<ResourceMap::iterator, bool > result = _resDB.insert(make_pair(name,res));
 	if(!result.second){
@@ -11,7 +11,7 @@ void Manager::add(const std::string& name, Resource* const res){
 	res->incRefCount();
 }
 
-void Manager::Destroy(){
+void BaseCache::Destroy(){
 	ResourceMap::iterator& it = _resDB.begin();
 	for_each(ResourceMap::value_type& it, _resDB){
 		remove(it.second, true);
@@ -20,7 +20,7 @@ void Manager::Destroy(){
 	_resDB.clear();
 }
 
-Resource* const Manager::find(const string& name){
+Resource* const BaseCache::find(const string& name){
 
 	ResourceMap::iterator resDBiter = _resDB.find(name);
 	if(resDBiter != _resDB.end()){
@@ -29,14 +29,14 @@ Resource* const Manager::find(const string& name){
 	return NULL;
 }
 
-bool Manager::remove(Resource* const resource,bool force){
+bool BaseCache::remove(Resource* const resource,bool force){
 	if(!resource){
-		ERROR_FN("ResourceManager: Trying to remove NULL resource!");
+		ERROR_FN("BaseCache: Trying to remove NULL resource!");
 		return false;
 	}
 	string name(resource->getName());
 	if(name.empty()){
-		ERROR_FN("ResourceManager: Trying to remove resource with invalid name!");
+		ERROR_FN("BaseCache: Trying to remove resource with invalid name!");
 		return true; //delete pointer
 	}
 
@@ -56,6 +56,6 @@ bool Manager::remove(Resource* const resource,bool force){
 		}
 	}
 	
-	ERROR_FN("ResourceManager: resource [ %s ] not found in database!",name.c_str());
+	ERROR_FN("BaseCache: resource [ %s ] not found in database!",name.c_str());
 	return force;
 }

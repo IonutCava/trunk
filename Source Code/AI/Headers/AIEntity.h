@@ -18,7 +18,7 @@
 #ifndef _AI_ENTITY_H_
 #define _AI_ENTITY_H_
 
-#include "resource.h"
+#include "core.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/Sensors/Headers/CommunicationSensor.h"
 #include "AI/ActionInterface/Headers/Coordination.h"

@@ -1,6 +1,6 @@
 #include "glResources.h"
 
-#include "resource.h"
+#include "core.h"
 #include "glTexture.h"
 #include "Hardware/Video/GFXDevice.h"
 using namespace std;

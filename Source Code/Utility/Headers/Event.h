@@ -18,8 +18,7 @@
 #ifndef _EVENT_H_
 #define _EVENT_H_
 
-#include "resource.h"
-#include "Hardware/Platform/Threading.h"
+#include "core.h"
 #include <boost/any.hpp>
 #include <boost/enable_shared_from_this.hpp> 
 

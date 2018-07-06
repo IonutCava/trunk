@@ -9,7 +9,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/ResourceManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 
 PostFX::PostFX(): _underwaterTexture(NULL),
 	_renderQuad(NULL),
