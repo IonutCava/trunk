@@ -381,7 +381,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
         _lockManagers[buffer]->WaitForLockedRange(0, bufferSize * sizeFactor);
         // Create sizeFactor copies of the data and store them in the buffer
         for (U8 i = 0; i < sizeFactor; ++i) {
-            U8* dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
+            bufferPtr dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
             memcpy(dst, data, bufferSize);
         }
         // Make sure we synchronize the write commands

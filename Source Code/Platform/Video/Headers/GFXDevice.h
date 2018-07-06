@@ -558,7 +558,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     GPUBlock _gpuBlock;
 
-    U32 _lastCmdCount;
     U32 _lastNodeCount;
     DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;

@@ -299,8 +299,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         _nodeBuffer->UpdateData(0, _lastNodeCount, _matricesData.data());
     }
 
-    _lastCmdCount = lastCmdCount;
-    uploadDrawCommands(_drawCommandsCache, _lastCmdCount);
+    uploadDrawCommands(_drawCommandsCache, lastCmdCount);
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,

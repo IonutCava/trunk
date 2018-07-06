@@ -52,7 +52,6 @@ void GUI::draw() const {
 
     _guiShader->bind();
 
-    GFXDevice& gfx = GFX_DEVICE;
     for (const guiMap::value_type& guiStackIterator : _guiStack) {
         GUIElement& element = *guiStackIterator.second;
         // Skip hidden elements
