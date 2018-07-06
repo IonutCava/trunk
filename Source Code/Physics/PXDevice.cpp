@@ -6,6 +6,12 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
+#include "Physics/PhysX/Headers/PhysX.h"
+
+#ifndef _PHYSICS_API_FOUND_
+#error "No physics library implemented!"
+#endif
+
 namespace Divide {
     
 PXDevice::PXDevice(Kernel& parent)

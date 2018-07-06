@@ -35,13 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // PhysX includes
 
 #include <PxPhysicsAPI.h>
-// Connecting the SDK to Visual Debugger
-#include <pvd/PxVisualDebugger.h>
-#include <extensions/PxDefaultErrorCallback.h>
-#include <extensions/PxDefaultAllocator.h>
-#include <extensions/PxVisualDebuggerExt.h>
-#include <foundation/PxAllocatorCallback.h>
-// PhysX includes //
 
 #include "Physics/Headers/PhysicsAsset.h"
 

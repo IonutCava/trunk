@@ -29,16 +29,12 @@
 
  */
 
-#include "Core/Headers/Application.h"
-#include "Core/Headers/KernelComponent.h"
-
 #ifndef _PHYSICS_DEVICE_H_
 #define _PHYSICS_DEVICE_H_
-#include "Physics/PhysX/Headers/PhysX.h"
 
-#ifndef _PHYSICS_API_FOUND_
-#error "No physics library implemented!"
-#endif
+#include "Core/Headers/Application.h"
+#include "Core/Headers/KernelComponent.h"
+#include "Physics/Headers/PhysicsAPIWrapper.h"
 
 namespace Divide {
 

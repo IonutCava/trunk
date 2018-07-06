@@ -12,34 +12,35 @@
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+// Connecting the SDK to Visual Debugger
+#include <pvd/PxPvd.h>
+#include <extensions/PxDefaultErrorCallback.h>
+#include <extensions/PxDefaultAllocator.h>
+#include <foundation/PxAllocatorCallback.h>
+// PhysX includes //
+
 #include <cstddef>
 
 namespace Divide {
+
+namespace {
+    const char* g_pvd_target_ip = "127.0.0.1";
+    physx::PxU32 g_pvd_target_port = 5425;
+    physx::PxU32 g_pvd_target_timeout_ms = 10;
+};
 
 physx::PxDefaultAllocator PhysX::_gDefaultAllocatorCallback;
 physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
 hashMapImpl<stringImpl, physx::PxTriangleMesh*> PhysX::_gMeshCache;
 
-physx::PxProfileZone* PhysX::getOrCreateProfileZone(
-    physx::PxFoundation& inFoundation) {
-#ifdef PHYSX_PROFILE_SDK
-    if (_profileZone == nullptr) {
-        _profileZone =
-            &physx::PxProfileZone::createProfileZone(
-                &inFoundation, "SampleProfileZone", gProfileNameProvider);
-    }
-#endif
-    return _profileZone;
-}
 
 PhysX::PhysX()
     : _gPhysicsSDK(nullptr),
       _foundation(nullptr),
-      _zoneManager(nullptr),
       _cooking(nullptr),
-      _profileZone(nullptr),
-      _pvdConnection(nullptr),
       _targetScene(nullptr),
+      _transport(nullptr),
+      _pvd(nullptr),
       _accumulator(0.0f),
       _timeStepFactor(0),
       _timeStep(0.0f),
@@ -57,49 +58,33 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
 
     _simulationSpeed = simSpeed;
     // create foundation object with default error and allocator callbacks.
-    _foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
+    _foundation = PxCreateFoundation(PX_FOUNDATION_VERSION,
                                      _gDefaultAllocatorCallback,
                                      _gDefaultErrorCallback);
     assert(_foundation != nullptr);
 
     bool recordMemoryAllocations = false;
 
-    if (Config::Build::IS_DEBUG_BUILD) {
-        recordMemoryAllocations = true;
-        _zoneManager = 
-            &physx::PxProfileZoneManager::createProfileZoneManager(_foundation);
-        assert(_zoneManager != nullptr);
+    if (Config::Build::IS_DEBUG_BUILD || Config::Build::IS_PROFILE_BUILD) {
+
+        recordMemoryAllocations = Config::Build::IS_DEBUG_BUILD;
+        createPvdConnection(g_pvd_target_ip,
+                            g_pvd_target_port,
+                            g_pvd_target_timeout_ms,
+                            Config::Build::IS_DEBUG_BUILD);
     }
 
     _gPhysicsSDK =
         PxCreatePhysics(PX_PHYSICS_VERSION, 
                         *_foundation, physx::PxTolerancesScale(),
-                        recordMemoryAllocations, _zoneManager);
+                        recordMemoryAllocations, _pvd);
 
     if (_gPhysicsSDK == nullptr) {
         Console::errorfn(Locale::get(_ID("ERROR_START_PHYSX_API")));
         return ErrorCode::PHYSX_INIT_ERROR;
     }
 
-    if (Config::Build::IS_DEBUG_BUILD) {
-        if (getOrCreateProfileZone(*_foundation)) {
-            _zoneManager->addProfileZone(*_profileZone);
-        }
-
-        _pvdConnection = _gPhysicsSDK->getPvdConnectionManager();
-        _gPhysicsSDK->getPvdConnectionManager()->addHandler(*this);
-
-        if (_pvdConnection != nullptr) {
-            if (physx::PxVisualDebuggerExt::createConnection(_pvdConnection,
-                                                             "localhost",
-                                                             5425, 10000) 
-                                                             != nullptr) {
-                Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
-            }
-        }
-    }
-
-    if (!PxInitExtensions(*_gPhysicsSDK)) {
+    if (!PxInitExtensions(*_gPhysicsSDK, _pvd)) {
         Console::errorfn(Locale::get(_ID("ERROR_EXTENSION_PHYSX_API")));
         return ErrorCode::PHYSX_EXTENSION_ERROR;
     }
@@ -131,12 +116,15 @@ bool PhysX::closePhysicsAPI() {
                   "closePhysicsAPI."
                   "Call \"setPhysicsScene( nullptr )\" first");
 
-    if (_cooking) {
+    if (_cooking != nullptr) {
         _cooking->release();
     }
     PxCloseExtensions();
-    if (_zoneManager) {
-        //_zoneManager->release();
+    if (_pvd != nullptr) {
+        _pvd->release();
+    }
+    if (_transport != nullptr) {
+        _transport->release();
     }
     _gPhysicsSDK->release();
     _foundation->release();
@@ -144,6 +132,55 @@ bool PhysX::closePhysicsAPI() {
     _foundation = nullptr;
 
     return true;
+}
+
+void PhysX::togglePvdConnection() {
+    if (_pvd == nullptr) {
+        return;
+    }
+
+    if (_pvd->isConnected()) {
+        _pvd->disconnect();
+    } else {
+        if (_pvd->connect(*_transport, _pvdFlags)) {
+            Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
+        }
+    }
+}
+
+
+void PhysX::createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 timeout, bool useFullConnection)
+{
+    //Create a pvd connection that writes data straight to the filesystem.  This is
+    //the fastest connection on windows for various reasons.  First, the transport is quite fast as
+    //pvd writes data in blocks and filesystems work well with that abstraction.
+    //Second, you don't have the PVD application parsing data and using CPU and memory bandwidth
+    //while your application is running.
+    //physx::PxPvdTransport* transport = physx::PxDefaultPvdFileTransportCreate( "c:\\mywork\\sample.pxd2" );
+
+    //The normal way to connect to pvd.  PVD needs to be running at the time this function is called.
+    //We don't worry about the return value because we are already registered as a listener for connections
+    //and thus our onPvdConnected call will take care of setting up our basic connection state.
+    _transport = physx::PxDefaultPvdSocketTransportCreate(ip, port, timeout);
+    if (_transport == nullptr) {
+        return;
+    }
+
+    //The connection flags state overall what data is to be sent to PVD.  Currently
+    //the Debug connection flag requires support from the implementation (don't send
+    //the data when debug isn't set) but the other two flags, profile and memory
+    //are taken care of by the PVD SDK.
+
+    //Use these flags for a clean profile trace with minimal overhead
+    _pvdFlags = physx::PxPvdInstrumentationFlag::eALL;
+    if (!useFullConnection)
+    {
+        _pvdFlags = physx::PxPvdInstrumentationFlag::ePROFILE;
+    }
+    //_pvd = physx::PxCreatePvd(*_foundation);
+    //if (_pvd->connect(*_transport, _pvdFlags)) {
+    //    Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
+    //}
 }
 
 inline void PhysX::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {

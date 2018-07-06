@@ -203,7 +203,7 @@ void GL_API::updateClipPlanes() {
         bool& activePlane = _activeClipPlanes[i];
         if (activePlane != list._active[i]) {
             // Update the clip plane if it differs internally
-            activePlane != activePlane;
+            activePlane = !activePlane;
             activePlane ? glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i))
                         : glDisable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
         }

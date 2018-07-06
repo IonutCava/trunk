@@ -51,12 +51,12 @@
 #pragma comment(lib, "CEGUICoreWindowRendererSet_Static_d.lib")
 #pragma comment(lib, "CEGUIExpatParser_Static_d.lib")
 
-#pragma comment(lib, "PhysXProfileSDKDEBUG.lib")
 #pragma comment(lib, "PhysX3CookingDEBUG_x64.lib")
 #pragma comment(lib, "PhysX3DEBUG_x64.lib")
 #pragma comment(lib, "PhysX3CommonDEBUG_x64.lib")
 #pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib")
+#pragma comment(lib, "PxPvdSDKDEBUG_x64.lib")
+#pragma comment(lib, "PxFoundationDEBUG_x64.lib")
 
 #else  //_DEBUG
 #pragma comment(lib, "glbinding.lib")
@@ -79,19 +79,19 @@
 #pragma comment(lib, "CEGUIExpatParser_Static.lib")
 
 #if defined(_PROFILE)
-    #pragma comment(lib, "PhysXProfileSDKCHECKED.lib")
     #pragma comment(lib, "PhysX3CookingCHECKED_x64.lib")
     #pragma comment(lib, "PhysX3CHECKED_x64.lib")
     #pragma comment(lib, "PhysX3CommonCHECKED_x64.lib")
     #pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
-    #pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
+    #pragma comment(lib, "PxPvdSDKCHECKED_x64.lib")
+    #pragma comment(lib, "PxFoundationCHECKED_x64.lib")
 #else
-    #pragma comment(lib, "PhysXProfileSDK.lib")
     #pragma comment(lib, "PhysX3Cooking_x64.lib")
     #pragma comment(lib, "PhysX3_x64.lib")
     #pragma comment(lib, "PhysX3Common_x64.lib")
     #pragma comment(lib, "PhysX3Extensions.lib")
-    #pragma comment(lib, "PhysXVisualDebuggerSDK.lib")
+    #pragma comment(lib, "PxPvdSDK_x64.lib")
+    #pragma comment(lib, "PxFoundation_x64.lib")
 #endif
 
 #endif  //_DEBUG

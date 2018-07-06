@@ -60,20 +60,11 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback {
 
 class PhysicsAsset;
 class SceneGraphNode;
-class PhysX final : public PhysicsAPIWrapper,
-                    private physx::debugger::comm::PvdConnectionHandler {
+class PhysX final : public PhysicsAPIWrapper {
 
 public:
     PhysX();
     ~PhysX();
-private:
-    ///////////////////////////////////////////////////////////////////////////////
-    // Implements PvdConnectionFactoryHandler
-    virtual void onPvdSendClassDescriptions(physx::debugger::comm::PvdConnection&) {
-    }
-    virtual void onPvdConnected(physx::debugger::comm::PvdConnection& inFactory) {}
-    virtual void onPvdDisconnected(
-        physx::debugger::comm::PvdConnection& inFactory) {}
 
 public:
     ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed)  override;
@@ -90,8 +81,10 @@ public:
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
 
     PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
-protected:
-    physx::PxProfileZone* getOrCreateProfileZone(physx::PxFoundation& inFoundation);
+
+
+    void togglePvdConnection();
+    void createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 timeout, bool useFullConnection);
 
 protected:
     PhysicsSceneInterface* _targetScene;
@@ -101,12 +94,13 @@ private:
     physx::PxPhysics* _gPhysicsSDK;
     physx::PxCooking* _cooking;
     physx::PxFoundation* _foundation;
-    physx::PxProfileZoneManager* _zoneManager;
-    physx::PxProfileZone* _profileZone;
-    physx::debugger::comm::PvdConnectionManager* _pvdConnection;
     physx::PxReal _timeStep;
     physx::PxU8   _timeStepFactor;
     physx::PxReal _accumulator;
+    physx::PxPvd*                     _pvd;
+    physx::PxPvdTransport*            _transport;
+    physx::PxPvdInstrumentationFlags  _pvdFlags;
+
     static physx::PxDefaultAllocator _gDefaultAllocatorCallback;
     static physx::PxDefaultErrorCallback _gDefaultErrorCallback;
 

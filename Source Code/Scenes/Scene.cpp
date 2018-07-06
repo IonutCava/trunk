@@ -752,7 +752,7 @@ bool Scene::load(const stringImpl& name) {
 
     loadBaseCamera();
     loadXMLAssets();
-    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context.gui(), this, std::placeholders::_1));
+    addSelectionCallback([this](U8 pIndex){_context.gui().selectionChangeCallback(this, pIndex);});
 
     U32 totalLoadingTasks = _loadingTasks;
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
