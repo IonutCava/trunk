@@ -117,21 +117,23 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     attachment->clearChanged();
 }
 
-void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state) {
+void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state, bool layeredRendering) {
 
     GLenum binding = static_cast<GLenum>(attachment->binding());
 
     BindingState bState{ state,
                          static_cast<GLint>(attachment->mipWriteLevel()),
-                         static_cast<GLint>(attachment->writeLayer()) };
+                         static_cast<GLint>(attachment->writeLayer()),
+                         layeredRendering};
 
-    if (bState != getAttachmentState(binding)) {
+    BindingState oldState = getAttachmentState(binding);
+    if (bState != oldState) {
         GLuint handle = 0;
         if (attachment->used() && bState._attState != AttachmentState::STATE_DISABLED) {
             handle = attachment->texture()->getHandle();
-        } 
+        }
 
-        if (bState._writeLayer > 0) {
+        if (attachment->texture()->getNumLayers() > 1 && layeredRendering) {
             glNamedFramebufferTextureLayer(_framebufferHandle, binding, handle, bState._writeLevel, bState._writeLayer);
         } else {
             glNamedFramebufferTexture(_framebufferHandle, binding, handle, bState._writeLevel);
@@ -214,8 +216,6 @@ void glFramebuffer::resolve(bool colours, bool depth) {
         // Do this first to prevent a stack overflow
         _resolved = true;
         if (_resolveBuffer != nullptr) {
-            toggleAttachments();
-
             RTBlitParams params = {};
             params._inputFB = this;
             if (colours) {
@@ -224,7 +224,7 @@ void glFramebuffer::resolve(bool colours, bool depth) {
                     ColourBlitEntry entry = {};
                     entry._inputIndex = entry._outputIndex = att->binding() - to_U32(GL_COLOR_ATTACHMENT0);
 
-                    const std::set<U32>& layers = _attachmentDirtyLayers[static_cast<GLenum>(att->binding())];
+                    const std::set<U32, std::greater<U32>>& layers = _attachmentDirtyLayers[static_cast<GLenum>(att->binding())];
                     for (U32 layer : layers) {
                         entry._inputLayer = entry._outputLayer = layer;
                         params._blitColours.push_back(entry);
@@ -233,7 +233,7 @@ void glFramebuffer::resolve(bool colours, bool depth) {
             }
 
             if (depth) {
-                const std::set<U32>& layers = _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT];
+                const std::set<U32, std::greater<U32>>& layers = _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT];
                 for (U32 layer : layers) {
                     params._blitDepth.push_back({ layer, layer });
                 }
@@ -313,11 +313,13 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
     bool mipMapsDirty = false;
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
     if (!params._blitColours.empty() && hasColour()) {
+
         const vector<RTAttachment_ptr>& inputAttachments = input->_attachmentPool->get(RTAttachmentType::Colour);
         const vector<RTAttachment_ptr>& outputAttachments = this->_attachmentPool->get(RTAttachmentType::Colour);
 
         GLuint prevReadAtt = 0;
         GLuint prevWriteAtt = 0;
+
         for (const ColourBlitEntry& entry : params._blitColours) {
             const RTAttachment_ptr& inAtt = inputAttachments[entry._inputIndex];
             const RTAttachment_ptr& outAtt = outputAttachments[entry._outputIndex];
@@ -336,12 +338,12 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
 
             const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(crtReadAtt));
             if (inAtt->writeLayer(entry._inputLayer)) {
-                input->toggleAttachment(inAtt, inState._attState);
+                input->toggleAttachment(inAtt, inState._attState, true);
             }
 
             const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(crtWriteAtt));
             if (outAtt->writeLayer(entry._outputLayer)) {
-                this->toggleAttachment(outAtt, outState._attState);
+                this->toggleAttachment(outAtt, outState._attState, true);
             }
 
             glBlitNamedFramebuffer(input->_framebufferHandle, this->_framebufferHandle,
@@ -354,6 +356,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             _context.registerDrawCall();
             mipMapsDirty = true;
         }
+
     }
 
     if (!params._blitDepth.empty() && hasDepth()) {
@@ -363,12 +366,12 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
 
             const BindingState& inState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
             if (inDepthAtt->writeLayer(entry._inputLayer)) {
-                input->toggleAttachment(inDepthAtt, inState._attState);
+                input->toggleAttachment(inDepthAtt, inState._attState, true);
             }
 
             const BindingState& outState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
             if (outDepthAtt->writeLayer(entry._outputLayer)) {
-                this->toggleAttachment(outDepthAtt, outState._attState);
+                this->toggleAttachment(outDepthAtt, outState._attState, true);
             }
 
             glBlitNamedFramebuffer(input->_framebufferHandle, this->_framebufferHandle,
@@ -469,7 +472,7 @@ void glFramebuffer::toggleAttachments() {
             attachment->mipWriteLevel(0);
 
             /// All active attachments are enabled by default
-            toggleAttachment(attachment, AttachmentState::STATE_ENABLED);
+            toggleAttachment(attachment, AttachmentState::STATE_ENABLED, false);
         }
     }
 }
@@ -517,12 +520,24 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Mark the resolve buffer as dirty
     _resolved = false;
 
-    if (drawPolicy.drawMask().isEnabled(RTAttachmentType::Depth)) {
+    if (hasDepth() && drawPolicy.drawMask().isEnabled(RTAttachmentType::Depth)) {
         _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT].insert(_attachmentState[GL_DEPTH_ATTACHMENT]._writeLayer);
+
+        const std::set<U32>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
+        for (U32 layer : additionalDirtyLayers) {
+            _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT].insert(layer);
+        }
     }
-    for (U8 i = 0; i < MAX_RT_COLOUR_ATTACHMENTS; ++i) {
-        if (drawPolicy.drawMask().isEnabled(RTAttachmentType::Colour, i)) {
-            _attachmentDirtyLayers[GL_COLOR_ATTACHMENT0 + i].insert(_attachmentState[GL_COLOR_ATTACHMENT0 + i]._writeLayer);
+
+    if (hasColour()) {
+        for (U8 i = 0; i < MAX_RT_COLOUR_ATTACHMENTS; ++i) {
+            if (drawPolicy.drawMask().isEnabled(RTAttachmentType::Colour, i)) {
+                _attachmentDirtyLayers[GL_COLOR_ATTACHMENT0 + i].insert(_attachmentState[GL_COLOR_ATTACHMENT0 + i]._writeLayer);
+                const std::set<U32>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Colour, i);
+                for (U32 layer : additionalDirtyLayers) {
+                    _attachmentDirtyLayers[GL_COLOR_ATTACHMENT0 + i].insert(layer);
+                }
+            }
         }
     }
     /// Memorize the current draw policy to speed up later calls
@@ -625,14 +640,14 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
         const BindingState& state = getAttachmentState(static_cast<GLenum>(attDepth->binding()));
         if (attDepth->writeLayer(params._layer)) {
-            toggleAttachment(attDepth, state._attState);
+            toggleAttachment(attDepth, state._attState, true);
         }
     }
 
     if (useColourLayer) {
         const BindingState& state = getAttachmentState(static_cast<GLenum>(att->binding()));
         if (att->writeLayer(params._layer)) {
-            toggleAttachment(att, state._attState);
+            toggleAttachment(att, state._attState, true);
         }
     }
 
@@ -655,11 +670,11 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
             {
                 const BindingState& state = getAttachmentState(static_cast<GLenum>(attachment->binding()));
                 attachment->mipWriteLevel(writeLevel);
-                toggleAttachment(attachment, state._attState);
+                toggleAttachment(attachment, state._attState, state._layeredRendering);
             } else {
                 //nVidia still has issues if attachments are not all at the same mip level -Ionut
                 if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
-                    toggleAttachment(attachment, AttachmentState::STATE_DISABLED);
+                    toggleAttachment(attachment, AttachmentState::STATE_DISABLED, false);
                 }
             }
         }

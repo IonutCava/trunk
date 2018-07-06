@@ -96,10 +96,18 @@ class RTDrawDescriptor {
     inline void clearColour(U8 index, const bool state) { _clearColourAttachment[index] = state; }
     inline bool clearColour(U8 index) const { return _clearColourAttachment[index]; }
 
+    void markDirtyLayer(RTAttachmentType type, U8 index, U32 layer);
+    std::set<U32> getDirtyLayers(RTAttachmentType type, U8 index = 0) const;
+
     bool operator==(const RTDrawDescriptor& other) const;
     bool operator!=(const RTDrawDescriptor& other) const;
 
   protected:
+
+    typedef std::set<U32> DirtyLayers;
+    typedef std::pair<U8, DirtyLayers> DirtyLayersEntry;
+
+    hashMap<RTAttachmentType, vectorEASTL<DirtyLayersEntry>> _dirtyLayers;
     RTDrawMask _drawMask;
     U32 _stateMask;
     std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;

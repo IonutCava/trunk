@@ -84,17 +84,20 @@ class glFramebuffer : public RenderTarget,
         AttachmentState _attState = AttachmentState::COUNT;
         GLint _writeLevel = -1;
         GLint _writeLayer = -1;
+        bool _layeredRendering = false;
 
         inline bool operator==(const BindingState& other) const {
             return _attState == other._attState &&
                    _writeLevel == other._writeLevel &&
-                   _writeLayer == other._writeLayer;
+                   _writeLayer == other._writeLayer &&
+                   _layeredRendering == other._layeredRendering;
         }
 
         inline bool operator!=(const BindingState& other) const {
             return _attState != other._attState ||
                    _writeLevel != other._writeLevel ||
-                   _writeLayer != other._writeLayer;
+                   _writeLayer != other._writeLayer ||
+                   _layeredRendering != other._layeredRendering;
         }
     };
 
@@ -109,7 +112,7 @@ class glFramebuffer : public RenderTarget,
 
     void initAttachment(RTAttachmentType type, U8 index);
 
-    void toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state);
+    void toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state, bool layeredRendering);
 
     bool hasDepth() const;
 
@@ -151,7 +154,7 @@ class glFramebuffer : public RenderTarget,
     bool _hasMultisampledColourAttachments;
 
     hashMap<GLenum, BindingState> _attachmentState;
-    hashMap<GLenum, std::set<U32>> _attachmentDirtyLayers;
+    hashMap<GLenum, std::set<U32, std::greater<U32>>> _attachmentDirtyLayers;
 };
 
 namespace Attorney {

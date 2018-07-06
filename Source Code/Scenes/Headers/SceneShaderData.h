@@ -46,7 +46,7 @@ class SceneShaderData {
         vec4<F32> _shadowingSettings;
         //x - elapsed time, y - delta time, z - renderer flag, w - reserved
         vec4<F32> _otherData;
-        // x - debug render, y - detail level, z - shadow detail level, w - reserved
+        // x - debug render, y - detail level, z - reserved, w - reserved
         vec4<F32> _otherData2;
         vec4<F32> _waterPositionsW/*[MAX_WATER_BODIES]*/;
         vec4<F32> _waterDetails/*[MAX_WATER_BODIES]*/;
@@ -96,9 +96,8 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    inline void detailLevel(RenderDetailLevel renderDetailLevel, RenderDetailLevel shadowDetailLevel) {
+    inline void detailLevel(RenderDetailLevel renderDetailLevel) {
         _bufferData._otherData2.y = to_F32(renderDetailLevel);
-        _bufferData._otherData2.z = to_F32(shadowDetailLevel);
         _dirty = true;
     }
 

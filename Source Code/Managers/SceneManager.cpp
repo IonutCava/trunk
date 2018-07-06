@@ -398,8 +398,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
     _sceneData->setRendererFlag(_platformContext->gfx().getRenderer().getFlag());
-    _sceneData->detailLevel(_platformContext->config().rendering.renderDetailLevel,
-                            _platformContext->config().rendering.shadowMapping.shadowDetailLevel);
+    _sceneData->detailLevel(_platformContext->config().rendering.renderDetailLevel);
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
     bool fogEnabled = _platformContext->config().rendering.enableFog;
@@ -469,7 +468,7 @@ void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GF
 }
 
 bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
-    if (_platformContext->config().rendering.shadowMapping.shadowDetailLevel != RenderDetailLevel::OFF) {
+    if (_platformContext->config().rendering.shadowMapping.enabled) {
         Scene& activeScene = getActiveScene();
         LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
         assert(lightPool != nullptr);

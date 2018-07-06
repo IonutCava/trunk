@@ -285,7 +285,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
 }
 
 void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
-    bool shadowMappingEnabled = _context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel != RenderDetailLevel::OFF;
+    bool shadowMappingEnabled = _context.parent().platformContext().config().rendering.shadowMapping.enabled;
 
     propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
                                                      ? -1.0f

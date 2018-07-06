@@ -48,7 +48,7 @@ void ShadowMap::resetShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::initShadowMaps(GFXDevice& context) {
-    Configuration::Rendering::ShadowMapping settings = context.parent().platformContext().config().rendering.shadowMapping;
+    Configuration::Rendering::ShadowMapping& settings = context.parent().platformContext().config().rendering.shadowMapping;
     
     if (!isPowerOfTwo(settings.shadowMapResolution)) {
         settings.shadowMapResolution = nextPOW2(settings.shadowMapResolution);
@@ -94,31 +94,15 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
                 depthMapSampler.setAnisotropy(settings.anisotropicFilteringLevel);
 
-                TextureType texType = settings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
-
-                TextureDescriptor depthMapDescriptor(texType,
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                      GFXImageFormat::RG32F,
                                                      GFXDataFormat::FLOAT_32);
-                depthMapDescriptor.msaaSamples(settings.msaaSamples);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT *
                                                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                SamplerDescriptor depthSampler;
-                depthSampler.setFilters(TextureFilter::NEAREST);
-                depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-
-                TextureDescriptor depthDescriptor(texType,
-                                                  GFXImageFormat::DEPTH_COMPONENT,
-                                                  GFXDataFormat::UNSIGNED_INT);
-                depthDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT *
-                                              Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-                depthDescriptor.setSampler(depthSampler);
-                depthDescriptor.msaaSamples(settings.msaaSamples);
-
                 vector<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachmentType::Colour },
-                    { depthDescriptor, RTAttachmentType::Depth },
+                    { depthMapDescriptor, RTAttachmentType::Colour }
                 };
 
                 RenderTargetDescriptor desc = {};

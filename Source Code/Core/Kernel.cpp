@@ -566,15 +566,15 @@ void Kernel::warmup() {
         static const U8 warmupLoopCount = 3;
         U8 loopCount = 0;
 
-        RenderDetailLevel shadowLevel = _platformContext->config().rendering.shadowMapping.shadowDetailLevel;
+        bool shadowsEnabled = _platformContext->config().rendering.shadowMapping.enabled;
         ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
-        _platformContext->config().rendering.shadowMapping.shadowDetailLevel = RenderDetailLevel::OFF;
+        _platformContext->config().rendering.shadowMapping.enabled = false;
 
         onLoop();
         loopCount++;
 
-        if (shadowLevel != RenderDetailLevel::OFF) {
-            _platformContext->config().rendering.shadowMapping.shadowDetailLevel = shadowLevel;
+        if (shadowsEnabled) {
+            _platformContext->config().rendering.shadowMapping.enabled = shadowsEnabled;
             onLoop();
             loopCount++;
         }

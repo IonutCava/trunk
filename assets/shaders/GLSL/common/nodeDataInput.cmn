@@ -65,7 +65,7 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     vec4   dvd_shadowingSettings;
     //x - elapsed time, y - delta time, z - renderer flag, w - reserved
     vec4   dvd_otherData;
-    // x - debug render, y - detail level, z - shadow detail level, w - reserved
+    // x - debug render, y - detail level, z - reserved, w - reserved
     vec4   dvd_otherData2;
     vec4   dvd_waterPositionsW/*[MAX_WATER_BODIES]*/;
     //x = width, y = length, z = depth
@@ -78,7 +78,6 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 #define dvd_deltaTime (int(dvd_otherData.y))
 #define dvd_showDebugInfo int(dvd_otherData2.x)
 #define dvd_renderDetailLevel (int(dvd_otherData2.y))
-#define dvd_shadowDetailLevel (int(dvd_otherData2.z))
 
 #if defined(VERT_SHADER) || defined(GEOM_SHADER)
 out float gl_ClipDistance[MAX_CLIP_PLANES];

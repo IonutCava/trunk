@@ -75,6 +75,7 @@ class CascadedShadowMaps : public ShadowMap {
     PushConstants     _blurDepthMapConstants;
     /// Shortcut for the owning directional light
     DirectionalLight* _dirLight;
+    RenderTargetHandle _drawBuffer;
     RenderTargetHandle _blurBuffer;
     vector<vec3<F32> > _frustumCornersVS;
     vector<vec3<F32> > _frustumCornersWS;

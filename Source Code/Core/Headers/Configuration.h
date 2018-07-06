@@ -108,7 +108,7 @@ public:
             bool enableSSAO;
         } postFX;
         struct ShadowMapping {
-            RenderDetailLevel shadowDetailLevel;
+            bool enabled;
             U32 shadowMapResolution;
             U8 msaaSamples;
             U8 anisotropicFilteringLevel;

@@ -492,7 +492,7 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         setShaderDefines(renderStagePass, "IS_REFLECTIVE");
     }
 
-    if (_context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
+    if (!_context.parent().platformContext().config().rendering.shadowMapping.enabled) {
         shader += ".NoShadows";
         setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
     }
@@ -531,7 +531,7 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         } break;
     }
 
-    if (_context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
+    if (!_context.parent().platformContext().config().rendering.shadowMapping.enabled) {
         setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
         shader += ".NoShadows";
     }

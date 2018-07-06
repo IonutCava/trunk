@@ -23,6 +23,10 @@
 
 namespace Divide {
 
+namespace{
+    Configuration::Rendering::ShadowMapping g_shadowSettings;
+};
+
 CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, U8 numSplits)
     : ShadowMap(context, light, shadowCameras, ShadowType::LAYERED)
 {
@@ -39,6 +43,8 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     _vertBlur = 0;
     _debugViews.fill(nullptr);
 
+    g_shadowSettings = _context.parent().platformContext().config().rendering.shadowMapping;
+
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
@@ -52,37 +58,68 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
         _debugViews[i] = _context.addDebugView(shadow);
     }
 
-    ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
+    ResourceDescriptor blurDepthMapShader(Util::StringFormat("blur.GaussBlur_%d_invocations", _numSplits));
     blurDepthMapShader.setThreadedLoading(false);
+    blurDepthMapShader.setPropertyList(Util::StringFormat("GS_MAX_INVOCATIONS %d", _numSplits));
+
     _blurDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), blurDepthMapShader);
-    _blurDepthMapConstants.set("layerTotalCount", GFX::PushConstantType::INT, (I32)_numSplits);
     _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, (I32)_numSplits);
+    _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)0);
+    _blurDepthMapConstants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)0);
+
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(), "EVCSM");
 
-    SamplerDescriptor blurMapSampler;
-    blurMapSampler.setFilters(TextureFilter::LINEAR);
-    blurMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    blurMapSampler.setAnisotropy(0);
+    SamplerDescriptor sampler;
+    sampler.setFilters(TextureFilter::LINEAR);
+    sampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    sampler.setAnisotropy(0);
 
-    TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
-                                        GFXImageFormat::RG32F,
-                                        GFXDataFormat::FLOAT_32);
-    blurMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
-    blurMapDescriptor.setSampler(blurMapSampler);
-    
-    const RenderTarget& depthMap = getDepthMap();
+    // Draw FBO
+    {
+        // MSAA rendering is supported
+        TextureType texType = g_shadowSettings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
+        TextureDescriptor depthMapDescriptor(texType, GFXImageFormat::RG32F, GFXDataFormat::FLOAT_32);
+        depthMapDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
+        depthMapDescriptor.setLayerCount(_numSplits);
+        depthMapDescriptor.setSampler(sampler);
 
-    vector<RTAttachmentDescriptor> att = {
-        { blurMapDescriptor, RTAttachmentType::Colour },
-    };
+        TextureDescriptor depthDescriptor(texType, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
+        depthDescriptor.setLayerCount(_numSplits);
+        depthDescriptor.setSampler(sampler);
+        depthDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
 
-    RenderTargetDescriptor desc = {};
-    desc._name = "CSM_Blur";
-    desc._resolution = vec2<U16>(depthMap.getWidth(), depthMap.getHeight());
-    desc._attachmentCount = to_U8(att.size());
-    desc._attachments = att.data();
+        vector<RTAttachmentDescriptor> att = {
+            { depthMapDescriptor, RTAttachmentType::Colour },
+            { depthDescriptor, RTAttachmentType::Depth },
+        };
 
-    _blurBuffer = _context.renderTargetPool().allocateRT(desc);
+        RenderTargetDescriptor desc = {};
+        desc._name = "CSM_ShadowMap_Draw";
+        desc._resolution = vec2<U16>(g_shadowSettings.shadowMapResolution);
+        desc._attachmentCount = to_U8(att.size());
+        desc._attachments = att.data();
+
+        _drawBuffer = context.renderTargetPool().allocateRT(desc);
+    }
+
+    //Blur FBO
+    {
+        TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG32F, GFXDataFormat::FLOAT_32);
+        blurMapDescriptor.setLayerCount(_numSplits);
+        blurMapDescriptor.setSampler(sampler);
+
+        vector<RTAttachmentDescriptor> att = {
+            { blurMapDescriptor, RTAttachmentType::Colour }
+        };
+
+        RenderTargetDescriptor desc = {};
+        desc._name = "CSM_Blur";
+        desc._resolution = vec2<U16>(g_shadowSettings.shadowMapResolution);
+        desc._attachmentCount = to_U8(att.size());
+        desc._attachments = att.data();
+
+        _blurBuffer = _context.renderTargetPool().allocateRT(desc);
+    }
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
 }
@@ -90,19 +127,19 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
 CascadedShadowMaps::~CascadedShadowMaps()
 {
     _context.renderTargetPool().deallocateRT(_blurBuffer);
+    _context.renderTargetPool().deallocateRT(_drawBuffer);
 }
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _numSplits = smi->numLayers();
-    const RenderTarget& depthMap = getDepthMap();
 
     _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
     _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
 
     vector<vec2<F32>> blurSizes(_numSplits);
-    blurSizes[0].set(1.0f / (depthMap.getWidth() * 1.0f), 1.0f / (depthMap.getHeight() * 1.0f));
+    blurSizes[0].set(1.0f / g_shadowSettings.shadowMapResolution);
     for (U8 i = 1; i < _numSplits; ++i) {
-        blurSizes[i].set(blurSizes[i - 1] * 0.5f);
+        blurSizes[i].set(blurSizes[i - 1]/* * 0.5f*/);
     }
 
     _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
@@ -125,13 +162,13 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     RenderPassManager::PassParams params;
     params._doPrePass = false;
     params._stage = RenderStage::SHADOW;
-    params._target = getDepthMapID();
+    params._target = _drawBuffer._targetID;
     params._bindTargets = false;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = params._target;
     beginRenderPassCmd._name = "DO_CSM_PASS";
-    beginRenderPassCmd._descriptor = RenderTarget::defaultPolicyNoClear();
+    beginRenderPassCmd._descriptor = RenderTarget::defaultPolicy();
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::EndRenderSubPassCommand endRenderSubPassCommand;
@@ -142,7 +179,7 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     RenderTarget::DrawLayerParams drawParams;
     drawParams._type = RTAttachmentType::Colour;
     drawParams._index = 0;
-    drawParams._layer = getArrayOffset();
+    drawParams._layer = 0;
 
     RenderPassManager& rpm = _context.parent().renderPassManager();
     for (U8 i = 0; i < _numSplits; ++i) {
@@ -166,12 +203,16 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
         _debugViews[i]->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, _shadowCameras[i]->getZPlanes());
     }
     
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+    drawParams._layer = 0;
+    beginRenderSubPassCmd._writeLayers.push_back(drawParams);
+    GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
+
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
-    if (_context.parent().platformContext().config().rendering.shadowMapping.enableBlurring) {
-        postRender(bufferInOut);
-    }
+    postRender(bufferInOut);
 }
 
 void CascadedShadowMaps::calculateSplitDepths(const mat4<F32>& projMatrix, const vec2<F32>& nearFarPlanes) {
@@ -241,77 +282,84 @@ void CascadedShadowMaps::applyFrustumSplits(const mat4<F32>& invViewMatrix, cons
         testPointRounded.round();
         _shadowMatrices[pass].translate(vec3<F32>(((testPointRounded - testPoint) / halfShadowMapSize).xy(), 0.0f));
 
-        _light->setShadowVPMatrix(pass, _shadowMatrices[pass]/* * MAT4_BIAS*/);
+        _light->setShadowVPMatrix(pass, _shadowMatrices[pass]);
         _light->setShadowLightPos(pass, currentEye);
     }
 }
 
 void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
-    RenderTarget& depthMap = getDepthMap();
+    if (g_shadowSettings.enableBlurring) {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+        pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
 
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
+        GenericDrawCommand pointsCmd;
+        pointsCmd._primitiveType = PrimitiveType::API_POINTS;
+        pointsCmd._drawCount = 1;
+        
+        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        GFX::BindPipelineCommand pipelineCmd;
+        GFX::SendPushConstantsCommand pushConstantsCommand;
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        GFX::EndRenderPassCommand endRenderPassCmd;
+        GFX::DrawCommand drawCmd;
+        drawCmd._drawCommands.push_back(pointsCmd);
 
-    GenericDrawCommand pointsCmd;
-    pointsCmd._primitiveType = PrimitiveType::API_POINTS;
-    pointsCmd._drawCount = 1;
+        // Blur horizontally
+        beginRenderPassCmd._target = _blurBuffer._targetID;
+        beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
+        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
-    GFX::BindPipelineCommand pipelineCmd;
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(pointsCmd);
+        pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getID();
+        pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    // Blur horizontally
-    beginRenderPassCmd._target = _blurBuffer._targetID;
-    beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        pushConstantsCommand._constants = _blurDepthMapConstants;
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getID();
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+        TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        descriptorSetCmd._set = _context.newDescriptorSet();
+        descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)getArrayOffset());
-    _blurDepthMapConstants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)0);
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    pushConstantsCommand._constants = _blurDepthMapConstants;
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
-    TextureData texData = depthMap.getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set = _context.newDescriptorSet(); 
-    descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        // Blur vertically
+        beginRenderPassCmd._target = getDepthMapID();
+        beginRenderPassCmd._descriptor = RenderTarget::defaultPolicyNoClear();
+        beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
+        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
+        pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _vertBlur;
+        pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+        pushConstantsCommand._constants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)getArrayOffset());
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    // Blur vertically
-    beginRenderPassCmd._target = getDepthMapID();
-    beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        descriptorSetCmd._set = _context.newDescriptorSet();
+        descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _vertBlur;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)0);
-    _blurDepthMapConstants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)getArrayOffset());
+        GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    } else {
+        GFX::BlitRenderTargetCommand blitRenderTargetCommand;
+        blitRenderTargetCommand._source = _drawBuffer._targetID;
+        blitRenderTargetCommand._destination = getDepthMapID();
 
-    pushConstantsCommand._constants = _blurDepthMapConstants;
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-    
-    texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set = _context.newDescriptorSet();
-    descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
-
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+        ColourBlitEntry blitEntry = {};
+        for (U8 i = 0; i < _numSplits; ++i) {
+            blitEntry._inputLayer = i;
+            blitEntry._outputLayer = getArrayOffset() + i;
+            blitRenderTargetCommand._blitColours.emplace_back(blitEntry);
+        }
+        GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
+    }
 }
 
 };

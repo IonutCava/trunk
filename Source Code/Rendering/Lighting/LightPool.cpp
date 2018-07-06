@@ -238,7 +238,7 @@ void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedSha
 void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
+    if (!context.parent().platformContext().config().rendering.shadowMapping.enabled) {
         _previewShadowMaps = false;
     }
 
@@ -248,11 +248,9 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
 // If we have computed shadowmaps, bind them before rendering any geometry;
 void LightPool::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     // Skip applying shadows if we are rendering to depth map, or we have shadows disabled
-    if (context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
-        return;
+    if (context.parent().platformContext().config().rendering.shadowMapping.enabled) {
+        ShadowMap::bindShadowMaps(context, bufferInOut);
     }
-
-    ShadowMap::bindShadowMaps(context, bufferInOut);
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {

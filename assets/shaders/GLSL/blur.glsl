@@ -107,7 +107,9 @@ void main(void)
 
 --Geometry.GaussBlur
 
+#ifndef GS_MAX_INVOCATIONS
 #define GS_MAX_INVOCATIONS MAX_SPLITS_PER_LIGHT
+#endif
 
 layout(points, invocations = GS_MAX_INVOCATIONS) in;
 layout(triangle_strip, max_vertices = 4) out;
@@ -116,7 +118,6 @@ uniform vec2 blurSizes[GS_MAX_INVOCATIONS];
 uniform int layerCount;
 uniform int layerOffsetRead;
 uniform int layerOffsetWrite;
-uniform int layerTotalCount;
 
 out vec3 _blurCoords[7];
 out flat int _blurred;
@@ -152,12 +153,12 @@ void computeCoordsV(in float texCoordX, in float texCoordY, in int layer){
 
 void passThrough(in float texCoordX, in float texCoordY, in int layer) {
     _blurCoords[0] = vec3(texCoordX, texCoordY, layer);
-    _blurCoords[1] = vec3(1.0);
-    _blurCoords[2] = vec3(1.0);
-    _blurCoords[3] = vec3(1.0);
-    _blurCoords[4] = vec3(1.0);
-    _blurCoords[5] = vec3(1.0);
-    _blurCoords[6] = vec3(1.0);
+    _blurCoords[1] = vec3(1.0, 1.0, layer);
+    _blurCoords[2] = vec3(1.0, 1.0, layer);
+    _blurCoords[3] = vec3(1.0, 1.0, layer);
+    _blurCoords[4] = vec3(1.0, 1.0, layer);
+    _blurCoords[5] = vec3(1.0, 1.0, layer);
+    _blurCoords[6] = vec3(1.0, 1.0, layer);
     _blurred = 0;
 }
 
@@ -165,44 +166,44 @@ void main() {
     if (gl_InvocationID < layerCount) {
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-        BlurRoutine(1.0, 1.0, gl_Layer + layerOffsetRead);
+        BlurRoutine(1.0, 1.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-        BlurRoutine(0.0, 1.0, gl_Layer + layerOffsetRead);
+        BlurRoutine(0.0, 1.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-        BlurRoutine(1.0, 0.0, gl_Layer + layerOffsetRead);
+        BlurRoutine(1.0, 0.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-        BlurRoutine(0.0, 0.0, gl_Layer + layerOffsetRead);
+        BlurRoutine(0.0, 0.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         EndPrimitive();
     } else {
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-        passThrough(1.0, 1.0, gl_Layer + layerOffsetRead);
+        passThrough(1.0, 1.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-        passThrough(0.0, 1.0, gl_Layer + layerOffsetRead);
+        passThrough(0.0, 1.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-        passThrough(1.0, 0.0, gl_Layer + layerOffsetRead);
+        passThrough(1.0, 0.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         gl_Layer = gl_InvocationID + layerOffsetWrite;
         gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-        passThrough(0.0, 0.0, gl_Layer + layerOffsetRead);
+        passThrough(0.0, 0.0, gl_InvocationID + layerOffsetRead);
         EmitVertex();
 
         EndPrimitive();

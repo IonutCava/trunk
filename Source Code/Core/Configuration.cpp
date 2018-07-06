@@ -51,7 +51,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     rendering.postFX.bloomFactor = 0.4f;
     rendering.postFX.enableSSAO = false;
 
-    rendering.shadowMapping.shadowDetailLevel = RenderDetailLevel::HIGH;
+    rendering.shadowMapping.enabled = true;
     rendering.shadowMapping.shadowMapResolution = 512;
     rendering.shadowMapping.msaaSamples = 0;
     rendering.shadowMapping.anisotropicFilteringLevel = 1;
@@ -115,10 +115,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.bloomFactor);
         GET_PARAM(rendering.postFX.enableSSAO);
 
-        U32 shadowDetail = to_I32(rendering.shadowMapping.shadowDetailLevel);
-        GET_TEMP_PARAM(rendering.shadowMapping.shadowDetailLevel, shadowDetail);
-        CLAMP(shadowDetail, to_U32(RenderDetailLevel::OFF), to_U32(RenderDetailLevel::COUNT) - 1);
-        rendering.shadowMapping.shadowDetailLevel = static_cast<RenderDetailLevel>(detail);
+        GET_PARAM(rendering.shadowMapping.enabled);
         GET_PARAM(rendering.shadowMapping.shadowMapResolution);
         GET_PARAM(rendering.shadowMapping.msaaSamples);
         GET_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
@@ -177,7 +174,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(rendering.postFX.enableBloom);
     PUT_PARAM(rendering.postFX.bloomFactor);
     PUT_PARAM(rendering.postFX.enableSSAO);
-    PUT_TEMP_PARAM(rendering.shadowMapping.shadowDetailLevel, to_I32(rendering.shadowMapping.shadowDetailLevel));
+
+    PUT_PARAM(rendering.shadowMapping.enabled);
     PUT_PARAM(rendering.shadowMapping.shadowMapResolution);
     PUT_PARAM(rendering.shadowMapping.msaaSamples);
     PUT_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
