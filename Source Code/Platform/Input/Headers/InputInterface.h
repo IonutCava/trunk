@@ -84,7 +84,7 @@ public:
         return _keys[to_uint(keyCode)];
     }
 
-    static KeyCode keyCodeByName(const stringImpl& keyName);
+    static OIS::KeyCode keyCodeByName(const stringImpl& keyName);
     static MouseButton mouseButtonByName(const stringImpl& buttonName);
     static JoystickElement joystickElementByName(const stringImpl& elementName);
 
@@ -111,7 +111,7 @@ protected:
     bool _bMustStop;
     bool _bIsInitialized;
 
-    KeyEvent _keys[KeyCode_PLACEHOLDER];
+    vectorImpl<KeyEvent> _keys;
 
 };
 namespace Attorney {

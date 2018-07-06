@@ -39,10 +39,16 @@ namespace Divide {
 namespace Input {
 /// Points to the position of said joystick in the vector
 enum class Joystick : U32 {
-    JOYSTICK_1 = 0,
-    JOYSTICK_2 = 1,
-    JOYSTICK_3 = 2,
-    JOYSTICK_4 = 3,
+    JOYSTICK_1  = 0,
+    JOYSTICK_2  = 1,
+    JOYSTICK_3  = 2,
+    JOYSTICK_4  = 3,
+    JOYSTICK_5  = 4,
+    JOYSTICK_6  = 5,
+    JOYSTICK_7  = 6,
+    JOYSTICK_8  = 7,
+    JOYSTICK_9  = 8,
+    JOYSTICK_10 = 9,
     COUNT
 };
 
@@ -57,16 +63,32 @@ struct JoystickData {
 typedef OIS::KeyCode KeyCode;
 typedef OIS::Keyboard::Modifier KeyModifier;
 
-typedef OIS::MouseEvent MouseEvent;
 typedef OIS::MouseButtonID MouseButton;
 
-typedef OIS::JoyStickEvent JoystickEvent;
+struct InputEvent {
+    explicit InputEvent(U8 deviceIndex);
+
+    U8 _deviceIndex;
+};
+
+struct MouseEvent : public InputEvent {
+    explicit MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg);
+
+    OIS::MouseEvent _event;
+};
+
+struct JoystickEvent : public InputEvent {
+    explicit JoystickEvent(U8 deviceIndex, const OIS::JoyStickEvent& arg);
+
+    OIS::JoyStickEvent _event;
+};
+
 typedef I8 JoystickButton;
 
 static const U32 KeyCode_PLACEHOLDER = 0xEE;
 
-struct KeyEvent {
-    KeyEvent();
+struct KeyEvent : public InputEvent {
+    explicit KeyEvent(U8 deviceIndex);
 
     KeyCode _key;
     bool _pressed;

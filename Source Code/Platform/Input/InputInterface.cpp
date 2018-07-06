@@ -27,7 +27,8 @@ InputInterface::InputInterface(Kernel& parent)
       _pJoystickInterface(nullptr),
       _pEffectMgr(nullptr),
       _bMustStop(false),
-      _bIsInitialized(false)
+      _bIsInitialized(false),
+      _keys(vectorImpl<KeyEvent>(KeyCode_PLACEHOLDER, KeyEvent(0)))
 {
     for (U16 i = 0; i < KeyCode_PLACEHOLDER; ++i) {
         _keys[i]._key = static_cast<KeyCode>(i);
@@ -286,12 +287,18 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
     return JoystickElement(JoystickElementType::BUTTON_PRESS, to_ubyte(buttonId));
 }
 
-KeyCode InputInterface::keyCodeByName(const stringImpl& name) {
+OIS::KeyCode InputInterface::keyCodeByName(const stringImpl& name) {
     stringImpl nameCpy("KC_" + name);
     std::map<stringImpl, OIS::KeyCode>::const_iterator it;
     it = g_keysByNameMap.find(nameCpy);
     if (it == std::cend(g_keysByNameMap)) {
-        transform(nameCpy.begin(), nameCpy.end(), nameCpy.begin(), toupper);
+        std::transform(std::begin(nameCpy),
+                       std::end(nameCpy),
+                       std::begin(nameCpy),
+                       [](char c) {
+                           return static_cast<char>(::toupper(c));
+                       });
+
         it = g_keysByNameMap.find(nameCpy);
     }
     assert(it != std::cend(g_keysByNameMap));

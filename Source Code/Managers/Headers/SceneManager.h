@@ -82,12 +82,12 @@ public:
     void destroy();
 
     // Add a new player to the simulation
-    // Returns true if the specified player is already active
-    bool addPlayer(const Scene& parentScene, const Player_ptr& player);
+    // Returns not null if the specified player is already active
+    Player_ptr addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
-    bool removePlayer(const Scene& parentScene, Player_ptr& player);
+    bool removePlayer(Scene& parentScene, Player_ptr& player);
     const PlayerList& getPlayers() const;
 
     /*Base Scene Operations*/
@@ -113,9 +113,9 @@ public:
     void updateSceneState(const U64 deltaTime);
 
     /// Gather input events and process them in the current scene
-    inline void processInput(const U64 deltaTime) {
-        getActiveScene().processInput(deltaTime);
-        Attorney::SceneManager::updateCameraControls(getActiveScene());
+    inline void processInput(U8 playerIndex, const U64 deltaTime) {
+        getActiveScene().processInput(playerIndex, deltaTime);
+        Attorney::SceneManager::updateCameraControls(getActiveScene(), playerIndex);
     }
 
     inline void processTasks(const U64 deltaTime) {
@@ -179,7 +179,8 @@ protected:
         bool doCulling,
         U32 passIndex);
     Camera* getActiveCamera() const;
-    
+    void currentPlayerPass(U8 playerIndex);
+
 private:
     bool _init;
     bool _processInput;
@@ -190,6 +191,8 @@ private:
     /// Pointer to the scene graph culler that's used to determine what nodes are
     /// visible in the current frame
     RenderPassCuller* _renderPassCuller;
+
+    U8 _currentPlayerPass;
 
     ScenePool* _scenePool;
     SceneShaderData* _sceneData;
@@ -262,6 +265,10 @@ class SceneManagerKernel {
 
     static void onCameraUpdate(Divide::SceneManager& manager, const Camera& camera) {
         manager.onCameraUpdate(camera);
+    }
+
+    static void currentPlayerPass(Divide::SceneManager& manager, U8 playerIndex) {
+        manager.currentPlayerPass(playerIndex);
     }
 
     friend class Divide::Kernel;

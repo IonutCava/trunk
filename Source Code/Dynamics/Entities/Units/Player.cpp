@@ -4,8 +4,9 @@
 
 namespace Divide {
 
-Player::Player(SceneGraphNode_ptr node)
-    : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER, node)
+Player::Player(SceneGraphNode_ptr node, U8 index)
+    : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER, node),
+      _index(index)
 {
      _lockedControls = false;
 

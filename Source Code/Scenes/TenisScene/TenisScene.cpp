@@ -296,7 +296,9 @@ void TenisScene::playGame(const Task& parentTask, cdiggins::any a, CallbackParam
     }
 }
 
-void TenisScene::processInput(const U64 deltaTime) {}
+void TenisScene::processInput(U8 playerIndex, const U64 deltaTime) {
+    Scene::processInput(playerIndex, deltaTime);
+}
 
 bool TenisScene::load(const stringImpl& name) {
     s_gameStarted = false;

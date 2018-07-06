@@ -13,7 +13,6 @@ namespace Divide {
 
 bool Camera::_addNewListener = false;
 Camera* Camera::_activeCamera = nullptr;
-Camera* Camera::_activePlayerCamera = nullptr;
 Camera* Camera::_previousCamera = nullptr;
 
 vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > Camera::_changeCameralisteners;
@@ -22,7 +21,6 @@ vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > Camera::_updateCameralisteners;
 SharedLock Camera::_cameraPoolLock;
 Camera::CameraPool Camera::_cameraPool;
 Camera::CameraPoolGUID Camera::_cameraPoolGUID;
-vectorImpl<I64> Camera::_lockedCameras;
 
 void Camera::update(const U64 deltaTime) {
     if (_addNewListener) {
@@ -63,52 +61,16 @@ void Camera::activeCamera(Camera* cam) {
     }
 }
 
-void Camera::activePlayerCamera(Camera* cam) {
-    _activePlayerCamera = cam;
-}
-
 void Camera::activeCamera(U64 cam) {
     activeCamera(findCamera(cam));
 }
-void Camera::activePlayerCamera(U64 cam) {
-    activePlayerCamera(findCamera(cam));
-}
+
 Camera* Camera::previousCamera() {
     return _previousCamera;
 }
 
 Camera* Camera::activeCamera() {
     return _activeCamera;
-}
-
-Camera* Camera::activePlayerCamera() {
-    return _activePlayerCamera;
-}
-
-void Camera::lockCamera(Camera* cam) {
-    I64 targetGUID = cam != nullptr ? cam->getGUID() : 0;
-    if (targetGUID != 0) {
-        if (std::find_if(std::cbegin(_lockedCameras),
-                         std::cend(_lockedCameras),
-                         [targetGUID](I64 guid) {
-                            return guid == targetGUID;
-                         }) == std::cend(_lockedCameras))
-        {
-            _lockedCameras.emplace_back(targetGUID);
-        }
-    }
-}
-
-void Camera::unlockCamera(Camera* cam) {
-    I64 targetGUID = cam != nullptr ? cam->getGUID() : 0;
-    if (targetGUID != 0) {
-        _lockedCameras.erase(std::remove_if(std::begin(_lockedCameras),
-                                            std::end(_lockedCameras),
-                                            [targetGUID](I64 guid) {
-                                                return guid == targetGUID;
-                                            }),
-                             std::end(_lockedCameras));
-    }
 }
 
 bool Camera::mouseMoved(const Input::MouseEvent& arg) {

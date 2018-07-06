@@ -98,8 +98,9 @@
 #ifdef FORCE_HIGHPERFORMANCE_GPU
 extern "C" {
     _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-    _declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+    _declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 }
+
 #endif
 
 void* malloc_aligned(const size_t size, size_t alignment) {

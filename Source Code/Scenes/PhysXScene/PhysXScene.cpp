@@ -35,8 +35,9 @@ void PhysXScene::processGUI(const U64 deltaTime) {
     Scene::processGUI(deltaTime);
 }
 
-void PhysXScene::processInput(const U64 deltaTime) {
+void PhysXScene::processInput(U8 playerIndex, const U64 deltaTime) {
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sun.lock()->getNode<Light>()->getDiffuseColour());
+    Scene::processInput(playerIndex, deltaTime);
 }
 
 bool PhysXScene::load(const stringImpl& name) {

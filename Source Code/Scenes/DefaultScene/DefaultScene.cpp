@@ -96,10 +96,12 @@ void DefaultScene::postLoadMainThread() {
                                                     to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                                     to_const_uint(SGNComponent::ComponentType::BOUNDS),
                                                     PhysicsGroup::GROUP_KINEMATIC,
-                                                    Util::StringFormat("Player %d", scenePlayers.size() + 2));
+                                                    getPlayerSGNName(to_ubyte(scenePlayers.size())));
 
-        _scenePlayers.emplace_back(MemoryManager_NEW Player(playerSGN));
-        _parent.addPlayer(*this, _scenePlayers.back());
+        const Player_ptr& player = _parent.addPlayer(*this, playerSGN);
+        if (player) {
+            _scenePlayers.emplace_back(player);
+        }
     });
 
     _GUI->addButton(_ID_RT("RemovePlayer"), "Remove Player",
@@ -123,13 +125,15 @@ void DefaultScene::postLoadMainThread() {
     Scene::postLoadMainThread();
 }
 
-void DefaultScene::processInput(const U64 deltaTime) {
+void DefaultScene::processInput(U8 playerIndex, const U64 deltaTime) {
     if (!_sceneToLoad.empty()) {
         _GUI->modifyText(_ID("globalMessage"),
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
         _parent.switchScene(_sceneToLoad, false);
         _sceneToLoad.clear();
     }
+
+    Scene::processInput(playerIndex, deltaTime);
 }
 
 void DefaultScene::processTasks(const U64 deltaTime) {

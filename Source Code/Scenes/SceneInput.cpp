@@ -84,12 +84,12 @@ bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
 bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
     if (g_recordInput) {
         vectorAlg::emplace_back(
-            _keyLog, std::make_pair(arg._key, Input::InputState::PRESSED));
+            _keyLog[arg._deviceIndex], std::make_pair(arg._key, Input::InputState::PRESSED));
     }
 
     PressReleaseActionCbks cbks;
     if (getKeyMapping(arg._key, cbks)) {
-        return handleCallbacks(cbks, InputParams(to_int(arg._key)), true);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, arg._deviceIndex, to_int(arg._key)), true);
     }
 
     return false;
@@ -98,12 +98,12 @@ bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
 bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
     if (g_recordInput) {
         vectorAlg::emplace_back(
-            _keyLog, std::make_pair(arg._key, Input::InputState::RELEASED));
+            _keyLog[arg._deviceIndex], std::make_pair(arg._key, Input::InputState::RELEASED));
     }
 
     PressReleaseActionCbks cbks;
     if (getKeyMapping(arg._key, cbks)) {
-        return handleCallbacks(cbks, InputParams(to_int(arg._key)), false);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(arg._key)), false);
     }
 
     return false;
@@ -112,10 +112,10 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
 bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
 
-    Input::Joystick joy = _context.joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg._deviceIndex);
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
-        return handleCallbacks(cbks, InputParams(to_int(button)), true);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(button)), true);
     }
 
     return false;
@@ -124,22 +124,26 @@ bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
 bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
     
-    Input::Joystick joy = _context.joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
-        return handleCallbacks(cbks, InputParams(to_int(button)), false);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(button)), false);
     }
 
     return false;
 }
 
 bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    Input::Joystick joy = _context.joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::AXIS_MOVE, axis), cbks)) {
-        InputParams params(arg.state.mAxes[axis].abs, arg.state.mAxes[axis].rel, to_int(axis), to_int(joy));
+        InputParams params(arg._deviceIndex,
+                           arg._event.state.mAxes[axis].abs,
+                           arg._event.state.mAxes[axis].rel,
+                           to_int(axis),
+                           to_int(joy));
         return handleCallbacks(cbks, params, true);
     }
 
@@ -148,11 +152,11 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
 
 bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 
-    Input::Joystick joy = _context.joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::POV_MOVE, pov), cbks)) {
-        InputParams params(arg.state.mPOV[pov].direction);
+        InputParams params(arg._deviceIndex, arg._event.state.mPOV[pov].direction);
         return handleCallbacks(cbks, params, true);
     }
 
@@ -160,11 +164,13 @@ bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 bool SceneInput::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    Input::Joystick joy = _context.joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::SLIDER_MOVE, index), cbks)) {
-        InputParams params(arg.state.mSliders[index].abX, arg.state.mSliders[index].abY);
+        InputParams params(arg._deviceIndex,
+                           arg._event.state.mSliders[index].abX,
+                           arg._event.state.mSliders[index].abY);
         return handleCallbacks(cbks, params, true);
     }
 
@@ -172,13 +178,14 @@ bool SceneInput::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) 
 }
 
 bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    Input::Joystick joy = _context.joystick(arg.device->getID());
+    Input::Joystick joy = _context.joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::VECTOR_MOVE, index), cbks)) {
-        InputParams params(to_int(arg.state.mVectors[index].x),
-                           to_int(arg.state.mVectors[index].y),
-                           to_int(arg.state.mVectors[index].z));
+        InputParams params(arg._deviceIndex,
+                           to_int(arg._event.state.mVectors[index].x),
+                           to_int(arg._event.state.mVectors[index].y),
+                           to_int(arg._event.state.mVectors[index].z));
         return handleCallbacks(cbks, params, true);
     }
 
@@ -186,18 +193,21 @@ bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index
 }
 
 bool SceneInput::mouseMoved(const Input::MouseEvent& arg) {
-    SceneState& state = _parentScene.state();
-    state.mouseXDelta(_mousePos.x - arg.state.X.abs);
-    state.mouseYDelta(_mousePos.y - arg.state.Y.abs);
-    _mousePos.set(arg.state.X.abs, arg.state.Y.abs);
+    SceneStatePerPlayer& state = _parentScene.state().playerState(arg._deviceIndex);
+    
+    vec2<I32>& mousePos = _mousePos[arg._deviceIndex];
+
+    state.mouseXDelta(mousePos.x - arg._event.state.X.abs);
+    state.mouseYDelta(mousePos.y - arg._event.state.Y.abs);
+    mousePos.set(arg._event.state.X.abs, arg._event.state.Y.abs);
 
     if (state.cameraLockedToMouse()) {
-        state.angleLR(state.mouseXDelta() < 0 
-                        ? SceneState::MoveDirection::POSITIVE
-                        : SceneState::MoveDirection::NEGATIVE);
-        state.angleUD(state.mouseYDelta() < 0 
-                        ? SceneState::MoveDirection::POSITIVE
-                        : SceneState::MoveDirection::NEGATIVE);
+        state.angleLR(state.mouseXDelta() < 0
+                        ? MoveDirection::POSITIVE
+                        : MoveDirection::NEGATIVE);
+        state.angleUD(state.mouseYDelta() < 0
+                        ? MoveDirection::POSITIVE
+                        : MoveDirection::NEGATIVE);
     }
 
     return true;
@@ -207,13 +217,13 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
                                     Input::MouseButton id) {
 
     if (g_recordInput) {
-        vectorAlg::emplace_back(_mouseBtnLog,
-            vectorAlg::make_tuple(id, Input::InputState::PRESSED, getMousePosition()));
+        vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
+            vectorAlg::make_tuple(id, Input::InputState::PRESSED, getMousePosition(arg._deviceIndex)));
     }
 
     PressReleaseActionCbks cbks;
     if (getMouseMapping(id, cbks)) {
-        return handleCallbacks(cbks, InputParams(to_int(id)), true);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(id)), true);
     }
 
     return false;
@@ -222,13 +232,13 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
 bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
                                      Input::MouseButton id) {
     if (g_recordInput) {
-        vectorAlg::emplace_back(_mouseBtnLog,
-                                vectorAlg::make_tuple(id, Input::InputState::RELEASED,   getMousePosition()));
+        vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
+                                vectorAlg::make_tuple(id, Input::InputState::RELEASED,   getMousePosition(arg._deviceIndex)));
     }
 
     PressReleaseActionCbks cbks;
     if (getMouseMapping(id, cbks)) {
-        return handleCallbacks(cbks, InputParams(to_int(id)), false);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(id)), false);
     }
 
     return false;

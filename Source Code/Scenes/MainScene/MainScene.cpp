@@ -9,6 +9,7 @@
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
+#include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
@@ -40,9 +41,9 @@ void MainScene::updateLights() {
     return;
 }
 
-void MainScene::processInput(const U64 deltaTime) {
-    if (state().cameraUpdated()) {
-        Camera& cam = *Camera::activeCamera();
+void MainScene::processInput(U8 playerIndex, const U64 deltaTime) {
+    if (state().playerState(playerIndex).cameraUpdated()) {
+        Camera& cam = _scenePlayers[playerIndex]->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         if (!_freeflyCamera) {
@@ -75,6 +76,8 @@ void MainScene::processInput(const U64 deltaTime) {
                                                 eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
         }
     }
+
+    Scene::processInput(playerIndex, deltaTime);
 }
 
 void MainScene::processGUI(const U64 deltaTime) {
@@ -88,7 +91,7 @@ void MainScene::processGUI(const U64 deltaTime) {
                                              Time::ApplicationTimer::instance().getFrameTime()));
         _GUI->modifyText(_ID("underwater"),
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
-                                             state().cameraUnderwater() ? "true" : "false",
+                                             state().playerState(0).cameraUnderwater() ? "true" : "false",
                                              state().waterLevel()));
         _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",

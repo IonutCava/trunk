@@ -261,10 +261,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
         return true;
     }
 
-    for(const Player_ptr& player : _sceneManager->getPlayers()){
-        Camera::lockCamera(&player->getCamera());
-    }
-
     {
         Time::ScopedTimer timer2(_physicsProcessTimer);
         // Process physics
@@ -273,6 +269,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
 
     {
         Time::ScopedTimer timer2(_sceneUpdateTimer);
+
+        const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
+        U8 playerCount = to_ubyte(activePlayers.size());
 
         _timingData._updateLoops = 0;
         while (_timingData._currentTime > _timingData._nextGameTick &&
@@ -287,7 +286,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
             // Flush any pending threaded callbacks
             _taskPool.flushCallbackQueue();
             // Update scene based on input
-            _sceneManager->processInput(deltaTime);
+            for (U8 i = 0; i < playerCount; ++i) {
+                _sceneManager->processInput(i, deltaTime);
+            }
             // process all scene events
             _sceneManager->processTasks(deltaTime);
             // Update the scene state based on current time (e.g. animation matrices)
@@ -478,11 +479,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     computeViewports(mainViewport, targetViewports, playerCount);
 
     for (U8 i = 0; i < playerCount; ++i) {
-        Camera* activeCamera = &activePlayers[i]->getCamera();
-        Camera::unlockCamera(activeCamera);
-        Camera::activeCamera(activeCamera);
-        Camera::activePlayerCamera(activeCamera);
-
+        Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
         _platformContext->gfx().poolIndex(i);
         {
             Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));

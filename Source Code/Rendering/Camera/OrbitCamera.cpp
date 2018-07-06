@@ -67,7 +67,7 @@ void OrbitCamera::update(const U64 deltaTime) {
 }
 
 bool OrbitCamera::mouseMovedInternal(const Input::MouseEvent& arg) {
-    I32 zoom = arg.state.Z.rel;
+    I32 zoom = arg._event.state.Z.rel;
     if (zoom != 0) {
         curRadius(_curRadius += (zoom * _cameraZoomSpeed * -0.01f));
     }

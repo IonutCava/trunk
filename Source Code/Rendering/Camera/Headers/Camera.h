@@ -371,14 +371,10 @@ class Camera : public Resource {
        static void update(const U64 deltaTime);
        static void destroyPool();
        static Camera* activeCamera();
-       static Camera* activePlayerCamera();
 
        static Camera* previousCamera();
        static void    activeCamera(Camera* cam);
        static void    activeCamera(U64 cam);
-
-       static void    activePlayerCamera(Camera* cam);
-       static void    activePlayerCamera(U64 cam);
 
        static Camera* createCamera(const stringImpl& cameraName, CameraType type);
        static bool    destroyCamera(Camera*& camera);
@@ -388,17 +384,11 @@ class Camera : public Resource {
        static void addChangeListener(const DELEGATE_CBK_PARAM<const Camera& /*new camera*/>& f);
        static void addUpdateListener(const DELEGATE_CBK_PARAM<const Camera& /*updated camera*/>& f);
 
-       static void lockCamera(Camera* cam);
-       static void unlockCamera(Camera* cam);
-
     private:
       typedef hashMapImpl<U64, Camera*> CameraPool;
       typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
 
-      static vectorImpl<I64> _lockedCameras;
-
       static Camera* _activeCamera;
-      static Camera* _activePlayerCamera;
       static Camera* _previousCamera;
       static vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _changeCameralisteners;
       static vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _updateCameralisteners;

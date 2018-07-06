@@ -46,7 +46,7 @@ I8 g_j = 1;
 F32 g_i = 0;
 bool _switch = false;
 
-void CubeScene::processInput(const U64 deltaTime) {
+void CubeScene::processInput(U8 playerIndex, const U64 deltaTime) {
     if (g_i >= 360)
         _switch = true;
     else if (g_i <= 0)
@@ -70,6 +70,8 @@ void CubeScene::processInput(const U64 deltaTime) {
         vec3<F32>(0.6f, 0.2f, 0.4f), g_i);
     bila->get<PhysicsComponent>()->translateY(g_j * 0.25f);
     dwarf->get<PhysicsComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
+
+    Scene::processInput(playerIndex, deltaTime);
 }
 
 bool CubeScene::load(const stringImpl& name) {

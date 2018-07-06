@@ -80,10 +80,13 @@ class SceneInput : public Input::InputAggregatorInterface {
     typedef hashMapImpl<Input::JoystickElement, PressReleaseActions, JoystickHasher> JoystickMapEntry;
     typedef hashMapImpl<Input::Joystick, JoystickMapEntry> JoystickMap;
 
+    typedef vectorImpl<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
+    typedef vectorImpl<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;
+
     explicit SceneInput(Scene &parentScene, Input::InputInterface& context);
 
-    inline const vec2<I32>& getMousePosition() const {
-        return _mousePos;
+    inline const vec2<I32>& getMousePosition(U8 index) const {
+        return _mousePos.find(index)->second;
     }
 
     bool onKeyDown(const Input::KeyEvent &arg);
@@ -139,6 +142,18 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     void flushCache();
 
+    inline void onPlayerAdd(U8 index) {
+        _mousePos.insert(std::make_pair(index, vec2<I32>()));
+        _keyLog.insert(std::make_pair(index, KeyLog()));
+        _mouseBtnLog.insert(std::make_pair(index, MouseBtnLog()));
+    }
+
+    inline void onPlayerRemove(U8 index) {
+        _mousePos.find(index)->second.reset();
+        _keyLog.find(index)->second.clear();
+        _mouseBtnLog.find(index)->second.clear();
+    }
+
    protected:
        bool handleCallbacks(const PressReleaseActionCbks& cbks,
                             const InputParams& params,
@@ -156,11 +171,13 @@ class SceneInput : public Input::InputAggregatorInterface {
     MouseMapCache _mouseMapCache;
     JoystickMapCache _joystickMapCache;
 
-    vec2<I32> _mousePos;
+    hashMapImpl<U8, vec2<I32>> _mousePos;
 
     InputActionList _actionList;
-    vectorImpl<std::pair<Input::KeyCode, Input::InputState>> _keyLog;
-    vectorImpl<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> _mouseBtnLog;
+
+    hashMapImpl<U8, KeyLog> _keyLog;
+    hashMapImpl<U8, MouseBtnLog> _mouseBtnLog;
+
 };  // SceneInput
 
 };  // namespace Divide

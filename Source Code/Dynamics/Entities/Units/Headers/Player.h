@@ -40,7 +40,7 @@ namespace Divide {
 class Camera;
 class Player : public Character {
    public:
-    Player(SceneGraphNode_ptr node);
+    explicit Player(SceneGraphNode_ptr node, U8 index);
     ~Player();
 
     /// Do not allow or allow the user again to control this player
@@ -49,7 +49,9 @@ class Player : public Character {
     Camera& getCamera();
     const Camera& getCamera() const;
 
+    inline const U8 index() const { return _index; }
    private:
+    U8 _index;
     bool _lockedControls;
     Camera* _playerCam;
 };

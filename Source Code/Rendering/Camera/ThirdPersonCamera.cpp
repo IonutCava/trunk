@@ -27,7 +27,7 @@ bool ThirdPersonCamera::mouseMovedInternal(const Input::MouseEvent& arg) {
     static const F32 rotationLimitYaw = 
         to_float(M_PI) - Angle::DegreesToRadians(1);
 
-    mousePos.set(arg.state.X.rel, arg.state.Y.rel);
+    mousePos.set(arg._event.state.X.rel, arg._event.state.Y.rel);
 
     Application::instance().snapCursorToCenter();
 

@@ -45,7 +45,7 @@ class CubeScene : public Scene {
 
     bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);
-    void processInput(const U64 deltaTime);
+    void processInput(U8 playerIndex, const U64 deltaTime);
     void processTasks(const U64 deltaTime);
 
     bool onKeyUp(const Input::KeyEvent& key);

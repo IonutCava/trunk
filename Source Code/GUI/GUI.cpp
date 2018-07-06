@@ -372,8 +372,8 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     }
 
     GUIEvent event;
-    event.mousePoint.x = to_float(arg.state.X.abs);
-    event.mousePoint.y = to_float(arg.state.Y.abs);
+    event.mousePoint.x = to_float(arg._event.state.X.abs);
+    event.mousePoint.y = to_float(arg._event.state.Y.abs);
 
     GUIInterface::mouseMoved(event);
 

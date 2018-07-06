@@ -105,7 +105,7 @@ class Scene : public Resource {
 
     /**Begin scene logic loop*/
     /// Get all input commands from the user
-    virtual void processInput(const U64 deltaTime);
+    virtual void processInput(U8 playerIndex, const U64 deltaTime);
     /// Update the scene based on the inputs
     virtual void processTasks(const U64 deltaTime);
     virtual void processGUI(const U64 deltaTime);
@@ -214,11 +214,14 @@ class Scene : public Resource {
     void clearObjects();
     /**End loading and unloading logic*/
     /// returns true if the camera was moved/rotated/etc
-    bool updateCameraControls();
+    bool updateCameraControls(U8 playerIndex);
     /// Draw debug entities
     virtual void debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
 
     inline const Camera& baseCamera() const { return *_baseCamera; }
+
+    void onPlayerAdd(const Player_ptr& player);
+    void onPlayerRemove(const Player_ptr& player);
 
     /// simple function to load the scene elements.
     inline bool SCENE_LOAD(const stringImpl& name,
@@ -246,6 +249,8 @@ class Scene : public Resource {
 
         return true;
     }
+
+    stringImpl getPlayerSGNName(U8 playerIndex);
 
    protected:
        /// Global info
@@ -312,8 +317,8 @@ class SceneManager {
         return scene._lightPool;
     }
 
-    static bool updateCameraControls(Scene& scene) {
-        return scene.updateCameraControls();
+    static bool updateCameraControls(Scene& scene, U8 playerIndex) {
+        return scene.updateCameraControls(playerIndex);
     }
 
     static bool checkLoadFlag(const Scene& scene) {
@@ -326,6 +331,14 @@ class SceneManager {
 
     static const Camera& baseCamera(const Scene& scene) {
         return scene.baseCamera();
+    }
+
+    static void onPlayerAdd(Scene& scene, const Player_ptr& player) {
+        scene.onPlayerAdd(player);
+    }
+
+    static void onPlayerRemove(Scene& scene, const Player_ptr& player) {
+        scene.onPlayerRemove(player);
     }
 
     /// Draw debug entities

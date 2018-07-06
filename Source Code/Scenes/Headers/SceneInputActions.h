@@ -37,32 +37,35 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct InputParams {
-    InputParams()
-        : InputParams(-1)
+    InputParams(U8 playerIndex)
+        : InputParams(playerIndex , -1)
     {
     }
 
-    InputParams(I32 var1)
-        : InputParams(var1, -1)
+    InputParams(U8 playerIndex, I32 var1)
+        : InputParams(playerIndex, var1, -1)
     {
     }
 
-    InputParams(I32 var1, I32 var2)
-        : InputParams(var1, var2, -1)
+    InputParams(U8 playerIndex, I32 var1, I32 var2)
+        : InputParams(playerIndex, var1, var2, -1)
     {
     }
 
-    InputParams(I32 var1, I32 var2, I32 var3)
-        : InputParams(var1, var2, var3, -1)
+    InputParams(U8 playerIndex, I32 var1, I32 var2, I32 var3)
+        : InputParams(playerIndex, var1, var2, var3, -1)
     {
     }
 
-    InputParams(I32 var1, I32 var2, I32 var3, I32 var4)
-        : _var{ var1, var2, var3, var4 }
+    InputParams(U8 playerIndex, I32 var1, I32 var2, I32 var3, I32 var4)
+        : _var{ var1, var2, var3, var4 },
+          _playerIndex(playerIndex)
     {
     }
 
     I32 _var[4];
+    // The player that generated the input
+    U8  _playerIndex;
 };
 
 struct PressReleaseActions {

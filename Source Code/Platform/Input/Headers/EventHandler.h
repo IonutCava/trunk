@@ -72,56 +72,42 @@ class EventHandler : public OIS::KeyListener,
     bool joystickButtonPressed(const JoystickEvent& arg,
                                JoystickButton button);
     /// Joystick button pressed - OIS
-    inline bool buttonPressed(const OIS::JoyStickEvent& arg,
-                              JoystickButton button) {
-        return joystickButtonPressed(arg, button);
-    }
+    bool buttonPressed(const OIS::JoyStickEvent& arg,
+                       JoystickButton button);
     /// Joystick button released - Engine
     bool joystickButtonReleased(const JoystickEvent& arg,
                                 JoystickButton button);
     /// Joystick button released - OIS
-    inline bool buttonReleased(const OIS::JoyStickEvent& arg,
-                               JoystickButton button) {
-        return joystickButtonReleased(arg, button);
-    }
+    bool buttonReleased(const OIS::JoyStickEvent& arg,
+                        JoystickButton button);
     /// Joystick axis change - Engine
     bool joystickAxisMoved(const JoystickEvent& arg, I8 axis);
     /// Joystick axis change - OIS
-    inline bool axisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
-        return joystickAxisMoved(arg, axis);
-    }
+    bool axisMoved(const OIS::JoyStickEvent& arg, I8 axis);
     /// Joystick direction change - Engine
     bool joystickPovMoved(const JoystickEvent& arg, I8 pov);
     /// Joystick direction change - OIS
-    inline bool povMoved(const OIS::JoyStickEvent& arg, I8 pov) {
-        return joystickPovMoved(arg, pov);
-    }
+    bool povMoved(const OIS::JoyStickEvent& arg, I8 pov);
     /// Joystick slider change - Engine
     bool joystickSliderMoved(const JoystickEvent& arg, I8 index);
     /// Joystick slider change - OIS
-    inline bool sliderMoved(const OIS::JoyStickEvent& arg, I8 index) {
-        return joystickSliderMoved(arg, index);
-    }
+    bool sliderMoved(const OIS::JoyStickEvent& arg, I8 index);
     /// Joystick 3D vector changed - Engine
     bool joystickVector3DMoved(const JoystickEvent& arg, I8 index);
     /// Joystick 3D vector changed - OIS
-    inline bool vector3DMoved(const OIS::JoyStickEvent& arg, I8 index) {
-        return joystickVector3DMoved(arg, index);
-    }
-    /// Mouse moved - Engine & OIS
+    bool vector3DMoved(const OIS::JoyStickEvent& arg, I8 index);
+    /// Mouse moved - OIS
+    bool mouseMoved(const OIS::MouseEvent& arg);
+    /// Mouse moved - Engine
     bool mouseMoved(const MouseEvent& arg);
     /// Mouse button pressed - Engine
     bool mouseButtonPressed(const MouseEvent& arg, MouseButton button);
     /// Mouse button pressed - OIS
-    inline bool mousePressed(const MouseEvent& arg, OIS::MouseButtonID id) {
-        return mouseButtonPressed(arg, id);
-    }
+    bool mousePressed(const OIS::MouseEvent& arg, OIS::MouseButtonID id);
     /// Mouse button released - Engine
     bool mouseButtonReleased(const MouseEvent& arg, MouseButton button);
     /// Mouse button released - OIS
-    inline bool mouseReleased(const MouseEvent& arg, OIS::MouseButtonID id) {
-        return mouseButtonReleased(arg, id);
-    }
+    bool mouseReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID id);
 };
 };  // namespace Input
 };  // namespace Divide;

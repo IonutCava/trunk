@@ -15,6 +15,7 @@
 #include "Rendering/Camera/Headers/FirstPersonCamera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
@@ -673,14 +674,14 @@ void WarScene::toggleCamera() {
         }
     }
     if (tpsCameraActive) {
-        Camera::activeCamera(Camera::activePlayerCamera());
+        Camera::activeCamera(&_scenePlayers[0]->getCamera());
         tpsCameraActive = false;
         flyCameraActive = true;
     }
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
-    Camera* defaultCam = Camera::activePlayerCamera();
+    Camera* defaultCam = &_scenePlayers[0]->getCamera();
     // Add a first person camera
     Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
     cam->fromCamera(*defaultCam);

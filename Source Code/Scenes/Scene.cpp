@@ -48,6 +48,8 @@ struct selectionQueueDistanceFrontToBack {
    private:
     vec3<F32> _eyePos;
 };
+
+constexpr char* g_defaultPlayerName = "Player_%d";
 };
 
 Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
@@ -401,7 +403,7 @@ U16 Scene::registerInputActions() {
     auto none = [](InputParams param) {};
     auto deleteSelection = [this](InputParams param) { _sceneGraph->deleteNode(_currentSelection[0], false); };
     auto increaseCameraSpeed = [this](InputParams param){
-        Camera& cam = *Camera::activePlayerCamera();
+        Camera& cam = *Camera::activeCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
@@ -409,7 +411,7 @@ U16 Scene::registerInputActions() {
         }
     };
     auto decreaseCameraSpeed = [this](InputParams param) {
-        Camera& cam = *Camera::activePlayerCamera();
+        Camera& cam = *Camera::activeCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
@@ -418,21 +420,21 @@ U16 Scene::registerInputActions() {
     };
     auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
     auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
-    auto moveForward = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::POSITIVE);};
-    auto moveBackwards = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NEGATIVE);};
-    auto stopMoveFWDBCK = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NONE);};
-    auto strafeLeft = [this](InputParams param) {state().moveLR(SceneState::MoveDirection::NEGATIVE);};
-    auto strafeRight = [this](InputParams param) {state().moveLR(SceneState::MoveDirection::POSITIVE);};
-    auto stopStrafeLeftRight = [this](InputParams param) {state().moveLR(SceneState::MoveDirection::NONE);};
-    auto rollCCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::POSITIVE);};
-    auto rollCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::NEGATIVE);};
-    auto stopRollCCWCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::NONE);};
-    auto turnLeft = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::NEGATIVE);};
-    auto turnRight = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::POSITIVE);};
-    auto stopTurnLeftRight = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::NONE);};
-    auto turnUp = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::NEGATIVE);};
-    auto turnDown = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::POSITIVE);};
-    auto stopTurnUpDown = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::NONE);};
+    auto moveForward = [this](InputParams param) {state().playerState(param._playerIndex).moveFB(MoveDirection::POSITIVE);};
+    auto moveBackwards = [this](InputParams param) {state().playerState(param._playerIndex).moveFB(MoveDirection::NEGATIVE);};
+    auto stopMoveFWDBCK = [this](InputParams param) {state().playerState(param._playerIndex).moveFB(MoveDirection::NONE);};
+    auto strafeLeft = [this](InputParams param) {state().playerState(param._playerIndex).moveLR(MoveDirection::NEGATIVE);};
+    auto strafeRight = [this](InputParams param) {state().playerState(param._playerIndex).moveLR(MoveDirection::POSITIVE);};
+    auto stopStrafeLeftRight = [this](InputParams param) {state().playerState(param._playerIndex).moveLR(MoveDirection::NONE);};
+    auto rollCCW = [this](InputParams param) {state().playerState(param._playerIndex).roll(MoveDirection::POSITIVE);};
+    auto rollCW = [this](InputParams param) {state().playerState(param._playerIndex).roll(MoveDirection::NEGATIVE);};
+    auto stopRollCCWCW = [this](InputParams param) {state().playerState(param._playerIndex).roll(MoveDirection::NONE);};
+    auto turnLeft = [this](InputParams param) { state().playerState(param._playerIndex).angleLR(MoveDirection::NEGATIVE);};
+    auto turnRight = [this](InputParams param) { state().playerState(param._playerIndex).angleLR(MoveDirection::POSITIVE);};
+    auto stopTurnLeftRight = [this](InputParams param) { state().playerState(param._playerIndex).angleLR(MoveDirection::NONE);};
+    auto turnUp = [this](InputParams param) {state().playerState(param._playerIndex).angleUD(MoveDirection::NEGATIVE);};
+    auto turnDown = [this](InputParams param) {state().playerState(param._playerIndex).angleUD(MoveDirection::POSITIVE);};
+    auto stopTurnUpDown = [this](InputParams param) {state().playerState(param._playerIndex).angleUD(MoveDirection::NONE);};
     auto togglePauseState = [](InputParams param){
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID("freezeLoopTime"), !par.getParam(_ID("freezeLoopTime"), false));
@@ -471,30 +473,30 @@ U16 Scene::registerInputActions() {
     auto toggleFlashLight = [this](InputParams param) {toggleFlashlight(); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(); };
-    auto lockCameraToMouse = [this](InputParams  param) {state().cameraLockedToMouse(true); };
+    auto lockCameraToMouse = [this](InputParams  param) {state().playerState(param._playerIndex).cameraLockedToMouse(true); };
     auto releaseCameraFromMouse = [this](InputParams  param) {
-        state().cameraLockedToMouse(false);
-        state().angleLR(SceneState::MoveDirection::NONE);
-        state().angleUD(SceneState::MoveDirection::NONE);
+        state().playerState(param._playerIndex).cameraLockedToMouse(false);
+        state().playerState(param._playerIndex).angleLR(MoveDirection::NONE);
+        state().playerState(param._playerIndex).angleUD(MoveDirection::NONE);
     };
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
     auto shutdown = [](InputParams param) {Application::instance().RequestShutdown();};
     auto povNavigation = [this](InputParams param) {
         if (param._var[0] & OIS::Pov::North) {  // Going up
-            state().moveFB(SceneState::MoveDirection::POSITIVE);
+            state().playerState(param._playerIndex).moveFB(MoveDirection::POSITIVE);
         }
         if (param._var[0] & OIS::Pov::South) {  // Going down
-            state().moveFB(SceneState::MoveDirection::NEGATIVE);
+            state().playerState(param._playerIndex).moveFB(MoveDirection::NEGATIVE);
         }
         if (param._var[0] & OIS::Pov::East) {  // Going right
-            state().moveLR(SceneState::MoveDirection::POSITIVE);
+            state().playerState(param._playerIndex).moveLR(MoveDirection::POSITIVE);
         }
         if (param._var[0] & OIS::Pov::West) {  // Going left
-            state().moveLR(SceneState::MoveDirection::NEGATIVE);
+            state().playerState(param._playerIndex).moveLR(MoveDirection::NEGATIVE);
         }
         if (param._var[0] == OIS::Pov::Centered) {  // stopped/centered out
-            state().moveLR(SceneState::MoveDirection::NONE);
-            state().moveFB(SceneState::MoveDirection::NONE);
+            state().playerState(param._playerIndex).moveLR(MoveDirection::NONE);
+            state().playerState(param._playerIndex).moveFB(MoveDirection::NONE);
         }
     };
 
@@ -511,39 +513,39 @@ U16 Scene::registerInputActions() {
         switch (axis) {
             case 0: {
                 if (axisABS > deadZone) {
-                    state().angleUD(SceneState::MoveDirection::POSITIVE);
+                    state().playerState(param._playerIndex).angleUD(MoveDirection::POSITIVE);
                 } else if (axisABS < -deadZone) {
-                    state().angleUD(SceneState::MoveDirection::NEGATIVE);
+                    state().playerState(param._playerIndex).angleUD(MoveDirection::NEGATIVE);
                 } else {
-                    state().angleUD(SceneState::MoveDirection::NONE);
+                    state().playerState(param._playerIndex).angleUD(MoveDirection::NONE);
                 }
             } break;
             case 1: {
                 if (axisABS > deadZone) {
-                    state().angleLR(SceneState::MoveDirection::POSITIVE);
+                    state().playerState(param._playerIndex).angleLR(MoveDirection::POSITIVE);
                 } else if (axisABS < -deadZone) {
-                    state().angleLR(SceneState::MoveDirection::NEGATIVE);
+                    state().playerState(param._playerIndex).angleLR(MoveDirection::NEGATIVE);
                 } else {
-                    state().angleLR(SceneState::MoveDirection::NONE);
+                    state().playerState(param._playerIndex).angleLR(MoveDirection::NONE);
                 }
             } break;
 
             case 2: {
                 if (axisABS < -deadZone) {
-                    state().moveFB(SceneState::MoveDirection::POSITIVE);
+                    state().playerState(param._playerIndex).moveFB(MoveDirection::POSITIVE);
                 } else if (axisABS > deadZone) {
-                    state().moveFB(SceneState::MoveDirection::NEGATIVE);
+                    state().playerState(param._playerIndex).moveFB(MoveDirection::NEGATIVE);
                 } else {
-                    state().moveFB(SceneState::MoveDirection::NONE);
+                    state().playerState(param._playerIndex).moveFB(MoveDirection::NONE);
                 }
             } break;
             case 3: {
                 if (axisABS < -deadZone) {
-                    state().moveLR(SceneState::MoveDirection::NEGATIVE);
+                    state().playerState(param._playerIndex).moveLR(MoveDirection::NEGATIVE);
                 } else if (axisABS > deadZone) {
-                    state().moveLR(SceneState::MoveDirection::POSITIVE);
+                    state().playerState(param._playerIndex).moveLR(MoveDirection::POSITIVE);
                 } else {
-                    state().moveLR(SceneState::MoveDirection::NONE);
+                    state().playerState(param._playerIndex).moveLR(MoveDirection::NONE);
                 }
             } break;
         }
@@ -702,6 +704,10 @@ void Scene::rebuildShaders() {
     }
 }
 
+stringImpl Scene::getPlayerSGNName(U8 playerIndex) {
+    return Util::StringFormat(g_defaultPlayerName, playerIndex + 1);
+}
+
 void Scene::onSetActive() {
     _context.pfx().setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
@@ -723,18 +729,22 @@ void Scene::onSetActive() {
     assert(scenePlayers.empty());
 
     SceneGraphNode& root = _sceneGraph->getRoot();
-    SceneGraphNode_ptr playerSGN(_sceneGraph->findNode("Player 1").lock());
+
+    stringImpl playerName = getPlayerSGNName(0);
+
+    SceneGraphNode_ptr playerSGN(_sceneGraph->findNode(playerName).lock());
     if (!playerSGN) {
         playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache)),
                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                  to_const_uint(SGNComponent::ComponentType::BOUNDS),
                                  PhysicsGroup::GROUP_KINEMATIC,
-                                 "Player 1");
+                                 playerName);
     }
-
-    _scenePlayers.emplace_back(MemoryManager_NEW Player(playerSGN));
-    _parent.addPlayer(*this, _scenePlayers.back());
+    const Player_ptr& player = _parent.addPlayer(*this, playerSGN);
+    if (player) {
+        _scenePlayers.emplace_back(player);
+    }
 }
 
 void Scene::onRemoveActive() {
@@ -744,6 +754,16 @@ void Scene::onRemoveActive() {
         _parent.removePlayer(*this, player);
     }
     _scenePlayers.clear();
+}
+
+void Scene::onPlayerAdd(const Player_ptr& player) {
+    state().onPlayerAdd(player->index());
+    input().onPlayerAdd(player->index());
+}
+
+void Scene::onPlayerRemove(const Player_ptr& player) {
+    state().onPlayerRemove(player->index());
+    input().onPlayerRemove(player->index());
 }
 
 bool Scene::loadPhysics(bool continueOnErrors) {
@@ -783,39 +803,47 @@ void Scene::clearObjects() {
     _sceneGraph->unload();
 }
 
-bool Scene::updateCameraControls() {
-    for (const Player_ptr& player : _scenePlayers) {
-        Camera& cam = player->getCamera();
+bool Scene::updateCameraControls(U8 playerIndex) {
+    Camera& cam = _scenePlayers[playerIndex]->getCamera();
+    
+    SceneStatePerPlayer& playerState = state().playerState(playerIndex);
 
-        state().cameraUpdated(false);
-        switch (cam.getType()) {
-            default:
-            case Camera::CameraType::FREE_FLY: {
-                if (state().angleLR() != SceneState::MoveDirection::NONE) {
-                    cam.rotateYaw(to_float(state().angleLR()));
-                    state().cameraUpdated(true);
-                }
-                if (state().angleUD() != SceneState::MoveDirection::NONE) {
-                    cam.rotatePitch(to_float(state().angleUD()));
-                    state().cameraUpdated(true);
-                }
-                if (state().roll() != SceneState::MoveDirection::NONE) {
-                    cam.rotateRoll(to_float(state().roll()));
-                    state().cameraUpdated(true);
-                }
-                if (state().moveFB() != SceneState::MoveDirection::NONE) {
-                    cam.moveForward(to_float(state().moveFB()));
-                    state().cameraUpdated(true);
-                }
-                if (state().moveLR() != SceneState::MoveDirection::NONE) {
-                    cam.moveStrafe(to_float(state().moveLR()));
-                    state().cameraUpdated(true);
-                }
-            } break;
-        }
+    playerState.cameraUpdated(false);
+    switch (cam.getType()) {
+        default:
+        case Camera::CameraType::FREE_FLY: {
+            if (playerState.angleLR() != MoveDirection::NONE) {
+                cam.rotateYaw(to_float(playerState.angleLR()));
+                playerState.cameraUpdated(true);
+            }
+            if (playerState.angleUD() != MoveDirection::NONE) {
+                cam.rotatePitch(to_float(playerState.angleUD()));
+                playerState.cameraUpdated(true);
+            }
+            if (playerState.roll() != MoveDirection::NONE) {
+                cam.rotateRoll(to_float(playerState.roll()));
+                playerState.cameraUpdated(true);
+            }
+            if (playerState.moveFB() != MoveDirection::NONE) {
+                cam.moveForward(to_float(playerState.moveFB()));
+                playerState.cameraUpdated(true);
+            }
+            if (playerState.moveLR() != MoveDirection::NONE) {
+                cam.moveStrafe(to_float(playerState.moveLR()));
+                playerState.cameraUpdated(true);
+            }
+        } break;
     }
 
-    return state().cameraUpdated();
+    if (checkCameraUnderwater()) {
+        playerState.cameraUnderwater(true);
+        PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
+    } else {
+        playerState.cameraUnderwater(false);
+        PostFX::instance().popFilter(FilterType::FILTER_UNDERWATER);
+    }
+
+    return playerState.cameraUpdated();
 }
 
 void Scene::updateSceneState(const U64 deltaTime) {
@@ -826,13 +854,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     {
         findHoverTarget(0/*i*/);
     }
-    if (checkCameraUnderwater()) {
-        state().cameraUnderwater(true);
-        PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
-    } else {
-        state().cameraUnderwater(false);
-        PostFX::instance().popFilter(FilterType::FILTER_UNDERWATER);
-    }
+
     SceneGraphNode_ptr flashLight = _flashLight.lock();
 
     if (flashLight) {
@@ -843,7 +865,10 @@ void Scene::updateSceneState(const U64 deltaTime) {
 }
 
 void Scene::onLostFocus() {
-    state().resetMovement();
+    for (U8 i = 0; i < to_ubyte(_scenePlayers.size()); ++i) {
+        state().playerState(i).resetMovement();
+    }
+
     if (!Config::Build::IS_DEBUG_BUILD) {
         //_paramHandler.setParam(_ID("freezeLoopTime"), true);
     }
@@ -879,7 +904,7 @@ void Scene::removeTask(I64 jobIdentifier) {
 
 }
 
-void Scene::processInput(const U64 deltaTime) {
+void Scene::processInput(U8 playerIndex, const U64 deltaTime) {
 }
 
 void Scene::processGUI(const U64 deltaTime) {
@@ -972,7 +997,7 @@ void Scene::findHoverTarget(U8 playerIndex) {
 
     const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
-    const vec2<I32>& mousePos = _input->getMousePosition();
+    const vec2<I32>& mousePos = _input->getMousePosition(playerIndex);
 
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = displaySize.height - to_float(mousePos.y) - 1;

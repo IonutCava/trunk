@@ -166,70 +166,28 @@ class SceneRenderState : public SceneComponent {
 };
 
 class Camera;
-class SceneState : public SceneComponent {
-   public:
-       enum class MoveDirection : I32 {
-           NONE = 0,
-           NEGATIVE = -1,
-           POSITIVE = 1
-       };
 
-   public:
-    /// Background music map : trackName - track
-    typedef hashMapImpl<U64, AudioDescriptor_ptr> MusicPlaylist;
+enum class MoveDirection : I32 {
+    NONE = 0,
+    NEGATIVE = -1,
+    POSITIVE = 1
+};
 
-    SceneState(Scene& parentScene)
-        : SceneComponent(parentScene),
-          _renderState(parentScene),
-          _cameraUnderwater(false), 
+class SceneStatePerPlayer {
+  public:
+    SceneStatePerPlayer()
+        : _cameraLockedToMouse(false),
+          _cameraUnderwater(false),
           _cameraUpdated(false),
-          _cameraLockedToMouse(false),
-          _saveLoadDisabled(false),
-          _overrideCamera(nullptr),
-          _waterHeight(0.0f),
-          _waterDepth(0.0f),
-          _windSpeed(1.0f),
-          _windDirX(0.0f),
-          _windDirZ(1.0f)
+          _overrideCamera(nullptr)
     {
-        resetMovement();
-        _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
-    }
-
-    virtual ~SceneState()
-    {
-        for (MusicPlaylist& playlist : _music) {
-            playlist.clear();
-        }
+         resetMovement();
     }
 
     inline void resetMovement() {
         _moveFB = _moveLR = _angleUD = _angleLR = _roll = MoveDirection::NONE;
         _mouseXDelta = _mouseYDelta = 0;
     }
-
-    inline FogDescriptor& fogDescriptor()   { return _fog; }
-    inline SceneRenderState& renderState()  { return _renderState; }
-    inline MusicPlaylist& music(MusicType type) { return _music[to_uint(type)]; }
-
-    inline const FogDescriptor& fogDescriptor() const { return _fog; }
-    inline const SceneRenderState& renderState() const { return _renderState; }
-    inline const MusicPlaylist& music(MusicType type) const { return _music[to_uint(type)]; }
-
-    inline void windSpeed(F32 speed) { _windSpeed = speed; }
-    inline F32  windSpeed()    const { return _windSpeed; }
-
-    inline void windDirX(F32 factor) { _windDirX = factor; }
-    inline F32  windDirX()     const { return _windDirX; }
-
-    inline void windDirZ(F32 factor) { _windDirZ = factor; }
-    inline F32  windDirZ()     const { return _windDirZ; }
-
-    inline void waterLevel(F32 level) { _waterHeight = level; }
-    inline F32  waterLevel()    const { return _waterHeight; }
-
-    inline void waterDepth(F32 depth) { _waterDepth = depth; }
-    inline F32  waterDepth()    const { return _waterDepth; }
 
     inline void cameraUnderwater(bool state) { _cameraUnderwater = state; }
     inline bool cameraUnderwater()     const { return _cameraUnderwater; }
@@ -261,32 +219,95 @@ class SceneState : public SceneComponent {
     inline void mouseYDelta(I32 depth) { _mouseYDelta = depth; }
     inline I32  mouseYDelta()    const { return _mouseYDelta; }
 
-    inline void saveLoadDisabled(const bool state) { _saveLoadDisabled = state; }
-    inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
-
     inline void    overrideCamera(Camera* camera) { _overrideCamera = camera; }
     inline Camera* overrideCamera()         const { return _overrideCamera; }
-    
-protected:
 
-    std::array<MusicPlaylist, to_const_uint(MusicType::COUNT)> _music;
-
+private:
     I32 _mouseXDelta;
     I32 _mouseYDelta;
     bool _cameraLockedToMouse;
-    bool _saveLoadDisabled;
-
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected
     MoveDirection _angleUD;  ///< up-down angle change detected
     MoveDirection _angleLR;  ///< left-right angle change detected
     MoveDirection _roll;     ///< roll left or right change detected
+    bool _cameraUnderwater;
+    // was the camera moved or rotated this frame
+    bool _cameraUpdated;
+    Camera* _overrideCamera;
+};
+
+class SceneState : public SceneComponent {
+   public:
+    /// Background music map : trackName - track
+    typedef hashMapImpl<U64, AudioDescriptor_ptr> MusicPlaylist;
+
+    SceneState(Scene& parentScene)
+        : SceneComponent(parentScene),
+          _renderState(parentScene),
+          _saveLoadDisabled(false),
+          _waterHeight(0.0f),
+          _waterDepth(0.0f),
+          _windSpeed(1.0f),
+          _windDirX(0.0f),
+          _windDirZ(1.0f)
+    {
+        _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
+    }
+
+    virtual ~SceneState()
+    {
+        for (MusicPlaylist& playlist : _music) {
+            playlist.clear();
+        }
+    }
+
+    inline void onPlayerAdd(U8 index) {
+        _playerState.insert(std::make_pair(index, SceneStatePerPlayer()));
+    }
+
+    inline void onPlayerRemove(U8 index) {
+        playerState(index).resetMovement();
+    }
+
+    inline SceneStatePerPlayer& playerState(U8 index) { return _playerState.find(index)->second; }
+    inline const SceneStatePerPlayer& playerState(U8 index) const { return _playerState.find(index)->second; }
+
+    inline FogDescriptor& fogDescriptor()   { return _fog; }
+    inline SceneRenderState& renderState()  { return _renderState; }
+    inline MusicPlaylist& music(MusicType type) { return _music[to_uint(type)]; }
+
+    inline const FogDescriptor& fogDescriptor() const { return _fog; }
+    inline const SceneRenderState& renderState() const { return _renderState; }
+    inline const MusicPlaylist& music(MusicType type) const { return _music[to_uint(type)]; }
+
+    inline void windSpeed(F32 speed) { _windSpeed = speed; }
+    inline F32  windSpeed()    const { return _windSpeed; }
+
+    inline void windDirX(F32 factor) { _windDirX = factor; }
+    inline F32  windDirX()     const { return _windDirX; }
+
+    inline void windDirZ(F32 factor) { _windDirZ = factor; }
+    inline F32  windDirZ()     const { return _windDirZ; }
+
+    inline void waterLevel(F32 level) { _waterHeight = level; }
+    inline F32  waterLevel()    const { return _waterHeight; }
+
+    inline void waterDepth(F32 depth) { _waterDepth = depth; }
+    inline F32  waterDepth()    const { return _waterDepth; }
+
+    inline void saveLoadDisabled(const bool state) { _saveLoadDisabled = state; }
+    inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
+
+protected:
+
+    std::array<MusicPlaylist, to_const_uint(MusicType::COUNT)> _music;
+    hashMapImpl<U8, SceneStatePerPlayer> _playerState;
+
+    bool _saveLoadDisabled;
 
     F32 _waterHeight;
     F32 _waterDepth;
-    bool _cameraUnderwater;
-    // was the camera moved or rotated this frame
-    bool _cameraUpdated;  
 
     FogDescriptor _fog;
     /// saves all the rendering information for the scene
@@ -295,8 +316,6 @@ protected:
     F32 _windSpeed;
     F32 _windDirX;
     F32 _windDirZ;
-
-    Camera* _overrideCamera;
 };
 
 namespace Attorney {

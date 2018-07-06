@@ -221,9 +221,10 @@ void PingPongScene::test(const Task& parentTask, cdiggins::any a, CallbackParam 
     }
 }
 
-void PingPongScene::processInput(const U64 deltaTime) {
+void PingPongScene::processInput(U8 playerIndex, const U64 deltaTime) {
     if (_freeFly) {
         _wasInFreeFly = true;
+        Scene::processInput(playerIndex, deltaTime);
         return;
     }
     if (_wasInFreeFly) {
@@ -237,11 +238,11 @@ void PingPongScene::processInput(const U64 deltaTime) {
     // Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
     // Camera controls
-    if (state().angleLR() != SceneState::MoveDirection::NONE) {
-        _paddleCam->rotateYaw(to_float(state().angleLR()));
+    if (state().playerState(playerIndex).angleLR() != MoveDirection::NONE) {
+        _paddleCam->rotateYaw(to_float(state().playerState(playerIndex).angleLR()));
     }
-    if (state().angleUD() != SceneState::MoveDirection::NONE) {
-        _paddleCam->rotatePitch(to_float(state().angleUD()));
+    if (state().playerState(playerIndex).angleUD() != MoveDirection::NONE) {
+        _paddleCam->rotatePitch(to_float(state().playerState(playerIndex).angleUD()));
     }
 
     SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());
@@ -249,20 +250,26 @@ void PingPongScene::processInput(const U64 deltaTime) {
     vec3<F32> pos = paddle->get<PhysicsComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
-    if (state().moveFB() != SceneState::MoveDirection::NONE) {
-        if ((state().moveFB() == SceneState::MoveDirection::POSITIVE && pos.y >= 3) ||
-            (state().moveFB() == SceneState::MoveDirection::NEGATIVE && pos.y <= 0.5f))
+    if (state().playerState(playerIndex).moveFB() != MoveDirection::NONE) {
+        if ((state().playerState(playerIndex).moveFB() == MoveDirection::POSITIVE && pos.y >= 3) ||
+            (state().playerState(playerIndex).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f)) {
+            Scene::processInput(playerIndex, deltaTime);
             return;
-        paddle->get<PhysicsComponent>()->translateY(to_int(state().moveFB()) / paddleMovementDivisor);
+        }
+        paddle->get<PhysicsComponent>()->translateY(to_int(state().playerState(playerIndex).moveFB()) / paddleMovementDivisor);
     }
 
-    if (state().moveLR() != SceneState::MoveDirection::NONE) {
+    if (state().playerState(playerIndex).moveLR() != MoveDirection::NONE) {
         // Left/right movement is flipped for proper control
-        if ((state().moveLR() == SceneState::MoveDirection::NEGATIVE && pos.x >= 3) ||
-            (state().moveLR() == SceneState::MoveDirection::POSITIVE && pos.x <= -3))
+        if ((state().playerState(playerIndex).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3) ||
+            (state().playerState(playerIndex).moveLR() == MoveDirection::POSITIVE && pos.x <= -3)) {
+            Scene::processInput(playerIndex, deltaTime);
             return;
-        paddle->get<PhysicsComponent>()->translateX(to_int(state().moveLR()) / paddleMovementDivisor);
+        }
+        paddle->get<PhysicsComponent>()->translateX(to_int(state().playerState(playerIndex).moveLR()) / paddleMovementDivisor);
     }
+
+    Scene::processInput(playerIndex, deltaTime);
 }
 
 bool PingPongScene::load(const stringImpl& name) {
@@ -291,10 +298,11 @@ U16 PingPongScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeFly = !_freeFly;
-        if (!_freeFly)
+        if (!_freeFly) {
             Camera::activeCamera(_paddleCam);
-        else
-            Camera::activeCamera(Camera::activePlayerCamera());
+        } else {
+            Camera::activeCamera(Camera::activeCamera());
+        }
     });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
@@ -345,7 +353,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _taskTimers.push_back(0.0);  // Light
 
     _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
-    _paddleCam->fromCamera(*Camera::activePlayerCamera());
+    _paddleCam->fromCamera(*Camera::activeCamera());
     // Position the camera
     // renderState().getCamera().setPitch(-90);
     _paddleCam->lockMovement(true);

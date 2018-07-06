@@ -14,8 +14,8 @@ bool ShadowScene::loadResources(bool continueOnErrors) {
     return Scene::loadResources(continueOnErrors);
 }
 
-void ShadowScene::processInput(const U64 deltaTime) {
-    Scene::processInput(deltaTime);
+void ShadowScene::processInput(U8 playerIndex, const U64 deltaTime) {
+    Scene::processInput(playerIndex, deltaTime);
 }
 
 void ShadowScene::processTasks(const U64 deltaTime) {

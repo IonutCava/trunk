@@ -16,7 +16,7 @@ NetworkScene::~NetworkScene()
 {
 }
 
-void NetworkScene::processInput(const U64 deltaTime) {
+void NetworkScene::processInput(U8 playerIndex, const U64 deltaTime) {
     Light* light = _lightPool->getLight(0, LightType::DIRECTIONAL);
     vec4<F32> vSunColour = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
         vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
@@ -24,7 +24,8 @@ void NetworkScene::processInput(const U64 deltaTime) {
 
     light->setDiffuseColour(vSunColour);
 
-    _currentSky = addSky();
+    //_currentSky = addSky();
+    Scene::processInput(playerIndex, deltaTime);
 }
 
 void NetworkScene::processGUI(const U64 deltaTime) {

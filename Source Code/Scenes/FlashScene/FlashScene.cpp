@@ -5,7 +5,9 @@
 
 namespace Divide {
 
-void FlashScene::processInput(const U64 deltaTime) {}
+void FlashScene::processInput(U8 playerIndex, const U64 deltaTime) {
+    Scene::processInput(playerIndex, deltaTime);
+}
 
 void FlashScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);

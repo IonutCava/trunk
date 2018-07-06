@@ -96,7 +96,7 @@ void CascadedShadowMaps::render(GFXDevice& context, U32 passIdx) {
     _nearClipOffset = _dirLight->csmNearClipOffset();
     _lightPosition.set(_light->getPosition());
 
-    Camera& camera = *Camera::activePlayerCamera();
+    Camera& camera = *Camera::activeCamera();
     _sceneZPlanes.set(camera.getZPlanes());
     camera.getWorldMatrix(_viewInvMatrixCache);
     camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);

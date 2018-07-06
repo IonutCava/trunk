@@ -71,6 +71,7 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _init(false),
       _elapsedTime(0ULL),
       _elapsedTimeMS(0),
+      _currentPlayerPass(0),
       _saveTimer(0ULL)
 {
     ADD_FILE_DEBUG_GROUP();
@@ -286,8 +287,18 @@ void SceneManager::onChangeResolution(U16 w, U16 h) {
     }
 }
 
-bool SceneManager::addPlayer(const Scene& parentScene, const Player_ptr& player) {
+Player_ptr SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode) {
     // If the player isn't in the list already
+
+    I64 sgnGUID = playerNode->getGUID();
+    for (const Player_ptr& crtPlayer : _players) {
+        if (crtPlayer->getBoundNode().lock()->getGUID() == sgnGUID) {
+            return crtPlayer;
+        }
+    }
+
+    Player_ptr player(MemoryManager_NEW Player(playerNode, to_ubyte(_players.size())));
+
     I64 targetGUID = player->getGUID();
     if (std::find_if(std::begin(_players),
                      std::end(_players),
@@ -299,14 +310,13 @@ bool SceneManager::addPlayer(const Scene& parentScene, const Player_ptr& player)
         _platformContext->gfx().resizePool(to_ubyte(_players.size()));
         player->getCamera().fromCamera(Attorney::SceneManager::baseCamera(parentScene));
         player->getCamera().setFixedYawAxis(true);
-
-        return true;
+        Attorney::SceneManager::onPlayerAdd(parentScene, player);
     }
 
-    return false;
+    return player;
 }
 
-bool SceneManager::removePlayer(const Scene& parentScene, Player_ptr& player) {
+bool SceneManager::removePlayer(Scene& parentScene, Player_ptr& player) {
     if (player) {
         I64 targetGUID = player->getGUID();
         vectorAlg::vecSize initialSize = _players.size();
@@ -321,6 +331,7 @@ bool SceneManager::removePlayer(const Scene& parentScene, Player_ptr& player) {
 
         if (initialSize != _players.size()) {
             _platformContext->gfx().resizePool(to_ubyte(_players.size()));
+            Attorney::SceneManager::onPlayerRemove(parentScene, player);
             return true;
         }
     }
@@ -425,12 +436,17 @@ bool SceneManager::generateShadowMaps() {
 }
 
 Camera* SceneManager::getActiveCamera() const {
-    Camera* overrideCamera = getActiveScene().state().overrideCamera();
+    Camera* overrideCamera = getActiveScene().state().playerState(_currentPlayerPass).overrideCamera();
     if (overrideCamera == nullptr) {
-        return Camera::activePlayerCamera();
+        overrideCamera = &getPlayers().at(_currentPlayerPass)->getCamera();
     }
 
     return overrideCamera;
+}
+
+void SceneManager::currentPlayerPass(U8 playerIndex) {
+    _currentPlayerPass = playerIndex;
+    Camera::activeCamera(&getPlayers().at(_currentPlayerPass)->getCamera());
 }
 
 const RenderPassCuller::VisibleNodeList&
