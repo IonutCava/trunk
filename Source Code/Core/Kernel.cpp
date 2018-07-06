@@ -193,7 +193,12 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
 {
     U32 frameCount = _GFX.getFrameCount();
     // Should be approximatelly 2 times a seconds
-    if (frameCount % (Config::TARGET_FRAME_RATE / 2) == 0) {
+#   if defined(_DEBUG)
+    if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0)
+#   else
+    if (frameCount % (Config::TARGET_FRAME_RATE / 2) == 0)
+#   endif
+    {
         stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData._updateLoops));
 
         if (Config::Profile::BENCHMARK_PERFORMANCE) {
@@ -399,7 +404,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread so how many threads do we allocate for tasks?
     // That's up to the programmer to decide for each app.
-    if (!_taskPool.init(HARDWARE_THREAD_COUNT())) {
+    if (!_taskPool.init(HARDWARE_THREAD_COUNT(), "DIVIDE_WORKER_THREAD_")) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 

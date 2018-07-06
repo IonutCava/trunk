@@ -707,6 +707,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 
 bool Scene::initializeAI(bool continueOnErrors) {
     _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, _aiManager));
+    setThreadName(&_aiTask, Util::StringFormat("AI_THREAD_SCENE_%s", getName().c_str()).c_str());
     return true;
 }
 

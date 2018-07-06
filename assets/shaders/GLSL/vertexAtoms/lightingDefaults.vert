@@ -5,9 +5,9 @@
 
 void computeLightVectors(){
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._normalWV = normalize(dvd_NormalMatrixWV() * dvd_Normal);
+    VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal);
 #if defined(COMPUTE_TBN)
-    VAR._tangentWV = normalize(dvd_NormalMatrixWV() * dvd_Tangent);
+    VAR._tangentWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Tangent);
     VAR._bitangentWV = normalize(cross(VAR._normalWV, VAR._tangentWV));
 #endif
 }

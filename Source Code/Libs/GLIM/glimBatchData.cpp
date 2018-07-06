@@ -460,7 +460,7 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
         glCreateBuffers(1, &m_uiElementBufferID_Wireframe);
 
         if (Divide::Config::ENABLE_GPU_VALIDATION) {
-            glObjectLabel(GL_BUFFER,
+            glObjectLabel(GL_VERTEX_ARRAY,
                           m_VertexArrayObjectID,
                           -1,
                           Divide::Util::StringFormat("DVD_GLIM_VAO_%d", m_VertexArrayObjectID).c_str());

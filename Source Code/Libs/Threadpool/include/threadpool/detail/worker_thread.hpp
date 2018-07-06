@@ -21,11 +21,11 @@
 #include "scope_guard.hpp"
 
 #include <boost/smart_ptr.hpp>
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
 #include <boost/thread/exceptions.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
-
+#include <thread>
 
 namespace boost { namespace threadpool { namespace detail 
 {
@@ -50,7 +50,7 @@ namespace boost { namespace threadpool { namespace detail
 
   private:
     shared_ptr<pool_type>      m_pool;     //!< Pointer to the pool which created the worker.
-    shared_ptr<boost::thread>  m_thread;   //!< Pointer to the thread which executes the run loop.
+    shared_ptr<std::thread>  m_thread;   //!< Pointer to the thread which executes the run loop.
 
     
     /*! Constructs a new worker. 
@@ -102,7 +102,7 @@ namespace boost { namespace threadpool { namespace detail
 		  shared_ptr<worker_thread> worker(new worker_thread(pool));
 		  if(worker)
 		  {
-			  worker->m_thread.reset(new boost::thread(bind(&worker_thread::run, worker)));
+			  worker->m_thread.reset(new std::thread(std::bind(&worker_thread::run, worker)));
 		  }
 	  }
 

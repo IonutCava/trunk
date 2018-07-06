@@ -590,7 +590,12 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_
         if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
             CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
         } else {
-            callback(false);
+            if (Application::instance().isMainThread()) {
+                callback(false);
+            } else {
+                WriteLock w_lock(_GFXLoadQueueLock);
+                _GFXLoadQueue.push_back(callback);
+            }
         }
 
         // The callback is valid and has been processed

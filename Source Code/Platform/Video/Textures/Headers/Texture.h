@@ -148,7 +148,7 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
-    bool LoadFile(const TextureLoadInfo& info, const stringImpl& name);
+    bool loadFile(const TextureLoadInfo& info, const stringImpl& name);
     /// Load texture data using the specified file name
     virtual bool load() override;
     virtual void threadedLoad();

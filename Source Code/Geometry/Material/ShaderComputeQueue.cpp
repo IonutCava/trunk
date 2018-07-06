@@ -1,16 +1,19 @@
 #include "Headers/ShaderComputeQueue.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 
 namespace Divide {
 
 namespace {
 #if defined(_DEBUG)
-    const U32 g_MaxShadersComputedPerFrame = 4;
-#else
     const U32 g_MaxShadersComputedPerFrame = 8;
+#else
+    const U32 g_MaxShadersComputedPerFrame = 12;
 #endif
 };
 
-ShaderComputeQueue::ShaderComputeQueue() : FrameListener()
+ShaderComputeQueue::ShaderComputeQueue()
+    : FrameListener(),
+      _queueComputeTimer(Time::ADD_TIMER("Shader Queue Timer"))
 {
     REGISTER_FRAME_LISTENER(this, 9999);
 }
@@ -21,6 +24,7 @@ ShaderComputeQueue::~ShaderComputeQueue()
 }
 
 void ShaderComputeQueue::update(const U64 deltaTime) {
+    Time::ScopedTimer timer(_queueComputeTimer);
     if (_shaderComputeQueue.empty() || _shadersComputedThisFrame) {
         return;
     }

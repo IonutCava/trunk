@@ -42,7 +42,7 @@ void main(){
     _colourOut = vec4(_colour.rgb, texture(texDiffuse0, VAR._texCoord).r);
 }
 
--- Vertex.EnvironmentProbe
+--Vertex.EnvironmentProbe
 
 #include "nodeBufferedInput.cmn"
 
@@ -54,15 +54,19 @@ vec3 UNPACK_FLOAT(in float value) {
 
 void main(void) {
 
+    VAR.dvd_drawID = gl_BaseInstanceARB;
+
     vec4 dvd_Vertex = vec4(inVertexData, 1.0);
     vec3 dvd_Normal = UNPACK_FLOAT(inNormalData);
     VAR._vertexW = dvd_WorldMatrixOverride * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._normalWV = normalize(dvd_NormalMatrixWV() * dvd_Normal);
+    VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal);
     //Compute the final vert position
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
--- Fragment.EnvironmentProbe
+
+
+--Fragment.EnvironmentProbe
 
 uniform uint dvd_LayerIndex;
 layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;

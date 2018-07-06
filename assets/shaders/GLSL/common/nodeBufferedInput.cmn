@@ -31,12 +31,12 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
-mat4 dvd_WorldMatrix() {
-    return dvd_Matrices[VAR.dvd_drawID]._worldMatrix;
+mat4 dvd_WorldMatrix(in uint index) {
+    return dvd_Matrices[index]._worldMatrix;
 }
 
-mat3 dvd_NormalMatrixWV() {
-    return mat3(dvd_Matrices[VAR.dvd_drawID]._normalMatrixWV);
+mat3 dvd_NormalMatrixWV(in uint index) {
+    return mat3(dvd_Matrices[index]._normalMatrixWV);
 }
 
 ivec4 dvd_BufferIntegerValues() {

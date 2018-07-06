@@ -628,6 +628,9 @@ DEFINE_SINGLETON(GFXDevice)
     mutable SharedLock _renderQueueLock;
     vectorImpl<RenderQueue> _renderQueues;
 
+    mutable SharedLock _GFXLoadQueueLock;
+    std::deque<DELEGATE_CBK_PARAM<bool>> _GFXLoadQueue;
+
     ShaderBuffer* _gfxDataBuffer;
     GenericDrawCommand _defaultDrawCmd;
 

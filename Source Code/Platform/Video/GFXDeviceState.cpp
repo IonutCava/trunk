@@ -289,6 +289,15 @@ void GFXDevice::idle() {
     PostFX::instance().idle();
     // And to the shader manager
     ShaderProgram::idle();
+
+    UpgradableReadLock r_lock(_GFXLoadQueueLock);
+    if (!_GFXLoadQueue.empty()) {
+        for(DELEGATE_CBK_PARAM<bool>& cbk : _GFXLoadQueue) {
+            cbk(false);
+        }
+        UpgradeToWriteLock w_lock(r_lock);
+        _GFXLoadQueue.clear();
+    }
 }
 
 void GFXDevice::beginFrame() {

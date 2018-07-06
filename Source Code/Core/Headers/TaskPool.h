@@ -42,7 +42,7 @@ class TaskPool {
     explicit TaskPool(U32 maxTaskCount);
     ~TaskPool();
     
-    bool init(U32 threadCount);
+    bool init(U32 threadCount, const stringImpl& workerName = "DVD_WORKER_");
     void flushCallbackQueue();
     void waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear = false);
 
@@ -62,6 +62,9 @@ class TaskPool {
     inline ThreadPool& threadPool() {
         return _mainTaskPool;
     }
+
+    void nameThreadpoolWorkers(const char* name, ThreadPool& pool);
+
   private:
     ThreadPool _mainTaskPool;
     boost::lockfree::queue<U32> _threadedCallbackBuffer;

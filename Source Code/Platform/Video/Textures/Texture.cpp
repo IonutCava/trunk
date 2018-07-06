@@ -37,7 +37,7 @@ Texture::~Texture()
 bool Texture::load() {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
-        [&](bool stopRequested) {
+        [&](const std::atomic_bool& stopRequested) {
             threadedLoad();
         }
     );
@@ -62,7 +62,7 @@ void Texture::threadedLoad() {
             // Skip invalid entries
             if (!currentTexture.empty()) {
                    // Attempt to load the current entry
-                    if (!LoadFile(info, currentTexture)) {
+                    if (!loadFile(info, currentTexture)) {
                         // Invalid texture files are not handled yet, so stop loading
                         return;
                     }
@@ -109,7 +109,7 @@ void Texture::threadedLoad() {
     Resource::load();
 }
 
-bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
+bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     // Create a new imageData object
     ImageTools::ImageData img;
     // Flip image if needed
@@ -138,7 +138,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
 
         // Each pixel is independent so this is a brilliant place to parallelize work
         // should this be atomic? At most, we run an extra task -Ionut
-        bool abort = false;
+        std::atomic_bool abort = false;
 
         auto findAlpha = [&abort, &img, height](const std::atomic_bool& stopRequested, U16 start, U16 end) {
             U8 tempR, tempG, tempB, tempA;
@@ -151,6 +151,9 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
                         }
                     }
                 }
+                if (stopRequested) {
+                    break;
+                }
             }
         };
 
@@ -158,6 +161,10 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
 
         _hasTransparency = abort;
     }
+
+    Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY")),
+                       name.c_str(),
+                       _hasTransparency ? "yes" : "no");
 
     // Create a new Rendering API-dependent texture object
     _descriptor._type = info._type;
@@ -216,7 +223,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     U16 mipMaxLevel = to_ushort(img.mipCount());
     
     if (!_descriptor._compressed) {
-        if (_descriptor._samplerDescriptor.generateMipMaps() && mipMaxLevel == 0) {
+        if (_descriptor._samplerDescriptor.generateMipMaps() && mipMaxLevel <= 1) {
             mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
         } else {
             mipMaxLevel += 1;
@@ -228,8 +235,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
              img.imageLayers(),
              vec2<U16>(0, mipMaxLevel));
 
-    // We will always return true because we load the "missing_texture.jpg" in
-    // case of errors
+    // We will always return true because we load the "missing_texture.jpg" in case of errors
     return true;
 }
 };

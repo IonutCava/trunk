@@ -51,6 +51,16 @@ namespace Divide {
 
         info._windowHandle = wmInfo.info.x11.window;
     }
+
+    void setThreadName(std::thread* thread, const char* threadName) {
+        auto handle = thread->native_handle();
+        pthread_setname_np(handle, threadName);
+    }
+
+    #include <sys/prctl.h>
+    void setThreadName(const char* threadName) {
+        prctl(PR_SET_NAME, threadName, 0, 0, 0);
+    }
 }; //namespace Divide
 
 #endif //defined(_UNIX)

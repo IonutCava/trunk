@@ -8,12 +8,10 @@ ShaderProgramInfo::ShaderProgramInfo()
     _shaderRef = nullptr;
     _shader.clear();
     _shaderCompStage = BuildStage::COUNT;
-    _stage = RenderStage::COUNT;
 }
 
 ShaderProgramInfo::ShaderProgramInfo(const ShaderProgramInfo& other)
-    : _stage(other._stage),
-    _customShader(other._customShader),
+  : _customShader(other._customShader),
     _shaderRef(other._shaderRef),
     _shader(other._shader),
     _shaderDefines(other._shaderDefines)
@@ -22,7 +20,6 @@ ShaderProgramInfo::ShaderProgramInfo(const ShaderProgramInfo& other)
 }
 
 ShaderProgramInfo& ShaderProgramInfo::operator=(const ShaderProgramInfo& other) {
-    _stage = other._stage;
     _customShader = other._customShader;
     _shaderRef = other._shaderRef;
     _shader = other._shader;

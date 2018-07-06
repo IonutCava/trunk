@@ -190,7 +190,7 @@ namespace Import {
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("LOAD_MESH_TIME")),
                            modelName.c_str(),
-                           Time::MillisecondsToSeconds(importTimer.get()));
+                           Time::MicrosecondsToSeconds<F32>(importTimer.get()));
 
         return success;
     }

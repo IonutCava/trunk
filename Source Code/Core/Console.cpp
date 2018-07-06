@@ -123,6 +123,7 @@ void Console::outThread() {
 void Console::start() {
     _running = true;
     _printThread = std::thread(&Console::outThread);
+    setThreadName(&_printThread, "CONSOLE_OUT_THREAD");
 }
 
 void Console::stop() {

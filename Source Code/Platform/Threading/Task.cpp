@@ -62,11 +62,14 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
             priority = TaskPriority::REALTIME_WITH_CALLBACK;
         }
     }
+
     if (!Config::USE_GPU_THREADED_LOADING) {
         if (BitCompare(_taskFlags, to_const_uint(TaskFlags::SYNC_WITH_GPU))) {
             priority = TaskPriority::REALTIME_WITH_CALLBACK;
+            ClearBit(_taskFlags, to_const_uint(TaskFlags::SYNC_WITH_GPU));
         }
     }
+
     _done = false;
     _priority = priority;
     if (priority != TaskPriority::REALTIME && 
@@ -152,16 +155,18 @@ void Task::run() {
     std::unique_lock<std::mutex> lk(_taskDoneMutex);
     _taskDoneCV.notify_one();
 
-    if (BitCompare(_taskFlags, to_const_uint(TaskFlags::PRINT_DEBUG_INFO))) {
-        Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
-    }
-
     if (BitCompare(_taskFlags, to_const_uint(TaskFlags::SYNC_WITH_GPU))) {
         endSyncGPU();
     }
 
+    if (BitCompare(_taskFlags, to_const_uint(TaskFlags::PRINT_DEBUG_INFO))) {
+        Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
+    }
+
     // task finished. Everything else is bookkeeping
-    _tp->taskCompleted(poolIndex(), _priority);
+    if (_tp != nullptr) {
+        _tp->taskCompleted(poolIndex(), _priority);
+    }
 }
 
 void Task::beginSyncGPU() {

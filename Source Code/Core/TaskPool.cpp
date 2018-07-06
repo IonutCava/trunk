@@ -28,13 +28,14 @@ TaskPool::~TaskPool()
     _mainTaskPool.wait(0);
 }
 
-bool TaskPool::init(U32 threadCount) {
+bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
     if (threadCount <= 2) {
         return false;
     }
 
     _workerThreadCount = std::max(threadCount + 1, 2U);
     _mainTaskPool.size_controller().resize(_workerThreadCount);
+    nameThreadpoolWorkers(workerName.c_str(), _mainTaskPool);
 
     return true;
 }
@@ -127,6 +128,7 @@ Task& TaskPool::getAvailableTask() {
             taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
             assert(failCount < poolSize * 2);
         }
+        _taskStates[taskIndex] = true;
     }
 
     Task& task = _tasksPool[taskIndex];
@@ -134,6 +136,28 @@ Task& TaskPool::getAvailableTask() {
     task.reset();
 
     return task;
+}
+
+//Ref: https://gist.github.com/shotamatsuda/e11ed41ee2978fa5a2f1/
+void TaskPool::nameThreadpoolWorkers(const char* name, ThreadPool& pool) {
+    pool.wait();
+    std::mutex mutex;
+    std::condition_variable condition;
+    bool predicate = false;
+    std::unique_lock<std::mutex> lock(mutex);
+    for (std::size_t i = 0; i < pool.size(); ++i) {
+        pool.schedule(PoolTask(1, [i, &name, &mutex, &condition, &predicate]() {
+            std::unique_lock<std::mutex> lock(mutex);
+            while (!predicate) {
+                condition.wait(lock);
+            }
+            setThreadName(Util::StringFormat("%s_%d", name, i).c_str());
+        }));
+    }
+    predicate = true;
+    condition.notify_all();
+    lock.unlock();
+    pool.wait();
 }
 
 TaskHandle GetTaskHandle(I64 taskGUID) {
@@ -248,4 +272,5 @@ TaskHandle parallel_for(TaskPool& pool,
 
     return updateTask;
 }
+
 };

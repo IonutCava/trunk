@@ -323,7 +323,7 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
         return info._shaderCompStage == ShaderProgramInfo::BuildStage::READY;
     }
 
-    // At this point, only computation reuqests are processed
+    // At this point, only computation requests are processed
     assert(info._shaderCompStage == ShaderProgramInfo::BuildStage::REQUESTED);
 
     const U32 slot0 = to_const_uint(ShaderProgram::TextureUsage::UNIT0);

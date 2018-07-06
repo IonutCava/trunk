@@ -108,8 +108,6 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
 
-    ParamHandler& par = ParamHandler::instance();
-
     GLenum glInternalFormat = _descriptor._internalFormat == GFXImageFormat::DEPTH_COMPONENT
                             ? GL_DEPTH_COMPONENT32
                             : GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)];
@@ -134,7 +132,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_MS: {
             glTextureStorage2DMultisample(
                 _textureData.getHandleHigh(), 
-                par.getParam<I32>(_ID("rendering.MSAAsampless"), 0),
+                ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0),
                 glInternalFormat,
                 _width,
                 _height,
@@ -143,7 +141,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_ARRAY_MS: {
             glTextureStorage3DMultisample(
                 _textureData.getHandleHigh(),
-                par.getParam<I32>(_ID("rendering.MSAAsampless"), 0),
+                ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0),
                 glInternalFormat,
                 _width,
                 _height,
@@ -316,31 +314,19 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
 
 void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data) {
     if (data) {
+        GLenum format = GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())];
+        GLenum type = GLUtil::glDataFormat[to_uint(_descriptor.dataType())];
+        GLuint handle = _textureData.getHandleHigh();
+
         GL_API::setPixelPackUnpackAlignment();
         switch (_textureData._textureType) {
             case TextureType::TEXTURE_1D: {
-                glTextureSubImage1D(
-                    _textureData.getHandleHigh(),
-                    0,
-                    0,
-                    _width,
-                    GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
-                    GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
-                    data);
+                glTextureSubImage1D(handle, 0, 0, _width, format, type, data);
                 _mipMapsDirty = true;
             } break;
             case TextureType::TEXTURE_2D:
             case TextureType::TEXTURE_2D_MS: {
-                glTextureSubImage2D(
-                    _textureData.getHandleHigh(),
-                    0,
-                    0,
-                    0,
-                    _width,
-                    _height,
-                    GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
-                    GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
-                    data);
+                glTextureSubImage2D(handle, 0, 0, 0, _width, _height, format, type, data);
                 _mipMapsDirty = true;
             } break;
 
@@ -349,18 +335,7 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
             case TextureType::TEXTURE_2D_ARRAY_MS:
             case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
-                glTextureSubImage3D(
-                    _textureData.getHandleHigh(),
-                    0,
-                    0,
-                    0,
-                    (info._cubeMapCount * 6) + info._layerIndex,
-                    _width,
-                    _height,
-                    1,
-                    GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())],
-                    GLUtil::glDataFormat[to_uint(_descriptor.dataType())],
-                    data);
+                glTextureSubImage3D(handle, 0, 0, 0, (info._cubeMapCount * 6) + info._layerIndex, _width, _height, 1, format, type, data);
                 _mipMapsDirty = info._layerIndex == _numLayers;
             } break;
         }

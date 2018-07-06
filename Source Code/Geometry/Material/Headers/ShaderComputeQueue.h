@@ -67,6 +67,8 @@ protected:
     bool frameEnded(const FrameEvent& evt) override;
 
 private:
+    Time::ProfileTimer& _queueComputeTimer;
+
     std::deque<ShaderQueueElement> _shaderComputeQueue;
     bool _shadersComputedThisFrame = false;
     U32  _totalShaderComputeCountThisFrame = 0;

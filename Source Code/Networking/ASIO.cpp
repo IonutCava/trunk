@@ -41,6 +41,8 @@ void ASIO::init(const stringImpl& address, const stringImpl& port) {
         _localClient->start(
             res.resolve(tcp::resolver::query(address.c_str(), port.c_str())));
         _thread = new std::thread([&] { io_service_.run(); });
+        setThreadName(_thread, "ASIO_THREAD");
+
         io_service_.poll();
         _connected = true;
     } catch (std::exception& e) {

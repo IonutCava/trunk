@@ -268,6 +268,8 @@ struct SysInfo;
 
 extern void getWindowHandle(void* window, SysInfo& info);
 
+extern void setThreadName(std::thread* thread, const char* threadName);
+extern void setThreadName(const char* threadName);
 
 bool PlatformInitStatic();
 bool PlatformInit();
