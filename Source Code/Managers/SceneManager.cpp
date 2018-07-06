@@ -33,7 +33,7 @@ SceneManager::~SceneManager() {
     MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE(_renderPassCuller);
     // Destroy the model loader;
-    DVDConverter::getInstance().destroyInstance();
+    DVDConverter::destroyInstance();
 }
 
 bool SceneManager::init(GUI* const gui) {
@@ -98,7 +98,7 @@ void SceneManager::initPostLoadState() {
 bool SceneManager::deinitializeAI(bool continueOnErrors) {
     bool state =
         Attorney::SceneManager::deinitializeAI(*_activeScene, continueOnErrors);
-    AI::AIManager::getInstance().destroyInstance();
+    AI::AIManager::destroyInstance();
     return state;
 }
 

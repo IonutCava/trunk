@@ -59,12 +59,7 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
 
 void GFXDevice::uploadGlobalBufferData() {
     if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
-        vectorAlg::vecSize lastNodecount = _matricesDataContainers.size();
-        for (vectorAlg::vecSize i = 0; i < lastNodecount; ++i) {
-            _matricesData[i + 1].set(_matricesDataContainers[i].get());
-        }
-        _nodeBuffer->UpdateData(0, lastNodecount, _matricesData.data());
-
+        _nodeBuffer->UpdateData(0, _lastNodeCount, _matricesData.data());
         _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
     }
 
@@ -87,7 +82,7 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // We also need a valid draw command ID so we can index the node buffer
     // properly
     DIVIDE_ASSERT(
-        cmd.drawID() < std::max(static_cast<U32>(_matricesData.size()), 1u) &&
+        cmd.drawID() < std::max(static_cast<U32>(_lastNodeCount), 1u) &&
             cmd.drawID() >= 0,
         "GFXDevice error: Invalid draw ID encountered!");
     if (cmd.primCount() == 0 || cmd.drawCount() == 0) {
@@ -203,9 +198,8 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node) {
-
-    NodeData dataOut;
+void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
+                                   NodeData& dataOut) {
 
     RenderingComponent* const renderable =
         node._visibleNode->getComponent<RenderingComponent>();
@@ -246,8 +240,6 @@ GFXDevice::NodeData GFXDevice::processVisibleNode(const RenderPassCuller::Render
     renderable->getMaterialPropertyMatrix(dataOut._matrix[3]);
 
     _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = true;
-
-    return dataOut;
 }
 
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
@@ -268,7 +260,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         // Generate and upload all lighting data
         LightManager::getInstance().updateAndUploadLightData(
             _gpuBlock._ViewMatrix);
-        _matricesDataContainers.resize(0);
+        _lastNodeCount = 1;
     }
     _renderQueue.reserve(nodeCount);
     // Reset previously generated commands
@@ -291,8 +283,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                 nonBatchedCommands.push_back(cmd);
             }
             if (refreshNodeData) {
-                _matricesDataContainers.emplace_back(
-                    std::async(&GFXDevice::processVisibleNode, this, node));
+               processVisibleNode(node, _matricesData[_lastNodeCount++]);
             }
             drawID += 1;
         }

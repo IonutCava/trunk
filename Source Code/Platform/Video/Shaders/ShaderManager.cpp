@@ -11,7 +11,15 @@ namespace Divide {
 ShaderManager::ShaderManager()
     : _init(false), _imShader(nullptr), _nullShader(nullptr) {}
 
-ShaderManager::~ShaderManager() {}
+ShaderManager::~ShaderManager()
+{
+    _atoms.clear();
+    _shaderNameMap.clear();
+    _shaderPrograms.clear();
+    assert(_nullShader == nullptr);
+    assert(_imShader == nullptr);
+    assert(_recompileQueue.empty());
+}
 
 /// Remove the NULL and IM shaders and destroy the API specific shader loading
 /// system

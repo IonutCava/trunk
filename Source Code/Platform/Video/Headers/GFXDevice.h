@@ -479,7 +479,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
-    NodeData processVisibleNode(const RenderPassCuller::RenderableNode& node);
+    void processVisibleNode(const RenderPassCuller::RenderableNode& node,
+                            NodeData& dataOut);
 
   private:
     Camera* _cubeCamera;
@@ -547,8 +548,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// This is set to true if the render queue will be submitted in sorted order.
     /// (e.g.: Z_PRE_PASS is unsorted, DISPLAY is sorted).
     /// Batching unsorted commands does not work
+    vectorAlg::vecSize _lastNodeCount;
     vectorImpl<NodeData> _matricesData;
-    vectorImpl<std::future<NodeData>> _matricesDataContainers;
     vectorImpl<IndirectDrawCommand> _drawCommandsCache;
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;

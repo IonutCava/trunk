@@ -26,7 +26,7 @@ int engineMain(int argc, char** argv) {
     // Stop our application
     // When the application is deleted, the last kernel used gets deleted as
     // well
-    Application::getInstance().destroyInstance();
+    Application::destroyInstance();
 
     return to_int(returnCode);
 }

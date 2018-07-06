@@ -11,6 +11,7 @@
 #include <map>
 #include "Utility/Headers/String.h"
 #include "Utility/Headers/Vector.h"
+#include "Utility/Headers/HashMap.h"
 
 namespace NS_GLIM
 {
@@ -45,7 +46,8 @@ namespace NS_GLIM
         unsigned int m_uiBufferOffset;
         unsigned int m_uiBufferStride;
         // previous attribute location (second) used with the saved shader program(first)
-        std::pair<unsigned int, int> m_programAttribLocation;
+        typedef hashMapImpl<unsigned int, int> AttributeLocationMap;
+        AttributeLocationMap m_programAttribLocation;
     };
 
     // used for tracking erroneous use of the interface

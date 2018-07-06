@@ -153,8 +153,10 @@ class Material : public Resource {
         }
 
         ShaderInfo& operator=(const ShaderInfo& other) {
-            _shaderRef = other.getProgram();
-            _shaderRef->AddRef();
+            _shaderRef = other._shaderRef;
+            if (_shaderRef != nullptr) {
+                _shaderRef->AddRef();
+            }
             _shader = other._shader;
             _shaderCompStage = other._shaderCompStage;
             for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {

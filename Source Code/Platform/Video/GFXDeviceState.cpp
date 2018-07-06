@@ -51,7 +51,6 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     _matricesData.resize(Config::MAX_VISIBLE_NODES + 1);
-    _matricesDataContainers.reserve(Config::MAX_VISIBLE_NODES);
     // Resize our window to the target resolution (usually, the splash screen
     // resolution)
     changeResolution(resolution.width, resolution.height);
@@ -215,8 +214,10 @@ void GFXDevice::closeRenderingAPI() {
     for (Framebuffer*& renderTarget : _renderTarget) {
         MemoryManager::DELETE(renderTarget);
     }
+    _renderer.reset(nullptr);
     // Close the shader manager
     ShaderManager::getInstance().destroy();
+    ShaderManager::getInstance().destroyInstance();
     // Close the rendering API
     _api->closeRenderingAPI();
     // Wait for the loading thread to terminate

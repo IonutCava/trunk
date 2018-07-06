@@ -29,8 +29,7 @@ namespace NS_GLIM
         m_CurrentValue[1].Int = 0;
         m_CurrentValue[2].Int = 0;
         m_CurrentValue[3].Int = 0;
-        m_programAttribLocation.first = 0;
-        m_programAttribLocation.second = -1;
+        m_programAttribLocation.clear();
     }
 
     void GlimArrayData::PushElement (void)
@@ -397,14 +396,16 @@ namespace NS_GLIM
         for (it = m_Attributes.begin (); it != itend; ++it)
         {
             int iAttributeArray = 0;
-            if (it->second.m_programAttribLocation.first != uiCurrentProgram ||
-                it->second.m_programAttribLocation.second == -1)
-            {
-                iAttributeArray = glGetAttribLocation(uiCurrentProgram, it->first.c_str());
-                it->second.m_programAttribLocation.first = uiCurrentProgram;
-                it->second.m_programAttribLocation.second = iAttributeArray;
+            GlimArrayData::AttributeLocationMap& attribs =
+                it->second.m_programAttribLocation;
+            GlimArrayData::AttributeLocationMap::const_iterator it2 =
+                attribs.find(uiCurrentProgram);
+
+            if (it2 != std::cend(attribs)) {
+                iAttributeArray = it2->second;
             } else {
-                iAttributeArray = it->second.m_programAttribLocation.second;
+                iAttributeArray = glGetAttribLocation(uiCurrentProgram, it->first.c_str());
+                attribs.insert(std::makePair(uiCurrentProgram, iAttributeArray));
             }
 
             if (iAttributeArray < 0) {

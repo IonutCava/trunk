@@ -106,7 +106,7 @@ void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
                   "glUniformBuffer::UpdateData error: was called for an "
                   "unmapped buffer!");
 
-    DiscardSubData(offsetElementCount, rangeElementCount);
+    //DiscardSubData(offsetElementCount, rangeElementCount);
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, range);

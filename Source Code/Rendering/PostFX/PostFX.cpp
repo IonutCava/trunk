@@ -57,7 +57,7 @@ PostFX::~PostFX() {
         MemoryManager::DELETE(_SSAO_FB);
     }
 
-    PreRenderStageBuilder::getInstance().destroyInstance();
+    PreRenderStageBuilder::destroyInstance();
 }
 
 void PostFX::init(const vec2<U16>& resolution) {

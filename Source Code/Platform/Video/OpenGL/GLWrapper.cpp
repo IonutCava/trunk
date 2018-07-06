@@ -94,7 +94,10 @@ void GL_API::endFrame() {
     // CEGUI handles its own states, so render it after we clear our states but
     // before we swap buffers
     if (_enableCEGUIRendering) {
+        /*glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1,
+                         "CEGUI OpenGL Renderer start!");*/
         CEGUI::System::getSingleton().renderAllGUIContexts();
+        //glPopDebugGroup();
     }
     // CEGUI does not clear the scissor test properly (yet)
     clearStates(true, true, true, false);
@@ -366,6 +369,8 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
+    /*glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1,
+                    "OpenGL render text start!");*/
     // Retrieve the font from the font cache
     I32 font = getFont(textLabel._font);
     // The font may be invalid, so skip this text label
@@ -401,6 +406,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
     }
     // Register each label rendered as a draw call
     GFX_DEVICE.registerDrawCall();
+    //glPopDebugGroup();
 }
 
 /// Rendering points is universally useful, so we have a function, and a VAO,

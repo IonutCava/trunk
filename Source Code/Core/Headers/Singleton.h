@@ -48,17 +48,30 @@ class Singleton {
     }
 
     inline static void destroyInstance() {
-        getInstance().~T();
+        T& instance = getInstance();
+        if (!instance._destroyed) {
+            instance._destroyed = true;
+            instance.~T();
+        }
     }
 
    protected:
-    Singleton() {}
+    Singleton() : _destroyed(false)
+    {
+    }
 
-    virtual ~Singleton() {}
+    virtual ~Singleton() 
+    {
+    }
 
+   
    private:
     Singleton(Singleton&) = delete;
     void operator=(Singleton&) = delete;
+
+private:
+    bool _destroyed;
+
 };
 
 #define DEFINE_SINGLETON_W_SPECIFIER(class_name, specifier)     \
