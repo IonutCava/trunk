@@ -131,7 +131,9 @@ public:
     {
     }
 
-    mat3(const mat4<T> &m);
+    mat3(const mat4<T> &m) {
+        set(m);
+    }
 
     vec3<T> operator*(const vec3<T> &v) const {
         return vec3<T>(mat[0] * v[0] + mat[3] * v[1] + mat[6] * v[2],
@@ -428,10 +430,7 @@ public:
 
     mat4(const mat3<T> &m) 
     {
-        mat[0] = m[0]; mat[4] = m[3]; mat[8]  = m[6]; mat[12] = 0.0;
-        mat[1] = m[1]; mat[5] = m[4]; mat[9]  = m[7]; mat[13] = 0.0;
-        mat[2] = m[2]; mat[6] = m[5]; mat[10] = m[8]; mat[14] = 0.0;
-        mat[3] = 0.0;  mat[7] = 0.0;  mat[11] = 0.0;  mat[15] = 1.0;
+       set(m);
     }
 
     /*Transforms the given 3-D vector by the matrix, projecting the result back into <i>w</i> = 1. (OGRE reference)*/
@@ -512,8 +511,10 @@ public:
     }
 
     inline void set(const mat3<T>& matrix) {
-        identity();
-        memcpy(this->mat, m, sizeof(T) * 9);
+        mat[0] = matrix.mat[0]; mat[4] = matrix.mat[3]; mat[8]  = matrix.mat[6]; mat[12] = 0.0;
+        mat[1] = matrix.mat[1]; mat[5] = matrix.mat[4]; mat[9]  = matrix.mat[7]; mat[13] = 0.0;
+        mat[2] = matrix.mat[2]; mat[6] = matrix.mat[5]; mat[10] = matrix.mat[8]; mat[14] = 0.0;
+        mat[3] = 0.0;           mat[7] = 0.0;           mat[11] = 0.0;           mat[15] = 1.0;
     }
 
     inline F32* getRow(I32 index) {
@@ -832,13 +833,6 @@ public:
          T m[4][4];
      };
 };
-
-template<class T>
-inline mat3<T>::mat3(const mat4<T> &matrix) {
-    this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
-    this->mat[1] = matrix[1]; this->mat[4] = matrix[5]; this->mat[7] = matrix[9];
-    this->mat[2] = matrix[2]; this->mat[5] = matrix[6]; this->mat[8] = matrix[10];
-}
 
 /// Converts a point from world coordinates to projection coordinates
 ///(from Y = depth, Z = up to Y = up, Z = depth)
