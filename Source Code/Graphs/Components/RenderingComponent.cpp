@@ -220,15 +220,9 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     }
 }
 
-void RenderingComponent::render(const SceneRenderState& sceneRenderState,
-                                const RenderStage& currentRenderStage) {
-    GFX_DEVICE.processNodeRenderData(_renderData);
-    postDraw(sceneRenderState, currentRenderStage);
-}
-
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
-                                              ShaderBuffer* shaderBuffer) {
-    ShaderBufferList::iterator it;
+                                              ShaderBuffer& shaderBuffer) {
+    GFXDevice::ShaderBufferList::iterator it;
     it = std::find_if(
         std::begin(_renderData._shaderBuffers),
         std::end(_renderData._shaderBuffers),
@@ -237,10 +231,21 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
 
     if (it == std::end(_renderData._shaderBuffers)) {
         _renderData._shaderBuffers.push_back(
-            std::make_pair(slot, shaderBuffer));
+            std::make_pair(slot, &shaderBuffer));
     } else {
-        it->second = shaderBuffer;
+        it->second = &shaderBuffer;
     }
+}
+
+void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
+    _renderData._shaderBuffers.erase(
+        std::remove_if(
+            std::begin(_renderData._shaderBuffers),
+            std::end(_renderData._shaderBuffers),
+            [&slot](
+                const std::pair<ShaderBufferLocation, ShaderBuffer*>& binding)
+                -> bool { return binding.first == slot; }),
+        std::end(_renderData._shaderBuffers));
 }
 
 U8 RenderingComponent::lodLevel() const {

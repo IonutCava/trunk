@@ -57,7 +57,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
     /*Base Scene Operations*/
     void preRender();
-    void render(const RenderStage& stage, const Kernel& kernel);
+    void render(RenderStage stage, const Kernel& kernel);
     void postRender();
     // renders the visible nodes
     void renderVisibleNodes();

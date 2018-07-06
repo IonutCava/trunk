@@ -127,6 +127,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Textures\d3dTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXDevice.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceDebug.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceDraw.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceState.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXState.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\IMPrimitive.cpp" />

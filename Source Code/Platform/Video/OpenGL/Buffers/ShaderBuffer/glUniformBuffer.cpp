@@ -88,23 +88,33 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
     }
 }
 
-bool glUniformBuffer::BindRange(U32 bindIndex,
-                                U32 offsetElementCount,
+bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
                                 U32 rangeElementCount) {
-    DIVIDE_ASSERT(_UBOid != 0,
-                  "glUniformBuffer error: Tried to bind an uninitialized UBO");
+    if (CheckBindRange(bindIndex, offsetElementCount, rangeElementCount)) {
+        DIVIDE_ASSERT(
+            _UBOid != 0,
+            "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
-    vec4<U32> bindConfiguration(bindIndex, _UBOid, offsetElementCount, rangeElementCount);
-    if (_currentBindConfig == bindConfiguration) {
-        return false;
+        _currentBindConfig.set(bindIndex, _UBOid, offsetElementCount,
+                               rangeElementCount);
+
+        glBindBufferRange(_target, bindIndex, _UBOid,
+                          _primitiveSize * offsetElementCount,
+                          _primitiveSize * rangeElementCount);
+        return true;
     }
 
-    _currentBindConfig.set(bindConfiguration);
+    return false;
+}
 
-    glBindBufferRange(_target, bindIndex, _UBOid,
-                      _primitiveSize * offsetElementCount,
-                      _primitiveSize * rangeElementCount);
-    return true;
+bool glUniformBuffer::CheckBindRange(U32 bindIndex, U32 offsetElementCount,
+                                     U32 rangeElementCount) {
+    return _currentBindConfig !=
+           vec4<U32>(bindIndex, _UBOid, offsetElementCount, rangeElementCount);
+}
+
+bool glUniformBuffer::CheckBind(U32 bindIndex) {
+    return CheckBindRange(bindIndex, 0, _primitiveCount);
 }
 
 bool glUniformBuffer::Bind(U32 bindIndex) {

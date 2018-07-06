@@ -1,14 +1,7 @@
 #include "Headers/GFXDevice.h"
 #include "Headers/RenderStateBlock.h"
 
-#include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUIText.h"
-#include "GUI/Headers/GUIFlash.h"
-
-#include "Core/Math/Headers/Plane.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Math/Headers/Transform.h"
-#include "Core/Headers/ApplicationTimer.h"
 #include "Utility/Headers/ImageTools.h"
 #include "Managers/Headers/SceneManager.h"
 
@@ -16,15 +9,6 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
-
-#include "Geometry/Shapes/Headers/Object3D.h"
-#include "Geometry/Shapes/Headers/SubMesh.h"
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
-
-#include "Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
@@ -110,135 +94,15 @@ GFXDevice::GFXDevice()
         Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
 }
 
-GFXDevice::~GFXDevice() {}
-
-/// A draw command is composed of a target buffer and a command. The command
-/// part is processed here
-bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
-    // We also need a valid draw command ID so we can index the node buffer
-    // properly
-    DIVIDE_ASSERT(
-        cmd.cmd().baseInstance < std::max(static_cast<U32>(_matricesData.size()), 1u) &&
-            cmd.cmd().baseInstance >= 0,
-        "GFXDevice error: Invalid draw ID encountered!");
-    if (cmd.instanceCount() == 0 || cmd.drawCount() == 0) {
-        return false;
-    }
-    // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
-                  "GFXDevice error: Draw shader state is not valid for the "
-                  "current draw operation!");
-    // Try to bind the shader program. If it failed to load, or isn't loaded
-    // yet, cancel the draw request for this frame
-    if (!cmd.shaderProgram()->bind()) {
-        return false;
-    }
-    // Finally, set the proper render states
-    setStateBlock(cmd.stateHash());
-    // Continue with the draw call
-    return true;
-}
-
-/// This is just a short-circuit system (hack) to send a list of points to the
-/// shader
-/// It's used, mostly, to draw full screen quads using geometry shaders
-void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
-                           ShaderProgram* const shaderProgram) {
-    // We need a valid amount of points. Check lower limit
-    if (numPoints == 0) {
-        Console::errorfn(Locale::get("ERROR_GFX_POINTS_UNDERFLOW"));
-        return;
-    }
-    // Also check upper limit
-    if (numPoints > Config::MAX_POINTS_PER_BATCH) {
-        Console::errorfn(Locale::get("ERROR_GFX_POINTS_OVERFLOW"));
-        return;
-    }
-    // We require a state hash value to set proper states
-    _defaultDrawCmd.stateHash(stateHash);
-    // We also require a shader program (although it may already be bound.
-    // Better safe ...)
-    _defaultDrawCmd.shaderProgram(shaderProgram);
-    // If the draw command was successfully parsed
-    if (setBufferData(_defaultDrawCmd)) {
-        // Tell the rendering API to upload the needed number of points
-        drawPoints(numPoints);
-    }
-}
-
-/// GUI specific elements, require custom handling by the rendering API
-void GFXDevice::drawGUIElement(GUIElement* guiElement) {
-    DIVIDE_ASSERT(guiElement != nullptr,
-                  "GFXDevice error: Invalid GUI element specified for the "
-                  "drawGUI command!");
-    // Skip hidden elements
-    if (!guiElement->isVisible()) {
-        return;
-    }
-    // Set the elements render states
-    setStateBlock(guiElement->getStateBlockHash());
-    // Choose the appropriate rendering path
-    switch (guiElement->getType()) {
-        case GUIType::GUI_TEXT: {
-            const GUIText& text = static_cast<GUIText&>(*guiElement);
-            drawText(text, text.getPosition());
-        } break;
-        case GUIType::GUI_FLASH: {
-            static_cast<GUIFlash*>(guiElement)->playMovie();
-        } break;
-        default: {
-            // not supported
-        } break;
-    };
-    // Update internal timer
-    guiElement->lastDrawTimer(Time::ElapsedMicroseconds());
-}
-
-/// Submit a single draw command
-void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
-    DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr,
-                  "GFXDevice error: Invalid vertex buffer submitted!");
-    // We may choose the instance count programmatically, and it may turn out to
-    // be 0, so skip draw
-    if (setBufferData(cmd)) {
-        // Same rules about pre-processing the draw command apply
-        cmd.sourceBuffer()->Draw(cmd);
-    }
-}
-
-/// Submit multiple draw commands that use the same source buffer (e.g. terrain
-/// or batched meshes)
-void GFXDevice::submitRenderCommand(
-    const vectorImpl<GenericDrawCommand>& cmds) {
-    // Ideally, we would merge all of the draw commands in a command buffer,
-    // sort by state/shader/etc and submit a single render call
-    STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");
-    // That feature will be added later, so, for now, submit each command
-    // manually
-    for (const GenericDrawCommand& cmd : cmds) {
-        // Data validation is handled in the single command version
-        submitRenderCommand(cmd);
-    }
-}
-
-void GFXDevice::processNodeRenderData(
-    RenderingComponent::NodeRenderData& data) {
-    for (RenderingComponent::ShaderBufferList::value_type& it :
-         data._shaderBuffers) {
-        if (it.second) {
-            it.second->Bind(it.first);
-        }
-    }
-
-    makeTexturesResident(data._textureData);
-    submitRenderCommand(data._drawCommands);
+GFXDevice::~GFXDevice()
+{
 }
 
 /// Generate a cube texture and store it in the provided framebuffer
 void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
                                 const DELEGATE_CBK<>& renderFunction,
                                 const vec2<F32>& zPlanes,
-                                const RenderStage& renderStage) {
+                                RenderStage renderStage) {
     // Only the first color attachment or the depth attachment is used for now
     // and it must be a cube map texture
     Texture* colorAttachment =
@@ -651,148 +515,6 @@ void GFXDevice::forceViewportInternal(const vec4<I32>& viewport) {
     _viewportUpdate = false;
 }
 
-/// Prepare the list of visible nodes for rendering
-void GFXDevice::processVisibleNodes(
-    const vectorImpl<SceneGraphNode*>& visibleNodes) {
-    // If there aren't any nodes visible in the current pass, don't update
-    // anything
-    if (visibleNodes.empty()) {
-        return;
-    }
-    vectorAlg::vecSize nodeCount = visibleNodes.size();
-    // Pass the list of nodes to the renderer for a pre-render pass
-    getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
-    // Generate and upload all lighting data
-    LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
-    // The first entry has identity values (e.g. for rendering points)
-    _matricesData.reserve(nodeCount + 1);
-    _matricesData.resize(1);
-    // Loop over the list of nodes
-    for (SceneGraphNode* const crtNode : visibleNodes) {
-        NodeData temp;
-        // Extract transform data
-        const PhysicsComponent* const transform =
-            crtNode->getComponent<PhysicsComponent>();
-        // If we have valid transform data ...
-        if (transform) {
-            // ... get the node's world matrix properly interpolated
-            temp._matrix[0].set(
-                crtNode->getComponent<PhysicsComponent>()->getWorldMatrix(
-                    _interpolationFactor));
-            // Calculate the normal matrix (world * view)
-            // If the world matrix is uniform scaled, inverseTranspose is a
-            // double transpose (no-op) so we can skip it
-            temp._matrix[1].set(
-                mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix));
-            if (!transform->isUniformScaled()) {
-                // Non-uniform scaling requires an inverseTranspose to negate
-                // scaling contribution but preserve rotation
-                temp._matrix[1].set(mat3<F32>(temp._matrix[0]));
-                temp._matrix[1].inverseTranspose();
-                temp._matrix[1] *= _gpuBlock._ViewMatrix;
-            }
-        } else {
-            // Nodes without transforms are considered as using identity
-            // matrices
-            temp._matrix[0].identity();
-            temp._matrix[1].identity();
-        }
-        // Since the normal matrix is 3x3, we can use the extra row and column
-        // to store additional data
-        temp._matrix[1].element(3, 2, true) =
-            static_cast<F32>(LightManager::getInstance().getLights().size());
-        temp._matrix[1].element(3, 3, true) = static_cast<F32>(
-            crtNode->getComponent<AnimationComponent>()
-                ? crtNode->getComponent<AnimationComponent>()->boneCount()
-                : 0);
-
-        RenderingComponent* const renderable =
-            crtNode->getComponent<RenderingComponent>();
-        // Get the color matrix (diffuse, ambient, specular, etc.)
-        renderable->getMaterialColorMatrix(temp._matrix[2]);
-        // Get the material property matrix (alpha test, texture count,
-        // texture operation, etc.)
-        renderable->getMaterialPropertyMatrix(temp._matrix[3]);
-
-        _matricesData.push_back(temp);
-    }
-    // Once the CPU-side buffer is filled, upload the buffer to the GPU
-    _nodeBuffer->UpdateData(0, (nodeCount + 1) * sizeof(NodeData),
-                            _matricesData.data());
-}
-
-void GFXDevice::buildDrawCommands(
-    const vectorImpl<SceneGraphNode*>& visibleNodes,
-    SceneRenderState& sceneRenderState) {
-    // If there aren't any nodes visible in the current pass, don't update
-    // anything
-    if (visibleNodes.empty()) {
-        return;
-    }
-        
-    // Reset previously generated commands
-    _nonBatchedCommands.reserve(visibleNodes.size() + 1);
-    _nonBatchedCommands.resize(0);
-    _nonBatchedCommands.push_back(_defaultDrawCmd);
-        
-    U32 drawID = 0;
-    // Loop over the list of nodes to generate a new command list
-    RenderStage currentStage = getRenderStage();
-    for (SceneGraphNode* node : visibleNodes) {
-        vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            node->getComponent<RenderingComponent>()->getDrawCommands(
-                sceneRenderState, currentStage);
-        drawID += 1;
-        for (GenericDrawCommand& cmd : nodeDrawCommands) {
-            cmd.drawID(drawID);
-            _nonBatchedCommands.push_back(cmd);
-        }
-    }
-
-    // Extract the specific rendering commands from the draw commands
-    // Rendering commands are stored in GPU memory. Draw commands are not.
-    _drawCommandsCache.reserve(_nonBatchedCommands.size());
-    _drawCommandsCache.resize(0);
-    for (const GenericDrawCommand& cmd : _nonBatchedCommands) {
-        _drawCommandsCache.push_back(cmd.cmd());
-    }
-
-    // Upload the rendering commands to the GPU memory
-    uploadDrawCommands(_drawCommandsCache);
-    
-}
-
-bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
-                              GenericDrawCommand& currentIDC) const {
-    if (!previousIDC.sourceBuffer() || !currentIDC.sourceBuffer()) {
-        return false;
-    }
-    if (!previousIDC.shaderProgram() || !currentIDC.shaderProgram()) {
-        return false;
-    }
-    // Batchable commands must share the same buffer
-    if (previousIDC.sourceBuffer()->getGUID() ==
-            currentIDC.sourceBuffer()->getGUID() &&
-        // And the same shader program
-        previousIDC.shaderProgram()->getID() ==
-            currentIDC.shaderProgram()->getID() &&
-        // Different states aren't batchable currently
-        previousIDC.stateHash() == currentIDC.stateHash() &&
-        // We need the same primitive type
-        previousIDC.primitiveType() == currentIDC.primitiveType() &&
-        previousIDC.renderWireframe() == currentIDC.renderWireframe()) 
-    {
-        // If the rendering commands are batchable, increase the draw count for
-        // the previous one
-        previousIDC.drawCount(previousIDC.drawCount() + 1);
-        // And set the current command's draw count to zero so it gets removed
-        // from the list later on
-        currentIDC.drawCount(0);
-        return true;
-    }
-
-    return false;
-}
 
 /// Depending on the context, either immediately call the function, or pass it
 /// to the loading thread via a queue
@@ -929,91 +651,6 @@ void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
         const vec3<F32>& endCoord = plot3D._coords[i + 1];
         vectorAlg::emplace_back(plotLines, startCoord, endCoord, color);
     }
-}
-
-/// Draw the outlines of a box defined by min and max as extents using the
-/// specified world matrix
-void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
-                          const vec4<U8>& color) {
-    // Grab an available primitive
-    IMPrimitive* priv = getOrCreatePrimitive();
-    // Prepare it for rendering lines
-    priv->_hasLines = true;
-    priv->_lineWidth = 4.0f;
-    priv->stateHash(_defaultStateBlockHash);
-    // Create the object
-    priv->beginBatch();
-    // Set it's color
-    priv->attribute4ub("inColorData", color);
-    // Draw the bottom loop
-    priv->begin(PrimitiveType::LINE_LOOP);
-    priv->vertex(min.x, min.y, min.z);
-    priv->vertex(max.x, min.y, min.z);
-    priv->vertex(max.x, min.y, max.z);
-    priv->vertex(min.x, min.y, max.z);
-    priv->end();
-    // Draw the top loop
-    priv->begin(PrimitiveType::LINE_LOOP);
-    priv->vertex(min.x, max.y, min.z);
-    priv->vertex(max.x, max.y, min.z);
-    priv->vertex(max.x, max.y, max.z);
-    priv->vertex(min.x, max.y, max.z);
-    priv->end();
-    // Connect the top to the bottom
-    priv->begin(PrimitiveType::LINES);
-    priv->vertex(min.x, min.y, min.z);
-    priv->vertex(min.x, max.y, min.z);
-    priv->vertex(max.x, min.y, min.z);
-    priv->vertex(max.x, max.y, min.z);
-    priv->vertex(max.x, min.y, max.z);
-    priv->vertex(max.x, max.y, max.z);
-    priv->vertex(min.x, min.y, max.z);
-    priv->vertex(min.x, max.y, max.z);
-    priv->end();
-    // Finish our object
-    priv->endBatch();
-}
-
-/// Render a list of lines within the specified constraints
-void GFXDevice::drawLines(const vectorImpl<Line>& lines,
-                          const mat4<F32>& globalOffset,
-                          const vec4<I32>& viewport, const bool inViewport,
-                          const bool disableDepth) {
-    // Check if we have a valid list. The list can be programmatically
-    // generated, so this check is required
-    if (lines.empty()) {
-        return;
-    }
-    // Grab an available primitive
-    IMPrimitive* priv = getOrCreatePrimitive();
-    // Prepare it for line rendering
-    priv->_hasLines = true;
-    priv->_lineWidth = 5.0f;
-    priv->stateHash(getDefaultStateBlock(disableDepth));
-    // Set the world matrix
-    priv->worldMatrix(globalOffset);
-    // If we need to render it into a specific viewport, set the pre and post
-    // draw functions to set up the
-    // needed viewport rendering (e.g. axis lines)
-    if (inViewport) {
-        priv->setRenderStates(
-            DELEGATE_BIND(&GFXDevice::setViewport, this, viewport),
-            DELEGATE_BIND(&GFXDevice::restoreViewport, this));
-    }
-    // Create the object containing all of the lines
-    priv->beginBatch();
-    priv->attribute4ub("inColorData", lines[0]._color);
-    // Set the mode to line rendering
-    priv->begin(PrimitiveType::LINES);
-    // Add every line in the list to the batch
-    for (const Line& line : lines) {
-        priv->attribute4ub("inColorData", line._color);
-        priv->vertex(line._startPoint);
-        priv->vertex(line._endPoint);
-    }
-    priv->end();
-    // Finish our object
-    priv->endBatch();
 }
 
 /// Extract the pixel data from the main render target's first color attachment

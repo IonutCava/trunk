@@ -55,7 +55,7 @@ class SceneRoot : public SceneNode {
         setState(ResourceState::RES_LOADED);
     }
 
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         return true;
     }
     bool unload() { return true; }
@@ -65,7 +65,7 @@ class SceneRoot : public SceneNode {
    protected:
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
     void getDrawCommands(SceneGraphNode& sgn,
-                         const RenderStage& renderStage,
+                         RenderStage renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 };
@@ -79,7 +79,7 @@ class SceneTransform : public SceneNode {
         setState(ResourceState::RES_LOADED);
     }
 
-    bool onDraw(const RenderStage& currentStage) { return true; }
+    bool onDraw(RenderStage currentStage) { return true; }
 
     void postLoad(SceneGraphNode& sgn) { return; }
     bool unload() { return true; }
@@ -273,12 +273,12 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
    protected:
     friend class RenderingComponent;
     bool prepareDraw(const SceneRenderState& sceneRenderState,
-                     const RenderStage& currentRenderStage);
+                     RenderStage currentRenderStage);
 
    private:
     inline void setName(const stringImpl& name) { _name = name; }
     inline void scheduleReset(RenderStage currentStage) {
-        _reset[currentStage] = true;
+        _reset[to_uint(currentStage)] = true;
     }
 
    private:
@@ -314,7 +314,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     std::unique_ptr<SGNComponent> _components[to_const_uint(
         SGNComponent::ComponentType::COUNT)];
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
-    hashMapImpl<RenderStage, bool, hashAlg::hash<RenderStage>> _reset;
+    bool _reset[to_const_uint(RenderStage::COUNT)];
 
     StateTracker<bool> _trackedBools;
 };

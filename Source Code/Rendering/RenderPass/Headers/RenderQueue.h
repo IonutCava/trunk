@@ -48,7 +48,7 @@ DEFINE_SINGLETON(RenderQueue)
 
   public:
     ///
-    void sort(const RenderStage& currentRenderStage);
+    void sort(RenderStage currentRenderStage);
     void refresh(bool force = false);
     void addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize() const;

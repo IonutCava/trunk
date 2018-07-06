@@ -65,6 +65,8 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
             *this));
+
+    memset(_reset, false, sizeof(bool) * to_uint(RenderStage::COUNT));
 }
 
 /// If we are destroying the current graph node
@@ -341,9 +343,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 }
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
-                                 const RenderStage& renderStage) {
-    if (_reset[renderStage]) {
-        _reset[renderStage] = false;
+                                 RenderStage renderStage) {
+    if (_reset[to_uint(renderStage)]) {
+        _reset[to_uint(renderStage)] = false;
         if (getParent() && !GFX_DEVICE.isDepthStage()) {
             for (SceneGraphNode::NodeChildren::value_type& it :
                  getParent()->getChildren()) {

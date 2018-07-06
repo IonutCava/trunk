@@ -79,12 +79,12 @@ class Sphere3D : public Object3D {
         return SceneNode::computeBoundingBox(sgn);
     }
 
-    bool onDraw(const RenderStage& currentStage) {
+    bool onDraw(RenderStage currentStage) {
         clean();
         return Object3D::onDraw(currentStage);
     }
 
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         clean();
         return Object3D::onDraw(sgn, currentStage);
     }

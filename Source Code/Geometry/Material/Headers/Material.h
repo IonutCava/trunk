@@ -285,7 +285,7 @@ class Material : public Resource {
         _shaderThreadedLoad = state;
     }
     void setShaderProgram(
-        const stringImpl& shader, const RenderStage& renderStage,
+        const stringImpl& shader, RenderStage renderStage,
         const bool computeOnAdd,
         const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>());
     inline void setShaderProgram(
@@ -301,7 +301,7 @@ class Material : public Resource {
                          shaderCompileCallback);
     }
     size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,
-                               const RenderStage& renderStage);
+                               RenderStage renderStage);
 
     inline void setParallaxFactor(F32 factor) {
         _parallaxFactor = std::min(0.01f, factor);
@@ -346,7 +346,7 @@ class Material : public Resource {
 
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
-    bool computeShader(const RenderStage& renderStage, const bool computeOnAdd,
+    bool computeShader(RenderStage renderStage, const bool computeOnAdd,
                        const DELEGATE_CBK<>& shaderCompileCallback);
 
     static void unlockShaderQueue() { _shaderQueueLocked = false; }
@@ -361,7 +361,7 @@ class Material : public Resource {
     void recomputeShaders();
     void computeShaderInternal();
     void setShaderProgramInternal(const stringImpl& shader,
-                                  const RenderStage& renderStage,
+                                  RenderStage renderStage,
                                   const bool computeOnAdd,
                                   const DELEGATE_CBK<>& shaderCompileCallback);
 

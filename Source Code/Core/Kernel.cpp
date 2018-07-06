@@ -423,7 +423,7 @@ void Kernel::firstLoop() {
     _currentTime = _nextGameTick = Time::ElapsedMicroseconds();
 }
 
-void Kernel::submitRenderCall(const RenderStage& stage,
+void Kernel::submitRenderCall(RenderStage stage,
                               const SceneRenderState& sceneRenderState,
                               const DELEGATE_CBK<>& sceneRenderCallback) const {
     _GFX.setRenderStage(stage);

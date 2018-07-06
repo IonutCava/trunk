@@ -47,8 +47,8 @@ class WaterPlane : public SceneNode, public Reflector {
     /// Resource inherited "unload"
     bool unload();
     /// General SceneNode stuff
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
-    bool getDrawState(const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage);
+    bool getDrawState(RenderStage currentStage);
     void setParams(F32 shininess, const vec2<F32>& noiseTile,
                    const vec2<F32>& noiseFactor, F32 transparency);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
@@ -87,7 +87,7 @@ class WaterPlane : public SceneNode, public Reflector {
     WaterPlane();
     ~WaterPlane() {}
     void getDrawCommands(SceneGraphNode& sgn,
-                         const RenderStage& currentRenderStage,
+                         RenderStage currentRenderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 

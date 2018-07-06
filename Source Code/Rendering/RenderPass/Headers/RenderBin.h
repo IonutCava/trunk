@@ -103,11 +103,12 @@ class RenderBin {
 
     virtual ~RenderBin() {}
 
-    virtual void sort(const RenderStage& currentRenderStage);
-    virtual void preRender(const RenderStage& currentRenderStage);
+    virtual void sort(RenderStage currentRenderStage);
+    virtual void preRender(RenderStage currentRenderStage);
     virtual void render(const SceneRenderState& renderState,
-                        const RenderStage& currentRenderStage);
-    virtual void postRender(const RenderStage& currentRenderStage);
+                        RenderStage currentRenderStage);
+    virtual void postRender(const SceneRenderState& renderState,
+                            RenderStage currentRenderStage);
     virtual void refresh();
 
     virtual void addNodeToBin(SceneGraphNode& sgn,

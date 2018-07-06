@@ -144,7 +144,7 @@ void SceneManager::renderVisibleNodes() {
                                _activeScene->getSceneGraph());
 }
 
-void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
+void SceneManager::render(RenderStage stage, const Kernel& kernel) {
     assert(_activeScene != nullptr);
 
     static DELEGATE_CBK<> renderFunction;

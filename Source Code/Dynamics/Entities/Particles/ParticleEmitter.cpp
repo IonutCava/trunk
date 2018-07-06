@@ -194,7 +194,7 @@ void ParticleEmitter::onCameraChange(SceneGraphNode& sgn) {
 }
 
 void ParticleEmitter::getDrawCommands(
-    SceneGraphNode& sgn, const RenderStage& currentRenderStage,
+    SceneGraphNode& sgn, RenderStage currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     U32 particleCount = getAliveParticleCount();
@@ -244,7 +244,7 @@ void ParticleEmitter::uploadToGPU() {
 
 /// The onDraw call will emit particles
 bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
-                             const RenderStage& currentStage) {
+                             RenderStage currentStage) {
     if (!_enabled || getAliveParticleCount() == 0) {
         return false;
     }

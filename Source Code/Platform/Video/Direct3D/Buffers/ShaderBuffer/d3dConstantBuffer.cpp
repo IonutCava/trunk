@@ -24,14 +24,23 @@ void d3dConstantBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const {
 void d3dConstantBuffer::UpdateData(ptrdiff_t offset, ptrdiff_t size,
     const bufferPtr data) const {}
 
-bool d3dConstantBuffer::BindRange(U32 bindIndex,
-    U32 offsetElementCount,
-    U32 rangeElementCount) {
-    return true;
+bool d3dConstantBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
+                                  U32 rangeElementCount) {
+    return CheckBindRange(bindIndex, offsetElementCount, rangeElementCount);
+    ;
+}
+
+bool d3dConstantBuffer::CheckBindRange(U32 bindIndex, U32 offsetElementCount,
+                                       U32 rangeElementCount) {
+    return false;
 }
 
 bool d3dConstantBuffer::Bind(U32 bindIndex) {
-    return true;
+    return CheckBind(bindIndex);
+}
+
+bool d3dConstantBuffer::CheckBind(U32 bindIndex) {
+    return false;
 }
 
 void d3dConstantBuffer::PrintInfo(const ShaderProgram* shaderProgram,

@@ -138,7 +138,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void threadPoolCompleted(U64 onExitTaskID);
 
    private:
-    void submitRenderCall(const RenderStage& stage,
+    void submitRenderCall(RenderStage stage,
                           const SceneRenderState& sceneRenderState,
                           const DELEGATE_CBK<>& sceneRenderCallback) const;
 
@@ -183,7 +183,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
 
 class KernelSceneAttorney {
    private:
-    static void submitRenderCall(const Kernel& kernel, const RenderStage& stage,
+    static void submitRenderCall(const Kernel& kernel, RenderStage stage,
                                  const SceneRenderState& sceneRenderState,
                                  const DELEGATE_CBK<>& sceneRenderCallback) {
         kernel.submitRenderCall(stage, sceneRenderState, sceneRenderCallback);

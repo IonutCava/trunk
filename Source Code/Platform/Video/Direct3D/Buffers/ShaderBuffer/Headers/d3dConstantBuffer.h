@@ -56,7 +56,11 @@ class d3dConstantBuffer final : public ShaderBuffer {
     bool BindRange(U32 bindIndex, U32 offsetElementCount,
                    U32 rangeElementCount);
 
+    bool CheckBindRange(U32 bindIndex, U32 offsetElementCount,
+                        U32 rangeElementCount);
+
     bool Bind(U32 bindIndex);
+    bool CheckBind(U32 bindIndex);
 
     void PrintInfo(const ShaderProgram* shaderProgram, U32 bindIndex);
 };

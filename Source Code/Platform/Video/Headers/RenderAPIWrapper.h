@@ -89,6 +89,7 @@ struct GenericDrawCommand {
     U8 _queryID;
     U8 _lodIndex;
     U16 _drawCount;
+    U32 _commandID;
     bool _drawToBuffer;
     bool _renderWireframe;
     size_t _stateHash;
@@ -100,6 +101,7 @@ struct GenericDrawCommand {
    public:
     inline void drawCount(U16 count) { _drawCount = count; }
     inline void drawID(U32 ID) { _cmd.baseInstance = ID; }
+    inline void commandID(U32 ID) { _commandID = ID;  }
     inline void LoD(U8 lod) { _lodIndex = lod; }
     inline void queryID(U8 queryID) { _queryID = queryID; }
     inline void stateHash(size_t hashValue) { _stateHash = hashValue; }
@@ -118,6 +120,8 @@ struct GenericDrawCommand {
 
     inline U8 LoD() const { return _lodIndex; }
     inline U8 queryID() const { return _queryID; }
+    inline U32 drawID() const { return _cmd.baseInstance; }
+    inline U32 commandID() const { return _commandID; }
     inline U16 drawCount() const { return _drawCount; }
     inline size_t stateHash() const { return _stateHash; }
     inline bool drawToBuffer() const { return _drawToBuffer; }
@@ -140,6 +144,7 @@ struct GenericDrawCommand {
           _stateHash(0),
           _queryID(0),
           _drawCount(1),
+          _commandID(0),
           _drawToBuffer(false),
           _renderWireframe(false),
           _shaderProgram(nullptr),
@@ -154,6 +159,7 @@ struct GenericDrawCommand {
         _queryID = base._queryID;
         _lodIndex = base._lodIndex;
         _drawCount = base._drawCount;
+        _commandID = base._commandID;
         _drawToBuffer = base._drawToBuffer;
         _renderWireframe = base._renderWireframe;
         _stateHash = base._stateHash;

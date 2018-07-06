@@ -36,7 +36,7 @@ void SceneNodeRenderState::addToDrawExclusionMask(U32 stageMask) {
     _exclusionMask |= stageMask;
 }
 
-bool SceneNodeRenderState::getDrawState(const RenderStage& currentStage) const {
+bool SceneNodeRenderState::getDrawState(RenderStage currentStage) const {
     return _drawState && !bitCompare(_exclusionMask, to_uint(currentStage));
 }
 };

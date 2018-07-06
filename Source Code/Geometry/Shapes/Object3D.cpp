@@ -55,7 +55,7 @@ VertexBuffer* const Object3D::getGeometryVB() const {
 
 void Object3D::getDrawCommands(
     SceneGraphNode& sgn,
-    const RenderStage& currentRenderStage,
+    RenderStage currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     RenderingComponent* const renderable =
@@ -74,11 +74,11 @@ void Object3D::getDrawCommands(
     drawCommandsOut.push_back(drawCmd);
 }
 
-bool Object3D::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+bool Object3D::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     return onDraw(currentStage);
 }
 
-bool Object3D::onDraw(const RenderStage& currentStage) {
+bool Object3D::onDraw(RenderStage currentStage) {
     return getState() == ResourceState::RES_LOADED;
 }
 

@@ -108,7 +108,7 @@ RenderBin::RenderBin(const RenderBinType& rbType,
         "Shadow Bin";
 }
 
-void RenderBin::sort(const RenderStage& currentRenderStage) {
+void RenderBin::sort(RenderStage currentRenderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:
@@ -163,21 +163,26 @@ void RenderBin::addNodeToBin(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
         sgn));
 }
 
-void RenderBin::preRender(const RenderStage& currentRenderStage) {}
+void RenderBin::preRender(RenderStage currentRenderStage) {}
 
 void RenderBin::render(const SceneRenderState& renderState,
-                       const RenderStage& currentRenderStage) {
+                       RenderStage currentRenderStage) {
     // We need to apply different materials for each stage. As nodes are sorted,
     // this should be very fast
-    for (U16 j = 0; j < getBinSize(); ++j) {
-        // Call render and the stage exclusion mask should do the rest
-        RenderingComponent* const renderable =
-            getItem(j)._node->getComponent<RenderingComponent>();
-        if (renderable) {
-            renderable->render(renderState, currentRenderStage);
-        }
+    for (const RenderBinItem& item : _renderBinStack) {
+        GFX_DEVICE.addToRenderQueue(
+            item._node->getComponent<RenderingComponent>()->getRenderData());
+    }
+
+    GFX_DEVICE.flushRenderQueue();
+}
+
+void RenderBin::postRender(const SceneRenderState& renderState,
+                           RenderStage renderStage) {
+    for (const RenderBinItem& item : _renderBinStack) {
+        item._node->getComponent<RenderingComponent>()->postDraw(renderState,
+                                                                 renderStage);
     }
 }
 
-void RenderBin::postRender(const RenderStage& currentRenderStage) {}
 };

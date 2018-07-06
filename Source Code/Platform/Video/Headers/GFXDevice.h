@@ -39,7 +39,6 @@
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Direct3D/Headers/DXWrapper.h"
 #include "Managers/Headers/RenderPassManager.h"
-#include "Graphs/Headers/SceneGraphNode.h"
 
 #include <stack>
 
@@ -55,6 +54,7 @@ class PostFX;
 class Quad3D;
 class Object3D;
 class Renderer;
+class SceneGraphNode;
 class SceneRenderState;
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
@@ -76,31 +76,41 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     };
 
   public:  // GPU specific data
-      enum class RenderAPI : U32 {
-        OpenGL,    ///< 4.x+
-        OpenGLES,  ///< 3.x+
-        Direct3D,  ///< 11.x+ (not supported yet)
-        Mantle,    ///< not supported yet
-        None,      ///< not supported yet
-        COUNT
-    };
+   typedef vectorImpl<std::pair<ShaderBufferLocation, ShaderBuffer*>>
+       ShaderBufferList;
+   struct RenderPackage {
+       vectorImpl<GenericDrawCommand> _drawCommands;
+       TextureDataContainer _textureData;
+       ShaderBufferList _shaderBuffers;
 
-    enum class RenderTarget : U32 {
-        RENDER_TARGET_SCREEN = 0,
-        RENDER_TARGET_ANAGLYPH = 1,
-        RENDER_TARGET_DEPTH = 2,
-        COUNT
-    };
+       bool isCompatible(const RenderPackage& other) const;
+   };
 
-    struct GPUBlock {
-        mat4<F32> _ProjectionMatrix;
-        mat4<F32> _ViewMatrix;
-        mat4<F32> _ViewProjectionMatrix;
-        vec4<F32> _cameraPosition;
-        vec4<F32> _ViewPort;
-        vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
-        vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
-    };
+   enum class RenderAPI : U32 {
+       OpenGL,    ///< 4.x+
+       OpenGLES,  ///< 3.x+
+       Direct3D,  ///< 11.x+ (not supported yet)
+       Mantle,    ///< not supported yet
+       None,      ///< not supported yet
+       COUNT
+   };
+
+   enum class RenderTarget : U32 {
+       RENDER_TARGET_SCREEN = 0,
+       RENDER_TARGET_ANAGLYPH = 1,
+       RENDER_TARGET_DEPTH = 2,
+       COUNT
+   };
+
+   struct GPUBlock {
+       mat4<F32> _ProjectionMatrix;
+       mat4<F32> _ViewMatrix;
+       mat4<F32> _ViewProjectionMatrix;
+       vec4<F32> _cameraPosition;
+       vec4<F32> _ViewPort;
+       vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
+       vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
+   };
 
   public:  // GPU interface
     ErrorCode initRenderingAPI(const vec2<U16>& resolution, I32 argc,
@@ -152,7 +162,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void drawGUIElement(GUIElement* guiElement);
     void submitRenderCommand(const GenericDrawCommand& cmd);
     void submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds);
-    void processNodeRenderData(RenderingComponent::NodeRenderData& data);
+    void addToRenderQueue(const RenderPackage& package);
+    void flushRenderQueue();
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
@@ -185,7 +196,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void generateCubeMap(
         Framebuffer& cubeMap, const vec3<F32>& pos,
         const DELEGATE_CBK<>& renderFunction, const vec2<F32>& zPlanes,
-        const RenderStage& renderStage = RenderStage::REFLECTION_STAGE);
+        RenderStage renderStage = RenderStage::REFLECTION_STAGE);
 
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
     /// Alternative to the normal version of getMatrix
@@ -479,6 +490,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     vectorImpl<NodeData> _matricesData;
     vectorImpl<IndirectDrawCommand> _drawCommandsCache;
     vectorImpl<GenericDrawCommand> _nonBatchedCommands;
+
+
+    typedef vectorImpl<RenderPackage> RenderQueue;
+    RenderQueue _renderQueue;
 
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;

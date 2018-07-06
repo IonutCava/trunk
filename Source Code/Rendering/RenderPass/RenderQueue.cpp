@@ -197,7 +197,7 @@ void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
     _isSorted = false;
 }
 
-void RenderQueue::sort(const RenderStage& currentRenderStage) {
+void RenderQueue::sort(RenderStage currentRenderStage) {
     /*if(_renderQueueLocked && _isSorted) {
         return;
     }*/

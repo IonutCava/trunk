@@ -31,7 +31,7 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
 
     parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
         ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS,
-        _boneTransformBuffer[_readBuffer]);
+       *_boneTransformBuffer[_readBuffer]);
 }
 
 AnimationComponent::~AnimationComponent() {
@@ -134,7 +134,7 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
 
     _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
         ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS,
-        _boneTransformBuffer[_readBuffer]);
+        *_boneTransformBuffer[_readBuffer]);
 
     if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY_STAGE ||
         !_playAnimations || _currentTimeStamp < 0.0) {

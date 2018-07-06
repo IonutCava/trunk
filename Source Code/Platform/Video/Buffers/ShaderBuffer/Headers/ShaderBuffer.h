@@ -86,12 +86,25 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
 
     }
 
+    virtual bool CheckBindRange(U32 bindIndex, U32 offsetElementCount,
+                                U32 rangeElementCount) = 0;
+
+    inline bool CheckBindRange(ShaderBufferLocation bindIndex,
+                               U32 offsetElementCount, U32 rangeElementCount) {
+        return CheckBindRange(to_uint(bindIndex), offsetElementCount,
+                              rangeElementCount);
+    }
+
     virtual bool Bind(U32 bindIndex) = 0;
+
+    virtual bool CheckBind(U32 bindIndex) = 0;
 
     inline bool Bind(ShaderBufferLocation bindIndex) {
         return Bind(to_uint(bindIndex));
     }
-
+    inline bool CheckBind(ShaderBufferLocation bindIndex) {
+        return CheckBind(to_uint(bindIndex));
+    }
     inline void PrintInfo(const ShaderProgram *shaderProgram,
                           ShaderBufferLocation bindIndex) {
         PrintInfo(shaderProgram, to_uint(bindIndex));

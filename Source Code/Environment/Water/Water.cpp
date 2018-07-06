@@ -132,7 +132,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     }
 }
 
-bool WaterPlane::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     const Quaternion<F32>& orientation =
         sgn.getComponent<PhysicsComponent>()->getOrientation();
     if (!_orientation.compare(orientation)) {
@@ -160,7 +160,7 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
 }
 
 void WaterPlane::getDrawCommands(
-    SceneGraphNode& sgn, const RenderStage& currentRenderStage,
+    SceneGraphNode& sgn, RenderStage currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     bool depthPass = GFX_DEVICE.isDepthStage();
@@ -181,7 +181,7 @@ void WaterPlane::getDrawCommands(
 }
 
 
-bool WaterPlane::getDrawState(const RenderStage& currentStage) {
+bool WaterPlane::getDrawState(RenderStage currentStage) {
     // Wait for the Reflector to update
     if (!_createdFB) {
         return false;

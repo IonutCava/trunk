@@ -75,9 +75,9 @@ class Object3D : public SceneNode {
     inline U32 getFlagMask() const { return _geometryFlagMask; }
 
     virtual bool onDraw(SceneGraphNode& sgn,
-                        const RenderStage& currentStage);
+                        RenderStage currentStage);
 
-    virtual bool onDraw(const RenderStage& currentStage);
+    virtual bool onDraw(RenderStage currentStage);
 
     virtual bool updateAnimations(SceneGraphNode& sgn) { return false; }
     inline void setGeometryPartitionID(size_t ID) {
@@ -100,7 +100,7 @@ class Object3D : public SceneNode {
 
    protected:
     virtual void getDrawCommands(
-        SceneGraphNode& sgn, const RenderStage& currentRenderStage,
+        SceneGraphNode& sgn, RenderStage currentRenderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();

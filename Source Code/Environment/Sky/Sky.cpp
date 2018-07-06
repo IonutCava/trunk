@@ -89,7 +89,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                       SceneState& sceneState) {}
 
-bool Sky::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     if (_sky->onDraw(sgn, currentStage)) {
         sgn.getComponent<RenderingComponent>()->makeTextureResident(
             *_skybox, to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
@@ -99,7 +99,7 @@ bool Sky::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
 }
 
 void Sky::getDrawCommands(SceneGraphNode& sgn,
-                          const RenderStage& currentRenderStage,
+                          RenderStage currentRenderStage,
                           SceneRenderState& sceneRenderState,
                           vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     GenericDrawCommand cmd;

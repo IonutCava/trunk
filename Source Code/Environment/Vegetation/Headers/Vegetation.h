@@ -76,7 +76,7 @@ class Vegetation : public SceneNode {
     void initialize(TerrainChunk* const terrainChunk);
     inline void toggleRendering(bool state) { _render = state; }
     void getDrawCommands(SceneGraphNode& sgn,
-                         const RenderStage& renderStage,
+                         RenderStage renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
     inline bool isInView(const SceneRenderState& sceneRenderState,
@@ -88,7 +88,7 @@ class Vegetation : public SceneNode {
    protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& renderStage);
+    bool onDraw(SceneGraphNode& sgn, RenderStage renderStage);
     void gpuCull();
 
    private:

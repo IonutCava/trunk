@@ -504,7 +504,7 @@ TerrainDescriptor* Scene::getTerrainInfo(const stringImpl& terrainName) {
     return _terrainInfoArray[0];
 }
 
-void Scene::debugDraw(const RenderStage& stage) {
+void Scene::debugDraw(RenderStage stage) {
 #ifdef _DEBUG
     const SceneRenderState::GizmoState& currentGizmoState =
         renderState().gizmoState();

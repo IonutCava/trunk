@@ -393,8 +393,11 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
                                             const stringImpl& materialName) {
     // See if the material already exists in a cooked state (XML file)
     STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
+#if !defined(DEBUG)
     const bool DISABLE_MAT_FROM_FILE = true;
-
+#else
+    const bool DISABLE_MAT_FROM_FILE = true;
+#endif
     Material* tempMaterial = nullptr;
     if (!DISABLE_MAT_FROM_FILE) {
         tempMaterial = XML::loadMaterial(materialName.c_str());

@@ -239,7 +239,7 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     /// returns true if the camera was moved/rotated/etc
     bool updateCameraControls();
     /// Draw debug entities
-    void debugDraw(const RenderStage& stage);
+    void debugDraw(RenderStage stage);
 
     /// simple function to load the scene elements.
     inline bool SCENE_LOAD(const stringImpl& name, GUI* const gui,
@@ -324,7 +324,7 @@ class SceneManagerAttorney {
     }
     static bool unload(Scene& scene) { return scene.unload(); }
     /// Draw debug entities
-    static void debugDraw(Scene& scene, const RenderStage& stage) {
+    static void debugDraw(Scene& scene, RenderStage stage) {
         scene.debugDraw(stage);
     }
 

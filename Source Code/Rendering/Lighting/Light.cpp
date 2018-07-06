@@ -203,7 +203,7 @@ bool Light::isInView(const SceneRenderState& sceneRenderState,
     return ((_impostorSGN != nullptr) && _drawImpostor);
 }
 
-bool Light::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     // The isInView call should stop impostor rendering if needed
     if (!_impostor) {
         _impostor =

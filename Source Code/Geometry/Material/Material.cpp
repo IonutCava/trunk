@@ -124,8 +124,7 @@ size_t Material::getRenderStateBlock(RenderStage currentStage) {
 }
 
 size_t Material::setRenderStateBlock(
-    const RenderStateBlockDescriptor& descriptor,
-    const RenderStage& renderStage) {
+    const RenderStateBlockDescriptor& descriptor, RenderStage renderStage) {
     size_t stateBlockHash = GFX_DEVICE.getOrCreateStateBlock(descriptor);
     _defaultRenderStates[to_uint(renderStage)] = stateBlockHash;
 
@@ -173,7 +172,7 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
 // Here we set the shader's name
 void Material::setShaderProgram(const stringImpl& shader,
-                                const RenderStage& renderStage,
+                                RenderStage renderStage,
                                 const bool computeOnAdd,
                                 const DELEGATE_CBK<>& shaderCompileCallback) {
     _shaderInfo[to_uint(renderStage)]._isCustomShader = true;
@@ -182,7 +181,7 @@ void Material::setShaderProgram(const stringImpl& shader,
 }
 
 void Material::setShaderProgramInternal(
-    const stringImpl& shader, const RenderStage& renderStage,
+    const stringImpl& shader, RenderStage renderStage,
     const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback) {
     U32 stageIndex = to_uint(renderStage);
     ShaderInfo& info = _shaderInfo[stageIndex];
@@ -233,7 +232,9 @@ void Material::setShaderProgramInternal(
 void Material::clean() {
     if (_dirty && _dumpToFile) {
         isTranslucent();
+#if !defined(DEBUG)
         XML::dumpMaterial(*this);
+#endif
         _dirty = false;
     }
 }
@@ -253,7 +254,7 @@ void Material::recomputeShaders() {
 /// the default ones.
 /// Manually setting a shader, overrides this function by setting
 /// _computedShaders to "true"
-bool Material::computeShader(const RenderStage& renderStage,
+bool Material::computeShader(RenderStage renderStage,
                              const bool computeOnAdd,
                              const DELEGATE_CBK<>& shaderCompileCallback) {
     ShaderInfo& info = _shaderInfo[to_uint(renderStage)];

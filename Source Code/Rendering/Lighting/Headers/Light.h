@@ -170,7 +170,7 @@ class Light : public SceneNode {
     /// Checks if this light needs and update
     void onCameraChange();
 
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage);
 
     /// SceneNode concrete implementations
     bool unload();
@@ -234,7 +234,7 @@ class Light : public SceneNode {
     bool load(const stringImpl& name);
 
     virtual void getDrawCommands(
-        SceneGraphNode& sgn, const RenderStage& currentRenderStage,
+        SceneGraphNode& sgn, RenderStage currentRenderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 

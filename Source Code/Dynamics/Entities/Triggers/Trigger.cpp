@@ -18,7 +18,7 @@ Trigger::Trigger()
 Trigger::~Trigger() {
 }
 
-bool Trigger::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
+bool Trigger::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     /// The isInView call should stop impostor rendering if needed
     if (!_triggerImpostor) {
         ResourceDescriptor impostorDesc(_name + "_impostor");

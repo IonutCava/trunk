@@ -77,13 +77,13 @@ class SceneNode : public Resource {
     /// If the node isn't ready for rendering and should be skipped this frame,
     /// the return value is false
     virtual bool onDraw(SceneGraphNode& sgn,
-                        const RenderStage& currentStage) = 0;
+                        RenderStage currentStage) = 0;
     virtual bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION_STAGE
-    virtual bool getDrawState(const RenderStage& currentStage);
+    virtual bool getDrawState(RenderStage currentStage);
     virtual void getDrawCommands(
-        SceneGraphNode& sgn, const RenderStage& currentRenderStage,
+        SceneGraphNode& sgn, RenderStage currentRenderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
     /*//Rendering/Processing*/

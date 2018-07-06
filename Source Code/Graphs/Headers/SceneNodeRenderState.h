@@ -21,7 +21,7 @@ class SceneNodeRenderState {
     inline bool useDefaultMaterial() const { return !_noDefaultMaterial; }
     inline void setDrawState(bool state) { _drawState = state; }
     bool getDrawState() const { return _drawState; }
-    bool getDrawState(const RenderStage& currentStage) const;
+    bool getDrawState(RenderStage currentStage) const;
     void addToDrawExclusionMask(U32 stageMask);
     void removeFromDrawExclusionMask(U32 stageMask);
     inline void addToDrawExclusionMask(RenderStage stage) {

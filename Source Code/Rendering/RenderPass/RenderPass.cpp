@@ -46,7 +46,7 @@ void RenderPass::render(const SceneRenderState& renderState,
 
     if (isDisplayStage) {
         for (U16 i = 0; i < renderBinCount; ++i) {
-            renderQueue.getBinSorted(i)->postRender(currentStage);
+            renderQueue.getBinSorted(i)->postRender(renderState, currentStage);
         }
     }
 

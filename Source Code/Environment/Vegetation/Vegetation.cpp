@@ -404,7 +404,7 @@ void Vegetation::gpuCull() {
 
 void Vegetation::getDrawCommands(
     SceneGraphNode& sgn,
-    const RenderStage& renderStage,
+    RenderStage renderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
@@ -435,7 +435,7 @@ void Vegetation::getDrawCommands(
     drawCommandsOut.push_back(_renderDrawCommand);
 }
 
-bool Vegetation::onDraw(SceneGraphNode& sgn, const RenderStage& renderStage) {
+bool Vegetation::onDraw(SceneGraphNode& sgn, RenderStage renderStage) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
              _terrainChunk->getLoD() > 0 ||

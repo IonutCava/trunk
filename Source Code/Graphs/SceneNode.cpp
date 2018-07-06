@@ -25,7 +25,7 @@ SceneNode::~SceneNode() {}
 void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                             SceneState& sceneState) {}
 
-bool SceneNode::getDrawState(const RenderStage& currentStage) {
+bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }
 

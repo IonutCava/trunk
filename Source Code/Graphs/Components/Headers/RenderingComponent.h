@@ -34,7 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SGNComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
@@ -43,20 +43,10 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderingComponent : public SGNComponent {
    public:
-    typedef vectorImpl<std::pair<ShaderBufferLocation, ShaderBuffer*>>  ShaderBufferList;
-    struct NodeRenderData {
-        vectorImpl<GenericDrawCommand> _drawCommands;
-        TextureDataContainer _textureData;
-        ShaderBufferList  _shaderBuffers;
-    };
-
     RenderingComponent(Material* const materialInstance,
                        SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
-    /// Draw the parent scene graph node
-    void render(const SceneRenderState& sceneRenderState,
-                const RenderStage& currentRenderStage);
     bool onDraw(RenderStage currentStage);
     void update(const U64 deltaTime);
 
@@ -102,8 +92,13 @@ class RenderingComponent : public SGNComponent {
     void makeTextureResident(const Texture& texture, U8 slot);
 
     void registerShaderBuffer(ShaderBufferLocation slot,
-                              ShaderBuffer* shaderBuffer);
+                              ShaderBuffer& shaderBuffer);
 
+    void unregisterShaderBuffer(ShaderBufferLocation slot);
+
+    inline const GFXDevice::RenderPackage& getRenderData() const {
+        return _renderData;
+    }
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
@@ -124,7 +119,8 @@ class RenderingComponent : public SGNComponent {
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
 
-    NodeRenderData _renderData;
+    GFXDevice::RenderPackage _renderData;
+
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;

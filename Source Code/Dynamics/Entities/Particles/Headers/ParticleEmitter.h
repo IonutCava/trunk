@@ -50,7 +50,7 @@ class ParticleEmitter : public SceneNode {
     ~ParticleEmitter();
 
     /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage);
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) { _enabled = state; }
@@ -93,7 +93,7 @@ class ParticleEmitter : public SceneNode {
                      SceneState& sceneState);
 
     void getDrawCommands(SceneGraphNode& sgn,
-                         const RenderStage& currentRenderStage,
+                         RenderStage currentRenderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
     void onCameraChange(SceneGraphNode& sgn);
