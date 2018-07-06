@@ -26,7 +26,7 @@ void main(void)
 
     vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0);
     
-    VAR._vertexW = dvd_WorldMatrix(VAR.dvd_instanceID) * vec4(patchPosition + vec4(posAndScale.xyz, 0.0));
+    VAR._vertexW = /*dvd_WorldMatrix(VAR.dvd_instanceID) * */vec4(patchPosition + vec4(posAndScale.xyz, 0.0));
 
     // Calcuate texture coordantes (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(VAR._vertexW);
@@ -258,15 +258,36 @@ vec2 interpolate2(in vec2 v0, in vec2 v1, in vec2 v2, in vec2 v3)
     return mix(a, b, gl_TessCoord.y);
 }
 
-vec3 getNormal(in float sampleHeight, in vec2 tex_coord) {
-    const vec2 size = vec2(2.0, 0.0);
+vec4 getHeightOffsets(in vec2 tex_coord) {
     const ivec3 off = ivec3(-1, 0, 1);
 
-    float s11 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
-    float s01 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.xy).x;
-    float s21 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.zy).x;
-    float s10 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.yx).x;
-    float s12 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.yz).x;
+    float s01 = textureOffset(TexTerrainHeight, tex_coord, off.xy).r;
+    float s21 = textureOffset(TexTerrainHeight, tex_coord, off.zy).r;
+    float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
+    float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
+
+    return vec4(s01, s21, s10, s12);
+}
+
+float getHeight(in vec4 heightOffsets) {
+    
+    float s01 = heightOffsets.r;
+    float s21 = heightOffsets.g;
+    float s10 = heightOffsets.b;
+    float s12 = heightOffsets.a;
+
+    return (s01 + s21 + s10 + s12) * 0.25;
+}
+
+vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
+    const vec2 size = vec2(2.0, 0.0);
+
+    float s11 = sampleHeight;
+    float s01 = heightOffsets.r;
+    float s21 = heightOffsets.g;
+    float s10 = heightOffsets.b;
+    float s12 = heightOffsets.a;
+
     vec3 va = normalize(vec3(size.xy, s21 - s01));
     vec3 vb = normalize(vec3(size.yx, s12 - s10));
 
@@ -290,8 +311,11 @@ void main()
     // Terrain heightmap coords
     vec2 terrainTexCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
 
+
+    vec4 heightOffsets = getHeightOffsets(terrainTexCoord);
+
     // Sample the heightmap and offset y position of vertex
-    float sampleHeight = texture(TexTerrainHeight, terrainTexCoord).r;
+    float sampleHeight = getHeight(heightOffsets);
     gl_Position.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
 
     // Project the vertex to clip space and send it along
@@ -301,7 +325,7 @@ void main()
 #if !defined(SHADOW_PASS)
     _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * _out._vertexW;
     mat3 normalMatrix = dvd_NormalMatrixWV(VAR[0].dvd_instanceID);
-    vec3 normal = getNormal(sampleHeight, terrainTexCoord);
+    vec3 normal = getNormal(sampleHeight, heightOffsets);
     _out._normalWV = normalize(normalMatrix * normal);
     _out._tangentWV = normalize(normalMatrix * getTangent(normal));
     _out._bitangentWV = normalize(cross(_out._normalWV, _out._tangentWV));
@@ -564,6 +588,7 @@ vec4 UnderwaterMappingRoutine() {
 
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo());
+
     return getAlbedo();//getPixelColour(VAR._texCoord);
 }
 

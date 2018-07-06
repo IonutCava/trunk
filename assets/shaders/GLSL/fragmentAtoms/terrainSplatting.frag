@@ -80,6 +80,9 @@ vec4 getTerrainAlbedo(){
 }
 
 vec3 getTerrainNormal() {
+
+    
+
     vec3 tbn = vec3(0.0);
     vec3 tbnTemp;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
@@ -93,7 +96,8 @@ vec3 getTerrainNormal() {
 #else//(CURRENT_TEXTURE_COUNT % 4) == 0
         tbnTemp = getFinalTBN4(blendMap, 0, detailScale[i]);
 #endif
-        tbnTemp = getTBNMatrix() * normalize(2.0 * tbnTemp - 1.0);
+        //tbnTemp = getTBNMatrix() * normalize(2.0 * tbnTemp - 1.0);
+        tbnTemp = perturb_normal(tbnTemp, VAR._normalWV, VAR._vertexW.xyz - dvd_cameraPosition.xyz, VAR._texCoord);
         tbn = normalUDNBlend(tbnTemp, tbn);
     }
 
