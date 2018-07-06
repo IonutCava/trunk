@@ -146,16 +146,17 @@ void Console::outThread() {
         UniqueLock lk(condMutex());
         entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
 
-        if (outBuffer().try_dequeue(/*ctok, */entry)) {
+        while (outBuffer().try_dequeue(/*ctok, */entry)) {
 #endif
             ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 
             for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
                 cbk(entry);
             }
-        } else {
-            std::this_thread::yield();
-        }
+        } 
+        //else {
+            //std::this_thread::yield();
+        //}
     }
     std::cout << "------------------------------------------" << std::endl
               << std::endl << std::endl << std::endl;

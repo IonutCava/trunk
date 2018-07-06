@@ -84,6 +84,7 @@ namespace GFX {
                      const vectorImpl<T>& values,
                      bool flag = false)
             : _binding(binding),
+              _bindingHash(_ID_RT(binding.c_str())),
               _type(type),
               _flag(flag),
               _transpose(false)
@@ -100,6 +101,7 @@ namespace GFX {
                      const vectorImpl<bool>& values,
                      bool flag)
             : _binding(binding),
+              _bindingHash(_ID_RT(binding.c_str())),
               _type(type),
               _flag(flag),
               _transpose(false)
@@ -118,6 +120,7 @@ namespace GFX {
                      const std::array<T, N>& values,
                      bool flag = false)
             : _binding(binding),
+              _bindingHash(_ID_RT(binding.c_str())),
               _type(type),
               _flag(flag),
               _transpose(false)
@@ -134,6 +137,7 @@ namespace GFX {
                      const std::array<bool, N>& values,
                      bool flag)
             : _binding(binding),
+              _bindingHash(_ID_RT(binding.c_str()))
               _type(type),
               _flag(flag),
               _transpose(false)
@@ -156,20 +160,20 @@ namespace GFX {
 
 
         inline bool operator==(const PushConstant& rhs) const {
-            return _binding == rhs._binding &&
+            return _bindingHash == rhs._bindingHash &&
                    _type == rhs._type &&
                    _flag == rhs._flag &&
                    _buffer == rhs._buffer;
         }
 
         inline bool operator!=(const PushConstant& rhs) const {
-            return _binding != rhs._binding ||
+            return _bindingHash != rhs._bindingHash ||
                    _type != rhs._type ||
                    _flag != rhs._flag ||
                    _buffer != rhs._buffer;
         }
 
-        //I32              _binding = -1;
+        U64              _bindingHash;
         stringImplFast   _binding;
         PushConstantType _type = PushConstantType::COUNT;
         vectorImpl<char> _buffer;

@@ -21,6 +21,7 @@ namespace GFX {
 
     PushConstant& PushConstant::assign(const PushConstant& other) {
         _binding = other._binding;
+        _bindingHash = other._bindingHash;
         _type = other._type;
         _flag = other._flag;
         _buffer = other._buffer;

@@ -60,10 +60,16 @@ class PushConstants {
                     GFX::PushConstantType type,
                     const vectorImpl<T>& values,
                     bool flag = false) {
-        auto ret = hashAlg::emplace(_data, _ID_RT(binding.c_str()), binding, type, values, flag);
-        if (!ret.second) {
-            ret.first->second.assign({ binding, type, values, flag });
+
+        U64 bindingID = _ID_RT(binding.c_str());
+        for (GFX::PushConstant& constant : _data) {
+            if (constant._bindingHash == bindingID) {
+                constant.assign({ binding, type, values, flag });
+                return;
+            }
         }
+
+        _data.emplace_back(binding, type, values, flag );
     }
 
     template<typename T, size_t N>
@@ -72,22 +78,28 @@ class PushConstants {
                     const std::array<T, N>& values,
                     bool flag = false) {
 
-        auto ret = hashAlg::emplace(_data, _ID_RT(binding.c_str()), binding, type, values, flag);
-        if (!ret.second) {
-            ret.first->second.assign({ binding, type, values, flag });
+        U64 bindingID = _ID_RT(binding.c_str());
+        for (GFX::PushConstant& constant : _data) {
+            if (constant._bindingHash == bindingID) {
+                constant.assign({ binding, type, values, flag });
+                return;
+            }
         }
+
+        _data.emplace_back(binding, type, values, flag);
     }
 
     void clear();
 
     inline bool empty() const { return _data.empty(); }
 
-    inline hashMapImpl<U64, GFX::PushConstant>& data() { return _data; }
+    inline vectorImpl<GFX::PushConstant>& data() { return _data; }
 
-    inline const hashMapImpl<U64, GFX::PushConstant>& data() const { return _data; }
+    inline const vectorImpl<GFX::PushConstant>& data() const { return _data; }
 
+  
   protected:
-    hashMapImpl<U64, GFX::PushConstant> _data;
+    vectorImpl<GFX::PushConstant> _data;
 };
 
 }; //namespace Divide

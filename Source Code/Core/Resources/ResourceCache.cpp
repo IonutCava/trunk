@@ -36,7 +36,9 @@ void ResourceCache::clear() {
     while (!_resDB.empty()) {
         for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB);)
         {
-            if (it->second.expired()) {
+            if (it->second.expired() ||
+                it->second.lock()->getType() == ResourceType::GPU_OBJECT)
+            {
                 it = _resDB.erase(it);
             } else {
                 ++it;

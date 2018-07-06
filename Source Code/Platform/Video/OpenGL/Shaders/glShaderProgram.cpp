@@ -794,9 +794,9 @@ void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
 }
 
 void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
-    for (auto& constant : constants.data()) {
-        if (!constant.second._binding.empty() && constant.second._type != GFX::PushConstantType::COUNT) {
-            UploadPushConstant(constant.second);
+    for (const GFX::PushConstant& constant : constants.data()) {
+        if (!constant._binding.empty() && constant._type != GFX::PushConstantType::COUNT) {
+            UploadPushConstant(constant);
         }
     }
 }

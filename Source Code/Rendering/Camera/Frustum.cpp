@@ -139,9 +139,7 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox, I8
 }
 
 void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix) {
-    mat4<F32>::Multiply(viewMatrix, projectionMatrix, _viewProjectionMatrixCache);
-
-    computePlanes(_viewProjectionMatrixCache);
+    computePlanes(viewMatrix * projectionMatrix);
 }
 
 void Frustum::intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
@@ -193,9 +191,9 @@ void Frustum::getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS) {
                    });
 }
 
-void Frustum::computePlanes(const mat4<F32>& invViewProj) {
+void Frustum::computePlanes(const mat4<F32>& viewProjMatrix) {
 #if 0
-    computeFrustumPlanes(invViewProj.getInverse(), _frustumPlanes);
+    computeFrustumPlanes(viewProjMatrix, _frustumPlanes);
 #else
     Plane<F32>& leftPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_LEFT)];
     Plane<F32>& rightPlane  = _frustumPlanes[to_base(FrustPlane::PLANE_RIGHT)];
@@ -204,7 +202,7 @@ void Frustum::computePlanes(const mat4<F32>& invViewProj) {
     Plane<F32>& topPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_TOP)];
     Plane<F32>& bottomPlane = _frustumPlanes[to_base(FrustPlane::PLANE_BOTTOM)];
 
-    F32 const* mat = &invViewProj.mat[0];
+    F32 const* mat = &viewProjMatrix.mat[0];
 
     leftPlane.set(   mat[3] + mat[0], mat[7] + mat[4], mat[11] + mat[8],  mat[15] + mat[12]);
     rightPlane.set(  mat[3] - mat[0], mat[7] - mat[4], mat[11] - mat[8],  mat[15] - mat[12]);
@@ -221,16 +219,18 @@ void Frustum::computePlanes(const mat4<F32>& invViewProj) {
     _pointsDirty = true;
 }
 
-void Frustum::computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut) {
+void Frustum::computePlanes(const mat4<F32>& viewProjMatrix, Plane<F32>* planesOut) {
     std::array<vec4<F32>, to_base(Frustum::FrustPlane::COUNT)> planesTemp;
 
-    computePlanes(invViewProj, planesTemp.data());
+    computePlanes(viewProjMatrix, planesTemp.data());
     for (U8 i = 0; i < to_U8(Frustum::FrustPoints::COUNT); ++i) {
         planesOut[i].set(planesTemp[i]);
     }
 }
 
-void Frustum::computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
+void Frustum::computePlanes(const mat4<F32>& viewProjMatrix, vec4<F32>* planesOut) {
+    const mat4<F32> invViewProj(viewProjMatrix.getInverse());
+
     static const vec4<F32> unitVecs[] = { vec4<F32>(-1, -1, -1, 1),
                                           vec4<F32>(-1 , 1, -1, 1),
                                           vec4<F32>(-1, -1,  1, 1),

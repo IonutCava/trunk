@@ -5,26 +5,22 @@
 namespace Divide {
 PushConstants::PushConstants()
 {
+    _data.reserve(3);
 }
 
 PushConstants::PushConstants(const GFX::PushConstant& constant)
+    : _data({constant})
 {
-    set(constant._binding,
-        constant._type,
-        constant._buffer,
-        constant._flag);
 }
 
 PushConstants::PushConstants(const vectorImpl<GFX::PushConstant>& data)
+    : _data(data)
 {
-    for (const GFX::PushConstant& constant : data) {
-        set(constant);
-    }
 }
 
 PushConstants::~PushConstants()
 {
-    clear();
+    //clear();
 }
 
 PushConstants::PushConstants(const PushConstants& other) 
@@ -38,10 +34,14 @@ PushConstants& PushConstants::operator=(const PushConstants& other) {
 }
 
 void PushConstants::set(const GFX::PushConstant& constant) {
-    set(constant._binding,
-        constant._type,
-        constant._buffer,
-        constant._flag);
+    for (GFX::PushConstant& iter : _data) {
+        if (iter._bindingHash == constant._bindingHash) {
+            iter.assign(constant);
+            return;
+        }
+    }
+
+    _data.emplace_back(constant);
 }
 
 void PushConstants::clear() {

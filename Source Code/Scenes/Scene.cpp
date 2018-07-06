@@ -460,6 +460,17 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         hashAlg::insert(_flashLight,
                         idx,
                         flashLight);
+
+        _cameraUpdateMap[idx] = 
+        Camera::addUpdateListener([this, idx](const Camera& cam) { 
+            if (idx < _scenePlayers.size() && idx < _flashLight.size() && _flashLight[idx]) {
+                if (cam.getGUID() == _scenePlayers[getSceneIndexForPlayer(idx)]->getCamera().getGUID()) {
+                    TransformComponent* tComp = _flashLight[idx]->get<TransformComponent>();
+                    tComp->setPosition(cam.getEye());
+                    tComp->setRotation(cam.getEuler());
+                }
+            }
+        });
                      
     }
 
@@ -901,7 +912,14 @@ void Scene::onPlayerRemove(const Player_ptr& player) {
 
     input().onPlayerRemove(idx);
     state().onPlayerRemove(idx);
-
+    Camera::removeUpdateListener(_cameraUpdateMap[idx]);
+    if (_flashLight.size() > idx) {
+        SceneGraphNode* flashLight = _flashLight[idx];
+        if (flashLight) {
+            _sceneGraph->getRoot().removeNode(*flashLight);
+            _flashLight[idx] = nullptr;
+        }
+    }
     _sceneGraph->getRoot().removeNode(*player->getBoundNode());
 
     _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(idx));
@@ -964,6 +982,7 @@ void Scene::clearObjects() {
 bool Scene::mouseMoved(const Input::MouseEvent& arg) {
     // ToDo: Use mapping between device ID an player index -Ionut
     PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
+    _hoverUpdateQueue.insert(idx);
 
     Camera& cam = _scenePlayers[idx]->getCamera();
     if (cam.moveRelative(arg.relativePos()))
@@ -1020,16 +1039,10 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
     _sceneGraph->sceneUpdate(deltaTimeUS, *_sceneState);
     _aiManager->update(deltaTimeUS);
 
-    for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
-        PlayerIndex idx = _scenePlayers[i]->index();
+    for(PlayerIndex idx : _hoverUpdateQueue) {
         findHoverTarget(idx);
-        if (_flashLight[idx]) {
-            TransformComponent* tComp = _flashLight[idx]->get<TransformComponent>();
-            const Camera& cam = _scenePlayers[idx]->getCamera();
-            tComp->setPosition(cam.getEye());
-            tComp->setRotation(cam.getEuler());
-        }
     }
+    _hoverUpdateQueue.clear();
 }
 
 void Scene::onLostFocus() {
@@ -1081,15 +1094,17 @@ void Scene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 }
 
 void Scene::processGUI(const U64 deltaTimeUS) {
-    for (U16 i = 0; i < _guiTimersMS.size(); ++i) {
-        _guiTimersMS[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
-    }
+    D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
+
+    std::transform(std::begin(_guiTimersMS), std::end(_guiTimersMS), std::begin(_guiTimersMS),
+                   std::bind1st(std::plus<D64>(), delta));
 }
 
 void Scene::processTasks(const U64 deltaTimeUS) {
-    for (U16 i = 0; i < _taskTimers.size(); ++i) {
-        _taskTimers[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
-    }
+    D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
+
+    std::transform(std::begin(_taskTimers), std::end(_taskTimers), std::begin(_taskTimers),
+                   std::bind1st(std::plus<D64>(), delta));
 }
 
 void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) {

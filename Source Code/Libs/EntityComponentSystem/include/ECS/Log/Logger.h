@@ -1,11 +1,11 @@
 /*
-	Author : Tobias Stein
-	Date   : 11th September, 2016
-	File   : Logger.h
+Author : Tobias Stein
+Date   : 11th September, 2016
+File   : Logger.h
 	
-	Class that manages the logging.
+Class that manages the logging.
 
-	All Rights Reserved. (c) Copyright 2016.
+All Rights Reserved. (c) Copyright 2016.
 */
 
 #if !defined(ECS_DISABLE_LOGGING)
@@ -17,64 +17,68 @@
 
 #include "Core/Headers/Console.h"
 
+#define ECS_DISABLE_INFO_LOG
+
 namespace ECS { namespace Log {
 
-		class ECS_API Logger
-		{		
-			Logger(const Logger&) = delete;
-			Logger& operator=(Logger&) = delete;
+	class ECS_API Logger
+	{		
+		Logger(const Logger&) = delete;
+		Logger& operator=(Logger&) = delete;
 					
 
-		public:
+	public:
 
-			explicit Logger();
+		explicit Logger();
 
-			~Logger();
+		~Logger();
 
-			// trace 
-			template<typename... Args>
-			inline void LogTrace(const char* fmt, Args... args)
-			{			
-                Divide::Console::printfn(fmt, std::forward<Args>(args)...);
-			}
+		// trace 
+		template<typename... Args>
+		inline void LogTrace(const char* fmt, Args... args)
+		{			
+            Divide::Console::printfn(fmt, std::forward<Args>(args)...);
+		}
 
-			// debug
-			template<typename... Args>
-			inline void LogDebug(const char* fmt, Args... args)
-			{
-                Divide::Console::d_printfn(fmt, std::forward<Args>(args)...);
-			}
+		// debug
+		template<typename... Args>
+		inline void LogDebug(const char* fmt, Args... args)
+		{
+            Divide::Console::d_printfn(fmt, std::forward<Args>(args)...);
+		}
 
-			// info
-			template<typename... Args>
-			inline void LogInfo(const char* fmt, Args... args)
-			{
-                Divide::Console::printfn(fmt, std::forward<Args>(args)...);
-			}
+		// info
+		template<typename... Args>
+		inline void LogInfo(const char* fmt, Args... args)
+		{
+        #if !defined(ECS_DISABLE_INFO_LOG)
+            Divide::Console::printfn(fmt, std::forward<Args>(args)...);
+        #endif
+        }
 
-			// warn
-			template<typename... Args>
-			inline void LogWarning(const char* fmt, Args... args)
-			{
-                Divide::Console::warnfn(fmt, std::forward<Args>(args)...);
-			}
+		// warn
+		template<typename... Args>
+		inline void LogWarning(const char* fmt, Args... args)
+		{
+            Divide::Console::warnfn(fmt, std::forward<Args>(args)...);
+		}
 
-			// error
-			template<typename... Args>
-			inline void LogError(const char* fmt, Args... args)
-			{
-                Divide::Console::errorfn(fmt, std::forward<Args>(args)...);
-			}
+		// error
+		template<typename... Args>
+		inline void LogError(const char* fmt, Args... args)
+		{
+            Divide::Console::errorfn(fmt, std::forward<Args>(args)...);
+		}
 
-			// fatal
-			template<typename... Args>
-			inline void LogFatal(const char* fmt, Args... args)
-			{
-                Divide::Console::errorfn(fmt, std::forward<Args>(args)...);
-                assert(false && "Fatal Error");
-			}
+		// fatal
+		template<typename... Args>
+		inline void LogFatal(const char* fmt, Args... args)
+		{
+            Divide::Console::errorfn(fmt, std::forward<Args>(args)...);
+            assert(false && "Fatal Error");
+		}
 
-		}; // class Logger
+	}; // class Logger
 
 
 }} // namespace ECS::Log

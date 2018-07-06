@@ -1,3 +1,4 @@
+
 /*
 Copyright (c) 2017 DIVIDE-Studio
 Copyright (c) 2009 Ionut Cava
@@ -71,6 +72,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 #include <condition_variable>
+#include <unordered_set>
 #include <type_traits>
 #include <functional>
 #include <stdexcept>

@@ -77,7 +77,7 @@ ErrorCode init(const char* newLanguage) {
             detail::g_LanguageFileWatcher.reset(new FW::FileWatcher());
             detail::g_fileWatcherListener.addIgnoredEndCharacter('~');
             detail::g_fileWatcherListener.addIgnoredExtension("tmp");
-            detail::g_LanguageFileWatcher->addWatch(Paths::g_localisationPath.c_str(), &detail::g_fileWatcherListener);
+            detail::g_LanguageFileWatcher->addWatch(Paths::g_exePath + Paths::g_localisationPath.c_str(), &detail::g_fileWatcherListener);
         }
     }
 

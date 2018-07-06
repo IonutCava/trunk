@@ -116,7 +116,7 @@ namespace ECS { namespace Event {
 			{
 				this->m_EventStorage.push_back(new (pMem)E(std::forward<ARGS>(eventArgs)...));
 
-				LogTrace("\'%s\' event buffered.", typeid(E).name());
+				LogInfo("\'%s\' event buffered.", typeid(E).name());
 			}
 			else
 			{

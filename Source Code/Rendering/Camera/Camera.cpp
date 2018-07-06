@@ -392,7 +392,7 @@ bool Camera::updateFrustum() {
         return false;
     }
 
-    _frustum->Extract(getViewMatrix(), _projectionMatrix);
+    _frustum->Extract(getViewMatrix(), getProjectionMatrix());
 
     _frustumDirty = false;
 
@@ -404,7 +404,7 @@ vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, cons
     temp.x = (temp.x - F32(viewport[0])) / F32(viewport[2]);
     temp.y = (temp.y - F32(viewport[1])) / F32(viewport[3]);
 
-    temp = _frustum->_viewProjectionMatrixCache.getInverse() * (2.0f * temp - 1.0f);
+    temp = (getViewMatrix() * getProjectionMatrix()).getInverse() * (2.0f * temp - 1.0f);
     temp /= temp.w;
 
     return temp.xyz();
