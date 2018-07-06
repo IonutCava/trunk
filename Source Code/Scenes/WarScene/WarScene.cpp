@@ -388,7 +388,6 @@ bool WarScene::load(const stringImpl& name) {
     SceneGraphNode* baseNode;
 
     SceneGraphNodeDescriptor sceneryNodeDescriptor;
-    sceneryNodeDescriptor._isSelectable = Config::Build::ENABLE_EDITOR;
     sceneryNodeDescriptor._componentMask = normalMask;
 
     U8 locationFlag = 0;
@@ -451,7 +450,7 @@ bool WarScene::load(const stringImpl& name) {
             //light->setCastShadows(i == 0 ? true : false);
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, false));
         }
@@ -464,7 +463,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setRange(35.0f);
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
         }
@@ -478,7 +477,7 @@ bool WarScene::load(const stringImpl& name) {
             //light->setCastShadows(i == 1 ? true : false);
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
             lightSGN->get<TransformComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
@@ -531,8 +530,6 @@ bool WarScene::load(const stringImpl& name) {
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::RED);
 
     sceneryNodeDescriptor._name = "FirstPersonFlag";
-    sceneryNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
-    sceneryNodeDescriptor._isSelectable = false;
     SceneGraphNode* firstPersonFlag = _sceneGraph->getRoot().addNode(sceneryNodeDescriptor);
     firstPersonFlag->lockVisibility(true);
 
@@ -549,6 +546,9 @@ bool WarScene::load(const stringImpl& name) {
     flagRComp = firstPersonFlag->getChild(0).get<RenderingComponent>();
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN);
     flagRComp->getMaterialInstance()->setHighPriority(true);
+
+    firstPersonFlag->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_KINEMATIC);
+
     _firstPersonWeapon = firstPersonFlag;
 
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);

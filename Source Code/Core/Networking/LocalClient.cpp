@@ -62,7 +62,6 @@ void LocalClient::HandleGeometryAppendOpCode(WorldPacket& p) {
     vector<FileData> patch;
     for (U8 i = 0; i < size; i++) {
         FileData d;
-        I8 type = -1;
         p >> d.ItemName;
         p >> d.ModelName;
         p >> d.orientation.x;
@@ -74,14 +73,6 @@ void LocalClient::HandleGeometryAppendOpCode(WorldPacket& p) {
         p >> d.scale.x;
         p >> d.scale.y;
         p >> d.scale.z;
-        p >> type;
-        if (type == 0)
-            d.type = GeometryType::GEOMETRY;
-        else if (type == 1)
-            d.type = GeometryType::VEGETATION;
-        else
-            d.type = GeometryType::PRIMITIVE;
-        p >> d.version;
         patch.push_back(d);
     }
     //_parentScene.addPatch(patch);

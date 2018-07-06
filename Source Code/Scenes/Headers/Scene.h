@@ -181,7 +181,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual void loadKeyBindings();
 
     void onNodeDestroy(SceneGraphNode& node);
-    void findHoverTarget(PlayerIndex idx);
+    void findHoverTarget(PlayerIndex idx, bool force);
     bool checkCameraUnderwater(PlayerIndex idx) const;
     void toggleFlashlight(PlayerIndex idx);
 
@@ -199,8 +199,8 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool saveToCache(const stringImpl& name);
 
     virtual bool load(const stringImpl& name);
-    Mesh_ptr loadModel(const FileData& data, bool addToSceneGraph);
-    Object3D_ptr loadGeometry(const FileData& data, bool addToSceneGraph);
+    Object3D_ptr createPrimitive(const FileData& data);
+    Object3D_ptr loadAsset(const FileData& data, bool addToSceneGraph);
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)
@@ -250,6 +250,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void resetSelection(PlayerIndex idx);
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
+    bool editorVisible() const;
    protected:
        /// Global info
        SceneManager& _parent;

@@ -36,7 +36,6 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                                                        to_base(ComponentType::BOUNDS) |
                                                        to_base(ComponentType::RENDERING) |
                                                        to_base(ComponentType::NETWORKING);
-            triggerImpostorDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
             triggerImpostorDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
 
             sgn.addNode(triggerImpostorDescriptor);

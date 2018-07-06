@@ -61,8 +61,6 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     SceneGraphNodeDescriptor waterNodeDescriptor;
     waterNodeDescriptor._node = _plane;
     waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-    waterNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_STATIC;
-    waterNodeDescriptor._isSelectable = false;
     waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                          to_base(ComponentType::TRANSFORM) |
                                          to_base(ComponentType::BOUNDS) |

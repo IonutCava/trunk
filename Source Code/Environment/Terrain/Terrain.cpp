@@ -43,8 +43,6 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     SceneGraphNodeDescriptor terrainNodeDescriptor;
     terrainNodeDescriptor._node = _plane;
     terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-    terrainNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_STATIC;
-    terrainNodeDescriptor._isSelectable = false;
     terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                            to_base(ComponentType::TRANSFORM) |
                                            to_base(ComponentType::RIGID_BODY) |
@@ -73,6 +71,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                                         *_shaderData);
 
     sgn.get<TransformComponent>()->setPosition(_offsetPosition);
+    sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
 
     SceneNode::postLoad(sgn);
 }

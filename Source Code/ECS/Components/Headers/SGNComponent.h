@@ -55,7 +55,8 @@ enum class ComponentType : U32 {
     NETWORKING = toBit(8),
     UNIT = toBit(9),
     RIGID_BODY = toBit(10),
-    COUNT = 11
+    SELECTION = toBit(11),
+    COUNT = 12
 };
 
 struct EntityOnUpdate;
@@ -86,10 +87,14 @@ class SGNComponent : private NonCopyable,
 
     I64 uniqueID() const;
 
+    virtual bool enabled() const;
+    virtual void enabled(const bool state);
+    
    protected:
     void RegisterEventCallbacks();
 
    protected:
+    std::atomic_bool _enabled;
     mutable std::atomic_bool _hasChanged;
     /// Pointer to the SGN owning this instance of AnimationComponent
     SceneGraphNode& _parentSGN;

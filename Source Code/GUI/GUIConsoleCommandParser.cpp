@@ -236,16 +236,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     model.data = 1.0f;
     model.scale = vec3<F32>(scale);
     model.orientation = cam->getEuler();
-    model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
-                     ? GeometryType::PRIMITIVE
-                     : GeometryType::GEOMETRY;
-    model.version = 1.0f;
-    model.isUnit = false;
     model.staticUsage = false;
-    model.navigationUsage = true;
-    model.useHighDetailNavMesh = true;
-    model.physicsUsage = true;
-    model.physicsStatic = true;
     _context.gui().activeScene()->addModel(model);
 }
 

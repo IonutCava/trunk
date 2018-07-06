@@ -43,7 +43,6 @@ struct PatchData {
     stringImpl sceneName;
     U32 size;
     vector<stringImpl> name, modelName;
-    vector<F32> version;
 };
 
 DEFINE_SINGLETON(Patch)

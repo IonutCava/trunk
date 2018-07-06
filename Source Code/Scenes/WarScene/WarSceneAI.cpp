@@ -326,13 +326,13 @@ bool WarScene::addUnits() {
             SceneGraphNodeDescriptor npcNodeDescriptor;
             npcNodeDescriptor._node = currentMesh;
             npcNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-            npcNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
-            npcNodeDescriptor._isSelectable = true;
-            npcNodeDescriptor._componentMask = normalMask;
+            npcNodeDescriptor._componentMask = normalMask | to_base(ComponentType::SELECTION);
             npcNodeDescriptor._name = currentName;
 
             SceneGraphNode* currentNode = root.addNode(npcNodeDescriptor);
             currentNode->setSelectable(true);
+
+            currentNode->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_KINEMATIC);
 
             TransformComponent* tComp =
                 currentNode->get<TransformComponent>();

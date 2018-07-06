@@ -41,7 +41,6 @@ void Mesh::updateBoundsInternal() {
 void Mesh::postLoad(SceneGraphNode& sgn) {
     static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
                                   to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
                                   to_base(ComponentType::BOUNDS) |
                                   to_base(ComponentType::RENDERING) |
                                   to_base(ComponentType::NAVIGATION);
@@ -52,15 +51,19 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                                    to_base(ComponentType::RAGDOLL);
 
     SceneGraphNodeDescriptor subMeshDescriptor;
-    subMeshDescriptor._isSelectable = true;
-    subMeshDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
     subMeshDescriptor._usageContext = sgn.usageContext();
 
     for (const SubMesh_ptr& submesh : _subMeshList) {
         subMeshDescriptor._node = submesh;
         subMeshDescriptor._componentMask = submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask;
+        if (sgn.get<RigidBodyComponent>()) {
+            subMeshDescriptor._componentMask |= to_base(ComponentType::RIGID_BODY);
+        }
         subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn.name().c_str(), submesh->getID());
-        sgn.addNode(subMeshDescriptor);
+        SceneGraphNode* subSGN = sgn.addNode(subMeshDescriptor);
+        if (BitCompare(subMeshDescriptor._componentMask, ComponentType::RIGID_BODY)) {
+            subSGN->get<RigidBodyComponent>()->physicsGroup(sgn.get<RigidBodyComponent>()->physicsGroup());
+        }
     }
 
     sgn.get<BoundsComponent>()->ignoreTransform(true);

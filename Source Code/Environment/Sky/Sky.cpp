@@ -88,8 +88,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     SceneGraphNodeDescriptor skyNodeDescriptor;
     skyNodeDescriptor._node = _sky;
     skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-    skyNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-    skyNodeDescriptor._isSelectable = false;
     skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                        to_base(ComponentType::BOUNDS) |
                                        to_base(ComponentType::RENDERING) |

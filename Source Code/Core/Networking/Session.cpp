@@ -38,13 +38,10 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
     ASIO::LOG_PRINT(("Received [ CMSG_GEOMERTY_LIST ] with : " + to_stringImpl(data.size) + " models").c_str());
     for (U32 i = 0; i < data.size; i++) {
         stringImpl name, modelname;
-        U32 version = 0;
         p >> name;
         p >> modelname;
-        p >> version;
         data.name.push_back(name);
         data.modelName.push_back(modelname);
-        data.version.push_back(to_F32(version));
     }
     bool updated = Patch::instance().compareData(data);
 
@@ -66,14 +63,6 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
             r << (*_iter).scale.x;
             r << (*_iter).scale.y;
             r << (*_iter).scale.z;
-            if ((*_iter).type == GeometryType::GEOMETRY) {
-                r << 0;
-            } else if ((*_iter).type == GeometryType::VEGETATION) {
-                r << 1;
-            } else {
-                r << 2;
-            }
-            r << (*_iter).version;
         }
         ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + to_stringImpl(PatchData.size()) + " models to update").c_str());
         sendPacket(r);

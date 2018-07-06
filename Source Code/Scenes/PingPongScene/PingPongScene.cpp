@@ -298,8 +298,6 @@ bool PingPongScene::load(const stringImpl& name) {
     ballNodeDescriptor._node = _ball;
     ballNodeDescriptor._name = "PingPongBallSGN";
     ballNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-    ballNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
-    ballNodeDescriptor._isSelectable = false;
     ballNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
         to_base(ComponentType::BOUNDS) |
         to_base(ComponentType::RENDERING) |
@@ -308,7 +306,7 @@ bool PingPongScene::load(const stringImpl& name) {
         to_base(ComponentType::NETWORKING);
     _ballSGN = _sceneGraph->getRoot().addNode(ballNodeDescriptor);
     _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
-
+    _ballSGN->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_KINEMATIC);
     // Add some taunts
     _quotes.push_back("Ha ha ... even Odin's laughin'!");
     _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
