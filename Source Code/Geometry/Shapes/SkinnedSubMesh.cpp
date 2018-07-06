@@ -14,7 +14,8 @@ const static bool USE_MUTITHREADED_LOADING = false;
 
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
     : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
-    _parentAnimatorPtr(nullptr)
+    _parentAnimatorPtr(nullptr),
+    _parentBoneBuffer(nullptr)
 {
     _buildingBoundingBoxes = false;
 }
@@ -29,8 +30,9 @@ void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
         _parentAnimatorPtr = _parentMesh->getAnimator();
     }
 
-    sgn.setComponent(SGNComponent::ComponentType::ANIMATION,
-                     MemoryManager_NEW AnimationComponent(_parentAnimatorPtr, sgn));
+    sgn.setComponent(
+        SGNComponent::ComponentType::ANIMATION,
+        MemoryManager_NEW AnimationComponent(*_parentAnimatorPtr, sgn));
 
     SubMesh::postLoad(sgn);
 }

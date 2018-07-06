@@ -45,7 +45,7 @@ class d3dConstantBuffer final : public ShaderBuffer {
     void Destroy();
     /// Reserve primitiveCount * implementation specific primitive size of space
     /// in the buffer and fill it with NULL values
-    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    void Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize);
 
     void DiscardAllData() const;
 

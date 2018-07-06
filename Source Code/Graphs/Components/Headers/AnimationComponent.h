@@ -48,14 +48,13 @@ class AnimationComponent : public SGNComponent {
     typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/>
         FrameIndexes;
 
-    AnimationComponent(SceneAnimator* animator,
+    AnimationComponent(SceneAnimator& animator,
                        SceneGraphNode& parentSGN);
     ~AnimationComponent();
     bool onDraw(RenderStage currentStage);
 
     void update(const U64 deltaTime);
 
-    void renderSkeleton();
     /// Select an animation by name
     bool playAnimation(const stringImpl& name);
     /// Select an animation by index
@@ -63,6 +62,7 @@ class AnimationComponent : public SGNComponent {
     /// Select next available animation
     bool playNextAnimation();
 
+    inline U64 animationTimeStamp() const { return _currentTimeStamp;  }
     inline I32 frameIndex() const { return frameIndex(_currentAnimIndex); }
     inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
     I32 frameIndex(U32 animationID) const;
@@ -99,9 +99,10 @@ class AnimationComponent : public SGNComponent {
     void resetTimers();
     void incParentTimeStamp(const U64 timestamp);
 
+    const vectorImpl<Line>& skeletonLines() const;
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
-    SceneAnimator* _animator;
+    SceneAnimator& _animator;
     /// Current animation index for the current SGN
     I32 _currentAnimIndex;
     /// Current animation timestamp for the current SGN
@@ -111,13 +112,11 @@ class AnimationComponent : public SGNComponent {
     U64 _parentTimeStamp;
     /// Last updated frame indexes for each animation
     FrameIndexes _lastFrameIndexes;
-    /// Does the mesh have a valid skeleton?
-    bool _skeletonAvailable;
     /// Animation playback toggle
     bool _playAnimations;
     /// Animation timestamp changed
     bool _updateAnimations;
-    /// Used to upload bone data to the gpu
+    /// Bone buffer used to upload animation data to the GPU
     ShaderBuffer* _boneTransformBuffer;
     /// Used to iterate through the bone buffer
     I32 _readOffset, _writeOffset, _dataRange, _bufferSizeFactor;

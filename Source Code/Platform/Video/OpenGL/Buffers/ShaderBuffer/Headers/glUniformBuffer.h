@@ -48,7 +48,7 @@ class glUniformBuffer final : public ShaderBuffer {
 
     void Destroy();
     /// Create a new buffer object to hold our uniform shader data
-    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    void Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize);
 
     void DiscardAllData() const;
 

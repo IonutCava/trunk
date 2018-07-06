@@ -79,6 +79,11 @@ class Object3D : public SceneNode {
 
     virtual bool onDraw(RenderStage currentStage);
 
+    inline bool isSkinned() const {
+        return bitCompare(getFlagMask(),
+                          to_uint(ObjectFlag::OBJECT_FLAG_SKINNED));
+    }
+
     virtual bool updateAnimations(SceneGraphNode& sgn) { return false; }
     /// Use playAnimations() to toggle animation playback for the current object
     /// (and all subobjects) on or off

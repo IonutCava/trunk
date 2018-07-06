@@ -47,6 +47,7 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
           _unbound(unbound),
           _primitiveSize(0),
           _primitiveCount(0),
+          _sizeFactor(0),
           _bufferSize(0),
           _persistentMapped(persistentMapped &&
                             !Config::Profile::DISABLE_PERSISTENT_BUFFER) {}
@@ -56,10 +57,12 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
     }
 
     /// Create a new buffer to hold our shader data
-    virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
+    virtual void Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize) {
+        _sizeFactor = sizeFactor;
         _primitiveCount = primitiveCount;
         _primitiveSize = primitiveSize;
-        _bufferSize = primitiveSize * primitiveCount;
+        _bufferSize = primitiveSize * primitiveCount * sizeFactor;
+        DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::Create error: Invalid buffer size!");
     }
 
     virtual void Destroy() = 0;
@@ -69,7 +72,7 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
                             ptrdiff_t rangeElementCount,
                             const bufferPtr data) const = 0;
     inline void SetData(const bufferPtr data) {
-        UpdateData(0, _primitiveCount, data);
+        UpdateData(0, _primitiveCount * _sizeFactor, data);
     }
 
     virtual bool BindRange(U32 bindIndex,
@@ -114,6 +117,7 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
 
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
+    inline U32 getSizeFactor() const { return _sizeFactor;  }
 
     static I32 getTargetDataAlignment(bool unbound = false) {
         return _targetDataAlignment[unbound ? 0 : 1];
@@ -124,6 +128,7 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
 
     size_t _bufferSize;
     size_t _primitiveSize;
+    U32 _sizeFactor;
     U32 _primitiveCount;
     const bool _unbound;
     const bool _persistentMapped;

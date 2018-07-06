@@ -9,11 +9,23 @@
 
 namespace Divide {
 
+SceneAnimator::SceneAnimator()
+    : _skeleton(nullptr),
+    _skeletonDepthCache(-1)
+{
+}
 
-void SceneAnimator::release() {
+SceneAnimator::~SceneAnimator()
+{
+    release();
+}
+
+void SceneAnimator::release()
+{
     // this should clean everything up
     _skeletonLines.clear();
     _skeletonLinesContainer.clear();
+    _skeletonDepthCache = -2;
     // clear all animations
     _animations.clear();
     _animationNameToID.clear();
@@ -32,7 +44,11 @@ bool SceneAnimator::init(const aiScene* pScene) {
     release();
 
     _skeleton = createBoneTree(pScene->mRootNode, nullptr);
+    _skeletonDepthCache = static_cast<I32>(_skeleton->hierarchyDepth());
 
+    vectorImpl<Bone*> bones;
+    bones.reserve(_skeletonDepthCache);
+    
     for (U16 meshPointer = 0; meshPointer < pScene->mNumMeshes; ++meshPointer) {
         const aiMesh* mesh = pScene->mMeshes[meshPointer];
         for (U32 n = 0; n < mesh->mNumBones; ++n) {
@@ -41,17 +57,21 @@ bool SceneAnimator::init(const aiScene* pScene) {
             Bone* found = _skeleton->find(bone->mName.data);
             assert(found != nullptr);
 
-            if (boneIndex(bone->mName.data) == -1) {
-                found->_offsetMatrix = bone->mOffsetMatrix;
-                _bones.push_back(found);
-            }
+            found->_offsetMatrix = bone->mOffsetMatrix;
+            bones.push_back(found);
         }
+    }
+
+    if (_skeletonDepthCache != static_cast<I32>(bones.size())) {
+        // ToDo: investigate mismatch. 
+        // Avoid adding unneeded bones to skeleton - Ionut
+        _skeletonDepthCache = static_cast<I32>(bones.size());
     }
 
     extractAnimations(pScene);
 
-    vectorAlg::vecSize boneCount = _bones.size();
-    _transforms.resize(boneCount);
+    _transforms.resize(_skeletonDepthCache);
+
     D32 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
     mat4<F32> rotationmat;
     vectorImpl<mat4<F32> > vec;
@@ -60,7 +80,8 @@ bool SceneAnimator::init(const aiScene* pScene) {
     for (vectorAlg::vecSize i(0); i < _animations.size(); ++i) {
         AnimEvaluator& crtAnimation = _animations[i];
         D32 duration = crtAnimation.duration();
-        D32 tickStep = crtAnimation.ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
+        D32 tickStep =
+            crtAnimation.ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
         D32 dt = 0;
         for (D32 ticks = 0; ticks < duration; ticks += tickStep) {
             dt += timestep;
@@ -68,24 +89,29 @@ bool SceneAnimator::init(const aiScene* pScene) {
             crtAnimation.transforms().push_back(vec);
             vectorImpl<mat4<F32> >& trans = crtAnimation.transforms().back();
             if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
-                for (vectorAlg::vecSize a = 0; a < boneCount; ++a) {
+                for (I32 a = 0; a < _skeletonDepthCache; ++a) {
+                    Bone* bone = bones[a];
                     AnimUtils::TransformMatrix(
-                        _bones[a]->_offsetMatrix * _bones[a]->_globalTransform,
+                        bone->_offsetMatrix * bone->_globalTransform,
                         rotationmat);
                     trans.push_back(rotationmat);
+                    bone->_boneID = a;
                 }
             } else {
-                for (vectorAlg::vecSize a = 0; a < boneCount; ++a) {
+                for (I32 a = 0; a < _skeletonDepthCache; ++a) {
+                    Bone* bone = bones[a];
                     AnimUtils::TransformMatrix(
-                        _bones[a]->_globalTransform * _bones[a]->_offsetMatrix,
+                        bone->_globalTransform * bone->_offsetMatrix,
                         rotationmat);
                     trans.push_back(rotationmat);
+                    bone->_boneID = a;
                 }
             }
         }
     }
 
-    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
+    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _skeletonDepthCache);
+
     return !_transforms.empty();
 }
 
@@ -93,26 +119,27 @@ void SceneAnimator::extractAnimations(const aiScene* pScene) {
     Console::d_printfn(Locale::get("LOAD_ANIMATIONS_BEGIN"));
     for (size_t i(0); i < pScene->mNumAnimations; i++) {
         if (pScene->mAnimations[i]->mDuration > 0.0f) {
-            _animations.push_back(
-                AnimEvaluator(pScene->mAnimations[i]));  // add the animations
+            // add the animations
+            _animations.push_back(AnimEvaluator(pScene->mAnimations[i]));  
         }
     }
     // get all the animation names so I can reference them by name and get the
     // correct id
     U16 i = 0;
     for (AnimEvaluator& animation : _animations) {
-        _animationNameToID.insert(
-            hashMapImpl<stringImpl, U32>::value_type(animation.name(), i++));
+        _animationNameToID.insert(hashAlg::makePair(animation.name(), i++));
     }
 }
 
 // ------------------------------------------------------------------------------------------------
 // Calculates the node transformations for the scene.
 void SceneAnimator::calculate(I32 animationIndex, const D32 pTime) {
+    assert(_skeleton != nullptr);
+
     if ((animationIndex < 0) || (animationIndex >= (I32)_animations.size())) {
         return;  // invalid animation
     }
-    _animations[animationIndex].evaluate(pTime, _bones);
+    _animations[animationIndex].evaluate(pTime, _skeleton);
     updateTransforms(_skeleton);
 }
 
@@ -135,8 +162,8 @@ Bone* SceneAnimator::createBoneTree(aiNode* pNode, Bone* parent) {
     // continue for all child nodes and assign the created internal nodes as our
     // children recursively call this function on all children
     for (U32 i = 0; i < pNode->mNumChildren; ++i) {
-        Bone* childNode = createBoneTree(pNode->mChildren[i], internalNode);
-        internalNode->_children.push_back(childNode);
+        internalNode->_children.push_back(
+            createBoneTree(pNode->mChildren[i], internalNode));
     }
 
     return internalNode;
@@ -154,21 +181,16 @@ void SceneAnimator::updateTransforms(Bone* pNode) {
 }
 
 Bone* SceneAnimator::boneByName(const stringImpl& bname) const {
-    I32 idx = boneIndex(bname);
-    if (idx != -1) {
-        return _bones.at(idx);
-    }
+    assert(_skeleton != nullptr);
 
-    return nullptr;
+    return _skeleton->find(bname);
 }
 
 I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
-    vectorImpl<Bone*>::const_iterator it = std::find_if(
-        std::begin(_bones), std::end(_bones), [&bname](Bone* const bone) {
-            return (bone->_name.compare(bname) == 0);
-        });
-    if (it != std::end(_bones)) {
-        return std::distance(std::begin(_bones), it);
+    Bone* bone = boneByName(bname);
+
+    if (bone != nullptr) {
+        return bone->_boneID;
     }
 
     return -1;
@@ -200,7 +222,7 @@ void SceneAnimator::calculateBoneToWorldTransform(Bone* child) {
 
 /// Renders the current skeleton pose at time index dt
 const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
-                                                        const D32 dt) {
+                                                     const D32 dt) {
     I32 frameIndex = _animations[animationIndex].frameIndexAt(dt);
     LineMap& lineMap = _skeletonLines[animationIndex];
     LineMap::iterator it = lineMap.find(frameIndex);
@@ -217,7 +239,7 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
     // create all the needed points
     vectorImpl<Line>& lines = _skeletonLinesContainer[it->second];
     if (lines.empty()) {
-        lines.reserve(_bones.size());
+        lines.reserve(boneCount());
         // Construct skeleton
         calculate(animationIndex, dt);
         // Start with identity transform

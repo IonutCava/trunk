@@ -14,7 +14,8 @@ Mesh::Mesh(ObjectFlag flag)
       _animator(nullptr)
 {
     setState(ResourceState::RES_LOADING);
-    if (bitCompare(getFlagMask(), to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
+
+    if (isSkinned()) {
         _animator = MemoryManager_NEW SceneAnimator();
     }
 }
@@ -24,14 +25,20 @@ Mesh::~Mesh()
     MemoryManager::DELETE(_animator);
 }
 
+void Mesh::initAnimator(const aiScene* scene) {
+    assert(isSkinned());
+
+    _animator->init(scene);
+}
+
 /// Mesh bounding box is built from all the SubMesh bounding boxes
 bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
+    typedef SceneGraphNode::NodeChildren::value_type value_type;
     BoundingBox& bb = sgn.getBoundingBox();
 
     bb.reset();
-    for (const SceneGraphNode::NodeChildren::value_type& s :
-         sgn.getChildren()) {
-        bb.Add(s.second->getInitialBoundingBox());
+    for (value_type it : sgn.getChildren()) {
+        bb.Add(it.second->getInitialBoundingBox());
     }
     bb.setComputed(true);
 
@@ -47,7 +54,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
-    for (SubMeshRefMap::value_type& it : _subMeshRefMap) {
+    for (SubMeshRefMap::value_type it : _subMeshRefMap) {
         sgn.addNode(it.second, sgn.getName() + "_" + std::to_string(it.first));
     }
 
@@ -59,12 +66,14 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
     typedef SceneGraphNode::NodeChildren::value_type value_type;
 
-    if (bitCompare(getFlagMask(), to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
-        bool playAnimations = ParamHandler::getInstance().getParam<bool>("mesh.playAnimations");
+    if (isSkinned()) {
+        bool playAnimations =
+            ParamHandler::getInstance().getParam<bool>("mesh.playAnimations") &&
+            _playAnimations;
 
         for (value_type it : sgn.getChildren()) {
             AnimationComponent* comp = it.second->getComponent<AnimationComponent>();
-            comp->playAnimations(playAnimations && _playAnimations);
+            comp->playAnimations(playAnimations);
             comp->incParentTimeStamp(deltaTime);
         }
     }

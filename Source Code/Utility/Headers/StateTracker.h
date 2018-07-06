@@ -32,7 +32,6 @@
 #ifndef UTIL_STATE_TRACKER_H_
 #define UTIL_STATE_TRACKER_H_
 
-#include "Vector.h"
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -40,45 +39,56 @@ namespace Divide {
 template <typename T>
 class StateTracker {
    public:
-    StateTracker() { _trackedValues.reserve(16); }
+    enum class State : U32 {
+        SKELETON_RENDERED = 0,
+        COUNT
+    };
 
-    ~StateTracker() { _trackedValues.clear(); }
+    StateTracker()
+    {
+    }
+
+    ~StateTracker()
+    {
+    }
 
     StateTracker& operator=(const StateTracker& other) {
-        _trackedValues.clear();
-        for (const optionalValue& val : other._trackedValues) {
-            _trackedValues.push_back(val);
+        for (U32 i = 0; i < to_uint(State::COUNT); ++i) {
+            _trackedValues[i] = other._trackedValues[i];
         }
         return *this;
     }
 
-    inline T getTrackedValue(U32 index) {
-        while (index >= _trackedValues.size()) {
-            _trackedValues.push_back(optionalValue());
-        }
-        return _trackedValues[index].value;
+    inline T getTrackedValue(State state) {
+        return _trackedValues[to_uint(state)].value;
     }
 
-    inline void setTrackedValue(U32 index, T value) {
-        _trackedValues[index].value = value;
-        _trackedValues[index].initialized = true;
+    inline void setTrackedValue(State state, T value) {
+        _trackedValues[to_uint(state)].value = value;
+        _trackedValues[to_uint(state)].initialized = true;
     }
 
     /// Init will not change an already initialized value
-    inline void initTrackedValue(U32 index, const T value) {
-        getTrackedValue(index);
-        if (!_trackedValues[index].initialized) setTrackedValue(index, value);
+    inline void initTrackedValue(State state, const T value) {
+        getTrackedValue(state);
+        if (!_trackedValues[to_uint(state)].initialized) {
+            setTrackedValue(state, value);
+        }
     }
 
    protected:
     struct optionalValue {
         T value;
         bool initialized;
-        optionalValue() : initialized(false) {}
+
+        optionalValue()
+            : initialized(false)
+        {
+        }
     };
 
    protected:
-    vectorImpl<optionalValue> _trackedValues;
+    std::array<optionalValue, to_const_uint(State::COUNT)> _trackedValues;
 };
 
 };  // namespace Divide

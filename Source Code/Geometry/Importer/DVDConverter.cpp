@@ -192,7 +192,7 @@ Mesh* DVDConverter::load(const stringImpl& file) {
         vb->getBoneWeights().reserve(vertCount);
         // create animator from current scene and current submesh pointer in
         // that scene
-        tempMesh->getAnimator()->init(_aiScenePointer);
+        tempMesh->initAnimator(_aiScenePointer);
     }
 
     U8 submeshBoneOffset = 0;

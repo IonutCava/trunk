@@ -50,14 +50,8 @@ class SceneAnimator {
         LineMap;
     typedef hashMapImpl<I32 /*animationID*/, LineMap> LineCollection;
 
-    SceneAnimator() : _skeleton(0)
-    {
-    }
-
-    ~SceneAnimator()
-    {
-        release();
-    }
+    SceneAnimator();
+    ~SceneAnimator();
 
     /// This must be called to fill the SceneAnimator with valid data
     bool init(const aiScene* pScene);
@@ -66,7 +60,7 @@ class SceneAnimator {
     void save(std::ofstream& file);
     void load(std::ifstream& file);
     /// Lets the caller know if there is a skeleton present
-    inline bool hasSkeleton() const { return !_bones.empty(); }
+    inline bool hasSkeleton() const { return _skeleton != nullptr; }
     /// The next two functions are good if you want to change the direction of
     /// the current animation.
     /// You could use a forward walking animation and reverse it to get a
@@ -139,24 +133,31 @@ class SceneAnimator {
     /// the transform will be off
     inline const mat4<F32>& boneTransform(I32 animationIndex, const D32 dt,
                                           const stringImpl& bname) {
-        I32 bindex = boneIndex(bname);
-        if (bindex == -1) {
-            _boneTransformCache.identity();
-            return _boneTransformCache;
+        I32 boneID = boneIndex(bname);
+        if (boneID != -1) {
+            return boneTransform(animationIndex, dt, boneID);
         }
-        return _animations[animationIndex].transforms(dt).at(bindex);
+
+        _boneTransformCache.identity();
+        return _boneTransformCache;
     }
 
     /// Same as above, except takes the index
     inline const mat4<F32>& boneTransform(I32 animationIndex, const D32 dt,
-                                          U32 bindex) {
-        return _animations[animationIndex].transforms(dt)[bindex];
+                                          I32 bindex) {
+        if (bindex != -1) {
+            return _animations[animationIndex].transforms(dt).at(bindex);
+        }
+
+        _boneTransformCache.identity();
+        return _boneTransformCache;
     }
+
     /// Get the bone's global transform
     inline const mat4<F32>& boneOffsetTransform(const stringImpl& bname) {
-        I32 bindex = boneIndex(bname);
-        if (bindex != -1) {
-            AnimUtils::TransformMatrix(_bones[bindex]->_offsetMatrix, _boneTransformCache);
+        Bone* bone = boneByName(bname);
+        if (bone != nullptr) {
+            AnimUtils::TransformMatrix(bone->_offsetMatrix, _boneTransformCache);
         }
         return _boneTransformCache;
     }
@@ -168,7 +169,9 @@ class SceneAnimator {
     I32 boneIndex(const stringImpl& bname) const;
     const vectorImpl<Line>& skeletonLines(I32 animationIndex, const D32 dt);
 
-    size_t boneCount() const { return _bones.size(); }
+    inline size_t boneCount() const {
+        return _skeletonDepthCache;
+    }
 
    private:
     /// I/O operations
@@ -190,13 +193,12 @@ class SceneAnimator {
 
    private:
     /// Root node of the internal scene structure
-    Bone* _skeleton; 
+    Bone* _skeleton;
+    I32   _skeletonDepthCache;
     /// A vector that holds each animation
     vectorImpl<AnimEvaluator> _animations;
     /// find animations quickly
     hashMapImpl<stringImpl, U32> _animationNameToID;
-    // DO NOT DELETE THESE when the destructor runs... THEY ARE JUST REFERENCES!!
-    vectorImpl<Bone*> _bones;  
     /// temp array of transforms
     vectorImpl<aiMatrix4x4> _transforms;
 

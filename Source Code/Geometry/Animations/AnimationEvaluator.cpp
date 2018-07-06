@@ -7,17 +7,6 @@
 
 namespace Divide {
 
-namespace {
-    Bone* boneByName(const stringImpl& name, const vectorImpl<Bone*>& bones) {
-        for (Bone* bone : bones) {
-            if (bone->_name.compare(name) == 0) {
-                return bone;
-            }
-        }
-        return nullptr;
-    }
-};
-
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation.
 AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim) {
@@ -75,8 +64,7 @@ I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
-void AnimEvaluator::evaluate(const D32 dt,
-                             vectorImpl<Bone*>& bones) {
+void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
     D32 pTime = dt * _ticksPerSecond;
 
     D32 time = 0.0f;
@@ -88,7 +76,7 @@ void AnimEvaluator::evaluate(const D32 dt,
     // calculate the transformations for each animation channel
     for (U32 a = 0; a < _channels.size(); a++) {
         const AnimationChannel* channel = &_channels[a];
-        Bone* bonenode = boneByName(channel->_name, bones);
+        Bone* bonenode = skeleton->find(channel->_name);
 
         if (bonenode == nullptr) {
             Console::d_errorfn(Locale::get("ERROR_BONE_FIND"),
@@ -165,8 +153,8 @@ void AnimEvaluator::evaluate(const D32 dt,
             _lastPositions[a].z = frame;
         }
 
-        aiMatrix4x4 mat = aiMatrix4x4(presentRotation.GetMatrix());
-
+        aiMatrix4x4& mat = bonenode->_localTransform;
+        mat = aiMatrix4x4(presentRotation.GetMatrix());
         mat.a1 *= presentScaling.x;
         mat.b1 *= presentScaling.x;
         mat.c1 *= presentScaling.x;
@@ -176,14 +164,12 @@ void AnimEvaluator::evaluate(const D32 dt,
         mat.a3 *= presentScaling.z;
         mat.b3 *= presentScaling.z;
         mat.c3 *= presentScaling.z;
-        mat.a4 = presentPosition.x;
-        mat.b4 = presentPosition.y;
-        mat.c4 = presentPosition.z;
+        mat.a4  = presentPosition.x;
+        mat.b4  = presentPosition.y;
+        mat.c4  = presentPosition.z;
         if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
             mat.Transpose();
         }
-
-        bonenode->_localTransform = mat;
     }
     _lastTime = time;
 }

@@ -62,6 +62,7 @@ class SkinnedSubMesh : public SubMesh {
 
    private:
     SceneAnimator* _parentAnimatorPtr;
+    ShaderBuffer*  _parentBoneBuffer;
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;
     /// This becomes true only while computing bbs for any animation

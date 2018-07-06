@@ -43,12 +43,12 @@ void glUniformBuffer::Destroy() {
     GLUtil::freeBuffer(_UBOid, _mappedBuffer);
 }
 
-void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
+void glUniformBuffer::Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize) {
     DIVIDE_ASSERT(
         _UBOid == 0,
         "glUniformBuffer::Create error: Tried to double create current UBO");
 
-    ShaderBuffer::Create(primitiveCount, primitiveSize);
+    ShaderBuffer::Create(primitiveCount, sizeFactor, primitiveSize);
 
     if (_persistentMapped) {
         BufferStorageMask storage = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
@@ -61,7 +61,7 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
             _primitiveCount += static_cast<U32>(
                 (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder) /
                 _primitiveSize);
-            _bufferSize = _primitiveCount * _primitiveSize;
+            _bufferSize = _primitiveCount * _primitiveSize * _sizeFactor;
         }
 
         _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(
@@ -151,11 +151,11 @@ bool glUniformBuffer::CheckBindRange(U32 bindIndex, U32 offsetElementCount,
 }
 
 bool glUniformBuffer::CheckBind(U32 bindIndex) {
-    return CheckBindRange(bindIndex, 0, _primitiveCount);
+    return CheckBindRange(bindIndex, 0, _primitiveCount * _sizeFactor);
 }
 
 bool glUniformBuffer::Bind(U32 bindIndex) {
-    return BindRange(bindIndex, 0, _primitiveCount);
+    return BindRange(bindIndex, 0, _primitiveCount * _sizeFactor);
 }
 
 void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,

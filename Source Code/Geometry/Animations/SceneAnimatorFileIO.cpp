@@ -144,17 +144,6 @@ void SceneAnimator::save(std::ofstream& file) {
     for (uint32_t i(0); i < nsize; i++) {
         _animations[i].save(file);
     }
-
-    nsize = static_cast<uint32_t>(_bones.size());
-    file.write(reinterpret_cast<char*>(&nsize),
-               sizeof(uint32_t));  // the number of bones
-
-    for (uint32_t i(0); i < _bones.size(); i++) {
-        nsize = static_cast<uint32_t>(_bones[i]->_name.size());
-        file.write(reinterpret_cast<char*>(&nsize),
-                   sizeof(uint32_t));  // the size of the bone name
-        file.write(_bones[i]->_name.c_str(), nsize);  // the name of the bone
-    }
 }
 
 void SceneAnimator::load(std::ifstream& file) {
@@ -175,20 +164,14 @@ void SceneAnimator::load(std::ifstream& file) {
             _animations[i].name(), i));
     }
 
-    char bname[250];
-    file.read(reinterpret_cast<char*>(&nsize),
-              sizeof(uint32_t));  // the number of bones
-    _bones.resize(nsize);
+    _skeletonDepthCache = static_cast<I32>(_skeleton->hierarchyDepth());
+    _transforms.resize(_skeletonDepthCache);
 
-    for (uint32_t i(0); i < _bones.size(); i++) {
-        file.read(reinterpret_cast<char*>(&nsize),
-                  sizeof(uint32_t));  // the size of the bone name
-        file.read(bname, nsize);      // the size of the bone name
-        bname[nsize] = 0;
-        _bones[i] = boneByName(bname);
-    }
+    
+    vectorImpl<const Bone*> bones;
+    bones.reserve(_skeletonDepthCache);
+    _skeleton->createBoneList(bones);
 
-    _transforms.resize(_bones.size());
     F32 timestep = 1.0f / (F32)ANIMATION_TICKS_PER_SECOND;  // 25.0f per second
     for (vectorAlg::vecSize i(0); i < _animations.size();
          i++) {  // pre calculate the animations
@@ -203,14 +186,14 @@ void SceneAnimator::load(std::ifstream& file) {
             vectorImpl<mat4<F32>>& trans = _animations[i].transforms().back();
             for (vectorAlg::vecSize a = 0; a < _transforms.size(); ++a) {
                 AnimUtils::TransformMatrix(
-                    aiMatrix4x4(_bones[a]->_globalTransform *
-                                _bones[a]->_offsetMatrix),
+                    aiMatrix4x4(bones[a]->_globalTransform *
+                                bones[a]->_offsetMatrix),
                     rotationmat);
                 trans.push_back(rotationmat);
             }
         }
     }
-    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
+    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _skeletonDepthCache);
 }
 
 void SceneAnimator::saveSkeleton(std::ofstream& file, Bone* parent) {

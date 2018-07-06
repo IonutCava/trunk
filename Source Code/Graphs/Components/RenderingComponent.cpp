@@ -5,7 +5,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/LightManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Geometry/Shapes/Headers/Object3D.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
@@ -72,6 +72,18 @@ void RenderingComponent::update(const U64 deltaTime) {
     Material* mat = getMaterialInstance();
     if (mat) {
         mat->update(deltaTime);
+    }
+
+    
+    Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+    bool skinned = _parentSGN.getNode<Object3D>()->isSkinned();
+
+    // Continue only for skinned submeshes
+    if (type == Object3D::ObjectType::SUBMESH && skinned) {
+        StateTracker<bool>& parentStates =
+            _parentSGN.getParent()->getTrackedBools();
+        parentStates.setTrackedValue(
+            StateTracker<bool>::State::SKELETON_RENDERED, false);
     }
 }
 
@@ -217,15 +229,35 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
         sceneRenderState.objectState() ==
             SceneRenderState::ObjectRenderState::DRAW_BOUNDING_BOX) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
-        IMPrimitive&  prim = GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(),
-                             vec4<U8>(0, 0, 255, 255), 4.0f);
+        IMPrimitive& prim = GFX_DEVICE.drawBox3D(
+            bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255), 4.0f);
         prim.name("BoundingBox_" + _parentSGN.getName());
 
         node->postDrawBoundingBox(_parentSGN);
     }
 
-    if (_parentSGN.getComponent<AnimationComponent>()) {
-        _parentSGN.getComponent<AnimationComponent>()->renderSkeleton();
+    Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+    bool skinned = _parentSGN.getNode<Object3D>()->isSkinned();
+
+    // Continue only for skinned submeshes
+    if (type == Object3D::ObjectType::SUBMESH && skinned) {
+        StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
+        if (parentStates.getTrackedValue(
+                StateTracker<bool>::State::SKELETON_RENDERED) == false) {
+            // Get the animation component of any submesh. They should be synced anyway.
+            AnimationComponent* childAnimComp =
+                _parentSGN.getComponent<AnimationComponent>();
+            // Get the skeleton lines from the submesh's animation component
+            const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
+            // Submit the skeleton lines to the GPU for rendering
+            IMPrimitive& prim = GFX_DEVICE.drawLines(
+                skeletonLines, 2.0f,
+                _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix(),
+                vec4<I32>(), false, true);
+            prim.name("Skeleton_" + _parentSGN.getName());
+            parentStates.setTrackedValue(
+                StateTracker<bool>::State::SKELETON_RENDERED, true);
+        }
     }
 }
 

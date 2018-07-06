@@ -49,8 +49,8 @@ the mesh.
 */
 
 #include "Object3D.h"
-#include <assimp/anim.h>
 
+struct aiScene;
 namespace Divide {
 
 class SubMesh;
@@ -66,6 +66,7 @@ class Mesh : public Object3D {
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
+    void initAnimator(const aiScene* scene);
     inline SceneAnimator* getAnimator() { return _animator; }
 
    protected:

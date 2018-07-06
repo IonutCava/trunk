@@ -16,8 +16,8 @@ d3dConstantBuffer::~d3dConstantBuffer()
 void d3dConstantBuffer::Destroy() {
 }
 
-void d3dConstantBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
-    ShaderBuffer::Create(primitiveCount, primitiveSize);
+void d3dConstantBuffer::Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize) {
+    ShaderBuffer::Create(primitiveCount, sizeFactor, primitiveSize);
 }
 
 void d3dConstantBuffer::DiscardAllData() const {

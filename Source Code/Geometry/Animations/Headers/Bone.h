@@ -42,6 +42,7 @@ namespace Divide {
 
 class Bone {
    public:
+    I32 _boneID;
     stringImpl _name;
 
     aiMatrix4x4 _offsetMatrix;
@@ -53,7 +54,10 @@ class Bone {
     vectorImpl<Bone*> _children;
 
     // index in the current animation's channel array.
-    Bone(const stringImpl& name) : _name(name), _parent(0)
+    Bone(const stringImpl& name)
+        : _name(name),
+        _parent(0),
+        _boneID(-1)
     {
     }
 
@@ -64,6 +68,15 @@ class Bone {
     ~Bone()
     {
         MemoryManager::DELETE_VECTOR(_children);
+    }
+
+    inline size_t hierarchyDepth() const {
+        size_t size = _children.size();
+        for (Bone* child : _children) {
+            size += child->hierarchyDepth();
+        }
+
+        return size;
     }
 
     inline Bone* find(const stringImpl& name) {
@@ -79,6 +92,13 @@ class Bone {
         }
 
         return nullptr;
+    }
+
+    inline void createBoneList(vectorImpl<const Bone*>& boneList) const {
+        boneList.push_back(this);
+        for (Bone* child : _children) {
+            child->createBoneList(boneList);
+        }
     }
 };
 

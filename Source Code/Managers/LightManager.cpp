@@ -75,14 +75,14 @@ void LightManager::init() {
 
     _lightProperties.resize(Config::Lighting::MAX_LIGHTS_PER_SCENE);
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->Create(
-        Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+        Config::Lighting::MAX_LIGHTS_PER_SCENE, 1, sizeof(LightProperties));
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->Bind(
         ShaderBufferLocation::LIGHT_NORMAL);
 
     _lightShadowProperties.resize(
         Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->Create(
-        Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
+        Config::Lighting::MAX_LIGHTS_PER_SCENE, 1, sizeof(LightShadowProperties));
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->Bind(
         ShaderBufferLocation::LIGHT_SHADOW);
 
