@@ -33,7 +33,7 @@ void d3dFrameBufferObject::Unbind(U8 unit) const
 {
 }
 
-void d3dFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer) const
+void d3dFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) const
 {
 }
 

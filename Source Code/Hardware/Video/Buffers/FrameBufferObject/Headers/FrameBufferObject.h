@@ -35,7 +35,7 @@ public:
     virtual bool Create(U16 width, U16 height, U8 imageLayers = 0) = 0;
 
     virtual void Destroy() = 0;
-    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer) const = 0; ///<Use by multilayerd FBO's
+    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) const = 0; ///<Use by multilayerd FBO's
     virtual void Begin(U8 nFace=0) const = 0;
     virtual void End(U8 nFace=0) const = 0;
 

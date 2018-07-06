@@ -42,7 +42,7 @@ Material::Material() : Resource(),
    /// set a polygon offset
    stateDescriptor._zBias = 1.1f;
    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
-   stateDescriptor.setColorWrites(true,true,false,false);
+   stateDescriptor.setColorWrites(false,false,false,false);
    _defaultRenderStates.insert(std::make_pair(DEPTH_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    
 

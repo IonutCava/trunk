@@ -308,18 +308,25 @@ void glFrameBufferObject::End(GLubyte nFace) const {
     _mipMapsDirty = true;
 }
 
-void glFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer) const
+void glFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) const
 {
     // only for array textures (it's better to simply ignore the command if the fomrat isn't supported (debugging reasons)
     if(_textureType != GL_TEXTURE_2D_ARRAY && _textureType != GL_TEXTURE_CUBE_MAP_ARRAY)
         return;
 
-    if(_hasDepth)
+    if(_hasDepth && includeDepth)
         GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureId[TextureDescriptor::Depth], 0, layer));
     if(_hasColor)
         GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, _textureId[slot], 0, layer));
 
-     if(_clearBuffersState) GLCheck(glClear(_clearBufferMask));
+     if(_clearBuffersState){
+         if(includeDepth)
+            GLCheck(glClear(_clearBufferMask));
+         else{
+             if(_hasColor)
+                GLCheck(glClear(GL_COLOR_BUFFER_BIT));
+         }
+     }
 }
 
 void glFrameBufferObject::UpdateMipMaps(TextureDescriptor::AttachmentType slot) const {

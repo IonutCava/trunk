@@ -40,10 +40,8 @@ public:
 
 protected:
     void renderInternal(const SceneRenderState& renderState) const;
-    //void createJitterTexture(I32 size, I32 samples_u, I32 samples_v);
     //OGRE! I know .... sorry -Ionut
     void calculateSplitPoints(U8 splitCount, F32 nearDist, F32 farDist, F32 lambda = 0.95);
-    //
     void setOptimalAdjustFactor(U8 index, F32 value);
 
 protected:
@@ -55,7 +53,6 @@ protected:
     vectorImpl<F32> _splitPoints;
     vectorImpl<F32> _optAdjustFactor;
     vectorImpl<F32> _orthoPerPass;
-    //PixelBufferObject* _jitterTexture; ///<For blurring
     ///The blur buffer
     FrameBufferObject*  _blurBuffer;
 };

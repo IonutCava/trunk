@@ -83,7 +83,7 @@ void main (void)
 	
 	if(length(_pixToEye) < shadow_distance_max) { 
 		float shadow = 1.0;
-		applyShadowDirectional(max(dot(L, N), 0.0), 0, shadow);
+		applyShadowDirectional(0, shadow);
 		// add Shadow
 		_colorOut.rgb *= (0.2 + 0.8 * shadow);
 	}

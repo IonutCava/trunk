@@ -189,7 +189,7 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
     float shadow = 1.0;
     float distance = length(_viewDirection);
     if(distance < shadowMaxDistance) {
-        applyShadowDirectional(iDiffuse, 0, shadow);
+        applyShadowDirectional(0, shadow);
         shadow = 0.2 + 0.8 * (1.0 - (1.0-shadow) * (shadowMaxDistance-distance) / shadowMaxDistance);
     }
 
@@ -237,7 +237,7 @@ vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
     float shadow = 1.0;
     float distance = length(_viewDirection);
     if(distance < shadowMaxDistance) {
-        applyShadowDirectional(iDiffuse, 0, shadow);
+        applyShadowDirectional(0, shadow);
         shadow = 0.2 + 0.8 * (1.0 - (1.0-shadow) * (shadowMaxDistance-distance) / shadowMaxDistance);
     }
 

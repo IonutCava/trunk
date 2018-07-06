@@ -58,8 +58,8 @@ bool ShadowMap::Bind(U8 offset){
 
     if(_depthMap){
         if(getShadowMapType() == SHADOW_TYPE_PSSM){
-            _depthMap->Bind(offset, TextureDescriptor::Depth/*Color0*/);
-            //_depthMap->UpdateMipMaps(TextureDescriptor::Color0);
+            _depthMap->Bind(offset, TextureDescriptor::Color0);
+            _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
         }else
             _depthMap->Bind(offset, TextureDescriptor::Depth);
             

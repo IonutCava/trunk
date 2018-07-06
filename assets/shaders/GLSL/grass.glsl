@@ -78,7 +78,7 @@ void main (void){
     // SHADOW MAPPING
     vec3 vPixPosInDepthMap;
     float shadow = 1.0;
-    applyShadowDirectional(iDiffuse, 0, shadow);
+    applyShadowDirectional(0, shadow);
 
     _colorOut = cAmbient * cBase + (0.2 + 0.8 * shadow) * cDiffuse * cBase;
     

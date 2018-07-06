@@ -57,7 +57,7 @@ void applyLight(const in int light,
         phong_directionalLight(light, iSpecular, NdotL, specularValue, materialProp);
 
         if(light >= MAX_SHADOW_CASTING_LIGHTS) return;
-        if(lightCastsShadows) applyShadowDirectional(NdotL, light, materialProp.shadowFactor); 
+        if(lightCastsShadows) applyShadowDirectional(light, materialProp.shadowFactor); 
 
     }else if(lightType == LIGHT_OMNIDIRECTIONAL){
         phong_pointLight(light, iSpecular, NdotL, specularValue, materialProp);

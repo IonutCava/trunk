@@ -34,7 +34,7 @@ public:
 
     virtual bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
     virtual void Destroy();
-    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer) const; ///<Use by multilayerd FBO's
+    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true) const; ///<Use by multilayerd FBO's
     virtual void AddDepthBuffer();
 
     virtual void Begin(GLubyte nFace=0) const;
