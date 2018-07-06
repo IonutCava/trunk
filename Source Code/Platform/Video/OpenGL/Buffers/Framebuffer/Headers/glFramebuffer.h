@@ -73,6 +73,7 @@ class glFramebuffer : public Framebuffer {
     bool checkStatus() const;
     void InitAttachment(TextureDescriptor::AttachmentType type,
                         const TextureDescriptor& texDescriptor);
+    void clearColor();
 
    protected:
     ClearBufferMask _clearBufferMask;
@@ -85,6 +86,7 @@ class glFramebuffer : public Framebuffer {
     vectorImpl<GLenum> _colorBuffers;
     bool _colorMaskChanged;
     bool _depthMaskChanged;
+    vec4<GLfloat> _prevClearColor;
     const std::unique_ptr<glFramebuffer> _resolveBuffer;
 
     using AttType = TextureDescriptor::AttachmentType;

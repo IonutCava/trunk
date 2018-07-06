@@ -196,8 +196,8 @@ void Kernel::mainLoopApp() {
         Util::plotFloatEvents("kernel.mainLoopApp", Util::getFloatEvents(), _appTimeGraph);
     }
     if (_appTimeGraph._coords.size() % 2 == 0) {
-        GFX_DEVICE.renderInViewport(vec4<I32>(0, 0, 256, 256),
-            DELEGATE_BIND(&GFXDevice::plot2DGraph, &GFX_DEVICE, _appTimeGraph, vec4<U8>(255,0,0,255)));
+        GFX::ScopedViewport viewport(0, 256, 256, 256);
+        GFX_DEVICE.plot2DGraph(_appTimeGraph, vec4<U8>(255,0,0,255));
     }
     if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0) {
         Console::printfn(

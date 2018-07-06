@@ -34,14 +34,6 @@
 
 namespace Divide {
 
-/// Render specified function inside of a viewport of specified dimensions and
-/// position
-inline void GFXDevice::renderInViewport(const vec4<I32>& rect,
-                                        const DELEGATE_CBK<>& callback) {
-    GFX::ScopedViewport viewport(rect);
-    callback();
-}
-
 inline bool GFXDevice::isDepthStage() const {
     return getRenderStage() == RenderStage::SHADOW ||
            getRenderStage() == RenderStage::Z_PRE_PASS;

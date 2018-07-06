@@ -438,15 +438,15 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
     _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
 }
 
-/// Enable or disable 2D rendering mode (orthographic projection, no depth
-/// reads)
+/// Enable or disable 2D rendering mode 
+/// (orthographic projection, no depth reads)
 void GFXDevice::toggle2D(bool state) {
     // Remember the previous state hash
     static size_t previousStateBlockHash = 0;
     // Prevent double 2D toggle to the same state (e.g. in a loop)
-    DIVIDE_ASSERT(
-        (state && !_2DRendering) || (!state && _2DRendering),
-        "GFXDevice error: double toggle2D call with same value detected!");
+    if (state == _2DRendering) {
+        return;
+    }
     Kernel& kernel = Application::getInstance().getKernel();
     _2DRendering = state;
     // If we need to enable 2D rendering

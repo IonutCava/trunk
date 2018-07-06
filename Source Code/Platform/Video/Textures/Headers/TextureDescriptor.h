@@ -231,7 +231,9 @@ class TextureDescriptor : public PropertyDescriptor {
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
           _type(type),
           _internalFormat(internalFormat),
-          _dataType(dataType) {
+          _dataType(dataType)
+    {
+        _baseFormat = baseFromInternalFormat(internalFormat);
         setDefaultValues();
     }
 
@@ -269,14 +271,62 @@ class TextureDescriptor : public PropertyDescriptor {
     inline void setSampler(const SamplerDescriptor& descriptor) {
         _samplerDescriptor = descriptor;
     }
+
     inline const SamplerDescriptor& getSampler() const {
         return _samplerDescriptor;
+    }
+
+    inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
+        switch (internalFormat) {
+            case GFXImageFormat::LUMINANCE_ALPHA:
+            case GFXImageFormat::LUMINANCE_ALPHA16F:
+            case GFXImageFormat::LUMINANCE_ALPHA32F:
+                return GFXImageFormat::LUMINANCE;
+
+            case GFXImageFormat::RED8:
+            case GFXImageFormat::RED16:
+            case GFXImageFormat::RED16F:
+            case GFXImageFormat::RED32:
+            case GFXImageFormat::RED32F:
+                return GFXImageFormat::RED;
+                
+            case GFXImageFormat::RG8:
+            case GFXImageFormat::RG16:
+            case GFXImageFormat::RG16F:
+            case GFXImageFormat::RG32:
+            case GFXImageFormat::RG32F:
+                return GFXImageFormat::RG;
+
+            case GFXImageFormat::RGB8:
+            case GFXImageFormat::SRGB8:
+            case GFXImageFormat::RGB8I:
+            case GFXImageFormat::RGB16:
+            case GFXImageFormat::RGB16F:
+                return GFXImageFormat::RGB;
+
+            case GFXImageFormat::RGBA4:
+            case GFXImageFormat::RGBA8:
+            case GFXImageFormat::SRGBA8:
+            case GFXImageFormat::RGBA8I:
+            case GFXImageFormat::RGBA16F:
+            case GFXImageFormat::RGBA32F:
+                return GFXImageFormat::RGBA;
+
+            case GFXImageFormat::DEPTH_COMPONENT16:
+            case GFXImageFormat::DEPTH_COMPONENT24:
+            case GFXImageFormat::DEPTH_COMPONENT32:
+            case GFXImageFormat::DEPTH_COMPONENT32F:
+                return GFXImageFormat::DEPTH_COMPONENT;
+        };
+
+        return internalFormat;
     }
 
     U8 _layerCount;
     U8 _packAlignment, _unpackAlignment;  ///<Pixel store information
     U16 _mipMinLevel, _mipMaxLevel;       ///<MipMap interval selection
     /// Texture data information
+    GFXImageFormat _baseFormat;
     GFXImageFormat _internalFormat;
     GFXDataFormat _dataType;
     TextureType _type;

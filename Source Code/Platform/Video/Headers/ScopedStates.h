@@ -65,6 +65,10 @@ class Scoped2DRendering : private NonCopyable {
 class ScopedViewport : private NonCopyable {
    public:
     explicit ScopedViewport(const vec4<I32>& viewport);
+    explicit ScopedViewport(I32 x, I32 y, I32 width, I32 height) 
+        : ScopedViewport(vec4<I32>(x, y, width, height))
+    {
+    }
     ~ScopedViewport();
 };
 

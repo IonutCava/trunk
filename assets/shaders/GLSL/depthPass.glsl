@@ -8,7 +8,7 @@ void main() {
     gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 }
 
--- Fragment.Shadow
+-- Fragment
 
 in vec2 _texCoord;
 in vec4 _vertexW;

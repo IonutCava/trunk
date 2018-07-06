@@ -44,14 +44,17 @@ WarScene::WarScene()
       _lampTransformNode(nullptr),
       _groundPlaceholder(nullptr),
       _sceneReady(false),
-      _lastNavMeshBuildTime(0UL) {
+      _lastNavMeshBuildTime(0UL)
+{
     for (U8 i = 0; i < 2; ++i) {
         _flag[i] = nullptr;
         _faction[i] = nullptr;
     }
 }
 
-WarScene::~WarScene() {}
+WarScene::~WarScene()
+{
+}
 
 void WarScene::processGUI(const U64 deltaTime) {
     D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
@@ -459,38 +462,41 @@ if(_bobNodeBody != nullptr){
         ->setHorizontalFoV(135);
 
     SceneInput::PressReleaseActions cbks;
-    cbks.second = [this]() {
-        static bool fpsCameraActive = false;
-        static bool tpsCameraActive = false;
-        static bool flyCameraActive = true;
-
-        if (_currentSelection != nullptr) {
-            /*if(flyCameraActive){
-                renderState().getCameraMgr().pushActiveCamera("fpsCamera");
-                flyCameraActive = false; fpsCameraActive = true;
-                }else if(fpsCameraActive){*/
-            if (flyCameraActive) {
-                if (fpsCameraActive) {
-                    renderState().getCameraMgr().popActiveCamera();
-                }
-                renderState().getCameraMgr().pushActiveCamera("tpsCamera");
-                static_cast<ThirdPersonCamera&>(renderState().getCamera())
-                    .setTarget(*_currentSelection);
-                /*fpsCameraActive*/ flyCameraActive = false;
-                tpsCameraActive = true;
-            }
-        }
-        if (tpsCameraActive) {
-            renderState().getCameraMgr().pushActiveCamera("defaultCamera");
-            tpsCameraActive = false;
-            flyCameraActive = true;
-        }
-        //renderState().getCamera().setTargetNode(_currentSelection);
-    };
+    cbks.second = DELEGATE_BIND(&WarScene::toggleCamera, this);
     _input->addKeyMapping(Input::KeyCode::KC_TAB, cbks);
 
     _sceneReady = true;
     return loadState;
+}
+
+void WarScene::toggleCamera() {
+    static bool fpsCameraActive = false;
+    static bool tpsCameraActive = false;
+    static bool flyCameraActive = true;
+
+    if (_currentSelection != nullptr) {
+        /*if(flyCameraActive){
+        renderState().getCameraMgr().pushActiveCamera("fpsCamera");
+        flyCameraActive = false; fpsCameraActive = true;
+        }else if(fpsCameraActive){*/
+        if (flyCameraActive) {
+            if (fpsCameraActive) {
+                renderState().getCameraMgr().popActiveCamera();
+            }
+            renderState().getCameraMgr().pushActiveCamera("tpsCamera");
+            static_cast<ThirdPersonCamera&>(renderState().getCamera())
+                .setTarget(*_currentSelection);
+            /*fpsCameraActive*/ flyCameraActive = false;
+            tpsCameraActive = true;
+            return;
+        }
+    }
+    if (tpsCameraActive) {
+        renderState().getCameraMgr().pushActiveCamera("defaultCamera");
+        tpsCameraActive = false;
+        flyCameraActive = true;
+    }
+    //renderState().getCamera().setTargetNode(_currentSelection);
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {

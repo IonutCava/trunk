@@ -161,7 +161,16 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
         return _activeFBID[to_uint(usage)];
     }
     /// Change the clear color for the specified renderTarget
-    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, vec4<GLfloat>& prevColor);
+    /// Change the clear color for the specified renderTarget
+    inline static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+        static vec4<GLfloat> prevColor;
+        clearColor(r, g, b, a, prevColor);
+    }
+        /// Change the clear color for the specified renderTarget
+    inline static void clearColor(const vec4<GLfloat>& color, vec4<GLfloat>& prevColor) {
+        clearColor(color.r, color.g, color.b, color.a, prevColor);
+    }
     /// Change the clear color for the specified renderTarget
     inline static void clearColor(const vec4<GLfloat>& color) {
         clearColor(color.r, color.g, color.b, color.a);
@@ -192,17 +201,26 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static void togglePrimitiveRestart(bool state);
     /// Set the currently active texture unit
     static bool setActiveTextureUnit(GLuint unit);
+    /// Set the currently active texture unit
+    static bool setActiveTextureUnit(GLuint unit, GLuint& previousUnit);
     /// Switch the currently active vertex array object
-    static bool setActiveVAO(GLuint id);
+    static bool setActiveVAO(GLuint ID);
+    /// Switch the currently active vertex array object
+    static bool setActiveVAO(GLuint ID, GLuint& previousID);
     /// Single place to change buffer objects for every target available
-    static bool setActiveBuffer(GLenum target, GLuint id);
+    static bool setActiveBuffer(GLenum target, GLuint ID);
     /// Single place to change buffer objects for every target available
-    static bool setActiveBuffer(GLenum target, GLuint id, GLuint& previousID);
+    static bool setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID);
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
-    static bool setActiveFB(GLuint id, Framebuffer::FramebufferUsage usage);
+    static bool setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID);
+    /// Switch the current framebuffer by binding it as either a R/W buffer, read
+    /// buffer or write buffer
+    static bool setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint& previousID);
     /// Bind the specified transform feedback object
-    static bool setActiveTransformFeedback(GLuint id);
+    static bool setActiveTransformFeedback(GLuint ID);
+    /// Bind the specified transform feedback object
+    static bool setActiveTransformFeedback(GLuint ID, GLuint& previousID);
     /// Change the currently active shader program. Passing null will unbind shaders
     /// (will use program 0)
     static bool setActiveProgram(glShaderProgram* const program);

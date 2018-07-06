@@ -177,7 +177,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // rendering context
     _state.startLoaderThread(
         DELEGATE_BIND(&GFXDevice::threadedLoadCallback, this));
-// Register a 2D function used for previewing the depth buffer.
+    // Register a 2D function used for previewing the depth buffer.
 #ifdef _DEBUG
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #endif
@@ -260,20 +260,19 @@ void GFXDevice::beginFrame() {
 }
 
 void GFXDevice::endFrame() {
-    // Max number of frames before an unused primitive is deleted (default: 180
-    // - 3 seconds at 60 fps)
+    // Max number of frames before an unused primitive is deleted
+    // (default: 180 - 3 seconds at 60 fps)
     static const I32 IM_MAX_FRAMES_ZOMBIE_COUNT = 180;
-
-    uploadGlobalBufferData();
 
     if (Application::getInstance().mainLoopActive()) {
         // Render all 2D debug info and call API specific flush function
-        GFX::Scoped2DRendering scoped2D(true);
-        for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction :
-             _2dRenderQueue) {
-            callbackFunction.second();
+        {
+            GFX::Scoped2DRendering scoped2D(true);
+            for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction :
+                _2dRenderQueue) {
+                callbackFunction.second();
+            }
         }
-
         // Remove dead primitives in 3 steps (or we could automate this with
         // shared_ptr?):
         // 1) Partition the vector in 2 parts: valid objects first, zombie
@@ -296,7 +295,8 @@ void GFXDevice::endFrame() {
         FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
         FRAME_DRAW_CALLS = 0;
     }
-
+    // Activate the default render states
+    setStateBlock(_defaultStateBlockHash);
     _api->endFrame();
 }
 

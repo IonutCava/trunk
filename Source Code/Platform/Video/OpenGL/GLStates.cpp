@@ -58,7 +58,7 @@ void GL_API::clearStates(const bool skipShader,
     if (!skipBuffers) {
         setPixelPackUnpackAlignment();
         setActiveVAO(0);
-        setActiveFB(0, Framebuffer::FramebufferUsage::FB_READ_WRITE);
+        setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
         setActiveBuffer(GL_ARRAY_BUFFER, 0);
         setActiveBuffer(GL_TEXTURE_BUFFER, 0);
         setActiveBuffer(GL_UNIFORM_BUFFER, 0);
@@ -175,8 +175,14 @@ void GL_API::updateClipPlanes() {
     }
 }
 
-/// Set the currently active texture unit
 bool GL_API::setActiveTextureUnit(GLuint unit) {
+    GLuint temp = 0;
+    return setActiveTextureUnit(unit, temp);
+}
+
+/// Set the currently active texture unit
+bool GL_API::setActiveTextureUnit(GLuint unit, GLuint& previousUnit) {
+    previousUnit = _activeTextureUnit;
     // Prevent double bind
     if (_activeTextureUnit == unit) {
         return false;
@@ -215,6 +221,7 @@ bool GL_API::bindSamplers(GLuint unitOffset,
 
 /// Bind the sampler object described by the hash value to the specified unit
 bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
+
     samplerBoundMapDef::iterator it = _samplerBoundMap.find(unit);
     if (it == std::end(_samplerBoundMap)) {
         hashAlg::emplace(_samplerBoundMap, static_cast<GLushort>(unit),
@@ -229,7 +236,7 @@ bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
         }
     }
     // Get the sampler object defined by the hash value and bind it to the
-    // specified unit
+    // specified unit (0 is a valid sampler object)
     glBindSampler(unit, getSamplerHandle(samplerHash));
 
     return true;
@@ -296,9 +303,13 @@ bool GL_API::bindTexture(GLuint unit,
     return false;
 }
 
+bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID) {
+    GLuint temp = 0;
+    return setActiveFB(usage, ID, temp);
+}
 /// Switch the current framebuffer by binding it as either a R/W buffer, read
 /// buffer or write buffer
-bool GL_API::setActiveFB(GLuint ID, Framebuffer::FramebufferUsage usage) {
+bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint& previousID) {
     // We may query the active framebuffer handle and get an invalid handle in
     // return and then try to bind the queried handle
     // This is, for example, in save/restore FB scenarios. An invalid handle
@@ -306,6 +317,7 @@ bool GL_API::setActiveFB(GLuint ID, Framebuffer::FramebufferUsage usage) {
     if (ID == GLUtil::_invalidObjectID) {
         ID = 0;
     }
+    previousID = _activeFBID[to_uint(usage)];
     // Prevent double bind
     if (_activeFBID[to_uint(usage)] == ID) {
         if (usage == Framebuffer::FramebufferUsage::FB_READ_WRITE) {
@@ -344,8 +356,14 @@ bool GL_API::setActiveFB(GLuint ID, Framebuffer::FramebufferUsage usage) {
     return true;
 }
 
-/// Switch the currently active vertex array object
 bool GL_API::setActiveVAO(GLuint ID) {
+    GLuint temp = 0;
+    return setActiveVAO(ID, temp);
+}
+
+/// Switch the currently active vertex array object
+bool GL_API::setActiveVAO(GLuint ID, GLuint& previousID) {
+    previousID = _activeVAOID;
     // Prevent double bind
     if (_activeVAOID == ID) {
         return false;
@@ -358,8 +376,14 @@ bool GL_API::setActiveVAO(GLuint ID) {
     return true;
 }
 
-/// Bind the specified transform feedback object
 bool GL_API::setActiveTransformFeedback(GLuint ID) {
+    GLuint temp = 0;
+    return setActiveTransformFeedback(ID, temp);
+}
+
+/// Bind the specified transform feedback object
+bool GL_API::setActiveTransformFeedback(GLuint ID, GLuint& previousID) {
+    previousID = _activeTransformFeedback;
     // Prevent double bind
     if (_activeTransformFeedback == ID) {
         return false;
@@ -421,9 +445,9 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
     return true;
 }
 
-bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
+bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {
     GLuint temp = 0;
-    return setActiveBuffer(target, id, temp);
+    return setActiveBuffer(target, ID, temp);
 }
 
 /// Change the currently active shader program. Passing null will unbind shaders
@@ -452,7 +476,8 @@ bool GL_API::setActiveProgram(glShaderProgram* const program) {
 }
 
 /// Change the clear color
-void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, vec4<GLfloat>& prevColor) {
+    prevColor.set(_prevClearColor);
     // Prevent setting the clear color to the exact same value again
     if (_prevClearColor != vec4<F32>(r, g, b, a)) {
         // Remember the current clear color for this target for future reference
@@ -474,22 +499,6 @@ void GL_API::changeViewport(const vec4<I32>& newViewport) const {
     }
 }
 
-/// The following toggle checks are similar to those used in Torque3D for
-/// managing state
-#ifndef SHOULD_TOGGLE
-#define SHOULD_TOGGLE(state) \
-    (!oldBlock || oldBlock->getDescriptor().state != newDescriptor.state)
-#define SHOULD_TOGGLE_2(state1, state2) \
-    (!oldBlock || SHOULD_TOGGLE(state1) || SHOULD_TOGGLE(state2))
-#define SHOULD_TOGGLE_3(state1, state2, state3) \
-    (!oldBlock || SHOULD_TOGGLE_2(state1, state2) || SHOULD_TOGGLE(state3))
-#define TOGGLE_NO_CHECK(state, enumValue) \
-    newDescriptor.state ? glEnable(enumValue) : glDisable(enumValue)
-#define TOGGLE_WITH_CHECK(state, enumValue) \
-    if (SHOULD_TOGGLE(state))               \
-        TOGGLE_NO_CHECK(state, enumValue);
-#endif
-
 /// A state block should contain all rendering state changes needed for the next
 /// draw call.
 /// Some may be redundant, so we check each one individually
@@ -497,63 +506,88 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
                                 RenderStateBlock* const oldBlock) const {
     // Get the new block's descriptor
     const RenderStateBlockDescriptor& newDescriptor = newBlock.getDescriptor();
+    const RenderStateBlockDescriptor* oldDescriptor = oldBlock ? &oldBlock->getDescriptor() : nullptr;
+
+    auto toggle = [](bool flag, GLenum state) {
+        flag ? glEnable(state) : glDisable(state);
+    };
+
     // Compare toggle-only states with the previous block
-    TOGGLE_WITH_CHECK(_blendEnable, GL_BLEND);
-    TOGGLE_WITH_CHECK(_cullEnabled, GL_CULL_FACE);
-    TOGGLE_WITH_CHECK(_stencilEnable, GL_STENCIL_TEST);
-    TOGGLE_WITH_CHECK(_zEnable, GL_DEPTH_TEST);
+    if (!oldDescriptor || oldDescriptor->_blendEnable != newDescriptor._blendEnable) {
+        toggle(newDescriptor._blendEnable, GL_BLEND);
+    }
+
+    if (!oldDescriptor || oldDescriptor->_cullEnabled != newDescriptor._cullEnabled) {
+        toggle(newDescriptor._cullEnabled, GL_CULL_FACE);
+    }
+    if (!oldDescriptor || oldDescriptor->_stencilEnable != newDescriptor._stencilEnable) {
+        toggle(newDescriptor._stencilEnable, GL_STENCIL_TEST);
+    }
+    if (!oldDescriptor || oldDescriptor->_zEnable != newDescriptor._zEnable) {
+        toggle(newDescriptor._zEnable, GL_DEPTH_TEST);
+    }
+    
     // Check separate blend functions
-    if (SHOULD_TOGGLE_2(_blendSrc, _blendDest)) {
+    if (!oldDescriptor ||
+        oldDescriptor->_blendSrc != newDescriptor._blendSrc ||
+        oldDescriptor->_blendDest != newDescriptor._blendDest) {
         glBlendFuncSeparate(
             GLUtil::glBlendTable[to_uint(newDescriptor._blendSrc)],
-            GLUtil::glBlendTable[to_uint(newDescriptor._blendDest)], GL_ONE,
-            GL_ZERO);
+            GLUtil::glBlendTable[to_uint(newDescriptor._blendDest)],
+            GL_ONE, GL_ZERO);
     }
+
     // Check the blend equation
-    if (SHOULD_TOGGLE(_blendOp)) {
+    if (!oldDescriptor || oldDescriptor->_blendOp != newDescriptor._blendOp) {
         glBlendEquation(
             GLUtil::glBlendOpTable[to_uint(newDescriptor._blendOp)]);
     }
     // Check culling mode (back (CW) / front (CCW) by default)
-    if (SHOULD_TOGGLE(_cullMode)) {
+    if (!oldDescriptor || oldDescriptor->_cullMode != newDescriptor._cullMode) {
         if (newDescriptor._cullMode != CullMode::NONE) {
             glCullFace(
                 GLUtil::glCullModeTable[to_uint(newDescriptor._cullMode)]);
         }
     }
     // Check rasterization mode
-    if (SHOULD_TOGGLE(_fillMode)) {
+    if (!oldDescriptor || oldDescriptor->_fillMode != newDescriptor._fillMode) {
         glPolygonMode(
             GL_FRONT_AND_BACK,
             GLUtil::glFillModeTable[to_uint(newDescriptor._fillMode)]);
     }
     // Check the depth function
-    if (SHOULD_TOGGLE(_zFunc)) {
+    if (!oldDescriptor || oldDescriptor->_zFunc != newDescriptor._zFunc) {
         glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newDescriptor._zFunc)]);
     }
     // Check if we need to toggle the depth mask
-    if (SHOULD_TOGGLE(_zWriteEnable)) {
+    if (!oldDescriptor || oldDescriptor->_zWriteEnable != newDescriptor._zWriteEnable) {
         glDepthMask(newDescriptor._zWriteEnable ? GL_TRUE : GL_FALSE);
     }
     // Check if we need to change the stencil mask
-    if (SHOULD_TOGGLE(_stencilWriteMask)) {
+    if (!oldDescriptor || oldDescriptor->_stencilWriteMask != newDescriptor._stencilWriteMask) {
         glStencilMask(newDescriptor._stencilWriteMask);
     }
     // Stencil function is dependent on 3 state parameters set together
-    if (SHOULD_TOGGLE_3(_stencilFunc, _stencilRef, _stencilMask)) {
+    if (!oldDescriptor ||
+        oldDescriptor->_stencilFunc != newDescriptor._stencilFunc ||
+        oldDescriptor->_stencilRef  != newDescriptor._stencilRef ||
+        oldDescriptor->_stencilMask != newDescriptor._stencilMask) {
         glStencilFunc(
             GLUtil::glCompareFuncTable[to_uint(newDescriptor._stencilFunc)],
             newDescriptor._stencilRef, newDescriptor._stencilMask);
     }
     // Stencil operation is also dependent  on 3 state parameters set together
-    if (SHOULD_TOGGLE_3(_stencilFailOp, _stencilZFailOp, _stencilPassOp)) {
+    if (!oldDescriptor ||
+        oldDescriptor->_stencilFailOp != newDescriptor._stencilFailOp ||
+        oldDescriptor->_stencilZFailOp != newDescriptor._stencilZFailOp ||
+        oldDescriptor->_stencilPassOp != newDescriptor._stencilPassOp) {
         glStencilOp(
             GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilFailOp)],
             GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilZFailOp)],
             GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilPassOp)]);
     }
     // Check and set polygon offset
-    if (SHOULD_TOGGLE(_zBias)) {
+    if (!oldDescriptor || oldDescriptor->_zBias != newDescriptor._zBias) {
         if (IS_ZERO(newDescriptor._zBias)) {
             glDisable(GL_POLYGON_OFFSET_FILL);
         } else {
@@ -562,7 +596,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
         }
     }
     // Check and set color mask
-    if (SHOULD_TOGGLE(_colorWrite.i)) {
+    if (!oldDescriptor || oldDescriptor->_colorWrite.i != newDescriptor._colorWrite.i) {
         glColorMask(
             newDescriptor._colorWrite.b.b0 == 1 ? GL_TRUE : GL_FALSE,   // R
             newDescriptor._colorWrite.b.b1 == 1 ? GL_TRUE : GL_FALSE,   // G

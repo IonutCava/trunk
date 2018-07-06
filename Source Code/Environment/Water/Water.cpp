@@ -277,17 +277,10 @@ void WaterPlane::previewReflection() {
     if (_previewReflection) {
         F32 height = _resolution.y * 0.333f;
         _refractionTexture->Bind();
-        vec4<I32> viewport(
-            _resolution.x * 0.333f,
-            Application::getInstance().getResolution().y - height,
-            _resolution.x * 0.666f, height);
-        GFX_DEVICE.renderInViewport(
-            viewport,
-            DELEGATE_BIND(
-                (void (GFXDevice::*)(U32, size_t, ShaderProgram* const)) &
-                    GFXDevice::drawPoints,
-                &GFX_DEVICE, 1, GFX_DEVICE.getDefaultStateBlock(true),
-                _previewReflectionShader));
+        GFX::ScopedViewport viewport(_resolution.x * 0.333f,
+                                     Application::getInstance().getResolution().y - height,
+                                     _resolution.x * 0.666f, height);
+        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _previewReflectionShader);
     }
 #endif
     Reflector::previewReflection();

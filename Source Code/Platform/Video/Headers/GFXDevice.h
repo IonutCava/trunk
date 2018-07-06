@@ -180,10 +180,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void setLineWidth(F32 width) override;
     /// Restore the width of rendered lines to the previously set value
     inline void restoreLineWidth();
-    /// Render specified function inside of a viewport of specified dimensions
-    /// and position
-    inline void renderInViewport(const vec4<I32>& rect,
-                                 const DELEGATE_CBK<>& callback);
     void postProcessingEnabled(const bool state);
     /**
      *@brief Returns an immediate mode emulation buffer that can be used to

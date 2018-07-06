@@ -62,7 +62,7 @@ class WarScene : public Scene {
 
    private:
     void startSimulation();
-
+    void toggleCamera();
    private:
     I8 _score;
     vec4<F32> _sunvector;

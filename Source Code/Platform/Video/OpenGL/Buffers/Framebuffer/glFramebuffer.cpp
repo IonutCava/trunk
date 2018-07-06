@@ -88,6 +88,8 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
 
     SamplerDescriptor sampler = texDescriptor.getSampler();
     GFXImageFormat internalFormat = texDescriptor._internalFormat;
+    GFXImageFormat format = texDescriptor._baseFormat;
+
     if (sampler.srgb()) {
         if (internalFormat == GFXImageFormat::RGBA8) {
             internalFormat = GFXImageFormat::SRGBA8;
@@ -133,7 +135,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
             ? 0
             : to_uint(GLUtil::glTextureTypeTable[to_uint(
                   currentType)]),
-        NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], internalFormat,
+        NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], format,
         internalFormat);
 
     tex->refreshMipMaps();
@@ -277,7 +279,8 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     } else {
         if (!_colorBuffers.empty()) {
             GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffers(
-                _framebufferHandle, static_cast<GLsizei>(_colorBuffers.size()),
+                _framebufferHandle, 
+                static_cast<GLsizei>(_colorBuffers.size()),
                 _colorBuffers.data());
         }
     }
@@ -336,31 +339,34 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB,
 
     GLuint previousFB =
         GL_API::getActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE);
-    GL_API::setActiveFB(input->_framebufferHandle,
-                        Framebuffer::FramebufferUsage::FB_READ_ONLY);
-    GL_API::setActiveFB(this->_framebufferHandle,
-                        Framebuffer::FramebufferUsage::FB_WRITE_ONLY);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY, input->_framebufferHandle);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY, this->_framebufferHandle);
 
     if (blitColor && _hasColor) {
         for (U8 i = 0; i < this->_colorBuffers.size(); ++i) {
+            /*GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffer(this->_framebufferHandle, this->_colorBuffers[i]);
+            GLUtil::DSAWrapper::dsaNamedFramebufferReadBuffer(input->_framebufferHandle, input->_colorBuffers[i]);*/
             glDrawBuffer(this->_colorBuffers[i]);
             glReadBuffer(input->_colorBuffers[i]);
-            glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0,
-                              this->_width, this->_height, GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
+            glext::glBlitNamedFramebuffer(input->_framebufferHandle, 
+                                          this->_framebufferHandle,
+                                          0, 0, input->_width, input->_height, 0, 0,
+                                          this->_width, this->_height, GL_COLOR_BUFFER_BIT,
+                                          GL_NEAREST);
             GFX_DEVICE.registerDrawCall();
         }
     }
 
     if (blitDepth && _hasDepth) {
-        glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0,
-                          this->_width, this->_height, GL_DEPTH_BUFFER_BIT,
-                          GL_NEAREST);
+        glext::glBlitNamedFramebuffer(input->_framebufferHandle,
+                                      this->_framebufferHandle,
+                                      0, 0, input->_width, input->_height, 0, 0,
+                                      this->_width, this->_height, GL_DEPTH_BUFFER_BIT,
+                                      GL_NEAREST);
         GFX_DEVICE.registerDrawCall();
     }
 
-    GL_API::setActiveFB(previousFB,
-                        Framebuffer::FramebufferUsage::FB_READ_WRITE);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, previousFB);
 }
 
 Texture* glFramebuffer::GetAttachment(TextureDescriptor::AttachmentType slot) {
@@ -389,10 +395,9 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
         _viewportChanged = true;
     }
 
-    GL_API::setActiveFB(_framebufferHandle,
-                        Framebuffer::FramebufferUsage::FB_WRITE_ONLY);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY, _framebufferHandle);
     // this is checked so it isn't called twice on the GPU
-    GL_API::clearColor(_clearColor);
+    GL_API::clearColor(_clearColor, _prevClearColor);
     if (_clearBuffersState && drawPolicy._clearBuffersOnBind) {
         glClear(_clearBufferMask);
         GFX_DEVICE.registerDrawCall();
@@ -428,13 +433,14 @@ void glFramebuffer::End() {
         glFramebuffer::_bufferBound,
         "glFramebuffer error: End() called without a previous call to Begin()");
 
-    GL_API::setActiveFB(0, Framebuffer::FramebufferUsage::FB_READ_WRITE);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
     if (_viewportChanged) {
         GFX_DEVICE.restoreViewport();
         _viewportChanged = false;
     }
     resolve();
 
+    GL_API::clearColor(_prevClearColor);
     glFramebuffer::_bufferBound = false;
 }
 
@@ -461,11 +467,8 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
         (_hasColor && slot < TextureDescriptor::AttachmentType::Depth);
 
     if (useDepthLayer && _isLayeredDepth) {
-        glFramebufferTextureLayer(
-            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-            _attachmentTexture[to_uint(
-                                   TextureDescriptor::AttachmentType::Depth)]
-                ->getHandle(),
+        GLUtil::DSAWrapper::dsaNamedFramebufferTextureLayer(_framebufferHandle,
+            GL_DEPTH_ATTACHMENT, _attachmentTexture[to_uint(TextureDescriptor::AttachmentType::Depth)]->getHandle(),
             0, layer);
     }
 
@@ -473,7 +476,7 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
         GLint offset = slot > TextureDescriptor::AttachmentType::Color0
                            ? _attOffset[to_uint(slot) - 1]
                            : 0;
-        glDrawBuffer(_colorBuffers[layer + offset]);
+        GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffer(_framebufferHandle, _colorBuffers[layer + offset]);
     }
 
     _attachmentTexture[to_uint(slot)]->refreshMipMaps();
@@ -523,8 +526,7 @@ void glFramebuffer::ReadData(const vec4<U16>& rect,
         _resolveBuffer->ReadData(rect, imageFormat, dataType, outData);
     } else {
         GL_API::setPixelPackUnpackAlignment();
-        GL_API::setActiveFB(_framebufferHandle,
-                            Framebuffer::FramebufferUsage::FB_READ_ONLY);
+        GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY, _framebufferHandle);
         glReadPixels(
             rect.x, rect.y, rect.z, rect.w,
             GLUtil::glImageFormatTable[to_uint(imageFormat)],

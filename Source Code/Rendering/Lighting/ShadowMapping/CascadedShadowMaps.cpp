@@ -305,23 +305,19 @@ void CascadedShadowMaps::postRender() {
 }
 
 bool CascadedShadowMaps::BindInternal(U8 offset) {
-    _depthMap->Bind(offset, TextureDescriptor::AttachmentType::Color0);
+    _depthMap->Bind(offset);
     return true;
 }
 
 void CascadedShadowMaps::previewShadowMaps() {
-    _depthMap->Bind(to_uint(ShaderProgram::TextureUsage::UNIT0));
+    _depthMap->Bind();
     for (U8 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform(
             "zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
-        GFX_DEVICE.renderInViewport(
-            vec4<I32>(130 * i, 0, 128, 128),
-            DELEGATE_BIND(
-                (void (GFXDevice::*)(U32, size_t, ShaderProgram* const)) &
-                    GFXDevice::drawPoints,
-                &GFX_DEVICE, 1, GFX_DEVICE.getDefaultStateBlock(true),
-                _previewDepthMapShader));
+        GFX::ScopedViewport viewport(130 * i, 0, 128, 128);
+        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
+                              _previewDepthMapShader);
     }
 }
 };
