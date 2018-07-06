@@ -36,32 +36,30 @@
 
 namespace Divide {
 
-class Quad3D;
-class Texture;
 class Framebuffer;
 class ShaderProgram;
 
 class BloomPreRenderOperator : public PreRenderOperator {
    public:
-    BloomPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution,
-                           SamplerDescriptor* const sampler);
+    BloomPreRenderOperator(Framebuffer* renderTarget);
     ~BloomPreRenderOperator();
 
-    void operation();
-    void reshape(U16 width, U16 height);
-
-   protected:
-    // tone maps _inputFB[0] converting it from HDR to LDR
-    void toneMapScreen();
+    void idle() override;
+    void execute() override;
+    void reshape(U16 width, U16 height) override;
+    void debugPreview(U8 slot) const;
 
    private:
+    Framebuffer* _bloomOutput;
+    Framebuffer* _bloomBlurBuffer[2];
+    Framebuffer* _previousExposure;
+    Framebuffer* _currentExposure;
+
     ShaderProgram* _blur;
-    ShaderProgram* _bright;
-    Framebuffer* _outputFB;
-    Framebuffer* _tempBloomFB;
-    Framebuffer* _tempHDRFB;
-    Framebuffer* _luminaFB[2];
-    U32 _luminaMipLevel;
+    ShaderProgram* _bloom;
+    ShaderProgram* _bloomApply;
+    ShaderProgram* _luminanceCalc;
+
     U32 _horizBlur;
     U32 _vertBlur;
 };

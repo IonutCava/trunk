@@ -32,7 +32,7 @@
 #ifndef _POST_EFFECTS_H
 #define _POST_EFFECTS_H
 
-#include "Core/Headers/Singleton.h"
+#include "PreRenderBatch.h"
 #include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
@@ -42,60 +42,41 @@ class Camera;
 class GFXDevice;
 class Framebuffer;
 class ShaderProgram;
-class PreRenderOperator;
-
 class Texture;
 
 DEFINE_SINGLETON(PostFX)
+   private:
+      enum class TexOperatorBindPoint : U32 {
+          TEX_BIND_POINT_SCREEN = 0,
+          TEX_BIND_POINT_BORDER = 1,
+          TEX_BIND_POINT_NOISE = 2,
+          TEX_BIND_POINT_UNDERWATER = 3,
+          TEX_BIND_POINT_LEFT_EYE = 4,
+          TEX_BIND_POINT_RIGHT_EYE = 5,
+          COUNT
+      };
+
   private:
     ~PostFX();
     PostFX();
-    void updateOperators();
-    void updateShaderStates(bool applyFilters);
 
   public:
-    void displayScene(bool applyFilters);
+    void displayScene();
 
     void init(const vec2<U16>& resolution);
     void idle();
     void updateResolution(U16 newWidth, U16 newHeight);
 
   private:
-    bool _enableBloom;
-    bool _enableDOF;
     bool _enableNoise;
     bool _enableVignette;
-    bool _enableSSAO;
-    bool _enableFXAA;
     bool _underwater;
-    bool _depthPreview;
 
-    enum class TexOperatorBindPoint : U32 {
-        TEX_BIND_POINT_SCREEN = 0,
-        TEX_BIND_POINT_BLOOM = 1,
-        TEX_BIND_POINT_SSAO = 2,
-        TEX_BIND_POINT_BORDER = 3,
-        TEX_BIND_POINT_NOISE = 4,
-        TEX_BIND_POINT_UNDERWATER = 5,
-        TEX_BIND_POINT_LEFT_EYE = 6,
-        TEX_BIND_POINT_RIGHT_EYE = 7,
-    };
-    /// Bloom
-    Framebuffer* _bloomFB;
-    PreRenderOperator* _bloomOP;
+    U32 _filterMask;
 
-    /// SSAO
-    Framebuffer* _SSAO_FB;
-
-    /// FXAA
-    PreRenderOperator* _fxaaOP;
-
-    /// DoF
-    PreRenderOperator* _dofOP;
-
+    PreRenderBatch _preRenderBatch;
     /// Screen Border
     Texture* _screenBorder;
-
     /// Noise
     Texture* _noise;
 

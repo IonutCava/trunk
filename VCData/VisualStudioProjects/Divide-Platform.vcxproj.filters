@@ -735,9 +735,6 @@
     <None Include="..\..\assets\shaders\GLSL\blur.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\bright.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
@@ -793,9 +790,6 @@
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\SSAOPass1.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\terrain.glsl">
@@ -883,6 +877,21 @@
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\lightImpostorShader.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\luminanceCalc.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\bloom.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\bloomApply.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\SSAOApply.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\SMAA.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
   </ItemGroup>

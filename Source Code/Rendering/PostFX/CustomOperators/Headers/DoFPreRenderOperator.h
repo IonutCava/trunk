@@ -38,16 +38,15 @@ namespace Divide {
 
 class DoFPreRenderOperator : public PreRenderOperator {
    public:
-    DoFPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution,
-                         SamplerDescriptor* const sampler);
+    DoFPreRenderOperator(Framebuffer* renderTarget);
     ~DoFPreRenderOperator();
 
-    void operation();
-    void reshape(U16 width, U16 height);
+    void idle() override;
+    void execute() override;
+    void reshape(U16 width, U16 height) override;
 
    private:
     ShaderProgram* _dofShader;
-    Framebuffer* _outputFB;
     Framebuffer* _samplerCopy;
 };
 

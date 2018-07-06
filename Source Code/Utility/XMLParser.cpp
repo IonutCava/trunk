@@ -254,12 +254,13 @@ void loadConfig(const stringImpl &file) {
         par.setParam("rendering.enableShadows", true);
     }
 
-    GFX_DEVICE.postProcessingEnabled(pt.get("rendering.enablePostFX", false));
     GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D", false));
     par.setParam("rendering.MSAAsampless",
                  std::max(pt.get<I32>("rendering.MSAAsamples", 0), 0));
-    par.setParam("rendering.FXAAsamples",
-                 std::max(pt.get<I32>("rendering.FXAAsamples", 0), 0));
+    par.setParam("rendering.PostAASamples",
+                 std::max(pt.get<I32>("rendering.PostAASamples", 0), 0));
+    par.setParam("rendering.PostAAType",
+                 pt.get("rendering.PostAAType", "FXAA"));
     par.setParam("GUI.CEGUI.ExtraStates",
                  pt.get("GUI.CEGUI.ExtraStates", false));
     par.setParam("GUI.CEGUI.SkipRendering",

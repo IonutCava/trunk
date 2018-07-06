@@ -71,7 +71,6 @@ GFXDevice::GFXDevice()
     _enableAnaglyph = false;
     _viewportUpdate = false;
     _rasterizationEnabled = true;
-    _enablePostProcessing = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
     _GPUVendor = GPUVendor::COUNT;
@@ -590,10 +589,6 @@ void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
     updateViewportInternal(viewport);
     // The forced viewport can't be popped
     _viewportUpdate = false;
-}
-  
-bool GFXDevice::postProcessingEnabled() const {
-    return _enablePostProcessing;
 }
 
 void GFXDevice::onCameraUpdate(Camera& camera) {

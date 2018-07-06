@@ -127,6 +127,7 @@ void fillEnumTables() {
     glImageFormatTable[to_const_uint(GFXImageFormat::RGB8I)] = GL_RGB8I;
     glImageFormatTable[to_const_uint(GFXImageFormat::RGB16)] = GL_RGB16;
     glImageFormatTable[to_const_uint(GFXImageFormat::RGB16F)] = GL_RGB16F;
+    glImageFormatTable[to_const_uint(GFXImageFormat::RGB32F)] = GL_RGB32F;
     glImageFormatTable[to_const_uint(GFXImageFormat::BGRA)] = GL_BGRA;
     glImageFormatTable[to_const_uint(GFXImageFormat::RGBA)] = GL_RGBA;
     glImageFormatTable[to_const_uint(GFXImageFormat::RGBA4)] = GL_RGBA4;

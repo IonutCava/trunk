@@ -811,7 +811,8 @@ Framebuffer* GL_API::newFB(GFXDevice& context, bool multisampled) const {
     // We set the resolve framebuffer as the requested framebuffer's child.
     // The framebuffer is responsible for deleting it's own resolve child!
     return MemoryManager_NEW glFramebuffer(context,
-        (multisampled && context.gpuState().MSAAEnabled()));
+        (multisampled &&
+         ParamHandler::getInstance().getParam<I32>("rendering.MSAAsampless", 0) > 0));
 }
 
 /// Create and return a new vertex array (VAO + VB + IB). The callee is

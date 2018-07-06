@@ -107,10 +107,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         }
     }
 
-    // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();
-    changeResolution(resolution.width, resolution.height);
     setBaseViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
+
     // Create general purpose render state blocks
     RenderStateBlock defaultState;
     _defaultStateBlockHash = defaultState.getHash();
@@ -249,6 +248,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _axisGizmo->name("GFXDeviceAxisGizmo");
     RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
     _axisGizmo->stateHash(primitiveDescriptor.getHash());
+
+    // Resize our window to the target resolution
+    changeResolution(resolution.width, resolution.height);
 
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;

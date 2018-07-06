@@ -19,7 +19,7 @@ Texture::Texture(GFXDevice& context, TextureType type)
     _width = _height = 0;
     _mipMaxLevel = _mipMinLevel = 0;
     _textureData._textureType = type;
-    _textureData._samplerHash = _samplerDescriptor.getHash();
+    _textureData._samplerHash = _descriptor._samplerDescriptor.getHash();
 }
 
 Texture::~Texture()
@@ -31,7 +31,7 @@ bool Texture::load() {
     // Make sure we have a valid file path
     if (getResourceLocation().empty() ||
         getResourceLocation().compare("default") == 0) {
-        return false;
+        return true;
     }
 
     TextureLoadInfo info;
@@ -152,36 +152,36 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     }
 
     // Create a new Rendering API-dependent texture object
-    GFXImageFormat internalFormat = GFXImageFormat::RGB8;
+    _descriptor._type = info._type;
+    _descriptor._internalFormat = GFXImageFormat::RGB8;
     // Select the proper color space internal format
-    bool srgb = _samplerDescriptor.srgb();
+    bool srgb = _descriptor._samplerDescriptor.srgb();
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
     switch (img.format()) {
         case GFXImageFormat::RED:
-            internalFormat = GFXImageFormat::RED8;
+            _descriptor._internalFormat = GFXImageFormat::RED8;
             break;
         case GFXImageFormat::RG:
-            internalFormat = GFXImageFormat::RG8;
+            _descriptor._internalFormat = GFXImageFormat::RG8;
             break;
         case GFXImageFormat::RGB:
-            internalFormat =
+            _descriptor._internalFormat =
                 srgb ? GFXImageFormat::SRGB8 : 
                        GFXImageFormat::RGB8;
             break;
         case GFXImageFormat::RGBA:
-            internalFormat =
+            _descriptor._internalFormat =
                 srgb ? GFXImageFormat::SRGBA8 : 
                        GFXImageFormat::RGBA8;
             break;
     }
 
     U16 mipMaxLevel = 1;
-    if (_samplerDescriptor.generateMipMaps()) {
+    if (_descriptor._samplerDescriptor.generateMipMaps()) {
         mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
     }
     // Uploading to the GPU dependents on the rendering API
-    loadData(info, img.data(), img.dimensions(), vec2<U16>(0, mipMaxLevel),
-             img.format(), internalFormat);
+    loadData(info, _descriptor, img.data(), img.dimensions(), vec2<U16>(0, mipMaxLevel));
 
     // We will always return true because we load the "missing_texture.jpg" in
     // case of errors

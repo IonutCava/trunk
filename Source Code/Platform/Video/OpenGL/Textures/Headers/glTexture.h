@@ -49,22 +49,17 @@ class glTexture final : public Texture {
 
     void setMipMapRange(GLushort base = 0, GLushort max = 1000) override;
 
-    void resize(const U8* const ptr,
+    void resize(const bufferPtr ptr,
                 const vec2<U16>& dimensions,
                 const vec2<U16>& mipLevels) override;
 
     void loadData(const TextureLoadInfo& info,
-                  const GLubyte* const ptr,
+                  const TextureDescriptor& descriptor,
+                  const bufferPtr ptr,
                   const vec2<GLushort>& dimensions,
-                  const vec2<GLushort>& mipLevels,
-                  GFXImageFormat format,
-                  GFXImageFormat internalFormat) override;
+                  const vec2<GLushort>& mipLevels) override;
 
     bool flushTextureState() override;
-
-    inline GFXImageFormat getInternalFormat() const {
-        return _internalFormat;
-    }
 
    protected:
     bool load() override;
@@ -75,7 +70,6 @@ class glTexture final : public Texture {
 
    private:
     GLenum _type;
-    GFXImageFormat _internalFormat;
     std::atomic_bool _allocatedStorage;
     std::unique_ptr<glLockManager> _lockManager;
 };

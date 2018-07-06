@@ -68,23 +68,22 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
         _mipMaxLevel = max;
     }
     /// Resize the texture to the specified dimensions and upload the new data
-    virtual void resize(const U8* const ptr,
+    virtual void resize(const bufferPtr ptr,
                         const vec2<U16>& dimensions,
                         const vec2<U16>& mipLevels) = 0;
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
     virtual void loadData(const TextureLoadInfo& info,
-                          const U8* const ptr,
+                          const TextureDescriptor& descriptor,
+                          const bufferPtr ptr,
                           const vec2<U16>& dimensions,
-                          const vec2<U16>& mipLevels, 
-                          GFXImageFormat format,
-                          GFXImageFormat internalFormat) = 0;
+                          const vec2<U16>& mipLevels) = 0;
 
     /// Specify the sampler descriptor used to sample from this texture in the
     /// shaders
     inline void setCurrentSampler(const SamplerDescriptor& descriptor) {
         // This can be called at any time
-        _samplerDescriptor = descriptor;
+        _descriptor._samplerDescriptor = descriptor;
         _textureData._samplerHash = descriptor.getHash();
         // The sampler will be updated before the next bind call and used in
         // that bind
@@ -92,7 +91,7 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     }
     /// Get the sampler descriptor used by this texture
     inline const SamplerDescriptor& getCurrentSampler() const {
-        return _samplerDescriptor;
+        return _descriptor._samplerDescriptor;
     }
 
     inline TextureData& getData() {
@@ -116,8 +115,6 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
     inline U32 getHandle() const { return _textureData.getHandleHigh(); }
-    /// Return the texture format used by this entity
-    inline GFXImageFormat getFormat() const { return _textureData._textureFormat; }
     /// If the texture has an alpha channel and at least one pixel is
     /// translucent, return true
     inline bool hasTransparency() const { return _hasTransparency; }
@@ -131,6 +128,11 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     /// Force a full update of the texture (all pending changes and mipmap refresh);
     /// Returns false if the texture is not ready or in an invalid state
     virtual bool flushTextureState() = 0;
+
+    const TextureDescriptor& getDescriptor() const {
+        return _descriptor;
+    }
+
    protected:
     SET_DELETE_FRIEND
 
@@ -157,7 +159,7 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     bool _power2Size;
     mat4<F32> _transformMatrix;
     TextureData  _textureData;
-    SamplerDescriptor _samplerDescriptor;
+    TextureDescriptor _descriptor;
 };
 
 };  // namespace Divide

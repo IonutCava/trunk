@@ -250,8 +250,7 @@ class TextureData {
     TextureData()
         : _textureType(TextureType::TEXTURE_2D),
           _samplerHash(0),
-          _textureHandle(0),
-          _textureFormat(GFXImageFormat::COUNT)
+          _textureHandle(0)
     {
     }
 
@@ -259,7 +258,6 @@ class TextureData {
         _textureHandle = other._textureHandle;
         _textureType = other._textureType;
         _samplerHash = other._samplerHash;
-        _textureFormat = other._textureFormat;
     }
 
     inline void setHandleHigh(U32 handle) {
@@ -294,30 +292,95 @@ class TextureData {
         handle = _textureHandle;
     }
 
-    inline void setFormat(GFXImageFormat format) {
-        _textureFormat = format;
-    }
-
-    inline GFXImageFormat getFormat() const {
-        return _textureFormat;
-    }
-
     // No need to cache this as it should already be pretty fast
     inline U32 getHash() const {
         U32 hash = 0;
         Util::Hash_combine(hash, to_uint(_textureType));
         Util::Hash_combine(hash, _samplerHash);
         Util::Hash_combine(hash, _textureHandle);
-        Util::Hash_combine(hash, to_uint(_textureFormat));
         return hash;
     }
 
     TextureType _textureType;
     U32 _samplerHash;
-    GFXImageFormat _textureFormat;
 private:
     U64  _textureHandle;
 };
+
+inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
+    switch (internalFormat) {
+        case GFXImageFormat::LUMINANCE_ALPHA:
+        case GFXImageFormat::LUMINANCE_ALPHA16F:
+        case GFXImageFormat::LUMINANCE_ALPHA32F:
+            return GFXImageFormat::LUMINANCE;
+
+        case GFXImageFormat::RED8:
+        case GFXImageFormat::RED16:
+        case GFXImageFormat::RED16F:
+        case GFXImageFormat::RED32:
+        case GFXImageFormat::RED32F:
+            return GFXImageFormat::RED;
+
+        case GFXImageFormat::RG8:
+        case GFXImageFormat::RG16:
+        case GFXImageFormat::RG16F:
+        case GFXImageFormat::RG32:
+        case GFXImageFormat::RG32F:
+            return GFXImageFormat::RG;
+
+        case GFXImageFormat::RGB8:
+        case GFXImageFormat::SRGB8:
+        case GFXImageFormat::RGB8I:
+        case GFXImageFormat::RGB16:
+        case GFXImageFormat::RGB16F:
+        case GFXImageFormat::RGB32F:
+            return GFXImageFormat::RGB;
+
+        case GFXImageFormat::RGBA4:
+        case GFXImageFormat::RGBA8:
+        case GFXImageFormat::SRGBA8:
+        case GFXImageFormat::RGBA8I:
+        case GFXImageFormat::RGBA16F:
+        case GFXImageFormat::RGBA32F:
+            return GFXImageFormat::RGBA;
+
+        case GFXImageFormat::DEPTH_COMPONENT16:
+        case GFXImageFormat::DEPTH_COMPONENT24:
+        case GFXImageFormat::DEPTH_COMPONENT32:
+        case GFXImageFormat::DEPTH_COMPONENT32F:
+            return GFXImageFormat::DEPTH_COMPONENT;
+
+        default:
+            break;
+    };
+
+    return internalFormat;
+}
+
+inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
+    switch (format) {
+        case GFXImageFormat::DEPTH_COMPONENT32F:
+        case GFXImageFormat::LUMINANCE_ALPHA32F:
+        case GFXImageFormat::RED32F:
+        case GFXImageFormat::RG32F:
+        case GFXImageFormat::RGB32F:
+        case GFXImageFormat::RGBA32F:
+            return GFXDataFormat::FLOAT_32;
+
+        case GFXImageFormat::LUMINANCE_ALPHA16F:
+        case GFXImageFormat::RED16F:
+        case GFXImageFormat::RG16F:
+        case GFXImageFormat::RGB16F:
+        case GFXImageFormat::RGBA16F:
+            return GFXDataFormat::FLOAT_16;
+
+        case GFXImageFormat::RGB8I:
+        case GFXImageFormat::RGBA8I:
+            return GFXDataFormat::SIGNED_BYTE;
+    };
+
+    return GFXDataFormat::UNSIGNED_BYTE;
+}
 
 typedef vectorImpl<TextureData> TextureDataContainer;
 typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;

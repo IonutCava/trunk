@@ -328,10 +328,12 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     }
 
     RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState());
+
     if (_GFX.anaglyphEnabled()) {
         RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), true);
     }
-    PostFX::getInstance().displayScene(_GFX.postProcessingEnabled());
+
+    PostFX::getInstance().displayScene();
 
     frameMgr.createEvent(_timingData._currentTime,
                          FrameEventType::FRAME_POSTRENDER_START, evt);

@@ -54,10 +54,12 @@ glFramebuffer::~glFramebuffer() {
 }
 
 void glFramebuffer::initAttachment(AttachmentType type,
-                                   const TextureDescriptor& texDescriptor,
+                                   TextureDescriptor& texDescriptor,
                                    bool resize) {
+    I32 slot = to_int(type);
     // If it changed
-    if (!_attachmentChanged[to_uint(type)]) {
+    bool shouldResize = resize && _attachmentTexture[slot] != nullptr;
+    if (!_attachmentChanged[to_uint(type)] && !shouldResize) {
         return;
     }
 
@@ -71,54 +73,46 @@ void glFramebuffer::initAttachment(AttachmentType type,
         _hasDepth = true;
     }
 
-    I32 slot = to_int(type);
-
-    TextureType currentType = texDescriptor._type;
-
     if (_multisampled) {
-        if (currentType == TextureType::TEXTURE_2D) {
-            currentType = TextureType::TEXTURE_2D_MS;
+        if (texDescriptor._type == TextureType::TEXTURE_2D) {
+            texDescriptor._type = TextureType::TEXTURE_2D_MS;
         }
-        if (currentType == TextureType::TEXTURE_2D_ARRAY) {
-            currentType = TextureType::TEXTURE_2D_ARRAY_MS;
+        if (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY) {
+            texDescriptor._type = TextureType::TEXTURE_2D_ARRAY_MS;
         }
     } else {
-        if (currentType == TextureType::TEXTURE_2D_MS) {
-            currentType = TextureType::TEXTURE_2D;
+        if (texDescriptor._type == TextureType::TEXTURE_2D_MS) {
+            texDescriptor._type = TextureType::TEXTURE_2D;
         }
-        if (currentType == TextureType::TEXTURE_2D_ARRAY_MS) {
-            currentType = TextureType::TEXTURE_2D_ARRAY;
+        if (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS) {
+            texDescriptor._type = TextureType::TEXTURE_2D_ARRAY;
         }
     }
 
-    bool isLayeredTexture = (currentType == TextureType::TEXTURE_2D_ARRAY ||
-                             currentType == TextureType::TEXTURE_2D_ARRAY_MS ||
-                             currentType == TextureType::TEXTURE_CUBE_MAP ||
-                             currentType == TextureType::TEXTURE_CUBE_ARRAY ||
-                             currentType == TextureType::TEXTURE_3D);
+    bool isLayeredTexture = (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY ||
+                             texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS ||
+                             texDescriptor._type == TextureType::TEXTURE_CUBE_MAP ||
+                             texDescriptor._type == TextureType::TEXTURE_CUBE_ARRAY ||
+                             texDescriptor._type == TextureType::TEXTURE_3D);
 
-    SamplerDescriptor sampler = texDescriptor.getSampler();
-    GFXImageFormat internalFormat = texDescriptor._internalFormat;
-    GFXImageFormat format = texDescriptor._baseFormat;
-
-    if (sampler.srgb()) {
-        if (internalFormat == GFXImageFormat::RGBA8) {
-            internalFormat = GFXImageFormat::SRGBA8;
+    if (texDescriptor.getSampler().srgb()) {
+        if (texDescriptor._internalFormat == GFXImageFormat::RGBA8) {
+            texDescriptor._internalFormat = GFXImageFormat::SRGBA8;
         }
-        if (internalFormat == GFXImageFormat::RGB8) {
-            internalFormat = GFXImageFormat::SRGB8;
+        if (texDescriptor._internalFormat == GFXImageFormat::RGB8) {
+            texDescriptor._internalFormat = GFXImageFormat::SRGB8;
         }
     } else {
-        if (internalFormat == GFXImageFormat::SRGBA8) {
-            internalFormat = GFXImageFormat::RGBA8;
+        if (texDescriptor._internalFormat == GFXImageFormat::SRGBA8) {
+            texDescriptor._internalFormat = GFXImageFormat::RGBA8;
         }
-        if (internalFormat == GFXImageFormat::SRGB8) {
-            internalFormat = GFXImageFormat::RGB8;
+        if (texDescriptor._internalFormat == GFXImageFormat::SRGB8) {
+            texDescriptor._internalFormat = GFXImageFormat::RGB8;
         }
     }
 
     if (_multisampled) {
-        sampler.toggleMipMaps(false);
+        texDescriptor.getSampler().toggleMipMaps(false);
     }
 
     if (_attachmentTexture[slot] && !resize) {
@@ -131,8 +125,8 @@ void glFramebuffer::initAttachment(AttachmentType type,
 
         ResourceDescriptor textureAttachment(attachmentName);
         textureAttachment.setThreadedLoading(false);
-        textureAttachment.setPropertyDescriptor(sampler);
-        textureAttachment.setEnumValue(to_uint(currentType));
+        textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
+        textureAttachment.setEnumValue(to_uint(texDescriptor._type));
         _attachmentTexture[slot] = CreateResource<Texture>(textureAttachment);
     }
 
@@ -140,16 +134,15 @@ void glFramebuffer::initAttachment(AttachmentType type,
     assert(tex != nullptr);
     tex->setNumLayers(texDescriptor._layerCount);
     _mipMapLevel[slot].set(0,
-                           sampler.generateMipMaps() 
+                           texDescriptor.getSampler().generateMipMaps()
                               ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
                               : 1);
     if (resize) {
         tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
-        return;
     } else {
         Texture::TextureLoadInfo info;
-        info._type = currentType;
-        tex->loadData(info, NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], format, internalFormat);
+        info._type = texDescriptor._type;
+        tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
     }
 
     // Attach to frame buffer
@@ -169,8 +162,10 @@ void glFramebuffer::initAttachment(AttachmentType type,
     _attachments[to_uint(type)] = std::make_pair(attachment, tex->getHandle());
     _attachmentChanged[slot] = false;
     _attDirty[slot] = true;
-    if (type != AttachmentType::Depth) {
-        _colorBuffers.push_back(attachment);
+    if (!resize) {
+        if (type != AttachmentType::Depth) {
+            _colorBuffers.push_back(attachment);
+        }
     }
 }
 
@@ -198,7 +193,7 @@ void glFramebuffer::addDepthBuffer() {
     TextureDescriptor desc = _attachment[to_uint(AttachmentType::Color0)];
     TextureType texType = desc._type;
 
-    GFXDataFormat dataType = desc._dataType;
+    GFXDataFormat dataType = desc.dataType();
     bool fpDepth = (dataType == GFXDataFormat::FLOAT_16 ||
                     dataType == GFXDataFormat::FLOAT_32);
     SamplerDescriptor screenSampler;

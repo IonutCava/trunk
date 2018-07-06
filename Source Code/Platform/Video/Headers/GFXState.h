@@ -86,11 +86,6 @@ class GPUState : private NonCopyable {
         return _supportedDislpayModes[displayIndex];
     }
 
-    inline void initAA(U8 fxaaSamples, U8 msaaSamples) {
-        _FXAASamples = fxaaSamples;
-        _MSAASamples = msaaSamples;
-    }
-
     inline void loadingThreadAvailable(bool state) {
         _loadingThreadAvailable = state;
     }
@@ -99,14 +94,6 @@ class GPUState : private NonCopyable {
         _closeLoadingThread = state;
     }
     
-    inline bool MSAAEnabled() const { return _MSAASamples > 0; }
-
-    inline U8   MSAASamples() const { return _MSAASamples; }
-
-    inline bool FXAAEnabled() const { return _FXAASamples > 0; }
-
-    inline U8   FXAASamples() const { return _FXAASamples; }
-
     inline bool loadingThreadAvailable() const {
         return _loadingThreadAvailable && _loaderThread;
     }
@@ -125,9 +112,6 @@ class GPUState : private NonCopyable {
     /// Atomic boolean value used to signal the loading thread to stop
     std::atomic_bool _closeLoadingThread;
     std::unique_ptr<std::thread> _loaderThread;
-    /// AA system
-    U8 _MSAASamples;
-    U8 _FXAASamples;
     // Display system
     vectorImpl<vectorImpl<GPUVideoMode>> _supportedDislpayModes;
 };

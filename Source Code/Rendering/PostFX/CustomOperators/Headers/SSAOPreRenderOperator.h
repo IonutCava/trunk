@@ -46,16 +46,19 @@ namespace Divide {
 
 class SSAOPreRenderOperator : public PreRenderOperator {
    public:
-    SSAOPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution,
-                          SamplerDescriptor* const sampler);
+    SSAOPreRenderOperator(Framebuffer* renderTarget);
     ~SSAOPreRenderOperator();
 
-    void operation();
-    void reshape(U16 width, U16 height);
+    void idle() override;
+    void execute() override;
+    void reshape(U16 width, U16 height) override;
+    void debugPreview(U8 slot) const;
 
    private:
-    ShaderProgram* _ssaoShader;
-    Framebuffer* _outputFB;
+    ShaderProgram* _ssaoGenerateShader;
+    ShaderProgram* _ssaoApplyShader;
+    Framebuffer* _ssaoOutput;
+    Texture* _noiseTexture;
 };
 
 };  // namespace Divide

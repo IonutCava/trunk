@@ -5,6 +5,8 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
+#include "Core/Headers/ParamHandler.h"
+
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
@@ -14,7 +16,6 @@ glTexture::glTexture(GFXDevice& context, TextureType type)
     : Texture(context, type),
     _lockManager(new glLockManager())
 {
-    _internalFormat = GFXImageFormat::COUNT;
     _allocatedStorage = false;
 
     _type = GLUtil::glTextureTypeTable[to_uint(type)];
@@ -66,7 +67,7 @@ void glTexture::setMipMapRange(GLushort base, GLushort max) {
     glTextureParameteri(_textureData.getHandleHigh(), GL_TEXTURE_MAX_LEVEL, max);
 }
 
-void glTexture::resize(const U8* const ptr,
+void glTexture::resize(const bufferPtr ptr,
                        const vec2<U16>& dimensions,
                        const vec2<U16>& mipLevels) {
     // Immutable storage requires us to create a new texture object 
@@ -83,11 +84,11 @@ void glTexture::resize(const U8* const ptr,
     _textureData.setHandleHigh(tempHandle);
     _allocatedStorage = false;
     TextureLoadInfo info;
-    loadData(info, ptr, dimensions, mipLevels, _textureData._textureFormat, _internalFormat);
+    loadData(info, _descriptor, ptr, dimensions, mipLevels);
 }
 
 void glTexture::updateMipMaps() {
-    if (_mipMapsDirty && _samplerDescriptor.generateMipMaps()) {
+    if (_mipMapsDirty && _descriptor._samplerDescriptor.generateMipMaps()) {
         glGenerateTextureMipmap(_textureData.getHandleHigh());
     }
     _mipMapsDirty = false;
@@ -96,7 +97,7 @@ void glTexture::updateMipMaps() {
 void glTexture::updateSampler() {
     if (_samplerDirty) {
         _textureData._samplerHash = 
-            GL_API::getOrCreateSamplerObject(_samplerDescriptor);
+            GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
         _samplerDirty = false;
     }
 }
@@ -119,9 +120,11 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         "glTexture::reserverStorage error: width and height for "
         "cube map texture do not match!");
 
-    GLenum glInternalFormat = _internalFormat == GFXImageFormat::DEPTH_COMPONENT
+    ParamHandler& par = ParamHandler::getInstance();
+
+    GLenum glInternalFormat = _descriptor._internalFormat == GFXImageFormat::DEPTH_COMPONENT
                             ? GL_DEPTH_COMPONENT32
-                            : GLUtil::glImageFormatTable[to_uint(_internalFormat)];
+                            : GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)];
     switch (_textureData._textureType) {
         case TextureType::TEXTURE_1D: {
             glTextureStorage1D(
@@ -143,7 +146,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_MS: {
             glTextureStorage2DMultisample(
                 _textureData.getHandleHigh(), 
-                _context.gpuState().MSAASamples(),
+                par.getParam<I32>("rendering.MSAAsampless", 0),
                 glInternalFormat,
                 _width,
                 _height,
@@ -152,7 +155,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_ARRAY_MS: {
             glTextureStorage3DMultisample(
                 _textureData.getHandleHigh(),
-                _context.gpuState().MSAASamples(),
+                par.getParam<I32>("rendering.MSAAsampless", 0),
                 glInternalFormat,
                 _width,
                 _height,
@@ -184,14 +187,14 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
-                         const GLubyte* const ptr,
+                         const TextureDescriptor& descriptor,
+                         const bufferPtr ptr,
                          const vec2<GLushort>& dimensions,
-                         const vec2<GLushort>& mipLevels,
-                         GFXImageFormat format,
-                         GFXImageFormat internalFormat) {
-    _textureData._textureFormat = format;
-    _internalFormat = internalFormat;
-    GLenum glFormat = GLUtil::glImageFormatTable[to_uint(format)];
+                         const vec2<GLushort>& mipLevels) {
+    _descriptor = descriptor;
+
+    GLenum glFormat = GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())];
+    GLenum dataType = GLUtil::glDataFormat[to_uint(_descriptor.dataType())];
 
     if (info._layerIndex == 0) {
             
@@ -240,8 +243,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
                     0,
                     _width,
                     glFormat,
-                    GL_UNSIGNED_BYTE,
-                    (bufferPtr)ptr);
+                    dataType,
+                    ptr);
             } break;
             case TextureType::TEXTURE_2D:
             case TextureType::TEXTURE_2D_MS: {
@@ -253,8 +256,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
                     _width,
                     _height,
                     glFormat,
-                    GL_UNSIGNED_BYTE,
-                    (bufferPtr)ptr);
+                    dataType,
+                    ptr);
             } break;
 
             case TextureType::TEXTURE_3D:
@@ -272,8 +275,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
                     _height,
                     1,
                     glFormat,
-                    GL_UNSIGNED_BYTE,
-                    (bufferPtr)ptr);
+                    dataType,
+                    ptr);
                 
             } break;
         }
@@ -310,7 +313,7 @@ void glTexture::BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
         GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                              : (write ? GL_WRITE_ONLY : GL_NONE);
         GL_API::bindTextureImage(slot, _textureData.getHandleHigh(), level, layered, layer, access, 
-                                 GLUtil::glImageFormatTable[to_uint(_internalFormat)]);
+                                 GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)]);
     }
 }
 

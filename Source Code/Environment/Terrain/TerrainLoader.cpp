@@ -296,7 +296,7 @@ bool TerrainLoader::loadThreadedResources(
         ImageTools::ImageDataInterface::CreateImageData(terrainDescriptor->getVariable("heightmap"), img);
         assert(terrainDimensions == img.dimensions());
         // data will be destroyed when img gets out of scope
-        const U8* data = img.data();
+        const U8* data = (const U8*)img.data();
         assert(data);
         heightValues.reserve(heightmapWidth * heightmapWidth);
         for (size_t i = 0; i < img.imageSize(); ++i) {

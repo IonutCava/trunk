@@ -28,16 +28,15 @@ U32 SceneNodeRenderState::getShadowStateBlock() {
 
 bool SceneNodeRenderState::getDrawState(RenderStage currentStage) const {
     return _drawState &&
-            !BitCompare(_exclusionMask,
-                        (to_bitwise(to_uint(currentStage) + 1)));
+            !BitCompare(_exclusionMask, to_uint(1 << (to_uint(currentStage) + 1)));
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage) {
-    _exclusionMask |= (to_bitwise(to_uint(stage) + 1));
+    _exclusionMask |= (1 << (to_uint(stage) + 1));
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage stage) {
-    _exclusionMask &= ~(to_bitwise(to_uint(stage) + 1));
+    _exclusionMask &= ~(1 << (to_uint(stage) + 1));
 }
 
 };

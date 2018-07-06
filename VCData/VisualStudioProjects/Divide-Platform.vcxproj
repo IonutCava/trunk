@@ -177,8 +177,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\bloomApply.glsl" />
     <None Include="..\..\assets\shaders\GLSL\blur.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\bright.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\bloom.glsl" />
     <None Include="..\..\assets\shaders\GLSL\common\HiZCullingAlgorithm.cmn" />
     <None Include="..\..\assets\shaders\GLSL\common\lightInput.cmn" />
     <None Include="..\..\assets\shaders\GLSL\common\nodeBufferedInput.cmn" />
@@ -212,13 +213,15 @@
     <None Include="..\..\assets\shaders\GLSL\lightCull.glsl" />
     <None Include="..\..\assets\shaders\GLSL\lightImpostorShader.glsl" />
     <None Include="..\..\assets\shaders\GLSL\lighting.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\luminanceCalc.glsl" />
     <None Include="..\..\assets\shaders\GLSL\particles.glsl" />
     <None Include="..\..\assets\shaders\GLSL\passThrough.glsl" />
     <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl" />
     <None Include="..\..\assets\shaders\GLSL\README" />
     <None Include="..\..\assets\shaders\GLSL\sky.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\SMAA.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\SSAOApply.glsl" />
     <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\SSAOPass1.glsl" />
     <None Include="..\..\assets\shaders\GLSL\terrain.glsl" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert" />

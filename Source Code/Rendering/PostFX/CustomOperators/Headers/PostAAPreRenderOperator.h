@@ -32,26 +32,27 @@
 /// shader from:
 /// http://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/
 
-#ifndef _FXAA_PRE_RENDER_OPERATOR_H_
-#define _FXAA_PRE_RENDER_OPERATOR_H_
+#ifndef _POST_AA_PRE_RENDER_OPERATOR_H_
+#define _POST_AA_PRE_RENDER_OPERATOR_H_
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
 namespace Divide {
 
-class FXAAPreRenderOperator : public PreRenderOperator {
+class PostAAPreRenderOperator : public PreRenderOperator {
    public:
-    FXAAPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution,
-                          SamplerDescriptor* const sampler);
-    ~FXAAPreRenderOperator();
+    PostAAPreRenderOperator(Framebuffer* renderTarget);
+    ~PostAAPreRenderOperator();
 
-    void operation();
-    void reshape(U16 width, U16 height);
+    void idle() override;
+    void execute() override;
+    void reshape(U16 width, U16 height) override;
 
    private:
-    bool _ready;
+    bool _useSMAA;
+    I32 _postAASamples;
     ShaderProgram* _fxaa;
-    Framebuffer* _outputFB;
+    ShaderProgram* _smaa;
     Framebuffer* _samplerCopy;
 };
 

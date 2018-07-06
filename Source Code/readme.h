@@ -28,3 +28,45 @@
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
+
+ /*
+ToDo:
+-Finish PostFX system :
+--HDR + MSAA resolved input -> LDR output after tonemap
+-- FXAA & SMAA
+-- Depth of Field
+-- - No motion blur(bleah)
+--Luminance + ToneMap + Automatic adaptive exposure
+-- LUT / Color correction
+
+- Improve MSAA
+-- Resolve after "end()" call.Use as PostFX input
+
+- Finish octree implementation
+-- Test collisions with first person weapon
+-- - Rotate weapon towards body on collision.
+-- - Use weapon as camera collision proxy
+-- Add camera collision
+-- Add motion sway for first person view
+
+- Fix shadowing system
+-- Fix cubemap based omni light shadow mapping
+-- Fix spot light shadow mapping
+-- Fix CSM plane split seam
+
+- Re - test and fix environment objects
+-- Test and fix terrain
+-- - Apply detail via the HW tessellator
+-- Test and fix vegetation
+-- - Improve vegetation culling : switch from GS + XFBK to Compute based system
+-- Test and fix water rendering
+
+- Create test scene :
+-- 2 Sponza atriums on large terrain, opposite sides of map
+-- Random NPC navigation from on building to the other
+-- Each NPC has small particle emitter
+-- Start position inside one building
+-- - No initial lights->Holster weapon->Flashlight turns on->Fire weapon -> ~512 point lights turn on->walk outside->View entire map->Be amazed
+
+- Implement Physically based shading with GUIEditor controls
+*/

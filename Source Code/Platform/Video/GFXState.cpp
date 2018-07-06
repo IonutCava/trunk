@@ -6,8 +6,6 @@ namespace Divide {
 GPUState::GPUState()
 {
     _loaderThread = nullptr;
-    _MSAASamples = 0;
-    _FXAASamples = 0;
     _loadingThreadAvailable = false;
     // Atomic boolean use to signal the loading thread to stop
     _closeLoadingThread = false;

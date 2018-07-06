@@ -49,7 +49,7 @@ class ImageData : private NonCopyable {
     inline void flip(bool state) { _flip = state; }
     inline bool flip() const { return _flip; }
     /// set and get the image's actual data
-    inline const U8* const data() const { return _data.data(); }
+    inline const bufferPtr data() const { return (bufferPtr)_data.data(); }
     /// width * height * bpp
     inline const U32 imageSize() const { return _imageSize; }
     /// set and get the image's compression state

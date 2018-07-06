@@ -221,7 +221,7 @@ class SamplerDescriptor : public PropertyDescriptor {
 };
 
 /// Use to define a texture with details such as type, image formats, etc
-/// We do not definy copy constructors as we must define descriptors only with
+/// We do not define copy constructors as we must define descriptors only with
 /// POD
 class TextureDescriptor : public PropertyDescriptor {
    public:
@@ -240,21 +240,29 @@ class TextureDescriptor : public PropertyDescriptor {
     TextureDescriptor()
         : TextureDescriptor(TextureType::COUNT,
                             GFXImageFormat::COUNT,
-                            GFXDataFormat::COUNT) {}
+                            GFXDataFormat::COUNT)
+    {
+    }
 
-    TextureDescriptor(TextureType type, GFXImageFormat internalFormat,
+    TextureDescriptor(TextureType type,
+                      GFXImageFormat internalFormat)
+        : TextureDescriptor(type,
+                            internalFormat,
+                            GFXDataFormat::COUNT)
+    {
+    }
+
+    TextureDescriptor(TextureType type,
+                      GFXImageFormat internalFormat,
                       GFXDataFormat dataType)
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
           _layerCount(1),
-          _packAlignment(1),
-          _unpackAlignment(1),
-          _baseFormat(internalFormat),
+          _baseFormat(GFXImageFormat::COUNT),
           _internalFormat(internalFormat),
           _dataType(dataType),
           _type(type)
     {
         _baseFormat = baseFromInternalFormat(internalFormat);
-        setDefaultValues();
     }
 
     virtual ~TextureDescriptor()
@@ -268,16 +276,17 @@ class TextureDescriptor : public PropertyDescriptor {
     /// Pixel alignment and miplevels are set to match what the HW sets by
     /// default
     inline void setDefaultValues() {
-        setAlignment();
-        _layerCount = 1;
+        setLayerCount(1);
+        setSampler(SamplerDescriptor());
+        _internalFormat = GFXImageFormat::RGBA8;
+        _baseFormat = baseFromInternalFormat(_internalFormat);
+        _dataType = GFXDataFormat::UNSIGNED_BYTE;
+        _type = TextureType::TEXTURE_2D;
     }
 
-    inline void setAlignment(U8 packAlignment = 1, U8 unpackAlignment = 1) {
-        _packAlignment = packAlignment;
-        _unpackAlignment = unpackAlignment;
+    inline void setLayerCount(U8 layerCount) { 
+        _layerCount = layerCount;
     }
-
-    inline void setLayerCount(U8 layerCount) { _layerCount = layerCount; }
 
     inline bool isCubeTexture() const {
         return (_type == TextureType::TEXTURE_CUBE_MAP ||
@@ -290,68 +299,41 @@ class TextureDescriptor : public PropertyDescriptor {
         _samplerDescriptor = descriptor;
     }
 
+    inline SamplerDescriptor& getSampler() {
+        return _samplerDescriptor;
+    }
+
     inline const SamplerDescriptor& getSampler() const {
         return _samplerDescriptor;
     }
 
-    inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
-        switch (internalFormat) {
-            case GFXImageFormat::LUMINANCE_ALPHA:
-            case GFXImageFormat::LUMINANCE_ALPHA16F:
-            case GFXImageFormat::LUMINANCE_ALPHA32F:
-                return GFXImageFormat::LUMINANCE;
+    inline GFXDataFormat dataType() {
+        if (_dataType == GFXDataFormat::COUNT) {
+            _dataType = dataTypeForInternalFormat(_internalFormat);
+        }
 
-            case GFXImageFormat::RED8:
-            case GFXImageFormat::RED16:
-            case GFXImageFormat::RED16F:
-            case GFXImageFormat::RED32:
-            case GFXImageFormat::RED32F:
-                return GFXImageFormat::RED;
-                
-            case GFXImageFormat::RG8:
-            case GFXImageFormat::RG16:
-            case GFXImageFormat::RG16F:
-            case GFXImageFormat::RG32:
-            case GFXImageFormat::RG32F:
-                return GFXImageFormat::RG;
+        return _dataType;
+    }
 
-            case GFXImageFormat::RGB8:
-            case GFXImageFormat::SRGB8:
-            case GFXImageFormat::RGB8I:
-            case GFXImageFormat::RGB16:
-            case GFXImageFormat::RGB16F:
-                return GFXImageFormat::RGB;
+    inline GFXImageFormat baseFormat() {
+        if (_baseFormat == GFXImageFormat::COUNT) {
+            _baseFormat = baseFromInternalFormat(_internalFormat);
+        }
 
-            case GFXImageFormat::RGBA4:
-            case GFXImageFormat::RGBA8:
-            case GFXImageFormat::SRGBA8:
-            case GFXImageFormat::RGBA8I:
-            case GFXImageFormat::RGBA16F:
-            case GFXImageFormat::RGBA32F:
-                return GFXImageFormat::RGBA;
-
-            case GFXImageFormat::DEPTH_COMPONENT16:
-            case GFXImageFormat::DEPTH_COMPONENT24:
-            case GFXImageFormat::DEPTH_COMPONENT32:
-            case GFXImageFormat::DEPTH_COMPONENT32F:
-                return GFXImageFormat::DEPTH_COMPONENT;
-
-            default:
-                break;
-        };
-
-        return internalFormat;
+        return _baseFormat;
     }
 
     U8 _layerCount;
-    U8 _packAlignment, _unpackAlignment;  ///<Pixel store information
     /// Texture data information
-    GFXImageFormat _baseFormat;
     GFXImageFormat _internalFormat;
-    GFXDataFormat _dataType;
     TextureType _type;
     /// The sampler used to initialize this texture with
     SamplerDescriptor _samplerDescriptor;
+
+    private:
+        GFXImageFormat _baseFormat;
+        GFXDataFormat _dataType;
+
 };
 
 };  // namespace Divide

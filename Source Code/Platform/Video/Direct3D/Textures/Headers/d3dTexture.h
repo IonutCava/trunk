@@ -51,7 +51,7 @@ class d3dTexture final : public Texture {
 
     void setMipMapRange(U16 base = 0, U16 max = 1000) override { Texture::setMipMapRange(base, max); }
 
-    void resize(const U8* const ptr,
+    void resize(const bufferPtr ptr,
                 const vec2<U16>& dimensions,
                 const vec2<U16>& mipLevels) override {}
 
@@ -60,11 +60,10 @@ class d3dTexture final : public Texture {
     bool flushTextureState() override { return true; }
 
     void loadData(const TextureLoadInfo& info,
-                  const U8* const ptr,
+                  const TextureDescriptor& descriptor,
+                  const bufferPtr ptr,
                   const vec2<U16>& dimensions,
-                  const vec2<U16>& mipLevels,
-                  GFXImageFormat format,
-                  GFXImageFormat internalFormat) override {}
+                  const vec2<U16>& mipLevels) override {}
 
    private:
     U32 _type;

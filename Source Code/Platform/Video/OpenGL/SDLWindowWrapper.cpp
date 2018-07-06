@@ -47,7 +47,11 @@ ErrorCode GL_API::createWindow() {
 
     // Toggle multi-sampling if requested.
     // This options requires a client-restart, sadly.
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, par.getParam<I32>("rendering.MSAAsampless", 0));
+    I32 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
+    if (msaaSamples > 0) {
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples);
+    }
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
@@ -329,8 +333,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     if (samplerBuffers == 0 || sampleCount == 0) {
         msaaSamples = 0;
     }
-    GFX_DEVICE.gpuState().initAA(to_ubyte(par.getParam<I32>("rendering.FXAAsamples", 0)),
-                                 to_ubyte(msaaSamples));
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get(_ID("GL_MAX_UNIFORM")),
@@ -386,9 +388,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Seamless cubemaps are a nice feature to have enabled (core since 3.2)
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     // Enable multisampling if we actually support and request it
-    GFX_DEVICE.gpuState().MSAAEnabled() 
-        ?  glEnable(GL_MULTISAMPLE) 
-        :  glDisable(GL_MULTISAMPLE);
+    msaaSamples  > 0 ? glEnable(GL_MULTISAMPLE) :  glDisable(GL_MULTISAMPLE);
 
     // Line smoothing should almost always be used
     if (Config::USE_HARDWARE_AA_LINES) {

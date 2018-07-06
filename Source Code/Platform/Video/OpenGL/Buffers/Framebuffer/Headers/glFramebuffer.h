@@ -76,7 +76,7 @@ class glFramebuffer : public Framebuffer {
     bool checkStatus() const;
     void setInitialAttachments();
     void initAttachment(TextureDescriptor::AttachmentType type,
-                        const TextureDescriptor& texDescriptor,
+                        TextureDescriptor& texDescriptor,
                         bool resize);
     void resetMipMaps(FramebufferTarget::BufferMask mask);
 

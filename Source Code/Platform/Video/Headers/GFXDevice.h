@@ -359,11 +359,6 @@ DEFINE_SINGLETON(GFXDevice)
     /// 2D rendering enabled
     inline bool is2DRendering() const { return _2DRendering; }
 
-    /// Post Processing state
-    bool postProcessingEnabled() const;
-    /// Toggle post processing on or off
-    void postProcessingEnabled(const bool state);
-
     /// Anaglyph rendering state
     inline bool anaglyphEnabled() const { return _enableAnaglyph; }
 
@@ -568,7 +563,6 @@ DEFINE_SINGLETON(GFXDevice)
     /// The interpolation factor between the current and the last frame
     D32 _interpolationFactor;
     PlaneList _clippingPlanes;
-    bool _enablePostProcessing;
     bool _enableAnaglyph;
     bool _2DRendering;
     bool _rasterizationEnabled;

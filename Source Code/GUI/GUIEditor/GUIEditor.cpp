@@ -213,15 +213,17 @@ void GUIEditor::UpdateControls() {
         _saveSelectionButton->setEnabled(true);
     }
     toggleButton(ToggleButtons::TOGGLE_POST_FX)
-        ->setSelected(GFX_DEVICE.postProcessingEnabled());
+        ->setSelected(false);
+    toggleButton(ToggleButtons::TOGGLE_POST_FX)
+        ->setEnabled(false);
     toggleButton(ToggleButtons::TOGGLE_FOG)
         ->setSelected(ParamHandler::getInstance().getParam<bool>(
             _ID("rendering.enableFog"), false));
 
-    bool depthPreview = ParamHandler::getInstance().getParam<bool>(
-        _ID("postProcessing.fullScreenDepthBuffer"), false);
     toggleButton(ToggleButtons::TOGGLE_DEPTH_PREVIEW)
-        ->setSelected(depthPreview);
+        ->setSelected(false);
+    toggleButton(ToggleButtons::TOGGLE_DEPTH_PREVIEW)
+        ->setEnabled(false);
 }
 
 void GUIEditor::setVisible(bool visible) {
@@ -978,9 +980,7 @@ bool GUIEditor::Handle_DepthPreviewToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: Depth Preview disabled!");
     }
-    ParamHandler::getInstance().setParam(
-        _ID("postProcessing.fullScreenDepthBuffer"),
-        toggleButton(ToggleButtons::TOGGLE_DEPTH_PREVIEW)->isSelected());
+
     return true;
 }
 
@@ -1018,8 +1018,7 @@ bool GUIEditor::Handle_PostFXToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: PostFX disabled!");
     }
-    GFX_DEVICE.postProcessingEnabled(
-        toggleButton(ToggleButtons::TOGGLE_POST_FX)->isSelected());
+
     return true;
 }
 

@@ -328,6 +328,7 @@ enum class GFXImageFormat : U32 {
     RGB8I,
     RGB16,
     RGB16F,
+    RGB32F,
     BGRA,
     RGBA,
     RGBA4,

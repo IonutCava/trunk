@@ -250,12 +250,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStage.cpp">
-      <Filter>Rendering\PostFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp">
-      <Filter>Rendering\PostFX</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
@@ -394,9 +388,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\FXAAPreRenderOperator.cpp">
-      <Filter>Rendering\PostFX\CustomOperators</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
@@ -533,6 +524,12 @@
     <ClCompile Include="..\..\Source Code\Graphs\Octree.cpp">
       <Filter>Graphs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderBatch.cpp">
+      <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\PostAAPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -643,12 +640,6 @@
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderOperator.h">
-      <Filter>Rendering\PostFX\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStage.h">
-      <Filter>Rendering\PostFX\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h">
       <Filter>Rendering\PostFX\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h">
@@ -770,9 +761,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h">
       <Filter>GUI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\FXAAPreRenderOperator.h">
-      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
       <Filter>Core\Headers</Filter>
@@ -939,6 +927,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\Octree.h">
       <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderBatch.h">
+      <Filter>Rendering\PostFX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\PostAAPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

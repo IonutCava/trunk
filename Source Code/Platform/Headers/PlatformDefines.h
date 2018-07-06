@@ -244,12 +244,6 @@ inline U32 powerOfTwo(U32 X) {
     return r;
 }
 
-template<typename T>
-T to_bitwise(T X) {
-    DIVIDE_ASSERT(X > 0, "to_bitwise(0) is currently disabled!");
-    return 1 << X;
-}
-
 static inline size_t realign_offset(size_t offset, size_t align) {
     return (offset + align - 1) & ~(align - 1);
 }

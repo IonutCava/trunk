@@ -7,20 +7,17 @@
 
 namespace Divide {
 
-DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
-                                           const vec2<U16>& resolution,
-                                           SamplerDescriptor* const sampler)
-    : PreRenderOperator(PostFXRenderStage::DOF, resolution, sampler), _outputFB(result)
+DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* renderTarget)
+    : PreRenderOperator(FilterType::FILTER_DEPTH_OF_FIELD, renderTarget)
 {
-    TextureDescriptor dofDescriptor(TextureType::TEXTURE_2D,
-                                    GFXImageFormat::RGBA8,
-                                    GFXDataFormat::UNSIGNED_BYTE);
-    dofDescriptor.setSampler(*_internalSampler);
+    Texture* targetTexture = renderTarget->getAttachment();
 
+    TextureDescriptor dofDescriptor(targetTexture->getDescriptor());
     _samplerCopy = GFX_DEVICE.newFB();
     _samplerCopy->addAttachment(dofDescriptor, TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
-    _samplerCopy->create(resolution.width, resolution.height);
+    _samplerCopy->create(_renderTarget->getWidth(), _renderTarget->getHeight());
+
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
     _dofShader = CreateResource<ShaderProgram>(dof);
@@ -32,27 +29,22 @@ DoFPreRenderOperator::~DoFPreRenderOperator()
     MemoryManager::DELETE(_samplerCopy);
 }
 
+void DoFPreRenderOperator::idle() {
+}
+
 void DoFPreRenderOperator::reshape(U16 width, U16 height) {
     _samplerCopy->create(width, height);
 }
 
-void DoFPreRenderOperator::operation() {
-    if (!_enabled) {
-        return;
-    }
-
-    if (_inputFB.empty()) {
-        Console::errorfn(Locale::get(_ID("ERROR_DOF_INPUT_FB")));
-        return;
-    }
-
+void DoFPreRenderOperator::execute() {
     // Copy current screen
-    _samplerCopy->blitFrom(_inputFB[0]);
-
-    _outputFB->begin(Framebuffer::defaultPolicy());
-    _samplerCopy->bind(0);  // screenFB
-    _inputFB[1]->bind(1, TextureDescriptor::AttachmentType::Depth);  // depthFB
-    GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
-    _outputFB->end();
+    _samplerCopy->blitFrom(_renderTarget);
+    _samplerCopy->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));  // screenFB
+    _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
+                      TextureDescriptor::AttachmentType::Depth);  // depthFB
+        
+    _renderTarget->begin(Framebuffer::defaultPolicy());
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
+    _renderTarget->end();
 }
 };
