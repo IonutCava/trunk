@@ -2,9 +2,9 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Textures/Headers/Texture.h"
-#include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
 

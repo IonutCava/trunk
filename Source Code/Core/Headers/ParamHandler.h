@@ -27,8 +27,8 @@
 #include "cdigginsAny.h"
 #include "Utility/Headers/HashMap.h"
 #include "Utility/Headers/Localization.h"
-#include "Hardware/Platform/Headers/SharedMutex.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
 

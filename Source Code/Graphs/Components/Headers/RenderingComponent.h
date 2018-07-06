@@ -25,7 +25,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SGNComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 

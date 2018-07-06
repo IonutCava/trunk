@@ -24,7 +24,7 @@
 #define BOUNDINGSPHERE_H_
 
 #include "Core/Math/Headers/Ray.h"
-#include "Hardware/Platform/Headers/SharedMutex.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 

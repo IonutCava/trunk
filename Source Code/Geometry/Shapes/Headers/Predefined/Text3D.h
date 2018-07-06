@@ -24,7 +24,7 @@
 #define _TEXT_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 ///For now, the name of the Text3D object is the text itself
 
 namespace Divide {

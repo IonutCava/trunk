@@ -2,9 +2,9 @@
 
 #include "Rendering/Headers/Renderer.h"
 #include "Utility/Headers/Localization.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
-#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Core/Headers/Console.h"
 #include "Core/Resources/Headers/ResourceCache.h"

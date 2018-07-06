@@ -4,11 +4,11 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/ApplicationTimer.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
-#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
-#include "Hardware/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
 

@@ -1,7 +1,7 @@
 #include "Headers/QuadtreeNode.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"

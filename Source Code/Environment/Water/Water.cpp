@@ -3,7 +3,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {

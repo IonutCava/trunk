@@ -43,7 +43,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _DIVIDE_FORMAT_CONVERTER_H_
 
 #include "Geometry/Material/Headers/Material.h"
-#include "Hardware/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 struct aiScene;
 struct aiMesh;

@@ -25,8 +25,8 @@
 
 #include "Utility/Headers/ImageTools.h"
 #include "Graphs/Headers/SceneNode.h"
-#include "Hardware/Platform/Headers/Task.h"
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Threading/Headers/Task.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 

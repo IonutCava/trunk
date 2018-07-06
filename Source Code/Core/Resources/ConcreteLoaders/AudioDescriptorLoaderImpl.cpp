@@ -1,6 +1,6 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Hardware/Audio/Headers/AudioDescriptor.h"
+#include "Platform/Audio/Headers/AudioDescriptor.h"
 
 namespace Divide {
 

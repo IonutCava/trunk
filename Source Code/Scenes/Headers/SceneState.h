@@ -24,9 +24,9 @@
 #define _SCENE_STATE_H_
 
 #include "Managers/Headers/CameraManager.h"
-#include "Hardware/Audio/Headers/SFXDevice.h"
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
-#include "Hardware/Audio/Headers/AudioDescriptor.h"
+#include "Platform/Audio/Headers/SFXDevice.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Audio/Headers/AudioDescriptor.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"

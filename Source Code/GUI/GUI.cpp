@@ -13,9 +13,9 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Input/Headers/InputInterface.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Input/Headers/InputInterface.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 

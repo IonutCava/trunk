@@ -1,5 +1,5 @@
 #include "Headers/AnimationUtils.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 

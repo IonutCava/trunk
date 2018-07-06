@@ -2,7 +2,7 @@
 
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Hardware/Platform/Headers/Task.h"
+#include "Platform/Threading/Headers/Task.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 

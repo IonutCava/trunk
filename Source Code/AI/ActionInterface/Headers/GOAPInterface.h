@@ -22,7 +22,7 @@
 #ifndef _AESOP_ACTION_INTERFACE_H_
 #define _AESOP_ACTION_INTERFACE_H_
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 #include <CPPGoap/AStar.h>
 #include <CPPGOAP/Action.h>

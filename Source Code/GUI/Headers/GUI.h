@@ -27,7 +27,7 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
-#include "Hardware/Input/Headers/InputAggregatorInterface.h"
+#include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 namespace CEGUI {
     class Renderer;

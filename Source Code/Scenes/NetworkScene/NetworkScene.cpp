@@ -1,5 +1,5 @@
-#include <Hardware/Network/Headers/ASIOImpl.h>
 #include "Headers/NetworkScene.h"
+#include "Network/Headers/ASIOImpl.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/ApplicationTimer.h"

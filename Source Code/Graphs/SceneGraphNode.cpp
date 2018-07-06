@@ -4,13 +4,13 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Environment/Terrain/Headers/Terrain.h"
-#include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 

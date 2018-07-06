@@ -23,7 +23,7 @@
 #ifndef _GUI_EDITOR_H_
 #define _GUI_EDITOR_H_
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace CEGUI {
     class Font;

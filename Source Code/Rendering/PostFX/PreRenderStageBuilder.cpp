@@ -1,8 +1,8 @@
 #include "Headers/PreRenderStage.h"
 #include "Headers/PreRenderStageBuilder.h"
 
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
-#include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
 

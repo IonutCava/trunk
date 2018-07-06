@@ -6,7 +6,7 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
-#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 #include <Samples/PxToolkit/include/PxToolkit.h>
 #include <Samples/PxToolkit/include/PxTkNamespaceMangle.h>

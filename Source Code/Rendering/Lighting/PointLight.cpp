@@ -1,5 +1,5 @@
 #include "Headers/PointLight.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Math/Headers/Transform.h"

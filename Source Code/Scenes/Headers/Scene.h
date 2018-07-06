@@ -25,7 +25,7 @@
 
 #include "SceneState.h"
 #include "Core/Headers/cdigginsAny.h"
-#include "Hardware/Platform/Headers/Task.h"
+#include "Platform/Threading/Headers/Task.h"
 
 /*All these includes are useful for a scene, so instead of forward declaring the classes, we include the headers
   to make them available in every scene source file. To reduce compile times, forward declare the "Scene" class instead
@@ -38,8 +38,8 @@
 //Managers
 #include "Managers/Headers/LightManager.h"
 //Hardware
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Input/Headers/InputInterface.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Input/Headers/InputInterface.h"
 //Scene Elements
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Lighting/Headers/Light.h"

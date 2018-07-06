@@ -22,7 +22,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SGN_COMPONENT_H_
 #define _SGN_COMPONENT_H_
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
 

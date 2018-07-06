@@ -2,8 +2,8 @@
 #include "Core/Headers/Application.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include <EASTL/string.h>
 

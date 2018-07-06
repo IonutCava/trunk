@@ -6,8 +6,8 @@
 #include "Headers/CascadedShadowMaps.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
 

@@ -362,6 +362,12 @@
     <Filter Include="AI\ActionInterface\CPPGOAP">
       <UniqueIdentifier>{754d3403-73ec-4d7b-a26b-c6476270380c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\NetworkScene\Network">
+      <UniqueIdentifier>{6959c93c-eb3a-4f96-8fe7-0ba91fba040e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\NetworkScene\Network\Headers">
+      <UniqueIdentifier>{fe5f3ebf-8da0-4a14-9eb6-9ab6154fde14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -564,9 +570,6 @@
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp">
-      <Filter>GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp">
@@ -856,6 +859,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponent.cpp">
       <Filter>Graphs\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\Network\ASIOImpl.cpp">
+      <Filter>Scenes\NetworkScene\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIFlash.cpp">
+      <Filter>GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1398,6 +1407,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathMatrices.h">
       <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\ASIOImpl.h">
+      <Filter>Scenes\NetworkScene\Network\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\OPCodesImpl.h">
+      <Filter>Scenes\NetworkScene\Network\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

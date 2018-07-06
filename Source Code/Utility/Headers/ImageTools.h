@@ -25,7 +25,7 @@
 
 #include "Utility/Headers/String.h"
 #include "Core/Math/Headers/MathVectors.h"
-#include "Hardware/Platform/Headers/SharedMutex.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
     enum GFXImageFormat;

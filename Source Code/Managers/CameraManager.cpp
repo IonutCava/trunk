@@ -1,6 +1,6 @@
 #include "Headers/CameraManager.h"
 
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"

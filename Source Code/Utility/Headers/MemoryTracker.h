@@ -24,7 +24,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _MEMORY_TRACKER_H_
 
 #include "Core/Math/Headers/MathHelper.h"
-#include "Hardware/Platform/Headers/SharedMutex.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 #include <atomic>
 
 namespace Divide {

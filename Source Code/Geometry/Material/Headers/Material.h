@@ -28,8 +28,8 @@
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
-#include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 

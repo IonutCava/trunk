@@ -22,8 +22,8 @@
 
 #ifndef _CEGUI_INPUT_H_
 #define _CEGUI_INPUT_H_
-#include "Hardware/Input/Headers/AutoKeyRepeat.h"
-#include "Hardware/Input/Headers/InputAggregatorInterface.h"
+#include "Platform/Input/Headers/AutoKeyRepeat.h"
+#include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 namespace Divide {
 

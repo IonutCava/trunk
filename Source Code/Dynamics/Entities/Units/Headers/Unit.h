@@ -24,7 +24,7 @@
 #define _UNIT_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Hardware/Platform/Headers/SharedMutex.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 #include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {

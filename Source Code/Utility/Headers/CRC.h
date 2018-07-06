@@ -26,7 +26,7 @@
 #ifndef UTIL_CRC_H_
 #define UTIL_CRC_H_
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Util {

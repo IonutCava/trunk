@@ -3,7 +3,7 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Utility/Headers/Localization.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 

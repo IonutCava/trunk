@@ -8,7 +8,7 @@
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/ApplicationTimer.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"

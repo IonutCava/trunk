@@ -24,7 +24,7 @@
 #define _SHADOW_MAP_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
 

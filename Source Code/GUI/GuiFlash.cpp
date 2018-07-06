@@ -1,6 +1,6 @@
 #include "Headers/GuiFlash.h"
 
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
 
 namespace Divide {

@@ -5,7 +5,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/MemoryTracker.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 

@@ -1,8 +1,8 @@
 #include "Headers/Impostor.h"
 
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {

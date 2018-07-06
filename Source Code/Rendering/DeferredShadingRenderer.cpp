@@ -5,7 +5,7 @@
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/RenderPassManager.h"

@@ -6,8 +6,8 @@
 #include "Managers/Headers/LightManager.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 

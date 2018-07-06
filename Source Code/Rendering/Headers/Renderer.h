@@ -23,7 +23,7 @@
 #ifndef _RENDERER_H_
 #define _RENDERER_H_
 
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 

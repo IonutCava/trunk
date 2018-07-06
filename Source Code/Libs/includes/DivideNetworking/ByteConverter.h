@@ -23,7 +23,7 @@
 for cross platform where they have different endians.
 */
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 #include <algorithm>
 
 namespace Divide {

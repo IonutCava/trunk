@@ -23,7 +23,7 @@
 #ifndef _GUI_SPLASH_H
 #define _GUI_SPLASH_H
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
 

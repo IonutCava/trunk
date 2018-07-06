@@ -4,7 +4,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"

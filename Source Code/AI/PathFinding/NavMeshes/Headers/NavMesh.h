@@ -52,7 +52,7 @@
 #define _NAVIGATION_MESH_H_
 
 #include "Utility/Headers/GUIDWrapper.h"
-#include "Hardware/Platform/Headers/Task.h"
+#include "Platform/Threading/Headers/Task.h"
 
 #include "NavMeshConfig.h"
 #include "NavMeshLoader.h"

@@ -23,7 +23,7 @@
 #ifndef _QUAD_TREE_NODE
 #define _QUAD_TREE_NODE
 
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 

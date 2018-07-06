@@ -24,7 +24,7 @@
 #define _QUAD_TREE
 
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 

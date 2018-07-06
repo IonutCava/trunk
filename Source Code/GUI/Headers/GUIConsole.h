@@ -26,8 +26,8 @@
 #define CEGUI_MAX_INPUT_HISTORY 5
 
 #include <CEGUI/CEGUI.h>
-#include "Hardware/Platform/Headers/PlatformDefines.h"
-#include "Hardware/Platform/Headers/SharedMutex.h"           //For multi-threading
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Threading/Headers/SharedMutex.h" 
 #include <deque>
 #include <boost/lockfree/queue.hpp>
 #include <boost/circular_buffer.hpp>

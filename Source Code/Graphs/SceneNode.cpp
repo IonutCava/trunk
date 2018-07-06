@@ -6,7 +6,7 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 namespace Divide {
 

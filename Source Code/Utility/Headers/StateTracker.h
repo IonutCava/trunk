@@ -24,7 +24,7 @@
 #define UTIL_STATE_TRACKER_H_
 
 #include "Vector.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
 

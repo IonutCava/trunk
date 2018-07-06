@@ -27,21 +27,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\DivideSever\resource.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\Server.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\tcp_session_impl.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\DataTypes.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\OutputBuffer.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\Patch.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\XMLParser.h" />
-    <ClInclude Include="..\..\source code\hardware\network\headers\OPCodesImpl.h" />
+    <ClInclude Include="..\..\Source Code\Server\Headers\resource.h" />
+    <ClInclude Include="..\..\Source Code\Server\Headers\Server.h" />
+    <ClInclude Include="..\..\Source Code\Server\Scenes\NetworkScene\Headers\tcp_session_impl.h" />
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\DataTypes.h" />
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\OutputBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\Patch.h" />
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\XMLParser.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\DivideSever\Server.cpp" />
-    <ClCompile Include="..\..\Source Code\DivideSever\tcp_session_impl.cpp" />
-    <ClCompile Include="..\..\Source Code\DivideSever\main.cpp" />
-    <ClCompile Include="..\..\Source Code\DivideSever\Utility\Patch.cpp" />
-    <ClCompile Include="..\..\Source Code\DivideSever\Utility\XMLParser.cpp" />
+    <ClCompile Include="..\..\Source Code\Server\main.cpp" />
+    <ClCompile Include="..\..\Source Code\Server\Scenes\NetworkScene\tcp_session_impl.cpp" />
+    <ClCompile Include="..\..\Source Code\Server\Server.cpp" />
+    <ClCompile Include="..\..\Source Code\Server\Utility\Patch.cpp" />
+    <ClCompile Include="..\..\Source Code\Server\Utility\XMLParser.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>Divide-Server</ProjectName>
@@ -172,7 +171,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -216,7 +215,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
@@ -263,7 +262,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>

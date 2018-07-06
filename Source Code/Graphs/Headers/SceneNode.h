@@ -27,7 +27,7 @@
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 class Scene;

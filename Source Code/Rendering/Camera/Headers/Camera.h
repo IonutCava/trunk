@@ -26,7 +26,7 @@
 #include "Frustum.h"
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Resources/Headers/Resource.h"
-#include "Hardware/Input/Headers/EventHandler.h"
+#include "Platform/Input/Headers/EventHandler.h"
 
 namespace Divide {
 

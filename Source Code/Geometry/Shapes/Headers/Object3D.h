@@ -24,7 +24,7 @@
 #define _OBJECT_3D_H_
 
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
 

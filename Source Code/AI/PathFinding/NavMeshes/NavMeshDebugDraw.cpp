@@ -6,8 +6,8 @@
 #include "Headers/NavMeshDebugDraw.h"
 #include "Headers/NavMesh.h"
 
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 namespace AI {

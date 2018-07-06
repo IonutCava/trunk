@@ -1,7 +1,7 @@
 #include "Headers/Frustum.h"
 #include "Headers/Camera.h"
 
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 namespace Divide {

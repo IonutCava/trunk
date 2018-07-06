@@ -1,6 +1,5 @@
 #include "Headers/Scene.h"
 
-#include <Hardware/Network/Headers/ASIOImpl.h>
 #include "GUI/Headers/GUI.h"
 
 #include "Core/Headers/ParamHandler.h"

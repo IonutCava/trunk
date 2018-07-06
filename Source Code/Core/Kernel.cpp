@@ -11,12 +11,12 @@
 #include "Core/Headers/ApplicationTimer.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
-#include "Hardware/Input/Headers/InputInterface.h"
+#include "Platform/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
-#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {

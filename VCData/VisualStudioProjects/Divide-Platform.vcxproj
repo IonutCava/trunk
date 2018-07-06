@@ -1,0 +1,480 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Win32">
+      <Configuration>Profile</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Platform\Audio\fmod\Headers\FmodWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\AudioAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\AudioDescriptor.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\SFXDevice.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Audio\openAl\Headers\ALWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Audio\sdl_mixer\Headers\SDLWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\DataTypes\Headers\PlatformDefines.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Input\Headers\AutoKeyRepeat.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Input\Headers\EffectManager.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Input\Headers\EventHandler.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Input\Headers\InputAggregatorInterface.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Input\Headers\InputInterface.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Input\Headers\InputVariables.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Input\Headers\JoystickInterface.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SharedMutex.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SimpleMutex.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\Task.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\Thread.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\Framebuffer\Headers\Framebuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\PixelBuffer\Headers\PixelBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\ShaderBuffer\Headers\ShaderBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\GenericVertexData.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VertexBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VertexDataInterface.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\FrameBuffer\Headers\d3dRenderTarget.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\PixelBuffer\Headers\d3dPixelBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\ShaderBuffer\Headers\d3dConstantBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\VertexBuffer\Headers\d3dGenericVertexData.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\VertexBuffer\Headers\d3dVertexBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Headers\d3dEnumTable.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Headers\d3dResources.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Headers\DXWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\Headers\d3dShader.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Textures\Headers\d3dTexture.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\IMPrimitive.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStateBlock.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Framebuffer\Headers\glFramebuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferLockManager.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericVertexData.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\glsw\Headers\bstrlib.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\glsw\Headers\glsw.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glIMPrimitive.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glResources.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\GLWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\Headers\glShader.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\Headers\glShaderProgram.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Textures\Headers\glSamplerObject.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Textures\Headers\glTexture.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Text\Headers\fontstash.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Text\Headers\glfontstash.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Text\Headers\stb_truetype.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\Shader.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderManager.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderProgram.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Textures\Headers\Texture.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Textures\Headers\TextureDescriptor.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Platform\Audio\openAl\ALWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\DataTypes\PlatformDefines.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Input\EffectManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Input\EventHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Input\InputInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Threading\Task.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\Framebuffer\Framebuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\FrameBuffer\d3dRenderTarget.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\PixelBuffer\d3dPixelBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\ShaderBuffer\d3dConstantBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\VertexBuffer\d3dVertexBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\d3dEnumTable.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\DXWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\d3dShader.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\d3dShaderProgram.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Textures\d3dTexture.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXDevice.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceDebug.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceState.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\IMPrimitive.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Framebuffer\glFramebuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glBufferLockManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLError.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLFWWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glIMPrimitive.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glResources.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLStates.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glsw\bstrlib.c" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glsw\glsw.c" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\glShader.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\glShaderProgram.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Textures\glSamplerOject.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Textures\glTexture.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\RenderStateBlock.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\Shader.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderProgram.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Textures\Texture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\blur.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\bright.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\common\lightInput.cmn" />
+    <None Include="..\..\assets\shaders\GLSL\common\nodeBufferedInput.cmn" />
+    <None Include="..\..\assets\shaders\GLSL\common\nodeDataInput.cmn" />
+    <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\DepthOfField.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\depthPass.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\DepthRangesConstruct.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\fbPreview.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\BRDF.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\lightData.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\materialData.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\terrainSplatting.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\utility.frag" />
+    <None Include="..\..\assets\shaders\GLSL\FXAA.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom" />
+    <None Include="..\..\assets\shaders\GLSL\grass.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\HiZConstruct.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\lighting.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\particles.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\passThrough.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\README" />
+    <None Include="..\..\assets\shaders\GLSL\sky.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\SSAOPass1.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\terrain.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert" />
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert" />
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vbInputData.vert" />
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert" />
+    <None Include="..\..\assets\shaders\GLSL\water.glsl" />
+    <None Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.inl" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CE681ABE-38E0-4445-92A0-0F17EE225473}</ProjectGuid>
+    <RootNamespace>DivideHardware</RootNamespace>
+    <ProjectName>Divide-Platform</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(Configuration)_Hardware\</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(Configuration)_Platform\</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <OutDir>$(ProjectDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <OutDir>$(ProjectDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(Configuration)_Hardwae\</IntDir>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(Configuration)_Platform\</IntDir>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <IntDir>$(Configuration)_Hardwae\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <IntDir>$(Configuration)_Platform\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\EASTL\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\OpenAL\include;$(EngineLibraries)\sdl\include;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_DEBUG;_WIN32_WINNT=0x0601;NOMINMAX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <ShowIncludes>false</ShowIncludes>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(TargetPath)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\EASTL\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\OpenAL\include;$(EngineLibraries)\sdl\include;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_WIN32_WINNT=0x0601;_SECURE_SCL=0;NOMINMAX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ShowIncludes>false</ShowIncludes>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(TargetPath)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\EASTL\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\OpenAL\include;$(EngineLibraries)\sdl\include;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;_SECURE_SCL=0;NOMINMAX;CEGUI_STATIC</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnablePREfast>true</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(TargetPath)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

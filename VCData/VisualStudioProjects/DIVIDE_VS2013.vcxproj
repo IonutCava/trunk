@@ -470,7 +470,7 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIConsoleCommandParser.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp" />
-    <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIFlash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
@@ -522,6 +522,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\Network\ASIOImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp" />
@@ -683,6 +684,8 @@
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\ASIOImpl.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\OPCodesImpl.h" />
     <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAISceneImpl.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />

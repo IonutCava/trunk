@@ -24,7 +24,7 @@
 #define RESOURCE_DESCRIPTOR_H_
 
 #include "Utility/Headers/String.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 #include <boost/shared_ptr.hpp>
 

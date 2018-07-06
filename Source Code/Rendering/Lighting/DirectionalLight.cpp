@@ -1,6 +1,6 @@
 #include "Headers/DirectionalLight.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "ShadowMapping/Headers/ShadowMap.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 

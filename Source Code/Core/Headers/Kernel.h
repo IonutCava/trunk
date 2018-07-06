@@ -25,8 +25,8 @@
 
 #include "Core/Headers/Application.h"
 #include "Managers/Headers/CameraManager.h"
-#include "Hardware/Platform/Headers/Task.h"
-#include "Hardware/Input/Headers/InputAggregatorInterface.h"
+#include "Platform/Threading/Headers/Task.h"
+#include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 namespace Divide {
 

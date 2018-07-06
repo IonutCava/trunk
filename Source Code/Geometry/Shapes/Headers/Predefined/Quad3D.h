@@ -24,7 +24,7 @@
 #define _QUAD_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
 

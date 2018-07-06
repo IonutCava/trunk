@@ -2,7 +2,7 @@
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 #define IL_STATIC_LIB
 #undef _UNICODE

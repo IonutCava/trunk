@@ -1,61 +1,59 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{7405f42a-77da-4550-bb6f-01590c5b6471}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{662090f3-2c7b-4893-a71f-00fe54f84c3a}</UniqueIdentifier>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{948093f4-4443-45e3-b131-6bafc7fd84cf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Utility">
-      <UniqueIdentifier>{713a42d6-833a-4730-82dd-09518cc0e1fd}</UniqueIdentifier>
+    <Filter Include="Scenes">
+      <UniqueIdentifier>{85dda651-8a9a-461b-9d0e-e3891f6a2a55}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Utility">
-      <UniqueIdentifier>{75ee1de9-9d75-4b9f-bb50-e07bb6b118b9}</UniqueIdentifier>
+    <Filter Include="Scenes\NetworkScene">
+      <UniqueIdentifier>{34e5fdbc-5336-4b13-a588-2aa150957187}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\NetworkScene\Headers">
+      <UniqueIdentifier>{5eb77e4b-ec9a-4f4b-b668-ed8d3e70b7b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Headers">
+      <UniqueIdentifier>{88ca22e3-d007-4de2-950f-50ae62ceb6aa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\DivideSever\resource.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Server\Scenes\NetworkScene\Headers\tcp_session_impl.h">
+      <Filter>Scenes\NetworkScene\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\DataTypes.h">
-      <Filter>Header Files\Utility</Filter>
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\XMLParser.h">
+      <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\OutputBuffer.h">
-      <Filter>Header Files\Utility</Filter>
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\DataTypes.h">
+      <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\Patch.h">
-      <Filter>Header Files\Utility</Filter>
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\OutputBuffer.h">
+      <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\XMLParser.h">
-      <Filter>Header Files\Utility</Filter>
+    <ClInclude Include="..\..\Source Code\Server\Utility\Headers\Patch.h">
+      <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\Server.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Server\Headers\resource.h">
+      <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\tcp_session_impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source code\hardware\network\headers\OPCodesImpl.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Server\Headers\Server.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\DivideSever\Utility\Patch.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Server\main.cpp" />
+    <ClCompile Include="..\..\Source Code\Server\Server.cpp" />
+    <ClCompile Include="..\..\Source Code\Server\Scenes\NetworkScene\tcp_session_impl.cpp">
+      <Filter>Scenes\NetworkScene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\DivideSever\Utility\XMLParser.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Server\Utility\XMLParser.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\DivideSever\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\DivideSever\Server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\DivideSever\tcp_session_impl.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\Source Code\Server\Utility\Patch.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "Core/Headers/NonCopyable.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 #include <memory>
 #include <vector>

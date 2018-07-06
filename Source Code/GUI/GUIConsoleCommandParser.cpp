@@ -10,7 +10,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
-#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 namespace Divide {
 

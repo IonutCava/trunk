@@ -27,7 +27,7 @@
 
 #include "Core/Headers/cdigginsAny.h"
 #include "Utility/Headers/GUIDWrapper.h"
-#include "Hardware/Platform/Headers/SharedMutex.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 struct dtCrowdAgent;
 
