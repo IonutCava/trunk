@@ -24,7 +24,7 @@
 #define _VERTEX_BUFFER_OBJECT_H
 
 #include <iostream>
-#include <assert.h>
+#include <cassert>
 #include "Utility/Headers/Vector.h"
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Core/Math/Headers/MathClasses.h"

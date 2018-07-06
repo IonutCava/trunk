@@ -51,7 +51,7 @@ void SceneGraphNode::checkBoundingBoxes(){
         _boundingBoxDirty = true;
     }
 
-    if(_boundingBoxDirty){
+    if(_boundingBoxDirty && _transform){
         updateBoundingBoxTransform(_transform->getGlobalMatrix());
         if(_parent) _parent->getBoundingBox().setComputed(false);
         _boundingBoxDirty = false;

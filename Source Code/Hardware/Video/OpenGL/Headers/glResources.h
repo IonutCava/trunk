@@ -85,7 +85,7 @@ namespace Divide {
         void glfw_focus_callback(GLFWwindow *window, I32);
         void glfw_error_callback(GLint error, const char* description);
         void initGlew();
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_PROFILE)
         ///from: https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
         ///Check the current operation for errors
         void DebugOutputToFile(GLuint contexId, GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message);
@@ -98,7 +98,7 @@ namespace Divide {
     }
 }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_PROFILE)
 #    define GLCheck(Func) (Divide::GL::GLFlushErrors(), (Func), Divide::GL::GLCheckError(__FILE__, __LINE__,#Func))
 #else
 #    define GLCheck(Func) (Func)
@@ -246,7 +246,7 @@ namespace Divide {
     /*----------- GLU overrides ------*/
     typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
     typedef std::stack<vec3<GLfloat>, vectorImpl<vec3<GLfloat> > > vector3Stack;
-    typedef std::stack<vec4<GLuint>, vectorImpl<vec4<GLuint> > > viewportStack;
+    typedef std::stack<vec4<GLint>, vectorImpl<vec4<GLint> > > viewportStack;
 
     /*--------- Object Management-------*/
     extern GLuint _invalidObjectID;

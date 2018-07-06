@@ -168,7 +168,7 @@ protected:
     virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
     /*Object viewing*/
-    virtual void renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback) = 0;
+    virtual void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback) = 0;
     virtual void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false) = 0;
     virtual void updateClipPlanes() = 0;
     /*Object viewing*/

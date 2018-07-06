@@ -371,7 +371,7 @@ int main(int arg, char **argv)
    #endif
 
    #ifndef STBTT_assert
-   #include <assert.h>
+   #include <cassert>
    #define STBTT_assert(x)    assert(x)
    #endif
 

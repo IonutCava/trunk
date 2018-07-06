@@ -133,7 +133,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     if( !glfwInit() )	return GLFW_INIT_ERROR;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_PROFILE)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 #endif
 
@@ -193,7 +193,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         return( GLFW_WINDOW_INIT_ERROR );
     }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_PROFILE)
     if(GLEW_ARB_debug_output) {
         GLCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB));
         GLCheck(glDebugMessageCallbackARB(&Divide::GL::DebugCallback, (GLvoid*)(0)));
@@ -542,7 +542,7 @@ void GL_API::changeResolutionInternal(GLushort w, GLushort h){
     Divide::GL::_matrixMode(PROJECTION_MATRIX);
     Divide::GL::_loadIdentity();
     // Set the viewport to be the entire window
-    GL_API::setViewport(vec4<GLuint>(0,0,w,h), true);
+    GL_API::setViewport(vec4<GLint>(0,0,w,h), true);
     // Set the clipping volume
     Divide::GL::_perspective(fov,ratio,zNear,zFar);
 

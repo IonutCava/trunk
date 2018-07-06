@@ -44,6 +44,7 @@ protected:
     void threadedLoad(const std::string& name);
 
     friend class GL_API;
+    friend class glFrameBufferObject;
     typedef Unordered_map<GLushort/*slot*/, std::pair<GLuint/*textureHandle*/, GLenum/*textureType*/> > textureBoundMapDef;
     static textureBoundMapDef textureBoundMap;
 

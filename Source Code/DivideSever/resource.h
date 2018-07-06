@@ -16,7 +16,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <assert.h>
+#include <cassert>
 #include <list>
 #include <map>
 #include <algorithm>

@@ -41,7 +41,8 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
     res->getMaterial()->setShininess(20.0f);
     res->getMaterial()->addShaderDefines("COMPUTE_TBN");
     res->getMaterial()->setShaderProgram("terrain");
-    res->getMaterial()->setShaderProgram("terrain.Depth",DEPTH_STAGE);
+    res->getMaterial()->setShaderProgram("terrain.Depth",SHADOW_STAGE);
+    res->getMaterial()->setShaderProgram("terrain.Depth",Z_PRE_PASS_STAGE);
     res->getMaterial()->setShaderLoadThreaded(false);
 
     ResourceDescriptor textureNormalMap("Terrain Normal Map");

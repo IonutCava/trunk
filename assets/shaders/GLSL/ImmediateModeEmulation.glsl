@@ -28,7 +28,7 @@ layout(std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
-	mat4 dvd_ViewProjectionMatrix;
+    mat4 dvd_ViewProjectionMatrix;
 };
 
 void main(){
@@ -47,12 +47,12 @@ in  vec4 _color;
 out vec4 _colorOut;
 
 void main(){
-	if(!useTexture){
-		_colorOut = _color;
-	}else{
-		_colorOut = texture(tex, _texCoord);
-		_colorOut.rgb += _color.rgb;
-	}
+    if(!useTexture){
+        _colorOut = _color;
+    }else{
+        _colorOut = texture(tex, _texCoord);
+        _colorOut.rgb += _color.rgb;
+    }
 }
 
 -- Fragment.GUI
@@ -65,5 +65,5 @@ in  vec3 _color;
 out vec4 _colorOut;
 
 void main(){
-	_colorOut = vec4(_color, texture(tex, _texCoord).r);
+    _colorOut = vec4(_color, texture(tex, _texCoord).r);
 }

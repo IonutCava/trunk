@@ -138,8 +138,6 @@ public:
     inline void useAlphaTest(const bool state)          {_useAlphaTest = state;}
     inline void setShadingMode(const ShadingMode& mode) {_shadingMode = mode;}
 
-    void setCastsShadows(const bool state);
-    void setReceivesShadows(const bool state);
     void setDoubleSided(const bool state);
     void setTexture(U32 textureUsageSlot, Texture2D* const texture, const TextureOperation& op = TextureOperation_Replace, U8 index = 0);
     ///Set the desired bump mapping method. If force == true, the shader is updated immediately
@@ -170,8 +168,6 @@ public:
 
     inline const mat4<F32>& getMaterialMatrix(U8 index = 0)  const {return _materialMatrix[index];}
                
-    inline bool  getCastsShadows()                const {return _castsShadows;}
-    inline bool  getReceivesShadows()             const {return _receiveShadows;}
     inline F32   getOpacityValue(U8 index = 0)    const {return _shaderData[index]._opacity;}
     inline U8    getTextureCount(U8 index = 0)    const {return _shaderData[index]._textureCount;}
 
@@ -204,25 +200,23 @@ private:
     ShadingMode _shadingMode;
     std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
     TranslucencySource _translucencySource;
-    vectorImpl<std::string > _shaderDefines[2]; //<Add shader preprocessor defines;
+    vectorImpl<std::string > _shaderDefines[3]; //<Add shader preprocessor defines;
     bool _dirty;
     bool _translucencyCheck;
     bool _useAlphaTest; //< use discard if true / blend if otherwise
     bool _doubleSided;
-    bool _castsShadows;
-    bool _receiveShadows;
     bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
     GeometryShaderType _gsInputType;        ///< Use triangles, lines or points as geometry shader input
     Unordered_map<RenderStage, ShaderProgram* > _shaderRef;
     ///Used to render geometry without materials.
     ///Should emmulate the basic fixed pipeline functions (no lights, just color and texture)
     ShaderProgram* _imShader;
-    ///Unordered maps have a lot of overhead, so use _shader[0] for final_stage, _shader[1] for shadow_stage, etc
-    std::string _shader[2]; /*shader name*/
+    ///Unordered maps have a lot of overhead, so use _shader[0] for final_stage, _shader[1] for z pre pass, _shader[2] for shadow stage, etc
+    std::string _shader[3]; /*shader name*/
     bool        _shaderThreadedLoad;
-    bool        _computedShader[2];
+    bool        _computedShader[3];
     bool        _computedShaderTextures;//<if we should recompute only fragment shader on texture change
-    P32         _matId[2];
+    P32         _matId[3];
     /// use this map to add more render states mapped to a specific state
     /// 3 render state's: Normal, reflection and shadow
     Unordered_map<RenderStage, RenderStateBlock* > _defaultRenderStates;

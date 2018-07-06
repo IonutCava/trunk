@@ -5,7 +5,8 @@ namespace Divide{
 void glfw_error_callback(GLint error, const char* description){
     ERROR_FN(Locale::get("ERROR_GENERIC_GLFW"), description);
 }
-#ifdef _DEBUG
+
+#if defined(_DEBUG) || defined(_PROFILE)
 void GLFlushErrors() {
     if(Divide::GL::_useDebugOutputCallback) return;
     if(!Divide::GL::_contextAvailable) return;

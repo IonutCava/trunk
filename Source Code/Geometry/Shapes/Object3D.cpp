@@ -43,7 +43,7 @@ void Object3D::onDraw(const RenderStage& currentStage){
 
     //check if we need to update vbo shader
     if(getMaterial()){
-        ShaderProgram* stageShader = getMaterial()->getShaderProgram(bitCompare(DEPTH_STAGE,currentStage) ? DEPTH_STAGE : FINAL_STAGE);
+        ShaderProgram* stageShader = getMaterial()->getShaderProgram(bitCompare(SHADOW_STAGE,currentStage) ? SHADOW_STAGE : (bitCompare(FINAL_STAGE,currentStage) ? FINAL_STAGE : Z_PRE_PASS_STAGE));
         assert(stageShader != NULL);
         _geometry->setShaderProgram(stageShader);
     }

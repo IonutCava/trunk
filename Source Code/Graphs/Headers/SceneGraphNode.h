@@ -170,6 +170,11 @@ public:
     inline bool isActive() const {return _active;}
     /*Node State*/
 
+    inline void setCastsShadows(const bool state)    {_castsShadows = state;}
+    inline void setReceivesShadows(const bool state) {_receiveShadows = state;}
+    inline bool getCastsShadows()    const {return _castsShadows;}
+    inline bool getReceivesShadows() const {return _receiveShadows;}
+
     inline U32  getChildQueue() const {return _childQueue;}
     inline void incChildQueue()       {_childQueue++;}
     inline void decChildQueue()       {_childQueue--;}
@@ -212,6 +217,8 @@ private:
     bool _noDefaultTransform;
     bool _sorted;
     bool _silentDispose;
+    bool _castsShadows;
+    bool _receiveShadows;
     boost::atomic<bool> _boundingBoxDirty;
     boost::atomic<bool> _isReady; //<is created and has a valid transform
     bool _shouldDelete;

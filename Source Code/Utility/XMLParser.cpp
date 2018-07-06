@@ -136,17 +136,26 @@ namespace XML {
             return Material::TextureOperation_Replace;
         }
 
-        void saveTextureXML(const std::string& textureNode, const char* operation, Texture* texture) {
+        void saveTextureXML(const std::string& textureNode, const char* operation, Texture* texture, ptree& tree) {
             const SamplerDescriptor& sampler = texture->getCurrentSampler();
-            pt.put(textureNode+".file",texture->getResourceLocation());
-            pt.put(textureNode+".flip",texture->isFlipped());
-            pt.put(textureNode+".MapU", getWrapModeName(sampler.wrapU()));
-            pt.put(textureNode+".MapV", getWrapModeName(sampler.wrapV()));
-            pt.put(textureNode+".MapW", getWrapModeName(sampler.wrapW()));
-            pt.put(textureNode+".minFilter",getFilterName(sampler.minFilter()));
-            pt.put(textureNode+".magFilter",getFilterName(sampler.magFilter()));
-            pt.put(textureNode+".anisotropy",(U32)sampler.anisotropyLevel());
-            pt.put(textureNode+".operation", operation);
+            while(texture->getState() != RES_LOADED)
+            {
+                //texture not fully loaded yet
+            }
+            std::string fileLocation = texture->getResourceLocation();
+            if(fileLocation.empty()){
+                ERROR_FN("INVALID FILE -------------------------------------");
+            }
+            assert(!fileLocation.empty());
+            tree.put(textureNode+".file",fileLocation);
+            tree.put(textureNode+".flip",texture->isFlipped());
+            tree.put(textureNode+".MapU", getWrapModeName(sampler.wrapU()));
+            tree.put(textureNode+".MapV", getWrapModeName(sampler.wrapV()));
+            tree.put(textureNode+".MapW", getWrapModeName(sampler.wrapW()));
+            tree.put(textureNode+".minFilter",getFilterName(sampler.minFilter()));
+            tree.put(textureNode+".magFilter",getFilterName(sampler.magFilter()));
+            tree.put(textureNode+".anisotropy",(U32)sampler.anisotropyLevel());
+            tree.put(textureNode+".operation", operation);
         }
 
         Texture* loadTextureXML(const std::string& textureNode, const std::string& textureName) {
@@ -439,6 +448,17 @@ namespace XML {
             model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
             model.type = GEOMETRY;
             model.version = pt.get<F32>(name + ".version");
+
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")){
+                model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
+            }else{
+                model.castsShadows = true;
+            }
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")){
+                model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
+            }else{
+                model.receivesShadows = true;
+            }
             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
                 model.staticUsage = pt.get<bool>(name + ".staticObject",false);
             }else{
@@ -483,6 +503,16 @@ namespace XML {
             model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
             model.type = VEGETATION;
             model.version = pt.get<F32>(name + ".version");
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")){
+                model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
+            }else{
+                model.castsShadows = true;
+            }
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")){
+                model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
+            }else{
+                model.receivesShadows = true;
+            }
             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
                 model.staticUsage = pt.get<bool>(name + ".staticObject",false);
             }else{
@@ -541,6 +571,17 @@ namespace XML {
 
             model.type = PRIMITIVE;
             model.version = pt.get<F32>(name + ".version");
+            
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")){
+                model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
+            }else{
+                model.castsShadows = true;
+            }
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")){
+                model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
+            }else{
+                model.receivesShadows = true;
+            }
             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
                 model.staticUsage = pt.get<bool>(name + ".staticObject",false);
             }else{
@@ -640,16 +681,12 @@ namespace XML {
         //if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
         //	mat->setShaderProgram(pt.get("shaderProgram.effect","NULL_SHADER"));
         //}
-        if(boost::optional<ptree &> child = pt.get_child_optional("shadows")){
-            mat->setCastsShadows(pt.get<bool>("shadows.castsShadows", true));
-            mat->setReceivesShadows(pt.get<bool>("shadows.receiveShadows", true));
-        }
         return mat;
     }
 
     void dumpMaterial(Material& mat){
         if(!mat.isDirty()) return;
-
+        ptree pt_writer;
         ParamHandler &par = ParamHandler::getInstance();
         std::string file = mat.getName();
         file = file.substr(file.rfind("/")+1,file.length());
@@ -659,62 +696,64 @@ namespace XML {
                                par.getParam<std::string>("currentScene") + "/materials/";
 
         std::string fileLocation = location +  file + "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml";
-        pt.clear();
-        pt.put("material.name",file);
-        pt.put("material.ambient.<xmlattr>.r",mat.getMaterialMatrix().getCol(0).x);
-        pt.put("material.ambient.<xmlattr>.g",mat.getMaterialMatrix().getCol(0).y);
-        pt.put("material.ambient.<xmlattr>.b",mat.getMaterialMatrix().getCol(0).z);
-        pt.put("material.ambient.<xmlattr>.a",mat.getMaterialMatrix().getCol(0).w);
-        pt.put("material.diffuse.<xmlattr>.r",mat.getMaterialMatrix().getCol(1).x);
-        pt.put("material.diffuse.<xmlattr>.g",mat.getMaterialMatrix().getCol(1).y);
-        pt.put("material.diffuse.<xmlattr>.b",mat.getMaterialMatrix().getCol(1).z);
-        pt.put("material.diffuse.<xmlattr>.a",mat.getMaterialMatrix().getCol(1).w);
-        pt.put("material.specular.<xmlattr>.r",mat.getMaterialMatrix().getCol(2).x);
-        pt.put("material.specular.<xmlattr>.g",mat.getMaterialMatrix().getCol(2).y);
-        pt.put("material.specular.<xmlattr>.b",mat.getMaterialMatrix().getCol(2).z);
-        pt.put("material.specular.<xmlattr>.a",mat.getMaterialMatrix().getCol(2).w);
-        pt.put("material.shininess.<xmlattr>.v",mat.getMaterialMatrix().getCol(3).x);
-        pt.put("material.emissive.<xmlattr>.r", mat.getMaterialMatrix().getCol(3).y);
-        pt.put("material.emissive.<xmlattr>.g", mat.getMaterialMatrix().getCol(3).z);
-        pt.put("material.emissive.<xmlattr>.b", mat.getMaterialMatrix().getCol(3).w);
-        pt.put("material.doubleSided", mat.isDoubleSided());
+        pt_writer.clear();
+        pt_writer.put("material.name",file);
+        pt_writer.put("material.ambient.<xmlattr>.r",mat.getMaterialMatrix().getCol(0).x);
+        pt_writer.put("material.ambient.<xmlattr>.g",mat.getMaterialMatrix().getCol(0).y);
+        pt_writer.put("material.ambient.<xmlattr>.b",mat.getMaterialMatrix().getCol(0).z);
+        pt_writer.put("material.ambient.<xmlattr>.a",mat.getMaterialMatrix().getCol(0).w);
+        pt_writer.put("material.diffuse.<xmlattr>.r",mat.getMaterialMatrix().getCol(1).x);
+        pt_writer.put("material.diffuse.<xmlattr>.g",mat.getMaterialMatrix().getCol(1).y);
+        pt_writer.put("material.diffuse.<xmlattr>.b",mat.getMaterialMatrix().getCol(1).z);
+        pt_writer.put("material.diffuse.<xmlattr>.a",mat.getMaterialMatrix().getCol(1).w);
+        pt_writer.put("material.specular.<xmlattr>.r",mat.getMaterialMatrix().getCol(2).x);
+        pt_writer.put("material.specular.<xmlattr>.g",mat.getMaterialMatrix().getCol(2).y);
+        pt_writer.put("material.specular.<xmlattr>.b",mat.getMaterialMatrix().getCol(2).z);
+        pt_writer.put("material.specular.<xmlattr>.a",mat.getMaterialMatrix().getCol(2).w);
+        pt_writer.put("material.shininess.<xmlattr>.v",mat.getMaterialMatrix().getCol(3).x);
+        pt_writer.put("material.emissive.<xmlattr>.r", mat.getMaterialMatrix().getCol(3).y);
+        pt_writer.put("material.emissive.<xmlattr>.g", mat.getMaterialMatrix().getCol(3).z);
+        pt_writer.put("material.emissive.<xmlattr>.b", mat.getMaterialMatrix().getCol(3).w);
+        pt_writer.put("material.doubleSided", mat.isDoubleSided());
 
         Texture* texture = NULL;
 
         if((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != NULL){
-            saveTextureXML("diffuseTexture1",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0)), texture);
+            saveTextureXML("diffuseTexture1",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0)), texture, pt_writer);
         }
 
         if((texture = mat.getTexture(Material::TEXTURE_UNIT0 + 1)) != NULL){
-            saveTextureXML("diffuseTexture2",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0 + 1)), texture);
+            saveTextureXML("diffuseTexture2",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0 + 1)), texture, pt_writer);
         }
 
         if((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != NULL){
-            saveTextureXML("bumpMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_NORMALMAP)), texture);
-            pt.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
+            saveTextureXML("bumpMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_NORMALMAP)), texture, pt_writer);
+            pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
         }
 
         if((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != NULL){
-            saveTextureXML("opacityMap",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_OPACITY)), texture);
+            saveTextureXML("opacityMap",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_OPACITY)), texture, pt_writer);
         }
 
         if((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != NULL){
-            saveTextureXML("specularMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_SPECULAR)), texture);
+            saveTextureXML("specularMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_SPECULAR)), texture, pt_writer);
         }
 
         ShaderProgram* s = mat.getShaderProgram();
         if(s){
-            pt.put("shaderProgram.effect",s->getName());
+            pt_writer.put("shaderProgram.effect",s->getName());
         }
-        s = mat.getShaderProgram(DEPTH_STAGE);
+        s = mat.getShaderProgram(SHADOW_STAGE);
         if(s){
-            pt.put("shaderProgram.depthEffect",s->getName());
+            pt_writer.put("shaderProgram.shadowEffect",s->getName());
         }
-        pt.put("shadows.castsShadows", mat.getCastsShadows());
-        pt.put("shadows.receiveShadows", mat.getReceivesShadows());
+        s = mat.getShaderProgram(Z_PRE_PASS_STAGE);
+        if(s){
+            pt_writer.put("shaderProgram.zPrePassEffect",s->getName());
+        }
         boost::property_tree::xml_writer_settings<char> settings('\t', 1);
         FILE * xml = fopen(fileLocation.c_str(), "w");
-        write_xml(fileLocation, pt,std::locale(),settings);
         fclose(xml);
+        write_xml(fileLocation, pt_writer,std::locale(),settings);
     }
 }

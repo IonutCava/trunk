@@ -277,8 +277,6 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         _lampTransformNode->getTransform()->setPosition(vec3<F32>(-75.0f, -45.0f, -5.0f));
     }*/
     //------------------------ The rest of the scene elements -----------------------------///
-//	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
-//	_groundPlaceholder->getSceneNode()->getMaterial()->setCastsShadows(false);
     _sceneReady = true;
     return loadState;
 }

@@ -26,9 +26,15 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
             currentStateBlock = mat->getRenderState(FINAL_STAGE);
             assert(currentStateBlock != NULL);
         }
-    }else if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
+    }else if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)){
         // Check if we have a shadow state
-        currentStateBlock = mat->getRenderState(DEPTH_STAGE);
+        currentStateBlock = mat->getRenderState(SHADOW_STAGE);
+        // If we do not have a special shadow state, don't worry, just use 0 for all similar nodes
+        // the SceneGraph will use a global state on them, so using 0 is still sort-correct
+        if(!currentStateBlock)	return;
+    }else if(GFX_DEVICE.isCurrentRenderStage(Z_PRE_PASS_STAGE)){
+        // Check if we have a z prepass state
+        currentStateBlock = mat->getRenderState(Z_PRE_PASS_STAGE);
         // If we do not have a special shadow state, don't worry, just use 0 for all similar nodes
         // the SceneGraph will use a global state on them, so using 0 is still sort-correct
         if(!currentStateBlock)	return;

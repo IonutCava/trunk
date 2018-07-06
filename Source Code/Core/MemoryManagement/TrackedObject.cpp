@@ -1,5 +1,5 @@
 #include "Headers/TrackedObject.h"
-#include <assert.h>
+#include <cassert>
 
 TrackedObject::TrackedObject() : _refCount(1)
 {

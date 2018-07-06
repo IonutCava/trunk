@@ -80,6 +80,7 @@ uniform sampler2D texWaterCaustics;
 uniform int   dvd_lightCount;
 uniform int   dvd_lightType[MAX_LIGHT_COUNT];
 uniform float dvd_time;
+uniform bool  dvd_isReflection;
 
 uniform float detail_scale;
 uniform float diffuse_scale;
@@ -131,6 +132,7 @@ vec4 CausticsColor()
 const float shadowMaxDistance = 200.0;
 vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
 {	
+    if(dvd_isReflection) computeData();
     vec3 lightVecTBN = normalize(pixelToLightTBN);
     vec3 viewVecTBN  = normalize(_viewDirection);
     vec2 uv_detail   = uv * detail_scale;
@@ -177,8 +179,7 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
     
 vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
 {	
-    computeData();
-    
+    if(dvd_isReflection) computeData();
 
     vec3 lightVecTBN = normalize(pixelToLightTBN);
     vec3 viewVecTBN  = normalize(_viewDirection);

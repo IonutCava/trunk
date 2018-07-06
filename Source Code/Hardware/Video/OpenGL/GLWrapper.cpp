@@ -124,7 +124,7 @@ void GL_API::flush(){
     clearStates(false,false,false,false);
 }
 
-void GL_API::renderInViewport(const vec4<GLuint>& rect, const DELEGATE_CBK& callback){
+void GL_API::renderInViewport(const vec4<GLint>& rect, const DELEGATE_CBK& callback){
     setViewport(rect);
     callback();
     restoreViewport();
@@ -177,7 +177,7 @@ void GL_API::setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawSt
     SET_STATE_BLOCK(drawState);
 
     if(ortho){
-        setViewport(vec4<U32>(_cachedResolution.width - 128, 0, 128, 128));
+        setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
         Divide::GL::_matrixMode(VIEW_MATRIX);
         Divide::GL::_pushMatrix();
         Divide::GL::_loadIdentity();

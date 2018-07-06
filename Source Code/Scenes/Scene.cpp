@@ -115,8 +115,10 @@ bool Scene::loadModel(const FileData& data){
         ERROR_FN(Locale::get("ERROR_SCENE_LOAD_MODEL"),  data.ModelName.c_str());
         return false;
     }
+    
     SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj, data.ItemName);
-
+    meshNode->setCastsShadows(data.castsShadows);
+    meshNode->setReceivesShadows(data.receivesShadows);
     meshNode->getTransform()->scale(data.scale);
     meshNode->getTransform()->rotateEuler(data.orientation);
     meshNode->getTransform()->translate(data.position);
@@ -175,6 +177,8 @@ bool Scene::loadGeometry(const FileData& data){
     thisObjSGN->getTransform()->scale(data.scale);
     thisObjSGN->getTransform()->rotateEuler(data.orientation);
     thisObjSGN->getTransform()->translate(data.position);
+    thisObjSGN->setCastsShadows(data.castsShadows);
+    thisObjSGN->setReceivesShadows(data.receivesShadows);
     if(data.staticUsage){
         thisObjSGN->setUsageContext(SceneGraphNode::NODE_STATIC);
     }

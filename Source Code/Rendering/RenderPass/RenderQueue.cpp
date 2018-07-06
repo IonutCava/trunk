@@ -158,8 +158,8 @@ void RenderQueue::sort(){
     _isSorted = true;
 }
 
-void RenderQueue::refresh(){
-    if(_renderQueueLocked)
+void RenderQueue::refresh(bool force){
+    if(_renderQueueLocked && !force)
         return;
 
     for_each(RenderBinMap::value_type& renderBin, _renderBins){

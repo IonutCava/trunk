@@ -201,7 +201,7 @@ SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
     actor._actor->getShapes(shapes, actor._actor->getNbShapes());
 
     std::string sgnName = "";
-
+    bool shadowState = true;
     switch(actor._type){
         case PxGeometryType::eBOX: {
             ResourceDescriptor boxDescriptor("BoxActor");
@@ -234,7 +234,7 @@ SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
             planeMaterial->setAmbient(vec4<F32>(0.4f,0.1f,0.1f,1.0f));
             planeMaterial->setEmissive(vec4<F32>(0.3f,0.3f,0.3f,1.0f));
             planeMaterial->setShininess(0);
-            planeMaterial->setCastsShadows(false);
+            shadowState = false;
             sceneNode->setMaterial(planeMaterial);
         }break;
     }
@@ -245,6 +245,7 @@ SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
         if(sceneNode){
             sceneNode->getSceneNodeRenderState().setDrawState(true);
             tempNode = _parentScene->addGeometry(sceneNode,sgnName);
+            tempNode->setCastsShadows(shadowState);
         }
         if(!tempNode){
             ERROR_FN(Locale::get("ERROR_ACTOR_CAST"), sgnName.c_str());

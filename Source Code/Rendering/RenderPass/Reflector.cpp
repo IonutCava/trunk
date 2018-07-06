@@ -92,7 +92,7 @@ void Reflector::previewReflection(){
     _previewReflectionShader->UniformTexture("tex",0);
     _reflectedTexture->Bind();
     GFX_DEVICE.toggle2D(true);
-        GFX_DEVICE.renderInViewport(vec4<U32>(128,128,256,256),
+        GFX_DEVICE.renderInViewport(vec4<I32>(128,128,256,256),
                                     DELEGATE_BIND(&GFXDevice::renderInstance,
                                                 DELEGATE_REF(GFX_DEVICE),
                                                 DELEGATE_REF(_renderQuad->renderInstance())));

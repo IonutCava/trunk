@@ -117,7 +117,6 @@ void BloomPreRenderOperator::operation(){
     _outputFBO->Bind(0);
         gfx.renderInstance(quadRI);
         
-    _blur->Uniform("size", vec2<F32>((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
     _blur->Uniform("horizontal", false);
 
     //Blur vertically

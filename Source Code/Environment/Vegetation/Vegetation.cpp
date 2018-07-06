@@ -16,7 +16,7 @@ Vegetation::~Vegetation(){
     _stopLoadingRequest = true;
     while(!_threadedLoadComplete){
         // wait for the loading thread to finish first;
-		boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
     }
 
     RemoveResource(_grassShader);
@@ -65,10 +65,10 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
         _windX = sceneState.getWindDirX();
         _windZ = sceneState.getWindDirZ();
         _windS = sceneState.getWindSpeed();
-        _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
+        _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows") && sgn->getReceivesShadows();
         _grassShader->Uniform("windDirection",vec2<F32>(_windX,_windZ));
         _grassShader->Uniform("windSpeed", _windS);
-		_grassShader->Uniform("grassScale", _grassSize);
+        _grassShader->Uniform("grassScale", _grassSize);
         _grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
         _grassShader->Uniform("worldHalfExtent", LightManager::getInstance().getLigthOrthoHalfExtent());
         _stateRefreshIntervalBuffer -= _stateRefreshInterval;
@@ -112,16 +112,16 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
     };
 
     static const U32 indices[] = {2, 1, 0, 2, 0, 1, 2, 0, 3, 2, 3, 0};
-					
+                    
     for(U8 index = 0; index < billboardCount; index++){
         mat3<F32> matRot, matScale;
         F32 uv_offset_t = 0.0f;
         vec3<F32> data;
         vec3<F32> currentVertex;
         I32 map_color;
-		// Preserve the same density when scaling grass
-		_grassDensity *= (1.0 / _grassScale); 
-		CLAMP<D32>(_grassDensity, 0.0, ((D32)Config::MAX_GRASS_BATCHES / 12));
+        // Preserve the same density when scaling grass
+        _grassDensity *= (1.0 / _grassScale); 
+        CLAMP<D32>(_grassDensity, 0.0, ((D32)Config::MAX_GRASS_BATCHES / 12));
         for(U32 k=0; k<(U32)_grassDensity; k++) {
             if(_stopLoadingRequest){
                 _threadedLoadComplete = true;
@@ -144,31 +144,31 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
 
             matRot.identity();
             matRot.rotate_y(random(360.0f));
-			// Negate the binormal as we are using -Z looking direction
-			vec3<F32>  B = Cross(N, T) * -1.0f;
+            // Negate the binormal as we are using -Z looking direction
+            vec3<F32>  B = Cross(N, T) * -1.0f;
 
             QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z)); assert(node);
             TerrainChunk* chunk = node->getChunk();                                     assert(chunk);
             ChunkGrassData& chunkGrassData = chunk->getGrassData();
 
             if(chunkGrassData.empty()){
-				assert(chunkGrassData._grassVBO == NULL);
+                assert(chunkGrassData._grassVBO == NULL);
 
-				U32 chunkSize = size / _terrain->getQuadtree().getChunkCount();
+                U32 chunkSize = size / _terrain->getQuadtree().getChunkCount();
                 chunkGrassData._grassIndices.resize(_billboardCount);
                 chunkGrassData._grassIndexOffset.resize(_billboardCount);
                 chunkGrassData._grassIndexSize.resize(_billboardCount);
                 chunkGrassData._grassVBO = GFX_DEVICE.newVBO(TRIANGLES);
-				chunkGrassData._grassVBO->useLargeIndices(true);
-				chunkGrassData._grassVBO->computeTriangles(false);
-				chunkGrassData._grassVBO->reservePositionCount( chunkSize);
-				chunkGrassData._grassVBO->reserveNormalCount( chunkSize );
-				chunkGrassData._grassVBO->getTexcoord().reserve( chunkSize );
-				chunkGrassData._grassVBO->setShaderProgram(_grassShader);
+                chunkGrassData._grassVBO->useLargeIndices(true);
+                chunkGrassData._grassVBO->computeTriangles(false);
+                chunkGrassData._grassVBO->reservePositionCount( chunkSize);
+                chunkGrassData._grassVBO->reserveNormalCount( chunkSize );
+                chunkGrassData._grassVBO->getTexcoord().reserve( chunkSize );
+                chunkGrassData._grassVBO->setShaderProgram(_grassShader);
             }
-	
-	        _grassSize = ((F32)(map_color+1) / 256) * _grassScale;	
-			currentVertex.set(P);
+    
+            _grassSize = ((F32)(map_color+1) / 256) * _grassScale;	
+            currentVertex.set(P);
             for(U8 i=0; i < 12 ; ++i)	{ // 4 vertices per quad, 3 quads per grass element
                 data.set(matRot * (_vertices[i] * _grassSize));
 

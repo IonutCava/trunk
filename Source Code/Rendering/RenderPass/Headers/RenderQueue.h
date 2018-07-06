@@ -37,7 +37,7 @@ DEFINE_SINGLETON( RenderQueue )
 public:
     ///
     void sort();
-    void refresh();
+    void refresh(bool force = false);
     void addNodeToQueue(SceneGraphNode* const sgn);
     U16 getRenderQueueStackSize();
     SceneGraphNode* getItem(U16 renderBin, U16 index);

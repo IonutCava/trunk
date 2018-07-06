@@ -47,7 +47,7 @@ void free_simd(void * pxData);
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #include <malloc.h>
 #include <typeinfo.h>

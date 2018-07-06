@@ -3,31 +3,41 @@
 
 SceneNodeRenderState::~SceneNodeRenderState()
 {
-	SAFE_DELETE(_depthStateBlock);
+    SAFE_DELETE(_depthStateBlock);
+    SAFE_DELETE(_shadowStateBlock);
 }
 
 RenderStateBlock* SceneNodeRenderState::getDepthStateBlock(){
-	if(!_depthStateBlock){
-		RenderStateBlockDescriptor depthDesc;
-		/// Cull back faces for shadow rendering
-		depthDesc.setCullMode(CULL_MODE_CCW);
-		depthDesc._zBias = 1.1f;
-		depthDesc.setColorWrites(false,false,false,true);
-		_depthStateBlock = GFX_DEVICE.createStateBlock(depthDesc);
-	}
-	return _depthStateBlock;
+    if(!_depthStateBlock){
+        RenderStateBlockDescriptor depthDesc;
+        depthDesc.setColorWrites(false,false,false,false);
+        _depthStateBlock = GFX_DEVICE.createStateBlock(depthDesc);
+    }
+    return _depthStateBlock;
+}
+
+RenderStateBlock* SceneNodeRenderState::getShadowStateBlock(){
+    if(!_shadowStateBlock){
+        RenderStateBlockDescriptor depthDesc;
+        /// Cull back faces for shadow rendering
+        depthDesc.setCullMode(CULL_MODE_CCW);
+        depthDesc._zBias = 1.1f;
+        depthDesc.setColorWrites(true,true,false,false);
+        _shadowStateBlock = GFX_DEVICE.createStateBlock(depthDesc);
+    }
+    return _shadowStateBlock;
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(I32 stageMask) {
-	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
-	_exclusionMask &= ~stageMask;
+    assert((stageMask & ~(INVALID_STAGE-1)) == 0);
+    _exclusionMask &= ~stageMask;
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(I32 stageMask) {
-	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
-	_exclusionMask |= static_cast<RenderStage>(stageMask);
+    assert((stageMask & ~(INVALID_STAGE-1)) == 0);
+    _exclusionMask |= static_cast<RenderStage>(stageMask);
 }
 
 bool SceneNodeRenderState::getDrawState(const RenderStage& currentStage)  const {
-	return !bitCompare(_exclusionMask,currentStage);
+    return !bitCompare(_exclusionMask,currentStage);
 }

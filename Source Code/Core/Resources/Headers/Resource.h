@@ -111,6 +111,8 @@ struct FileData {
     std::string data2;
     std::string data3;
     F32 version;
+    bool castsShadows;
+    bool receivesShadows;
     bool staticUsage; //<Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
     bool navigationUsage; //< Used to determine if the object should be added to the nav mesh generation process or not
     bool physicsUsage;   //< Used to determine if the object should be added to physics simulations

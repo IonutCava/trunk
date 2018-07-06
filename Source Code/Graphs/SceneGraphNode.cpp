@@ -33,6 +33,8 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _shouldDelete(false),
                                                   _isReady(false),
                                                   _overrideNavMeshDetail(false),
+                                                  _castsShadows(true),
+                                                  _receiveShadows(true),
                                                   _updateTimer(GETMSTIME()),
                                                   _childQueue(0),
                                                   _bbAddExclusionList(0),
@@ -134,9 +136,13 @@ void SceneGraphNode::print(){
             //Get the shader's name
             shader = mat->getShaderProgram()->getName();
         }
-        if(mat->getShaderProgram(DEPTH_STAGE)){
+        if(mat->getShaderProgram(SHADOW_STAGE)){
             //Get the depth shader's name
-            depthShader = mat->getShaderProgram(DEPTH_STAGE)->getName();
+            depthShader = mat->getShaderProgram(SHADOW_STAGE)->getName();
+        }
+        if(mat->getShaderProgram(Z_PRE_PASS_STAGE)){
+            //Get the depth shader's name
+            depthShader = mat->getShaderProgram(Z_PRE_PASS_STAGE)->getName();
         }
     }
     //Print our current node's information

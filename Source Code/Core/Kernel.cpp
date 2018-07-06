@@ -210,10 +210,11 @@ void Kernel::displayScene(){
 
     _GFX.isDepthPrePass(true);
 
+    /// Lock the render pass manager because the Z_PRE_PASS and the FINAL_STAGE pass must render the exact same geometry
     RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
-        SceneManager::getInstance().render(Z_PRE_PASS, *this);
+        SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
    
     _GFX.isDepthPrePass(false);
 
@@ -223,12 +224,12 @@ void Kernel::displayScene(){
         _GFX.getScreenBuffer(0)->Begin(FrameBufferObject::defaultPolicy());        
     }
         SceneManager::getInstance().render(stage, *this);
-        RenderPassManager::getInstance().unlock();
     if(postProcessing){
         _GFX.getScreenBuffer(0)->End();
         PostFX::getInstance().displaySceneWithoutAnaglyph();
     }
-    
+
+    RenderPassManager::getInstance().unlock();    
 }
 
 void Kernel::displaySceneAnaglyph(){
@@ -247,7 +248,7 @@ void Kernel::displaySceneAnaglyph(){
         RenderPassManager::getInstance().lock();
         // Z-prePass
         _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
-            SceneManager::getInstance().render(Z_PRE_PASS, *this); 
+            SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this); 
 
         // first screen buffer
         _GFX.getScreenBuffer(0)->Begin(FrameBufferObject::defaultPolicy());
@@ -260,7 +261,7 @@ void Kernel::displaySceneAnaglyph(){
         RenderPassManager::getInstance().lock();
         // Z-prePass
         _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
-            SceneManager::getInstance().render(Z_PRE_PASS, *this);
+            SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
         // second screen buffer
         _GFX.getScreenBuffer(1)->Begin(FrameBufferObject::defaultPolicy());
             SceneManager::getInstance().render(stage, *this);

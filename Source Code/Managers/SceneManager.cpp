@@ -12,6 +12,7 @@ SceneManager::SceneManager() : FrameListener(),
                                _renderPassCuller(NULL),
                                _renderPassManager(NULL),
                                _init(false),
+                               _previewDepthBuffer(false),
                                _frameCount(0)
 {
     DVDConverter::createInstance();
@@ -85,6 +86,11 @@ bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
     return true;
 }
 
+bool SceneManager::frameEnded(const FrameEvent& evt){
+    _renderPassCuller->refresh();
+    return true;
+}
+
 void SceneManager::preRender() {
     _activeScene->preRender();
 }
@@ -112,9 +118,12 @@ void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
 }
 
 void SceneManager::postRender(){
+    _activeScene->postRender();
     // Preview depthmaps if needed
     LightManager::getInstance().previewShadowMaps();
-    _activeScene->postRender();
+    if(_previewDepthBuffer)
+        GFX_DEVICE.previewDepthBuffer();
+
     _frameCount++;
 }
 

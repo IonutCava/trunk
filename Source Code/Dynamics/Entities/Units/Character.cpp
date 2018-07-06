@@ -11,9 +11,9 @@ Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit
     _newVelocity.reset();
     _curVelocity.reset();
     if(node && node->getTransform()){
-        _newPosition = node->getTransform()->getPosition();
-        _oldPosition = _newPosition;
-        _curPosition = _oldPosition;
+        _newPosition.set(node->getTransform()->getPosition());
+        _oldPosition.set(_newPosition);
+        _curPosition.set(_oldPosition);
         _positionDirty = true;
     }
 }
@@ -45,10 +45,10 @@ bool Character::frameRenderingQueued(const FrameEvent& evt) {
     Transform* t = getBoundNode()->getTransform();
     assert(t != NULL);
 
-    vec3<F32> sourceDirection = getLookingDirection();
+    vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;
 
-    _oldPosition = t->getPosition();
+    _oldPosition.set(t->getPosition());
     _oldPosition.lerp(_curPosition, evt._interpolationFactor);  
     t->setPosition(_oldPosition);
     t->rotateSlerp(t->getOrientation() * rotationFromVToU(sourceDirection, _curVelocity), evt._interpolationFactor);
@@ -56,12 +56,12 @@ bool Character::frameRenderingQueued(const FrameEvent& evt) {
 }
 
 void Character::setPosition(const vec3<F32>& newPosition){
-    _newPosition = newPosition;
+    _newPosition.set(newPosition);
     _positionDirty = true;
 }
 
 void Character::setVelocity(const vec3<F32>& newVelocity){
-    _newVelocity = newVelocity;
+    _newVelocity.set(newVelocity);
     _velocityDirty = true;
 }
 
@@ -79,7 +79,7 @@ vec3<F32> Character::getLookingDirection() {
 void Character::lookAt(const vec3<F32>& targetPos) {
     if(!getBoundNode()) 
         return;
-    _newVelocity = getBoundNode()->getTransform()->getPosition().direction(targetPos);
+    _newVelocity.set(getBoundNode()->getTransform()->getPosition().direction(targetPos));
     _velocityDirty = true;
 }
 

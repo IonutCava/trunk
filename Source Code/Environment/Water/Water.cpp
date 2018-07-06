@@ -111,6 +111,7 @@ void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
     //_refractedTexture->Bind(2);
     _shader->bind();
     _shader->Uniform("material",getMaterial()->getMaterialMatrix());
+    _shader->Uniform("dvd_isReflection", GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
 }
 
 void WaterPlane::releaseMaterial(){

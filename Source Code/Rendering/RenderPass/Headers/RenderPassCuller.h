@@ -28,6 +28,7 @@
 /// This class performs all the necessary visibility checks on the scene's scenegraph to decide what get's rendered and what not
 /// All node's that should be rendered, will be added to the RenderQueue
 class SceneState;
+class SceneRenderState;
 class SceneGraphNode;
 
 class RenderPassCuller {
@@ -37,12 +38,15 @@ public:
     ~RenderPassCuller();
     /// This method performs the visibility check on the given node and all of it's children and adds them to the RenderQueue
     void cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState);
+    void refresh();
 
 protected:
     /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)
-    void cullSceneGraphCPU(SceneGraphNode* const currentNode, SceneState& sceneState);
+    void cullSceneGraphCPU(SceneGraphNode* const currentNode, SceneRenderState& sceneRenderState);
     /// Perform GPU-based culling (e.g. Occlusion queries)
     void cullSceneGraphGPU(SceneState& sceneState);
+    /// Internal cleanup
+    void refreshNodeList();
 
 protected:
     vectorImpl<SceneGraphNode* > _visibleNodes;

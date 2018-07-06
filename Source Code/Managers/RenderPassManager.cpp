@@ -8,7 +8,7 @@ struct RenderPassCallOrder{
     }
 };
 
-RenderPassManager::RenderPassManager() : _renderPassesLocked(true)
+RenderPassManager::RenderPassManager() : _renderPassesLocked(false)
 {
     RenderQueue::createInstance();
 }

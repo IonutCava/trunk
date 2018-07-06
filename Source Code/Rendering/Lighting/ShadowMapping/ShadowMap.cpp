@@ -10,6 +10,7 @@ ShadowMap::ShadowMap(Light* light, ShadowType type) : _resolutionFactor(1),
                                                       _init(false),
                                                       _isBound(false),
                                                       _light(light),
+                                                      _shadowMapType(type),
                                                       _par(ParamHandler::getInstance())
 {
 }
@@ -32,19 +33,21 @@ ShadowMapInfo::~ShadowMapInfo(){
 
 ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderState){
     if(_shadowMap) return _shadowMap;
+
     if(!_light->castsShadows()) return NULL;
+
     switch(_light->getLightType()){
-    case LIGHT_TYPE_POINT:
-        _shadowMap = New CubeShadowMap(_light);
-        break;
-    case LIGHT_TYPE_DIRECTIONAL:
-        _shadowMap = New PSShadowMaps(_light);
-        break;
-    case LIGHT_TYPE_SPOT:
-        _shadowMap = New SingleShadowMap(_light);
-        break;
-    default:
-        break;
+        case LIGHT_TYPE_POINT:
+            _shadowMap = New CubeShadowMap(_light);
+            break;
+        case LIGHT_TYPE_DIRECTIONAL:
+            _shadowMap = New PSShadowMaps(_light);
+            break;
+        case LIGHT_TYPE_SPOT:
+            _shadowMap = New SingleShadowMap(_light);
+            break;
+        default:
+            break;
     };
     _shadowMap->resolution(_resolution, renderState);
     return _shadowMap;
@@ -60,9 +63,9 @@ bool ShadowMap::Bind(U8 offset){
         if(getShadowMapType() == SHADOW_TYPE_PSSM){
             _depthMap->Bind(offset, TextureDescriptor::Color0);
             _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
-        }else
+        }else{
             _depthMap->Bind(offset, TextureDescriptor::Depth);
-            
+        }
     }
 
     return true;

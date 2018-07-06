@@ -88,7 +88,7 @@ private:
     void debugDraw();
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return NULL; }
 
-    void renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback);
+    void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback);
     void updateClipPlanes();
     friend class GFXDevice;
     typedef void (*callback)();

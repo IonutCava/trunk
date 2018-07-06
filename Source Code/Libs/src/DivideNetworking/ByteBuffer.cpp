@@ -1,5 +1,5 @@
 #include <ByteBuffer.h>
-#include <assert.h>
+#include <cassert>
 
 void ByteBuffer::append(const U8 *src, size_t cnt){
     if (!cnt)	return;

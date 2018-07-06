@@ -296,12 +296,12 @@ void GL_API::restoreViewport(){
 
     if(!_viewportForced) Divide::GL::_viewport.pop(); //push / pop only if new viewport (not-forced)
 
-    const vec4<GLuint>& prevViewport = Divide::GL::_viewport.top();
+    const vec4<GLint>& prevViewport = Divide::GL::_viewport.top();
     GLCheck(glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w));
     
 }
 
-vec4<GLuint> GL_API::setViewport(const vec4<GLuint>& viewport, bool force){
+vec4<GLint> GL_API::setViewport(const vec4<GLint>& viewport, bool force){
     _viewportUpdateGL = !viewport.compare(Divide::GL::_viewport.top());
 
     if(_viewportUpdateGL) {

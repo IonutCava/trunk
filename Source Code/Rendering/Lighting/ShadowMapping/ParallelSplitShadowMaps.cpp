@@ -26,11 +26,12 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
     //Initialize the FBO's with a variable resolution
     PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _light->getId());
 
-    ResourceDescriptor shadowPreviewShader("fboPreview.Layered");
-    _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
-    _previewDepthMapShader->UniformTexture("tex", 0);
     ResourceDescriptor blurShader("blur.Layered");
+    ResourceDescriptor shadowPreviewShader("fboPreview.Layered.LinearDepth");
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurShader);
+    _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
+    
+    _previewDepthMapShader->UniformTexture("tex", 0);
     _blurDepthMapShader->UniformTexture("texScreen", 0);
     _blurDepthMapShader->Uniform("kernelSize", 3);
 
@@ -40,6 +41,7 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
     mrt.setFlag(true); //No default Material;
     _renderQuad = CreateResource<Quad3D>(mrt);
     _renderQuad->renderInstance()->draw2D(true);
+    _renderQuad->renderInstance()->preDraw(true);
     _renderQuad->setCustomShader(_previewDepthMapShader);
 
     SamplerDescriptor depthMapSampler;
@@ -67,6 +69,8 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
     _blurBuffer->AddAttachment(depthMapDescriptor, TextureDescriptor::Color0);
     _blurBuffer->toggleDepthBuffer(false);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
+    _blurBuffer->Create(GFX_DEVICE.getScreenBuffer(0)->getWidth(), GFX_DEVICE.getScreenBuffer(0)->getHeight(),_numSplits);
+    _blurDepthMapShader->Uniform("size", vec2<F32>(GFX_DEVICE.getScreenBuffer(0)->getWidth(), GFX_DEVICE.getScreenBuffer(0)->getHeight()));
 }
 
 PSShadowMaps::~PSShadowMaps()
@@ -94,9 +98,9 @@ void PSShadowMaps::resolution(U16 resolution, const SceneRenderState& sceneRende
         PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _light->getId());
         U16 shadowMapDimension = _maxResolution/_resolutionFactor;
         _depthMap->Create(shadowMapDimension,shadowMapDimension,_numSplits);
-        _blurBuffer->Create(shadowMapDimension,shadowMapDimension,_numSplits);
-        _renderQuad->setDimensions(vec4<F32>(0,0,shadowMapDimension,shadowMapDimension));
+        _renderQuad->setDimensions(vec4<F32>(0,0,GFX_DEVICE.getScreenBuffer(0)->getWidth(), GFX_DEVICE.getScreenBuffer(0)->getHeight()));
     }
+
     ShadowMap::resolution(resolution,sceneRenderState);
 }
 
@@ -174,21 +178,19 @@ void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
 }
 
 void PSShadowMaps::postRender(){
-
-    /*_renderQuad->setCustomShader(_blurDepthMapShader);
-    _renderQuad->onDraw(DISPLAY_STAGE);
+    return; //needs more work
+    _renderQuad->setCustomShader(_blurDepthMapShader);
 
     _blurDepthMapShader->bind();
+    
     _blurDepthMapShader->Uniform("horizontal", true);
-    _blurDepthMapShader->Uniform("size", vec2<F32>(_depthMap->getWidth(), _depthMap->getHeight()));
-
     GFX_DEVICE.toggle2D(true);
 
     //Blur horizontally
     _blurBuffer->Begin(FrameBufferObject::defaultPolicy());
     _depthMap->Bind(0, TextureDescriptor::Color0);
     _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
-    for(U8 i = 0; i < _numSplits; i++) {
+    for(U8 i = 0; i < 1/*_numSplits*/; i++) {
         _blurDepthMapShader->Uniform("layer", i);
         _blurBuffer->DrawToLayer(TextureDescriptor::Color0, i);
         GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
@@ -201,7 +203,7 @@ void PSShadowMaps::postRender(){
     //Blur vertically
     _depthMap->Begin(FrameBufferObject::defaultPolicy());
     _blurBuffer->Bind(0, TextureDescriptor::Color0);
-    for(U8 i = 0; i < _numSplits; i++) {
+    for(U8 i = 0; i < 1/*_numSplits*/; i++) {
         _blurDepthMapShader->Uniform("layer", i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, false);
         GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
@@ -211,33 +213,23 @@ void PSShadowMaps::postRender(){
 
     GFX_DEVICE.toggle2D(false);
 
-    _blurDepthMapShader->unbind();*/
+    _blurDepthMapShader->unbind();
 }
 
 void PSShadowMaps::previewShadowMaps(){
-    _renderQuad->setCustomShader(_previewDepthMapShader);
-    _renderQuad->onDraw(DISPLAY_STAGE);
-
-    _depthMap->Bind(0, TextureDescriptor::Color0);
-    _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
     _previewDepthMapShader->bind();
-    
+    _renderQuad->setCustomShader(_previewDepthMapShader);
+
+    _depthMap->Bind();
+    _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
     GFX_DEVICE.toggle2D(true);
-        _previewDepthMapShader->Uniform("layer",0);
-        GFX_DEVICE.renderInViewport(vec4<U32>(0,0,128,128),
-                                    DELEGATE_BIND(&GFXDevice::renderInstance,
-                                                DELEGATE_REF(GFX_DEVICE),
-                                                DELEGATE_REF(_renderQuad->renderInstance())));
-        _previewDepthMapShader->Uniform("layer",1);
-        GFX_DEVICE.renderInViewport(vec4<U32>(130,0,128,128),
-                                    DELEGATE_BIND(&GFXDevice::renderInstance,
-                                                 DELEGATE_REF(GFX_DEVICE),
-                                                 DELEGATE_REF(_renderQuad->renderInstance())));
-        _previewDepthMapShader->Uniform("layer",2);
-        GFX_DEVICE.renderInViewport(vec4<U32>(260,0,128,128),
-                                    DELEGATE_BIND(&GFXDevice::renderInstance,
-                                                DELEGATE_REF(GFX_DEVICE),
-                                                DELEGATE_REF(_renderQuad->renderInstance())));
+        for(U8 i = 0; i < _numSplits; ++i){
+            _previewDepthMapShader->Uniform("layer",i);
+            GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128),
+                                        DELEGATE_BIND(&GFXDevice::renderInstance,
+                                                    DELEGATE_REF(GFX_DEVICE),
+                                                    DELEGATE_REF(_renderQuad->renderInstance())));
+        }
     GFX_DEVICE.toggle2D(false);
-    _depthMap->Unbind(0);
+    _depthMap->Unbind();
 }

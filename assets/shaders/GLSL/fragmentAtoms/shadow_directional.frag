@@ -20,10 +20,11 @@ float chebyshevUpperBound(in vec3 posInDM, in int layer){
     // The fragment is either in shadow or penumbra. 
     //We now use chebyshev's upperBound to check how likely this pixel is to be lit
     float variance = moments.y - (moments.x * moments.x);
-    variance = max(variance, 0.002);
+    variance = max(variance, 0.0002);
     
     float d = 1.0 - posInDM.z - moments.x;
-    return (variance / (variance + d*d));
+    float p_max = (variance / (variance + d*d));
+    return max(p_max, 0.0);
 }
 
 void applyShadowDirectional(in int shadowIndex, inout float shadow) {

@@ -55,8 +55,7 @@ Terrain::~Terrain()
 void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     //Query shadow state every "_stateRefreshInterval" microseconds
     if (_stateRefreshIntervalBuffer >= _stateRefreshInterval){
-        _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
-
+        _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows") && sgn->getReceivesShadows();
         _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }
     _stateRefreshIntervalBuffer += deltaTime;
@@ -72,7 +71,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     }
 
     //Prepare the main light (directional light only, sun) for now.
-    if(!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
+    if(!GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)){
         //Find the most influental light for the terrain. Usually the Sun
         _lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
         //Update lights for this node
@@ -117,9 +116,11 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
         SET_STATE_BLOCK(_terrainReflectionRenderState);
         terrainShader->Uniform("bbox_min", _boundingBox.getMax());
+        terrainShader->Uniform("dvd_isReflection", true);
     }else{
         SET_STATE_BLOCK(_terrainRenderState);
         terrainShader->Uniform("bbox_min", _boundingBox.getMin());
+        terrainShader->Uniform("dvd_isReflection", false);
     }
 }
 
@@ -146,7 +147,7 @@ void Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
         _terrainTransform = sgn->getTransform();
     }
     SET_STATE_BLOCK(_terrainDepthRenderState);
-    ShaderProgram* terrainShader = getMaterial()->getShaderProgram(DEPTH_STAGE);
+    ShaderProgram* terrainShader = getMaterial()->getShaderProgram(SHADOW_STAGE);
     _groundVBO->setShaderProgram(terrainShader);
     _plane->setCustomShader(terrainShader);
     terrainShader->bind();
@@ -173,7 +174,7 @@ void Terrain::postDraw(const RenderStage& currentStage){
 }
 
 void Terrain::drawInfinitePlain(){
-    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE | SHADOW_STAGE)) return;
+    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE | DEPTH_STAGE)) return;
 
     SET_STATE_BLOCK(_terrainDepthRenderState);
     _planeTransform->setPosition(vec3<F32>(_eyePos.x,_planeTransform->getPosition().y,_eyePos.z));

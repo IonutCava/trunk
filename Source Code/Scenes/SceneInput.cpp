@@ -3,6 +3,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
+#include "Managers/Headers/SceneManager.h"
 
 struct selectionQueueDistanceFrontToBack{
     bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
@@ -133,6 +134,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             }break;
         case OIS::KC_F10:
             LightManager::getInstance().togglePreviewShadowMaps();
+            SceneManager::getInstance().togglePreviewDepthBuffer();
             break;
         case OIS::KC_F12:
             GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()._cachedResolution.x,renderState()._cachedResolution.y));

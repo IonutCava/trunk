@@ -26,7 +26,7 @@
 #define MATH_SIMD_H_
 
 #include <math.h>
-#include <assert.h>
+#include <cassert.h>
 #include <xmmintrin.h>
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 

@@ -102,7 +102,7 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
         _deltaTime = 0;
     }
 
-    if(_currentEnemyTarget && _entity->getPosition().distanceSquared(_currentEnemyTarget->getPosition()) < ATTACK_RADIUS){
+    if(_currentEnemyTarget && _currentEnemyTarget->getUnitRef() && _entity->getPosition().distanceSquared(_currentEnemyTarget->getPosition()) < ATTACK_RADIUS){
         if(_currentEnemyTarget->isMoving()){
             _currentEnemyTarget->stop();
             _entity->stop();

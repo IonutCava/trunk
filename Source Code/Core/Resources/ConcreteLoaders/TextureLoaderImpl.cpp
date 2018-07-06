@@ -15,7 +15,7 @@ Texture* ImplResourceLoader<Texture>::operator()(){
     }
 
     ptr->enableThreadedLoading(_descriptor.getThreaded());
-
+    ptr->setResourceLocation(_descriptor.getResourceLocation());
     //Add the specified sampler, if any o
     if(_descriptor.hasPropertyDescriptor()){
         //cast back to a SamplerDescriptor from a PropertyDescriptor

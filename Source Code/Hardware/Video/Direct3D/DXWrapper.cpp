@@ -112,7 +112,7 @@ void DX_API::debugDraw()
 {
 }
 
-void DX_API::renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback)
+void DX_API::renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback)
 {
 }
 

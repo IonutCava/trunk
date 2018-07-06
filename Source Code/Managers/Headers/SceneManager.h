@@ -75,6 +75,7 @@ public:
         _sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));
         return true;
     }
+    inline void togglePreviewDepthBuffer() {_previewDepthBuffer = !_previewDepthBuffer;}
 
 public: ///Input
     ///Key pressed
@@ -101,6 +102,7 @@ public: ///Input
 protected:
     ///This is inherited from FrameListener and is used to setup cameras before rendering the frame
     bool framePreRenderStarted(const FrameEvent& evt);
+    bool frameEnded(const FrameEvent& evt);
 
 private:
     SceneManager();
@@ -109,6 +111,7 @@ private:
 private:
     typedef Unordered_map<std::string, Scene*> SceneMap;
     bool _init;
+    bool _previewDepthBuffer;
     U32  _frameCount;
     ///Pointer to the currently active scene
     Scene* _activeScene;
@@ -122,7 +125,7 @@ private:
     SceneMap _sceneMap;
     ///Scene_Name -Scene_Factory table
     Unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
-
+    
 END_SINGLETON
 
 ///Return a pointer to the currently active scene

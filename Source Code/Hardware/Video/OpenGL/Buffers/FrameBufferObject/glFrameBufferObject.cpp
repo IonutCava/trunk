@@ -280,12 +280,14 @@ void glFrameBufferObject::Bind(GLubyte unit, TextureDescriptor::AttachmentType s
     GL_API::setActiveTextureUnit(unit);
     glSamplerObject::Unbind(unit);
     GLCheck(glBindTexture(_textureType, _textureId[slot]));
+    glTexture::textureBoundMap[unit] = std::make_pair(_textureId[slot], _textureType);
 }
 
 void glFrameBufferObject::Unbind(GLubyte unit) const {
     FrameBufferObject::Unbind(unit);
     GL_API::setActiveTextureUnit(unit);
     GLCheck(glBindTexture(_textureType, 0 ));
+    glTexture::textureBoundMap[unit] = std::make_pair(0, GL_NONE);
 }
 
 void glFrameBufferObject::Begin(const FrameBufferObjectTarget& drawPolicy) {
@@ -294,7 +296,7 @@ void glFrameBufferObject::Begin(const FrameBufferObjectTarget& drawPolicy) {
         _viewportChanged = false;
     }
 
-    GL_API::setViewport(vec4<U32>(0,0,_width,_height));
+    GL_API::setViewport(vec4<GLint>(0,0,_width,_height));
     _viewportChanged = true;
 
     GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
@@ -324,9 +326,9 @@ void glFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8
         GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, _textureId[slot], 0, layer));
 
     if(_clearBuffersState){
-        if(includeDepth)
+        if(includeDepth){
             GLCheck(glClear(_clearBufferMask));
-        else{
+        }else{
             if(_hasColor)
                 GLCheck(glClear(GL_COLOR_BUFFER_BIT));
         }

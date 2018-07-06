@@ -9,8 +9,6 @@ Material::Material() : Resource(),
                        _dirty(false),
                        _doubleSided(false),
                        _shaderThreadedLoad(true),
-                       _castsShadows(true),
-                       _receiveShadows(true),
                        _hardwareSkinning(false),
                        _useAlphaTest(true),
                        _gsInputType(GS_TRIANGLES),
@@ -42,21 +40,26 @@ Material::Material() : Resource(),
    _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    /// the reflection descriptor is the same as the normal descriptor
    _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   /// the z-pre-pass descriptor does not process colors
+   stateDescriptor.setColorWrites(false,false,false,false);
+   _defaultRenderStates.insert(std::make_pair(Z_PRE_PASS_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    /// A descriptor used for rendering to depth map
    stateDescriptor.setCullMode(CULL_MODE_CCW);
    /// set a polygon offset
    stateDescriptor._zBias = 1.1f;
    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
-   stateDescriptor.setColorWrites(false,false,false,false);
-   _defaultRenderStates.insert(std::make_pair(DEPTH_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   stateDescriptor.setColorWrites(true,true,false,false);
+   _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    
 
     assert(_defaultRenderStates[FINAL_STAGE] != NULL);
-    assert(_defaultRenderStates[DEPTH_STAGE] != NULL);
+    assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != NULL);
+    assert(_defaultRenderStates[SHADOW_STAGE] != NULL);
     assert(_defaultRenderStates[REFLECTION_STAGE] != NULL);
 
     _shaderRef[FINAL_STAGE] = NULL;
-    _shaderRef[DEPTH_STAGE] = NULL;
+    _shaderRef[Z_PRE_PASS_STAGE] = NULL;
+    _shaderRef[SHADOW_STAGE] = NULL;
 
     //Create an immediate mode shader (one should exist already)
     _imShader = CreateResource<ShaderProgram>(ResourceDescriptor("ImmediateModeEmulation"));
@@ -64,14 +67,17 @@ Material::Material() : Resource(),
 
     _computedShader[0] = false;
     _computedShader[1] = false;
+    _computedShader[2] = false;
     _computedShaderTextures = false;
     _matId[0].i = 0;
     _matId[1].i = 0;
+    _matId[2].i = 0;
 }
 
 Material::~Material(){
     SAFE_DELETE(_defaultRenderStates[FINAL_STAGE]);
-    SAFE_DELETE(_defaultRenderStates[DEPTH_STAGE]);
+    SAFE_DELETE(_defaultRenderStates[Z_PRE_PASS_STAGE]);
+    SAFE_DELETE(_defaultRenderStates[SHADOW_STAGE]);
     SAFE_DELETE(_defaultRenderStates[REFLECTION_STAGE]);
     _defaultRenderStates.clear();
 }
@@ -119,7 +125,7 @@ void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const 
 //Here we set the shader's name
 ShaderProgram* Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage){
     ShaderProgram* shaderReference = _shaderRef[renderStage];
-    U8 id = (renderStage == FINAL_STAGE ? 0 : 1);
+    U8 id = (renderStage == FINAL_STAGE ? 0 : (renderStage == Z_PRE_PASS_STAGE ? 1 : 2));
     //if we already had a shader assigned ...
     if(!_shader[id].empty()){
         //and we are trying to assing the same one again, return.
@@ -160,28 +166,28 @@ void Material::clean() {
     if(_dirty){
         isTranslucent();
         _matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
-        _matId[1].i = (_shaderRef[DEPTH_STAGE] != NULL ?  _shaderRef[DEPTH_STAGE]->getId() : 0);
+        _matId[1].i = (_shaderRef[Z_PRE_PASS_STAGE] != NULL ?  _shaderRef[Z_PRE_PASS_STAGE]->getId() : 0);
+        _matId[2].i = (_shaderRef[SHADOW_STAGE] != NULL ?  _shaderRef[SHADOW_STAGE]->getId() : 0);
         dumpToXML();
        _dirty = false;
     }
-}
-
-void Material::setReceivesShadows(const bool state) {
-    _receiveShadows = state;
 }
 
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
 void Material::computeShader(bool force, const RenderStage& renderStage){
     bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD;
-    bool depthPassShader = renderStage == DEPTH_STAGE;
+    bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
     //bool forwardPassShader = !deferredPassShader && !depthPassShader;
 
-    U8 id = (renderStage == FINAL_STAGE ? 0 : 1);
+    U8 id = (renderStage == FINAL_STAGE ? 0 : (renderStage == Z_PRE_PASS_STAGE ? 1 : 2));
     if(_computedShader[id] && !force && (id == 0 && _computedShaderTextures)) return;
     if(_shader[id].empty() || (id == 0 && !_computedShaderTextures)){
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
+
+        if(renderStage == Z_PRE_PASS_STAGE)
+            shader += ".PrePass";
 
         //What kind of effects do we need?
         if(_textures[TEXTURE_UNIT0]){
@@ -264,19 +270,6 @@ ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
     return shaderPr;
 }
 
-void Material::setCastsShadows(bool state) {
-    if(_castsShadows == state)
-        return;
-
-    _castsShadows = state;
-    _dirty = true;
-
-    if(!state) _shader[1] = "NULL_SHADER";
-    else _shader[1].clear();
-
-    _computedShader[1] = false;
-}
-
 void Material::setBumpMethod(U32 newBumpMethod,bool force){
     if(newBumpMethod == 0){
         _bumpMethod = BUMP_NONE;
@@ -313,9 +306,11 @@ void Material::addShaderDefines(U8 shaderId, const std::string& shaderDefines, b
     _shaderDefines[shaderId].push_back(shaderDefines);
     if(force){
         _shader[FINAL_STAGE].clear();
-        _shader[DEPTH_STAGE].clear();
+        _shader[SHADOW_STAGE].clear();
+        _shader[Z_PRE_PASS_STAGE].clear();
         computeShader(true);
-        computeShader(true,DEPTH_STAGE);
+        computeShader(true,SHADOW_STAGE);
+        computeShader(true,Z_PRE_PASS_STAGE);
     }
 }
 

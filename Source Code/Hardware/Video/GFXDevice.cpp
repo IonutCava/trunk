@@ -33,6 +33,8 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
    _screenBuffer[1] = NULL;
    _newStateBlock = NULL;
    _previousStateBlock = NULL;
+   _previewDepthMapShader = NULL;
+   _renderQuad = NULL;
    _stateBlockDirty = false;
    _drawDebugAxis = false;
    _enablePostProcessing = false;
@@ -40,6 +42,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
    _enableHDR = false;
    _clippingPlanesDirty = true;
    _isDepthPrePass = false;
+   _previewDepthBuffer = false;
    _renderer = NULL;
    _renderStage = INVALID_STAGE;
    _worldMatrices.push(mat4<F32>(/*identity*/));
@@ -457,9 +460,52 @@ void GFXDevice::cleanMatrices(){
         if(_VDirty) 	       _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
         if(_VDirty || _PDirty) _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
         // we transpose the matrices when we use them in the shader
-         _WVCachedMatrix.set(_worldMatrices.top() * _viewCacheMatrix);
-         _WVPCachedMatrix.set(_worldMatrices.top() * _VPCachedMatrix);
-
-         _VDirty = _PDirty = _WDirty = false;
+        _WVCachedMatrix.set(_worldMatrices.top() * _viewCacheMatrix);
+        _WVPCachedMatrix.set(_worldMatrices.top() * _VPCachedMatrix);
+        _VDirty = _PDirty = _WDirty = false;
     }
+}
+
+void GFXDevice::previewDepthBuffer(){
+    _previewDepthBuffer = true;
+}
+
+void GFXDevice::previewDepthBufferInternal(){
+    if(!_previewDepthBuffer)
+        return;
+
+    if(!_previewDepthMapShader){
+        ResourceDescriptor shadowPreviewShader("fboPreview.LinearDepth");
+        _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
+        assert(_previewDepthMapShader != NULL);
+        ResourceDescriptor mrt("DepthBufferPreviewQuad");
+        mrt.setFlag(true); //No default Material;
+        _renderQuad = CreateResource<Quad3D>(mrt);
+        _renderQuad->renderInstance()->draw2D(true);
+        _renderQuad->renderInstance()->preDraw(true);
+        _renderQuad->setCustomShader(_previewDepthMapShader);
+        _renderQuad->setDimensions(vec4<F32>(0,0,Application::getInstance().getResolution().width,Application::getInstance().getResolution().height));
+    }
+
+    if(_previewDepthMapShader->getState() != RES_LOADED)
+        return;
+
+    const I32 viewportSide = 256;
+    getDepthBuffer()->Bind(0, TextureDescriptor::Depth);
+    _previewDepthMapShader->bind();
+    _previewDepthMapShader->UniformTexture("tex",0);
+    toggle2D(true);
+    renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-viewportSide,0,viewportSide,viewportSide),
+                                boost::bind(&GFXDevice::renderInstance,
+                                            DELEGATE_REF(GFX_DEVICE),
+                                            DELEGATE_REF(_renderQuad->renderInstance())));
+    toggle2D(false);
+    getDepthBuffer()->Unbind(0);
+
+    _previewDepthBuffer = false;
+}
+
+void GFXDevice::flush(){
+    previewDepthBufferInternal();
+    _api.flush();
 }

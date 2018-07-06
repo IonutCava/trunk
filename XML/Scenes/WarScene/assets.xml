@@ -46,6 +46,7 @@
 	<orientation x="0" y="0" z="-90" />
 	<color r="0.1" g="0.4" b="0.1"/>
 	<version>1.0</version>
+	<castsShadows>false</castsShadows>
 	<addToNavigation>true</addToNavigation>
 </Ground_placeholder>
 

@@ -63,7 +63,8 @@ void SceneNode::onDraw(const RenderStage& currentStage){
         return;
 
     mat->computeShader(false);
-    mat->computeShader(false,DEPTH_STAGE);
+    mat->computeShader(false,SHADOW_STAGE);
+    mat->computeShader(false,Z_PRE_PASS_STAGE);
 }
 
 void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
@@ -170,7 +171,6 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
                 s->Uniform(_textureOperationUniformSlots[i], (I32)_material->getTextureOperation(i));
         }
 
-
     if(_material->isTranslucent()){
         s->Uniform("opacity", _material->getOpacityValue());
         s->Uniform("useAlphaTest", _material->useAlphaTest());
@@ -187,7 +187,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     if(lightMgr.shadowMappingEnabled()){
         s->Uniform("worldHalfExtent", lightMgr.getLigthOrthoHalfExtent());
         s->Uniform("dvd_lightProjectionMatrices",lightMgr.getLightProjectionMatricesCache());
-        s->Uniform("dvd_enableShadowMapping",_material->getReceivesShadows());
+        s->Uniform("dvd_enableShadowMapping",sgn->getReceivesShadows());
     }else{
         s->Uniform("dvd_enableShadowMapping",false);
     }
@@ -196,6 +196,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     s->Uniform("dvd_lightType",        lightMgr.getLightTypesForCurrentNode());
     s->Uniform("dvd_lightCount",       lightMgr.getLightCountForCurrentNode());
     s->Uniform("dvd_lightCastsShadows",lightMgr.getShadowCastingLightsForCurrentNode());
+    s->Uniform("dvd_isReflection",     GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
 
     s->Uniform("windDirection",vec2<F32>(activeScene->state().getWindDirX(),activeScene->state().getWindDirZ()));
     s->Uniform("windSpeed", activeScene->state().getWindSpeed());
@@ -222,16 +223,16 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN)
         return;
 
+    bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
+    
     //UpgradableReadLock ur_lock(_materialLock);
-    // general depth descriptor for objects without material
     if(!_material) {
-        SET_STATE_BLOCK(_renderState.getDepthStateBlock());
+        SET_STATE_BLOCK(shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock());
         return;
     }
+    SET_STATE_BLOCK(_material->getRenderState(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
 
-    SET_STATE_BLOCK(_material->getRenderState(DEPTH_STAGE));
-
-    ShaderProgram* s = _material->getShaderProgram(DEPTH_STAGE);
+    ShaderProgram* s = _material->getShaderProgram(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE);
     assert(s != NULL);
     s->bind();
 
@@ -262,20 +263,16 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
 
 void SceneNode::releaseDepthMaterial(){
     //UpgradableReadLock ur_lock(_materialLock);
-    if(!_material)
+    if(!_material || !_material->isTranslucent())
         return;
 
-    if(_material->isTranslucent()){
-    
-        Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-        if(opacityMap){
-            opacityMap->Unbind(Material::TEXTURE_OPACITY);
-        }else{
-            // maybe the diffuse texture has an alpha channel so use it as an opacity map
-            Texture2D* diffuse = _material->getTexture(Material::TEXTURE_UNIT0);
-            diffuse->Unbind(Material::TEXTURE_OPACITY);
-        }
-
+    Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+    if(opacityMap){
+        opacityMap->Unbind(Material::TEXTURE_OPACITY);
+    }else{
+        // maybe the diffuse texture has an alpha channel so use it as an opacity map
+        Texture2D* diffuse = _material->getTexture(Material::TEXTURE_UNIT0);
+        diffuse->Unbind(Material::TEXTURE_OPACITY);
     }
 }
 

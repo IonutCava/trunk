@@ -108,7 +108,7 @@ void SingleShadowMap::previewShadowMaps(){
     _previewDepthMapShader->bind();
     _previewDepthMapShader->UniformTexture("tex",0);
     GFX_DEVICE.toggle2D(true);
-        GFX_DEVICE.renderInViewport(vec4<U32>(0,0,256,256),
+        GFX_DEVICE.renderInViewport(vec4<I32>(0,0,256,256),
                                     boost::bind(&GFXDevice::renderInstance,
                                                 DELEGATE_REF(GFX_DEVICE),
                                                 DELEGATE_REF(_renderQuad->renderInstance())));

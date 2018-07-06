@@ -34,7 +34,7 @@ class SceneGraphNode;
 
 #include "Utility/Headers/Vector.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-#include <assert.h>
+#include <cassert>
 
 struct RenderBinItem{
     SceneGraphNode  *_node;
@@ -68,8 +68,8 @@ public:
         RBT_TERRAIN,
         RBT_IMPOSTOR,
         RBT_PARTICLES,
-		RBT_VEGETATION_GRASS,
-		RBT_VEGETATION_TREES,
+        RBT_VEGETATION_GRASS,
+        RBT_VEGETATION_TREES,
         RBT_DECALS,
         RBT_SHADOWS,
         RBT_PLACEHOLDER

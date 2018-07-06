@@ -117,7 +117,7 @@ private:
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
     /*immediate mode emmlation end*/
 
-    void renderInViewport(const vec4<GLuint>& rect, const DELEGATE_CBK& callback);
+    void renderInViewport(const vec4<GLint>& rect, const DELEGATE_CBK& callback);
 
     void setLight(Light* const light);
 
@@ -146,7 +146,7 @@ protected:
     friend class glTextureArrayBufferObject;
     inline static bool useMSAA() {return _useMSAA; }
            static void restoreViewport();
-           static vec4<GLuint> setViewport(const vec4<GLuint>& viewport, bool force = false);
+           static vec4<GLint> setViewport(const vec4<GLint>& viewport, bool force = false);
            static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
            inline static void clearColor(const vec4<GLfloat>& color,bool force = false) {
                clearColor(color.r,color.g,color.b,color.a,force);

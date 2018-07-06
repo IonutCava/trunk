@@ -99,17 +99,23 @@ inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (fabs
 #define DELEGATE_CBK  boost::function0<void>
 
 typedef struct packed_int {
-	U8 b0; U8 b1; U8 b2; U8 b3;
+    U8 b0; U8 b1; U8 b2; U8 b3;
 } packed_int;
 
 typedef union {
-	U32 i;
-	packed_int b;
+    U32 i;
+    packed_int b;
 } P32;
 #else
 #undef _P_D_TYPES_ONLY_
 #endif
 #if defined(_MSC_VER)
+
+#if defined(_PROFILE)
+    #undef assert
+    #define assert(x) if(!(x)) __debugbreak()
+#endif
+
 #	pragma warning(disable:4103) ///<Boost alignment shouts
 #	pragma warning(disable:4244)
 #	pragma warning(disable:4996) ///< strcpy

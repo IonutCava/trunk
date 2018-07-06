@@ -58,12 +58,12 @@ enum RenderStage {
     REFLECTION_STAGE		   = toBit(3),
     FINAL_STAGE				   = toBit(4),
     ENVIRONMENT_MAPPING_STAGE  = toBit(5),
-    Z_PRE_PASS                 = toBit(6),
+    Z_PRE_PASS_STAGE           = toBit(6),
     //Place all stages above this
     INVALID_STAGE		       = toBit(7),
     //Special composite stages go here
     DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
-    DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS
+    DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS_STAGE
 };
 
 enum PBOType {

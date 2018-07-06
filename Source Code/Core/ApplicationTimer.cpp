@@ -46,7 +46,8 @@ void ProfileTimer::create(const char* name){
 }
 
 void ProfileTimer::print() const {
-    PRINT_FN("[ %s ] : [ %5.3f ms]", _name, _timerAverage / _timerCounter);
+    if(!_paused)
+        PRINT_FN("[ %s ] : [ %5.3f ms]", _name, _timerAverage / _timerCounter);
 }
 
 void ApplicationTimer::addTimer(ProfileTimer* const timer) {

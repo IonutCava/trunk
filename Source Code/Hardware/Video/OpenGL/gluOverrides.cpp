@@ -46,7 +46,7 @@ namespace Divide {
             _projectionMatrix.push(_identityMatrix);
             _viewMatrix.push(_identityMatrix);
             _textureMatrix.push(_identityMatrix);
-            _viewport.push(vec4<U32>(0,0,0,0));
+            _viewport.push(vec4<GLint>(0,0,0,0));
         }
 
         void _unproject(const vec3<GLfloat>& windowCoords, vec3<GLfloat>& objCoords) {

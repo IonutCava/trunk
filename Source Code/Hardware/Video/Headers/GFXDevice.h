@@ -40,6 +40,7 @@ enum SceneNodeType;
 
 class Light;
 class Camera;
+class Quad3D;
 class Object3D;
 class ApplicationTimer;
 class SceneRenderState;
@@ -77,7 +78,7 @@ public:
 
     inline void beginFrame() {_api.beginFrame();}
     inline void endFrame()   {_api.endFrame();  }
-    inline void flush()      {_api.flush();}
+           void flush();
 
     /// Rendering buffer management
     inline FrameBufferObject*  getScreenBuffer(U8 index)                       const  {assert(index < 2 && index >= 0); return _screenBuffer[index];}
@@ -112,7 +113,7 @@ public:
     inline void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false)  {_api.setAnaglyphFrustum(camIOD,rightFrustum);}
             ///sets a new horizontal FoV
             void setHorizontalFoV(I32 newFoV);
-    inline void renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback)  {_api.renderInViewport(rect,callback);}
+    inline void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback)  {_api.renderInViewport(rect,callback);}
     //returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
     //allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
     inline IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) { return _api.createPrimitive(allowPrimitiveRecycle); }
@@ -239,6 +240,8 @@ public:
 
     inline U64 getFrameDurationGPU() const { return _api.getFrameDurationGPU(); }
 
+    void previewDepthBuffer();
+
 #if defined(OS_WINDOWS)
     HWND getHWND() {return _api.getHWND();}
 #elif defined(OS_APPLE)
@@ -261,6 +264,7 @@ private:
     ///Returns an API dependend stateblock based on the description
     inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) { return _api.newRenderStateBlock(descriptor); }
     inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) {_api.drawText(textLabel, position);}
+           void previewDepthBufferInternal();
 
 private:
     RenderAPIWrapper& _api;
@@ -307,7 +311,11 @@ protected:
     bool      _enablePostProcessing;
     bool      _enableAnaglyph;
     bool      _enableHDR;
-
+    ///shader used to preview the depth buffer
+    ShaderProgram* _previewDepthMapShader;
+    Quad3D* _renderQuad;
+    bool    _previewDepthBuffer;
+    
 END_SINGLETON
 
 #include "GFXDevice-Inl.h"
