@@ -241,7 +241,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_base(ShaderType::COUNT)> _functionIndex;
     std::array<vectorImpl<U32>, to_base(ShaderType::COUNT)>  _availableFunctionIndex;
 
-    static std::unique_ptr<FW::FileWatcher> s_shaderFileWatcher;
+    static I64 s_shaderFileWatcherID;
 };
 
 namespace Attorney {

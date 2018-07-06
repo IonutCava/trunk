@@ -117,6 +117,11 @@ typedef std::any AnyParam;
 #ifndef BOOST_EXCEPTION_DISABLE
 #define BOOST_EXCEPTION_DISABLE
 #endif
+
+#ifndef BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
+#define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
+#endif 
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/serialization/base_object.hpp>
@@ -152,6 +157,7 @@ typedef std::any AnyParam;
 #include <chaiscript/utility/utility.hpp>
 
 #include <ConcurrentQueue/concurrentqueue.h>
+#include <ConcurrentQueue/blockingconcurrentqueue.h>
 
 #ifndef YES_IMGUIMINIGAMES
 #define YES_IMGUIMINIGAMES

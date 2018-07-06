@@ -46,20 +46,9 @@ class Console : private NonCopyable {
          Command
     };
 
-   
     struct OutputEntry {
-        OutputEntry() noexcept : _type(EntryType::Info)
-        {
-        }
-
-        OutputEntry(const stringImplBest& text, EntryType type)
-            : _text(text),
-              _type(type)
-        {
-        }
-
         stringImplBest _text;
-        EntryType _type;
+        EntryType _type = EntryType::Info;
     };
 
     typedef std::function<void(const Console::OutputEntry&)> ConsolePrintCallback;

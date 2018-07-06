@@ -386,6 +386,9 @@
     <ClInclude Include="..\../Source Code/Platform\Video\Headers\RenderPackageQueue.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWatcherManager.h">
+      <Filter>File\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\../Source Code/Platform\Input\AutoKeyRepeat.cpp">
@@ -682,6 +685,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderAPIWrapper.cpp">
       <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\File\FileWatcherManager.cpp">
+      <Filter>File</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

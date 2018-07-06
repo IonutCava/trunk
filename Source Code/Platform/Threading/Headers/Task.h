@@ -146,10 +146,11 @@ struct TaskHandle {
     {
     }
 
-    inline void startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE,
-                          U32 taskFlags = 0) {
+    inline TaskHandle& startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE,
+                                 U32 taskFlags = 0) {
         assert(_task != nullptr);
         _task->startTask(prio, taskFlags);
+        return *this;
     }
 
     inline Task* addChildTask(const TaskHandle& taskHandle) {
@@ -158,10 +159,11 @@ struct TaskHandle {
         return _task->addChildTask(task);
     }
 
-    inline void wait() {
+    inline TaskHandle& wait() {
         if (_task != nullptr) {
             _task->wait();
         }
+        return *this;
     }
 
     Task* _task;

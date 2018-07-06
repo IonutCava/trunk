@@ -51,7 +51,7 @@ void ApplicationTimer::update() {
                                    _frameRateHandler.averageFrameRate(),
                                    _frameRateHandler.maxFrameRate(),
                                    _frameRateHandler.minFrameRate(),
-                                   1000.0f / _frameRateHandler.frameRate());
+                                   _frameRateHandler.frameTime());
         }
     }
 }

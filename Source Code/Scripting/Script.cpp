@@ -8,6 +8,7 @@
 #include "Utility/Headers/Localization.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"
+#include "Platform/File/Headers/FileWatcherManager.h"
 
 namespace Divide {
 
@@ -17,7 +18,8 @@ namespace {
     });
 };
 
-std::unique_ptr<FW::FileWatcher> Script::s_scriptFileWatcher;
+I64 Script::s_scriptFileWatcher = -1;
+
 Script::ScriptMap Script::s_scripts;
 bool Script::s_scriptsReady = false;
 
@@ -53,9 +55,6 @@ Script::~Script()
 }
 
 void Script::idle() {
-    if (!Config::Build::IS_SHIPPING_BUILD) {
-        s_scriptFileWatcher->update();
-    }
 }
 
 bool Script::onStartup() {
@@ -63,13 +62,13 @@ bool Script::onStartup() {
     s_scriptsReady = true;
 
     if (!Config::Build::IS_SHIPPING_BUILD) {
-        s_scriptFileWatcher = std::make_unique<FW::FileWatcher>();
+        FileWatcher& scriptFileWatcher = FileWatcherManager::allocateWatcher();
+        s_scriptFileWatcher = scriptFileWatcher.getGUID();
+
         s_fileWatcherListener.addIgnoredEndCharacter('~');
         s_fileWatcherListener.addIgnoredExtension("tmp");
-        s_scriptFileWatcher->addWatch(Paths::Scripts::g_scriptsLocation, &s_fileWatcherListener);
-        s_scriptFileWatcher->addWatch(Paths::Scripts::g_scriptsAtomsLocation, &s_fileWatcherListener);
-
-        return s_scriptFileWatcher != nullptr;
+        scriptFileWatcher().addWatch(Paths::Scripts::g_scriptsLocation, &s_fileWatcherListener);
+        scriptFileWatcher().addWatch(Paths::Scripts::g_scriptsAtomsLocation, &s_fileWatcherListener);
     }
 
     return true;
@@ -79,8 +78,8 @@ bool Script::onShutdown() {
     s_scriptsReady = false;
 
     if (!Config::Build::IS_SHIPPING_BUILD) {
-        s_scriptFileWatcher.reset();
-        return s_scriptFileWatcher == nullptr;
+        FileWatcherManager::deallocateWatcher(s_scriptFileWatcher);
+        s_scriptFileWatcher = -1;
     }
 
     s_scripts.clear();

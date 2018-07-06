@@ -154,21 +154,29 @@ void RenderQueue::postRender(const SceneRenderState& renderState, const RenderSt
 }
 
 void RenderQueue::sort() {
+    // How many elements should a renderbin contain before we decide that sorting 
+    // should happen on a separate thread
+    static const U16 threadBias = 16;
+
     TaskPool& pool = _context.parent().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             RenderingOrder::List sortOrder = getSortOrder(renderBin->getType());
-            Task* child = sortTask.addChildTask(CreateTask(pool,
-                [renderBin, sortOrder](const Task& parentTask) {
+
+            if (renderBin->getBinSize() > threadBias) {
+                Task* child = sortTask.addChildTask(CreateTask(pool,
+                                                               [renderBin, sortOrder](const Task& parentTask) {
                     renderBin->sort(sortOrder, parentTask);
                 }));
 
-            child->startTask(Task::TaskPriority::HIGH);
+                child->startTask(Task::TaskPriority::HIGH);
+            } else {
+                renderBin->sort(sortOrder);
+            }
         }
     }
-    sortTask.startTask(Task::TaskPriority::MAX);
-    sortTask.wait();
+    sortTask.startTask(Task::TaskPriority::MAX).wait();
 }
 
 void RenderQueue::refresh() {

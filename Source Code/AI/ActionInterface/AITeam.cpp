@@ -92,8 +92,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
                                 }))->startTask(Task::TaskPriority::HIGH);
     }
 
-    updateTask.startTask(Task::TaskPriority::MAX);
-    updateTask.wait();
+    updateTask.startTask(Task::TaskPriority::MAX).wait();
 
     return true;
 }
@@ -112,8 +111,7 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
                                }))->startTask(Task::TaskPriority::HIGH);
     }
 
-    inputTask.startTask(Task::TaskPriority::MAX);
-    inputTask.wait();
+    inputTask.startTask(Task::TaskPriority::MAX).wait();
 
     return true;
 }
@@ -132,8 +130,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
                               }))->startTask(Task::TaskPriority::HIGH);
     }
 
-    dataTask.startTask(Task::TaskPriority::MAX);
-    dataTask.wait();
+    dataTask.startTask(Task::TaskPriority::MAX).wait();
 
     return true;
 }

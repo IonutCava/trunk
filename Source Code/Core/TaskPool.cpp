@@ -60,7 +60,7 @@ void TaskPool::runCbkAndClearTask(U32 taskIndex) {
 }
 
 TaskPool::TaskState TaskPool::state(U32 index) const {
-    UniqueLock lk(_taskStateLock);
+    ReadLock lk(_taskStateLock);
     return _taskStates[index];
 }
 
@@ -83,7 +83,7 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
                           });
         }
         // Possible race condition. Try to set all child states to false as well!
-        UniqueLock lk(_taskStateLock);
+        ReadLock lk(_taskStateLock);
         finished = std::find_if(std::cbegin(_taskStates),
                                 std::cend(_taskStates),
                                 [](TaskState entry) {
@@ -110,7 +110,7 @@ void TaskPool::setTaskCallback(const TaskHandle& handle,
 }
 
 void TaskPool::taskStarted(U32 poolIndex, Task::TaskPriority priority) {
-    UniqueLock lk(_taskStateLock);
+    WriteLock lk(_taskStateLock);
     _taskStates[poolIndex] = TaskState::TASK_RUNNING;
 }
 
@@ -121,7 +121,7 @@ void TaskPool::taskCompleted(U32 poolIndex, Task::TaskPriority priority) {
         runCbkAndClearTask(poolIndex);
     }
 
-    UniqueLock lk(_taskStateLock);
+    WriteLock lk(_taskStateLock);
     _taskStates[poolIndex] = TaskState::TASK_FREE;
 }
 
@@ -149,7 +149,7 @@ Task& TaskPool::getAvailableTask() {
     size_t failCount = 0;
 
     {
-        UniqueLock lk(_taskStateLock);
+        WriteLock lk(_taskStateLock);
         while(_taskStates[taskIndex] != TaskState::TASK_FREE) {
             failCount++;
             taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
@@ -246,8 +246,7 @@ TaskHandle parallel_for(TaskPool& pool,
         }
     }
 
-    updateTask.startTask(priority, taskFlags);
-    updateTask.wait();
+    updateTask.startTask(priority, taskFlags).wait();
 
     return updateTask;
 }

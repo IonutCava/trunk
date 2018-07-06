@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-ReCast", "VisualStudioProjects\Divide-ReCast.vcxproj", "{1ED21303-434E-46DA-8050-2DF2684BE74E}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -86,12 +86,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Editor", "VisualStud
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB} = {3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CEGUIOpenGLRenderer", "VisualStudioProjects\CEGUIOpenGLRenderer-0_Static.vcxproj", "{F85687BA-FB44-3120-993D-3266FD9CF9BA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CEGUI-GLRenderer", "VisualStudioProjects\CEGUIOpenGLRenderer-0_Static.vcxproj", "{F85687BA-FB44-3120-993D-3266FD9CF9BA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CE681ABE-38E0-4445-92A0-0F17EE225473} = {CE681ABE-38E0-4445-92A0-0F17EE225473}
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Profile|x64 = Profile|x64
@@ -170,6 +173,12 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3D06752E-8BD6-487B-9DE6-74632A399539}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

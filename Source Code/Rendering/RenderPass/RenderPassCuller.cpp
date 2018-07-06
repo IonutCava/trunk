@@ -94,7 +94,11 @@ void RenderPassCuller::frustumCull(PlatformContext& context,
             root.forEachChild(perChildCull, start, end);
         };
 
-        parallel_for(context, cullIterFunction, childCount, g_nodesPerCullingPartition, Task::TaskPriority::MAX);
+        parallel_for(context,
+                     cullIterFunction,
+                     childCount,
+                     g_nodesPerCullingPartition,
+                     Task::TaskPriority::MAX);
 
         VisibleNodeList& nodeCache = getNodeCache(stage);
         nodeCache.resize(0);

@@ -84,7 +84,7 @@ protected:
     FileType     _scriptFileType;
     vectorImpl<stringImpl> _usedAtoms;
 
-    static std::unique_ptr<FW::FileWatcher> s_scriptFileWatcher;
+    static I64 s_scriptFileWatcher;
 
     typedef hashMapImpl<I64, Script*> ScriptMap;
     static  ScriptMap s_scripts;

@@ -101,6 +101,7 @@ class RenderBin {
     explicit RenderBin(GFXDevice& context, RenderBinType rbType);
     ~RenderBin();
 
+    void sort(RenderingOrder::List renderOrder);
     void sort(RenderingOrder::List renderOrder, const Task& parentTask);
     void populateRenderQueue(const RenderStagePass& renderStagePass);
     void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut);

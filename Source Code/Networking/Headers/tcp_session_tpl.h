@@ -96,7 +96,7 @@ class tcp_session_tpl : public subscriber,
     std::deque<stringImpl> _outputFileQueue;
     boost::asio::deadline_timer _nonEmptyOutputQueue;
     boost::asio::deadline_timer _outputDeadline;
-    boost::asio::strand _strand;
+    boost::asio::io_context::strand _strand;
     time_t _startTime;
 };
 

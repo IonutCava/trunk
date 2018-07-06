@@ -20,10 +20,10 @@ ASIO::ASIO() : _connected(false),
 
 ASIO::~ASIO()
 {
+    io_service_.stop();
     _work.reset();
     _thread->join();
     _localClient->stop();
-    io_service_.stop();
     delete _localClient;
 }
 

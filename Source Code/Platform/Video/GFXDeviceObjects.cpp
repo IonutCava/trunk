@@ -275,7 +275,7 @@ ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) const {
             /// Create and return a new shader buffer. The callee is responsible for it's deletion!
             /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
             /// or a 'Shader Storage Block Object' otherwise
-            // The shader buffer can also be persistently mapped, if requested
+            /// The shader buffer can also be persistently mapped, if requested
             temp = new (_gpuObjectArena) glUniformBuffer(refThis(this), descriptor);
         } break;
         case RenderAPI::Direct3D: {

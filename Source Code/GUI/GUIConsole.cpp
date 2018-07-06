@@ -165,9 +165,13 @@ void GUIConsole::setVisible(bool visible) {
             _editBox->setText("");
         }
 
-        printText(Console::OutputEntry(visible ? "Toggling console display: ON"
-                                               : "Toggling console display: OFF",
-                                       Console::EntryType::Info));
+        printText(
+            {
+                visible ? "Toggling console display: ON"
+                        : "Toggling console display: OFF",
+                Console::EntryType::Info
+            }
+        );
         size_t count = _outputWindow->getItemCount();
         if (count > 0 && visible) {
             _outputWindow->ensureItemIsVisible(count - 1);
@@ -238,7 +242,12 @@ void GUIConsole::update(const U64 deltaTimeUS) {
     }
 
     if (!_lastMsg.empty()) {
-        OutputText(Console::OutputEntry(_lastMsg.c_str(), _lastMsgType));
+        OutputText(
+            {
+                _lastMsg.c_str(),
+                _lastMsgType
+            }
+        );
         _lastMsg.clear();
     }
 }

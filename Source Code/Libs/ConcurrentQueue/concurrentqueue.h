@@ -5,7 +5,7 @@
 //    http://moodycamel.com/blog/2014/detailed-design-of-a-lock-free-queue
 
 // Simplified BSD license:
-// Copyright (c) 2013-2015, Cameron Desrochers.
+// Copyright (c) 2013-2016, Cameron Desrochers.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -59,6 +59,7 @@
 #include <atomic>		// Requires C++11. Sorry VS2010.
 #include <cassert>
 #endif
+#include <cstddef>              // for max_align_t
 #include <cstdint>
 #include <cstdlib>
 #include <type_traits>
@@ -95,7 +96,7 @@ namespace moodycamel { namespace details {
 	static const thread_id_t invalid_thread_id2 = 0xFFFFFFFFU;	// Not technically guaranteed to be invalid, but is never used in practice. Note that all Win32 thread IDs are presently multiples of 4.
 	static inline thread_id_t thread_id() { return static_cast<thread_id_t>(::GetCurrentThreadId()); }
 } }
-#elif defined(__APPLE__) && TARGET_OS_IPHONE
+#elif defined(__arm__) || defined(_M_ARM) || defined(__aarch64__) || (defined(__APPLE__) && TARGET_OS_IPHONE)
 namespace moodycamel { namespace details {
 	static_assert(sizeof(std::thread::id) == 4 || sizeof(std::thread::id) == 8, "std::thread::id is expected to be either 4 or 8 bytes");
 	
@@ -153,6 +154,9 @@ namespace moodycamel { namespace details {
 #ifndef MOODYCAMEL_EXCEPTIONS_ENABLED
 #if (defined(_MSC_VER) && defined(_CPPUNWIND)) || (defined(__GNUC__) && defined(__EXCEPTIONS)) || (!defined(_MSC_VER) && !defined(__GNUC__))
 #define MOODYCAMEL_EXCEPTIONS_ENABLED
+#endif
+#endif
+#ifdef MOODYCAMEL_EXCEPTIONS_ENABLED
 #define MOODYCAMEL_TRY try
 #define MOODYCAMEL_CATCH(...) catch(__VA_ARGS__)
 #define MOODYCAMEL_RETHROW throw
@@ -162,7 +166,6 @@ namespace moodycamel { namespace details {
 #define MOODYCAMEL_CATCH(...) else if (false)
 #define MOODYCAMEL_RETHROW
 #define MOODYCAMEL_THROW(expr)
-#endif
 #endif
 
 #ifndef MOODYCAMEL_NOEXCEPT
@@ -191,13 +194,13 @@ namespace moodycamel { namespace details {
 #ifdef MCDBGQ_USE_RELACY
 #define MOODYCAMEL_CPP11_THREAD_LOCAL_SUPPORTED
 #else
-//// VS2013 doesn't support `thread_local`, and MinGW-w64 w/ POSIX threading has a crippling bug: http://sourceforge.net/p/mingw-w64/bugs/445
-//// g++ <=4.7 doesn't support thread_local either.
-//// Finally, iOS/ARM doesn't have support for it either.
-//#if (!defined(_MSC_VER) || _MSC_VER >= 1900) && (!defined(__MINGW32__) && !defined(__MINGW64__) || !defined(__WINPTHREADS_VERSION)) && (!defined(__GNUC__) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)) && (!defined(__APPLE__) || !TARGET_OS_IPHONE)
-//// Assume `thread_local` is fully supported in all other C++11 compilers/runtimes
-//#define MOODYCAMEL_CPP11_THREAD_LOCAL_SUPPORTED
-//#endif
+// VS2013 doesn't support `thread_local`, and MinGW-w64 w/ POSIX threading has a crippling bug: http://sourceforge.net/p/mingw-w64/bugs/445
+// g++ <=4.7 doesn't support thread_local either.
+// Finally, iOS/ARM doesn't have support for it either, and g++/ARM allows it to compile but it's unconfirmed to actually work
+#if (!defined(_MSC_VER) || _MSC_VER >= 1900) && (!defined(__MINGW32__) && !defined(__MINGW64__) || !defined(__WINPTHREADS_VERSION)) && (!defined(__GNUC__) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)) && (!defined(__APPLE__) || !TARGET_OS_IPHONE) && !defined(__arm__) && !defined(_M_ARM) && !defined(__aarch64__)
+// Assume `thread_local` is fully supported in all other C++11 compilers/platforms
+//#define MOODYCAMEL_CPP11_THREAD_LOCAL_SUPPORTED    // always disabled for now since several users report having problems with it on
+#endif
 #endif
 #endif
 
@@ -235,12 +238,20 @@ namespace details {
 			? (static_cast<T>(1) << (sizeof(T) * CHAR_BIT - 1)) - static_cast<T>(1)
 			: static_cast<T>(-1);
 	};
-    
-#ifdef __GNUC__
-	typedef ::max_align_t max_align_t;      // GCC forgot to add it to std:: for a while
+
+#if defined(__GLIBCXX__)
+	typedef ::max_align_t std_max_align_t;      // libstdc++ forgot to add it to std:: for a while
 #else
-	typedef std::max_align_t max_align_t;   // Others (e.g. MSVC) insist it can *only* be accessed via std::
+	typedef std::max_align_t std_max_align_t;   // Others (e.g. MSVC) insist it can *only* be accessed via std::
 #endif
+
+	// Some platforms have incorrectly set max_align_t to a type with <8 bytes alignment even while supporting
+	// 8-byte aligned scalar values (*cough* 32-bit iOS). Work around this with our own union. See issue #64.
+	typedef union {
+		std_max_align_t x;
+		long long y;
+		void* z;
+	} max_align_t;
 }
 
 // Default traits for the ConcurrentQueue. To change some of the
@@ -748,7 +759,7 @@ public:
 	{
 		implicitProducerHashResizeInProgress.clear(std::memory_order_relaxed);
 		populate_initial_implicit_producer_hash();
-		size_t blocks = ((((minCapacity + BLOCK_SIZE - 1) / BLOCK_SIZE) - 1) * (maxExplicitProducers + 1) + 2 * (maxExplicitProducers + maxImplicitProducers)) * BLOCK_SIZE;
+		size_t blocks = (((minCapacity + BLOCK_SIZE - 1) / BLOCK_SIZE) - 1) * (maxExplicitProducers + 1) + 2 * (maxExplicitProducers + maxImplicitProducers);
 		populate_initial_block_list(blocks);
 		
 #ifdef MOODYCAMEL_QUEUE_INTERNAL_DEBUG
@@ -942,7 +953,7 @@ public:
 	bool enqueue_bulk(It itemFirst, size_t count)
 	{
 		if (INITIAL_IMPLICIT_PRODUCER_HASH_SIZE == 0) return false;
-		return inner_enqueue_bulk<CanAlloc>(std::forward<It>(itemFirst), count);
+		return inner_enqueue_bulk<CanAlloc>(itemFirst, count);
 	}
 	
 	// Enqueues several items using an explicit producer token.
@@ -954,7 +965,7 @@ public:
 	template<typename It>
 	bool enqueue_bulk(producer_token_t const& token, It itemFirst, size_t count)
 	{
-		return inner_enqueue_bulk<CanAlloc>(token, std::forward<It>(itemFirst), count);
+		return inner_enqueue_bulk<CanAlloc>(token, itemFirst, count);
 	}
 	
 	// Enqueues a single item (by copying it).
@@ -1006,7 +1017,7 @@ public:
 	bool try_enqueue_bulk(It itemFirst, size_t count)
 	{
 		if (INITIAL_IMPLICIT_PRODUCER_HASH_SIZE == 0) return false;
-		return inner_enqueue_bulk<CannotAlloc>(std::forward<It>(itemFirst), count);
+		return inner_enqueue_bulk<CannotAlloc>(itemFirst, count);
 	}
 	
 	// Enqueues several items using an explicit producer token.
@@ -1017,7 +1028,7 @@ public:
 	template<typename It>
 	bool try_enqueue_bulk(producer_token_t const& token, It itemFirst, size_t count)
 	{
-		return inner_enqueue_bulk<CannotAlloc>(token, std::forward<It>(itemFirst), count);
+		return inner_enqueue_bulk<CannotAlloc>(token, itemFirst, count);
 	}
 	
 	
@@ -1281,14 +1292,14 @@ private:
 	template<AllocationMode canAlloc, typename It>
 	inline bool inner_enqueue_bulk(producer_token_t const& token, It itemFirst, size_t count)
 	{
-		return static_cast<ExplicitProducer*>(token.producer)->ConcurrentQueue::ExplicitProducer::template enqueue_bulk<canAlloc>(std::forward<It>(itemFirst), count);
+		return static_cast<ExplicitProducer*>(token.producer)->ConcurrentQueue::ExplicitProducer::template enqueue_bulk<canAlloc>(itemFirst, count);
 	}
 	
 	template<AllocationMode canAlloc, typename It>
 	inline bool inner_enqueue_bulk(It itemFirst, size_t count)
 	{
 		auto producer = get_or_add_implicit_producer();
-		return producer == nullptr ? false : producer->ConcurrentQueue::ImplicitProducer::template enqueue_bulk<canAlloc>(std::forward<It>(itemFirst), count);
+		return producer == nullptr ? false : producer->ConcurrentQueue::ImplicitProducer::template enqueue_bulk<canAlloc>(itemFirst, count);
 	}
 	
 	inline bool update_current_producer_after_rotation(consumer_token_t& token)
@@ -1565,8 +1576,8 @@ private:
 			}
 		}
 		
-		inline T* operator[](index_t idx) MOODYCAMEL_NOEXCEPT { return reinterpret_cast<T*>(elements) + static_cast<size_t>(idx & static_cast<index_t>(BLOCK_SIZE - 1)); }
-		inline T const* operator[](index_t idx) const MOODYCAMEL_NOEXCEPT { return reinterpret_cast<T const*>(elements) + static_cast<size_t>(idx & static_cast<index_t>(BLOCK_SIZE - 1)); }
+		inline T* operator[](index_t idx) MOODYCAMEL_NOEXCEPT { return static_cast<T*>(static_cast<void*>(elements)) + static_cast<size_t>(idx & static_cast<index_t>(BLOCK_SIZE - 1)); }
+		inline T const* operator[](index_t idx) const MOODYCAMEL_NOEXCEPT { return static_cast<T const*>(static_cast<void const*>(elements)) + static_cast<size_t>(idx & static_cast<index_t>(BLOCK_SIZE - 1)); }
 		
 	private:
 		// IMPORTANT: This must be the first member in Block, so that if T depends on the alignment of
@@ -1597,7 +1608,7 @@ private:
 		void* owner;
 #endif
 	};
-    static_assert(std::alignment_of<Block>::value >= std::alignment_of<details::max_align_t>::value, "Internal error: Blocks must be at least as aligned as the type they are wrapping");
+	static_assert(std::alignment_of<Block>::value >= std::alignment_of<details::max_align_t>::value, "Internal error: Blocks must be at least as aligned as the type they are wrapping");
 
 
 #if MCDBGQ_TRACKMEM
@@ -1612,14 +1623,14 @@ private:
 	
 	struct ProducerBase : public details::ConcurrentQueueProducerTypelessBase
 	{
-		ProducerBase(ConcurrentQueue* parent, bool isExplicit) :
+		ProducerBase(ConcurrentQueue* parent_, bool isExplicit_) :
 			tailIndex(0),
 			headIndex(0),
 			dequeueOptimisticCount(0),
 			dequeueOvercommit(0),
 			tailBlock(nullptr),
-			isExplicit(isExplicit),
-			parent(parent)
+			isExplicit(isExplicit_),
+			parent(parent_)
 		{
 		}
 		
@@ -2120,7 +2131,7 @@ private:
 							}
 							currentTailIndex = startTailIndex;
 							while (true) {
-								auto stopIndex = (currentTailIndex & ~static_cast<index_t>(BLOCK_SIZE - 1)) + static_cast<index_t>(BLOCK_SIZE);
+								stopIndex = (currentTailIndex & ~static_cast<index_t>(BLOCK_SIZE - 1)) + static_cast<index_t>(BLOCK_SIZE);
 								if (details::circular_less_than<index_t>(constructedStopIndex, stopIndex)) {
 									stopIndex = constructedStopIndex;
 								}
@@ -2557,7 +2568,7 @@ private:
 					currentTailIndex += static_cast<index_t>(BLOCK_SIZE);
 					
 					// Find out where we'll be inserting this block in the block index
-					BlockIndexEntry* idxEntry;
+					BlockIndexEntry* idxEntry = nullptr;  // initialization here unnecessary but compiler can't always tell
 					Block* newBlock;
 					bool indexInserted = false;
 					auto head = this->headIndex.load(std::memory_order_relaxed);
@@ -2641,7 +2652,7 @@ private:
 							}
 							currentTailIndex = startTailIndex;
 							while (true) {
-								auto stopIndex = (currentTailIndex & ~static_cast<index_t>(BLOCK_SIZE - 1)) + static_cast<index_t>(BLOCK_SIZE);
+								stopIndex = (currentTailIndex & ~static_cast<index_t>(BLOCK_SIZE - 1)) + static_cast<index_t>(BLOCK_SIZE);
 								if (details::circular_less_than<index_t>(constructedStopIndex, stopIndex)) {
 									stopIndex = constructedStopIndex;
 								}
@@ -2804,6 +2815,9 @@ private:
 		inline bool insert_block_index_entry(BlockIndexEntry*& idxEntry, index_t blockStartIndex)
 		{
 			auto localBlockIndex = blockIndex.load(std::memory_order_relaxed);		// We're the only writer thread, relaxed is OK
+			if (localBlockIndex == nullptr) {
+				return false;  // this can happen if new_block_index failed in the constructor
+			}
 			auto newTail = (localBlockIndex->tail.load(std::memory_order_relaxed) + 1) & (localBlockIndex->capacity - 1);
 			idxEntry = localBlockIndex->index[newTail];
 			if (idxEntry->key.load(std::memory_order_relaxed) == INVALID_BLOCK_BASE ||
@@ -3318,10 +3332,10 @@ private:
 							auto empty = details::invalid_thread_id;
 #ifdef MOODYCAMEL_CPP11_THREAD_LOCAL_SUPPORTED
 							auto reusable = details::invalid_thread_id2;
-							if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed)) ||
-								(probedKey == reusable && mainHash->entries[index].key.compare_exchange_strong(reusable, id, std::memory_order_acquire))) {
+							if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed, std::memory_order_relaxed)) ||
+								(probedKey == reusable && mainHash->entries[index].key.compare_exchange_strong(reusable, id, std::memory_order_acquire, std::memory_order_acquire))) {
 #else
-							if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed))) {
+							if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed, std::memory_order_relaxed))) {
 #endif
 								mainHash->entries[index].value = value;
 								break;
@@ -3406,10 +3420,10 @@ private:
 					auto empty = details::invalid_thread_id;
 #ifdef MOODYCAMEL_CPP11_THREAD_LOCAL_SUPPORTED
 					auto reusable = details::invalid_thread_id2;
-					if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed)) ||
-						(probedKey == reusable && mainHash->entries[index].key.compare_exchange_strong(reusable, id, std::memory_order_acquire))) {
+					if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed, std::memory_order_relaxed)) ||
+						(probedKey == reusable && mainHash->entries[index].key.compare_exchange_strong(reusable, id, std::memory_order_acquire, std::memory_order_acquire))) {
 #else
-					if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed))) {
+					if ((probedKey == empty    && mainHash->entries[index].key.compare_exchange_strong(empty,    id, std::memory_order_relaxed, std::memory_order_relaxed))) {
 #endif
 						mainHash->entries[index].value = producer;
 						break;

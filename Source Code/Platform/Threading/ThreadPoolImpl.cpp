@@ -81,17 +81,7 @@ ThreadPoolBoostPrio::~ThreadPoolBoostPrio()
 }
 
 bool ThreadPoolBoostPrio::enqueue(const PoolTask& task) {
-    const I32 failCountLimit = 5;
-    I32 failCount = 0;
-    boost::threadpool::prio_task_func task_func(task._priority, task._task);
-
-    while (!_pool.schedule(task_func)) {
-        if (++failCount > failCountLimit) {
-            return false;
-        }
-    }
-
-    return true;
+    return _pool.schedule(boost::threadpool::prio_task_func(task._priority, task._task));
 }
 
 void ThreadPoolBoostPrio::stopAll() {
@@ -118,16 +108,7 @@ ThreadPoolBoostFifo::~ThreadPoolBoostFifo()
 }
 
 bool ThreadPoolBoostFifo::enqueue(const PoolTask& task) {
-    const I32 failCountLimit = 5;
-    I32 failCount = 0;
-    while (!_pool.schedule(
-        boost::threadpool::task_func(task._task))) {
-        if (++failCount > failCountLimit) {
-            return false;
-        }
-    }
-
-    return true;
+    return _pool.schedule(boost::threadpool::task_func(task._task));
 }
 
 void ThreadPoolBoostFifo::stopAll() {

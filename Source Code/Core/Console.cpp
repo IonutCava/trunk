@@ -4,9 +4,6 @@
 
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include <iomanip>
-#include <stdarg.h>
-#include <thread>
-#include <iostream>
 
 namespace Divide {
 
@@ -22,23 +19,13 @@ vectorImpl<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
 namespace {
-    std::mutex& condMutex() noexcept {
-        static std::mutex condMutex;
-        return condMutex;
-    }
+    struct MyTraits : public moodycamel::ConcurrentQueueDefaultTraits
+    {
+        static const size_t BLOCK_SIZE = MAX_CONSOLE_ENTRIES;
+    };
 
-    std::condition_variable& entryEnqueCV() {
-        static std::condition_variable entryEnqueCV;
-        return entryEnqueCV;
-    }
-
-    std::atomic_bool& entryAdded() noexcept {
-        static std::atomic_bool entryAdded;
-        return entryAdded;
-    }
-
-    moodycamel::ConcurrentQueue<Console::OutputEntry>& outBuffer() {
-        static moodycamel::ConcurrentQueue<Console::OutputEntry> outputBuffer(MAX_CONSOLE_ENTRIES);
+    moodycamel::BlockingConcurrentQueue<Console::OutputEntry, MyTraits>& outBuffer() {
+        static moodycamel::BlockingConcurrentQueue<Console::OutputEntry, MyTraits> outputBuffer;
         return outputBuffer;
     }
 
@@ -106,15 +93,14 @@ void Console::output(const char* text, const bool newline, const EntryType type)
         stringstreamImplBest outStream;
         decorate(outStream, text, newline, type);
 
-        OutputEntry entry(outStream.str() , type);
+        OutputEntry entry;
+        entry._text = outStream.str();
+        entry._type = type;
 
         //moodycamel::ProducerToken ptok(outBuffer());
-        WAIT_FOR_CONDITION_TIMEOUT(outBuffer().enqueue(/*ptok, */entry),
-                                   Time::SecondsToMilliseconds(1.0));
-
-        UniqueLock lk(condMutex());
-        entryAdded() = true;
-        entryEnqueCV().notify_one();
+        if (!outBuffer().enqueue(/*ptok, */entry)) {
+            // ToDo: Something happened. Handle it, maybe? -Ionut
+        }
     }
 }
 
@@ -122,10 +108,7 @@ void Console::outThread() {
     //moodycamel::ConsumerToken ctok(outBuffer());
     OutputEntry entry;
     while (_running) {
-        UniqueLock lk(condMutex());
-        entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
-
-        if (outBuffer().try_dequeue(/*ctok, */entry)) {
+        if (outBuffer().wait_dequeue_timed(/*ctok, */entry, Time::Milliseconds(16))) {
             ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 
             for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {

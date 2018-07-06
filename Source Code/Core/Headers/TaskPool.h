@@ -91,7 +91,7 @@ class TaskPool {
     vectorImpl<TaskState> _taskStates;
     vectorImpl<DELEGATE_CBK<void>> _taskCallbacks;
 
-    mutable std::mutex _taskStateLock;
+    mutable SharedLock _taskStateLock;
 
     std::atomic<size_t> _allocatedJobs;
 

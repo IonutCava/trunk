@@ -29,8 +29,9 @@
 #include "ECS/Systems/Headers/ECSManager.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
-#include "Platform/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
+#include "Platform/Input/Headers/InputInterface.h"
+#include "Platform/File/Headers/FileWatcherManager.h"
 #include "Platform/Compute/Headers/OpenCLInterface.h"
 
 #include <ECS.h>
@@ -138,10 +139,12 @@ void Kernel::idle() {
     _taskPool.flushCallbackQueue();
 
     _platformContext->idle();
+    if (!Config::Build::IS_SHIPPING_BUILD) {
+        FileWatcherManager::idle();
+    }
     _sceneManager->idle();
     Locale::idle();
     Script::idle();
-
     FrameListenerManager::instance().idle();
 
     bool freezeLoopTime = ParamHandler::instance().getParam(_ID("freezeLoopTime"), false);
@@ -612,9 +615,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread so how many threads do we allocate for tasks?
     // That's up to the programmer to decide for each app.
-
-    STUBBED("ToDo: Boost prio pool stopped working with Boost libraries 1.65. Falling back to FIFO for now. Fix This! - Ionut");
-    if (!_taskPool.init(HARDWARE_THREAD_COUNT(), TaskPool::TaskPoolType::FIFO_QUEUE/*PRIORITY_QUEUE*/, "DIVIDE_WORKER_THREAD_")) {
+    if (!_taskPool.init(HARDWARE_THREAD_COUNT(), TaskPool::TaskPoolType::PRIORITY_QUEUE, "DIVIDE_WORKER_THREAD_")) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 

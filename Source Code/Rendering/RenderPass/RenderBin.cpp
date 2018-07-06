@@ -75,7 +75,7 @@ RenderBin::~RenderBin()
 {
 }
 
-void RenderBin::sort(RenderingOrder::List renderOrder, const Task& parentTask) {
+void RenderBin::sort(RenderingOrder::List renderOrder) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (renderOrder) {
         case RenderingOrder::List::BY_STATE: {
@@ -101,6 +101,11 @@ void RenderBin::sort(RenderingOrder::List renderOrder, const Task& parentTask) {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")), _rbType._to_string());
         } break;
     };
+}
+
+void RenderBin::sort(RenderingOrder::List renderOrder, const Task& parentTask) {
+    ACKNOWLEDGE_UNUSED(parentTask);
+    sort(renderOrder);
 }
 
 void RenderBin::getSortedNodes(vectorImpl<SceneGraphNode*>& nodes) const {

@@ -10,6 +10,7 @@
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"
+#include "Platform/File/Headers/FileWatcherManager.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
@@ -29,7 +30,7 @@ ShaderProgram::ShaderProgramMap ShaderProgram::_shaderPrograms;
 
 SharedLock ShaderProgram::_programLock;
 
-std::unique_ptr<FW::FileWatcher> ShaderProgram::s_shaderFileWatcher;
+I64 ShaderProgram::s_shaderFileWatcherID = -1;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
@@ -133,9 +134,6 @@ void ShaderProgram::idle() {
         }
         _recompileQueue.pop();
     }
-    if (!Config::Build::IS_SHIPPING_BUILD) {
-        s_shaderFileWatcher->update();
-    }
 }
 
 /// Calling this will force a recompilation of all shader stages for the program
@@ -220,15 +218,16 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
 }
 
 void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
-    s_shaderFileWatcher = std::make_unique<FW::FileWatcher>();
-
     if (!Config::Build::IS_SHIPPING_BUILD) {
+        FileWatcher& watcher = FileWatcherManager::allocateWatcher();
+        s_shaderFileWatcherID = watcher.getGUID();
+        s_fileWatcherListener.addIgnoredEndCharacter('~');
+        s_fileWatcherListener.addIgnoredExtension("tmp");
+
         vectorImpl<stringImpl> atomLocations = getAllAtomLocations();
         for (const stringImpl& loc : atomLocations) {
             createDirectories(loc.c_str());
-            s_fileWatcherListener.addIgnoredEndCharacter('~');
-            s_fileWatcherListener.addIgnoredExtension("tmp");
-            s_shaderFileWatcher->addWatch(loc, &s_fileWatcherListener);
+            watcher().addWatch(loc, &s_fileWatcherListener);
         }
     }
 
@@ -252,8 +251,8 @@ void ShaderProgram::onShutdown() {
     while (!_recompileQueue.empty()) {
         _recompileQueue.pop();
     }
-
-    s_shaderFileWatcher.reset();
+    FileWatcherManager::deallocateWatcher(s_shaderFileWatcherID);
+    s_shaderFileWatcherID = -1;
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {

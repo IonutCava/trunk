@@ -139,6 +139,11 @@ namespace Divide {
     }
 
     void ApplicationOutput::executeCommand(const char* command_line) {
-        printText(Console::OutputEntry(Util::StringFormat("# %s\n", command_line), Console::EntryType::Command));
+        printText(
+            {
+                Util::StringFormat("# %s\n", command_line),
+                Console::EntryType::Command
+            }
+        );
     }
 }; //namespace Divide
