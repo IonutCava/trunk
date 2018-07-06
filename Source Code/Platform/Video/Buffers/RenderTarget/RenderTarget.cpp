@@ -41,6 +41,13 @@ RenderTarget::~RenderTarget()
     MemoryManager::DELETE(_attachmentPool);
 }
 
+void RenderTarget::copy(const RenderTarget& other) {
+    _attachmentPool->copy(*other._attachmentPool);
+    _width = other._width;
+    _height = other._height;
+    _depthValue = other._depthValue;
+}
+
 void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
                                  RTAttachment::Type type,
                                  U8 index,
@@ -117,6 +124,10 @@ U16 RenderTarget::getWidth()  const {
 
 U16 RenderTarget::getHeight() const {
     return _height;
+}
+
+const stringImpl& RenderTarget::getName() const {
+    return _name;
 }
 
 };

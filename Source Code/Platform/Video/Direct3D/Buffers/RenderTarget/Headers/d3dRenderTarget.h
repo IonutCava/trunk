@@ -42,6 +42,8 @@ class d3dRenderTarget : public RenderTarget {
     d3dRenderTarget(GFXDevice& context, const stringImpl& name);
     ~d3dRenderTarget();
 
+    void copy(const RenderTarget& other) override;
+
     bool create(U16 width, U16 height) override;
 
     void drawToLayer(RTAttachment::Type type,

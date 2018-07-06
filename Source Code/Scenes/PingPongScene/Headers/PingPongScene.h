@@ -63,7 +63,6 @@ class PingPongScene : public Scene {
     vec3<F32> _sunvector;
     std::shared_ptr<Sphere3D> _ball;
     SceneGraphNode_wptr _ballSGN;
-    Camera* _freeFlyCam;
     Camera* _paddleCam;
     SceneGraphNode_wptr _sun;
 

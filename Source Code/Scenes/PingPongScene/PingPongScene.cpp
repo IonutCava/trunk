@@ -19,7 +19,6 @@ PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, Sce
     _touchedAdversaryTableHalf = false;
     _lost = false;
     _ball = nullptr;
-    _freeFlyCam = nullptr;
     _paddleCam = nullptr;
     _score = 0;
     _freeFly = false;
@@ -275,14 +274,6 @@ bool PingPongScene::load(const stringImpl& name) {
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
-    _freeFlyCam = Camera::findCamera(Camera::DefaultCameraHash);
-    _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
-    _paddleCam->fromCamera(*_freeFlyCam);
-    // Position the camera
-    // renderState().getCamera().setPitch(-90);
-    _paddleCam->lockMovement(true);
-    _paddleCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
-    _freeFlyCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
 
     return loadState;
 }
@@ -303,7 +294,7 @@ U16 PingPongScene::registerInputActions() {
         if (!_freeFly)
             Camera::activeCamera(_paddleCam);
         else
-            Camera::activeCamera(_ID("defaultCamera"));
+            Camera::activeCamera(Camera::activePlayerCamera());
     });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
@@ -352,6 +343,13 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
 
     _guiTimers.push_back(0.0);  // Fps
     _taskTimers.push_back(0.0);  // Light
+
+    _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
+    _paddleCam->fromCamera(*Camera::activePlayerCamera());
+    // Position the camera
+    // renderState().getCamera().setPitch(-90);
+    _paddleCam->lockMovement(true);
+    _paddleCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
 
     return true;
 }

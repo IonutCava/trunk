@@ -16,6 +16,7 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Physics/Headers/PXDevice.h"
+#include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
@@ -260,6 +261,10 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
         return true;
     }
 
+    for(const Player_ptr& player : _sceneManager->getPlayers()){
+        Camera::lockCamera(&player->getCamera());
+    }
+
     {
         Time::ScopedTimer timer2(_physicsProcessTimer);
         // Process physics
@@ -335,6 +340,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
 }
 
 void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targetViewports, U8 count) {
+    
     assert(count > 0);
     I32 xOffset = mainViewport.x;
     I32 yOffset = mainViewport.y;
@@ -414,7 +420,9 @@ void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targ
     //Slide the last row to center it
     if (extraColumns > 0) {
         ViewportRow& lastRow = rows.back();
-        I32 slideFactor = to_int((rows.back().size() * playerWidth) / 2);
+        I32 screenMidPoint = width / 2;
+        I32 rowMidPoint = to_int((lastRow.size() * playerWidth) / 2);
+        I32 slideFactor = screenMidPoint - rowMidPoint;
         for (vec4<I32>& viewport : lastRow) {
             viewport.x += slideFactor;
         }
@@ -469,8 +477,13 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     U8 playerCount = to_ubyte(activePlayers.size());
     computeViewports(mainViewport, targetViewports, playerCount);
 
-
     for (U8 i = 0; i < playerCount; ++i) {
+        Camera* activeCamera = &activePlayers[i]->getCamera();
+        Camera::unlockCamera(activeCamera);
+        Camera::activeCamera(activeCamera);
+        Camera::activePlayerCamera(activeCamera);
+
+        _platformContext->gfx().poolIndex(i);
         {
             Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));
             _renderPassManager->render(_sceneManager->getActiveScene().renderState());
@@ -483,6 +496,15 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
             Attorney::GFXDeviceKernel::flushDisplay(_platformContext->gfx(), targetViewports[i]);
         }
+    }
+
+    for (U8 i = playerCount; i < to_ubyte(_renderTimer.size()); ++i) {
+        Time::ProfileTimer::removeTimer(*_renderTimer[i]);
+        Time::ProfileTimer::removeTimer(*_postFxRenderTimer[i]);
+        Time::ProfileTimer::removeTimer(*_blitToDisplayTimer[i]);
+        _renderTimer.erase(std::begin(_renderTimer) + i);
+        _postFxRenderTimer.erase(std::begin(_postFxRenderTimer) + i);
+        _blitToDisplayTimer.erase(std::begin(_blitToDisplayTimer) + i);
     }
 
     {
@@ -604,16 +626,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 
-    // As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
-
-    Camera* defaultCam = Camera::createCamera(Camera::DefaultCamera, Camera::CameraType::FREE_FLY);
-    defaultCam->setFixedYawAxis(true);
-    defaultCam->setProjection(to_float(renderResolution.width) / to_float(renderResolution.height),
-                              par.getParam<F32>(_ID("rendering.verticalFOV")),
-                              vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
-                                        par.getParam<F32>(_ID("rendering.zFar"))));
-    Camera::activeCamera(defaultCam);
-
     SceneManager::onStartup();
     // We start of with a forward plus renderer
     _platformContext->gfx().setRenderer(RendererType::RENDERER_TILED_FORWARD_SHADING);
@@ -720,15 +732,7 @@ void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
     Attorney::GFXDeviceKernel::onChangeRenderResolution(_platformContext->gfx(), w, h);
     _platformContext->gui().onChangeResolution(w, h);
 
-
-    Camera* mainCamera = Camera::findCamera(Camera::DefaultCameraHash);
-    if (mainCamera) {
-        const ParamHandler& par = ParamHandler::instance();
-        mainCamera->setProjection(to_float(w) / to_float(h),
-                                  par.getParam<F32>(_ID("rendering.verticalFOV")),
-                                  vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
-                                            par.getParam<F32>(_ID("rendering.zFar"))));
-    }
+    _sceneManager->onChangeResolution(w, h);
 }
 
 ///--------------------------Input Management-------------------------------------///

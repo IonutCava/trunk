@@ -52,6 +52,11 @@ glFramebuffer::~glFramebuffer()
     MemoryManager::DELETE(_resolveBuffer);
 }
 
+void glFramebuffer::copy(const RenderTarget& other) {
+    RenderTarget::copy(other);
+    create(other.getWidth(), other.getHeight());
+}
+
 void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
     const RTAttachment_ptr& attachment = _attachmentPool->get(type, index);
 

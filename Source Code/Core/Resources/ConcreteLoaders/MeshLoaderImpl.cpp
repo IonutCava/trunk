@@ -16,7 +16,7 @@ Resource_ptr ImplResourceLoader<Mesh>::operator()() {
     } else {
         //handle error
         DIVIDE_UNEXPECTED_CALL(Util::StringFormat("Failed to import mesh [ %s ]!",
-                               _descriptor.getResourceLocation()).c_str());
+                               _descriptor.getResourceLocation().c_str()).c_str());
     }
 
     if (!load(ptr) || !ptr) {

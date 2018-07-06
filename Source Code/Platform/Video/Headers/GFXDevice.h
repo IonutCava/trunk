@@ -262,16 +262,24 @@ public:  // Accessors and Mutators
                 : _defaultStateBlockHash);
     }
 
+    inline void resizePool(U8 poolSize) {
+        _rtPool->resize(poolSize);
+    }
+
+    inline void poolIndex(U8 index) {
+        _rtPool->poolIndex(index);
+    }
+
     inline RenderTarget& renderTarget(RenderTargetID target) {
-        return _rtPool.renderTarget(target);
+        return _rtPool->renderTarget(target);
     }
 
     inline void renderTarget(RenderTargetID target, RenderTarget* newTarget) {
-        _rtPool.set(target, newTarget);
+        _rtPool->set(target, newTarget);
     }
 
     inline RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const stringImpl& name) {
-        return _rtPool.add(targetUsage, newRT(name));
+        return _rtPool->add(targetUsage, newRT(name));
     }
 
     inline RenderTargetHandle allocateRT(const stringImpl& name) {
@@ -279,7 +287,7 @@ public:  // Accessors and Mutators
     }
 
     inline bool deallocateRT(RenderTargetHandle& handle) {
-        return _rtPool.remove(handle);
+        return _rtPool->remove(handle);
     }
 
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
@@ -334,6 +342,7 @@ protected:
         }
     }
 
+    friend class GFXRTPool;
     RenderTarget* newRT(const stringImpl& name) const;
 
     void drawDebugFrustum(RenderSubPassCmds& subPassesInOut);
@@ -419,7 +428,7 @@ protected:
     GPURenderer _GPURenderer;
     GPUState _state;
     /* Rendering buffers.*/
-    GFXRTPool _rtPool;
+    GFXRTPool* _rtPool;
     /*State management */
     bool _stateBlockByDescription;
     size_t _defaultStateBlockHash;

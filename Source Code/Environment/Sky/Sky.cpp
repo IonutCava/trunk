@@ -106,8 +106,6 @@ void Sky::sceneUpdate(const U64 deltaTime,
                       SceneGraphNode& sgn,
                       SceneState& sceneState) {
 
-    sgn.get<PhysicsComponent>()->setPosition(Camera::activeCamera()->getEye());
-
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
@@ -130,6 +128,8 @@ void Sky::updateDrawCommands(SceneGraphNode& sgn,
                              RenderStage renderStage,
                              const SceneRenderState& sceneRenderState,
                              GenericDrawCommands& drawCommandsInOut) {
+
+    sgn.get<PhysicsComponent>()->setPosition(Camera::activeCamera()->getEye());
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
     cmd.stateHash(renderStage == RenderStage::REFLECTION

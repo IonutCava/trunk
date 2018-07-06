@@ -51,8 +51,8 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
     _resetUnits = false;
 
     addSelectionCallback([&]() {
-        if (!_currentSelection.expired()) {
-            _GUI->modifyText(_ID("entityState"), _currentSelection.lock()->getName().c_str());
+        if (!_currentSelection[0].expired()) {
+            _GUI->modifyText(_ID("entityState"), _currentSelection[0].lock()->getName().c_str());
         } else {
             _GUI->modifyText(_ID("entityState"), "");
         }
@@ -94,8 +94,8 @@ void WarScene::processGUI(const U64 deltaTime) {
     }
 
     if (_guiTimers[1] >= Time::SecondsToMilliseconds(1)) {
-        if (!_currentSelection.expired()) {
-            AI::AIEntity* entity = findAI(_currentSelection.lock());
+        if (!_currentSelection[0].expired()) {
+            AI::AIEntity* entity = findAI(_currentSelection[0].lock());
             if (entity) {
                 _GUI->modifyText(_ID("entityState"), entity->toString().c_str());
             }
@@ -332,8 +332,8 @@ bool WarScene::load(const stringImpl& name) {
     // Add a skybox
     _currentSky = addSky();
     // Position camera
-    Camera::activeCamera()->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
-    Camera::activeCamera()->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
+    _baseCamera->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
+    _baseCamera->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
@@ -505,7 +505,6 @@ bool WarScene::load(const stringImpl& name) {
     firstPersonFlag->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
     flagPComp = firstPersonFlag->get<PhysicsComponent>();
-    flagPComp->ignoreView(true, Camera::activeCamera()->getGUID());
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
@@ -513,7 +512,9 @@ bool WarScene::load(const stringImpl& name) {
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN());
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
-    
+
+    //_firstPersonWeapon.lock()->get<PhysicsComponent>()->ignoreView(true, Camera::activeCamera()->getGUID());
+
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
     AI::WarSceneAIProcessor::registerScoreCallback([&](U8 teamID, const stringImpl& unitName) {
@@ -596,7 +597,7 @@ bool WarScene::load(const stringImpl& name) {
         }
     }
 
-    Camera::activeCamera()->setHorizontalFoV(110);
+    _baseCamera->setHorizontalFoV(110);
 
     _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
     _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
@@ -615,12 +616,12 @@ U16 WarScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, 0, ""));
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_ushort(0), ""));
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_1, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, 1, ""));
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_ushort(1), ""));
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_2, actions);
     actionID++;
@@ -662,24 +663,24 @@ void WarScene::toggleCamera() {
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
 
-    if (!_currentSelection.expired()) {
+    if (!_currentSelection[0].expired()) {
         if (flyCameraActive) {
             Camera::activeCamera(_ID("tpsCamera"));
-            static_cast<ThirdPersonCamera&>(*Camera::activeCamera()).setTarget(_currentSelection);
+            static_cast<ThirdPersonCamera&>(*Camera::activeCamera()).setTarget(_currentSelection[0]);
             flyCameraActive = false;
             tpsCameraActive = true;
             return;
         }
     }
     if (tpsCameraActive) {
-        Camera::activeCamera(_ID("defaultCamera"));
+        Camera::activeCamera(Camera::activePlayerCamera());
         tpsCameraActive = false;
         flyCameraActive = true;
     }
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
-    Camera* defaultCam = Camera::findCamera(Camera::DefaultCameraHash);
+    Camera* defaultCam = Camera::activePlayerCamera();
     // Add a first person camera
     Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
     cam->fromCamera(*defaultCam);

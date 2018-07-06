@@ -46,6 +46,8 @@ public:
     explicit RTAttachmentPool(RenderTarget& parent, U8 colourAttCount);
     ~RTAttachmentPool();
 
+    void copy(const RTAttachmentPool& other);
+
     void add(RTAttachment::Type type,
         U8 index,
         const TextureDescriptor& descriptor,

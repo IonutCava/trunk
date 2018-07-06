@@ -53,6 +53,8 @@ GFXDevice::GFXDevice(Kernel& parent)
     _debugFrustum = nullptr;
     _debugFrustumPrimitive = nullptr;
     _renderDocManager = nullptr;
+    _rtPool = nullptr;
+
     // Integers
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
@@ -305,11 +307,7 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     }
 
     // Update render targets with the new resolution
-    for (RenderTarget* rt : _rtPool.renderTargets(RenderTargetUsage::SCREEN)) {
-        if (rt) {
-            rt->create(w, h);
-        }
-    }
+    _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
 
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);

@@ -109,7 +109,7 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sc
     /*if (_type == LightType::DIRECTIONAL) {
         if (sceneState.overrideCamera() == nullptr) {
             sceneState.overrideCamera(_shadowCamera);
-            GFXDevice::instance().debugDrawFrustum(&Camera::findCamera(Camera::DefaultCameraHash)->getFrustum());
+            GFXDevice::instance().debugDrawFrustum(&Camera::activePlayerCamera()->getFrustum());
         }
     }*/
 

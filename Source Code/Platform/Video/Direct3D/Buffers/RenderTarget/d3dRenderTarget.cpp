@@ -12,6 +12,10 @@ d3dRenderTarget::~d3dRenderTarget()
 {
 }
 
+void d3dRenderTarget::copy(const RenderTarget& other) { 
+    RenderTarget::copy(other);
+}
+
 bool d3dRenderTarget::create(U16 width, U16 height) { return true; }
 
 void d3dRenderTarget::begin(const RTDrawDescriptor& drawPolicy) {}

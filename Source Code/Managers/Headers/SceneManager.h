@@ -83,11 +83,11 @@ public:
 
     // Add a new player to the simulation
     // Returns true if the specified player is already active
-    bool addPlayer(const Player_ptr& player);
+    bool addPlayer(const Scene& parentScene, const Player_ptr& player);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
-    bool removePlayer(Player_ptr& player);
+    bool removePlayer(const Scene& parentScene, Player_ptr& player);
     const PlayerList& getPlayers() const;
 
     /*Base Scene Operations*/
@@ -124,6 +124,8 @@ public:
     inline void processGUI(const U64 deltaTime) {
         getActiveScene().processGUI(deltaTime);
     }
+
+    void onChangeResolution(U16 w, U16 h);
 
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
 
@@ -176,7 +178,7 @@ protected:
     bool populateRenderQueue(RenderStage stage,
         bool doCulling,
         U32 passIndex);
-    Camera* getDefaultCamera() const;
+    Camera* getActiveCamera() const;
     
 private:
     bool _init;
@@ -286,8 +288,8 @@ class SceneManagerRenderPass {
         return mgr.generateShadowMaps();
     }
 
-    static Camera* getDefaultCamera(Divide::SceneManager& mgr) {
-        return mgr.getDefaultCamera();
+    static Camera* getActiveCamera(Divide::SceneManager& mgr) {
+        return mgr.getActiveCamera();
     }
 
     friend class Divide::RenderPass;

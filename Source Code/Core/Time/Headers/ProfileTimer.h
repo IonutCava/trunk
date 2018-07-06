@@ -68,6 +68,7 @@ class ProfileTimer {
    // timer <-> timer relationship
    public:
     void addChildTimer(ProfileTimer& child);
+    void removeChildTimer(ProfileTimer& child);
 
    protected:
      vectorImpl<U32> _children;

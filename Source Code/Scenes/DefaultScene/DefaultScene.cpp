@@ -96,10 +96,10 @@ void DefaultScene::postLoadMainThread() {
                                                     to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                                     to_const_uint(SGNComponent::ComponentType::BOUNDS),
                                                     PhysicsGroup::GROUP_KINEMATIC,
-                                                    Util::StringFormat("Player %d", scenePlayers.size()));
+                                                    Util::StringFormat("Player %d", scenePlayers.size() + 2));
 
         _scenePlayers.emplace_back(MemoryManager_NEW Player(playerSGN));
-        _parent.addPlayer(_scenePlayers.back());
+        _parent.addPlayer(*this, _scenePlayers.back());
     });
 
     _GUI->addButton(_ID_RT("RemovePlayer"), "Remove Player",
@@ -108,7 +108,7 @@ void DefaultScene::postLoadMainThread() {
         [this](I64 btnGUID) {
 
         if (_scenePlayers.size() > 1) {
-            _parent.removePlayer(_scenePlayers.back());
+            _parent.removePlayer(*this, _scenePlayers.back());
             _scenePlayers.pop_back();
         }
     });

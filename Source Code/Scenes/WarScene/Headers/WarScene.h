@@ -60,7 +60,7 @@ class WarScene : public Scene {
     void updateSceneStateInternal(const U64 deltaTime);
     U16 registerInputActions() override;
 
-    void registerPoint(U8 teamID, const stringImpl& unitName);
+    void registerPoint(U16 teamID, const stringImpl& unitName);
     void printMessage(U8 eventId, const stringImpl& unitName);
     void debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut) override;
 

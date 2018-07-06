@@ -150,10 +150,10 @@ void ShadowMap::clearShadowMapBuffers(GFXDevice& context) {
     }
 }
 
-U32 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
+U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
     LayerUsageMask& usageMask = _depthMapUsage[to_uint(shadowType)];
-    U32 layer = std::numeric_limits<U32>::max();
-    for (U32 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS; ++i) {
+    U16 layer = std::numeric_limits<U16>::max();
+    for (U16 i = 0; i < to_const_ubyte(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS); ++i) {
         if (usageMask[i] == false) {
             layer = i;
             break;

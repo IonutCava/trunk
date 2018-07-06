@@ -12,7 +12,7 @@
 namespace Divide {
 
 namespace {
-    U32 g_maxEnvironmentProbes = 32;
+    U16 g_maxEnvironmentProbes = 32;
 };
 
 vectorImpl<bool> EnvironmentProbe::s_availableSlices;
@@ -82,8 +82,8 @@ void EnvironmentProbe::onShutdown(GFXDevice& context)
     context.deallocateRT(s_reflection);
 }
 
-U32 EnvironmentProbe::allocateSlice() {
-    U32 i = 0;
+U16 EnvironmentProbe::allocateSlice() {
+    U16 i = 0;
     for (; i < g_maxEnvironmentProbes; ++i) {
         if (!s_availableSlices[i]) {
             s_availableSlices[i] = true;

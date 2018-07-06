@@ -142,12 +142,10 @@ class Scene : public Resource {
     SceneGraphNode_ptr addSky(const stringImpl& nodeName = "");
 
     /// Object picking
-    inline SceneGraphNode_wptr getCurrentSelection() const {
-        return _currentSelection;
+    inline SceneGraphNode_wptr getCurrentSelection(U8 index) {
+        return _currentSelection[index];
     }
-    inline SceneGraphNode_wptr getCurrentHoverTarget() const {
-        return  _currentHoverTarget;
-    }
+
     void findSelection();
 
     inline void addSelectionCallback(const DELEGATE_CBK<>& selectionCallback) {
@@ -182,7 +180,7 @@ class Scene : public Resource {
     virtual void loadKeyBindings();
 
     void resetSelection();
-    void findHoverTarget();
+    void findHoverTarget(U8 playerIndex);
     bool checkCameraUnderwater() const;
     void toggleFlashlight();
 
@@ -220,6 +218,8 @@ class Scene : public Resource {
     /// Draw debug entities
     virtual void debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
 
+    inline const Camera& baseCamera() const { return *_baseCamera; }
+
     /// simple function to load the scene elements.
     inline bool SCENE_LOAD(const stringImpl& name,
                            const bool contOnErrorRes,
@@ -256,6 +256,7 @@ class Scene : public Resource {
        SceneGraph*    _sceneGraph;
        AI::AIManager* _aiManager;
        SceneGUIElements* _GUI;
+       Camera* _baseCamera;
 
        vectorImpl<Player_ptr> _scenePlayers;
        U64 _sceneTimer;
@@ -269,8 +270,8 @@ class Scene : public Resource {
        vectorImpl<TerrainDescriptor*> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
-       SceneGraphNode_wptr _currentSelection;
-       SceneGraphNode_wptr _currentHoverTarget;
+       hashMapImpl<U8, SceneGraphNode_wptr> _currentSelection;
+       hashMapImpl<U8, SceneGraphNode_wptr> _currentHoverTarget;
        SceneGraphNode_wptr _currentSky;
        SceneGraphNode_wptr _flashLight;
 
@@ -321,6 +322,10 @@ class SceneManager {
 
     static bool deinitializeAI(Scene& scene) {
         return scene.deinitializeAI(true);
+    }
+
+    static const Camera& baseCamera(const Scene& scene) {
+        return scene.baseCamera();
     }
 
     /// Draw debug entities
@@ -393,8 +398,8 @@ class SceneLoadSave {
 class SceneGraph {
 private:
     static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
-        if (!scene.getCurrentSelection().expired() &&
-            scene.getCurrentSelection().lock()->getGUID() == node.getGUID())
+        if (!scene.getCurrentSelection(0).expired() &&
+            scene.getCurrentSelection(0).lock()->getGUID() == node.getGUID())
         {
             scene.resetSelection();
         }

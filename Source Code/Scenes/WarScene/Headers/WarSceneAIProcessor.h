@@ -212,12 +212,12 @@ class WarSceneAIProcessor : public AIProcessor {
         _messageCallback = cbk;
     }
 
-    static U8 getScore(U8 teamID) {
+    static U8 getScore(U16 teamID) {
         return _globalWorkingMemory._score[teamID].value();
     }
 
     static void reset();
-    static void incrementScore(U8 teamID) {
+    static void incrementScore(U16 teamID) {
         _globalWorkingMemory._score[teamID].value(getScore(teamID) + 1);
     }
 

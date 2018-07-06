@@ -46,6 +46,8 @@ class glFramebuffer : public RenderTarget {
     glFramebuffer(GFXDevice& context, const stringImpl& name);
     ~glFramebuffer();
 
+    void copy(const RenderTarget& other) override;
+
     bool create(U16 width, U16 height) override;
 
     const RTAttachment& getAttachment(RTAttachment::Type type,

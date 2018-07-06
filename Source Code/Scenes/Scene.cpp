@@ -59,6 +59,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
       _pxScene(nullptr),
+      _baseCamera(nullptr),
       _paramHandler(ParamHandler::instance())
 {
     _sceneTimer = 0UL;
@@ -374,7 +375,7 @@ void Scene::toggleFlashlight() {
 
 SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("Default Sky");
-    skyDescriptor.setID(to_uint(std::floor(Camera::activeCamera()->getZPlanes().y * 2)));
+    skyDescriptor.setID(to_uint(std::floor(_baseCamera->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
@@ -398,9 +399,9 @@ U16 Scene::registerInputActions() {
     _input->flushCache();
 
     auto none = [](InputParams param) {};
-    auto deleteSelection = [this](InputParams param) { _sceneGraph->deleteNode(_currentSelection, false); };
+    auto deleteSelection = [this](InputParams param) { _sceneGraph->deleteNode(_currentSelection[0], false); };
     auto increaseCameraSpeed = [this](InputParams param){
-        Camera& cam = *Camera::activeCamera();
+        Camera& cam = *Camera::activePlayerCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
@@ -408,7 +409,7 @@ U16 Scene::registerInputActions() {
         }
     };
     auto decreaseCameraSpeed = [this](InputParams param) {
-        Camera& cam = *Camera::activeCamera();
+        Camera& cam = *Camera::activePlayerCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
@@ -610,9 +611,27 @@ bool Scene::load(const stringImpl& name) {
 
     STUBBED("ToDo: load skyboxes from XML")
     _name = name;
+    _baseCamera = Camera::createCamera(Util::StringFormat("BaseCamera_%s", name.c_str()), Camera::CameraType::FREE_FLY);
 
     loadXMLAssets();
     SceneGraphNode& root = _sceneGraph->getRoot();
+
+    // Camera position is overridden in the scene's XML configuration file
+    if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + "options.cameraStartPositionOverride").c_str()))) {
+        _baseCamera->setEye(vec3<F32>(
+            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.x").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.y").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+        _baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
+    }
+    else {
+        _baseCamera->setEye(vec3<F32>(0, 50, 0));
+    }
+
+    _baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    _baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
 
      // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
@@ -633,22 +652,6 @@ bool Scene::load(const stringImpl& name) {
     }
     _terrainInfoArray.clear();
 
-    // Camera position is overridden in the scene's XML configuration file
-    if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + "options.cameraStartPositionOverride").c_str()))) {
-        Camera::activeCamera()->setEye(vec3<F32>(
-            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.x").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.y").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-                                 _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
-        Camera::activeCamera()->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
-    } else {
-        Camera::activeCamera()->setEye(vec3<F32>(0, 50, 0));
-    }
-
-    Camera::activeCamera()->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    Camera::activeCamera()->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
-
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context.gui(), this));
 
     _loadComplete = true;
@@ -667,6 +670,7 @@ bool Scene::unload() {
     MemoryManager::DELETE(_pxScene);
     _context.pfx().setPhysicsScene(nullptr);
     clearObjects();
+    Camera::destroyCamera(_baseCamera);
     _loadComplete = false;
     assert(_scenePlayers.empty());
 
@@ -690,7 +694,7 @@ void Scene::postLoadMainThread() {
 }
 
 void Scene::rebuildShaders() {
-    SceneGraphNode_ptr selection(_currentSelection.lock());
+    SceneGraphNode_ptr selection(_currentSelection[0].lock());
     if (selection != nullptr) {
         selection->get<RenderingComponent>()->rebuildMaterial();
     } else {
@@ -730,14 +734,14 @@ void Scene::onSetActive() {
     }
 
     _scenePlayers.emplace_back(MemoryManager_NEW Player(playerSGN));
-    _parent.addPlayer(_scenePlayers.back());
+    _parent.addPlayer(*this, _scenePlayers.back());
 }
 
 void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
 
     for (Player_ptr& player : _scenePlayers) {
-        _parent.removePlayer(player);
+        _parent.removePlayer(*this, player);
     }
     _scenePlayers.clear();
 }
@@ -780,33 +784,35 @@ void Scene::clearObjects() {
 }
 
 bool Scene::updateCameraControls() {
-    Camera& cam = *Camera::activeCamera();
+    for (const Player_ptr& player : _scenePlayers) {
+        Camera& cam = player->getCamera();
 
-    state().cameraUpdated(false);
-    switch (cam.getType()) {
-        default:
-        case Camera::CameraType::FREE_FLY: {
-            if (state().angleLR() != SceneState::MoveDirection::NONE) {
-                cam.rotateYaw(to_float(state().angleLR()));
-                state().cameraUpdated(true);
-            }
-            if (state().angleUD() != SceneState::MoveDirection::NONE) {
-                cam.rotatePitch(to_float(state().angleUD()));
-                state().cameraUpdated(true);
-            }
-            if (state().roll() != SceneState::MoveDirection::NONE) {
-                cam.rotateRoll(to_float(state().roll()));
-                state().cameraUpdated(true);
-            }
-            if (state().moveFB() != SceneState::MoveDirection::NONE) {
-                cam.moveForward(to_float(state().moveFB()));
-                state().cameraUpdated(true);
-            }
-            if (state().moveLR() != SceneState::MoveDirection::NONE) {
-                cam.moveStrafe(to_float(state().moveLR()));
-                state().cameraUpdated(true);
-            }
-        } break;
+        state().cameraUpdated(false);
+        switch (cam.getType()) {
+            default:
+            case Camera::CameraType::FREE_FLY: {
+                if (state().angleLR() != SceneState::MoveDirection::NONE) {
+                    cam.rotateYaw(to_float(state().angleLR()));
+                    state().cameraUpdated(true);
+                }
+                if (state().angleUD() != SceneState::MoveDirection::NONE) {
+                    cam.rotatePitch(to_float(state().angleUD()));
+                    state().cameraUpdated(true);
+                }
+                if (state().roll() != SceneState::MoveDirection::NONE) {
+                    cam.rotateRoll(to_float(state().roll()));
+                    state().cameraUpdated(true);
+                }
+                if (state().moveFB() != SceneState::MoveDirection::NONE) {
+                    cam.moveForward(to_float(state().moveFB()));
+                    state().cameraUpdated(true);
+                }
+                if (state().moveLR() != SceneState::MoveDirection::NONE) {
+                    cam.moveStrafe(to_float(state().moveLR()));
+                    state().cameraUpdated(true);
+                }
+            } break;
+        }
     }
 
     return state().cameraUpdated();
@@ -816,7 +822,10 @@ void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
-    findHoverTarget();
+    //for (U8 i = 0; i < _scenePlayers.size(); ++i)
+    {
+        findHoverTarget(0/*i*/);
+    }
     if (checkCameraUnderwater()) {
         state().cameraUnderwater(true);
         PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
@@ -895,7 +904,7 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPa
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
         if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
-            SceneGraphNode_ptr selection(_currentSelection.lock());
+            SceneGraphNode_ptr selection(_currentSelection[0].lock());
             if (selection != nullptr) {
                 selection->get<RenderingComponent>()->drawDebugAxis();
             }
@@ -956,8 +965,11 @@ bool Scene::checkCameraUnderwater() const {
     return false;
 }
 
-void Scene::findHoverTarget() {
-    const Camera& crtCamera = *Camera::activeCamera();
+void Scene::findHoverTarget(U8 playerIndex) {
+    assert(playerIndex < to_ubyte(_scenePlayers.size()));
+
+    const Camera& crtCamera = _scenePlayers[playerIndex]->getCamera();
+
     const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
     const vec2<I32>& mousePos = _input->getMousePosition();
@@ -983,25 +995,25 @@ void Scene::findHoverTarget() {
     }
 
     if (!_sceneSelectionCandidates.empty()) {
-        _currentHoverTarget = _sceneSelectionCandidates.front();
-        std::shared_ptr<SceneNode> node = _currentHoverTarget.lock()->getNode();
+        _currentHoverTarget[playerIndex] = _sceneSelectionCandidates.front();
+        std::shared_ptr<SceneNode> node = _currentHoverTarget[playerIndex].lock()->getNode();
         if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
             if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::SUBMESH) {
-                _currentHoverTarget = _currentHoverTarget.lock()->getParent();
+                _currentHoverTarget[playerIndex] = _currentHoverTarget[playerIndex].lock()->getParent();
             }
         }
 
-        SceneGraphNode_ptr target = _currentHoverTarget.lock();
+        SceneGraphNode_ptr target = _currentHoverTarget[playerIndex].lock();
         if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
         }
     } else {
-        SceneGraphNode_ptr target(_currentHoverTarget.lock());
+        SceneGraphNode_ptr target(_currentHoverTarget[playerIndex].lock());
         if (target) {
             if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
                 target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
             }
-            _currentHoverTarget.reset();
+            _currentHoverTarget[playerIndex].reset();
         }
 
     }
@@ -1009,26 +1021,26 @@ void Scene::findHoverTarget() {
 }
 
 void Scene::resetSelection() {
-    if (!_currentSelection.expired()) {
-        _currentSelection.lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
+    if (!_currentSelection[0].expired()) {
+        _currentSelection[0].lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
     }
 
-    _currentSelection.reset();
+    _currentSelection[0].reset();
 }
 
 void Scene::findSelection() {
-    bool hadTarget = !_currentSelection.expired();
-    bool haveTarget = !_currentHoverTarget.expired();
+    bool hadTarget = !_currentSelection[0].expired();
+    bool haveTarget = !_currentHoverTarget[0].expired();
 
-    I64 crtGUID = hadTarget ? _currentSelection.lock()->getGUID() : -1;
-    I64 GUID = haveTarget ? _currentHoverTarget.lock()->getGUID() : -1;
+    I64 crtGUID = hadTarget ? _currentSelection[0].lock()->getGUID() : -1;
+    I64 GUID = haveTarget ? _currentHoverTarget[0].lock()->getGUID() : -1;
 
     if (crtGUID != GUID) {
         resetSelection();
 
         if (haveTarget) {
-            _currentSelection = _currentHoverTarget;
-            _currentSelection.lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
+            _currentSelection[0] = _currentHoverTarget[0];
+            _currentSelection[0].lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
         }
 
         for (DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {
@@ -1050,9 +1062,8 @@ bool Scene::load(ByteBuffer& inputBuffer) {
 
         inputBuffer >> camPos >> camEuler;
 
-        Camera& cam = *Camera::activeCamera();
-        cam.setEye(camPos);
-        cam.setGlobalRotation(-camEuler);
+        _baseCamera->setEye(camPos);
+        _baseCamera->setGlobalRotation(-camEuler);
     }
 
     return true;

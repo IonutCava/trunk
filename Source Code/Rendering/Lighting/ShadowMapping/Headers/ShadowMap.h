@@ -78,7 +78,7 @@ class NOINITVTABLE ShadowMap {
     static void initShadowMaps(GFXDevice& context);
     static void clearShadowMaps(GFXDevice& context);
     static void bindShadowMaps(GFXDevice& context);
-    static U32 findDepthMapLayer(ShadowType shadowType);
+    static U16  findDepthMapLayer(ShadowType shadowType);
     static void commitDepthMapLayer(ShadowType shadowType, U32 layer);
     static bool freeDepthMapLayer(ShadowType shadowType, U32 layer);
     static void clearShadowMapBuffers(GFXDevice& context);
@@ -92,7 +92,7 @@ class NOINITVTABLE ShadowMap {
     static std::array<LayerUsageMask, to_const_uint(ShadowType::COUNT)> _depthMapUsage;
     
     ShadowType _shadowMapType;
-    U32 _arrayOffset;
+    U16 _arrayOffset;
     /// Internal pointer to the parent light
     Light* _light;
     Camera* _shadowCamera;

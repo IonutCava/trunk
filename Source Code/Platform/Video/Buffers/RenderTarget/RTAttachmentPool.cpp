@@ -26,6 +26,18 @@ RTAttachmentPool::~RTAttachmentPool()
     }
 }
 
+void RTAttachmentPool::copy(const RTAttachmentPool& other) {
+    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+        for (U8 j = 0; j < other._attachment[i].size(); ++j) {
+            const RTAttachment_ptr& att = other._attachment[i][j];
+            if (att != nullptr) {
+                RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
+                add(type, j, att->descriptor(), other.keepPrevFrame(type, j));
+            }
+        }
+    }
+}
+
 bool RTAttachmentPool::frameEnded(const FrameEvent& evt) {
     for (const std::pair<RTAttachment::Type, U8> &entry : _attachmentHistoryIndex) {
         RTAttachment_ptr& crt = getInternal(_attachment, entry.first, entry.second);

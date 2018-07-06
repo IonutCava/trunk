@@ -39,9 +39,22 @@ namespace Divide {
 
 class GFXRTPool {
 protected:
+    typedef vectorImpl<RenderTarget*> TargetsPerUsage;
+    typedef std::array<TargetsPerUsage, to_const_uint(RenderTargetUsage::COUNT)> RenderTargets;
+    typedef vectorImpl<RenderTargets> RenderTargetPool;
+
+protected:
     friend class GFXDevice;
-    GFXRTPool();
+    explicit GFXRTPool(GFXDevice& parent);
     ~GFXRTPool();
+
+    void resize(U8 size);
+    
+    void resizeTargets(RenderTargetUsage target, U16 width, U16 height);
+
+    inline void poolIndex(U8 index) {
+        _poolIndex = index;
+    }
 
     inline RenderTarget& renderTarget(const RenderTargetHandle& handle) {
         return renderTarget(handle._targetID);
@@ -52,15 +65,15 @@ protected:
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target) {
-        return *_renderTargets[to_uint(target._usage)][target._index];
+        return *_renderTargets[_poolIndex][to_uint(target._usage)][target._index];
     }
 
     inline const RenderTarget& renderTarget(RenderTargetID target) const {
-        return *_renderTargets[to_uint(target._usage)][target._index];
+        return *_renderTargets[_poolIndex][to_uint(target._usage)][target._index];
     }
 
     inline vectorImpl<RenderTarget*>& renderTargets(RenderTargetUsage target) {
-        return _renderTargets[to_uint(target)];
+        return _renderTargets[_poolIndex][to_uint(target)];
     }
 
     inline void set(const RenderTargetHandle& handle, RenderTarget* newTarget) {
@@ -73,7 +86,17 @@ protected:
     bool remove(RenderTargetHandle& handle);
 
 protected:
-    std::array<vectorImpl<RenderTarget*>, to_const_uint(RenderTargetUsage::COUNT)> _renderTargets;
+    void duplicateTargets(U8 targetIndex, const RenderTargets& src, RenderTargets& dest);
+
+protected:
+    SET_SAFE_DELETE_FRIEND
+
+    GFXDevice& _parent;
+
+    U8 _poolSize;
+    U8 _poolIndex;
+
+    RenderTargetPool _renderTargets;
 };
 }; //namespace Divide
 

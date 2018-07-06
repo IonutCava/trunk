@@ -100,7 +100,7 @@ void WarScene::checkGameCompletion() {
     }
 }
 
-void WarScene::registerPoint(U8 teamID, const stringImpl& unitName) {
+void WarScene::registerPoint(U16 teamID, const stringImpl& unitName) {
     if (!_resetUnits) {
         _resetUnits = true;
 

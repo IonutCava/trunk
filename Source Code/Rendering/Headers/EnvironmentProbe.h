@@ -77,13 +77,13 @@ public:
 protected:
     void updateInternal();
 
-    static U32 allocateSlice();
+    static U16 allocateSlice();
 
 protected:
     ProbeType _type;
     U8 _updateRate;
     U8 _currentUpdateCall;
-    U32 _currentArrayIndex;
+    U16 _currentArrayIndex;
     BoundingBox _aabb;
     IMPrimitive* _boundingBoxPrimitive;
     std::shared_ptr<ImpostorSphere> _impostor;

@@ -37,6 +37,7 @@
 namespace Divide {
 
 /// User controlled Unit
+class Camera;
 class Player : public Character {
    public:
     Player(SceneGraphNode_ptr node);
@@ -45,8 +46,12 @@ class Player : public Character {
     /// Do not allow or allow the user again to control this player
     inline bool lockControlls(bool state) { _lockedControls = state; }
 
+    Camera& getCamera();
+    const Camera& getCamera() const;
+
    private:
     bool _lockedControls;
+    Camera* _playerCam;
 };
 
 };  // namespace Divide

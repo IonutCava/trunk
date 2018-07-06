@@ -72,13 +72,28 @@ void ProfileTimer::addChildTimer(ProfileTimer& child) {
     child._parent = _globalIndex;
 }
 
+void ProfileTimer::removeChildTimer(ProfileTimer& child) {
+    U32 childID = child._globalIndex;
+
+    _children.erase(
+        std::remove_if(std::begin(_children),
+                       std::end(_children),
+                       [childID](U32 entry) {
+                           return entry == childID;
+                        }),
+        std::end(_children));
+    child._parent = Config::Profile::MAX_PROFILE_TIMERS + 1;
+}
+
 stringImpl ProfileTimer::print(U32 level) const {
     if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
         stringImpl ret(Util::StringFormat("[ %s ] : [ %5.3f ms]",
                                           _name.c_str(),
                                           MicrosecondsToMilliseconds<F32>(get())));
         for (U32 child : _children) {
-            ret.append("\n    " + g_profileTimers[child].print(level + 1));
+            if (g_profileTimersState[child]) {
+                ret.append("\n    " + g_profileTimers[child].print(level + 1));
+            }
         }
 
         for (U32 i = 0; i < level; ++i) {
@@ -141,6 +156,9 @@ ProfileTimer& ProfileTimer::getNewTimer(const char* timerName) {
 
 void ProfileTimer::removeTimer(ProfileTimer& timer) {
     g_profileTimersState[timer._globalIndex] = false;
+    if (timer._parent < Config::Profile::MAX_PROFILE_TIMERS) {
+        g_profileTimers[timer._parent].removeChildTimer(timer);
+    }
 }
 
 };  // namespace Time

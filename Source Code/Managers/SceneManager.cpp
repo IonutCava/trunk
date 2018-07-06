@@ -131,6 +131,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
         _sceneData = MemoryManager_NEW SceneShaderData(platformContext.gfx());
         _renderPassCuller = MemoryManager_NEW RenderPassCuller();
         _scenePool->init();
+
         _init = true;
     } else {
         _init = false;
@@ -275,7 +276,17 @@ void SceneManager::initPostLoadState() {
     _processInput = true;
 }
 
-bool SceneManager::addPlayer(const Player_ptr& player) {
+void SceneManager::onChangeResolution(U16 w, U16 h) {
+    const ParamHandler& par = ParamHandler::instance();
+    for (const Player_ptr& player : getPlayers()) {
+        player->getCamera().setProjection(to_float(w) / to_float(h),
+                                          par.getParam<F32>(_ID("rendering.verticalFOV")),
+                                          vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
+                                                    par.getParam<F32>(_ID("rendering.zFar"))));
+    }
+}
+
+bool SceneManager::addPlayer(const Scene& parentScene, const Player_ptr& player) {
     // If the player isn't in the list already
     I64 targetGUID = player->getGUID();
     if (std::find_if(std::begin(_players),
@@ -285,13 +296,17 @@ bool SceneManager::addPlayer(const Player_ptr& player) {
                      }) == std::end(_players)) {
 
         _players.push_back(player);
+        _platformContext->gfx().resizePool(to_ubyte(_players.size()));
+        player->getCamera().fromCamera(Attorney::SceneManager::baseCamera(parentScene));
+        player->getCamera().setFixedYawAxis(true);
+
         return true;
     }
 
     return false;
 }
 
-bool SceneManager::removePlayer(Player_ptr& player) {
+bool SceneManager::removePlayer(const Scene& parentScene, Player_ptr& player) {
     if (player) {
         I64 targetGUID = player->getGUID();
         vectorAlg::vecSize initialSize = _players.size();
@@ -304,7 +319,10 @@ bool SceneManager::removePlayer(Player_ptr& player) {
                            }),
             std::end(_players));
 
-        return initialSize != _players.size();
+        if (initialSize != _players.size()) {
+            _platformContext->gfx().resizePool(to_ubyte(_players.size()));
+            return true;
+        }
     }
 
     return false;
@@ -406,10 +424,10 @@ bool SceneManager::generateShadowMaps() {
     return lightPool->generateShadowMaps(_platformContext->gfx(), activeScene.renderState());
 }
 
-Camera* SceneManager::getDefaultCamera() const {
+Camera* SceneManager::getActiveCamera() const {
     Camera* overrideCamera = getActiveScene().state().overrideCamera();
     if (overrideCamera == nullptr) {
-        return Camera::findCamera(Camera::DefaultCameraHash);
+        return Camera::activePlayerCamera();
     }
 
     return overrideCamera;

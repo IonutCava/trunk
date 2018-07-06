@@ -88,6 +88,8 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
    public:
     virtual ~RenderTarget();
 
+    virtual void copy(const RenderTarget& other);
+
     static RTDrawDescriptor& defaultPolicy();
     static RTDrawDescriptor& defaultPolicyKeepDepth();
     static RTDrawDescriptor& defaultPolicyDepthOnly();
@@ -125,6 +127,8 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
 
     U16 getWidth()  const;
     U16 getHeight() const;
+
+    const stringImpl& getName() const;
 
    protected:
     virtual bool checkStatus() const = 0;
