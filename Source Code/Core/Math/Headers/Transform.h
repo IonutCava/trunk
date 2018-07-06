@@ -336,7 +336,7 @@ class Transform : public GUIDWrapper, private NonCopyable {
     /// Set position, scale and rotation based on the specified transform values
     inline void setValues(const TransformValues& values) {
         this->_dirty = true;
-
+        this->_rebuildMatrix = true;
         WriteLock w_lock(this->_lock);
         this->_transformValues._scale.set(values._scale);
         this->_transformValues._translation.set(values._translation);

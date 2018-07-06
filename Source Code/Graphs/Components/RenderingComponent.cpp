@@ -196,7 +196,7 @@ void RenderingComponent::renderGeometry(const bool state) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
-            renderable->renderGeometry(_renderGeometry);
+            renderable->renderGeometry(state);
         }
     }
 }
@@ -208,18 +208,19 @@ void RenderingComponent::renderWireframe(const bool state) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
-            renderable->renderWireframe(_renderWireframe);
+            renderable->renderWireframe(state);
         }
     }
 }
 
 void RenderingComponent::renderBoundingBox(const bool state) {
     _renderBoundingBox = state;
+
     for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
-            renderable->renderBoundingBox(_renderBoundingBox);
+            renderable->renderBoundingBox(state);
         }
     }
 }
@@ -231,7 +232,7 @@ void RenderingComponent::renderSkeleton(const bool state) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
-            renderable->renderSkeleton(_renderSkeleton);
+            renderable->renderSkeleton(state);
         }
     }
 }
@@ -494,10 +495,8 @@ void RenderingComponent::boundingBoxUpdatedCallback() {
 
 void RenderingComponent::setActive(const bool state) {
     if (!state) {
-        _boundingBoxPrimitive->paused(true);
-        if (_skeletonPrimitive) {
-            _skeletonPrimitive->paused(true);
-        }
+        renderSkeleton(false);
+        renderBoundingBox(false);
     }
     SGNComponent::setActive(state);
 }

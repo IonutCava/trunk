@@ -356,7 +356,7 @@ const vec3<F32>& PhysicsComponent::getScale(D32 interpolationFactor,
                                             const bool local) {
     vec3<F32>& scale = _cacheTransformValues._scale;
     if (_transform) {
-        if (interpolationFactor < 0.975 && false) {
+        if (interpolationFactor < 0.975) {
             scale.set(Lerp(_prevTransformValues._scale, _transform->getScale(),
                            to_float(interpolationFactor)));
         } else {

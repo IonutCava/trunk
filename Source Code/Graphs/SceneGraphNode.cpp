@@ -262,9 +262,9 @@ void SceneGraphNode::setSelected(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     _wasActive = _active;
     _active = state;
-    for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
-        if (_components[i]) {
-            _components[i]->setActive(state);
+    for (std::unique_ptr<SGNComponent>& comp : _components) {
+        if (comp) {
+            comp->setActive(state);
         }
     }
 
