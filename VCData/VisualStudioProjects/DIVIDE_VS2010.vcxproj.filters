@@ -413,15 +413,6 @@
     <Filter Include="LIBS">
       <UniqueIdentifier>{81a846ac-30cb-4a09-8e1e-26ae755f3bf8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LIBS\ThreadPool">
-      <UniqueIdentifier>{90fceeca-06f8-4c5c-aa39-f20f6e3cd9d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\SimpleIni">
-      <UniqueIdentifier>{30850742-8d07-4482-98a8-e110c31c6813}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\SimpleIni\Header">
-      <UniqueIdentifier>{55c5f205-273a-4d17-ae42-772df49c9116}</UniqueIdentifier>
-    </Filter>
     <Filter Include="LIBS\Detour">
       <UniqueIdentifier>{60783ae9-51c3-4023-8711-cee8a8bfe5ee}</UniqueIdentifier>
     </Filter>
@@ -926,75 +917,6 @@
     <ClCompile Include="..\..\Source Code\Utility\Localization.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.c">
-      <Filter>LIBS\SimpleIni</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\Recast.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastAlloc.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastArea.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastContour.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastFilter.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastLayers.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMesh.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMeshDetail.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRasterization.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRegion.cpp">
-      <Filter>LIBS\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourCrowd.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourLocalBoundary.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourObstacleAvoidance.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathCorridor.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathQueue.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourProximityGrid.cpp">
-      <Filter>LIBS\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourAlloc.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourCommon.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMesh.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshBuilder.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshQuery.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNode.cpp">
-      <Filter>LIBS\Detour</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp">
       <Filter>Hardware\Video\Direct3D</Filter>
     </ClCompile>
@@ -1087,6 +1009,72 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp">
       <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourAlloc.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourCommon.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMesh.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMeshBuilder.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMeshQuery.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNode.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourCrowd.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourLocalBoundary.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourObstacleAvoidance.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourPathCorridor.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourPathQueue.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourProximityGrid.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Recast.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastAlloc.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastArea.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastContour.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastFilter.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastLayers.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMesh.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMeshDetail.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRasterization.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRegion.cpp">
+      <Filter>LIBS\ReCast</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1466,66 +1454,6 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\threadpool.hpp">
-      <Filter>LIBS\ThreadPool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\SimpleIni.h">
-      <Filter>LIBS\SimpleIni\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.h">
-      <Filter>LIBS\SimpleIni\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\Recast.h">
-      <Filter>LIBS\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAlloc.h">
-      <Filter>LIBS\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAssert.h">
-      <Filter>LIBS\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourCrowd.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourLocalBoundary.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourObstacleAvoidance.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathCorridor.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathQueue.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourProximityGrid.h">
-      <Filter>LIBS\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAlloc.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAssert.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourCommon.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMesh.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshBuilder.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshQuery.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNode.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourStatus.h">
-      <Filter>LIBS\Detour\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Audio\Headers\AudioAPIWrapper.h">
       <Filter>Hardware\Audio\Headers</Filter>
     </ClInclude>
@@ -1675,6 +1603,57 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h">
       <Filter>AI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourAlloc.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourAssert.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourCommon.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMesh.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMeshBuilder.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMeshQuery.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNode.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourStatus.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourCrowd.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourLocalBoundary.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourObstacleAvoidance.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourPathCorridor.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourPathQueue.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourProximityGrid.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\Recast.h">
+      <Filter>LIBS\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAlloc.h">
+      <Filter>LIBS\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAssert.h">
+      <Filter>LIBS\ReCast\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

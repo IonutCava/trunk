@@ -18,29 +18,30 @@
 #ifndef PHYSX_H_
 #define PHYSX_H_
 
-#include "core.h"
-
 //PhysX includes
-#include < PxPhysicsAPI.h> 
-#include < PxExtensionsAPI.h>
-#include < PxDefaultErrorCallback.h>
-#include < PxDefaultAllocator.h>
-#include < PxDefaultSimulationFilterShader.h>
-#include < PxDefaultCpuDispatcher.h>
-#include < PxShapeExt.h>
-#include < PxMat33Legacy.h> 
-#include < PxSimpleFactory.h>
+#ifdef _PLATFORM_DEFINES_H_
+#undef U8
+#undef U16
+#undef U32
+#undef U64
+#undef _PLATFORM_DEFINES_H_
+#define _P_D_TYPES_ONLY_
+#endif
+#include "config.h"
+#include < PxPhysicsAPI.h >
+#include < PxDefaultErrorCallback.h >
+#include < PxDefaultAllocator.h > 
+#include < PxVisualDebuggerExt.h>
 //PhysX includes //
+#include "core.h"
+//PhysX libraries
+#pragma comment(lib, "PhysX3CHECKED_x86.lib")
+#pragma comment(lib, "PhysX3CommonCHECKED_x86.lib")
+#pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
+#pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
+//PhysX libraries //
 
 #include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
-
-//PhysX libraries
-#pragma comment(lib, "PhysX3_x86.lib")
-#pragma comment(lib, "PxTask.lib")
-#pragma comment(lib, "Foundation.lib")
-#pragma comment(lib, "PhysX3Extensions.lib")
-#pragma comment(lib, "GeomUtils.lib") 
-//PhysX libraries //
 
 class SceneGraphNode;
 class PhysXSceneInterface;
@@ -68,11 +69,13 @@ public:
    inline const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}
 
 private:
-	PhysXSceneInterface* _currentScene;
+    PhysXSceneInterface* _currentScene;
 	physx::PxPhysics* _gPhysicsSDK ;
+	physx::PxFoundation* _foundation;
 	physx::PxDefaultErrorCallback _gDefaultErrorCallback;
 	physx::PxDefaultAllocator _gDefaultAllocatorCallback;
 	physx::PxSimulationFilterShader _gDefaultFilterShader;
+	physx::debugger::comm::PvdConnectionManager* _pvdConnection;
 	boost::mutex _physxMutex;
 
 END_SINGLETON

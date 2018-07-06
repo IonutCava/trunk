@@ -18,6 +18,8 @@
 #define F32 float
 #define D32 double
 
+#ifndef _P_D_TYPES_ONLY_
+
 #define TEST_EPSILON std::numeric_limits<float>::epsilon()
 #define IS_ZERO(X)  (fabs(X) < TEST_EPSILON)
 #define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
@@ -38,5 +40,7 @@ typedef union {
 	U32 i;
 	packed_int b;
 } P32;
-
+#else
+#undef _P_D_TYPES_ONLY_
+#endif
 #endif

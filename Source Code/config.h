@@ -27,6 +27,10 @@
 #ifndef _CONFIG_HEADER_
 #define _CONFIG_HEADER_
 
+#ifndef _DEBUG
+	#define NDEBUG
+#endif
+
 ///Edit the maximum number of concurrent threads that this application may start excluding events.
 ///Default 5: Rendering + Update + A.I. + Networking + PhysX
 #ifndef THREAD_LIMIT

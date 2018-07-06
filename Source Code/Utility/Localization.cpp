@@ -1,5 +1,5 @@
 #include "Headers/Localization.h"
-#include <simpleini/SimpleIni.h>
+#include <SimpleIni.h>
 
 namespace Locale {
 

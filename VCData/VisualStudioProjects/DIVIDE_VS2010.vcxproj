@@ -59,7 +59,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\freeglut\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(OutDir)../Source Code;$(OutDir)../Source Code/Libs\includes;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -75,12 +75,12 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;CEGUIBase_Static_d.lib;CEGUIExpatParser_Static_d.lib;CEGUISILLYImageCodec_Static_d.lib;CEGUIOpenGLRenderer_Static_d.lib;CEGUIFalagardWRBase_Static_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking_d.lib;SDL.lib;SDL_mixer.lib;freeglut_static_d.lib;OIS_static_d.lib;freetype_d.lib;expat_d.lib;SILLY.lib;pcre_d.lib;libpng_d.lib;libtiff_d.lib;zlib_d.lib;jpeg_d.lib;CEGUIBase_Static_d.lib;CEGUIExpatParser_Static_d.lib;CEGUISILLYImageCodec_Static_d.lib;CEGUIOpenGLRenderer_Static_d.lib;CEGUIFalagardWRBase_Static_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Debug;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\freeglut\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib; LIBCPMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib; LIBCPMT.lib;LIBCPMTD.lib;</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
       <Profile>true</Profile>
@@ -92,7 +92,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\freeglut\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(OutDir)../Source Code;$(OutDir)../Source Code/Libs\includes;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -105,9 +105,9 @@
       <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;CEGUIBase_Static.lib;CEGUIExpatParser_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUIOpenGLRenderer_Static.lib;CEGUIFalagardWRBase_Static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;freeglut_static.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;CEGUIBase_Static.lib;CEGUIExpatParser_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUIOpenGLRenderer_Static.lib;CEGUIFalagardWRBase_Static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Release;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\freeglut\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -206,29 +206,28 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderGenerator.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Textures\Texture.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.c" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourCrowd.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourLocalBoundary.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourObstacleAvoidance.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathCorridor.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathQueue.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourProximityGrid.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourAlloc.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourCommon.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshBuilder.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshQuery.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNode.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\Recast.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastAlloc.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastArea.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastContour.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastFilter.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastLayers.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMeshDetail.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRasterization.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRegion.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourCrowd.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourLocalBoundary.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourObstacleAvoidance.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourPathCorridor.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourPathQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourProximityGrid.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourAlloc.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourCommon.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMeshBuilder.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMeshQuery.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\DetourNode.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Recast.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastAlloc.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastArea.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastContour.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastFilter.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastLayers.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMeshDetail.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRasterization.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRegion.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp" />
@@ -387,26 +386,23 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderGenerator.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\Texture.h" />
-    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.h" />
-    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\SimpleIni.h" />
-    <ClInclude Include="..\..\Source Code\Libs\includes\threadpool.hpp" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourCrowd.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourLocalBoundary.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourObstacleAvoidance.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathCorridor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathQueue.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourProximityGrid.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAlloc.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAssert.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourCommon.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMesh.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshBuilder.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshQuery.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNode.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourStatus.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\Recast.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAlloc.h" />
-    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAssert.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourCrowd.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourLocalBoundary.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourObstacleAvoidance.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourPathCorridor.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourPathQueue.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourProximityGrid.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourAlloc.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourAssert.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourCommon.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMesh.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMeshBuilder.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMeshQuery.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNode.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourStatus.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\Recast.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAlloc.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAssert.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />

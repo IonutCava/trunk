@@ -59,7 +59,8 @@ bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
 		}
 	}
 
-	if(!boundingBox.ContainsPoint(frust.getEyePos())){
+	vec3<F32> eye = frust.getEyePos();
+	if(!boundingBox.ContainsPoint(eye)){
 		I8 resSphereInFrustum = frust.ContainsSphere(center, radius);
 		switch(resSphereInFrustum) {
 			case FRUSTUM_OUT: return false;

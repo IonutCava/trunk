@@ -132,11 +132,11 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 																	          source->mBitangents[j].y,
 																		      source->mBitangents[j].z));
 		}
-		
+
 		if( source->HasBones())	{
 			vec4<U8>  boneIndices( 0, 0, 0, 0 );
 			vec4<F32> boneWeights( 0, 0, 0, 0 );
-			ai_assert( weightsPerVertex[j].size() <= 4);
+			assert( weightsPerVertex[j].size() <= 4);
 
 			for( U8 a = 0; a < weightsPerVertex[j].size(); a++){
 
