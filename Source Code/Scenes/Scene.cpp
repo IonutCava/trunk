@@ -34,7 +34,8 @@ Scene::Scene()
       _cookCollisionMeshesScheduled(false),
       _paramHandler(ParamHandler::getInstance()),
       _currentSelection(nullptr),
-      _currentSky(nullptr) {
+      _currentSky(nullptr)
+{
     _mousePressed[OIS::MB_Left] = false;
     _mousePressed[OIS::MB_Right] = false;
     _mousePressed[OIS::MB_Middle] = false;
@@ -43,6 +44,8 @@ Scene::Scene()
     _mousePressed[OIS::MB_Button5] = false;
     _mousePressed[OIS::MB_Button6] = false;
     _mousePressed[OIS::MB_Button7] = false;
+
+    _sceneGraph.load();
 }
 
 Scene::~Scene() {}
@@ -408,6 +411,8 @@ void Scene::clearObjects() {
         _modelDataArray.pop();
     }
     _vegetationDataArray.clear();
+
+    _sceneGraph.unload();
 }
 
 void Scene::clearLights() { LightManager::getInstance().clear(); }

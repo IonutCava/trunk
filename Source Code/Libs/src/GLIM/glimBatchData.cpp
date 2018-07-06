@@ -508,25 +508,30 @@ namespace NS_GLIM
 
         // upload the index buffer for the points
         if (m_uiPointElements > 0) {
-            glNamedBufferData (m_uiElementBufferID_Points, m_uiPointElements * sizeof(unsigned int), m_IndexBuffer_Points.data(), GL_STATIC_DRAW);
+            //glNamedBufferData(
+            gl45ext::glNamedBufferDataEXT(
+                m_uiElementBufferID_Points, m_uiPointElements * sizeof(unsigned int), m_IndexBuffer_Points.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Points.clear ();
         }
             
         // upload the index buffer for the lines
         if (m_uiLineElements > 0) {
-            glNamedBufferData (m_uiElementBufferID_Lines, m_uiLineElements * sizeof(unsigned int), m_IndexBuffer_Lines.data(), GL_STATIC_DRAW);
+            //glNamedBufferData(
+            gl45ext::glNamedBufferDataEXT(m_uiElementBufferID_Lines, m_uiLineElements * sizeof(unsigned int), m_IndexBuffer_Lines.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Lines.clear ();
         }
 
         // upload the index buffer for the triangles
         if (m_uiTriangleElements > 0) {
-            glNamedBufferData (m_uiElementBufferID_Triangles, m_uiTriangleElements * sizeof(unsigned int), m_IndexBuffer_Triangles.data(), GL_STATIC_DRAW);
+            //glNamedBufferData(
+            gl45ext::glNamedBufferDataEXT(m_uiElementBufferID_Triangles, m_uiTriangleElements * sizeof(unsigned int), m_IndexBuffer_Triangles.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Triangles.clear ();
         }
 
         // upload the index buffer for the wireframe
         if (m_uiWireframeElements > 0) {
-            glNamedBufferData (m_uiElementBufferID_Wireframe, m_uiWireframeElements * sizeof(unsigned int), m_IndexBuffer_Wireframe.data(), GL_STATIC_DRAW);
+            //glNamedBufferData(
+            gl45ext::glNamedBufferDataEXT(m_uiElementBufferID_Wireframe, m_uiWireframeElements * sizeof(unsigned int), m_IndexBuffer_Wireframe.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Wireframe.clear ();
         }
     }

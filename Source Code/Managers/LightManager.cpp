@@ -89,10 +89,12 @@ bool LightManager::clear() {
 
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
 
-    // Lights are removed by the sceneGraph
-    for (Light::LightMap::value_type& it : _lights) {
+    // Lights are removed by the sceneGraph 
+    // (range_based for-loops will fail due to iterator invalidation
+    U32 lightCount = _lights.size();
+    for (U32 i = 0; i < lightCount; i++) {
         // in case we had some light hanging
-        RemoveResource(it.second);
+        RemoveResource(_lights[i]);
     }
 
     _lights.clear();

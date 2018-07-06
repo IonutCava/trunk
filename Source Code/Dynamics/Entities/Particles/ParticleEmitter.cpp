@@ -134,8 +134,9 @@ bool ParticleEmitter::unload() {
     if (getState() != RES_LOADED && getState() != RES_LOADING) {
         return true;
     }
-
-    UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
+    if (_particleTexture) {
+        UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
+    }
     UNREGISTER_TRACKED_DEPENDENCY(_particleShader);
     UNREGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
     RemoveResource(_particleTexture);

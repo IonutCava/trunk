@@ -46,6 +46,9 @@ class SceneGraph : private NonCopyable {
     SceneGraph();
     ~SceneGraph();
 
+    void load();
+    void unload();
+
     inline SceneGraphNode& getRoot() const { return *_root; }
 
     inline vectorImpl<BoundingBox>& getBBoxes() {

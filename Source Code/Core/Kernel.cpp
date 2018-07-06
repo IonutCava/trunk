@@ -81,11 +81,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 }
 
 Kernel::~Kernel() {
-    _mainTaskPool->clear();
-    while (_mainTaskPool->active() > 0) {
-    }
     MemoryManager::DELETE(_mainTaskPool);
-    Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
 void Kernel::threadPoolCompleted(U64 onExitTaskID) {
@@ -584,6 +580,11 @@ void Kernel::shutdown() {
     // Destroy the shader manager AFTER the resource cache
     ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
+        
+    _mainTaskPool->clear();
+    while (_mainTaskPool->active() > 0) {
+    }
+        Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h) {

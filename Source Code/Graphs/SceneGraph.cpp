@@ -6,9 +6,23 @@
 
 namespace Divide {
 SceneGraph::SceneGraph()
-    : _root(MemoryManager_NEW SceneGraphNode(MemoryManager_NEW SceneRoot(),
-                                             "ROOT"))
+    : _root(nullptr)
 {
+    load();
+}
+
+SceneGraph::~SceneGraph()
+{
+    unload();
+}
+
+void SceneGraph::load() {
+    if (_root != nullptr) {
+        return;
+    }
+
+    _root.reset(MemoryManager_NEW SceneGraphNode(MemoryManager_NEW SceneRoot(),
+                "ROOT"));
     _root->getComponent<RenderingComponent>()->castsShadows(false);
     _root->getComponent<RenderingComponent>()->receivesShadows(false);
     _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT | TYPE_TRIGGER |
@@ -16,14 +30,17 @@ SceneGraph::SceneGraph()
                               TYPE_VEGETATION_TREES);
 }
 
-SceneGraph::~SceneGraph()
-{
+void SceneGraph::unload() {
+    if (_root == nullptr) {
+        return;
+    }
     Console::d_printfn(Locale::get("DELETE_SCENEGRAPH"));
     SceneNode* root = _root->getNode<SceneRoot>();
-    // Should recursively call unload on the entire scene graph
-    _root->unload();
     // Delete the root scene node
     MemoryManager::DELETE(root);
+    // Should recursively call unload on the entire scene graph
+    _root->unload();
+    _root.reset(nullptr);
 }
 
 void SceneGraph::idle() {

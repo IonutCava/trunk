@@ -25,6 +25,7 @@ glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped)
 glUniformBuffer::~glUniformBuffer() 
 {
     if (_UBOid > 0) {
+        DiscardAllData();
         if (_persistentMapped) {
             GL_API::setActiveBuffer(_target, _UBOid);
             glUnmapBuffer(_target);
@@ -50,8 +51,8 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
         BufferAccessMask mask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
                                 GL_MAP_COHERENT_BIT;
 
-        glNamedBufferStorage(_UBOid, _bufferSize, NULL, usage);
-        _mappedBuffer = glMapNamedBufferRange(_UBOid, 0, _bufferSize, mask);
+        //glNamedBufferStorage(_UBOid, _bufferSize, NULL, usage);
+        //_mappedBuffer = glMapNamedBufferRange(_UBOid, 0, _bufferSize, mask);
 
         STUBBED("Remove this hack when proper OpenGL4.5 support is available!")
         if (!_mappedBuffer) {
@@ -70,7 +71,8 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
                         "Can't mapped persistent buffer!");
         
     } else {
-        glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
+        //glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
+        gl45ext::glNamedBufferDataEXT(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
     }
 }
 
@@ -93,10 +95,6 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
                    "glUniformBuffer::UpdateData error: was called for an "
                    "unmapped buffer!");
 
-    if (invalidateBuffer) {
-        glNamedBufferSubData(_UBOid, 0, _bufferSize, NULL);
-    }
-
     if (size == 0 || !data) {
         return;
     }
@@ -108,7 +106,12 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
         memcpy(dst, data, size);
         _lockManager->LockRange(offset, size);
     } else {
-        glNamedBufferSubData(_UBOid, offset, size, data);
+        if (invalidateBuffer) {
+            //glNamedBufferSubData(_UBOid, 0, _bufferSize, NULL);
+            gl45ext::glNamedBufferSubDataEXT(_UBOid, 0, _bufferSize, NULL);
+        }
+        //glNamedBufferSubData(_UBOid, offset, size, data);
+        gl45ext::glNamedBufferSubDataEXT(_UBOid, offset, size, data);
     }
 }
 
