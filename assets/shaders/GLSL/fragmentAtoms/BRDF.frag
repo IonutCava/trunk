@@ -68,12 +68,14 @@ vec4 getPixelColour(const in vec2 texCoord) {
         vec3 lightColour = vec3(0.0);
         // Apply all lighting contributions
         uint lightIdx;
+        
+        uint directionalLightCount = dvd_lightCountPerType[LIGHT_DIRECTIONAL];
         // Directional lights
-        for (lightIdx = 0; lightIdx < dvd_lightCountPerType[0]; ++lightIdx) {
+        for (lightIdx = 0; lightIdx < directionalLightCount; ++lightIdx) {
             getBRDFFactors(int(lightIdx), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
         }
 
-        uint offset = dvd_lightCountPerType[0];
+        uint offset = directionalLightCount;
         // Point lights
         uint nIndex = uint(dvd_otherData.w) * GetTileIndex(gl_FragCoord.xy);
         uint nNextLightIndex = perTileLightIndices[nIndex];
@@ -84,7 +86,7 @@ vec4 getPixelColour(const in vec2 texCoord) {
             getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
         }
 
-        offset = dvd_lightCountPerType[1];
+        offset = dvd_lightCountPerType[LIGHT_OMNIDIRECTIONAL];
         // Spot lights
         // Moves past the first sentinel to get to the spot lights.
         nNextLightIndex = perTileLightIndices[++nIndex];
@@ -101,9 +103,9 @@ vec4 getPixelColour(const in vec2 texCoord) {
     if (isReflective(reflectionCoeff)) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
-        colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
+        /*colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
                     colour,
-                    vec3(reflectionCoeff));
+                    vec3(reflectionCoeff));*/
 
     }
 

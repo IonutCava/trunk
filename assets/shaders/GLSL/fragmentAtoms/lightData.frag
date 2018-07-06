@@ -39,12 +39,11 @@ float getLightAttenuation(const in vec3 lightDirection) {
 
 //non-normalized light direction!
 vec3 getLightDirection() {
-    int lightType = int(dvd_private_light._options.x);
+    if (int(dvd_private_light._options.x) == LIGHT_DIRECTIONAL) {
+        return -dvd_private_light._positionWV.xyz;
+    }
 
-    return mix(dvd_private_light._positionWV.xyz - VAR._vertexWV.xyz,
-               -dvd_private_light._positionWV.xyz,
-               vec3(lightType == LIGHT_DIRECTIONAL));
-
+    return dvd_private_light._positionWV.xyz - VAR._vertexWV.xyz;
 }
 
 #endif

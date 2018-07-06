@@ -489,7 +489,7 @@ void SceneManager::preRender(const Camera& camera, RenderTarget& target, GFX::Co
     gfx.getRenderer().preRender(target, *lightPool, bufferInOut);
 
     if (gfx.getRenderStage().stage() == RenderStage::DISPLAY) {
-        PostFX::instance().cacheDisplaySettings(gfx);
+        PostFX::instance().cacheDisplaySettings(gfx, camera);
     }
 }
 

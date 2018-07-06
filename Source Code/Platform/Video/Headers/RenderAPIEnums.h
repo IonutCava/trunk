@@ -95,19 +95,6 @@ enum class ShaderBufferLocation : U32 {
     COUNT
 };
 
-/// Fixed pipeline functionality should be avoided. Both D3D and OGL should have
-/// these matrices
-enum class MATRIX : U32 {
-    VIEW = 0,
-    VIEW_INV = 1,
-    PROJECTION = 2,
-    PROJECTION_INV = 3,
-    VIEW_PROJECTION = 4,
-    // ViewProjection matrix's invers: inverse (VIEW_PROJECTION)
-    VIEW_PROJECTION_INV = 5,  
-    TEXTURE = 6
-};
-
 /// Using multiple threads for streaming and issuing API specific construction
 /// commands to the rendering API will
 /// cause problems with libraries such as ASSIMP or with the scenegraph. Having

@@ -226,7 +226,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // backed up from the camera's view direction
             _axisGizmo->worldMatrix(mat4<F32>(-activeCamera.getForwardDir() * 2,
                                                VECTOR3_ZERO,
-                                               activeCamera.getUpDir()) * getMatrix(MATRIX::VIEW_INV));
+                                               activeCamera.getUpDir()) * activeCamera.getViewMatrix().getInverse());
             bufferInOut.add(_axisGizmo->toCommandBuffer());
         }
     }

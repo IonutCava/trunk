@@ -61,7 +61,7 @@ class NOINITVTABLE PreRenderOperator {
 
     virtual TextureData getDebugOutput() const;
 
-    static void cacheDisplaySettings(const GFXDevice& context);
+    static void cacheDisplaySettings(const GFXDevice& context, const Camera& camera);
 
    protected:
     GFXDevice& _context;

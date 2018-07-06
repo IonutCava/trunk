@@ -226,9 +226,6 @@ public:  // GPU interface
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
-    void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
-    /// Alternative to the normal version of getMatrix
-    inline const mat4<F32>& getMatrix(const MATRIX& mode) const;
     /// Access (Read Only) rendering data used by the GFX
     inline const GFXShaderData::GPUData& renderingData() const;
     /// Returns true if the viewport was changed
@@ -429,10 +426,7 @@ private:
 
     ErrorCode createAPIInstance();
 
-    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex, bool isOcclusionCullable);
-
-    mat4<F32>& getMatrixInternal(const MATRIX& mode);
-    const mat4<F32>& getMatrixInternal(const MATRIX& mode) const;
+    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, bool isOcclusionCullable);
 
 private:
     std::unique_ptr<RenderAPIWrapper> _api;

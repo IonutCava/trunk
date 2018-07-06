@@ -99,8 +99,8 @@ DEFINE_SINGLETON(PostFX)
     void setFadeOutIn(const UColour& targetColour, D64 durationMS, D64 waitDurationMS);
     void setFadeOutIn(const UColour& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 
-    inline void cacheDisplaySettings(const GFXDevice& context) {
-        PreRenderOperator::cacheDisplaySettings(context);
+    inline void cacheDisplaySettings(const GFXDevice& context, const Camera& camera) {
+        PreRenderOperator::cacheDisplaySettings(context, camera);
     }
   private:
 

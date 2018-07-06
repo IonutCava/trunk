@@ -19,16 +19,12 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
       _drawImpostor(false),
       _impostor(nullptr),
       _shadowMapInfo(nullptr),
+      _impostorSGN(nullptr),
       _castsShadows(false),
       _spotPropertiesChanged(false),
       _spotCosOuterConeAngle(0.0f)
 {
     _shadowCameras.fill(nullptr);
-
-    if (type == LightType::DIRECTIONAL) {
-        // 0,0,0 is not a valid direction for directional lights
-        _positionAndRange.set(1.0f);
-    }
 
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         _shadowProperties._lightVP[i].identity();

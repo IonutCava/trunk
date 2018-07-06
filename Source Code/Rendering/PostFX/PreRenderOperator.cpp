@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/PreRenderOperator.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
@@ -26,9 +27,9 @@ PreRenderOperator::~PreRenderOperator()
     _context.renderTargetPool().deallocateRT(_samplerCopy);
 }
 
-void PreRenderOperator::cacheDisplaySettings(const GFXDevice& context) {
-    context.getMatrix(MATRIX::PROJECTION, s_mainCamProjectionMatrixCache);
-    context.getMatrix(MATRIX::VIEW, s_mainCamViewMatrixCache);
+void PreRenderOperator::cacheDisplaySettings(const GFXDevice& context, const Camera& camera) {
+    s_mainCamViewMatrixCache = camera.getViewMatrix();
+    s_mainCamProjectionMatrixCache = camera.getProjectionMatrix();
     s_mainCamAspectRatio = context.renderingData().aspectRatio();
     s_mainCamZPlanes.set(context.renderingData().currentZPlanes());
 }

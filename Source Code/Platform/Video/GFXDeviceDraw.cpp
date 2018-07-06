@@ -91,7 +91,7 @@ void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& p
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex, bool isOcclusionCullable) {
+GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, bool isOcclusionCullable) {
     NodeData& dataOut = _matricesData[dataIndex];
 
     RenderingComponent* const renderable = node.get<RenderingComponent>();
@@ -115,7 +115,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
         dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
 
         // Calculate the normal matrix (world * view)
-        dataOut._normalMatrixWV *= getMatrix(MATRIX::VIEW);
+        dataOut._normalMatrixWV *= camera.getViewMatrix();
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
@@ -184,7 +184,7 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
                     if (refreshNodeData) {
                         Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, currentStage, cmdCount, nodeCount);
 
-                        processVisibleNode(*node, nodeCount, pkg.isOcclusionCullable());
+                        processVisibleNode(*node, nodeCount, camera, pkg.isOcclusionCullable());
 
                         for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
                             const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);

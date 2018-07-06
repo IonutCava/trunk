@@ -463,63 +463,6 @@ void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
     setBaseViewport(renderingViewport);
 }
 
-/// Return a GFXDevice specific matrix or a derivative of it
-void GFXDevice::getMatrix(const MATRIX& mode, mat4<F32>& mat) const {
-    mat.set(getMatrixInternal(mode));
-}
-
-mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) {
-    // The matrix names are self-explanatory
-    switch (mode) {
-        case  MATRIX::VIEW_PROJECTION:
-            return _gpuBlock._data._ViewProjectionMatrix;
-        case MATRIX::VIEW:
-            return _gpuBlock._data._ViewMatrix;
-        case MATRIX::PROJECTION:
-            return _gpuBlock._data._ProjectionMatrix;
-        case MATRIX::VIEW_INV: 
-            return _gpuBlock._viewMatrixInv;
-        case MATRIX::PROJECTION_INV:
-            return _gpuBlock._data._InvProjectionMatrix;
-        case MATRIX::VIEW_PROJECTION_INV:
-            return _gpuBlock._viewProjMatrixInv;
-        case MATRIX::TEXTURE:
-            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
-            break;
-        default:
-            DIVIDE_ASSERT(false, "GFXDevice error: attempted to query an invalid matrix target!");
-            break;
-    };
-    
-    return MAT4_IDENTITY;
-}
-
-const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
-    // The matrix names are self-explanatory
-    switch (mode) {
-        case  MATRIX::VIEW_PROJECTION:
-            return _gpuBlock._data._ViewProjectionMatrix;
-        case MATRIX::VIEW:
-            return _gpuBlock._data._ViewMatrix;
-        case MATRIX::PROJECTION:
-            return _gpuBlock._data._ProjectionMatrix;
-        case MATRIX::VIEW_INV:
-            return _gpuBlock._viewMatrixInv;
-        case MATRIX::PROJECTION_INV:
-            return _gpuBlock._data._InvProjectionMatrix;
-        case MATRIX::VIEW_PROJECTION_INV:
-            return _gpuBlock._viewProjMatrixInv;
-        case MATRIX::TEXTURE:
-            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
-            break;
-        default:
-            DIVIDE_ASSERT(false, "GFXDevice error: attempted to query an invalid matrix target!");
-            break;
-    };
-
-    return MAT4_IDENTITY;
-}
-
 /// set a new list of clipping planes. The old one is discarded
 void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     static_assert(std::is_same<std::remove_reference<decltype(*(_gpuBlock._data._clipPlanes))>::type, vec4<F32>>::value, "GFXDevice error: invalid clip plane type!");

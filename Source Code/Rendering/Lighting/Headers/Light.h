@@ -112,10 +112,10 @@ class Light : public SceneNode {
     }
 
     /// Get light position for omni and spot or direction for a directional light
-    inline vec3<F32> getPosition() const { return _positionAndRange.xyz(); }
+    inline const vec3<F32>& getPosition() const { return _positionAndRange.xyz(); }
 
     /// Get direction for spot lights
-    inline vec3<F32> getSpotDirection() const { return _spotProperties.xyz(); }
+    inline const vec3<F32>& getSpotDirection() const { return _spotProperties.xyz(); }
 
     inline F32 getSpotAngle() const { return _spotProperties.w; }
 

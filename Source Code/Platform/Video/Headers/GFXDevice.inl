@@ -84,11 +84,6 @@ GFXDevice::setRenderStagePass(const RenderStagePass& stage) {
     return stage;
 }
 
-/// Alternative to the normal version of getMatrix
-inline const mat4<F32>& GFXDevice::getMatrix(const MATRIX& mode) const {
-    return getMatrixInternal(mode);
-}
-
 };  // namespace Divide
 
 #endif
