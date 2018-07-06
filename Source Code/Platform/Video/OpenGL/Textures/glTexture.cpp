@@ -48,7 +48,7 @@ bool glTexture::unload() {
 void glTexture::threadedLoad(const stringImpl& name) {
     updateSampler();
     Texture::threadedLoad(name);
-    _lockManager->Lock();
+    _lockManager->Lock(_asyncLoad);
 }
 
 void glTexture::setMipMapRange(GLushort base, GLushort max) {

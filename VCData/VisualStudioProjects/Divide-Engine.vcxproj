@@ -394,6 +394,7 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\PhysicsComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\SGNComponent.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\IntersectionRecord.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h" />

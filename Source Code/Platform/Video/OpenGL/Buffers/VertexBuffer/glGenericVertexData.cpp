@@ -235,7 +235,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
                 if (_bufferIsRing[i]) {
                     offset += bufferSize * queueReadIndex();
                 }
-                _lockManagers[i]->LockRange(offset, bufferSize);
+                _lockManagers[i]->LockRange(offset, bufferSize, false);
             }
         }
     }

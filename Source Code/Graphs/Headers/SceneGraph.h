@@ -99,6 +99,7 @@ class SceneGraph : private NonCopyable, public FrameListener {
 
    private:
     bool _loadComplete;
+    bool _octreeChanged;
     SceneRoot* _rootNode;
     SceneGraphNode_ptr _root;
     std::shared_ptr<Octree> _octree;

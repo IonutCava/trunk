@@ -236,7 +236,7 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
     // Pass the rest of the loading steps to the parent class
-    _lockManager->Lock();
+    _lockManager->Lock(_asyncLoad);
     ShaderProgram::load();
 }
 

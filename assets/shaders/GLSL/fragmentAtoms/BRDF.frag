@@ -10,6 +10,45 @@
 
 vec3 processedNormal;
 
+//TEMP PBR
+/// Smith GGX Visibility
+///     nDotL: dot-prod of surface normal and light direction
+///     nDotV: dot-prod of surface normal and view direction
+///     roughness: surface roughness
+float SmithGGXVisibility(in float nDotL, in float nDotV, in float roughness)
+{
+    float rough2 = roughness * roughness;
+    float gSmithV = nDotV + sqrt(nDotV * (nDotV - nDotV * rough2) + rough2);
+    float gSmithL = nDotL + sqrt(nDotL * (nDotL - nDotL * rough2) + rough2);
+    return 1.0 / (gSmithV * gSmithL);
+}
+
+
+float SchlickG1(in float factor, in float rough2)
+{
+    return 1.0 / (factor * (1.0 - rough2) + rough2);
+}
+
+/// Schlick approximation of Smith GGX
+///     nDotL: dot product of surface normal and light direction
+///     nDotV: dot product of surface normal and view direction
+///     roughness: surface roughness
+float SchlickVisibility(float nDotL, float nDotV, float roughness)
+{
+    const float rough2 = roughness * roughness;
+    return (SchlickG1(nDotL, rough2) * SchlickG1(nDotV, rough2)) * 0.25;
+}
+
+void PBR(in int lightIndex, in vec3 normalWV, inout vec4 colorInOut) {
+    vec3 lightDirection = getLightDirection(lightIndex);
+    vec3 lightDir = normalize(lightDirection);
+    float roughness = dvd_MatShininess;
+
+
+    colorInOut = vec4(1.0);
+}
+
+//TEMP PBR
 void getBRDFFactors(in int lightIndex,
                     in vec3 normalWV,
                     inout vec3 colorInOut)
@@ -19,6 +58,7 @@ void getBRDFFactors(in int lightIndex,
 #elif defined(USE_SHADING_TOON)
 #elif defined(USE_SHADING_OREN_NAYAR)
 #else //if defined(USE_SHADING_COOK_TORRANCE)
+    PBR(lightIndex, normalWV, colorInOut);
 #endif
 }
 

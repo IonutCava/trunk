@@ -272,7 +272,22 @@ class SceneGraphNode : public GUIDWrapper,
                         const vec3<F32>& posOffset,
                         const mat4<F32>& rotationOffset);
 
+    inline void setSpatialPartitionFlag() {
+        _spatialPartitionFlag = true;
+    }
+   protected:
+    friend class Octree;
+    inline bool getSpatialPartitionFlag() const {
+        return _spatialPartitionFlag;
+    }
+    inline void clearSpatialPartitionFlag() {
+        _spatialPartitionFlag = false;
+    }
+
+    void onCollision(SceneGraphNode_wptr collider);
+
    private:
+    bool filterCollission(SceneGraphNode& node);
     inline void setName(const stringImpl& name) { _name = name; }
 
    private:
@@ -289,6 +304,7 @@ class SceneGraphNode : public GUIDWrapper,
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
     std::atomic<bool> _visibilityLocked;
+    std::atomic<bool> _spatialPartitionFlag;
 
     bool _isSelectable;
     SelectionFlag _selectionFlag;

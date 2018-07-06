@@ -96,8 +96,11 @@ class BoundingBox : public GUIDWrapper {
     void setMin(const vec3<F32>& min);
     void setMax(const vec3<F32>& max);
 
+    void set(F32 min, F32 max);
     void set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ);
+    void setMin(F32 min);
     void setMin(F32 minX, F32 minY, F32 minZ);
+    void setMax(F32 max);
     void setMax(F32 maxX, F32 maxY, F32 maxZ);
 
     void reset();

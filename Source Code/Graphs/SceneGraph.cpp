@@ -17,6 +17,7 @@ namespace {
 
 SceneGraph::SceneGraph() : FrameListener(),
                            _loadComplete(false),
+                           _octreeChanged(false),
                            _rootNode(MemoryManager_NEW SceneRoot())
 {
     REGISTER_FRAME_LISTENER(this, 1);
@@ -86,13 +87,13 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
     _allNodes.push_back(newNode.shared_from_this());
 
     if (_loadComplete) {
-        _octree->addNode(newNode.shared_from_this());
+        _octreeChanged = _octree->addNode(newNode.shared_from_this());
     }
 }
 
 void SceneGraph::onNodeTransform(SceneGraphNode& node) {
     if (_loadComplete) {
-        _octree->registerMovedNode(node);
+        node.setSpatialPartitionFlag();
     }
 }
 
@@ -128,6 +129,9 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _root->sceneUpdate(deltaTime, sceneState);
     if (_loadComplete) {
+        if (_octreeChanged) {
+            _octree->updateTree();
+        }
         _octree->update(deltaTime);
     }
 }
@@ -142,6 +146,7 @@ void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneG
 
 void SceneGraph::postLoad() {
     _octree->addNodes(_allNodes);
+    _octreeChanged = true;
     _loadComplete = true;
 }
 

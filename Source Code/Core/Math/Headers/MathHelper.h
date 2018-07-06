@@ -78,6 +78,8 @@ void CLAMP(T& n, const T min, const T max);
 template <typename T>
 T CLAMPED(const T& n, const T min, const T max);
 
+U32 nextPOW2(U32 n);
+
 ///Helper methods to go from a float to packed char and back
 U8 FLOAT_TO_CHAR(const F32 value);
 U8 FLOAT_TO_CHAR_SNORM(const F32 value);

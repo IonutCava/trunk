@@ -179,7 +179,7 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
     }
 
     if (_persistentMapped) {
-        _lockManager->LockRange(offset, range);
+        _lockManager->LockRange(offset, range, false);
     }
 
     return success;

@@ -176,14 +176,30 @@ inline void BoundingBox::set(const BoundingBox& bb) {
     set(bb._min, bb._max); 
 }
 
+inline void BoundingBox::set(F32 min, F32 max) {
+    _min.set(min);
+    _max.set(max);
+    _pointsDirty = true;
+}
+
 inline void BoundingBox::set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) {
     _min.set(minX, minY, minZ);
     _max.set(maxX, maxY, maxZ);
     _pointsDirty = true;
 }
 
+inline void BoundingBox::setMin(F32 min) {
+    _min.set(min);
+    _pointsDirty = true;
+}
+
 inline void BoundingBox::setMin(F32 minX, F32 minY, F32 minZ) {
     _min.set(minX, minY, minZ);
+    _pointsDirty = true;
+}
+
+inline void BoundingBox::setMax(F32 max) {
+    _max.set(max);
     _pointsDirty = true;
 }
 

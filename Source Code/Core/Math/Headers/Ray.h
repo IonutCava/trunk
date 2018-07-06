@@ -48,6 +48,10 @@ namespace Divide {
 
 class Ray {
    public:
+    Ray() : Ray(VECTOR3_ZERO, WORLD_Y_AXIS)
+    {
+    }
+
     Ray(const vec3<F32> &o, const vec3<F32> &d) {
         origin = o;
         direction = d;

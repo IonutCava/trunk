@@ -39,8 +39,7 @@ Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center,
     return FrustCollision::FRUSTUM_IN;
 }
 
-Frustum::FrustCollision Frustum::ContainsBoundingBox(
-    const BoundingBox& bbox) const {
+Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
     const vec3<F32>* boxCorners = bbox.getPoints();
 
     I32 iPtIn = 1, iTotalIn = 0, iInCount = 8;

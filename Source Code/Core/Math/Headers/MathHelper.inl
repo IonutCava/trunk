@@ -81,6 +81,17 @@ inline void ClearBit(U32& bitMask, const U32 bit) {
     bitMask &= ~(bit);
 }
 
+inline U32 nextPOW2(U32 n) {
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+
+    return ++n;
+}
+
 ///(thx sqrt[-1] and canuckle of opengl.org forums)
 
 // Helper method to emulate GLSL

@@ -24,6 +24,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _node(&node),
       _active(true),
       _visibilityLocked(false),
+      _spatialPartitionFlag(false),
       _isSelectable(false),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
       _boundingBoxDirty(true),
@@ -382,6 +383,19 @@ void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
         pComp->setViewOffset(posOffset, rotationOffset);
     }
     
+}
+
+bool SceneGraphNode::filterCollission(SceneGraphNode& node) {
+    // filter by mask, type, etc
+    return true;
+}
+
+void SceneGraphNode::onCollision(SceneGraphNode_wptr collider) {
+    SceneGraphNode_ptr node = collider.lock();
+    if (node && filterCollission(*node)) {
+        //handle collision
+        Console::d_printfn("Collision [ %s ] - [ %s ]", getName().c_str(), node->getName().c_str());
+    }
 }
 
 bool SceneGraphNode::cullNode(const Camera& currentCamera,

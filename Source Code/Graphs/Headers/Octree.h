@@ -32,6 +32,7 @@
 #ifndef _OCTREE_H_
 #define _OCTREE_H_
 
+#include "IntersectionRecord.h"
 #include "SceneGraphNode.h"
 
 namespace Divide {
@@ -45,15 +46,15 @@ class Octree : public std::enable_shared_from_this<Octree> {
         ~Octree();
 
         void update(const U64 deltaTime);
-        void addNode(SceneGraphNode_wptr node);
-        void addNodes(const vectorImpl<SceneGraphNode_wptr>& nodes);
-        void getAllRegions(vectorImpl<BoundingBox>& regionsOut, bool skipInactive) const;
+        bool addNode(SceneGraphNode_wptr node);
+        bool addNodes(const vectorImpl<SceneGraphNode_wptr>& nodes);
+        void getAllRegions(vectorImpl<BoundingBox>& regionsOut) const;
 
         inline const BoundingBox& getRegion() const {
             return _region;
         }
 
-        void registerMovedNode(SceneGraphNode& node);
+        void updateTree();
 
     private:
         U8 activeNodes() const;
@@ -67,6 +68,9 @@ class Octree : public std::enable_shared_from_this<Octree> {
         std::shared_ptr<Octree>
         createNode(const BoundingBox& region, SceneGraphNode_wptr object);
 
+        vectorImpl<IntersectionRecord> getIntersection(const vectorImpl<SceneGraphNode_wptr>& parentObjects);
+        void handleIntersection(SceneGraphNode_ptr node, IntersectionRecord intersection);
+
     private:
         U32 _nodeMask;
         I32 _curLife;
@@ -78,7 +82,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         std::array<std::shared_ptr<Octree>, 8> _childNodes;
         vectorImpl<SceneGraphNode_wptr> _movedObjects;
 
-        static vectorImpl<I64> _movedObjectsQueue;
+        static std::queue<SceneGraphNode_wptr> _pendingInsertion;
         static bool _treeReady;
         static bool _treeBuilt;
             

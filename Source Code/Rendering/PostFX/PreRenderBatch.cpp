@@ -10,19 +10,6 @@
 
 namespace Divide {
 
-namespace {
-    inline U32 nextPOW2(U32 n) {
-        n--;
-        n |= n >> 1;
-        n |= n >> 2;
-        n |= n >> 4;
-        n |= n >> 8;
-        n |= n >> 16;
-        n++;
-        return n;
-    }
-};
-
 PreRenderBatch::PreRenderBatch() : _adaptiveExposureControl(true),
                                    _debugOperator(nullptr),
                                    _postFXOutput(nullptr),
