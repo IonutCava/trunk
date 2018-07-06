@@ -134,12 +134,6 @@
     <Filter Include="GUI\CEGUIAddons\Headers">
       <UniqueIdentifier>{33beb6d6-b315-45b5-95eb-1a5e31998630}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GUI\GUIEditor">
-      <UniqueIdentifier>{7b6049b8-e12d-4ac7-91a2-059fe09a5160}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GUI\GUIEditor\Headers">
-      <UniqueIdentifier>{76eb6003-dd36-483c-a501-1782735b82a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphs\Components">
       <UniqueIdentifier>{641df06e-21cd-4d1b-a381-fa752da7badf}</UniqueIdentifier>
     </Filter>
@@ -396,9 +390,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\GUIDWrapper.cpp">
       <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp">
-      <Filter>GUI\GUIEditor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp">
       <Filter>Rendering\Camera</Filter>
@@ -776,9 +767,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h">
       <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h">
-      <Filter>GUI\GUIEditor\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ScriptedCamera.h">
       <Filter>Rendering\Camera\Headers</Filter>

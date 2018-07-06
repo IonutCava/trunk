@@ -1,9 +1,6 @@
-#include "Headers/MathMatrixTests.h"
+#include "Headers/Defines.h"
 
 namespace Divide {
 
-U32 run_MathMatrixTests() {
-    return NO_ERROR;
-}
 
 };

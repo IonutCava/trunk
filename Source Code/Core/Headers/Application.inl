@@ -145,6 +145,7 @@ inline bool Application::ShutdownRequested() const {
 }
 
 inline Kernel& Application::kernel() const {
+    assert(_kernel != nullptr);
     return *_kernel;
 }
 

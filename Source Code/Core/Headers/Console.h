@@ -104,6 +104,7 @@ class Console : private NonCopyable {
 
     static bool threadIDEnabled() { return _threadID; }
     static void togglethreadID(const bool state) { _threadID = state; }
+    static void toggle(const bool state) { _enabled = state; }
 
     static void bindConsoleOutput(
         const consolePrintCallback& guiConsoleCallback) {
@@ -121,6 +122,7 @@ class Console : private NonCopyable {
     static consolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
     static bool _threadID;
+    static bool _enabled;
     static std::atomic_bool _running;
     static std::thread _printThread;
     static moodycamel::BlockingConcurrentQueue<OutputEntry> _outputBuffer;

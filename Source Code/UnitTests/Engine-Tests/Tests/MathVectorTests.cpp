@@ -1,4 +1,5 @@
-#include "Headers/MathVectorTests.h"
+#include "Headers/Defines.h"
+
 #include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {

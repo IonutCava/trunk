@@ -41,7 +41,7 @@ class TaskPool;
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */
-class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_from_this<Task> {
+class Task : public GUIDWrapper, private NonCopyable {
    public:
        enum class TaskPriority : U32 {
            DONT_CARE = 0,
@@ -57,7 +57,7 @@ class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_
      */
     Task();
     ~Task();
-    
+
     void startTask(TaskPriority priority = TaskPriority::DONT_CARE);
 
     void stopTask();
@@ -126,15 +126,18 @@ struct TaskHandle {
     }
 
     inline void startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE) {
+        assert(_task != nullptr);
         _task->startTask(prio);
     }
 
     inline Task* addChildTask(Task* task) {
+        assert(_task != nullptr);
         _task->addChildTask(task);
         return task;
     }
 
     inline void wait() {
+        assert(_task != nullptr);
         _task->wait();
     }
 

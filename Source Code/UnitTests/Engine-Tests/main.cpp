@@ -1,8 +1,12 @@
-#include "Headers/TestList.h"
+#include "Core/Headers/Console.h"
+
 #include <iostream>
 #include <TestClass.cpp>
 
 int main(int argc, char **argv) {
+
+    Divide::Console::toggle(false);
+
     int state = 0;
 
     std::cout << "Running Engine Unit Tests!" << std::endl;

@@ -3,17 +3,20 @@
 
 namespace Divide {
 
-TaskPool::TaskPool() 
-    : _threadedCallbackBuffer(Config::MAX_POOLED_TASKS)
+TaskPool::TaskPool(U32 maxTaskCount)
+    : _threadedCallbackBuffer(maxTaskCount),
+      _workerThreadCount(0u),
+      _tasksPool(maxTaskCount),
+      _taskCallbacks(maxTaskCount),
+      _taskStates(maxTaskCount, false)
 {
-    assert(isPowerOfTwo(Config::MAX_POOLED_TASKS));
+    assert(isPowerOfTwo(maxTaskCount));
     _allocatedJobs = 0;
 
-    for (U32 i = 0; i < Config::MAX_POOLED_TASKS; ++i) {
+    for (U32 i = 0; i < maxTaskCount; ++i) {
         Task& task = _tasksPool[i];
         task.setOwningPool(*this, i);
     }
-    _taskStates.fill(false);
 }
 
 TaskPool::~TaskPool()
@@ -24,16 +27,13 @@ TaskPool::~TaskPool()
     _mainTaskPool.wait(0);
 }
 
-bool TaskPool::init() {
-    // We have an A.I. thread, a networking thread, a PhysX thread, the main
-    // update/rendering thread so how many threads do we allocate for tasks?
-    // That's up to the programmer to decide for each app.
-    U32 threadCount = HARDWARE_THREAD_COUNT();
+bool TaskPool::init(U32 threadCount) {
     if (threadCount <= 2) {
-        return false;;
+        return false;
     }
 
-    _mainTaskPool.size_controller().resize(std::max(threadCount + 1, 2U));
+    _workerThreadCount = std::max(threadCount + 1, 2U);
+    _mainTaskPool.size_controller().resize(_workerThreadCount);
 
     return true;
 }
@@ -71,16 +71,19 @@ TaskHandle TaskPool::getTaskHandle(I64 taskGUID) {
         }
     }
     // return the first task instead of a dummy result
-    return TaskHandle(&_tasksPool.front(), -1);
+    return _tasksPool.empty() ? TaskHandle(nullptr, -1) 
+                              : TaskHandle(&_tasksPool.front(), -1);
 }
 
 Task& TaskPool::getAvailableTask() {
-    U32 taskIndex = (++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u);
+    const U32 poolSize = to_const_uint(_tasksPool.size());
+
+    U32 taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
     U32 failCount = 0;
     while(_taskStates[taskIndex]) {
         failCount++;
-        taskIndex = (++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u);
-        assert(failCount < Config::MAX_POOLED_TASKS * 2);
+        taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
+        assert(failCount < poolSize * 2);
     }
 
     Task& task = _tasksPool[taskIndex];
@@ -101,7 +104,7 @@ TaskHandle GetTaskHandle(TaskPool& pool, I64 taskGUID) {
 }
 
 TaskHandle CreateTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction)
+                      const DELEGATE_CBK<>& onCompletionFunction)
 {
     return CreateTask(-1, threadedFunction, onCompletionFunction);
 }
@@ -151,21 +154,34 @@ TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32,
                         Task::TaskPriority priority,
                         bool waitForResult)
 {
+    TaskPool& pool = Application::instance().kernel().taskPool();
+    return parallel_for(pool, cbk, count, partitionSize, priority, waitForResult);
+}
+
+TaskHandle parallel_for(TaskPool& pool, 
+                        const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
+                        U32 count,
+                        U32 partitionSize,
+                        Task::TaskPriority priority,
+                        bool waitForResult)
+{
     U32 crtPartitionSize = std::min(partitionSize, count);
     U32 partitionCount = count / crtPartitionSize;
     U32 remainder = count % crtPartitionSize;
 
-    TaskHandle updateTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
+    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK_PARAM<bool>());
     for (U32 i = 0; i < partitionCount; ++i) {
         U32 start = i * crtPartitionSize;
         U32 end = start + crtPartitionSize;
-        updateTask.addChildTask(CreateTask(DELEGATE_BIND(cbk,
+        updateTask.addChildTask(CreateTask(pool,
+                                           DELEGATE_BIND(cbk,
                                                          std::placeholders::_1,
                                                          start,
                                                          end))._task)->startTask(priority);
     }
     if (remainder > 0) {
-        updateTask.addChildTask(CreateTask(DELEGATE_BIND(cbk,
+        updateTask.addChildTask(CreateTask(pool,
+                                           DELEGATE_BIND(cbk,
                                                          std::placeholders::_1,
                                                          count - remainder,
                                                          count))._task)->startTask(priority);

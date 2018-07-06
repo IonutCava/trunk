@@ -39,16 +39,20 @@ namespace Divide {
 
 class TaskPool {
   public:
-    TaskPool();
+    explicit TaskPool(U32 maxTaskCount);
     ~TaskPool();
-
-    bool init();
+    
+    bool init(U32 threadCount);
     void flushCallbackQueue();
 
     TaskHandle getTaskHandle(I64 taskGUID);
     Task& getAvailableTask();
     void setTaskCallback(const TaskHandle& handle,
                          const DELEGATE_CBK<>& callback);
+
+    inline U32 workerThreadCount() const {
+        return _workerThreadCount;
+    }
 
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
@@ -61,11 +65,13 @@ class TaskPool {
     ThreadPool _mainTaskPool;
     boost::lockfree::queue<U32> _threadedCallbackBuffer;
 
-    std::array<Task, Config::MAX_POOLED_TASKS> _tasksPool;
-    std::array<bool, Config::MAX_POOLED_TASKS> _taskStates;
-    std::array<DELEGATE_CBK<>, Config::MAX_POOLED_TASKS> _taskCallbacks;
+    vectorImpl<Task> _tasksPool;
+    vectorImpl<bool> _taskStates;
+    vectorImpl<DELEGATE_CBK<>> _taskCallbacks;
 
     std::atomic<U32> _allocatedJobs;
+
+    U32 _workerThreadCount;
 };
 
 // The following calls should work with any taskpool, 
@@ -78,7 +84,7 @@ TaskHandle GetTaskHandle(I64 taskGUID);
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+                      const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 
 /**
 * @brief Creates a new Task that runs in a separate thread
@@ -88,8 +94,8 @@ TaskHandle CreateTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(I64 jobIdentifier,
-                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+                      const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                      const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 
 
 //The following calls are identical to the ones above, but use the specified pool
@@ -103,8 +109,13 @@ TaskHandle CreateTask(TaskPool& pool,
                    I64 jobIdentifier,
                    const DELEGATE_CBK_PARAM<bool>& threadedFunction,
                    const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
-
 TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
+                        U32 count,
+                        U32 partitionSize,
+                        Task::TaskPriority priority = Task::TaskPriority::HIGH,
+                        bool waitForResult = true);
+TaskHandle parallel_for(TaskPool& pool, 
+                        const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,

@@ -1,7 +1,6 @@
-#include "Headers/StringTests.h"
-#include "Core/Math/Headers/MathHelper.h"
+#include "Headers/Defines.h"
 
-#include <iostream>
+#include "Core/Math/Headers/MathHelper.h"
 
 namespace Divide {
 

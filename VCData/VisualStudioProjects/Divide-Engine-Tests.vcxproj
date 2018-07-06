@@ -24,7 +24,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0F94F3A5-3023-45A4-A003-F427AC82D869}</ProjectGuid>
     <RootNamespace>DivideHardware</RootNamespace>
-    <ProjectName>Divide-Platform-Tests</ProjectName>
+    <ProjectName>Test-Platform</ProjectName>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -142,7 +142,7 @@
       </AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
-      <Command>$(OutDir)Divide-Platform-Tests_d.exe nopause</Command>
+      <Command>$(OutDir)Test-Platform_d.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -185,7 +185,7 @@
       </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>$(OutDir)Divide-Platform-Tests.exe nopause</Command>
+      <Command>$(OutDir)Test-Platform.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -228,7 +228,7 @@
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
     </Lib>
     <PostBuildEvent>
-      <Command>$(OutDir)Divide-Platform-Tests_p.exe nopause</Command>
+      <Command>$(OutDir)Test-Platform_p.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

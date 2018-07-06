@@ -11,6 +11,8 @@ namespace Divide {
 
 bool Console::_timestamps = false;
 bool Console::_threadID = false;
+bool Console::_enabled = true;
+
 std::thread Console::_printThread;
 
 std::atomic_bool Console::_running;
@@ -85,24 +87,28 @@ void Console::decorate(std::ostream& outStream, const char* text, const bool new
 }
 
 void Console::output(std::ostream& outStream, const char* text, const bool newline, const bool error) {
-    decorate(outStream, text, newline, error);
+    if (_enabled) {
+        decorate(outStream, text, newline, error);
+    }
 }
 
 void Console::output(const char* text, const bool newline, const bool error) {
-    if (_guiConsoleCallback) {
-        _guiConsoleCallback(text, error);
+    if (_enabled) {
+        if (_guiConsoleCallback) {
+            _guiConsoleCallback(text, error);
+        }
+
+        stringstreamImpl outStream;
+        decorate(outStream, text, newline, error);
+
+        OutputEntry entry;
+        entry._error = error;
+        entry._text = outStream.str();
+
+        //moodycamel::ProducerToken ptok(_outputBuffer);
+        WAIT_FOR_CONDITION_TIMEOUT(_outputBuffer.enqueue(/*ptok, */entry),
+                                   Time::SecondsToMilliseconds(1.0));
     }
-
-    stringstreamImpl outStream;
-    decorate(outStream, text, newline, error);
-
-    OutputEntry entry;
-    entry._error = error;
-    entry._text = outStream.str();
-
-    //moodycamel::ProducerToken ptok(_outputBuffer);
-    WAIT_FOR_CONDITION_TIMEOUT(_outputBuffer.enqueue(/*ptok, */entry),
-                               Time::SecondsToMilliseconds(1.0));
 }
 
 void Console::outThread() {

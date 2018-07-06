@@ -39,6 +39,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
       _APP(parentApp),
+      _taskPool(Config::MAX_POOLED_TASKS),
       _GFX(GFXDevice::instance()),                // Video
       _SFX(SFXDevice::instance()),                // Audio
       _PFX(PXDevice::instance()),                 // Physics
@@ -343,7 +344,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    if (!_taskPool.init()) {
+    // We have an A.I. thread, a networking thread, a PhysX thread, the main
+    // update/rendering thread so how many threads do we allocate for tasks?
+    // That's up to the programmer to decide for each app.
+    if (!_taskPool.init(HARDWARE_THREAD_COUNT())) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 

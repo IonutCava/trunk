@@ -50,7 +50,7 @@ void Task::startTask(TaskPriority priority) {
 
     _done = false;
     _priority = priority;
-    if (priority != TaskPriority::REALTIME && _tp != nullptr) {
+    if (priority != TaskPriority::REALTIME && _tp != nullptr && _tp->workerThreadCount() > 0) {
         while (!_tp->threadPool().schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
             Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
         }
