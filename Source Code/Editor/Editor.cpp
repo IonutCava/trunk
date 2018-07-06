@@ -229,6 +229,8 @@ void Editor::toggle(const bool state) {
     _running = state;
     if (!state) {
         toggleScenePreview(false);
+    } else {
+        _enableGizmo = true;
     }
 }
 

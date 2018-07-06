@@ -573,9 +573,9 @@ TEST_MEMBER_FUNCTION(matN, inverse, NA)
     input3x3.inverse();
     CHECK_EQUAL(input3x3, rezult3x3);
 
-    //Zero determinate inversion
-    mat4<F32> zeroInput(0.0f);
-    mat4<F32> zeroResult(zeroInput);
+    //Zero determinate inversion (F32 version is undefined)
+    mat4<I32> zeroInput(0.0f);
+    mat4<I32> zeroResult(zeroInput);
     zeroInput.inverse();
 
     CHECK_EQUAL(zeroInput, zeroResult);

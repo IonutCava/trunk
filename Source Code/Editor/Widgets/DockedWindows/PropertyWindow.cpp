@@ -383,6 +383,18 @@ namespace Divide {
          if (enableGizmo) {
              TransformSettings settings = _parent.getTransformSettings();
 
+             if (ImGui::IsKeyPressed(Input::KeyCode::KC_T)) {
+                 settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
+             }
+
+             if (ImGui::IsKeyPressed(Input::KeyCode::KC_R)) {
+                 settings.currentGizmoOperation = ImGuizmo::ROTATE;
+             }
+
+             if (ImGui::IsKeyPressed(Input::KeyCode::KC_S)) {
+                 settings.currentGizmoOperation = ImGuizmo::SCALE;
+             }
+
              if (ImGui::RadioButton("Translate", settings.currentGizmoOperation == ImGuizmo::TRANSLATE)) {
                  settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
              }

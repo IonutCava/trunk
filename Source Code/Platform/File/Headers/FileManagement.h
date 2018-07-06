@@ -127,6 +127,8 @@ bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 template<typename T /*requirement: has_assign<T> == true*/>
 bool readFile(const stringImpl& filePath, const stringImpl& fileName, T& contentOut, FileType fileType);
 bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType);
+bool deleteFile(const stringImpl& filePath, const stringImpl& fileName);
+bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const stringImpl& targetPath, const stringImpl& targetName, bool overwrite);
 
 /// will add '.' automatically at the start of 'extension'
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension);

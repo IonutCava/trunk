@@ -349,6 +349,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                 if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
                     if (_parentSGN.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::SUBMESH) {
                         drawDebugAxis();
+                        bufferInOut.add(_axisGizmo->toCommandBuffer());
                     }
                 }
             } break;
@@ -356,6 +357,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                 switch (_parentSGN.getSelectionFlag()) {
                     case SceneGraphNode::SelectionFlag::SELECTION_SELECTED : {
                         drawDebugAxis();
+                        bufferInOut.add(_axisGizmo->toCommandBuffer());
                     } break;
                     default: {
                         _axisGizmo->paused(true);
@@ -375,14 +377,14 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
     renderBBox = renderBBox || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
 
-    bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
+    bool renderBSphere = _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED;
+    renderBSphere = renderBSphere || renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
+
 
     if (renderBBox) {
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour(0, 0, 255, 255));
-
-        renderBSphere = renderBSphere || _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED;
-        toggleRenderOption(RenderOptions::RENDER_BOUNDS_SPHERE, renderBSphere);
+        bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
 
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
@@ -396,14 +398,18 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                                      bbGrandParent.getMin() - vec3<F32>(0.0025f),
                                      bbGrandParent.getMax() + vec3<F32>(0.0025f),
                                      UColour(255, 0, 0, 255));
+                bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
             }
+        }
+
+        if (renderBSphere) {
+            const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
+            _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), UColour(0, 255, 0, 255));
+            bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
         }
     }
 
-    if (renderBSphere) {
-        const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
-        _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), UColour(0, 255, 0, 255));
-    }
+
 
     bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON);
     renderSkeleton = renderSkeleton || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
@@ -425,22 +431,13 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines);
                 parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, true);
+                bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
             }
         }
     } else {
         if (_skeletonPrimitive) {
             _skeletonPrimitive->paused(true);
         }
-    }
-
-    bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
-    bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
-    bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
-    if (_skeletonPrimitive) {
-        bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
-    }
-    if (Config::Build::IS_DEBUG_BUILD) {
-        bufferInOut.add(_axisGizmo->toCommandBuffer());
     }
 }
 

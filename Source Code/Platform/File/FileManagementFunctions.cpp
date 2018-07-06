@@ -64,7 +64,30 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
     createDirectories((systemInfo._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
 
     return std::ifstream(filePathAndName, std::fstream::in).good();
+}
 
+bool deleteFile(const stringImpl& filePath, const stringImpl& fileName) {
+    if (fileName.empty()) {
+        return false;
+    }
+    boost::filesystem::path file(filePath + fileName);
+    boost::filesystem::remove(file);
+    return true;
+}
+
+bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const stringImpl& targetPath, const stringImpl& targetName, bool overwrite) {
+    if (sourceName.empty() || targetName.empty()) {
+        return false;
+    }
+
+    if (!overwrite && fileExists((targetPath + targetName).c_str())) {
+        return false;
+    }
+
+    boost::filesystem::path destination(targetPath + targetName);
+    boost::filesystem::path source(sourcePath + sourceName);
+    boost::filesystem::copy_file(source, destination, boost::filesystem::copy_option::overwrite_if_exists);
+    return true;
 }
 
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension) {

@@ -152,30 +152,27 @@ namespace {
         r._reg[3] = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg);
     }
 
-    // for row major matrix
-    // we use __m128 to represent 2x2 matrix as A = | A0  A1 |
-    //                                              | A2  A3 |
-    // 2x2 row major Matrix multiply A*B
+    // for column major matrix
+    // we use __m128 to represent 2x2 matrix as A = | A0  A2 |
+    //                                              | A1  A3 |
+    // 2x2 column major Matrix multiply A*B
     __forceinline __m128 Mat2Mul(__m128 vec1, __m128 vec2)
     {
-        return
-            _mm_add_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 0, 3, 0, 3)),
-                _mm_mul_ps(VecSwizzle(vec1, 1, 0, 3, 2), VecSwizzle(vec2, 2, 1, 2, 1)));
+        return  _mm_add_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 0, 0, 3, 3)),
+                           _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
     }
-    // 2x2 row major Matrix adjugate multiply (A#)*B
+    // 2x2 column major Matrix adjugate multiply (A#)*B
     __forceinline __m128 Mat2AdjMul(__m128 vec1, __m128 vec2)
     {
-        return
-            _mm_sub_ps(_mm_mul_ps(VecSwizzle(vec1, 3, 3, 0, 0), vec2),
-                _mm_mul_ps(VecSwizzle(vec1, 1, 1, 2, 2), VecSwizzle(vec2, 2, 3, 0, 1)));
+        return  _mm_sub_ps(_mm_mul_ps(VecSwizzle(vec1, 3, 0, 3, 0), vec2),
+                            _mm_mul_ps(VecSwizzle(vec1, 2, 1, 2, 1), VecSwizzle(vec2, 1, 0, 3, 2)));
 
     }
-    // 2x2 row major Matrix multiply adjugate A*(B#)
+    // 2x2 column major Matrix multiply adjugate A*(B#)
     __forceinline __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
     {
-        return
-            _mm_sub_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 3, 0, 3, 0)),
-                _mm_mul_ps(VecSwizzle(vec1, 1, 0, 3, 2), VecSwizzle(vec2, 2, 1, 2, 1)));
+        return  _mm_sub_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 3, 3, 0, 0)),
+                           _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
     }
 
     // Requires this matrix to be transform matrix
@@ -215,7 +212,7 @@ namespace {
     }
 
     // Inverse function is the same no matter column major or row major
-    // this version treats it as row major
+    // this version treats it as column major
     inline void GetInverse(const mat4<F32>& inM, mat4<F32>& r)
     {
         // use block matrix method
@@ -288,6 +285,12 @@ namespace {
         r._reg[1]._reg = VecShuffle(X_, Z_, 2, 0, 2, 0);
         r._reg[2]._reg = VecShuffle(Y_, W_, 3, 1, 3, 1);
         r._reg[3]._reg = VecShuffle(Y_, W_, 2, 0, 2, 0);
+    }
+
+    inline mat4<F32> GetInverse(const mat4<F32>& inM) {
+        mat4<F32> r;
+        GetInverse(inM, r);
+        return r;
     }
 };
 
@@ -2073,6 +2076,11 @@ void mat4<T>::inverse() {
     Inverse(mat, mat);
 }
 
+template<>
+FORCE_INLINE void mat4<F32>::inverse() {
+    *this = GetInverse(*this);
+}
+
 template<typename T>
 void mat4<T>::transpose() {
     set(mat[0], mat[4], mat[8],  mat[12],
@@ -2089,9 +2097,9 @@ void mat4<T>::inverseTranspose() {
 
 template<typename T>
 mat4<T> mat4<T>::transposeRotation() const {
-    set(mat[0], mat[4], mat[8], mat[3],
-        mat[1], mat[5], mat[9], mat[7],
-        mat[2], mat[6], mat[10], mat[11],
+    set(mat[0],  mat[4],  mat[8],  mat[3],
+        mat[1],  mat[5],  mat[9],  mat[7],
+        mat[2],  mat[6],  mat[10], mat[11],
         mat[12], mat[13], mat[14], mat[15]);
 }
 
@@ -2102,9 +2110,21 @@ mat4<T> mat4<T>::getInverse() const {
     return ret;
 }
 
+template<>
+FORCE_INLINE mat4<F32> mat4<F32>::getInverse() const {
+    mat4<F32> ret;
+    GetInverse(*this, ret);
+    return ret;
+}
+
 template<typename T>
 void mat4<T>::getInverse(mat4 &ret) const {
     Inverse(mat, ret.mat);
+}
+
+template<>
+FORCE_INLINE void mat4<F32>::getInverse(mat4<F32> &ret) const {
+    GetInverse(*this, ret);
 }
 
 template<typename T>
@@ -2131,9 +2151,23 @@ mat4<T> mat4<T>::getInverseTranspose() const {
     return ret;
 }
 
+template<>
+FORCE_INLINE mat4<F32> mat4<F32>::getInverseTranspose() const {
+    mat4<F32> ret;
+    GetInverse(*this, ret);
+    ret.transpose();
+    return ret;
+}
+
 template<typename T>
 void mat4<T>::getInverseTranspose(mat4 &ret) const {
     Inverse(mat, ret.mat);
+    ret.transpose();
+}
+
+template<>
+FORCE_INLINE void mat4<F32>::getInverseTranspose(mat4<F32> &ret) const {
+    GetInverse(*this, ret);
     ret.transpose();
 }
 
