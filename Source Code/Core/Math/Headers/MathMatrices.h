@@ -527,10 +527,15 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     mat4 operator+(U f) const;
     template<typename U>
     mat4 operator-(U f) const;
+
     template<typename U>
     mat4 &operator*=(U f);
     template<typename U>
     mat4 &operator/=(U f);
+    template<typename U>
+    mat4 &operator+=(U f);
+    template<typename U>
+    mat4 &operator-=(U f);
 
     bool operator==(const mat4& B) const;
     bool operator!=(const mat4 &B) const;

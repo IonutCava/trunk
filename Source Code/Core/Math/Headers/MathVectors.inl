@@ -561,42 +561,50 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
 */
 
 template<>
-const vec4<F32> vec4<F32>::operator-(F32 _f) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator-(F32 _f) const noexcept {
     return vec4<F32>(_mm_sub_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator+(F32 _f) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator+(F32 _f) const noexcept {
     return vec4<F32>(_mm_add_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator*(F32 _f) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator*(F32 _f) const noexcept {
     return vec4<F32>(_mm_mul_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator/(F32 _f) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator/(F32 _f) const noexcept {
     return vec4<F32>(_mm_div_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator+(const vec4<F32> &v) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator+(const vec4<F32> &v) const noexcept {
     return vec4<F32>(_mm_add_ps(_reg._reg, v._reg._reg));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator-(const vec4<F32> &v) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator-(const vec4<F32> &v) const noexcept {
     return vec4<F32>(_mm_sub_ps(_reg._reg, v._reg._reg));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator/(const vec4<F32> &v) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator/(const vec4<F32> &v) const noexcept {
     return vec4<F32>(_mm_div_ps(_reg._reg, v._reg._reg));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator*(const vec4<F32>& v) const noexcept {
+template<>
+inline const vec4<F32> vec4<F32>::operator*(const vec4<F32>& v) const noexcept {
     return vec4<F32>(_mm_mul_ps(_reg._reg, v._reg._reg));
 }
 

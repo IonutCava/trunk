@@ -402,29 +402,23 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, scalar)
 
 TEST_MEMBER_FUNCTION(mat4, addSubtractOperator, scalar)
 {
-    const mat4<F32> input4(1.0f, 2.0f, 3.0f, 4.0f,
-                           5.0f, 6.0f, 7.0f, 8.0f,
-                           9.0f, 8.0f, 7.0f, 6.0f,
-                           5.0f, 4.0f, 3.0f, 2.0f);
+    const mat4<F32> input(1.0f, 2.0f, 3.0f, 4.0f,
+                          5.0f, 6.0f, 7.0f, 8.0f,
+                          9.0f, 8.0f, 7.0f, 6.0f,
+                          5.0f, 4.0f, 3.0f, 2.0f);
 
-    const mat4<F32> result4A(-2.0f, -1.0f, 0.0f,  1.0f,
-                              2.0f,  3.0f, 4.0f,  5.0f,
-                              6.0f,  5.0f, 4.0f,  3.0f,
-                              2.0f,  1.0f, 0.0f, -1.0f);
+    const mat4<F32> resultA(-2.0f, -1.0f, 0.0f,  1.0f,
+                             2.0f,  3.0f, 4.0f,  5.0f,
+                             6.0f,  5.0f, 4.0f,  3.0f,
+                             2.0f,  1.0f, 0.0f, -1.0f);
 
-    const mat4<F32> result4B( 4.0f,  5.0f,  6.0f,  7.0f,
-                              8.0f,  9.0f, 10.0f, 11.0f,
-                             12.0f, 11.0f, 10.0f,  9.0f,
-                              8.0f,  7.0f,  6.0f,  5.0f);
+    const mat4<F32> resultB( 4.0f,  5.0f,  6.0f,  7.0f,
+                             8.0f,  9.0f, 10.0f, 11.0f,
+                            12.0f, 11.0f, 10.0f,  9.0f,
+                             8.0f,  7.0f,  6.0f,  5.0f);
 
-
-    const mat4<F32> result4C(4.0f, 5.0f, 6.0f, 7.0f,
-        8.0f, 9.0f, 10.0f, 11.0f,
-        12.0f, 11.0f, 10.0f, 9.0f,
-        8.0f, 7.0f, 6.0f, 5.0f);
-
-    CHECK_TRUE((input4 - 3) == result4A);
-    CHECK_TRUE((input4 + 3) == result4B);
+    CHECK_TRUE((input - 3) == resultA);
+    CHECK_TRUE((input + 3) == resultB);
 }
 
 // this depends on multiply tests!

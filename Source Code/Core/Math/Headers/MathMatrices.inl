@@ -443,68 +443,77 @@ mat2<T>& mat2<T>::operator+=(const mat2<U> &B) {
 template<typename T>
 template<typename U>
 mat2<T>& mat2<T>::operator-=(const mat2<U> &B) {
-    return *this = *this - B;
+    for (auto& val : _vec) {
+        val -= f;
+    }
+    return *this;
 }
 
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator*(U f) const {
-    return mat2(mat[0] * f, mat[1] * f,
-                mat[2] * f, mat[3] * f);
+    return (mat2(*this) *= f);
 }
 
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator/(U f) const {
-    return mat2(mat[0] / f, mat[1] / f,
-                mat[2] / f, mat[3] / f);
+    return (mat2(*this) /= f);
 }
 
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator+(U f) const {
-    return mat2(mat[0] + f, mat[1] + f,
-                mat[2] + f, mat[3] + f);
+    return (mat2(*this) += f);
 }
 
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator-(U f) const {
-    return mat2(mat[0] - f, mat[1] - f,
-                mat[2] - f, mat[3] - f);
+    return (mat2(*this) -= f);
 }
 
 template<typename T>
 template<typename U>
 mat2<T>& mat2<T>::operator*=(U f) {
-    return *this = *this * f;
+    for (auto& val : _vec) {
+        val *= f;
+    }
+    return *this;
 }
 
 template<typename T>
 template<typename U>
 mat2<T>& mat2<T>::operator/=(U f) {
-    return *this = *this / f;
+    for (auto& val : _vec) {
+        val /= f;
+    }
+    return *this;
 }
 
 template<typename T>
 template<typename U>
 mat2<T>& mat2<T>::operator+=(U f) {
-    return *this = *this + f;
+    for (auto& val : _vec) {
+        val += f;
+    }
+    return *this;
 }
 
 template<typename T>
 template<typename U>
 mat2<T>& mat2<T>::operator-=(U f) {
-    return *this = *this - f;
+    for (auto& val : _vec) {
+        val -= f;
+    }
+    return *this;
 }
 
 template<typename T>
 bool mat2<T>::operator==(const mat2 &B) const {
-    for (U8 i = 0; i < 2; ++i) {
-        for (U8 j = 0; j < 2; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return false;
-            }
+    for (U8 i = 0; i < 4; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return false;
         }
     }
     return true;
@@ -512,11 +521,9 @@ bool mat2<T>::operator==(const mat2 &B) const {
 
 template<typename T>
 bool mat2<T>::operator!=(const mat2 &B) const {
-    for (U8 i = 0; i < 2; ++i) {
-        for (U8 j = 0; j < 2; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return true;
-            }
+    for (U8 i = 0; i < 4; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return true;
         }
     }
     return false;
@@ -525,11 +532,9 @@ bool mat2<T>::operator!=(const mat2 &B) const {
 template<typename T>
 template<typename U>
 bool mat2<T>::operator==(const mat2<U> &B) const {
-    for (U8 i = 0; i < 2; ++i) {
-        for (U8 j = 0; j < 2; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return false;
-            }
+    for (U8 i = 0; i < 4; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return false;
         }
     }
     return true;
@@ -538,11 +543,9 @@ bool mat2<T>::operator==(const mat2<U> &B) const {
 template<typename T>
 template<typename U>
 bool mat2<T>::operator!=(const mat2<U> &B) const {
-    for (U8 i = 0; i < 2; ++i) {
-        for (U8 j = 0; j < 2; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return true;
-            }
+    for (U8 i = 0; i < 4; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return true;
         }
     }
     return false;
@@ -550,11 +553,9 @@ bool mat2<T>::operator!=(const mat2<U> &B) const {
 
 template<typename T>
 bool mat2<T>::compare(const mat2 &B, F32 epsilon) const {
-    for (U8 i = 0; i < 2; ++i) {
-        for (U8 j = 0; j < 2; ++j) {
-            if (!COMPARE_TOLERANCE(m[i][j], B.m[i][j], epsilon)) {
-                return false;
-            }
+    for (U8 i = 0; i < 4; ++i) {
+        if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
+            return false;
         }
     }
     return true;
@@ -563,11 +564,9 @@ bool mat2<T>::compare(const mat2 &B, F32 epsilon) const {
 template<typename T>
 template<typename U>
 bool mat2<T>::compare(const mat2<U> &B, F32 epsilon) const {
-    for (U8 i = 0; i < 2; ++i) {
-        for (U8 j = 0; j < 2; ++j) {
-            if (!COMPARE_TOLERANCE(m[i][j], B.m[i][j], epsilon)) {
-                return false;
-            }
+    for (U8 i = 0; i < 4; ++i) {
+        if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
+            return false;
         }
     }
     return true;
@@ -956,131 +955,129 @@ mat3<T>& mat3<T>::operator-=(const mat3<U> &B) {
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator*(U f) const {
-    return mat3(mat[0] * f, mat[1] * f, mat[2] * f,
-                mat[3] * f, mat[4] * f, mat[5] * f,
-                mat[6] * f, mat[7] * f, mat[8] * f);
+    return (mat3(*this) *= f);
 }
 
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator/(U f) const {
-    return mat3(mat[0] / f, mat[1] / f, mat[2] / f,
-                mat[3] / f, mat[4] / f, mat[5] / f,
-                mat[6] / f, mat[7] / f, mat[8] / f);
+    return (mat3(*this) /= f);
 }
 
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator+(U f) const {
-    return mat3(mat[0] + f, mat[1] + f, mat[2] + f,
-                mat[3] + f, mat[4] + f, mat[5] + f,
-                mat[6] + f, mat[7] + f, mat[8] + f);
+    return (mat3(*this) += f);
 }
 
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator-(U f) const {
-    return mat3(mat[0] - f, mat[1] - f, mat[2] - f,
-                mat[3] - f, mat[4] - f, mat[5] - f,
-                mat[6] - f, mat[7] - f, mat[8] - f);
+    return (mat3(*this) -= f);
 }
 
 template<typename T>
 template<typename U>
 mat3<T>& mat3<T>::operator*=(U f) {
-    return *this = *this * f;
+    for (auto& val : _vec) {
+        val *= f;
+    }
+    return *this;
 }
 
 template<typename T>
 template<typename U>
 mat3<T>& mat3<T>::operator/=(U f) {
-    return *this = *this / f;
+    for (auto& val : _vec) {
+        val /= f;
+    }
+    return *this;
 }
 
 template<typename T>
 template<typename U>
 mat3<T>& mat3<T>::operator+=(U f) {
-    return *this = *this + f;
+    for (auto& val : _vec) {
+        val += f;
+    }
+    return *this;
 }
 
 template<typename T>
 template<typename U>
 mat3<T>& mat3<T>::operator-=(U f) {
-    return *this = *this - f;
+    for (auto& val : _vec) {
+        val -= f;
+    }
+    return *this;
 }
 
 template<typename T>
 bool mat3<T>::operator==(const mat3 &B) const {
-    for (U8 i = 0; i < 3; ++i) {
-        for (U8 j = 0; j < 3; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return false;
-            }
+    for (U8 i = 0; i < 9; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return false;
         }
     }
+
     return true;
 }
 
 template<typename T>
 template<typename U>
 bool mat3<T>::operator==(const mat3<U> &B) const {
-    for (U8 i = 0; i < 3; ++i) {
-        for (U8 j = 0; j < 3; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return false;
-            }
+    for (U8 i = 0; i < 9; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return false;
         }
     }
+
     return true;
 }
 
 template<typename T>
 template<typename U>
 bool mat3<T>::operator!=(const mat3<U> &B) const {
-    for (U8 i = 0; i < 3; ++i) {
-        for (U8 j = 0; j < 3; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return true;
-            }
+    for (U8 i = 0; i < 9; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return true;
         }
     }
+
     return false;
 }
 
 template<typename T>
 bool mat3<T>::operator!=(const mat3 &B) const {
-    for (U8 i = 0; i < 3; ++i) {
-        for (U8 j = 0; j < 3; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return true;
-            }
+    for (U8 i = 0; i < 9; ++i) {
+        if (!COMPARE(mat[i], B.mat[i])) {
+            return true;
         }
     }
+
     return false;
 }
 
 template<typename T>
 bool mat3<T>::compare(const mat3 &B, F32 epsilon) const {
-    for (U8 i = 0; i < 3; ++i) {
-        for (U8 j = 0; j < 3; ++j) {
-            if (!COMPARE_TOLERANCE(m[i][j], B.m[i][j], epsilon)) {
-                return false;
-            }
+    for (U8 i = 0; i < 9; ++i) {
+        if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
+            return false;
         }
     }
+
     return true;
 }
 
 template<typename T>
 template<typename U>
 bool mat3<T>::compare(const mat3<U> &B, F32 epsilon) const {
-    for (U8 i = 0; i < 3; ++i) {
-        for (U8 j = 0; j < 3; ++j) {
-            if (!COMPARE_TOLERANCE(m[i][j], B.m[i][j], epsilon)) {
-                return false;
-            }
+    for (U8 i = 0; i < 9; ++i) {
+        if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
+            return false;
         }
     }
+
     return true;
 }
 
@@ -1634,23 +1631,13 @@ mat4<T> mat4<T>::operator/(const mat4<U>& matrix) const {
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator+(const mat4<U> &matrix) const {
-    const U* b = matrix.mat;
-
-    return mat4<T>(mat[0]  + static_cast<T>(b[0]),  mat[1]  + static_cast<T>(b[1]),  mat[2]  + static_cast<T>(b[2]),  mat[3]  + static_cast<T>(b[3]),
-                   mat[4]  + static_cast<T>(b[4]),  mat[5]  + static_cast<T>(b[5]),  mat[6]  + static_cast<T>(b[6]),  mat[7]  + static_cast<T>(b[7]), 
-                   mat[8]  + static_cast<T>(b[8]),  mat[9]  + static_cast<T>(b[9]),  mat[10] + static_cast<T>(b[10]), mat[11] + static_cast<T>(b[11]), 
-                   mat[12] + static_cast<T>(b[12]), mat[13] + static_cast<T>(b[13]), mat[14] + static_cast<T>(b[14]), mat[15] + static_cast<T>(b[15]));
+    return (mat4(*this) += matrix);
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator-(const mat4<U> &matrix) const {
-    const U* b = matrix.mat;
-
-    return mat4<T>(mat[0]  - static_cast<T>(b[0]),  mat[1]  - static_cast<T>(b[1]),  mat[2]  - static_cast<T>(b[2]),  mat[3]  - static_cast<T>(b[3]),
-                   mat[4]  - static_cast<T>(b[4]),  mat[5]  - static_cast<T>(b[5]),  mat[6]  - static_cast<T>(b[6]),  mat[7]  - static_cast<T>(b[7]),
-                   mat[8]  - static_cast<T>(b[8]),  mat[9]  - static_cast<T>(b[9]),  mat[10] - static_cast<T>(b[10]), mat[11] - static_cast<T>(b[11]),
-                   mat[12] - static_cast<T>(b[12]), mat[13] - static_cast<T>(b[13]), mat[14] - static_cast<T>(b[14]), mat[15] - static_cast<T>(b[15]));
+    return (mat4(*this) -= matrix);
 }
 
 template<typename T>
@@ -1670,15 +1657,8 @@ mat4<T>& mat4<T>::operator/=(const mat4<U> &matrix) {
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator+=(const mat4<U> &matrix) {
-    const U* b = matrix.mat;
-
-    U8 index = 0;
     for (U8 i = 0; i < 4; ++i) {
-        index = i * 4;
-        setRow(i, mat[index + 0] + static_cast<T>(b[index + 0]),
-                  mat[index + 1] + static_cast<T>(b[index + 1]),
-                  mat[index + 2] + static_cast<T>(b[index + 2]),
-                  mat[index + 3] + static_cast<T>(b[index + 3]));
+        _vec[i] += matrix._vec[i];
     }
     return *this;
 }
@@ -1686,15 +1666,8 @@ mat4<T>& mat4<T>::operator+=(const mat4<U> &matrix) {
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) {
-    const U* b = matrix.mat;
-
-    U8 index = 0;
     for (U8 i = 0; i < 4; ++i) {
-        index = i * 4;
-        setRow(i, mat[index + 0] - static_cast<T>(b[index + 0]),
-                  mat[index + 1] - static_cast<T>(b[index + 1]),
-                  mat[index + 2] - static_cast<T>(b[index + 2]),
-                  mat[index + 3] - static_cast<T>(b[index + 3]));
+        _vec[i] -= matrix._vec[i];
     }
 
     return *this;
@@ -1703,42 +1676,25 @@ mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) {
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator*(U f) const {
-     mat4<T> ret(mat[0]  * f, mat[1]  * f, mat[2]  * f, mat[3]  * f,
-                 mat[4]  * f, mat[5]  * f, mat[6]  * f, mat[7]  * f,
-                 mat[8]  * f, mat[9]  * f, mat[10] * f, mat[11] * f,
-                 mat[12] * f, mat[13] * f, mat[14] * f, mat[15] * f);
-     ret.mat[15] = static_cast<T>(mat[15] * f);
-     return ret;
+    return (mat4(*this) *= f);
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator/(U f) const {
-    mat4<T> ret(mat[0]  / f, mat[1]  / f, mat[2]  / f, mat[3]  / f,
-                mat[4]  / f, mat[5]  / f, mat[6]  / f, mat[7]  / f,
-                mat[8]  / f, mat[9]  / f, mat[10] / f, mat[11] / f,
-                mat[12] / f, mat[13] / f, mat[14] / f, mat[15] / f);
-
-    ret.mat[15] = static_cast<T>(mat[15] / f);
-    return ret;
+    return (mat4(*this) /= f);
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator+(U f) const {
-    return mat4(mat[0]  + f, mat[1]  + f, mat[2]  + f, mat[3]  + f,
-                mat[4]  + f, mat[5]  + f, mat[6]  + f, mat[7]  + f,
-                mat[8]  + f, mat[9]  + f, mat[10] + f, mat[11] + f,
-                mat[12] + f, mat[13] + f, mat[14] + f, mat[15] + f);
+    return (mat4(*this) += f);
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator-(U f) const {
-    return mat4(mat[0]  - f, mat[1]  - f, mat[2]  - f, mat[3]  - f,
-                mat[4]  - f, mat[5]  - f, mat[6]  - f, mat[7]  - f,
-                mat[8]  - f, mat[9]  - f, mat[10] - f, mat[11] - f,
-                mat[12] - f, mat[13] - f, mat[14] - f, mat[15] - f);
+    return (mat4(*this) -= f);
 }
 
 template<typename T>
@@ -1756,6 +1712,26 @@ template<typename U>
 mat4<T>& mat4<T>::operator/=(U f) {
     for (U8 i = 0; i < 4; ++i) {
         _vec[i] /= f;
+    }
+
+    return *this;
+}
+
+template<typename T>
+template<typename U>
+mat4<T>& mat4<T>::operator+=(U f) {
+    for (U8 i = 0; i < 4; ++i) {
+        _vec[i] += f;
+    }
+
+    return *this;
+}
+
+template<typename T>
+template<typename U>
+mat4<T>& mat4<T>::operator-=(U f) {
+    for (U8 i = 0; i < 4; ++i) {
+        _vec[i] -= f;
     }
 
     return *this;
@@ -1826,26 +1802,24 @@ bool mat4<T>::operator!=(const mat4<U> &B) const {
 
 template<typename T>
 bool mat4<T>::compare(const mat4 &B, F32 epsilon) const {
-    for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            if (!COMPARE_TOLERANCE(m[i][j], B.m[i][j], epsilon)) {
-                return false;
-            }
+    for (U8 i = 0; i < 16; ++i) {
+        if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
+            return false;
         }
     }
+
     return true;
 }
 
 template<typename T>
 template<typename U>
 bool mat4<T>::compare(const mat4<U> &B, F32 epsilon) const {
-    for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            if (!COMPARE_TOLERANCE(m[i][j], B.m[i][j], epsilon)) {
-                return false;
-            }
+    for (U8 i = 0; i < 16; ++i) {
+        if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
+            return false;
         }
     }
+
     return true;
 }
 

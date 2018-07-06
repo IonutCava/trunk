@@ -228,30 +228,6 @@ class vec2 {
     template<typename U>
     bool operator==(const vec2<U> &v) const { return this->compare(v); }
 
-    vec2 &operator=(T _f) noexcept {
-        this->set(_f);
-        return (*this);
-    }
-
-    vec2 &operator=(const vec2& other) noexcept {
-        this->set(other);
-        return (*this);
-    }
-
-    const vec2 operator*(T _f) const {
-        return vec2(this->x * _f, this->y * _f);
-    }
-    const vec2 operator/(T _i) const {
-        return vec2(this->x / _i, this->y / _i);
-    }
-    const vec2 operator+(const vec2 &v) const {
-        return vec2(this->x + v.x, this->y + v.y);
-    }
-
-    const vec2 operator+(T _f) const {
-        return vec2(this->x + _f, this->y + _f);
-    }
-
     const vec2 operator-(T _f) const {
         return vec2(this->x - _f, this->y - _f);
     }
@@ -269,6 +245,16 @@ class vec2 {
     }
 
     template<typename U>
+    const vec2 operator+(U _f) const {
+        return vec2(this->x + _f, this->y + _f);
+    }
+
+    template<typename U>
+    const vec2 operator-(U _i) const {
+        return vec2(this->x - _i, this->y - _i);
+    }
+
+    template<typename U>
     const vec2 operator*(U _f) const {
         return vec2(this->x * _f, this->y * _f);
     }
@@ -283,47 +269,64 @@ class vec2 {
         return vec2(this->x + v.x, this->y + v.y);
     }
 
-    template<typename U>
-    const vec2 operator+(U _f) const {
-        return vec2(this->x + _f, this->y + _f);
-    }
-
-    template<typename U>
-    const vec2 operator-(U _f) const {
-        return vec2(this->x - _f, this->y - _f);
-    }
-
     const vec2 operator-() const { return vec2(-this->x, -this->y); }
     const vec2 operator-(const vec2 &v) const {
         return vec2(this->x - v.x, this->y - v.y);
     }
-    vec2 &operator*=(T _f) {
+ 
+    template<typename U>
+    vec2 &operator+=(U _f) {
+        this->set(*this + _f);
+        return *this;
+    }
+
+    template<typename U>
+    vec2 &operator-=(U _f) {
+        this->set(*this - _f);
+        return *this;
+    }
+
+    template<typename U>
+    vec2 &operator*=(U _f) {
         this->set(*this * _f);
         return *this;
     }
-    vec2 &operator/=(T _f) {
+
+    template<typename U>
+    vec2 &operator/=(U _f) {
         this->set(*this / _f);
         return *this;
     }
-    vec2 &operator*=(const vec2 &v) {
+
+    template<typename U>
+    vec2 &operator*=(const vec2<U> &v) {
         this->set(*this * v);
         return *this;
     }
-    vec2 &operator/=(const vec2 &v) {
+
+    template<typename U>
+    vec2 &operator/=(const vec2<U> &v) {
         this->set(*this / v);
         return *this;
     }
-    vec2 &operator+=(const vec2 &v) {
+
+    template<typename U>
+    vec2 &operator+=(const vec2<U> &v) {
         this->set(*this + v);
         return *this;
     }
-    vec2 &operator-=(const vec2 &v) {
+
+    template<typename U>
+    vec2 &operator-=(const vec2<U> &v) {
         this->set(*this - v);
         return *this;
     }
-    vec2 operator*(const vec2 &v) const {
+
+    template<typename U>
+    vec2 operator*(const vec2<U> &v) const {
         return vec2(this->x * v.x, this->y * v.y);
     }
+
     T &operator[](I32 i) { return this->_v[i]; }
     const T &operator[](I32 i) const { return this->_v[i]; }
     const vec2 operator/(const vec2 &v) const {
@@ -547,31 +550,6 @@ class vec3 {
     template<typename U>
     bool operator==(const vec3<U> &v) const { return this->compare(v); }
 
-    vec3 &operator=(T _f) noexcept {
-        this->set(_f);
-        return (*this);
-    }
-
-    vec3 &operator=(const vec3& other) noexcept {
-        this->set(other);
-        return (*this);
-    }
-
-    const vec3 operator*(T _f) const noexcept {
-        return vec3(this->x * _f, this->y * _f, this->z * _f);
-    }
-    const vec3 operator/(T _f) const {
-        if (IS_ZERO(_f)) return *this;
-        _f = 1.0f / _f;
-        return (*this) * _f;
-    }
-    const vec3 operator+(const vec3 &v) const noexcept {
-        return vec3(this->x + v.x, this->y + v.y, this->z + v.z);
-    }
-    const vec3 operator-(T _f) const noexcept {
-        return vec3(this->x - _f, this->y - _f, this->z - _f);
-    }
-
     template <typename U>
     vec3 &operator=(U _f) noexcept {
         this->set(_f);
@@ -582,6 +560,16 @@ class vec3 {
     vec3 &operator=(const vec3<U>& other) noexcept {
         this->set(other);
         return (*this);
+    }
+
+    template <typename U>
+    const vec3 operator+(U _f) const {
+        return vec3(this->x + _f, this->y + _f, this->z + _f);
+    }
+
+    template <typename U>
+    const vec3 operator-(U _f) const {
+        return vec3(this->x - _f, this->y - _f, this->z - _f);
     }
 
     template <typename U>
@@ -603,39 +591,59 @@ class vec3 {
         return vec3(this->x + v.x, this->y + v.y, this->z + v.z);
     }
 
-    template <typename U>
-    const vec3 operator-(U _f) const {
-        return vec3(this->x - _f, this->y - _f, this->z - _f);
-    }
-
     const vec3 operator-() const  noexcept { return vec3(-this->x, -this->y, -this->z); }
     const vec3 operator-(const vec3 &v) const  noexcept {
         return vec3(this->x - v.x, this->y - v.y, this->z - v.z);
     }
-    const vec3 operator*(const vec3 &v) const noexcept {
+    template<typename U>
+    const vec3 operator*(const vec3<U> &v) const noexcept {
         return vec3(this->x * v.x, this->y * v.y, this->z * v.z);
     }
-    vec3 &operator*=(T _f) {
+    
+    template<typename U>
+    vec3 &operator+=(U _f) {
+        this->set(*this + _f);
+        return *this;
+    }
+
+    template<typename U>
+    vec3 &operator-=(U _f) {
+        this->set(*this - _f);
+        return *this;
+    }
+
+    template<typename U>
+    vec3 &operator*=(U _f) {
         this->set(*this * _f);
         return *this;
     }
-    vec3 &operator/=(T _f) {
+
+    template<typename U>
+    vec3 &operator/=(U _f) {
         this->set(*this / _f);
         return *this;
     }
-    vec3 &operator*=(const vec3 &v) {
+
+    template<typename U>
+    vec3 &operator*=(const vec3<U> &v) {
         this->set(*this * v);
         return *this;
     }
-    vec3 &operator/=(const vec3 &v) {
+
+    template<typename U>
+    vec3 &operator/=(const vec3<U> &v) {
         this->set(*this / v);
         return *this;
     }
-    vec3 &operator+=(const vec3 &v) {
+
+    template<typename U>
+    vec3 &operator+=(const vec3<U> &v) {
         this->set(*this + v);
         return *this;
     }
-    vec3 &operator-=(const vec3 &v) {
+
+    template<typename U>
+    vec3 &operator-=(const vec3<U> &v) {
         this->set(*this - v);
         return *this;
     }
@@ -920,30 +928,6 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
 
-    const vec4 operator-(T _f) const noexcept {
-        return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f);
-    }
-
-    const vec4 operator+(T _f) const noexcept {
-        return vec4(this->x + _f, this->y + _f, this->z + _f, this->w + _f);
-    }
-
-    const vec4 operator*(T _f) const noexcept {
-        return vec4(this->x * _f, this->y * _f, this->z * _f, this->w * _f);
-    }
-
-    const vec4 operator/(T _f) const noexcept {
-        if (IS_ZERO(_f)) {
-            return *this;
-        }
-
-        return vec4(static_cast<T>(this->x * (1.0f / _f)),
-                    static_cast<T>(this->y * (1.0f / _f)),
-                    static_cast<T>(this->z * (1.0f / _f)),
-                    static_cast<T>(this->w * (1.0f / _f)));
-    }
-
-
     template<typename U>
     vec4 &operator=(U _f) noexcept { this->set(_f); return *this; }
 
@@ -979,54 +963,76 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     const vec4 operator-() const noexcept { return vec4(-x, -y, -z, -w); }
 
-    const vec4 operator+(const vec4 &v) const noexcept {
+    template<typename U>
+    const vec4 operator+(const vec4<U> &v) const noexcept {
         return vec4(this->x + v.x, this->y + v.y, this->z + v.z, this->w + v.w);
     }
 
-    const vec4 operator-(const vec4 &v) const noexcept {
+    template<typename U>
+    const vec4 operator-(const vec4<U> &v) const noexcept {
         return vec4(this->x - v.x, this->y - v.y, this->z - v.z, this->w - v.w);
     }
 
-    const vec4 operator/(const vec4 &v) const noexcept {
+    template<typename U>
+    const vec4 operator/(const vec4<U> &v) const noexcept {
         return vec4(IS_ZERO(v.x) ? this->x : this->x / v.x,
             IS_ZERO(v.y) ? this->y : this->y / v.y,
             IS_ZERO(v.z) ? this->z : this->z / v.z,
             IS_ZERO(v.w) ? this->w : this->w / v.w);
     }
 
-    const vec4 operator*(const vec4& v) const noexcept {
+    template<typename U>
+    const vec4 operator*(const vec4<U>& v) const noexcept {
         return vec4(this->x * v.x,
                     this->y * v.y,
                     this->z * v.z,
                     this->w * v.w);
     }
 
-    vec4 &operator*=(T _f) {
+    template<typename U>
+    vec4 &operator+=(U _f) {
+        this->set(*this + _f);
+        return *this;
+    }
+
+    template<typename U>
+    vec4 &operator-=(U _f) {
+        this->set(*this - _f);
+        return *this;
+    }
+
+    template<typename U>
+    vec4 &operator*=(U _f) {
         this->set(*this * _f);
         return *this;
     }
 
-    vec4 &operator/=(T _f) {
+    template<typename U>
+    vec4 &operator/=(U _f) {
         this->set(*this / _f);
         return *this;
     }
 
-    vec4 &operator*=(const vec4 &v) {
+    template<typename U>
+    vec4 &operator*=(const vec4<U> &v) {
         this->set(*this * v);
         return *this;
     }
 
-    vec4 &operator/=(const vec4 &v) {
+    template<typename U>
+    vec4 &operator/=(const vec4<U> &v) {
         this->set(*this / v);
         return *this;
     }
 
-    vec4 &operator+=(const vec4 &v) {
+    template<typename U>
+    vec4 &operator+=(const vec4<U> &v) {
         this->set(*this + v);
         return *this;
     }
 
-    vec4 &operator-=(const vec4 &v) {
+    template<typename U>
+    vec4 &operator-=(const vec4<U> &v) {
         this->set(*this - v);
         return *this;
     }
