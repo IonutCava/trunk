@@ -252,6 +252,8 @@ class SceneGraphNode : public GUIDWrapper,
         return getGUID() != rhs.getGUID();
     }
 
+    void postLoad();
+
    protected:
     friend class RenderPassCuller;
     // Returns true if the node should be culled (is not visible for the current stage)
@@ -264,6 +266,7 @@ class SceneGraphNode : public GUIDWrapper,
     friend class RenderingComponent;
     bool prepareDraw(const SceneRenderState& sceneRenderState,
                      RenderStage renderStage);
+
    protected:
     friend class SceneGraph;
     void frameEnded();
@@ -287,8 +290,11 @@ class SceneGraphNode : public GUIDWrapper,
     void onCollision(SceneGraphNode_cwptr collider);
 
    private:
+    void onTransform();
     bool filterCollission(const SceneGraphNode& node);
-    inline void setName(const stringImpl& name) { _name = name; }
+    inline void setName(const stringImpl& name) { 
+        _name = name;
+    }
 
    private:
     // An SGN doesn't exist outside of a scene graph

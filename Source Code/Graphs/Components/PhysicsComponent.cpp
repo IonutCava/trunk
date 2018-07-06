@@ -36,6 +36,14 @@ void PhysicsComponent::update(const U64 deltaTime) {
     }
 
     _parentDirty = isParentTransformDirty();
+
+    if (_transformUpdatedMask.hasSetFlags()) {
+        for (DELEGATE_CBK<>& cbk : _transformCallbacks) {
+            cbk();
+        }
+         
+        _transformUpdatedMask.clearAllFlags();
+    }
 }
 
 void PhysicsComponent::reset() {

@@ -97,15 +97,15 @@ void TenisScene::checkCollisions() {
     SceneGraphNode_ptr Player3(_aiPlayer3->getUnitRef()->getBoundNode().lock());
     SceneGraphNode_ptr Player4(_aiPlayer4->getUnitRef()->getBoundNode().lock());
 
-    BoundingBox ballBB = _ballSGN.lock()->get<BoundsComponent>()->getBoundingBoxConst();
-    BoundingBox floorBB = _floor.lock()->get<BoundsComponent>()->getBoundingBoxConst();
+    BoundingBox ballBB = _ballSGN.lock()->get<BoundsComponent>()->getBoundingBox();
+    BoundingBox floorBB = _floor.lock()->get<BoundsComponent>()->getBoundingBox();
 
     WriteLock w_lock(_gameLock);
-    _collisionPlayer1 = ballBB.collision(Player1->get<BoundsComponent>()->getBoundingBoxConst());
-    _collisionPlayer2 = ballBB.collision(Player2->get<BoundsComponent>()->getBoundingBoxConst());
-    _collisionPlayer3 = ballBB.collision(Player3->get<BoundsComponent>()->getBoundingBoxConst());
-    _collisionPlayer4 = ballBB.collision(Player4->get<BoundsComponent>()->getBoundingBoxConst());
-    _collisionNet = ballBB.collision(_net.lock()->get<BoundsComponent>()->getBoundingBoxConst());
+    _collisionPlayer1 = ballBB.collision(Player1->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer2 = ballBB.collision(Player2->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer3 = ballBB.collision(Player3->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer4 = ballBB.collision(Player4->get<BoundsComponent>()->getBoundingBox());
+    _collisionNet = ballBB.collision(_net.lock()->get<BoundsComponent>()->getBoundingBox());
     _collisionFloor = floorBB.collision(ballBB);
 }
 
@@ -139,8 +139,8 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b) {
         Player3->get<PhysicsComponent>()->getPosition();
     vec3<F32> player4Pos =
         Player4->get<PhysicsComponent>()->getPosition();
-    vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBoxConst().getMax();
-    vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBoxConst().getMin();
+    vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMax();
+    vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMin();
 
     UpgradeToWriteLock uw_lock(ur_lock);
     // Is the ball traveling from team 1 to team 2?

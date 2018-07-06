@@ -36,9 +36,9 @@ struct selectionQueueDistanceFrontToBack {
 
     bool operator()(SceneGraphNode_wptr a, SceneGraphNode_wptr b) const {
         F32 dist_a =
-            a.lock()->get<BoundsComponent>()->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+            a.lock()->get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(_eyePos);
         F32 dist_b =
-            b.lock()->get<BoundsComponent>()->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+            b.lock()->get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(_eyePos);
         return dist_a > dist_b;
     }
 

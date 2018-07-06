@@ -129,12 +129,7 @@ class NOINITVTABLE SceneNode : public Resource {
                              SceneState& sceneState);
 
     // Post insertion calls (Use this to setup child objects during creation)
-    virtual void postLoad(SceneGraphNode& sgn) {
-        if (_sgnParentCount > 0) {
-            AddRef();
-        }
-        _sgnParentCount++;
-    };
+    virtual void postLoad(SceneGraphNode& sgn);
 
    protected:
     /// The various states needed for rendering

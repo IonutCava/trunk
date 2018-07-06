@@ -35,6 +35,15 @@ void SceneNode::sceneUpdate(const U64 deltaTime,
     assert(_sgnParentCount != 0);
 }
 
+void SceneNode::postLoad(SceneGraphNode& sgn) {
+    if (_sgnParentCount > 0) {
+        AddRef();
+    }
+    _sgnParentCount++;
+
+    sgn.postLoad();
+}
+
 bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }

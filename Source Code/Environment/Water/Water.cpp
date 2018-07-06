@@ -135,9 +135,9 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     _cameraUnderWater =
         isPointUnderWater(sceneState.renderState().getCamera().getEye());
     if (_dirty) {
-        sgn.get<BoundsComponent>()
+        /*sgn.get<BoundsComponent>()
             ->getBoundingSphere().fromBoundingBox(sgn.get<BoundsComponent>()
-                                                    ->getBoundingBoxConst());
+                                                    ->getBoundingBoxConst());*/
         _dirty = false;
     }
     if (_paramsDirty) {

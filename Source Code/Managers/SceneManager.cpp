@@ -23,10 +23,10 @@ namespace {
 
         bool operator()(const RenderPassCuller::VisibleNode& a,
             const RenderPassCuller::VisibleNode& b) const {
-            F32 distASQ = a.second.lock()->get<BoundsComponent>()->getBoundingSphereConst()
+            F32 distASQ = a.second.lock()->get<BoundsComponent>()->getBoundingSphere()
                 .getCenter()
                 .distanceSquared(_camPos);
-            F32 distBSQ = b.second.lock()->get<BoundsComponent>()->getBoundingSphereConst()
+            F32 distBSQ = b.second.lock()->get<BoundsComponent>()->getBoundingSphere()
                 .getCenter()
                 .distanceSquared(_camPos);
             return distASQ < distBSQ;

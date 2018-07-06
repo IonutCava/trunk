@@ -39,28 +39,40 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     class BoundsComponent : public SGNComponent {
     public:
-        inline BoundingBox& getBoundingBox() { return _boundingBox; }
-        inline const BoundingBox& getBoundingBoxConst() const { return _boundingBox; }
-        inline BoundingSphere& getBoundingSphere() { return _boundingSphere; }
-        inline const BoundingSphere& getBoundingSphereConst() const { return _boundingSphere; }
+        inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
+        inline const BoundingSphere& getBoundingSphere() const { return _boundingSphere; }
         inline bool lockBBTransforms() const { return _lockBBTransforms; }
         inline void lockBBTransforms(const bool state) { _lockBBTransforms = state; }
+
+    protected:
+        friend class SceneGraph;
+        inline void onTransform(const mat4<F32>& worldMatrix) {
+            _worldMatrix.set(worldMatrix);
+            flagBoundingBoxDirty();
+        }
 
     protected:
         friend class SceneGraphNode;
         BoundsComponent(SceneGraphNode& sgn);
         ~BoundsComponent();
-        // ToDo: THIS IS AN UNGLY HACK. PLEASE REMOVE AND USE THE PROPER UPDATE SYSTEM! - Ionut
-        void parseBounds(const BoundingBox& nodeBounds, const bool force, const mat4<F32>& worldTransform);
+        
+        void update(const U64 deltaTime);
 
         inline void flagBoundingBoxDirty() {
             _boundingBoxDirty = true;
         }
 
+        inline void onBoundsChange(const BoundingBox& nodeBounds) {
+            _refBoundingBox.set(nodeBounds);
+            flagBoundingBoxDirty();
+        }
+
     private:
         std::atomic<bool> _boundingBoxDirty;
         bool _lockBBTransforms;
+        mat4<F32> _worldMatrix;
         BoundingBox _boundingBox;
+        BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;
     };
 };

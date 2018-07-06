@@ -384,7 +384,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
-        const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBoxConst();
+        const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
         GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[0], bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 
 
@@ -401,10 +401,10 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
             bool renderParentBB = parentStates.getTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED,
                                    renderParentBBFlagInitialized);
             if (!renderParentBB || !renderParentBBFlagInitialized) {
-                const BoundingBox& bbGrandParent = grandParent->get<BoundsComponent>()->getBoundingBoxConst();
+                const BoundingBox& bbGrandParent = grandParent->get<BoundsComponent>()->getBoundingBox();
                 GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[1],
-                                     bbGrandParent.getMin(),
-                                     bbGrandParent.getMax(),
+                                     bbGrandParent.getMin() - vec3<F32>(0.0025f),
+                                     bbGrandParent.getMax() + vec3<F32>(0.0025f),
                                      vec4<U8>(0, 128, 128, 255));
             }
         }
@@ -416,7 +416,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
     
     if (renderBoundingSphere()) {
-        const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphereConst();
+        const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
         GFX_DEVICE.drawSphere3D(*_boundingSpherePrimitive, bs.getCenter(), bs.getRadius(),
                                 vec4<U8>(0, 255, 0, 255));
     } else {
@@ -547,7 +547,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
             F32 cameraDistanceSQ =
                 _parentSGN
                     .get<BoundsComponent>()
-                    ->getBoundingSphereConst()
+                    ->getBoundingSphere()
                     .getCenter()
                     .distanceSquared(sceneRenderState
                                      .getCameraConst()

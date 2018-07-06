@@ -45,6 +45,15 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                     : nullptr,
             *this));
+
+    PhysicsComponent* pComp = get<PhysicsComponent>();
+    pComp->addTransformUpdateCbk(DELEGATE_BIND(
+            &Attorney::SceneGraphSGN::onNodeTransform,
+            std::ref(_sceneGraph),
+            std::ref(*this)));
+    pComp->addTransformUpdateCbk(DELEGATE_BIND(
+            &SceneGraphNode::onTransform,
+            this));
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -168,6 +177,17 @@ void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
 
     // Beware. Removing a node, does no delete it!
     // Call delete on the SceneGraphNode's pointer to do that
+}
+
+void SceneGraphNode::postLoad() {
+    SceneNode::BoundingBoxPair& pair = Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
+    if (pair.second) {
+        BoundsComponent* bComp = get<BoundsComponent>();
+        if (bComp) {
+            bComp->onBoundsChange(pair.first);
+        }
+        pair.second = false;
+    }
 }
 
 bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
@@ -305,7 +325,7 @@ void SceneGraphNode::intersect(const Ray& ray,
                                bool recursive) const {
 
     if (isSelectable()) {
-        if (get<BoundsComponent>()->getBoundingBoxConst().intersect(ray, start, end)) {
+        if (get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end)) {
             selectionHits.push_back(shared_from_this());
         }
     }
@@ -386,24 +406,30 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _elapsedTime += deltaTime;
 
     // update all of the internal components (animation, physics, etc)
-    for (U8 i = 0; i < to_const_uint(SGNComponent::ComponentType::COUNT); ++i) {
-        if (_components[i]) {
-            _components[i]->update(deltaTime);
+    for (const std::unique_ptr<SGNComponent>& comp : _components) {
+        if (comp != nullptr) {
+            comp->update(deltaTime);
         }
     }
 
-    PhysicsComponent* pComp = get<PhysicsComponent>();
-    if (pComp->parseTransformUpdateMask()) {
-        Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
-        get<BoundsComponent>()->flagBoundingBoxDirty();
-    }
-
     SceneNode::BoundingBoxPair& pair = Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
-
-    get<BoundsComponent>()->parseBounds(pair.first, pair.second, pComp->getWorldMatrix());
-    pair.second = false;
-
+    if (pair.second) {
+        BoundsComponent* bComp = get<BoundsComponent>();
+        if (bComp) {
+            bComp->onBoundsChange(pair.first);
+        }
+        pair.second = false;
+    }
+        
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
+}
+
+void SceneGraphNode::onTransform() {
+    PhysicsComponent* pComp = get<PhysicsComponent>();
+    BoundsComponent* bComp = get<BoundsComponent>();
+    if (pComp != nullptr && bComp != nullptr) {
+        bComp->onTransform(pComp->getWorldMatrix());
+    }
 }
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
@@ -471,8 +497,8 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     }
 
     bool distanceCheck = currentStage != RenderStage::SHADOW;
-    const BoundingBox& boundingBox = get<BoundsComponent>()->getBoundingBoxConst();
-    const BoundingSphere& sphere = get<BoundsComponent>()->getBoundingSphereConst();
+    const BoundingBox& boundingBox = get<BoundsComponent>()->getBoundingBox();
+    const BoundingSphere& sphere = get<BoundsComponent>()->getBoundingSphere();
 
     F32 radius = sphere.getRadius();
     const vec3<F32>& eye = currentCamera.getEye();

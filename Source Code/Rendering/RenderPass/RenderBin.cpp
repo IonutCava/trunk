@@ -143,7 +143,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
                             stage,
                             keyA,
                             keyB,
-                            sgn.get<BoundsComponent>()->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
+                            sgn.get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(eyePos),
                             *renderable);
 }
 

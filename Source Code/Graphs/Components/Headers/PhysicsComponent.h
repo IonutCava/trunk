@@ -246,10 +246,8 @@ class PhysicsComponent : public SGNComponent {
 
     void useDefaultTransform(const bool state);
 
-    inline bool parseTransformUpdateMask() {
-        bool ret = _transformUpdatedMask.hasSetFlags();
-        _transformUpdatedMask.clearAllFlags();
-        return ret;
+    inline void addTransformUpdateCbk(DELEGATE_CBK<> cbk) {
+        _transformCallbacks.push_back(cbk);
     }
 
    private:
@@ -266,6 +264,9 @@ class PhysicsComponent : public SGNComponent {
     typedef std::stack<TransformValues> TransformStack;
     TransformStack _transformStack;
     TransformMask _transformUpdatedMask;
+
+    vectorImpl<DELEGATE_CBK<> > _transformCallbacks;
+
     /// Transform cache values
     std::atomic_bool _dirty;
     std::atomic_bool _dirtyInterp;
