@@ -1,5 +1,4 @@
 -- Vertex
-out vec2 _texCoord;
 
 void main(void)
 {
@@ -7,14 +6,13 @@ void main(void)
     if((gl_VertexID & 1) != 0)uv.x = 1;
     if((gl_VertexID & 2) != 0)uv.y = 1;
 
-    _texCoord = uv * 2;
+    VAR._texCoord = uv * 2;
     gl_Position.xy = uv * 4 - 1;
     gl_Position.zw = vec2(0,1);
 }
 
 -- Fragment
 
-in vec2  _texCoord;
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
@@ -40,7 +38,7 @@ vec3 Uncharted2Tonemap(vec3 x)
 }
 
 void main() {    
-    vec3 value = texture(texScreen, _texCoord).rgb;
+    vec3 value = texture(texScreen, VAR._texCoord).rgb;
 
     if(luminancePass){
         float PreviousExposure = texture(texPrevExposure, vec2(0.5, 0.5)).r;

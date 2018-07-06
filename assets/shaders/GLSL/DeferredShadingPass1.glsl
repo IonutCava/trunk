@@ -6,7 +6,7 @@ out mat4 TBN;
 
 void main( void ){
     computeData();
-    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 
     position = vec3(transpose(dvd_ViewMatrix * dvd_WorldMatrix()) * dvd_Vertex);
     normals = normalize(dvd_NormalMatrix() * dvd_Normal);
@@ -64,7 +64,6 @@ void main( void ){
 
 in vec3  normals;
 in vec3  position;
-in vec2  _texCoord;
 in mat4  TBN;
 
 out vec4 diffuseOutput; // layout(location = 0)
@@ -75,7 +74,7 @@ out vec4 blendOutput;   // layout(location = 3)
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main( void ){
-   vec4 color = texture(texDiffuse0,_texCoord);
+   vec4 color = texture(texDiffuse0, VAR._texCoord);
 
    diffuseOutput = color;
    posOutput     = vec4(position,1);
@@ -87,7 +86,6 @@ void main( void ){
 -- Fragment.Bump
 
 in vec3       position;
-in vec2       _texCoord;
 in mat4       TBN;
 
 out vec4 diffuseOutput; // layout(location = 0)
@@ -100,11 +98,11 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D  texNormalMap;
 
 void main( void ){
 
-   vec4 color = texture(texDiffuse0,_texCoord);
+   vec4 color = texture(texDiffuse0, VAR._texCoord);
    
    diffuseOutput = color;
    posOutput     = vec4(position,1);
-   normOutput    = (texture(texNormalMap,_texCoord) * 2 -
+   normOutput    = (texture(texNormalMap, VAR._texCoord) * 2 -
                      vec4(1,1,1,0)) * TBN;
    blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
    blendOutput.a = color.a;

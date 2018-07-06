@@ -1,5 +1,4 @@
 -- Vertex
-out vec2 _texCoord;
 
 void main(void)
 {
@@ -7,7 +6,7 @@ void main(void)
     if((gl_VertexID & 1) != 0)uv.x = 1;
     if((gl_VertexID & 2) != 0)uv.y = 1;
 
-    _texCoord = uv * 2;
+    VAR._texCoord = uv * 2;
     gl_Position.xy = uv * 4 - 1;
     gl_Position.zw = vec2(0,1);
 }
@@ -15,7 +14,6 @@ void main(void)
 -- Fragment
 
 #define PI  3.14159265
-in  vec2 _texCoord;
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
@@ -166,12 +164,12 @@ vec2 rand(in vec2 coord) //generating noise/pattern texture for dithering
 void main() 
 {
     
-    float depth = texture(texDepth,_texCoord).x;
+    float depth = texture(texDepth, VAR._texCoord).x;
     float blur = 0.0;
     
     if (depthblur)
     {
-        depth = bdepth(_texCoord);
+        depth = bdepth(VAR._texCoord);
     }
     
     blur = clamp((abs(depth - focalDepth)/range)*100.0,-maxblur,maxblur);
@@ -182,12 +180,12 @@ void main()
         blur = clamp((abs(depth - fDepth)/range)*100.0,-maxblur,maxblur);
     }
     
-    vec2 noise = rand(_texCoord)*namount*blur;
+    vec2 noise = rand(VAR._texCoord)*namount*blur;
     
     float w = (1.0/width)*blur+noise.x;
     float h = (1.0/height)*blur+noise.y;
     
-    vec3 col = texture(texScreen, _texCoord).rgb;
+    vec3 col = texture(texScreen, VAR._texCoord).rgb;
     float s = 1.0;
     
     int ringsamples;
@@ -206,7 +204,7 @@ void main()
             { 
             p = penta(vec2(pw,ph));
             }
-            col += color(_texCoord + vec2(pw*w,ph*h),blur)*mix(1.0,(float(i))/(float(rings)),bias)*p;  
+            col += color(VAR._texCoord + vec2(pw*w,ph*h),blur)*mix(1.0,(float(i))/(float(rings)),bias)*p;
             s += 1.0*mix(1.0,(float(i))/(float(rings)),bias)*p;   
         }
     }
@@ -218,8 +216,6 @@ void main()
 }
 
 -- Fragment.OLD.BROKEN.DO.NOT.USE
-
-in vec2 _texCoord;
 
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
@@ -238,7 +234,7 @@ vec4 convolH11(){
     int k = (11/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask11[ind++] * texture(texScreen, _texCoord + vec2(i*stepX, 0));
+        color += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
             
     return color;
 }
@@ -250,7 +246,7 @@ vec4 convolH5(){
     int k = (5/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask5[ind++] * texture(texScreen, _texCoord + vec2(i*stepX, 0));
+        color += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
     return color;
 }
 
@@ -261,7 +257,7 @@ vec4 convolH3(){
     int k = (3/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask3[ind++] * texture(texScreen, _texCoord + vec2(i*stepX, 0));
+        color += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
     return color;
 }
 
@@ -272,7 +268,7 @@ vec4 convolV11(){
     int k = (11/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask11[ind++] * texture(texScreen, _texCoord + vec2(0, i*stepY));
+        color += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
     return color;
 }
 
@@ -283,7 +279,7 @@ vec4 convolV5(){
     int k = (5/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask5[ind++] * texture(texScreen, _texCoord + vec2(0, i*stepY));
+        color += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
     return color;
 }
 
@@ -294,7 +290,7 @@ vec4 convolV3(){
     int k = (3/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask3[ind++] * texture(texScreen, _texCoord + vec2(0, i*stepY));
+        color += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
     
     return color;
 }
@@ -303,7 +299,7 @@ vec4 convolV3(){
 
 void Pdc(inout vec4 color){
 
-    float depth = texture(texDepth, _texCoord).r;
+    float depth = texture(texDepth, VAR._texCoord).r;
 
     if(depth > 0.997){
 
@@ -329,7 +325,7 @@ void Pdc(inout vec4 color){
         
     }
     else{
-        color = texture(texScreen, _texCoord);
+        color = texture(texScreen, VAR._texCoord);
     }
 }
 

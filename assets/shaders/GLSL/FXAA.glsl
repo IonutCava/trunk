@@ -9,7 +9,6 @@ void main(void)
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-out vec2 _texCoord;
 out vec4 _posPos;
 
 uniform float dvd_fxaaSubpixShift = 1.0 / 4.0;
@@ -18,23 +17,19 @@ void main() {
     vec2 offset = dvd_invScreenDimensions.xy * (0.5 + dvd_fxaaSubpixShift);
 
     gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-    _texCoord = vec2(1.0, 1.0);
-    _posPos = vec4(_texCoord, _texCoord - offset);
+    _posPos = vec4(VAR._texCoord, _texCoord - offset);
     EmitVertex();
 
     gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-    _texCoord = vec2(0.0, 1.0);
-    _posPos = vec4(_texCoord, _texCoord - offset);
+    _posPos = vec4(VAR._texCoord, _texCoord - offset);
     EmitVertex();
 
     gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-    _texCoord = vec2(1.0, 0.0);
-    _posPos = vec4(_texCoord, _texCoord - offset);
+    _posPos = vec4(VAR._texCoord, _texCoord - offset);
     EmitVertex();
 
     gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-    _texCoord = vec2(0.0, 0.0);
-    _posPos = vec4(_texCoord, _texCoord - offset);
+    _posPos = vec4(VAR._texCoord, _texCoord - offset);
     EmitVertex();
 
     EndPrimitive();

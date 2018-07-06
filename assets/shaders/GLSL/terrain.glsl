@@ -16,17 +16,17 @@ void main(void){
 
     computeData();
 
-    _texCoord = vec3((_vertexW.xyz - bbox_min) / bbox_extent).sp;
-    _waterDepth = 1.0 - (dvd_waterHeight - _vertexW.y) / (dvd_waterHeight - bbox_min.y);
+    VAR._texCoord = vec3((VAR._vertexW.xyz - bbox_min) / bbox_extent).sp;
+    _waterDepth = 1.0 - (dvd_waterHeight - VAR._vertexW.y) / (dvd_waterHeight - bbox_min.y);
     computeLightVectors();
 
     float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = _texCoord * underwaterDiffuseScale;
+    vec2 noiseUV = VAR._texCoord * underwaterDiffuseScale;
     _uv0 = noiseUV;
     _uv1 = noiseUV + time2;
     _uv0.s -= time2;
 
-    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
 
 -- Fragment
@@ -47,7 +47,7 @@ out vec4 _colorOut;
 vec4 computeLightInfoLOD1Frag() {
     vec4 color = vec4(0.0);
     getColorNormal(color);
-    return getPixelColor(_texCoord, _normalWV, color);
+    return getPixelColor(VAR._texCoord, VAR._normalWV, color);
 }
 
 //subroutine(TerrainMappingType)
@@ -55,7 +55,7 @@ vec4 computeLightInfoLOD0Frag() {
     vec4 color = vec4(0.0);
     vec3 tbn = vec3(0.0);
     getColorAndTBNNormal(color, tbn);
-    return getPixelColor(_texCoord, tbn, color);
+    return getPixelColor(VAR._texCoord, tbn, color);
 }
 
 
@@ -68,7 +68,7 @@ vec4 UnderwaterColor() {
     vec3 tbn = vec3(0.0);
     getColorAndTBNUnderwater(color, tbn);
 
-    return getPixelColor(_texCoord, tbn, color);
+    return getPixelColor(VAR._texCoord, tbn, color);
 }
 
 vec4 UnderwaterMappingRoutine(){

@@ -20,7 +20,6 @@ layout(binding = 4) uniform sampler2D lightTexture;
 
 uniform int lightCount;
 
-in vec2 _texCoord;
 in vec3 _eyePos;
 out vec4 _colorOut;
 
@@ -31,10 +30,10 @@ void main( void )
    vec3 light = vec3(0,0,0);
    vec3 lightDir = vec3(0,0,0);
    vec3 vHalfVector = vec3(0,0,0);
-   vec4 albedo   = texture( albedoTexture, _texCoord );
-   vec4 position = texture( positionTexture, _texCoord );
-   vec4 normal   = texture( normalTexture, _texCoord );
-   vec4 blend    = texture( blendTexture, _texCoord );
+   vec4 albedo   = texture( albedoTexture, VAR._texCoord );
+   vec4 position = texture( positionTexture, VAR._texCoord );
+   vec4 normal   = texture( normalTexture, VAR._texCoord );
+   vec4 blend    = texture( blendTexture, VAR._texCoord );
    vec3 eyeDir = normalize(_eyePos-position.xyz);
 
    float lightIntensity = 0;

@@ -21,8 +21,8 @@ void main()
 {
     vec3 posOffset = positionOffsets[gl_VertexID];
     _arrayLayer = int(instanceData.w);
-    _texCoord = texCoordOffsets[gl_VertexID];
-    _vertexW = /* transform[gl_InstanceID]* */ 
+    VAR._texCoord = texCoordOffsets[gl_VertexID];
+    VAR._vertexW = /* transform[gl_InstanceID]* */
                vec4(rotationMatrices[instanceID % 18] * 
                     positionOffsets[gl_VertexID] * 
                     instanceScale + 
@@ -32,13 +32,13 @@ void main()
     dvd_Normal = vec3(1.0, 1.0, 1.0);
 
     if (posOffset.y > 0.75) 
-        computeFoliageMovementGrass(_vertexW);
+        computeFoliageMovementGrass(VAR._vertexW);
 
-    setClipPlanes(_vertexW);
+    setClipPlanes(VAR._vertexW);
 
     //computeLightVectors();
 
-    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
 
 -- Fragment
@@ -51,16 +51,15 @@ out vec4 _colorOut;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
+    vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
     if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
-    //color = getPixelColor(_texCoord, _normalWV, color);
+    //color = getPixelColor(VAR._texCoord, VAR._normalWV, color);
     _colorOut = applyFog(color);
 }
 
 --Fragment.Shadow
 
-in vec2 _texCoord;
 flat in int _arrayLayer;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
@@ -76,7 +75,7 @@ vec2 computeMoments(in float depth) {
 }
 
 void main(void){
-    vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
+    vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
     if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
     _colorOut = computeMoments(gl_FragCoord.z);
@@ -84,7 +83,6 @@ void main(void){
 
 --Fragment.PrePass
 
-in vec2 _texCoord;
 flat in int _arrayLayer;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
@@ -92,7 +90,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 out vec4 _colorOut;
 
 void main(void){
-    vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
+    vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
     if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
     _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, 0.0);

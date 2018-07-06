@@ -1,11 +1,10 @@
 -- Vertex
 
-out vec2 _texCoord;
 out vec4 _color;
 uniform mat4 dvd_WorldMatrix;
 
 void main(){
-  _texCoord = inTexCoordData;
+    VAR._texCoord = inTexCoordData;
   _color = inColorData;
   gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * vec4(inVertexData,1.0);
 } 
@@ -24,7 +23,7 @@ void main(){
     if(!useTexture){
         _colorOut = _color;
     }else{
-        _colorOut = texture(texDiffuse0, _texCoord);
+        _colorOut = texture(texDiffuse0, VAR._texCoord);
         _colorOut.rgb += _color.rgb;
     }
     _colorOut = ToSRGB(_colorOut);
@@ -34,11 +33,10 @@ void main(){
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
-in  vec2 _texCoord;
 in  vec4 _color;
 
 out vec4 _colorOut;
 
 void main(){
-    _colorOut = vec4(_color.rgb, texture(texDiffuse0, _texCoord).r);
+    _colorOut = vec4(_color.rgb, texture(texDiffuse0, VAR._texCoord).r);
 }

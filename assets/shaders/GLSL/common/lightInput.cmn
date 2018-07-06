@@ -66,15 +66,4 @@ layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowB
 };
 #endif
 
-#if !defined(COMPUTE_SHADER)
-VARYING vec3 _normalWV;
-#if defined(COMPUTE_TBN)
-VARYING vec3 _tangentWV;
-VARYING vec3 _bitangentWV;
-#endif
-
-VARYING vec3 _viewDirection;
-flat VARYING uint _lightCount;
-#endif
-
 #endif //_LIGHT_INPUT_CMN_

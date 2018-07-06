@@ -24,19 +24,18 @@ float shadow_loop(){
 
     float shadow = 1.0;
     for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++) {
-        if (_lightCount == i) {
+        if (VAR._lightCount == i) {
             break;
         }
+        Shadow shadowSource = dvd_ShadowSource[dvd_LightSource[i]._options.z];
         if (dvd_LightSource[i]._options.y == 1)
             switch (dvd_LightSource[i]._options.x) {
                 case LIGHT_DIRECTIONAL:
-                    shadow *= applyShadowDirectional(i, dvd_ShadowSource[dvd_LightSource[i]._options.z]);
+                    shadow *= applyShadowDirectional(i, shadowSource);
                     break;
-                    // case LIGHT_OMNIDIRECTIONAL : shadow *= applyShadowPoint(
-                    //    i, dvd_ShadowSource[dvd_LightSource[i]._options.z]);
+                    // case LIGHT_OMNIDIRECTIONAL : shadow *= applyShadowPoint(i, shadowSource);
                     // break;
-                    // case LIGHT_SPOT            : shadow *= applyShadowSpot(
-                    //    i, dvd_ShadowSource[dvd_LightSource[i]._options.z]); 
+                    // case LIGHT_SPOT            : shadow *= applyShadowSpot(i, shadowSource); 
                     // break;
             }
     }

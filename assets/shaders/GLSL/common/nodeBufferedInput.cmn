@@ -1,8 +1,6 @@
 #ifndef _NODE_BUFFERED_INPUT_CMN_
 #define _NODE_BUFFERED_INPUT_CMN_
 
-flat VARYING uint dvd_drawID;
-
 struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
@@ -17,19 +15,19 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 };
 
 mat4 dvd_WorldMatrix() {
-    return dvd_Matrices[dvd_drawID]._worldMatrix;
+    return dvd_Matrices[VAR.dvd_drawID]._worldMatrix;
 }
 
 mat3 dvd_NormalMatrix() {
-    return mat3(dvd_Matrices[dvd_drawID]._normalMatrix);
+    return mat3(dvd_Matrices[VAR.dvd_drawID]._normalMatrix);
 }
 
 ivec4 dvd_BufferIntegerValues() {
-    return ivec4(dvd_Matrices[dvd_drawID]._properties);
+    return ivec4(dvd_Matrices[VAR.dvd_drawID]._properties);
 }
 
 #if defined(VERT_SHADER)
-#define dvd_boneCount     uint(dvd_Matrices[dvd_drawID]._normalMatrix[3][2])
+#define dvd_boneCount     uint(dvd_Matrices[VAR.dvd_drawID]._normalMatrix[3][2])
 #endif
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
@@ -37,7 +35,7 @@ ivec4 dvd_BufferIntegerValues() {
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor
-#define buffer_matProperties dvd_Matrices[dvd_drawID]._colorMatrix[3]
+#define buffer_matProperties dvd_Matrices[VAR.dvd_drawID]._colorMatrix[3]
 
 #define dvd_isSelected     (dvd_BufferIntegerValues().x < -0.5)
 #define dvd_isHighlighted  (dvd_BufferIntegerValues().x >  0.5)
@@ -47,10 +45,10 @@ ivec4 dvd_BufferIntegerValues() {
 #define dvd_textureCount   uint(buffer_matProperties.z)
 #define dvd_parallaxFactor buffer_matProperties.w
 #define dvd_reliefFactor   dvd_parallaxFactor
-#define dvd_MatDiffuse     dvd_Matrices[dvd_drawID]._colorMatrix[0]
-#define dvd_MatSpecular    dvd_Matrices[dvd_drawID]._colorMatrix[1].rgb
-#define dvd_MatEmissive    dvd_Matrices[dvd_drawID]._colorMatrix[2].rgb
-#define dvd_MatShininess   dvd_Matrices[dvd_drawID]._colorMatrix[2].w
+#define dvd_MatDiffuse     dvd_Matrices[VAR.dvd_drawID]._colorMatrix[0]
+#define dvd_MatSpecular    dvd_Matrices[VAR.dvd_drawID]._colorMatrix[1].rgb
+#define dvd_MatEmissive    dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].rgb
+#define dvd_MatShininess   dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].w
 
 #endif
 

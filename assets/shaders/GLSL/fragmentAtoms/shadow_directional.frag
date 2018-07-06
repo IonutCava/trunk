@@ -25,7 +25,7 @@ bool inRange(const in float value){
     return value >= 0.0 && value <= 1.0;
 }
 
-float applyShadowDirectional(const in uint lightIndex, const in Shadow currentShadowSource) {
+float applyShadowDirectional(const in uint lightIndex, Shadow currentShadowSource) {
 
 #   if !defined(_DEBUG)
       int _shadowTempInt = -2;
@@ -56,7 +56,7 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
         return 1.0;
     }
 
-    vec4 shadow_coord = currentShadowSource._lightVP[_shadowTempInt] * _vertexW;
+    vec4 shadow_coord = currentShadowSource._lightVP[_shadowTempInt] * VAR._vertexW;
     
     if (inRange(shadow_coord.z) && inRange(shadow_coord.x) && inRange(shadow_coord.y)){
         shadow_coord.w = shadow_coord.z;

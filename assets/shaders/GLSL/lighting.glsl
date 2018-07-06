@@ -17,7 +17,7 @@ void main(void){
     computeLightVectors();
 
     //Compute the final vert position
-    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
 
 -- Fragment
@@ -36,23 +36,23 @@ out vec4 _colorOut;
 
 //subroutine(MappingRoutineType)
 vec4 mappingFlat(){
-    return getPixelColor(_texCoord, _normalWV);
+    return getPixelColor(VAR._texCoord, VAR._normalWV);
 }
 
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
-    return getPixelColor(_texCoord, normalize(2.0 * texture(texNormalMap, _texCoord).rgb - 1.0));
+    return getPixelColor(VAR._texCoord, normalize(2.0 * texture(texNormalMap, VAR._texCoord).rgb - 1.0));
 }
 
 //subroutine(MappingRoutineType)
 vec4 mappingRelief(){
-    return ReliefMapping(bumpMapLightID,_texCoord);
+    return ReliefMapping(bumpMapLightID, VAR._texCoord);
 }
 
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
-    return ParallaxMapping(bumpMapLightID, _texCoord);
+    return ParallaxMapping(bumpMapLightID, VAR._texCoord);
 }
 #endif
 

@@ -123,7 +123,7 @@ const bool USE_1x1_VIEWPORT = false;
 /// textures are capped at 2x2 when uploaded to the GPU
 const bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers
-const bool DISABLE_PERSISTENT_BUFFER = false;
+const bool DISABLE_PERSISTENT_BUFFER = true;
 };  // namespace Profile
 
 namespace Assert {

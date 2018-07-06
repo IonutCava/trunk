@@ -2,18 +2,14 @@
 
 #include "vbInputData.vert"
 
-#if !defined(SHADOW_PASS)
-out vec3 _normal;
-#endif
-
 void main() {
 
     computeData();
 #if defined(SHADOW_PASS)
-    gl_Position = _vertexW;
+    gl_Position = VAR._vertexW;
 #else
-    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
-    _normal = dvd_Normal;
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+    VAR._normal = dvd_Normal;
 #endif
 }
 
@@ -22,14 +18,6 @@ void main() {
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     mat4 _lightVP[MAX_SPLITS_PER_LIGHT];
-};
-
-in Inputs{
-    vec2 _texCoord;
-} v_in[];
-
-out Outputs{
-    vec2 _texCoord;
 };
 
 #if defined(USE_TRIANGLE_STRIP)
@@ -45,7 +33,7 @@ void main()
     mat4 vp = _lightVP[gl_InvocationID];
     for (int i = 0; i < gl_in.length(); ++i)
     {
-        _texCoord = v_in[i]._texCoord;
+        passVertex(i);
         gl_Layer = gl_InvocationID + int(dvd_shadowArrayOffset);
         gl_Position = vp * gl_in[i].gl_Position;
         EmitVertex();
@@ -55,12 +43,9 @@ void main()
 
 -- Fragment
 
-in vec2 _texCoord;
-
 #if defined(SHADOW_PASS)
 out vec2 _colorOut;
 #else
-in vec3 _normal;
 out vec3 _colorOut;
 #endif
 
@@ -93,16 +78,16 @@ void main() {
 #if defined(HAS_TRANSPARENCY)
 #if defined(USE_OPACITY_DIFFUSE_MAP)
     if (dvd_BufferIntegerValues().w == 0) {
-        alpha *= texture(texDiffuse0, _texCoord).a;
+        alpha *= texture(texDiffuse0, VAR._texCoord).a;
     } else {
-        alpha *= texture(texDiffuse1, _texCoord).a;
+        alpha *= texture(texDiffuse1, VAR._texCoord).a;
     }
 #endif
 #if defined(USE_OPACITY_DIFFUSE)
     alpha *= dvd_MatDiffuse.a;
 #endif
 #if defined(USE_OPACITY_MAP)
-    vec4 opacityMap = texture(texOpacityMap, _texCoord);
+    vec4 opacityMap = texture(texOpacityMap, VAR._texCoord);
     alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
     if (alpha < ALPHA_DISCARD_THRESHOLD) discard;
@@ -114,7 +99,7 @@ void main() {
     //_colorOut = vec4(computeMoments(exp(DEPTH_EXP_WARP * gl_FragCoord.z)), 0.0, alpha);
     _colorOut = computeMoments(gl_FragCoord.z);
 #else
-    _colorOut = normalize(dvd_NormalMatrix() * _normal);
+    _colorOut = normalize(dvd_NormalMatrix() * f_in._normal);
 #endif
 
 }

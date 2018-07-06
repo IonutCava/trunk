@@ -7,11 +7,11 @@ uniform float lod_metric;
 
 void computeFoliageMovementTree(inout vec4 vertex) {
 
-    float move_speed = (float(int(_vertexW.y*_vertexW.z) % 50)/50.0 + 0.5);
+    float move_speed = (float(int(VAR._vertexW.y * VAR._vertexW.z) % 50)/50.0 + 0.5);
     float timeTree = dvd_time * 0.001 * dvd_windDetails.w * move_speed; //to seconds
     float amplituted = pow(vertex.y, 2.0);
-    vertex.x += 0.01 * amplituted * cos(timeTree + _vertexW.x) *dvd_windDetails.x;
-    vertex.z += 0.05 *scale.y* amplituted * cos(timeTree + _vertexW.z) *dvd_windDetails.z;
+    vertex.x += 0.01 * amplituted * cos(timeTree + VAR._vertexW.x) *dvd_windDetails.x;
+    vertex.z += 0.05 *scale.y* amplituted * cos(timeTree + VAR._vertexW.z) *dvd_windDetails.z;
 }
 
 void computeFoliageMovementGrass(inout vec4 vertex) {

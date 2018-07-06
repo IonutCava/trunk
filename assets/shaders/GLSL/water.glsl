@@ -10,9 +10,9 @@ void main(void)
 {
     computeData();
 
-    _pixToEye   = -vec3(dvd_ViewMatrix * _vertexW);
+    _pixToEye   = -vec3(dvd_ViewMatrix * VAR._vertexW);
 
-    _vertexWVP = dvd_ViewProjectionMatrix * _vertexW;
+    _vertexWVP = dvd_ViewProjectionMatrix * VAR._vertexW;
     _normalWV = normalize(dvd_NormalMatrix() * dvd_Normal);
 
     gl_Position = _vertexWVP;
@@ -53,10 +53,10 @@ void main (void)
     uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
 
     float time2 = float(dvd_time) * 0.00001;
-    vec2 uvNormal0 = _texCoord * _noiseTile;
+    vec2 uvNormal0 = VAR._texCoord * _noiseTile;
     uvNormal0.s += time2;
     uvNormal0.t += time2;
-    vec2 uvNormal1 = _texCoord * _noiseTile;
+    vec2 uvNormal1 = VAR._texCoord * _noiseTile;
     uvNormal1.s -= time2;
     uvNormal1.t += time2;
 

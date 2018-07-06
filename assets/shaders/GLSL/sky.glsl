@@ -1,22 +1,21 @@
 -- Vertex
 
-out vec3 _vertex;
+#include "vbInputData.vert"
+
+out vec4 _vertex;
 out vec3 _normal;
 
-vec3 UNPACK_FLOAT(in float value) {
-    return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
-}
-
 void main(void){
-    _vertex = normalize(inVertexData);
-    _normal = UNPACK_FLOAT(inNormalData);
-    gl_Position = dvd_ViewProjectionMatrix * vec4(inVertexData + dvd_cameraPosition.xyz, 1.0);
+    computeData();
+    _normal = dvd_Normal;
+    _vertex = dvd_Vertex;
+    gl_Position = dvd_ViewProjectionMatrix * vec4(_vertex.xyz + dvd_cameraPosition.xyz, 1.0);
     gl_Position.z = gl_Position.w -0.00001; //fix to far plane.
 }
 
 -- Fragment
 
-in vec3 _vertex;
+in vec4 _vertex;
 in vec3 _normal;
 out vec4 _skyColor;
 
@@ -29,7 +28,7 @@ uniform samplerCubeArray texSky;
 #include "utility.frag"
 
 vec3 sunColor(){
-    vec3 vert = normalize(_vertex);
+    vec3 vert = normalize(_vertex.xyz);
     vec3 sun = normalize(sun_vector);
         
     float day_factor = max(-sun.y, 0.0);

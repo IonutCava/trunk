@@ -1,10 +1,6 @@
 #ifndef _LIGHTING_DEFAULTS_FRAG_
 #define _LIGHTING_DEFAULTS_FRAG_
 
-in vec2 _texCoord;
-in vec4 _vertexW;
-in vec4 _vertexWV;
-
 #include "nodeBufferedInput.cmn"
 
 uniform float projectedTextureMixWeight;

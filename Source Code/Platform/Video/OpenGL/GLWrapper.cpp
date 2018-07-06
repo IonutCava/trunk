@@ -195,6 +195,17 @@ void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
 
 /// Prepare our shader loading system
 bool GL_API::initShaders() {
+    static const std::string shaderVaryings[] = { "flat uint dvd_drawID;",
+                                                  "vec4 _vertex;",
+                                                  "vec4 _vertexW;",
+                                                  "vec4 _vertexWV;",
+                                                  "vec3 _normal;",
+                                                  "vec3 _normalWV;",
+                                                  "vec3 _tangentWV;",
+                                                  "vec3 _bitangentWV;",
+                                                  "vec3 _viewDirection;",
+                                                  "flat uint _lightCount;",
+                                                  "vec2 _texCoord;" };
     // Initialize GLSW
     GLint glswState = glswInit();
 
@@ -202,7 +213,7 @@ bool GL_API::initShaders() {
   
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    appendToShaderHeader(ShaderType::COUNT, "#version 440 core", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,
                          "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);
@@ -273,7 +284,30 @@ bool GL_API::initShaders() {
         appendToShaderHeader(ShaderType::COUNT,
                              "//#pragma optionNV(unroll all)", lineOffsets);
     }
-    // Try to sync engine specific data and values with GLSL
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "const uint MAX_SPLITS_PER_LIGHT = " +
+        std::to_string(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";",
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "const uint MAX_POSSIBLE_LIGHTS = " +
+        std::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS) + ";",
+        lineOffsets);
+
+    appendToShaderHeader(ShaderType::COUNT,
+        "const int MAX_VISIBLE_NODES = " +
+        std::to_string(Config::MAX_VISIBLE_NODES) + ";",
+        lineOffsets);
+
+    appendToShaderHeader(ShaderType::COUNT, "const float Z_TEST_SIGMA = 0.0001;", lineOffsets);
+
+    appendToShaderHeader(ShaderType::COUNT, "const float ALPHA_DISCARD_THRESHOLD = 0.25;", lineOffsets);
+
+    appendToShaderHeader(ShaderType::FRAGMENT, "const uint DEPTH_EXP_WARP = 32;", lineOffsets);
+
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + std::to_string(Config::MAX_CLIP_PLANES),
@@ -282,56 +316,16 @@ bool GL_API::initShaders() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_SHADOW_CASTING_LIGHTS " +
-            std::to_string(
-                Config::Lighting::MAX_SHADOW_CASTING_LIGHTS),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "const uint MAX_SPLITS_PER_LIGHT = " +
-            std::to_string(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";",
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "const uint MAX_POSSIBLE_LIGHTS = " +
-            std::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS) + ";",
-        lineOffsets);
-
-    appendToShaderHeader(ShaderType::COUNT,
-                         "const int MAX_VISIBLE_NODES = " +
-                             std::to_string(Config::MAX_VISIBLE_NODES) + ";",
-                         lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_NORMAL " +
-            std::to_string(to_uint(ShaderBufferLocation::LIGHT_NORMAL)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_POINT_LIGHTS " +
-            std::to_string(to_uint(ShaderBufferLocation::LIGHT_POINT_LIGHTS)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_SPOT_LIGHTS " +
-            std::to_string(to_uint(ShaderBufferLocation::LIGHT_SPOT_LIGHTS)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_INDICES " +
-            std::to_string(to_uint(ShaderBufferLocation::LIGHT_INDICES)),
+        std::to_string(
+        Config::Lighting::MAX_SHADOW_CASTING_LIGHTS),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_GPU_BLOCK " +
-            std::to_string(to_uint(ShaderBufferLocation::GPU_BLOCK)),
+        std::to_string(to_uint(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
+
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_GPU_COMMANDS " +
@@ -340,45 +334,44 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define BUFFER_LIGHT_NORMAL " +
+        std::to_string(to_uint(ShaderBufferLocation::LIGHT_NORMAL)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_SHADOW " +
+        std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_POINT_LIGHTS " +
+        std::to_string(to_uint(ShaderBufferLocation::LIGHT_POINT_LIGHTS)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_SPOT_LIGHTS " +
+        std::to_string(to_uint(ShaderBufferLocation::LIGHT_SPOT_LIGHTS)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_INDICES " +
+        std::to_string(to_uint(ShaderBufferLocation::LIGHT_INDICES)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define BUFFER_NODE_INFO " +
-            std::to_string(to_uint(ShaderBufferLocation::NODE_INFO)),
+        std::to_string(to_uint(ShaderBufferLocation::NODE_INFO)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_SCENE_DATA " +
-            std::to_string(to_uint(ShaderBufferLocation::SCENE_DATA)),
-        lineOffsets);
-
-    appendToShaderHeader(ShaderType::COUNT,
-                         "const float Z_TEST_SIGMA = 0.0001;", lineOffsets);
-
-    appendToShaderHeader(ShaderType::COUNT,
-                         "const float ALPHA_DISCARD_THRESHOLD = 0.25;",
-                         lineOffsets);
-
-    appendToShaderHeader(ShaderType::FRAGMENT, "#define VARYING in",
-                         lineOffsets);
-
-    appendToShaderHeader(ShaderType::COMPUTE, "#define VARYING ",
-                         lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define BUFFER_LIGHT_SHADOW " +
-            std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::GEOMETRY,
-        "#define BUFFER_LIGHT_SHADOW " +
-            std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COMPUTE,
-        "#define BUFFER_LIGHT_SHADOW " +
-            std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
+        std::to_string(to_uint(ShaderBufferLocation::SCENE_DATA)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -456,13 +449,7 @@ bool GL_API::initShaders() {
                 to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::LAYERED))),
         lineOffsets);
 
-    appendToShaderHeader(ShaderType::FRAGMENT,
-                         "const uint DEPTH_EXP_WARP = 32;", lineOffsets);
-
     // GLSL <-> VBO intercommunication
-    appendToShaderHeader(ShaderType::VERTEX, "#define VARYING out",
-                         lineOffsets);
-
     appendToShaderHeader(ShaderType::VERTEX,
                          "const uint MAX_BONE_COUNT_PER_NODE = " +
                              std::to_string(Config::MAX_BONE_COUNT_PER_NODE) +
@@ -531,6 +518,33 @@ bool GL_API::initShaders() {
             std::to_string(to_uint(AttribLocation::VERTEX_WIDTH)) +
             ") in uint inLineWidthData;",
         lineOffsets);
+
+    // INTERFACE BLOCKS BEGIN
+    appendToShaderHeader(ShaderType::COUNT, "", lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX, "out PerVertexData{", lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "in  PerVertexData{", lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "in  PerVertexData{", lineOffsets);
+    for (std::string entry : shaderVaryings) {
+        appendToShaderHeader(ShaderType::COUNT, "    " + entry, lineOffsets);
+    }
+    appendToShaderHeader(ShaderType::GEOMETRY, "} v_in[];", lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "out  PerVertexData{", lineOffsets);
+    for (std::string entry : shaderVaryings) {
+        appendToShaderHeader(ShaderType::GEOMETRY, "    " + entry, lineOffsets);
+    }
+    appendToShaderHeader(ShaderType::GEOMETRY, "} g_out;", lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "} f_in;", lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX, "} v_out;", lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX, "#define VAR v_out", lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#define VAR v_in", lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "#define VAR f_in", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "", lineOffsets);
+    // INTERFACE BLOCKS END
+
+    appendToShaderHeader(ShaderType::GEOMETRY,
+                         "#include \"inOut.geom\"",
+                         lineOffsets);
+    lineOffsets[to_const_uint(ShaderType::GEOMETRY)] += 18;
 
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes are defined in an external file included in every shader

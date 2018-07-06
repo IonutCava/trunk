@@ -144,7 +144,6 @@ class Terrain : public Object3D {
    protected:
     VegetationDetails _vegDetails;
 
-    U8 _lightCount;
     vec2<U16> _terrainDimensions;
     U32 _chunkSize;
     Quadtree _terrainQuadtree;

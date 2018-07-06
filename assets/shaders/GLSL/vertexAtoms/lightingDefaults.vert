@@ -3,25 +3,23 @@
 
 #include "lightInput.cmn"
 
-out vec4 _vertexWV;
-
 void computeLightVectors(){
-    _lightCount = dvd_lodLevel > 2 ? 1 : dvd_lightCount;
-    _normalWV = normalize(dvd_NormalMatrix() * dvd_Normal);
-    _vertexWV = dvd_ViewMatrix * _vertexW;
+    VAR._lightCount = dvd_lodLevel > 2 ? 1 : dvd_lightCount;
+    VAR._normalWV = normalize(dvd_NormalMatrix() * dvd_Normal);
+    VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
 
 #if defined(COMPUTE_TBN)
-    _tangentWV = normalize(dvd_NormalMatrix() * dvd_Tangent);
-    _bitangentWV = normalize(cross(_normalWV, _tangentWV));
+    VAR._tangentWV = normalize(dvd_NormalMatrix() * dvd_Tangent);
+    VAR._bitangentWV = normalize(cross(VAR._normalWV, VAR._tangentWV));
     
-    vec3 tmpVec = -_vertexWV.xyz;
-   _viewDirection.x = dot(tmpVec, _tangentWV);
-   _viewDirection.y = dot(tmpVec, _bitangentWV);
-   _viewDirection.z = dot(tmpVec, _normalWV);
+    vec3 tmpVec = -VAR._vertexWV.xyz;
+    VAR._viewDirection.x = dot(tmpVec, VAR._tangentWV);
+    VAR._viewDirection.y = dot(tmpVec, VAR._bitangentWV);
+    VAR._viewDirection.z = dot(tmpVec, VAR._normalWV);
 #else
-    _viewDirection = -_vertexWV.xyz;
+    VAR._viewDirection = -VAR._vertexWV.xyz;
 #endif
-    _viewDirection = normalize(_viewDirection);
+    VAR._viewDirection = normalize(VAR._viewDirection);
 }
 
 #endif //_LIGHTING_DEFAULTS_VERT_

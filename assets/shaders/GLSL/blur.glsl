@@ -1,5 +1,4 @@
 -- Vertex
-out vec2 _texCoord;
 
 void main(void)
 {
@@ -12,14 +11,13 @@ void main(void)
         uv.y = 1;
     }
 
-    _texCoord = uv * 2;
+    VAR._texCoord = uv * 2;
     gl_Position.xy = uv * 4 - 1;
     gl_Position.zw = vec2(0,1);
 }
 
 -- Fragment
 
-in  vec2 _texCoord;
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
@@ -38,7 +36,7 @@ vec3 blurHorizontal(){
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, _texCoord + vec2(pass.x*i, 0.0)).rgb;
+        value = texture(texScreen, VAR._texCoord + vec2(pass.x*i, 0.0)).rgb;
         factor = kernelSize + 1 - abs(i);
         color += value * factor;
         sum += factor;
@@ -54,7 +52,7 @@ vec3 blurVertical(){
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, _texCoord + vec2(0.0, pass.y*i)).rgb;
+        value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y*i)).rgb;
         factor = kernelSize + 1 - abs(i);
         color += value * factor;
         sum += factor;
@@ -70,7 +68,7 @@ vec3 blurHorizontalLayered(){
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, _texCoord + vec2(pass.x*i, 0.0), layer).rgb;
+        value = texture(texScreen, VAR._texCoord + vec2(pass.x*i, 0.0), layer).rgb;
         factor = kernelSize + 1 - abs(i);
         color += value * factor;
         sum += factor;
@@ -86,7 +84,7 @@ vec3 blurVerticalLayered(){
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, _texCoord + vec2(0.0, pass.y*i), layer).rgb;
+        value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y*i), layer).rgb;
         factor = kernelSize + 1 - abs(i);
         color += value * factor;
         sum += factor;

@@ -45,11 +45,11 @@ vec4 ParallaxMapping(in uint bumpMapLightID, in vec2 uv){
             break;
         case LIGHT_OMNIDIRECTIONAL  : 
         case LIGHT_SPOT             : 
-            lightVecTBN = normalize(_viewDirection + dvd_LightSource[bumpMapLightID]._position.xyz); 
+            lightVecTBN = normalize(VAR._viewDirection + dvd_LightSource[bumpMapLightID]._position.xyz); 
             break;
     };
 
-    vec3 viewVecTBN = normalize(_viewDirection);
+    vec3 viewVecTBN = normalize(VAR._viewDirection);
     
     //Offset, scale and bias
     vec2 vTexCoord = uv + 
@@ -63,7 +63,7 @@ vec4 ParallaxMapping(in uint bumpMapLightID, in vec2 uv){
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
-    vec3 viewVecTBN = normalize(_viewDirection);
+    vec3 viewVecTBN = normalize(VAR._viewDirection);
     //Size and search starting position in texture space
     vec2 AB = dvd_reliefFactor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;
 
@@ -71,7 +71,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
     
     vec2 uv_offset = h * AB;
     
-    vec3 p = _vertexWV.xyz;
+    vec3 p = VAR._vertexWV.xyz;
     vec3 v = normalize(p);
     //Compute light direction
     p += v*h*viewVecTBN.z;    

@@ -33,7 +33,7 @@ float computeAttenuationSpot(const in uint lightIndex, const in vec3 lightDirect
 vec3 getLightDirection(const in uint lightIndex, const in vec3 viewDir, const in vec3 normal) {
 #if defined(COMPUTE_TBN)
     vec3 lightDir = normalize(viewDir + dvd_LightSource[lightIndex]._position.xyz);
-    return normalize(vec3(dot(lightDir, _tangentWV), dot(lightDir, _bitangentWV), dot(lightDir, normal)));
+    return normalize(vec3(dot(lightDir, VAR._tangentWV), dot(lightDir, VAR._bitangentWV), dot(lightDir, normal)));
 #else
     return normalize(viewDir + dvd_LightSource[lightIndex]._position.xyz);
 #endif
@@ -42,7 +42,7 @@ vec3 getLightDirection(const in uint lightIndex, const in vec3 viewDir, const in
 vec3 getLightDirectionDirectional(const in uint lightIndex, const in vec3 normal) {
 #if defined(COMPUTE_TBN)
     vec3 lightDir = -normalize(dvd_LightSource[lightIndex]._position.xyz);
-    return normalize(vec3(dot(lightDir, _tangentWV), dot(lightDir, _bitangentWV), dot(lightDir, normal)));
+    return normalize(vec3(dot(lightDir, VAR._tangentWV), dot(lightDir, VAR._bitangentWV), dot(lightDir, normal)));
 #else
     return -normalize(dvd_LightSource[lightIndex]._position.xyz);
 #endif
@@ -51,7 +51,7 @@ vec3 getLightDirectionDirectional(const in uint lightIndex, const in vec3 normal
 LightPropertiesFrag getLightProperties(const in uint lightIndex, const in vec3 normal) {
     LightPropertiesFrag currentLight;
     currentLight._lightIndex = lightIndex;
-    currentLight._viewDirNorm = normalize(_viewDirection);
+    currentLight._viewDirNorm = normalize(VAR._viewDirection);
     switch (dvd_LightSource[lightIndex]._options.x){
         case LIGHT_DIRECTIONAL: {
             currentLight._lightDir = getLightDirectionDirectional(lightIndex, normal);

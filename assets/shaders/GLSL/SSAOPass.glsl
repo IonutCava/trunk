@@ -1,5 +1,4 @@
 -- Vertex
-out vec2 _texCoord;
 
 void main(void)
 {
@@ -7,14 +6,12 @@ void main(void)
     if((gl_VertexID & 1) != 0)uv.x = 1;
     if((gl_VertexID & 2) != 0)uv.y = 1;
 
-    _texCoord = uv * 2;
+    VAR._texCoord = uv * 2;
     gl_Position.xy = uv * 4 - 1;
     gl_Position.zw = vec2(0,1);
 }
 
 -- Fragment
-
-in vec2 _texCoord;
 
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
@@ -40,7 +37,7 @@ float CompareDepth(in float crtDepth, in vec2 uv1) {
 }
  
 void main(void) {
-    vec2 UV = _texCoord + vec2(0.0011); 
+    vec2 UV = VAR._texCoord + vec2(0.0011);
     float original_pix = LinearizeDepth(texture(texDepth, UV).x);
     float crtRealDepth = original_pix * dvd_ZPlanesCombined.y + dvd_ZPlanesCombined.x;
     

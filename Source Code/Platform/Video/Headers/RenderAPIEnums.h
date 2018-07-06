@@ -56,9 +56,9 @@ enum class ShaderBufferLocation : U32 {
     LIGHT_POINT_LIGHTS = 4,
     LIGHT_SPOT_LIGHTS = 5,
     LIGHT_INDICES = 6,
-    NODE_INFO = 5,
-    BONE_TRANSFORMS = 6,
-    SCENE_DATA = 7,
+    NODE_INFO = 7,
+    BONE_TRANSFORMS = 8,
+    SCENE_DATA = 9,
     COUNT
 };
 

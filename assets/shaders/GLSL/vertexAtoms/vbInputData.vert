@@ -3,9 +3,6 @@
 
 invariant gl_Position;
 
-out vec4 _vertexW;
-out vec2 _texCoord;
-
 #include "nodeBufferedInput.cmn"
 
 #if defined(USE_GPU_SKINNING)
@@ -22,7 +19,7 @@ vec3 UNPACK_FLOAT(in float value) {
 }
 
 void computeData(){
-    dvd_drawID  = gl_BaseInstanceARB;
+    VAR.dvd_drawID  = gl_BaseInstanceARB;
     dvd_Vertex  = vec4(inVertexData,1.0);
     dvd_Normal  = UNPACK_FLOAT(inNormalData);
     dvd_Color   = inColorData;
@@ -36,10 +33,10 @@ void computeData(){
 #       endif
 #   endif
 
-    _texCoord = inTexCoordData;
-    _vertexW  = dvd_WorldMatrix() * dvd_Vertex;
+    VAR._texCoord = inTexCoordData;
+    VAR._vertexW  = dvd_WorldMatrix() * dvd_Vertex;
 
-    setClipPlanes(_vertexW);
+    setClipPlanes(VAR._vertexW);
 }
 
 /*

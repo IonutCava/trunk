@@ -66,7 +66,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
         materialProp.specular = vec3(0.0);
 #else
     // Apply all lighting contributions
-    for (uint i = 0; i < _lightCount; i++){
+    for (uint i = 0; i < VAR._lightCount; i++){
         getBRDFFactors(getLightProperties(i, normal), materialProp, normal);
     }
 
@@ -74,7 +74,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
     vec3 color = (materialProp.diffuse * textureColor.rgb) + materialProp.specular;
 
 #if defined(USE_REFLECTIVE_CUBEMAP)
-    vec3 reflectDirection = reflect(normalize(_vertexWV.xyz), normal);
+    vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normal);
     reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
     color = mix(texture(texEnvironmentCube, vec4(reflectDirection, 0.0)).rgb,
                 color,
