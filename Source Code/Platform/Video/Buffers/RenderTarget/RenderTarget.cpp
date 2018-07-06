@@ -109,8 +109,8 @@ const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index)
 }
 
 /// Used by cubemap FB's
-void RenderTarget::drawToFace(RTAttachmentType type, U8 index, U16 nFace, bool includeDepth) {
-    drawToLayer(type, index, nFace, includeDepth);
+void RenderTarget::drawToFace(const DrawLayerParams& params) {
+    drawToLayer(params);
 }
 
 void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) {

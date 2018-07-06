@@ -71,7 +71,6 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 #define dvd_time int(dvd_otherData.x)
 #define dvd_showDebugInfo int(dvd_otherData.y)
 #define dvd_deltaTime (int(dvd_otherData2.x))
-#define dvd_shadowsEnabled (int(dvd_otherData.z) == 1)
 #define dvd_renderDetailLevel (int(dvd_otherData2.y))
 #define dvd_shadowDetailLevel (int(dvd_otherData2.z))
 

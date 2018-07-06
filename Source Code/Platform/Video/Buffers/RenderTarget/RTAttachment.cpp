@@ -50,16 +50,26 @@ bool RTAttachment::isExternal() const {
     return _externalAttachment != nullptr;
 }
 
-void RTAttachment::mipWriteLevel(U16 level) {
-    _mipWriteLevel = level;
+bool RTAttachment::mipWriteLevel(U16 level) {
+    if (_mipWriteLevel != level) {
+        _mipWriteLevel = level;
+        return true;
+    }
+
+    return false;
 }
 
 U16 RTAttachment::mipWriteLevel() const {
     return _mipWriteLevel;
 }
 
-void RTAttachment::writeLayer(U16 layer) {
-    _writeLayer = layer;
+bool RTAttachment::writeLayer(U16 layer) {
+    if (_writeLayer != layer) {
+        _writeLayer = layer;
+        return true;
+    }
+
+    return false;
 }
 
 U16 RTAttachment::writeLayer() const {

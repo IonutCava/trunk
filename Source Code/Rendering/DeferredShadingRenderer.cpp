@@ -217,7 +217,7 @@ void DeferredShadingRenderer::secondPass(RenderStagePass stagePass,
     // Draw a 2D fullscreen quad with lighting shader applied and all generated
     // textures bound to that shader
     GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     TextureData texData0 = _deferredBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();

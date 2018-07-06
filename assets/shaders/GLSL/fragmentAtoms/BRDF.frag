@@ -4,7 +4,9 @@
 #include "lightInput.cmn"
 #include "lightData.frag"
 #include "materialData.frag"
+#if !defined(DISABLE_SHADOW_MAPPING)
 #include "shadowMapping.frag"
+#endif
 #include "pbr.frag"
 #include "phong_lighting.frag"
 
@@ -48,16 +50,15 @@ vec4 getPixelColour(const in vec2 texCoord) {
         float reflectivity = getReflectivity();
         vec3 lightColour = vec3(0.0);
         // Apply all lighting contributions
-        uint lightIdx;
-        
+       
         // Directional lights
-        for (lightIdx = 0; lightIdx < DIRECTIONAL_LIGHT_COUNT; ++lightIdx) {
-            getBRDFFactors(int(lightIdx), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
+        for (int lightIdx = 0; lightIdx < DIRECTIONAL_LIGHT_COUNT; ++lightIdx) {
+            getBRDFFactors(lightIdx, processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
         }
 
         uint offset = DIRECTIONAL_LIGHT_COUNT;
         // Point lights
-        uint nIndex = uint(dvd_otherData.w) * GetTileIndex(gl_FragCoord.xy);
+        uint nIndex = uint(dvd_otherData.z) * GetTileIndex(gl_FragCoord.xy);
         uint nNextLightIndex = perTileLightIndices[nIndex];
         while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
         {
@@ -92,6 +93,8 @@ vec4 getPixelColour(const in vec2 texCoord) {
 #endif
 
     colour *= mix(mix(1.0, 2.0, dvd_isHighlighted), 3.0, dvd_isSelected);
+
+#if !defined(DISABLE_SHADOW_MAPPING)
     // Apply shadowing
     colour *= mix(1.0, shadow_loop(), dvd_shadowMapping);
 
@@ -114,7 +117,7 @@ vec4 getPixelColour(const in vec2 texCoord) {
         };
     }
 #endif
-
+#endif
     return vec4(colour, albedo.a);
 }
 

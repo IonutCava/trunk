@@ -13,8 +13,6 @@
 
 namespace Divide {
 
-Camera* Camera::s_activeCamera = nullptr;
-
 std::array<Camera*, to_base(Camera::UtilityCamera::COUNT)> Camera::_utilityCameras;
 
 U32 Camera::s_changeCameraId = 0;
@@ -46,29 +44,6 @@ vector<U64> Camera::cameraList() {
     }
 
     return ret;
-}
-
-bool Camera::activeCamera(Camera* camera) {
-    if (s_activeCamera) {
-        if (camera && s_activeCamera->getGUID() == camera->getGUID()) {
-            return false;
-        }
-        s_activeCamera->setActiveInternal(false);
-    }
-
-    s_activeCamera = camera;
-    if (camera) {
-        s_activeCamera->setActiveInternal(true);
-        for (ListenerMap::value_type it : s_changeCameraListeners) {
-            it.second(*s_activeCamera);
-        }
-    }
-
-    return true;
-}
-
-bool Camera::activeCamera(U64 camera) {
-    return activeCamera(findCamera(camera));
 }
 
 Camera* Camera::utilityCamera(UtilityCamera type) {
@@ -128,17 +103,11 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 }
 
 bool Camera::destroyCamera(Camera*& camera) {
-    if (camera != nullptr) {
-        if (s_activeCamera && s_activeCamera->getGUID() == camera->getGUID()) {
-            activeCamera(nullptr);
-        }
-
-        if (camera->unload()) {
-            WriteLock w_lock(s_cameraPoolLock);
-            s_cameraPool.erase(_ID_RT(camera->name()));
-            MemoryManager::DELETE(camera);
-            return true;
-        }
+    if (camera != nullptr && camera->unload()) {
+        WriteLock w_lock(s_cameraPoolLock);
+        s_cameraPool.erase(_ID_RT(camera->name()));
+        MemoryManager::DELETE(camera);
+        return true;
     }
 
     return false;

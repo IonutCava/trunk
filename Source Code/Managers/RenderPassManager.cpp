@@ -235,9 +235,6 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
-    g_drawCommands.resize(0);
-    g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
-
     for (const vectorEASTL<SceneGraphNode*>& queue : g_sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
@@ -290,9 +287,11 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         }
     }
 
+    
     if (refresh) {
         refreshNodeData(stagePass, params, bufferInOut);
     }
+    
 }
 
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
@@ -307,7 +306,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     }
     // Sort all bins
     queue.sort(stagePass);
-
+    
     vectorEASTL<RenderPackage*>& packageQueue = _renderQueues[to_base(stagePass._stage)];
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
@@ -317,20 +316,22 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
                                                    ? RenderBinType::RBT_TRANSLUCENT
                                                    : RenderBinType::RBT_COUNT,
                                packageQueue);
-
+    
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
+    
 }
 
 void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
-    beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = " - PrePass";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
     // PrePass requires a depth buffer
     bool doPrePass = params._doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
 
     if (doPrePass && params._target._usage != RenderTargetUsage::COUNT) {
+
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        beginDebugScopeCmd._scopeID = 0;
+        beginDebugScopeCmd._scopeName = " - PrePass";
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
         RenderStagePass stagePass(params._stage, RenderPassType::DEPTH_PASS);
         prepareRenderQueues(stagePass, params, true, bufferInOut);
 
@@ -350,10 +351,10 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
             GFX::EndRenderPassCommand endRenderPassCommand;
             GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
         }
-    }
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+        GFX::EndDebugScopeCommand endDebugScopeCmd;
+        GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+    }
 }
 
 void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -393,15 +394,15 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
         }
 
-        // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
-        RTDrawDescriptor& drawPolicy = 
-            params._drawPolicy ? *params._drawPolicy
-                               : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyNoClear()
-                                                             : RenderTarget::defaultPolicyKeepColour());
-
-        drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
-
         if (params._bindTargets) {
+            // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
+            RTDrawDescriptor& drawPolicy =  params._drawPolicy ? *params._drawPolicy
+                                                                : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyNoClear()
+                                                                                                : RenderTarget::defaultPolicyKeepColour());
+
+            drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
+
+            
             GFX::BeginRenderPassCommand beginRenderPassCommand;
             beginRenderPassCommand._target = params._target;
             beginRenderPassCommand._descriptor = drawPolicy;
@@ -424,7 +425,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
         }
     }
-
+    
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
@@ -533,7 +534,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._camera = params._camera;
+    setCameraCommand._cameraSnapshot = params._camera->snapshot();
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::SetClipPlanesCommand setClipPlanesCommand;
@@ -558,7 +559,10 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     }
 
     mainPass(params, target, bufferInOut);
-    woitPass(params, target, bufferInOut);
+
+    if (params._stage != RenderStage::SHADOW) {
+        woitPass(params, target, bufferInOut);
+    }
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);

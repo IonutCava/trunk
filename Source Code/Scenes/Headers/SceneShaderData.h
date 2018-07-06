@@ -81,13 +81,8 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    inline void toggleShadowMapping(bool state) {
-        _bufferData._otherData.z = state ? 1.0f : 0.0f;
-        _dirty = true;
-    }
-
     inline void setRendererFlag(U32 flag) {
-        _bufferData._otherData.w = to_F32(flag);
+        _bufferData._otherData.z = to_F32(flag);
         _dirty = true;
     }
 

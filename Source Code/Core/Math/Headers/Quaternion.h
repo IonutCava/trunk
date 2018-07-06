@@ -130,13 +130,15 @@ class Quaternion {
     //! Convert from Euler Angles
     void fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll);
 
-    void fromLookAt(const vec3<F32>& fwdDirection, const vec3<F32>& upDirection);
+    void fromLookAt(const vec3<T>& source, const vec3<T>& destination, const vec3<T>& up);
 
     // a la Ogre3D
     void fromMatrix(const mat3<T>& rotationMatrix);
 
+    void fromMatrix(const mat4<T>& viewMatrix);
+
     //! Convert to Matrix
-    void getMatrix(mat3<F32>& outMatrix) const;
+    void getMatrix(mat3<T>& outMatrix) const;
 
     //! Convert to Axis/Angles
     void getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const;
@@ -153,15 +155,15 @@ class Quaternion {
     vec3<T> yAxis() const;
     vec3<T> zAxis() const;
 
-    inline F32 X() const noexcept;
-    inline F32 Y() const noexcept;
-    inline F32 Z() const noexcept;
-    inline F32 W() const noexcept;
+    inline T X() const noexcept;
+    inline T Y() const noexcept;
+    inline T Z() const noexcept;
+    inline T W() const noexcept;
 
-    inline void X(F32 x) noexcept;
-    inline void Y(F32 y) noexcept;
-    inline void Z(F32 z) noexcept;
-    inline void W(F32 w) noexcept;
+    inline void X(T x) noexcept;
+    inline void Y(T y) noexcept;
+    inline void Z(T z) noexcept;
+    inline void W(T w) noexcept;
 
     inline void identity();
 

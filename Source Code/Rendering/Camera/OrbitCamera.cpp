@@ -46,15 +46,6 @@ void OrbitCamera::setTarget(SceneGraphNode* sgn, const vec3<F32>& offsetDirectio
     _offsetDir.normalize();
 }
 
-void OrbitCamera::setActiveInternal(bool state) {
-    if (state) {
-        //_cameraRotation.reset();
-    }
-
-    Camera::setActiveInternal(state);
-}
-
-
 bool OrbitCamera::updateViewMatrix() {
     setEye(_newEye);
 

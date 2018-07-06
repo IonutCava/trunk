@@ -192,7 +192,7 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
    const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (cmd.type<GFX::CommandType>()) {
+        switch (cmd.type<GFX::CommandType::_enumerated>()) {
             case GFX::CommandType::DRAW_COMMANDS: {
                 addDrawCommand(commandBuffer.getCommand<GFX::DrawCommand>(cmd));
             } break;
@@ -263,7 +263,7 @@ GFX::CommandBuffer& RenderPackage::buildAndGetCommandBuffer(bool cacheMiss) {
 
         buffer.clear();
         for (const GFX::CommandBuffer::CommandEntry& cmd : _commandOrdering) {
-            switch (cmd.type<GFX::CommandType>()) {
+            switch (cmd.type<GFX::CommandType::_enumerated>()) {
                 case GFX::CommandType::DRAW_COMMANDS: {
                     GFX::EnqueueCommand(buffer, _drawCommands[cmd._elementIndex]);
                 } break;

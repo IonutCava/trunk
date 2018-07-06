@@ -336,32 +336,29 @@ void Quaternion<T>::fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, An
     // normalize(); this method does produce a normalized quaternion
 }
 
-//ref: https://www.gamedev.net/topic/613595-quaternion-lookrotationlookat-up/
+//ref: https://gamedev.stackexchange.com/questions/15070/orienting-a-model-to-face-a-target
 template <typename T>
-void Quaternion<T>::fromLookAt(const vec3<F32>& fwdDirection, const vec3<F32>& upDirection) {
-        vec3<F32> forward(fwdDirection);
-        vec3<F32> up(upDirection);
+void Quaternion<T>::fromLookAt(const vec3<T>& source, const vec3<T>& destination, const vec3<T>& up) {
+    F32 dot = to_F32(Dot(source, dest));
 
-        OrthoNormalize(forward, up);
-        vec3<F32> right(Cross(up, forward));
+    if (std::abs(dot - (-1.0f)) < EPSILON_F32) {
+        // vector a and b point exactly in the opposite direction, 
+        // so it is a 180 degrees turn around the up-axis
+        fromAxisAngle(up, M_PI);
+    } else if (std::abs(dot - (1.0f)) < EPSILON_F32) {
+        // vector a and b point exactly in the same direction
+        // so we return the identity quaternion
+        identity();
+    } else {
+        fromAxisAngle(Normalize(Cross(source, dest)), std::acos(dot));
+    }
+}
 
-        const F32& m00 = right.x;
-        const F32& m01 = up.x;
-        const F32& m02 = forward.x;
-        const F32& m10 = right.y;
-        const F32& m11 = up.y;
-        const F32& m12 = forward.y;
-        const F32& m20 = right.z;
-        const F32& m21 = up.z;
-        const F32& m22 = forward.z;
-
-        F32 w = sqrtf(1.0f + m00 + m11 + m22) * 0.5f;
-        F32 w4_recip = 1.0f / (4.0f * w);
-        F32 x = (m21 - m12) * w4_recip;
-        F32 y = (m02 - m20) * w4_recip;
-        F32 z = (m10 - m01) * w4_recip;
-
-        set(x, y, z, w);
+template <typename T>
+void Quaternion<T>::fromMatrix(const mat4<T>& viewMatrix) {
+    mat3<T> rotMatrix;
+    viewMatrix.extractMat3(rotMatrix);
+    fromMatrix(rotMatrix);
 }
 
 template <typename T>
@@ -371,13 +368,13 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 
     T fTrace = rotationMatrix.m[0][0] + rotationMatrix.m[1][1] +
                rotationMatrix.m[2][2];
-    T fRoot = 0.0f;
+    T fRoot = T(0);
 
-    if (fTrace > 0.0) {
+    if (fTrace > T(0)) {
         // |w| > 1/2, may as well choose w > 1/2
-        fRoot = (T)Divide::Sqrt(to_F32(fTrace) + 1.0f);  // 2w
-        W(0.5f * fRoot);
-        fRoot = 0.5f / fRoot;  // 1/(4w)
+        fRoot = Divide::Sqrt<T, F32>(fTrace + 1.0f);  // 2w
+        W(T(0.5f * fRoot));
+        fRoot = T(0.5f / fRoot);  // 1/(4w)
         X((rotationMatrix.m[2][1] - rotationMatrix.m[1][2]) * fRoot);
         Y((rotationMatrix.m[0][2] - rotationMatrix.m[2][0]) * fRoot);
         Z((rotationMatrix.m[1][0] - rotationMatrix.m[0][1]) * fRoot);
@@ -394,12 +391,10 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
         size_t j = s_iNext[i];
         size_t k = s_iNext[j];
 
-        fRoot = static_cast<T>(Divide::Sqrt(
-                    to_F32(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] -
-                             rotationMatrix.m[k][k] + 1.0f)));
+        fRoot = Divide::Sqrt<T, F32>(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] - rotationMatrix.m[k][k] + 1.0f);
         T* apkQuat[3] = {&_elements.x, &_elements.y, &_elements.z};
-        *apkQuat[i] = 0.5f * fRoot;
-        fRoot = 0.5f / fRoot;
+        *apkQuat[i] = T(0.5f * fRoot);
+        fRoot = T(0.5f / fRoot);
         W((rotationMatrix.m[k][j] - rotationMatrix.m[j][k]) * fRoot);
         *apkQuat[j] = (rotationMatrix.m[j][i] + rotationMatrix.m[i][j]) * fRoot;
         *apkQuat[k] = (rotationMatrix.m[k][i] + rotationMatrix.m[i][k]) * fRoot;
@@ -407,7 +402,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 }
 
 template <typename T>
-void Quaternion<T>::getMatrix(mat3<F32>& outMatrix) const {
+void Quaternion<T>::getMatrix(mat3<T>& outMatrix) const {
     const T& x = X();
     const T& y = Y();
     const T& z = Z();
@@ -425,15 +420,15 @@ void Quaternion<T>::getMatrix(mat3<F32>& outMatrix) const {
     T fTyz = fTz*y;
     T fTzz = fTz*z;
 
-    outMatrix.m[0][0] = 1.0f - (fTyy + fTzz);
+    outMatrix.m[0][0] = static_cast<T>(1.0f - (fTyy + fTzz));
     outMatrix.m[0][1] =         fTxy - fTwz;
     outMatrix.m[0][2] =         fTxz + fTwy;
     outMatrix.m[1][0] =         fTxy + fTwz;
-    outMatrix.m[1][1] = 1.0f - (fTxx + fTzz);
+    outMatrix.m[1][1] = static_cast<T>(1.0f - (fTxx + fTzz));
     outMatrix.m[1][2] =         fTyz - fTwx;
     outMatrix.m[2][0] =         fTxz - fTwy;
     outMatrix.m[2][1] =         fTyz + fTwx;
-    outMatrix.m[2][2] = 1.0f - (fTxx + fTyy);
+    outMatrix.m[2][2] = static_cast<T>(1.0f - (fTxx + fTyy));
 }
 
 template <typename T>
@@ -503,13 +498,7 @@ void Quaternion<T>::fromAxes(const vec3<T>& xAxis, const vec3<T>& yAxis, const v
 
 template <typename T>
 void Quaternion<T>::toAxes(vec3<T>* axis) const {
-    
-    mat3<T> rot
-    getMatrix(rot);
-
-    for (U8 col = 0; col < 3; col++) {
-        axis[col].set(rot.getCol(col));
-    }
+    toAxes(axis[0], axis[1], axis[2]);
 }
 
 template <typename T>
@@ -582,42 +571,42 @@ vec3<T> Quaternion<T>::zAxis() const {
 }
 
 template <typename T>
-inline F32 Quaternion<T>::X() const noexcept {
+inline T Quaternion<T>::X() const noexcept {
     return _elements.x;
 }
 
 template <typename T>
-inline F32 Quaternion<T>::Y() const noexcept {
+inline T Quaternion<T>::Y() const noexcept {
     return _elements.y;
 }
 
 template <typename T>
-inline F32 Quaternion<T>::Z() const noexcept {
+inline T Quaternion<T>::Z() const noexcept {
     return _elements.z;
 }
 
 template <typename T>
-inline F32 Quaternion<T>::W() const noexcept {
+inline T Quaternion<T>::W() const noexcept {
     return _elements.w;
 }
 
 template <typename T>
-inline void Quaternion<T>::X(F32 x) noexcept {
+inline void Quaternion<T>::X(T x) noexcept {
     _elements.x = x;
 }
 
 template <typename T>
-inline void Quaternion<T>::Y(F32 y) noexcept {
+inline void Quaternion<T>::Y(T y) noexcept {
     _elements.y = y;
 }
 
 template <typename T>
-inline void Quaternion<T>::Z(F32 z) noexcept {
+inline void Quaternion<T>::Z(T z) noexcept {
     _elements.z = z;
 }
 
 template <typename T>
-inline void Quaternion<T>::W(F32 w) noexcept {
+inline void Quaternion<T>::W(T w) noexcept {
     _elements.w = w;
 }
 

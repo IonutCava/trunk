@@ -79,10 +79,10 @@ class RTAttachment {
         void clearColour(const FColour& clearColour);
         const FColour& clearColour() const;
 
-        void mipWriteLevel(U16 level);
+        bool mipWriteLevel(U16 level);
         U16  mipWriteLevel() const;
 
-        void writeLayer(U16 layer);
+        bool writeLayer(U16 layer);
         U16  writeLayer() const;
 
         const Texture_ptr& texture() const;

@@ -87,7 +87,7 @@ class CommandBuffer {
     stringImpl toString() const;
 
   protected:
-    template<typename T, CommandType enumVal>
+    template<typename T, CommandType::_enumerated enumVal>
     friend struct Command;
 
     void toString(const GFX::CommandBase& cmd, I32& crtIndent, stringImpl& out) const;

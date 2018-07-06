@@ -60,10 +60,7 @@ class glFramebuffer : public RenderTarget,
 
     const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const override;
 
-    void drawToLayer(RTAttachmentType type,
-                     U8 index,
-                     U16 layer,
-                     bool includeDepth = true) override;
+    void drawToLayer(const DrawLayerParams& params) override;
 
     void setMipLevel(U16 writeLevel) override;
 

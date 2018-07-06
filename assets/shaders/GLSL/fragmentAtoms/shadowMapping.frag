@@ -18,8 +18,8 @@ int g_shadowTempInt = -2;
 
 float getShadowFactor(in int index, in float fragDepth, in uvec4 lightData) {
     switch (lightData.x) {
-        /*case LIGHT_DIRECTIONAL     : return applyShadowDirectional(index, int(lightData.y), fragDepth);
-        case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(index);
+        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(index, int(lightData.y), fragDepth);
+        /*case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(index);
         case LIGHT_SPOT            : return applyShadowSpot(index);*/
     }
 
@@ -27,10 +27,6 @@ float getShadowFactor(in int index, in float fragDepth, in uvec4 lightData) {
 }
 
 float shadow_loop(){
-    if (!dvd_shadowsEnabled) {
-        return 1.0;
-    }
-
     float shadow = 1.0;
     for (int i = 0; i < TOTAL_SHADOW_LIGHTS; ++i) {
         shadow *= getShadowFactor(i, gl_FragCoord.z, dvd_ShadowSource[i]._lightDetails);

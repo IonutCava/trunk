@@ -567,7 +567,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
     GFX::EnqueueCommand(buffer, viewportCmd);
 
     GFX::SetCameraCommand cameraCmd;
-    cameraCmd._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y);
+    cameraCmd._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot();
     GFX::EnqueueCommand(buffer, cameraCmd);
 
     GFX::DrawIMGUICommand drawIMGUI;
