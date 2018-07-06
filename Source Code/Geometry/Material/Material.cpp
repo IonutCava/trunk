@@ -438,16 +438,17 @@ void Material::computeShaderInternal() {
 
     ShaderInfo& info = _shaderInfo[std::get<0>(currentItem)];
     info._shaderRef = CreateResource<ShaderProgram>(std::get<1>(currentItem));
-    info._shaderCompStage = info._shaderRef->getState() == ResourceState::RES_LOADED
-        ? ShaderInfo::ShaderCompilationStage::COMPUTED
-        : ShaderInfo::ShaderCompilationStage::PENDING;
+    bool shaderAvailable = info._shaderRef->getState() == ResourceState::RES_LOADED;
+    info._shaderCompStage = shaderAvailable
+                                ? ShaderInfo::ShaderCompilationStage::COMPUTED
+                                : ShaderInfo::ShaderCompilationStage::PENDING;
     REGISTER_TRACKED_DEPENDENCY(info._shaderRef);
-    _shaderComputeQueue.pop_front();
-
     const DELEGATE_CBK<>& callback = std::get<2>(currentItem);
     if (callback) {
         callback();
     }
+
+    _shaderComputeQueue.pop_front();
 }
 
 void Material::getTextureData(ShaderProgram::TextureUsage slot,

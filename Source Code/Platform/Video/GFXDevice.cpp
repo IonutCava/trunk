@@ -64,7 +64,6 @@ GFXDevice::GFXDevice()
     _viewportUpdate = false;
     _rasterizationEnabled = true;
     _enablePostProcessing = false;
-    _batchCommands = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::DETAIL_HIGH;
     _GPUVendor = GPUVendor::COUNT;

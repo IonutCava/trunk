@@ -277,11 +277,12 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     bool prepareDraw(const SceneRenderState& sceneRenderState,
                      RenderStage renderStage);
 
+   protected:
+    friend class SceneManager;
+    inline void firstDraw() { _firstDraw = true; }
+
    private:
     inline void setName(const stringImpl& name) { _name = name; }
-    inline void firstDraw() {
-        _firstDraw = true;
-    }
 
    private:
     SceneNode* _node;

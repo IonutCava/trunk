@@ -302,7 +302,11 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     if (_firstDraw) {
         _firstDraw = false;
+        //GFX_DEVICE.refreshBuffers();
         if (getParent()) {
+            if (getComponent<AnimationComponent>()) {
+                getComponent<AnimationComponent>()->resetTimers();
+            }
             for (NodeChildren::value_type& it : _children) {
                 if (it.second->getComponent<AnimationComponent>()) {
                     it.second->getComponent<AnimationComponent>()

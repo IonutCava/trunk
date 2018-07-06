@@ -60,7 +60,8 @@ void RenderPassCuller::cullSceneGraph(
         sceneState.getRenderState().getCameraConst().getEye();
 
     for (RenderableNode& node : _visibleNodes) {
-        RenderQueue::getInstance().addNodeToQueue(*node._visibleNode, eyePos);
+            RenderQueue::getInstance().addNodeToQueue(*node._visibleNode,
+                                                      eyePos);
     }
 
     RenderQueue::getInstance().sort(GFX_DEVICE.getRenderStage());

@@ -94,7 +94,7 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
     Material* mat = getMaterialInstance();
     if (mat) {
         if (!mat->computeShader(
-                renderStage, /*false*/true /*ToDo: REMOVE THIS HACK! -Ionut*/,
+                renderStage, false,
                 DELEGATE_BIND(&SceneGraphNode::firstDraw, &_parentSGN))) {
             return false;
         }

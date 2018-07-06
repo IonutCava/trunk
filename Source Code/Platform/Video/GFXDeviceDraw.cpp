@@ -118,14 +118,12 @@ void GFXDevice::flushRenderQueue() {
     for (RenderPackage& package : _renderQueue) {
         vectorAlg::vecSize commandCount = package._drawCommands.size();
         if (commandCount > 0) {
-            if (_batchCommands) {
-                GenericDrawCommand& previousCmd = package._drawCommands[0];
-                for (vectorAlg::vecSize i = 1; i < commandCount; i++) {
-                    GenericDrawCommand& currentCmd =
-                        package._drawCommands[i];
-                    if (!batchCommands(previousCmd, currentCmd)) {
-                        previousCmd = currentCmd;
-                    }
+            GenericDrawCommand& previousCmd = package._drawCommands[0];
+            for (vectorAlg::vecSize i = 1; i < commandCount; i++) {
+                GenericDrawCommand& currentCmd =
+                    package._drawCommands[i];
+                if (!batchCommands(previousCmd, currentCmd)) {
+                    previousCmd = currentCmd;
                 }
             }
             package._drawCommands.erase(
@@ -134,8 +132,7 @@ void GFXDevice::flushRenderQueue() {
                                [](const GenericDrawCommand& cmd)
                                    -> bool { return cmd.drawCount() == 0; }),
                 std::end(package._drawCommands));
-            for (ShaderBufferList::value_type& it :
-                    package._shaderBuffers) {
+            for (ShaderBufferList::value_type& it : package._shaderBuffers) {
                 it.second->Bind(it.first);
             }
 
@@ -239,6 +236,14 @@ void GFXDevice::processVisibleNodes(VisibleNodeList& visibleNodes,
                             _matricesData.data());
 }
 
+void GFXDevice::refreshBuffers() {
+    _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
+                            _matricesData.data());
+    _gfxDataBuffer->SetData(&_gpuBlock);
+    uploadDrawCommands(_drawCommandsCache);
+    setInterpolation(1.0);
+}
+
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                                   SceneRenderState& sceneRenderState,
                                   bool refreshNodeData) {
@@ -247,8 +252,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     if (visibleNodes.empty()) {
         return;
     }
-
-    _batchCommands = true;
 
     if (refreshNodeData) {
         processVisibleNodes(visibleNodes, sceneRenderState);
@@ -278,21 +281,20 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                 cmd.drawID(drawID);
                 nonBatchedCommands.push_back(cmd);
             }
+            drawID += 1;
         }
-
-        drawID += 1;
     }
 
     // Extract the specific rendering commands from the draw commands
     // Rendering commands are stored in GPU memory. Draw commands are not.
-    vectorImpl<IndirectDrawCommand> drawCommandsCache;
-    drawCommandsCache.reserve(nonBatchedCommands.size());
+    _drawCommandsCache.resize(0);
+    _drawCommandsCache.reserve(nonBatchedCommands.size());
     for (const GenericDrawCommand& cmd : nonBatchedCommands) {
-        drawCommandsCache.push_back(cmd.cmd());
+        _drawCommandsCache.push_back(cmd.cmd());
     }
 
     // Upload the rendering commands to the GPU memory
-    uploadDrawCommands(drawCommandsCache);
+    uploadDrawCommands(_drawCommandsCache);
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,

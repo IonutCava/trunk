@@ -86,9 +86,8 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
     }
 
     if (_persistentMapped) {
-        GL_API::setActiveBuffer(_target, _UBOid);
         _lockManager->WaitForLockedRange(offset, size);
-        bufferPtr dst = (U8*)_mappedBuffer + offset;
+        GLUtil::bufferPtr dst = (U8*)_mappedBuffer + offset;
         memcpy(dst, data, size);
         _lockManager->LockRange(offset, size);
     } else {

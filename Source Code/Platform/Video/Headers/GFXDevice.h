@@ -166,6 +166,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds);
     void addToRenderQueue(const RenderPackage& package);
     void flushRenderQueue();
+    void refreshBuffers();
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
@@ -494,8 +495,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// This is set to true if the render queue will be submitted in sorted order.
     /// (e.g.: Z_PRE_PASS is unsorted, DISPLAY is sorted).
     /// Batching unsorted commands does not work
-    bool _batchCommands;
     vectorImpl<NodeData> _matricesData;
+    vectorImpl<IndirectDrawCommand> _drawCommandsCache;
 
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;
