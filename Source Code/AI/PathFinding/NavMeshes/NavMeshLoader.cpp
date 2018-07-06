@@ -55,6 +55,7 @@ char* parseRow(char* buf, char* bufEnd, char* row, I32 len) {
             } break;
         }
     }
+    ACKNOWLEDGE_UNUSED(cont);
     row[n] = '\0';
     return buf;
 }

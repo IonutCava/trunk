@@ -295,7 +295,7 @@ inline stringImpl& Trim(stringImpl& s) {
 namespace Mat4 {
 
 template <typename T>
-FORCE_INLINE T Det(const T* mat) {
+inline T Det(const T* mat) {
     return ((mat[0] * mat[5] * mat[10]) + (mat[4] * mat[9] * mat[2]) +
             (mat[8] * mat[1] * mat[6]) - (mat[8] * mat[5] * mat[2]) -
             (mat[4] * mat[1] * mat[10]) - (mat[0] * mat[9] * mat[6]));
@@ -303,7 +303,7 @@ FORCE_INLINE T Det(const T* mat) {
 
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
 template <typename T>
-FORCE_INLINE void Inverse(const T* in, T* out) {
+inline void Inverse(const T* in, T* out) {
     T m00 = in[0], m10 = in[1], m20 = in[2], m30 = in[3];
     T m01 = in[4], m11 = in[5], m21 = in[6], m31 = in[7];
     T m02 = in[8], m12 = in[9], m22 = in[10], m32 = in[11];
@@ -368,7 +368,7 @@ FORCE_INLINE void Substract(const T a[16], const T b[16], T r[16]) {
 }
 
 template <typename T>
-FORCE_INLINE void Multiply(const T a[16], const T b[16], T r[16]) {
+inline void Multiply(const T a[16], const T b[16], T r[16]) {
     T rTemp[] = 
         {(a[0]  * b[0]) + (a[1]  * b[4]) + (a[2]  * b[8] ) + (a[3]  * b[12]),
          (a[0]  * b[1]) + (a[1]  * b[5]) + (a[2]  * b[9] ) + (a[3]  * b[13]),

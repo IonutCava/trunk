@@ -1,8 +1,6 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 
-/// Comment this out to show the debug console
-#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
 namespace Divide {
 
 int engineMain(int argc, char** argv) {

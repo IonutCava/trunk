@@ -44,6 +44,7 @@
 #include <X11/Xlib.h>
 #include <strings.h>
 #include <iterator>
+#include <cmath>
 
 #ifdef None
 #undef None
@@ -79,11 +80,10 @@ namespace Divide {
 typedef long int TimeValue;
 }; //namespace Divide
 
-template<typename T>
+template <typename T>
 inline bool isfinite(T val) {
-	return isfinite(val);
+	return std::isfinite(val);
 }
-
 
 inline int _strnicmp(const char* str1, const char* str2, unsigned long int n) {
     return strncasecmp(str1, str2, n);
@@ -92,27 +92,8 @@ inline int _strnicmp(const char* str1, const char* str2, unsigned long int n) {
 inline int _stricmp(const char* str1, const char* str2) {
     return strcasecmp(str1, str2);
 }
-/*
-inline int vsprintf_s(char * s, unsigned int maxlen, const char * format, va_list arg) {
-	return vsprintf(s, format, arg);
-}
 
-inline int vsnprintf_s(char * s, unsigned long maxlen, const char * format, va_list arg) {
-    return vsnprintf(s, maxlen, format, arg);
-}
-*/
-inline int _vscprintf (const char * format, va_list pargs) {
-    int retval;
-    va_list argcopy;
-    va_copy(argcopy, pargs);
-    retval = vsnprintf(NULL, 0, format, argcopy);
-    va_end(argcopy);
-    return retval;
-}
-
-/*inline int _vscwprintf(const wchar_t *format, va_list argptr) {
-    return(vswprintf(0, 0, format, argptr));
-}*/
+int _vscprintf (const char * format, va_list pargs);
 
 // HACK FOR MISSING C++1y features:
 namespace std {

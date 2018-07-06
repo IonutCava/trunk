@@ -84,8 +84,7 @@ ErrorCode GL_API::createWindow() {
     if (!GLUtil::_mainWindow) {
         SDL_Quit();
         Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
-                         Locale::get("ERROR_GL_OLD_VERSION"));
-        Console::printfn(Locale::get("WARN_SWITCH_D3D"));
+                         Locale::get("ERROR_SDL_WINDOW"));
         Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
         return ErrorCode::SDL_WINDOW_INIT_ERROR;
     }
@@ -103,6 +102,16 @@ ErrorCode GL_API::createGLContext() {
     SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
     GLUtil::_glRenderContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
     GLUtil::_glLoadingContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
+
+    if (GLUtil::_glRenderContext == nullptr ||
+        GLUtil::_glRenderContext == nullptr)
+    {
+    	Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
+    					 Locale::get("ERROR_GL_OLD_VERSION"));
+    	Console::printfn(Locale::get("WARN_SWITCH_D3D"));
+    	Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
+   		return ErrorCode::OGL_OLD_HARDWARE;
+    }
 
     return ErrorCode::NO_ERR;
 }

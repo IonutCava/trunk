@@ -91,6 +91,10 @@ inline const char* getErrorCodeName(ErrorCode code) {
             return "Current hardware does not support the minimum DirectX "
                    "features required";
         };
+        case ErrorCode::OGL_OLD_HARDWARE: {
+        	return "Current hardware does not support the minimum Opengl "
+        	       "features required or the maximum supported version is too old"; 
+        };
         case ErrorCode::SDL_AUDIO_INIT_ERROR: {
             return "SDL Audio library failed to initialize";
         };

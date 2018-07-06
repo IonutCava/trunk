@@ -1,6 +1,7 @@
 #if !defined(_WIN32) && !defined(__APPLE_CC__)
 
 #include "Headers/PlatformDefinesUnix.h"
+#include "Core/Math/Headers/MathHelper.h"
 
 #include <SDL_syswm.h>
 #include <malloc.h>
@@ -12,6 +13,15 @@ void* malloc_aligned(const size_t size, size_t alignment) {
 
 void  malloc_free(void*& ptr) {
 	free(ptr);
+}
+
+int _vscprintf (const char * format, va_list pargs) {
+    int retval;
+    va_list argcopy;
+    va_copy(argcopy, pargs);
+    retval = vsnprintf(NULL, 0, format, argcopy);
+    va_end(argcopy);
+    return retval;
 }
 
 namespace Divide {
@@ -32,7 +42,7 @@ namespace Divide {
     }
 
     void getTicksPerSecond(TimeValue& ticksPerSecond) {
-        ticksPerSecond = 1;
+        ticksPerSecond = Time::SecondsToMicroseconds(1);
     }
 
     void getCurrentTime(TimeValue& timeOut) {

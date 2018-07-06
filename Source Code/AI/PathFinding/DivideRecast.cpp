@@ -207,7 +207,7 @@ bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh,
                                                            frand,
                                                            &resultPoly,
                                                            resultPt._v);
-
+                ACKNOWLEDGE_UNUSED(status);
                 if (centerPosition.distanceSquared(resultPt) <= radiusSq) {
                     return true;
                 }

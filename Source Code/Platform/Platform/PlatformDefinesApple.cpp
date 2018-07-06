@@ -1,6 +1,7 @@
 #if defined(__APPLE_CC__)
 
 #include "Headers/PlatformDefinesApple.h"
+#include "Core/Math/Headers/MathHelper.h"
 
 #include <SDL_syswm.h>
 
@@ -36,7 +37,7 @@ namespace Divide {
     }
 
     void getTicksPerSecond(TimeValue& ticksPerSecond) {
-        ticksPerSecond = 1;
+        ticksPerSecond = Time::SecondsToMicroseconds(1);
     }
 
     void getCurrentTime(TimeValue& timeOut) {
