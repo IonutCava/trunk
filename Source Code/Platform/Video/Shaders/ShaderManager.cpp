@@ -217,8 +217,7 @@ Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
     ShaderMap::iterator it = _shaderNameMap.find(name);
     if (it != std::end(_shaderNameMap)) {
         if (!recompile) {
-            // We don't need a ref count increase if we just recompile the
-            // shader
+            // We don't need a ref count increase if we just recompile the shader
             it->second->AddRef();
             Console::d_printfn(Locale::get("SHADER_MANAGER_GET_INC"),
                                name.c_str(), it->second->GetRef());

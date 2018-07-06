@@ -5,8 +5,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(ImpostorSphere)
-
 template <>
 ImpostorSphere* ImplResourceLoader<ImpostorSphere>::operator()() {
     ImpostorSphere* ptr = MemoryManager_NEW ImpostorSphere(_descriptor.getName(), 1.0f);
@@ -27,8 +25,6 @@ ImpostorSphere* ImplResourceLoader<ImpostorSphere>::operator()() {
     return ptr;
 }
 
-
-DEFAULT_LOADER_IMPL(ImpostorBox)
 
 template <>
 ImpostorBox* ImplResourceLoader<ImpostorBox>::operator()() {

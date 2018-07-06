@@ -79,7 +79,8 @@ class NOINITVTABLE Resource : public TrackedObject {
     virtual ~Resource() {}
 
     /// Loading and unloading interface
-    virtual bool unload() = 0;
+    virtual bool load() { return true; }
+    virtual bool unload() { return true; }
 
     /// Name management
     const stringImpl& getName() const { return _name; }

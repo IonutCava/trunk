@@ -67,8 +67,8 @@ class glTexture final : public Texture {
     }
 
    protected:
-    bool generateHWResource(const stringImpl& name) override;
-    void threadedLoad(const stringImpl& name) override;
+    bool load() override;
+    void threadedLoad(const stringImpl& name);
     void reserveStorage(const TextureLoadInfo& info);
     void updateMipMaps();
     void updateSampler();

@@ -35,12 +35,12 @@
 #include "TextureDescriptor.h"
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
-#include "Core/Resources/Headers/HardwareResource.h"
+#include "Core/Resources/Headers/Resource.h"
 
 namespace Divide {
 
 /// An API-independent representation of a texture
-class NOINITVTABLE Texture : public HardwareResource {
+class NOINITVTABLE Texture : public Resource {
     friend class ResourceCache;
     friend class ResourceLoader;
     template <typename T>
@@ -138,7 +138,7 @@ class NOINITVTABLE Texture : public HardwareResource {
     /// Use DevIL to load a file into a Texture Object
     bool LoadFile(const TextureLoadInfo& info, const stringImpl& name);
     /// Load texture data using the specified file name
-    virtual bool generateHWResource(const stringImpl& name);
+    virtual bool load() override;
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
 

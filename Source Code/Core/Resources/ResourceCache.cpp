@@ -49,7 +49,7 @@ void ResourceCache::add(const stringImpl& name, Resource* const res) {
 Resource* ResourceCache::loadResource(const stringImpl& name) {
     Resource* resource = find(name);
     if (resource) {
-        cloneResource<Resource>(resource);
+        resource->AddRef();
     } else {
         Console::printfn(Locale::get("RESOURCE_CACHE_GET_RES"), name.c_str());
     }
@@ -129,15 +129,7 @@ bool ResourceCache::removeInternal(Resource* const resource) {
 bool ResourceCache::load(Resource* const res, const stringImpl& name) {
     assert(res != nullptr);
     res->setName(name);
-    return true;
+    return res->load();
 }
 
-bool ResourceCache::loadHW(Resource* const res, const stringImpl& name) {
-    if (load(res, name)) {
-        HardwareResource* hwRes = dynamic_cast<HardwareResource*>(res);
-        assert(hwRes);
-        return hwRes->generateHWResource(name);
-    }
-    return false;
-}
 };

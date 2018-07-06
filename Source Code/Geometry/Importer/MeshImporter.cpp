@@ -308,7 +308,8 @@ namespace Import {
         // the Resource Cache
         tempMaterial = FindResourceImpl<Material>(importData._name);
         if (tempMaterial) {
-            return CloneResource(tempMaterial);
+            tempMaterial->AddRef();
+            return tempMaterial;
         }
 
         // If we found it in the Resource Cache, return a copy of it

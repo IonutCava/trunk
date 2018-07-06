@@ -238,8 +238,8 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
     // Pass the rest of the loading steps to the parent class
-    ShaderProgram::generateHWResource(name);
     _lockManager->Lock();
+    ShaderProgram::threadedLoad(name);
 }
 
 /// Linking a shader program also sets up all pre-link properties for the shader
@@ -291,15 +291,13 @@ void glShaderProgram::link() {
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
-bool glShaderProgram::generateHWResource(const stringImpl& name) {
-    _name = name;
-
+bool glShaderProgram::load() {
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
-    if (name.compare("NULL") == 0) {
+    if (_name.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
-        _threadedLoadComplete = HardwareResource::generateHWResource(name);
+        _threadedLoadComplete = ShaderProgram::load();
         return true;
     }
 
@@ -387,29 +385,29 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         // properties
         // The effect file name is the part up until the first period or comma
         // symbol
-        stringImpl shaderName = name.substr(0, name.find_first_of(".,"));
+        stringImpl shaderName = _name.substr(0, _name.find_first_of(".,"));
         // We also differentiate between general properties, and vertex
         // properties
         stringImpl shaderProperties;
         // Get the position of the first "," symbol. Must be added at the end of
         // the program's name!!
-        stringAlg::stringSize propPositionVertex = name.find_first_of(",");
+        stringAlg::stringSize propPositionVertex = _name.find_first_of(",");
         // Get the position of the first "." symbol
-        stringAlg::stringSize propPosition = name.find_first_of(".");
+        stringAlg::stringSize propPosition = _name.find_first_of(".");
         // If we have effect properties, we extract them from the name
         // (starting from the first "." symbol to the first "," symbol)
         if (propPosition != stringImpl::npos) {
             shaderProperties =
                 "." +
-                name.substr(propPosition + 1,
-                            propPositionVertex - propPosition - 1);
+                _name.substr(propPosition + 1,
+                             propPositionVertex - propPosition - 1);
         }
         // Vertex properties start off identically to the rest of the stages'
         // names
         stringImpl vertexProperties(shaderProperties);
         // But we also add the shader specific properties
         if (propPositionVertex != stringImpl::npos) {
-            vertexProperties += "." + name.substr(propPositionVertex + 1);
+            vertexProperties += "." + _name.substr(propPositionVertex + 1);
         }
 
         // For every stage
@@ -473,7 +471,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             ? CurrentContext::GFX_LOADING_CTX
             : */CurrentContext::GFX_RENDERING_CTX,
         [&](){
-            threadedLoad(name);
+            threadedLoad(_name);
         });
 }
 
@@ -482,9 +480,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 bool glShaderProgram::isValid() const {
     // null shader is a valid shader
     return _shaderProgramID == 0 ||
-           (isHWInitComplete() &&
-           _linked &&
-           _shaderProgramID != GLUtil::_invalidObjectID);
+           (_linked && _shaderProgramID != GLUtil::_invalidObjectID);
 }
 
 bool glShaderProgram::isBound() const {

@@ -705,9 +705,6 @@
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h">
       <Filter>Core\MemoryManagement\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\HardwareResource.h">
-      <Filter>Core\Resources\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>

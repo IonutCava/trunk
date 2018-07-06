@@ -7,7 +7,7 @@
 namespace Divide {
 
 Texture::Texture(TextureType type)
-    : HardwareResource("temp_texture"),
+    : Resource("temp_texture"),
       _numLayers(1),
       _lockMipMaps(false),
       _samplerDirty(true),
@@ -26,7 +26,7 @@ Texture::~Texture()
 }
 
 /// Load texture data using the specified file name
-bool Texture::generateHWResource(const stringImpl& name) {
+bool Texture::load() {
     // Make sure we have a valid file path
     if (getResourceLocation().empty() ||
         getResourceLocation().compare("default") == 0) {
@@ -88,9 +88,9 @@ bool Texture::generateHWResource(const stringImpl& name) {
         }
     }
 
-    setResourceLocation(name);
+    setResourceLocation(_name);
 
-    return HardwareResource::generateHWResource(name);
+    return Resource::load();
 }
 
 /// Use DevIL to load a file into a Texture Object

@@ -5,8 +5,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(Mesh)
-
 template<>
 Mesh* ImplResourceLoader<Mesh>::operator()() {
     MeshImporter& importer = MeshImporter::getInstance();

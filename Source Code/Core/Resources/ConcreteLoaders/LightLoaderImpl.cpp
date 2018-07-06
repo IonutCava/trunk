@@ -6,8 +6,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(Light)
-
 template<>
 Light* ImplResourceLoader<Light>::operator()() {
     Light* ptr = nullptr;

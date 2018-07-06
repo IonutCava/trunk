@@ -4,8 +4,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(Sky)
-
 template<>
 Sky* ImplResourceLoader<Sky>::operator()() {
     Sky* ptr = MemoryManager_NEW Sky(_descriptor.getName());

@@ -4,8 +4,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(SubMesh)
-
 template<>
 SubMesh* ImplResourceLoader<SubMesh>::operator()() {
     SubMesh* ptr = nullptr;

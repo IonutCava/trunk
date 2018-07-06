@@ -68,18 +68,6 @@ DEFINE_SINGLETON(ResourceCache)
         return ptr;
     }
 
-    template <typename T>
-    typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
-    cloneResource(T* resource) {
-        if (resource) {
-            resource->AddRef();
-            Console::d_printfn(Locale::get("RESOURCE_CACHE_GET_RES_INC"),
-                resource->getName().c_str(), resource->GetRef());
-        }
-
-        return resource;
-    }
-
     Resource* const find(const stringImpl& name);
     void add(const stringImpl& name, Resource* const resource);
     bool remove(Resource* res);
@@ -112,12 +100,6 @@ RemoveResource(T*& resource) {
     }
 
     return false;
-}
-
-template <typename T>
-typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
-CloneResource(T*& resource) {
-    return ResourceCache::getInstance().cloneResource<T>(resource);
 }
 
 template <typename T>

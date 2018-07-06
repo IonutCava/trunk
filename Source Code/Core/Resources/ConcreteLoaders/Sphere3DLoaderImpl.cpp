@@ -5,8 +5,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(Sphere3D)
-
 template<>
 Sphere3D* ImplResourceLoader<Sphere3D>::operator()() {
     Sphere3D* ptr = MemoryManager_NEW Sphere3D(_descriptor.getEnumValue() == 0 

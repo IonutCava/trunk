@@ -4,8 +4,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(Box3D)
-
 template <>
 Box3D* ImplResourceLoader<Box3D>::operator()() {
     D32 size = 1.0;

@@ -4,8 +4,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(TerrainDescriptor)
-
 template<>
 TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()() {
     TerrainDescriptor* ptr = MemoryManager_NEW TerrainDescriptor();

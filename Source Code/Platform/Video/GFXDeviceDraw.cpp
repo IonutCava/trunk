@@ -157,7 +157,7 @@ void GFXDevice::flushRenderQueue(bool refreshNodeData, U32 pass) {
                 it._buffer->bindRange(it._slot, it._range.x, it._range.y);
             }
 
-            makeTexturesResident(package._textureData);
+            _api->makeTexturesResident(package._textureData);
             submitIndirectRenderCommands(package._drawCommands);
         }
     }
@@ -286,7 +286,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     
     ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage, pass);
     cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());
-    registerCommandBuffer(cmdBuffer);
+    _api->registerCommandBuffer(cmdBuffer);
     _lastCommandCount = cmdCount;
     if (refreshNodeData) {
         getNodeBuffer(currentStage, pass).updateData(0, nodeCount, _matricesData.data());

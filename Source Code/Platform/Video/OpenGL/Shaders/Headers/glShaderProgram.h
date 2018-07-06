@@ -138,7 +138,7 @@ class glShaderProgram final : public ShaderProgram {
    protected:
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
-    bool generateHWResource(const stringImpl& name) override;
+    bool load() override;
     /// Linking a shader program also sets up all pre-link properties for the
     /// shader (varying locations, attrib bindings, etc)
     void link();

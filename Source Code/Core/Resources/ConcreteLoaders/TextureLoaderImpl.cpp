@@ -8,9 +8,6 @@
 
 namespace Divide {
 
-DEFAULT_HW_LOADER_IMPL(Texture)
-
-
 template<>
 Texture* ImplResourceLoader<Texture>::operator()() {
     Texture* ptr = nullptr;

@@ -90,8 +90,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
         Texture* const tex = base._textures[i];
         if (tex) {
             tex->AddRef();
-            cloneMat->setTexture(static_cast<ShaderProgram::TextureUsage>(i),
-                                 tex);
+            cloneMat->setTexture(static_cast<ShaderProgram::TextureUsage>(i), tex);
         }
     }
     for (const std::pair<Texture*, U8>& tex : base._customTextures) {

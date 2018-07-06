@@ -215,7 +215,7 @@ U32 GFXDevice::setStateBlock(U32 stateBlockHash) {
                       "GFXDevice error: Invalid state blocks detected on activation!");
 
         // Activate the new render state block in an rendering API dependent way
-        activateStateBlock(currentStateIt->second, previousStateIt->second);
+        _api->activateStateBlock(currentStateIt->second, previousStateIt->second);
     }
     // Return the previous state hash
     return _previousStateBlockHash;
@@ -349,7 +349,7 @@ void GFXDevice::updateClipPlanes() {
 /// Update the internal GPU data buffer with the updated viewport dimensions
 void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
     // Change the viewport on the Rendering API level
-    changeViewport(viewport);
+    _api->changeViewport(viewport);
     // Update the buffer with the new value
     _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
     _gpuBlock._updated = true;

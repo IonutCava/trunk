@@ -119,8 +119,8 @@ class d3dShaderProgram final : public ShaderProgram {
     void SetMemoryBarrier() override {}
 
    protected:
-    inline bool generateHWResource(const stringImpl& name) override {
-        return ShaderProgram::generateHWResource(name);
+    inline bool load() override {
+        return ShaderProgram::load();
     }
 };
 

@@ -32,7 +32,7 @@
 #ifndef _HANDLER_H_
 #define _HANDLER_H_
 
-#include "Core/Resources/Headers/HardwareResource.h"
+#include "Core/Resources/Headers/Resource.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/Shaders/Headers/Shader.h"
 
@@ -44,7 +44,7 @@ class Shader;
 class ShaderBuffer;
 struct GenericDrawCommand;
 
-class NOINITVTABLE ShaderProgram : public HardwareResource {
+class NOINITVTABLE ShaderProgram : public Resource {
    public:
     /// A list of built-in sampler slots. Use these if possible
     enum class TextureUsage : U32 {
@@ -243,7 +243,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
 
     template <typename T>
     friend class ImplResourceLoader;
-    virtual bool generateHWResource(const stringImpl& name);
 
    protected:
     std::atomic_bool _linked;

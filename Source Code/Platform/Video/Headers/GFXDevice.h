@@ -70,16 +70,14 @@ namespace Time {
 namespace Attorney {
     class GFXDeviceGUI;
     class GFXDeviceKernel;
-    class GFXDeviceGPUState;
     class GFXDeviceRenderStateBlock;
 };
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
+DEFINE_SINGLETON(GFXDevice)
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
-    friend class Attorney::GFXDeviceGPUState;
     friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
     typedef hashMapImpl<U32, RenderStateBlock> RenderStateMap;
@@ -235,22 +233,22 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    };
 
   public:  // GPU interface
-    ErrorCode initRenderingAPI(I32 argc, char** argv) override;
-    void closeRenderingAPI() override;
+    ErrorCode initRenderingAPI(I32 argc, char** argv);
+    void closeRenderingAPI();
 
     inline void setAPI(RenderAPI API) { _API_ID = API; }
     inline RenderAPI getAPI() const { return _API_ID; }
 
     void idle();
-    void beginFrame() override;
-    void endFrame() override;
+    void beginFrame();
+    void endFrame();
     void handleWindowEvent(WindowEvent event, I32 data1, I32 data2);
 
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D
     /// (Perspective) rendering
     void toggle2D(bool state);
     /// Toggle hardware rasterization on or off.
-    inline void toggleRasterization(bool state) override;
+    inline void toggleRasterization(bool state);
     /// Query rasterization state
     inline bool rasterizationState();
 
@@ -288,7 +286,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     /// Clipping plane management. All the clipping planes are handled by shader
     /// programs only!
-    void updateClipPlanes() override;
+    void updateClipPlanes();
     /// disable or enable a clip plane by index
     inline void toggleClipPlane(ClipPlaneIndex index, const bool state);
     /// modify a single clip plane by index
@@ -403,45 +401,45 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
   public:  // Direct API calls
     /// Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
-    inline bool initShaders() override { return _api->initShaders(); }
+    inline bool initShaders() { return _api->initShaders(); }
 
-    inline bool deInitShaders() override { return _api->deInitShaders(); }
+    inline bool deInitShaders() { return _api->deInitShaders(); }
 
-    inline IMPrimitive* newIMP() const override { return _api->newIMP(); }
+    inline IMPrimitive* newIMP() const { return _api->newIMP(); }
 
-    inline Framebuffer* newFB(bool multisampled = false) const override {
+    inline Framebuffer* newFB(bool multisampled = false) const {
         return _api->newFB(multisampled);
     }
 
-    inline VertexBuffer* newVB() const override { return _api->newVB(); }
+    inline VertexBuffer* newVB() const { return _api->newVB(); }
 
     inline PixelBuffer* newPB(
-        const PBType& type = PBType::PB_TEXTURE_2D) const override {
+        const PBType& type = PBType::PB_TEXTURE_2D) const {
         return _api->newPB(type);
     }
 
-    inline GenericVertexData* newGVD(const bool persistentMapped) const override {
+    inline GenericVertexData* newGVD(const bool persistentMapped) const {
         return _api->newGVD(persistentMapped);
     }
 
-    inline Texture* newTextureArray() const override {
+    inline Texture* newTextureArray() const {
         return _api->newTextureArray();
     }
 
-    inline Texture* newTexture2D() const override {
+    inline Texture* newTexture2D() const {
         return _api->newTexture2D();
     }
 
-    inline Texture* newTextureCubemap() const override {
+    inline Texture* newTextureCubemap() const {
         return _api->newTextureCubemap();
     }
 
-    inline ShaderProgram* newShaderProgram() const override {
+    inline ShaderProgram* newShaderProgram() const {
         return _api->newShaderProgram();
     }
 
     inline Shader* newShader(const stringImpl& name, const ShaderType& type,
-                             const bool optimise = false) const override {
+                             const bool optimise = false) const {
         return _api->newShader(name, type, optimise);
     }
 
@@ -450,52 +448,32 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
-                                   BufferUpdateFrequency::ONCE) const override {
+                                   BufferUpdateFrequency::ONCE) const {
         return _api->newSB(bufferName, ringBufferLength, unbound, persistentMapped, frequency);
     }
 
-    inline HardwareQuery* newHardwareQuery() const override {
+    inline HardwareQuery* newHardwareQuery() const {
         return _api->newHardwareQuery();
     }
 
-    inline U64 getFrameDurationGPU() override {
+    inline U64 getFrameDurationGPU() {
         return _api->getFrameDurationGPU();
     }
 
-    inline void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override {
-        _api->registerCommandBuffer(commandBuffer);
-    }
-
-    inline bool makeTexturesResident(const TextureDataContainer& textureData) override {
-        return _api->makeTexturesResident(textureData);
-    }
-
-    inline bool makeTextureResident(const TextureData& textureData) override {
-        return _api->makeTextureResident(textureData);
-    }
-
-    inline void setCursorPosition(I32 x, I32 y) override {
+    inline void setCursorPosition(I32 x, I32 y) {
         _api->setCursorPosition(x, y);
-    }
-
-    inline void threadedLoadCallback() override {
-        _api->threadedLoadCallback();
     }
 
   protected:
     void setBaseViewport(const vec4<I32>& viewport);
 
-    inline void changeViewport(const vec4<I32>& newViewport) const override {
-        _api->changeViewport(newViewport);
-    }
-
-    inline void drawPoints(U32 numPoints) override { 
+    inline void drawPoints(U32 numPoints) { 
         uploadGPUBlock();
         _api->drawPoints(numPoints); 
         registerDrawCall();
     }
 
-    inline void drawTriangle() override {
+    inline void drawTriangle() {
         uploadGPUBlock();
         _api->drawTriangle();
         registerDrawCall();
@@ -506,12 +484,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                          const vec2<F32>& relativeOffset) {
         uploadGPUBlock();
         setStateBlock(stateHash);
-        drawText(text, relativeOffset);
-    }
-
-    inline void drawText(const TextLabel& textLabel,
-                         const vec2<F32>& relativeOffset) override {
-        _api->drawText(textLabel, relativeOffset);
+        _api->drawText(text, relativeOffset);
     }
 
     void drawDebugAxis(const SceneRenderState& sceneRenderState);
@@ -558,12 +531,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     bool setBufferData(const GenericDrawCommand& cmd);
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
-    /// Update the graphics pipeline using the current rendering API with the state
-    /// block passed
-    inline void activateStateBlock(const RenderStateBlock& newBlock,
-                                   const RenderStateBlock& oldBlock) const override {
-        _api->activateStateBlock(newBlock, oldBlock);
-    }
 
     /// If the stateBlock doesn't exist in the state block map, add it for future reference
     bool registerRenderStateBlock(const RenderStateBlock& stateBlock);
@@ -684,13 +651,6 @@ namespace Attorney {
         friend class Divide::Kernel;
     };
 
-    class GFXDeviceGPUState {
-        private:
-            static void threadedLoadCallback() {
-                GFXDevice::getInstance().threadedLoadCallback();
-            }
-        friend class Divide::GPUState;
-    };
 };  // namespace Attorney
 };  // namespace Divide
 

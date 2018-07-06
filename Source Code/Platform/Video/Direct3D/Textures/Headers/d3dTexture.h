@@ -41,9 +41,9 @@ class d3dTexture final : public Texture {
     d3dTexture(TextureType type);
     ~d3dTexture() {}
 
-    bool generateHWResource(const stringImpl& name) override { return Texture::generateHWResource(name); }
+    bool load() override { return Texture::load(); }
 
-    bool unload() override { return true; }
+    bool unload() override { return Texture::unload(); }
 
     void Bind(U8 unit, bool flushStateOnRequest = true) override {}
     

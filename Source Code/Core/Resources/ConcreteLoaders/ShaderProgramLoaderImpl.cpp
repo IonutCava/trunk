@@ -7,8 +7,6 @@
 
 namespace Divide {
 
-DEFAULT_HW_LOADER_IMPL(ShaderProgram)
-
 template<>
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     ParamHandler& par = ParamHandler::getInstance();

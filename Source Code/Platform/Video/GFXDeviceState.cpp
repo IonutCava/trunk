@@ -211,7 +211,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Create a separate loading thread that shares resources with the main
     // rendering context
     _state.startLoaderThread([&]() {
-        threadedLoadCallback();
+        _api->threadedLoadCallback();
         // Use an atomic bool to check if the thread is still active
         _state.loadingThreadAvailable(true);
         // Run an infinite loop until we actually request otherwise

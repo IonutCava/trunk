@@ -4,8 +4,6 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(Trigger)
-
 template<>
 Trigger* ImplResourceLoader<Trigger>::operator()() {
     Trigger* ptr = MemoryManager_NEW Trigger();

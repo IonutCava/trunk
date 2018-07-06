@@ -13,7 +13,7 @@
 namespace Divide {
 
 ShaderProgram::ShaderProgram()
-    : HardwareResource("temp_shader_program")
+    : Resource("temp_shader_program")
 {
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
@@ -36,23 +36,6 @@ ShaderProgram::~ShaderProgram()
 
 /// Called once per frame. Update common values used across programs
 bool ShaderProgram::update(const U64 deltaTime) {
-    // Skip programs that aren't fully loaded
-    return isHWInitComplete();
-}
-
-/// Rendering API specific loading (called after the API specific derived calls
-/// processed the request)
-bool ShaderProgram::generateHWResource(const stringImpl& name) {
-    _name = name;
-
-    if (!HardwareResource::generateHWResource(name)) {
-        return false;
-    }
-    // Finish threaded loading
-    HardwareResource::threadedLoad(name);
-    // Validate loading state
-    DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
-
     return true;
 }
 
@@ -107,7 +90,7 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
         tessellation;
     _refreshStage[to_uint(ShaderType::COMPUTE)] = compute;
     // Recreate all of the needed shaders
-    generateHWResource(getName());
+    load();
     // Restore bind state
     if (wasBound) {
         bind();

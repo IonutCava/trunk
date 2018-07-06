@@ -45,7 +45,7 @@ bool glTexture::unload() {
 
 void glTexture::threadedLoad(const stringImpl& name) {
     updateSampler();
-    Texture::generateHWResource(name);
+    Texture::load();
     if (_threadedLoading) {
         _lockManager->Lock();
     } else {
@@ -100,12 +100,12 @@ void glTexture::updateSampler() {
     }
 }
 
-bool glTexture::generateHWResource(const stringImpl& name) {
+bool glTexture::load() {
     GFX_DEVICE.loadInContext(
         _threadedLoading ? CurrentContext::GFX_LOADING_CTX
                          : CurrentContext::GFX_RENDERING_CTX,
         [&]() {
-            threadedLoad(name);
+            threadedLoad(_name);
         });
 
     return true;
