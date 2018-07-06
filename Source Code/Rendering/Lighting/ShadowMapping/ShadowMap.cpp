@@ -32,6 +32,7 @@ void ShadowMap::initShadowMaps() {
                 SamplerDescriptor depthMapSampler;
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
                 depthMapSampler.toggleMipMaps(false);
+                depthMapSampler.setFilters(TextureFilter::LINEAR);
                 depthMapSampler._useRefCompare = true;
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;
                 // Default filters, LINEAR is OK for this
@@ -68,6 +69,7 @@ void ShadowMap::initShadowMaps() {
                 // Default filters, LINEAR is OK for this
                 SamplerDescriptor depthMapSampler;
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.setFilters(TextureFilter::LINEAR);
                 depthMapSampler.toggleMipMaps(false);
                 depthMapSampler._useRefCompare = true;  //< Use compare function
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal

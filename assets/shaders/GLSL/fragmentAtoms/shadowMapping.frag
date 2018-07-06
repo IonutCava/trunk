@@ -1,9 +1,9 @@
 #ifndef _SHADOW_MAPPING_FRAG_
 #define _SHADOW_MAPPING_FRAG_
 
-layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow texDepthMapFromLightCube;
-layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArrayShadow   texDepthMapFromLight;
-layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray         texDepthMapFromLightArray;
+layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArrayShadow    texDepthMapFromLight;
+layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow  texDepthMapFromLightCube;
+layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDepthMapFromLightArray;
 
 
 #if defined(_DEBUG)

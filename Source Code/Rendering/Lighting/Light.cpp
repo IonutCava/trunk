@@ -40,7 +40,6 @@ Light::Light(const F32 range, const LightType& type)
 
 Light::~Light()
 {
-    unload();
 }
 
 bool Light::load(const stringImpl& name) {
@@ -49,17 +48,9 @@ bool Light::load(const stringImpl& name) {
 }
 
 bool Light::unload() {
-    /*if (getState() != ResourceState::RES_LOADED && getState() != ResourceState::RES_LOADING) {
-        return true;
-    }*/
-
-    // DELETE(_shadowCamera); <-- deleted by the camera manager
     LightManager::getInstance().removeLight(getGUID(), getLightType());
 
     removeShadowMapInfo();
-    if (_impostor != nullptr) {
-        RemoveResource(_impostor);
-    }
 
     return SceneNode::unload();
 }
@@ -102,7 +93,6 @@ void Light::setSpotDirection(const vec3<F32>& newDirection) {
     vec3<F32> newDirectionNormalized(newDirection);
     newDirectionNormalized.normalize();
     _spotProperties.xyz(newDirectionNormalized);
-    _placementDirty = true;
 }
 
 void Light::setSpotAngle(F32 newAngle) {
@@ -116,8 +106,6 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sc
         _lightSGN->updateBoundingBoxTransform(_lightSGN->getComponent<PhysicsComponent>()->getWorldMatrix());
         sgn.getBoundingBox().setComputed(false);
     }
-
-    _placementDirty = true;
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
@@ -182,7 +170,7 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
                   "Light::generateShadowMaps error: Shadow casting light "
                   "with no shadow map found!");
 
-    _shadowProperties._arrayOffset = sm->getArrayOffset();
+    _shadowProperties._arrayOffset.set(sm->getArrayOffset());
     sm->render(sceneRenderState);
 
 }

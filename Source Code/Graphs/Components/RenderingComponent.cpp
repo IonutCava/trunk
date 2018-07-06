@@ -23,7 +23,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _renderGeometry(true),
       _renderBoundingBox(false),
       _renderSkeleton(false),
-      _impostorDirty(false),
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
@@ -51,7 +50,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
     }
 
-    _impostor = CreateResource<ImpostorBox>(ResourceDescriptor(parentSGN.getName() + "_impostor"));
 #ifdef _DEBUG
     // Red X-axis
     _axisLines.push_back(
@@ -99,7 +97,6 @@ RenderingComponent::~RenderingComponent()
         RemoveResource(_materialInstance);
     }
 
-    RemoveResource(_impostor);
 }
 
 void RenderingComponent::update(const U64 deltaTime) {
@@ -119,20 +116,6 @@ void RenderingComponent::update(const U64 deltaTime) {
     if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
         _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
         _skeletonPrimitive->paused(true);
-    }
-
-    if (_impostorDirty) {
-        const vec3<F32>* bbPoints = _parentSGN.getInitialBoundingBox().getPoints();
-        _impostor->fromPoints({ bbPoints[1],
-                                bbPoints[5],
-                                bbPoints[3],
-                                bbPoints[7],
-                                bbPoints[0],
-                                bbPoints[4],
-                                bbPoints[2],
-                                bbPoints[6] },
-                               _parentSGN.getInitialBoundingBox().getHalfExtent());
-        _impostorDirty = false;
     }
 }
 
@@ -491,7 +474,6 @@ RenderingComponent::getDrawPackage(RenderStage renderStage) {
 }
 
 void RenderingComponent::boundingBoxUpdatedCallback() {
-    _impostorDirty = true;
 }
 
 void RenderingComponent::setActive(const bool state) {

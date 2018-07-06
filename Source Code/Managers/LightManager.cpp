@@ -32,13 +32,10 @@ LightManager::LightManager()
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = nullptr;
-    // We bind shadow maps to the last available texture slots that the hardware supports.
-    // Starting offsets for each texture type is stored here
-    const U8 maxTextureStorage = to_ubyte(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 32));
-    _shadowLocation[to_uint(ShadowType::CUBEMAP)] = maxTextureStorage - 3;
-    _shadowLocation[to_uint(ShadowType::SINGLE)]  = maxTextureStorage - 2;
-    _shadowLocation[to_uint(ShadowType::LAYERED)] = maxTextureStorage - 1;
-    
+    const U8 startOffset = to_ubyte(ShaderProgram::TextureUsage::COUNT);
+    _shadowLocation[to_uint(ShadowType::CUBEMAP)] = startOffset + 1;
+    _shadowLocation[to_uint(ShadowType::SINGLE)] = startOffset + 2;
+    _shadowLocation[to_uint(ShadowType::LAYERED)] = startOffset + 3;
 
     ParamHandler::getInstance().setParam<bool>("rendering.debug.displayShadowDebugInfo", false);
 }
@@ -313,11 +310,8 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
             temp._options.y = light->castsShadows();
             lightPropertiesCount++;
 
-            if (light->_placementDirty) {
-                temp._position.xyz(viewMatrix * vec4<F32>(temp._position.xyz(), 0.0f));
-                temp._direction.xyz(viewMatrix * vec4<F32>(temp._direction.xyz(), 0.0f));
-                light->_placementDirty = false;
-            }
+            temp._position.xyz(viewMatrix * vec4<F32>(temp._position.xyz(), 0.0f));
+            temp._direction.xyz(viewMatrix * vec4<F32>(temp._direction.xyz(), 0.0f));
 
             if (light->castsShadows() && lightShadowPropertiesCount < lightShadowCount) {
 

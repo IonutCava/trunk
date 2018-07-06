@@ -220,9 +220,9 @@ void CascadedShadowMaps::applyFrustumSplits() {
 }
 
 void CascadedShadowMaps::postRender() {
-    //if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
+    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
         return;
-    //}
+    }
     _blurDepthMapShader->bind();
 
     // Blur horizontally

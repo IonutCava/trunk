@@ -60,7 +60,7 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
     
     if (inRange(shadow_coord.z) && inRange(shadow_coord.x) && inRange(shadow_coord.y)){
         shadow_coord.w = shadow_coord.z;
-        shadow_coord.z = _shadowTempInt + currentShadowSource._arrayOffset;
+        shadow_coord.z = _shadowTempInt + currentShadowSource._arrayOffset.x;
 
         vec2 moments = texture(texDepthMapFromLightArray, shadow_coord.xyz).rg;
        

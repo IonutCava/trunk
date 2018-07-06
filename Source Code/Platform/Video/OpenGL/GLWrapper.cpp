@@ -209,6 +209,24 @@ bool GL_API::initShaders() {
     appendToShaderHeader(ShaderType::COUNT,
                          "#extension GL_ARB_shader_draw_parameters : require",
                          lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,
+                         "#extension GL_ARB_gpu_shader5 : require",
+                         lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,
+                         Util::StringFormat("#define GPU_VENDOR_AMD %d", to_uint(GPUVendor::AMD)),
+                         lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,
+                         Util::StringFormat("#define GPU_VENDOR_NVIDIA %d", to_uint(GPUVendor::NVIDIA)),
+                         lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,
+                         Util::StringFormat("#define GPU_VENDOR_INTEL %d", to_uint(GPUVendor::INTEL)),
+                         lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,
+                         Util::StringFormat("#define GPU_VENDOR_OTHER %d", to_uint(GPUVendor::OTHER)),
+                         lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,
+                         Util::StringFormat("#define GPU_VENDOR %d", to_uint(GFX_DEVICE.getGPUVendor())),
+                         lineOffsets);
 
     // Add current build environment information to the shaders
 #if defined(_DEBUG)
@@ -416,6 +434,7 @@ bool GL_API::initShaders() {
         "#define TEXTURE_REFLECTION " +
             std::to_string(to_uint(ShaderProgram::TextureUsage::REFLECTION)),
         lineOffsets);
+
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +

@@ -240,8 +240,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     if (currentStage == RenderStage::SHADOW) {
         Light* shadowLight = LightManager::getInstance().currentShadowCastingLight();
         assert(shadowLight != nullptr);
-        if (_gpuBlock._data._shadowArrayOffset != shadowLight->getShadowProperties()._arrayOffset) {
-            _gpuBlock._data._shadowArrayOffset = shadowLight->getShadowProperties()._arrayOffset;
+        if (_gpuBlock._data._shadowArrayOffset != shadowLight->getShadowProperties()._arrayOffset.x) {
+            _gpuBlock._data._shadowArrayOffset = shadowLight->getShadowProperties()._arrayOffset.x;
             _gpuBlock._updated = true;
         }
     }

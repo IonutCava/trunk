@@ -181,7 +181,7 @@ void WarScene::processTasks(const U64 deltaTime) {
         _taskTimers[2] = 0.0;
     }
 
-    if (_taskTimers[3] >= updateLights && false) {
+    /*if (_taskTimers[3] >= updateLights && false) {
         for (U8 row = 0; row < 3; row++)
             for (U8 col = 0; col < _lightNodes.size() / 3; col++) {
                 F32 x = col * 150.0f - 5.0f +  cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *   0.008f) * 200.0f;
@@ -196,7 +196,7 @@ void WarScene::processTasks(const U64 deltaTime) {
             }
 
         _taskTimers[3] = 0.0;
-    }
+    }*/
 
     Scene::processTasks(deltaTime);
 }

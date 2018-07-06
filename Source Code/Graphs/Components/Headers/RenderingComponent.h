@@ -116,8 +116,6 @@ class RenderingComponent : public SGNComponent {
 
     void setActive(const bool state);
 
-    inline ImpostorBox* const getImpostor() const { return _impostor; }
-
    protected:
     friend class SceneGraphNode;
     RenderingComponent(Material* const materialInstance,
@@ -161,13 +159,11 @@ class RenderingComponent : public SGNComponent {
     bool _renderSkeleton;
     bool _nodeSkinned;
     bool _isSubMesh;
-    bool _impostorDirty;
     TextureDataContainer _textureDependencies;
     std::array<GFXDevice::RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
     
     IMPrimitive* _boundingBoxPrimitive;
     IMPrimitive* _skeletonPrimitive;
-    ImpostorBox* _impostor;
 
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;
