@@ -160,7 +160,6 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     glfwWindowHint(GLFW_ALPHA_BITS,8);
     glfwWindowHint(GLFW_DEPTH_BITS,24);
     glfwWindowHint(GLFW_STENCIL_BITS,8);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     //Store the main window ID for future reference
@@ -232,7 +231,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     GLint max_vertex_uniform = 0, max_vertex_attrib = 0,max_texture_units = 0;
     GLint buffers = 0,samplesEffective = 0;
     GLint major = 0, minor = 0, maxMinor = 0;
-    GLint maxAnisotrophy = 0;
+    GLint maxAnisotropy = 0;
     GLint maxUBOBindings = 0, maxUBOBlockSize = 0;
 
     GLCheck(glGetIntegerv(GL_MAJOR_VERSION, &major)); // OpenGL major version
@@ -244,7 +243,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     GLCheck(glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform)); //How many uniforms can we send to vertex shaders
     GLCheck(glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib)); //How many attributes can we send to a vertex shader
     GLCheck(glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units)); //Maximum number of texture units we can address in shaders
-    GLCheck(glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotrophy));//Maximum supporter anisotropic filtering level
+    GLCheck(glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy));//Maximum supporter anisotropic filtering level
     GLCheck(glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUBOBindings));
     GLCheck(glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUBOBlockSize));
 
@@ -265,8 +264,8 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     par.setParam("shaderDetailToken",par.getParam<GLubyte>("rendering.detailLevel"));
     par.setParam("GFX_DEVICE.maxTextureCombinedUnits",max_texture_units);
     //Cap max aniso to what the hardware supports
-    if(maxAnisotrophy < par.getParam<GLubyte>("rendering.anisotropicFilteringLevel",1)){
-        par.setParam("rendering.anisotropicFilteringLevel",maxAnisotrophy);
+    if(maxAnisotropy < par.getParam<GLubyte>("rendering.anisotropicFilteringLevel",1)){
+        par.setParam("rendering.anisotropicFilteringLevel",maxAnisotropy);
     }
     //Time to select our shaders.
     //We do not support OpenGL version lower than 3.0;
@@ -326,6 +325,26 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     //start background loading thread
     _closeLoadingThread = false;
     _loaderThread = New boost::thread(&GL_API::loadInContextInternal, DELEGATE_REF(GL_API::getInstance()));
+
+	_anisotropySupported = (glewIsSupported("GL_EXT_texture_filter_anisotropic") == GL_TRUE);
+	_texCompressionSupported = (glewIsSupported("GL_EXT_texture_compression_s3tc") == GL_TRUE);
+	if(!_anisotropySupported || !_texCompressionSupported){
+		//check manually as GLEW has some issues with 3.0+
+		GLint num = 0;
+		GLCheck(glGetIntegerv(GL_NUM_EXTENSIONS, &num));
+		while(0 < --num) {
+			std::string ext((const char*) glGetStringi(GL_EXTENSIONS, num-1));
+			if(!_anisotropySupported && ext.compare("GL_EXT_texture_filter_anisotropic") == 0) _anisotropySupported = true;
+			if(!_texCompressionSupported && ext.compare("GL_EXT_texture_compression_s3tc") == 0) _texCompressionSupported = true;	
+		}
+	}
+
+	if(!_anisotropySupported){
+		ERROR_FN(Locale::get("ERROR_NO_ANISO_SUPPORT"));
+	}
+	if(!_texCompressionSupported){
+		ERROR_FN(Locale::get("ERROR_NO_S3TC_SUPPORT"));
+	}
 
     //OpenGL is up and ready
     Divide::GL::_contextAvailable = true;

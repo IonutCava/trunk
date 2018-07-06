@@ -72,13 +72,9 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
 
         //generate a new texture attachement
         //anisotrophic filtering is only added to color attachements
-        if (sampler.anisotrophyLevel() > 1 && _mipMapEnabled[slot] && type != TextureDescriptor::Depth) {
-            if(!glewIsSupported("GL_EXT_texture_filter_anisotropic")){
-                ERROR_FN(Locale::get("ERROR_NO_ANISO_SUPPORT"));
-            }else{
-                U8 anisoLevel = std::min<I32>((I32)sampler.anisotrophyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
-                GLCheck(glTexParameteri(_textureType, GL_TEXTURE_MAX_ANISOTROPY_EXT,anisoLevel));
-            }
+		if (sampler.anisotropyLevel() > 1 && _mipMapEnabled[slot] && type != TextureDescriptor::Depth && GL_API::_anisotropySupported) {
+	       U8 anisoLevel = std::min<I32>((I32)sampler.anisotropyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
+           GLCheck(glTexParameteri(_textureType, GL_TEXTURE_MAX_ANISOTROPY_EXT,anisoLevel));
         }
 
         //depth attachements may need comparison functions

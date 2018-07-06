@@ -11,6 +11,7 @@ out vec3 _lightDirection[MAX_LIGHT_COUNT];
 out vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
 out vec3 _normalWV;
 out vec4 _vertexWV;
+out vec4 _grassColor;
 
 uniform int dvd_lightCount;
 
@@ -40,10 +41,9 @@ void main(void){
     computeLightVectorsPhong();
     vec3 vLightPosMVTemp = _lightDirection[0];
     float intensity = dot(vLightPosMVTemp.xyz, _normalWV);
-    gl_FrontColor = vec4(intensity, intensity, intensity, 1.0);
-    gl_FrontColor.a = 1.0 - clamp(length(_vertexWV)/lod_metric, 0.0, 1.0);
-        
-    
+    _grassColor = vec4(intensity, intensity, intensity, 1.0);
+    _grassColor.a = 1.0 - clamp(length(_vertexWV)/lod_metric, 0.0, 1.0);
+            
     gl_Position = dvd_ProjectionMatrix * _vertexWV;
     
     if(dvd_enableShadowMapping) {
@@ -59,32 +59,34 @@ in vec2 _texCoord;
 in vec3 _normalWV;
 in vec4 _vertexWV;
 in vec3 _lightDirection[MAX_LIGHT_COUNT];
+in vec4 _grassColor;
 out vec4 _colorOut;
 
 uniform sampler2D texDiffuse;
 
 ///Global NDotL, basically
 float iDiffuse;
-#include "shadowMapping.frag"
 #include "lightInput.cmn"
+#include "shadowMapping.frag"
 
 void main (void){
-
+	
     vec4 cBase = texture(texDiffuse, _texCoord);
+	_colorOut.a = min(cBase.a, _grassColor.a);
 
     int i = 0;
     float cAmbient = dvd_LightSource[dvd_lightIndex[i]]._diffuse.w;
-    vec3 cDiffuse = dvd_LightSource[dvd_lightIndex[i]]._diffuse.rgb * gl_Color.rgb;
+    vec3 cDiffuse = dvd_LightSource[dvd_lightIndex[i]]._diffuse.rgb * _grassColor.rgb;
     vec3 L = normalize(_lightDirection[0]);
     iDiffuse = max(dot(L, _normalWV), 0.0);
     // SHADOW MAPPING
     vec3 vPixPosInDepthMap;
     float shadow = 1.0;
     applyShadowDirectional(0, shadow);
-
-    _colorOut.rgb = cAmbient * cBase + (0.2 + 0.8 * shadow) * cDiffuse * cBase.rgb;
-    
-    _colorOut.a = gl_Color.a;
+	
+    _colorOut.rgb = cAmbient * cBase.rgb + (0.2 + 0.8 * shadow) * cDiffuse * cBase.rgb;
+	_colorOut = vec4(1.0);
+	_colorOut.rb = vec2(0.0);
 }
 
 

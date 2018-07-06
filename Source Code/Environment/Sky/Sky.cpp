@@ -39,7 +39,7 @@ bool Sky::load() {
 
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);
-    skyboxSampler.setAnisotrophy(16);
+    skyboxSampler.setAnisotropy(16);
     skyboxSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");

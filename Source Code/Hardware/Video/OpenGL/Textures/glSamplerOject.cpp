@@ -45,13 +45,9 @@ bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
         GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_FUNC,  glCompareFuncTable[descriptor._cmpFunc]));
     }
 
-    if (descriptor.anisotrophyLevel() > 1 && descriptor.generateMipMaps()) {
-        if(!glewIsSupported("GL_EXT_texture_filter_anisotropic")){
-            ERROR_FN(Locale::get("ERROR_NO_ANISO_SUPPORT"));
-        }else{
-            U8 anisoLevel = std::min<I32>((I32)descriptor.anisotrophyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
-            GLCheck(glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel));
-        }
+	if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps() && GL_API::_anisotropySupported) {
+         U8 anisoLevel = std::min<I32>((I32)descriptor.anisotropyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
+         GLCheck(glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel));
     }
     //GLCheck(glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]));
     return true;

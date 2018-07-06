@@ -5,12 +5,13 @@ Transform::Transform()	: _dirty(true),
                           _rebuildMatrix(true),
                           _hasParentTransform(false),
                           _scale(vec3<F32>(1.0f)),
-                          _translation(vec3<F32>()),
-                          _parentTransform(NULL)
+                          _translation(vec3<F32>())
 
 {
     _orientation.identity();
     _worldMatrix.identity();
+	WriteLock w_lock(_parentLock);
+	_parentTransform = NULL;
 }
 
 Transform::Transform(const Quaternion<F32>& orientation,
@@ -21,10 +22,11 @@ Transform::Transform(const Quaternion<F32>& orientation,
                                                 _dirty(true),
                                                 _physicsDirty(true),
                                                 _rebuildMatrix(true),
-                                                _hasParentTransform(false),
-                                                _parentTransform(NULL)
+                                                _hasParentTransform(false)
 {
     _worldMatrix.identity();
+	WriteLock w_lock(_parentLock);
+	_parentTransform = NULL;
 }
 
 Transform::~Transform()
@@ -76,4 +78,13 @@ bool Transform::compare(const Transform* const t){
     return (_scale.compare(t->_scale) &&
             _orientation.compare(t->_orientation) &&
             _translation.compare(t->_translation));
+}
+
+void Transform::identity() {
+	WriteLock w_lock(_lock);
+	_scale = vec3<F32>(1.0f);
+	_translation.reset();
+	_orientation.identity();
+	_worldMatrix.identity();
+	clean();
 }

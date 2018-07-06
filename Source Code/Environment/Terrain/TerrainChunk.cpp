@@ -9,7 +9,8 @@
 #include "Geometry/Material/Headers/Material.h"
 
 void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize){
-    for(U8 i=0; i < Config::TERRAIN_CHUNKS_LOD; i++) ComputeIndicesArray(i, depth, pos, HMsize);
+    for(U8 i=0; i < Config::TERRAIN_CHUNKS_LOD; i++) 
+		ComputeIndicesArray(i, depth, pos, HMsize);
 
     _grassData._grassVisibility = GET_ACTIVE_SCENE()->state().getGrassVisibility();
 }
@@ -52,9 +53,7 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 void TerrainChunk::Destroy(){
     for(U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++){
         _indice[i].clear();
-        _indOffsetW[i] = 0;
-        _indOffsetH[i] = 0;
-        _grassData._grassVisibility = 0;
+        _grassData._grassVisibility = _indOffsetW[i] = _indOffsetH[i] = 0;
     }
 }
 
@@ -63,7 +62,7 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
     if(lod>0) lod--;
 
     program->Uniform("LODFactor", 1.0f / (lod+1));
-
+	
     vbo->setFirstElement(&(_indice[lod][0]));
     vbo->setRangeCount(_indice[lod].size());
     GFX_DEVICE.renderBuffer(vbo);
@@ -71,6 +70,7 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
     return 1;
 }
 
+#pragma message("Grass rendering disabled for now! -Ionut")
 void  TerrainChunk::DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const parentTransform){
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
     if(lod != 0) return;
@@ -79,17 +79,14 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const 
     }
 
     if(!_grassData._grassIndice[geometryIndex].empty())	{
-        F32 ratio = 1.0f - (d / _grassData._grassVisibility);
-        ratio *= 2.0f;
-        if(ratio > 1.0f) ratio = 1.0f;
+        F32 ratio = std::min((1.0f - (d / _grassData._grassVisibility)) * 2.0f, 1.0f);
 
         U32 indices_count = (U32)( ratio * _grassData._grassIndice[geometryIndex].size() );
-        indices_count -= indices_count%4;
 
-        if(indices_count > 0){
+        if(indices_count > 0 && false){
             _grassData._grassVBO->setFirstElement(&(_grassData._grassIndice[geometryIndex].front()));
             _grassData._grassVBO->setRangeCount(indices_count);
-            GFX_DEVICE.renderBuffer(_grassData._grassVBO,parentTransform);
+            GFX_DEVICE.renderBuffer(_grassData._grassVBO, parentTransform);
         }
     }
 }

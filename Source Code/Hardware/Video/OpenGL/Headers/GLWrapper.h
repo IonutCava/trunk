@@ -233,6 +233,8 @@ private: //OpenGL specific:
 	static bool _viewportForced;
 	static bool _viewportUpdateGL;
 	static bool _useMSAA;
+	static bool _anisotropySupported;
+	static bool _texCompressionSupported;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
 
     /// performance counters

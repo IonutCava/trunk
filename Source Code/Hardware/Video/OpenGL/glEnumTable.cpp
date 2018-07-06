@@ -116,7 +116,7 @@ namespace GL_ENUM_TABLE {
        glPrimitiveTypeTable[TRIANGLES] = GL_TRIANGLES;
        glPrimitiveTypeTable[TRIANGLE_STRIP] = GL_TRIANGLE_STRIP;
        glPrimitiveTypeTable[TRIANGLE_FAN] = GL_TRIANGLE_FAN;
-       glPrimitiveTypeTable[QUADS] = GL_QUADS;
+       //glPrimitiveTypeTable[QUADS] = GL_QUADS; //<Deprecated
        glPrimitiveTypeTable[QUAD_STRIP] = GL_QUAD_STRIP;
        glPrimitiveTypeTable[POLYGON] = GL_POLYGON;
 

@@ -13,8 +13,8 @@
 
 SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _parent(NULL),
-                                                  _grandParent(NULL),
                                                   _transform(NULL),
+												  _transformPrevious(NULL),
                                                   _wasActive(true),
                                                   _active(true),
                                                   _selected(false),
@@ -171,15 +171,14 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
     std::string sgName(name.empty() ? node->getName() : name);
     //Name the new SceneGraphNode
     sceneGraphNode->setName(sgName);
-    //Set the current node's parent as the new node's grandparent
-    sceneGraphNode->setGrandParent(getParent());
-    //Get the new node's transform
+     //Get the new node's transform
     Transform* nodeTransform = sceneGraphNode->getTransform();
     //If the current node and the new node have transforms,
     //Update the relationship between the 2
-    if(nodeTransform && getTransform()){
+	Transform* currentTransform = getTransform();
+    if(nodeTransform && currentTransform){
         //The child node's parent transform is our current transform matrix
-        nodeTransform->setParentTransform(getTransform());
+        nodeTransform->setParentTransform(currentTransform);
     }
     //Set the current node as the new node's parrent
     sceneGraphNode->setParent(this);
@@ -259,6 +258,7 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
         it.second->Intersect(ray,start,end,selectionHits);
     }
 }
+
 const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
     assert(_node != NULL);
 
@@ -275,7 +275,13 @@ const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
 
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
-    SAFE_UPDATE(_transform,t);
+	SAFE_UPDATE(_transform,t);
+	// Update children
+	for_each(NodeChildren::value_type& it, _children){
+		Transform* nodeTransform = it.second->getTransform();
+		if(nodeTransform)
+			nodeTransform->setParentTransform(_transform);
+    }
 }
 
 void SceneGraphNode::setPrevTransform(Transform* const t) {
@@ -306,9 +312,8 @@ Transform* const SceneGraphNode::getPrevTransform(){
 
 //Get the node's transform
 Transform* const SceneGraphNode::getTransform(){
-    //A node does not necessarily have a transform
-    //If this is the case, we can either create a default one
-    //Or return NULL. When creating a node we can specify if we do not want a default transform
+    //A node does not necessarily have a transform. If this is the case, we can either create a default one or return NULL.
+    //When creating a node we can specify if we do not want a default transform
     if(!_noDefaultTransform && !_transform){
         _transform = New Transform();
         assert(_transform);

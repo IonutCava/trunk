@@ -14,7 +14,7 @@ GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensi
     _renderQuad->setDimensions(vec4<F32>(0,0,dimensions.width,dimensions.height));
     SamplerDescriptor splashSampler;
     splashSampler.toggleMipMaps(true);
-    splashSampler.setAnisotrophy(16);
+    splashSampler.setAnisotropy(16);
     splashSampler.setWrapMode(TEXTURE_CLAMP);
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setFlag(true);

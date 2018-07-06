@@ -79,7 +79,7 @@ namespace Navigation {
             case DU_DRAW_TRIS:   _primType = TRIANGLES;  break;
             case DU_DRAW_POINTS: _primType = API_POINTS; break;
             case DU_DRAW_LINES:  _primType = LINES;      break;
-            case DU_DRAW_QUADS:  _primType = QUADS;
+            case DU_DRAW_QUADS:  /*_primType = QUADS;*/ assert(prim == DU_DRAW_QUADS);
         }
 
         _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,128));

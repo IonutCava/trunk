@@ -70,10 +70,10 @@ namespace NS_GLIM
 		}
 	}
 
-	void glimBatchData::Upload (void)
+	void glimBatchData::Upload (unsigned int uiCurrentProgram)
 	{
 #ifdef AE_RENDERAPI_OPENGL
-		UploadOGL ();
+		UploadOGL (uiCurrentProgram);
 #else
 		UploadD3D11 ();
 #endif
@@ -108,6 +108,8 @@ namespace NS_GLIM
 		m_pIndexBuffer_Lines = NULL;
 		m_pIndexBuffer_Triangles = NULL;
 		m_pIndexBuffer_Wireframe = NULL;
+#else
+		vaoID = 0;
 #endif
 
 		Reset ();
@@ -127,7 +129,10 @@ namespace NS_GLIM
 			glDeleteBuffers (1, &m_uiElementBufferID_Lines);
 			glDeleteBuffers (1, &m_uiElementBufferID_Triangles);
 			glDeleteBuffers (1, &m_uiElementBufferID_Wireframe);
+			glDeleteVertexArrays(1, &vaoID);
+			vaoID = 0;
 		}
+
 #endif
 	}
 
@@ -370,19 +375,17 @@ namespace NS_GLIM
 
 	void glimBatchData::UnbindOGL (void)
 	{
-		// make sure no VAO is bound, such that GLIM does not accidently change it's state
 
-		// if the pointer is != NULL, the extension should be available
-		if (glBindVertexArray)
-		{
-			glBindVertexArray (0);
-		}
-
-		glBindBuffer (GL_ARRAY_BUFFER, 0);
+		/*glBindBuffer (GL_ARRAY_BUFFER, 0);
 		glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		for (int i = 0; i < 16; ++i)
 			glDisableVertexAttribArray (i);
+	    */
+		if (glBindVertexArray)
+		{
+			glBindVertexArray (0);
+		}
 	}
 
 	void glimBatchData::BindOGL (unsigned int uiCurrentProgram)
@@ -395,7 +398,7 @@ namespace NS_GLIM
 		// if the pointer is != NULL, the extension should be available
 		if (glBindVertexArray)
 		{
-			glBindVertexArray (0);
+			glBindVertexArray (vaoID);
 		}
 
 		if (GLEW_NV_vertex_buffer_unified_memory)
@@ -453,9 +456,10 @@ namespace NS_GLIM
 		// set the pointer for position last
 		glEnableVertexAttribArray (m_VertAttribLocation);
 		glVertexAttribPointer (m_VertAttribLocation, 3, GL_FLOAT, false, 0, BUFFER_OFFSET (0));
+		
 	}
 
-	void glimBatchData::UploadOGL (void)
+	void glimBatchData::UploadOGL (unsigned int uiCurrentProgram)
 	{
 		if (m_bUploadedToGPU)
 			return;
@@ -464,15 +468,7 @@ namespace NS_GLIM
 			return;
 
 		m_bUploadedToGPU = true;
-
-
-		// make sure no VAO is bound, such that GLIM does not accidently change it's state
-
-		// if the pointer is != NULL, the extension should be available
-		if (glBindVertexArray)
-		{
-			glBindVertexArray (0);
-		}
+		
 
 		if (GLEW_NV_vertex_buffer_unified_memory)
 		{
@@ -486,15 +482,14 @@ namespace NS_GLIM
 		if (!m_bCreatedVBOs)
 		{
 			m_bCreatedVBOs = true;
-
+			glGenVertexArrays(1, &vaoID);
 			glGenBuffers (1, &m_uiVertexBufferID);
 			glGenBuffers (1, &m_uiElementBufferID_Points);
 			glGenBuffers (1, &m_uiElementBufferID_Lines);
 			glGenBuffers (1, &m_uiElementBufferID_Triangles);
 			glGenBuffers (1, &m_uiElementBufferID_Wireframe);
 		}
-
-		
+			
 		glBindBuffer (GL_ARRAY_BUFFER, m_uiVertexBufferID);
 		glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, NULL, GL_STATIC_DRAW);
 
@@ -567,16 +562,7 @@ namespace NS_GLIM
 			m_IndexBuffer_Triangles.clear ();
 		}
 
-
-		// upload the index buffer for wireframe
-		glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Wireframe);
-
-		if (!m_IndexBuffer_Wireframe.empty ())
-		{
-			m_uiWireframeElements = (unsigned int) m_IndexBuffer_Wireframe.size ();
-			glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer_Wireframe.size () * 4, &m_IndexBuffer_Wireframe[0], GL_STATIC_DRAW);
-			m_IndexBuffer_Wireframe.clear ();
-		}
+		
 	}
 #endif
 }

@@ -145,7 +145,7 @@ namespace XML {
             pt.put(textureNode+".MapW", getWrapModeName(sampler.wrapW()));
             pt.put(textureNode+".minFilter",getFilterName(sampler.minFilter()));
             pt.put(textureNode+".magFilter",getFilterName(sampler.magFilter()));
-            pt.put(textureNode+".anisotrophy",(U32)sampler.anisotrophyLevel());
+            pt.put(textureNode+".anisotropy",(U32)sampler.anisotropyLevel());
             pt.put(textureNode+".operation", operation);
         }
 
@@ -158,12 +158,12 @@ namespace XML {
             TextureWrap wrapW = getWrapMode(pt.get<std::string>(textureNode+".MapW","TEXTURE_REPEAT").c_str());
             TextureFilter minFilterValue = getFilter(pt.get<std::string>(textureNode+".minFilter","TEXTURE_FILTER_LINEAR").c_str());
             TextureFilter magFilterValue = getFilter(pt.get<std::string>(textureNode+".magFilter","TEXTURE_FILTER_LINEAR").c_str());
-            U32 anisotrophy = pt.get(textureNode+".anisotrophy", 0);
+            U32 anisotropy = pt.get(textureNode+".anisotropy", 0);
 
             SamplerDescriptor sampDesc;
             sampDesc.setWrapMode(wrapU,wrapV,wrapW);
             sampDesc.setFilters(minFilterValue,magFilterValue);
-            sampDesc.setAnisotrophy(anisotrophy);
+            sampDesc.setAnisotropy(anisotropy);
 
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(pathName + img_name);

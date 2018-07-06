@@ -17,6 +17,8 @@ GLuint GL_API::_activeVAOId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
 vec4<GLfloat> GL_API::_prevClearColor = DefaultColors::DIVIDE_BLUE();
 
+bool GL_API::_anisotropySupported = false;
+bool GL_API::_texCompressionSupported = false;
 bool GL_API::_viewportForced = false;
 bool GL_API::_viewportUpdateGL = false;
 bool GL_API::_useMSAA = false;

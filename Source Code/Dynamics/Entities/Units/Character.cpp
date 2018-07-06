@@ -5,7 +5,7 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
-static const D32 DESTINATION_RADIUS = 1 * 0.5;
+static const D32 DESTINATION_RADIUS = 1.0 * 1.0;
 
 Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit::UNIT_TYPE_CHARACTER, node),
 																	   _detourCrowd(NULL),
@@ -100,20 +100,18 @@ void Character::updatePosition(const U64 deltaTime){
         return;
 
     if (_agentControlled) {
-        if(getAgent()->active) {
-            vec3<F32> agentPos(getAgent()->npos);
-            _node->getTransform()->setPosition(agentPos);
-        }
+        if(getAgent()->active)
+            getBoundNode()->getTransform()->setPosition(getAgent()->npos);
     } else {
         // Move character manually to new position
-        if(getVelocity().length() <= 0.0f)   return;
-        _node->getTransform()->setPosition(getPosition() + getVelocity() * getUsToSec(deltaTime));
+        if(!getVelocity().isZeroLength())
+			getBoundNode()->getTransform()->translate(getVelocity() * getUsToSec(deltaTime));
     }
 }
 
 void Character::setPosition(const vec3<F32> position) {
     if(!_agentControlled || !isLoaded()) {
-        _node->getTransform()->setPosition(position);
+        getBoundNode()->getTransform()->setPosition(position);
         return;
     }
     vec3<F32> result;
@@ -126,11 +124,11 @@ void Character::setPosition(const vec3<F32> position) {
     _agentID = _detourCrowd->addAgent(result);
     _agent = _detourCrowd->getAgent(_agentID);
 
-    _node->getTransform()->setPosition(position);
+    getBoundNode()->getTransform()->setPosition(position);
 }
 
 vec3<F32> Character::getPosition() const {
-    return _node->getTransform()->getPosition();
+    return getBoundNode()->getTransform()->getPosition();
 }
 
 bool Character::destinationReached(){
@@ -199,7 +197,7 @@ D32 Character::getMaxAcceleration(){
 }
 
 vec3<F32> Character::getLookingDirection(){
-    return _node->getTransform()->getOrientation() * getRelativeLookingDirection();
+    return getBoundNode()->getTransform()->getOrientation() * getRelativeLookingDirection();
 }
 
 void Character::setAgentControlled(bool agentControlled){

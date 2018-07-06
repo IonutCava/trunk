@@ -127,9 +127,7 @@ public:
     /*Parent <-> Children*/
                 SceneGraphNode*  getRoot()        const;
     inline      SceneGraphNode*  getParent()      const {return _parent;}
-    inline      SceneGraphNode*  getGrandParent() const {return _grandParent;}
     inline      NodeChildren&    getChildren()          {return _children;}
-    inline      void             setGrandParent(SceneGraphNode* const grandParent) {_grandParent = grandParent;}
                 void             setParent(SceneGraphNode* const parent);
     /*Parent <-> Children*/
 
@@ -207,7 +205,7 @@ protected:
 private:
     SceneNode* _node;
     NodeChildren _children;
-    SceneGraphNode *_parent, *_grandParent;
+    SceneGraphNode *_parent;
     SceneGraph     *_sceneGraph;
     boost::atomic<bool> _active;
     //Used to skip certain BB's (sky, ligts, etc);

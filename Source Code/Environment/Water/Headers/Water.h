@@ -60,6 +60,7 @@ public:
 
     /// Reflector overwrite
     void updateReflection();
+	void updateRefraction();
     void updatePlaneEquation();
     /// Used for many things, such as culling switches, and underwater effects
     inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }

@@ -42,7 +42,7 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
     depthMapSampler.setFilters(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR, TEXTURE_FILTER_LINEAR);
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(true);
-    depthMapSampler.setAnisotrophy(8);
+    depthMapSampler.setAnisotropy(8);
 
     TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY,
                                          RG,

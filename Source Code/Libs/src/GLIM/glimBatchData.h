@@ -73,7 +73,7 @@ namespace NS_GLIM
 		void Reset (void);
 
 		// Uploads the data onto the GPU
-		void Upload (void);
+		void Upload (unsigned int uiCurrentProgram);
 		// Binds the vertex arrays for rendering.
 		void Bind (unsigned int uiCurrentProgram);
 		// Unbinds all data after rendering.
@@ -81,7 +81,7 @@ namespace NS_GLIM
 
 #ifdef AE_RENDERAPI_OPENGL
 		// Uploads the data onto the GPU
-		void UploadOGL (void);
+		void UploadOGL (unsigned int uiCurrentProgram);
 		// Binds the vertex arrays for rendering.
 		void BindOGL (unsigned int uiCurrentProgram);
 		// Unbinds all data after rendering.
@@ -164,6 +164,8 @@ namespace NS_GLIM
 		ID3D11Buffer* m_pIndexBuffer_Wireframe;
 
 		std::vector<D3D11_INPUT_ELEMENT_DESC> m_Signature;
+#else
+		unsigned int vaoID;
 #endif
 
 		// AABB 

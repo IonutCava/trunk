@@ -80,13 +80,7 @@ namespace NS_GLIM
 			return (false);
 
 		GLIM_CHECK (m_Data.m_State == STATE_FINISHED_BATCH, "GLIM_BATCH::RenderBatch: This function can only be called after a batch has been created.");
-
-		m_Data.Upload ();
-
-		// if this happens the array is simply empty
-		if (!m_Data.m_bUploadedToGPU)
-			return (false);
-
+		
 		// allow the application to apply gl states now
 		if (s_StateChangeCallback)
 			s_StateChangeCallback ();
@@ -96,6 +90,12 @@ namespace NS_GLIM
 		glGetIntegerv (GL_CURRENT_PROGRAM, &iCurrentProgram);
 
 		GLIM_CHECK (iCurrentProgram > 0, "GLIM_BATCH::RenderBatch: Currently no shader is bound or the shader has an error.");
+		
+		m_Data.Upload (iCurrentProgram);
+
+		// if this happens the array is simply empty
+		if (!m_Data.m_bUploadedToGPU)
+			return (false);
 
 		// bind all vertex arrays
 		m_Data.Bind (iCurrentProgram);
@@ -115,6 +115,7 @@ namespace NS_GLIM
 		//	(glDisableClientState (GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV));
 		//	(glDisableClientState (GL_ELEMENT_ARRAY_UNIFIED_NV));
 		}
+
 
         (glBindBuffer (GL_ARRAY_BUFFER, m_Data.m_uiVertexBufferID));
 

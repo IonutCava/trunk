@@ -207,6 +207,8 @@ public:
     inline void reset()                 { this->x = this->y = this->z = 0; }
     /// return the vector's length
     inline T    length()          const {return square_root_tpl(lengthSquared()); }
+	/// return true if length is zero
+	inline bool isZeroLength()    const {return lengthSquared() < (EPSILON * EPSILON); }
     /// compare 2 vectors within the specified tolerance
     inline bool compare(const vec3 &v,F32 epsi=EPSILON) const;
     /// uniform vector: x = y = z

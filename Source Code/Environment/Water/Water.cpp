@@ -17,10 +17,10 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _node = sgn;
 
     _farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("runtime.zFar");
-    _plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(   -_farPlane, 0, -_farPlane));
-    _plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(   _farPlane, 0, -_farPlane));
-    _plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(-_farPlane, 0,  _farPlane));
-    _plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(_farPlane, 0,  _farPlane));
+    _plane->setCorner(Quad3D::TOP_LEFT,     vec3<F32>(-_farPlane, 0, -_farPlane));
+    _plane->setCorner(Quad3D::TOP_RIGHT,    vec3<F32>( _farPlane, 0, -_farPlane));
+    _plane->setCorner(Quad3D::BOTTOM_LEFT,  vec3<F32>(-_farPlane, 0,  _farPlane));
+    _plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>( _farPlane, 0,  _farPlane));
     _plane->getSceneNodeRenderState().setDrawState(false);
     _plane->setCustomShader(_shader);
     _plane->renderInstance()->preDraw(true);
@@ -28,7 +28,7 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _planeSGN->setActive(false);
     _planeTransform = _planeSGN->getTransform();
     _plane->renderInstance()->transform(_planeTransform);
-    ///The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
+    //The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
 
     _shader->UniformTexture("texWaterNoiseNM", 0);
@@ -62,9 +62,9 @@ bool WaterPlane::unload(){
 }
 
 void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency){
-    _shader->Uniform("_waterShininess",shininess  );
-    _shader->Uniform("_noiseFactor",   noiseFactor);
-    _shader->Uniform("_noiseTile",     noiseTile  );
+    _shader->Uniform("_waterShininess",   shininess   );
+    _shader->Uniform("_noiseFactor",      noiseFactor );
+    _shader->Uniform("_noiseTile",        noiseTile   );
     _shader->Uniform("_transparencyBias", transparency);
 }
 
@@ -142,7 +142,7 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage)  const {
 }
 
 /// update water refraction
-//void WaterPlane::updateRefraction(){
+void WaterPlane::updateRefraction(){
     // Early out check for render callback
     //if(_renderCallback.empty()) return;
     //_refractionRendering = true;
@@ -152,7 +152,7 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage)  const {
         //_renderCallback();
     //_refractionTexture->End();
     //_refractionRendering = false;
-//}
+}
 
 /// Update water reflections
 void WaterPlane::updateReflection(){
@@ -168,10 +168,8 @@ void WaterPlane::updateReflection(){
         GFX_DEVICE.enableClipPlane(_clippingPlaneID);
     }
 
-    // bind the reflective texture
     _reflectedTexture->Begin(FrameBufferObject::defaultPolicy());
-        // render to the reflective texture
-        _renderCallback();
+        _renderCallback(); //< render to the reflective texture
     _reflectedTexture->End();
 
     if(!underwater){
@@ -182,7 +180,7 @@ void WaterPlane::updateReflection(){
 }
 
 void WaterPlane::updatePlaneEquation(){
-    _absNormal = _planeSGN->getTransform()->getOrientation() * WORLD_Y_AXIS;
+    _absNormal = _planeTransform->getOrientation() * WORLD_Y_AXIS;
     _absNormal.normalize();
     _reflectionPlane.set(_absNormal,_waterLevel);
     _reflectionPlane.active(false);

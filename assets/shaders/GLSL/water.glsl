@@ -18,7 +18,7 @@ void main(void)
 	vec3 vPositionNormalized = (vertex - water_bb_min) / water_bb_diff;
 	_texCoord = vPositionNormalized.xz;
 	
-	_pixToLight = -(dvd_LightSource[dvd_LightIndex[0]].position.xyz);
+	_pixToLight = -(dvd_LightSource[dvd_lightIndex[0]]._position.xyz);
 	_pixToEye = -vec3(dvd_WorldViewMatrix * dvd_Vertex);	
 
 	gl_Position = dvd_ViewProjectionMatrix * _vertexW;
@@ -47,12 +47,14 @@ in vec3 _pixToEye;
 in vec2 _texCoord;
 out vec4 _colorOut;
 
+#include "lightInput.cmn"
 #include "fog.frag"
 #include "shadowMapping.frag"
 
 float Fresnel(in vec3 incident, in vec3 normal, in float bias, in float power);
 
-const float shadow_distance_max = 200.0;
+const int shadow_distance_max = 200;
+
 void main (void)
 {
 	float time2 = dvd_time * 0.00001;
@@ -79,7 +81,7 @@ void main (void)
 	// add Diffuse
 	_colorOut = texture(texWaterReflection, uvFinal);
 	// add Specular
-	_colorOut.rgb += dvd_LightSource[dvd_LightIndex[0]]._specular.rgb * mat3(material[2]) * iSpecular;
+	_colorOut.rgb += dvd_LightSource[dvd_lightIndex[0]]._specular.rgb * material[2].rgb * iSpecular;
 
 	// shadow mapping
 	

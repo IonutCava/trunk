@@ -42,7 +42,7 @@ public:
     inline void setDefaultValues() {
         setWrapMode();
         setFilters();
-        setAnisotrophy(16);
+        setAnisotropy(16);
         setLOD();
         toggleMipMaps(true);
         //The following 2 are mainly used by depthmaps for hardware comparisons
@@ -53,9 +53,9 @@ public:
     SamplerDescriptor* clone() const {return New SamplerDescriptor(*this);}
 
     /*
-    *  Sampler states (LOD, wrap modes, anisotrophy levels, etc
+    *  Sampler states (LOD, wrap modes, anisotropy levels, etc
     */
-    inline void setAnisotrophy(U8 value = 0) {_anisotrophyLevel = value;}
+    inline void setAnisotropy(U8 value = 0) {_anisotropyLevel = value;}
 
     inline void setLOD(F32 minLOD = -1000.f, F32 maxLOD = 1000.f, F32 biasLOD = 0.f){
         _minLOD = minLOD; _maxLOD = maxLOD; _biasLOD = biasLOD;
@@ -116,14 +116,14 @@ public:
     inline F32           minLOD()           const {return _minLOD;}
     inline F32           maxLOD()           const {return _maxLOD;}
     inline F32           biasLOD()          const {return _biasLOD;}
-    inline U8            anisotrophyLevel() const {return _anisotrophyLevel;}
+    inline U8            anisotropyLevel()  const {return _anisotropyLevel;}
     inline bool          generateMipMaps()  const {return _generateMipMaps;}
 protected:
     //Sampler states
     TextureFilter  _minFilter, _magFilter; ///Texture filtering mode
     TextureWrap    _wrapU, _wrapV, _wrapW; ///<Or S-R-T
     bool           _generateMipMaps;       ///<If it's set to true we create automatic MipMaps
-    U8             _anisotrophyLevel;      ///<The value must be in the range [0...255] and is automatically clamped by the max HW supported level
+    U8             _anisotropyLevel;       ///<The value must be in the range [0...255] and is automatically clamped by the max HW supported level
     F32            _minLOD,_maxLOD;        ///<OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
     F32            _biasLOD;               ///<OpenGL eg: used by TEXTURE_LOD_BIAS
 };
