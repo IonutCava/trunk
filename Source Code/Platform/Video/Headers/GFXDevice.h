@@ -208,7 +208,7 @@ DEFINE_SINGLETON(GFXDevice)
    enum class RenderAPI : U32 {
        OpenGL,    ///< 4.x+
        OpenGLES,  ///< 3.x+
-       Direct3D,  ///< 11.x+ (not supported yet)
+       Direct3D,  ///< 12.x+ (not supported yet)
        Vulkan,    ///< not supported yet
        None,      ///< not supported yet
        COUNT

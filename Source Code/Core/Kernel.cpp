@@ -404,11 +404,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default
     if (Config::USE_OPENGL_RENDERING) {
-        if (Config::USE_OPENGL_ES) {
-            _GFX.setAPI(GFXDevice::RenderAPI::OpenGLES);
-        } else {
-            _GFX.setAPI(GFXDevice::RenderAPI::OpenGL);
-        }
+        _GFX.setAPI(Config::USE_OPENGL_ES ? GFXDevice::RenderAPI::OpenGLES
+                                            : GFXDevice::RenderAPI::OpenGL);
     }
     // Load info from XML files
     stringImpl startupScene(XML::loadScripts(entryPoint));

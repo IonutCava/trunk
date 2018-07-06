@@ -41,7 +41,6 @@
 
 #include <glbinding/gl45/gl.h>
 using namespace gl45;
-namespace glext = gl45ext;
 
 #include <glbinding/Binding.h>
 

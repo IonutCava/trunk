@@ -7,7 +7,7 @@
 namespace Divide {
 namespace GLUtil {
 
-static THREAD_LOCAL stringImpl g_tempOutputString;
+static thread_local stringImpl g_tempOutputString;
 
 /// Print OpenGL specific messages
 void

@@ -41,6 +41,12 @@ class FreeFlyCamera : public Camera {
    protected:
     friend class CameraManager;
     FreeFlyCamera(const vec3<F32>& eye = VECTOR3_ZERO);
+    void move(F32 dx, F32 dy, F32 dz);
+    void update(const U64 deltaTime);
+
+   protected:
+     vec3<F32> _targetPosition;
+     vec3<F32> _currentVelocity;
 };
 
 };  // namespace Divide

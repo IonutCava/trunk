@@ -589,11 +589,11 @@ bool glFramebuffer::checkStatus() const {
             Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_LAYER_TARGETS")));
             return false;
         }
-        case glext::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
+        case gl::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
             Console::errorfn(Locale::get(_ID("ERROR_FB_DIMENSIONS")));
             return false;
         }
-        case glext::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
+        case gl::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
              Console::errorfn(Locale::get(_ID("ERROR_FB_FORMAT")));
              return false;
         }
