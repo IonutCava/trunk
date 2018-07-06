@@ -872,6 +872,12 @@
     <ClCompile Include="..\..\Source Code\Rendering\ForwardPlusRenderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysicsAPIWrapper.cpp">
+      <Filter>Dynamics\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysicsSceneInterface.cpp">
+      <Filter>Dynamics\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1251,9 +1257,6 @@
       <Filter>GUI\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAPIWrapper.h">
-      <Filter>Dynamics\Physics\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAsset.h">
       <Filter>Dynamics\Physics\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsSceneInterface.h">

@@ -56,10 +56,11 @@ public:
     inline physx::PxScene* getPhysXScene() {return _gScene;}
 
 protected:
-    void updateActor(const PhysXActor& actor);
-    void updateShape(physx::PxShape* const shape, const PhysXActor& actor);
-    ///Adds the actor to the PhysX scene and the SceneGraph. Returns a pointer to the new SceneGraph node created;
-    SceneGraphNode* addToScene(PhysXActor& actor);
+    void updateActor(PhysXActor& actor);
+    void updateShape(physx::PxShape* const shape, PhysXActor& actor);
+    /// Adds the actor to the PhysX scene and the SceneGraph. 
+    // outNode becomes pointer to the new SceneGraph node created;
+    void addToScene(PhysXActor& actor, SceneGraphNode* const outNode);
 
 private:
     typedef vectorImpl<PhysXActor* >        RigidMap;

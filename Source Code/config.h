@@ -118,9 +118,6 @@ namespace Config
 /// if this is 0, a variable timestep will be used for the game loop
 #define USE_FIXED_TIMESTEP 1
 
-///Direct 3D desired target version
-#define TARGET_D3D_VERSION D3D11 /*or D3D10*/
-
 ///Comment this out to show the debug console
 #ifndef HIDE_DEBUG_CONSOLE
     #define HIDE_DEBUG_CONSOLE

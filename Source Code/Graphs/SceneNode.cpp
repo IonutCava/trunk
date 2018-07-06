@@ -19,13 +19,11 @@ SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resou
                                                              _type(type),
                                                              _lodLevel(0),
                                                              _LODcount(1), ///<Defaults to 1 LOD level
-                                                             _sgnReferenceCount(0),
-                                                             _physicsAsset(nullptr)
+                                                             _sgnReferenceCount(0)
 {
 }
 
 SceneNode::~SceneNode() {
-    SAFE_DELETE(_physicsAsset);
 }
 
 void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){

@@ -76,6 +76,9 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _maxTextureSlots = 0;
    _stateExclusionMask = 0;
    _maxRenderTargetOutputs = 0;
+   FRAME_COUNT = 0;
+   FRAME_DRAW_CALLS = 0;
+   FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
    // Floats
    _currentLineWidth = 1.0;
    _previousLineWidth = 1.0;
@@ -593,7 +596,7 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     // Loop over the list of nodes
     for (SceneGraphNode* const crtNode : visibleNodes) {
         // Extract transform data
-        Transform* transform = crtNode->getTransform();
+        const Transform* transform = crtNode->getComponent<PhysicsComponent>()->getConstTransform();
         // If we have valid transform data ...
         if (transform) {
             // ... get the node's world matrix properly interpolated
@@ -603,7 +606,9 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
             temp._matrix[1].set(mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix));
             if (!transform->isUniformScaled()) {
                 // Non-uniform scaling requires an inverseTranspose to negate scaling contribution but preserve rotation
-                temp._matrix[1].set(mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix).getInverseTranspose());
+                temp._matrix[1].set(mat3<F32>(temp._matrix[0]));
+                temp._matrix[1].inverseTranspose();
+                temp._matrix[1] *= _gpuBlock._ViewMatrix;
             }
         } else {
             // Nodes without transforms are considered as using identity matrices

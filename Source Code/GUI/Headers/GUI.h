@@ -77,12 +77,6 @@ public:
     GUIText* modifyText(const std::string& id, char* format, ...);
     /// Called on window resize to adjust the dimensions of all the GUI elements
     void onResize(const vec2<U16>& newResolution);
-    /// Mouse Button Up/Down callback
-    bool clickCheck(OIS::MouseButtonID button, bool pressed);
-    /// Key Press/Release callback
-    bool keyCheck(OIS::KeyEvent key, bool pressed);
-    /// Mouse move / scroll callback
-    bool checkItem(const OIS::MouseEvent& arg);
     /// Get a pointer to our console window
     inline GUIConsole* const getConsole() {return _console;}
     inline const GUIEditor&  getEditor()  {return GUIEditor::getInstance(); }
@@ -97,7 +91,28 @@ public:
     void selectionChangeCallback(Scene* const activeScene);
     /// Used to prevent text updating every frame
     inline void setTextRenderTimer(const U64 renderIntervalUs) {_textRenderInterval = renderIntervalUs;}
-    
+    /// Mouse cursor forced to a certain position
+    void setCursorPosition(U16 x, U16 y) const;
+    ///Key pressed
+    bool onKeyDown(const OIS::KeyEvent& key);
+    ///Key released
+    bool onKeyUp(const OIS::KeyEvent& key);
+    ///Joystick axis change
+    bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone);
+    ///Joystick direction change
+    bool onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
+    ///Joystick button pressed
+    bool onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
+    ///Joystick button released
+    bool onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
+    bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index);
+    ///Mouse moved
+    bool onMouseMove(const OIS::MouseEvent& arg);
+    ///Mouse button pressed
+    bool onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    ///Mouse button released
+    bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 private:
     GUI();               //< Constructor
     ~GUI();              //< Destructor

@@ -82,7 +82,7 @@ bool GUIEditor::Handle_ChangeSelection(SceneGraphNode* const newNode) {
 
 void GUIEditor::TrackSelection() {
     if (_currentSelection && !_pauseSelectionTracking) {
-        Transform* selectionTransform = _currentSelection->getTransform();
+        const Transform* selectionTransform = _currentSelection->getComponent<PhysicsComponent>()->getConstTransform();
         const vec3<F32>& localPosition = selectionTransform->getLocalPosition();
         const vec3<F32>& localScale = selectionTransform->getLocalScale();
         vec3<F32> localOrientation;
@@ -116,7 +116,7 @@ void GUIEditor::TrackSelection() {
 void GUIEditor::UpdateControls() {
     bool hasValidTransform = false;
     if (_currentSelection) {
-        hasValidTransform = (_currentSelection->getTransform() != nullptr);
+        hasValidTransform = (_currentSelection->getComponent<PhysicsComponent>()->getConstTransform() != nullptr);
         _toggleButtons[TOGGLE_WIREFRAME]->setEnabled(true);
         _toggleButtons[TOGGLE_BOUNDING_BOXES]->setEnabled(true);
         _toggleButtons[TOGGLE_SKELETONS]->setEnabled(true);
@@ -629,7 +629,7 @@ bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
 bool GUIEditor::Handle_PositionXChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Position X changed via text edit!");
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_X]->getText());
-    _currentSelection->getTransform()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
     _pauseSelectionTracking = false;
     return true;
 }
@@ -637,7 +637,7 @@ bool GUIEditor::Handle_PositionXChange(const CEGUI::EventArgs &e) {
 bool GUIEditor::Handle_PositionYChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Position Y changed via text edit!");
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Y]->getText());
-    _currentSelection->getTransform()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
     _pauseSelectionTracking = false;
     return true;
 }
@@ -645,7 +645,7 @@ bool GUIEditor::Handle_PositionYChange(const CEGUI::EventArgs &e) {
 bool GUIEditor::Handle_PositionZChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Position Z changed via text edit!");
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Z]->getText());
-    _currentSelection->getTransform()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
     _pauseSelectionTracking = false;
     return true;
 }
@@ -663,9 +663,9 @@ bool GUIEditor::Handle_RotationXChange(const CEGUI::EventArgs &e) {
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->getText());
     CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X], -360.0f, 360.0f);
     _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X]));
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     _pauseSelectionTracking = false;
     return true;
 }
@@ -675,9 +675,9 @@ bool GUIEditor::Handle_RotationYChange(const CEGUI::EventArgs &e) {
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->getText());
     CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y], -360.0f, 360.0f);
     _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y]));
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     _pauseSelectionTracking = false;
     return true;
 }
@@ -687,9 +687,9 @@ bool GUIEditor::Handle_RotationZChange(const CEGUI::EventArgs &e) {
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->getText());
     CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z], -360.0f, 360.0f);
     _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     _pauseSelectionTracking = false;
     return true;
 }
@@ -705,7 +705,7 @@ bool GUIEditor::Handle_RotationGranularityChange(const CEGUI::EventArgs &e) {
 bool GUIEditor::Handle_ScaleXChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale X changed via text edit!");
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_X]->getText());
-    _currentSelection->getTransform()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
     _pauseSelectionTracking = false;
     return true;
 }
@@ -713,7 +713,7 @@ bool GUIEditor::Handle_ScaleXChange(const CEGUI::EventArgs &e) {
 bool GUIEditor::Handle_ScaleYChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale Y changed via text edit!");
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Y]->getText());
-    _currentSelection->getTransform()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
     _pauseSelectionTracking = false;
     return true;
 }
@@ -721,7 +721,7 @@ bool GUIEditor::Handle_ScaleYChange(const CEGUI::EventArgs &e) {
 bool GUIEditor::Handle_ScaleZChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale Z changed via text edit!");
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Z]->getText());
-    _currentSelection->getTransform()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
     _pauseSelectionTracking = false;
     return true;
 }
@@ -739,7 +739,7 @@ bool GUIEditor::Handle_IncrementPositionX(const CEGUI::EventArgs &e) {
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] += _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
     return true;
 }
 
@@ -748,7 +748,7 @@ bool GUIEditor::Handle_DecrementPositionX(const CEGUI::EventArgs &e) {
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] -= _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
     return true;
 }
 
@@ -757,7 +757,7 @@ bool GUIEditor::Handle_IncrementPositionY(const CEGUI::EventArgs &e) {
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] += _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
     return true;
 }
 
@@ -766,7 +766,7 @@ bool GUIEditor::Handle_DecrementPositionY(const CEGUI::EventArgs &e) {
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] -= _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
     return true;
 }
 
@@ -775,7 +775,7 @@ bool GUIEditor::Handle_IncrementPositionZ(const CEGUI::EventArgs &e) {
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z] += _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
     return true;
 }
 
@@ -784,7 +784,7 @@ bool GUIEditor::Handle_DecrementPositionZ(const CEGUI::EventArgs &e) {
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z] -= _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
+    _currentSelection->getComponent<PhysicsComponent>()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
     return true;
 }
 
@@ -806,9 +806,9 @@ bool GUIEditor::Handle_IncrementRotationX(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation X incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
@@ -816,9 +816,9 @@ bool GUIEditor::Handle_DecrementRotationX(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation X decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
@@ -826,9 +826,9 @@ bool GUIEditor::Handle_IncrementRotationY(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Y incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
@@ -836,9 +836,9 @@ bool GUIEditor::Handle_DecrementRotationY(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Y decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
@@ -846,9 +846,9 @@ bool GUIEditor::Handle_IncrementRotationZ(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Z incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
@@ -856,9 +856,9 @@ bool GUIEditor::Handle_DecrementRotationZ(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Z decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
-                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getComponent<PhysicsComponent>()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                                               _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
@@ -880,7 +880,7 @@ bool GUIEditor::Handle_IncrementScaleX(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale X incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X] += _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
     return true;
 }
 
@@ -888,7 +888,7 @@ bool GUIEditor::Handle_DecrementScaleX(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale X decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X] -= _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
     return true;
 }
 
@@ -896,7 +896,7 @@ bool GUIEditor::Handle_IncrementScaleY(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale Y incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y] += _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
     return true;
 }
 
@@ -904,7 +904,7 @@ bool GUIEditor::Handle_DecrementScaleY(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale Y decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y] -= _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
     return true;
 }
 
@@ -912,14 +912,14 @@ bool GUIEditor::Handle_IncrementScaleZ(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale Z incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z] += _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
     return true;
 }
 
 bool GUIEditor::Handle_DecrementScaleZ(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Scale Z decremented via button!");
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z] -= _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
-    _currentSelection->getTransform()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
+    _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
     return true;
 }
 

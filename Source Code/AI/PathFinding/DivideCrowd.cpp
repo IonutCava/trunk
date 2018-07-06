@@ -10,13 +10,13 @@ namespace Navigation {
                                                             _targetRef(0),
                                                             _activeAgents(0)
     {
+        assert(_recast);
         _crowd = dtAllocCrowd();
-        _targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;
         if(!_crowd){
             ERROR_FN(Locale::get("ERROR_DETOUR_CROWD_INSTANCE"));
             assert(_crowd != nullptr);
         }
-
+        _targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;
         // Set default agent parameters
         _anticipateTurns = true;
         _optimizeVis = true;
@@ -29,6 +29,7 @@ namespace Navigation {
         memset(_trails, 0, sizeof(_trails));
 
         _vod = dtAllocObstacleAvoidanceDebugData();
+        assert(_vod != nullptr);
         _vod->init(2048);
 
         memset(&_agentDebug, 0, sizeof(_agentDebug));
@@ -36,6 +37,8 @@ namespace Navigation {
         _agentDebug.vod = _vod;
         
         dtNavMesh * nav = navMesh->getNavigationMesh();
+        assert(nav);
+
         dtCrowd* crowd = _crowd;
         
         if (nav && crowd && crowd->getAgentCount() == 0) {

@@ -84,7 +84,6 @@ private:
     F32             _waterDepth;
     /// the water's "geometry"
     Quad3D*			_plane;
-    Transform*      _planeTransform;
     SceneGraphNode* _node;
     SceneGraphNode* _planeSGN;
     Framebuffer*    _refractionTexture;

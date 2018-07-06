@@ -4,6 +4,7 @@ namespace CEGUI
 {
 //----------------------------------------------------------------------------//
 FormattedListboxTextItem::FormattedListboxTextItem(const String& text,
+                Colour col,
                 const HorizontalTextFormatting format,
                 const uint item_id,
                 void* const item_data,
@@ -16,6 +17,7 @@ FormattedListboxTextItem::FormattedListboxTextItem(const String& text,
     d_formattedRenderedString(0),
     d_formattingAreaSize(0, 0)
 {
+    setTextColours(col);
 }
 
 //----------------------------------------------------------------------------//

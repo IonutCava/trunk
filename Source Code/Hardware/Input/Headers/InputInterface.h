@@ -127,6 +127,8 @@ public:
     inline void stop() { _bMustStop = true; }
     inline JoystickInterface* getJoystickInterface(){ return _pJoystickInterface; }
     inline EffectManager* getEffectManager()        { return _pEffectMgr; }
+    inline OIS::Keyboard* getKeyboard() const { return _pKeyboard; }
+    inline OIS::Mouse*    getMouse()    const { return _pMouse; }
 
 END_SINGLETON
 

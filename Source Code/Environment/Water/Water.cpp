@@ -8,9 +8,9 @@
 
 
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)),
-                           _plane(nullptr),  _planeTransform(nullptr), _node(nullptr), _planeSGN(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER), 
-                           _reflectionPlaneID(ClipPlaneIndex_PLACEHOLDER), _reflectionRendering(false), _refractionRendering(false), _refractionTexture(nullptr), _dirty(true), _cameraUnderWater(false),
-                           _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
+                           _plane(nullptr), _node(nullptr), _planeSGN(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER), 
+                           _reflectionPlaneID(ClipPlaneIndex_PLACEHOLDER), _reflectionRendering(false), _refractionRendering(false), _refractionTexture(nullptr), 
+                           _dirty(true), _cameraUnderWater(false), _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
 {
     //Set water plane to be single-sided
     P32 quadMask;
@@ -36,7 +36,6 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _plane->setNormal(Quad3D::CORNER_ALL, WORLD_Y_AXIS);
     _plane->getSceneNodeRenderState().setDrawState(false);
     _planeSGN = _node->addNode(_plane);
-    _planeTransform = _planeSGN->getTransform();
     //The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
 
@@ -71,7 +70,7 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
 
     _waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel();
     _waterDepth = GET_ACTIVE_SCENE()->state().getWaterDepth();
-    _planeTransform->setPositionY(_waterLevel);
+    _planeSGN->getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
     _planeDirty = true;
     bb.set(vec3<F32>(-_farPlane,_waterLevel - _waterDepth, -_farPlane), vec3<F32>(_farPlane, _waterLevel, _farPlane));
     _planeSGN->getBoundingBox().Add(bb);
@@ -194,7 +193,7 @@ void WaterPlane::updateReflection(){
 }
 
 void WaterPlane::updatePlaneEquation(){
-    const Quaternion<F32>& orientation = _planeTransform->getOrientation();
+    const Quaternion<F32>& orientation = _planeSGN->getComponent<PhysicsComponent>()->getConstTransform()->getOrientation();
     vec3<F32> reflectionNormal(orientation * WORLD_Y_AXIS);
     reflectionNormal.normalize();
     vec3<F32> refractionNormal(orientation * WORLD_Y_NEG_AXIS);

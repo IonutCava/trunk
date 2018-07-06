@@ -137,8 +137,8 @@ const mat4<F32>& AnimationComponent::getBoneTransform(const std::string& name) {
     assert(node != nullptr);
 
     if (node->getObjectType() != Object3D::SUBMESH || (node->getObjectType() == Object3D::SUBMESH && !bitCompare(node->getFlagMask(), Object3D::OBJECT_FLAG_SKINNED))){
-        assert(_parentSGN->getTransform());
-        return _parentSGN->getTransform()->getMatrix();
+        assert(_parentSGN->getComponent<PhysicsComponent>()->getConstTransform());
+        return _parentSGN->getComponent<PhysicsComponent>()->getTransform()->getMatrix();
     }
 
     return currentBoneTransform(name);

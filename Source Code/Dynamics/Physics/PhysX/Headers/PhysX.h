@@ -78,23 +78,25 @@
 #define MAX_ACTOR_QUEUE 30
 
 class Transform;
-class PhysXActor {
+class PhysXActor : public PhysicsAsset {
 public:
-    PhysXActor() : _actor(nullptr),
-                   _transform(nullptr),
+    PhysXActor() : PhysicsAsset(),
+                   _actor(nullptr),
                    _isDynamic(false),
                    _isInScene(false),
                    _userData(0.0f)
     {
     }
 
+    ~PhysXActor() 
+    {
+    }
 protected:
     friend class PhysX;
     friend class PhysXSceneInterface;
     physx::PxRigidActor*        _actor;
     physx::PxGeometryType::Enum _type;
     std::string                 _actorName;
-    Transform*                  _transform;
     bool                        _isDynamic;
     bool                        _isInScene;
     F32                         _userData;

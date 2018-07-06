@@ -68,10 +68,13 @@ bool SceneGraphNode::receivesShadows() const {
     return _receiveShadows && LightManager::getInstance().shadowMappingEnabled();
 }
 
-void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
-    if (_boundingBox.Transform(_initialBoundingBox, transform, !_initialBoundingBox.Compare(_initialBoundingBoxCache)))
+bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
+    if (_boundingBox.Transform(_initialBoundingBox, transform, !_initialBoundingBox.Compare(_initialBoundingBoxCache))){
         _initialBoundingBoxCache = _initialBoundingBox;
         _boundingSphere.fromBoundingBox(_boundingBox);
+        return true;
+    }
+    return false;
 }
 
 void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox){
@@ -98,15 +101,23 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     }
     // update local time
     _elapsedTime += deltaTime;
-
+    Transform* transform = getComponent<PhysicsComponent>()->getTransform();
     // update transform
-    if (getTransform())
-        _transform->setParentTransform(_parent ? _parent->getTransform() : nullptr);
-        
+    if (transform) {
+        transform->setParentTransform(_parent ? _parent->getComponent<PhysicsComponent>()->getTransform() : nullptr);
+    }
     // update all of the internal components (animation, physics, etc)
-    FOR_EACH(NodeComponents::value_type& it, _components)
-        if (it.second) it.second->update(deltaTime);
-
+    FOR_EACH(NodeComponents::value_type& it, _components) {
+        if (it.second) {
+            it.second->update(deltaTime);
+        }
+    }
+    if (getComponent<PhysicsComponent>()->transformUpdated()){
+        _boundingBoxDirty = true;
+        FOR_EACH(NodeChildren::value_type& it, _children){
+            it.second->getComponent<PhysicsComponent>()->transformUpdated(true);
+        }
+    }
     assert(_node->getState() == RES_LOADED);
     //Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
 
@@ -117,21 +128,27 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         _boundingBoxDirty = true;
     }
 
-    if (_boundingBoxDirty){
-        if (_transform) updateBoundingBoxTransform(getWorldMatrix());
-        if (_parent)    _parent->getBoundingBox().setComputed(false);
-
+    if (_boundingBoxDirty) {
+        if (updateBoundingBoxTransform(getWorldMatrix())) {
+            if (_parent) {
+                _parent->getBoundingBox().setComputed(false);
+            }
+        }
         _boundingBoxDirty = false;
     }
+
+    getComponent<PhysicsComponent>()->transformUpdated(false);
 
     _node->sceneUpdate(deltaTime, this, sceneState);
 
     Material* mat = _node->getMaterial();
-    if (mat)
+    if (mat) {
         mat->update(deltaTime);
-    
+    }
 
-    if(_shouldDelete) GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+    if (_shouldDelete) {
+        GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+    }
 }
 
 void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
@@ -231,9 +248,10 @@ void SceneGraphNode::isInViewCallback(){
 #ifdef _DEBUG
 /// Draw the axis arrow gizmo
 void SceneGraphNode::drawDebugAxis() {
-    if (getTransform()) {
-        mat4<F32> tempOffset(::getMatrix(getTransform()->getOrientation()));
-        tempOffset.setTranslation(getTransform()->getPosition());
+    const Transform* transform = getComponent<PhysicsComponent>()->getConstTransform();
+    if (transform) {
+        mat4<F32> tempOffset(::getMatrix(transform->getOrientation()));
+        tempOffset.setTranslation(transform->getPosition());
         _axisGizmo->worldMatrix(tempOffset);
     } else {
         _axisGizmo->resetWorldMatrix();

@@ -94,16 +94,17 @@ void Light::onCameraChange(){
     if(_type != LIGHT_TYPE_DIRECTIONAL) {
 
         if(_mode == LIGHT_MODE_MOVABLE) {  
-            const vec3<F32>& newPosition = _lightSGN->getTransform()->getPosition();
+            const vec3<F32>& newPosition = _lightSGN->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
             if (_properties._position != newPosition){
                 _properties._position.set(newPosition);
             }
         } else {
-            _lightSGN->getTransform()->setPosition(_properties._position);
+            _lightSGN->getComponent<PhysicsComponent>()->setPosition(_properties._position);
         }
 
-        if(_updateLightBB)
+        if (_updateLightBB) {
             _lightSGN->updateBoundingBoxTransform(_lightSGN->getWorldMatrix());
+        }
     }
 
     _updateLightBB = false;
@@ -119,9 +120,9 @@ void Light::setPosition(const vec3<F32>& newPosition){
 
     _properties._position = vec4<F32>(newPosition, _properties._position.w);
 
-    if(_mode == LIGHT_MODE_MOVABLE)
-        _lightSGN->getTransform()->setPosition(newPosition);
-
+    if (_mode == LIGHT_MODE_MOVABLE) {
+        _lightSGN->getComponent<PhysicsComponent>()->setPosition(newPosition);
+    }
     _updateLightBB = true;
 
     _dirty[PROPERTY_TYPE_PHYSICAL] = true;

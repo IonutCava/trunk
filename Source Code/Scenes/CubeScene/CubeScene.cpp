@@ -49,10 +49,10 @@ void CubeScene::preRender() {
     SceneGraphNode* hellotext = _sceneGraph->findNode("HelloText");
     SceneGraphNode* bila = _sceneGraph->findNode("Bila");
     SceneGraphNode* dwarf = _sceneGraph->findNode("dwarf");
-    cutia1->getTransform()->rotate(vec3<F32>(0.3f*g_i, 0.6f*g_i,0));
-    hellotext->getTransform()->rotate(vec3<F32>(0.6f,0.2f,0.4f),g_i);
-    bila->getTransform()->translateY(g_j*0.25f);
-    dwarf->getTransform()->rotate(vec3<F32>(0,1,0),g_i);
+    cutia1->getComponent<PhysicsComponent>()->rotate(vec3<F32>(0.3f*g_i, 0.6f*g_i,0));
+    hellotext->getComponent<PhysicsComponent>()->rotate(vec3<F32>(0.6f,0.2f,0.4f),g_i);
+    bila->getComponent<PhysicsComponent>()->translateY(g_j*0.25f);
+    dwarf->getComponent<PhysicsComponent>()->rotate(vec3<F32>(0,1,0),g_i);
 }
 
 void CubeScene::processInput(const U64 deltaTime){

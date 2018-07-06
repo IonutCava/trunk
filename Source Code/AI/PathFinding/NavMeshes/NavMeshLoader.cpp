@@ -281,7 +281,7 @@ namespace Navigation {
             assert(sgn != nullptr);
             
             //Ignore if specified
-            if(sgn->getComponent<NavigationComponent>()->getNavigationContext() == NavigationComponent::NODE_IGNORE)  goto next;
+            if(sgn->getComponent<NavigationComponent>()->navigationContext() == NavigationComponent::NODE_IGNORE)  goto next;
             //Skip small objects
             if(box.getHeight() < 0.05f)  goto next;
 
@@ -309,13 +309,13 @@ namespace Navigation {
 
             switch(nodeType){
                 case TYPE_WATER    : {
-                    if (!sgn->getComponent<NavigationComponent>()->getNavMeshDetailOverride()) 
+                    if (!sgn->getComponent<NavigationComponent>()->navMeshDetailOverride()) 
                         level = DETAIL_BOUNDINGBOX;
                     areType = SAMPLE_POLYAREA_WATER;
                     }break;
                 case TYPE_OBJECT3D : {
                     //Check if we need to override detail level
-                    if (!sgn->getComponent<NavigationComponent>()->getNavMeshDetailOverride() && sgn->getUsageContext() == SceneGraphNode::NODE_STATIC){
+                    if (!sgn->getComponent<NavigationComponent>()->navMeshDetailOverride() && sgn->usageContext() == SceneGraphNode::NODE_STATIC){
                         level = DETAIL_BOUNDINGBOX;
                     }
                     if(dynamic_cast<Object3D*>(sn)->getType() == Object3D::TERRAIN)

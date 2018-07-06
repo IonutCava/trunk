@@ -43,8 +43,27 @@ enum PhysicsAPI {
 
 class Scene;
 class SceneGraphNode;
-
+#include "core.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+
+class PhysicsAsset {
+public:
+    PhysicsAsset();
+    virtual ~PhysicsAsset();
+
+protected:
+    friend class PhysicsComponent;
+    inline bool resetTransforms()            const { return _resetTransforms; }
+    inline void resetTransforms(const bool state)  { _resetTransforms = state; }
+    
+    void setParent(PhysicsComponent* parent);
+    PhysicsComponent* getComponent() { return _parentComponent; }
+
+protected:
+    bool _resetTransforms;
+    PhysicsComponent* _parentComponent;
+};
+
 class PhysicsSceneInterface;
 class PhysicsAPIWrapper {
 protected:
@@ -68,7 +87,7 @@ protected:
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
     virtual void initScene() = 0;
 
-private:
+ private:
     PhysicsAPI _apiId;
 };
 

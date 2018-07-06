@@ -25,7 +25,6 @@
 
 #include "SceneNodeRenderState.h"
 #include "Core/Resources/Headers/Resource.h"
-#include "Dynamics/Physics/Headers/PhysicsAsset.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
@@ -116,8 +115,6 @@ protected:
 protected:
     ///The various states needed for rendering
     SceneNodeRenderState  _renderState;
-    ///Attach a physics asset to the node to make it physics enabled
-    PhysicsAsset*         _physicsAsset;
     ///LOD level is updated at every visibility check (SceneNode::isInView(...));
     U8                    _lodLevel; ///<Relative to camera distance
     U8                    _LODcount; ///<Maximum available LOD levels

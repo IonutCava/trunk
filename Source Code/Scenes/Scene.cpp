@@ -121,20 +121,20 @@ bool Scene::loadModel(const FileData& data){
     SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj, data.ItemName);
     meshNode->castsShadows(data.castsShadows);
     meshNode->receivesShadows(data.receivesShadows);
-    meshNode->getTransform()->setScale(data.scale);
-    meshNode->getTransform()->setRotation(data.orientation);
-    meshNode->getTransform()->setPosition(data.position);
+    meshNode->getComponent<PhysicsComponent>()->setScale(data.scale);
+    meshNode->getComponent<PhysicsComponent>()->setRotation(data.orientation);
+    meshNode->getComponent<PhysicsComponent>()->setPosition(data.position);
     if(data.staticUsage){
-        meshNode->setUsageContext(SceneGraphNode::NODE_STATIC);
+        meshNode->usageContext(SceneGraphNode::NODE_STATIC);
     }
     if(data.navigationUsage){
-        meshNode->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
+        meshNode->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_OBSTACLE);
     }
     if(data.physicsUsage){
-        meshNode->getComponent<PhysicsComponent>()->setPhysicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
+        meshNode->getComponent<PhysicsComponent>()->physicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
     }
     if(data.useHighDetailNavMesh){
-        meshNode->getComponent<NavigationComponent>()->setNavigationDetailOverride(true);
+        meshNode->getComponent<NavigationComponent>()->navigationDetailOverride(true);
     }
     return true;
 }
@@ -178,22 +178,22 @@ bool Scene::loadGeometry(const FileData& data){
 
     thisObj->setMaterial(tempMaterial);
     SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->addNode(thisObj);
-    thisObjSGN->getTransform()->setScale(data.scale);
-    thisObjSGN->getTransform()->setRotation(data.orientation);
-    thisObjSGN->getTransform()->setPosition(data.position);
+    thisObjSGN->getComponent<PhysicsComponent>()->setScale(data.scale);
+    thisObjSGN->getComponent<PhysicsComponent>()->setRotation(data.orientation);
+    thisObjSGN->getComponent<PhysicsComponent>()->setPosition(data.position);
     thisObjSGN->castsShadows(data.castsShadows);
     thisObjSGN->receivesShadows(data.receivesShadows);
     if(data.staticUsage){
-        thisObjSGN->setUsageContext(SceneGraphNode::NODE_STATIC);
+        thisObjSGN->usageContext(SceneGraphNode::NODE_STATIC);
     }
     if(data.navigationUsage){
-        thisObjSGN->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
+        thisObjSGN->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_OBSTACLE);
     }
     if(data.physicsUsage){
-        thisObjSGN->getComponent<PhysicsComponent>()->setPhysicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
+        thisObjSGN->getComponent<PhysicsComponent>()->physicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
     }
     if(data.useHighDetailNavMesh){
-        thisObjSGN->getComponent<NavigationComponent>()->setNavigationDetailOverride(true);
+        thisObjSGN->getComponent<NavigationComponent>()->navigationDetailOverride(true);
     }
     return true;
 }
@@ -284,9 +284,9 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
             Terrain* temp = CreateResource<Terrain>(terrain);
             SceneGraphNode* terrainTemp = root->addNode(temp);
             terrainTemp->setActive(_terrainInfoArray[i]->getActive());
-            terrainTemp->setUsageContext(SceneGraphNode::NODE_STATIC);
-            terrainTemp->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
-            terrainTemp->getComponent<PhysicsComponent>()->setPhysicsGroup(_terrainInfoArray[i]->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH : PhysicsComponent::NODE_COLLIDE_IGNORE);
+            terrainTemp->usageContext(SceneGraphNode::NODE_STATIC);
+            terrainTemp->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_OBSTACLE);
+            terrainTemp->getComponent<PhysicsComponent>()->physicsGroup(_terrainInfoArray[i]->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH : PhysicsComponent::NODE_COLLIDE_IGNORE);
         }
     }
     //Camera position is overridden in the scene's XML configuration file

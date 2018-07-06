@@ -64,7 +64,7 @@ void PingPongScene::resetGame(){
     _lost = false;
     _sideDrift = 0;
     clearTasks();
-    _ballSGN->getTransform()->setPosition(vec3<F32>(0, 2 ,2));
+    _ballSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(0, 2 ,2));
 }
 
 void PingPongScene::serveBall(){
@@ -82,16 +82,16 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     if(getTasks().empty()) return;
     bool updated = false;
     std::string message;
-    Transform* ballTransform = _ballSGN->getTransform();
-    vec3<F32> ballPosition  = ballTransform->getPosition();
+    PhysicsComponent* ballTransform = _ballSGN->getComponent<PhysicsComponent>();
+    vec3<F32> ballPosition  = ballTransform->getConstTransform()->getPosition();
 
     SceneGraphNode* table = _sceneGraph->findNode("table");
     SceneGraphNode* net = _sceneGraph->findNode("net");
     SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
     SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
-    vec3<F32> paddlePosition   = paddle->getTransform()->getPosition();
-    vec3<F32> opponentPosition = opponent->getTransform()->getPosition();
-    vec3<F32> tablePosition     = table->getTransform()->getPosition();
+    vec3<F32> paddlePosition   = paddle->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> opponentPosition = opponent->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> tablePosition     = table->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
 
     //Is the ball coming towards us or towards the opponent?
     _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z += 0.11f;
@@ -101,9 +101,9 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     //Is the ball moving to the right or to the left?
     ballPosition.x += _sideDrift*0.15f;
     if(opponentPosition.x != ballPosition.x)
-        opponent->getTransform()->translateX(ballPosition.x - opponentPosition.x);
+        opponent->getComponent<PhysicsComponent>()->translateX(ballPosition.x - opponentPosition.x);
 
-    ballTransform->translate(ballPosition - ballTransform->getPosition());
+    ballTransform->translate(ballPosition - ballTransform->getConstTransform()->getPosition());
 
     //Did we hit the table? Bounce then ...
     if(table->getBoundingBox().Collision(_ballSGN->getBoundingBox())){
@@ -164,7 +164,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     //Add a small chance that we win
     if(random(30) != 2)
     if(_ballSGN->getBoundingBox().Collision(opponent->getBoundingBox())){
-        _sideDrift = ballPosition.x - opponent->getTransform()->getPosition().x;
+        _sideDrift = ballPosition.x - opponent->getComponent<PhysicsComponent>()->getConstTransform()->getPosition().x;
         _directionTowardsAdversary = false;
     }
     //Add a spin effect to the ball
@@ -212,18 +212,18 @@ void PingPongScene::processInput(const U64 deltaTime){
 
     SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
-    vec3<F32> pos = paddle->getTransform()->getPosition();
+    vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
 
     //Paddle movement is limited to the [-3,3] range except for Y-descent
     if(state()._moveFB){
         if((state()._moveFB > 0 && pos.y >= 3) || (state()._moveFB < 0 && pos.y <= 0.5f)) return;
-        paddle->getTransform()->translateY(state()._moveFB / paddleMovementDivisor);
+        paddle->getComponent<PhysicsComponent>()->translateY(state()._moveFB / paddleMovementDivisor);
     }
 
     if(state()._moveLR){
         //Left/right movement is flipped for proper control
         if((state()._moveLR < 0 && pos.x >= 3) || (state()._moveLR > 0 && pos.x <= -3)) return;
-        paddle->getTransform()->translateX(state()._moveLR / paddleMovementDivisor);
+        paddle->getComponent<PhysicsComponent>()->translateX(state()._moveLR / paddleMovementDivisor);
     }
 }
 
@@ -255,7 +255,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     _ballSGN = addGeometry(_ball,"PingPongBallSGN");
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
-    _ballSGN->getTransform()->translate(vec3<F32>(0, 2 ,2));
+    _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2 ,2));
     _ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.4f,0.4f,1.0f));
     _ball->getMaterial()->setAmbient(vec4<F32>(0.25f,0.25f,0.25f,1.0f));
     _ball->getMaterial()->setShininess(36.8f);

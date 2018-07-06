@@ -126,9 +126,8 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GU
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f,0.1f),0.34f);
     _waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
     _waterGraphNode->useDefaultTransform(false);
-    _waterGraphNode->setTransform(nullptr);
-    _waterGraphNode->setUsageContext(SceneGraphNode::NODE_STATIC);
-    _waterGraphNode->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_IGNORE);
+    _waterGraphNode->usageContext(SceneGraphNode::NODE_STATIC);
+    _waterGraphNode->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
     //Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
     _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
@@ -149,7 +148,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b){
     SceneGraphNode* boxNode = _sceneGraph->findNode("box");
     Object3D* box = nullptr;
     if(boxNode) box = boxNode->getNode<Object3D>();
-    if(box) pos = boxNode->getTransform()->getPosition();
+    if(box) pos = boxNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
 
     if(!switchAB){
         if(pos.x < 300 && pos.z == 0)		   pos.x++;
@@ -173,7 +172,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b){
             }
         }
     }
-    //if(box)	boxNode->getTransform()->setPosition(pos);
+    if(box)	boxNode->getComponent<PhysicsComponent>()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors){

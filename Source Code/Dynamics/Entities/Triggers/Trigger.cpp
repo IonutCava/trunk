@@ -20,7 +20,7 @@ void Trigger::setParams( Task_ptr triggeredTask, const vec3<F32>& triggerPositio
        _triggerPosition = triggerPosition;
        if(_triggerImpostor){
             /// update dummy position if it is so
-            _impostorSGN->getTransform()->setPosition(_triggerPosition);
+            _impostorSGN->getComponent<PhysicsComponent>()->setPosition(_triggerPosition);
        }
    }
    /// Check if radius has changed

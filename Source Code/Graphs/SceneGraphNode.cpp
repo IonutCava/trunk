@@ -10,17 +10,11 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
-#pragma message("TODO (Prio 1): - Bake transforms inside vbs for STATIC nodes")
-#pragma message("               - assert if 'getTransform()' is called for such nodes. Use default identity matrix for static nodes")
-#pragma message("               - premultiply positions AND normals AND tangents AND bitangets to avoid artifacts")
-#pragma message("               - Ionut")
-
 SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GUIDWrapper(),
                                                   _sceneGraph(sg),
                                                   _node(node),
                                                   _elapsedTime(0ULL),
                                                   _parent(nullptr),
-                                                  _transform(nullptr),
                                                   _prevTransformValues(nullptr),
                                                   _loaded(true),
                                                   _wasActive(true),
@@ -28,12 +22,10 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
                                                   _inView(false),
                                                   _selected(false),
                                                   _isSelectable(false),
-                                                  _noDefaultTransform(false),
                                                   _sorted(false),
                                                   _silentDispose(false),
                                                   _boundingBoxDirty(true),
                                                   _shouldDelete(false),
-                                                  _isReady(false),
                                                   _castsShadows(true),
                                                   _receiveShadows(true),
                                                   _renderWireframe(false),
@@ -93,7 +85,6 @@ SceneGraphNode::~SceneGraphNode(){
         SAFE_DELETE(it.second);
     }
     //and delete the transform bound to this node
-    SAFE_DELETE(_transform);
     SAFE_DELETE(_prevTransformValues);
     _children.clear();
     _components.clear();
@@ -198,10 +189,10 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
     //Name the new SceneGraphNode
     sceneGraphNode->setName(sgName);
      //Get the new node's transform
-    Transform* nodeTransform = sceneGraphNode->getTransform();
+    Transform* nodeTransform = sceneGraphNode->getComponent<PhysicsComponent>()->getTransform();
     //If the current node and the new node have transforms,
     //Update the relationship between the 2
-    Transform* currentTransform = getTransform();
+    Transform* currentTransform = getComponent<PhysicsComponent>()->getTransform();
     if(nodeTransform && currentTransform){
         //The child node's parent transform is our current transform matrix
         nodeTransform->setParentTransform(currentTransform);
@@ -269,37 +260,15 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
         it.second->Intersect(ray,start,end,selectionHits);
 }
 
-//This updates the SceneGraphNode's transform by deleting the old one first
-void SceneGraphNode::setTransform(Transform* const t) {
-    SAFE_UPDATE(_transform, t);
-    // Update children
-    FOR_EACH(NodeChildren::value_type& it, _children){
-        Transform* nodeTransform = it.second->getTransform();
-        if(nodeTransform)
-            nodeTransform->setParentTransform(_transform);
-    }
-}
-
-//Get the node's transform
-Transform* const SceneGraphNode::getTransform(){
-    //A node does not necessarily have a transform. If this is the case, we can either create a default one or return nullptr.
-    //When creating a node we can specify if we do not want a default transform
-    if(!_noDefaultTransform && !_transform){
-        _transform = New Transform();
-        assert(_transform);
-        _isReady = true;
-    }
-    return _transform;
-}
-
 const mat4<F32>& SceneGraphNode::getWorldMatrix(D32 interpolationFactor){
-    if(getTransform()){
+    Transform* transform = getComponent<PhysicsComponent>()->getTransform();
+    if(transform){
         if(!_prevTransformValues) {
             _prevTransformValues = New TransformValues();
-            _transform->getValues(*_prevTransformValues);
+            transform->getValues(*_prevTransformValues);
         }
-        _worldMatrixInterp.set(_transform->interpolate(*_prevTransformValues, interpolationFactor));
-        _transform->getValues(*_prevTransformValues);
+        _worldMatrixInterp.set(transform->interpolate(*_prevTransformValues, interpolationFactor));
+        transform->getValues(*_prevTransformValues);
     }
 
     return _worldMatrixInterp;

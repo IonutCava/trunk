@@ -65,6 +65,8 @@ void GUI::draw2D() {
     FOR_EACH(guiMap::value_type& guiStackIterator, _guiStack) {
         gfx.drawGUIElement(guiStackIterator.second);
     }
+    const OIS::MouseState& mouseState = InputInterface::getInstance().getMouse()->getMouseState();
+    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 }
 
 void GUI::update(const U64 deltaTime) {
@@ -72,13 +74,14 @@ void GUI::update(const U64 deltaTime) {
         return;
     }
 
+    _input.update(deltaTime);
+    CEGUI::System::getSingleton().injectTimePulse(getUsToSec(deltaTime));
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(getUsToSec(deltaTime));
+
     if (_console) {
         _console->update(deltaTime);
     }
 
-    _input.update(deltaTime);
-
-    CEGUI::System::getSingleton().injectTimePulse(getUsToSec(deltaTime));
     GUIEditor::getInstance().update(deltaTime);
 }
 
@@ -90,7 +93,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     _cachedResolution = resolution;
 
 #ifdef _DEBUG
-    CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Insane);
+    CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 #endif
     CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>( CEGUI::System::getSingleton().getResourceProvider() ) ;
     std::string CEGUIInstallSharePath = ParamHandler::getInstance().getParam<std::string>("assetsLocation");
@@ -101,8 +104,8 @@ bool GUI::init(const vec2<U16>& resolution) {
     rp->setResourceGroupDirectory( "layouts",    CEGUIInstallSharePath + "layouts/" ) ;
     rp->setResourceGroupDirectory( "looknfeels", CEGUIInstallSharePath + "looknfeel/" ) ;
     rp->setResourceGroupDirectory( "lua_scripts",CEGUIInstallSharePath + "lua_scripts/" ) ;
-    //rp->setResourceGroupDirectory( "schemas",    CEGUIInstallSharePath + "xml_schemas/" ) ;
-    //rp->setResourceGroupDirectory( "animations", CEGUIInstallSharePath + "animations/" ) ;
+    rp->setResourceGroupDirectory( "schemas",    CEGUIInstallSharePath + "xml_schemas/" ) ;
+    rp->setResourceGroupDirectory( "animations", CEGUIInstallSharePath + "animations/" ) ;
 
     // set the default resource groups to be used
     CEGUI::ImageManager::setImagesetDefaultResourceGroup("imagesets");
@@ -117,10 +120,12 @@ bool GUI::init(const vec2<U16>& resolution) {
         parser->setProperty("SchemaDefaultResourceGroup", "schemas");
     }
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12.font");
+    CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
     _defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
     CEGUI::SchemeManager::getSingleton().createFromFile(  _defaultGUIScheme + ".scheme") ;
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow","root_window");
+    _rootSheet->setMousePassThroughEnabled(true);
     CEGUI_DEFAULT_CONTEXT.setRootWindow( _rootSheet );
     CEGUI_DEFAULT_CONTEXT.setDefaultTooltipType( _defaultGUIScheme + "/Tooltip" );
 
@@ -133,7 +138,8 @@ bool GUI::init(const vec2<U16>& resolution) {
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
 
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
-
+    const OIS::MouseState& mouseState = InputInterface::getInstance().getMouse()->getMouseState();
+    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
     _init = true;
     return true;
 }
@@ -142,7 +148,40 @@ void GUI::selectionChangeCallback(Scene* const activeScene) {
     GUIEditor::getInstance().Handle_ChangeSelection(activeScene->getCurrentSelection());
 }
 
-bool GUI::checkItem(const OIS::MouseEvent& arg) {
+void GUI::setCursorPosition(U16 x, U16 y) const {
+    CEGUI_DEFAULT_CONTEXT.injectMousePosition(x, y);
+}
+
+bool GUI::onKeyDown(const OIS::KeyEvent& key) {
+    if (!_init) {
+        return true;
+    }
+
+    _input.injectOISKey(true, key);
+
+    return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
+}
+
+bool GUI::onKeyUp(const OIS::KeyEvent& key) {
+    if (!_init) {
+        return true;
+    }
+
+    if (key.key == OIS::KC_GRAVE) {
+        _console->setVisible(!_console->isVisible());
+    }
+
+#   ifdef _DEBUG
+        if (key.key == OIS::KC_F11) {
+            GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
+        }
+#   endif
+    _input.injectOISKey(false, key);
+
+    return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
+}
+
+bool GUI::onMouseMove(const OIS::MouseEvent& arg) {
     if (!_init) { 
         return true;
     }
@@ -155,90 +194,96 @@ bool GUI::checkItem(const OIS::MouseEvent& arg) {
         guiStackIterator.second->onMouseMove(event);
     }
 
-    CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
     CEGUI_DEFAULT_CONTEXT.injectMouseWheelChange(arg.state.Z.abs);
-
+    CEGUI_DEFAULT_CONTEXT.injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
     return true;
 }
 
-bool GUI::keyCheck(OIS::KeyEvent key, bool pressed) {
+bool GUI::onMouseClickDown(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
     if (!_init) {
         return true;
     }
-
-    if (key.key == OIS::KC_GRAVE && !pressed) {
-        _console->setVisible(!_console->isVisible());
-    }
-
-#   ifdef _DEBUG
-        if (key.key == OIS::KC_F11 && !pressed) {
-            GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
-        }
-#   endif
-    _input.injectOISKey(pressed,key);
-
-    return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
-}
-
-bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
-    if (!_init) {
-        return true;
-    }
-
-    if (pressed) {
-        switch (button) {
-            case OIS::MB_Left: {
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::LeftButton);
-                GUIEvent event;
-                event.mouseClickCount = 0;
-                FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
-                    guiStackIterator.second->onMouseDown(event);
-                }
-                }break;
-            case OIS::MB_Middle:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::MiddleButton);
-                break;
-            case OIS::MB_Right:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::RightButton);
-                break;
-            case OIS::MB_Button3:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X1Button);
-                break;
-            case OIS::MB_Button4:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X2Button);
-                break;
-            default:
-                break;
-        }
-    } else {
-        switch (button) {
-            case OIS::MB_Left: {
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::LeftButton);
-                GUIEvent event;
-                event.mouseClickCount = 1;
-                FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
-                    guiStackIterator.second->onMouseUp(event);
-                }
-                }break;
-            case OIS::MB_Middle:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::MiddleButton);
-                break;
-            case OIS::MB_Right:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::RightButton);
-                break;
-            case OIS::MB_Button3:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X1Button);
-                break;
-            case OIS::MB_Button4:
-                CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X2Button);
-                break;
-            default:
-                break;
-        }
-    }
+    //CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
+    switch (button) {
+        case OIS::MB_Left : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::LeftButton);
+            GUIEvent event;
+            event.mouseClickCount = 0;
+            FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
+                guiStackIterator.second->onMouseDown(event);
+            }
+        } break;
+        case OIS::MB_Middle : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::MiddleButton);
+        } break;
+        case OIS::MB_Right : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::RightButton);
+        } break;
+        case OIS::MB_Button3 : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X1Button);
+        } break;
+        case OIS::MB_Button4 : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X2Button);
+        } break;
+    };
+ 
     return !_console->isVisible() && !GUIEditor::getInstance().wasControlClick();
 }
 
+bool GUI::onMouseClickUp(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+    if (!_init) {
+        return true;
+    }
+    //CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
+    switch (button) {
+        case OIS::MB_Left : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::LeftButton);
+            GUIEvent event;
+            event.mouseClickCount = 1;
+            FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
+                guiStackIterator.second->onMouseUp(event);
+            }
+        } break;
+        case OIS::MB_Middle : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::MiddleButton);
+        } break;
+        case OIS::MB_Right : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::RightButton);
+        } break;
+        case OIS::MB_Button3 : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X1Button);
+        } break;
+        case OIS::MB_Button4 : {
+            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X2Button);
+        } break;
+    };
+ 
+    return !_console->isVisible() && !GUIEditor::getInstance().wasControlClick();
+}
+
+bool GUI::onJoystickMoveAxis(const OIS::JoyStickEvent& arg, I8 axis, I32 deadZone) {
+    return true;
+}
+
+bool GUI::onJoystickMovePOV(const OIS::JoyStickEvent& arg, I8 pov){
+    return true;
+}
+
+bool GUI::onJoystickButtonDown(const OIS::JoyStickEvent& arg, I8 button){
+    return true;
+}
+
+bool GUI::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
+    return true;
+}
+
+bool GUI::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+    return true;
+}
+
+bool GUI::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
+    return true;
+}
 GUIButton* GUI::addButton(const std::string& id, const std::string& text,
                     const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
                     ButtonCallback callback,const std::string& rootSheetId){
@@ -246,7 +291,9 @@ GUIButton* GUI::addButton(const std::string& id, const std::string& text,
     if (!rootSheetId.empty()) {
         parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(rootSheetId);
     }
-    if(!parent) parent = _rootSheet;
+    if (!parent) {
+        parent = _rootSheet;
+    }
     GUIButton* btn = New GUIButton(id,text,_defaultGUIScheme,position,dimensions,color,parent,callback);
     _guiStack[id] = btn;
     return btn;
@@ -302,9 +349,3 @@ GUIText* GUI::modifyText(const std::string& id, char* format, ...){
     fmt_text.empty();
     return textElement;
 }
-
-/*   void onRightMouseUp(const GuiEvent &event);
-     void onRightMouseDown(const GuiEvent &event);
-     bool onKeyUp(const GuiEvent &event);
-     bool onKeyDown(const GuiEvent &event);
-*/

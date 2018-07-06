@@ -8,7 +8,6 @@ Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation,
                      const vec3<F32>& scale) :  GUIDWrapper(),
                                                 _dirty(true),
-                                                _physicsDirty(true),
                                                 _rebuildMatrix(true),
                                                 _hasParentTransform(false)
 {
@@ -56,7 +55,7 @@ mat4<F32> Transform::interpolate(const TransformValues& prevTransforms, const D3
     return getGlobalMatrix();
 }
 
-void Transform::getValues(TransformValues& transforms) {
+void Transform::getValues(TransformValues& transforms) const {
     transforms._scale.set(getLocalScale());
     transforms._orientation.set(getLocalOrientation());
     transforms._translation.set(getLocalPosition());

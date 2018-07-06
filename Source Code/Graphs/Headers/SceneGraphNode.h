@@ -93,8 +93,8 @@ public:
     void render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     /// Update bounding boxes
     void checkBoundingBoxes();
-    /// Apply current transform to the node's BB
-    void updateBoundingBoxTransform(const mat4<F32>& transform);
+    /// Apply current transform to the node's BB. Return true if the bounding extents changed
+    bool updateBoundingBoxTransform(const mat4<F32>& transform);
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
     /// Called when the camera updates the view matrix and/or the projection matrix
@@ -141,12 +141,10 @@ public:
     void getBBoxes(vectorImpl<BoundingBox >& boxes) const;
     /*Bounding Box Management*/
 
-    /*Transform management*/
-    Transform* const getTransform();
-               void	 setTransform(Transform* const t);
-
     inline     void  silentDispose(const bool state)       {_silentDispose = state;}
-    inline     void  useDefaultTransform(const bool state) {_noDefaultTransform = !state;}
+    inline     void  useDefaultTransform(const bool state) {
+        getComponent<PhysicsComponent>()->useDefaultTransform(!state);
+    }
 
     const mat4<F32>& getWorldMatrix(D32 interpolationFactor = 1.0);
     /*Transform management*/
@@ -157,7 +155,6 @@ public:
     inline void	scheduleDeletion()    {_shouldDelete = true;}
 
     inline bool inView()   const {return _inView;}
-    inline bool isReady()  const {return _isReady;}
     inline bool isActive() const {return _active;}
 
     void renderWireframe(const bool state);
@@ -182,8 +179,8 @@ public:
     inline void incChildQueue()       {_childQueue++;}
     inline void decChildQueue()       {_childQueue--;}
 
-    inline const UsageContext&      getUsageContext()          const {return _usageContext;}
-    inline void  setUsageContext(const UsageContext& newContext)           {_usageContext = newContext;}
+    inline const UsageContext& usageContext()                 const {return _usageContext;}
+    inline void  usageContext(const UsageContext& newContext)       {_usageContext = newContext;}
 
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
@@ -237,7 +234,6 @@ private:
     bool _selected;
     bool _isSelectable;
     bool _wasActive;
-    bool _noDefaultTransform;
     bool _sorted;
     bool _silentDispose;
     bool _castsShadows;
@@ -246,7 +242,6 @@ private:
     bool _renderBoundingBox;
     bool _renderSkeleton;
     boost::atomic<bool> _boundingBoxDirty;
-    boost::atomic<bool> _isReady; //<is created and has a valid transform
     bool _shouldDelete;
     ///_initialBoundingBox is a copy of the initialy calculate BB for transformation
     ///it should be copied in every computeBoungingBox call;
@@ -254,7 +249,6 @@ private:
     BoundingBox _boundingBox;
     BoundingSphere _boundingSphere; ///<For faster visibility culling
 
-    Transform*	     _transform;
     TransformValues* _prevTransformValues;
 
     ///The interpolated matrix cache. Represents an intermediate matrix between the current matrix and another, external matrix, interpolated by the given factor

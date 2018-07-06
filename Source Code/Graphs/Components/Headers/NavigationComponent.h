@@ -39,11 +39,11 @@ public:
     NavigationComponent(SceneGraphNode* const sgn);
     ~NavigationComponent();
 
-    inline const NavigationContext& getNavigationContext()     const { return _navigationContext; }
-    inline       bool               getNavMeshDetailOverride() const { return _overrideNavMeshDetail; }
+    inline const NavigationContext& navigationContext()     const { return _navigationContext; }
+    inline       bool               navMeshDetailOverride() const { return _overrideNavMeshDetail; }
 
-    void  setNavigationContext(const NavigationContext& newContext);
-    void  setNavigationDetailOverride(const bool detailOverride);
+    void  navigationContext(const NavigationContext& newContext);
+    void  navigationDetailOverride(const bool detailOverride);
 
 protected:
     NavigationContext _navigationContext;

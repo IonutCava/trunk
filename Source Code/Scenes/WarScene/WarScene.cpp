@@ -25,7 +25,7 @@ void WarScene::processGUI(const U64 deltaTime){
         const Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
-        //const vec3<F32>& lampPos = _lampLightNode->getTransform()->getPosition();
+        //const vec3<F32>& lampPos = _lampLightNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _GUI->modifyText("camPosition", "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
@@ -86,31 +86,6 @@ void WarScene::processTasks(const U64 deltaTime){
     Scene::processTasks(deltaTime);
 }
 
-void WarScene::resetSimulation(){
-    clearTasks();
-}
-
-void WarScene::startSimulation(){
-    resetSimulation();
-
-    if(getTasks().empty()){
-        Kernel* kernel = Application::getInstance().getKernel();
-        Task_ptr newSim(kernel->AddTask(12, true, false, DELEGATE_BIND(&WarScene::processSimulation, this, rand() % 5, TYPE_INTEGER)));
-        addTask(newSim);
-    }
-
-}
-
-void WarScene::processSimulation(cdiggins::any a, CallbackParam b){
-    if(getTasks().empty()) return;
-    //SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
-    //assert(Soldier1);
-    //assert(_groundPlaceholder);
-}
-
-void WarScene::processInput(const U64 deltaTime){
-}
-
 static boost::atomic_bool navMeshStarted;
 
 void navMeshCreationCompleteCallback(Navigation::NavigationMesh* navMesh){
@@ -119,14 +94,14 @@ void navMeshCreationCompleteCallback(Navigation::NavigationMesh* navMesh){
     //AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 }
 
-void WarScene::updateSceneStateInternal(const U64 deltaTime){
-    if(!_sceneReady) return;
+void WarScene::resetSimulation(){
+    navMeshStarted = false;
+}
 
-    static U64 totalTime = 0;
-    
-    totalTime += deltaTime;
+void WarScene::startSimulation(){
+    resetSimulation();
 
-    if(getUsToSec(totalTime) > 20 && !navMeshStarted){
+    if (!navMeshStarted) {
         Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
         if (!navMesh) {
             navMesh = New Navigation::NavigationMesh();
@@ -137,19 +112,41 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
             navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
         } else {
             AIManager::getInstance().addNavMesh(navMesh);
-#ifdef _DEBUG
-            AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
-#endif
+#       ifdef _DEBUG
+                AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+#       endif
         }
 
         navMeshStarted = true;
     }
 
+}
+
+void WarScene::processSimulation(cdiggins::any a, CallbackParam b){
+    if(getTasks().empty()) return;
+    //SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
+    //assert(Soldier1);
+    //assert(_groundPlaceholder);
+
+
+}
+
+void WarScene::processInput(const U64 deltaTime){
+}
+
+void WarScene::updateSceneStateInternal(const U64 deltaTime){
+    if (!_sceneReady) {
+        return;
+    }
+    static U64 totalTime = 0;
+    
+    totalTime += deltaTime;
+
     /*if(_lampLightNode && _bobNodeBody){
-        static mat4<F32> position = _lampLightNode->getTransform()->getMatrix(); 
+        static mat4<F32> position = _lampLightNode->getComponent<PhysicsComponent>()->getConstTransform()->getMatrix(); 
         const mat4<F32>& fingerPosition = _bobNodeBody->getAnimationComponent()->getBoneTransform("fingerstip.R");
         mat4<F32> finalTransform(fingerPosition * position);
-        _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());
+        _lampLightNode->getComponent<PhysicsComponent>()->setTransforms(finalTransform.transpose());
     }*/
     
 #ifdef _DEBUG
@@ -243,13 +240,13 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
         assert(currentNode);
         currentNode->setSelectable(true);
-        currentNode->setUsageContext(baseNode->getUsageContext());
-        currentNode->getComponent<PhysicsComponent>()->setPhysicsGroup(baseNode->getComponent<PhysicsComponent>()->getPhysicsGroup());
-        currentNode->getComponent<NavigationComponent>()->setNavigationContext(baseNode->getComponent<NavigationComponent>()->getNavigationContext());
-        currentNode->getComponent<NavigationComponent>()->setNavigationDetailOverride(baseNode->getComponent<NavigationComponent>()->getNavMeshDetailOverride());
+        currentNode->usageContext(baseNode->usageContext());
+        currentNode->getComponent<PhysicsComponent>()->physicsGroup(baseNode->getComponent<PhysicsComponent>()->physicsGroup());
+        currentNode->getComponent<NavigationComponent>()->navigationContext(baseNode->getComponent<NavigationComponent>()->navigationContext());
+        currentNode->getComponent<NavigationComponent>()->navigationDetailOverride(baseNode->getComponent<NavigationComponent>()->navMeshDetailOverride());
         
-        currentNode->getTransform()->setScale(baseNode->getTransform()->getScale());
-        currentNode->getTransform()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
+        currentNode->getComponent<PhysicsComponent>()->setScale(baseNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale());
+        currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
 
     /*_bobNode = _sceneGraph->findNode("Soldier3");
@@ -271,7 +268,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         _lampTransformNode = _bobNodeBody->addNode(_lampTransform, "lampTransform");
         _lampLightNode = addLight(light, _lampTransformNode);
         // Move it to the lamp's position
-        _lampTransformNode->getTransform()->setPosition(vec3<F32>(-75.0f, -45.0f, -5.0f));
+        _lampTransformNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-75.0f, -45.0f, -5.0f));
     }*/
     //------------------------ The rest of the scene elements -----------------------------///
 
@@ -286,7 +283,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 
     ParticleEmitter* test = addParticleEmitter("TESTPARTICLES", particleSystem);
     SceneGraphNode* testSGN = _sceneGraph->getRoot()->addNode(test, "TESTPARTICLES");
-    testSGN->getTransform()->translateY(5);
+    testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     _sceneReady = true;
@@ -324,37 +321,37 @@ bool WarScene::initializeAI(bool continueOnErrors){
             U8 zFactor = 0;
             if(i < 5){
                 currentMesh = soldierMesh1;
-                currentScale = soldierNode1->getTransform()->getScale();
+                currentScale = soldierNode1->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
                 currentName = std::string("Soldier_1_" + Util::toString((I32)k) + "_" + Util::toString((I32)i));
             }else if(i >= 5 && i < 10){
                 currentMesh = soldierMesh2;
-                currentScale = soldierNode2->getTransform()->getScale();
+                currentScale = soldierNode2->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
                 currentName = std::string("Soldier_2_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%5));
                 speed = 5.75f;
                 zFactor = 1;
             }else{
                 currentMesh = soldierMesh3;
-                currentScale = soldierNode3->getTransform()->getScale();
+                currentScale = soldierNode3->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
                 currentName = std::string("Soldier_3_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%10));
                 speed = 5.35f;
                 zFactor = 2;
             }
 
             currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
-            currentNode->getTransform()->setScale(currentScale);
+            currentNode->getComponent<PhysicsComponent>()->setScale(currentScale);
             DIVIDE_ASSERT(currentNode != nullptr, "WarScene error: INVALID SOLDIER NODE TEMPLATE!");
             currentNode->setSelectable(true);
             I8 side = k == 0 ? -1 : 1;
 
-            currentNode->getTransform()->setPosition(vec3<F32>(-125 + 25*(i%5), -0.01f, 200 * side + 25*zFactor*side));
+            currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-125 + 25*(i%5), -0.01f, 200 * side + 25*zFactor*side));
             if (side == 1) {
-                 currentNode->getTransform()->rotateY(180);
-                 currentNode->getTransform()->translateX(100);
+                 currentNode->getComponent<PhysicsComponent>()->rotateY(180);
+                 currentNode->getComponent<PhysicsComponent>()->translateX(100);
             }
           
-            currentNode->getTransform()->translateX(25 * side);
+            currentNode->getComponent<PhysicsComponent>()->translateX(25 * side);
 
-            aiSoldier = New AIEntity(currentNode->getTransform()->getPosition(), currentNode->getName());
+            aiSoldier = New AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
             aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
             aiSoldier->addAISceneImpl(New WarSceneAISceneImpl(_GOAPContext));
             aiSoldier->setTeam(k == 0 ? _faction1 : _faction2);

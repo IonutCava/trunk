@@ -129,9 +129,9 @@ const char* Console::output(const char* output, const bool error) const {
         if(error){
             std::string outputString("Error: ");
             outputString.append(output);
-            _guiConsoleCallback(outputString.c_str(),error);
+            _guiConsoleCallback(outputString.c_str(), error);
         }else{
-            _guiConsoleCallback(output,error);
+            _guiConsoleCallback(output, error);
         }
     }
 
@@ -142,9 +142,9 @@ const char* Console::output(const char* output, const bool error) const {
     if(_timestamps)
         outputStream << "[ " << std::setprecision(2) << GETTIME(true) << " ] ";
 
-    if(error)
+    if (error) {
         outputStream << " Error: ";
-
+    }
     outputStream << output << std::flush;
 
     return output;

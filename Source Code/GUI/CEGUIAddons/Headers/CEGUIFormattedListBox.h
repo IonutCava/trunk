@@ -32,6 +32,7 @@ class FormattedListboxTextItem : public ListboxTextItem {
 public:
     ///! Constructor
     FormattedListboxTextItem(const String& text,
+                    Colour col,
                     const HorizontalTextFormatting format = HTF_LEFT_ALIGNED,
                     const uint item_id = 0,
                     void* const item_data = 0,
@@ -51,7 +52,7 @@ public:
     */
     void setFormatting(const HorizontalTextFormatting fmt);
 
-    // overriden functions.
+    // overridden functions.
     Sizef getPixelSize(void) const;
     void draw(GeometryBuffer& buffer, const Rectf& targetRect, float alpha, const Rectf* clipper) const;
 

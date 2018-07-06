@@ -147,82 +147,81 @@ void SceneManager::onCameraChange(){
 ///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const OIS::KeyEvent& key) {
-    if(!_processInput) return false;
-
-    if(_GUI->keyCheck(key,true)){
-        return _activeScene->onKeyDown(key);
+    if (!_processInput) {
+        return false;
     }
-    return true;
+    return  _activeScene->onKeyDown(key);
 }
 
 bool SceneManager::onKeyUp(const OIS::KeyEvent& key) {
-    if(!_processInput) return false;
-    
-    if(_GUI->keyCheck(key,false)){
-        return _activeScene->onKeyUp(key);
+    if (!_processInput) {
+        return false;
     }
-    return true;
+
+    return _activeScene->onKeyUp(key);
 }
 
 bool SceneManager::onMouseMove(const OIS::MouseEvent& arg) {
-    if(!_processInput) return false;
-
-    if(_GUI->checkItem(arg)){
-        return _activeScene->onMouseMove(arg);
+    if (!_processInput) {
+        return false;
     }
-    return true;
+
+    return _activeScene->onMouseMove(arg);
 }
 
 bool SceneManager::onMouseClickDown(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
-    if(!_processInput) return false;
-
-    if(_GUI->clickCheck(button,true)){
-        return _activeScene->onMouseClickDown(arg,button);
+    if (!_processInput) {
+        return false;
     }
-    return true;
+    return _activeScene->onMouseClickDown(arg,button);
 }
 
 bool SceneManager::onMouseClickUp(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
-    if(!_processInput) return false;
-
-    if(_GUI->clickCheck(button,false)){
-        return _activeScene->onMouseClickUp(arg,button);
+    if (!_processInput) {
+        return false;
     }
-    return true;
+
+    return _activeScene->onMouseClickUp(arg,button);
 }
 
 bool SceneManager::onJoystickMoveAxis(const OIS::JoyStickEvent& arg, I8 axis, I32 deadZone) {
-    if(!_processInput) return false;
-
+    if (!_processInput) {
+        return false;
+    }
     return _activeScene->onJoystickMoveAxis(arg,axis,deadZone);
 }
 
 bool SceneManager::onJoystickMovePOV(const OIS::JoyStickEvent& arg, I8 pov){
-    if(!_processInput) return false;
-
+    if (!_processInput) {
+        return false;
+    }
     return _activeScene->onJoystickMovePOV(arg,pov);
 }
 
 bool SceneManager::onJoystickButtonDown(const OIS::JoyStickEvent& arg, I8 button){
-    if(!_processInput) return false;
-
+    if (!_processInput) {
+        return false;
+    }
     return _activeScene->onJoystickButtonDown(arg,button);
 }
 
 bool SceneManager::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
-    if(!_processInput) return false;
-
+    if (!_processInput) {
+        return false;
+    }
     return _activeScene->onJoystickButtonUp(arg,button);
 }
 
 bool SceneManager::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
-    if(!_processInput) return false;
-
+    if (!_processInput) {
+        return false;
+    }
     return _activeScene->sliderMoved(arg,index);
 }
 
 bool SceneManager::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
-    if(!_processInput) return false;
-
+    if (!_processInput) {
+        return false;
+    }
     return _activeScene->vector3Moved(arg,index);
 }

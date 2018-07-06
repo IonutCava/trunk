@@ -201,6 +201,10 @@ public:
     inline void setRotationX(const F32 angle, bool inDegrees = true) {
         this->setRotation(vec3<F32>(1,0,0), angle, inDegrees);
     }
+    /// Set the rotation on the X axis (Euler used) by the specified angle (either degrees or radians)
+    inline void setRotationXEuler(const F32 angle, bool inDegrees = true) {
+        this->setRotation(angle, inDegrees);
+    }
     /// Set the rotation on the Y axis (Axis-Angle used) by the specified angle (either degrees or radians)
     inline void setRotationY(const F32 angle, bool inDegrees = true) {
         this->setRotation(vec3<F32>(0,1,0), angle, inDegrees);
@@ -347,19 +351,11 @@ public:
     /// Interpolate the current transform values with the specified ones and return the resulting transformation matrix
     mat4<F32> interpolate(const TransformValues& prevTransforms, const D32 factor);
     /// Extract the 3 transform values (position, scale, rotation) from the current instance
-    void getValues(TransformValues& transforms);
+    void getValues(TransformValues& transforms) const;
     /// Creates the local transformation matrix using the position, scale and position values
     const mat4<F32>& applyTransforms();
     /// Compares 2 transforms
     bool compare(const Transform* const t);
-    /// Call this when the physics actor is updated
-    inline void cleanPhysics() {
-        this->_physicsDirty = false;
-    }
-    /// Used to update (override) the physics actor associated with this transform
-    inline bool isPhysicsDirty()  const {
-        return this->_physicsDirty;
-    }
     ///Reset transform to identity
     void identity();
 
@@ -371,7 +367,6 @@ private:
 
     inline void setDirty() {
         this->_dirty = true;
-        this->_physicsDirty = true; 
     }
 
     inline void rebuildMatrix() {
@@ -394,8 +389,6 @@ private:
     mat4<F32> _worldMatrix, _worldMatrixInterp;
     ///_dirty is set to true whenever a translation, rotation or scale is applied
     boost::atomic_bool _dirty;
-    ///_physicsDirty is a hack flag to sync SGN transform with physics actor's pose
-    boost::atomic_bool _physicsDirty;
     ///_rebuildMatrix is set to true only when a rotation or scale is applied to avoid rebuilding matrices on translation only
     boost::atomic_bool _rebuildMatrix;
     Transform*         _parentTransform;

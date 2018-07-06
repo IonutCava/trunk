@@ -23,13 +23,8 @@
 #ifndef _D3D_RESOURCES_H_
 #define _D3D_RESOURCES_H_
 
-#if TARGET_D3D_VERSION == D3D10
-#define D3D10_IGNORE_SDK_LAYERS
-//#include <D3D10.h>
-#include <CEGUI/RendererModules/Direct3D10/Renderer.h>
-#else
 //#include <D3D11.h>
-#include <CEGUI/RendererModules/Direct3D11/Renderer.h>
-#endif
+//#include <CEGUI/RendererModules/Direct3D11/Renderer.h>
+
 
 #endif

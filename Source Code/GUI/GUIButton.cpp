@@ -20,6 +20,7 @@ GUIButton::GUIButton(const std::string& id, const std::string& text,const std::s
   _btnWindow->setText(text);
   _btnWindow->subscribeEvent(CEGUI::PushButton::EventClicked,CEGUI::Event::Subscriber(&GUIButton::buttonPressed,this));
   _parent->addChild(_btnWindow);
+  _btnWindow->setEnabled(true);
   setActive(true);
 }
 

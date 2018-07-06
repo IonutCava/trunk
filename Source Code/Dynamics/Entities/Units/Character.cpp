@@ -11,8 +11,9 @@ Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();
-    if(node && node->getTransform()){
-        _newPosition.set(node->getTransform()->getPosition());
+    const Transform* transform = node->getComponent<PhysicsComponent>()->getConstTransform();
+    if(node && transform){
+        _newPosition.set(transform->getPosition());
         _oldPosition.set(_newPosition);
         _curPosition.set(_oldPosition);
         _positionDirty = true;
@@ -42,8 +43,8 @@ void Character::update(const U64 deltaTime) {
 bool Character::frameRenderingQueued(const FrameEvent& evt) {
     if(!getBoundNode())
         return false;
-
-    Transform* t = getBoundNode()->getTransform();
+    PhysicsComponent* nodePhysicsComponent = getBoundNode()->getComponent<PhysicsComponent>();
+    const Transform* t = nodePhysicsComponent->getConstTransform();
     assert(t != nullptr);
 
     vec3<F32> sourceDirection(getLookingDirection());
@@ -51,8 +52,8 @@ bool Character::frameRenderingQueued(const FrameEvent& evt) {
 
     _oldPosition.set(t->getPosition());
     _oldPosition.lerp(_curPosition, GFX_DEVICE.getInterpolation());  
-    t->setPosition(_oldPosition);
-    t->rotateSlerp(t->getOrientation() * rotationFromVToU(sourceDirection, _curVelocity), GFX_DEVICE.getInterpolation());
+    nodePhysicsComponent->setPosition(_oldPosition);
+    nodePhysicsComponent->rotateSlerp(t->getOrientation() * rotationFromVToU(sourceDirection, _curVelocity), GFX_DEVICE.getInterpolation());
     return true;
 }
 
@@ -72,7 +73,7 @@ vec3<F32> Character::getPosition() const {
 
 vec3<F32> Character::getLookingDirection() {
     if(getBoundNode())
-        return getBoundNode()->getTransform()->getOrientation() * getRelativeLookingDirection();
+        return getBoundNode()->getComponent<PhysicsComponent>()->getConstTransform()->getOrientation() * getRelativeLookingDirection();
     
     return getRelativeLookingDirection();
 }
@@ -80,7 +81,7 @@ vec3<F32> Character::getLookingDirection() {
 void Character::lookAt(const vec3<F32>& targetPos) {
     if(!getBoundNode()) 
         return;
-    _newVelocity.set(getBoundNode()->getTransform()->getPosition().direction(targetPos));
+    _newVelocity.set(getBoundNode()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition().direction(targetPos));
     _velocityDirty = true;
 }
 

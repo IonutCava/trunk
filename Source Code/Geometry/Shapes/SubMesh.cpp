@@ -39,7 +39,6 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SubMesh::postLoad(SceneGraphNode* const sgn){
-    //sgn->getTransform()->setTransforms(_localMatrix);
     // If the mesh has animation data, use dynamic VB's if we use software skinning
 	_drawCmd.firstIndex(getGeometryVB()->getPartitionOffset(_geometryPartitionId));
 	_drawCmd.indexCount(getGeometryVB()->getPartitionCount(_geometryPartitionId));

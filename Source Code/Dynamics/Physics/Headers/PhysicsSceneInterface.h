@@ -23,8 +23,12 @@
 #ifndef _PHYSICS_SCENE_INTERFACE_H_
 #define _PHYSICS_SCENE_INTERFACE_H_
 
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+
 class Scene;
 class Transform;
+class PhysicsAsset;
+class SceneGraphNode;
 class PhysicsSceneInterface {
 public:
     PhysicsSceneInterface(Scene* parentScene) :  _parentScene(parentScene){}
@@ -38,12 +42,15 @@ public:
     virtual void idle() = 0;
     ///Called on interface destruction
     virtual void release() = 0;
-    ///Physics update callback for custom behaviour
+    ///Physics update callback for custom behavior
     virtual void update(const U64 deltaTime) = 0;
     ///Custom process step
     virtual void process(const U64 deltaTime) = 0;
 
     inline Scene* getParentScene() {return _parentScene;}
+
+    virtual void addToScene(PhysicsAsset& actor, SceneGraphNode* const outNode);
+
 protected:
     Scene* _parentScene;
 };

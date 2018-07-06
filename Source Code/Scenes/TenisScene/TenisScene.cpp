@@ -67,7 +67,7 @@ void TenisScene::resetGame(){
     _applySideImpulse = false;
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
-    _ballSGN->getTransform()->setPosition(vec3<F32>((random(0,10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
+    _ballSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>((random(0,10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
     _directionTeam1ToTeam2 = !_lostTeam1;
     _lostTeam1 = false;
     s_gameStarted = true;
@@ -113,12 +113,12 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
     SceneGraphNode* Player3 = _aiPlayer3->getUnitRef()->getBoundNode();
     SceneGraphNode* Player4 = _aiPlayer4->getUnitRef()->getBoundNode();
     //Store by copy (thread-safe) current ball position (getPosition()) should be threadsafe
-    vec3<F32> netPosition  = _net->getTransform()->getPosition();
-    vec3<F32> ballPosition = _ballSGN->getTransform()->getPosition();
-    vec3<F32> player1Pos   = Player1->getTransform()->getPosition();
-    vec3<F32> player2Pos   = Player2->getTransform()->getPosition();
-    vec3<F32> player3Pos   = Player3->getTransform()->getPosition();
-    vec3<F32> player4Pos   = Player4->getTransform()->getPosition();
+    vec3<F32> netPosition  = _net->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> ballPosition = _ballSGN->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> player1Pos   = Player1->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> player2Pos   = Player2->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> player3Pos   = Player3->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    vec3<F32> player4Pos   = Player4->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
     vec3<F32> netBBMax     = _net->getBoundingBox().getMax();
     vec3<F32> netBBMin     = _net->getBoundingBox().getMin();
 
@@ -132,9 +132,9 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
 
     //After we finish our computations, apply the new transform
     //setPosition/getPosition should be thread-safe
-    _ballSGN->getTransform()->setPosition(ballPosition);
+    _ballSGN->getComponent<PhysicsComponent>()->setPosition(ballPosition);
     //Add a spin to the ball just for fun ...
-    _ballSGN->getTransform()->rotate(vec3<F32>(ballPosition.z,1,1));
+    _ballSGN->getComponent<PhysicsComponent>()->rotate(vec3<F32>(ballPosition.z,1,1));
 
     //----------------------COLLISIONS------------------------------//
     //z = depth. Descending to the horizon
@@ -282,10 +282,10 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     player[2]->setSelectable(true);
     player[3]->setSelectable(true);
 
-    _aiPlayer1 = New AIEntity(player[0]->getTransform()->getPosition(), "Player1");
-    _aiPlayer2 = New AIEntity(player[1]->getTransform()->getPosition(), "Player2");
-    _aiPlayer3 = New AIEntity(player[2]->getTransform()->getPosition(), "Player3");
-    _aiPlayer4 = New AIEntity(player[3]->getTransform()->getPosition(), "Player4");
+    _aiPlayer1 = New AIEntity(player[0]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player1");
+    _aiPlayer2 = New AIEntity(player[1]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player2");
+    _aiPlayer3 = New AIEntity(player[2]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player3");
+    _aiPlayer4 = New AIEntity(player[3]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player4");
     _aiPlayer1->addSensor(VISUAL_SENSOR,New VisualSensor());
     _aiPlayer2->addSensor(VISUAL_SENSOR,New VisualSensor());
     _aiPlayer3->addSensor(VISUAL_SENSOR,New VisualSensor());
@@ -356,7 +356,7 @@ bool TenisScene::loadResources(bool continueOnErrors){
     _ballSGN = addGeometry(_ball,"TenisBallSGN");
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN->getTransform()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));
+    _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));
     _ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.5f,0.5f,1.0f));
     _ball->getMaterial()->setAmbient(vec4<F32>(0.5f,0.5f,0.5f,1.0f));
     _ball->getMaterial()->setShininess(0.2f);

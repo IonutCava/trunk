@@ -216,17 +216,19 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     
     PhysXSceneInterface* targetScene = dynamic_cast<PhysXSceneInterface* >(_targetScene);
     PhysXActor* tempActor = nullptr;
-    Transform* nodeTransform = sNode->getObjectType() == Object3D::SUBMESH ? node->getParent()->getTransform() : node->getTransform();
+    PhysicsComponent* nodePhysics = sNode->getObjectType() == Object3D::SUBMESH ? 
+                                     node->getParent()->getComponent<PhysicsComponent>() :
+                                     node->getComponent<PhysicsComponent>();
 
     tempActor = targetScene->getOrCreateRigidActor(node->getName());
-    
+    tempActor->setParent(nodePhysics);
+
     assert(tempActor != nullptr);
-    assert(nodeTransform != nullptr);
-    tempActor->_transform = nodeTransform;
+    assert(nodePhysics->getConstTransform() != nullptr);
 
     if (!tempActor->_actor) {
-        const vec3<F32>& position = nodeTransform->getPosition();
-        const vec4<F32>& orientation = nodeTransform->getOrientation().asVec4();
+        const vec3<F32>& position = nodePhysics->getConstTransform()->getPosition();
+        const vec4<F32>& orientation = nodePhysics->getConstTransform()->getOrientation().asVec4();
 
         physx::PxTransform posePxTransform(PxVec3(position.x, position.y, position.z),
                                            PxQuat(orientation.x,orientation.y,orientation.z,orientation.w).getConjugate());
@@ -245,7 +247,6 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
 
         tempActor->_type = PxGeometryType::eTRIANGLEMESH;
         targetScene->addRigidActor(tempActor, false);
-        nodeTransform->cleanPhysics();
     }
     
     assert(tempActor->_actor);
@@ -260,7 +261,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
         return false;
     }
 
-    const vec3<F32>& scale = nodeTransform->getScale();
+    const vec3<F32>& scale = tempActor->getComponent()->getConstTransform()->getScale();
     geometry = New PxTriangleMeshGeometry(triangleMesh, PxMeshScale(PxVec3(scale.x,scale.y,scale.z), PxQuat(PxIdentity)));
     assert(geometry != nullptr);
 
