@@ -7,7 +7,10 @@
 #include "GUI/Headers/GUIFlash.h"
 
 #include "Rendering/Headers/Renderer.h"
+
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
+
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -15,56 +18,6 @@
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
-
-// ToDo: This will return false if the number of shader buffers or number of
-// textures does not match between the 2 packages although said buffers/textures
-// might be compatible and batchable between the two.
-// Obviously, this is not desirable. Fix it! -Ionut
-bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
-    vectorAlg::vecSize bufferCount = other._shaderBuffers.size();
-    if (_shaderBuffers.size() == bufferCount) {
-        for (vectorAlg::vecSize i = 0; i < bufferCount; i++) {
-            const GFXDevice::ShaderBufferList::value_type& buffer1 =
-                _shaderBuffers[i];
-            const GFXDevice::ShaderBufferList::value_type& buffer2 =
-                other._shaderBuffers[i];
-
-
-            I64 guid1 = buffer1._buffer ? buffer1._buffer->getGUID() : -1;
-            I64 guid2 = buffer2._buffer ? buffer2._buffer->getGUID() : -1;
-            if (buffer1._slot != buffer2._slot ||
-                buffer1._range != buffer2._range ||
-                guid1 != guid2) 
-            {
-                return false;
-            }
-        }
-    } else {
-        return false;
-    }
-
-    const vectorImpl<TextureData>& textures = _textureData.textures();
-    const vectorImpl<TextureData>& otherTextures = other._textureData.textures();
-    vectorAlg::vecSize textureCount = otherTextures.size();
-    if (textures.size() == textureCount) {
-        U64 handle1 = 0, handle2 = 0;
-        for (vectorAlg::vecSize i = 0; i < textureCount; ++i) {
-            const TextureData& data1 = textures[i];
-            const TextureData& data2 = otherTextures[i];
-            data1.getHandle(handle1);
-            data2.getHandle(handle2);
-            if (handle1 != handle2 ||
-                data1._samplerHash != data2._samplerHash ||
-                data1._textureType != data2._textureType) {
-                return false;
-            }
-        }
-    } else {
-        return false;
-    }
-
-    return true;
-}
 
 void GFXDevice::uploadGPUBlock() {
     if (_gpuBlock._updated) {
@@ -77,7 +30,7 @@ void GFXDevice::uploadGPUBlock() {
 
 void GFXDevice::renderQueueToSubPasses(RenderPassCmd& commandsInOut) {
     ReadLock lock(_renderQueueLock);
-    for (RenderQueue& renderQueue : _renderQueues) {
+    for (RenderPackageQueue& renderQueue : _renderQueues) {
         if (!renderQueue.empty()) {
             U32 queueSize = renderQueue.size();
             for (U32 idx = 0; idx < queueSize; ++idx) {
@@ -130,7 +83,7 @@ void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
         return;
     }
 
-    RenderQueue& queue = _renderQueues[queueIndex];
+    RenderPackageQueue& queue = _renderQueues[queueIndex];
 
     if (!queue.empty()) {
         RenderPackage& previous = queue.back();
@@ -153,7 +106,7 @@ I32 GFXDevice::reserveRenderQueue() {
     //ToDo: Nothing about this bloody thing is threadsafe
     I32 queueCount = to_int(_renderQueues.size());
     for (I32 i = 0; i < queueCount; ++i) {
-        RenderQueue& queue = _renderQueues[i];
+        RenderPackageQueue& queue = _renderQueues[i];
         if (queue.empty() && !queue.locked()) {
             queue.lock();
             return i;

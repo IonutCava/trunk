@@ -49,6 +49,8 @@ class ShaderProgram;
 class SceneGraphNode;
 class ParticleEmitter;
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Material);
+
 namespace Attorney {
     class RenderingCompRenderPass;
     class RenderingCompGFXDevice;
@@ -156,10 +158,9 @@ class RenderingComponent : public SGNComponent {
                     RenderStage renderStage,
                     RenderSubPassCmds& subPassesInOut);
 
-    GFXDevice::RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState,
-                                             RenderStage renderStage);
+    RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage);
 
-    GFXDevice::RenderPackage& getDrawPackage(RenderStage renderStage);
+    RenderPackage& getDrawPackage(RenderStage renderStage);
 
     inline void drawOrder(U32 index) { _drawOrder = index; }
 
@@ -197,7 +198,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderBoundingSphere;
     bool _renderSkeleton;
     TextureDataContainer _textureDependencies;
-    std::array<GFXDevice::RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
+    std::array<RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
     
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
@@ -249,8 +250,7 @@ class RenderingCompRenderPass {
 
 class RenderingCompSceneNode {
     private:
-        static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                                        RenderStage renderStage) {
+        static RenderPackage& getDrawPackage(RenderingComponent& renderable, RenderStage renderStage) {
             return renderable.getDrawPackage(renderStage);
         }
 
@@ -275,11 +275,11 @@ class RenderingCompSceneNode {
 
 class RenderingCompGFXDevice {
    private:
-    static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                                    const SceneRenderState& sceneRenderState,
-                                                    RenderStage renderStage,
-                                                    U32 cmdOffset,
-                                                    U32 cmdIndex) {
+    static RenderPackage& getDrawPackage(RenderingComponent& renderable,
+                                         const SceneRenderState& sceneRenderState,
+                                         RenderStage renderStage,
+                                         U32 cmdOffset,
+                                         U32 cmdIndex) {
         renderable.commandIndex(cmdIndex);
         renderable.commandOffset(cmdOffset);
         return renderable.getDrawPackage(sceneRenderState, renderStage);
@@ -290,8 +290,7 @@ class RenderingCompGFXDevice {
 
 class RenderingCompRenderBin {
    private:
-    static const GFXDevice::RenderPackage& getRenderData(RenderingComponent& renderable,
-                                                         RenderStage renderStage) {
+    static const RenderPackage& getRenderData(RenderingComponent& renderable, RenderStage renderStage) {
         return renderable._renderData[to_uint(renderStage)];
     }
 

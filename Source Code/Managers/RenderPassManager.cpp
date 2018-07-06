@@ -94,7 +94,6 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
     return getPassForStage(renderStage)->getBufferData(bufferIndex);
 }
 
-
 void cleanCommandBuffer(CommandBuffer& cmdBuffer) {
     cmdBuffer.erase(std::remove_if(std::begin(cmdBuffer),
                                    std::end(cmdBuffer),

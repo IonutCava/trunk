@@ -47,6 +47,7 @@ namespace {
 
 GL_API::GL_API()
     : RenderAPIWrapper(),
+      _context(GFX_DEVICE),
       _prevSizeNode(0),
       _prevSizeString(0),
       _prevWidthNode(0),
@@ -101,7 +102,7 @@ void GL_API::beginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
-    GFX_DEVICE.registerDrawCall();
+    _context.registerDrawCall();
     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
     _previousStateBlockHash = 0;
 }
@@ -220,7 +221,7 @@ bool GL_API::initShaders() {
                          Util::StringFormat("#define GPU_VENDOR_OTHER %d", to_const_uint(GPUVendor::OTHER)),
                          lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
-                         Util::StringFormat("#define GPU_VENDOR %d", to_uint(GFX_DEVICE.getGPUVendor())),
+                         Util::StringFormat("#define GPU_VENDOR %d", to_uint(_context.getGPUVendor())),
                          lineOffsets);
 
     // Add current build environment information to the shaders
@@ -253,7 +254,7 @@ bool GL_API::initShaders() {
                          lineOffsets);
 
     // Add some nVidia specific pragma directives
-    if (GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
+    if (_context.getGPUVendor() == GPUVendor::NVIDIA) {
         appendToShaderHeader(ShaderType::COUNT,
                              "//#pragma optionNV(fastmath on)", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT,
@@ -695,7 +696,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, siz
                          text[i].c_str(),
                          nullptr);
             // Register each label rendered as a draw call
-            GFX_DEVICE.registerDrawCall();
+            _context.registerDrawCall();
         }
     }
     // glPopDebugGroup();
@@ -737,11 +738,10 @@ bool GL_API::draw(const GenericDrawCommand& cmd) {
 
 void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
-    
     for (const RenderPassCmd& pass : commandBuffer) {
         RenderTarget* target = nullptr; 
         if (pass._renderTarget._usage != RenderTargetUsage::COUNT) {
-            target = &GFX_DEVICE.renderTarget(pass._renderTarget);
+            target = &_context.renderTarget(pass._renderTarget);
             target->begin(pass._renderTargetDescriptor);
         }
 
@@ -752,7 +752,7 @@ void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
                                                 shaderBufCmd._dataRange.x,
                                                 shaderBufCmd._dataRange.y);
             }
-
+            Attorney::GFXDeviceAPI::onRenderSubPass(_context);
             for (const GenericDrawCommand& cmd : subPass._commands) {
                 if (draw(cmd)) {
                     if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
@@ -769,16 +769,15 @@ void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
             target->end();
         }
     }
-    
 
-    GFX_DEVICE.registerDrawCalls(drawCallCount);
+    _context.registerDrawCalls(drawCallCount);
 }
 
 /// Activate the render state block described by the specified hash value (0 == default state block)
 size_t GL_API::setStateBlock(size_t stateBlockHash) {
     // Passing 0 is a perfectly acceptable way of enabling the default render state block
     if (stateBlockHash == 0) {
-        stateBlockHash = GFX_DEVICE.getDefaultStateBlock(false);
+        stateBlockHash = _context.getDefaultStateBlock(false);
     }
 
     // If the new state hash is different from the previous one

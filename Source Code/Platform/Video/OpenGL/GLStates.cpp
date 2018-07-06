@@ -163,7 +163,7 @@ void GL_API::toggleRasterization(bool state) {
 /// state
 void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
-    const PlaneList& list = GFX_DEVICE.getClippingPlanes();
+    const PlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
     // For every clip plane that we support (usually 6)
     for (U32 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
         // Check its state

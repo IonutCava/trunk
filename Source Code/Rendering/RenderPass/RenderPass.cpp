@@ -4,6 +4,8 @@
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
 
 #include "Scenes/Headers/Scene.h"

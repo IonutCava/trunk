@@ -6,11 +6,11 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
 
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
-#include "Rendering/RenderPass/Headers/RenderPass.h"
 
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -404,29 +404,16 @@ void GFXDevice::updateViewportInternal(I32 x, I32 y, I32 width, I32 height) {
 
 /// Update the virtual camera's matrices and upload them to the GPU
 F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
-    bool updated = false;
-
-    GPUBlock::GPUData& data = _gpuBlock._data;
-
-    if (eyePos != _gpuBlock._data._cameraPosition.xyz()) {
-        data._cameraPosition.xyz(eyePos);
-        updated = true;
-    }
-
     if (viewMatrix != _gpuBlock._data._ViewMatrix) {
+        GPUBlock::GPUData& data = _gpuBlock._data;
         data._ViewMatrix.set(viewMatrix);
-        updated = true;
-    }
-
-    if (updated) {
+        data._cameraPosition.xyz(eyePos);
         _gpuBlock.update(true);
-    }
 
-    return data._ViewMatrix.mat;
+    return _gpuBlock._data._ViewMatrix.mat;
 }
 
-/// Enable an orthographic projection and upload the corresponding matrices to
-/// the GPU
+/// Enable an orthographic projection and upload the corresponding matrices to the GPU
 F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
     GPUBlock::GPUData& data = _gpuBlock._data;
 

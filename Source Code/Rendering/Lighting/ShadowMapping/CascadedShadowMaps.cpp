@@ -9,6 +9,8 @@
 #include "Rendering/Lighting/Headers/Light.h"
 
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
+
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
@@ -125,9 +127,6 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, U32 passIdx) {
     _shadowMatricesBuffer->bind(ShaderBufferLocation::LIGHT_SHADOW);
     _shadowMatricesBuffer->incQueue();
 
-    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
-
-    RenderPassManager& passMgr = RenderPassManager::instance();
     RenderPassManager::PassParams params;
     params.doPrePass = false;
     params.occlusionCull = false;
@@ -137,7 +136,8 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, U32 passIdx) {
     params.drawPolicy = _renderPolicy;
     params.pass = passIdx;
 
-    passMgr.doCustomPass(params);
+    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
+    RenderPassManager::instance().doCustomPass(params);
     renderState.getCameraMgr().popActiveCamera();
 
     postRender();
@@ -264,7 +264,7 @@ void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
         return;
     }
 
-    getDepthMap().bind(0, RTAttachment::Type::Colour, 0);
+    getDepthMap().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);

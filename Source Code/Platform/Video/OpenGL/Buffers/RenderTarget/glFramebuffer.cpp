@@ -130,9 +130,9 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
         assert(tex);
         Texture::TextureLoadInfo info;
         info._type = texDescriptor._type;
-        tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), attachment->mipMapLevel());
         tex->setNumLayers(texDescriptor._layerCount);
         tex->lockAutomaticMipMapGeneration(!texDescriptor.automaticMipMapGeneration());
+        tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), attachment->mipMapLevel());
         attachment->setTexture(tex);
     }
 
@@ -542,7 +542,7 @@ void glFramebuffer::drawToLayer(RTAttachment::Type type,
         (hasDepth() && includeDepth) ||
         (hasDepth() && type == RTAttachment::Type::Depth);
     bool useColourLayer =
-        (hasColour() && type < RTAttachment::Type::Depth);
+        (hasColour() && type == RTAttachment::Type::Colour);
 
     if (useDepthLayer && _isLayeredDepth) {
         const RTAttachment_ptr& attDepth = _attachments.get(RTAttachment::Type::Depth, 0);

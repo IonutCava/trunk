@@ -1,6 +1,7 @@
 #include "Headers/PhysXScene.h"
 
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Headers/ParamHandler.h"

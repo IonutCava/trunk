@@ -6,8 +6,12 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Headers/EnvironmentProbe.h"
+
+#include "Managers/Headers/RenderPassManager.h"
+
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -350,6 +354,8 @@ void GFXDevice::endFrame(bool swapBuffers) {
 
 ErrorCode GFXDevice::createAPIInstance() {
     assert(_api == nullptr && "GFXDevice error: initRenderingAPI called twice!");
+
+    ErrorCode err = ErrorCode::NO_ERR;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
@@ -357,24 +363,17 @@ ErrorCode GFXDevice::createAPIInstance() {
         } break;
         case RenderAPI::Direct3D: {
             _api = &DX_API::instance();
-            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
-            return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
+
+        default:
+        case RenderAPI::None:
         case RenderAPI::Vulkan: {
-            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
-            return ErrorCode::GFX_NOT_SUPPORTED;
-        } break;
-        case RenderAPI::None: {
-            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
-            return ErrorCode::GFX_NOT_SUPPORTED;
-        } break;
-        default: {
-            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
-            return ErrorCode::GFX_NON_SPECIFIED;
+            err = ErrorCode::GFX_NON_SPECIFIED;
         } break;
     };
 
-    return ErrorCode::NO_ERR;
+    DIVIDE_ASSERT(_api != nullptr, Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+    return err;
 }
 
 RenderTarget& GFXDevice::activeRenderTarget() {

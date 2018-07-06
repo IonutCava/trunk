@@ -54,6 +54,42 @@ struct ShaderBufferBindCmd {
     vec2<U32> _dataRange;
 };
 
+struct ShaderBufferBinding {
+    ShaderBufferLocation _slot;
+    ShaderBuffer* _buffer;
+    vec2<U32>    _range;
+
+    ShaderBufferBinding()
+        : ShaderBufferBinding(ShaderBufferLocation::COUNT,
+            nullptr,
+            vec2<U32>(0, 0))
+    {
+    }
+
+    ShaderBufferBinding(ShaderBufferLocation slot,
+        ShaderBuffer* buffer,
+        const vec2<U32>& range)
+        : _slot(slot),
+        _buffer(buffer),
+        _range(range)
+    {
+    }
+
+    inline void set(const ShaderBufferBinding& other) {
+        set(other._slot, other._buffer, other._range);
+    }
+
+    inline void set(ShaderBufferLocation slot,
+                    ShaderBuffer* buffer,
+                    const vec2<U32>& range) {
+        _slot = slot;
+        _buffer = buffer;
+        _range.set(range);
+    }
+};
+
+typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
+
 typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
 
 struct RenderSubPassCmd {

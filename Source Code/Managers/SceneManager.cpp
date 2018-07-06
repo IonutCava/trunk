@@ -1,4 +1,5 @@
 #include "Headers/SceneManager.h"
+#include "Headers/RenderPassManager.h"
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"

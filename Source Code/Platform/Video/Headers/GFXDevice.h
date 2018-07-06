@@ -37,14 +37,14 @@
 #include "GFXState.h"
 #include "GFXRTPool.h"
 #include "ScopedStates.h"
+#include "RenderPackage.h"
 #include "GenericCommandPool.h"
-
 #include "Core/Math/Headers/Line.h"
-#include "Managers/Headers/RenderPassManager.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 #include <stack>
@@ -58,6 +58,9 @@ enum class WindowEvent : U32;
 
 class GUI;
 class GUIText;
+
+class GL_API;
+class DX_API;
 
 class Light;
 class Camera;
@@ -78,6 +81,7 @@ namespace Time {
 };
 
 namespace Attorney {
+    class GFXDeviceAPI;
     class GFXDeviceGUI;
     class GFXDeviceKernel;
     class GFXDeviceRenderer;
@@ -87,6 +91,7 @@ namespace Attorney {
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 DEFINE_SINGLETON(GFXDevice)
+    friend class Attorney::GFXDeviceAPI;
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
     friend class Attorney::GFXDeviceRenderer;
@@ -109,104 +114,11 @@ DEFINE_SINGLETON(GFXDevice)
             _normalMatrixWV.identity();
             _colourMatrix.zero();
         }
+
         void set(const NodeData& other);
     };
 
   public:  // GPU specific data
-   struct ShaderBufferBinding {
-       ShaderBufferLocation _slot;
-       ShaderBuffer* _buffer;
-       vec2<U32>    _range;
-
-       ShaderBufferBinding() 
-            : ShaderBufferBinding(ShaderBufferLocation::COUNT,
-                                  nullptr,
-                                  vec2<U32>(0,0))
-       {
-       }
-
-       ShaderBufferBinding(ShaderBufferLocation slot,
-                           ShaderBuffer* buffer,
-                           const vec2<U32>& range) 
-         : _slot(slot),
-           _buffer(buffer),
-           _range(range)
-       {
-       }
-
-       void set(const ShaderBufferBinding& other);
-
-       void set(ShaderBufferLocation slot,
-                ShaderBuffer* buffer,
-                const vec2<U32>& range);
-   };
-
-   typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
-
-   struct RenderPackage {
-       RenderPackage() : _isRenderable(false),
-                         _isOcclusionCullable(true)
-       {
-       }
-
-       bool isCompatible(const RenderPackage& other) const;
-
-       void clear();
-       void set(const RenderPackage& other);
-
-       inline bool isRenderable() const {
-           return  _isRenderable;
-       }
-
-       inline bool isOcclusionCullable() const {
-           return  _isOcclusionCullable;
-       }
-
-       inline void isRenderable(bool state) {
-           _isRenderable = state;
-       }
-
-       inline void isOcclusionCullable(bool state) {
-           _isOcclusionCullable = state;
-       }
-
-       ShaderBufferList _shaderBuffers;
-       TextureDataContainer _textureData;
-       GenericDrawCommands _drawCommands;
-
-       private:
-           bool _isRenderable;
-           bool _isOcclusionCullable;
-   };
-
-   struct RenderQueue {
-    public:
-       RenderQueue() : _locked(false),
-                       _currentCount(0)
-       {
-       }
-
-       void clear();
-       U32 size() const;
-       bool empty() const;
-       bool locked() const;
-       const RenderPackage& getPackage(U32 idx) const;
-
-    protected:
-        friend class GFXDevice;
-        RenderPackage& getPackage(U32 idx);
-        RenderPackage& back();
-        bool push_back(const RenderPackage& package);
-        void reserve(U16 size);
-        void lock();
-        void unlock();
-
-    protected:
-       bool _locked;
-       U32 _currentCount;
-       vectorImpl<RenderPackage> _packages;
-   };
-
    // Enough to hold a cubemap (e.g. environment stage has 6 passes)
    static const U32 MAX_PASSES_PER_STAGE = 6;
 
@@ -311,7 +223,6 @@ DEFINE_SINGLETON(GFXDevice)
     void flushCommandBuffer(const CommandBuffer& commandBuffer);
 
     I32  reserveRenderQueue();
-
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
@@ -393,9 +304,6 @@ DEFINE_SINGLETON(GFXDevice)
     inline RenderStage getRenderStage() const { return isPrePass() ? RenderStage::Z_PRE_PASS : _renderStage; }
 
     inline RenderStage getPrevRenderStage() const { return _prevRenderStage; }
-
-    /// Get the entire list of clipping planes
-    inline const PlaneList& getClippingPlanes() const { return _clippingPlanes; }
 
     /// Return the last number of HIZ culled items
     U32 getLastCullCount() const;
@@ -613,7 +521,7 @@ DEFINE_SINGLETON(GFXDevice)
     std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastNodeCount;
 
     mutable SharedLock _renderQueueLock;
-    vectorImpl<RenderQueue> _renderQueues;
+    vectorImpl<RenderPackageQueue> _renderQueues;
 
     mutable SharedLock _GFXLoadQueueLock;
     std::deque<DELEGATE_CBK_PARAM<bool>> _GFXLoadQueue;
@@ -687,6 +595,21 @@ namespace Attorney {
            device._graphicResources--;
        }
        friend class Divide::GraphicsResource;
+    };
+
+    class GFXDeviceAPI {
+        private:
+        static void onRenderSubPass(GFXDevice& device) {
+            device.uploadGPUBlock();
+        }
+
+        /// Get the entire list of clipping planes
+        static const PlaneList& getClippingPlanes(GFXDevice& device) {
+            return device._clippingPlanes;
+        }
+
+        friend class Divide::GL_API;
+        friend class Divide::DX_API;
     };
 };  // namespace Attorney
 };  // namespace Divide

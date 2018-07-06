@@ -16,6 +16,7 @@
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"

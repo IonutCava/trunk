@@ -219,6 +219,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                               ShaderOffsetArray& inOutOffset);
 
   private:
+    GFXDevice& _context;
     /// The previous Text3D node's font face size
     GLfloat _prevSizeNode;
     /// The previous plain text string's font face size

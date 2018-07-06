@@ -4,6 +4,7 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"

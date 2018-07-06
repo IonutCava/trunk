@@ -8,6 +8,7 @@
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Rendering/Headers/Renderer.h"

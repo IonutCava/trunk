@@ -49,7 +49,7 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
         }
     }
 
-    for (GFXDevice::RenderPackage& pkg : _renderData) {
+    for (RenderPackage& pkg : _renderData) {
         pkg.isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
     }
 
@@ -128,7 +128,7 @@ RenderingComponent::~RenderingComponent()
 
 void RenderingComponent::postLoad() {
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        GFXDevice::RenderPackage& pkg = _renderData[to_uint(static_cast<RenderStage>(i))];
+        RenderPackage& pkg = _renderData[to_uint(static_cast<RenderStage>(i))];
         _parentSGN.getNode()->initialiseDrawCommands(_parentSGN, static_cast<RenderStage>(i), pkg._drawCommands);
     }
 }
@@ -195,7 +195,7 @@ bool RenderingComponent::onRender(RenderStage currentStage) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
 
-    GFXDevice::RenderPackage& pkg = _renderData[to_uint(currentStage)];
+    RenderPackage& pkg = _renderData[to_uint(currentStage)];
 
     pkg._textureData.clear(false);
     const Material_ptr& mat = getMaterialInstance();
@@ -468,11 +468,11 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
 
-    GFXDevice::ShaderBufferList::iterator it;
-    for (GFXDevice::RenderPackage& pkg : _renderData) {
-        GFXDevice::ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
+    ShaderBufferList::iterator it;
+    for (RenderPackage& pkg : _renderData) {
+        ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
         it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
-            [slot](const GFXDevice::ShaderBufferBinding& binding)
+            [slot](const ShaderBufferBinding& binding)
                     -> bool { return binding._slot == slot; });
 
         if (it == itEnd) {
@@ -484,10 +484,10 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    for (GFXDevice::RenderPackage& pkg : _renderData) {
+    for (RenderPackage& pkg : _renderData) {
         pkg._shaderBuffers.erase(
             std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
-                [&slot](const GFXDevice::ShaderBufferBinding& binding)
+                [&slot](const ShaderBufferBinding& binding)
                     -> bool { return binding._slot == slot; }),
             std::end(pkg._shaderBuffers));
     }
@@ -555,9 +555,9 @@ void RenderingComponent::updateLoDLevel(const SceneRenderState& sceneRenderState
     }
 }
 
-GFXDevice::RenderPackage&
+RenderPackage&
 RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
-    GFXDevice::RenderPackage& pkg = _renderData[to_uint(renderStage)];
+    RenderPackage& pkg = _renderData[to_uint(renderStage)];
     pkg.isRenderable(false);
     if (canDraw(renderStage) && _parentSGN.prepareDraw(sceneRenderState, renderStage))
     {
@@ -588,7 +588,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, Ren
     return pkg;
 }
 
-GFXDevice::RenderPackage& 
+RenderPackage& 
 RenderingComponent::getDrawPackage(RenderStage renderStage) {
     return _renderData[to_uint(renderStage)];
 }

@@ -34,12 +34,12 @@
 
 #include "Core/Headers/NonCopyable.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 namespace Divide {
 
 class Camera;
 class SceneGraph;
-class RenderQueue;
 class RenderTarget;
 class RTDrawDescriptor;
 enum class RenderStage : U32;
