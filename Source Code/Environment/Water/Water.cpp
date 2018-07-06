@@ -12,10 +12,10 @@ namespace {
     ClipPlaneIndex g_refractionClipID = ClipPlaneIndex::CLIP_PLANE_5;
 };
 
-WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, I32 sideLength)
+WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const vec3<F32>& dimensions)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
-      _sideLength(std::max(sideLength, 1)),
+      _dimensions(dimensions),
       _paramsDirty(true),
       _reflectionCam(nullptr)
 {
@@ -34,7 +34,10 @@ WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const 
     // The water doesn't cast shadows, doesn't need ambient occlusion and
     // doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
-    Console::printfn(Locale::get(_ID("REFRACTION_INIT_FB")), nextPOW2(sideLength), nextPOW2(sideLength));
+
+    U32 sideLength = nextPOW2(std::max(to_U32(dimensions.width), to_U32(dimensions.height)));
+
+    Console::printfn(Locale::get(_ID("REFRACTION_INIT_FB")), sideLength, sideLength);
 
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
@@ -53,13 +56,16 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
 
-    _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,     vec3<F32>(-_sideLength, 0, -_sideLength));
-    _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,    vec3<F32>( _sideLength, 0, -_sideLength));
-    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,  vec3<F32>(-_sideLength, 0,  _sideLength));
-    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>( _sideLength, 0,  _sideLength));
+    F32 halfWidth = _dimensions.width * 0.5f;
+    F32 halfLength = _dimensions.height * 0.5f;
+
+    _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,     vec3<F32>(-halfWidth, 0, -halfLength));
+    _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,    vec3<F32>( halfWidth, 0, -halfLength));
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,  vec3<F32>(-halfWidth, 0,  halfLength));
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>( halfWidth, 0,  halfLength));
     _plane->setNormal(Quad3D::CornerLocation::CORNER_ALL, WORLD_Y_AXIS);
     _plane->renderState().setDrawState(false);
-
+    
     sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
@@ -77,7 +83,10 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
 
 void WaterPlane::updateBoundsInternal(SceneGraphNode& sgn) {
     if (_paramsDirty) {
-        _boundingBox.set(vec3<F32>(-_sideLength), vec3<F32>(_sideLength, 0, _sideLength));
+        F32 halfWidth = _dimensions.width * 0.5f;
+        F32 halfLength = _dimensions.height * 0.5f;
+
+        _boundingBox.set(vec3<F32>(-halfWidth, _dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
     }
 
     SceneNode::updateBoundsInternal(sgn);
@@ -200,6 +209,10 @@ void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plan
     normal.normalize();
     plane.set(normal, -waterLevel);
     plane.active(false);
+}
+
+const vec3<F32>& WaterPlane::getDimensions() const {
+    return _dimensions;
 }
 
 };

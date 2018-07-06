@@ -17,13 +17,14 @@
 namespace Divide {
 
 namespace {
+    vec3<F32> g_waterDimensions(500, 500, 500);
     I64 g_boxMoveTaskID = 0;
 };
 
 MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
    : Scene(context, cache, parent, name),
     _beep(nullptr),
-    _freeflyCamera(true),
+    _freeflyCamera(true/*false*/),
     _updateLights(true),
     _musicPlaying(false),
     _sun_cosy(0.0f)
@@ -54,7 +55,10 @@ void MainScene::processInput(U8 playerIndex, const U64 deltaTime) {
         if (!_freeflyCamera) {
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
-            for (SceneGraphNode_wptr terrainNode : _terrains) {
+
+            vectorImpl<SceneGraphNode_wptr> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
+
+            for (SceneGraphNode_wptr terrainNode : terrains) {
                 const std::shared_ptr<Terrain>& ter = terrainNode.lock()->getNode<Terrain>();
                 assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x,
@@ -147,12 +151,13 @@ bool MainScene::load(const stringImpl& name) {
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION);
 
+    g_waterDimensions.x = _baseCamera->getZPlanes().y;
+    g_waterDimensions.z = _baseCamera->getZPlanes().y;
     ResourceDescriptor infiniteWater("waterEntity");
-    infiniteWater.setID(to_U32(_baseCamera->getZPlanes().y));
+    infiniteWater.setUserPtr(g_waterDimensions);
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
     water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),  0.34f);
-    _waterPlanes.push_back(_sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE));
-    SceneGraphNode_ptr waterGraphNode(_waterPlanes.back().lock());
+    SceneGraphNode_ptr waterGraphNode = _sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE);
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel());
@@ -198,8 +203,10 @@ U16 MainScene::registerInputActions() {
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        for (SceneGraphNode_wptr ter : _terrains) {
-            ter.lock()->getNode<Terrain>()->toggleBoundingBoxes();
+        vectorImpl<SceneGraphNode_wptr> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
+
+        for (SceneGraphNode_wptr terrainNode : terrains) {
+            terrainNode.lock()->getNode<Terrain>()->toggleBoundingBoxes();
         }
     });
     actions._onReleaseAction = actionID;
@@ -266,7 +273,7 @@ void MainScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {
 }
 
 bool MainScene::loadResources(bool continueOnErrors) {
-    _taskTimers.push_back(0.0);  // Sun
+    _taskTimers.push_back(0.0); // Sun
     _guiTimers.push_back(0.0);  // Fps
     _guiTimers.push_back(0.0);  // Time
 

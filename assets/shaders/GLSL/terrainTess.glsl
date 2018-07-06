@@ -317,7 +317,7 @@ void main()
 
 --Geometry
 
-uniform float ToggleWireframe = 1.0;
+uniform float ToggleWireframe = 0.0;
 
 layout(triangles) in;
 
@@ -415,7 +415,8 @@ void main(void)
         gl_Position = getWVPPositon(i);
 
 #if !defined(SHADOW_PASS)
-        _waterDistance = dvd_clip_plane[0].w;
+        setClipPlanes(VAR[i]._vertexW);
+        _waterDistance = gl_ClipDistance[0];
         _waterDepth = waterDepth(i);
 
         _scrollingUV = getScrollingUV(i);
@@ -444,7 +445,8 @@ void main(void)
     gl_Position = getWVPPositon(0);
 
 #if !defined(SHADOW_PASS)
-    _waterDistance = dvd_clip_plane[0].w;
+    setClipPlanes(VAR[0]._vertexW);
+    _waterDistance = gl_ClipDistance[0];
     _scrollingUV = getScrollingUV(0);
     _waterDepth = waterDepth(0);
 #   if defined(_DEBUG)
@@ -498,7 +500,7 @@ void main()
 #include "terrainSplatting.frag"
 #include "velocityCalc.frag"
 
-uniform float ToggleWireframe = 1.0;
+uniform float ToggleWireframe = 0.0;
 
 in vec4 _scrollingUV;
 smooth in float _waterDistance;
@@ -557,7 +559,7 @@ vec4 UnderwaterColour() {
 }
 
 vec4 UnderwaterMappingRoutine() {
-    return mix(CausticsColour(), UnderwaterColour(), _waterDepth);
+    return mix(CausticsColour(), UnderwaterColour(), _waterDepth + 1.5);
 }
 
 vec4 TerrainMappingRoutine() {

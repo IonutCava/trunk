@@ -79,6 +79,17 @@ void SceneGraph::unregisterNode(I64 guid, SceneGraphNode::UsageContext usage) {
 
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     I64 guid = oldNode.getGUID();
+
+    vectorImpl<SceneGraphNode_wptr>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
+
+    nodesByType.erase(std::remove_if(std::begin(nodesByType), std::end(nodesByType), 
+                                     [guid](SceneGraphNode_wptr node)-> bool
+                                     {
+                                         SceneGraphNode_ptr nodePtr = node.lock();
+                                         return nodePtr && nodePtr->getGUID() == guid;
+                                     }),
+                      std::end(nodesByType));
+
     if (_loadComplete) {
         unregisterNode(guid, oldNode.usageContext());
     }
@@ -95,8 +106,10 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
 }
 
 void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
-    _allNodes.push_back(newNode.shared_from_this());
-
+    SceneGraphNode_ptr newNodePtr(newNode.shared_from_this());
+    _allNodes.push_back(newNodePtr);
+    _nodesByType[to_base(newNodePtr->getNode()->getType())].emplace_back(newNodePtr);
+    
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
         _octreeChanged = _octree->addNode(newNode.shared_from_this());
@@ -217,6 +230,11 @@ void SceneGraph::postLoad() {
     _octree->addNodes(_allNodes);
     _octreeChanged = true;
     _loadComplete = true;
+}
+
+
+const vectorImpl<SceneGraphNode_wptr>& SceneGraph::getNodesByType(SceneNodeType type) const {
+    return _nodesByType[to_base(type)];
 }
 
 };

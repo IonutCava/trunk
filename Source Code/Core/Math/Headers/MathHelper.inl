@@ -34,6 +34,164 @@
 
 namespace Divide {
 
+namespace detail {
+    ///////////////////////////////////////////////////////////////////////////////////
+    /// OpenGL Mathematics (glm.g-truc.net)
+    ///
+    /// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
+    /// Permission is hereby granted, free of charge, to any person obtaining a copy
+    /// of this software and associated documentation files (the "Software"), to deal
+    /// in the Software without restriction, including without limitation the rights
+    /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    /// copies of the Software, and to permit persons to whom the Software is
+    /// furnished to do so, subject to the following conditions:
+    /// 
+    /// The above copyright notice and this permission notice shall be included in
+    /// all copies or substantial portions of the Software.
+    /// 
+    /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    /// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    /// THE SOFTWARE.
+    ///
+    /// @ref gtc_packing
+    /// @file glm/gtc/packing.inl
+    /// @date 2013-08-08 / 2013-08-08
+    /// @author Christophe Riccio
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    inline U32 float2packed11(U32 const & f)
+    {
+        // 10 bits    =>                         EE EEEFFFFF
+        // 11 bits    =>                        EEE EEFFFFFF
+        // Half bits  =>                   SEEEEEFF FFFFFFFF
+        // Float bits => SEEEEEEE EFFFFFFF FFFFFFFF FFFFFFFF
+
+        // 0x000007c0 => 00000000 00000000 00000111 11000000
+        // 0x00007c00 => 00000000 00000000 01111100 00000000
+        // 0x000003ff => 00000000 00000000 00000011 11111111
+        // 0x38000000 => 00111000 00000000 00000000 00000000
+        // 0x7f800000 => 01111111 10000000 00000000 00000000
+        // 0x00008000 => 00000000 00000000 10000000 00000000
+        return
+            ((((f & 0x7f800000) - 0x38000000) >> 17) & 0x07c0) | // exponential
+            ((f >> 17) & 0x003f); // Mantissa
+    }
+
+    inline U32 packed11ToFloat(U32 const & p)
+    {
+        // 10 bits    =>                         EE EEEFFFFF
+        // 11 bits    =>                        EEE EEFFFFFF
+        // Half bits  =>                   SEEEEEFF FFFFFFFF
+        // Float bits => SEEEEEEE EFFFFFFF FFFFFFFF FFFFFFFF
+
+        // 0x000007c0 => 00000000 00000000 00000111 11000000
+        // 0x00007c00 => 00000000 00000000 01111100 00000000
+        // 0x000003ff => 00000000 00000000 00000011 11111111
+        // 0x38000000 => 00111000 00000000 00000000 00000000
+        // 0x7f800000 => 01111111 10000000 00000000 00000000
+        // 0x00008000 => 00000000 00000000 10000000 00000000
+        return
+            ((((p & 0x07c0) << 17) + 0x38000000) & 0x7f800000) | // exponential
+            ((p & 0x003f) << 17); // Mantissa
+    }
+
+    inline U32 float2packed10(U32 const & f)
+    {
+        // 10 bits    =>                         EE EEEFFFFF
+        // 11 bits    =>                        EEE EEFFFFFF
+        // Half bits  =>                   SEEEEEFF FFFFFFFF
+        // Float bits => SEEEEEEE EFFFFFFF FFFFFFFF FFFFFFFF
+
+        // 0x0000001F => 00000000 00000000 00000000 00011111
+        // 0x0000003F => 00000000 00000000 00000000 00111111
+        // 0x000003E0 => 00000000 00000000 00000011 11100000
+        // 0x000007C0 => 00000000 00000000 00000111 11000000
+        // 0x00007C00 => 00000000 00000000 01111100 00000000
+        // 0x000003FF => 00000000 00000000 00000011 11111111
+        // 0x38000000 => 00111000 00000000 00000000 00000000
+        // 0x7f800000 => 01111111 10000000 00000000 00000000
+        // 0x00008000 => 00000000 00000000 10000000 00000000
+        return
+            ((((f & 0x7f800000) - 0x38000000) >> 18) & 0x03E0) | // exponential
+            ((f >> 18) & 0x001f); // Mantissa
+    }
+
+    inline U32 packed10ToFloat(U32 const & p)
+    {
+        // 10 bits    =>                         EE EEEFFFFF
+        // 11 bits    =>                        EEE EEFFFFFF
+        // Half bits  =>                   SEEEEEFF FFFFFFFF
+        // Float bits => SEEEEEEE EFFFFFFF FFFFFFFF FFFFFFFF
+
+        // 0x0000001F => 00000000 00000000 00000000 00011111
+        // 0x0000003F => 00000000 00000000 00000000 00111111
+        // 0x000003E0 => 00000000 00000000 00000011 11100000
+        // 0x000007C0 => 00000000 00000000 00000111 11000000
+        // 0x00007C00 => 00000000 00000000 01111100 00000000
+        // 0x000003FF => 00000000 00000000 00000011 11111111
+        // 0x38000000 => 00111000 00000000 00000000 00000000
+        // 0x7f800000 => 01111111 10000000 00000000 00000000
+        // 0x00008000 => 00000000 00000000 10000000 00000000
+        return
+            ((((p & 0x03E0) << 18) + 0x38000000) & 0x7f800000) | // exponential
+            ((p & 0x001f) << 18); // Mantissa
+    }
+
+    inline U32 floatTo11bit(F32 x)
+    {
+        if (x == 0.0f)
+            return 0u;
+        else if (std::isnan(x))
+            return ~0u;
+        else if (std::isinf(x))
+            return 0x1f << 6;
+
+        return float2packed11(reinterpret_cast<U32&>(x));
+    }
+
+    inline F32 packed11bitToFloat(U32 x)
+    {
+        if (x == 0u)
+            return 0.0f;
+        else if (x == ((1 << 11) - 1))
+            return ~0;//NaN
+        else if (x == (0x1f << 6))
+            return ~0;//Inf
+
+        U32 result = packed11ToFloat(x);
+        return reinterpret_cast<F32&>(result);
+    }
+
+    inline U32 floatTo10bit(F32 x)
+    {
+        if (x == 0.0f)
+            return 0u;
+        else if (std::isnan(x))
+            return ~0u;
+        else if (std::isinf(x))
+            return 0x1f << 5;
+
+        return float2packed10(reinterpret_cast<U32&>(x));
+    }
+
+    inline F32 packed10bitToFloat(U32 x)
+    {
+        if (x == 0)
+            return 0.0f;
+        else if (x == ((1 << 10) - 1))
+            return ~0;//NaN
+        else if (x == (0x1f << 5))
+            return ~0;//Inf
+
+        U32 result = packed10ToFloat(x);
+        return reinterpret_cast<F32&>(result);
+    }
+}
+
 namespace customRNG
 {
     namespace detail
@@ -213,8 +371,8 @@ inline F32 CHAR_TO_FLOAT_SNORM(const U8 value) {
 inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) {
     static const D64 offset = to_D64(1 << 24);
 
-    U32 packedColour = (x << 16) | (y << 8) | z;
-    return to_F32(to_D64(packedColour) / offset);
+    U32 packed = (x << 16) | (y << 8) | z;
+    return to_F32(to_D64(packed) / offset);
 }
 
 // UnPack 3 values from 1 float
@@ -227,6 +385,19 @@ inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) {
     r = (r * 2.0f) - 1.0f;
     g = (g * 2.0f) - 1.0f;
     b = (b * 2.0f) - 1.0f;
+}
+
+inline U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z) {
+    return
+        ((detail::floatTo11bit(x) & ((1 << 11) - 1)) << 0) |
+        ((detail::floatTo11bit(y) & ((1 << 11) - 1)) << 11) |
+        ((detail::floatTo10bit(z) & ((1 << 10) - 1)) << 22);
+}
+
+inline void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) {
+    x = detail::packed11bitToFloat(src >> 0);
+    y = detail::packed11bitToFloat(src >> 11);
+    z = detail::packed10bitToFloat(src >> 22);
 }
 
 namespace Angle {

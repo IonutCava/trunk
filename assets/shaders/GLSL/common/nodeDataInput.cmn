@@ -64,7 +64,9 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     vec4   dvd_otherData;
     vec4   dvd_otherData2;
     uvec4  dvd_lightCountPerType;
-    //uint  dvd_lightCountPerType[MAX_LIGHT_TYPES];
+    vec4   dvd_waterPositions/*[MAX_WATER_BODIES]*/;
+    //x = width, y = length, z = depth
+    vec4   dvd_waterDetails/*[MAX_WATER_BODIES]*/;
 };
 
 #define dvd_fogColour dvd_fogDetails.xyz
@@ -87,35 +89,14 @@ int dvd_renderDetailLevel() {
 int dvd_shadowDetailLevel() {
     return int(dvd_otherData2.z);
 }
-#if defined(VERT_SHADER)
 
+#if defined(VERT_SHADER) || defined(GEOM_SHADER)
 out float gl_ClipDistance[MAX_CLIP_PLANES];
 
 void setClipPlanes(in vec4 worldSpaceVertex) {
-
     for(int i = 0; i < MAX_CLIP_PLANES; ++i) {
         gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
     }
-/*
-#if MAX_CLIP_PLANES > 0
-    gl_ClipDistance[0] = dot(worldSpaceVertex, dvd_clip_plane[0]);
-#   if MAX_CLIP_PLANES > 1
-        gl_ClipDistance[1] = dot(worldSpaceVertex, dvd_clip_plane[1]);
-#       if MAX_CLIP_PLANES > 2
-            gl_ClipDistance[2] = dot(worldSpaceVertex, dvd_clip_plane[2]);
-#           if MAX_CLIP_PLANES > 3
-                gl_ClipDistance[3] = dot(worldSpaceVertex, dvd_clip_plane[3]);
-#               if MAX_CLIP_PLANES > 4
-                    gl_ClipDistance[4] = dot(worldSpaceVertex, dvd_clip_plane[4]);
-#                   if MAX_CLIP_PLANES > 5
-                        gl_ClipDistance[5] = dot(worldSpaceVertex, dvd_clip_plane[5]);
-#                   endif
-#               endif
-#           endif
-#       endif
-#   endif
-#endif
-*/
 }
 #elif defined(FRAG_SHADER)
 #if GPU_VENDOR == GPU_VENDOR_AMD

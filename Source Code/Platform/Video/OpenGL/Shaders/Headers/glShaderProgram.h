@@ -178,6 +178,8 @@ class glShaderProgram final : public ShaderProgram {
 
     void reloadShaders(bool reparseShaderSource);
 
+    void reuploadUniforms();
+
    private:
     typedef hashMapImpl<U64, I32> ShaderVarMap;
     typedef hashMapImpl<I32, U32> ShaderVarU32Map;

@@ -44,7 +44,8 @@ class SceneShaderData {
         vec4<F32> _otherData;
         vec4<F32> _otherData2;
         vec4<U32> _lightCountPerType;
-        //U32     _lightCountPerType[to_base(LightType::COUNT)];
+        vec4<F32> _waterPositions/*[MAX_WATER_BODIES]*/;
+        vec4<F32> _waterDetails/*[MAX_WATER_BODIES]*/;
     };
 
   public:
@@ -94,6 +95,12 @@ class SceneShaderData {
     inline void detailLevel(RenderDetailLevel renderDetailLevel, RenderDetailLevel shadowDetailLevel) {
         _bufferData._otherData2.y = to_F32(renderDetailLevel);
         _bufferData._otherData2.z = to_F32(shadowDetailLevel);
+    }
+
+    inline void waterDetails(U8 index, const vec3<F32>& position, const vec3<F32>& dimensions) {
+        ACKNOWLEDGE_UNUSED(index);
+        _bufferData._waterPositions/*[index]*/.set(position);
+        _bufferData._waterDetails/*[index]*/.set(dimensions);
     }
 
     void uploadToGPU();

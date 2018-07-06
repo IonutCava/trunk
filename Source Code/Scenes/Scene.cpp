@@ -213,12 +213,6 @@ void Scene::loadXMLAssets(bool singleStep) {
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
-        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res.lock()->getName(), true).lock());
-        assert(terrainNode != nullptr);
-        if (terrainNode->isActive()) {
-            //tempTerrain->toggleBoundingBoxes();
-            _terrains.push_back(terrainNode);
-        }
         _loadingTasks--;
     };
 
@@ -936,8 +930,6 @@ void Scene::clearObjects() {
         _modelDataArray.pop();
     }
     _vegetationDataArray.clear();
-    _terrains.clear();
-    _waterPlanes.clear();
     _flashLight.clear();
     _sceneGraph->unload();
 }
@@ -993,6 +985,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
     _aiManager->update(deltaTime);
+
     for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         U8 playerIndex = _scenePlayers[i]->index();
         findHoverTarget(playerIndex);
@@ -1117,18 +1110,16 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
 }
 
 bool Scene::checkCameraUnderwater(U8 playerIndex) const {
-    const Camera& crtCamera = getPlayerForIndex(playerIndex)->getCamera();
-    const vec3<F32>& eyePos = crtCamera.getEye();
+    const vectorImpl<SceneGraphNode_wptr>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
 
-    RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
-    for (RenderPassCuller::VisibleNode& node : nodes) {
-        const SceneGraphNode* nodePtr = node.second;
-        if (nodePtr) {
-            const std::shared_ptr<SceneNode>& sceneNode = nodePtr->getNode();
-            if (sceneNode->getType() == SceneNodeType::TYPE_WATER) {
-                if (nodePtr->getNode<WaterPlane>()->pointUnderwater(*nodePtr, eyePos)) {
-                    return true;
-                }
+    if (!waterBodies.empty()) {
+        const Camera& crtCamera = getPlayerForIndex(playerIndex)->getCamera();
+        const vec3<F32>& eyePos = crtCamera.getEye();
+
+        for (const SceneGraphNode_wptr& node : waterBodies) {
+            SceneGraphNode_ptr nodePtr = node.lock();
+            if (nodePtr->getNode<WaterPlane>()->pointUnderwater(*nodePtr, eyePos)) {
+                return true;
             }
         }
     }

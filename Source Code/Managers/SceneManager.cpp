@@ -17,6 +17,7 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "Platform/File/Headers/FileManagement.h"
 
+#include "Environment/Water/Headers/Water.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
@@ -430,6 +431,20 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
                             0.0f,
                             activeSceneState.windDirZ(),
                             activeSceneState.windSpeed());
+
+    const vectorImpl<SceneGraphNode_wptr>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
+    if (!waterBodies.empty()) {
+        U8 index = 0;
+        for (SceneGraphNode_wptr body : waterBodies) {
+            const SceneGraphNode_ptr water(body.lock());
+            
+            _sceneData->waterDetails(index,
+                                     water->get<PhysicsComponent>()->getPosition(),
+                                     water->getNode<WaterPlane>()->getDimensions());
+            index++;
+            break;//<- temp
+        }
+    }
 
     activeScene.updateSceneState(deltaTime);
 

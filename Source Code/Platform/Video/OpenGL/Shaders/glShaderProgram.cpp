@@ -255,6 +255,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
     if (!skipRegister) {
         ShaderProgram::load(onLoadCallback);
+        reuploadUniforms();
     }
 }
 
@@ -842,6 +843,42 @@ void glShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
     }
 
     glMemoryBarrier(barrierType);
+}
+
+void glShaderProgram::reuploadUniforms() {
+    for (ShaderVarU32Map::value_type it : _shaderVarsU32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarI32Map::value_type it : _shaderVarsI32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarF32Map::value_type it : _shaderVarsF32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarVec2F32Map::value_type it : _shaderVarsVec2F32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarvec2I32Map::value_type it : _shaderVarsVec2I32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarVec3F32Map::value_type it : _shaderVarsVec3F32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarVec3I32Map::value_type it : _shaderVarsVec3I32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarVec4F32Map::value_type it : _shaderVarsVec4F32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarVec4I32Map::value_type it : _shaderVarsVec4I32) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarMat3Map::value_type it : _shaderVarsMat3) {
+        Uniform(it.first, it.second);
+    }
+    for (ShaderVarMat4Map::value_type it : _shaderVarsMat4) {
+        Uniform(it.first, it.second);
+    }
 }
 
 };

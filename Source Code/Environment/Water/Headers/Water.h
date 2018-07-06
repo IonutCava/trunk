@@ -43,7 +43,7 @@ class ShaderProgram;
 
 class WaterPlane : public SceneNode {
    public:
-    explicit WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, I32 sideLength);
+    explicit WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const vec3<F32>& dimenions);
     ~WaterPlane();
 
     /// Resource inherited "unload"
@@ -66,6 +66,9 @@ class WaterPlane : public SceneNode {
                              Plane<F32>& plane,
                              bool reflection);
 
+    // width, length, depth
+    const vec3<F32>& getDimensions() const;
+
    protected:
     void initialiseDrawCommands(SceneGraphNode& sgn,
                                 const RenderStagePass& renderStagePass,
@@ -77,11 +80,6 @@ class WaterPlane : public SceneNode {
 
     void postLoad(SceneGraphNode& sgn) override;
 
-    inline void setSideLength(I32 length) { 
-        _sideLength = std::max(length, 1);
-        _paramsDirty = true;
-    }
-
    private:
     void updateBoundsInternal(SceneGraphNode& sgn) override;
     void updateReflection(RenderCbkParams& renderParams);
@@ -89,7 +87,7 @@ class WaterPlane : public SceneNode {
 
    private:
     /// cached far plane value
-    I32 _sideLength;
+    vec3<F32> _dimensions;
     /// the water's "geometry"
     std::shared_ptr<Quad3D> _plane;
     bool _paramsDirty;

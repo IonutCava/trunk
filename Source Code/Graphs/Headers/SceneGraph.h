@@ -94,6 +94,8 @@ class SceneGraph : private NonCopyable,
 
     void postLoad();
 
+    const vectorImpl<SceneGraphNode_wptr>& getNodesByType(SceneNodeType type) const;
+
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);
@@ -114,6 +116,8 @@ class SceneGraph : private NonCopyable,
     vectorImpl<SceneGraphNode_wptr> _allNodes;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
     vectorImpl<SceneGraphNode*> _orderedNodeList;
+
+    std::array<vectorImpl<SceneGraphNode_wptr>, to_base(SceneNodeType::COUNT)> _nodesByType;
 };
 
 namespace Attorney {

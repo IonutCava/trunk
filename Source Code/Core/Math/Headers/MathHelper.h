@@ -133,6 +133,9 @@ F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z);
 // UnPack 3 values from 1 float
 void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b);
 
+U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z);
+void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z);
+
 // bit manipulation
 #define BitSet(arg, posn) (arg |= 1 << posn)
 #define BitClr(arg, posn) (arg &= ~(1 << (posn)))
@@ -337,6 +340,10 @@ inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
 void UNPACK_VEC3(const F32 src, vec3<F32>& res);
 
 vec3<F32> UNPACK_VEC3(const F32 src);
+
+U32 PACK_11_11_10(const vec3<F32>& value);
+
+void UNPACK_11_11_10(const U32 src, vec3<F32>& res);
 
 };  // namespace Util
 };  // namespace Divide

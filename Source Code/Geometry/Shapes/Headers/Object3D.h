@@ -130,6 +130,9 @@ class Object3D : public SceneNode {
     // primitive type
     bool computeTriangleList(bool force = false);
 
+
+    static vectorImpl<SceneGraphNode_wptr> filterByType(const vectorImpl<SceneGraphNode_wptr>& nodes, ObjectType filter);
+
    protected:
     bool isPrimitive();
     /// Use a custom vertex buffer for this object (e.g., a submesh uses the

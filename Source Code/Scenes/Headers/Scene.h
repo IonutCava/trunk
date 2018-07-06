@@ -277,8 +277,6 @@ class Scene : public Resource {
        SceneGUIElements* _GUI;
        Camera* _baseCamera;
 
-       vectorImpl<SceneGraphNode_wptr> _terrains;
-       vectorImpl<SceneGraphNode_wptr> _waterPlanes;
        SceneGraphNode_wptr _sun;
 
        vectorImpl<Player_ptr> _scenePlayers;

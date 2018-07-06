@@ -149,6 +149,14 @@ vec3<F32> UNPACK_VEC3(const F32 src) {
     return res;
 }
 
+U32 PACK_11_11_10(const vec3<F32>& value) {
+    return Divide::PACK_11_11_10(value.x, value.y, value.z);
+}
+
+void UNPACK_11_11_10(const U32 src, vec3<F32>& res) {
+    Divide::UNPACK_11_11_10(src, res.x, res.y, res.z);
+}
+
 void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
                bool normPitch, bool normRoll) {
     if (normYaw) {
