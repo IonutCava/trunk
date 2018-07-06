@@ -368,7 +368,7 @@ void glVertexArray::uploadVBAttributes(U8 vaoIndex) {
     static const U32 tangentLoc = to_const_uint(AttribLocation::VERTEX_TANGENT);
     static const U32 boneWeightLoc = to_const_uint(AttribLocation::VERTEX_BONE_WEIGHT);
     static const U32 boneIndiceLoc = to_const_uint(AttribLocation::VERTEX_BONE_INDICE);
-
+    
     glEnableVertexAttribArray(positionLoc);
     glVertexAttribFormat(positionLoc, 3, GL_FLOAT, GL_FALSE, _attributeOffset[positionLoc]);
     glVertexAttribBinding(positionLoc, 0);

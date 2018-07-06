@@ -130,7 +130,7 @@ class glGenericVertexData : public GenericVertexData {
     vectorImpl<glGenericBuffer*> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
 
-    static hashMapImpl<GLuint, BufferBindConfig> _bindConfigs;
+    static hashMapImpl<GLuint, BufferBindConfig> k_bindConfigs;
 };
 
 };  // namespace Divide

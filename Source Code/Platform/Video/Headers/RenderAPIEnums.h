@@ -45,7 +45,8 @@ enum class AttribLocation : U32 {
     VERTEX_TANGENT = 4,
     VERTEX_BONE_WEIGHT = 5,
     VERTEX_BONE_INDICE = 6,
-    VERTEX_WIDTH = 7
+    VERTEX_WIDTH = 7,
+    COUNT
 };
 
 enum class ShaderBufferLocation : U32 {
@@ -454,6 +455,27 @@ inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
 
     return GFXDataFormat::UNSIGNED_BYTE;
 }
+
+inline size_t dataSizeForType(GFXDataFormat format) {
+    switch (format) {
+        case GFXDataFormat::SIGNED_BYTE:
+        case GFXDataFormat::UNSIGNED_BYTE:
+            return sizeof(U8);
+
+        case GFXDataFormat::FLOAT_16:
+        case GFXDataFormat::SIGNED_SHORT:
+        case GFXDataFormat::UNSIGNED_SHORT:
+            return sizeof(U16);
+
+        case GFXDataFormat::FLOAT_32:
+        case GFXDataFormat::SIGNED_INT:
+        case GFXDataFormat::UNSIGNED_INT:
+            return sizeof(U32);
+    };
+
+    return 1;
+}
+
 };  // namespace Divide
 
 #endif

@@ -270,6 +270,8 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     GLuint _dummyVAO;
     /// Number of available texture units
     static GLint _maxTextureUnits;
+    /// Number of available attribute binding indices
+    static GLint _maxAttribBindings;
     /// Used to store all of the indirect draw commands
     static GLuint _indirectDrawBuffer;
     /// A cache of all fonts used

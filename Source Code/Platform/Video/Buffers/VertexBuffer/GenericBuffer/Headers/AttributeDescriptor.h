@@ -52,6 +52,7 @@ namespace Divide {
         void dataType(GFXDataFormat type);
         void wasSet(bool wasSet);
         void clean();
+        void stride(size_t stride);
 
         inline U32 attribIndex() const { return _index; }
         inline U32 offset() const { return _elementCountOffset; }
@@ -62,7 +63,8 @@ namespace Divide {
         inline GFXDataFormat dataType() const { return _type; }
         inline bool wasSet() const { return _wasSet; }
         inline bool dirty() const { return _dirty; }
-
+        
+        size_t stride() const;
     protected:
         U32 _index;
         U32 _divisor;

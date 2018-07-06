@@ -55,28 +55,27 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     _particleGPUBuffer->create(3);
 
     static F32 particleQuad[] = {
-        -0.5f, -0.5f, 0.0f, 
-         0.5f, -0.5f, 0.0f,
-        -0.5f,  0.5f, 0.0f,
-         0.5f,  0.5f, 0.0f,
+        -0.5f, -0.5f,  0.0f, 
+         0.5f, -0.5f,  0.0f,
+        -0.5f,  0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
     };
-
     _particleGPUBuffer->setBuffer(g_particleGeometryBuffer,
                                   4,
                                   3 * sizeof(F32),
                                   false,
                                   particleQuad,
                                   false,
-                                  false,
-                                  g_usePersistentlyMappedBuffers);
-    AttributeDescriptor& descriptor = _particleGPUBuffer->attribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
+                                  false);
 
-    descriptor.set(g_particleGeometryBuffer,
-                   0,
-                   3,
-                   false,
-                   0,
-                   GFXDataFormat::FLOAT_32);
+    _particleGPUBuffer
+        ->attribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION))
+        .set(g_particleGeometryBuffer,
+             0,
+             3,
+             false,
+             0,
+             GFXDataFormat::FLOAT_32);
 
     updateData(particleData);
 

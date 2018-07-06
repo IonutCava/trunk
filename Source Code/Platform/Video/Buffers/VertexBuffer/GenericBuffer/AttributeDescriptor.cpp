@@ -30,6 +30,12 @@ void AttributeDescriptor::set(U32 bufferIndex, U32 instanceDivisor, U32 componen
     this->dataType(dataType);
 }
 
+void AttributeDescriptor::stride(size_t stride) {
+    _stride = stride;
+    _dirty = true;
+    _wasSet = false;
+}
+
 void AttributeDescriptor::attribIndex(U32 index) {
     _index = index;
     _dirty = true;
@@ -65,6 +71,14 @@ void AttributeDescriptor::normalized(bool normalized) {
 void AttributeDescriptor::dataType(GFXDataFormat type) {
     _type = type;
     _dirty = true;
+}
+
+size_t AttributeDescriptor::stride() const {
+    if (_stride == 0) {
+        return componentsPerElement() * dataSizeForType(dataType());
+    }
+
+    return _stride;
 }
 
 void AttributeDescriptor::wasSet(bool wasSet) {

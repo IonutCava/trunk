@@ -50,7 +50,7 @@ public:
     virtual void updateData(size_t offset, size_t range, const bufferPtr data) = 0;
 protected:
     GLenum _target;
-    GLuint _UBOid;
+    GLuint _handle;
     size_t _alignedSize;
 };
 

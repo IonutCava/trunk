@@ -6,13 +6,13 @@
 
 namespace Divide {
 
-hashMapImpl<GLuint, glGenericVertexData::BufferBindConfig> glGenericVertexData::_bindConfigs;
+hashMapImpl<GLuint, glGenericVertexData::BufferBindConfig> glGenericVertexData::k_bindConfigs;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glGenericVertexData, 0, 0)
 bool glGenericVertexData::setIfDifferentBindRange(GLuint bindIndex, const BufferBindConfig& bindConfig) {
 
     // If this is a new index, this will just create a default config
-    BufferBindConfig& crtConfig = _bindConfigs[bindIndex];
+    BufferBindConfig& crtConfig = k_bindConfigs[bindIndex];
     if (bindConfig == crtConfig) {
         return false;
     }
@@ -244,7 +244,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
 
     glGenericBuffer* tempBuffer =
         MemoryManager_NEW glGenericBuffer(isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK
-                                                                   : GL_BUFFER,
+                                                                   : GL_ARRAY_BUFFER,
                                           persistentMapped,
                                           useRingBuffer ? queueLength()
                                                         : 1);
@@ -286,23 +286,26 @@ void glGenericVertexData::setAttributes(bool feedbackPass) {
 
 /// Update internal attribute data
 void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) {
-    U32 bufferIndex = descriptor.bufferIndex();
-
-    glGenericBuffer* buffer = _bufferObjects[bufferIndex];
-
-    BufferBindConfig crtConfig = BufferBindConfig(buffer->bufferHandle(),
-                                                  buffer->bindOffset(descriptor.offset(), queueReadIndex()),
-                                                  0/*static_cast<GLsizei>(buffer->elementSize())*/);
-
-    setIfDifferentBindRange(bufferIndex, crtConfig);
-
     // Early out if the attribute didn't change
     if (!descriptor.dirty()) {
         return;
     }
 
+    U32 bufferIndex = descriptor.bufferIndex();
+
+    glGenericBuffer* buffer = _bufferObjects[bufferIndex];
+
+    BufferBindConfig crtConfig(buffer->bufferHandle(),
+                               buffer->bindOffset(descriptor.offset(), queueReadIndex()),
+                               static_cast<GLsizei>(buffer->elementSize()));
+
+    setIfDifferentBindRange(bufferIndex, crtConfig);
+
     // If the attribute wasn't activate until now, enable it
     if (!descriptor.wasSet()) {
+        DIVIDE_ASSERT(descriptor.attribIndex() < to_uint(GL_API::_maxAttribBindings),
+                      "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
+
         glEnableVertexAttribArray(descriptor.attribIndex());
         glVertexAttribBinding(descriptor.attribIndex(), bufferIndex);
         descriptor.wasSet(true);
@@ -327,9 +330,7 @@ void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) 
                               0);
     }
 
-    if (descriptor.instanceDivisor() > 0) {
-        glVertexBindingDivisor(descriptor.attribIndex(), descriptor.instanceDivisor());
-    }
+    glVertexBindingDivisor(bufferIndex, descriptor.instanceDivisor());
 
     // Inform the descriptor that the data was updated
     descriptor.clean();

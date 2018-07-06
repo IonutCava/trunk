@@ -222,7 +222,9 @@ struct GenericDrawCommand {
     {
     }
 
-    GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 indexCount,
+    GenericDrawCommand(PrimitiveType type,
+                       U32 firstIndex,
+                       U32 indexCount,
                        U32 primCount = 1)
         : _lodIndex(0),
           _drawCount(1),

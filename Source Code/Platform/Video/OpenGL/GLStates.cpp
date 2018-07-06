@@ -12,6 +12,7 @@ namespace Divide {
 
 /// The following static variables are used to remember the current OpenGL state
 GLint  GL_API::_maxTextureUnits = 0;
+GLint  GL_API::_maxAttribBindings = 0;
 GLuint GL_API::_activeShaderProgram = 0;
 GLuint GL_API::_indirectDrawBuffer = 0;
 GLint  GL_API::_activePackUnpackAlignments[] = {1, 1};

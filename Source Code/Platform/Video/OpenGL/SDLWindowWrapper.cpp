@@ -147,6 +147,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
     _maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
+    _maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
+
+    DIVIDE_ASSERT(to_const_uint(AttribLocation::COUNT) < to_uint(_maxAttribBindings), 
+                  "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), _maxTextureUnits);
     

@@ -7,8 +7,6 @@
 namespace Divide {
 namespace GLUtil {
 
-static thread_local stringImpl g_tempOutputString;
-
 /// Print OpenGL specific messages
 void
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
@@ -57,15 +55,12 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
         } else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
             gl_severity = "Info";
         }
-
-        g_tempOutputString = Util::StringFormat(Locale::get(_ID("ERROR_GENERIC_GL_DEBUG")),
-                                                 userParam == nullptr
-                                                     ? " [Main Thread] "
-                                                     : " [Loader Thread] ",
-                                                 gl_source, gl_type, id, gl_severity, message).c_str();
-
         // Print the message and the details
-        Console::errorfn(g_tempOutputString.c_str());
+        Console::errorfn(Util::StringFormat(Locale::get(_ID("ERROR_GENERIC_GL_DEBUG")),
+                                            userParam == nullptr
+                                                       ? " [Main Thread] "
+                                                       : " [Loader Thread] ",
+                                            gl_source, gl_type, id, gl_severity, message).c_str());
     }
 
 }
