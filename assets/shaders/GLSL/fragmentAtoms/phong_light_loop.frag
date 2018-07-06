@@ -60,7 +60,7 @@ void applyLight(const in int index, const in int type, const in bool castsShadow
 }
 
 void phong_loop(in vec2 texCoord, in vec3 normal, inout MaterialProperties materialProp){
-    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel + 1)));
+    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel + 1.0f)));
 
     vec3 L; vec3 R;
 

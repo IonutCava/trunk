@@ -33,7 +33,7 @@ void loopNormalLOD(in vec3 T, in vec3 B) {
     float lightTypeInit = 0.0;
     Light currentLight;
 
-    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1)));
+    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1.0f)));
 
     for(int i = 0; i < MAX_LIGHT_COUNT; i++){
         if(currentLightCount == i) break;
@@ -83,7 +83,7 @@ void loopLowLOD() {
     float lightTypeInit = 0.0;
     Light currentLight;
 
-    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1)));
+    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1.0f)));
 
     for(int i = 0; i < MAX_LIGHT_COUNT; i++){
         if(currentLightCount == i) break;
