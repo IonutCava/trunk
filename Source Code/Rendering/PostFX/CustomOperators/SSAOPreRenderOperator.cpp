@@ -117,7 +117,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoApply.setThreadedLoading(false);
     _ssaoApplyShader = CreateResource<ShaderProgram>(cache, ssaoApply);
 
-    _ssaoGenerateConstants.set("sampleKernel",PushConstantType::VEC3, kernel);
+    _ssaoGenerateConstants.set("sampleKernel", GFX::PushConstantType::VEC3, kernel);
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator() 
@@ -136,10 +136,10 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     _ssaoOutput._rt->resize(width, height);
     _ssaoOutputBlurred._rt->resize(width, height);
 
-    _ssaoGenerateConstants.set("noiseScale", PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->getWidth()));
+    _ssaoGenerateConstants.set("noiseScale", GFX::PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->getWidth()));
 
-    _ssaoBlurConstants.set("ssaoTexelSize", PushConstantType::VEC2, vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),
-                                                                              1.0f / _ssaoOutput._rt->getHeight()));
+    _ssaoBlurConstants.set("ssaoTexelSize", GFX::PushConstantType::VEC2, vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),
+                                                                                  1.0f / _ssaoOutput._rt->getHeight()));
 }
 
 void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
@@ -150,8 +150,8 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
 
-    _ssaoGenerateConstants.set("projectionMatrix", PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache);
-    _ssaoGenerateConstants.set("invProjectionMatrix", PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
+    _ssaoGenerateConstants.set("projectionMatrix", GFX::PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache);
+    _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
 
     RenderTargetHandle screen = _parent.inputRT();
 

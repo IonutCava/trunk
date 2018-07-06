@@ -105,9 +105,9 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
 
         PushConstants pushConstants;
         // Inform the shader if we have (or don't have) a texture
-        pushConstants.set("useTexture", PushConstantType::BOOL, _texture != nullptr);
+        pushConstants.set("useTexture", GFX::PushConstantType::BOOL, _texture != nullptr);
         // Upload the primitive's world matrix to the shader
-        pushConstants.set("dvd_WorldMatrix", PushConstantType::MAT4, worldMatrix());
+        pushConstants.set("dvd_WorldMatrix", GFX::PushConstantType::MAT4, worldMatrix());
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _pipeline;

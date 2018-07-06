@@ -145,6 +145,8 @@
     <ClInclude Include="..\../Source Code/Platform\Video\Textures\Headers\Texture.h" />
     <ClInclude Include="..\../Source Code/Platform\Video\Textures\Headers\TextureDescriptor.h" />
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWatcherManager.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstant.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstantPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\../Source Code/Core\MemoryManagement\TrackedObject.cpp" />
@@ -269,6 +271,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\File\FileWatcherManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\PushConstantPool.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\PushConstants.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderAPIWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -339,6 +343,7 @@
     <None Include="..\../Source Code/Platform\Video\Headers\GFXShaderData.inl" />
     <None Include="..\../Source Code/Platform\Video\OpenGL\Headers\glResources.inl" />
     <None Include="..\../Source Code/Platform\Video\OpenGL\Shaders\Headers\glShaderProgram.inl" />
+    <None Include="..\..\Source Code\Platform\Video\Headers\PushConstantPool.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\assets\shaders\GLSL\toneMap.glsl" />

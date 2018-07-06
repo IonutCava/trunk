@@ -56,7 +56,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     blur.setThreadedLoading(false);
     _blur = CreateResource<ShaderProgram>(cache, blur);
 
-    _bloomCalcConstants.set("kernelSize", PushConstantType::INT, 10);
+    _bloomCalcConstants.set("kernelSize", GFX::PushConstantType::INT, 10);
     _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
     _vertBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
 }
@@ -80,7 +80,7 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     _bloomBlurBuffer[0]._rt->resize(width, height);
     _bloomBlurBuffer[1]._rt->resize(width, height);
 
-    _bloomCalcConstants.set("size", PushConstantType::VEC2, vec2<F32>(width, height));
+    _bloomCalcConstants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(width, height));
 }
 
 // Order: luminance calc -> bloom -> tonemap
@@ -180,7 +180,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
-    _bloomApplyConstants.set("bloomFactor", PushConstantType::FLOAT, _bloomFactor);
+    _bloomApplyConstants.set("bloomFactor", GFX::PushConstantType::FLOAT, _bloomFactor);
     pushConstantsCommand._constants = _bloomApplyConstants;
     GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
 

@@ -171,8 +171,8 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     GFX::SendPushConstantsCommand pushConstants;
     PushConstants& constants = pushConstants._constants;
     const vec3<F32>& bbPos = _aabb.getCenter();
-    constants.set("dvd_WorldMatrixOverride", PushConstantType::MAT4, mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
-    constants.set("dvd_LayerIndex", PushConstantType::UINT, to_U32(_currentArrayIndex));
+    constants.set("dvd_WorldMatrixOverride", GFX::PushConstantType::MAT4, mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
+    constants.set("dvd_LayerIndex", GFX::PushConstantType::UINT, to_U32(_currentArrayIndex));
     GFX::SendPushConstants(bufferInOut, pushConstants);
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());

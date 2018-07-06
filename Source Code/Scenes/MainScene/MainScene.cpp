@@ -45,9 +45,9 @@ void MainScene::updateLights() {
     _sun->getNode<Light>()->setDiffuseColour(_sunColour);
 
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
-    constants.set("enable_sun", PushConstantType::BOOL, true);
-    constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
-    constants.set("sun_colour", PushConstantType::VEC3, _sunColour.rgb());
+    constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
+    constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunvector);
+    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sunColour.rgb());
 
     _updateLights = false;
     return;
@@ -175,9 +175,9 @@ bool MainScene::load(const stringImpl& name) {
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<TransformComponent>()->setPositionY(state().waterLevel());
     PushConstants& constants = waterGraphNode->get<RenderingComponent>()->pushConstants();
-    constants.set("_waterShininess", PushConstantType::FLOAT, 50.0f);
-    constants.set("_noiseFactor", PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));
-    constants.set("_noiseTile", PushConstantType::VEC2, vec2<F32>(0.1f, 0.1f));
+    constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
+    constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));
+    constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(0.1f, 0.1f));
     return loadState;
 }
 

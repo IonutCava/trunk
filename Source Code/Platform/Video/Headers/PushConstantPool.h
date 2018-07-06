@@ -29,10 +29,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _COMMAND_BUFFER_POOL_H_
-#define _COMMAND_BUFFER_POOL_H_
+#ifndef _PUSH_BUFFER_POOL_H_
+#define _PUSH_BUFFER_POOL_H_
 
-#include "CommandBuffer.h"
+#include "PushConstant.h"
 #include "config.h"
 
 #include <MemoryPool/StackAlloc.h>
@@ -41,48 +41,32 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
-class CommandBufferPool {
- public:
-    CommandBufferPool();
-    ~CommandBufferPool();
+    class PushConstantPool {
+      public:
+        PushConstantPool();
+        ~PushConstantPool();
 
-    CommandBuffer* allocateBuffer();
-    void deallocateBuffer(CommandBuffer*& buffer);
+        template <typename... Args>
+        PushConstant* allocateConstant(Args&&... );
 
- private:
-    mutable SharedLock _mutex;
-    size_t _count;
-    MemoryPool<CommandBuffer, 4096 * 4> _pool;
-};
+        void deallocateConstant(PushConstant*& constans);
 
-class ScopedCommandBuffer {
-  public:
-    ScopedCommandBuffer(bool useSecondaryBuffers);
-    ~ScopedCommandBuffer();
+      private:
+        mutable SharedLock _mutex;
+        size_t _count;
+        MemoryPool<PushConstant, 4096> _pool;
+    };
 
-    inline CommandBuffer& operator()() {
-        return *_buffer;
-    }
+    static PushConstantPool s_pushConstantPool;
 
-    inline const CommandBuffer& operator()() const {
-        return *_buffer;
-    }
+    template <typename... Args>
+    PushConstant* allocatePushConstant(Args&&... args);
 
-  private:
-    GFX::CommandBuffer* _buffer;
-    bool _useSecondaryBuffers;
-};
-
-ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
-CommandBuffer* allocateCommandBuffer(bool useSecondaryBuffers = false);
-void deallocateCommandBuffer(CommandBuffer*& buffer, bool useSecondaryBuffers = false);
-
-static CommandBufferPool s_commandBufferPool;
-static CommandBufferPool s_secondaryCommandBufferPool;
+    void deallocatePushConstant(PushConstant*& buffer);
 
 }; //namespace GFX
 }; //namespace Divide
 
-#endif //_COMMAND_BUFFER_POOL_H_
+#endif //_PUSH_BUFFER_POOL_H_
 
-#include "CommandBufferPool.inl"
+#include "PushConstantPool.inl"

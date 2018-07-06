@@ -727,7 +727,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
             viewportCommand._viewport.set(0, 0, twidth, theight);
             GFX::SetViewPort(cmdBufferInOut, viewportCommand);
 
-            pushConstantsCommand._constants.set("depthInfo", PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+            pushConstantsCommand._constants.set("depthInfo", GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
             GFX::SendPushConstants(cmdBufferInOut, pushConstantsCommand);
 
             // Dummy draw command as the full screen quad is generated completely in the vertex shader

@@ -641,9 +641,9 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
-            viewPtr->_shaderData.set("lodLevel", PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set("linearSpace", PushConstantType::BOOL, false);
-            viewPtr->_shaderData.set("unpack2Channel", PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+            viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
 
             viewPtr->_name = Util::StringFormat("Reflection_", reflectRTID);
             _context.addDebugView(viewPtr);
@@ -724,9 +724,9 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
-            viewPtr->_shaderData.set("lodLevel", PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set("linearSpace", PushConstantType::BOOL, false);
-            viewPtr->_shaderData.set("unpack2Channel", PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+            viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
             viewPtr->_name = Util::StringFormat("Refraction", refractRTID);
             _context.addDebugView(viewPtr);
         } else {

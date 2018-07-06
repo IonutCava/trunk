@@ -32,162 +32,68 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PUSH_CONSTANTS_H_
 #define _PUSH_CONSTANTS_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
-#include "Platform/Headers/PlatformDefines.h"
+#include "PushConstantPool.h"
 
 namespace Divide {
-
-enum class PushConstantType : U8 {
-    BOOL = 0,
-    INT,
-    UINT,
-    FLOAT,
-    DOUBLE,
-    //BVEC2, use vec2<I32>(1/0, 1/0)
-    //BVEC3, use vec3<I32>(1/0, 1/0)
-    //BVEC4, use vec4<I32>(1/0, 1/0)
-    IVEC2,
-    IVEC3,
-    IVEC4,
-    UVEC2,
-    UVEC3,
-    UVEC4,
-    VEC2,
-    VEC3,
-    VEC4,
-    DVEC2,
-    DVEC3,
-    DVEC4,
-    IMAT2,
-    IMAT3,
-    IMAT4,
-    UMAT2,
-    UMAT3,
-    UMAT4,
-    MAT2,
-    MAT3,
-    MAT4,
-    DMAT2,
-    DMAT3,
-    DMAT4,
-    //MAT_N_x_M,
-    COUNT
-};
-
-struct PushConstant {
-    PushConstant() = default;
-
-    template<typename T>
-    PushConstant(const stringImplFast& binding,
-                 PushConstantType type,
-                 const vectorImpl<T>& values,
-                 bool flag = false)
-        : _binding(binding),
-          _type(type),
-          _values(std::cbegin(values), std::cend(values)),
-          _flag(flag),
-          _transpose(false)
-    {
-    }
-
-    template<typename T, size_t N>
-    PushConstant(const stringImplFast& binding,
-                 PushConstantType type,
-                 const std::array<T, N>& values,
-                 bool flag = false)
-        : _binding(binding),
-          _type(type),
-          _values(std::cbegin(values), std::cend(values)),
-          _flag(flag),
-          _transpose(false)
-    {
-    }
-
-    PushConstant(const PushConstant& other)
-    {
-        assign(other);
-    }
-
-    PushConstant& operator=(const PushConstant& other) {
-        return assign(other);
-    }
-
-    PushConstant& assign(const PushConstant& other) {
-        _binding = other._binding;
-        _type = other._type;
-        _flag = other._flag;
-        _values.clear();
-        _values.reserve(other._values.size());
-        for (const AnyParam& param : other._values) {
-            _values.push_back(param);
-        }
-        return *this;
-    }
-
-    //I32              _binding = -1;
-    stringImplFast   _binding;
-    PushConstantType _type = PushConstantType::COUNT;
-    vectorImpl<AnyParam> _values;
-    union {
-        bool _flag = false;
-        bool _transpose;
-    };
-};
-
 class PushConstants {
-public:
-    PushConstants()
-    {
-    }
+    public:
+    PushConstants();
+    PushConstants(const GFX::PushConstant& constant);
+    PushConstants(const vectorImpl<GFX::PushConstant>& data);
+    ~PushConstants();
 
-    PushConstants(const PushConstant& constant)
-    {
-        _data[_ID_RT(constant._binding.c_str())] = constant;
-    }
+    PushConstants(const PushConstants& other);
+    PushConstants& operator=(const PushConstants& other);
 
-    PushConstants(const vectorImpl<PushConstant>& data)
-    {
-        for (const PushConstant& constant : data) {
-            _data[_ID_RT(constant._binding.c_str())] = constant;
-        }
-    }
+    void set(const GFX::PushConstant& constant);
 
     template<typename T>
     inline void set(const stringImplFast& binding,
-                    PushConstantType type,
+                    GFX::PushConstantType type,
                     const T& value,
                     bool flag = false) {
-        _data[_ID_RT(binding.c_str())] = PushConstant{ binding, type, vectorImpl<T>{ value }, flag };
+        GFX::PushConstant*& constant = getCleared(_ID_RT(binding.c_str()));
+        constant = allocatePushConstant(binding, type, vectorImpl<T>{ value }, flag);
     }
 
     template<typename T>
     inline void set(const stringImplFast& binding,
-                    PushConstantType type,
+                    GFX::PushConstantType type,
                     const vectorImpl<T>& values,
                     bool flag = false) {
-
-        _data[_ID_RT(binding.c_str())] = PushConstant{ binding, type, values, flag };
+        GFX::PushConstant*& constant = getCleared(_ID_RT(binding.c_str()));
+        constant = allocatePushConstant(binding, type, values, flag);
     }
 
     template<typename T, size_t N>
     inline void set(const stringImplFast& binding,
-                    PushConstantType type,
+                    GFX::PushConstantType type,
                     const std::array<T, N>& values,
                     bool flag = false) {
 
-        _data[_ID_RT(binding.c_str())] = PushConstant{ binding, type, values, flag };
+        GFX::PushConstant*& constant = getCleared(_ID_RT(binding.c_str()));
+        constant = allocatePushConstant(binding, type, values, flag);
     }
+
+    void clear();
 
     inline bool empty() const { return _data.empty(); }
 
-    inline hashMapImpl<U64, PushConstant>& data() { return _data; }
+    inline hashMapImpl<U64, GFX::PushConstant*>& data() { return _data; }
 
-    inline const hashMapImpl<U64, PushConstant>& data() const { return _data; }
+    inline const hashMapImpl<U64, GFX::PushConstant*>& data() const { return _data; }
 
-protected:
-    hashMapImpl<U64, PushConstant> _data;
+    protected:
+    inline GFX::PushConstant*& getCleared(U64 nameHash) {
+        GFX::PushConstant*& constant = _data[nameHash];
+        GFX::deallocatePushConstant(constant);
+        return constant;
+    }
+
+    protected:
+    hashMapImpl<U64, GFX::PushConstant*> _data;
 };
 
-};
+}; //namespace Divide
 
 #endif //_PUSH_CONSTANTS_H_

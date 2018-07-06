@@ -35,41 +35,41 @@
 
 namespace Divide {
     namespace {
-        bool compare(PushConstantType type, const vectorImpl<AnyParam>& lhsVec, const vectorImpl<AnyParam>& rhsVec) {
+        bool compare(GFX::PushConstantType type, const vectorImpl<AnyParam>& lhsVec, const vectorImpl<AnyParam>& rhsVec) {
             for (vectorAlg::vecSize i = 0; i < lhsVec.size(); ++i) {
                 const AnyParam& lhs = lhsVec[i];
                 const AnyParam& rhs = rhsVec[i];
 
                 switch (type) {
-                    case PushConstantType::BOOL:  return lhs.constant_cast<bool>() == rhs.constant_cast<bool>();
-                    case PushConstantType::INT:   return lhs.constant_cast<I32>() == rhs.constant_cast<I32>();
-                    case PushConstantType::UINT:  return lhs.constant_cast<U32>() == rhs.constant_cast<U32>();
-                    case PushConstantType::DOUBLE:return lhs.constant_cast<D64>() == rhs.constant_cast<D64>();
-                    case PushConstantType::FLOAT: return lhs.constant_cast<F32>() == rhs.constant_cast<F32>();
-                    case PushConstantType::IVEC2: return lhs.constant_cast<vec2<I32>>() == rhs.constant_cast<vec2<I32>>();
-                    case PushConstantType::IVEC3: return lhs.constant_cast<vec3<I32>>() == rhs.constant_cast<vec3<I32>>();
-                    case PushConstantType::IVEC4: return lhs.constant_cast<vec4<I32>>() == rhs.constant_cast<vec4<I32>>();
-                    case PushConstantType::UVEC2: return lhs.constant_cast<vec2<U32>>() == rhs.constant_cast<vec2<U32>>();
-                    case PushConstantType::UVEC3: return lhs.constant_cast<vec3<U32>>() == rhs.constant_cast<vec3<U32>>();
-                    case PushConstantType::UVEC4: return lhs.constant_cast<vec4<U32>>() == rhs.constant_cast<vec4<U32>>();
-                    case PushConstantType::DVEC2: return lhs.constant_cast<vec2<D64>>() == rhs.constant_cast<vec2<D64>>();
-                    case PushConstantType::VEC2:  return lhs.constant_cast<vec2<F32>>() == rhs.constant_cast<vec2<F32>>();
-                    case PushConstantType::DVEC3: return lhs.constant_cast<vec3<D64>>() == rhs.constant_cast<vec3<D64>>();
-                    case PushConstantType::VEC3:  return lhs.constant_cast<vec3<F32>>() == rhs.constant_cast<vec3<F32>>();
-                    case PushConstantType::DVEC4: return lhs.constant_cast<vec4<D64>>() == rhs.constant_cast<vec4<D64>>();
-                    case PushConstantType::VEC4:  return lhs.constant_cast<vec4<F32>>() == rhs.constant_cast<vec4<F32>>();
-                    case PushConstantType::IMAT2: return lhs.constant_cast<mat2<I32>>() == rhs.constant_cast<mat2<I32>>();
-                    case PushConstantType::IMAT3: return lhs.constant_cast<mat3<I32>>() == rhs.constant_cast<mat3<I32>>();
-                    case PushConstantType::IMAT4: return lhs.constant_cast<mat4<I32>>() == rhs.constant_cast<mat4<I32>>();
-                    case PushConstantType::UMAT2: return lhs.constant_cast<mat2<U32>>() == rhs.constant_cast<mat2<U32>>();
-                    case PushConstantType::UMAT3: return lhs.constant_cast<mat3<U32>>() == rhs.constant_cast<mat3<U32>>();
-                    case PushConstantType::UMAT4: return lhs.constant_cast<mat4<U32>>() == rhs.constant_cast<mat4<U32>>();
-                    case PushConstantType::MAT2:  return lhs.constant_cast<mat2<F32>>() == rhs.constant_cast<mat2<F32>>();
-                    case PushConstantType::MAT3:  return lhs.constant_cast<mat3<F32>>() == rhs.constant_cast<mat3<F32>>();
-                    case PushConstantType::MAT4:  return lhs.constant_cast<mat4<F32>>() == rhs.constant_cast<mat4<F32>>();
-                    case PushConstantType::DMAT2: return lhs.constant_cast<mat2<D64>>() == rhs.constant_cast<mat2<D64>>();
-                    case PushConstantType::DMAT3: return lhs.constant_cast<mat3<D64>>() == rhs.constant_cast<mat3<D64>>();
-                    case PushConstantType::DMAT4: return lhs.constant_cast<mat4<D64>>() == rhs.constant_cast<mat4<D64>>();
+                    case GFX::PushConstantType::BOOL:  return lhs.constant_cast<bool>() == rhs.constant_cast<bool>();
+                    case GFX::PushConstantType::INT:   return lhs.constant_cast<I32>() == rhs.constant_cast<I32>();
+                    case GFX::PushConstantType::UINT:  return lhs.constant_cast<U32>() == rhs.constant_cast<U32>();
+                    case GFX::PushConstantType::DOUBLE:return lhs.constant_cast<D64>() == rhs.constant_cast<D64>();
+                    case GFX::PushConstantType::FLOAT: return lhs.constant_cast<F32>() == rhs.constant_cast<F32>();
+                    case GFX::PushConstantType::IVEC2: return lhs.constant_cast<vec2<I32>>() == rhs.constant_cast<vec2<I32>>();
+                    case GFX::PushConstantType::IVEC3: return lhs.constant_cast<vec3<I32>>() == rhs.constant_cast<vec3<I32>>();
+                    case GFX::PushConstantType::IVEC4: return lhs.constant_cast<vec4<I32>>() == rhs.constant_cast<vec4<I32>>();
+                    case GFX::PushConstantType::UVEC2: return lhs.constant_cast<vec2<U32>>() == rhs.constant_cast<vec2<U32>>();
+                    case GFX::PushConstantType::UVEC3: return lhs.constant_cast<vec3<U32>>() == rhs.constant_cast<vec3<U32>>();
+                    case GFX::PushConstantType::UVEC4: return lhs.constant_cast<vec4<U32>>() == rhs.constant_cast<vec4<U32>>();
+                    case GFX::PushConstantType::DVEC2: return lhs.constant_cast<vec2<D64>>() == rhs.constant_cast<vec2<D64>>();
+                    case GFX::PushConstantType::VEC2:  return lhs.constant_cast<vec2<F32>>() == rhs.constant_cast<vec2<F32>>();
+                    case GFX::PushConstantType::DVEC3: return lhs.constant_cast<vec3<D64>>() == rhs.constant_cast<vec3<D64>>();
+                    case GFX::PushConstantType::VEC3:  return lhs.constant_cast<vec3<F32>>() == rhs.constant_cast<vec3<F32>>();
+                    case GFX::PushConstantType::DVEC4: return lhs.constant_cast<vec4<D64>>() == rhs.constant_cast<vec4<D64>>();
+                    case GFX::PushConstantType::VEC4:  return lhs.constant_cast<vec4<F32>>() == rhs.constant_cast<vec4<F32>>();
+                    case GFX::PushConstantType::IMAT2: return lhs.constant_cast<mat2<I32>>() == rhs.constant_cast<mat2<I32>>();
+                    case GFX::PushConstantType::IMAT3: return lhs.constant_cast<mat3<I32>>() == rhs.constant_cast<mat3<I32>>();
+                    case GFX::PushConstantType::IMAT4: return lhs.constant_cast<mat4<I32>>() == rhs.constant_cast<mat4<I32>>();
+                    case GFX::PushConstantType::UMAT2: return lhs.constant_cast<mat2<U32>>() == rhs.constant_cast<mat2<U32>>();
+                    case GFX::PushConstantType::UMAT3: return lhs.constant_cast<mat3<U32>>() == rhs.constant_cast<mat3<U32>>();
+                    case GFX::PushConstantType::UMAT4: return lhs.constant_cast<mat4<U32>>() == rhs.constant_cast<mat4<U32>>();
+                    case GFX::PushConstantType::MAT2:  return lhs.constant_cast<mat2<F32>>() == rhs.constant_cast<mat2<F32>>();
+                    case GFX::PushConstantType::MAT3:  return lhs.constant_cast<mat3<F32>>() == rhs.constant_cast<mat3<F32>>();
+                    case GFX::PushConstantType::MAT4:  return lhs.constant_cast<mat4<F32>>() == rhs.constant_cast<mat4<F32>>();
+                    case GFX::PushConstantType::DMAT2: return lhs.constant_cast<mat2<D64>>() == rhs.constant_cast<mat2<D64>>();
+                    case GFX::PushConstantType::DMAT3: return lhs.constant_cast<mat3<D64>>() == rhs.constant_cast<mat3<D64>>();
+                    case GFX::PushConstantType::DMAT4: return lhs.constant_cast<mat4<D64>>() == rhs.constant_cast<mat4<D64>>();
                 };
             }
 
@@ -115,7 +115,7 @@ namespace Divide {
         };
     };
 
-    inline bool glShaderProgram::comparePushConstants(const PushConstant& lhs, const PushConstant& rhs) const {
+    inline bool glShaderProgram::comparePushConstants(const GFX::PushConstant& lhs, const GFX::PushConstant& rhs) const {
         if (lhs._type == rhs._type) {
             if (lhs._binding == rhs._binding) {
                 if (lhs._flag == rhs._flag) {
@@ -127,94 +127,94 @@ namespace Divide {
         return false;
     }
 
-    void glShaderProgram::Uniform(I32 binding, PushConstantType type, const vectorImpl<AnyParam>& values, bool flag) const {
+    void glShaderProgram::Uniform(I32 binding, GFX::PushConstantType type, const vectorImpl<AnyParam>& values, bool flag) const {
         GLsizei count = (GLsizei)values.size();
         switch (type) {
-            case PushConstantType::BOOL:
+            case GFX::PushConstantType::BOOL:
                 glProgramUniform1iv(_shaderProgramID, binding, count, castData<GLint, bool>(values)());
                 break;
-            case PushConstantType::INT:
+            case GFX::PushConstantType::INT:
                 glProgramUniform1iv(_shaderProgramID, binding, count, castData<GLint, I32>(values)());
                 break;
-            case PushConstantType::UINT:
+            case GFX::PushConstantType::UINT:
                 glProgramUniform1uiv(_shaderProgramID, binding, count, castData<GLuint, U32>(values)());
                 break;
-            case PushConstantType::DOUBLE:           // Warning! Downcasting to float -Ionut
+            case GFX::PushConstantType::DOUBLE:           // Warning! Downcasting to float -Ionut
                 glProgramUniform1fv(_shaderProgramID, binding, count, castData<GLfloat, D64>(values)());
                 break;
-            case PushConstantType::FLOAT:
+            case GFX::PushConstantType::FLOAT:
                 glProgramUniform1fv(_shaderProgramID, binding, count, castData<GLfloat, F32>(values)());
                 break;
-            case PushConstantType::IVEC2:
+            case GFX::PushConstantType::IVEC2:
                 glProgramUniform2iv(_shaderProgramID, binding, count, castData<GLint, vec2<I32>>(values)());
                 break;
-            case PushConstantType::IVEC3:
+            case GFX::PushConstantType::IVEC3:
                 glProgramUniform3iv(_shaderProgramID, binding, count, castData<GLint, vec3<I32>>(values)());
                 break;
-            case PushConstantType::IVEC4:
+            case GFX::PushConstantType::IVEC4:
                 glProgramUniform4iv(_shaderProgramID, binding, count, castData<GLint, vec4<I32>>(values)());
                 break;
-            case PushConstantType::UVEC2:
+            case GFX::PushConstantType::UVEC2:
                 glProgramUniform2uiv(_shaderProgramID, binding, count, castData<GLuint, vec2<U32>>(values)());
                 break;
-            case PushConstantType::UVEC3:
+            case GFX::PushConstantType::UVEC3:
                 glProgramUniform3uiv(_shaderProgramID, binding, count, castData<GLuint, vec3<U32>>(values)());
                 break;
-            case PushConstantType::UVEC4:
+            case GFX::PushConstantType::UVEC4:
                 glProgramUniform4uiv(_shaderProgramID, binding, count, castData<GLuint, vec4<U32>>(values)());
                 break;
-            case PushConstantType::DVEC2:            // Warning! Downcasting to float -Ionut
+            case GFX::PushConstantType::DVEC2:            // Warning! Downcasting to float -Ionut
                 glProgramUniform2fv(_shaderProgramID, binding, count, castData<GLfloat, vec2<D64>>(values)());
                 break;
-            case PushConstantType::VEC2:
+            case GFX::PushConstantType::VEC2:
                 glProgramUniform2fv(_shaderProgramID, binding, count, castData<GLfloat, vec2<F32>>(values)());
                 break;
-            case PushConstantType::DVEC3:            // Warning! Downcasting to float -Ionut
+            case GFX::PushConstantType::DVEC3:            // Warning! Downcasting to float -Ionut
                 glProgramUniform3fv(_shaderProgramID, binding, count, castData<GLfloat, vec3<D64>>(values)());
                 break;
-            case PushConstantType::VEC3:
+            case GFX::PushConstantType::VEC3:
                 glProgramUniform3fv(_shaderProgramID, binding, count, castData<GLfloat, vec3<F32>>(values)());
                 break;
-            case PushConstantType::DVEC4:            // Warning! Downcasting to float -Ionut
+            case GFX::PushConstantType::DVEC4:            // Warning! Downcasting to float -Ionut
                 glProgramUniform4fv(_shaderProgramID, binding, count, castData<GLfloat, vec4<D64>>(values)());
                 break;
-            case PushConstantType::VEC4:
+            case GFX::PushConstantType::VEC4:
                 glProgramUniform4fv(_shaderProgramID, binding, count, castData<GLfloat, vec4<F32>>(values)());
                 break;
-            case PushConstantType::IMAT2:
+            case GFX::PushConstantType::IMAT2:
                 glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<I32>>(values)());
                 break;
-            case PushConstantType::IMAT3:
+            case GFX::PushConstantType::IMAT3:
                 glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<I32>>(values)());
                 break;
-            case PushConstantType::IMAT4:
+            case GFX::PushConstantType::IMAT4:
                 glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<I32>>(values)());
                 break;
-            case PushConstantType::UMAT2:
+            case GFX::PushConstantType::UMAT2:
                 glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<U32>>(values)());
                 break;
-            case PushConstantType::UMAT3:
+            case GFX::PushConstantType::UMAT3:
                 glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<U32>>(values)());
                 break;
-            case PushConstantType::UMAT4:
+            case GFX::PushConstantType::UMAT4:
                 glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<U32>>(values)());
                 break;
-            case PushConstantType::MAT2:
+            case GFX::PushConstantType::MAT2:
                 glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<F32>>(values)());
                 break;
-            case PushConstantType::MAT3:
+            case GFX::PushConstantType::MAT3:
                 glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<F32>>(values)());
                 break;
-            case PushConstantType::MAT4: {
+            case GFX::PushConstantType::MAT4: {
                 glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<F32>>(values)());
             }break;
-            case PushConstantType::DMAT2:
+            case GFX::PushConstantType::DMAT2:
                 glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<D64>>(values)());
                 break;
-            case PushConstantType::DMAT3:
+            case GFX::PushConstantType::DMAT3:
                 glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<D64>>(values)());
                 break;
-            case PushConstantType::DMAT4:
+            case GFX::PushConstantType::DMAT4:
                 glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<D64>>(values)());
                 break;
             default:
@@ -222,7 +222,7 @@ namespace Divide {
         }
     }
 
-    inline void glShaderProgram::UploadPushConstant(const PushConstant& constant) {
+    inline void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
         I32 binding = cachedValueUpdate(constant);
 
         if (binding != -1) {
@@ -231,9 +231,9 @@ namespace Divide {
     }
 
     inline void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
-        for (auto constant : constants.data()) {
-            if (!constant.second._binding.empty() && constant.second._type != PushConstantType::COUNT) {
-                UploadPushConstant(constant.second);
+        for (auto& constant : constants.data()) {
+            if (!constant.second->_binding.empty() && constant.second->_type != GFX::PushConstantType::COUNT) {
+                UploadPushConstant(*constant.second);
             }
         }
     }

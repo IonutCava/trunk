@@ -41,9 +41,9 @@ void PhysXScene::processGUI(const U64 deltaTimeUS) {
 
 void PhysXScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
-    constants.set("enable_sun", PushConstantType::BOOL, true);
-    constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
-    constants.set("sun_colour", PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
+    constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
+    constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunvector);
+    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
 
     Scene::processInput(idx, deltaTimeUS);
 }

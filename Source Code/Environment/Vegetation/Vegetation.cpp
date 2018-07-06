@@ -378,9 +378,9 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
         GFX::BindPipeline(cmdBuffer, pipelineCmd);
 
         GFX::SendPushConstantsCommand pushConstantsCommand;
-        pushConstantsCommand._constants.set("ObjectExtent", PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
-        pushConstantsCommand._constants.set("dvd_visibilityDistance", PushConstantType::FLOAT, sceneRenderState.grassVisibility());
-        pushConstantsCommand._constants.set("cullType", PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
+        pushConstantsCommand._constants.set("ObjectExtent", GFX::PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
+        pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, sceneRenderState.grassVisibility());
+        pushConstantsCommand._constants.set("cullType", GFX::PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
         GFX::SendPushConstants(cmdBuffer, pushConstantsCommand);
 
         GFX::DrawCommand drawCmd;
@@ -413,11 +413,11 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.pipeline(0, _context.newPipeline(pipeDesc));
 
     PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("grassScale", PushConstantType::FLOAT, 1.0f);
-    constants.set("positionOffsets", PushConstantType::VEC3, _grassBlades);
-    constants.set("texCoordOffsets", PushConstantType::VEC2, _texCoord);
-    constants.set("rotationMatrices", PushConstantType::MAT3, _rotationMatrices, true);
-    constants.set("lod_metric", PushConstantType::FLOAT, 100.0f);
+    constants.set("grassScale", GFX::PushConstantType::FLOAT, 1.0f);
+    constants.set("positionOffsets", GFX::PushConstantType::VEC3, _grassBlades);
+    constants.set("texCoordOffsets", GFX::PushConstantType::VEC2, _texCoord);
+    constants.set("rotationMatrices", GFX::PushConstantType::MAT3, _rotationMatrices, true);
+    constants.set("lod_metric", GFX::PushConstantType::FLOAT, 100.0f);
     pkgInOut.pushConstants(0, constants);
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);

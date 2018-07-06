@@ -242,7 +242,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
     GenericDrawCommand cmd;
     if (_debugView) {
-        pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 4);
+        pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 4);
         GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
         cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
         {
@@ -250,7 +250,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
             drawCmd._drawCommands.push_back(cmd);
             GFX::AddDrawCommands(bufferInOut, drawCmd);
         }
-        pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 1);
+        pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 1);
         GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
         cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
         {
@@ -258,7 +258,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
             drawCmd._drawCommands.push_back(cmd);
             GFX::AddDrawCommands(bufferInOut, drawCmd);
         }
-        pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 2);
+        pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 2);
         GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
         cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
         {
@@ -272,7 +272,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
-    pushConstantsCommand._constants.set("lightCount", PushConstantType::INT, (I32)_cachedLightCount);
+    pushConstantsCommand._constants.set("lightCount", GFX::PushConstantType::INT, (I32)_cachedLightCount);
     GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
     cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
     {

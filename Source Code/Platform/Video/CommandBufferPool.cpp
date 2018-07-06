@@ -16,7 +16,7 @@ namespace {
 };
 
 CommandBufferPool::CommandBufferPool()
-    : _bufferCount(0)
+    : _count(0)
 {
 }
 
@@ -28,20 +28,20 @@ CommandBufferPool::~CommandBufferPool()
 CommandBuffer* CommandBufferPool::allocateBuffer() {
 #if defined(USE_MEMORY_POOL)
     WriteLock lock(_mutex);
-    return _pool.newElement(_bufferCount++);
+    return _pool.newElement(_count++);
 #else
     WriteLock lock(s_mutex);
     for (size_t i = 0; i < s_freeList.size(); ++i) {
         if (s_freeList[i]) {
             s_freeList[i] = false;
-            _bufferCount++;
+            _count++;
             return &s_pool[i];
         }
     }
 
     s_freeList.push_back(false);
     s_pool.emplace_back(s_pool.size());
-    s_bufferCount++;
+    _count++;
     return &s_pool.back();
 #endif
 }
@@ -60,7 +60,7 @@ void CommandBufferPool::deallocateBuffer(CommandBuffer*& buffer) {
 #endif
 
         buffer = nullptr;
-        _bufferCount--;
+        _count--;
     }
 }
 

@@ -369,7 +369,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     immediateModeShader.setThreadedLoading(false);
     _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
     assert(_textRenderShader != nullptr);
-    _textRenderConstants.set("dvd_WorldMatrix", PushConstantType::MAT4, mat4<F32>());
+    _textRenderConstants.set("dvd_WorldMatrix", GFX::PushConstantType::MAT4, mat4<F32>());
     PipelineDescriptor descriptor;
     descriptor._shaderProgram = _textRenderShader;
     descriptor._stateHash = get2DStateBlock();

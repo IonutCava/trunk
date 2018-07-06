@@ -65,7 +65,7 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     PushConstants constants;
-    constants.set("maxNumLightsPerTile", PushConstantType::UINT, _flag);
+    constants.set("maxNumLightsPerTile", GFX::PushConstantType::UINT, _flag);
     sendPushConstantsCmd._constants = constants;
     GFX::SendPushConstants(bufferInOut, sendPushConstantsCmd);
 

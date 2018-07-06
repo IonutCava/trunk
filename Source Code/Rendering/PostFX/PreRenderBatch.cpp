@@ -116,14 +116,14 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         _previousLuminance = _context.renderTargetPool().allocateRT(desc);
     }
     _toneMapConstants.set("luminanceMipLevel",
-                          PushConstantType::INT,
+                          GFX::PushConstantType::INT,
                           to_I32(_currentLuminance
                           ._rt
                           ->getAttachment(RTAttachmentType::Colour, 0)
                           .texture()
                           ->getMaxMipLevel()));
     _toneMapConstants.set("exposureMipLevel",
-                          PushConstantType::INT,
+                          GFX::PushConstantType::INT,
                           0);
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
@@ -279,7 +279,7 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
     _previousLuminance._rt->resize(1, 1);
 
     _toneMapConstants.set("luminanceMipLevel",
-                          PushConstantType::UINT, 
+                          GFX::PushConstantType::UINT,
                           _currentLuminance
                           ._rt
                           ->getAttachment(RTAttachmentType::Colour, 0)

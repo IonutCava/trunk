@@ -50,7 +50,7 @@ void PostAAPreRenderOperator::idle(const Configuration& config) {
 
     if (_postAASamples != samples) {
         _postAASamples = samples;
-        _fxaaConstants.set("dvd_qualityMultiplier", PushConstantType::INT, _postAASamples);
+        _fxaaConstants.set("dvd_qualityMultiplier", GFX::PushConstantType::INT, _postAASamples);
     }
 
     if (_idleCount == 0) {

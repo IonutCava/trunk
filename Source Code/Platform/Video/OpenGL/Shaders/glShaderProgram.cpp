@@ -664,7 +664,8 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const
                                 name);
 }
 
-I32 glShaderProgram::cachedValueUpdate(const PushConstant& constant) {
+I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
+
     const char* location = constant._binding.c_str();
     U64 locationHash = _ID_RT(location);
 
@@ -679,7 +680,7 @@ I32 glShaderProgram::cachedValueUpdate(const PushConstant& constant) {
         if (comparePushConstants(it->second, constant)) {
             return -1;
         } else {
-            it->second = constant;
+            it->second.assign(constant);
         }
     } else {
         hashAlg::emplace(_uniformsByNameHash._shaderVars, locationHash, constant);
