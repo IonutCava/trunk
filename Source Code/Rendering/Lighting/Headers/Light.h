@@ -170,19 +170,19 @@ class Light : public SceneNode {
     void onCameraChange();
 
     /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
         return true;
     }
 
     /// SceneNode concrete implementations
     bool unload();
 
-    bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn);
 
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode* const sgn, const bool distanceCheck = true);
+                  SceneGraphNode& sgn, const bool distanceCheck = true);
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
     /*----------- Shadow Mapping-------------------*/
@@ -237,16 +237,16 @@ class Light : public SceneNode {
 
     /// When the SceneGraph calls the light's render function, we draw the
     /// impostor if needed
-    virtual void render(SceneGraphNode* const sgn,
+    virtual void render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage);
 
     virtual void getDrawCommands(
-        SceneGraphNode* const sgn, const RenderStage& currentRenderStage,
+        SceneGraphNode& sgn, const RenderStage& currentRenderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 
-    void postLoad(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode& sgn);
 
     /// Set light type
     /// @param type Directional/Spot/Omni (see LightType enum)

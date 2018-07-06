@@ -44,7 +44,8 @@ void glBufferLockManager::WaitForLockedRange(size_t _lockBeginBytes,
 void glBufferLockManager::LockRange(size_t _lockBeginBytes,
                                     size_t _lockLength) {
     BufferRange newRange = {_lockBeginBytes, _lockLength};
-    GLsync syncName = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    GLsync syncName = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 
+                                 UnusedMask::GL_UNUSED_BIT);
     BufferLock newLock = {newRange, syncName};
 
     _bufferLocks.push_back(newLock);
@@ -56,11 +57,10 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes,
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::wait(GLsync* _syncObj) {
     if (_CPUUpdates) {
-        GLbitfield waitFlags = 0;
         GLuint64 waitDuration = 0;
-        while (1) {
-            GLenum waitRet =
-                glClientWaitSync(*_syncObj, waitFlags, waitDuration);
+        while (true) {
+            GLenum waitRet = glClientWaitSync(
+                *_syncObj, GL_SYNC_FLUSH_COMMANDS_BIT, waitDuration);
             if (waitRet == GL_ALREADY_SIGNALED ||
                 waitRet == GL_CONDITION_SATISFIED) {
                 return;
@@ -69,14 +69,10 @@ void glBufferLockManager::wait(GLsync* _syncObj) {
             DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED,
                           "Not sure what to do here. Probably raise an "
                           "exception or something.");
-
-            // After the first time, need to start flushing, and wait for a
-            // looong time.
-            waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;
         }
     } else {
-        glWaitSync(*_syncObj, 0, GL_TIMEOUT_IGNORED);
+        glWaitSync(*_syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);
     }
 }
 

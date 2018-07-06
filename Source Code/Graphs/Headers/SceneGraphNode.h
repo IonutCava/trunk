@@ -55,19 +55,19 @@ class SceneRoot : public SceneNode {
         setState(RES_LOADED);
     }
 
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
         return true;
     }
     bool unload() { return true; }
     bool load(const stringImpl& name) { return true; }
-    bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn);
 
    protected:
-    void render(SceneGraphNode* const sgn,
+    void render(SceneGraphNode& sgn,
                 const SceneRenderState& sceneRenderState,
                 const RenderStage& currentRenderStage) {}
-    void postLoad(SceneGraphNode* const sgn) { SceneNode::postLoad(sgn); }
-    void getDrawCommands(SceneGraphNode* const sgn,
+    void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
+    void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
@@ -82,15 +82,15 @@ class SceneTransform : public SceneNode {
         setState(RES_LOADED);
     }
 
-    void render(SceneGraphNode* const sgn,
+    void render(SceneGraphNode& sgn,
                 const SceneRenderState& sceneRenderState,
                 const RenderStage& currentRenderStage) {}
     bool onDraw(const RenderStage& currentStage) { return true; }
 
-    void postLoad(SceneGraphNode* const sgn) { return; }
+    void postLoad(SceneGraphNode& sgn) { return; }
     bool unload() { return true; }
     bool load(const stringImpl& name) { return true; }
-    bool computeBoundingBox(SceneGraphNode* const sgn) { return true; }
+    bool computeBoundingBox(SceneGraphNode& sgn) { return true; }
 };
 
 class IMPrimitive;
@@ -127,11 +127,11 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     }
     /// Create node never increments the node's ref counter (used for scene
     /// loading)
-    SceneGraphNode* createNode(SceneNode* const node,
+    SceneGraphNode& createNode(SceneNode* const node,
                                const stringImpl& name = "");
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode* addNode(SceneNode* const node, const stringImpl& name = "");
+    SceneGraphNode& addNode(SceneNode* const node, const stringImpl& name = "");
     void removeNode(SceneGraphNode* node);
     inline void deleteNode(SceneGraphNode*& node) {
         removeNode(node);
@@ -158,7 +158,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     /*Parent <-> Children*/
     inline SceneGraphNode* getParent() const { return _parent; }
     inline NodeChildren& getChildren() { return _children; }
-    void setParent(SceneGraphNode* const parent);
+    void setParent(SceneGraphNode& parent);
 
     /*Parent <-> Children*/
 

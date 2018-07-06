@@ -10,38 +10,17 @@
 // We are actually importing GL specific libraries in code mainly for
 // maintenance reasons
 // We can easily adjust them as needed. Same thing with PhysX libs
-#ifdef GLEW_MX
-#ifdef _DEBUG
-#pragma comment(lib, "CEGUIOpenGLRenderer_MX_d.lib")
-#pragma comment(lib, "glew32mxsd.lib")
-#else  //_DEBUG
-#pragma comment(lib, "CEGUIOpenGLRenderer_MX.lib")
-#pragma comment(lib, "glew32mxs.lib")
-#endif  //_DEBUG
-#else  // GLEW_MX
 #ifdef _DEBUG
 #pragma comment(lib, "CEGUIOpenGLRenderer_d.lib")
 #pragma comment(lib, "glew32sd.lib")
+#pragma comment(lib, "glbindingd.lib")
 #else  //_DEBUG
 #pragma comment(lib, "CEGUIOpenGLRenderer.lib")
 #pragma comment(lib, "glew32s.lib")
+#pragma comment(lib, "glbinding.lib")
 #endif  //_DEBUG
-#endif  // GLEW_MX
 
 #include <glim.h>
-
-#ifdef GLEW_MX
-/// GLEW_MX requirement
-static boost::thread_specific_ptr<GLEWContext> _GLEWContextPtr;
-GLEWContext* glewGetContext() { return _GLEWContextPtr.get(); }
-#if defined(OS_WINDOWS)
-static boost::thread_specific_ptr<WGLEWContext> _WGLEWContextPtr;
-WGLEWContext* wglewGetContext() { return _WGLEWContextPtr.get(); }
-#else
-static boost::thread_specific_ptr<GLXEWContext> _GLXEWContextPtr;
-GLXEWContext* glxewGetContext() { return _GLXEWContextPtr.get(); }
-#endif
-#endif  // GLEW_MX
 
 namespace Divide {
 namespace GLUtil {
@@ -69,72 +48,6 @@ void glfw_focus_callback(GLFWwindow* window, I32 focusState) {
     Application::getInstance().hasFocus(focusState != 0);
 }
 
-/// As these messages are printed if a various range of conditions are not met,
-/// it's easier to just group them in a function
-void printGLInitError(GLuint err) {
-    Console::errorfn(Locale::get("ERROR_GFX_DEVICE"), glewGetErrorString(err));
-    Console::printfn(Locale::get("WARN_SWITCH_D3D"));
-    Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
-}
-
-void destroyGlew() {
-#ifdef GLEW_MX
-    assert(_GLEWContextPtr.get() != nullptr);
-#if defined(OS_WINDOWS)
-    assert(_WGLEWContextPtr.get() != nullptr);
-#else  //! OS_WINDOWS
-    assert(_GLXEWContextPtr.get() != nullptr);
-#endif  // OS_WINDOWS
-#endif  // GLEW_MX
-}
-
-/// Glew needs extra data to be initialized if it's build with the MX flag
-void initGlew() {
-#ifdef GLEW_MX
-    if (_GLEWContextPtr.get() == nullptr) {
-        _GLEWContextPtr.reset(new GLEWContext);
-    }
-#endif  // GLEW_MX
-    // As we are using the bleeding edge of OpenGL functionality, experimental
-    // must be set to 'true';
-    glewExperimental = TRUE;
-    // Everything is set up as needed, so initialize the OpenGL API
-    GLuint err = glewInit();
-    // Check for errors and print if any (They happen more than anyone thinks)
-    // Bad drivers, old video card, corrupt GPU, anything can throw an error
-    if (GLEW_OK != err) {
-        printGLInitError(err);
-        // No need to continue, as switching to DX should be set before
-        // launching the application!
-        exit(GLEW_INIT_ERROR);
-    }
-
-#ifdef GLEW_MX
-#if defined(OS_WINDOWS)
-    /// Same as for normal GLEW initialization, but this time, init platform
-    /// specific pointers
-    if (_WGLEWContextPtr.get() == nullptr) {
-        _WGLEWContextPtr.reset(new WGLEWContext);
-    }
-
-    err = wglewInit();
-#else  //! OS_WINDOWS
-    /// Same as for normal GLEW initialization, but this time, init platform
-    /// specific pointers
-    if (_GLXEWContextPtr.get() == nullptr) {
-        _GLXEWContextPtr.reset(new GLXEWContext);
-    }
-
-    err = glxewInit();
-#endif  // OS_WINDOWS
-    if (GLEW_OK != err) {
-        printGLInitError(err);
-        exit(GLEW_INIT_ERROR);
-    }
-
-#endif  // GLEW_MX
-}  // InitGlew
-
 namespace GL_ENUM_TABLE {
 GLenum glBlendTable[BlendProperty_PLACEHOLDER];
 GLenum glBlendOpTable[BlendOperation_PLACEHOLDER];
@@ -146,8 +59,8 @@ GLenum glTextureTypeTable[TextureType_PLACEHOLDER];
 GLenum glImageFormatTable[GFXImageFormat_PLACEHOLDER];
 GLenum glPrimitiveTypeTable[PrimitiveType_PLACEHOLDER];
 GLenum glDataFormat[GDF_PLACEHOLDER];
-GLuint glWrapTable[TextureWrap_PLACEHOLDER];
-GLuint glTextureFilterTable[TextureFilter_PLACEHOLDER];
+GLenum glWrapTable[TextureWrap_PLACEHOLDER];
+GLenum glTextureFilterTable[TextureFilter_PLACEHOLDER];
 NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
 
 void fill() {
@@ -200,15 +113,15 @@ void fill() {
     glTextureTypeTable[TEXTURE_2D] = GL_TEXTURE_2D;
     glTextureTypeTable[TEXTURE_3D] = GL_TEXTURE_3D;
     glTextureTypeTable[TEXTURE_CUBE_MAP] = GL_TEXTURE_CUBE_MAP;
-    glTextureTypeTable[TEXTURE_2D_ARRAY] = GL_TEXTURE_2D_ARRAY_EXT;
+    glTextureTypeTable[TEXTURE_2D_ARRAY] = GL_TEXTURE_2D_ARRAY;
     glTextureTypeTable[TEXTURE_CUBE_ARRAY] = GL_TEXTURE_CUBE_MAP_ARRAY;
     glTextureTypeTable[TEXTURE_2D_MS] = GL_TEXTURE_2D_MULTISAMPLE;
     glTextureTypeTable[TEXTURE_2D_ARRAY_MS] = GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
 
     glImageFormatTable[LUMINANCE] = GL_LUMINANCE;
     glImageFormatTable[LUMINANCE_ALPHA] = GL_LUMINANCE_ALPHA;
-    glImageFormatTable[LUMINANCE_ALPHA16F] = GL_LUMINANCE_ALPHA16F_ARB;
-    glImageFormatTable[LUMINANCE_ALPHA32F] = GL_LUMINANCE_ALPHA32F_ARB;
+    glImageFormatTable[LUMINANCE_ALPHA16F] = gl::GL_LUMINANCE_ALPHA16F_ARB;
+    glImageFormatTable[LUMINANCE_ALPHA32F] = gl::GL_LUMINANCE_ALPHA32F_ARB;
     glImageFormatTable[INTENSITY] = GL_INTENSITY;
     glImageFormatTable[ALPHA] = GL_ALPHA;
     glImageFormatTable[RED] = GL_RED;
@@ -426,7 +339,24 @@ static GLhalf ftoh(GLfloat val) {
     return h.bits;
 }
 
-/// For use with GL_INT_2_10_10_10_REV
-// static GLuint ftopacked(GLfloat val) {
-//}
+static U32 VecTo_UNSIGNED_INT_2_10_10_10_REV(const vec4<U32>& values) {
+    U32 returnValue = 0;
+    returnValue = returnValue | (values.a << 30);
+	returnValue = returnValue | (values.b << 20);
+	returnValue = returnValue | (values.g << 10);
+	returnValue = returnValue | (values.r << 0);
+
+    return returnValue;
+}
+
+static I32 VecTo_INT_2_10_10_10_REV(const vec4<I32>& values) {
+    I32 returnValue = 0;
+    returnValue = returnValue | (values.a << 30);
+	returnValue = returnValue | (values.b << 20);
+	returnValue = returnValue | (values.g << 10);
+	returnValue = returnValue | (values.r << 0);
+
+    return returnValue;
+}
+
 }

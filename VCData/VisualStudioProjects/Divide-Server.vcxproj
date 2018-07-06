@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\Source Code\Server\Server.cpp" />
     <ClCompile Include="..\..\Source Code\Server\Utility\Patch.cpp" />
     <ClCompile Include="..\..\Source Code\Server\Utility\XMLParser.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>Divide-Server</ProjectName>
@@ -172,7 +173,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -222,7 +223,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
@@ -273,7 +274,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>

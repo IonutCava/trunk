@@ -17,7 +17,7 @@ RenderPassCuller::~RenderPassCuller() { _visibleNodes.clear(); }
 /// This method performs the visibility check on the given node and all of it's
 /// children
 /// and adds them to the RenderQueue
-void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode,
+void RenderPassCuller::cullSceneGraph(SceneGraphNode& currentNode,
                                       SceneState& sceneState) {
     bool renderingLocked = RenderPassManager::getInstance().isLocked();
 
@@ -36,7 +36,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode,
     const vec3<F32>& eyePos =
         sceneState.getRenderState().getCameraConst().getEye();
     for (SceneGraphNode* node : _visibleNodes) {
-        RenderQueue::getInstance().addNodeToQueue(node, eyePos);
+        RenderQueue::getInstance().addNodeToQueue(*node, eyePos);
     }
 
     cullSceneGraphGPU(sceneState);
@@ -49,7 +49,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode,
     }
 }
 
-void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
+void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode& currentNode,
                                          SceneRenderState& sceneRenderState) {
     // No point in updating visual information if the scene disabled object
     // rendering
@@ -62,11 +62,11 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
     // Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
 
-    if (currentNode->getParent()) {
-        currentNode->inView(false);
+    if (currentNode.getParent()) {
+        currentNode.inView(false);
         // Skip all of this for inactive nodes.
-        if (currentNode->isActive()) {
-            SceneNode* node = currentNode->getNode();
+        if (currentNode.isActive()) {
+            SceneNode* node = currentNode.getNode();
             // If this node isn't render-disabled, check if it is visible
             // Skip expensive frustum culling if we shouldn't draw the node in
             // the first place
@@ -76,7 +76,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
                 skipChildren = true;
             } else {
                 RenderingComponent* renderingCmp =
-                    currentNode->getComponent<RenderingComponent>();
+                    currentNode.getComponent<RenderingComponent>();
                 if (currentStage != SHADOW_STAGE ||
                     (currentStage == SHADOW_STAGE &&
                      (renderingCmp ? renderingCmp->castsShadows() : false))) {
@@ -86,8 +86,8 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
                             currentStage == SHADOW_STAGE ? false : true)) {
                         // If the current node is visible, add it to the render
                         // queue
-                        _visibleNodes.push_back(currentNode);
-                        currentNode->inView(true);
+                        _visibleNodes.push_back(&currentNode);
+                        currentNode.inView(true);
                     }
                 }
             }
@@ -96,8 +96,8 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
     // If we don't need to skip child testing
     if (!skipChildren) {
         for (SceneGraphNode::NodeChildren::value_type& it :
-             currentNode->getChildren()) {
-            cullSceneGraphCPU(it.second, sceneRenderState);
+             currentNode.getChildren()) {
+            cullSceneGraphCPU(*it.second, sceneRenderState);
         }
     }
 }

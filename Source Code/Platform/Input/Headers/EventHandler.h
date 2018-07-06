@@ -56,7 +56,7 @@ class EventHandler : public OIS::KeyListener,
     Kernel* _kernel;
 
    public:
-    EventHandler(InputInterface* pApp, Kernel* const kernel);
+    EventHandler(InputInterface* pApp, Kernel& kernel);
     void initialize(JoystickInterface* pJoystickInterface,
                     EffectManager* pEffectMgr);
 

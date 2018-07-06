@@ -88,10 +88,12 @@ class Box3D : public Object3D {
         _size = size;
     }
 
-    virtual bool computeBoundingBox(SceneGraphNode* const sgn) {
-        if (sgn->getBoundingBoxConst().isComputed()) return true;
-        sgn->getBoundingBox().set(vec3<F32>(-_size), vec3<F32>(_size));
-        sgn->getBoundingBox().Multiply(0.5f);
+    virtual bool computeBoundingBox(SceneGraphNode& sgn) {
+        if (sgn.getBoundingBoxConst().isComputed()) {
+            return true;
+        }
+        sgn.getBoundingBox().set(vec3<F32>(-_size), vec3<F32>(_size));
+        sgn.getBoundingBox().Multiply(0.5f);
         return SceneNode::computeBoundingBox(sgn);
     }
 

@@ -44,7 +44,7 @@ class OrbitCamera : public Camera {
     OrbitCamera(const CameraType& type = ORBIT,
                 const vec3<F32>& eye = VECTOR3_ZERO);
 
-    void setTarget(SceneGraphNode* const sgn,
+    void setTarget(SceneGraphNode& sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
 
     inline void maxRadius(F32 radius) { _maxRadius = radius; }

@@ -48,7 +48,7 @@ class Trigger : public SceneNode {
     ~Trigger();
 
     /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
         return true;
     };
     /// Checks if the unit has activated this trigger and launches the Task
@@ -76,21 +76,21 @@ class Trigger : public SceneNode {
 
     /// When the SceneGraph calls the trigger's render function, we draw the
     /// impostor if needed
-    virtual void render(SceneGraphNode* const sgn,
+    virtual void render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage);
-    void getDrawCommands(SceneGraphNode* const sgn,
+    void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
     /// SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode* const sgn, const bool distanceCheck = false) {
+                  SceneGraphNode& sgn, const bool distanceCheck = false) {
         return _drawImpostor;
     }
 
    protected:
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState) {}
 
    private:

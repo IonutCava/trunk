@@ -72,9 +72,12 @@ class Object3D : public SceneNode {
     inline ObjectType getObjectType() const { return _geometryType; }
     inline U32 getFlagMask() const { return _geometryFlagMask; }
 
-    virtual bool onDraw(SceneGraphNode* const sgn,
+    virtual bool onDraw(SceneGraphNode& sgn,
                         const RenderStage& currentStage);
-    virtual bool updateAnimations(SceneGraphNode* const sgn) { return false; }
+
+    virtual bool onDraw(const RenderStage& currentStage);
+
+    virtual bool updateAnimations(SceneGraphNode& sgn) { return false; }
     inline void setGeometryPartitionId(size_t idx) {
         _geometryPartitionId = (U32)idx;
     }
@@ -94,11 +97,11 @@ class Object3D : public SceneNode {
     bool computeTriangleList(bool force = false);
 
    protected:
-    virtual void render(SceneGraphNode* const sgn,
+    virtual void render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage);
     virtual void getDrawCommands(
-        SceneGraphNode* const sgn, const RenderStage& currentRenderStage,
+        SceneGraphNode& sgn, const RenderStage& currentRenderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();

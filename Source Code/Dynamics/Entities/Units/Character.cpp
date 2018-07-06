@@ -5,15 +5,15 @@
 
 namespace Divide {
 
-Character::Character(CharacterType type, SceneGraphNode* const node)
+Character::Character(CharacterType type, SceneGraphNode& node)
     : Unit(Unit::UNIT_TYPE_CHARACTER, node), _type(type) {
     _positionDirty = false;
     _velocityDirty = false;
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();
-    PhysicsComponent* const transform = node->getComponent<PhysicsComponent>();
-    if (node && transform) {
+    PhysicsComponent* const transform = node.getComponent<PhysicsComponent>();
+    if (transform) {
         _newPosition.set(transform->getPosition());
         _oldPosition.set(_newPosition);
         _curPosition.set(_oldPosition);

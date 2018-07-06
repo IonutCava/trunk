@@ -36,21 +36,21 @@ void Trigger::setParams(Task_ptr triggeredTask,
 
 bool Trigger::unload() { return SceneNode::unload(); }
 
-void Trigger::render(SceneGraphNode* const sgn,
+void Trigger::render(SceneGraphNode& sgn,
                      const SceneRenderState& sceneRenderState,
                      const RenderStage& currentRenderStage) {
     /// The isInView call should stop impostor rendering if needed
     if (!_triggerImpostor) {
         ResourceDescriptor impostorDesc(_name + "_impostor");
         _triggerImpostor = CreateResource<Impostor>(impostorDesc);
-        sgn->addNode(_triggerImpostor);
+        sgn.addNode(_triggerImpostor);
     }
     /// update dummy position if it is so
-    sgn->getChildren()[0]->getComponent<PhysicsComponent>()->setPosition(
+    sgn.getChildren()[0]->getComponent<PhysicsComponent>()->setPosition(
         _triggerPosition);
     _triggerImpostor->setRadius(_radius);
     _triggerImpostor->renderState().setDrawState(true);
-    sgn->addNode(_triggerImpostor)->setActive(true);
+    sgn.getChildren()[0]->setActive(true);
 }
 
 bool Trigger::check(Unit* const unit, const vec3<F32>& camEyePos) {

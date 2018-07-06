@@ -72,7 +72,7 @@ class glFramebuffer : public Framebuffer {
                         const TextureDescriptor& texDescriptor);
 
    protected:
-    GLuint _clearBufferMask;
+    ClearBufferMask _clearBufferMask;
     bool _hasDepth;
     bool _hasColor;
     bool _resolved;

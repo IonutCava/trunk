@@ -98,8 +98,8 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             light->setRange(30.0f);
             light->setCastShadows(
                 false);  // ToDo: Shadows are ... for another time -Ionut
-            _sceneGraph.getRoot()->addNode(light);
-            addLight(light);
+            _sceneGraph.getRoot().addNode(light);
+            addLight(light, _sceneGraph.getRoot());
         }
 
     _taskTimers.push_back(0.0);

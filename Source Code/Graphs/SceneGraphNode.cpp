@@ -14,13 +14,13 @@
 
 namespace Divide {
 
-bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
-    BoundingBox& bb = sgn->getBoundingBox();
+bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
+    BoundingBox& bb = sgn.getBoundingBox();
     bb.reset();
     for (const SceneGraphNode::NodeChildren::value_type& s :
-         sgn->getChildren()) {
-        sgn->addBoundingBox(s.second->getBoundingBoxConst(),
-                            s.second->getNode()->getType());
+         sgn.getChildren()) {
+        sgn.addBoundingBox(s.second->getBoundingBoxConst(),
+                           s.second->getNode()->getType());
     }
     bb.setComputed(true);
     return SceneNode::computeBoundingBox(sgn);
@@ -52,14 +52,14 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
     Material* const materialTpl = _node->getMaterialTpl();
     _components[SGNComponent::SGN_COMP_ANIMATION] = nullptr;
     _components[SGNComponent::SGN_COMP_NAVIGATION] =
-        MemoryManager_NEW NavigationComponent(this);
+        MemoryManager_NEW NavigationComponent(*this);
     _components[SGNComponent::SGN_COMP_PHYSICS] =
-        MemoryManager_NEW PhysicsComponent(this);
+        MemoryManager_NEW PhysicsComponent(*this);
     _components[SGNComponent::SGN_COMP_RENDERING] =
         MemoryManager_NEW RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
-            this);
+            *this);
 }
 
 /// If we are destroying the current graph node
@@ -122,14 +122,11 @@ bool SceneGraphNode::unload() {
 }
 
 /// Change current SceneGraphNode's parent
-void SceneGraphNode::setParent(SceneGraphNode* const parent) {
-    DIVIDE_ASSERT(parent != nullptr,
-                  "SceneGraphNode error: Can't add a new node to a null "
-                  "parent. Top level allowed is ROOT");
-    assert(parent->getGUID() != getGUID());
+void SceneGraphNode::setParent(SceneGraphNode& parent) {
+    assert(parent.getGUID() != getGUID());
 
     if (_parent) {
-        if (*_parent == *parent) {
+        if (*_parent == parent) {
             return;
         }
         // Remove us from the old parent's children map
@@ -139,7 +136,7 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
         }
     }
     // Set the parent pointer to the new parent
-    _parent = parent;
+    _parent = &parent;
     // Add ourselves in the new parent's children map
     // Time to add it to the children map
     hashAlg::pair<hashMapImpl<stringImpl, SceneGraphNode*>::iterator, bool>
@@ -155,11 +152,10 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
     // That's it. Parent Transforms will be updated in the next render pass;
 }
 
-SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,
+SceneGraphNode& SceneGraphNode::addNode(SceneNode* const node,
                                         const stringImpl& name) {
-    STUBBED(
-        "SceneGraphNode: This add/create node system is an ugly HACK so it "
-        "should probably be removed soon! -Ionut")
+    STUBBED("SceneGraphNode: This add/create node system is an ugly HACK "
+            "so it should probably be removed soon! -Ionut")
 
     if (SceneNodeGraphAttorney::hasSGNParent(*node)) {
         node->AddRef();
@@ -169,7 +165,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,
 
 /// Add a new SceneGraphNode to the current node's child list based on a
 /// SceneNode
-SceneGraphNode* SceneGraphNode::createNode(SceneNode* const node,
+SceneGraphNode& SceneGraphNode::createNode(SceneNode* const node,
                                            const stringImpl& name) {
     // assert(node != nullptr && FindResourceImpl<Resource>(node->getName()) !=
     // nullptr);
@@ -178,14 +174,16 @@ SceneGraphNode* SceneGraphNode::createNode(SceneNode* const node,
     // If we did not supply a custom name use the SceneNode's name
     SceneGraphNode* sceneGraphNode = MemoryManager_NEW SceneGraphNode(
         node, name.empty() ? node->getName() : name);
+    DIVIDE_ASSERT(sceneGraphNode != nullptr,
+    "SceneGraphNode::createNode error: New node allocation failed");
     // Set the current node as the new node's parent
-    sceneGraphNode->setParent(this);
+    sceneGraphNode->setParent(*this);
     // Do all the post load operations on the SceneNode
     // Pass a reference to the newly created SceneGraphNode in case we need
     // transforms or bounding boxes
-    SceneNodeGraphAttorney::postLoad(*node, sceneGraphNode);
+    SceneNodeGraphAttorney::postLoad(*node, *sceneGraphNode);
     // return the newly created node
-    return sceneGraphNode;
+    return *sceneGraphNode;
 }
 
 // Remove a child node from this Node
@@ -283,7 +281,7 @@ void SceneGraphNode::onCameraChange() {
     for (NodeChildren::value_type& it : _children) {
         it.second->onCameraChange();
     }
-    SceneNodeGraphAttorney::onCameraChange(*_node, this);
+    SceneNodeGraphAttorney::onCameraChange(*_node, *this);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
@@ -313,7 +311,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     // Compute the BoundingBox if it isn't already
     if (!_boundingBox.isComputed()) {
-        _node->computeBoundingBox(this);
+        _node->computeBoundingBox(*this);
         assert(_boundingBox.isComputed());
         _boundingBoxDirty = true;
     }
@@ -330,7 +328,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     getComponent<PhysicsComponent>()->transformUpdated(false);
 
-    SceneNodeGraphAttorney::sceneUpdate(*_node, deltaTime, this, sceneState);
+    SceneNodeGraphAttorney::sceneUpdate(*_node, deltaTime, *this, sceneState);
 
     if (_shouldDelete) {
         GET_ACTIVE_SCENEGRAPH().addToDeletionQueue(this);

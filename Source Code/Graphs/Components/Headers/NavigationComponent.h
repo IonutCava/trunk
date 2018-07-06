@@ -42,7 +42,7 @@ class NavigationComponent : public SGNComponent {
    public:
     enum NavigationContext { NODE_OBSTACLE = 0, NODE_IGNORE };
 
-    NavigationComponent(SceneGraphNode* const sgn);
+    NavigationComponent(SceneGraphNode& sgn);
     ~NavigationComponent();
 
     inline const NavigationContext& navigationContext() const {

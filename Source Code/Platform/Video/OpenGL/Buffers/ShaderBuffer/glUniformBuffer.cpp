@@ -48,14 +48,16 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     _target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
 
     if (_persistentMapped) {
-        GLenum usageFlag =
+        BufferAccessMask accessFlag =
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glNamedBufferStorageEXT(_UBOid, _bufferSize, NULL,
-                                usageFlag | GL_DYNAMIC_STORAGE_BIT);
+        MapBufferUsageMask usageFlag =
+            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
+            GL_MAP_COHERENT_BIT | GL_DYNAMIC_STORAGE_BIT;
+        glNamedBufferStorage(_UBOid, _bufferSize, NULL, usageFlag);
         _mappedBuffer =
-            glMapNamedBufferRangeEXT(_UBOid, 0, _bufferSize, usageFlag);
+            glMapNamedBufferRange(_UBOid, 0, _bufferSize, accessFlag);
     } else {
-        glNamedBufferDataEXT(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
+        glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
     }
 }
 
@@ -79,7 +81,7 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
         if (_persistentMapped) {
             // glNamedBufferSubDataEXT(_UBOid, 0, _bufferSize, NULL);
         } else {
-            glNamedBufferDataEXT(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
+            glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
         }
     }
 
@@ -94,7 +96,7 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
         memcpy(dst, data, size);
         _lockManager->LockRange(offset, size);
     } else {
-        glNamedBufferSubDataEXT(_UBOid, offset, size, data);
+        glNamedBufferSubData(_UBOid, offset, size, data);
     }
 }
 

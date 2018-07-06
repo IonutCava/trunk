@@ -48,7 +48,7 @@ class SGNComponent : private NonCopyable {
         ComponentType_PLACEHOLDER = 4
     };
 
-    SGNComponent(ComponentType type, SceneGraphNode* const parentSGN);
+    SGNComponent(ComponentType type, SceneGraphNode& parentSGN);
     virtual ~SGNComponent();
 
     virtual bool onDraw(RenderStage currentStage) { return true; }
@@ -63,13 +63,13 @@ class SGNComponent : private NonCopyable {
     }
 
     inline ComponentType getType() const { return _type; }
-    inline SceneGraphNode* const getSGN() const { return _parentSGN; }
+    inline SceneGraphNode& getSGN() const { return _parentSGN; }
 
    protected:
     /// The current instance using this component
     U32 _instanceID;
     /// Pointer to the SGN owning this instance of AnimationComponent
-    SceneGraphNode* _parentSGN;
+    SceneGraphNode& _parentSGN;
     ComponentType _type;
     U64 _elapsedTime;
     U64 _deltaTime;

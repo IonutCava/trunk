@@ -163,11 +163,13 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
             ? texDescriptor._mipMaxLevel
             : 1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
 
-    tex->loadData(isLayeredTexture
-                      ? 0
-                      : GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType],
-                  NULL, vec2<U16>(_width, _height), _mipMapLevel[slot],
-                  internalFormat, internalFormat);
+    tex->loadData(
+        isLayeredTexture
+            ? 0
+            : GLUtil::GLenum_to_uint(
+                  GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType]),
+        NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], internalFormat,
+        internalFormat);
 
     tex->refreshMipMaps();
     tex->Bind(0);
@@ -184,7 +186,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
         }
         if (texDescriptor.isCubeTexture() && !_layeredRendering) {
             for (GLuint i = 0; i < 6; ++i) {
-                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + i + offset;
+                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, attachPoint,
                                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                                        tex->getHandle(), 0);
@@ -193,7 +195,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
             _attOffset[slot] = _attOffset[slot - 1] + 6;
         } else if (texDescriptor._layerCount > 1 && !_layeredRendering) {
             for (GLuint i = 0; i < texDescriptor._layerCount; ++i) {
-                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + i + offset;
+                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
                 glFramebufferTextureLayer(GL_FRAMEBUFFER, attachPoint,
                                           tex->getHandle(), 0, i);
                 _colorBuffers.push_back(attachPoint);
@@ -202,9 +204,11 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
             // If we require layered rendering, or have a non-layered /
             // non-cubemap texture, attach it to a single binding point
         } else {
-            glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot,
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +
+                                                     static_cast<GLuint>(slot),
                                  tex->getHandle(), 0);
-            _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 + slot);
+            _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 +
+                                    static_cast<GLuint>(slot));
         }
     }
 }
@@ -266,8 +270,6 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
         _resolveBuffer->Create(width, height);
     }
 
-    _clearBufferMask = 0;
-
     if (_framebufferHandle <= 0) {
         glGenFramebuffers(1, &_framebufferHandle);
     }
@@ -302,12 +304,12 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
         }
     }
 
-    if (_hasColor) {
-        _clearBufferMask = _clearBufferMask | GL_COLOR_BUFFER_BIT;
-    }
-
-    if (_hasDepth) {
-        _clearBufferMask = _clearBufferMask | GL_DEPTH_BUFFER_BIT;
+    if (!_hasColor && _hasDepth) {
+        _clearBufferMask = GL_DEPTH_BUFFER_BIT;
+    } else if (_hasColor && !_hasDepth) {
+        _clearBufferMask = GL_COLOR_BUFFER_BIT;
+    } else {
+        _clearBufferMask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
     }
 
     checkStatus();
@@ -461,7 +463,7 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
     DIVIDE_ASSERT(slot < TextureDescriptor::AttachmentType_PLACEHOLDER,
                   "glFrameBuffer::DrawToLayer Error: invalid slot received!");
 
-    GLuint textureType =
+    GLenum textureType =
         GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]
                                                       ->getTextureType()];
     // only for array textures (it's better to simply ignore the command if the
@@ -507,7 +509,7 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
 void glFramebuffer::SetMipLevel(GLushort mipLevel, GLushort mipMaxLevel,
                                 GLushort writeLevel,
                                 TextureDescriptor::AttachmentType slot) {
-    GLuint textureType =
+    GLenum textureType =
         GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]
                                                       ->getTextureType()];
     // Only 2D texture support for now
@@ -540,7 +542,8 @@ void glFramebuffer::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
 
 bool glFramebuffer::checkStatus() const {
     // check FB status
-    switch (glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    switch (status) {
         case GL_FRAMEBUFFER_COMPLETE: {
             return true;
         }
@@ -550,14 +553,6 @@ bool glFramebuffer::checkStatus() const {
         }
         case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
             Console::errorfn(Locale::get("ERROR_FB_NO_IMAGE"));
-            return false;
-        }
-        case 0x8CD9 /*GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS*/: {
-            Console::errorfn(Locale::get("ERROR_FB_DIMENSIONS"));
-            return false;
-        }
-        case 0x8CDA /*GL_FRAMEBUFFER_INCOMPLETE_FORMATS*/: {
-            Console::errorfn(Locale::get("ERROR_FB_FORMAT"));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
@@ -581,7 +576,15 @@ bool glFramebuffer::checkStatus() const {
             return false;
         }
         default: {
-            Console::errorfn(Locale::get("ERROR_UNKNOWN"));
+            if (GLUtil::GLenum_to_uint(status) == 0x8CD9) {
+                /*GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS*/
+                Console::errorfn(Locale::get("ERROR_FB_DIMENSIONS"));
+            } else if (GLUtil::GLenum_to_uint(status) == 0x8CDA) {
+                 /*GL_FRAMEBUFFER_INCOMPLETE_FORMATS*/
+                Console::errorfn(Locale::get("ERROR_FB_FORMAT"));
+            } else {
+                Console::errorfn(Locale::get("ERROR_UNKNOWN"));
+            }
             return false;
         }
     };

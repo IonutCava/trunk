@@ -44,7 +44,7 @@ class SceneGraphNode;
 class RenderingComponent : public SGNComponent {
    public:
     RenderingComponent(Material* const materialInstance,
-                       SceneGraphNode* const parentSGN);
+                       SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
     /// Draw the parent scene graph node

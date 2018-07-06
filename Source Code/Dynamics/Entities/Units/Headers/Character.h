@@ -87,7 +87,7 @@ class Character : public Unit {
         CHARACTER_TYPE_PLACEHOLDER
     };
 
-    Character(CharacterType type, SceneGraphNode* const node);
+    Character(CharacterType type, SceneGraphNode& node);
     virtual ~Character();
 
     /// Set unit type

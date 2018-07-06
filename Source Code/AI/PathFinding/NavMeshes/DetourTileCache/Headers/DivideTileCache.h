@@ -199,7 +199,7 @@ class DivideTileCache {
       * This method has to be called once after construction, and before any
       *tile builds happen.
       **/
-    bool configure(SceneGraphNode* const inputGeom);
+    bool configure(SceneGraphNode& inputGeom);
 
     /**
       * Find tiles that (partially or completely) intersect the specified
@@ -284,7 +284,7 @@ class DivideTileCache {
       *
       * @see OgreDetourTileCache::TileCacheBuild(vectorImpl<Ogre::Entity*>)
       **/
-    bool TileCacheBuild(SceneGraphNode* const inputGeom);
+    bool TileCacheBuild(SceneGraphNode& inputGeom);
 
     // TODO maybe provide isLoaded(tx, ty) method
 
@@ -312,7 +312,7 @@ class DivideTileCache {
       * Don't use an arbitrary bounding box for culling the inputGeom, but use
       *getTileAlignedBox() instead!
       **/
-    bool buildTile(const I32 tx, const I32 ty, SceneGraphNode* const inputGeom);
+    bool buildTile(const I32 tx, const I32 ty, SceneGraphNode& inputGeom);
 
     /**
       * Build or rebuild a cache tiles or tiles that cover the specified
@@ -334,7 +334,7 @@ class DivideTileCache {
       * corresponding tiles. (the alternative is adding a request that is
       *processed as deferred command)
       **/
-    void buildTiles(SceneGraphNode* const inputGeom,
+    void buildTiles(SceneGraphNode& inputGeom,
                     const BoundingBox* areaToUpdate = nullptr);
 
     /**
@@ -613,7 +613,7 @@ class DivideTileCache {
       *(implemented in OgreRecast::NavMeshBuild()),
       * up till step 4.
       **/
-    I32 rasterizeTileLayers(SceneGraphNode* const geom, const I32 tx,
+    I32 rasterizeTileLayers(SceneGraphNode& geom, const I32 tx,
                             const I32 ty, const rcConfig& cfg,
                             TileCacheData* tiles, const I32 maxTiles);
 

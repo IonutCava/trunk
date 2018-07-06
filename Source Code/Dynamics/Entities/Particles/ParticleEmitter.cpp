@@ -151,22 +151,22 @@ bool ParticleEmitter::unload() {
     return SceneNode::unload();
 }
 
-void ParticleEmitter::postLoad(SceneGraphNode* const sgn) {
-    sgn->addNode(_impostor)->setActive(false);
+void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
+    sgn.addNode(_impostor).setActive(false);
     SceneNode::postLoad(sgn);
 }
 
-bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn) {
+bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
     if (!_enabled || !_created) {
         return false;
     }
 
     _updateParticleEmitterBB = true;
-    sgn->getBoundingBox().set(vec3<F32>(-5), vec3<F32>(5));
+    sgn.getBoundingBox().set(vec3<F32>(-5), vec3<F32>(5));
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void ParticleEmitter::onCameraChange(SceneGraphNode* const sgn) {
+void ParticleEmitter::onCameraChange(SceneGraphNode& sgn) {
     const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
     _particleShader->Uniform(
         "CameraRight_worldspace",
@@ -187,7 +187,7 @@ void ParticleEmitter::onCameraChange(SceneGraphNode* const sgn) {
 }
 
 void ParticleEmitter::getDrawCommands(
-    SceneGraphNode* const sgn, const RenderStage& currentRenderStage,
+    SceneGraphNode& sgn, const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     U32 particleCount = _particles->aliveCount();
@@ -196,7 +196,7 @@ void ParticleEmitter::getDrawCommands(
     }
 
     _drawCommand.renderWireframe(
-        sgn->getComponent<RenderingComponent>()->renderWireframe());
+        sgn.getComponent<RenderingComponent>()->renderWireframe());
     _drawCommand.stateHash(_particleStateBlockHash);
     _drawCommand.instanceCount(particleCount);
     _drawCommand.shaderProgram(currentRenderStage == FINAL_STAGE
@@ -208,7 +208,7 @@ void ParticleEmitter::getDrawCommands(
 
 /// When the SceneGraph calls the particle emitter's render function, we draw
 /// the impostor if needed
-void ParticleEmitter::render(SceneGraphNode* const sgn,
+void ParticleEmitter::render(SceneGraphNode& sgn,
                              const SceneRenderState& sceneRenderState,
                              const RenderStage& currentRenderStage) {
     U32 particleCount = _particles->aliveCount();
@@ -217,7 +217,7 @@ void ParticleEmitter::render(SceneGraphNode* const sgn,
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
             ->Bind(ShaderProgram::TEXTURE_UNIT1, TextureDescriptor::Depth);
         GFX_DEVICE.submitRenderCommand(
-            sgn->getComponent<RenderingComponent>()->getDrawCommands());
+            sgn.getComponent<RenderingComponent>()->getDrawCommands());
     }
 }
 
@@ -250,7 +250,7 @@ void ParticleEmitter::uploadToGPU() {
 }
 
 /// The onDraw call will emit particles
-bool ParticleEmitter::onDraw(SceneGraphNode* const sgn,
+bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              const RenderStage& currentStage) {
     if (!_enabled || _particles->aliveCount() == 0 || !_created) {
         return false;
@@ -263,18 +263,18 @@ bool ParticleEmitter::onDraw(SceneGraphNode* const sgn,
 
 /// Pre-process particles
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
-                                  SceneGraphNode* const sgn,
+                                  SceneGraphNode& sgn,
                                   SceneState& sceneState) {
     if (!_enabled || !_created) {
         return;
     }
 
-    PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
+    PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos =
         sceneState.getRenderState().getCameraConst().getEye();
 
     if (_updateParticleEmitterBB) {
-        sgn->updateBoundingBoxTransform(transform->getWorldMatrix());
+        sgn.updateBoundingBoxTransform(transform->getWorldMatrix());
         _updateParticleEmitterBB = false;
     }
 
@@ -283,7 +283,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     }
 
     U32 count = _particles->totalCount();
-    U8 lodLevel = sgn->getComponent<RenderingComponent>()->lodLevel();
+    U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
     for (U32 i = 0; i < count; ++i) {
         _particles->_misc[i].w =
             _particles->_position[i].xyz().distanceSquared(eyePos);

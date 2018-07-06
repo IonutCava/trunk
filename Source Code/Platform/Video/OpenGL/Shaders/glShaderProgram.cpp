@@ -57,7 +57,7 @@ void glShaderProgram::validateInternal() {
     // debug
     // the validation log is only retrieved if we request it. (i.e. in release,
     // if the shader is validated, it isn't retrieved)
-    if (status == GL_FALSE) {
+    if (status == 0) {
         Console::errorfn(Locale::get("GLSL_VALIDATING_PROGRAM"),
                          getName().c_str(), getLog().c_str());
     } else {
@@ -240,7 +240,8 @@ void glShaderProgram::link() {
     // driver a hint to give us access to it later
     if (Config::USE_SHADER_BINARY) {
         glProgramParameteri(_shaderProgramIDTemp,
-                            GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+                            GL_PROGRAM_BINARY_RETRIEVABLE_HINT,
+                            1);
     }
 #endif
     Console::d_printfn(Locale::get("GLSL_LINK_PROGRAM"), getName().c_str(),
@@ -266,7 +267,7 @@ void glShaderProgram::link() {
     glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
     // If linking failed, show an error, else print the result in debug builds.
     // Same getLog() method is used
-    if (linkStatus == GL_FALSE) {
+    if (linkStatus == 0) {
         Console::errorfn(Locale::get("GLSL_LINK_PROGRAM_LOG"),
                          getName().c_str(), getLog().c_str());
     } else {
@@ -348,7 +349,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &success);
             // If it loaded properly set all appropriate flags (this also
             // prevents low level access to the program's shaders)
-            if (success == GL_TRUE) {
+            if (success == 1) {
                 _loadedFromBinary = _linked = true;
                 _threadedLoading = false;
             }
@@ -826,10 +827,11 @@ void glShaderProgram::Uniform(GLint location, const mat3<GLfloat>& value,
     }
 
     if (!_bound) {
-        glProgramUniformMatrix3fv(_shaderProgramId, location, 1, rowMajor,
+        glProgramUniformMatrix3fv(_shaderProgramId, location, 1,
+                                  rowMajor ? GL_TRUE : GL_FALSE,
                                   value.mat);
     } else {
-        glUniformMatrix3fv(location, 1, rowMajor, value);
+        glUniformMatrix3fv(location, 1, rowMajor ? GL_TRUE : GL_FALSE, value);
     }
 }
 
@@ -841,10 +843,11 @@ void glShaderProgram::Uniform(GLint location, const mat4<GLfloat>& value,
     }
 
     if (!_bound) {
-        glProgramUniformMatrix4fv(_shaderProgramId, location, 1, rowMajor,
+        glProgramUniformMatrix4fv(_shaderProgramId, location, 1,
+                                  rowMajor ? GL_TRUE : GL_FALSE,
                                   value.mat);
     } else {
-        glUniformMatrix4fv(location, 1, rowMajor, value.mat);
+        glUniformMatrix4fv(location, 1, rowMajor ? GL_TRUE : GL_FALSE, value.mat);
     }
 }
 
@@ -933,10 +936,12 @@ void glShaderProgram::Uniform(GLint location,
 
     if (!_bound) {
         glProgramUniformMatrix3fv(_shaderProgramId, location,
-                                  (GLsizei)values.size(), rowMajor,
+                                  (GLsizei)values.size(),
+                                  rowMajor ? GL_TRUE : GL_FALSE,
                                   values.front());
     } else {
-        glUniformMatrix3fv(location, (GLsizei)values.size(), rowMajor,
+        glUniformMatrix3fv(location, (GLsizei)values.size(),
+                           rowMajor ? GL_TRUE : GL_FALSE,
                            values.front());
     }
 }
@@ -951,10 +956,12 @@ void glShaderProgram::Uniform(GLint location,
 
     if (!_bound) {
         glProgramUniformMatrix4fv(_shaderProgramId, location,
-                                  (GLsizei)values.size(), rowMajor,
+                                  (GLsizei)values.size(),
+                                  rowMajor ? GL_TRUE : GL_FALSE,
                                   values.front());
     } else {
-        glUniformMatrix4fv(location, (GLsizei)values.size(), rowMajor,
+        glUniformMatrix4fv(location, (GLsizei)values.size(),
+                           rowMajor ? GL_TRUE : GL_FALSE,
                            values.front());
     }
 }

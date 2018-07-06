@@ -116,7 +116,7 @@ const bool USE_1x1_VIEWPORT = false;
 /// textures are capped at 2x2 when uploaded to the GPU
 const bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers
-const bool DISABLE_PERSISTENT_BUFFER = true;
+const bool DISABLE_PERSISTENT_BUFFER = false;
 };  // namespace Profile
 
 namespace Assert {
@@ -232,5 +232,8 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 #ifndef HASH_MAP_IMP
 #define HASH_MAP_IMP 1
 #endif  // HASH_MAP_IMP
+
+/// Enable move semantings in EASTL libraries
+#define EA_COMPILER_HAS_MOVE_SEMANTICS
 
 #endif  //_CONFIG_HEADER

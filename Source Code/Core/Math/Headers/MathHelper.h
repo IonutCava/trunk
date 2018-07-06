@@ -256,8 +256,12 @@ void normalize(vec3<F32>& inputRotation, bool degrees = false,
 
 vec4<U8> toByteColor(const vec4<F32>& floatColor);
 vec3<U8> toByteColor(const vec3<F32>& floatColor);
+vec4<U32> toUIntColor(const vec4<F32>& floatColor);
+vec3<U32> toUIntColor(const vec3<F32>& floatColor);
 vec4<F32> toFloatColor(const vec4<U8>& byteColor);
 vec3<F32> toFloatColor(const vec3<U8>& byteColor);
+vec4<F32> toFloatColor(const vec4<U32>& uintColor);
+vec3<F32> toFloatColor(const vec3<U32>& uintColor);
 
 namespace Mat4 {
 template <typename T>

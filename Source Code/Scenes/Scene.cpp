@@ -56,8 +56,7 @@ bool Scene::idle() {  // Called when application is idle
         loadXMLAssets(true);
     }
 
-    if (!_sceneGraph.getRoot() ||
-        _sceneGraph.getRoot()->getChildren().empty()) {
+    if (_sceneGraph.getRoot().getChildren().empty()) {
         return false;
     }
 
@@ -66,7 +65,7 @@ bool Scene::idle() {  // Called when application is idle
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
             _sceneGraph.getRoot()
-                ->getComponent<PhysicsComponent>()
+                .getComponent<PhysicsComponent>()
                 ->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
@@ -76,9 +75,7 @@ bool Scene::idle() {  // Called when application is idle
 }
 
 void Scene::onCameraChange() {
-    if (_sceneGraph.getRoot()) {
-        _sceneGraph.getRoot()->onCameraChange();
-    }
+    _sceneGraph.getRoot().onCameraChange();
 }
 
 void Scene::postRender() {
@@ -131,29 +128,29 @@ bool Scene::loadModel(const FileData& data) {
         return false;
     }
 
-    SceneGraphNode* meshNode =
-        _sceneGraph.getRoot()->createNode(thisObj, data.ItemName);
-    meshNode->getComponent<RenderingComponent>()->castsShadows(
+    SceneGraphNode& meshNode =
+        _sceneGraph.getRoot().createNode(thisObj, data.ItemName);
+    meshNode.getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
-    meshNode->getComponent<RenderingComponent>()->receivesShadows(
+    meshNode.getComponent<RenderingComponent>()->receivesShadows(
         data.receivesShadows);
-    meshNode->getComponent<PhysicsComponent>()->setScale(data.scale);
-    meshNode->getComponent<PhysicsComponent>()->setRotation(data.orientation);
-    meshNode->getComponent<PhysicsComponent>()->setPosition(data.position);
+    meshNode.getComponent<PhysicsComponent>()->setScale(data.scale);
+    meshNode.getComponent<PhysicsComponent>()->setRotation(data.orientation);
+    meshNode.getComponent<PhysicsComponent>()->setPosition(data.position);
     if (data.staticUsage) {
-        meshNode->usageContext(SceneGraphNode::NODE_STATIC);
+        meshNode.usageContext(SceneGraphNode::NODE_STATIC);
     }
     if (data.navigationUsage) {
-        meshNode->getComponent<NavigationComponent>()->navigationContext(
+        meshNode.getComponent<NavigationComponent>()->navigationContext(
             NavigationComponent::NODE_OBSTACLE);
     }
     if (data.physicsUsage) {
-        meshNode->getComponent<PhysicsComponent>()->physicsGroup(
+        meshNode.getComponent<PhysicsComponent>()->physicsGroup(
             data.physicsPushable ? PhysicsComponent::NODE_COLLIDE
                                  : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
     }
     if (data.useHighDetailNavMesh) {
-        meshNode->getComponent<NavigationComponent>()->navigationDetailOverride(
+        meshNode.getComponent<NavigationComponent>()->navigationDetailOverride(
             true);
     }
     return true;
@@ -207,37 +204,37 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode* thisObjSGN = _sceneGraph.getRoot()->createNode(thisObj);
-    thisObjSGN->getComponent<PhysicsComponent>()->setScale(data.scale);
-    thisObjSGN->getComponent<PhysicsComponent>()->setRotation(data.orientation);
-    thisObjSGN->getComponent<PhysicsComponent>()->setPosition(data.position);
-    thisObjSGN->getComponent<RenderingComponent>()->castsShadows(
+    SceneGraphNode& thisObjSGN = _sceneGraph.getRoot().createNode(thisObj);
+    thisObjSGN.getComponent<PhysicsComponent>()->setScale(data.scale);
+    thisObjSGN.getComponent<PhysicsComponent>()->setRotation(data.orientation);
+    thisObjSGN.getComponent<PhysicsComponent>()->setPosition(data.position);
+    thisObjSGN.getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
-    thisObjSGN->getComponent<RenderingComponent>()->receivesShadows(
+    thisObjSGN.getComponent<RenderingComponent>()->receivesShadows(
         data.receivesShadows);
     if (data.staticUsage) {
-        thisObjSGN->usageContext(SceneGraphNode::NODE_STATIC);
+        thisObjSGN.usageContext(SceneGraphNode::NODE_STATIC);
     }
     if (data.navigationUsage) {
-        thisObjSGN->getComponent<NavigationComponent>()->navigationContext(
+        thisObjSGN.getComponent<NavigationComponent>()->navigationContext(
             NavigationComponent::NODE_OBSTACLE);
     }
     if (data.physicsUsage) {
-        thisObjSGN->getComponent<PhysicsComponent>()->physicsGroup(
+        thisObjSGN.getComponent<PhysicsComponent>()->physicsGroup(
             data.physicsPushable ? PhysicsComponent::NODE_COLLIDE
                                  : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
     }
     if (data.useHighDetailNavMesh) {
-        thisObjSGN->getComponent<NavigationComponent>()
+        thisObjSGN.getComponent<NavigationComponent>()
             ->navigationDetailOverride(true);
     }
     return true;
 }
 
-SceneGraphNode* const Scene::addParticleEmitter(const stringImpl& name,
-                                                const ParticleData& data,
-                                                SceneGraphNode* parentNode) {
-    assert(parentNode != nullptr && !name.empty());
+SceneGraphNode& Scene::addParticleEmitter(const stringImpl& name,
+                                          const ParticleData& data,
+                                          SceneGraphNode& parentNode) {
+    assert(!name.empty());
 
     ResourceDescriptor particleEmitter(name);
     ParticleEmitter* emitter = CreateResource<ParticleEmitter>(particleEmitter);
@@ -248,26 +245,20 @@ SceneGraphNode* const Scene::addParticleEmitter(const stringImpl& name,
 
     emitter->initData(std::make_shared<ParticleData>(data));
 
-    return parentNode->addNode(emitter);
+    return parentNode.addNode(emitter);
 }
 
-SceneGraphNode* Scene::addLight(Light* const lightItem,
-                                SceneGraphNode* const parentNode) {
+SceneGraphNode& Scene::addLight(Light* const lightItem,
+                                SceneGraphNode& parentNode) {
     assert(lightItem != nullptr);
 
     lightItem->setCastShadows(lightItem->getType() != LIGHT_TYPE_POINT);
 
-    SceneGraphNode* returnNode = nullptr;
-    if (parentNode) {
-        returnNode = parentNode->addNode(lightItem);
-    } else {
-        returnNode = _sceneGraph.getRoot()->addNode(lightItem);
-    }
-    return returnNode;
+    return parentNode.addNode(lightItem);
 }
 
-SceneGraphNode* Scene::addLight(LightType type,
-                                SceneGraphNode* const parentNode) {
+SceneGraphNode& Scene::addLight(LightType type,
+                                SceneGraphNode& parentNode) {
     const char* lightType = "";
     switch (type) {
         case LIGHT_TYPE_DIRECTIONAL:
@@ -288,9 +279,9 @@ SceneGraphNode* Scene::addLight(LightType type,
     return addLight(CreateResource<Light>(defaultLight), parentNode);
 }
 
-SceneGraphNode* Scene::addSky(Sky* const skyItem) {
+SceneGraphNode& Scene::addSky(Sky* const skyItem) {
     assert(skyItem != nullptr);
-    return _sceneGraph.getRoot()->createNode(skyItem);
+    return _sceneGraph.getRoot().createNode(skyItem);
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
@@ -302,22 +293,22 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
                    _sceneState.getFogDesc()._fogColor);
 
     loadXMLAssets();
-    SceneGraphNode* root = _sceneGraph.getRoot();
+    SceneGraphNode& root = _sceneGraph.getRoot();
     // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode* terrainTemp = root->createNode(temp);
-            terrainTemp->setActive(terrainInfo->getActive());
-            terrainTemp->usageContext(SceneGraphNode::NODE_STATIC);
+            SceneGraphNode& terrainTemp = root.createNode(temp);
+            terrainTemp.setActive(terrainInfo->getActive());
+            terrainTemp.usageContext(SceneGraphNode::NODE_STATIC);
 
             NavigationComponent* nComp =
-                terrainTemp->getComponent<NavigationComponent>();
+                terrainTemp.getComponent<NavigationComponent>();
             nComp->navigationContext(NavigationComponent::NODE_OBSTACLE);
 
             PhysicsComponent* pComp =
-                terrainTemp->getComponent<PhysicsComponent>();
+                terrainTemp.getComponent<PhysicsComponent>();
             pComp->physicsGroup(terrainInfo->getCreatePXActor()
                                     ? PhysicsComponent::NODE_COLLIDE_NO_PUSH
                                     : PhysicsComponent::NODE_COLLIDE_IGNORE);

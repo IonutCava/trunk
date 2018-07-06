@@ -118,7 +118,7 @@ bool QuadtreeNode::computeBoundingBox() {
     return true;
 }
 
-void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                                SceneState& sceneState) {
     F32 camDistance =
         _boundingSphere.getCenter().distance(

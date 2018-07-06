@@ -173,12 +173,11 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn,
+void RenderQueue::addNodeToQueue(SceneGraphNode& sgn,
                                  const vec3<F32>& eyePos) {
-    assert(sgn != nullptr);
-    RenderingComponent* renderingCmp = sgn->getComponent<RenderingComponent>();
+    RenderingComponent* renderingCmp = sgn.getComponent<RenderingComponent>();
     RenderBin* rb = getBinForNode(
-        sgn->getNode(),
+        sgn.getNode(),
         renderingCmp ? renderingCmp->getMaterialInstance() : nullptr);
     if (rb) {
         rb->addNodeToBin(sgn, eyePos);

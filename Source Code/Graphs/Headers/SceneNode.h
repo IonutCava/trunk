@@ -76,28 +76,28 @@ class SceneNode : public Resource {
     /// updates)
     /// If the node isn't ready for rendering and should be skipped this frame,
     /// the return value is false
-    virtual bool onDraw(SceneGraphNode* const sgn,
+    virtual bool onDraw(SceneGraphNode& sgn,
                         const RenderStage& currentStage) = 0;
     virtual bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION_STAGE
     virtual bool getDrawState(const RenderStage& currentStage);
     virtual void getDrawCommands(
-        SceneGraphNode* const sgn, const RenderStage& currentRenderStage,
+        SceneGraphNode& sgn, const RenderStage& currentRenderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
     /*//Rendering/Processing*/
 
     virtual bool unload();
     virtual bool isInView(const SceneRenderState& sceneRenderState,
-                          SceneGraphNode* const sgn,
+                          SceneGraphNode& sgn,
                           const bool distanceCheck = true);
     virtual void setMaterialTpl(Material* const m);
     Material* const getMaterialTpl();
 
     /// Every SceneNode computes a bounding box in it's own way.
-    virtual bool computeBoundingBox(SceneGraphNode* const sgn);
-    virtual void postDrawBoundingBox(SceneGraphNode* const sgn) const;
+    virtual bool computeBoundingBox(SceneGraphNode& sgn);
+    virtual void postDrawBoundingBox(SceneGraphNode& sgn) const;
 
     inline void setType(const SceneNodeType& type) { _type = type; }
     inline const SceneNodeType& getType() const { return _type; }
@@ -111,22 +111,22 @@ class SceneNode : public Resource {
    protected:
     /// Perform any post-draw operations (this is after releasing object and
     /// shadow states)
-    virtual void postDraw(SceneGraphNode* const sgn,
+    virtual void postDraw(SceneGraphNode& sgn,
                           const RenderStage& currentStage) { /*Nothing yet*/
     }
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
     /*Rendering/Processing*/
-    virtual void render(SceneGraphNode* const sgn,
+    virtual void render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage) = 0;
 
-    virtual void onCameraChange(SceneGraphNode* const sgn) {}
+    virtual void onCameraChange(SceneGraphNode& sgn) {}
 
     // Post insertion calls (Use this to setup child objects during creation)
-    virtual void postLoad(SceneGraphNode* const sgn) {
-        _hasSGNParent = (sgn != nullptr);
+    virtual void postLoad(SceneGraphNode& sgn) {
+        _hasSGNParent = true;
     };
 
     inline bool hasSGNParent() const { return _hasSGNParent; }
@@ -145,11 +145,11 @@ class SceneNode : public Resource {
 
 class SceneNodeRenderAttorney {
    private:
-    static void postDraw(SceneNode& node, SceneGraphNode* const sgn,
+    static void postDraw(SceneNode& node, SceneGraphNode& sgn,
                          const RenderStage& currentStage) {
         node.postDraw(sgn, currentStage);
     }
-    static void render(SceneNode& node, SceneGraphNode* const sgn,
+    static void render(SceneNode& node, SceneGraphNode& sgn,
                        const SceneRenderState& sceneRenderState,
                        const RenderStage& currentRenderStage) {
         node.render(sgn, sceneRenderState, currentRenderStage);
@@ -161,14 +161,14 @@ class SceneNodeRenderAttorney {
 class SceneNodeGraphAttorney {
    private:
     static bool hasSGNParent(SceneNode& node) { return node.hasSGNParent(); }
-    static void postLoad(SceneNode& node, SceneGraphNode* const sgn) {
+    static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }
-    static void onCameraChange(SceneNode& node, SceneGraphNode* const sgn) {
+    static void onCameraChange(SceneNode& node, SceneGraphNode& sgn) {
         node.onCameraChange(sgn);
     }
     static void sceneUpdate(SceneNode& node, const U64 deltaTime,
-                            SceneGraphNode* const sgn, SceneState& sceneState) {
+                            SceneGraphNode& sgn, SceneState& sceneState) {
         node.sceneUpdate(deltaTime, sgn, sceneState);
     }
     friend class SceneGraphNode;

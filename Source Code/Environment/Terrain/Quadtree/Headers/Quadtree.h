@@ -57,7 +57,7 @@ class Quadtree {
 
     inline U32 getChunkCount() const { return _chunkCount; }
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
     void createDrawCommands(const SceneRenderState& sceneRenderState,
                             vectorImpl<GenericDrawCommand>& drawCommandsOut);

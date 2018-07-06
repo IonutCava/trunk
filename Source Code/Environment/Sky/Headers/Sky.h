@@ -49,23 +49,23 @@ class Sky : public SceneNode {
     Sky(const stringImpl& name);
     ~Sky();
 
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
     void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor);
     /// Skies are always visible (for now. Interiors will change that. Windows
     /// will require a occlusion query(?))
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode* const sgn, const bool distanceCheck = false) {
+                  SceneGraphNode& sgn, const bool distanceCheck = false) {
         return true;
     }
 
    protected:
-    void render(SceneGraphNode* const sgn,
+    void render(SceneGraphNode& sgn,
                 const SceneRenderState& sceneRenderState,
                 const RenderStage& currentRenderStage);
-    void postLoad(SceneGraphNode* const sgn);
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void postLoad(SceneGraphNode& sgn);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
-    void getDrawCommands(SceneGraphNode* const sgn,
+    void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);

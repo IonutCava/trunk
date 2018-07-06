@@ -53,7 +53,7 @@ class Vehicle : public Unit {
         VEHICLE_TYPE_PLACEHOLDER = toBit(10)
     };
 
-    Vehicle(SceneGraphNode* const node);
+    Vehicle(SceneGraphNode& node);
     ~Vehicle();
 
     /// A vehicle can be of multiple types at once

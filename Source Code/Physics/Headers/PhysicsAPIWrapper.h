@@ -89,7 +89,7 @@ class PhysicsAPIWrapper {
                              U32 size = 1) = 0;
     virtual bool createBox(const vec3<F32>& position = VECTOR3_ZERO,
                            F32 size = 1.0f) = 0;
-    virtual bool createActor(SceneGraphNode* const node,
+    virtual bool createActor(SceneGraphNode& node,
                              const stringImpl& sceneName, PhysicsActorMask mask,
                              PhysicsCollisionGroup group) = 0;
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;

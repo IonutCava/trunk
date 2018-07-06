@@ -160,15 +160,15 @@ class Quad3D : public Object3D {
         getGeometryVB()->queueRefresh();
     }
 
-    virtual bool computeBoundingBox(SceneGraphNode* const sgn) {
-        if (sgn->getBoundingBoxConst().isComputed()) {
+    virtual bool computeBoundingBox(SceneGraphNode& sgn) {
+        if (sgn.getBoundingBoxConst().isComputed()) {
             return true;
         }
         vec3<F32> min = getGeometryVB()->getPosition()[2];
         min.z =
             +0.0025f;  //<add some depth padding for collision and nav meshes
-        sgn->getBoundingBox().setMax(getGeometryVB()->getPosition()[1]);
-        sgn->getBoundingBox().setMin(min);
+        sgn.getBoundingBox().setMax(getGeometryVB()->getPosition()[1]);
+        sgn.getBoundingBox().setMin(min);
         return SceneNode::computeBoundingBox(sgn);
     }
 };

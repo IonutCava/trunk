@@ -125,11 +125,11 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     }
     void addPatch(vectorImpl<FileData>& data);
 
-    SceneGraphNode* addLight(Light* const lightItem,
-                             SceneGraphNode* const parentNode = nullptr);
-    SceneGraphNode* addLight(LightType type,
-                             SceneGraphNode* const parentNode = nullptr);
-    SceneGraphNode* addSky(Sky* const skyItem);
+    SceneGraphNode& addLight(Light* const lightItem,
+                             SceneGraphNode& parentNode);
+    SceneGraphNode& addLight(LightType type,
+                             SceneGraphNode& parentNode);
+    SceneGraphNode& addSky(Sky* const skyItem);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
         SceneRenderStateSceneAttorney::cachedResolution(
@@ -157,9 +157,9 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     /// (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
-    SceneGraphNode* const addParticleEmitter(const stringImpl& name,
+    SceneGraphNode& addParticleEmitter(const stringImpl& name,
                                              const ParticleData& data,
-                                             SceneGraphNode* parentNode);
+                                             SceneGraphNode& parentNode);
 
     TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() {

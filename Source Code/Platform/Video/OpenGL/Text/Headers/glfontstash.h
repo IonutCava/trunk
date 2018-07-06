@@ -46,8 +46,8 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
     gl->width = width;
     gl->height = width;
     Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(GL_R8), gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(GL_LINEAR));
     Divide::GL_API::unbindTexture(0, GL_TEXTURE_2D);
     return 1;
 }

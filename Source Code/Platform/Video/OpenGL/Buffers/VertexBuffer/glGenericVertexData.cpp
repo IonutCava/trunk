@@ -262,7 +262,7 @@ void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
             // Assert if the IB creation failed
             DIVIDE_ASSERT(_indexBuffer != 0, Locale::get("ERROR_IB_INIT"));
         }
-        glNamedBufferDataEXT(
+        glNamedBufferData(
             _indexBuffer, indices.size() * sizeof(GLuint), indices.data(),
             dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
                     : GL_STATIC_DRAW);
@@ -309,13 +309,17 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount,
     if (persistentMapped) {
         // If we requested a persistently mapped buffer, we use glBufferStorage
         // to pin it in memory
-        GLenum flag =
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glNamedBufferStorageEXT(currentBuffer, bufferSize * sizeFactor, NULL,
-                                flag);
+        MapBufferUsageMask usageFlag = GL_MAP_WRITE_BIT | 
+                                       GL_MAP_PERSISTENT_BIT | 
+                                       GL_MAP_COHERENT_BIT;
+        BufferAccessMask accessFlag = GL_MAP_WRITE_BIT | 
+                                      GL_MAP_PERSISTENT_BIT | 
+                                      GL_MAP_COHERENT_BIT;
+        glNamedBufferStorage(currentBuffer, bufferSize * sizeFactor, NULL,
+                             usageFlag);
         // Map the entire buffer range
         _bufferPersistentData[buffer] =
-            glMapNamedBufferRangeEXT(currentBuffer, 0, bufferSize * 3, flag);
+            glMapNamedBufferRange(currentBuffer, 0, bufferSize * 3, accessFlag);
         DIVIDE_ASSERT(data != nullptr,
                       "glGenericVertexData error: persistent mapping failed "
                       "when setting the current buffer!");
@@ -335,11 +339,11 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount,
                            : GL_STATIC_DRAW);
         // If the buffer is not persistently mapped, allocate storage the
         // classic way
-        glNamedBufferDataEXT(currentBuffer, bufferSize * sizeFactor, NULL,
+        glNamedBufferData(currentBuffer, bufferSize * sizeFactor, NULL,
                              flag);
         // And upload sizeFactor copies of the data
         for (U8 i = 0; i < sizeFactor; ++i) {
-            glNamedBufferSubDataEXT(currentBuffer, i * bufferSize, bufferSize,
+            glNamedBufferSubData(currentBuffer, i * bufferSize, bufferSize,
                                     data);
         }
     }
@@ -368,9 +372,9 @@ void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount,
     if (!_bufferPersistent[buffer]) {
         // Update part of the data in the buffer at the specified buffer in the
         // copy that's ready for writing
-        glNamedBufferSubDataEXT(_bufferObjects[buffer],
-                                _startDestOffset[buffer] + offset,
-                                dataCurrentSize, data);
+        glNamedBufferSubData(_bufferObjects[buffer],
+                             _startDestOffset[buffer] + offset,
+                             dataCurrentSize, data);
     } else {
         GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
         // Wait for the target part of the buffer to become available for

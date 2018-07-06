@@ -76,23 +76,23 @@ class Vegetation : public SceneNode {
     void initialize(TerrainChunk* const terrainChunk);
     inline void toggleRendering(bool state) { _render = state; }
     /// parentTransform: the transform of the parent terrain node
-    void render(SceneGraphNode* const sgn,
+    void render(SceneGraphNode& sgn,
                 const SceneRenderState& sceneRenderState,
                 const RenderStage& currentRenderStage);
-    void getDrawCommands(SceneGraphNode* const sgn,
+    void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
     inline bool isInView(const SceneRenderState& sceneRenderState,
-                         SceneGraphNode* const sgn,
+                         SceneGraphNode& sgn,
                          const bool distanceCheck = true) {
         return true;
     }
 
    protected:
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& renderStage);
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& renderStage);
     void gpuCull();
 
    private:

@@ -71,18 +71,18 @@ WaterPlane::WaterPlane()
     _refractionTexture->Create(_resolution.x, _resolution.y);
 }
 
-void WaterPlane::postLoad(SceneGraphNode* const sgn) {
-    sgn->addNode(_plane);
+void WaterPlane::postLoad(SceneGraphNode& sgn) {
+    sgn.addNode(_plane);
     SceneNode::postLoad(sgn);
 }
 
-bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn) {
-    BoundingBox& bb = sgn->getBoundingBox();
+bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
+    BoundingBox& bb = sgn.getBoundingBox();
 
     if (bb.isComputed()) {
         return true;
     }
-    SceneGraphNode* planeSGN = sgn->getChildren()[0];
+    SceneGraphNode* planeSGN = sgn.getChildren()[0];
     _waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel();
     _waterDepth = GET_ACTIVE_SCENE()->state().getWaterDepth();
     planeSGN->getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
@@ -110,16 +110,16 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile,
     _paramsDirty = true;
 }
 
-void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState) {
     _cameraUnderWater =
         isPointUnderWater(sceneState.getRenderState().getCamera().getEye());
     if (_dirty) {
-        sgn->getBoundingSphere().fromBoundingBox(sgn->getBoundingBoxConst());
+        sgn.getBoundingSphere().fromBoundingBox(sgn.getBoundingBoxConst());
         _dirty = false;
     }
     if (_paramsDirty) {
-        RenderingComponent* rComp = sgn->getComponent<RenderingComponent>();
+        RenderingComponent* rComp = sgn.getComponent<RenderingComponent>();
         ShaderProgram* shader = rComp->getMaterialInstance()
                                     ->getShaderInfo(FINAL_STAGE)
                                     .getProgram();
@@ -131,10 +131,10 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
     }
 }
 
-bool WaterPlane::onDraw(SceneGraphNode* const sgn,
+bool WaterPlane::onDraw(SceneGraphNode& sgn,
                         const RenderStage& currentStage) {
     const Quaternion<F32>& orientation =
-        sgn->getComponent<PhysicsComponent>()->getOrientation();
+        sgn.getComponent<PhysicsComponent>()->getOrientation();
     if (!_orientation.compare(orientation)) {
         _orientation.set(orientation);
         updatePlaneEquation();
@@ -142,16 +142,16 @@ bool WaterPlane::onDraw(SceneGraphNode* const sgn,
     return true;
 }
 
-void WaterPlane::postDraw(SceneGraphNode* const sgn,
+void WaterPlane::postDraw(SceneGraphNode& sgn,
                           const RenderStage& currentStage) {}
 
 void WaterPlane::getDrawCommands(
-    SceneGraphNode* const sgn, const RenderStage& currentRenderStage,
+    SceneGraphNode& sgn, const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
     RenderingComponent* const renderable =
-        sgn->getComponent<RenderingComponent>();
+        sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader =
@@ -166,10 +166,10 @@ void WaterPlane::getDrawCommands(
     drawCommandsOut.push_back(cmd);
 }
 
-void WaterPlane::render(SceneGraphNode* const sgn,
+void WaterPlane::render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage) {
-    if (!_plane->onDraw(nullptr, currentRenderStage)) {
+    if (!_plane->onDraw(currentRenderStage)) {
         return;
     }
     if (!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
@@ -180,7 +180,7 @@ void WaterPlane::render(SceneGraphNode* const sgn,
     }
 
     GFX_DEVICE.submitRenderCommand(
-        sgn->getComponent<RenderingComponent>()->getDrawCommands());
+        sgn.getComponent<RenderingComponent>()->getDrawCommands());
 }
 
 bool WaterPlane::getDrawState(const RenderStage& currentStage) {

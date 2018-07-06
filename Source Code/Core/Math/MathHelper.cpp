@@ -41,9 +41,7 @@ vectorImpl<stringImpl> split(const stringImpl& input, char delimiter) {
 }
 
 vec4<U8> toByteColor(const vec4<F32>& floatColor) {
-    return vec4<U8>(static_cast<U8>(floatColor.r * 255),
-                    static_cast<U8>(floatColor.g * 255),
-                    static_cast<U8>(floatColor.b * 255),
+    return vec4<U8>(toByteColor(floatColor.rgb()),
                     static_cast<U8>(floatColor.a * 255));
 }
 
@@ -53,17 +51,38 @@ vec3<U8> toByteColor(const vec3<F32>& floatColor) {
                     static_cast<U8>(floatColor.b * 255));
 }
 
+vec4<U32> toUIntColor(const vec4<F32>& floatColor) {
+    return vec4<U32>(toUIntColor(floatColor.rgb()),
+                     static_cast<U32>(floatColor.a * 255));
+}
+
+vec3<U32> toUIntColor(const vec3<F32>& floatColor) {
+    vec3<U8> tempColor(toByteColor(floatColor));
+    return vec3<U32>(static_cast<U32>(tempColor.r),
+                     static_cast<U32>(tempColor.g),
+                     static_cast<U32>(tempColor.b));
+}
+
 vec4<F32> toFloatColor(const vec4<U8>& byteColor) {
-    return vec4<F32>(static_cast<F32>(byteColor.r / 255),
-                     static_cast<F32>(byteColor.g / 255),
-                     static_cast<F32>(byteColor.b / 255),
-                     static_cast<F32>(byteColor.a / 255));
+    return vec4<F32>(toFloatColor(byteColor.rgb()),
+                     byteColor.a / 255.0f);
 }
 
 vec3<F32> toFloatColor(const vec3<U8>& byteColor) {
-    return vec3<F32>(static_cast<F32>(byteColor.r / 255),
-                     static_cast<F32>(byteColor.g / 255),
-                     static_cast<F32>(byteColor.b / 255));
+    return vec3<F32>(byteColor.r / 255.0f,
+                     byteColor.g / 255.0f,
+                     byteColor.b / 255.0f);
+}
+
+vec4<F32> toFloatColor(const vec4<U32>& uintColor) {
+    return vec4<F32>(toFloatColor(uintColor.rgb()),
+                     uintColor.a / 255.0f);
+}
+
+vec3<F32> toFloatColor(const vec3<U32>& uintColor) {
+    return vec3<F32>(uintColor.r / 255.0f,
+                     uintColor.g / 255.0f,
+                     uintColor.b / 255.0f);
 }
 
 void normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,

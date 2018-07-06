@@ -406,16 +406,16 @@ namespace NS_GLIM
             switch (it->second.m_DataType)
             {
             case GLIM_1F:
-                glVertexAttribPointer (iAttributeArray, 1, GL_FLOAT, false, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
+                glVertexAttribPointer (iAttributeArray, 1, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
             case GLIM_2F:
-                glVertexAttribPointer (iAttributeArray, 2, GL_FLOAT, false, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
+                glVertexAttribPointer (iAttributeArray, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
             case GLIM_3F:
-                glVertexAttribPointer (iAttributeArray, 3, GL_FLOAT, false, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
+                glVertexAttribPointer (iAttributeArray, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
             case GLIM_4F:
-                glVertexAttribPointer (iAttributeArray, 4, GL_FLOAT, false, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
+                glVertexAttribPointer (iAttributeArray, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
             case GLIM_1I:
                 glVertexAttribIPointer (iAttributeArray, 1, GL_INT, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
@@ -430,14 +430,14 @@ namespace NS_GLIM
                 glVertexAttribIPointer (iAttributeArray, 4, GL_INT, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
             case GLIM_4UB:
-                glVertexAttribPointer (iAttributeArray, 4, GL_UNSIGNED_BYTE, true, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
+                glVertexAttribPointer (iAttributeArray, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
             }
         }
 
         // set the pointer for position last
         glEnableVertexAttribArray (m_VertAttribLocation);
-        glVertexAttribPointer (m_VertAttribLocation, 3, GL_FLOAT, false, 0, BUFFER_OFFSET (0));
+        glVertexAttribPointer (m_VertAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (0));
         
     }
 
@@ -508,25 +508,25 @@ namespace NS_GLIM
 
         // upload the index buffer for the points
         if (m_uiPointElements > 0) {
-            glNamedBufferDataEXT (m_uiElementBufferID_Points, m_uiPointElements * sizeof(unsigned int), m_IndexBuffer_Points.data(), GL_STATIC_DRAW);
+            glNamedBufferData (m_uiElementBufferID_Points, m_uiPointElements * sizeof(unsigned int), m_IndexBuffer_Points.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Points.clear ();
         }
             
         // upload the index buffer for the lines
         if (m_uiLineElements > 0) {
-            glNamedBufferDataEXT (m_uiElementBufferID_Lines, m_uiLineElements * sizeof(unsigned int), m_IndexBuffer_Lines.data(), GL_STATIC_DRAW);
+            glNamedBufferData (m_uiElementBufferID_Lines, m_uiLineElements * sizeof(unsigned int), m_IndexBuffer_Lines.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Lines.clear ();
         }
 
         // upload the index buffer for the triangles
         if (m_uiTriangleElements > 0) {
-            glNamedBufferDataEXT (m_uiElementBufferID_Triangles, m_uiTriangleElements * sizeof(unsigned int), m_IndexBuffer_Triangles.data(), GL_STATIC_DRAW);
+            glNamedBufferData (m_uiElementBufferID_Triangles, m_uiTriangleElements * sizeof(unsigned int), m_IndexBuffer_Triangles.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Triangles.clear ();
         }
 
         // upload the index buffer for the wireframe
         if (m_uiWireframeElements > 0) {
-            glNamedBufferDataEXT (m_uiElementBufferID_Wireframe, m_uiWireframeElements * sizeof(unsigned int), m_IndexBuffer_Wireframe.data(), GL_STATIC_DRAW);
+            glNamedBufferData (m_uiElementBufferID_Wireframe, m_uiWireframeElements * sizeof(unsigned int), m_IndexBuffer_Wireframe.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Wireframe.clear ();
         }
     }

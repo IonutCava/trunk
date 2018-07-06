@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-PhysicsComponent::PhysicsComponent(SceneGraphNode* const parentSGN)
+PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::SGN_COMP_PHYSICS, parentSGN),
       _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
       _transformUpdated(true),
@@ -54,19 +54,19 @@ void PhysicsComponent::physicsAsset(PhysicsAsset* const asset) {
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
     for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN->getChildren()) {
+         _parentSGN.getChildren()) {
         it.second->getComponent<PhysicsComponent>()->cookCollisionMesh(
             sceneName);
     }
 
-    if (_parentSGN->getNode()->getType() == TYPE_OBJECT3D) {
+    if (_parentSGN.getNode()->getType() == TYPE_OBJECT3D) {
         U32 obj3DExclussionMask =
             Object3D::TEXT_3D | Object3D::MESH | Object3D::FLYWEIGHT;
         if (!bitCompare(obj3DExclussionMask,
-                        _parentSGN->getNode<Object3D>()->getObjectType())) {
+                        _parentSGN.getNode<Object3D>()->getObjectType())) {
             PHYSICS_DEVICE.createActor(
                 _parentSGN, sceneName,
-                _parentSGN->usageContext() == SceneGraphNode::NODE_STATIC
+                _parentSGN.usageContext() == SceneGraphNode::NODE_STATIC
                     ? MASK_RIGID_STATIC
                     : MASK_RIGID_DYNAMIC,
                 _physicsCollisionGroup == NODE_COLLIDE_IGNORE
@@ -334,7 +334,7 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor,
         _worldMatrix.identity();
     }
 
-    const SceneGraphNode* const parent = _parentSGN->getParent();
+    const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
         _worldMatrix *=
             parent->getComponent<PhysicsComponent>()->getWorldMatrix(
@@ -352,7 +352,7 @@ const vec3<F32>& PhysicsComponent::getScale(const bool local) {
         _scaleCache.set(1.0f);
     }
 
-    const SceneGraphNode* const parent = _parentSGN->getParent();
+    const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
         _scaleCache *=
             parent->getComponent<PhysicsComponent>()->getScale(local);
@@ -369,7 +369,7 @@ const vec3<F32>& PhysicsComponent::getPosition(const bool local) {
         _positionCache.set(0.0f);
     }
 
-    const SceneGraphNode* const parent = _parentSGN->getParent();
+    const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
         _positionCache +=
             parent->getComponent<PhysicsComponent>()->getPosition(local);
@@ -386,7 +386,7 @@ const Quaternion<F32>& PhysicsComponent::getOrientation(const bool local) {
         _orientationCache.identity();
     }
 
-    const SceneGraphNode* const parent = _parentSGN->getParent();
+    const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
         _orientationCache.set(parent->getComponent<PhysicsComponent>()
                                   ->getOrientation(local)

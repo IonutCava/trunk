@@ -107,7 +107,7 @@ void glShader::validate() {
     vectorImpl<char> shaderLog(length);
     glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
     shaderLog.push_back('\n');
-    if (status == GL_FALSE) {
+    if (status == 0) {
         Console::errorfn(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),
                          &shaderLog[0]);
     } else {

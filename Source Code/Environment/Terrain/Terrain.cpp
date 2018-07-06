@@ -54,13 +54,13 @@ bool Terrain::unload() {
     return SceneNode::unload();
 }
 
-void Terrain::postLoad(SceneGraphNode* const sgn) {
-    SceneGraphNode* planeSGN = sgn->addNode(_plane);
-    planeSGN->setActive(false);
+void Terrain::postLoad(SceneGraphNode& sgn) {
+    SceneGraphNode& planeSGN = sgn.addNode(_plane);
+    planeSGN.setActive(false);
     _plane->computeBoundingBox(planeSGN);
     computeBoundingBox(sgn);
     for (TerrainChunk* chunk : _terrainChunks) {
-        sgn->addNode(TerrainChunkTerrainAttorney::getVegetation(*chunk));
+        sgn.addNode(TerrainChunkTerrainAttorney::getVegetation(*chunk));
     }
     SceneNode::postLoad(sgn);
 }
@@ -122,30 +122,31 @@ void Terrain::buildQuadtree() {
     }
 }
 
-bool Terrain::computeBoundingBox(SceneGraphNode* const sgn) {
+bool Terrain::computeBoundingBox(SceneGraphNode& sgn) {
     // Inform the scenegraph of our new BB
-    sgn->getBoundingBox() = _boundingBox;
+    sgn.getBoundingBox() = _boundingBox;
     return SceneNode::computeBoundingBox(sgn);
 }
 
 bool Terrain::isInView(const SceneRenderState& sceneRenderState,
-                       SceneGraphNode* const sgn, const bool distanceCheck) {
+                       SceneGraphNode& sgn, const bool distanceCheck) {
     _terrainInView = SceneNode::isInView(sceneRenderState, sgn, distanceCheck);
     _planeInView = _terrainInView
                        ? false
                        : _plane->isInView(sceneRenderState,
-                                          sgn->getChildren()[0], distanceCheck);
+                                          *sgn.getChildren()[0],
+                                          distanceCheck);
 
     return _terrainInView || _planeInView;
 }
 
-void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                           SceneState& sceneState) {
     _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Terrain::getDrawCommands(SceneGraphNode* const sgn,
+void Terrain::getDrawCommands(SceneGraphNode& sgn,
                               const RenderStage& currentRenderStage,
                               SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
@@ -162,7 +163,7 @@ void Terrain::getDrawCommands(SceneGraphNode* const sgn,
     }
 
     RenderingComponent* const renderable =
-        sgn->getComponent<RenderingComponent>();
+        sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader = renderable->getDrawShader(
@@ -202,7 +203,7 @@ void Terrain::getDrawCommands(SceneGraphNode* const sgn,
     }
 }
 
-void Terrain::postDrawBoundingBox(SceneGraphNode* const sgn) const {
+void Terrain::postDrawBoundingBox(SceneGraphNode& sgn) const {
     if (_drawBBoxes) {
         _terrainQuadtree.drawBBox();
     }

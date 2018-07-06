@@ -43,6 +43,10 @@
 struct glslopt_ctx;
 struct FONScontext;
 
+namespace CEGUI {
+    class OpenGL3Renderer;
+};
+
 namespace Divide {
 
 /// OpenGL implementation of the RenderAPIWrapper
@@ -146,15 +150,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void threadedLoadCallback() override;
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in debug builds
-    inline GLuint64 getFrameDurationGPU() override {
-    #ifdef _DEBUG
-        // The returned results are 4 frames old!
-        glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT,
-                              &FRAME_DURATION_GPU);
-    #endif
-
-        return FRAME_DURATION_GPU;
-    }
+    GLuint64 getFrameDurationGPU() override;
     /// Return the OpenGL framebuffer handle bound and assigned for the specified
     /// usage
     inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage) {

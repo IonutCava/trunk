@@ -94,18 +94,18 @@ void WarSceneAISceneImpl::initInternal() {
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
         _visualSensor->followSceneGraphNode(
-            g_myTeamContainer, member.second->getUnitRef()->getBoundNode());
+            g_myTeamContainer, *member.second->getUnitRef()->getBoundNode());
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
         _visualSensor->followSceneGraphNode(
-            g_enemyTeamContainer, enemy.second->getUnitRef()->getBoundNode());
+            g_enemyTeamContainer, *enemy.second->getUnitRef()->getBoundNode());
     }
 
     _visualSensor->followSceneGraphNode(g_flagContainer,
-                                        WorkingMemory::_flags[0].value());
+                                        *WorkingMemory::_flags[0].value());
     _visualSensor->followSceneGraphNode(g_flagContainer,
-                                        WorkingMemory::_flags[1].value());
+                                        *WorkingMemory::_flags[1].value());
 
     _initialFlagPositions[0].set(WorkingMemory::_flags[0]
                                      .value()
@@ -294,7 +294,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
             vec3<F32> prevScale(pComp->getScale());
 
             SceneGraphNode* targetNode = _entity->getUnitRef()->getBoundNode();
-            _workingMemory._flags[flag].value()->setParent(targetNode);
+            _workingMemory._flags[flag].value()->setParent(*targetNode);
             pComp->setPosition(vec3<F32>(0.0f, 0.75f, 1.5f));
             pComp->setScale(
                 prevScale /
@@ -385,8 +385,10 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
                   "WarScene error: INVALID TEAM FOR INPUT UPDATE");
     const SceneGraphNode* const currentNode =
         _entity->getUnitRef()->getBoundNode();
+    assert(currentNode != nullptr);
     const SceneGraphNode* const enemyFlag =
         _workingMemory._flags[1 - currentTeam->getTeamID()].value();
+    assert(enemyFlag != nullptr);
 
     bool state = false;
     const BoundingBox& bb1 = currentNode->getBoundingBoxConst();
@@ -412,6 +414,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
         case ACTION_RETURN_FLAG: {
             const SceneGraphNode* const ownFlag =
                 _workingMemory._flags[currentTeam->getTeamID()].value();
+            assert(ownFlag != nullptr);
             const BoundingBox& ownFlagBB = ownFlag->getBoundingBoxConst();
             // Our flag is in its original position and the 2 flags are touching
             const vec3<F32>& flagPos =

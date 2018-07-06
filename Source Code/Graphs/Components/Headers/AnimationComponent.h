@@ -49,7 +49,7 @@ class AnimationComponent : public SGNComponent {
         frameIndexes;
 
     AnimationComponent(SceneAnimator* animator,
-                       SceneGraphNode* const parentSGN);
+                       SceneGraphNode& parentSGN);
     ~AnimationComponent();
     bool onDraw(RenderStage currentStage);
 

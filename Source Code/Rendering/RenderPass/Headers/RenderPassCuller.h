@@ -50,7 +50,7 @@ class RenderPassCuller {
     /// This method performs the visibility check on the given node and all of
     /// it's children and
     /// adds them to the RenderQueue
-    void cullSceneGraph(SceneGraphNode* const currentNode,
+    void cullSceneGraph(SceneGraphNode& currentNode,
                         SceneState& sceneState);
     void refresh();
 
@@ -60,7 +60,7 @@ class RenderPassCuller {
 
    protected:
     /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)
-    void cullSceneGraphCPU(SceneGraphNode* const currentNode,
+    void cullSceneGraphCPU(SceneGraphNode& currentNode,
                            SceneRenderState& sceneRenderState);
     /// Perform GPU-based culling (e.g. Occlusion queries)
     void cullSceneGraphGPU(SceneState& sceneState);

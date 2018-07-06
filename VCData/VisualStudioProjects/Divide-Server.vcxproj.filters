@@ -55,5 +55,6 @@
     <ClCompile Include="..\..\Source Code\Server\Utility\Patch.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
   </ItemGroup>
 </Project>

@@ -33,8 +33,8 @@ void SubMesh::setParentMesh(Mesh* const parentMesh) {
         getGeometryVB()->getPartitionCount(_geometryPartitionId));
 }
 
-bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn) {
-    BoundingBox& bb = sgn->getBoundingBox();
+bool SubMesh::computeBoundingBox(SceneGraphNode& sgn) {
+    BoundingBox& bb = sgn.getBoundingBox();
     if (bb.isComputed()) {
         return true;
     }
@@ -45,14 +45,14 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void SubMesh::getDrawCommands(SceneGraphNode* const sgn,
+void SubMesh::getDrawCommands(SceneGraphNode& sgn,
                               const RenderStage& currentRenderStage,
                               SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_parentMesh != nullptr);
 
     RenderingComponent* const renderable =
-        sgn->getComponent<RenderingComponent>();
+        sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     _drawCmd.renderWireframe(renderable->renderWireframe());

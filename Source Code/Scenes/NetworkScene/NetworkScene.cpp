@@ -72,9 +72,9 @@ bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
     _paramHandler.setParam("serverResponse", "waiting");
-    addLight(LIGHT_TYPE_DIRECTIONAL);
+    addLight(LIGHT_TYPE_DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
     _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     renderState().getCamera().setEye(vec3<F32>(0, 30, -30));
 
     return loadState;

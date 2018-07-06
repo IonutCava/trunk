@@ -12,8 +12,8 @@
 namespace Divide {
 
 RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
-                             SceneGraphNode* const node)
-    : _node(node),
+                             SceneGraphNode& node)
+    : _node(&node),
       _sortKeyA(sortKeyA),
       _sortKeyB(sortKeyB),
       _distanceToCameraSq(distToCamSq) {
@@ -135,12 +135,12 @@ void RenderBin::refresh() {
     _renderBinStack.reserve(128);
 }
 
-void RenderBin::addNodeToBin(SceneGraphNode* const sgn,
+void RenderBin::addNodeToBin(SceneGraphNode& sgn,
                              const vec3<F32>& eyePos) {
     I32 keyA = (U32)_renderBinStack.size() + 1;
     I32 keyB = keyA;
     RenderingComponent* const renderable =
-        sgn->getComponent<RenderingComponent>();
+        sgn.getComponent<RenderingComponent>();
     if (renderable) {
         Material* nodeMaterial = renderable->getMaterialInstance();
         if (nodeMaterial) {
@@ -149,7 +149,7 @@ void RenderBin::addNodeToBin(SceneGraphNode* const sgn,
     }
     _renderBinStack.push_back(RenderBinItem(
         keyA, keyB,
-        sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
+        sgn.getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
         sgn));
 }
 

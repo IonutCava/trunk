@@ -159,10 +159,10 @@ void WarScene::startSimulation() {
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh();
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
-        if (!navMesh->load(nullptr)) {
+        if (!navMesh->load(GET_ACTIVE_SCENEGRAPH().getRoot())) {
             loadedFromFile = false;
             navMesh->build(
-                nullptr,
+                GET_ACTIVE_SCENEGRAPH().getRoot(),
                 DELEGATE_BIND(navMeshCreationCompleteCallback,
                               _army[0][0]->getAgentRadiusCategory(), navMesh));
         } else {
@@ -261,10 +261,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL,
+               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     // Add a skybox
     _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     // Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 35 /*pitch*/);
@@ -298,7 +299,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     stringImpl currentName;
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* baseNode = nullptr;
-    SceneGraphNode* currentNode = nullptr;
+    
     std::pair<I32, I32> currentPos;
     for (U8 i = 0; i < 40; ++i) {
         if (i < 10) {
@@ -327,13 +328,13 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentPos.second = 200 - 40 * (i % 30) - 50;
         }
 
-        currentNode = _sceneGraph.getRoot()->addNode(currentMesh, currentName);
-        assert(currentNode);
-        currentNode->setSelectable(true);
-        currentNode->usageContext(baseNode->usageContext());
-        PhysicsComponent* pComp = currentNode->getComponent<PhysicsComponent>();
+        SceneGraphNode& crtNode = _sceneGraph.getRoot().addNode(currentMesh,
+                                                                currentName);
+        crtNode.setSelectable(true);
+        crtNode.usageContext(baseNode->usageContext());
+        PhysicsComponent* pComp = crtNode.getComponent<PhysicsComponent>();
         NavigationComponent* nComp =
-            currentNode->getComponent<NavigationComponent>();
+            crtNode.getComponent<NavigationComponent>();
         pComp->physicsGroup(
             baseNode->getComponent<PhysicsComponent>()->physicsGroup());
         nComp->navigationContext(
@@ -347,7 +348,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
     SceneGraphNode* baseFlagNode = cylinder[1];
-    _flag[0] = _sceneGraph.getRoot()->addNode(cylinderMeshNW, "Team1Flag");
+    _flag[0] = &_sceneGraph.getRoot().addNode(cylinderMeshNW, "Team1Flag");
     _flag[0]->setSelectable(false);
     _flag[0]->usageContext(baseFlagNode->usageContext());
     PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
@@ -361,7 +362,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(0.05f, 1.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
-    _flag[1] = _sceneGraph.getRoot()->addNode(cylinderMeshNW, "Team2Flag");
+    _flag[1] = &_sceneGraph.getRoot().addNode(cylinderMeshNW, "Team2Flag");
     _flag[1]->setSelectable(false);
     _flag[1]->usageContext(baseFlagNode->usageContext());
 
@@ -376,7 +377,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(0.05f, 1.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
-    AI::WarSceneAISceneImpl::registerFlags(_flag[0], _flag[1]);
+    AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);
 
 /*_bobNode = _sceneGraph.findNode("Soldier3");
 _bobNodeBody = _sceneGraph.findNode("Soldier3_Bob.md5mesh-submesh-0");
@@ -431,10 +432,10 @@ if(_bobNodeBody != nullptr){
         std::make_shared<ParticleTimeGenerator>();
     particleSource->addGenerator(timeGenerator);
 
-    SceneGraphNode* testSGN =
+    SceneGraphNode& testSGN =
         addParticleEmitter("TESTPARTICLES", particles, _sceneGraph.getRoot());
-    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
-    testSGN->getComponent<PhysicsComponent>()->translateY(5);
+    ParticleEmitter* test = testSGN.getNode<ParticleEmitter>();
+    testSGN.getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     test->addSource(particleSource);
@@ -578,7 +579,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             }
 
             currentNode =
-                _sceneGraph.getRoot()->addNode(currentMesh, currentName);
+                &GET_ACTIVE_SCENEGRAPH().getRoot().addNode(currentMesh,
+                                                           currentName);
             currentNode->getComponent<PhysicsComponent>()->setScale(
                 currentScale);
             DIVIDE_ASSERT(currentNode != nullptr,
@@ -638,7 +640,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             brain->registerGoal(retrieveFlag);
 
             aiSoldier->addAISceneImpl(brain);
-            soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
+            soldier = MemoryManager_NEW NPC(*currentNode, aiSoldier);
             soldier->setMovementSpeed(speed * 2);
             _armyNPCs[k].push_back(soldier);
             _army[k].push_back(aiSoldier);
@@ -656,9 +658,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     if (state || continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
-    _sceneGraph.getRoot()->deleteNode(soldierNode1);
-    _sceneGraph.getRoot()->deleteNode(soldierNode2);
-    _sceneGraph.getRoot()->deleteNode(soldierNode3);
+    _sceneGraph.getRoot().deleteNode(soldierNode1);
+    _sceneGraph.getRoot().deleteNode(soldierNode2);
+    _sceneGraph.getRoot().deleteNode(soldierNode3);
 
     for (U8 i = 0; i < 2; ++i) {
         _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(
@@ -769,7 +771,7 @@ bool WarScene::onKeyUp(const Input::KeyEvent& key) {
                         renderState().getCameraMgr().popActiveCamera();
                     renderState().getCameraMgr().pushActiveCamera("tpsCamera");
                     static_cast<ThirdPersonCamera&>(renderState().getCamera())
-                        .setTarget(_currentSelection);
+                        .setTarget(*_currentSelection);
                     /*fpsCameraActive*/ flyCameraActive = false;
                     tpsCameraActive = true;
                     break;

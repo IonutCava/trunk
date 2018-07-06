@@ -18,12 +18,12 @@ Mesh::Mesh(ObjectFlag flag)
 Mesh::~Mesh() {}
 
 /// Mesh bounding box is built from all the SubMesh bounding boxes
-bool Mesh::computeBoundingBox(SceneGraphNode* const sgn) {
-    BoundingBox& bb = sgn->getBoundingBox();
+bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
+    BoundingBox& bb = sgn.getBoundingBox();
 
     bb.reset();
     for (const SceneGraphNode::NodeChildren::value_type& s :
-         sgn->getChildren()) {
+         sgn.getChildren()) {
         bb.Add(s.second->getInitialBoundingBox());
     }
     bb.setComputed(true);
@@ -39,25 +39,26 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
-void Mesh::postLoad(SceneGraphNode* const sgn) {
+void Mesh::postLoad(SceneGraphNode& sgn) {
     for (SubMeshRefMap::value_type& it : _subMeshRefMap) {
-        sgn->addNode(it.second,
-                     sgn->getName() + "_" + Util::toString(it.first));
+        sgn.addNode(it.second,
+                    sgn.getName() + "_" + Util::toString(it.first));
     }
 
     Object3D::postLoad(sgn);
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
+    typedef SceneGraphNode::NodeChildren::value_type value_type;
+
     if (bitCompare(getFlagMask(), OBJECT_FLAG_SKINNED)) {
         bool playAnimation =
             (_playAnimations &&
              ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
         if (playAnimation != _playAnimationsCurrent) {
-            for (SceneGraphNode::NodeChildren::value_type& it :
-                 sgn->getChildren()) {
+            for (value_type& it : sgn.getChildren()) {
                 it.second->getComponent<AnimationComponent>()->playAnimation(
                     playAnimation);
             }

@@ -42,7 +42,7 @@ class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsComponent : public SGNComponent {
    public:
-    PhysicsComponent(SceneGraphNode* const parentSGN);
+    PhysicsComponent(SceneGraphNode& parentSGN);
     ~PhysicsComponent();
 
     enum PhysicsGroup {

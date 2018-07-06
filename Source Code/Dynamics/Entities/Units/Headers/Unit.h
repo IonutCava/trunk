@@ -52,7 +52,7 @@ class Unit : public FrameListener {
         UNIT_TYPE_PLACEHOLDER
     };
 
-    Unit(UnitType type, SceneGraphNode* const node);
+    Unit(UnitType type, SceneGraphNode& node);
     virtual ~Unit();
 
     /// moveTo makes the unit follow a path from it's current position to the
@@ -92,7 +92,7 @@ class Unit : public FrameListener {
     /// Get unit type
     inline UnitType getUnitType() const { return _type; }
     /// Get bound node
-    inline SceneGraphNode* const getBoundNode() const { return _node; }
+    inline SceneGraphNode* getBoundNode() const { return _node; }
     /// Just before we render the frame
     virtual bool frameRenderingQueued(const FrameEvent& evt) { return true; }
     /// If the parent node is deleted, this gets called automatically

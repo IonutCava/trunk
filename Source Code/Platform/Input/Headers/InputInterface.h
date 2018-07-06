@@ -58,7 +58,7 @@ DEFINE_SINGLETON(InputInterface)
     friend class InputInterfaceEventAttorney;
 
   public:
-    U8 init(Kernel* const kernel, const stringImpl& windowTitle);
+    U8 init(Kernel& kernel, const stringImpl& windowTitle);
 
     void updateResolution(U16 w, U16 h);
 

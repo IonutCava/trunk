@@ -58,7 +58,7 @@ class PhysicsSceneInterface {
 
     inline Scene* getParentScene() { return _parentScene; }
 
-    virtual void addToScene(PhysicsAsset& actor, SceneGraphNode* const outNode);
+    virtual void addToScene(PhysicsAsset& actor, SceneGraphNode* outNode);
 
    protected:
     Scene* _parentScene;

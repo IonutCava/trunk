@@ -50,7 +50,7 @@ class ParticleEmitter : public SceneNode {
     ~ParticleEmitter();
 
     /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) { _enabled = state; }
@@ -63,11 +63,11 @@ class ParticleEmitter : public SceneNode {
     /// SceneNode concrete implementations
     bool unload();
 
-    bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn);
 
     /// SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode* const sgn, const bool distanceCheck = false) {
+                  SceneGraphNode& sgn, const bool distanceCheck = false) {
         if (_enabled && _impostor) {
             return _impostor->isInView(sceneRenderState, sgn, distanceCheck);
         }
@@ -84,22 +84,22 @@ class ParticleEmitter : public SceneNode {
     }
 
    protected:
-    void postLoad(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode& sgn);
 
     /// preprocess particles here
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
     /// When the SceneGraph calls the particle emitter's render function, we
     /// draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn,
+    virtual void render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage);
-    void getDrawCommands(SceneGraphNode* const sgn,
+    void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
-    void onCameraChange(SceneGraphNode* const sgn);
+    void onCameraChange(SceneGraphNode& sgn);
 
    private:
     I32 findUnusedParticle();

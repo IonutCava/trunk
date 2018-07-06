@@ -2,7 +2,7 @@
 
 namespace Divide {
 
-Vehicle::Vehicle(SceneGraphNode* const node)
+Vehicle::Vehicle(SceneGraphNode& node)
     : Unit(Unit::UNIT_TYPE_VEHICLE, node) {
     _playerControlled = false;
 }

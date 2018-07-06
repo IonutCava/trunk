@@ -5,14 +5,11 @@
 namespace Divide {
 namespace Input {
 
-EventHandler::EventHandler(InputInterface *pApp, Kernel *const kernel)
-    : _kernel(kernel),
+EventHandler::EventHandler(InputInterface *pApp, Kernel& kernel)
+    : _kernel(&kernel),
       _pApplication(pApp),
       _pJoystickInterface(nullptr),
       _pEffectMgr(nullptr) {
-    DIVIDE_ASSERT(
-        kernel != nullptr,
-        "EventHandler error: INVALID KERNEL PASSED ON HANDLER CREATION");
 }
 
 void EventHandler::initialize(JoystickInterface *pJoystickInterface,

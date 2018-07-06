@@ -9,7 +9,7 @@ Quadtree::Quadtree() : _parentVB(nullptr) { _chunkCount = 0; }
 
 Quadtree::~Quadtree() {}
 
-void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                            SceneState& sceneState) {
     assert(_root);
     _root->sceneUpdate(deltaTime, sgn, sceneState);

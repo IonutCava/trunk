@@ -21,20 +21,18 @@ VisualSensor::~VisualSensor() {
 }
 
 void VisualSensor::followSceneGraphNode(U32 containerID,
-                                        SceneGraphNode* const node) {
-    DIVIDE_ASSERT(
-        node != nullptr,
-        "VisualSensor error: Invalid node specified for follow function");
+                                        SceneGraphNode& node) {
+
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
     if (container != std::end(_nodeContainerMap)) {
         NodeContainer::const_iterator nodeEntry =
-            container->second.find(node->getGUID());
+            container->second.find(node.getGUID());
         if (nodeEntry == std::end(container->second)) {
-            hashAlg::emplace(container->second, node->getGUID(), node);
-            node->registerDeletionCallback(
+            hashAlg::emplace(container->second, node.getGUID(), &node);
+            node.registerDeletionCallback(
                 DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this,
-                              containerID, node->getGUID()));
+                              containerID, node.getGUID()));
         } else {
             Console::errorfn(
                 "VisualSensor: Added the same node to follow twice!");
@@ -42,15 +40,15 @@ void VisualSensor::followSceneGraphNode(U32 containerID,
     } else {
         NodeContainer& newContainer = _nodeContainerMap[containerID];
 
-        hashAlg::emplace(newContainer, node->getGUID(), node);
-        node->registerDeletionCallback(
+        hashAlg::emplace(newContainer, node.getGUID(), &node);
+        node.registerDeletionCallback(
             DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this,
-                          containerID, node->getGUID()));
+                          containerID, node.getGUID()));
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];
-    hashAlg::emplace(positions, node->getGUID(),
-                     node->getComponent<PhysicsComponent>()->getPosition());
+    hashAlg::emplace(positions, node.getGUID(),
+                     node.getComponent<PhysicsComponent>()->getPosition());
 }
 
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
@@ -83,7 +81,7 @@ void VisualSensor::update(const U64 deltaTime) {
     }
 }
 
-SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
+SceneGraphNode* VisualSensor::getClosestNode(U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != std::end(_nodeContainerMap)) {
         NodePositions& positions = _nodePositionsMap[container->first];

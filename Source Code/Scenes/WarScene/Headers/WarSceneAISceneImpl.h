@@ -147,10 +147,10 @@ class WarSceneAISceneImpl : public AISceneImpl {
                         const cdiggins::any& msg_content);
     void registerAction(GOAPAction* const action);
 
-    static void registerFlags(SceneGraphNode* const flag1,
-                              SceneGraphNode* const flag2) {
-        WorkingMemory::_flags[0].value(flag1);
-        WorkingMemory::_flags[1].value(flag2);
+    static void registerFlags(SceneGraphNode& flag1,
+                              SceneGraphNode& flag2) {
+        WorkingMemory::_flags[0].value(&flag1);
+        WorkingMemory::_flags[1].value(&flag2);
     }
 
    protected:

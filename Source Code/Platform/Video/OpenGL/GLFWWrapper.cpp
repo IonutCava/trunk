@@ -11,6 +11,8 @@
 #include <chrono>
 #include <thread>
 
+#include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
+
 namespace Divide {
 
 /// Try and create a valid OpenGL context taking in account the specified
@@ -34,7 +36,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
     // OpenGL error handling is available in any build configurations if the
     // proper defines are in place.
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
 // Debug context also ensures more robust GLFW stress testing
 #if defined(_DEBUG)
     glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);
@@ -83,32 +85,27 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // Check if we have a valid window
     if (!GLUtil::_mainWindow) {
         glfwTerminate();
+        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
+                         Locale::get("ERROR_GL_OLD_VERSION"));
+        Console::printfn(Locale::get("WARN_SWITCH_D3D"));
+        Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
         return (GLFW_WINDOW_INIT_ERROR);
     }
 
     // The application window will hold the main rendering context
     glfwMakeContextCurrent(GLUtil::_mainWindow);
-    // Init glew for main context
-    GLUtil::initGlew();
+    // Init OpenGL Bidnings for main context
+    glbinding::Binding::initialize(false);
     // Bind the window close request received from GLFW with our custom callback
     glfwSetWindowCloseCallback(GLUtil::_mainWindow,
                                GLUtil::glfw_close_callback);
     // Bind our focus change callback to GLFW's internal wiring
     glfwSetWindowFocusCallback(GLUtil::_mainWindow,
                                GLUtil::glfw_focus_callback);
-    // Geometry shaders became core in version 3.3, shader storage buffers in
-    // 4.3,
-    // buffer storage in 4.4 so fail if we are missing the required version
-    if ((Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_3) ||
-        (!Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_4)) {
-        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
-                         Locale::get("ERROR_GL_OLD_VERSION"));
-        return GLEW_OLD_HARDWARE;
-    }
 
     // We also create a loader thread in the background with its own GL context.
     // To do this with GLFW, we'll create a second, invisible, window
-    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+    glfwWindowHint(GLFW_VISIBLE, 0);
     // The loader window will share context lists with the main window
     GLUtil::_loaderWindow = glfwCreateWindow(1, 1, "divide-res-loader", nullptr,
                                              GLUtil::_mainWindow);
@@ -181,23 +178,12 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     par.setParam(
         "rendering.anisotropicFilteringLevel",
         std::min(
-            GLUtil::getIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT),
+            GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT),
             par.getParam<GLint>("rendering.anisotropicFilteringLevel", 1)));
-    // OpenGL major version ( we do not support OpenGL versions lower than 4.x )
-    if (GLUtil::getIntegerv(GL_MAJOR_VERSION) < 4) {
-        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
-                         Locale::get("ERROR_GL_OLD_VERSION"));
-        return GLEW_OLD_HARDWARE;
-    } else {
-        Console::printfn(
-            Locale::get("GL_MAX_VERSION"), 4,
-            /*GLEW_VERSION_4_5 ? 5 :*/
-            GLEW_VERSION_4_4 ? 4 : GLEW_VERSION_4_3 ? 3 : GLEW_VERSION_4_2
-                                                              ? 2
-                                                              : GLEW_VERSION_4_1
-                                                                    ? 1
-                                                                    : 0);
-    }
+
+    Console::printfn(Locale::get("GL_MAX_VERSION"),
+                     GLUtil::getIntegerv(GL_MAJOR_VERSION),
+                     GLUtil::getIntegerv(GL_MINOR_VERSION));
 
     // Number of sample buffers associated with the framebuffer & MSAA sample
     // count
@@ -368,8 +354,6 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
         par.getParam<bool>("GUI.CEGUI.ExtraStates"));
     CEGUI::System::create(*_GUIGLrenderer);
 
-    Application::getInstance().registerShutdownCallback(
-        DELEGATE_BIND(&GLUtil::destroyGlew));
     return NO_ERR;
 }
 
@@ -428,16 +412,14 @@ void GL_API::threadedLoadCallback() {
     // We need a valid OpenGL context to make current in this thread
     assert(GLUtil::_loaderWindow != nullptr);
     glfwMakeContextCurrent(GLUtil::_loaderWindow);
+    glbinding::Binding::initialize();
 
-#ifdef GLEW_MX
-    GLUtil::initGlew();
 // Enable OpenGL debug callbacks for this context as well
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // Debug callback in a separate thread requires a flag to distinguish it
     // from the main thread's callbacks
     glDebugMessageCallback(&GLUtil::DebugCallback, (void*)(1));
-#endif
 #endif
 
     GPUState& gfxState = GFX_DEVICE.gpuState();
@@ -461,7 +443,7 @@ void GL_API::threadedLoadCallback() {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
-    GLUtil::destroyGlew();
+
     // If we close the loading thread, update our atomic bool to make sure the
     // application isn't using it anymore
     gfxState.loadingThreadAvailable(false);

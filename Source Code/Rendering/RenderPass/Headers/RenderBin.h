@@ -55,7 +55,7 @@ struct RenderBinItem {
 
     RenderBinItem() : _node(nullptr) {}
     RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
-                  SceneGraphNode* node);
+                  SceneGraphNode& node);
 };
 
 struct RenderingOrder {
@@ -109,7 +109,7 @@ class RenderBin {
     virtual void postRender(const RenderStage& currentRenderStage);
     virtual void refresh();
 
-    virtual void addNodeToBin(SceneGraphNode* const sgn,
+    virtual void addNodeToBin(SceneGraphNode& sgn,
                               const vec3<F32>& eyePos);
 
     inline const RenderBinItem& getItem(U16 index) const {

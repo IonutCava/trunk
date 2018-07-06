@@ -75,7 +75,7 @@ DEFINE_SINGLETON_EXT1(PXDevice, PhysicsAPIWrapper)
         return _api.createBox(position, size);
     }
 
-    inline bool createActor(SceneGraphNode* const node, const stringImpl& sceneName,
+    inline bool createActor(SceneGraphNode& node, const stringImpl& sceneName,
                             PhysicsActorMask mask, PhysicsCollisionGroup group) {
         return _api.createActor(node, sceneName, mask, group);
     }

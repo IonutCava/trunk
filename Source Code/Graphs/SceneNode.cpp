@@ -22,7 +22,7 @@ SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
 
 SceneNode::~SceneNode() {}
 
-void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                             SceneState& sceneState) {}
 
 bool SceneNode::getDrawState(const RenderStage& currentStage) {
@@ -30,9 +30,9 @@ bool SceneNode::getDrawState(const RenderStage& currentStage) {
 }
 
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
-                         SceneGraphNode* const sgn, const bool distanceCheck) {
-    const BoundingBox& boundingBox = sgn->getBoundingBoxConst();
-    const BoundingSphere& sphere = sgn->getBoundingSphereConst();
+                         SceneGraphNode& sgn, const bool distanceCheck) {
+    const BoundingBox& boundingBox = sgn.getBoundingBoxConst();
+    const BoundingSphere& sphere = sgn.getBoundingSphereConst();
 
     const Camera& cam = sceneRenderState.getCameraConst();
     const vec3<F32>& eye = cam.getEye();
@@ -62,7 +62,7 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
         }
     }
 
-    RenderingComponent* rComp = sgn->getComponent<RenderingComponent>();
+    RenderingComponent* rComp = sgn.getComponent<RenderingComponent>();
     if (rComp) {
         rComp->lodLevel(
             (cameraDistance > Config::SCENE_NODE_LOD0)
@@ -115,9 +115,9 @@ void SceneNode::setMaterialTpl(Material* const mat) {
     }
 }
 
-bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
-    sgn->setInitialBoundingBox(sgn->getBoundingBoxConst());
-    sgn->getBoundingBox().setComputed(true);
+bool SceneNode::computeBoundingBox(SceneGraphNode& sgn) {
+    sgn.setInitialBoundingBox(sgn.getBoundingBoxConst());
+    sgn.getBoundingBox().setComputed(true);
     return true;
 }
 
@@ -126,5 +126,5 @@ bool SceneNode::unload() {
     return true;
 }
 
-void SceneNode::postDrawBoundingBox(SceneGraphNode* const sgn) const {}
+void SceneNode::postDrawBoundingBox(SceneGraphNode& sgn) const {}
 };

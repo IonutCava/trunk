@@ -60,9 +60,9 @@ class Mesh : public Object3D {
 
     virtual ~Mesh();
 
-    bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn);
 
-    virtual void postLoad(SceneGraphNode* const sgn);
+    virtual void postLoad(SceneGraphNode& sgn);
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
@@ -73,13 +73,13 @@ class Mesh : public Object3D {
 
    protected:
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
-    virtual void render(SceneGraphNode* const sgn,
+    virtual void render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage) {}
     virtual void getDrawCommands(
-        SceneGraphNode* const sgn, const RenderStage& renderStage,
+        SceneGraphNode& sgn, const RenderStage& renderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 

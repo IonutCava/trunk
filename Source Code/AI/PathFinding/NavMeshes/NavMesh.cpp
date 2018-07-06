@@ -144,7 +144,7 @@ bool NavigationMesh::loadConfigFromFile() {
     return true;
 }
 
-bool NavigationMesh::build(SceneGraphNode* const sgn,
+bool NavigationMesh::build(SceneGraphNode& sgn,
                            CreationCallback creationCompleteCallback,
                            bool threaded) {
     if (!loadConfigFromFile()) {
@@ -152,7 +152,7 @@ bool NavigationMesh::build(SceneGraphNode* const sgn,
         return false;
     }
 
-    _sgn = (sgn != nullptr) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH().getRoot();
+    _sgn = &sgn;
     _loadCompleteClbk = creationCompleteCallback;
 
     if (_buildThreaded && threaded) {
@@ -617,17 +617,13 @@ void NavigationMesh::render() {
     _debugDrawInterface->endBatch();
 }
 
-bool NavigationMesh::load(SceneGraphNode* const sgn) {
+bool NavigationMesh::load(SceneGraphNode& sgn) {
     if (!_fileName.length()) {
         return false;
     }
     stringImpl file = _fileName;
 
-    if (sgn == nullptr) {
-        file.append("_root_node");
-    } else {
-        file.append("_node_[_" + sgn->getName() + "_]");
-    }
+    file.append("_node_[_" + sgn.getName() + "_]");
 
     file.append(".nm");
     // Parse objects from level into RC-compatible format

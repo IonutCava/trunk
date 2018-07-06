@@ -51,7 +51,7 @@ namespace Divide {
 //        DELETE(_root);
 //    }
 //
-//    inline SceneGraphNode* getRoot(){ return _root; }
+//    inline SceneGraphNode& getRoot(){ return *_root; }
 //
 //    inline SceneGraphNode* findNode(const stringImpl& name){
 //        return _root->findNode(name);

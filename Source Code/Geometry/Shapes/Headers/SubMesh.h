@@ -65,7 +65,7 @@ class SubMesh : public Object3D {
 
     bool unload() { return SceneNode::unload(); }
 
-    bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn);
 
     inline U32 getId() { return _id; }
     /// When loading a submesh, the ID is the node index from the imported scene
@@ -76,7 +76,7 @@ class SubMesh : public Object3D {
    protected:
     void setParentMesh(Mesh* const parentMesh);
 
-    void getDrawCommands(SceneGraphNode* const sgn,
+    void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);

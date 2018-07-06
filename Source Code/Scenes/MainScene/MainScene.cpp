@@ -121,12 +121,13 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL,
+               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _sun->csmSplitCount(3);  // 3 splits
     _sun->csmSplitLogFactor(0.965f);
     _sun->csmNearClipOffset(25.0f);
     _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
     for (U8 i = 0; i < _terrainInfoArray.size(); i++) {
         SceneGraphNode* terrainNode = _sceneGraph.findNode(
@@ -148,7 +149,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
-    _waterGraphNode = _sceneGraph.getRoot()->addNode(_water);
+    _waterGraphNode = &_sceneGraph.getRoot().addNode(_water);
     _waterGraphNode->useDefaultTransform(false);
     _waterGraphNode->usageContext(SceneGraphNode::NODE_STATIC);
     _waterGraphNode->getComponent<NavigationComponent>()->navigationContext(

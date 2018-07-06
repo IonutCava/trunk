@@ -62,10 +62,10 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case GLFW_WINDOW_INIT_ERROR: {
             return "GLFW failed to create a valid window";
         };
-        case GLEW_INIT_ERROR: {
-            return "GLEW failed to initialize";
+        case GLBINGING_INIT_ERROR: {
+            return "GLBinding failed to initialize";
         };
-        case GLEW_OLD_HARDWARE: {
+        case GL_OLD_HARDWARE: {
             return "Current hardware does not support the minimum OpenGL "
                    "features required";
         };

@@ -73,13 +73,13 @@ bool Light::unload() {
     return SceneNode::unload();
 }
 
-void Light::postLoad(SceneGraphNode* const sgn) {
+void Light::postLoad(SceneGraphNode& sgn) {
     // Hold a pointer to the light's location in the SceneGraph
     DIVIDE_ASSERT(
         _lightSGN == nullptr,
         "Light error: Lights can only be bound to a single SGN node!");
 
-    _lightSGN = sgn;
+    _lightSGN = &sgn;
     _updateLightBB = true;
 
     SceneNode::postLoad(sgn);
@@ -162,34 +162,34 @@ void Light::setDirection(const vec3<F32>& newDirection) {
     _dirty[PROPERTY_TYPE_PHYSICAL] = true;
 }
 
-void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                         SceneState& sceneState) {
     if (_type == LIGHT_TYPE_DIRECTIONAL) {
         return;
     }
 
     // Check if range changed
-    if (FLOAT_COMPARE(getRange(), sgn->getBoundingBoxConst().getMax().x)) {
+    if (FLOAT_COMPARE(getRange(), sgn.getBoundingBoxConst().getMax().x)) {
         return;
     }
 
-    sgn->getBoundingBox().setComputed(false);
+    sgn.getBoundingBox().setComputed(false);
 
     _updateLightBB = true;
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Light::computeBoundingBox(SceneGraphNode* const sgn) {
+bool Light::computeBoundingBox(SceneGraphNode& sgn) {
     if (_type == LIGHT_TYPE_DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _properties._position.xyz() *
             Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
-        sgn->getBoundingBox().set(directionalLightPosition - vec3<F32>(10),
-                                  directionalLightPosition + vec3<F32>(10));
+        sgn.getBoundingBox().set(directionalLightPosition - vec3<F32>(10),
+                                 directionalLightPosition + vec3<F32>(10));
     } else {
-        sgn->getBoundingBox().set(vec3<F32>(-getRange()),
-                                  vec3<F32>(getRange()));
+        sgn.getBoundingBox().set(vec3<F32>(-getRange()),
+                                 vec3<F32>(getRange()));
     }
 
     _updateLightBB = true;
@@ -198,11 +198,11 @@ bool Light::computeBoundingBox(SceneGraphNode* const sgn) {
 }
 
 bool Light::isInView(const SceneRenderState& sceneRenderState,
-                     SceneGraphNode* const sgn, const bool distanceCheck) {
+                     SceneGraphNode& sgn, const bool distanceCheck) {
     return ((_impostorSGN != nullptr) && _drawImpostor);
 }
 
-void Light::render(SceneGraphNode* const sgn,
+void Light::render(SceneGraphNode& sgn,
                    const SceneRenderState& sceneRenderState,
                    const RenderStage& currentRenderStage) {
     // The isInView call should stop impostor rendering if needed
@@ -211,7 +211,7 @@ void Light::render(SceneGraphNode* const sgn,
             CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_properties._attenuation.w);
         _impostor->renderState().setDrawState(true);
-        _lightSGN->addNode(_impostor)->setActive(true);
+        _lightSGN->addNode(_impostor).setActive(true);
     }
     SceneGraphNode* impostorSGN = std::begin(_lightSGN->getChildren())->second;
     Material* const impostorMaterialInst =

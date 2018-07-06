@@ -114,6 +114,7 @@ class Texture : public HardwareResource {
     bool _mipMapsDirty;
     bool _samplerDirty;
     bool _hasTransparency;
+    bool _power2Size;
     TextureType _textureType;
     mat4<F32> _transformMatrix;
     std::atomic<U32> _handle;

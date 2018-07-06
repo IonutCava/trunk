@@ -48,10 +48,11 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     _sunvector =
         vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y), -cosf(sunAngle.y),
                   -sinf(sunAngle.x) * sinf(sunAngle.y));
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL,
+               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _sun->setDirection(_sunvector);
     _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     s_sceneState = STATE_IDLE;
     return loadState;
 }

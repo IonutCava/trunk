@@ -19,11 +19,9 @@ OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye)
     setMouseSensitivity(0.5f);
 }
 
-void OrbitCamera::setTarget(SceneGraphNode* const sgn,
+void OrbitCamera::setTarget(SceneGraphNode& sgn,
                             const vec3<F32>& offsetDirection) {
-    assert(sgn != nullptr);
-
-    _targetNode = sgn;
+    _targetNode = &sgn;
     _offsetDir = offsetDirection;
     _offsetDir.normalize();
 }

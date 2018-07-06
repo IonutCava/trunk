@@ -267,9 +267,10 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
     // Add a light
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL,
+               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
     //    ResourceDescriptor tempLight1("Light omni");
     //    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
@@ -347,10 +348,10 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     if (state || continueOnErrors) {
         //----------------------- AI controlled units (NPC's)
         //---------------------//
-        _player1 = MemoryManager_NEW NPC(player[0], _aiPlayer1);
-        _player2 = MemoryManager_NEW NPC(player[1], _aiPlayer2);
-        _player3 = MemoryManager_NEW NPC(player[2], _aiPlayer3);
-        _player4 = MemoryManager_NEW NPC(player[3], _aiPlayer4);
+        _player1 = MemoryManager_NEW NPC(*player[0], _aiPlayer1);
+        _player2 = MemoryManager_NEW NPC(*player[1], _aiPlayer2);
+        _player3 = MemoryManager_NEW NPC(*player[2], _aiPlayer3);
+        _player4 = MemoryManager_NEW NPC(*player[3], _aiPlayer4);
 
         _player1->setMovementSpeed(1.45f);
         _player2->setMovementSpeed(1.5f);
@@ -392,7 +393,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN = _sceneGraph.addNode(_ball, "TenisBallSGN");
+    _ballSGN = &_sceneGraph.addNode(_ball, "TenisBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN->setSelectable(true);

@@ -89,7 +89,7 @@ class glVertexArray : public VertexBuffer {
     GLuint _IBid;
     GLuint _VBid;
     GLuint _VAOid;
-    GLuint _usage;
+    GLenum _usage;
     bool _animationData;  ///< Used to bind an extra set of vertex attributes
                           ///for bone indices and bone weights
     bool _refreshQueued;  ///< A refresh call might be called before "Create()".

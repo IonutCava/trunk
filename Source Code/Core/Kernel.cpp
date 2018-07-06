@@ -502,7 +502,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Bind the kernel with the input interface
     Input::InputInterface::getInstance().init(
-        this, par.getParam<stringImpl>("appTitle"));
+        *this, par.getParam<stringImpl>("appTitle"));
 
     // Initialize GUI with our current resolution
     _GUI.init(resolution);

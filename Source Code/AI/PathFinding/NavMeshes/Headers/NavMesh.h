@@ -115,12 +115,12 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     }
     /// Initiates the NavigationMesh build process, which includes notifying the
     /// clients and posting a task.
-    bool build(SceneGraphNode* const sgn,
+    bool build(SceneGraphNode& sgn,
                CreationCallback creationCompleteCallback, bool threaded = true);
     /// Save the NavigationMesh to a file.
     bool save();
     /// Load a saved NavigationMesh from a file.
-    bool load(SceneGraphNode* const node);
+    bool load(SceneGraphNode& node);
     /// Unload the navmesh reverting the instance to an empty container
     bool unload();
     /// Called once per frame with the time diff between this and the last frame

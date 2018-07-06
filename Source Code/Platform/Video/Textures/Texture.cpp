@@ -15,7 +15,10 @@ Texture::Texture(TextureType type, const bool flipped)
       _numLayers(1),
       _samplerDirty(true),
       _mipMapsDirty(true),
-      _hasTransparency(false) {}
+      _hasTransparency(false),
+      _power2Size(true)
+{
+}
 
 Texture::~Texture() {}
 

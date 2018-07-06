@@ -104,7 +104,7 @@ class Terrain : public Object3D {
 
     bool unload();
 
-    void postDrawBoundingBox(SceneGraphNode* const sgn) const;
+    void postDrawBoundingBox(SceneGraphNode& sgn) const;
     inline void toggleBoundingBoxes() { _drawBBoxes = !_drawBBoxes; }
 
     vec3<F32> getPositionFromGlobal(F32 x, F32 z) const;
@@ -117,27 +117,27 @@ class Terrain : public Object3D {
 
     void terrainSmooth(F32 k);
     void initializeVegetation(TerrainDescriptor* const terrain,
-                              SceneGraphNode* const terrainSGN);
+                              SceneGraphNode& terrainSGN);
 
     inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
 
-    bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn);
 
    protected:
-    void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {}
-    void getDrawCommands(SceneGraphNode* const sgn,
+    void postDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {}
+    void getDrawCommands(SceneGraphNode& sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
     void buildQuadtree();
-    void postLoad(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode& sgn);
 
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode* const sgn, const bool distanceCheck = true);
+                  SceneGraphNode& sgn, const bool distanceCheck = true);
 
    protected:
     VegetationDetails _vegDetails;

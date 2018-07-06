@@ -7,7 +7,7 @@
 namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneAnimator* animator,
-                                       SceneGraphNode* const parentSGN)
+                                       SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, parentSGN),
       _animator(animator),
       _skeletonAvailable(false),
@@ -53,7 +53,7 @@ void AnimationComponent::update(const U64 deltaTime) {
         _animator->GetAnimationByIndex(_currentAnimIndex)
             .GetFrameIndexAt(_currentTimeStamp);
 
-    Object3D* node = _parentSGN->getNode<Object3D>();
+    Object3D* node = _parentSGN.getNode<Object3D>();
     node->updateAnimations(_parentSGN);
 }
 
@@ -101,7 +101,7 @@ bool AnimationComponent::playNextAnimation() {
 void AnimationComponent::renderSkeleton() {
     if (!_skeletonAvailable ||
         (!GET_ACTIVE_SCENE()->renderState().drawSkeletons() &&
-         !_parentSGN->getComponent<RenderingComponent>()->renderSkeleton())) {
+         !_parentSGN.getComponent<RenderingComponent>()->renderSkeleton())) {
         return;
     }
 
@@ -111,7 +111,7 @@ void AnimationComponent::renderSkeleton() {
     // Submit skeleton to gpu
     GFX_DEVICE.drawLines(
         skeletonLines,
-        _parentSGN->getComponent<PhysicsComponent>()->getWorldMatrix(),
+        _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix(),
         vec4<I32>(), false, true);
 }
 
@@ -163,13 +163,13 @@ const vectorImpl<mat4<F32>>& AnimationComponent::transformsByIndex(
 
 const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
                                                       const stringImpl& name) {
-    Object3D* node = _parentSGN->getNode<Object3D>();
+    Object3D* node = _parentSGN.getNode<Object3D>();
     assert(node != nullptr);
 
     if (node->getObjectType() != Object3D::SUBMESH ||
         (node->getObjectType() == Object3D::SUBMESH &&
          !bitCompare(node->getFlagMask(), Object3D::OBJECT_FLAG_SKINNED))) {
-        return _parentSGN->getComponent<PhysicsComponent>()->getWorldMatrix();
+        return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 
     return currentBoneTransform(animationID, name);

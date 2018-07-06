@@ -259,9 +259,10 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL, 
+               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     _freeFlyCam = &renderState().getCamera();
     _paddleCam = MemoryManager_NEW FreeFlyCamera();
     _paddleCam->fromCamera(*_freeFlyCam);
@@ -285,7 +286,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setShininess(36.8f);
     _ball->getMaterialTpl()->setSpecular(
         vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
-    _ballSGN = _sceneGraph.addNode(_ball, "PingPongBallSGN");
+    _ballSGN = &_sceneGraph.addNode(_ball, "PingPongBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
 
     /*ResourceDescriptor tempLight("Light Omni");

@@ -67,13 +67,20 @@ class Sphere3D : public Object3D {
         getGeometryVB()->queueRefresh();
     }
 
-    virtual bool computeBoundingBox(SceneGraphNode* const sgn) {
-        if (sgn->getBoundingBoxConst().isComputed()) return true;
-        sgn->getBoundingBox().set(vec3<F32>(-_radius), vec3<F32>(_radius));
+    virtual bool computeBoundingBox(SceneGraphNode& sgn) {
+        if (sgn.getBoundingBoxConst().isComputed()) {
+            return true;
+        }
+        sgn.getBoundingBox().set(vec3<F32>(-_radius), vec3<F32>(_radius));
         return SceneNode::computeBoundingBox(sgn);
     }
 
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
+    bool onDraw(const RenderStage& currentStage) {
+        clean();
+        return Object3D::onDraw(currentStage);
+    }
+
+    bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
         clean();
         return Object3D::onDraw(sgn, currentStage);
     }

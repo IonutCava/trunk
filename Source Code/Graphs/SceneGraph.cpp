@@ -47,17 +47,14 @@ void SceneGraph::intersect(const Ray& ray, F32 start, F32 end,
 void SceneGraph::print() {
     Console::printfn(Locale::get("SCENEGRAPH_TITLE"));
     Console::toggleTimeStamps(false);
-    printInternal(_root);
+    printInternal(getRoot());
     Console::toggleTimeStamps(true);
 }
 
 /// Prints out the SceneGraph structure to the Console
-void SceneGraph::printInternal(SceneGraphNode* const sgn) {
-    if (!sgn) {
-        return;
-    }
+void SceneGraph::printInternal(SceneGraphNode& sgn) {
     // Starting from the current node
-    SceneGraphNode* parent = sgn;
+    SceneGraphNode* parent = &sgn;
     SceneGraphNode* tempParent = parent;
     U8 i = 0;
     // Count how deep in the graph we are
@@ -107,7 +104,7 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn) {
         for (U8 j = 0; j < i; j++) {
             Console::printf("-");
         }
-        printInternal(it.second);
+        printInternal(*it.second);
     }
 }
 };

@@ -75,31 +75,31 @@ bool Sky::load() {
     return true;
 }
 
-void Sky::postLoad(SceneGraphNode* const sgn) {
+void Sky::postLoad(SceneGraphNode& sgn) {
     if (_sky == nullptr) {
         load();
     }
     _sky->renderState().setDrawState(false);
-    sgn->addNode(_sky)->getComponent<PhysicsComponent>()->physicsGroup(
+    sgn.addNode(_sky).getComponent<PhysicsComponent>()->physicsGroup(
         PhysicsComponent::NODE_COLLIDE_IGNORE);
 
     SceneNode::postLoad(sgn);
 }
 
-void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                       SceneState& sceneState) {}
 
-bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
+bool Sky::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
     return _sky->onDraw(sgn, currentStage);
 }
 
-void Sky::getDrawCommands(SceneGraphNode* const sgn,
+void Sky::getDrawCommands(SceneGraphNode& sgn,
                           const RenderStage& currentRenderStage,
                           SceneRenderState& sceneRenderState,
                           vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     GenericDrawCommand cmd;
     cmd.renderWireframe(
-        sgn->getComponent<RenderingComponent>()->renderWireframe());
+        sgn.getComponent<RenderingComponent>()->renderWireframe());
     cmd.stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)
                       ? _skyboxRenderStateReflectedHash
                       : _skyboxRenderStateHash);
@@ -109,12 +109,12 @@ void Sky::getDrawCommands(SceneGraphNode* const sgn,
     drawCommandsOut.push_back(cmd);
 }
 
-void Sky::render(SceneGraphNode* const sgn,
+void Sky::render(SceneGraphNode& sgn,
                  const SceneRenderState& sceneRenderState,
                  const RenderStage& currentRenderStage) {
     _skybox->Bind(ShaderProgram::TEXTURE_UNIT0);
     GFX_DEVICE.submitRenderCommand(
-        sgn->getComponent<RenderingComponent>()->getDrawCommands());
+        sgn.getComponent<RenderingComponent>()->getDrawCommands());
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect,

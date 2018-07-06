@@ -69,7 +69,7 @@ class QuadtreeNode {
                            vectorImpl<GenericDrawCommand>& drawCommandsOut);
     void drawBBox() const;
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
     inline bool isALeaf() const {

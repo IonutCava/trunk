@@ -4,7 +4,7 @@
 namespace Divide {
 namespace Input {
 
-U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
+U8 InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
     if (_bIsInitialized) {
         return NO_ERR;
     }

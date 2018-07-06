@@ -6,10 +6,10 @@
 
 namespace Divide {
 
-Unit::Unit(UnitType type, SceneGraphNode* const node)
+Unit::Unit(UnitType type, SceneGraphNode& node)
     : FrameListener(),
       _type(type),
-      _node(node),
+      _node(&node),
       _moveSpeed(Metric::Base(1)),
       _moveTolerance(0.1f),
       _prevTime(0) {

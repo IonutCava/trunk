@@ -49,15 +49,15 @@ class SkinnedSubMesh : public SubMesh {
     ~SkinnedSubMesh();
 
    public:
-    void postLoad(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode& sgn);
 
     inline SceneAnimator* getAnimator() { return _animator; }
 
    protected:
-    bool updateAnimations(SceneGraphNode* const sgn);
+    bool updateAnimations(SceneGraphNode& sgn);
 
    private:
-    bool getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn);
+    bool getBoundingBoxForCurrentFrame(SceneGraphNode& sgn);
     void buildBoundingBoxesForAnimCompleted(U32 animationIndex);
     void buildBoundingBoxesForAnim(U32 animationIndex,
                                    AnimationComponent* const animComp);

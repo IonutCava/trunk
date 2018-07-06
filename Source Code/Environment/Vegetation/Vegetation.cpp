@@ -285,7 +285,7 @@ void Vegetation::uploadGrassData() {
     _render = _threadedLoadComplete = true;
 }
 
-void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
+void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState) {
     if (_threadedLoadComplete && !_success) {
         generateTrees();
@@ -303,7 +303,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
             _windZ = sceneState.getWindDirZ();
             _windS = sceneState.getWindSpeed();
             Material* mat =
-                sgn->getComponent<RenderingComponent>()->getMaterialInstance();
+                sgn.getComponent<RenderingComponent>()->getMaterialInstance();
             for (U8 i = 0; i < 3; ++i) {
                 RenderStage stage =
                     (i == 0 ? FINAL_STAGE
@@ -391,7 +391,7 @@ void Vegetation::gpuCull() {
 }
 
 void Vegetation::getDrawCommands(
-    SceneGraphNode* const sgn, const RenderStage& renderStage,
+    SceneGraphNode& sgn, const RenderStage& renderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
@@ -410,7 +410,7 @@ void Vegetation::getDrawCommands(
         .offset(_instanceCountGrass * queryId);
 
     RenderingComponent* const renderable =
-        sgn->getComponent<RenderingComponent>();
+        sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     _renderDrawCommand.renderWireframe(renderable->renderWireframe());
@@ -422,7 +422,7 @@ void Vegetation::getDrawCommands(
     drawCommandsOut.push_back(_renderDrawCommand);
 }
 
-bool Vegetation::onDraw(SceneGraphNode* const sgn,
+bool Vegetation::onDraw(SceneGraphNode& sgn,
                         const RenderStage& renderStage) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
@@ -431,7 +431,7 @@ bool Vegetation::onDraw(SceneGraphNode* const sgn,
               GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)));
 }
 
-void Vegetation::render(SceneGraphNode* const sgn,
+void Vegetation::render(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStage& currentRenderStage) {
     GFX_DEVICE.submitRenderCommand(_renderDrawCommand);

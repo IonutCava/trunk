@@ -21,15 +21,15 @@ SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
 SkinnedSubMesh::~SkinnedSubMesh() { MemoryManager::DELETE(_animator); }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
-void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn) {
-    sgn->setComponent(SGNComponent::SGN_COMP_ANIMATION,
-                      MemoryManager_NEW AnimationComponent(_animator, sgn));
+void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
+    sgn.setComponent(SGNComponent::SGN_COMP_ANIMATION,
+                     MemoryManager_NEW AnimationComponent(_animator, sgn));
     SubMesh::postLoad(sgn);
 }
 
 /// update possible animations
-bool SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn) {
-    assert(sgn->getComponent<AnimationComponent>());
+bool SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
+    assert(sgn.getComponent<AnimationComponent>());
 
     return getBoundingBoxForCurrentFrame(sgn);
 }
@@ -92,8 +92,8 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
     }
 }
 
-bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn) {
-    AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
+bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
+    AnimationComponent* animComp = sgn.getComponent<AnimationComponent>();
     // If anymations are paused or unavailable, keep the current BB
     if (!animComp->playAnimations()) {
         return true;
@@ -105,7 +105,7 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn) {
     if (!animBB.empty()) {
         // Update the BB, only if the calculation task has finished
         if (!_boundingBoxesComputing[animationIndex]) {
-            sgn->setInitialBoundingBox(animBB[animComp->frameIndex()]);
+            sgn.setInitialBoundingBox(animBB[animComp->frameIndex()]);
             return true;
         }
         return false;

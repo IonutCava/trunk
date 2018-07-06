@@ -182,12 +182,11 @@ void PhysX::initScene() {
     _targetScene->init();
 }
 
-bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
+bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
                         PhysicsActorMask mask, PhysicsCollisionGroup group) {
-    assert(node != nullptr);
     assert(_targetScene != nullptr);
 
-    Object3D* sNode = node->getNode<Object3D>();
+    Object3D* sNode = node.getNode<Object3D>();
 
     // Load cached version from file first
     stringImpl nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" +
@@ -217,7 +216,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
 
         VertexBuffer* nodeVB = sNode->getGeometryVB();
         if (sNode->getObjectType() == Object3D::SUBMESH) {
-            nodeVB = node->getParent()->getNode<Object3D>()->getGeometryVB();
+            nodeVB = node.getParent()->getNode<Object3D>()->getGeometryVB();
         }
 
         PxDefaultFileOutputStream stream(nodeName.c_str());
@@ -247,10 +246,10 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
         dynamic_cast<PhysXSceneInterface*>(_targetScene);
     PhysicsComponent* nodePhysics =
         sNode->getObjectType() == Object3D::SUBMESH
-            ? node->getParent()->getComponent<PhysicsComponent>()
-            : node->getComponent<PhysicsComponent>();
+            ? node.getParent()->getComponent<PhysicsComponent>()
+            : node.getComponent<PhysicsComponent>();
 
-    PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node->getName());
+    PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName());
     assert(tempActor != nullptr);
     tempActor->setParent(nodePhysics);
 

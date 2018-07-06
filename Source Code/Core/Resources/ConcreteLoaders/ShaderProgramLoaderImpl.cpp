@@ -5,8 +5,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
-#include <EASTL/string.h>
-
 namespace Divide {
 
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
@@ -32,7 +30,9 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
         vectorImpl<stringImpl> defines =
             Util::split(_descriptor.getPropertyListString(), ',');
         for (U8 i = 0; i < defines.size(); i++) {
-            if (!defines[i].empty()) ptr->addShaderDefine(defines[i]);
+            if (!defines[i].empty()) {
+                ptr->addShaderDefine(defines[i]);
+            }
         }
     }
 

@@ -7,15 +7,6 @@
 #ifndef GLIM_GLIMBATCHDATA_H
 #define GLIM_GLIMBATCHDATA_H
 
-#ifndef GLEW_STATIC
-#define GLEW_STATIC
-#define GLEW_MX
-#endif
-#include <glew.h>
-#ifdef GLEW_MX
-    GLEWContext* glewGetContext();
-#endif
-
 #include "Declarations.h"
 #include <map>
 #include "Utility/Headers/String.h"

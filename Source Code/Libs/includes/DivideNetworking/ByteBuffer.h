@@ -394,9 +394,9 @@ class ByteBuffer {
 
     template <typename Archive>
     void serialize(Archive &ar, const unsigned int version) {
-        /*ar & _rpos;
+        ar & _rpos;
         ar & _wpos;
-        ar & _storage;*/
+        ar & _storage;
     }
 
    protected:

@@ -106,6 +106,15 @@ void GL_API::endFrame() {
 #endif
 }
 
+GLuint64 GL_API::getFrameDurationGPU() {
+#ifdef _DEBUG
+    // The returned results are 4 frames old!
+    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT,
+                            &FRAME_DURATION_GPU);
+#endif
+
+    return FRAME_DURATION_GPU;
+}
 /// Prepare our shader loading system
 bool GL_API::initShaders() {
     // Initialize GLSW
@@ -280,7 +289,7 @@ bool GL_API::deInitShaders() {
     // Delete the glsl-optimizer context
     glslopt_cleanup(_GLSLOptContex);
     // Shutdown GLSW
-    return (glswShutdown() == GL_TRUE);
+    return (glswShutdown() == 1);
 }
 
 /// Try to find the requested font in the font cache. Load on cache miss.
@@ -368,9 +377,9 @@ void GL_API::drawPoints(GLuint numPoints) {
 
 void GL_API::uploadDrawCommands(
     const vectorImpl<IndirectDrawCommand>& drawCommands) const {
-    glNamedBufferDataEXT(_indirectDrawBuffer,
-                         sizeof(IndirectDrawCommand) * drawCommands.size(),
-                         drawCommands.data(), GL_DYNAMIC_COPY);
+    glNamedBufferData(_indirectDrawBuffer,
+                      sizeof(IndirectDrawCommand) * drawCommands.size(),
+                      drawCommands.data(), GL_DYNAMIC_COPY);
 }
 
 /// Verify if we have a sampler object created and available for the given

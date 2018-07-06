@@ -46,7 +46,7 @@ class SceneGraph : private NonCopyable {
     SceneGraph();
     ~SceneGraph();
 
-    inline SceneGraphNode* getRoot() const { return _root; }
+    inline SceneGraphNode& getRoot() const { return *_root; }
 
     inline vectorImpl<BoundingBox>& getBBoxes() {
         _boundingBoxes.clear();
@@ -59,7 +59,7 @@ class SceneGraph : private NonCopyable {
         return _root->findNode(name, sceneNodeName);
     }
 
-    inline SceneGraphNode* addNode(SceneNode* const node,
+    inline SceneGraphNode& addNode(SceneNode* const node,
                                    const stringImpl& nodeName) {
         return _root->addNode(node, nodeName);
     }
@@ -76,7 +76,7 @@ class SceneGraph : private NonCopyable {
     }
 
    protected:
-    void printInternal(SceneGraphNode* const sgn);
+    void printInternal(SceneGraphNode& sgn);
 
    private:
     SceneGraphNode* _root;

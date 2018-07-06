@@ -2,7 +2,7 @@
 
 namespace Divide {
 
-Player::Player(SceneGraphNode* const node)
+Player::Player(SceneGraphNode& node)
     : Character(Character::CHARACTER_TYPE_PLAYER, node) {
     _lockedControls = false;
 }
