@@ -180,7 +180,7 @@ class Material : public CachedResource {
     /// Shader modifiers add tokens to the end of the shader name.
     /// Add as many tokens as needed but separate them with a ".". i.e:
     /// "Tree.NoWind.Glow"
-    void addShaderModifier(const RenderStagePass& renderStagePass, const stringImpl& shaderModifier);
+    void addShaderModifier(RenderStagePass renderStagePass, const stringImpl& shaderModifier);
 
     void addShaderModifier(const stringImpl& shaderModifier);
 
@@ -193,7 +193,7 @@ class Material : public CachedResource {
     ///#define MAX_SHADOW_CASTERS 2
     void setShaderDefines(RenderPassType passType, const stringImpl& shaderDefines);
     void setShaderDefines(RenderStage renderStage, const stringImpl& shaderDefines);
-    void setShaderDefines(const RenderStagePass& renderStagePass, const stringImpl& shaderDefines);
+    void setShaderDefines(RenderStagePass renderStagePass, const stringImpl& shaderDefines);
 
     void setShaderDefines(const stringImpl& shaderDefines);
 
@@ -202,11 +202,11 @@ class Material : public CachedResource {
 
     /// Add the specified shader to the specified Stage Pass (stage and pass type)
     void setShaderProgram(const stringImpl& shader,
-                          const RenderStagePass& renderStagePass,
+                          RenderStagePass renderStagePass,
                           const bool computeOnAdd);
 
     void setShaderProgram(const ShaderProgram_ptr& shader,
-                          const RenderStagePass& renderStagePass);
+                          RenderStagePass renderStagePass);
 
     /// Add the specified shader to the specified render stage (for all pass types)
     void setShaderProgram(const stringImpl& shader,
@@ -241,22 +241,22 @@ class Material : public CachedResource {
                              I32 variant = -1);
 
     void setRenderStateBlock(size_t renderStateBlockHash,
-                             const RenderStagePass& renderStagePass,
+                             RenderStagePass renderStagePass,
                               I32 variant = -1);
 
     void setParallaxFactor(F32 factor);
 
-    void getSortKeys(const RenderStagePass& renderStagePass, I32& shaderKey, I32& textureKey) const;
+    void getSortKeys(RenderStagePass renderStagePass, I32& shaderKey, I32& textureKey) const;
 
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
     F32 getParallaxFactor() const;
 
-    size_t getRenderStateBlock(const RenderStagePass& renderStagePass, I32 variant = 0);
+    size_t getRenderStateBlock(RenderStagePass renderStagePass, I32 variant = 0);
 
     std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
 
-    ShaderProgramInfo& getShaderInfo(const RenderStagePass& renderStagePass);
+    ShaderProgramInfo& getShaderInfo(RenderStagePass renderStagePass);
 
     const TextureOperation& getTextureOperation() const;
 
@@ -264,7 +264,7 @@ class Material : public CachedResource {
     const ShadingMode& getShadingMode() const;
     const BumpMethod&  getBumpMethod()  const;
 
-    void getTextureData(TextureDataContainer& textureData);
+    void getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData);
 
     void rebuild();
     void clean();
@@ -277,9 +277,9 @@ class Material : public CachedResource {
     bool isDoubleSided() const;
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
-    bool computeShader(const RenderStagePass& renderStagePass, const bool computeOnAdd);
+    bool computeShader(RenderStagePass renderStagePass, const bool computeOnAdd);
 
-    bool canDraw(const RenderStagePass& renderStagePass);
+    bool canDraw(RenderStagePass renderStagePass);
 
     void updateReflectionIndex(ReflectorType type, I32 index);
     void updateRefractionIndex(ReflectorType type, I32 index);
@@ -296,19 +296,19 @@ class Material : public CachedResource {
 
     void recomputeShaders();
     void setShaderProgramInternal(const stringImpl& shader,
-                                  const RenderStagePass& renderStagePass,
+                                  RenderStagePass renderStagePass,
                                   const bool computeOnAdd);
 
     void setShaderProgramInternal(const ShaderProgram_ptr& shader,
-                                  const RenderStagePass& renderStagePass);
+                                  RenderStagePass renderStagePass);
 
     bool isExternalTexture(ShaderProgram::TextureUsage slot) const;
 
-    ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass);
+    ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass);
 
-    const ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass) const;
+    const ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass) const;
 
-    std::array<size_t, 3>& defaultRenderStates(const RenderStagePass& renderStagePass);
+    std::array<size_t, 3>& defaultRenderStates(RenderStagePass renderStagePass);
 
    private:
     GFXDevice& _context;

@@ -52,7 +52,7 @@ class ParticleEmitter : public SceneNode {
 
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass) override;
+                  RenderStagePass renderStagePass) override;
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) { _enabled = state; }
@@ -86,10 +86,10 @@ class ParticleEmitter : public SceneNode {
                      SceneState& sceneState) override;
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                const RenderStagePass& renderStagePass,
+                                RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
-    void prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera);
+    void prepareForRender(RenderStagePass renderStagePass, const Camera& crtCamera);
 
     GenericVertexData& getDataBuffer(RenderStage stage, PlayerIndex idx);
 

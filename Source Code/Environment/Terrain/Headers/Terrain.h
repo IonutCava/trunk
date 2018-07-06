@@ -138,7 +138,7 @@ class Terrain : public Object3D {
     
    protected:
     void buildDrawCommands(SceneGraphNode& sgn,
-                                const RenderStagePass& renderStagePass,
+                                RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
@@ -146,7 +146,7 @@ class Terrain : public Object3D {
 
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass) override;
+                  RenderStagePass renderStagePass) override;
 
     void onCameraUpdate(SceneGraphNode& sgn,
                         const U64 cameraNameHash,
@@ -167,7 +167,7 @@ class Terrain : public Object3D {
     VegetationDetails _vegDetails;
 
     typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
-    typedef std::array<bool, to_base(RenderStage::COUNT)> CameraUpdateFlagArray;
+    typedef hashMap<U64, bool> CameraUpdateFlagArray;
 
     U32 _chunkSize;
     vec3<F32> _offsetPosition;

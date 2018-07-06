@@ -52,13 +52,13 @@ class Sky : public SceneNode {
 
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass) override;
+                  RenderStagePass renderStagePass) override;
 
    protected:
     void postLoad(SceneGraphNode& sgn) override;
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                const RenderStagePass& renderStagePass,
+                                RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
    protected:

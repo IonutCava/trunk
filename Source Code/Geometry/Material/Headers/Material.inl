@@ -79,7 +79,7 @@ inline void Material::setHighPriority(const bool state) {
     _highPriority = state;
 }
 
-inline void Material::addShaderModifier(const RenderStagePass& renderStagePass, const stringImpl& shaderModifier) {
+inline void Material::addShaderModifier(RenderStagePass renderStagePass, const stringImpl& shaderModifier) {
     _shaderModifier[renderStagePass.index()] = shaderModifier;
 }
 
@@ -101,7 +101,7 @@ inline void Material::setShaderDefines(RenderStage renderStage, const stringImpl
     }
 }
 
-inline void Material::setShaderDefines(const RenderStagePass& renderStagePass, const stringImpl& shaderDefines) {
+inline void Material::setShaderDefines(RenderStagePass renderStagePass, const stringImpl& shaderDefines) {
     vector<stringImpl>& defines = shaderInfo(renderStagePass)._shaderDefines;
     if (std::find(std::cbegin(defines), std::cend(defines), shaderDefines) == std::cend(defines)) {
         defines.push_back(shaderDefines);
@@ -172,7 +172,7 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
 }
 
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
-                                          const RenderStagePass& renderStagePass,
+                                          RenderStagePass renderStagePass,
                                           I32 variant) {
     if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
         for (size_t& state : defaultRenderStates(renderStagePass)) {
@@ -183,7 +183,7 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
     }
 }
 
-inline size_t Material::getRenderStateBlock(const RenderStagePass& renderStagePass, I32 variant) {
+inline size_t Material::getRenderStateBlock(RenderStagePass renderStagePass, I32 variant) {
     const std::array<size_t, 3>& states = defaultRenderStates(renderStagePass);
 
     assert(variant >= 0 && variant < 3);
@@ -269,28 +269,28 @@ inline void Material::setShadingMode(const ShadingMode& mode) {
     recomputeShaders();
 }
 
-inline ShaderProgramInfo& Material::getShaderInfo(const RenderStagePass& renderStagePass) {
+inline ShaderProgramInfo& Material::getShaderInfo(RenderStagePass renderStagePass) {
     return shaderInfo(renderStagePass);
 }
 
-inline ShaderProgramInfo& Material::shaderInfo(const RenderStagePass& renderStagePass) {
+inline ShaderProgramInfo& Material::shaderInfo(RenderStagePass renderStagePass) {
     return _shaderInfo[renderStagePass.index()];
 }
 
-inline const ShaderProgramInfo& Material::shaderInfo(const RenderStagePass& renderStagePass) const {
+inline const ShaderProgramInfo& Material::shaderInfo(RenderStagePass renderStagePass) const {
     return _shaderInfo[renderStagePass.index()];
 }
 
 // Here we set the shader's name
 inline void Material::setShaderProgram(const stringImpl& shader,
-                                       const RenderStagePass& renderStagePass,
+                                       RenderStagePass renderStagePass,
                                        const bool computeOnAdd) {
     shaderInfo(renderStagePass)._customShader = true;
     setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
 }
 
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
-                                       const RenderStagePass& renderStagePass) {
+                                       RenderStagePass renderStagePass) {
     shaderInfo(renderStagePass)._customShader = true;
     setShaderProgramInternal(shader, renderStagePass);
 }
@@ -325,7 +325,7 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
     }
 }
 
-inline std::array<size_t, 3>& Material::defaultRenderStates(const RenderStagePass& renderStagePass) {
+inline std::array<size_t, 3>& Material::defaultRenderStates(RenderStagePass renderStagePass) {
     return _defaultRenderStates[renderStagePass.index()];
 }
 

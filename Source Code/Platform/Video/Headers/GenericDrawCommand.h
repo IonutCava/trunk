@@ -80,7 +80,7 @@ struct GenericDrawCommand {
     U32 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 13 bytes
     U32 _patchVertexCount = 4;                                       // 9  bytes
     U16 _drawCount = 1;                                              // 5  bytes
-    U8  _drawToBuffer = 0;                                           // 3  bytes
+    U8  _bufferIndex = 0;                                            // 3  bytes
     U8  _lodIndex = 0;                                               // 2  bytes
     PrimitiveType _primitiveType = PrimitiveType::COUNT;             // 1  bytes
 

@@ -139,22 +139,18 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     return dataOut;
 }
 
-void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
-                                  SceneRenderState& sceneRenderState,
-                                  RenderPass::BufferData& bufferData,
-                                  const Camera& camera,
-                                  bool refreshNodeData)
+void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params)
 {
     Time::ScopedTimer timer(_commandBuildTimer);
-    // If there aren't any nodes visible in the current pass, don't update anything (but clear the render queue
 
-    RenderStagePass currentStage = getRenderStage();
-    if (refreshNodeData) {
+    RenderPass::BufferData bufferData = *params._bufferData;
+
+    if (params._refreshNodeData) {
         bufferData._lastCommandCount = 0;
         bufferData._lasNodeCount = 0;
     }
 
-    if (currentStage.stage() == RenderStage::SHADOW) {
+    if (params._renderStagePass._stage == RenderStage::SHADOW) {
         Light* shadowLight = LightPool::currentShadowCastingLight();
         assert(shadowLight != nullptr);
         if (!COMPARE(_gpuBlock._data._renderProperties.x, shadowLight->getShadowProperties()._arrayOffset.x)) {
@@ -173,21 +169,22 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
     U32 nodeCount = 0;
     U32 cmdCount = 0;
 
-    for (const vector<SceneGraphNode*>& queue : sortedNodes) {
+    const RenderQueue::SortedQueues& sortedQueues = *params._sortedQueues;
+    for (const vector<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-            Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, camera, sceneRenderState, currentStage);
+            Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, *params._camera, *params._sceneRenderState, params._renderStagePass);
         }
 
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
 
-            const RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(renderable, currentStage);
+            const RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(renderable, params._renderStagePass);
             if (pkg.isRenderable()) {
-                if (refreshNodeData) {
-                    Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, currentStage, cmdCount, nodeCount);
+                if (params._refreshNodeData) {
+                    Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, params._renderStagePass, cmdCount, nodeCount);
 
-                    processVisibleNode(*node, nodeCount, camera, pkg.isOcclusionCullable());
+                    processVisibleNode(*node, nodeCount, *params._camera, pkg.isOcclusionCullable());
 
                     for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
                         const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
@@ -203,7 +200,7 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
         }
     }
 
-    if (refreshNodeData) {
+    if (params._refreshNodeData) {
         bufferData._lastCommandCount = cmdCount;
         bufferData._lasNodeCount = nodeCount;
 

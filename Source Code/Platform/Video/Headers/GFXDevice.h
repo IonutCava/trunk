@@ -173,6 +173,15 @@ public:
 
     FWD_DECLARE_MANAGED_CLASS(DebugView);
 
+    struct BuildDrawCommandsParams {
+        const RenderQueue::SortedQueues* _sortedQueues = nullptr;
+        const SceneRenderState* _sceneRenderState = nullptr;
+        RenderPass::BufferData* _bufferData = nullptr;
+        RenderStagePass _renderStagePass;
+        const Camera* _camera = nullptr;
+        bool _refreshNodeData = false;
+    };
+
 public:  // GPU interface
     explicit GFXDevice(Kernel& parent);
     ~GFXDevice();
@@ -202,11 +211,7 @@ public:  // GPU interface
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
     void flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer);
 
-    /// Sets the current render stage.
-    ///@param stage Is used to inform the rendering pipeline what we are rendering.
-    ///Shadows? reflections? etc
-    inline bool isDepthStage() const;
-    inline bool isDepthStage(const RenderStagePass& renderStagePass) const;
+    inline bool isDepthStage(RenderStagePass renderStagePass) const;
 
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
@@ -216,7 +221,7 @@ public:  // GPU interface
         const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
-        const RenderStagePass& stagePass,
+        RenderStagePass stagePass,
         U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
@@ -225,7 +230,7 @@ public:  // GPU interface
         const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
-        const RenderStagePass& stagePass,
+        RenderStagePass stagePass,
         U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
@@ -266,10 +271,6 @@ public:  // Accessors and Mutators
     inline GPUState& gpuState() { return _state; }
 
     inline void debugDrawFrustum(Frustum* frustum) { _debugFrustum = frustum; }
-
-    inline const RenderStagePass& getRenderStage() const { return _renderStagePass; }
-
-    inline const RenderStagePass&  getPrevRenderStage() const { return _prevRenderStagePass; }
 
     /// Return the last number of HIZ culled items
     U32 getLastCullCount() const;
@@ -320,8 +321,6 @@ public:  // Accessors and Mutators
     inline const Rect<I32>& getCurrentViewport() const { return _viewport; }
 
     inline const Rect<I32>& getBaseViewport() const { return _baseViewport; }
-
-    inline const RenderStagePass& setRenderStagePass(const RenderStagePass& stage);
 
     DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
 
@@ -409,11 +408,7 @@ protected:
                        const Texture_ptr& depthBuffer,
                        GFX::CommandBuffer& bufferInOut);
 
-    void buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
-                           SceneRenderState& sceneRenderState,
-                           RenderPass::BufferData& bufferData,
-                           const Camera& camera,
-                           bool refreshNodeData);
+    void buildDrawCommands(const BuildDrawCommandsParams& params);
 
     void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut);
 
@@ -438,8 +433,6 @@ private:
     /// Pointer to a shader creation queue
     ShaderComputeQueue* _shaderComputeQueue;
 
-    RenderStagePass _renderStagePass;
-    RenderStagePass _prevRenderStagePass;
     vector<Line> _axisLines;
     IMPrimitive     *_axisGizmo;
     vector<Line> _axisLinesTransformed;

@@ -44,7 +44,8 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
    : Scene(context, cache, parent, name),
     _infoBox(nullptr),
     _sceneReady(false),
-    _lastNavMeshBuildTime(0UL)
+    _lastNavMeshBuildTime(0UL),
+    _firstPersonWeapon(nullptr)
 {
 
     for (U8 i = 0; i < 2; ++i) {
@@ -149,7 +150,7 @@ namespace {
     }
 };
 
-void WarScene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) {
+void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     bufferInOut.add(_targetLines->toCommandBuffer());
     Scene::debugDraw(activeCamera, stagePass, bufferInOut);
 }
@@ -358,6 +359,7 @@ bool WarScene::load(const stringImpl& name) {
     _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
     _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     // Add some obstacles
+#if 0
     SceneGraphNode* cylinder[5];
     cylinder[0] = _sceneGraph->findNode("cylinderC");
     cylinder[1] = _sceneGraph->findNode("cylinderNW");
@@ -557,7 +559,7 @@ bool WarScene::load(const stringImpl& name) {
     AI::WarSceneAIProcessor::registerMessageCallback([&](U8 eventID, const stringImpl& unitName) {
         printMessage(eventID, unitName);
     });
-    
+#endif
     static const bool disableParticles = true;
 
     if (disableParticles) {
@@ -806,7 +808,7 @@ void WarScene::postLoadMainThread() {
 
 void WarScene::onSetActive() {
     Scene::onSetActive();
-    _firstPersonWeapon->lockToCamera(_ID_RT(playerCamera()->name()));
+    //_firstPersonWeapon->lockToCamera(_ID_RT(playerCamera()->name()));
 }
 
 void WarScene::weaponCollision(const RigidBodyComponent& collider) {

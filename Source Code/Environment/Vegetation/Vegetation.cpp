@@ -282,7 +282,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     if (_threadedLoadComplete && !_success) {
         generateTrees(updateTask);
         Camera::addUpdateListener([this, &renderState](const Camera& cam) {
-            gpuCull(renderState, cam);
+            //gpuCull(renderState, cam);
         });
         _success = true;
     }
@@ -308,8 +308,8 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-U32 Vegetation::getQueryID() {
-    switch (_context.getRenderStage().stage()) {
+U32 getQueryID(RenderStagePass renderStagePass) {
+    switch (renderStagePass._stage) {
         case RenderStage::SHADOW:
             return 0;
         case RenderStage::REFLECTION:
@@ -321,13 +321,13 @@ U32 Vegetation::getQueryID() {
     };
 }
 
-void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera& cam) {
-    U32 queryID = getQueryID();
+void Vegetation::gpuCull(RenderStagePass renderStagePass, const SceneRenderState& sceneRenderState, const Camera& cam) {
+    U32 queryID = getQueryID(renderStagePass);
 
     bool draw = false;
     switch (queryID) {
         case 0 /*SHADOW*/: {
-            draw = _context.getRenderStage() != _context.getPrevRenderStage();
+            draw = renderStagePass != _prevRenderStagePass;
             _culledFinal = false;
         } break;
         case 1 /*REFLECTION*/: {
@@ -339,6 +339,8 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
             _culledFinal = true;
         } break;
     }
+    _prevRenderStagePass = renderStagePass;
+
     _parentLoD = _terrainChunk->getLoD(cam.getEye());
     if (draw && _threadedLoadComplete && _parentLoD == 0) {
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
@@ -359,8 +361,9 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
         pipeDesc._shaderProgramHandle = _cullShader->getID();
 
         _cullDrawCommand._cmd.primCount = _instanceCountGrass;
-        _cullDrawCommand._drawToBuffer = to_U8(queryID);
+        _cullDrawCommand._bufferIndex = to_U8(queryID);
         _cullDrawCommand._sourceBuffer = buffer;
+        
         enableOption(_cullDrawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE);
         buffer->incQueryQueue();
 
@@ -396,7 +399,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
 }
 
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
-                                   const RenderStagePass& renderStagePass,
+                                   RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
 
     GenericDrawCommand cmd;
@@ -426,14 +429,14 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
 
 bool Vegetation::onRender(SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          const RenderStagePass& renderStagePass) {
+                          RenderStagePass renderStagePass) {
     RenderingComponent* renderComp = sgn.get<RenderingComponent>();
     RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
 
     ACKNOWLEDGE_UNUSED(sceneRenderState);
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
-    U32 queryID = getQueryID();
-    gpuCull(sceneRenderState, *sceneRenderState.parentScene().playerCamera());
+    U32 queryID = getQueryID(renderStagePass);
+    gpuCull(renderStagePass, sceneRenderState, *sceneRenderState.parentScene().playerCamera());
 
     buffer->attribDescriptor(posLocation).strideInBytes(sizeof(vec4<F32>) * _instanceCountGrass * queryID);
     buffer->attribDescriptor(scaleLocation).strideInBytes(sizeof(F32) * _instanceCountGrass * queryID);
@@ -442,13 +445,11 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
     cmd._cmd.primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
     cmd._sourceBuffer = buffer;
+    cmd._bufferIndex = renderStagePass.index();
     pkg.drawCommand(0, 0, cmd);
     
     _staticDataUpdated = false;
-    return !(!_render || !_success || !_threadedLoadComplete ||
-             _parentLoD > 0 ||
-             (renderStagePass == _context.getPrevRenderStage() &&
-              renderStagePass.stage() == RenderStage::SHADOW));
+    return !(!_render || !_success || !_threadedLoadComplete || _parentLoD > 0);
 }
 
 void Vegetation::generateTrees(const Task& parentTask) {

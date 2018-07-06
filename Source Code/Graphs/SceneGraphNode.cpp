@@ -475,7 +475,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
 }
 
 bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
-                                   const RenderStagePass& renderStagePass) {
+                                   RenderStagePass renderStagePass) {
     
     RenderingComponent* rComp = get<RenderingComponent>();
     if (rComp != nullptr) {

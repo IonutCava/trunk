@@ -36,6 +36,7 @@
 #include "Graphs/Headers/SceneNode.h"
 #include "Platform/Threading/Headers/Task.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/RenderStagePass.h"
 
 namespace Divide {
 
@@ -78,7 +79,7 @@ class Vegetation : public SceneNode {
     inline void toggleRendering(bool state) { _render = state; }
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                const RenderStagePass& renderStagePass,
+                                RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
     protected:
@@ -88,16 +89,14 @@ class Vegetation : public SceneNode {
 
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass)  override;
+                  RenderStagePass renderStagePass)  override;
 
-    void gpuCull(const SceneRenderState& sceneRenderState, const Camera& cam);
+    void gpuCull(RenderStagePass renderStagePass, const SceneRenderState& sceneRenderState, const Camera& cam);
 
    private:
     void uploadGrassData();
     void generateTrees(const Task& parentTask);
     void generateGrass(const Task& parentTask);
-
-    U32 getQueryID();
 
    private:
     enum class CullType : U8 {
@@ -144,6 +143,7 @@ class Vegetation : public SceneNode {
     ShaderBuffer* _grassMatrices;
     static bool _staticDataUpdated;
     GenericDrawCommand _cullDrawCommand;
+    RenderStagePass _prevRenderStagePass;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);

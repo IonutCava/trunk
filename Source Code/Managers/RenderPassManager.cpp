@@ -11,18 +11,6 @@
 
 namespace Divide {
 
-RenderPassManager::PassParams::PassParams()
-  : drawPolicy(nullptr),
-    stage(RenderStage::COUNT),
-    camera(nullptr),
-    occlusionCull(false),
-    doPrePass(true),
-    bindTargets(true),
-    pass(0),
-    clippingPlanes(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
-{
-}
-
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
       _context(context),
@@ -121,27 +109,28 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage)).c_str();
+    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params._stage)).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     // PrePass requires a depth buffer
-    bool doPrePass = params.doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
+    bool doPrePass = params._doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
 
     if (doPrePass) {
         SceneManager& sceneManager = parent().sceneManager();
 
-        _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::DEPTH_PASS));
+        RenderStagePass stagePass(params._stage, RenderPassType::DEPTH_PASS);
 
         Attorney::SceneManagerRenderPass::populateRenderQueue(sceneManager,
-                                                              *params.camera,
+                                                              stagePass,
+                                                              *params._camera,
                                                               true,
-                                                              params.pass);
+                                                              params._pass);
 
-        if (params.target._usage != RenderTargetUsage::COUNT) {
+        if (params._target._usage != RenderTargetUsage::COUNT) {
            
-            if (params.bindTargets) {
+            if (params._bindTargets) {
                 GFX::BeginRenderPassCommand beginRenderPassCommand;
-                beginRenderPassCommand._target = params.target;
+                beginRenderPassCommand._target = params._target;
                 beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
                 beginRenderPassCommand._name = "DO_PRE_PASS";
                 GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
@@ -158,9 +147,9 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
                 }
             }
 
-            Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, bufferInOut);
+            Attorney::SceneManagerRenderPass::postRender(sceneManager, stagePass, *params._camera, bufferInOut);
 
-            if (params.bindTargets) {
+            if (params._bindTargets) {
                 GFX::EndRenderPassCommand endRenderPassCommand;
                 GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
             }
@@ -182,27 +171,28 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
-    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage)).c_str();
+    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params._stage)).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     SceneManager& sceneManager = parent().sceneManager();
 
-    _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::COLOUR_PASS));
+    RenderStagePass stagePass(params._stage, RenderPassType::COLOUR_PASS);
     Attorney::SceneManagerRenderPass::populateRenderQueue(sceneManager,
-                                                          *params.camera,
-                                                          !params.doPrePass,
-                                                          params.pass);
+                                                          stagePass,
+                                                          *params._camera,
+                                                          !params._doPrePass,
+                                                          params._pass);
 
-    if (params.target._usage != RenderTargetUsage::COUNT) {
+    if (params._target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
-        if (params.stage != RenderStage::SHADOW) {
-            Attorney::SceneManagerRenderPass::preRender(sceneManager, *params.camera, target, bufferInOut);
-            if (params.doPrePass) {
+        if (params._stage != RenderStage::SHADOW) {
+            Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
+            if (params._doPrePass) {
                 drawToDepth = Config::DEBUG_HIZ_CULLING;
             }
         }
 
-        if (params.stage == RenderStage::DISPLAY) {
+        if (params._stage == RenderStage::DISPLAY) {
             GFX::BindDescriptorSetsCommand bindDescriptorSets;
             bindDescriptorSets._set = _context.newDescriptorSet();
             // Bind the depth buffers
@@ -220,21 +210,21 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
         }
 
         RTDrawDescriptor& drawPolicy = 
-            params.drawPolicy ? *params.drawPolicy
-                              : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
-                                                            : RenderTarget::defaultPolicy());
+            params._drawPolicy ? *params._drawPolicy
+                               : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
+                                                             : RenderTarget::defaultPolicy());
 
         drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
 
-        if (params.bindTargets) {
+        if (params._bindTargets) {
             GFX::BeginRenderPassCommand beginRenderPassCommand;
-            beginRenderPassCommand._target = params.target;
+            beginRenderPassCommand._target = params._target;
             beginRenderPassCommand._descriptor = drawPolicy;
             beginRenderPassCommand._name = "DO_MAIN_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
         }
 
-        if (params.stage == RenderStage::SHADOW) {
+        if (params._stage == RenderStage::SHADOW) {
             for (RenderBinType type : RenderBinType::_values()) {
                 if (std::find(std::begin(shadowExclusionList),
                               std::end(shadowExclusionList),
@@ -253,14 +243,14 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             }
         }
 
-        Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, bufferInOut);
+        Attorney::SceneManagerRenderPass::postRender(sceneManager, stagePass, *params._camera, bufferInOut);
 
-        if (params.stage == RenderStage::DISPLAY) {
+        if (params._stage == RenderStage::DISPLAY) {
             /// These should be OIT rendered as well since things like debug nav meshes have translucency
-            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, *params.camera, bufferInOut);
+            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, stagePass, *params._camera, bufferInOut);
         }
 
-        if (params.bindTargets) {
+        if (params._bindTargets) {
             GFX::EndRenderPassCommand endRenderPassCommand;
             GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
         }
@@ -341,19 +331,19 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._camera = params.camera;
+    setCameraCommand._camera = params._camera;
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::SetClipPlanesCommand setClipPlanesCommand;
-    setClipPlanesCommand._clippingPlanes = params.clippingPlanes;
+    setClipPlanesCommand._clippingPlanes = params._clippingPlanes;
     GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
 
-    RenderTarget& target = _context.renderTargetPool().renderTarget(params.target);
+    RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
     prePass(params, target, bufferInOut);
 
-    if (params.occlusionCull) {
-        _context.constructHIZ(params.target, bufferInOut);
-        _context.occlusionCull(getBufferData(params.stage, params.pass), target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
+    if (params._occlusionCull) {
+        _context.constructHIZ(params._target, bufferInOut);
+        _context.occlusionCull(getBufferData(params._stage, params._pass), target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
     }
 
     mainPass(params, target, bufferInOut);

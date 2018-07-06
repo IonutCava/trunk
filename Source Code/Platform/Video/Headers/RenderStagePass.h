@@ -37,33 +37,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class RenderStagePass {
-public:
-    explicit RenderStagePass(RenderStage stage, RenderPassType prePass)
-        : _stage(stage),
-          _passType(prePass)
+struct RenderStagePass {
+    typedef U8 PassIndex;
+
+    RenderStagePass() : RenderStagePass(RenderStage::COUNT, RenderPassType::COUNT)
     {
     }
 
-    typedef U8 PassIndex;
-
-    inline bool operator==(const RenderStagePass& other) const {
-        return _passType == other._passType &&
-            _stage == other._stage;
+    RenderStagePass(RenderStage stage, RenderPassType passType)
+        : _stage(stage),
+          _passType(passType)
+    {
     }
 
-    inline bool operator!=(const RenderStagePass& other) const {
-        return _passType != other._passType ||
-            _stage != other._stage;
-    }
-
-    inline RenderStage stage() const {
-        return _stage;
-    }
-
-    inline RenderPassType pass() const {
-        return _passType;
-    }
+    RenderStage _stage = RenderStage::COUNT;
+    RenderPassType _passType = RenderPassType::COUNT;
 
     inline PassIndex index() const {
         return index(_stage, _passType);
@@ -86,13 +74,19 @@ public:
     }
 
     static RenderStagePass stagePass(PassIndex index) {
-        return RenderStagePass(stage(index), pass(index));
+        return RenderStagePass(RenderStagePass::stage(index), RenderStagePass::pass(index));
     }
-
-private:
-    RenderStage _stage;
-    RenderPassType _passType;
 };
+
+inline bool operator==(const RenderStagePass& lhs, const RenderStagePass& rhs) {
+    return lhs._stage == rhs._stage &&
+           lhs._passType == rhs._passType;
+}
+
+inline bool operator!=(const RenderStagePass& lhs, const RenderStagePass& rhs) {
+    return lhs._stage != rhs._stage ||
+           lhs._passType != rhs._passType;
+}
 
 }; //namespace Divide
 

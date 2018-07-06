@@ -67,8 +67,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     virtual void draw(const GenericDrawCommand& cmd) = 0;
 
     virtual void beginBatch(bool reserveBuffers, 
-                            unsigned int vertexCount,
-                            unsigned int attributeCount) = 0;
+                            U32 vertexCount,
+                            U32 attributeCount) = 0;
 
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(F32 x, F32 y, F32 z) = 0;

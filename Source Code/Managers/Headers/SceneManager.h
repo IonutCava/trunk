@@ -98,7 +98,7 @@ public:
 
     /*Base Scene Operations*/
     // generate a list of nodes to render
-    void updateVisibleNodes(const RenderStagePass& stage, bool refreshNodeData, U32 pass = 0);
+    void updateVisibleNodes(RenderStagePass stage, bool refreshNodeData, U32 pass = 0);
 
 
     inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
@@ -108,7 +108,7 @@ public:
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
     // cull the scenegraph against the current view frustum
-    const RenderPassCuller::VisibleNodeList& cullSceneGraph(const RenderStagePass& stage);
+    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStagePass stage);
     // get the full list of reflective nodes
     const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
     // get the full list of refractive nodes
@@ -202,11 +202,11 @@ protected:
     bool frameEnded(const FrameEvent& evt) override;
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
-    void preRender(const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
-    void postRender(const Camera& camera, GFX::CommandBuffer& bufferInOut);
-    void debugDraw(const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    void preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
-    bool populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex);
+    bool populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex);
     Camera* playerCamera() const;
     Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
@@ -354,22 +354,23 @@ class SceneManagerCameraAccessor {
 class SceneManagerRenderPass {
    private:
     static bool populateRenderQueue(Divide::SceneManager& mgr,
+                                    RenderStagePass stagePass,
                                     const Camera& camera,
                                     bool doCulling,
                                     U32 passIndex) {
-        return mgr.populateRenderQueue(camera, doCulling, passIndex);
+        return mgr.populateRenderQueue(stagePass, camera, doCulling, passIndex);
     }
 
-    static void preRender(Divide::SceneManager& mgr, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-        mgr.preRender(camera, target, bufferInOut);
+    static void preRender(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+        mgr.preRender(stagePass, camera, target, bufferInOut);
     }
 
-    static void postRender(Divide::SceneManager& mgr, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-        mgr.postRender(camera, bufferInOut);
+    static void postRender(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+        mgr.postRender(stagePass, camera, bufferInOut);
     }
 
-    static void debugDraw(Divide::SceneManager& mgr, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-        mgr.debugDraw(camera, bufferInOut);
+    static void debugDraw(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+        mgr.debugDraw(stagePass, camera, bufferInOut);
     }
 
     static bool generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {

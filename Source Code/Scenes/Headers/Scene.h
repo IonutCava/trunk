@@ -216,7 +216,7 @@ class Scene : public Resource, public PlatformContextComponent {
     /// returns true if the camera was moved/rotated/etc
     bool updateCameraControls(PlayerIndex idx);
     /// Draw debug entities
-    virtual void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut);
+    virtual void debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
 
     //Return true if input was consumed
     virtual bool mouseMoved(const Input::MouseEvent& arg);
@@ -355,7 +355,7 @@ class SceneManager {
     }
 
     /// Draw debug entities
-    static void debugDraw(Scene& scene, const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) {
+    static void debugDraw(Scene& scene, const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
         scene.debugDraw(activeCamera, stagePass, bufferInOut);
     }
 

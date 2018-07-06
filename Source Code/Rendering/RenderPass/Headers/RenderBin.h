@@ -46,10 +46,11 @@
 namespace Divide {
 
 struct Task;
+struct RenderStagePass;
+
 class GFXDevice;
 class SceneGraphNode;
 class RenderingComponent;
-class RenderStagePass;
 
 namespace GFX {
     class CommandBuffer;
@@ -63,7 +64,7 @@ struct RenderBinItem {
     F32 _distanceToCameraSq;
 
     RenderBinItem() : _sortKeyA(-1), _sortKeyB(-1), _stateHash(0), _distanceToCameraSq(-1.0f), _renderable(nullptr) {}
-    RenderBinItem(const RenderStagePass& currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, RenderingComponent& renderable);
+    RenderBinItem(RenderStagePass currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, RenderingComponent& renderable);
 };
 
 struct RenderingOrder {
@@ -87,7 +88,7 @@ BETTER_ENUM(RenderBinType, U32,
     RBT_IMPOSTOR)    //< Impostors should be overlayed over everything since they are a debugging tool
 
 class SceneRenderState;
-class RenderStagePass;
+struct RenderStagePass;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
@@ -102,12 +103,12 @@ class RenderBin {
 
     void sort(RenderingOrder::List renderOrder);
     void sort(RenderingOrder::List renderOrder, const Task& parentTask);
-    void populateRenderQueue(const RenderStagePass& renderStagePass);
-    void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut);
+    void populateRenderQueue(RenderStagePass renderStagePass);
+    void postRender(const SceneRenderState& renderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut);
     void refresh();
 
     void addNodeToBin(const SceneGraphNode& sgn,
-                      const RenderStagePass& renderStagePass,
+                      RenderStagePass renderStagePass,
                       const vec3<F32>& eyePos);
 
     inline const RenderBinItem& getItem(U16 index) const {

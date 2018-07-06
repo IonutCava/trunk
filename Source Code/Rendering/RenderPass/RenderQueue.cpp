@@ -38,14 +38,14 @@ U16 RenderQueue::getRenderQueueStackSize() const {
     return temp;
 }
 
-RenderingOrder::List RenderQueue::getSortOrder(RenderBinType rbType) {
+RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinType rbType) {
     RenderingOrder::List sortOrder = RenderingOrder::List::COUNT;
     switch (rbType) {
         case RenderBinType::RBT_TRANSPARENT:
         case RenderBinType::RBT_OPAQUE: {
             // Opaque items should be rendered front to back in depth passes for early-Z reasons
-            sortOrder = !_context.isDepthStage() ? RenderingOrder::List::BY_STATE
-                                                 : RenderingOrder::List::FRONT_TO_BACK;
+            sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::BY_STATE
+                                                          : RenderingOrder::List::FRONT_TO_BACK;
         } break;
         case RenderBinType::RBT_SKY: {
             sortOrder = RenderingOrder::List::NONE;
@@ -54,15 +54,15 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderBinType rbType) {
         case RenderBinType::RBT_TERRAIN:
         case RenderBinType::RBT_DECAL: {
             // No need to sort decals in depth passes as they're small on screen and processed post-opaque pass
-            sortOrder = !_context.isDepthStage() ? RenderingOrder::List::FRONT_TO_BACK
-                                                 : RenderingOrder::List::NONE;
+            sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::FRONT_TO_BACK
+                                                          : RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_TRANSLUCENT: {
             // Translucent items should be rendered by material in depth passes to avoid useless material switches
             // Small cost for bypassing early-Z checks, but translucent items should be in the minority on the screen anyway
             // and the Opaque pass should have finished by now
-            sortOrder = !_context.isDepthStage() ? RenderingOrder::List::BACK_TO_FRONT
-                                                 : RenderingOrder::List::BY_STATE;
+            sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::BACK_TO_FRONT
+                                                          : RenderingOrder::List::BY_STATE;
         } break;
         default: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
@@ -126,7 +126,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass& stage, const vec3<F32>& eyePos) {
+void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, const vec3<F32>& eyePos) {
     static Material_ptr defaultMat;
 
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
@@ -139,7 +139,7 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePas
     }
 }
 
-void RenderQueue::populateRenderQueues(const RenderStagePass& renderStagePass) {
+void RenderQueue::populateRenderQueues(RenderStagePass renderStagePass) {
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             renderBin->populateRenderQueue(renderStagePass);
@@ -147,13 +147,13 @@ void RenderQueue::populateRenderQueues(const RenderStagePass& renderStagePass) {
     }
 }
 
-void RenderQueue::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut) {
+void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
     for (RenderBin* renderBin : _activeBins) {
         renderBin->postRender(renderState, renderStagePass, bufferInOut);
     }
 }
 
-void RenderQueue::sort() {
+void RenderQueue::sort(RenderStagePass stagePass) {
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
     static const U16 threadBias = 32;
 
@@ -161,7 +161,7 @@ void RenderQueue::sort() {
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
-            RenderingOrder::List sortOrder = getSortOrder(renderBin->getType());
+            RenderingOrder::List sortOrder = getSortOrder(stagePass, renderBin->getType());
 
             if (renderBin->getBinSize() > threadBias) {
                 CreateTask(pool,

@@ -243,7 +243,7 @@ bool glVertexArray::refresh() {
 
     vaoCachesDirty.fill(false);
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        const AttribFlags& stageMask = _attribMaskPerStage[i];
+        const AttribFlags& stageMask = _attribMasks[i];
 
         AttribFlags& stageUsage = attributesPerStage[i];
         for (U8 j = 0; j < to_base(VertexAttribute::COUNT); ++j) {
@@ -381,8 +381,8 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
     }
 
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
-    const RenderStagePass& stagePass = _context.getRenderStage();
-    GLuint vao = _vaoCaches[to_U32(stagePass.index())];
+
+    GLuint vao = _vaoCaches[command._bufferIndex];
     if (GL_API::setActiveVAO(vao)) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests

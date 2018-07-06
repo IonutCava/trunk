@@ -138,9 +138,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
 
-    _sceneGraph->findNode("Soldier1")->setActive(false);
-    _sceneGraph->findNode("Soldier2")->setActive(false);
-    _sceneGraph->findNode("Soldier3")->setActive(false);
+    //_sceneGraph->findNode("Soldier1")->setActive(false);
+    //_sceneGraph->findNode("Soldier2")->setActive(false);
+    //_sceneGraph->findNode("Soldier3")->setActive(false);
 
     return state;
 }
@@ -259,7 +259,7 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(scoreFlag);
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
-
+#if 0
     SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier1"));
     SceneGraphNode* animalNode(_sceneGraph->findNode("Soldier2"));
     SceneGraphNode* heavyNode(_sceneGraph->findNode("Soldier3"));
@@ -380,6 +380,8 @@ bool WarScene::addUnits() {
 
     //----------------------- AI controlled units ---------------------//
     return !(_armyNPCs[0].empty() || _armyNPCs[1].empty());
+#endif
+    return true;
 }
 
 AI::AIEntity* WarScene::findAI(SceneGraphNode* node) {

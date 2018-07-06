@@ -340,7 +340,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    protected:
     friend class RenderingComponent;
     bool prepareRender(const SceneRenderState& sceneRenderState,
-                     const RenderStagePass& renderStagePass);
+                     RenderStagePass renderStagePass);
 
    protected:
     friend class SceneGraph;

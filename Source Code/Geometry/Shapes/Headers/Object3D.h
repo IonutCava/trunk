@@ -92,7 +92,7 @@ class Object3D : public SceneNode {
 
     virtual bool onRender(SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          const RenderStagePass& renderStagePass) override;
+                          RenderStagePass renderStagePass) override;
                         
     virtual void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) { 
         ACKNOWLEDGE_UNUSED(sgn);
@@ -146,7 +146,7 @@ class Object3D : public SceneNode {
     virtual void setGeometryVB(VertexBuffer* const vb);
 
     virtual void buildDrawCommands(SceneGraphNode& sgn,
-                                   const RenderStagePass& renderStagePass,
+                                   RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) override;
    protected:
     GFXDevice& _context;

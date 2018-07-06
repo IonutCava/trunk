@@ -18,17 +18,17 @@ SceneNodeRenderState::~SceneNodeRenderState()
 {
 }
 
-bool SceneNodeRenderState::getDrawState(const RenderStagePass& currentStagePass) const {
+bool SceneNodeRenderState::getDrawState(RenderStagePass currentStagePass) const {
     return _drawState &&
-           !BitCompare(_exclusionMask[to_U32(currentStagePass.pass())], to_U32(1 << (to_U32(currentStagePass.stage()) + 1)));
+           !BitCompare(_exclusionMask[to_U32(currentStagePass._passType)], to_U32(1 << (to_U32(currentStagePass._stage) + 1)));
 }
 
-void SceneNodeRenderState::addToDrawExclusionMask(const RenderStagePass& currentStagePass) {
-    _exclusionMask[to_U32(currentStagePass.pass())] |= (1 << (to_U32(currentStagePass.stage()) + 1));
+void SceneNodeRenderState::addToDrawExclusionMask(RenderStagePass currentStagePass) {
+    _exclusionMask[to_U32(currentStagePass._passType)] |= (1 << (to_U32(currentStagePass._stage) + 1));
 }
 
-void SceneNodeRenderState::removeFromDrawExclusionMask(const RenderStagePass& currentStagePass) {
-    _exclusionMask[to_U32(currentStagePass.pass())] &= ~(1 << (to_U32(currentStagePass.stage()) + 1));
+void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStagePass currentStagePass) {
+    _exclusionMask[to_U32(currentStagePass._passType)] &= ~(1 << (to_U32(currentStagePass._stage) + 1));
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStage currentStage) {

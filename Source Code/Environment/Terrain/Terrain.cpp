@@ -27,7 +27,6 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _waterHeight(0.0f),
       _altitudeRange(0.0f, 1.0f)
 {
-    _cameraUpdated.fill(true);
 }
 
 Terrain::~Terrain()
@@ -107,16 +106,15 @@ void Terrain::onCameraUpdate(SceneGraphNode& sgn,
                              const vec3<F32>& posOffset,
                              const mat4<F32>& rotationOffset) {
     ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(cameraNameHash);
     ACKNOWLEDGE_UNUSED(posOffset);
     ACKNOWLEDGE_UNUSED(rotationOffset);
 
-    _cameraUpdated[to_base(_context.getRenderStage().stage())] = true;
+    _cameraUpdated[cameraNameHash] = true;
 }
 
 bool Terrain::onRender(SceneGraphNode& sgn,
                        const SceneRenderState& sceneRenderState,
-                       const RenderStagePass& renderStagePass) {
+                       RenderStagePass renderStagePass) {
     RenderingComponent* renderComp = sgn.get<RenderingComponent>();
     RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
 
@@ -126,12 +124,15 @@ bool Terrain::onRender(SceneGraphNode& sgn,
                    true);
     pkg.clipPlanes(0, clipPlanes);
 
-    const U8 stageIndex = to_U8(renderStagePass.stage());
-    bool& cameraUpdated = _cameraUpdated[stageIndex];
+    Camera* camera = sceneRenderState.parentScene().playerCamera();
+
+    const U8 stageIndex = to_U8(renderStagePass._stage);
+
+    //ToDo: maybe do a "find" first? -Ionut
+    bool& cameraUpdated = _cameraUpdated[_ID_RT(camera->name().c_str())];
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 
     if (cameraUpdated) {
-        Camera* camera = sceneRenderState.parentScene().playerCamera();
         const vec3<F32>& newEye = camera->getEye();
         if (tessellator.getEye() != newEye) {
             tessellator.createTree(newEye,
@@ -156,15 +157,15 @@ bool Terrain::onRender(SceneGraphNode& sgn,
                                                         vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
 
-    if (renderStagePass.stage() == RenderStage::DISPLAY) {
+    if (renderStagePass._stage == RenderStage::DISPLAY) {
         // draw infinite plane
         assert(pkg.drawCommand(1, 0)._drawCount == 1u);
 
         const Pipeline* pipeline = pkg.pipeline(1);
         PipelineDescriptor descriptor = pipeline->descriptor();
-        descriptor._shaderProgramHandle = (renderStagePass.pass() == RenderPassType::DEPTH_PASS
-                                                                   ? _planeDepthShader
-                                                                   : _planeShader)->getID();
+        descriptor._shaderProgramHandle = (renderStagePass._passType == RenderPassType::DEPTH_PASS
+                                                                      ? _planeDepthShader
+                                                                      : _planeShader)->getID();
 
         pkg.pipeline(1, *_context.newPipeline(descriptor));
 
@@ -181,7 +182,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 }
 
 void Terrain::buildDrawCommands(SceneGraphNode& sgn,
-                                const RenderStagePass& renderStagePass,
+                                RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) {
 
     const vec3<F32>& bbMin = _boundingBox.getMin();
@@ -204,6 +205,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd;
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._sourceBuffer = getGeometryVB();
+    cmd._bufferIndex = renderStagePass.index();
     cmd._patchVertexCount = 4;
     cmd._cmd.indexCount = getGeometryVB()->getIndexCount();
     enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
@@ -212,13 +214,13 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         drawCommand._drawCommands.push_back(cmd);
         pkgInOut.addDrawCommand(drawCommand);
     }
-    if (renderStagePass.stage() == RenderStage::DISPLAY) {
+    if (renderStagePass._stage == RenderStage::DISPLAY) {
 
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._shaderProgramHandle = 
-            (renderStagePass.pass() == RenderPassType::DEPTH_PASS
-                                     ? _planeDepthShader
-                                     : _planeShader)->getID();
+            (renderStagePass._passType == RenderPassType::DEPTH_PASS
+                                        ? _planeDepthShader
+                                        : _planeShader)->getID();
         {
             GFX::BindPipelineCommand pipelineCommand;
             pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -231,6 +233,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         planeCmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
         planeCmd._lodIndex = 0;
         planeCmd._sourceBuffer = _plane->getGeometryVB();
+        planeCmd._bufferIndex = renderStagePass.index();
 
         {
             GFX::DrawCommand drawCommand;
@@ -251,7 +254,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 
-    _cameraUpdated[to_base(renderStagePass.stage())] = true;
+    _cameraUpdated[to_base(renderStagePass._stage)] = true;
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

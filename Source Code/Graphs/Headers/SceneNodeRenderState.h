@@ -5,7 +5,7 @@
 
 namespace Divide {
 
-class RenderStagePass;
+struct RenderStagePass;
 enum class RenderStage : U8;
 
 class SceneNodeRenderState {
@@ -18,10 +18,10 @@ class SceneNodeRenderState {
     inline void setDrawState(bool state) { _drawState = state; }
     inline bool getDrawState() const { return _drawState; }
 
-    bool getDrawState(const RenderStagePass& currentStagePass) const;
+    bool getDrawState(RenderStagePass currentStagePass) const;
 
-    void addToDrawExclusionMask(const RenderStagePass& currentStagePass);
-    void removeFromDrawExclusionMask(const RenderStagePass& currentStagePass);
+    void addToDrawExclusionMask(RenderStagePass currentStagePass);
+    void removeFromDrawExclusionMask(RenderStagePass currentStagePass);
 
     void addToDrawExclusionMask(RenderStage currentStage);
     void removeFromDrawExclusionMask(RenderStage currentStage);

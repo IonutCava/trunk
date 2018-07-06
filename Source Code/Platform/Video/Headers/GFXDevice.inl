@@ -64,24 +64,9 @@ GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
 }
 
 inline bool 
-GFXDevice::isDepthStage() const {
-    return isDepthStage(getRenderStage());
-}
-
-inline bool 
-GFXDevice::isDepthStage(const RenderStagePass& renderStagePass) const {
-    return renderStagePass.stage() == RenderStage::SHADOW ||
-           renderStagePass.pass() == RenderPassType::DEPTH_PASS;
-}
-
-/// Sets the current render stage.
-///@param stage Is used to inform the rendering pipeline what we are rendering.
-/// Shadows? reflections? etc
-inline const RenderStagePass& 
-GFXDevice::setRenderStagePass(const RenderStagePass& stage) {
-    _prevRenderStagePass = _renderStagePass;
-    _renderStagePass = stage;
-    return stage;
+GFXDevice::isDepthStage(RenderStagePass renderStagePass) const {
+    return renderStagePass._stage == RenderStage::SHADOW ||
+           renderStagePass._passType == RenderPassType::DEPTH_PASS;
 }
 
 };  // namespace Divide

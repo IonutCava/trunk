@@ -62,7 +62,7 @@ class WarScene : public Scene {
 
     void registerPoint(U16 teamID, const stringImpl& unitName);
     void printMessage(U8 eventId, const stringImpl& unitName);
-    void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) override;
+    void debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) override;
 
    private:
     void onSetActive() override;

@@ -110,18 +110,19 @@ VertexBuffer* const Object3D::getGeometryVB() const {
 
 bool Object3D::onRender(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
-                        const RenderStagePass& renderStagePass) {
+                        RenderStagePass renderStagePass) {
     rebuild();
     return SceneNode::onRender(sgn, sceneRenderState, renderStagePass);
 }
 
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,
-                                 const RenderStagePass& renderStagePass,
+                                 RenderStagePass renderStagePass,
                                  RenderPackage& pkgInOut) {
     if (pkgInOut.drawCommandCount() == 0) {
         GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
         cmd._sourceBuffer = vb;
+        cmd._bufferIndex = renderStagePass.index();
         cmd._cmd.indexCount = to_U32(vb->getIndexCount());
         
         GFX::DrawCommand drawCommand;

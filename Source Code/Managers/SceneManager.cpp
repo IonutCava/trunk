@@ -477,29 +477,26 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     }
 }
 
-void SceneManager::preRender(const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     const GFXDevice& gfx = _platformContext->gfx();
 
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
     gfx.getRenderer().preRender(target, *lightPool, bufferInOut);
 
-    if (gfx.getRenderStage().stage() == RenderStage::DISPLAY) {
+    if (stagePass._stage == RenderStage::DISPLAY) {
         PostFX::instance().cacheDisplaySettings(gfx, camera);
     }
 }
 
-void SceneManager::postRender(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
-    const RenderStagePass& stagePass = _platformContext->gfx().getRenderStage();
-
     parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 }
 
-void SceneManager::debugDraw(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     Scene& activeScene = getActiveScene();
     SceneRenderState& activeSceneRenderState = activeScene.renderState();
 
-    const RenderStagePass& stagePass = _platformContext->gfx().getRenderStage();
     Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, bufferInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
     _platformContext->gfx().debugDraw(activeSceneRenderState, camera, bufferInOut);
@@ -614,10 +611,10 @@ namespace {
     }
 };
 
-const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const RenderStagePass& stage) {
+const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStagePass stage) {
     Scene& activeScene = getActiveScene();
 
-    RenderStage renderStage = stage.stage();
+    RenderStage renderStage = stage._stage;
 
     RenderPassCuller::CullParams cullParams;
     cullParams._context = &activeScene.context();
@@ -651,53 +648,60 @@ RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStag
     return _renderPassCuller->getNodeCache(stage);
 }
 
-void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refreshNodeData, U32 pass) {
+void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNodeData, U32 pass) {
     GFXDevice& gfx = _platformContext->gfx();
     RenderPassManager& mgr = parent().renderPassManager();
     RenderQueue& queue = mgr.getQueue();
 
-    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage.stage());
+    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stagePass._stage);
 
     if (refreshNodeData) {
         // Add all the visible nodes to the proper bins
         queue.refresh();
         const vec3<F32>& eyePos = playerCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-            queue.addNodeToQueue(*node._node, stage, eyePos);
+            queue.addNodeToQueue(*node._node, stagePass, eyePos);
         }
     }
     
     // Sort all bins
-    queue.sort();
+    queue.sort(stagePass);
 
     // Prepare draw buffers
-    RenderPass::BufferData& bufferData = mgr.getBufferData(stage.stage(), pass);
+    RenderPass::BufferData& bufferData = mgr.getBufferData(stagePass._stage, pass);
 
     // Get all of the sorted render bins
     SceneRenderState& renderState = getActiveScene().renderState();
     const RenderQueue::SortedQueues& sortedQueues = queue.getSortedQueues();
-    gfx.buildDrawCommands(sortedQueues, renderState, bufferData, *playerCamera(), refreshNodeData);
+
+    GFXDevice::BuildDrawCommandsParams params;
+    params._sortedQueues = &sortedQueues;
+    params._sceneRenderState = &renderState;
+    params._bufferData = &bufferData;
+    params._renderStagePass = stagePass;
+    params._camera = playerCamera();
+    params._refreshNodeData = refreshNodeData;
+
+    gfx.buildDrawCommands(params);
 }
 
-bool SceneManager::populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex) {
+bool SceneManager::populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex) {
 
-    const RenderStagePass& stage = _platformContext->gfx().getRenderStage();
-
-    if (stage.pass() != RenderPassType::DEPTH_PASS) {
+    if (stagePass._passType != RenderPassType::DEPTH_PASS) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
         lightPool->prepareLightData(camera.getEye(), camera.getViewMatrix());
     }
 
     if (doCulling) {
-        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage.pass())][to_U32(stage.stage())]);
-        cullSceneGraph(stage);
+        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stagePass._passType)][to_U32(stagePass._stage)]);
+        cullSceneGraph(stagePass);
     }
 
-    updateVisibleNodes(stage, doCulling, passIndex);
+    updateVisibleNodes(stagePass, doCulling, passIndex);
 
     RenderQueue& queue = parent().renderPassManager().getQueue();
     if (getActiveScene().renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
-        queue.populateRenderQueues(stage);
+        queue.populateRenderQueues(stagePass);
     }
 
     return queue.getRenderQueueStackSize() > 0;

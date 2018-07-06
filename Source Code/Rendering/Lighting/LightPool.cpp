@@ -194,12 +194,11 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, GFX::Comm
 void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (context.shadowDetailLevel() == RenderDetailLevel::OFF || context.getRenderStage().stage() != RenderStage::DISPLAY) {
-        ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), false);
+    if (context.shadowDetailLevel() == RenderDetailLevel::OFF) {
         _previewShadowMaps = false;
-    } else {
-        ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
     }
+
+    ParamHandler::instance().setParam(_ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
 }
 
 // If we have computed shadowmaps, bind them before rendering any geometry;

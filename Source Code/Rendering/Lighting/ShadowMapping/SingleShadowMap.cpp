@@ -47,13 +47,13 @@ void SingleShadowMap::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
 
     RenderPassManager& passMgr = _context.parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params.doPrePass = false;
-    params.occlusionCull = false;
-    params.camera = _shadowCameras[0];
-    params.stage = RenderStage::SHADOW;
-    params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
-    params.drawPolicy = &RenderTarget::defaultPolicy();
-    params.pass = passIdx;
+    params._doPrePass = false;
+    params._occlusionCull = false;
+    params._camera = _shadowCameras[0];
+    params._stage = RenderStage::SHADOW;
+    params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
+    params._drawPolicy = &RenderTarget::defaultPolicy();
+    params._pass = passIdx;
 
     passMgr.doCustomPass(params, bufferInOut);
 }

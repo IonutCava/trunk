@@ -1174,7 +1174,7 @@ void Scene::processTasks(const U64 deltaTimeUS) {
                    std::bind1st(std::plus<D64>(), delta));
 }
 
-void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) {
+void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if (Config::Build::IS_DEBUG_BUILD) {
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 

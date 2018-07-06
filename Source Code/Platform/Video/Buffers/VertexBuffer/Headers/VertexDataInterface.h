@@ -38,6 +38,7 @@
 
 namespace Divide {
 
+struct RenderStagePass;
 struct GenericDrawCommand;
 class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsResource {
     USE_CUSTOM_ALLOCATOR

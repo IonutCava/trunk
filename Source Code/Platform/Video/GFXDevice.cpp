@@ -90,8 +90,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _api(nullptr),
     _renderer(nullptr),
     _shaderComputeQueue(nullptr),
-    _renderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS),
-    _prevRenderStagePass(RenderStage::COUNT, RenderPassType::COLOUR_PASS),
     _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer")),
     _clippingPlanes(Plane<F32>(0, 0, 0, 0))
 {
@@ -148,17 +146,17 @@ GFXDevice::GFXDevice(Kernel& parent)
 
     AttribFlags flags;
     flags.fill(true);
-    VertexBuffer::setAttribMasks(flags);
+    VertexBuffer::setAttribMasks(static_cast<size_t>(RenderStagePass::count()), flags);
 
     // Don't (currently) need these for shadow passes
     flags[to_base(VertexAttribute::ATTRIB_COLOR)] = false;
     flags[to_base(VertexAttribute::ATTRIB_TANGENT)] = false;
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::DEPTH_PASS), flags);
+        VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::DEPTH_PASS).index(), flags);
     }
     flags[to_base(VertexAttribute::ATTRIB_NORMAL)] = false;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), flags);
+        VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)).index(), flags);
     }
 }
 
@@ -171,7 +169,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const U16 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
-                                const RenderStagePass& stagePass,
+                                RenderStagePass stagePass,
                                 U32 passIndex,
                                 GFX::CommandBuffer& bufferInOut,
                                 Camera* camera) {
@@ -218,8 +216,6 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     // Set a 90 degree vertical FoV perspective projection
     camera->setProjection(1.0f, 90.0f, zPlanes);
-    // Set the desired render stage, remembering the previous one
-    const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
 
     // Enable our render target
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -231,13 +227,13 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params.doPrePass = stagePass.stage() != RenderStage::SHADOW;
-    params.occlusionCull = params.doPrePass;
-    params.camera = camera;
-    params.stage = stagePass.stage();
-    params.target = cubeMap;
+    params._doPrePass = stagePass._stage != RenderStage::SHADOW;
+    params._occlusionCull = params._doPrePass;
+    params._camera = camera;
+    params._stage = stagePass._stage;
+    params._target = cubeMap;
     // We do our own binding
-    params.bindTargets = false;
+    params._bindTargets = false;
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
         cubeMapTarget.drawToFace(hasColour ? RTAttachmentType::Colour
@@ -247,23 +243,20 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         // Point our camera to the correct face
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
-        params.pass = passIndex + i;
+        params._pass = passIndex + i;
         passMgr.doCustomPass(params, bufferInOut);
     }
 
     // Resolve our render target
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
-
-    // Return to our previous rendering stage
-    setRenderStagePass(prevRenderStage);
 }
 
 void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const U16 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
-                                          const RenderStagePass& stagePass,
+                                          RenderStagePass stagePass,
                                           U32 passIndex,
                                           GFX::CommandBuffer& bufferInOut,
                                           Camera* camera)
@@ -295,17 +288,15 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 
     // Set a 90 degree vertical FoV perspective projection
     camera->setProjection(1.0f, 180.0f, zPlanes);
-    // Set the desired render stage, remembering the previous one
-    const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params.doPrePass = stagePass.stage() != RenderStage::SHADOW;
-    params.occlusionCull = params.doPrePass;
-    params.camera = camera;
-    params.stage = stagePass.stage();
-    params.target = targetBuffer;
-    params.bindTargets = false;
+    params._doPrePass = stagePass._stage != RenderStage::SHADOW;
+    params._occlusionCull = params._doPrePass;
+    params._camera = camera;
+    params._stage = stagePass._stage;
+    params._target = targetBuffer;
+    params._bindTargets = false;
     // Enable our render target
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -322,13 +313,11 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
             camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
             // And generated required matrices
             // Pass our render function to the renderer
-            params.pass = passIndex + i;
+            params._pass = passIndex + i;
             passMgr.doCustomPass(params, bufferInOut);
         }
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
-    // Return to our previous rendering stage
-    setRenderStagePass(prevRenderStage);
 }
 
 void GFXDevice::increaseResolution() {

@@ -6,8 +6,7 @@
 
 namespace Divide {
 
-std::array<AttribFlags, to_base(RenderStagePass::count())> VertexBuffer::_attribMaskPerStage;
-
+vectorEASTL<AttribFlags> VertexBuffer::_attribMasks;
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),
      _format(GFXDataFormat::UNSIGNED_SHORT),
@@ -33,16 +32,18 @@ bool VertexBuffer::createInternal() {
 }
 
 
-void VertexBuffer::setAttribMasks(const AttribFlags& flagMask) {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        _attribMaskPerStage[i] = flagMask;
+void VertexBuffer::setAttribMasks(size_t count, const AttribFlags& flagMask) {
+    _attribMasks.resize(0);
+    _attribMasks.reserve(count);
+    for (size_t i = 0; i < count; ++i) {
+        _attribMasks.push_back(flagMask);
     }
 }
 
-void VertexBuffer::setAttribMask(const RenderStagePass& stagePass, const AttribFlags& flagMask) {
-    _attribMaskPerStage[stagePass.index()] = flagMask;
+void VertexBuffer::setAttribMask(size_t index, const AttribFlags& flagMask) {
+    assert(index < _attribMasks.size());
+    _attribMasks[index] = flagMask;
 }
-
 
 void VertexBuffer::computeNormals() {
     vec3<F32> v1, v2, normal;

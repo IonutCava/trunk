@@ -158,14 +158,14 @@ void RenderPass::render(SceneRenderState& renderState) {
 
             const RenderTarget& screenRT = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
-            params.occlusionCull = Config::USE_HIZ_CULLING;
-            params.camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
+            params._occlusionCull = Config::USE_HIZ_CULLING;
+            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
-            params.stage = _stageFlag;
-            params.target = RenderTargetID(RenderTargetUsage::SCREEN);
-            params.pass = 0;
-            params.doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
-            params.occlusionCull = true;
+            params._stage = _stageFlag;
+            params._target = RenderTargetID(RenderTargetUsage::SCREEN);
+            params._pass = 0;
+            params._doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
+            params._occlusionCull = true;
             _parent.doCustomPass(params, commandBuffer);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
@@ -188,8 +188,8 @@ void RenderPass::render(SceneRenderState& renderState) {
         case RenderStage::REFLECTION: {
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
-            params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-            params.camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
+            params._pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
             
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
@@ -234,7 +234,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
                                                                                  ReflectionUtil::currentEntry(),
-                                                                                 params.camera,
+                                                                                 params._camera,
                                                                                  renderState,
                                                                                  commandBuffer)) {
 
@@ -253,8 +253,8 @@ void RenderPass::render(SceneRenderState& renderState) {
             // Get list of refractive nodes from the scene manager
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
-            params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-            params.camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
+            params._pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
@@ -282,7 +282,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);
                         if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
                                                                                 RefractionUtil::currentEntry(),
-                                                                                params.camera,
+                                                                                params._camera,
                                                                                 renderState,
                                                                                 commandBuffer))
                         {

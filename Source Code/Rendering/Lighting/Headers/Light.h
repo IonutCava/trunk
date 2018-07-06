@@ -149,7 +149,7 @@ class Light : public SceneNode {
 
     bool onRender(SceneGraphNode& sgn,
                   const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass) override;
+                  RenderStagePass renderStagePass) override;
 
     /// SceneNode concrete implementations
     bool unload() override;

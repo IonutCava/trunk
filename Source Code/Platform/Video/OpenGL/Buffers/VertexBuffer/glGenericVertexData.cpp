@@ -125,9 +125,8 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
 
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::draw(const GenericDrawCommand& command) {
-
     bool useCmdBuffer = isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT);
-    U32 drawBufferID = command._drawToBuffer;
+    U32 drawBufferID = command._bufferIndex;
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (drawBufferID > 0 && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we requested
@@ -156,7 +155,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
         // Mark the current query as completed and ready to be retrieved
-        _resultAvailable[_currentWriteQuery][command._drawToBuffer] = true;
+        _resultAvailable[_currentWriteQuery][drawBufferID] = true;
     }
 
     vec_size bufferCount = _bufferObjects.size();

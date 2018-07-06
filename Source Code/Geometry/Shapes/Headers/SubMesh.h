@@ -86,7 +86,7 @@ class SubMesh : public Object3D {
     void setParentMesh(Mesh* const parentMesh);
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                const RenderStagePass& renderStagePass,
+                                RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
    protected:
     bool _visibleToNetwork;

@@ -383,8 +383,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     bool deserialize(ByteBuffer& dataIn);
     bool serialize(ByteBuffer& dataOut) const;
 
-    static void setAttribMasks(const AttribFlags& flagMask);
-    static void setAttribMask(const RenderStagePass& stagePass, const AttribFlags& flagMask);
+    static void setAttribMasks(size_t count, const AttribFlags& flagMask);
+    static void setAttribMask(size_t index, const AttribFlags& flagMask);
 
     inline void keepData(const bool state) {
         _keepDataInMemory = state;
@@ -394,7 +394,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual void computeTangents();
 
    protected:
-    static std::array<AttribFlags, to_base(RenderStagePass::count())> _attribMaskPerStage;
+    static vectorEASTL<AttribFlags> _attribMasks;
 
     virtual bool refresh() = 0;
     virtual bool createInternal();
@@ -402,9 +402,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     inline bool keepData() const {
         return _keepDataInMemory;
     }
-
-   protected:
-    void notifyListeners() const;
 
    protected:
     /// Flag used to prevent clearing of the _data vector for static buffers

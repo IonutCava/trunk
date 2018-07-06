@@ -107,19 +107,20 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
 bool Sky::onRender(SceneGraphNode& sgn,
                    const SceneRenderState& sceneRenderState,
-                   const RenderStagePass& renderStagePass) {
+                   RenderStagePass renderStagePass) {
     return _sky->onRender(sgn, sceneRenderState, renderStagePass);
 }
 
 void Sky::buildDrawCommands(SceneGraphNode& sgn,
-                            const RenderStagePass& renderStagePass,
+                            RenderStagePass renderStagePass,
                             RenderPackage& pkgInOut) {
-    if (renderStagePass.stage() == RenderStage::SHADOW) {
+    if (renderStagePass._stage == RenderStage::SHADOW) {
         return;
     }
 
     GenericDrawCommand cmd;
     cmd._sourceBuffer = _sky->getGeometryVB();
+    cmd._bufferIndex = renderStagePass.index();
     cmd._cmd.indexCount = _sky->getGeometryVB()->getIndexCount();
 
     GFX::DrawCommand drawCommand;
@@ -128,13 +129,13 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
 
     const Pipeline* pipeline = pkgInOut.pipeline(0);
     PipelineDescriptor pipeDesc = pipeline->descriptor();
-    if (renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
+    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
         pipeDesc._stateHash = _skyboxRenderStateHashPrePass;
         pipeDesc._shaderProgramHandle = _skyShaderPrePass->getID();
     } else {
-        pipeDesc._stateHash = (renderStagePass.stage() == RenderStage::REFLECTION
-                                                        ? _skyboxRenderStateReflectedHash
-                                                        : _skyboxRenderStateHash);
+        pipeDesc._stateHash = (renderStagePass._stage == RenderStage::REFLECTION
+                                                      ? _skyboxRenderStateReflectedHash
+                                                      : _skyboxRenderStateHash);
         pipeDesc._shaderProgramHandle = _skyShader->getID();
     }
 

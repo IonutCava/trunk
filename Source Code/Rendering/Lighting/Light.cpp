@@ -130,7 +130,7 @@ void Light::updateBoundsInternal() {
 
 bool Light::onRender(SceneGraphNode& sgn,
                      const SceneRenderState& sceneRenderState,
-                     const RenderStagePass& renderStagePass) {
+                     RenderStagePass renderStagePass) {
     ACKNOWLEDGE_UNUSED(sceneRenderState);
 
     if (!_drawImpostor) {

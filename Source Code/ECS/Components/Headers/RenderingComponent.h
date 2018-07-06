@@ -119,7 +119,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
                                 SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
-    void onRender(const RenderStagePass& renderStagePass);
+    void onRender(RenderStagePass renderStagePass);
 
     void Update(const U64 deltaTimeUS) override;
 
@@ -134,16 +134,16 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
 
     inline U32 commandOffset() const { return _commandOffset; }
 
-    ShaderProgram_ptr getDrawShader(const RenderStagePass& renderStagePass);
+    ShaderProgram_ptr getDrawShader(RenderStagePass renderStagePass);
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
     void getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
 
-    RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
-    const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
+    RenderPackage& getDrawPackage(RenderStagePass renderStagePass);
+    const RenderPackage& getDrawPackage(RenderStagePass renderStagePass) const;
 
-    size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
+    size_t getSortKeyHash(RenderStagePass renderStagePass) const;
 
     inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
 
@@ -166,20 +166,20 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     void drawDebugAxis();
 
    protected:
-    bool canDraw(const RenderStagePass& renderStagePass);
-    void updateLoDLevel(const Camera& camera, const RenderStagePass& renderStagePass);
-    size_t getMaterialStateHash(const RenderStagePass& renderStagePass);
+    bool canDraw(RenderStagePass renderStagePass);
+    void updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass);
+    size_t getMaterialStateHash(RenderStagePass renderStagePass);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
-                    const RenderStagePass& renderStagePass,
+                    RenderStagePass renderStagePass,
                     GFX::CommandBuffer& bufferInOut);
 
-    void rebuildDrawCommands(const RenderStagePass& stagePass);
+    void rebuildDrawCommands(RenderStagePass stagePass);
 
-    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
+    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass);
 
-    void setDrawIDs(const RenderStagePass& renderStagePass,
+    void setDrawIDs(RenderStagePass renderStagePass,
                     U32 cmdOffset,
                     U32 cmdIndex);
 
@@ -203,8 +203,8 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
    protected:
-    std::unique_ptr<RenderPackage>& renderData(const RenderStagePass& stagePass);
-    const std::unique_ptr<RenderPackage>& renderData(const RenderStagePass& stagePass) const;
+    std::unique_ptr<RenderPackage>& renderData(RenderStagePass stagePass);
+    const std::unique_ptr<RenderPackage>& renderData(RenderStagePass stagePass) const;
 
    protected:
     GFXDevice& _context;
@@ -287,12 +287,12 @@ class RenderingCompGFXDevice {
     static void prepareDrawPackage(RenderingComponent& renderable,
                                    const Camera& camera,
                                    const SceneRenderState& sceneRenderState,
-                                   const RenderStagePass& renderStagePass) {
+                                   RenderStagePass renderStagePass) {
         renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
     }
 
     static void setDrawIDs(RenderingComponent& renderable, 
-                           const RenderStagePass& renderStagePass,
+                           RenderStagePass renderStagePass,
                            U32 cmdOffset,
                            U32 cmdIndex)
     {
@@ -300,7 +300,7 @@ class RenderingCompGFXDevice {
     }
 
     static const RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                               const RenderStagePass& renderStagePass) {
+                                               RenderStagePass renderStagePass) {
         return renderable.getDrawPackage(renderStagePass);
     }
 
@@ -310,17 +310,17 @@ class RenderingCompGFXDevice {
 
 class RenderingCompRenderBin {
    private:
-    static const RenderPackage& getRenderData(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
+    static const RenderPackage& getRenderData(RenderingComponent& renderable, RenderStagePass renderStagePass) {
         return renderable.getDrawPackage(renderStagePass);
     }
 
-    static size_t getSortKeyHash(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
+    static size_t getSortKeyHash(RenderingComponent& renderable, RenderStagePass renderStagePass) {
         return renderable.getSortKeyHash(renderStagePass);
     }
 
     static void postRender(RenderingComponent& renderable,
                            const SceneRenderState& sceneRenderState,
-                           const RenderStagePass& renderStagePass,
+                           RenderStagePass renderStagePass,
                            GFX::CommandBuffer& bufferInOut) {
         renderable.postRender(sceneRenderState, renderStagePass, bufferInOut);
     }

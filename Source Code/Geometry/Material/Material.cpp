@@ -203,7 +203,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
 
 void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
-                                        const RenderStagePass& renderStagePass) {
+                                        RenderStagePass renderStagePass) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     if (shader != nullptr) {
         info._customShader = true;
@@ -215,7 +215,7 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
 }
 
 void Material::setShaderProgramInternal(const stringImpl& shader,
-                                        const RenderStagePass& renderStagePass,
+                                        RenderStagePass renderStagePass,
                                         const bool computeOnAdd) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
@@ -282,7 +282,7 @@ void Material::recomputeShaders() {
     }
 }
 
-bool Material::canDraw(const RenderStagePass& renderStage) {
+bool Material::canDraw(RenderStagePass renderStage) {
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         if (_shaderInfo[i].computeStage() != ShaderProgramInfo::BuildStage::READY) {
             computeShader(RenderStagePass::stagePass(i), _highPriority);
@@ -347,7 +347,7 @@ void Material::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 ar
 }
 
 /// If the current material doesn't have a shader associated with it, then add the default ones.
-bool Material::computeShader(const RenderStagePass& renderStagePass, const bool computeOnAdd){
+bool Material::computeShader(RenderStagePass renderStagePass, const bool computeOnAdd){
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // If shader's invalid, try to request a recompute as it might fix it
     if (info.computeStage() == ShaderProgramInfo::BuildStage::COUNT) {
@@ -386,8 +386,8 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
 
     bool deferredPassShader = _context.getRenderer().getType() !=
                               RendererType::RENDERER_TILED_FORWARD_SHADING;
-    bool depthPassShader = renderStagePass.stage() == RenderStage::SHADOW ||
-                           renderStagePass.pass() == RenderPassType::DEPTH_PASS;
+    bool depthPassShader = renderStagePass._stage == RenderStage::SHADOW ||
+                           renderStagePass._passType == RenderPassType::DEPTH_PASS;
 
     // the base shader is either for a Deferred Renderer or a Forward  one ...
     stringImpl shader =
@@ -400,7 +400,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
         return false;
     }
 
-    if (depthPassShader && renderStagePass.stage() == RenderStage::SHADOW) {
+    if (depthPassShader && renderStagePass._stage == RenderStage::SHADOW) {
         shader += ".Shadow";
     }
 
@@ -539,9 +539,9 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
     }
 }
 
-void Material::getTextureData(TextureDataContainer& textureData) {
+void Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
     const U32 textureCount = to_base(ShaderProgram::TextureUsage::COUNT);
-    const bool depthstage = _context.isDepthStage();
+    const bool depthstage = _context.isDepthStage(renderStagePass);
 
     getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
     getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
@@ -644,7 +644,7 @@ void Material::updateTranslucency(bool requestRecomputeShaders) {
     }
 }
 
-void Material::getSortKeys(const RenderStagePass& renderStagePass, I32& shaderKey, I32& textureKey) const {
+void Material::getSortKeys(RenderStagePass renderStagePass, I32& shaderKey, I32& textureKey) const {
     static const I16 invalidShaderKey = -std::numeric_limits<I16>::max();
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);

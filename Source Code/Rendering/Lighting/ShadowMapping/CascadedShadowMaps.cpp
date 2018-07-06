@@ -133,21 +133,21 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     _previousFrustumBB.transformHomogeneous(_shadowCamera->getViewMatrix());*/
 
     RenderPassManager::PassParams params;
-    params.doPrePass = false;
-    params.stage = RenderStage::SHADOW;
-    params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
-    params.pass = passIdx;
-    params.bindTargets = false;
+    params._doPrePass = false;
+    params._stage = RenderStage::SHADOW;
+    params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
+    params._pass = passIdx;
+    params._bindTargets = false;
 
-    RenderTarget& target = _context.renderTargetPool().renderTarget(params.target);
+    RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = params.target;
+    beginRenderPassCmd._target = params._target;
     beginRenderPassCmd._name = "DO_CSM_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
     for (U8 i = 0; i < _numSplits; ++i) {
         target.drawToLayer(RTAttachmentType::Colour, 0, to_U16(i + getArrayOffset()));
-        params.camera = _shadowCameras[i];
+        params._camera = _shadowCameras[i];
         _context.parent().renderPassManager().doCustomPass(params, bufferInOut);
     }
     GFX::EndRenderPassCommand endRenderPassCmd;

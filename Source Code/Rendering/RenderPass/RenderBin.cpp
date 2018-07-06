@@ -15,7 +15,7 @@ namespace {
     constexpr U32 AVERAGE_BIN_SIZE = 127;
 };
 
-RenderBinItem::RenderBinItem(const RenderStagePass& currentStage,
+RenderBinItem::RenderBinItem(RenderStagePass currentStage,
                              I32 sortKeyA,
                              I32 sortKeyB,
                              F32 distToCamSq,
@@ -122,7 +122,7 @@ void RenderBin::refresh() {
     _renderBinStack.reserve(AVERAGE_BIN_SIZE);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& renderStagePass, const vec3<F32>& eyePos) {
+void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass renderStagePass, const vec3<F32>& eyePos) {
     I32 keyA = to_U32(_renderBinStack.size() + 1);
     I32 keyB = keyA;
 
@@ -141,7 +141,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& r
                             *renderable);
 }
 
-void RenderBin::populateRenderQueue(const RenderStagePass& renderStagePass) {
+void RenderBin::populateRenderQueue(RenderStagePass renderStagePass) {
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     RenderBinType type = getType();
     _context.lockQueue(type);
@@ -152,7 +152,7 @@ void RenderBin::populateRenderQueue(const RenderStagePass& renderStagePass) {
     _context.unlockQueue(type);
 }
 
-void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut) {
+void RenderBin::postRender(const SceneRenderState& renderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
     for (const RenderBinItem& item : _renderBinStack) {
         Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStagePass, bufferInOut);
     }

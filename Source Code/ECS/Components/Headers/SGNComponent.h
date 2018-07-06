@@ -41,8 +41,8 @@ namespace Divide {
 /// A generic component for the SceneGraphNode class
 enum class RenderStage : U8;
 class SceneGraphNode;
-class RenderStagePass;
 class SceneRenderState;
+struct RenderStagePass;
 
 enum class ComponentType : U32 {
     ANIMATION = toBit(1),
