@@ -45,7 +45,6 @@ GLuint GL_API::s_activeBufferID[] = {GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID};
 VAOBindings GL_API::s_vaoBufferData;
 GLfloat GL_API::s_depthNearVal = 0.0f;
-GLboolean GL_API::s_blendEnabled = GL_FALSE;
 Pipeline const* GL_API::s_activePipeline = nullptr;
 glFramebuffer* GL_API::s_activeRenderTarget = nullptr;
 glPixelBuffer* GL_API::s_activePixelBuffer = nullptr;
@@ -65,6 +64,7 @@ SharedLock GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
 vectorImpl<BlendingProperties> GL_API::s_blendProperties;
+vectorImpl<GLboolean> GL_API::s_blendEnabled;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {
@@ -83,6 +83,9 @@ void GL_API::clearStates() {
     setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     setActiveTransformFeedback(0);
 
+    for (vectorAlg::vecSize i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
+        setBlending((GLuint)i, false, BlendingProperties(), vec4<U8>(0u), true);
+    }
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
     s_activePixelBuffer = nullptr;
@@ -493,16 +496,16 @@ void GL_API::setDepthRange(F32 nearVal, F32 farVal) {
     }
 }
 
-void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour) {
+void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour, bool force) {
     assert(drawBufferIdx < (GLuint)(GL_API::s_maxFBOAttachments));
 
-    if ((GL_API::s_blendEnabled == GL_TRUE) != enable) {
+    if ((GL_API::s_blendEnabled[drawBufferIdx] == GL_TRUE) != enable || force) {
         enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
-        GL_API::s_blendEnabled = enable ? GL_TRUE : GL_FALSE;
+        GL_API::s_blendEnabled[drawBufferIdx] = (enable ? GL_TRUE : GL_FALSE);
     }
 
-    if (enable) {
-        if (GL_API::s_blendProperties[drawBufferIdx] != blendingProperties) {
+    if (enable || force) {
+        if (GL_API::s_blendProperties[drawBufferIdx] != blendingProperties || force) {
             if (blendingProperties._blendSrcAlpha != BlendProperty::COUNT) {
                 glBlendFuncSeparatei(drawBufferIdx,
                                      GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
@@ -524,7 +527,7 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
             GL_API::s_blendProperties[drawBufferIdx] = blendingProperties;
         }
 
-        if (GL_API::s_blendColour != blendColour) {
+        if (GL_API::s_blendColour != blendColour || force) {
             vec4<F32> floatColour = Util::ToFloatColour(blendColour);
             glBlendColor(static_cast<GLfloat>(floatColour.r),
                          static_cast<GLfloat>(floatColour.g),

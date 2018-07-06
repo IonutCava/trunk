@@ -796,7 +796,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
     fonsClearState(_fonsContext);
     for (const TextElement& entry : batch())
     {
-        const TextLabel& textLabel = *entry._textLabel;
+        const TextLabel& textLabel = entry._textLabel;
         // Retrieve the font from the font cache
         I32 font = getFont(textLabel._font);
         // The font may be invalid, so skip this text label
@@ -1018,6 +1018,8 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 popDebugMessage(_context);
             } break;
             case GFX::CommandType::DRAW_TEXT: {
+                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
+
                 GFX::DrawTextCommand* crtCmd = static_cast<GFX::DrawTextCommand*>(cmd.get());
                 drawText(crtCmd->_batch);
             }break;

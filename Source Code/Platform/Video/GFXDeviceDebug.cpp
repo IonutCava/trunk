@@ -161,13 +161,13 @@ void GFXDevice::renderDebugViews() {
 
         // Draw labels at the end to reduce number of state changes
         TextLabel label("", Font::DROID_SERIF_BOLD, vec4<U8>(255), 96);
-        TextElement text(&label, vec2<F32>(10.0f));
         for (const std::pair<stringImpl, vec4<I32>>& entry : labelStack) {
             setViewport._viewport.set(entry.second);
             GFX::SetViewPort(buffer, setViewport);
 
-            text._position.y = entry.second.sizeY - 10.0f;
             label.text(entry.first);
+            TextElement text(label, vec2<F32>(10.0f));
+            text._position.y = entry.second.sizeY - 10.0f;
             drawText(text, buffer);
         }
 

@@ -79,19 +79,14 @@ private:
 };
 
 struct TextElement {
-    TextElement()
-        : _textLabel(nullptr)
-    {
-    }
-
-    TextElement(const TextLabel *textLabel,
+    TextElement(const TextLabel& textLabel,
                 const vec2<F32>& position)
         : _textLabel(textLabel),
           _position(position)
     {
     }
 
-    const TextLabel *_textLabel = 0;
+    TextLabel _textLabel;
     vec2<F32> _position;
 };
 

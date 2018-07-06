@@ -239,6 +239,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Maximum number of colour attachments per framebuffer
     s_maxFBOAttachments = GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS);
     GL_API::s_blendProperties.resize(s_maxFBOAttachments);
+    GL_API::s_blendEnabled.resize(s_maxFBOAttachments, GL_FALSE);
 
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel, to_U8(0), to_U8(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));

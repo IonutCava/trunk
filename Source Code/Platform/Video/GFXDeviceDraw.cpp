@@ -258,14 +258,14 @@ U32 GFXDevice::getLastCullCount() const {
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
-    static bool firstRun = false;
+    static bool firstRun = true;
     static GFX::BindPipelineCommand bindPipelineCmd;
     static GFX::SendPushConstantsCommand pushConstantsCommand;
     static GFX::DrawTextCommand drawTextCommand;
-    if (!firstRun) {
+    if (firstRun) {
         bindPipelineCmd._pipeline = _textRenderPipeline;
         pushConstantsCommand._constants = _textRenderConstants;
-        firstRun = true;
+        firstRun = false;
     }
 
     drawTextCommand._batch = batch;

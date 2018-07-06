@@ -62,6 +62,16 @@ struct BlendingProperties {
             _blendDestAlpha != rhs._blendDestAlpha ||
             _blendOpAlpha != rhs._blendOpAlpha;
     }
+
+    inline void reset() {
+        _blendSrc = BlendProperty::ONE;
+        _blendDest = BlendProperty::ONE;
+        _blendOp = BlendOperation::ADD;
+
+        _blendSrcAlpha = BlendProperty::COUNT;
+        _blendDestAlpha = BlendProperty::COUNT;
+        _blendOpAlpha = BlendOperation::COUNT;
+    }
 };
 
 }; //namespace Divide

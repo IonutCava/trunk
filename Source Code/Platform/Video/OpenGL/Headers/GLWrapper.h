@@ -164,7 +164,7 @@ public:
     /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
     static void setDepthRange(F32 nearVal, F32 farVal);
     /// Set the blending properties for the specified draw buffer
-    static void setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour);
+    static void setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour, bool force = false);
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
     static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
@@ -294,8 +294,8 @@ private:
     static GLuint s_activeShaderProgram;
     static GLfloat s_depthNearVal;
     static GLfloat s_depthFarVal;
-    static GLboolean s_blendEnabled;
     static vectorImpl<BlendingProperties> s_blendProperties;
+	static vectorImpl<GLboolean> s_blendEnabled;
     static vec4<U8> s_blendColour;
     static vec4<I32> s_activeViewport;
     static vec4<I32> s_activeScissor;

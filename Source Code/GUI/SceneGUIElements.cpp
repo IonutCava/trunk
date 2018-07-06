@@ -42,7 +42,7 @@ void SceneGUIElements::draw(GFXDevice& context) {
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (!textElement.text().empty()) {
-            batch._data.emplace_back(&textElement, textElement.getPosition());
+            batch._data.emplace_back(textElement, textElement.getPosition());
         }
     }
 
