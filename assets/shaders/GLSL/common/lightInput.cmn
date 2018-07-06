@@ -19,10 +19,7 @@ layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 };
 
 struct Shadow {
-    mat4  _lightVP0;
-    mat4  _lightVP1;
-    mat4  _lightVP2;
-    mat4  _lightVP3;
+    mat4  _lightVP[4];
     vec4  _floatValues;
     vec4  _lightPosition[4];
 };

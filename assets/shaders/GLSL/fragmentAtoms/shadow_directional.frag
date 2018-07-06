@@ -24,9 +24,9 @@ bool inRange(const in float value){
 
 float applyShadowDirectional(const in uint lightIndex, const in Shadow currentShadowSource) {
 
-#if !defined(_DEBUG)
-    int _shadowTempInt = -1;
-#endif
+#   if !defined(_DEBUG)
+      int _shadowTempInt = -1;
+#   endif
 
     // find the appropriate depth map to look up in based on the depth of this fragment
     if (gl_FragCoord.z < currentShadowSource._floatValues.x)      {
@@ -50,14 +50,11 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
     _shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
 
-    vec4 shadow_coord;
-    switch (_shadowTempInt){
-        case 0: shadow_coord = currentShadowSource._lightVP0 * _vertexW; break;
-        case 1: shadow_coord = currentShadowSource._lightVP1 * _vertexW; break;
-        case 2: shadow_coord = currentShadowSource._lightVP2 * _vertexW; break;
-        case 3: shadow_coord = currentShadowSource._lightVP3 * _vertexW; break;
-        default: return 1.0;
-    };
+    if (_shadowTempInt < 0 || _shadowTempInt > 3) {
+        return 1.0;
+    }
+
+    vec4 shadow_coord = currentShadowSource._lightVP[_shadowTempInt] * _vertexW;
     
     if (inRange(shadow_coord.z) && inRange(shadow_coord.x) && inRange(shadow_coord.y)){
         shadow_coord.w = shadow_coord.z;

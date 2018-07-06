@@ -129,17 +129,17 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(*_textureSampler);
-    terrainMaterial->setTexture(Material::TEXTURE_UNIT0, CreateResource<Texture>(textureWaterCaustics));
+    terrainMaterial->setTexture(ShaderProgram::TEXTURE_UNIT0, CreateResource<Texture>(textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
     underwaterAlbedoTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
     underwaterAlbedoTexture.setPropertyDescriptor(*_textureSampler);
-    terrainMaterial->setTexture(Material::TEXTURE_UNIT1, CreateResource<Texture>(underwaterAlbedoTexture));
+    terrainMaterial->setTexture(ShaderProgram::TEXTURE_UNIT1, CreateResource<Texture>(underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
     underwaterDetailTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(*_textureSampler);
-    terrainMaterial->setTexture(Material::TEXTURE_NORMALMAP, CreateResource<Texture>(underwaterDetailTexture));
+    terrainMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP, CreateResource<Texture>(underwaterDetailTexture));
 
     terrainMaterial->setShaderLoadThreaded(false);
     terrainMaterial->dumpToFile(false);

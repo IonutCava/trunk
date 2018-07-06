@@ -52,8 +52,8 @@ protected:
 	inline void setId(AudioAPI api) {_apiId = api;}
 	inline AudioAPI getId() { return _apiId;}
 
-	virtual I8   initAudioApi() = 0;
-	virtual void closeAudioApi() = 0;
+	virtual ErrorCodes initAudioApi()  = 0;
+	virtual void       closeAudioApi() = 0;
 
 	virtual void playSound(AudioDescriptor* sound) = 0;
 	virtual void playMusic(AudioDescriptor* music) = 0;

@@ -82,7 +82,7 @@ void RenderBin::sort(const RenderStage& currentRenderStage){
     switch(_renderOrder){
         default:
         case RenderingOrder::BY_STATE:{
-            if(bitCompare(DEPTH_STAGE, currentRenderStage))
+            if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE))
                 std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceFrontToBack());
             else
                 std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueKeyCompare());

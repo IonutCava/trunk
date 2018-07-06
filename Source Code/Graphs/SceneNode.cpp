@@ -129,14 +129,16 @@ ShaderProgram* const SceneNode::getDrawShader(RenderStage renderStage) {
 }
 
 size_t SceneNode::getDrawStateHash(RenderStage renderStage){
-    if(!_material) 
+    if (!_material) {
         return 0L;
+    }
 
-    bool depthPass = bitCompare(DEPTH_STAGE, renderStage);
+    bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
     bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
 
-    if(!_material && depthPass)
+    if (!_material && depthPass) {
         return shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock();
+   }
 
     bool reflectionStage = GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE);
 

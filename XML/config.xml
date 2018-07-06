@@ -29,7 +29,7 @@
 <GUI>
 	<CEGUI>
 		<ExtraStates>false</ExtraStates>
-		<SkipRendering>true</SkipRendering>
+		<SkipRendering>false</SkipRendering>
 	</CEGUI>
 	<defaultGUIScheme>GWEN</defaultGUIScheme>
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
@@ -39,16 +39,16 @@
 <rendering>
 	<!-- detail level: low = 0, medium = 1, high = 2 -->
 	<detailLevel>2</detailLevel>
-	<FXAAsamples>0</FXAAsamples>
+	<FXAAsamples>4</FXAAsamples>
 	<MSAAsamples>0</MSAAsamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- detail level: off = 0, low = 1 (no blurring, 512x512 base resolution), medium = 2 (blurring, 512x512 base resolution) -->
 	<!--               high = 3 (blurring, 1024x1024 base resolution), ultra = 4 (blurring, 2048x2048 base resolution) -->
-	<shadowDetailLevel>0</shadowDetailLevel>
-	<enableFog>false</enableFog>
+	<shadowDetailLevel>2</shadowDetailLevel>
+	<enableFog>true</enableFog>
 	<fogDensity>0.0040</fogDensity>
 	<fogColor r="0.5" g="0.5" b="0.55"/>
-	<enablePostFX>false</enablePostFX>
+	<enablePostFX>true</enablePostFX>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>
 	<enableNoise>false</enableNoise>

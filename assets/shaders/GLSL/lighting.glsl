@@ -23,7 +23,10 @@ void main(void){
 -- Fragment
 
 #include "phong_lighting.frag"
-#include "bumpMapping.frag"
+
+#if defined(COMPUTE_TBN)
+    #include "bumpMapping.frag"
+#endif
 
 out vec4 _colorOut;
 
@@ -36,6 +39,7 @@ vec4 mappingFlat(){
 	return Phong(_texCoord, _normalWV);
 }
 
+#if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
 	return Phong(_texCoord, normalize(2.0 * texture(texNormalMap, _texCoord).rgb - 1.0));
@@ -57,6 +61,7 @@ vec4 mappingParallax(){
 
 	return ParallaxMapping(_texCoord, lightDir);
 }
+#endif
 
 void main (void){
 	//_colorOut = applyFog(MappingRoutine());

@@ -23,7 +23,6 @@ GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensi
     ResourceDescriptor splashShader("fbPreview");
     splashShader.setThreadedLoading(false);
     _splashShader = CreateResource<ShaderProgram>(splashShader);
-    _splashShader->UniformTexture("tex", 0);
 }
 
 GUISplash::~GUISplash()
@@ -34,6 +33,6 @@ GUISplash::~GUISplash()
 
 void GUISplash::render(){
     _splashShader->bind();
-    _splashImage->Bind(0);
+    _splashImage->Bind(ShaderProgram::TEXTURE_UNIT0);
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
 }

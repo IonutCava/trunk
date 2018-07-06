@@ -710,13 +710,7 @@
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedSubMesh.cpp">
       <Filter>Geometry\Shapes</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\DeferredLightingRenderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\DeferredShadingRenderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\ForwardRenderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBin.cpp">
@@ -883,6 +877,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\Components\SGNComponent.cpp">
       <Filter>Graphs\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\ForwardPlusRenderer.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1202,13 +1199,7 @@
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h">
       <Filter>Geometry\Shapes\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredLightingRenderer.h">
-      <Filter>Rendering\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredShadingRenderer.h">
-      <Filter>Rendering\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\Headers\ForwardRenderer.h">
       <Filter>Rendering\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Renderer.h">
@@ -1429,6 +1420,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\StateTracker.h">
       <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\ForwardPlusRenderer.h">
+      <Filter>Rendering\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -114,7 +114,7 @@ void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const Rend
 bool SceneGraphNode::onDraw(RenderStage renderStage){
     if (_drawReset[renderStage]){
         _drawReset[renderStage] = false;
-        if (getParent() && !bitCompare(DEPTH_STAGE, renderStage)){
+        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
             FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, getParent()->getChildren())
                 if (it.second->getComponent<AnimationComponent>()) 
                     it.second->getComponent<AnimationComponent>()->reset();

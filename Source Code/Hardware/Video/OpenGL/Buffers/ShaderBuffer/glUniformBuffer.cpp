@@ -5,62 +5,84 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "core.h"
 
-glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped) : ShaderBuffer(unbound, persistentMapped), _UBOid(0), _mappedBuffer(nullptr)
+glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped) : ShaderBuffer(unbound, persistentMapped), 
+                                                                        _mappedBuffer(nullptr),
+                                                                        _lockManager(nullptr),
+                                                                        _UBOid(0)
 {
-    _lockManager = persistentMapped ? New glBufferLockManager(true) : nullptr;
+    if (Config::Profile::DISABLE_PERSISTENT_BUFFER) {
+        persistentMapped = _persistentMapped = false;
+    }
 
-    if(Config::Profile::DISABLE_PERSISTENT_BUFFER)
-        _persistentMapped = false;
+    if (persistentMapped) {
+        _lockManager = New glBufferLockManager(true);
+    }
 }
 
 glUniformBuffer::~glUniformBuffer()
 {
-    if(_UBOid > 0) {
-        if(_persistentMapped) {
+    if (_UBOid > 0) {
+        if (_persistentMapped) {
             GL_API::setActiveBuffer(_target, _UBOid);
             glUnmapBuffer(_target);
         }
         glDeleteBuffers(1, &_UBOid);
         _UBOid = 0;
     }
+
     SAFE_DELETE(_lockManager);
 }
 
 void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     DIVIDE_ASSERT(_UBOid == 0, "glUniformBuffer error: Tried to double create current UBO");
+    ShaderBuffer::Create(primitiveCount, primitiveSize);
 
     glGenBuffers(1, &_UBOid); // Generate the buffer
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: UBO creation failed");
-
+    
     _target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
 
     GL_API::setActiveBuffer(_target, _UBOid);
-    if(_persistentMapped) {
+    if (_persistentMapped) {
         GLenum usageFlag = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glBufferStorage(_target, primitiveSize * primitiveCount, NULL, usageFlag | GL_DYNAMIC_STORAGE_BIT);
-        _mappedBuffer = glMapBufferRange(_target, 0, primitiveSize * primitiveCount, usageFlag);
+        glBufferStorage(_target, _bufferSize, NULL, usageFlag | GL_DYNAMIC_STORAGE_BIT);
+        _mappedBuffer = glMapBufferRange(_target, 0, _bufferSize, usageFlag);
     }else{
-        glBufferData(_target, primitiveSize * primitiveCount, NULL, GL_DYNAMIC_DRAW);
+        glBufferData(_target, _bufferSize, NULL, GL_DYNAMIC_DRAW);
     }
-    ShaderBuffer::Create(primitiveCount, primitiveSize);
+}
+
+void glUniformBuffer::DiscardAllData() {
+    glInvalidateBufferData(_UBOid);
+}
+
+void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) {
+    DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, "glUniformBuffer error: DiscardSubData was called with an invalid range (buffer overflow)!");
+    glInvalidateBufferSubData(_UBOid, offset, size);
 }
 
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const void *data, const bool invalidateBuffer) const {
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, "glUniformBuffer error: ChangeSubData was called with an invalid range (buffer overflow)!");
 
-    if(invalidateBuffer)
-        glInvalidateBufferSubData(_UBOid, offset, size);
-    
-    if(size == 0 || !data)
-        return;
+    if (invalidateBuffer) {
+        if (_persistentMapped) {
+            //glNamedBufferSubDataEXT(_UBOid, 0, _bufferSize, NULL);
+        } else {
+            glNamedBufferDataEXT(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
+        }
+    }
 
-    if(_persistentMapped) {
+    if (size == 0 || !data) {
+        return;
+    }
+
+    if (_persistentMapped) {
         GL_API::setActiveBuffer(_target, _UBOid);
         _lockManager->WaitForLockedRange(offset, size);
             void* dst = (U8*) _mappedBuffer + offset;
             memcpy(dst, data, size);
         _lockManager->LockRange(offset, size);
-    }else{
+    } else {
         glNamedBufferSubDataEXT(_UBOid, offset, size, data);
     }
 }
@@ -68,18 +90,16 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const void *d
 bool glUniformBuffer::BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const {
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
-    if(_persistentMapped)
-        _lockManager->WaitForLockedRange();
-
     glBindBufferRange(_target, bindIndex, _UBOid, _primitiveSize * offsetElementCount, _primitiveSize * rangeElementCount);
+
     return true;
 }
 
 bool glUniformBuffer::Bind(Divide::ShaderBufferLocation bindIndex) const {
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
-    if(_persistentMapped)
-        _lockManager->WaitForLockedRange();
+
     glBindBufferBase(_target, bindIndex, _UBOid);
+
     return true;
 }
 
@@ -87,14 +107,16 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, Divide::Shad
     GLuint prog = shaderProgram->getId();
     GLuint block_index = bindIndex;
 
-    if (prog <= 0 || block_index < 0 || _unbound)
+    if (prog <= 0 || block_index < 0 || _unbound) {
         return;
+    }
 
     // Fetch uniform block name:
     GLint name_length;
     glGetActiveUniformBlockiv(prog, block_index, GL_UNIFORM_BLOCK_NAME_LENGTH, &name_length);
-    if (name_length <= 0)
+    if (name_length <= 0) {
         return;
+    }
 
     std::string block_name(name_length, 0);
     glGetActiveUniformBlockName(prog, block_index, name_length, NULL, &block_name[0]);
@@ -126,8 +148,7 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, Divide::Shad
     // Build a string detailing each uniform in the block:
     std::vector<std::string> uniform_details;
     uniform_details.reserve(uniform_indices.size());
-    for (std::size_t i = 0; i < uniform_indices.size(); ++i)
-    {
+    for (std::size_t i = 0; i < uniform_indices.size(); ++i) {
         GLuint const uniform_index = uniform_indices[i];
 
         std::string name(name_lengths[i], 0);
@@ -136,8 +157,9 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, Divide::Shad
         std::ostringstream details;
         details << std::setfill('0') << std::setw(4) << offsets[i] << ": " << std::setfill(' ') << std::setw(5) << types[i] << " " << name;
 
-        if (sizes[i] > 1)
+        if (sizes[i] > 1) {
             details << "[" << sizes[i] << "]";
+        }
 
         details << "\n";
         uniform_details.push_back(details.str());
@@ -150,6 +172,7 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, Divide::Shad
 
     // Output details:
     PRINT_FN("%s ( %d )", block_name.c_str(), block_size);
-    for (auto detail = uniform_details.begin(); detail != uniform_details.end(); ++detail)
+    for (auto detail = uniform_details.begin(); detail != uniform_details.end(); ++detail) {
         PRINT_FN("%s", (*detail).c_str());
+    }
 }

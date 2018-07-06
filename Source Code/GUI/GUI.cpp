@@ -15,7 +15,6 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
 GUI::GUI() : _init(false),
-             _enableCEGUIRendering(false),
              _rootSheet(nullptr),
              _console(New GUIConsole()),
              _textRenderInterval(getMsToUs(10))
@@ -66,7 +65,7 @@ void GUI::draw2D() {
     }
 }
 
-void GUI::draw(const U64 deltaTime) {
+void GUI::update(const U64 deltaTime) {
     if (!_init) {
         return;
     }
@@ -78,12 +77,7 @@ void GUI::draw(const U64 deltaTime) {
     _input.update(deltaTime);
 
     CEGUI::System::getSingleton().injectTimePulse(getUsToSec(deltaTime));
-
     GUIEditor::getInstance().update(deltaTime);
-
-    if (_enableCEGUIRendering) {
-        CEGUI::System::getSingleton().renderAllGUIContexts();
-    }
 }
 
 bool GUI::init(const vec2<U16>& resolution) {
@@ -135,7 +129,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
-    _guiShader->UniformTexture("tex", 0);
+
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
 
     _init = true;
@@ -170,11 +164,11 @@ bool GUI::keyCheck(OIS::KeyEvent key, bool pressed) {
         _console->setVisible(!_console->isVisible());
     }
 
-#ifdef _DEBUG
-    if (key.key == OIS::KC_F11 && !pressed) {
-        GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
-    }
-#endif
+#   ifdef _DEBUG
+        if (key.key == OIS::KC_F11 && !pressed) {
+            GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
+        }
+#   endif
     _input.injectOISKey(pressed,key);
 
     return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
@@ -308,9 +302,3 @@ GUIText* GUI::modifyText(const std::string& id, char* format, ...){
      bool onKeyUp(const GuiEvent &event);
      bool onKeyDown(const GuiEvent &event);
 */
-
-bool GUI::bindRenderer(CEGUI::Renderer& renderer) {
-    CEGUI::System::create(renderer);
-    _enableCEGUIRendering =  !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
-    return true;
-}

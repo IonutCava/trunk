@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Rendering/Headers/Renderer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -186,10 +187,9 @@ namespace XML {
         inline std::string getRendererTypeName(RendererType type) {
             switch(type) {
                 default:
-                case RENDERER_PLACEHOLDER       : return "Unknown Renderer Type";
-                case RENDERER_FORWARD           : return "Forward Renderer";
-                case RENDERER_DEFERRED_SHADING  : return "Deferred Shading Renderer";
-                case RENDERER_DEFERRED_LIGHTING : return "Deferred Lighting Renderer";
+                case RendererType_PLACEHOLDER   : return "Unknown_Renderer_Type";
+                case RENDERER_FORWARD_PLUS      : return "Forward_Renderer";
+                case RENDERER_DEFERRED_SHADING  : return "Deferred_Shading Renderer";
             }
         }
     }
@@ -235,8 +235,8 @@ namespace XML {
         GFX_DEVICE.postProcessingEnabled(pt.get("rendering.enablePostFX", false));
         GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D",false));
         GFX_DEVICE.hdrEnabled(pt.get("rendering.enableHDR",false));
-        par.setParam("rendering.MSAAsampless",(U8)std::max(pt.get<I32>("rendering.MSAAsamples", 2), 0));
-        par.setParam("rendering.FXAAsamples",(U8)std::max(pt.get<I32>("rendering.FXAAsamples", 2), 0));
+        par.setParam("rendering.MSAAsampless",std::max(pt.get<I32>("rendering.MSAAsamples", 0), 0));
+        par.setParam("rendering.FXAAsamples", std::max(pt.get<I32>("rendering.FXAAsamples", 0), 0));
         par.setParam("GUI.CEGUI.ExtraStates",pt.get("GUI.CEGUI.ExtraStates",false));
         par.setParam("GUI.CEGUI.SkipRendering",pt.get("GUI.CEGUI.SkipRendering",false));
         par.setParam("GUI.defaultScheme",pt.get("GUI.defaultGUIScheme","GWEN"));
@@ -709,27 +709,27 @@ namespace XML {
         mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
 
         if (boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")) {
-            mat->setTexture(Material::TEXTURE_UNIT0, loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none")));
+            mat->setTexture(ShaderProgram::TEXTURE_UNIT0, loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none")));
         }
 
         if (boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture2")) {
-            mat->setTexture(Material::TEXTURE_UNIT1,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
+            mat->setTexture(ShaderProgram::TEXTURE_UNIT1,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
                             getTextureOperation(pt.get<std::string>("diffuseTexture2.operation","TEX_OP_MULTIPLY").c_str()));
         }
 
         if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap")) {
-            mat->setTexture(Material::TEXTURE_NORMALMAP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")));
+            mat->setTexture(ShaderProgram::TEXTURE_NORMALMAP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")));
             if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap.method")) {
                 mat->setBumpMethod(getBumpMethod(pt.get<std::string>("bumpMap.method","BUMP_NORMAL").c_str()));
             }
         }
 
         if (boost::optional<ptree &> child = pt.get_child_optional("opacityMap")) {
-            mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML("opacityMap", pt.get("opacityMap.file","none")));
+            mat->setTexture(ShaderProgram::TEXTURE_OPACITY,loadTextureXML("opacityMap", pt.get("opacityMap.file","none")));
         }
 
         if (boost::optional<ptree &> child = pt.get_child_optional("specularMap")) {
-            mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML("specularMap", pt.get("specularMap.file","none")));
+            mat->setTexture(ShaderProgram::TEXTURE_SPECULAR,loadTextureXML("specularMap", pt.get("specularMap.file","none")));
         }
  
         return mat;
@@ -772,24 +772,24 @@ namespace XML {
 
         Texture* texture = nullptr;
 
-        if ((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != nullptr) {
+        if ((texture = mat.getTexture(ShaderProgram::TEXTURE_UNIT0)) != nullptr) {
             saveTextureXML("diffuseTexture1", texture, pt_writer);
         }
 
-        if ((texture = mat.getTexture(Material::TEXTURE_UNIT1)) != nullptr) {
+        if ((texture = mat.getTexture(ShaderProgram::TEXTURE_UNIT1)) != nullptr) {
             saveTextureXML("diffuseTexture2", texture, pt_writer, getTextureOperationName(mat.getTextureOperation())); 
         }
 
-        if ((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != nullptr) {
+        if ((texture = mat.getTexture(ShaderProgram::TEXTURE_NORMALMAP)) != nullptr) {
             saveTextureXML("bumpMap", texture, pt_writer);
             pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
         }
 
-        if ((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != nullptr) {
+        if ((texture = mat.getTexture(ShaderProgram::TEXTURE_OPACITY)) != nullptr) {
             saveTextureXML("opacityMap", texture, pt_writer);
         }
 
-        if ((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != nullptr) {
+        if ((texture = mat.getTexture(ShaderProgram::TEXTURE_SPECULAR)) != nullptr) {
             saveTextureXML("specularMap", texture, pt_writer);
         }
 

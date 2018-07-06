@@ -1,15 +1,29 @@
 #include "Headers/SDLWrapper.h"
 #include <stdexcept>
 
-I8 SDL_API::initAudioApi() {
+ErrorCodes SDL_API::initAudioApi() {
     Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
     _music = nullptr;
     _chunk = nullptr;
 
-    if (-1 == Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096)){
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) == -1) {
         return SDL_AUDIO_INIT_ERROR;
     }
+
     return NO_ERR;
+}
+
+void SDL_API::closeAudioApi() {
+	if (_music != nullptr) {
+		Mix_HaltMusic();
+		Mix_FreeMusic(_music);
+	}
+
+	if(_chunk != nullptr) {
+		Mix_FreeChunk(_chunk);
+    }
+
+	Mix_Quit();
 }
 
 void SDL_API::playMusic(AudioDescriptor* musicFile){

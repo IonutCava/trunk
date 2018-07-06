@@ -142,7 +142,7 @@ ShaderProgram* const ParticleEmitter::getDrawShader(RenderStage renderStage){
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
 void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     if(_particlesCurrentCount > 0 && _enabled && _created){
-        _particleTexture->Bind(Material::TEXTURE_UNIT0);
+        _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
 
         _drawCommand.setStateHash(_particleStateBlockHash);

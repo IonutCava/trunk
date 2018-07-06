@@ -42,7 +42,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
     res->setMaterial(waterMat);
 
     waterMat->dumpToFile(false);
-    waterMat->setTexture(Material::TEXTURE_UNIT0, waterNM);
+    waterMat->setTexture(ShaderProgram::TEXTURE_UNIT0, waterNM);
     waterMat->setShaderProgram(waterShaderProgram->getName(), FINAL_STAGE, true);
     waterMat->setShaderProgram("depthPass.PrePass", Z_PRE_PASS_STAGE, true);
  

@@ -36,6 +36,17 @@ enum MATRIX_MODE;
 
 class ShaderProgram : public HardwareResource {
 public:
+    /// A list of built-in sampler slots. Use these if possible
+    enum TextureUsage {
+        TEXTURE_UNIT0 = 0,
+        TEXTURE_UNIT1 = 1,
+        TEXTURE_NORMALMAP = 2,
+        TEXTURE_OPACITY   = 3,
+        TEXTURE_SPECULAR  = 4,
+        TEXTURE_PROJECTION = 5,
+        TextureUsage_PLACEHOLDER = 6
+    };
+
     virtual ~ShaderProgram();
 
     virtual bool bind();

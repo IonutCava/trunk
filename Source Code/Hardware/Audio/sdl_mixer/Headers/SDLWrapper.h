@@ -29,17 +29,8 @@
 DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 
 public:
-	I8 initAudioApi();
-
-	void closeAudioApi(){
-		if(_music != nullptr){
-			Mix_HaltMusic();
-			Mix_FreeMusic(_music);
-		}
-		if(_chunk != nullptr)
-			Mix_FreeChunk(_chunk);
-		Mix_Quit();
-	}
+	ErrorCodes initAudioApi();
+	void       closeAudioApi();
 
 	void playSound(AudioDescriptor* sound);
 	void playMusic(AudioDescriptor* music);

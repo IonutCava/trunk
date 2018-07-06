@@ -31,8 +31,8 @@ DEFINE_SINGLETON_EXT1(SFXDevice,AudioAPIWrapper)
 
 public:
 
-	inline I8   initAudioApi()  { return _api.initAudioApi(); }
-	inline void closeAudioApi() { _api.closeAudioApi(); }
+	inline ErrorCodes initAudioApi()  { return _api.initAudioApi(); }
+	inline void       closeAudioApi() { _api.closeAudioApi(); }
 
 	inline void playSound(AudioDescriptor* sound){_api.playSound(sound);}
 	inline void playMusic(AudioDescriptor* music){_api.playMusic(music);}

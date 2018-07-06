@@ -27,11 +27,12 @@
 #include "Utility/Headers/XMLParser.h"
 #include "Utility/Headers/StateTracker.h"
 #include "Core/Resources/Headers/Resource.h"
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
+
 class Texture;
-class ShaderProgram;
 class RenderStateBlock;
 class ResourceDescriptor;
 class RenderStateBlockDescriptor;
@@ -46,16 +47,6 @@ public:
         BUMP_PARALLAX = 2,
         BUMP_RELIEF = 3,
         BumpMethod_PLACEHOLDER = 4
-    };
-
-    enum TextureUsage {
-        TEXTURE_UNIT0 = 0,
-        TEXTURE_UNIT1 = 1,
-        TEXTURE_NORMALMAP = 2,
-        TEXTURE_OPACITY   = 3,
-        TEXTURE_SPECULAR  = 4,
-        TEXTURE_PROJECTION = 5, //< Not currently handled!
-        TextureUsage_PLACEHOLDER = 6
     };
 
     /// How should each texture be added
@@ -158,7 +149,7 @@ public:
     inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
-    void setTexture(TextureUsage textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace);
+    void setTexture(ShaderProgram::TextureUsage textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace);
     /// Add a texture <-> bind slot pair to be bound with the default textures on each "bindTexture" call
     inline void addCustomTexture(Texture* texture, U32 offset) {
         // custom textures are not material dependencies!
@@ -218,7 +209,7 @@ public:
     inline U8    getTextureCount() const {return _shaderData._textureCount;}
 
                  size_t            getRenderStateBlock(RenderStage currentStage);
-    inline       Texture*	 const getTexture(TextureUsage textureUsage) {return _textures[textureUsage];}
+    inline       Texture*	 const getTexture(ShaderProgram::TextureUsage textureUsage) {return _textures[textureUsage];}
              ShaderInfo&           getShaderInfo(RenderStage renderStage = FINAL_STAGE);
     
     inline const TextureOperation& getTextureOperation() const { return _operation; }

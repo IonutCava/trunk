@@ -162,12 +162,14 @@ protected:
 class TextureDescriptor : public PropertyDescriptor {
 public:
     ///This enum is used when creating Frame Buffers to define the channel that the texture will attach to
-    enum AttachmentType{
+    enum AttachmentType {
         Color0 = 0,
-        Color1,
-        Color2,
-        Color3,
-        Depth
+        Color1 = 1,
+        Color2 = 2,
+        Color3 = 3,
+        Depth  = 4,
+        AttachmentType_PLACEHOLDER = 5
+        
     };
 
     TextureDescriptor() : TextureDescriptor(TextureType_PLACEHOLDER, GFXImageFormat_PLACEHOLDER, GDF_PLACEHOLDER)

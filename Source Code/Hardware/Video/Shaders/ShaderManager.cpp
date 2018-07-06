@@ -1,12 +1,12 @@
 #include "Headers/ShaderManager.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Hardware/Video/Shaders/Headers/Shader.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Shaders/Headers/Shader.h"
+#include "Geometry/Material/Headers/Material.h"
 
-ShaderManager::ShaderManager() : _nullShader(nullptr), _activeKernel(nullptr), _init(false)
+ShaderManager::ShaderManager() : _nullShader(nullptr), _init(false)
 {
 }
 
@@ -20,12 +20,11 @@ void ShaderManager::destroy() {
     RemoveResource(_nullShader);
 }
 
-bool ShaderManager::init(Kernel* const activeKernel){
+bool ShaderManager::init(){
     if (_init) {
         ERROR_FN(Locale::get("WARNING_SHADER_MANAGER_DOUBLE_INIT"));
     }
 
-    _activeKernel = activeKernel;
     _init = GFX_DEVICE.initShaders();
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);

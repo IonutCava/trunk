@@ -23,28 +23,36 @@
 #ifndef _RENDERER_H_
 #define _RENDERER_H_
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
-class SceneRenderState;
+#include "Hardware/Video/Headers/GFXDevice.h"
 
-enum RendererType{
-	RENDERER_FORWARD = 0,
-	RENDERER_DEFERRED_SHADING,
-	RENDERER_DEFERRED_LIGHTING,
-	RENDERER_PLACEHOLDER
+enum RendererType {
+    RENDERER_FORWARD_PLUS     = 0,
+    RENDERER_DEFERRED_SHADING = 1,
+    RendererType_PLACEHOLDER  = 2
 };
-///An abstract renderer used to switch between different rendering tehniques: Forward, Deferred Shading or Deferred Lighting
+
+///An abstract renderer used to switch between different rendering techniques: ForwardPlus, Deferred Shading, etc
 class Renderer {
 public:
-	Renderer(RendererType type) : _type(type) {}
-	virtual ~Renderer() {}
-	virtual void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) = 0;
-	virtual void toggleDebugView() = 0;
-	inline RendererType getType() {return _type;}
+    Renderer(RendererType type) : _type(type),
+                                  _debugView(false)
+    {
+    }
 
+    virtual ~Renderer() 
+    {
+    }
+
+    virtual void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock) = 0;
+    virtual void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) = 0;
     virtual void updateResolution(U16 width, U16 height) = 0;
 
+    inline RendererType getType() const { return _type; }
+    inline void toggleDebugView()       { _debugView = !_debugView; }	
+
 protected:
-	RendererType _type;
+    bool _debugView;
+    RendererType _type;
 };
 
 #endif

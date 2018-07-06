@@ -21,7 +21,6 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
     ResourceDescriptor reflectionPreviewShader("fbPreview");
     reflectionPreviewShader.setThreadedLoading(false);
     _previewReflectionShader = CreateResource<ShaderProgram>(reflectionPreviewShader);
-    _previewReflectionShader->UniformTexture("tex", 0);
 
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&Reflector::previewReflection, this), 2);
 }
@@ -82,12 +81,14 @@ bool Reflector::build(){
 }
 
 bool Reflector::previewReflection() {
-    if (_previewReflection) {
-        F32 height = _resolution.y * 0.333f;
-        _previewReflectionShader->bind();
-        _reflectedTexture->Bind();
-        GFX_DEVICE.renderInViewport(vec4<I32>(0, Application::getInstance().getResolution().y - height, _resolution.x  * 0.333f, height), 
-                                    DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1, GFX_DEVICE.getDefaultStateBlock(true)));
-    }
+#   ifdef _DEBUG
+        if (_previewReflection) {
+            F32 height = _resolution.y * 0.333f;
+            _previewReflectionShader->bind();
+            _reflectedTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
+            vec4<I32> viewport(0, Application::getInstance().getResolution().y - height, _resolution.x  * 0.333f, height);
+            GFX_DEVICE.renderInViewport(viewport, DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1, GFX_DEVICE.getDefaultStateBlock(true)));
+        }
+#   endif
     return true;
 }

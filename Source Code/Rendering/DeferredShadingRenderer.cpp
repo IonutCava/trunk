@@ -15,7 +15,6 @@
 #include "Managers/Headers/RenderPassManager.h"
 
 DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_SHADING),
-                                                    _debugView(false),
                                                     _cachedLightCount(0)
 {
     _lightTexture = GFX_DEVICE.newPB();
@@ -114,7 +113,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     SAFE_DELETE(_lightTexture);
 }
 
-void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) {
+void DeferredShadingRenderer::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock) {
     GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
 
     Light::LightMap& lights = LightManager::getInstance().getLights();
@@ -139,6 +138,10 @@ void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const S
         }
     }
     _lightTexture->End();
+}
+
+void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) {
+
     firstPass(renderCallback, sceneRenderState);
     secondPass(sceneRenderState);
 }
@@ -168,13 +171,13 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     cmd.setShaderProgram(_previewDeferredShader);
     if(_debugView){
         _previewDeferredShader->bind();
-        _previewDeferredShader->UniformTexture("tex",4);
+        _previewDeferredShader->UniformTexture("texDiffuse0",4);
         if(_renderQuads[1]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
             GFX_DEVICE.submitRenderCommand(_renderQuads[1]->getGeometryVB(), cmd);
-        _previewDeferredShader->UniformTexture("tex",1);
+        _previewDeferredShader->UniformTexture("texDiffuse0",1);
         if(_renderQuads[2]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
             GFX_DEVICE.submitRenderCommand(_renderQuads[2]->getGeometryVB(), cmd);
-        _previewDeferredShader->UniformTexture("tex",2);
+        _previewDeferredShader->UniformTexture("texDiffuse0",2);
         if(_renderQuads[3]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
             GFX_DEVICE.submitRenderCommand(_renderQuads[3]->getGeometryVB(), cmd);
     }
@@ -220,8 +223,4 @@ void DeferredShadingRenderer::updateResolution(U16 width, U16 height){
     _renderQuads[3]->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, height / 2, 0));
     //Using a separate, smaller render quad for debug view because it's faster than resizing a quad back and forth -Ionut
     _renderQuads[4]->setDimensions(vec4<F32>(0, 0, width / 2, height / 2));
-}
-
-void DeferredShadingRenderer::toggleDebugView(){
-    _debugView = !_debugView;
 }

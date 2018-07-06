@@ -53,20 +53,19 @@ protected:
 
 protected:
     GLuint _clearBufferMask;
-    GLint  _attOffset[5];
     bool   _hasDepth;
     bool   _hasColor;
     bool   _resolved;
     bool   _isLayeredDepth;
     static bool _viewportChanged;
     static bool _bufferBound;
-    static vec2<GLushort>  _prevViewportDim;
     vectorImpl<GLenum >    _colorBuffers;
-    vec2<GLushort > _mipMapLevel[5];
     bool _colorMaskChanged;
     bool _depthMaskChanged;
-    static GLint _maxColorAttachments;
     glFramebuffer* _resolveBuffer;
+
+    GLint           _attOffset[TextureDescriptor::AttachmentType_PLACEHOLDER];
+    vec2<GLushort > _mipMapLevel[TextureDescriptor::AttachmentType_PLACEHOLDER];
 };
 
 #endif

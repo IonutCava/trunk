@@ -9,7 +9,7 @@
 #include <CEGUI/CEGUI.h>
 
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
-I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) {
+ErrorCodes GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GL_ENUM_TABLE::fill();
     // Most runtime variables are stored in the ParamHandler, including initialization settings retrieved from XML
@@ -114,6 +114,8 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
     GFX_DEVICE.setMaxTextureSlots(Divide::GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
+    // Maximum number of color attachments per framebuffer
+    GFX_DEVICE.setMaxRenderTargetOutputs(Divide::GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
     std::string gpuVendorByte(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
     if (!gpuVendorByte.empty()) {
@@ -142,11 +144,11 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
     GLint sampleCount =  Divide::GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
     PRINT_FN(Locale::get("GL_MULTI_SAMPLE_INFO"), sampleCount, samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
-    U8 msaaSamples = par.getParam<U8>("rendering.MSAAsampless", 0);
+    U8 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
     if (samplerBuffers == 0 || sampleCount == 0) {
         msaaSamples = 0;
     }
-    GFX_DEVICE.initAA(msaaSamples, par.getParam<U8>("rendering.FXAAsamples", 0));
+    GFX_DEVICE.initAA(par.getParam<I32>("rendering.FXAAsamples", 0), msaaSamples);
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     PRINT_FN(Locale::get("GL_MAX_UNIFORM"), Divide::GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
@@ -257,11 +259,12 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
     PRINT_FN(Locale::get("START_OGL_API_OK"));
 
     // Once OpenGL is ready for rendering, init CEGUI
+    _enableCEGUIRendering =  !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
     CEGUI::OpenGL3Renderer& GUIGLrenderer = CEGUI::OpenGL3Renderer::create();
     GUIGLrenderer.enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
-    GUI::getInstance().bindRenderer(GUIGLrenderer);
+    CEGUI::System::create(GUIGLrenderer);
 
-    return 0;
+    return NO_ERR;
 }
 
 /// Clear everything that was setup in initRenderingApi()

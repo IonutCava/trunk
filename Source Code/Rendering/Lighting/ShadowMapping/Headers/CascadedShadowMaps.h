@@ -66,7 +66,6 @@ protected:
     ///Shortcut for the owning directional light
     DirectionalLight*  _dirLight;
     Framebuffer*       _blurBuffer;
-    GFXDevice&         _gfxDevice;
     vectorImpl<vec3<F32> > _frustumCornersVS;
     vectorImpl<vec3<F32> > _frustumCornersWS;
     vectorImpl<vec3<F32> > _frustumCornersLS;

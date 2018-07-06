@@ -33,6 +33,8 @@ public:
     
     ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with NULL values
     virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    virtual void DiscardAllData();
+    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size);
     virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const;
     virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
     virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const;

@@ -14,6 +14,12 @@ void d3dConstantBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     ShaderBuffer::Create(primitiveCount, primitiveSize);
 }
 
+void d3dConstantBuffer::DiscardAllData() {
+}
+
+void d3dConstantBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) {
+}
+
 void d3dConstantBuffer::UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer) const {
 }
 

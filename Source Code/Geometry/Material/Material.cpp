@@ -1,9 +1,10 @@
 #include "Headers/Material.h"
 
-#include "Core/Resources/Headers/ResourceCache.h"
+#include "Rendering/Headers/Renderer.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 
 bool Material::_shaderQueueLocked = false;
 bool Material::_serializeShaderLoad = false;
@@ -17,10 +18,9 @@ Material::Material() : Resource("temp_material"),
                        _dumpToFile(true),
                        _translucencyCheck(false),
                        _shadingMode(SHADING_PHONG), //< phong shading by default
-                       _bumpMethod(BUMP_NONE),
-                       _translucencySource(TRANSLUCENT_NONE)
+                       _bumpMethod(BUMP_NONE)
 {
-    _textures.resize(TextureUsage_PLACEHOLDER, nullptr);
+    _textures.resize(ShaderProgram::TextureUsage_PLACEHOLDER, nullptr);
 
     _operation = TextureOperation_Replace;
 
@@ -83,7 +83,7 @@ size_t Material::setRenderStateBlock(const RenderStateBlockDescriptor& descripto
 //base = base texture
 //second = second texture used for multitexturing
 //bump = bump map
-void Material::setTexture(TextureUsage textureUsageSlot, Texture* const texture, const TextureOperation& op) {
+void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot, Texture* const texture, const TextureOperation& op) {
     bool computeShaders = false;
 
     if(_textures[textureUsageSlot]){
@@ -100,13 +100,13 @@ void Material::setTexture(TextureUsage textureUsageSlot, Texture* const texture,
         REGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
     
 
-    if(textureUsageSlot == TEXTURE_UNIT1)
+    if(textureUsageSlot == ShaderProgram::TEXTURE_UNIT1)
         _operation = op;
 
-    if(textureUsageSlot == TEXTURE_UNIT0 || textureUsageSlot == TEXTURE_UNIT1)
+    if(textureUsageSlot == ShaderProgram::TEXTURE_UNIT0 || textureUsageSlot == ShaderProgram::TEXTURE_UNIT1)
         texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
 
-    if(textureUsageSlot == TEXTURE_UNIT0 || textureUsageSlot == TEXTURE_OPACITY){
+    if(textureUsageSlot == ShaderProgram::TEXTURE_UNIT0 || textureUsageSlot == ShaderProgram::TEXTURE_OPACITY){
         _translucencyCheck = false;
     }
    
@@ -180,11 +180,11 @@ bool Material::computeShader(const RenderStage& renderStage){
     if (_shaderInfo[renderStage]._computedShader)
         return false;
 
-    if((_textures[TEXTURE_UNIT0]   && _textures[TEXTURE_UNIT0]->getState()   != RES_LOADED) ||
-       (_textures[TEXTURE_OPACITY] && _textures[TEXTURE_OPACITY]->getState() != RES_LOADED))
+    if((_textures[ShaderProgram::TEXTURE_UNIT0]   && _textures[ShaderProgram::TEXTURE_UNIT0]->getState()   != RES_LOADED) ||
+       (_textures[ShaderProgram::TEXTURE_OPACITY] && _textures[ShaderProgram::TEXTURE_OPACITY]->getState() != RES_LOADED))
         return false;
 
-    bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD;
+    bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD_PLUS;
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
 
     //the base shader is either for a Deferred Renderer or a Forward  one ...
@@ -197,9 +197,9 @@ bool Material::computeShader(const RenderStage& renderStage){
         renderStage == Z_PRE_PASS_STAGE ? shader += ".PrePass" :  shader += ".Shadow";
  
     //What kind of effects do we need?
-    if (_textures[TEXTURE_UNIT0]){
+    if (_textures[ShaderProgram::TEXTURE_UNIT0]){
         //Bump mapping?
-        if (_textures[TEXTURE_NORMALMAP] && _bumpMethod != BUMP_NONE){
+        if (_textures[ShaderProgram::TEXTURE_NORMALMAP] && _bumpMethod != BUMP_NONE){
             addShaderDefines(renderStage, "COMPUTE_TBN");
             shader += ".Bump"; //Normal Mapping
             if (_bumpMethod == BUMP_PARALLAX){
@@ -218,7 +218,7 @@ bool Material::computeShader(const RenderStage& renderStage){
         shader += ".NoTexture";
     }
 
-    if (_textures[TEXTURE_SPECULAR]){
+    if (_textures[ShaderProgram::TEXTURE_SPECULAR]){
         shader += ".Specular";
         addShaderDefines(renderStage, "USE_SPECULAR_MAP");
     }
@@ -273,22 +273,31 @@ void Material::computeShaderInternal(){
 }
 
 void Material::bindTextures(){
-    if(_textures[TEXTURE_OPACITY])
-        _textures[TEXTURE_OPACITY]->Bind(TEXTURE_OPACITY);
-    if(_textures[TEXTURE_UNIT0])
-        _textures[TEXTURE_UNIT0]->Bind(TEXTURE_UNIT0);
+    if (_textures[ShaderProgram::TEXTURE_OPACITY]) {
+        _textures[ShaderProgram::TEXTURE_OPACITY]->Bind(ShaderProgram::TEXTURE_OPACITY);
+    }
 
-    if(bitCompare(GFX_DEVICE.getRenderStage(), DEPTH_STAGE))
-        return;
+    if (_textures[ShaderProgram::TEXTURE_UNIT0]) {
+        _textures[ShaderProgram::TEXTURE_UNIT0]->Bind(ShaderProgram::TEXTURE_UNIT0);
+    }
 
-    if(_textures[TEXTURE_NORMALMAP])
-        _textures[TEXTURE_NORMALMAP]->Bind(TEXTURE_NORMALMAP);
-    if(_textures[TEXTURE_SPECULAR])
-        _textures[TEXTURE_SPECULAR]->Bind(TEXTURE_SPECULAR);
-    if(_textures[TEXTURE_UNIT1])
-        _textures[TEXTURE_UNIT1]->Bind(TEXTURE_UNIT1);
-    for(std::pair<Texture*, U32>& tex : _customTextures)
-        tex.first->Bind(tex.second);
+    if (!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
+        if (_textures[ShaderProgram::TEXTURE_NORMALMAP]) {
+            _textures[ShaderProgram::TEXTURE_NORMALMAP]->Bind(ShaderProgram::TEXTURE_NORMALMAP);
+        }
+
+        if (_textures[ShaderProgram::TEXTURE_SPECULAR]) {
+            _textures[ShaderProgram::TEXTURE_SPECULAR]->Bind(ShaderProgram::TEXTURE_SPECULAR);
+        }
+
+        if (_textures[ShaderProgram::TEXTURE_UNIT1]) {
+            _textures[ShaderProgram::TEXTURE_UNIT1]->Bind(ShaderProgram::TEXTURE_UNIT1);
+        }
+
+        for (std::pair<Texture*, U32>& tex : _customTextures) {
+            tex.first->Bind(tex.second);
+        }
+    }
 }
 
 ShaderProgram* const Material::ShaderInfo::getProgram(){
@@ -350,13 +359,13 @@ bool Material::isTranslucent() {
         }
 
         // base texture is translucent
-        if (_textures[TEXTURE_UNIT0] && _textures[TEXTURE_UNIT0]->hasTransparency()){
+        if (_textures[ShaderProgram::TEXTURE_UNIT0] && _textures[ShaderProgram::TEXTURE_UNIT0]->hasTransparency()){
             _translucencySource.push_back(TRANSLUCENT_DIFFUSE_MAP);
             useAlphaTest = true;
         }
 
         // opacity map
-        if(_textures[TEXTURE_OPACITY]){
+        if(_textures[ShaderProgram::TEXTURE_OPACITY]){
             _translucencySource.push_back(TRANSLUCENT_OPACITY_MAP);
             useAlphaTest = false;
         }
@@ -375,11 +384,6 @@ bool Material::isTranslucent() {
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     Unordered_map<RenderStage, ShaderInfo >::const_iterator it = _shaderInfo.find(FINAL_STAGE);
 
-    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? 
-                    it->second._shaderRef->getId() : 
-                    GFXDevice::SORT_NO_VALUE;
-
-    textureKey = _textures[TEXTURE_UNIT0] ? 
-                    _textures[TEXTURE_UNIT0]->getHandle() : 
-                    GFXDevice::SORT_NO_VALUE;
+    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() : GFXDevice::SORT_NO_VALUE;
+    textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : GFXDevice::SORT_NO_VALUE;
 }

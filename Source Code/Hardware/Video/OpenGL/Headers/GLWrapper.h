@@ -57,7 +57,7 @@ protected:
     ~GL_API();
 
     /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
-    I8   initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv);
+    ErrorCodes initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv);
     /// Clear everything that was setup in initRenderingApi()
     void closeRenderingApi();
     /// Prepare our shader loading system
@@ -217,6 +217,8 @@ private:
     static bool _lastRestartIndexSmall;
     /// Boolean value used to verify if primitive restart index is enabled or disabled
     static bool _primitiveRestartEnabled;
+    /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering performance)
+    bool _enableCEGUIRendering;     
     /// Current state of all available clipping planes
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
     /// Performance counters: front x 2 and back x 2

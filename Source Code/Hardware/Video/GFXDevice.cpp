@@ -4,12 +4,14 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"
-#include "Core/Math/Headers/Plane.h"
 
+#include "Core/Math/Headers/Plane.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Utility/Headers/ImageTools.h"
 #include "Managers/Headers/SceneManager.h"
+
+#include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
@@ -38,13 +40,13 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
 {
    _loaderThread = nullptr;
    _renderer = nullptr;
-   _maxTextureSlots = 0;
    _interpolationFactor = 1.0;
    _MSAASamples = _FXAASamples = 0;
    _previousLineWidth = _currentLineWidth = 1.0;
+   _maxTextureSlots = _maxRenderTargetOutputs = 0;
    _prevTextureId = _stateExclusionMask = _prevShaderId = 0;
    _gfxDataBuffer = _nodeBuffer = nullptr;
-   _isDepthPrePass = _previewDepthBuffer = _viewportUpdate = false;
+   _previewDepthBuffer = _viewportUpdate = false;
    _2DRendering = _drawDebugAxis = _enablePostProcessing = _enableAnaglyph = _enableHDR = false;
    _previewDepthMapShader = _imShader = _activeShaderProgram = nullptr;
    _HIZConstructProgram = _depthRangesConstructProgram = nullptr;
@@ -441,10 +443,9 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     if (visibleNodes.empty()) {
         return;
     }
-
+    // Update renderer
+    getRenderer()->processVisibleNodes(visibleNodes, _gpuBlock);
     // Generate and upload all lighting data
-    
-    LightManager::getInstance().buildLightGrid(_gpuBlock._ViewMatrix, _gpuBlock._ProjectionMatrix, _gpuBlock._ZPlanesCombined.xy());
     LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
 
     // Generate and upload per node data
@@ -535,7 +536,8 @@ void GFXDevice::ConstructHIZ() {
 }
 
 void GFXDevice::DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges){
-
+    // Make sure destination buffer is empty
+    depthRanges.clear();
     _renderTarget[RENDER_TARGET_DEPTH_RANGES]->Begin(Framebuffer::defaultPolicy());
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
     _depthRangesConstructProgram->bind();

@@ -1,4 +1,4 @@
-uniform int   lodLevel = 0;
+uniform int lodLevel = 0;
 
 #include "lightInput.cmn"
 #include "lightingDefaults.frag"
@@ -10,10 +10,10 @@ uniform int   lodLevel = 0;
 //Specular and opacity maps are available even for non-textured geometry
 #if defined(USE_OPACITY_MAP)
 //Opacity and specular maps
-layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
+//layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #endif
 #if defined(USE_SPECULAR_MAP)
-layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
+//layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
 #if !defined(SKIP_TEXTURES)
@@ -40,8 +40,8 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
     alpha *= dvd_MatDiffuse.a;
 #endif
 #if defined(USE_OPACITY_MAP)
-    vec4 opacityMap = texture(texOpacityMap, texCoord);
-    alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
+    //vec4 opacityMap = texture(texOpacityMap, texCoord);
+    //alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
     /*if (dvd_useAlphaTest && alpha < ALPHA_DISCARD_THRESHOLD)
         discard;*/
@@ -50,7 +50,7 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
     MaterialProperties materialProp;
     
 #if defined(USE_SPECULAR_MAP)
-    materialProp.specularValue = texture(texSpecularMap, texCoord).rgb;
+    //materialProp.specularValue = texture(texSpecularMap, texCoord).rgb;
 #else
     materialProp.specularValue = dvd_MatSpecular;
 #endif
@@ -69,7 +69,7 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
     // Apply shadowing
     color *= shadow_loop();
 
-#if defined(_DEBUG) && defined(_SHADOWMAPPING)
+#if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)
     switch (dvd_showShadowSplits ? _shadowTempInt : -2){
         case -2: return vec4(color, alpha);
         case -1: return vec4(1.0);

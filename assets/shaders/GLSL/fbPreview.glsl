@@ -36,11 +36,11 @@ void main() {
 in vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform sampler2D tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    _colorOut = texture(tex, _texCoord);
+    _colorOut = texture(texDiffuse0, _texCoord);
     _colorOut.a = 1.0;
 }
 
@@ -50,7 +50,7 @@ in vec2 _texCoord;
 out vec4 _colorOut;
 
 uniform bool useScenePlanes = false;
-uniform sampler2D tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
@@ -61,7 +61,7 @@ void main()
         f = dvd_sceneZPlanes.y * 0.5;
     }
 
-    float depth = texture(tex, _texCoord).r;
+    float depth = texture(texDiffuse0, _texCoord).r;
     float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
     _colorOut.rgb = vec3(linearDepth);
     _colorOut.a = 1.0;
@@ -72,12 +72,12 @@ void main()
 in vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform sampler2DArray tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 
 void main()
 {
-    _colorOut = texture(tex, vec3(_texCoord, layer));
+    _colorOut = texture(texDiffuse0, vec3(_texCoord, layer));
 }
 
 -- Fragment.Layered.LinearDepth
@@ -85,7 +85,7 @@ void main()
 in vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform sampler2DArray tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 uniform bool useScenePlanes = false;
 
@@ -98,7 +98,7 @@ void main()
         f = dvd_sceneZPlanes.y * 0.5;
     }
 
-    float depth = texture(tex, vec3(_texCoord, layer)).r;
+    float depth = texture(texDiffuse0, vec3(_texCoord, layer)).r;
     _colorOut.rgb = vec3((2 * n) / (f + n - (depth)* (f - n)));
 }
 
@@ -107,12 +107,12 @@ void main()
 in vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform sampler2DArray tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 
 void main()
 {
-    float depth = texture(tex, vec3(_texCoord, layer)).r;
+    float depth = texture(texDiffuse0, vec3(_texCoord, layer)).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
     
     _colorOut.rgb = vec3(depth);

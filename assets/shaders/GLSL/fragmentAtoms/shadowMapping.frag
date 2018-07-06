@@ -1,6 +1,6 @@
-uniform sampler2DArray    texDepthMapFromLightArray[MAX_SHADOW_CASTING_LIGHTS];
-uniform samplerCubeShadow texDepthMapFromLightCube[MAX_SHADOW_CASTING_LIGHTS];
-uniform sampler2DShadow   texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
+layout(binding = SHADOW_CUBE_START)   uniform samplerCubeShadow texDepthMapFromLightCube[MAX_SHADOW_CASTING_LIGHTS];
+layout(binding = SHADOW_NORMAL_START) uniform sampler2DShadow   texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
+layout(binding = SHADOW_ARRAY_START)  uniform sampler2DArray    texDepthMapFromLightArray[MAX_SHADOW_CASTING_LIGHTS];
 
 uniform float dvd_lightBleedBias = 0.2;
 uniform float dvd_minShadowVariance = 0.00002;
@@ -26,7 +26,6 @@ vec2 getArrayShadowValue(in uint index, in vec3 coords){
 }
 
 float getCubeShadowValue(in uint index, in vec4 coords){
-    return 1.0;
     #if MAX_SHADOW_CASTING_LIGHTS > 1
         switch(index){
             case 0 :  return texture(texDepthMapFromLightCube[0], coords).r;
@@ -44,7 +43,7 @@ float getCubeShadowValue(in uint index, in vec4 coords){
 }
 
 #if defined(_DEBUG)
-#define _SHADOWMAPPING
+#define DEBUG_SHADOWMAPPING
 
 uniform bool dvd_showShadowSplits = false;
 // set this to whatever (current cascade, current depth comparison result, anything)

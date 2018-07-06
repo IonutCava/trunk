@@ -7,9 +7,9 @@ in vec4 _vertexWV;
 uniform float mixWeight;
 layout(binding = TEXTURE_PROJECTION) uniform sampler2D texDiffuseProjected;
 
-void projectTexture(in vec3 PoxPosInMap, inout vec4 tex){
+void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
 	vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));
-	tex.xyz = mix(tex.xyz, projectedTex.xyz, mixWeight);
+	targetTexture.xyz = mix(targetTexture.xyz, projectedTex.xyz, mixWeight);
 }
 
 uniform bool  dvd_enableFog = true;

@@ -64,12 +64,12 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
     drawShader->Uniform("bbox_min", _boundingBox.getMin());
     drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
-    drawShader->UniformTexture("texWaterCaustics",    Material::TEXTURE_UNIT0);
-    drawShader->UniformTexture("texUnderwaterAlbedo", Material::TEXTURE_UNIT1);
-    drawShader->UniformTexture("texUnderwaterDetail", Material::TEXTURE_NORMALMAP);
+    drawShader->UniformTexture("texWaterCaustics",    ShaderProgram::TEXTURE_UNIT0);
+    drawShader->UniformTexture("texUnderwaterAlbedo", ShaderProgram::TEXTURE_UNIT1);
+    drawShader->UniformTexture("texUnderwaterDetail", ShaderProgram::TEXTURE_NORMALMAP);
     drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-    U8 textureOffset = Material::TEXTURE_NORMALMAP + 1;
+    U8 textureOffset = ShaderProgram::TEXTURE_NORMALMAP + 1;
     U8 layerOffset = 0;
     std::string layerIndex;
     for (U32 i = 0; i < _terrainTextures.size(); ++i){
@@ -126,8 +126,8 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
 }
 
 size_t Terrain::getDrawStateHash(RenderStage renderStage){
-    if(bitCompare(DEPTH_STAGE, renderStage))
-        return GFX_DEVICE.isDepthPrePass() ? _terrainRenderStateHash : _terrainDepthRenderStateHash;
+    if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE))
+        return GFX_DEVICE.isCurrentRenderStage(Z_PRE_PASS_STAGE) ? _terrainRenderStateHash : _terrainDepthRenderStateHash;
 
     return GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash;
 }

@@ -46,7 +46,7 @@ typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram* > > ShaderQueue;
 
 public:
     ///Create rendering API specific initialization of shader libraries
-    bool    init(Kernel* const activeKernel);
+    bool    init();
     void    destroy();
     ///Called once per frame
     U8      update(const U64 deltaTime);
@@ -93,8 +93,6 @@ private:
     ShaderProgram* _imShader;
     ///A simple check to see if the manager is ready to process commands
     bool             _init;
-    ///A pointer to the active kernel (for simplicity)
-    Kernel*          _activeKernel;
 
 private:
     ShaderManager();

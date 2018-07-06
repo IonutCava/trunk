@@ -59,7 +59,7 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _refractionTexture->toggleDepthBuffer(true);
     _refractionTexture->Create(_resolution.x, _resolution.y);
 
-    //getMaterial()->addCustomTexture(_refractionTexture->GetAttachment(TextureDescriptor::Color0), Material::TEXTURE_UNIT1);
+    //getMaterial()->addCustomTexture(_refractionTexture->GetAttachment(TextureDescriptor::Color0), ShaderProgram::TEXTURE_UNIT1);
     SceneNode::postLoad(sgn);
 }
 
@@ -115,7 +115,7 @@ void WaterPlane::render(SceneGraphNode* const sgn, const SceneRenderState& scene
     if(!_plane->onDraw(nullptr, currentRenderStage))
         return;
 
-    bool depthPass = bitCompare(DEPTH_STAGE, currentRenderStage);
+    bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
 
     if(!depthPass){
         _reflectedTexture->Bind(1);
@@ -214,14 +214,14 @@ void WaterPlane::updatePlaneEquation(){
 }
 
 bool WaterPlane::previewReflection(){
-
-    if (_previewReflection) {
-        F32 height = _resolution.y * 0.333f;
-        _previewReflectionShader->bind();
-        _refractionTexture->Bind();
-        GFX_DEVICE.renderInViewport(vec4<I32>(_resolution.x  * 0.333f, Application::getInstance().getResolution().y - height, _resolution.x  * 0.666f, height), 
-                                    DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1, GFX_DEVICE.getDefaultStateBlock(true)));
-    }
-
+#   ifdef _DEBUG
+        if (_previewReflection) {
+            F32 height = _resolution.y * 0.333f;
+            _previewReflectionShader->bind();
+            _refractionTexture->Bind();
+            vec4<I32> viewport(_resolution.x  * 0.333f, Application::getInstance().getResolution().y - height, _resolution.x  * 0.666f, height);
+            GFX_DEVICE.renderInViewport(viewport, DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1, GFX_DEVICE.getDefaultStateBlock(true)));
+        }
+#   endif
     return Reflector::previewReflection();
 }

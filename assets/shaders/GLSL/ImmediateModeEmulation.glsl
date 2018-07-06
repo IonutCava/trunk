@@ -23,7 +23,7 @@ void main(){
 
 -- Fragment
 
-uniform sampler2D tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 uniform bool useTexture;
 
 in  vec2 _texCoord;
@@ -34,14 +34,14 @@ void main(){
     if(!useTexture){
         _colorOut = _color;
     }else{
-        _colorOut = texture(tex, _texCoord);
+        _colorOut = texture(texDiffuse0, _texCoord);
         _colorOut.rgb += _color.rgb;
     }
 }
 
 -- Fragment.GUI
 
-uniform sampler2D tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 in  vec2 _texCoord;
 in  vec3 _color;
@@ -49,5 +49,5 @@ in  vec3 _color;
 out vec4 _colorOut;
 
 void main(){
-    _colorOut = vec4(_color, texture(tex, _texCoord).r);
+    _colorOut = vec4(_color, texture(texDiffuse0, _texCoord).r);
 }

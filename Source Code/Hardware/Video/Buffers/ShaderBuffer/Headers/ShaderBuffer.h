@@ -46,6 +46,8 @@ public:
         _bufferSize = primitiveSize * primitiveCount;
     }
 
+    virtual void DiscardAllData() = 0;
+    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) = 0;
     virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const = 0;
     inline  void SetData(const void *data) { UpdateData(0, _bufferSize, data, true); }
 

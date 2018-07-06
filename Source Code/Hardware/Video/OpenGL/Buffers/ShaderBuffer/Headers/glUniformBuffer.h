@@ -35,8 +35,9 @@ public:
 
     ///Create a new buffer object to hold our uniform shader data
     virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    virtual void DiscardAllData();
+    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size);
     virtual void UpdateData(GLintptr offset, GLsizeiptr size, const void *data, const bool invalidateBuffer = false) const;
-
     virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
     virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const;
 

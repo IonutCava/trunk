@@ -2,10 +2,11 @@
 
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Rendering/Headers/Renderer.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "Rendering/Camera/Headers/Camera.h"
-#include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_Single)
@@ -14,7 +15,6 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap
     ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
-    _previewDepthMapShader->UniformTexture("tex", 0);
     SamplerDescriptor depthMapSampler;
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(false);
@@ -75,7 +75,7 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const 
 }
 
 void SingleShadowMap::previewShadowMaps(){
-    _depthMap->Bind(0);
+    _depthMap->Bind(ShaderProgram::TEXTURE_UNIT0);
     _previewDepthMapShader->bind();
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
 }

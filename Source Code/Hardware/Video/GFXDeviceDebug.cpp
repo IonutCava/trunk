@@ -5,27 +5,31 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+/// Show the contents of the depth buffer in a small rectangle in the bottom right of the screen
 void GFXDevice::previewDepthBuffer() {
-    if (!_previewDepthBuffer) {
-        return;
-    }
+    // As this is touched once per frame, we'll only enable it in debug builds
+#   ifdef _DEBUG
+        // Early out if we didn't request the preview
+        if (!_previewDepthBuffer) {
+            return;
+        }
+        // Lazy-load preview shader
+        if (!_previewDepthMapShader) {
+            // The LinearDepth variant converts the depth values to linear values between the 2 scene z-planes
+            _previewDepthMapShader = CreateResource<ShaderProgram>(ResourceDescriptor("fbPreview.LinearDepth"));
+            assert(_previewDepthMapShader != nullptr);
+            _previewDepthMapShader->Uniform("useScenePlanes", true);
+        }
 
-    if (!_previewDepthMapShader) {
-        ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
-        _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
-        assert(_previewDepthMapShader != nullptr);
-        _previewDepthMapShader->UniformTexture("tex", 0);
-        _previewDepthMapShader->Uniform("useScenePlanes", true);
-    }
+        if (_previewDepthMapShader->getState() != RES_LOADED) {
+            return;
+        }
 
-    if (_previewDepthMapShader->getState() != RES_LOADED) {
-        return;
-    }
-
-    _previewDepthMapShader->bind();
-    _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
+        _previewDepthMapShader->bind();
+        _renderTarget[RENDER_TARGET_DEPTH]->Bind(ShaderProgram::TEXTURE_UNIT0, TextureDescriptor::Depth);
     
-    renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-256,0,256,256), DELEGATE_BIND(&GFXDevice::drawPoints, this, 1, _defaultStateNoDepthHash));
+        renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-256,0,256,256), DELEGATE_BIND(&GFXDevice::drawPoints, this, 1, _defaultStateNoDepthHash));
+#   endif
 }
 
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {

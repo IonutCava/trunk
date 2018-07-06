@@ -13,9 +13,9 @@ void main(void)
 in  vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform sampler2D tex;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-	_colorOut = texture(tex, _texCoord);
+	_colorOut = texture(texDiffuse0, _texCoord);
 }

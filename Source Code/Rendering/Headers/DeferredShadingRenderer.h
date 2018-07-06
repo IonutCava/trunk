@@ -37,6 +37,7 @@ class DeferredShadingRenderer : public Renderer {
 public:
 	DeferredShadingRenderer();
 	~DeferredShadingRenderer();
+    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock);
 	void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView();
     void updateResolution(U16 width, U16 height);
@@ -47,7 +48,6 @@ private:
 
 private:
 	U16 _cachedLightCount;
-	bool _debugView;
 	vectorImpl<Quad3D* >  _renderQuads;
 	Framebuffer*    _deferredBuffer;
 	ShaderProgram*  _deferredShader;

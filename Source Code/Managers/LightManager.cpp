@@ -17,19 +17,16 @@ LightManager::LightManager() : FrameListener(),
                                _previewShadowMaps(false),
                                _currentShadowPass(0)
 {
+    // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
-    
-    _lightShaderBuffer[SHADER_BUFFER_NORMAL]   = GFX_DEVICE.newSB();
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]   = GFX_DEVICE.newSB();
-    
-    for(U8 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
-        normShadowLocation[i] = 255;
-        cubeShadowLocation[i] = 255;
-        arrayShadowLocation[i] = 255;
-    }
-
-    _opaqueGrid = New LightGrid();
-    _transparentGrid = New LightGrid();
+    // SHADER_BUFFER_NORMAL holds general info about the currently active lights: position, color, etc.
+    _lightShaderBuffer[SHADER_BUFFER_NORMAL] = GFX_DEVICE.newSB();
+    // SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: ViewProjection Matrices, View Space Position, etc
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW] = GFX_DEVICE.newSB();
+    // We bind shadow maps to the last available texture slots that the hardware supports. Starting offsets for each texture type is stored here
+    _cubeShadowLocation  = 255;
+    _normShadowLocation  = 255;
+    _arrayShadowLocation = 255;
 }
 
 LightManager::~LightManager()
@@ -38,12 +35,12 @@ LightManager::~LightManager()
     REMOVE_TIMER(s_shadowPassTimer);
     SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_NORMAL] );
     SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_SHADOW]);
-    SAFE_DELETE(_opaqueGrid);
-    SAFE_DELETE(_transparentGrid);
 }
 
 void LightManager::init(){
-    STUBBED("Replace light map bind slots with bindless textures! Max texture units is currently hard coded! -Ionut!");
+    if(_init)
+        return;
+    STUBBED("Replace light map bind slots with bindless textures! Max texture units is currently used! -Ionut!");
 
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
 
@@ -55,16 +52,6 @@ void LightManager::init(){
     _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(Divide::SHADER_BUFFER_LIGHT_SHADOW);
 
     _cachedResolution.set(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution());
-
-    U32 maxTextureStorage = GFX_DEVICE.getMaxTextureSlots();
-    U32 maxSlotsPerLight = 3;
-    maxTextureStorage -= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * maxSlotsPerLight;
-
-    for (U8 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
-        normShadowLocation[i]  = maxTextureStorage + 0 + (i * maxSlotsPerLight);
-        cubeShadowLocation[i]  = maxTextureStorage + 1 + (i * maxSlotsPerLight);
-        arrayShadowLocation[i] = maxTextureStorage + 2 + (i * maxSlotsPerLight);
-    }
     _init = true;
 }
 
@@ -130,6 +117,22 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight){
     _cachedResolution.set(newWidth, newHeight);
 }
 
+U8 LightManager::getShadowBindSlotOffset(ShadowSlotType type) {
+    if (_cubeShadowLocation == _normShadowLocation && _normShadowLocation == _arrayShadowLocation && _arrayShadowLocation == 255) {
+        U32 maxTextureStorage = GFX_DEVICE.getMaxTextureSlots();
+        _cubeShadowLocation  = maxTextureStorage - (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 3);
+        _normShadowLocation  = maxTextureStorage - (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 2);
+        _arrayShadowLocation = maxTextureStorage - (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 1);
+    }
+    switch (type){
+        default:
+        case SHADOW_SLOT_TYPE_NORMAL: return _normShadowLocation;
+        case SHADOW_SLOT_TYPE_CUBE  : return _cubeShadowLocation;
+        case SHADOW_SLOT_TYPE_ARRAY : return _arrayShadowLocation;
+    };
+}
+
+
 ///Check light properties for every light (this is bound to the camera change listener group
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
@@ -138,38 +141,6 @@ void LightManager::onCameraChange(){
         assert(it.second != nullptr);
         it.second->onCameraChange();
     }
-}
-
-bool LightManager::buildLightGrid(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix, const vec2<F32>& zPlanes){
-    vectorImpl<LightGrid::LightInternal > omniLights;
-    omniLights.reserve(_lights.size());
-    FOR_EACH(Light::LightMap::value_type& it, _lights){
-        const Light& light = *it.second;
-        if (light.getLightType() == LIGHT_TYPE_POINT){
-            omniLights.push_back(LightGrid::make_light(light.getPosition(), light.getDiffuseColor(), light.getRange()));
-        }
-    }
-    if (!omniLights.empty()){
-        _transparentGrid->build(vec2<U16>(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y),
-                                _cachedResolution,
-                                omniLights,
-                                viewMatrix,
-                                projectionMatrix,
-                                zPlanes.x, 
-                                vectorImpl<vec2<F32> >());
-
-        {
-            vectorImpl<vec2<F32> > depthRanges;
-            GFX_DEVICE.DownSampleDepthBuffer(depthRanges);
-            // We take a copy of this, and prune the grid using depth ranges found from pre-z pass (for opaque geometry).
-            // Note that the pruning does not occur if the pre-z pass was not performed (depthRanges is empty in this case).
-            _opaqueGrid = _transparentGrid;
-            _opaqueGrid->prune(depthRanges);
-            _transparentGrid->pruneFarOnly(zPlanes.x, depthRanges);
-        }
-    }
-
-    return true;
 }
 
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
@@ -184,10 +155,10 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     //set the current render stage to SHADOW_STAGE
     RenderStage previousRS = GFX_DEVICE.setRenderStage(SHADOW_STAGE);
     //generate shadowmaps for each light
-    /*FOR_EACH(Light::LightMap::value_type& light, _lights){
+    FOR_EACH(Light::LightMap::value_type& light, _lights){
         setCurrentLight(light.second);
         light.second->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
-    }*/
+    }
 
     //Revert back to the previous stage
     GFX_DEVICE.setRenderStage(previousRS);
@@ -211,16 +182,19 @@ void LightManager::togglePreviewShadowMaps() {
 }
 
 void LightManager::previewShadowMaps(Light* light) {
-    //Stop if we have shadows disabled
-    if (!_shadowMapsEnabled || !_previewShadowMaps || !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
-        return;
+#   ifdef _DEBUG
+        //Stop if we have shadows disabled
+        if (!_shadowMapsEnabled || !_previewShadowMaps || !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
+            return;
 
-    if (!light) light = _lights.begin()->second;
+        if (!light) light = _lights.begin()->second;
 
-    if(!light->castsShadows())
-        return;
-
-    light->getShadowMapInfo()->getShadowMap()->previewShadowMaps();
+        if(!light->castsShadows())
+            return;
+        if(light->getShadowMapInfo()->getShadowMap()) {
+            light->getShadowMapInfo()->getShadowMap()->previewShadowMaps();
+        }
+#   endif
 }
 
 //If we have computed shadowmaps, bind them before rendering any geometry;
@@ -239,11 +213,11 @@ void LightManager::bindDepthMaps(){
         ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
         if(sm){
 #           if defined(_DEBUG)
-                U8 slot = getShadowBindSlot(lightLocal->getLightType(), i);
+                U8 slot = getShadowBindSlotOffset(lightLocal->getLightType()) + i;
                 assert(slot < GFX_DEVICE.getMaxTextureSlots());
                 sm->Bind(slot);
 #           else
-                sm->Bind(getShadowBindSlot(lightLocal->getLightType(), i));
+                sm->Bind(getShadowBindSlotOffset(lightLocal->getLightType()) +  i);
 #           endif
         }
     }

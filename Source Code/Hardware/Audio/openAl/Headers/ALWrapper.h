@@ -28,8 +28,10 @@
 DEFINE_SINGLETON_EXT1(AL_API,AudioAPIWrapper)
 
 public:
-	I8   initAudioApi() { return OAL_INIT_ERROR; }
-	void closeAudioApi(){}
+	ErrorCodes initAudioApi() { 
+        return OAL_INIT_ERROR; 
+    }
+	void       closeAudioApi(){}
 
 	void playSound(AudioDescriptor* sound){}
 	void playMusic(AudioDescriptor* music){}

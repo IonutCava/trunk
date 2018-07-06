@@ -11,6 +11,7 @@
 
 #include "GUI/Headers/GUIText.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Managers/Headers/LightManager.h"
 #include "Geometry/Material/Headers/Material.h"
 
 #ifndef GLFONTSTASH_IMPLEMENTATION
@@ -20,7 +21,7 @@
 #include "Text/Headers/glfontstash.h"
 #endif
 #include <glsl/glsl_optimizer.h>
-
+#include <CEGUI/CEGUI.h>
 
 GL_API::GL_API() : RenderAPIWrapper(),
                    _prevWidthNode(0),
@@ -30,7 +31,8 @@ GL_API::GL_API() : RenderAPIWrapper(),
                    _lineWidthLimit(1),
                    _pointDummyVAO(0),
                    _fonsContext(nullptr),
-                   _GLSLOptContex(nullptr)
+                   _GLSLOptContex(nullptr),
+                   _enableCEGUIRendering(false)
 {
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0;
@@ -82,6 +84,10 @@ void GL_API::beginFrame() {
 void GL_API::endFrame() {
     // Revert back to the default OpenGL states
     clearStates(false, false, false);
+    // CEGUI handles its own states, so render it after we clear our states but before we swap buffers
+    if (_enableCEGUIRendering) {
+        CEGUI::System::getSingleton().renderAllGUIContexts();
+    }
     // Swap buffers
     glfwSwapBuffers(Divide::GLUtil::_mainWindow);
     // Poll for new events
@@ -140,17 +146,21 @@ bool GL_API::initShaders() {
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_INFO " + Util::toString(Divide::SHADER_BUFFER_NODE_INFO)).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
-   
+    
     glswAddDirectiveToken("Fragment", std::string("#define VARYING in").c_str()); 
     glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(Material::TEXTURE_UNIT0)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(Material::TEXTURE_UNIT1)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_PROJECTION " + Util::toString(Material::TEXTURE_PROJECTION)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_NORMALMAP " + Util::toString(Material::TEXTURE_NORMALMAP)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(Material::TEXTURE_OPACITY)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(Material::TEXTURE_SPECULAR)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define MAX_TEXTURE_SLOTS " + Util::toString(GFX_DEVICE.getMaxTextureSlots())).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(ShaderProgram::TEXTURE_UNIT0)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(ShaderProgram::TEXTURE_UNIT1)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_NORMALMAP " + Util::toString(ShaderProgram::TEXTURE_NORMALMAP)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(ShaderProgram::TEXTURE_OPACITY)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(ShaderProgram::TEXTURE_SPECULAR)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_PROJECTION " + Util::toString(ShaderProgram::TEXTURE_PROJECTION)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define SHADOW_CUBE_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_CUBE))).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define SHADOW_NORMAL_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_NORMAL))).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define SHADOW_ARRAY_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_ARRAY))).c_str());
     glswAddDirectiveToken("Fragment", "const uint DEPTH_EXP_WARP = 32;");
-    
+
     // GLSL <-> VBO intercommunication 
     glswAddDirectiveToken("Vertex", std::string("#define VARYING out").c_str());
     glswAddDirectiveToken("Vertex", std::string("const uint MAX_BONE_COUNT_PER_NODE = " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE) + ";").c_str());

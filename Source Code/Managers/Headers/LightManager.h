@@ -25,7 +25,6 @@
 
 #include "core.h"
 #include "Rendering/Lighting/Headers/Light.h"
-#include "Rendering/Lighting/Headers/LightGrid.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
 class ShaderBuffer;
@@ -77,23 +76,14 @@ public:
     void updateAndUploadLightData(const mat4<F32>& viewMatrix);
 
     /// Get the appropriate shadow bind slot for every light's shadow
-    inline U8 getShadowBindSlot(ShadowSlotType type, U8 lightIndex) {
-        assert(lightIndex < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
-        switch (type){
-            default:
-            case SHADOW_SLOT_TYPE_NORMAL: return normShadowLocation[lightIndex];
-            case SHADOW_SLOT_TYPE_CUBE  : return cubeShadowLocation[lightIndex];
-            case SHADOW_SLOT_TYPE_ARRAY : return arrayShadowLocation[lightIndex];
-        };
-    }
-
-    /// Get the appropriate shadow bind slot for every light's shadow
-    inline U8 getShadowBindSlot(LightType lightType, U8 lightIndex) {
+    U8 getShadowBindSlotOffset(ShadowSlotType type);
+    /// Get the appropriate shadow bind slot offset for every light's shadow
+    inline U8 getShadowBindSlotOffset(LightType lightType) {
         switch (lightType){
             default:
-            case LIGHT_TYPE_SPOT        : return  getShadowBindSlot(SHADOW_SLOT_TYPE_NORMAL, lightIndex);
-            case LIGHT_TYPE_POINT       : return  getShadowBindSlot(SHADOW_SLOT_TYPE_CUBE, lightIndex);
-            case LIGHT_TYPE_DIRECTIONAL : return  getShadowBindSlot(SHADOW_SLOT_TYPE_ARRAY, lightIndex);
+            case LIGHT_TYPE_SPOT        : return  getShadowBindSlotOffset(SHADOW_SLOT_TYPE_NORMAL);
+            case LIGHT_TYPE_POINT       : return  getShadowBindSlotOffset(SHADOW_SLOT_TYPE_CUBE);
+            case LIGHT_TYPE_DIRECTIONAL : return  getShadowBindSlotOffset(SHADOW_SLOT_TYPE_ARRAY);
         };
     }
 
@@ -128,12 +118,9 @@ private:
 
     ShaderBuffer*           _lightShaderBuffer[ShaderBuffer_PLACEHOLDER];
 
-    LightGrid*              _opaqueGrid;
-    LightGrid*              _transparentGrid;
-
-    U8 normShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
-    U8 cubeShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
-    U8 arrayShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
+    U8 _normShadowLocation;
+    U8 _cubeShadowLocation;
+    U8 _arrayShadowLocation;
 
 END_SINGLETON
 

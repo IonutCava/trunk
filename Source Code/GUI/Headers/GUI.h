@@ -64,8 +64,8 @@ DEFINE_SINGLETON( GUI )
     typedef DELEGATE_CBK ButtonCallback;
 
 public:
-    /// Main display call
-    void draw(const U64 deltaTime);
+    /// Main update call
+    void update(const U64 deltaTime);
     /// Add a text label
     GUIText* addText(const std::string& id,const vec2<I32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
     /// Add a button with a specific callback. The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up from the bottom
@@ -104,7 +104,6 @@ private:
 
 private:
     bool _init;                     //< Set to true when the GUI has finished loading
-    bool _enableCEGUIRendering;     //< Toggle CEGUI rendering on/off (e.g. to check raw application rendering performance)
     GUIInput    _input;             //< Used to implement key repeat
     GUIConsole* _console;           //< Pointer to the GUIConsole object
     guiMap      _guiStack;          //< All the GUI elements created

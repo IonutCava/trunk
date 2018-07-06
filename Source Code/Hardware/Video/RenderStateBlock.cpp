@@ -8,11 +8,21 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
     setDefaultValues();
 }
 
-void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor& descriptor){
-   setBlend(descriptor._blendEnable,descriptor._blendSrc,descriptor._blendDest,descriptor._blendOp);
-   setColorWrites(descriptor._colorWrite.b.b0 > 0, descriptor._colorWrite.b.b1 > 0, descriptor._colorWrite.b.b2 > 0, descriptor._colorWrite.b.b3 > 0);
+void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor& descriptor) {
    setCullMode(descriptor._cullMode);
-   setZReadWrite(descriptor._zEnable, descriptor._zWriteEnable);
+
+   setBlend(descriptor._blendEnable,
+            descriptor._blendSrc,
+            descriptor._blendDest,
+            descriptor._blendOp);
+
+   setColorWrites(descriptor._colorWrite.b.b0 > 0,
+                  descriptor._colorWrite.b.b1 > 0,
+                  descriptor._colorWrite.b.b2 > 0,
+                  descriptor._colorWrite.b.b3 > 0);
+
+   setZReadWrite(descriptor._zEnable,
+                 descriptor._zWriteEnable);
 
    _zFunc = descriptor._zFunc;
    _zBias = descriptor._zBias;
@@ -32,22 +42,29 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
    clean();
 }
 
-void RenderStateBlockDescriptor::flipCullMode(){
-    if (_cullMode == CULL_MODE_NONE) _cullMode = CULL_MODE_ALL;
-    if (_cullMode == CULL_MODE_ALL)  _cullMode = CULL_MODE_NONE;
-    if (_cullMode == CULL_MODE_CW)   _cullMode = CULL_MODE_CCW;
-    if (_cullMode == CULL_MODE_CCW)  _cullMode = CULL_MODE_CW;
-
+void RenderStateBlockDescriptor::flipCullMode() {
+    if (_cullMode == CULL_MODE_NONE) {
+        _cullMode = CULL_MODE_ALL;
+    }
+    if (_cullMode == CULL_MODE_ALL)  {
+        _cullMode = CULL_MODE_NONE;
+    }
+    if (_cullMode == CULL_MODE_CW) {
+        _cullMode = CULL_MODE_CCW;
+    }
+    if (_cullMode == CULL_MODE_CCW) {
+        _cullMode = CULL_MODE_CW;
+    }
     clean();
 }
 
-void RenderStateBlockDescriptor::setCullMode( CullMode mode ) {
+void RenderStateBlockDescriptor::setCullMode(CullMode mode) {
    _cullMode = mode;
    _cullEnabled = _cullMode == CULL_MODE_NONE ? false : true;
    clean();
 }
 
-void RenderStateBlockDescriptor::setZEnable(const bool enable){
+void RenderStateBlockDescriptor::setZEnable(const bool enable) {
     _zEnable = enable;
 
     clean();
@@ -78,20 +95,20 @@ void RenderStateBlockDescriptor::setColorWrites( bool red, bool green, bool blue
     clean();
 }
 
-void RenderStateBlockDescriptor::setZBias(F32 zBias, F32 zUnits){
+void RenderStateBlockDescriptor::setZBias(F32 zBias, F32 zUnits) {
     _zBias = zBias;
     _zUnits = zUnits;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setZFunc(ComparisonFunction zFunc){
+void RenderStateBlockDescriptor::setZFunc(ComparisonFunction zFunc) {
     _zFunc = zFunc;
 
     clean();
 }
 
-void RenderStateBlockDescriptor::setFillMode(FillMode mode)  { 
+void RenderStateBlockDescriptor::setFillMode(FillMode mode) { 
     _fillMode = mode; 
 
     clean();
@@ -116,7 +133,7 @@ void RenderStateBlockDescriptor::setStencil(bool enable, U32 stencilRef, Stencil
     clean();
 }
 
-void RenderStateBlockDescriptor::setDefaultValues(){
+void RenderStateBlockDescriptor::setDefaultValues() {
     _lockHash = true;
     setZBias(0.0f, 1.0f);
     setZFunc();
@@ -132,8 +149,10 @@ void RenderStateBlockDescriptor::setDefaultValues(){
     clean();
 }
 
-void RenderStateBlockDescriptor::clean(){
-    if (_lockHash) return;
+void RenderStateBlockDescriptor::clean() {
+    if (_lockHash) {
+        return;
+    }
 
     _cachedHash = 0;
     boost::hash_combine(_cachedHash, _colorWrite.i);

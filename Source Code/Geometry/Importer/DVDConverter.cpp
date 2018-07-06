@@ -463,7 +463,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
             assert(tempMaterial != nullptr);
             assert(textureRes != nullptr);
             //The first texture is always "Replace"
-            tempMaterial->setTexture(count == 1 ? Material::TEXTURE_UNIT1 : Material::TEXTURE_UNIT0, 
+            tempMaterial->setTexture(count == 1 ? ShaderProgram::TEXTURE_UNIT1 : ShaderProgram::TEXTURE_UNIT0, 
                                      textureRes, 
                                      count == 0 ? Material::TextureOperation_Replace : aiTextureOperationTable[op]);
         }//endif
@@ -491,7 +491,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(Material::TEXTURE_NORMALMAP, textureRes, aiTextureOperationTable[op]);
+            tempMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP, textureRes, aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
         }//endif
     }//endif
@@ -512,7 +512,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
+            tempMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
         }//endif
     }//endif
@@ -534,7 +534,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(Material::TEXTURE_OPACITY, textureRes,aiTextureOperationTable[op]);
+            tempMaterial->setTexture(ShaderProgram::TEXTURE_OPACITY, textureRes,aiTextureOperationTable[op]);
             tempMaterial->setDoubleSided(true);
         }//endif
     }else{
@@ -543,11 +543,11 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
         // try to find out whether the diffuse texture has any
         // non-opaque pixels. If we find a few, use it as opacity texture
-        if (tempMaterial->getTexture(Material::TEXTURE_UNIT0)){
+        if (tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)){
             if(!(flags & aiTextureFlags_IgnoreAlpha) &&
-                tempMaterial->getTexture(Material::TEXTURE_UNIT0)->hasTransparency()){
-                    Texture* textureRes = CreateResource<Texture>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_UNIT0)->getName()));
-                    tempMaterial->setTexture(Material::TEXTURE_OPACITY, textureRes);
+                tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)->hasTransparency()){
+                    Texture* textureRes = CreateResource<Texture>(ResourceDescriptor(tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)->getName()));
+                    tempMaterial->setTexture(ShaderProgram::TEXTURE_OPACITY, textureRes);
             }
         }
     }
@@ -570,7 +570,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(Material::TEXTURE_SPECULAR,textureRes,aiTextureOperationTable[op]);
+            tempMaterial->setTexture(ShaderProgram::TEXTURE_SPECULAR,textureRes,aiTextureOperationTable[op]);
         }//endif
     }//endif
 

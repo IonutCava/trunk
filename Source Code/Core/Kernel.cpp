@@ -8,6 +8,7 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
@@ -16,9 +17,6 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
-#include "Rendering/Headers/ForwardRenderer.h"
-#include "Rendering/Headers/DeferredShadingRenderer.h"
-#include "Rendering/Headers/DeferredLightingRenderer.h"
 
 U64 Kernel::_previousTime = 0ULL;
 U64 Kernel::_currentTime = 0ULL;
@@ -218,14 +216,17 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     // Update the scene state based on current time (e.g. animation matrices)
     _sceneMgr.updateSceneState(_freezeLoopTime ? 0ULL : _currentTimeDelta);
 
-    //Update physics - uses own timestep implementation
+    // Update physics - uses own timestep implementation
     _PFX.update(_freezeLoopTime ? 0ULL : _currentTimeDelta);
+
+    // Update the graphical user interface
+    GUI::getInstance().update(_freezeGUITime ? 0ULL : _currentTimeDelta);
 
     return presentToScreen(evt);
 }
 
 void Kernel::renderScene() {
-    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : FINAL_STAGE;
     bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
     if (_GFX.anaglyphEnabled() && postProcessing) {
@@ -237,15 +238,12 @@ void Kernel::renderScene() {
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
     
-    _GFX.isDepthPrePass(true);
     /// Lock the render pass manager because the Z_PRE_PASS and the FINAL_STAGE pass must render the exact same geometry
     RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
         SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
-
-    _GFX.isDepthPrePass(false);
 
     _GFX.ConstructHIZ();
 
@@ -264,7 +262,7 @@ void Kernel::renderScene() {
 }
 
 void Kernel::renderSceneAnaglyph(){
-    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : FINAL_STAGE;
 
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
@@ -339,9 +337,6 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
         return false;
     }
 
-    // Draw the GUI
-    _GUI.draw(_freezeGUITime ? 0ULL : _currentTimeDelta);
-
     return true;
 }
 
@@ -374,7 +369,7 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
     _GFX.setRenderStage(stage);
     _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
 
-    if (bitCompare(FINAL_STAGE, stage) || bitCompare(DEFERRED_STAGE, stage)) {
+    if (_GFX.isCurrentRenderStage(DISPLAY_STAGE)) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         _GFX.debugDraw(sceneRenderState);
         // Show NavMeshes
@@ -383,7 +378,6 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
 }
 
 I8 Kernel::initialize(const std::string& entryPoint) {
-    I8 returnCode = 0;
     ParamHandler& par = ParamHandler::getInstance();
 
     Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), _1, _2));
@@ -405,13 +399,12 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
 
     _GFX.registerKernel(this);
-    I8 windowId = _GFX.initRenderingApi(resolution/2, _argc, _argv);
+    ErrorCodes initError = _GFX.initRenderingApi(resolution/2, _argc, _argv);
 
     //If we could not initialize the graphics device, exit
-    if(windowId < 0) return windowId;
-
-    //We start of with a forward renderer. Change it to something else on scene load ... or ... whenever
-    _GFX.setRenderer(New ForwardRenderer());
+    if(initError != NO_ERR) {
+        return initError;
+    }
 
     PRINT_FN(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
     Camera* camera = New FreeFlyCamera();
@@ -430,12 +423,14 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     LightManager::getInstance().init();
 
     PRINT_FN(Locale::get("START_SOUND_INTERFACE"));
-    if((returnCode = _SFX.initAudioApi()) != NO_ERR)
-        return returnCode;
+    if((initError = _SFX.initAudioApi()) != NO_ERR) {
+        return initError;
+    }
 
     PRINT_FN(Locale::get("START_PHYSICS_INTERFACE"));
-    if((returnCode =_PFX.initPhysicsApi(Config::TARGET_FRAME_RATE)) != NO_ERR)
-        return returnCode;
+    if((initError =_PFX.initPhysicsApi(Config::TARGET_FRAME_RATE)) != NO_ERR) {
+        return initError;
+    }
 
     //Bind the kernel with the input interface
     InputInterface::getInstance().init(this, par.getParam<std::string>("appTitle"));
@@ -463,7 +458,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     _sceneMgr.initializeAI(true);
     PRINT_FN(Locale::get("CREATE_AI_ENTITIES_END"));
 
-    return windowId;
+    return initError;
 }
 
 void Kernel::runLogicLoop(){
@@ -517,24 +512,20 @@ void Kernel::shutdown(){
 void Kernel::updateResolutionCallback(I32 w, I32 h){
     Application& APP = Application::getInstance();
     APP.setResolution(w, h);
-
-    if (!APP.mainLoopActive()){
-        return;
-    }
-
+    //Update the graphical user interface
+    vec2<U16> newResolution(w, h);
+    GUI::getInstance().onResize(newResolution);
     //minimized
     _renderingPaused = (w == 0 || h == 0);
     APP.isFullScreen(!ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
-    vec2<U16> newResolution(w, h);
-    //Update the graphical user interface
-    GUI::getInstance().onResize(newResolution);
-    // Update light manager so that all shadow maps and other render targets match our needs
-    LightManager::getInstance().updateResolution(w, h);
-    // Cache resolution for faster access
-    SceneManager::getInstance().cacheResolution(newResolution);
-    // Update internal resolution tracking (used for joysticks and mouse)
-    InputInterface::getInstance().updateResolution(w,h);
-    
+    if (APP.mainLoopActive()) {
+        // Update light manager so that all shadow maps and other render targets match our needs
+        LightManager::getInstance().updateResolution(w, h);
+        // Cache resolution for faster access
+        SceneManager::getInstance().cacheResolution(newResolution);
+        // Update internal resolution tracking (used for joysticks and mouse)
+        InputInterface::getInstance().updateResolution(w,h);
+    }
 }
 
 ///--------------------------Input Management-------------------------------------///

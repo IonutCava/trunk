@@ -26,9 +26,8 @@
 #include "Hardware/Video/Textures/Headers/Texture.h"
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Direct3D/Headers/DXWrapper.h"
-#include "Managers/Headers/RenderPassManager.h" ///<For GFX_RENDER_BIN_SIZE
+#include "Managers/Headers/RenderPassManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Rendering/Headers/Renderer.h"
 
 enum RenderStage;
 enum SceneNodeType;
@@ -38,11 +37,9 @@ class Camera;
 class PostFX;
 class Quad3D;
 class Object3D;
+class Renderer;
 class ApplicationTimer;
 class SceneRenderState;
-
-class GFXDevice;
-
 /// Rough around the edges Adapter pattern abstracting the actual rendering API and access to the GPU
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
     typedef Unordered_map<size_t, RenderStateBlock* > RenderStateMap;
@@ -105,12 +102,13 @@ public:
     inline RenderAPI getApi()        {return _api.getId(); }
     inline GPUVendor getGPUVendor()  {return _api.getGPUVendor();}
 
-    I8   initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv);
+    ErrorCodes initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv);
+    void       closeRenderingApi();
+
     void idle();
 
     inline void      registerKernel(Kernel* const kernel)           {_kernel = kernel;}
     inline void      setWindowPos(U16 w, U16 h)               const {_api.setWindowPos(w,h);}
-           void      closeRenderingApi();
            void      changeResolution(U16 w, U16 h);
     inline void      changeResolution(const vec2<U16>& resolution) {changeResolution(resolution.width, resolution.height);}
 
@@ -188,17 +186,8 @@ public:
     inline void         setPrevTextureId(const U32& id)  {_prevTextureId = id;}
     inline U32          getPrevTextureId()               {return _prevTextureId;}
 
-           void      closeRenderer();
-
-    inline Renderer* getRenderer()  {
-        DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!"); 
-        return _renderer;
-    }
-
-    inline void      setRenderer(Renderer* const renderer) {
-        DIVIDE_ASSERT(renderer != nullptr, "GFXDevice error: Tried to create an invalid renderer!"); 
-        SAFE_UPDATE(_renderer, renderer);
-    }
+    Renderer* getRenderer() const;
+    void setRenderer(Renderer* const renderer);
 
     /*
     /* Clipping plane management. All the clipping planes are handled by shader programs only!
@@ -237,9 +226,6 @@ public:
     /// High Dynamic Range rendering
     inline bool hdrEnabled()                 const {return _enableHDR;}
     inline void hdrEnabled(const bool state)       {_enableHDR = state;}
-    /// Depth pre-pass
-    inline bool isDepthPrePass()                 const { return _isDepthPrePass; }
-    inline void isDepthPrePass(const bool state)       { _isDepthPrePass = state;}
     /// 2D rendering enabled
     inline bool is2DRendering()                  const { return _2DRendering; }
     ///Save a screenshot in TGA format
@@ -300,9 +286,10 @@ public:
     inline U32  getFrameCount()       const { return FRAME_COUNT; }
     inline I32  getDrawCallCount()    const { return FRAME_DRAW_CALLS_PREV; }
     inline void registerDrawCall()          { FRAME_DRAW_CALLS++; }
-    inline U32  getMaxTextureSlots()     const { return _maxTextureSlots; }
     inline bool loadingThreadAvailable() const { return _loadingThreadAvailable && _loaderThread;  }
 
+    inline U32 getMaxTextureSlots()        const { return _maxTextureSlots; }
+    inline U32 getMaxRenderTargetOutputs() const { return _maxRenderTargetOutputs; }
 
 protected:
     /// Some functions should only be accessable from the rendering api itself
@@ -324,9 +311,9 @@ protected:
         }
     }
 
-    inline void setMaxTextureSlots(U32 textureSlots)  { _maxTextureSlots = textureSlots; }
-
-    inline void loadingThreadAvailable(bool state)    { _loadingThreadAvailable = state; }
+    inline void loadingThreadAvailable(bool state)                    { _loadingThreadAvailable = state; }
+    inline void setMaxTextureSlots(U32 textureSlots)                  { _maxTextureSlots = textureSlots; }
+    inline void setMaxRenderTargetOutputs(U32 maxRenderTargetOutputs) { _maxRenderTargetOutputs = maxRenderTargetOutputs; }
 
 protected:
     friend class Kernel;
@@ -370,10 +357,10 @@ private:
     RenderAPIWrapper& _api;
     RenderStage _renderStage;
     U32  _maxTextureSlots;
+    U32  _maxRenderTargetOutputs;
     U32  _prevShaderId,  _prevTextureId;
     I32  _stateExclusionMask;
     bool _drawDebugAxis;
-    bool _isDepthPrePass;
     bool _viewportUpdate;
     LoadQueue _loadQueue;
     boost::atomic_bool _loadingThreadAvailable;

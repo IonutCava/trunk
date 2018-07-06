@@ -3,35 +3,37 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
+#include "Rendering/Headers/ForwardPlusRenderer.h"
+#include "Rendering/Headers/DeferredShadingRenderer.h"
 
-//Max number of frames before an unused primitive is deleted (default: 180 - 3 seconds at 60 fps)
-const I32 IM_MAX_FRAMES_ZOMBIE_COUNT = 180;
-
-I8 GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
-    I8 hardwareState = _api.initRenderingApi(resolution,argc,argv);
-
-    if(hardwareState != NO_ERR)
+/// Create a display context using the selected API and create all of the needed primitives needed for frame rendering
+ErrorCodes GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
+    // Initialize the rendering API
+    ErrorCodes hardwareState = _api.initRenderingApi(resolution, argc, argv);
+    // Validate initialization
+    if (hardwareState != NO_ERR) {
         return hardwareState;
-
-    //Create an immediate mode shader
-    ShaderManager::getInstance().init(_kernel);
+    }
+    // Initialize the shader manager
+    ShaderManager::getInstance().init();
+    // Create an immediate mode shader used for general purpose rendering (e.g. to mimic the fixed function pipeline)
     _imShader = ShaderManager::getInstance().getDefaultShader();
     DIVIDE_ASSERT(_imShader != nullptr, "GFXDevice error: No immediate mode emulation shader available!");
-    _imShader->Uniform("tex",0);
-
-    //View, Projection, ViewProjection, Camera Position, Viewport, zPlanes and ClipPlanes[MAX_CLIP_PLANES]
+    // Create a shader buffer to store the following info: ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
+    // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping. (Many small updates with BufferSubData are recommended with the target usage of the buffer)
     _gfxDataBuffer = newSB(false, false);
     _gfxDataBuffer->Create(1, sizeof(GPUBlock)); 
     _gfxDataBuffer->Bind(Divide::SHADER_BUFFER_GPU_BLOCK);
-
+    // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
+    // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
     _nodeBuffer = newSB(true);
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
-
+    // Resize our window to the target resolution (usually, the splash screen resolution)
     changeResolution(resolution);
-
+    // Create general purpose render state blocks
     RenderStateBlockDescriptor defaultStateDescriptor;
     _defaultStateBlockHash = getOrCreateStateBlock(defaultStateDescriptor);
     RenderStateBlockDescriptor defaultStateDescriptorNoDepth;
@@ -45,143 +47,152 @@ I8 GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **arg
     stateDepthOnlyRendering.setColorWrites(false, false, false, false);
     stateDepthOnlyRendering.setZFunc(CMP_FUNC_ALWAYS);
     _stateDepthOnlyRenderingHash = getOrCreateStateBlock(stateDepthOnlyRendering);
+    // Block with hash 0 is null, and it's used to force a block update, bypassing state comparison with previous blocks
     _stateBlockMap[0] = nullptr;
-
+    // The general purpose render state blocks are both mandatory and must differ from each other at a state hash level
     DIVIDE_ASSERT(_stateDepthOnlyRenderingHash != _state2DRenderingHash,    "GFXDevice error: Invalid default state hash detected!");
     DIVIDE_ASSERT(_state2DRenderingHash        != _defaultStateNoDepthHash, "GFXDevice error: Invalid default state hash detected!");
     DIVIDE_ASSERT(_defaultStateNoDepthHash     != _defaultStateBlockHash,   "GFXDevice error: Invalid default state hash detected!");
-
+    // Activate the default render states
     setStateBlock(_defaultStateBlockHash);
-
-    //Screen FB should use MSAA if available, else fallback to normal color FB (no AA or FXAA)
+    // Our default render targets hold the screen buffer, depth buffer, and a special, on demand, down-sampled version of the depth buffer
+    // Screen FB should use MSAA if available
     _renderTarget[RENDER_TARGET_SCREEN]       = newFB(true);
+    // The depth buffer should probably be merged into the screen buffer
     _renderTarget[RENDER_TARGET_DEPTH]        = newFB(false);
+    // The down-sampled depth buffer is used to cull screen space lights for our Forward+ rendering algorithm. It's only updated on demand.
     _renderTarget[RENDER_TARGET_DEPTH_RANGES] = newFB(false);
-
-    TextureDescriptor depthRangesDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32);
-    SamplerDescriptor depthRangesSampler;
-    depthRangesSampler.setFilters(TEXTURE_FILTER_NEAREST);
-    depthRangesSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    depthRangesSampler.toggleMipMaps(false);
-    depthRangesDescriptor.setSampler(depthRangesSampler);
-    vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
-    vec2<U16> resTemp(resolution + tileSize);
-
+    // We need to create all of our attachments for the default render targets
+    // Start with the screen render target: Try a half float, multisampled buffer (MSAA + HDR rendering if possible)
     TextureDescriptor screenDescriptor(TEXTURE_2D_MS, RGBA16F, FLOAT_16);
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
     screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
-
-    TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
-    SamplerDescriptor depthSamplerHiZ;
-    depthSamplerHiZ.setFilters(TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST, TEXTURE_FILTER_NEAREST);
-    depthSamplerHiZ.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    depthSamplerHiZ.toggleMipMaps(true);
-    depthSamplerHiZ._useRefCompare = false; //< Use compare function
-    depthSamplerHiZ._cmpFunc = CMP_FUNC_GEQUAL; //< Use greater or equal
-    depthDescriptorHiZ.setSampler(depthSamplerHiZ);
-
-    TextureDescriptor depthDescriptor(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
+    // Next, create a depth attachment for the screen render target.
+    // Must also multisampled. Use full float precision for long view distances
     SamplerDescriptor depthSampler;
     depthSampler.setFilters(TEXTURE_FILTER_NEAREST);
     depthSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthSampler.toggleMipMaps(false);
-    depthSampler._useRefCompare = false; //< Use compare function
-    depthSampler._cmpFunc = CMP_FUNC_GEQUAL; //< Use greater or equal
+    // Use greater or equal depth compare function, but depth comparison is disabled, anyway.
+    depthSampler._cmpFunc = CMP_FUNC_GEQUAL; 
+    TextureDescriptor depthDescriptor(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
     depthDescriptor.setSampler(depthSampler);
-
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->AddAttachment(depthRangesDescriptor, TextureDescriptor::Color0);
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->toggleDepthBuffer(false);
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
-    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->Create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
-
-    _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptorHiZ, TextureDescriptor::Depth);
-    _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
-    _renderTarget[RENDER_TARGET_DEPTH]->Create(resolution.width, resolution.height);
-
+    // The depth render target uses a HierarchicalZ buffer to help with occlusion culling
+    // Must be as close as possible to the screen's depth buffer
+    SamplerDescriptor depthSamplerHiZ;
+    depthSamplerHiZ.setFilters(TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST, TEXTURE_FILTER_NEAREST);
+    depthSamplerHiZ.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthSamplerHiZ.toggleMipMaps(true);
+    TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
+    depthDescriptorHiZ.setSampler(depthSamplerHiZ);
+    /// Depth ranges are a bit more complicated and used for grid based light culling (see LightManager.cpp)
+    SamplerDescriptor depthRangesSampler;
+    depthRangesSampler.setFilters(TEXTURE_FILTER_NEAREST);
+    depthRangesSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthRangesSampler.toggleMipMaps(false);
+    TextureDescriptor depthRangesDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32);
+    depthRangesDescriptor.setSampler(depthRangesSampler);
+    /// Add the attachments to the render targets
     _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
     _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(depthDescriptor,  TextureDescriptor::Depth);
     _renderTarget[RENDER_TARGET_SCREEN]->Create(resolution.width, resolution.height);
-
+    _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptorHiZ, TextureDescriptor::Depth);
+    _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
+    _renderTarget[RENDER_TARGET_DEPTH]->Create(resolution.width, resolution.height);
+    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->AddAttachment(depthRangesDescriptor, TextureDescriptor::Color0);
+    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->toggleDepthBuffer(false);
+    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
+    vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
+    vec2<U16> resTemp(resolution + tileSize);
+    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->Create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
+    /// If we enabled anaglyph rendering, we need a second target, identical to the screen target used to render the scene at an offset
     if(_enableAnaglyph){
         _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(true);
         _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
         _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(depthDescriptor,  TextureDescriptor::Depth);
         _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width, resolution.height);
     }
-
+    /// If render targets ready, we initialize our post processing system    
     _postFX.init(resolution);
-    add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
+    /// We also add a couple of useful cameras used by this class. One for rendering in 2D and one for generating cube maps
     _kernel->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
     _kernel->getCameraMgr().addNewCamera("_gfxCubeCamera", _cubeCamera);
+    /// Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZConstructProgram->UniformTexture("LastMip", 0);
-
+    /// Initialize our depth ranges construction shader (see LightManager.cpp for more documentation)
     ResourceDescriptor rangesDesc("DepthRangesConstruct");
     rangesDesc.setPropertyList("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," + "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
     _depthRangesConstructProgram->UniformTexture("depthTex", 0);
-
+    /// Store our target z distances
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
-    
+    /// Create a separate loading thread that shares resources with the main rendering context
     _loaderThread = New boost::thread(&GFXDevice::createLoaderThread, this);
-
+    /// Register a 2D function used for previewing the depth buffer.
+#   ifdef _DEBUG
+        add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
+#   endif
+    // We start of with a forward plus renderer
+    setRenderer(New ForwardPlusRenderer());
+    /// Everything is ready from the rendering point of view
     return NO_ERR;
 }
 
+/// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingApi() {
-    closeRenderer();
-
-    _shaderManager.destroyInstance();
+    // Delete the 2 internal shaders
+    RemoveResource(_HIZConstructProgram);
+    RemoveResource(_depthRangesConstructProgram);
+    // Destroy our post processing system
+    PRINT_FN(Locale::get("STOP_POST_FX"));
+    PostFX::destroyInstance();
+    // Close the shader manager
+    _shaderManager.destroy();
+    // Destroy the shader manager
+    ShaderManager::destroyInstance();
+    // Delete the renderer implementation
+    PRINT_FN(Locale::get("CLOSING_RENDERER"));
+    SAFE_DELETE(_renderer);
+    // Close the rendering API
     _api.closeRenderingApi();
+    // Wait for the loading thread to terminate
     _loaderThread->join();
+    // And delete it
     SAFE_DELETE(_loaderThread);
-
+    // Delete our default render state blocks
     FOR_EACH(RenderStateMap::value_type& it, _stateBlockMap) {
         SAFE_DELETE(it.second);
     }
-
     _stateBlockMap.clear();
-
+    // Destroy all of the immediate mode emulation primitives created during runtime
     for (IMPrimitive*& priv : _imInterfaces) {
         SAFE_DELETE(priv);
     }
-
-    _imInterfaces.clear(); //<Should call all destructors
-
-    //Destroy all rendering Passes
+    _imInterfaces.clear();
+    // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
-
+    // Delete all of our rendering targets
     for (Framebuffer*& renderTarget : _renderTarget) {
         SAFE_DELETE(renderTarget);
     }
-
+    // Delete our shader buffers
     SAFE_DELETE(_gfxDataBuffer);
     SAFE_DELETE(_nodeBuffer);
 }
 
-void GFXDevice::closeRenderer(){
-    RemoveResource(_HIZConstructProgram);
-    RemoveResource(_depthRangesConstructProgram);
-    PRINT_FN(Locale::get("STOP_POST_FX"));
-    PostFX::destroyInstance();
-    _shaderManager.destroy();
-    PRINT_FN(Locale::get("CLOSING_RENDERER"));
-    SAFE_DELETE(_renderer);
-}
-
+/// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing
 void GFXDevice::idle() {
-    if (!_renderer) {
-        return;
-    }
-
+    // Update the zPlanes if needed
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
-
+    // Pass the idle call to the post processing system
     _postFX.idle();
+    // And to the shader manager
     _shaderManager.idle();
 }
 
@@ -191,6 +202,8 @@ void GFXDevice::beginFrame() {
 }
 
 void GFXDevice::endFrame() { 
+    // Max number of frames before an unused primitive is deleted (default: 180 - 3 seconds at 60 fps)
+    static const I32 IM_MAX_FRAMES_ZOMBIE_COUNT = 180;
 
     if (Application::getInstance().mainLoopActive()) {
         // Render all 2D debug info and call API specific flush function
@@ -220,4 +233,14 @@ void GFXDevice::endFrame() {
     }
 
     _api.endFrame();  
+}
+
+Renderer* GFXDevice::getRenderer() const {
+    DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!"); 
+    return _renderer;
+}
+
+void GFXDevice::setRenderer(Renderer* const renderer) {
+    DIVIDE_ASSERT(renderer != nullptr, "GFXDevice error: Tried to create an invalid renderer!"); 
+    SAFE_UPDATE(_renderer, renderer);
 }
