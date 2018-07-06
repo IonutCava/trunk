@@ -43,13 +43,6 @@ enum ResourceState{
 
 class Resource : public TrackedObject {
 public:
-    Resource() : TrackedObject(),  _name("default"),
-                                   _threadedLoading(true),
-                                   _threadedLoadComplete(false),
-                                   _resourceState(RES_CREATED)
-    {
-    }
-
     Resource(const std::string& name) : TrackedObject(),
                                        _name(name),
                                        _threadedLoading(true),

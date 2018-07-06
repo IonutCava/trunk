@@ -9,25 +9,11 @@
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
 
-SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
-                                           _material(nullptr),
-                                           _customShader(nullptr),
-                                           _refreshMaterialData(true),
-                                           _type(type),
-                                           _lodLevel(0),
-                                           _LODcount(1), ///<Defaults to 1 LOD level
-                                           _sgnReferenceCount(0),
-                                           _physicsAsset(nullptr)
+SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 {
-    U32 i = 0, j = 0;
-    for(; i <  Material::TEXTURE_UNIT0; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
-
-    for(i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
 }
 
-SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resource(name),
+SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resource(name),
                                                              _material(nullptr),
                                                              _customShader(nullptr),
                                                              _refreshMaterialData(true),

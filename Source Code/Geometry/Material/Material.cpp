@@ -5,7 +5,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-Material::Material() : Resource(),
+Material::Material() : Resource("temp_material"),
                        _dirty(false),
                        _doubleSided(false),
                        _shaderThreadedLoad(true),

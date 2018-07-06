@@ -142,7 +142,7 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
     assert(sgn != nullptr);
-    RenderBin* rb = getBinForNode(sgn->getSceneNode());
+    RenderBin* rb = getBinForNode(sgn->getNode());
     if(rb) rb->addNodeToBin(sgn);
     _isSorted = false;
 }

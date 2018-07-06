@@ -52,7 +52,7 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn){
         i++;
     }
     //get out material's name
-    Material* mat = parent->getSceneNode()->getMaterial();
+    Material* mat = parent->getNode()->getMaterial();
 
     //Some strings to hold the names of our material and shader
     std::string material("none"), shader("none"), depthShader("none");
@@ -76,7 +76,7 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn){
     }
     //Print our current node's information
     PRINT_FN(Locale::get("PRINT_SCENEGRAPH_NODE"), parent->getName().c_str(),
-        parent->getSceneNode()->getName().c_str(),
+        parent->getNode()->getName().c_str(),
         material.c_str(),
         shader.c_str(),
         depthShader.c_str());

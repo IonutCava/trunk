@@ -44,7 +44,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
     bool skipChildren = false;
     //Skip all of this for inactive nodes.
     if(currentNode->isActive() && currentNode->getParent()) {
-        SceneNode* node = currentNode->getSceneNode();
+        SceneNode* node = currentNode->getNode();
 
         //If this node isn't render-disabled, check if it is visible
         //Skip expensive frustum culling if we shouldn't draw the node in the first place

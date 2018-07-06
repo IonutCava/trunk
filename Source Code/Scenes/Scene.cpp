@@ -25,7 +25,7 @@
 
 #include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
 
-Scene::Scene() :  Resource(),
+Scene::Scene() :  Resource("temp_scene"),
                  _GFX(GFX_DEVICE),
                  _FBSpeedFactor(1.0f),
                  _LRSpeedFactor(5.0f),

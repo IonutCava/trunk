@@ -11,7 +11,7 @@
 bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     sgn->getBoundingBox().reset();
     FOR_EACH(SceneGraphNode::NodeChildren::value_type& s, sgn->getChildren()){
-        sgn->addBoundingBox(s.second->getBoundingBoxTransformed(), s.second->getSceneNode()->getType());
+        sgn->addBoundingBox(s.second->getBoundingBoxTransformed(), s.second->getNode()->getType());
     }
     sgn->getBoundingBox().setComputed(true);
     return true;

@@ -28,7 +28,7 @@
 
 class TerrainDescriptor : public Resource {
 public:
-    TerrainDescriptor() :  Resource(),
+    TerrainDescriptor() :  Resource("temp_terrain_descriptor"),
                            _active(false),
                            _addToPhysics(false),
                            _normalMapScale(0.0f),

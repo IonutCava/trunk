@@ -207,13 +207,13 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     SceneGraphNode* cylinderSE = _sceneGraph->findNode("cylinderSE");
 
     SceneGraphNode::NodeChildren& children = cylinderNW->getChildren();
-    (*children.begin()).second->getSceneNode()->getMaterial()->setDoubleSided(true);
+    (*children.begin()).second->getNode()->getMaterial()->setDoubleSided(true);
 
     assert(cylinderNW && cylinderNE && cylinderSW && cylinderSE);
-    SceneNode* cylinderMeshNW = cylinderNW->getSceneNode();
-    SceneNode* cylinderMeshNE = cylinderNE->getSceneNode();
-    SceneNode* cylinderMeshSW = cylinderSW->getSceneNode();
-    SceneNode* cylinderMeshSE = cylinderSE->getSceneNode();
+    SceneNode* cylinderMeshNW = cylinderNW->getNode();
+    SceneNode* cylinderMeshNE = cylinderNE->getNode();
+    SceneNode* cylinderMeshSW = cylinderSW->getNode();
+    SceneNode* cylinderMeshSE = cylinderSE->getNode();
 
     std::string currentName;
     SceneNode* currentMesh = nullptr;
@@ -310,9 +310,9 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SceneGraphNode* soldierNode1 = _sceneGraph->findNode("Soldier1");
     SceneGraphNode* soldierNode2 = _sceneGraph->findNode("Soldier2");
     SceneGraphNode* soldierNode3 = _sceneGraph->findNode("Soldier3");
-    SceneNode* soldierMesh1 = soldierNode1->getSceneNode();
-    SceneNode* soldierMesh2 = soldierNode2->getSceneNode();
-    SceneNode* soldierMesh3 = soldierNode3->getSceneNode();
+    SceneNode* soldierMesh1 = soldierNode1->getNode();
+    SceneNode* soldierMesh2 = soldierNode2->getNode();
+    SceneNode* soldierMesh3 = soldierNode3->getNode();
     assert(soldierMesh1 && soldierMesh2 && soldierMesh3);
 
     vec3<F32> currentScale;

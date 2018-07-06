@@ -185,7 +185,7 @@ namespace Navigation {
     bool NavigationMesh::generateMesh(){
         assert(_sgn != nullptr);
 
-        std::string nodeName((_sgn->getSceneNode()->getType() != TYPE_ROOT) ? "_node_[_" + _sgn->getName() + "_]" : "_root_node");
+        std::string nodeName((_sgn->getNode()->getType() != TYPE_ROOT) ? "_node_[_" + _sgn->getName() + "_]" : "_root_node");
         // Parse objects from level into RC-compatible format
         _fileName.append(nodeName);
         _fileName.append(".nm");

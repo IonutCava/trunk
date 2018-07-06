@@ -4,7 +4,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-Texture::Texture(const bool flipped) : HardwareResource(),
+Texture::Texture(const bool flipped) : HardwareResource("temp_texture"),
                                        _flipped(flipped),
                                        _handle(0),
                                        _hasTransparency(false)

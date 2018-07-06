@@ -28,8 +28,8 @@
 
 class AudioDescriptor : public Resource{
 public:
-	AudioDescriptor(const std::string& audioFile) :
-						 Resource(), _audioFile(audioFile),
+	AudioDescriptor(const std::string& audioFile) : Resource(audioFile), 
+                         _audioFile(audioFile),
 						 _is3D(false), _volume(100),
 						 _frequency(44.2f), _bitDepth(16),
 						 _channelId(-1), _isLooping(false)

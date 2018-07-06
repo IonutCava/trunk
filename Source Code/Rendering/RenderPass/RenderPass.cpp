@@ -39,7 +39,7 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
             renderQueue.getBinSorted(i)->postRender();
         }
         SceneGraphNode* root = activeSceneGraph->getRoot();
-        root->getSceneNode()->preFrameDrawEnd(root);
+        root->getNode()->preFrameDrawEnd(root);
     }
 
     renderQueue.refresh();

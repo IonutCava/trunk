@@ -12,7 +12,7 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
                                                                          _stateHash(0)//< Defaulting to a null state hash
 {
     RenderStateBlock* currentStateBlock = nullptr;
-    Material* mat = _node->getSceneNode()->getMaterial();
+    Material* mat = _node->getNode()->getMaterial();
     // If we do not have a material, no need to continue
     if(!mat) return;
 
@@ -133,7 +133,7 @@ void RenderBin::refresh(){
 }
 
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn){
-    SceneNode* sn = sgn->getSceneNode();
+    SceneNode* sn = sgn->getNode();
     P32 key;
     key.i = (U32)_renderBinStack.size() + 1;
     Material* nodeMaterial = sn->getMaterial();
@@ -160,7 +160,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
         sgn = getItem(j)._node;
         assert(sgn);
         //And get it's attached SceneNode and validate it
-        sn = sgn->getSceneNode();
+        sn = sgn->getNode();
 
         //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
         sgn->onDraw(currentRenderStage);
@@ -219,6 +219,6 @@ void RenderBin::postRender(){
     for(U16 j = 0; j < getBinSize(); j++){
         sgn = getItem(j)._node;
         //Perform any last updates before the preFrameDrawEnd
-        sgn->getSceneNode()->preFrameDrawEnd(sgn);
+        sgn->getNode()->preFrameDrawEnd(sgn);
     }
 }

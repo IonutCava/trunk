@@ -28,11 +28,6 @@
 ///singlethreaded hardware initialization (textures, shaders, etc)
 class HardwareResource : public Resource {
 public:
-	HardwareResource() : Resource(),
-						 _hardwareInitComplete(false)
-	{
-	}
-
 	HardwareResource(const std::string& name) : Resource(name),
 												_hardwareInitComplete(false)
 	{

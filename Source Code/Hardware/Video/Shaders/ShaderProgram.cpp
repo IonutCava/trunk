@@ -7,7 +7,7 @@
 #include "Core/Headers/Application.h"
 #include "Geometry/Material/Headers/Material.h"
 
-ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
+ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
                                                     _optimise(optimise),
                                                     _useTessellation(false),
                                                     _useGeometry(false),

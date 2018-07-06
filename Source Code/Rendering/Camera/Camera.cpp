@@ -5,7 +5,7 @@
 #include "Managers/Headers/SceneManager.h"
 
 Camera::Camera(const CameraType& type, const vec3<F32>& eye) :
-                                         Resource(),
+                                         Resource("temp_camera"),
                                          _saved(false),
                                          _viewMatrixDirty(true),
                                          _mouseSensitivity(1.0f),
