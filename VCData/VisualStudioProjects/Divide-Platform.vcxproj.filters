@@ -868,9 +868,6 @@
     <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\particles.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
@@ -993,6 +990,9 @@
     </None>
     <None Include="..\..\Source Code\Platform\Headers\DisplayWindow.inl">
       <Filter>Headers</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\material.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
   </ItemGroup>
 </Project>

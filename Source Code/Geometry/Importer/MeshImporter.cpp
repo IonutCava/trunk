@@ -95,11 +95,11 @@ namespace Import {
         dataOut << _ignoreAlpha;
         dataOut << _doubleSided;
         dataOut << _name;
-        dataOut << _shadingData._diffuse;
-        dataOut << _shadingData._specular;
-        dataOut << _shadingData._emissive;
-        dataOut << _shadingData._shininess;
-        dataOut << _shadingData._textureCount;
+        dataOut << _colourData._diffuse;
+        dataOut << _colourData._specular;
+        dataOut << _colourData._emissive;
+        dataOut << _colourData._shininess;
+        dataOut << _colourData._textureCount;
         dataOut << to_uint(_shadingMode);
         dataOut << to_uint(_bumpMethod);
         for (const TextureEntry& texture : _textures) {
@@ -117,11 +117,11 @@ namespace Import {
         dataIn >> _ignoreAlpha;
         dataIn >> _doubleSided;
         dataIn >> _name;
-        dataIn >> _shadingData._diffuse;
-        dataIn >> _shadingData._specular;
-        dataIn >> _shadingData._emissive;
-        dataIn >> _shadingData._shininess;
-        dataIn >> _shadingData._textureCount;
+        dataIn >> _colourData._diffuse;
+        dataIn >> _colourData._specular;
+        dataIn >> _colourData._emissive;
+        dataIn >> _colourData._shininess;
+        dataIn >> _colourData._textureCount;
         dataIn >> temp;
         _shadingMode = static_cast<Material::ShadingMode>(temp);
         dataIn >> temp;
@@ -315,13 +315,12 @@ namespace Import {
         // If we found it in the Resource Cache, return a copy of it
         ResourceDescriptor materialDesc(importData._name);
         if (skinned) {
-            materialDesc.setEnumValue(
-                to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+            materialDesc.setEnumValue(to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
 
         tempMaterial = CreateResource<Material>(materialDesc);
 
-        tempMaterial->setShaderData(importData._shadingData);
+        tempMaterial->setColourData(importData._colourData);
         tempMaterial->setShadingMode(importData._shadingMode);
         tempMaterial->setBumpMethod(importData._bumpMethod);
         tempMaterial->setDoubleSided(importData._doubleSided);

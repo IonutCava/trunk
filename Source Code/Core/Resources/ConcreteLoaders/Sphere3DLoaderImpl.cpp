@@ -18,10 +18,10 @@ namespace Divide {
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
-        Material_ptr matTemp =
-            CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
 
-        matTemp->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+        ResourceDescriptor matDesc("Material_" + _descriptor.getName());
+        matDesc.setEnumValue(to_uint(Material::ShadingMode::BLINN_PHONG));
+        Material_ptr matTemp = CreateResource<Material>(matDesc);
         ptr->setMaterialTpl(matTemp);
     }
 

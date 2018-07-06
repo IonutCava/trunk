@@ -149,7 +149,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
         }
     }
 
-    cloneMat->_shaderData = base._shaderData;
+    cloneMat->_colourData = base._colourData;
 
     return cloneMat;
 }
@@ -383,16 +383,16 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
     info._shaderDefines.clear();
 
     if (_textures[slot0]) {
-        _shaderData._textureCount = 1;
+        _colourData._textureCount = 1;
     }
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
             std::swap(_textures[slot0], _textures[slot1]);
-            _shaderData._textureCount = 1;
+            _colourData._textureCount = 1;
             _translucencyCheck = true;
         } else {
-            _shaderData._textureCount = 2;
+            _colourData._textureCount = 2;
         }
     }
 
@@ -404,7 +404,7 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
     // the base shader is either for a Deferred Renderer or a Forward  one ...
     stringImpl shader =
         (deferredPassShader ? "DeferredShadingPass1"
-                            : (depthPassShader ? "depthPass" : "lighting"));
+                            : (depthPassShader ? "depthPass" : "material"));
 
     if (Config::Profile::DISABLE_SHADING) {
         shader = "passThrough";
@@ -660,9 +660,9 @@ bool Material::isTranslucent() {
         bool useAlphaTest = false;
         // In order of importance (less to more)!
         // diffuse channel alpha
-        if (_shaderData._diffuse.a < 0.95f) {
+        if (_colourData._diffuse.a < 0.95f) {
             _translucencySource.push_back(TranslucencySource::DIFFUSE);
-            useAlphaTest = (_shaderData._diffuse.a < 0.15f);
+            useAlphaTest = (_colourData._diffuse.a < 0.15f);
         }
 
         // base texture is translucent
@@ -705,9 +705,9 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
 }
 
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
-    retMatrix.setRow(0, _shaderData._diffuse);
-    retMatrix.setRow(1, _shaderData._specular);
-    retMatrix.setRow(2, vec4<F32>(_shaderData._emissive.rgb(), _shaderData._shininess));
+    retMatrix.setRow(0, _colourData._diffuse);
+    retMatrix.setRow(1, _colourData._specular);
+    retMatrix.setRow(2, vec4<F32>(_colourData._emissive.rgb(), _colourData._shininess));
     retMatrix.setRow(3, vec4<F32>(isTranslucent() ? 1.0f : 0.0f,  to_float(getTextureOperation()), to_float(getTextureCount()), getParallaxFactor()));
 }
 

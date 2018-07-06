@@ -88,6 +88,7 @@ class Material : public Resource, public FrameListener {
         PHONG = 0x2,
         BLINN_PHONG = 0x3,
         TOON = 0x4,
+        // Use PBR for the following
         OREN_NAYAR = 0x5,
         COOK_TORRANCE = 0x6,
         COUNT
@@ -95,14 +96,14 @@ class Material : public Resource, public FrameListener {
 
     /// ShaderData stores information needed by the shader code to properly
     /// shade objects
-    struct ShaderData {
+    struct ColourData {
         vec4<F32> _diffuse;  /* diffuse component */
         vec4<F32> _specular; /* specular component*/
         vec4<F32> _emissive; /* emissive component*/
         F32 _shininess;      /* specular exponent */
         U8  _textureCount;
 
-        ShaderData()
+        ColourData()
             : _diffuse(vec4<F32>(VECTOR3_UNIT / 1.5f, 1)),
               _specular(0.8f, 0.8f, 0.8f, 1.0f),
               _emissive(0.0f, 0.0f, 0.0f, 1.0f),
@@ -111,7 +112,7 @@ class Material : public Resource, public FrameListener {
         {
         }
 
-        ShaderData(const ShaderData& other)
+        ColourData(const ColourData& other)
             : _diffuse(other._diffuse),
               _specular(other._specular),
               _emissive(other._emissive),
@@ -120,7 +121,7 @@ class Material : public Resource, public FrameListener {
         {
         }
 
-        ShaderData& operator=(const ShaderData& other) {
+        ColourData& operator=(const ColourData& other) {
             _diffuse.set(other._diffuse);
             _specular.set(other._specular);
             _emissive.set(other._emissive);
@@ -208,15 +209,15 @@ class Material : public Resource, public FrameListener {
     bool unload();
     void update(const U64 deltaTime);
 
-    inline void setShaderData(const ShaderData& other) {
+    inline void setColourData(const ColourData& other) {
         _dirty = true;
-        _shaderData = other;
+        _colourData = other;
         _translucencyCheck = true;
     }
 
     inline void setDiffuse(const vec4<F32>& value) {
         _dirty = true;
-        _shaderData._diffuse = value;
+        _colourData._diffuse = value;
         if (value.a < 0.95f) {
             _translucencyCheck = true;
         }
@@ -224,12 +225,12 @@ class Material : public Resource, public FrameListener {
 
     inline void setSpecular(const vec4<F32>& value) {
         _dirty = true;
-        _shaderData._specular = value;
+        _colourData._specular = value;
     }
 
     inline void setEmissive(const vec3<F32>& value) {
         _dirty = true;
-        _shaderData._emissive = value;
+        _colourData._emissive = value;
     }
 
     inline void setHardwareSkinning(const bool state) {
@@ -239,13 +240,13 @@ class Material : public Resource, public FrameListener {
 
     inline void setOpacity(F32 value) {
         _dirty = true;
-        _shaderData._diffuse.a = value;
+        _colourData._diffuse.a = value;
         _translucencyCheck = true;
     }
 
     inline void setShininess(F32 value) {
         _dirty = true;
-        _shaderData._shininess = value;
+        _colourData._shininess = value;
     }
 
     void setShadingMode(const ShadingMode& mode);
@@ -275,11 +276,9 @@ class Material : public Resource, public FrameListener {
         _shaderModifier[to_uint(renderStage)] = shaderModifier;
     }
     inline void addShaderModifier(const stringImpl& shaderModifier) {
-        addShaderModifier(RenderStage::DISPLAY, shaderModifier);
-        addShaderModifier(RenderStage::Z_PRE_PASS, shaderModifier);
-        addShaderModifier(RenderStage::SHADOW, shaderModifier);
-        addShaderModifier(RenderStage::REFLECTION, shaderModifier);
-        addShaderModifier(RenderStage::REFRACTION, shaderModifier);
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            addShaderModifier(static_cast<RenderStage>(i), shaderModifier);
+        }
     }
 
     /// Shader defines, separated by commas, are added to the generated shader
@@ -298,11 +297,9 @@ class Material : public Resource, public FrameListener {
     }
 
     inline void setShaderDefines(const stringImpl& shaderDefines) {
-        setShaderDefines(RenderStage::DISPLAY, shaderDefines);
-        setShaderDefines(RenderStage::Z_PRE_PASS, shaderDefines);
-        setShaderDefines(RenderStage::SHADOW, shaderDefines);
-        setShaderDefines(RenderStage::REFLECTION, shaderDefines);
-        setShaderDefines(RenderStage::REFRACTION, shaderDefines);
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            setShaderDefines(static_cast<RenderStage>(i), shaderDefines);
+        }
     }
 
     /// toggle multi-threaded shader loading on or off for this material
@@ -346,7 +343,7 @@ class Material : public Resource, public FrameListener {
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
     inline F32 getParallaxFactor() const { return _parallaxFactor; }
-    inline U8  getTextureCount()   const { return _shaderData._textureCount; }
+    inline U8  getTextureCount()   const { return _colourData._textureCount; }
 
     size_t getRenderStateBlock(RenderStage currentStage, I32 variant = 0);
     inline std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const {
@@ -356,7 +353,7 @@ class Material : public Resource, public FrameListener {
 
     inline const TextureOperation& getTextureOperation() const { return _operation; }
 
-    inline const ShaderData&  getShaderData()  const { return _shaderData; }
+    inline const ColourData&  getColourData()  const { return _colourData; }
     inline const ShadingMode& getShadingMode() const { return _shadingMode; }
     inline const BumpMethod&  getBumpMethod()  const { return _bumpMethod; }
 
@@ -433,15 +430,12 @@ class Material : public Resource, public FrameListener {
 
     /// use the below map to define texture operation
     TextureOperation _operation;
-
     BumpMethod _bumpMethod;
-
-    ShaderData _shaderData;
+    ColourData _colourData;
 
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
     I32 _reflectionIndex;
     I32 _refractionIndex;
-
     std::pair<Texture_ptr, U32> _defaultReflection;
     std::pair<Texture_ptr, U32> _defaultRefraction;
 

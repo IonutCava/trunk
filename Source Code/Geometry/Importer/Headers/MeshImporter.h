@@ -73,9 +73,9 @@ namespace Divide {
             bool _ignoreAlpha;
             bool _doubleSided;
             stringImpl _name;
-            Material::ShaderData _shadingData;
-            Material::ShadingMode _shadingMode;
-            Material::BumpMethod _bumpMethod;
+            Material::ColourData   _colourData;
+            Material::ShadingMode  _shadingMode;
+            Material::BumpMethod   _bumpMethod;
             std::array<TextureEntry, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textures;
         };
 

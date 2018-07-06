@@ -981,29 +981,29 @@ void dumpMaterial(Material &mat) {
     pt_writer.clear();
     pt_writer.put("material.name", file);
     pt_writer.put("material.diffuse.<xmlattr>.r",
-                  mat.getShaderData()._diffuse.r);
+                  mat.getColourData()._diffuse.r);
     pt_writer.put("material.diffuse.<xmlattr>.g",
-                  mat.getShaderData()._diffuse.g);
+                  mat.getColourData()._diffuse.g);
     pt_writer.put("material.diffuse.<xmlattr>.b",
-                  mat.getShaderData()._diffuse.b);
+                  mat.getColourData()._diffuse.b);
     pt_writer.put("material.diffuse.<xmlattr>.a",
-                  mat.getShaderData()._diffuse.a);
+                  mat.getColourData()._diffuse.a);
     pt_writer.put("material.specular.<xmlattr>.r",
-                  mat.getShaderData()._specular.r);
+                  mat.getColourData()._specular.r);
     pt_writer.put("material.specular.<xmlattr>.g",
-                  mat.getShaderData()._specular.g);
+                  mat.getColourData()._specular.g);
     pt_writer.put("material.specular.<xmlattr>.b",
-                  mat.getShaderData()._specular.b);
+                  mat.getColourData()._specular.b);
     pt_writer.put("material.specular.<xmlattr>.a",
-                  mat.getShaderData()._specular.a);
+                  mat.getColourData()._specular.a);
     pt_writer.put("material.shininess.<xmlattr>.v",
-                  mat.getShaderData()._shininess);
+                  mat.getColourData()._shininess);
     pt_writer.put("material.emissive.<xmlattr>.r",
-                  mat.getShaderData()._emissive.y);
+                  mat.getColourData()._emissive.y);
     pt_writer.put("material.emissive.<xmlattr>.g",
-                  mat.getShaderData()._emissive.z);
+                  mat.getColourData()._emissive.z);
     pt_writer.put("material.emissive.<xmlattr>.b",
-                  mat.getShaderData()._emissive.w);
+                  mat.getColourData()._emissive.w);
     pt_writer.put("material.doubleSided", mat.isDoubleSided());
 
     std::weak_ptr<Texture> texture;

@@ -323,7 +323,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                        bool skinned) {
 
     material._name = materialName;
-    Material::ShaderData& data = material._shadingData;
+    Material::ColourData& data = material._colourData;
     // default diffuse colour
     data._diffuse.set(0.8f, 0.8f, 0.8f, 1.0f);
     // Load diffuse colour

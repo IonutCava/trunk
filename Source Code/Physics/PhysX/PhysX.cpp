@@ -9,10 +9,6 @@
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
-#include <Samples/PxToolkit/include/PxToolkit.h>
-#include <Samples/PxToolkit/include/PxTkNamespaceMangle.h>
-#include <Source/foundation/include/PsFile.h>
-
 #include <cstddef>
 
 namespace Divide {

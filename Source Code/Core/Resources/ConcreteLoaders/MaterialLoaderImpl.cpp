@@ -16,10 +16,9 @@ Resource_ptr ImplResourceLoader<Material>::operator()() {
         if (_descriptor.getFlag()) {
             ptr->setShaderProgram("", true);
         }
-        if (_descriptor.getEnumValue() ==
-            to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-            ptr->setHardwareSkinning(true);
-        }
+
+        ptr->setHardwareSkinning(_descriptor.getEnumValue() == 
+                                    to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
     }
 
     return ptr;
