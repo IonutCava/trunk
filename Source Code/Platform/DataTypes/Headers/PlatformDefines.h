@@ -302,16 +302,9 @@ inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
     return expression;
 }
 
-typedef struct packed_int {
-    U8 b0;
-    U8 b1;
-    U8 b2;
-    U8 b3;
-} packed_int;
-
 typedef union {
     U32 i;
-    packed_int b;
+    U8  b[4];
 } P32;
 
 template <typename... Args>

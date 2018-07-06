@@ -51,10 +51,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
                      "EVCSM");
     SamplerDescriptor depthMapSampler;
-    depthMapSampler.setFilters(
-        TextureFilter::LINEAR_MIPMAP_LINEAR);
+    depthMapSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
     depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthMapSampler.toggleMipMaps(true);
     depthMapSampler.setAnisotropy(8);
     TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                          GFXImageFormat::RG32F,
@@ -71,7 +69,6 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     SamplerDescriptor blurMapSampler;
     blurMapSampler.setFilters(TextureFilter::LINEAR);
     blurMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    blurMapSampler.toggleMipMaps(false);
     depthMapSampler.setAnisotropy(0);
     TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                         GFXImageFormat::RG32F,

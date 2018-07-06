@@ -598,10 +598,10 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     // Check and set color mask
     if (!oldDescriptor || oldDescriptor->_colorWrite.i != newDescriptor._colorWrite.i) {
         glColorMask(
-            newDescriptor._colorWrite.b.b0 == 1 ? GL_TRUE : GL_FALSE,   // R
-            newDescriptor._colorWrite.b.b1 == 1 ? GL_TRUE : GL_FALSE,   // G
-            newDescriptor._colorWrite.b.b2 == 1 ? GL_TRUE : GL_FALSE,   // B
-            newDescriptor._colorWrite.b.b3 == 1 ? GL_TRUE : GL_FALSE);  // A
+            newDescriptor._colorWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
+            newDescriptor._colorWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
+            newDescriptor._colorWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
+            newDescriptor._colorWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
     }
 }
 };

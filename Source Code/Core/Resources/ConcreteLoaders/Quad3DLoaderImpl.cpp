@@ -5,7 +5,7 @@
 namespace Divide {
 
 Quad3D* ImplResourceLoader<Quad3D>::operator()() {
-    Quad3D* ptr = MemoryManager_NEW Quad3D(_descriptor.getMask().b.b0 == 0);
+    Quad3D* ptr = MemoryManager_NEW Quad3D(_descriptor.getMask().b[0] == 0);
 
     if (!load(ptr, _descriptor.getName())) {
         MemoryManager::DELETE(ptr);

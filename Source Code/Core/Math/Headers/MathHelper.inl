@@ -71,31 +71,32 @@ inline bool bitCompare<U32>(U32 bitMask, U32 bit) {
     return ((bitMask & bit) == bit);
 }
 
+///(thx sqrt[-1] and canuckle of opengl.org forums)
+
 // Helper method to emulate GLSL
-inline F32 fract(F32 floatValue) {
+inline F32 FRACT(F32 floatValue) {
     return static_cast<F32>(fmod(floatValue, 1.0f));
 }
 
-/// Packs a floating point value into the [0...255] range (thx sqrt[-1] of
-/// opengl.org forums)
-inline U8 PACK_FLOAT(F32 floatValue) {
-    // Scale and bias
-    floatValue = (floatValue + 1.0f) * 0.5f;
-    return static_cast<U8>(floatValue * 255.0f);
+//Helper method to go from a float to packed char
+inline U8 FLOAT_TO_CHAR(F32 value) {
+    value = (value + 1.0f) * 0.5f;
+    return static_cast<U8>(value * 255.0f);
 }
 
 // Pack 3 values into 1 float
 inline F32 PACK_FLOAT(U8 x, U8 y, U8 z) {
-    U32 packedColor = (x << 16) | (y << 8) | z;
+    static const D32 offset = static_cast<D32>(1 << 24);
 
-    return static_cast<F32>(((D32)packedColor) / ((D32)(1 << 24)));
+    U32 packedColor = (x << 16) | (y << 8) | z;
+    return static_cast<F32>(static_cast<D32>(packedColor) / offset);
 }
 
 // UnPack 3 values from 1 float
 inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b) {
-    r = fract(src);
-    g = fract(src * 256.0f);
-    b = fract(src * 65536.0f);
+    r = FRACT(src);
+    g = FRACT(src * 256.0f);
+    b = FRACT(src * 65536.0f);
 
     // Unpack to the -1..1 range
     r = (r * 2.0f) - 1.0f;

@@ -15,10 +15,16 @@ void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
     if (dvd_boneCount == 0) {
         return;
     }
-    mat4 transformMatrix[4] = mat4[]( inBoneWeightData.x * boneTransforms[inBoneIndiceData.x],
-                                      inBoneWeightData.y * boneTransforms[inBoneIndiceData.y],
-                                      inBoneWeightData.z * boneTransforms[inBoneIndiceData.z],
-                                      (1.0 - dot(inBoneWeightData.xyz, vec3(1.0))) * boneTransforms[inBoneIndiceData.w] );
+
+    uint w = inBoneIndiceData >> 24 & 0xFF;
+    uint z = inBoneIndiceData >> 16 & 0xFF;
+    uint y = inBoneIndiceData >> 8 & 0xFF;
+    uint x = inBoneIndiceData & 0xFF;
+
+    mat4 transformMatrix[4] = mat4[]( inBoneWeightData.x * boneTransforms[x],
+                                      inBoneWeightData.y * boneTransforms[y],
+                                      inBoneWeightData.z * boneTransforms[z],
+                                      (1.0 - dot(inBoneWeightData.xyz, vec3(1.0))) * boneTransforms[w] );
 
     position = (transformMatrix[0] * position + transformMatrix[1] * position + 
                 transformMatrix[2] * position + transformMatrix[3] * position);

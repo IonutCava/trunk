@@ -185,7 +185,6 @@ Mesh* DVDConverter::load(const stringImpl& file) {
     vb->reservePositionCount(vertCount);
     vb->reserveNormalCount(vertCount);
     vb->reserveTangentCount(vertCount);
-    vb->reserveBiTangentCount(vertCount);
     vb->getTexcoord().reserve(vertCount);
     if (skinned) {
         vb->getBoneIndices().reserve(vertCount);
@@ -310,8 +309,8 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
     VertexBuffer* vb = parentMesh->getGeometryVB();
     U32 previousOffset = (U32)vb->getPosition().size();
 
-    vec3<F32> position, normal, tangent, bitangent;
-    vec4<U8> boneIndices;
+    vec3<F32> position, normal, tangent;
+    P32 boneIndices;
     vec4<F32> boneWeights;
 
     for (U32 j = 0; j < source->mNumVertices; j++) {
@@ -323,19 +322,19 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         importBB.Add(position);
         if (processTangents) {
             tangent.setV(&source->mTangents[j].x);
-            bitangent.setV(&source->mBitangents[j].x);
             vb->addTangent(tangent);
-            vb->addBiTangent(bitangent);
         }
 
         if (skinned) {
-            boneIndices.reset();
+            boneIndices.i = 0;
             boneWeights.reset();
 
             assert(weightsPerVertex[j].size() <= 4);
 
             for (U8 a = 0; a < weightsPerVertex[j].size(); a++) {
-                boneIndices[a] = weightsPerVertex[j][a]._boneID + submeshBoneOffsetOut;
+                U16 boneID = weightsPerVertex[j][a]._boneID + submeshBoneOffsetOut;
+                assert(boneID < std::numeric_limits<U8>::max());
+                boneIndices.b[a] = static_cast<U8>(boneID);
                 boneWeights[a] = weightsPerVertex[j][a]._boneWeight;
             }
 

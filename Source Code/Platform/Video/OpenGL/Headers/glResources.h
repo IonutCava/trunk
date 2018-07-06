@@ -46,6 +46,7 @@
 #endif
 
 #define GL_VERSION_4_4
+//#define GL_VERSION_4_5
 
 #ifdef GL_VERSION_4_5
 #include <glbinding/gl/gl45.h>
@@ -196,21 +197,6 @@ namespace DSAWrapper {
 };  // namespace DSAWrapper
 };  // namespace GLUtil
 };  // namespace Divide
-
-/* ARB_vertex_type_2_10_10_10_rev */
-#define P10(f) ((I32)((f)*0x1FF))
-#define UP10(f) ((I32)((f)*0x3FF))
-#define PN2(f)                                                          \
-    ((I32)((f) < 0.333 ? 3 /* = -0.333 */ : (f) < 1 ? 0   /* = 0.333 */ \
-                                                    : 1)) /* normalized */
-#define P2(f) ((I32)(f))                                  /* unnormalized */
-#define UP2(f) ((I32)((f)*0x3))
-#define P1010102(x, y, z, w) \
-    (P10(x) | (P10(y) << 10) | (P10(z) << 20) | (P2(w) << 30))
-#define PN1010102(x, y, z, w) \
-    (P10(x) | (P10(y) << 10) | (P10(z) << 20) | (PN2(w) << 30))
-#define UP1010102(x, y, z, w) \
-    (UP10(x) | (UP10(y) << 10) | (UP10(z) << 20) | (UP2(w) << 30))
 
 #if defined(_MSC_VER)
 #pragma warning(pop)

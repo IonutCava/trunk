@@ -58,10 +58,9 @@ class SamplerDescriptor : public PropertyDescriptor {
     /// texture usage
     inline void setDefaultValues() {
         setWrapMode();
-        setFilters();
+        setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR, TextureFilter::LINEAR);
         setAnisotropy(16);
         setLOD();
-        toggleMipMaps(true);
         toggleSRGBColorSpace(false);
         // The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = ComparisonFunction::LEQUAL;
@@ -112,9 +111,21 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline void setWrapModeV(TextureWrap wrapV) { _wrapV = wrapV; }
     inline void setWrapModeW(TextureWrap wrapW) { _wrapW = wrapW; }
 
-    inline void setFilters(
-        TextureFilter minFilter = TextureFilter::LINEAR,
-        TextureFilter magFilter = TextureFilter::LINEAR) {
+    inline void setFilters(TextureFilter filters) {
+        setMinFilter(filters);
+        switch (filters) {
+            case TextureFilter::LINEAR_MIPMAP_LINEAR:
+            case TextureFilter::LINEAR_MIPMAP_NEAREST:
+                setMagFilter(TextureFilter::LINEAR);
+                break;
+            case TextureFilter::NEAREST_MIPMAP_LINEAR:
+            case TextureFilter::NEAREST_MIPMAP_NEAREST:
+                setMagFilter(TextureFilter::NEAREST);
+                break;
+        }
+    }
+
+    inline void setFilters(TextureFilter minFilter, TextureFilter magFilter) {
         setMinFilter(minFilter);
         setMagFilter(magFilter);
     }
@@ -122,19 +133,34 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline void setMinFilter(TextureFilter minFilter) {
         _minFilter = minFilter;
     }
+
     inline void setMagFilter(TextureFilter magFilter) {
+        assert(magFilter == TextureFilter::LINEAR ||
+               magFilter == TextureFilter::NEAREST);
         _magFilter = magFilter;
     }
 
     inline void toggleMipMaps(const bool state) {
-        _generateMipMaps = state;
         if (state) {
-            if (_minFilter == TextureFilter::LINEAR)
-                _minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+            switch (_minFilter) {
+                case TextureFilter::LINEAR:
+                    _minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+                    break;
+                case TextureFilter::NEAREST:
+                    _minFilter = TextureFilter::NEAREST_MIPMAP_NEAREST;
+                    break;
+            };
         } else {
-            if (_minFilter ==
-                TextureFilter::LINEAR_MIPMAP_LINEAR)
-                _minFilter = TextureFilter::LINEAR;
+            switch (_minFilter) {
+                case TextureFilter::LINEAR_MIPMAP_LINEAR:
+                case TextureFilter::LINEAR_MIPMAP_NEAREST:
+                    _minFilter = TextureFilter::LINEAR;
+                    break;
+                case TextureFilter::NEAREST_MIPMAP_LINEAR:
+                case TextureFilter::NEAREST_MIPMAP_NEAREST:
+                    _minFilter = TextureFilter::NEAREST;
+                    break;
+            };
         }
     }
 
@@ -154,7 +180,6 @@ class SamplerDescriptor : public PropertyDescriptor {
         Util::hash_combine(hash, _maxLOD);
         Util::hash_combine(hash, _biasLOD);
         Util::hash_combine(hash, _anisotropyLevel);
-        Util::hash_combine(hash, _generateMipMaps);
         Util::hash_combine(hash, _borderColor.r);
         Util::hash_combine(hash, _borderColor.g);
         Util::hash_combine(hash, _borderColor.b);
@@ -179,7 +204,10 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline F32 biasLOD() const { return _biasLOD; }
     inline bool srgb() const { return _srgb; }
     inline U8 anisotropyLevel() const { return _anisotropyLevel; }
-    inline bool generateMipMaps() const { return _generateMipMaps; }
+    inline bool generateMipMaps() const { 
+        return _minFilter != TextureFilter::LINEAR &&
+               _minFilter != TextureFilter::NEAREST; 
+    }
     inline vec4<F32> borderColor() const { return _borderColor; }
 
    protected:
@@ -188,8 +216,6 @@ class SamplerDescriptor : public PropertyDescriptor {
     TextureFilter _minFilter, _magFilter;
     /// Texture wrap mode (Or S-R-T)
     TextureWrap _wrapU, _wrapV, _wrapW;
-    /// If it's set to true we create automatic MipMaps
-    bool _generateMipMaps;
     /// Use SRGB color space
     bool _srgb;
     /// The value must be in the range [0...255] and is automatically clamped by

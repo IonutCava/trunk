@@ -203,12 +203,11 @@ void glFramebuffer::AddDepthBuffer() {
     bool fpDepth = (dataType == GFXDataFormat::FLOAT_16 ||
                     dataType == GFXDataFormat::FLOAT_32);
     SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TextureFilter::NEAREST,
-                             TextureFilter::NEAREST);
+    screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.setWrapMode(desc.getSampler().wrapU(),
                               desc.getSampler().wrapV(),
                               desc.getSampler().wrapW());
-    screenSampler.toggleMipMaps(false);
+    
     TextureDescriptor depthDescriptor(
         texType, fpDepth ? GFXImageFormat::DEPTH_COMPONENT32F
                          : GFXImageFormat::DEPTH_COMPONENT,
@@ -520,7 +519,7 @@ void glFramebuffer::SetMipLevel(GLushort mipLevel,
     DIVIDE_ASSERT(textureType == GL_TEXTURE_2D,
                   "glFramebuffer error: Changing mip level is only available "
                   "for 2D textures!");
-    _attachmentTexture[to_uint(slot)]->setMipMapRange(mipLevel, mipLevel);
+    _attachmentTexture[to_uint(slot)]->setMipMapRange(mipLevel, mipMaxLevel);
     glFramebufferTexture(
         GL_FRAMEBUFFER, slot == TextureDescriptor::AttachmentType::Depth
                             ? GL_DEPTH_ATTACHMENT

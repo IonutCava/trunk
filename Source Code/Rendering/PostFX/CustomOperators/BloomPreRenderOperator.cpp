@@ -149,7 +149,6 @@ void BloomPreRenderOperator::toneMapScreen() {
         SamplerDescriptor lumaSampler;
         lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
         lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
-        lumaSampler.toggleMipMaps(true);
 
         TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D,
                                          GFXImageFormat::RED16F,
@@ -161,7 +160,6 @@ void BloomPreRenderOperator::toneMapScreen() {
         _luminaFB[0]->Create(lumaRez, lumaRez);
 
         lumaSampler.setFilters(TextureFilter::LINEAR);
-        lumaSampler.toggleMipMaps(false);
         lumaDescriptor.setSampler(lumaSampler);
         _luminaFB[1]->AddAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
 

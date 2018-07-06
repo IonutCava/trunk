@@ -75,8 +75,11 @@ void CLAMP(T& n, T min, T max);
 template <typename T>
 T CLAMPED(const T& n, T min, T max);
 
-// Helper method to emulate GLSL
-F32 fract(F32 floatValue);
+///Helper method to go from a float to packed char
+U8 FLOAT_TO_CHAR(F32 value);
+
+/// Helper method to emulate GLSL
+F32 FRACT(F32 floatValue);
 
 /// Packs a floating point value into the [0...255] range (thx sqrt[-1] of
 /// opengl.org forums)
@@ -250,6 +253,9 @@ vec4<F32> toFloatColor(const vec4<U8>& byteColor);
 vec3<F32> toFloatColor(const vec3<U8>& byteColor);
 vec4<F32> toFloatColor(const vec4<U32>& uintColor);
 vec3<F32> toFloatColor(const vec3<U32>& uintColor);
+
+F32 PACK_VEC3(const vec3<F32>& value);
+vec3<F32> UNPACK_VEC3(F32 value);
 
 namespace Mat4 {
 template <typename T>

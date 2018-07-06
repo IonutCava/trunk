@@ -399,7 +399,7 @@ bool GL_API::initShaders() {
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_COLOR)) +
-            ") in vec4  inColorData;",
+            ") in uvec4  inColorData;",
         lineOffsets);
 
     appendToShaderHeader(
@@ -420,14 +420,7 @@ bool GL_API::initShaders() {
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_TANGENT)) +
-            ") in vec3  inTangentData;",
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::VERTEX,
-        "layout(location = " +
-            std::to_string(to_uint(AttribLocation::VERTEX_BITANGENT)) +
-            ") in vec3  inBiTangentData;",
+            ") in float  inTangentData;",
         lineOffsets);
 
     appendToShaderHeader(
@@ -441,7 +434,7 @@ bool GL_API::initShaders() {
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_BONE_INDICE)) +
-            ") in ivec4 inBoneIndiceData;",
+            ") in uint inBoneIndiceData;",
         lineOffsets);
 
     // GPU specific data, such as GFXDevice's main uniform block and clipping

@@ -11,8 +11,6 @@ PreRenderStageBuilder::PreRenderStageBuilder() {
     _screenSampler = MemoryManager_NEW SamplerDescriptor;
     _screenSampler->setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     _screenSampler->setFilters(TextureFilter::NEAREST);
-    _screenSampler->toggleMipMaps(
-        false);  // it's a flat texture on a full screen quad. really?
     _screenSampler->setAnisotropy(0);
 }
 

@@ -547,8 +547,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                      AI::GOAPValue(true));
 
     for (I32 k = 0; k < 2; ++k) {
-        for (I32 i = 0; i < /*15*/1; ++i) {
-            F32 speed = 15.5f;  // 5.5 m/s
+        for (I32 i = 0; i < 15; ++i) {
+            F32 speed = 5.5f;  // 5.5 m/s
             U8 zFactor = 0;
             AI::WarSceneAISceneImpl::AIType type;
             if (i < 5) {

@@ -99,17 +99,14 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                        GFXImageFormat::RGBA16F,
                                        GFXDataFormat::FLOAT_16);
     SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TextureFilter::NEAREST,
-                             TextureFilter::NEAREST);
+    screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
     // Next, create a depth attachment for the screen render target.
     // Must also multisampled. Use full float precision for long view distances
     SamplerDescriptor depthSampler;
     depthSampler.setFilters(TextureFilter::NEAREST);
     depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthSampler.toggleMipMaps(false);
     // Use greater or equal depth compare function, but depth comparison is
     // disabled, anyway.
     depthSampler._cmpFunc = ComparisonFunction::GEQUAL;
@@ -117,20 +114,6 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                       GFXImageFormat::DEPTH_COMPONENT32F,
                                       GFXDataFormat::FLOAT_32);
     depthDescriptor.setSampler(depthSampler);
-    // The depth render target uses a HierarchicalZ buffer to help with
-    // occlusion culling
-    // Must be as close as possible to the screen's depth buffer
-    SamplerDescriptor depthSamplerHiZ;
-    depthSamplerHiZ.setFilters(
-        TextureFilter::NEAREST_MIPMAP_NEAREST,
-        TextureFilter::NEAREST);
-    depthSamplerHiZ.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthSamplerHiZ.toggleMipMaps(true);
-    depthSamplerHiZ._cmpFunc = ComparisonFunction::GEQUAL;
-    TextureDescriptor depthDescriptorHiZ(TextureType::TEXTURE_2D_MS,
-                                         GFXImageFormat::DEPTH_COMPONENT32F,
-                                         GFXDataFormat::FLOAT_32);
-    depthDescriptorHiZ.setSampler(depthSamplerHiZ);
     // Add the attachments to the render targets
     _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(
         screenDescriptor, TextureDescriptor::AttachmentType::Color0);
@@ -140,7 +123,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                                          resolution.height);
 
     _renderTarget[to_uint(RenderTarget::DEPTH)]->AddAttachment(
-        depthDescriptorHiZ, TextureDescriptor::AttachmentType::Depth);
+        depthDescriptor, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->Create(resolution.width,
                                                         resolution.height);

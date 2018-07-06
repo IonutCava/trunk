@@ -14,19 +14,21 @@ uniform uint baseInstance = 0;
 #include "boneTransforms.vert"
 #endif
 
-vec4  dvd_Vertex;
-vec4  dvd_Color;
-vec3  dvd_Normal;
-vec3  dvd_Tangent;
-vec3  dvd_BiTangent;
+vec4   dvd_Vertex;
+uvec4  dvd_Color;
+vec3   dvd_Normal;
+vec3   dvd_Tangent;
+
+vec3 UNPACK_FLOAT(in float value) {
+    return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
+}
 
 void computeData(){
-    dvd_drawID     = /*gl_BaseInstanceARB*/baseInstance + gl_DrawIDARB;
-    dvd_Vertex     = vec4(inVertexData,1.0);
-    dvd_Normal     = inNormalData;
-    dvd_Tangent    = inTangentData;
-    dvd_BiTangent  = inBiTangentData;
-    dvd_Color      = inColorData;
+    dvd_drawID  = /*gl_BaseInstanceARB*/baseInstance + gl_DrawIDARB;
+    dvd_Vertex  = vec4(inVertexData,1.0);
+    dvd_Normal  = inNormalData;
+    dvd_Color   = inColorData;
+    dvd_Tangent = UNPACK_FLOAT(inTangentData); 
 
 #   if defined(USE_GPU_SKINNING)
 #       if defined(COMPUTE_TBN)

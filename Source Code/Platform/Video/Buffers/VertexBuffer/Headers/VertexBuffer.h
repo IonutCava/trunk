@@ -51,9 +51,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         ATTRIB_NORMAL = 2,
         ATTRIB_TEXCOORD = 3,
         ATTRIB_TANGENT = 4,
-        ATTRIB_BITANGENT = 5,
-        ATTRIB_BONE_WEIGHT = 6,
-        ATTRIB_BONE_INDICE = 7,
+        ATTRIB_BONE_WEIGHT = 5,
+        ATTRIB_BONE_INDICE = 6,
         COUNT
     };
 
@@ -99,9 +98,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     inline void reserveColourCount(U32 size) { _dataColor.reserve(size); }
     inline void reserveNormalCount(U32 size) { _dataNormal.reserve(size); }
     inline void reserveTangentCount(U32 size) { _dataTangent.reserve(size); }
-    inline void reserveBiTangentCount(U32 size) {
-        _dataBiTangent.reserve(size);
-    }
 
     inline void reserveIndexCount(U32 size) {
         usesLargeIndices() ? _hardwareIndicesL.reserve(size)
@@ -114,7 +110,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     inline void resizeColoCount(U32 size,
-                                const vec3<U8>& defaultValue = vec3<U8>()) {
+                                const vec4<U8>& defaultValue = vec4<U8>(255)) {
         _dataColor.resize(size, defaultValue);
     }
 
@@ -128,16 +124,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _dataTangent.resize(size, defaultValue);
     }
 
-    inline void resizeBiTangentCount(
-        U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO) {
-        _dataBiTangent.resize(size, defaultValue);
-    }
-
     inline vectorImpl<vec2<F32> >& getTexcoord() {
         _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
         return _dataTexcoord;
     }
-    inline vectorImpl<vec4<U8> >& getBoneIndices() {
+    inline vectorImpl<P32 >& getBoneIndices() {
         _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
         return _boneIndices;
     }
@@ -149,15 +140,12 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     inline const vectorImpl<vec3<F32> >& getPosition() const {
         return _dataPosition;
     }
-    inline const vectorImpl<vec3<U8> >& getColor() const { return _dataColor; }
+    inline const vectorImpl<vec4<U8> >& getColor() const { return _dataColor; }
     inline const vectorImpl<vec3<F32> >& getNormal() const {
         return _dataNormal;
     }
     inline const vectorImpl<vec3<F32> >& getTangent() const {
         return _dataTangent;
-    }
-    inline const vectorImpl<vec3<F32> >& getBiTangent() const {
-        return _dataBiTangent;
     }
     inline const vec3<F32>& getPosition(U32 index) const {
         return _dataPosition[index];
@@ -168,9 +156,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     inline const vec3<F32>& getTangent(U32 index) const {
         return _dataTangent[index];
     }
-    inline const vec3<F32>& getBiTangent(U32 index) const {
-        return _dataBiTangent[index];
-    }
+
     virtual bool queueRefresh() = 0;
 
     inline bool usesLargeIndices() const { return _largeIndices; }
@@ -221,7 +207,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
-    inline void addColor(const vec3<U8>& col) {
+    inline void addColor(const vec4<U8>& col) {
         _dataColor.push_back(col);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
     }
@@ -241,12 +227,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
     }
 
-    inline void addBiTangent(const vec3<F32>& bitangent) {
-        _dataBiTangent.push_back(bitangent);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BITANGENT)] = true;
-    }
-
-    inline void addBoneIndex(const vec4<U8>& idx) {
+    inline void addBoneIndex(const P32& idx) {
         _boneIndices.push_back(idx);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
     }
@@ -263,7 +244,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
-    inline void modifyColorValue(U32 index, const vec3<U8>& newValue) {
+    inline void modifyColorValue(U32 index, const vec4<U8>& newValue) {
         DIVIDE_ASSERT(index < _dataColor.size(),
                       "VertexBuffer error: Invalid color offset!");
         _dataColor[index] = newValue;
@@ -284,20 +265,12 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
     }
 
-    inline void modifyBiTangentValue(U32 index, const vec3<F32>& newValue) {
-        DIVIDE_ASSERT(index < _dataBiTangent.size(),
-                      "VertexBuffer error: Invalid bitangent offset!");
-        _dataBiTangent[index] = newValue;
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BITANGENT)] = true;
-    }
-
     inline void shrinkAllDataToFit() {
         shrinkToFit(_dataPosition);
         shrinkToFit(_dataColor);
         shrinkToFit(_dataNormal);
         shrinkToFit(_dataTexcoord);
         shrinkToFit(_dataTangent);
-        shrinkToFit(_dataBiTangent);
         shrinkToFit(_boneWeights);
         shrinkToFit(_boneIndices);
     }
@@ -346,7 +319,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _dataNormal.clear();
         _dataTexcoord.clear();
         _dataTangent.clear();
-        _dataBiTangent.clear();
         _boneIndices.clear();
         _boneWeights.clear();
         _hardwareIndicesL.clear();
@@ -395,12 +367,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     vectorImpl<U32> _hardwareIndicesL;
     vectorImpl<U16> _hardwareIndicesS;
     vectorImpl<vec3<F32> > _dataPosition;
-    vectorImpl<vec3<U8> > _dataColor;
+    vectorImpl<vec4<U8>  > _dataColor;
     vectorImpl<vec3<F32> > _dataNormal;
     vectorImpl<vec2<F32> > _dataTexcoord;
     vectorImpl<vec3<F32> > _dataTangent;
-    vectorImpl<vec3<F32> > _dataBiTangent;
-    vectorImpl<vec4<U8> > _boneIndices;
+    vectorImpl<P32 >       _boneIndices;
     vectorImpl<vec4<F32> > _boneWeights;
     vectorImpl<vec3<F32> > _minPosition;
     vectorImpl<vec3<F32> > _maxPosition;

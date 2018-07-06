@@ -194,7 +194,7 @@ bool Scene::loadGeometry(const FileData& data) {
         vec3<F32> position = data.position;
         P32 quadMask;
         quadMask.i = 0;
-        quadMask.b.b0 = 1;
+        quadMask.b[0] = 1;
         item.setBoolMask(quadMask);
         thisObj = CreateResource<Quad3D>(item);
         static_cast<Quad3D*>(thisObj)

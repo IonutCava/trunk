@@ -16,8 +16,8 @@ void RenderStateBlockDescriptor::fromDescriptor(
              descriptor._blendDest, descriptor._blendOp);
 
     setColorWrites(
-        descriptor._colorWrite.b.b0 > 0, descriptor._colorWrite.b.b1 > 0,
-        descriptor._colorWrite.b.b2 > 0, descriptor._colorWrite.b.b3 > 0);
+        descriptor._colorWrite.b[0] > 0, descriptor._colorWrite.b[1] > 0,
+        descriptor._colorWrite.b[2] > 0, descriptor._colorWrite.b[3] > 0);
 
     setZReadWrite(descriptor._zEnable, descriptor._zWriteEnable);
 
@@ -87,10 +87,10 @@ void RenderStateBlockDescriptor::setBlend(bool enable, BlendProperty src,
 
 void RenderStateBlockDescriptor::setColorWrites(bool red, bool green, bool blue,
                                                 bool alpha) {
-    _colorWrite.b.b0 = red ? 1 : 0;
-    _colorWrite.b.b1 = green ? 1 : 0;
-    _colorWrite.b.b2 = blue ? 1 : 0;
-    _colorWrite.b.b3 = alpha ? 1 : 0;
+    _colorWrite.b[0] = red ? 1 : 0;
+    _colorWrite.b[1] = green ? 1 : 0;
+    _colorWrite.b[2] = blue ? 1 : 0;
+    _colorWrite.b[3] = alpha ? 1 : 0;
 
     clean();
 }

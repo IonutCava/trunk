@@ -26,7 +26,7 @@ WaterPlane::WaterPlane()
     // Set water plane to be single-sided
     P32 quadMask;
     quadMask.i = 0;
-    quadMask.b.b0 = true;
+    quadMask.b[0] = true;
 
     setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f), 0.34f);
 

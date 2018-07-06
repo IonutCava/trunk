@@ -7,7 +7,7 @@ out vec4 _vertexWV;
 
 void computeLightVectors(){
     _lightCount = dvd_lightCount;
-    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal); //<ModelView Normal 
+    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal);
     _vertexWV = dvd_ViewMatrix * _vertexW;
 
 #if defined(COMPUTE_TBN)

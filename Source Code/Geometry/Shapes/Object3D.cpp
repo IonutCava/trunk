@@ -146,7 +146,7 @@ void Object3D::computeTangents() {
 
     vec3<F32> deltaPos1, deltaPos2;
     vec2<F32> deltaUV1, deltaUV2;
-    vec3<F32> tangent, bitangent;
+    vec3<F32> tangent;
 
     for (U32 i = 0; i < getGeometryVB()->getIndexCount(); i += 3) {
         // get the three vertices that make the faces
@@ -172,17 +172,12 @@ void Object3D::computeTangents() {
 
         F32 r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
         tangent.set((deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r);
-        bitangent.set((deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r);
 
         // Set the same tangent for all three vertices of the triangle.
         // They will be merged later, in vbindexer.cpp
         getGeometryVB()->addTangent(tangent);
         getGeometryVB()->addTangent(tangent);
         getGeometryVB()->addTangent(tangent);
-        // Same thing for binormals
-        getGeometryVB()->addBiTangent(bitangent);
-        getGeometryVB()->addBiTangent(bitangent);
-        getGeometryVB()->addBiTangent(bitangent);
     }
 }
 

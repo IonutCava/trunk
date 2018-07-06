@@ -106,6 +106,18 @@ vec3<F32> toFloatColor(const vec3<U32>& uintColor) {
                      uintColor.b / 255.0f);
 }
 
+F32 PACK_VEC3(const vec3<F32>& value) {
+    return PACK_FLOAT(FLOAT_TO_CHAR(value.x),
+                      FLOAT_TO_CHAR(value.y),
+                      FLOAT_TO_CHAR(value.z));
+}
+
+vec3<F32> UNPACK_VEC3(F32 value) {
+    vec3<F32> ret;
+    UNPACK_FLOAT(value, ret.x, ret.y, ret.z);
+    return ret;
+}
+
 void normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
                bool normPitch, bool normRoll) {
     if (normYaw) {

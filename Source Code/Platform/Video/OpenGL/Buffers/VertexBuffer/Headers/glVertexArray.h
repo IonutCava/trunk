@@ -43,7 +43,6 @@
 ///- Normals      bound to location Divide::VERTEX_NORMAL
 ///- TexCoords    bound to location Divide::VERTEX_TEXCOORD
 ///- Tangents     bound to location Divide::VERTEX_TANGENT
-///- BiTangents   bound to location Divide::VERTEX_BITANGENT
 ///- Bone weights bound to location Divide::VERTEX_BONE_WEIGHT
 ///- Bone indices bound to location Divide::VERTEX_BONE_INDICE
 
@@ -93,9 +92,8 @@ class glVertexArray : public VertexBuffer {
                           ///for bone indices and bone weights
     bool _refreshQueued;  ///< A refresh call might be called before "Create()".
                           ///This should help with that
-    vectorImpl<vec4<GLhalf> > _normalsSmall;
-    vectorImpl<vec4<GLshort> > _tangentSmall;
-    vectorImpl<vec4<GLshort> > _bitangentSmall;
+    vectorImpl<F32 > _normalsSmall;
+    vectorImpl<F32 > _tangentSmall;
 
     std::array<GLsizei, to_const_uint(VertexAttribute::COUNT)> _prevSize;
     GLsizei _prevSizeIndices;
