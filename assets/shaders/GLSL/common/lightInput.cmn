@@ -14,22 +14,32 @@ const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
 
 struct Light {
-    vec4   _color;       //< rgb = color,  w = ambientCoef;
-    vec4   _position;    //< xyz = Position is a direction for directional lights; w = spot cutoff
-    vec4   _direction;   //< xyz = Used by spot lights, w = spotExponent
-    ivec4  _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, z = shadow block index, w = reserved
-    float  _range;
+    /// rgb = color
+    /// w = reserved
+    vec4   _color;
+    /// xyz = light positoon (or direction for Directional lights)
+    /// w = range
+    vec4   _position; 
+    /// xyz = spot direction
+    /// w = spot angle   
+    vec4   _direction;
+    /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    /// y = casts shadows
+    /// z = shadow block index
+    /// w = reserved
+    ivec4  _options;
 };
 
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBlock
 {
-    Light dvd_LightSource[NUM_POSSIBLE_LIGHTS];
+    Light dvd_LightSource[MAX_POSSIBLE_LIGHTS];
 };
 
 struct Shadow {
     mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
     vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
     vec4  _floatValues[MAX_SPLITS_PER_LIGHT];
+    uint  _arrayOffset;
 };
 
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
@@ -39,13 +49,13 @@ layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 
 layout(binding = BUFFER_LIGHT_POINT_LIGHTS, std430) coherent ACCESS buffer pointLightBuffer
 {
-    vec4 pointLightBufferCenterAndRadius[NUM_POSSIBLE_LIGHTS];
-    vec4 pointLightColor[NUM_POSSIBLE_LIGHTS];
+    vec4 pointLightBufferCenterAndRadius[MAX_POSSIBLE_LIGHTS];
+    vec4 pointLightColor[MAX_POSSIBLE_LIGHTS];
 };
 
 layout(binding = BUFFER_LIGHT_SPOT_LIGHTS, std430) coherent ACCESS buffer spotLightBuffer {
-    vec4 spotLightBufferCenterAndRadius[NUM_POSSIBLE_LIGHTS];
-    vec4 spotLightColor[NUM_POSSIBLE_LIGHTS];
+    vec4 spotLightBufferCenterAndRadius[MAX_POSSIBLE_LIGHTS];
+    vec4 spotLightColor[MAX_POSSIBLE_LIGHTS];
     vec4 spotLightParams;
 };
 

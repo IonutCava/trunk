@@ -15,7 +15,6 @@ void NetworkScene::preRender() {
                                vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
                                0.25f + cosf(_sunAngle.y) * 0.75f);
 
-    light->setDirection(_sunvector);
     light->setDiffuseColor(vSunColor);
 
     _currentSky = addSky();

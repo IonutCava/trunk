@@ -22,14 +22,9 @@ void MainScene::updateLights() {
         Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
              vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
-    _sun->setDirection(_sunvector);
-    _sun->setDiffuseColor(_sunColor);
+    _sun.lock()->getComponent<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->getNode<Light>()->setDiffuseColor(_sunColor);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
-    for (SceneGraphNode_wptr ter : _visibleTerrains) {
-        ter.lock()->getComponent<RenderingComponent>()
-            ->getMaterialInstance()
-            ->setAmbient(_sunColor);
-    }
 
     _updateLights = false;
     return;
@@ -121,11 +116,10 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    _sun = addLight(LightType::DIRECTIONAL,
-               GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
-    _sun->csmSplitCount(3);  // 3 splits
-    _sun->csmSplitLogFactor(0.965f);
-    _sun->csmNearClipOffset(25.0f);
+    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
+    _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
+    _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.965f);
+    _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
     for (U8 i = 0; i < _terrainInfoArray.size(); i++) {

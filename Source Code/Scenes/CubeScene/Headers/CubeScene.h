@@ -47,6 +47,8 @@ class CubeScene : public Scene {
     void processTasks(const U64 deltaTime);
 
     bool onKeyUp(const Input::KeyEvent& key);
+    protected:
+    vectorImpl<SceneGraphNode_wptr> _lightNodes;
 };
 
 };  // namespace Divide

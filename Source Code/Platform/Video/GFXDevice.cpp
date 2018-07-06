@@ -110,6 +110,7 @@ GFXDevice::~GFXDevice()
 
 /// Generate a cube texture and store it in the provided framebuffer
 void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
+                                const U32 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 RenderStage renderStage) {
@@ -164,7 +165,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
         // Draw to the current cubemap face
         cubeMap.drawToFace(hasColor ? TextureDescriptor::AttachmentType::Color0
                                     : TextureDescriptor::AttachmentType::Depth,
-                           i);
+                           i + arrayOffset);
         // Point our camera to the correct face
         _cubeCamera->lookAt(pos, TabCenter[i], TabUp[i]);
         // And generated required matrices

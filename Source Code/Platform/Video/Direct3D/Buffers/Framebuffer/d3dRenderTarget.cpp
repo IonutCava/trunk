@@ -18,7 +18,7 @@ void d3dRenderTarget::end() {}
 void d3dRenderTarget::bind(U8 unit, TextureDescriptor::AttachmentType slot, bool flushStateOnRequest) {}
 
 void d3dRenderTarget::drawToLayer(TextureDescriptor::AttachmentType slot,
-                                  U8 layer,
+                                  U32 layer,
                                   bool includeDepth) {}
 
 void d3dRenderTarget::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
@@ -35,4 +35,6 @@ void d3dRenderTarget::readData(const vec4<U16>& rect,
 void d3dRenderTarget::blitFrom(Framebuffer* inputFB,
                                TextureDescriptor::AttachmentType slot,
                                bool blitColor, bool blitDepth) {}
+
+void d3dRenderTarget::clear() const {}
 };

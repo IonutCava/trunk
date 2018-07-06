@@ -60,9 +60,9 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
     
     if (inRange(shadow_coord.z) && inRange(shadow_coord.x) && inRange(shadow_coord.y)){
         shadow_coord.w = shadow_coord.z;
-        shadow_coord.z = _shadowTempInt;
+        shadow_coord.z = _shadowTempInt + currentShadowSource._arrayOffset;
 
-        vec2 moments = getArrayShadowValue(lightIndex, shadow_coord.xyz);
+        vec2 moments = texture(texDepthMapFromLightArray, shadow_coord.xyz).rg;
        
         //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_shadowingSettings.y);
         //float shadowWarpedz1 = exp(shadow_coord.w * DEPTH_EXP_WARP);

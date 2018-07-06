@@ -108,7 +108,6 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     Material* vegMaterial = CreateResource<Material>(vegetationMaterial);
 
     vegMaterial->setDiffuse(DefaultColors::WHITE());
-    vegMaterial->setAmbient(DefaultColors::WHITE() / 3);
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);

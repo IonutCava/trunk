@@ -284,7 +284,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
         }
     }
 
-    clearBuffers();
+    clear();
 
     _isCreated = checkStatus();
     _shouldRebuild = !_isCreated;
@@ -413,7 +413,7 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, _framebufferHandle);
 
     if (drawPolicy._clearBuffersOnBind) {
-        clearBuffers();
+        clear();
     }
 
     resetMipMaps(drawPolicy._drawMask);
@@ -491,7 +491,7 @@ void glFramebuffer::setInitialAttachments() {
     _attDirty.fill(false);
 }
 
-void glFramebuffer::clearBuffers() const {
+void glFramebuffer::clear() const {
     if (_hasColor) {
         GLuint index = 0;
         for (; index < _colorBuffers.size(); ++index) {
@@ -508,7 +508,7 @@ void glFramebuffer::clearBuffers() const {
 }
 
 void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
-                                U8 layer,
+                                U32 layer,
                                 bool includeDepth) {
     DIVIDE_ASSERT(slot < TextureDescriptor::AttachmentType::COUNT,
                   "glFrameBuffer::DrawToLayer Error: invalid slot received!");

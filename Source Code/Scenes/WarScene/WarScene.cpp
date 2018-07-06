@@ -40,7 +40,6 @@ namespace {
 
 WarScene::WarScene()
     : Scene(),
-    _sun(nullptr),
     _infoBox(nullptr),
     _sceneReady(false),
     _lastNavMeshBuildTime(0UL)
@@ -159,12 +158,11 @@ void WarScene::processTasks(const U64 deltaTime) {
                             -cosf(g_sunAngle.y),
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
-       _sun->setDirection(sunVector);
+       _sun.lock()->getComponent<PhysicsComponent>()->setPosition(sunVector);
        vec4<F32> sunColor = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
 
-       _sun->setDiffuseColor(sunColor);
-        _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector,
-            _sun->getDiffuseColor());
+       _sun.lock()->getNode<Light>()->setDiffuseColor(sunColor);
+        _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector, _sun.lock()->getNode<Light>()->getDiffuseColor());
 
         _taskTimers[0] = 0.0;
     }
@@ -183,19 +181,18 @@ void WarScene::processTasks(const U64 deltaTime) {
         _taskTimers[2] = 0.0;
     }
 
-    if (_taskTimers[3] >= updateLights) {
-        Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
+    if (_taskTimers[3] >= updateLights && false) {
         for (U8 row = 0; row < 3; row++)
-            for (U8 col = 0; col < lights.size() / 3.0f; col++) {
+            for (U8 col = 0; col < _lightNodes.size() / 3; col++) {
                 F32 x = col * 150.0f - 5.0f +  cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *   0.008f) * 200.0f;
                 F32 y = cos(to_float(Time::ElapsedSeconds()) * (col - row + 2) * 0.01f) * 200.0f +  20;
                 F32 z = row * 500.0f - 500.0f - cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) * 0.009f) * 200.0f + 10;
                 F32 r = 1.0f - (col / 3.0f);
                 F32 g = 1.0f - (row / 3.0f);
-                F32 b = col / (lights.size() / 3.0f);
+                F32 b = col / (_lightNodes.size() / 3.0f);
 
-                lights[row * 10 + col]->setPosition(vec3<F32>(x, y, z));
-                lights[row * 10 + col]->setDiffuseColor(vec3<F32>(r, g, b));
+                _lightNodes[row * 2 + col].lock()->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(x, y, z));
+                _lightNodes[row * 2 + col].lock()->getNode<Light>()->setDiffuseColor(vec3<F32>(r, g, b));
             }
 
         _taskTimers[3] = 0.0;
@@ -279,15 +276,15 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
+    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
     // Add a skybox
     _currentSky = addSky();
     // Position camera
     renderState().getCamera().setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 59.21 /*pitch*/);
-    _sun->csmSplitCount(3);  // 3 splits
-    _sun->csmSplitLogFactor(0.85f);
-    _sun->csmNearClipOffset(25.0f);
+    _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
+    _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
+    _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     // Add some obstacles
     SceneGraphNode_ptr cylinder[5];
     cylinder[0] = _sceneGraph->findNode("cylinderC").lock();
@@ -374,7 +371,6 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     renderable->getMaterialInstance()->setDoubleSided(true);
     Material* mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
-    mat->setAmbient(vec4<F32>(0.01f));
     flag->setActive(false);
     SceneNode* flagNode = flag->getNode();
 
@@ -486,14 +482,19 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
 
     for (U8 row = 0; row < 3; row++) {
-        for (U8 col = 0; col < 10; col++) {
-            ResourceDescriptor tempLight("Light_point_" + std::to_string(to_uint(row * 10 + col)));
+        for (U8 col = 0; col < 2; col++) {
+            ResourceDescriptor tempLight("Light_point_" + std::to_string(to_uint(row * 2 + col)));
             tempLight.setEnumValue(to_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
-            light->setRange(5.0f);
+            light->setRange(1.0f);
             light->setCastShadows(false);
-            _sceneGraph->getRoot()->addNode(*light);
+            light->setDiffuseColor(col == 0 ? DefaultColors::GREEN()
+                                            : col == 1 ? DefaultColors::BLUE()
+                                                       : DefaultColors::RED());
+            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot()->addNode(*light);
+            lightSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-100.0f + (100 * row), 10.0f, (-100.0f + (100 * col))));
+            _lightNodes.push_back(lightSGN);
         }
     }
 

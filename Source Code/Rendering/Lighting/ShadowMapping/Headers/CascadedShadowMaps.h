@@ -55,12 +55,10 @@ class CascadedShadowMaps : public ShadowMap {
     void render(SceneRenderState& renderState);
     void postRender();
     /// Update depth maps
-    void resolution(U16 resolution, U8 resolutionFactor);
     void previewShadowMaps();
     void init(ShadowMapInfo* const smi);
 
    protected:
-    bool bindInternal(U8 offset);
     void calculateSplitDepths(const Camera& cam);
     void applyFrustumSplits();
 

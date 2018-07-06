@@ -131,11 +131,11 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
     // Shadow splits are only visible in debug builds
     _sceneData.enableDebugRender(par.getParam<bool>("rendering.debug.displayShadowDebugInfo"));
-    // Time, fog, ambient light
+    // Time, fog, etc
     _sceneData.elapsedTime(_elapsedTimeMS);
 
-    const vec3<F32>& ambient = lightMgr.getAmbientLight();
-    _sceneData.lightDetails(ambient.r, ambient.g, ambient.b, lightMgr.getActiveLightCount());
+    _sceneData.lightCount(lightMgr.getActiveLightCount());
+
     _sceneData.toggleShadowMapping(lightMgr.shadowMappingEnabled());
 
     _sceneData.fogDensity(par.getParam<bool>("rendering.enableFog")

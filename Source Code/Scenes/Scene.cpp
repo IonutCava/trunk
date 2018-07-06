@@ -347,9 +347,6 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         renderState().getCamera().setEye(vec3<F32>(0, 50, 0));
     }
 
-    vec3<F32> ambientColor(0.1f, 0.1f, 0.1f);
-    LightManager::getInstance().setAmbientLight(ambientColor);
-
     // Create an AI thread, but start it only if needed
     Kernel& kernel = Application::getInstance().getKernel();
     _aiTask = kernel.AddTask(

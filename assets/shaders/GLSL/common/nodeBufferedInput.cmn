@@ -49,7 +49,6 @@ ivec4 dvd_BufferIntegerValues() {
 #define dvd_textureCount   uint(buffer_matProperties.z)
 #define dvd_parallaxFactor buffer_matProperties.w
 #define dvd_reliefFactor   dvd_parallaxFactor
-#define dvd_MatAmbient     dvd_Matrices[dvd_drawID]._colorMatrix[0].rgb
 #define dvd_MatDiffuse     dvd_Matrices[dvd_drawID]._colorMatrix[1]
 #define dvd_MatSpecular    dvd_Matrices[dvd_drawID]._colorMatrix[2].rgb
 #define dvd_MatEmissive    dvd_Matrices[dvd_drawID]._colorMatrix[3].rgb

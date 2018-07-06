@@ -14,12 +14,11 @@ REGISTER_SCENE(CubeScene);
 void CubeScene::render() {}
 
 void CubeScene::processTasks(const U64 deltaTime) {
-    Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
     D32 updateLights = Time::SecondsToMilliseconds(0.05);
 
     if (_taskTimers[0] >= updateLights) {
         for (U8 row = 0; row < 3; row++)
-            for (U8 col = 0; col < lights.size() / 3.0f; col++) {
+            for (U8 col = 0; col < _lightNodes.size() / 3.0f; col++) {
                 F32 x = col * 150.0f - 5.0f +
                         cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *
                             0.008f) *
@@ -35,10 +34,10 @@ void CubeScene::processTasks(const U64 deltaTime) {
                         10;
                 F32 r = 1;
                 F32 g = 1.0f - (row / 3.0f);
-                F32 b = col / (lights.size() / 3.0f);
+                F32 b = col / (_lightNodes.size() / 3.0f);
 
-                lights[row * 10 + col]->setPosition(vec3<F32>(x, y, z));
-                lights[row * 10 + col]->setDiffuseColor(vec3<F32>(r, g, b));
+                _lightNodes[row * 10 + col].lock()->getNode<Light>()->setDiffuseColor(vec3<F32>(r, g, b));
+                _lightNodes[row * 10 + col].lock()->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(x, y, z));
             }
 
         _taskTimers[0] = 0.0;
@@ -105,7 +104,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);
-            _sceneGraph->getRoot()->addNode(*light);
+            _lightNodes.push_back(_sceneGraph->getRoot()->addNode(*light));
         }
     }
 

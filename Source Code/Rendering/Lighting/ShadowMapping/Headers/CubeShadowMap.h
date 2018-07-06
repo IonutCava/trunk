@@ -43,7 +43,6 @@ class CubeShadowMap : public ShadowMap {
     void render(SceneRenderState& renderState);
 
     /// Update depth maps
-    void resolution(U16 resolution, U8 resolutionFactor);
     void previewShadowMaps() {}
     void init(ShadowMapInfo* const smi);
 };

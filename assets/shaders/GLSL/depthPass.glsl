@@ -46,7 +46,7 @@ void main()
     for (int i = 0; i < gl_in.length(); ++i)
     {
         _texCoord = v_in[i]._texCoord;
-        gl_Layer = gl_InvocationID;
+        gl_Layer = gl_InvocationID + int(dvd_shadowArrayOffset);
         gl_Position = vp * gl_in[i].gl_Position;
         EmitVertex();
     }

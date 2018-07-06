@@ -887,11 +887,6 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
                   pt.get<F32>("material.diffuse.<xmlattr>.g", 0.6f),
                   pt.get<F32>("material.diffuse.<xmlattr>.b", 0.6f),
                   pt.get<F32>("material.diffuse.<xmlattr>.a", 1.f)));
-    mat->setAmbient(
-        vec4<F32>(pt.get<F32>("material.ambient.<xmlattr>.r", 0.6f),
-                  pt.get<F32>("material.ambient.<xmlattr>.g", 0.6f),
-                  pt.get<F32>("material.ambient.<xmlattr>.b", 0.6f),
-                  pt.get<F32>("material.ambient.<xmlattr>.a", 1.f)));
     mat->setSpecular(
         vec4<F32>(pt.get<F32>("material.specular.<xmlattr>.r", 1.f),
                   pt.get<F32>("material.specular.<xmlattr>.g", 1.f),
@@ -967,14 +962,6 @@ void dumpMaterial(Material &mat) {
         getRendererTypeName(SceneManager::getInstance().getRenderer().getType()) + ".xml");
     pt_writer.clear();
     pt_writer.put("material.name", file);
-    pt_writer.put("material.ambient.<xmlattr>.r",
-                  mat.getShaderData()._ambient.r);
-    pt_writer.put("material.ambient.<xmlattr>.g",
-                  mat.getShaderData()._ambient.g);
-    pt_writer.put("material.ambient.<xmlattr>.b",
-                  mat.getShaderData()._ambient.b);
-    pt_writer.put("material.ambient.<xmlattr>.a",
-                  mat.getShaderData()._ambient.a);
     pt_writer.put("material.diffuse.<xmlattr>.r",
                   mat.getShaderData()._diffuse.r);
     pt_writer.put("material.diffuse.<xmlattr>.g",

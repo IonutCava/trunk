@@ -265,7 +265,7 @@ bool GL_API::initShaders() {
         ShaderType::COUNT,
         "#define MAX_SHADOW_CASTING_LIGHTS " +
             std::to_string(
-                Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE),
+                Config::Lighting::MAX_SHADOW_CASTING_LIGHTS),
         lineOffsets);
 
     appendToShaderHeader(
@@ -276,9 +276,10 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "const uint NUM_POSSIBLE_LIGHTS = " +
-            std::to_string(Config::Lighting::NUM_POSSIBLE_LIGHTS) + ";",
+        "const uint MAX_POSSIBLE_LIGHTS = " +
+            std::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS) + ";",
         lineOffsets);
+
     appendToShaderHeader(ShaderType::COUNT,
                          "const int MAX_VISIBLE_NODES = " +
                              std::to_string(Config::MAX_VISIBLE_NODES) + ";",
@@ -404,40 +405,36 @@ bool GL_API::initShaders() {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_REFLECTION " +
-        std::to_string(to_uint(ShaderProgram::TextureUsage::REFLECTION)),
-        lineOffsets);
-
-    appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP " +
         std::to_string(
             to_uint(ShaderProgram::TextureUsage::DEPTH)),
         lineOffsets);
-    
+
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define SHADOW_CUBE_START " +
+        "#define TEXTURE_REFLECTION " +
+            std::to_string(to_uint(ShaderProgram::TextureUsage::REFLECTION)),
+        lineOffsets);
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define SHADOW_CUBE_MAP_ARRAY " +
             std::to_string(
-                to_uint(LightManager::getInstance().getShadowBindSlotOffset(
-                    ShadowType::CUBEMAP))),
+                to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::CUBEMAP))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define SHADOW_NORMAL_START " +
+        "#define SHADOW_SINGLE_MAP_ARRAY " +
             std::to_string(
-                to_uint(LightManager::getInstance().getShadowBindSlotOffset(
-                    ShadowType::SINGLE))),
+                to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::SINGLE))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define SHADOW_ARRAY_START " +
+        "#define SHADOW_LAYERED_MAP_ARRAY " +
             std::to_string(
-                to_uint(LightManager::getInstance().getShadowBindSlotOffset(
-                    ShadowType::LAYERED))),
+                to_uint(LightManager::getInstance().getShadowBindSlotOffset(ShadowType::LAYERED))),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::FRAGMENT,

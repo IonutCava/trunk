@@ -41,6 +41,32 @@ class SceneGraphNode;
 class SceneRenderState;
 
 DEFINE_SINGLETON(LightManager)
+  protected:
+      struct LightProperties {
+          /// rgb = diffuse
+          ///  w = reserved;
+          vec4<F32> _diffuse;
+          /// light position (or direction for Directional lights)
+          /// w = range
+          vec4<F32> _position;
+          /// xyz = spot direction
+          /// w = spot angle
+          vec4<F32> _direction;
+          /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot#
+          /// y = casts shadows, 
+          /// z - shadow block index
+          /// w - reserved;
+          vec4<I32> _options;
+
+          inline void set(const LightProperties& other) {
+              _diffuse.set(other._diffuse);
+              _position.set(other._position);
+              _direction.set(other._direction);
+              _options.set(other._options);
+          }
+      };
+
+
 
   public:
     void init();
@@ -49,10 +75,6 @@ DEFINE_SINGLETON(LightManager)
     bool addLight(Light& light);
     /// remove a light from the manager
     bool removeLight(I64 lightGUID, LightType type);
-    /// Update the ambient light values used in shader programs
-    inline void setAmbientLight(const vec3<F32>& light) { _ambientLight = light; }
-    /// Retrieve the current ambient light values
-    inline const vec3<F32>& getAmbientLight() const { return _ambientLight; }
     /// Retrieve the number of active lights in the scene;
     inline const U32 getActiveLightCount() const { return _activeLightCount; }
     inline Light* currentShadowCastingLight() const { return _currentShadowCastingLight; }
@@ -116,11 +138,12 @@ DEFINE_SINGLETON(LightManager)
     bool _shadowMapsEnabled;
     Light* _currentShadowCastingLight;
     U32 _activeLightCount;
-    vec3<F32> _ambientLight;
-    mat4<F32> _viewMatrixCache;
 
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>  _lightShaderBuffer;
     std::array<U8, to_const_uint(ShadowType::COUNT)> _shadowLocation;
+
+    std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightProperties;
+    std::array<Light::ShadowProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightShadowProperties;
 
 END_SINGLETON
 

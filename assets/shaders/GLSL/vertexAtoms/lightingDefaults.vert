@@ -6,7 +6,7 @@
 out vec4 _vertexWV;
 
 void computeLightVectors(){
-    _lightCount = dvd_lodLevel > 2 ? 1 : uint(dvd_lightInfo.w);
+    _lightCount = dvd_lodLevel > 2 ? 1 : dvd_lightCount;
     _normalWV = normalize(dvd_NormalMatrix() * dvd_Normal);
     _vertexWV = dvd_ViewMatrix * _vertexW;
 

@@ -15,14 +15,11 @@ Light::Light(const F32 range, const LightType& type)
     : SceneNode(SceneNodeType::TYPE_LIGHT),
       _type(type),
       _drawImpostor(false),
-      _updateLightBB(false),
       _impostor(nullptr),
       _lightSGN(nullptr),
-      _resolutionFactor(1),
-      _shadowMapInfo(nullptr)
+      _shadowMapInfo(nullptr),
+      _castsShadows(false)
 {
-    // All lights default to fully dynamic for now.
-    setLightMode(LightMode::MOVABLE);
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         _shadowProperties._lightVP[i].identity();
         _shadowProperties._floatValues[i].set(-1.0f);
@@ -33,17 +30,12 @@ Light::Light(const F32 range, const LightType& type)
     _shadowCamera->setTurnSpeedFactor(0.0f);
     _shadowCamera->setFixedYawAxis(true);
 
-    _properties._diffuse.set(DefaultColors::WHITE());
-    _properties._position.w = 35.0f;
-    _properties._options.x = to_int(_type);
-    _properties._options.y = 0;
-    _properties._options.z = -1;
-    _properties._direction.w = 0.0f;
-    _properties._range = 1.0f;
+    setDiffuseColor(DefaultColors::WHITE());
+    setRange(1.0f);
+
+    _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
     _enabled = true;
-    _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
-    _renderState.addToDrawExclusionMask(RenderStage::Z_PRE_PASS);
 }
 
 Light::~Light()
@@ -57,14 +49,17 @@ bool Light::load(const stringImpl& name) {
 }
 
 bool Light::unload() {
-    if (getState() != ResourceState::RES_LOADED && getState() != ResourceState::RES_LOADING) {
+    /*if (getState() != ResourceState::RES_LOADED && getState() != ResourceState::RES_LOADING) {
         return true;
-    }
+    }*/
 
     // DELETE(_shadowCamera); <-- deleted by the camera manager
     LightManager::getInstance().removeLight(getGUID(), getLightType());
 
     removeShadowMapInfo();
+    if (_impostor != nullptr) {
+        RemoveResource(_impostor);
+    }
 
     return SceneNode::unload();
 }
@@ -76,8 +71,7 @@ void Light::postLoad(SceneGraphNode& sgn) {
         "Light error: Lights can only be bound to a single SGN node!");
 
     _lightSGN = &sgn;
-    _updateLightBB = true;
-
+    _lightSGN->getComponent<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
     SceneNode::postLoad(sgn);
 }
 
@@ -87,29 +81,7 @@ void Light::onCameraUpdate(Camera& camera) {
     if (!getEnabled()) {
         return;
     }
-
-    _placementDirty = true;
-
-    if (_type != LightType::DIRECTIONAL) {
-        if (_mode == LightMode::MOVABLE) {
-            const vec3<F32>& newPosition =
-                _lightSGN->getComponent<PhysicsComponent>()->getPosition();
-            if (_properties._position.xyz() != newPosition) {
-                _properties._position.xyz(newPosition);
-            }
-        } else {
-            _lightSGN->getComponent<PhysicsComponent>()->setPosition(
-                _properties._position.xyz());
-        }
-
-        if (_updateLightBB) {
-            _lightSGN->updateBoundingBoxTransform(
-                _lightSGN->getComponent<PhysicsComponent>()->getWorldMatrix());
-        }
-    }
-
-    _updateLightBB = false;
-
+    
     if (_shadowMapInfo) {
         ShadowMap* sm = _shadowMapInfo->getShadowMap();
         if (sm) {
@@ -118,67 +90,34 @@ void Light::onCameraUpdate(Camera& camera) {
     }
 }
 
-void Light::setPosition(const vec3<F32>& newPosition) {
-    // Togglable lights can't be moved.
-    if (_mode == LightMode::TOGGLABLE) {
-        Console::errorfn(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(),
-                         "Light_Togglable", "LIGHT_POSITION");
-        return;
-    }
-
-    _properties._position.xyz(newPosition);
-
-    if (_mode == LightMode::MOVABLE) {
-        _lightSGN->getComponent<PhysicsComponent>()->setPosition(newPosition);
-    }
-    _updateLightBB = true;
-
-    _placementDirty = true;
-}
-
-void Light::setDiffuseColor(const vec3<F32>& newDiffuseColor) {
-    _properties._diffuse.set(newDiffuseColor, _properties._diffuse.a);
+void Light::setDiffuseColor(const vec3<U8>& newDiffuseColor) {
+    _color.rgb(newDiffuseColor);
 }
 
 void Light::setRange(F32 range) {
-    _properties._range = range;
-    _placementDirty = true;
+    _positionAndRange.w = range;
 }
 
-void Light::setDirection(const vec3<F32>& newDirection) {
-    // Togglable lights can't be moved.
-    if (_mode == LightMode::TOGGLABLE) {
-        Console::errorfn(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(),
-                         "Light_Togglable", "LIGHT_DIRECTION");
-        return;
-    }
+void Light::setSpotDirection(const vec3<F32>& newDirection) {
     vec3<F32> newDirectionNormalized(newDirection);
     newDirectionNormalized.normalize();
-
-    if (_type == LightType::SPOT) {
-        _properties._direction.xyz(newDirectionNormalized);
-    } else {
-        _properties._position.xyz(newDirectionNormalized);
-    }
-
-    _updateLightBB = true;
+    _spotProperties.xyz(newDirectionNormalized);
     _placementDirty = true;
 }
 
-void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                        SceneState& sceneState) {
-    if (_type == LightType::DIRECTIONAL) {
-        return;
+void Light::setSpotAngle(F32 newAngle) {
+    _spotProperties.w = newAngle;
+}
+
+void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
+    _positionAndRange.xyz(_lightSGN->getComponent<PhysicsComponent>()->getPosition());
+
+    if (_type != LightType::DIRECTIONAL) {
+        _lightSGN->updateBoundingBoxTransform(_lightSGN->getComponent<PhysicsComponent>()->getWorldMatrix());
+        sgn.getBoundingBox().setComputed(false);
     }
 
-    // Check if range changed
-    if (COMPARE(getRange(), sgn.getBoundingBoxConst().getMax().x)) {
-        return;
-    }
-
-    sgn.getBoundingBox().setComputed(false);
-
-    _updateLightBB = true;
+    _placementDirty = true;
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
@@ -186,7 +125,7 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 bool Light::computeBoundingBox(SceneGraphNode& sgn) {
     if (_type == LightType::DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
-            _properties._position.xyz() *
+            _positionAndRange.xyz() * 
             to_const_float(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE) * -1.0f;
         sgn.getBoundingBox().set(directionalLightPosition - vec3<F32>(10),
                                  directionalLightPosition + vec3<F32>(10));
@@ -194,30 +133,25 @@ bool Light::computeBoundingBox(SceneGraphNode& sgn) {
         sgn.getBoundingBox().set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
     }
 
-    _updateLightBB = true;
-
     return SceneNode::computeBoundingBox(sgn);
 }
 
 bool Light::isInView(const SceneRenderState& sceneRenderState,
                      SceneGraphNode& sgn, const bool distanceCheck) {
-    return ((_impostorSGN.lock() != nullptr) && _drawImpostor);
+    return _drawImpostor;
 }
 
 bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     // The isInView call should stop impostor rendering if needed
     if (!_impostor) {
-        _impostor =
-            CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
-        _impostor->setRadius(_properties._range);
+        _impostor = CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
+        _impostor->setRadius(_positionAndRange.w);
         _impostor->renderState().setDrawState(true);
         _impostorSGN = _lightSGN->addNode(*_impostor);
         _impostorSGN.lock()->setActive(true);
     }
-    Material* const impostorMaterialInst =
-        _impostorSGN.lock()->getComponent<RenderingComponent>()->getMaterialInstance();
+    Material* const impostorMaterialInst = _impostorSGN.lock()->getComponent<RenderingComponent>()->getMaterialInstance();
     impostorMaterialInst->setDiffuse(getDiffuseColor());
-    impostorMaterialInst->setAmbient(getDiffuseColor());
 
     // Updating impostor range is expensive, so check if we need to
     if (!COMPARE(getRange(), _impostor->getRadius())) {
@@ -236,16 +170,21 @@ bool Light::removeShadowMapInfo() {
     return true;
 }
 
+void Light::validateOrCreateShadowMaps(SceneRenderState& sceneRenderState) {
+    ShadowMap* sm = _shadowMapInfo->createShadowMap(sceneRenderState, shadowCamera());
+    assert(sm != nullptr);
+}
+
 void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
-    ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(sceneRenderState, _shadowCamera);
+    ShadowMap* sm = _shadowMapInfo->getShadowMap();
 
     DIVIDE_ASSERT(sm != nullptr,
                   "Light::generateShadowMaps error: Shadow casting light "
                   "with no shadow map found!");
 
+    _shadowProperties._arrayOffset = sm->getArrayOffset();
     sm->render(sceneRenderState);
-    sm->postRender();
+
 }
 
-void Light::setLightMode(const LightMode& mode) { _mode = mode; }
 };

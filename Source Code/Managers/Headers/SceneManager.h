@@ -39,11 +39,15 @@
 namespace Divide {
 
 struct SceneShaderData {
-    vec4<F32> _lightInfo;
+    SceneShaderData() : _shadowCastingLightArrayOffset(0)
+    {
+    }
+
     vec4<F32> _fogDetails;
     vec4<F32> _windDetails;
     vec4<F32> _shadowingSettings;
     vec4<U32> _otherData;
+    U32 _shadowCastingLightArrayOffset;
 
     inline void fogDetails(F32 colorR, F32 colorG, F32 colorB, F32 density) {
         _fogDetails.set(colorR, colorG, colorB, density);
@@ -61,10 +65,6 @@ struct SceneShaderData {
         _windDetails.set(directionX, directionY, directionZ, speed);
     }
 
-    inline void lightDetails(F32 ambientR, F32 ambientG, F32 ambientB, U32 lightCount) {
-        _lightInfo.set(ambientR, ambientG, ambientB, to_float(lightCount));
-    }
-
     inline void elapsedTime(U32 timeMS) {
         _otherData.x = timeMS;
     }
@@ -75,6 +75,14 @@ struct SceneShaderData {
 
     inline void toggleShadowMapping(bool state) {
         _otherData.z = state ? 1 : 0;
+    }
+
+    inline void lightCount(U32 lightCount) {
+        _otherData.w = lightCount;
+    }
+
+    inline void shadowCastingLightArrayOffset(U32 offset) {
+        _shadowCastingLightArrayOffset = offset;
     }
 };
 
@@ -144,6 +152,12 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     }
 
     void enableFog(F32 density, const vec3<F32>& color);
+
+
+    SceneShaderData& sceneData() {
+        return _sceneData;
+    }
+
   public:  /// Input
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);

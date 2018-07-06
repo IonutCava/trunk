@@ -219,6 +219,10 @@ DEFINE_SINGLETON(GFXDevice)
        }
 
        struct GPUData {
+           GPUData() : _shadowArrayOffset(0)
+           {
+           }
+
            mat4<F32> _ProjectionMatrix;
            mat4<F32> _ViewMatrix;
            mat4<F32> _ViewProjectionMatrix;
@@ -227,6 +231,7 @@ DEFINE_SINGLETON(GFXDevice)
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
+           U32       _shadowArrayOffset;
         } _data;
 
         bool _updated;
@@ -303,6 +308,7 @@ DEFINE_SINGLETON(GFXDevice)
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
     void generateCubeMap(Framebuffer& cubeMap,
+                         const U32 arrayOffset,
                          const vec3<F32>& pos,
                          const vec2<F32>& zPlanes,
                          RenderStage renderStage);

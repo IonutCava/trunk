@@ -94,7 +94,7 @@ class TenisScene : public Scene {
     SceneGraphNode_wptr _ballSGN;
     SceneGraphNode_wptr _net;
     SceneGraphNode_wptr _floor;
-    DirectionalLight* _sun;
+    SceneGraphNode_wptr _sun;
 
    private:  // Game stuff
     mutable SharedLock _gameLock;

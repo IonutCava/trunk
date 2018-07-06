@@ -12,9 +12,12 @@ ImpostorSphere* ImplResourceLoader<ImpostorSphere>::operator()() {
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
-        Material* matTemp = CreateResource<Material>(
-            ResourceDescriptor("Material_" + _descriptor.getName()));
-        matTemp->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+        Material* matTemp = CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
+        RenderStateBlock dummyDesc(GFX_DEVICE.getRenderStateBlock(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));
+        dummyDesc.setFillMode(FillMode::WIREFRAME);
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY);
+        matTemp->setShadingMode(Material::ShadingMode::FLAT);
+
         ptr->setMaterialTpl(matTemp);
     }
 
@@ -33,9 +36,12 @@ ImpostorBox* ImplResourceLoader<ImpostorBox>::operator()() {
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
-        Material* matTemp = CreateResource<Material>(
-            ResourceDescriptor("Material_" + _descriptor.getName()));
-        matTemp->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+        Material* matTemp = CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
+        RenderStateBlock dummyDesc(GFX_DEVICE.getRenderStateBlock(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));
+        dummyDesc.setFillMode(FillMode::WIREFRAME);
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY);
+        matTemp->setShadingMode(Material::ShadingMode::FLAT);
+
         ptr->setMaterialTpl(matTemp);
     }
 

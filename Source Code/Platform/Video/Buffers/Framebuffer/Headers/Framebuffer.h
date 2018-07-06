@@ -85,10 +85,10 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
     virtual void destroy() = 0;
 
     /// Use by multilayered FB's
-    virtual void drawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
+    virtual void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
                              bool includeDepth = true) = 0;
     /// Used by cubemap FB's
-    inline void drawToFace(TextureDescriptor::AttachmentType slot, U8 nFace,
+    inline void drawToFace(TextureDescriptor::AttachmentType slot, U32 nFace,
                            bool includeDepth = true) {
         drawToLayer(slot, nFace, includeDepth);
     }
@@ -119,6 +119,8 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         readData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType,
                  outData);
     }
+
+    virtual void clear() const = 0;
 
     virtual void blitFrom(Framebuffer* inputFB,
                           TextureDescriptor::AttachmentType
@@ -162,8 +164,6 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
     virtual bool checkStatus() const = 0;
 
    protected:
-    P32 _colorMask;
-    bool _depthWritesEnabled;
     bool _shouldRebuild;
     bool _useDepthBuffer;
     bool _disableColorWrites;

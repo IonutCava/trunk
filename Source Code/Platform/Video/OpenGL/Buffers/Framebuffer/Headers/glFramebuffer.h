@@ -50,7 +50,7 @@ class glFramebuffer : public Framebuffer {
     Texture* getAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
                            bool flushStateOnRequest = true);
 
-    void drawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
+    void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
                      bool includeDepth = true);
     void setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                      TextureDescriptor::AttachmentType slot);
@@ -72,7 +72,7 @@ class glFramebuffer : public Framebuffer {
 
    protected:
     void resolve();
-    void clearBuffers() const;
+    void clear() const override;
     bool checkStatus() const;
     void setInitialAttachments();
     void initAttachment(TextureDescriptor::AttachmentType type,
@@ -92,8 +92,6 @@ class glFramebuffer : public Framebuffer {
     static bool _viewportChanged;
     static bool _bufferBound;
     vectorImpl<GLenum> _colorBuffers;
-    bool _colorMaskChanged;
-    bool _depthMaskChanged;
     const std::unique_ptr<glFramebuffer> _resolveBuffer;
 
     using AttType = TextureDescriptor::AttachmentType;

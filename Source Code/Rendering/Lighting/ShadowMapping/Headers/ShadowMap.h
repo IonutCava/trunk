@@ -58,32 +58,36 @@ class NOINITVTABLE ShadowMap {
 
     /// Render the scene and save the frame to the shadow map
     virtual void render(SceneRenderState& renderState) = 0;
-    /// Setup needed before rendering the light
-    void preRender();
-    /// Setup needed after rendering the light
-    virtual void postRender();
     /// Get the current shadow mapping tehnique
     inline ShadowType getShadowMapType() const { return _shadowMapType; }
 
-    inline Framebuffer* getDepthMap() { return _depthMap; }
+    inline Framebuffer* getDepthMap() { return _depthMaps[to_uint(getShadowMapType())]; }
 
-    U16 resolution();
-    virtual void resolution(U16 resolution, U8 resolutionFactor) {}
+    inline U32 getArrayOffset() const {
+        return _arrayOffset;
+    }
 
     virtual void init(ShadowMapInfo* const smi) = 0;
-    virtual bool bind(U8 offset);
     virtual void previewShadowMaps() = 0;
     
     virtual void onCameraUpdate(Camera& camera) {}
 
-   protected:
-    virtual bool bindInternal(U8 offset);
+    static void initShadowMaps();
+    static void clearShadowMaps();
+    static void bindShadowMaps();
+    static U32 findDepthMapLayer(ShadowType shadowType);
+    static void commitDepthMapLayer(ShadowType shadowType, U32 layer);
+    static bool freeDepthMapLayer(ShadowType shadowType, U32 layer);
+    static void clearShadowMapBuffers();
 
    protected:
+    /// The depth maps. Using 1 array for each type: CSM, Cube and single
+    static std::array<Framebuffer*, to_const_uint(ShadowType::COUNT)> _depthMaps;
+    typedef std::array<bool, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LayerUsageMask;
+    static std::array<LayerUsageMask, to_const_uint(ShadowType::COUNT)> _depthMapUsage;
+
     ShadowType _shadowMapType;
-    /// The depth maps. Number depends on the current method
-    Framebuffer* _depthMap;
-    U16 _resolution;
+    U32 _arrayOffset;
     /// Internal pointer to the parent light
     Light* _light;
     Camera* _shadowCamera;
@@ -99,12 +103,8 @@ class ShadowMapInfo {
 
     inline ShadowMap* getShadowMap() { return _shadowMap; }
 
-    ShadowMap* getOrCreateShadowMap(const SceneRenderState& sceneRenderState,
-                                    Camera* shadowCamera);
+    ShadowMap* createShadowMap(const SceneRenderState& sceneRenderState, Camera* shadowCamera);
 
-    void resolution(U16 resolution);
-
-    inline U16 resolution() const { return _resolution; }
     inline U8 numLayers() const { return _numLayers; }
 
     inline void numLayers(U8 layerCount) {
@@ -113,7 +113,6 @@ class ShadowMapInfo {
 
    private:
     U8 _numLayers;
-    U16 _resolution;
     ShadowMap* _shadowMap;
     Light* _light;
 };

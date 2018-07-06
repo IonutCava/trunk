@@ -19,8 +19,6 @@ Framebuffer::Framebuffer(bool multiSampled)
     _clearColor.set(DefaultColors::WHITE());
     _attachmentChanged.fill(false);
     _attachmentTexture.fill(nullptr);
-    _colorMask.i = 1;
-    _depthWritesEnabled = true;
 }
 
 Framebuffer::~Framebuffer()

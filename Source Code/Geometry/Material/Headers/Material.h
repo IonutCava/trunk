@@ -95,7 +95,6 @@ class Material : public Resource {
     /// shade objects
     struct ShaderData {
         vec4<F32> _diffuse;  /* diffuse component */
-        vec4<F32> _ambient;  /* ambient component */
         vec4<F32> _specular; /* specular component*/
         vec4<F32> _emissive; /* emissive component*/
         F32 _shininess;      /* specular exponent */
@@ -103,7 +102,6 @@ class Material : public Resource {
 
         ShaderData()
             : _diffuse(vec4<F32>(VECTOR3_UNIT / 1.5f, 1)),
-              _ambient(vec4<F32>(VECTOR3_UNIT / 5.0f, 1)),
               _specular(0.8f, 0.8f, 0.8f, 1.0f),
               _emissive(0.6f, 0.6f, 0.6f, 1.0f),
               _shininess(5),
@@ -113,7 +111,6 @@ class Material : public Resource {
 
         ShaderData& operator=(const ShaderData& other) {
             _diffuse.set(other._diffuse);
-            _ambient.set(other._ambient);
             _specular.set(other._specular);
             _emissive.set(other._emissive);
             _shininess = other._shininess;
@@ -204,14 +201,11 @@ class Material : public Resource {
         }
     }
 
-    inline void setAmbient(const vec4<F32>& value) {
-        _dirty = true;
-        _shaderData._ambient = value;
-    }
     inline void setSpecular(const vec4<F32>& value) {
         _dirty = true;
         _shaderData._specular = value;
     }
+
     inline void setEmissive(const vec3<F32>& value) {
         _dirty = true;
         _shaderData._emissive = value;
@@ -221,11 +215,13 @@ class Material : public Resource {
         _dirty = true;
         _hardwareSkinning = state;
     }
+
     inline void setOpacity(F32 value) {
         _dirty = true;
         _shaderData._diffuse.a = value;
         _translucencyCheck = true;
     }
+
     inline void setShininess(F32 value) {
         _dirty = true;
         _shaderData._shininess = value;
@@ -335,11 +331,9 @@ class Material : public Resource {
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
 
     inline void getMaterialMatrix(mat4<F32>& retMatrix) const {
-        retMatrix.setCol(0, _shaderData._ambient);
         retMatrix.setCol(1, _shaderData._diffuse);
         retMatrix.setCol(2, _shaderData._specular);
-        retMatrix.setCol(
-            3, vec4<F32>(_shaderData._emissive.rgb(), _shaderData._shininess));
+        retMatrix.setCol(3, vec4<F32>(_shaderData._emissive.rgb(), _shaderData._shininess));
     }
 
     inline F32 getParallaxFactor() const { return _parallaxFactor; }

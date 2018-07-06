@@ -11,9 +11,14 @@ struct LightPropertiesFrag {
 
 float computeAttenuationOmni(const in uint lightIndex, const in vec3 lightDirection) {
     float distance = length(lightDirection);
-    float radius = dvd_LightSource[lightIndex]._range;
+    float radius = dvd_LightSource[lightIndex]._position.w;
     float att = clamp(1.0 - distance*distance / (radius*radius), 0.0, 1.0);
-    return att * att;
+    att *= att;
+    if (att > radius) {
+        return 0;
+    }
+
+    return att;
 }
 
 #define M_PIDIV180 0.01745329251994329576923690768488

@@ -11,47 +11,19 @@ namespace Divide {
 
 CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
     : ShadowMap(light, shadowCamera, ShadowType::CUBEMAP) {
-    Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
-                     "Single Shadow Map");
-    // Default filters, LINEAR is OK for this
-    TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_MAP,
-                                         GFXImageFormat::DEPTH_COMPONENT,
-                                         GFXDataFormat::UNSIGNED_INT);
+    Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
 
-    SamplerDescriptor depthMapSampler;
-    depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthMapSampler.toggleMipMaps(false);
-    depthMapSampler._useRefCompare = true;  //< Use compare function
-    depthMapSampler._cmpFunc =
-        ComparisonFunction::LEQUAL;  //< Use less or equal
-    depthMapDescriptor.setSampler(depthMapSampler);
-
-    _depthMap = GFX_DEVICE.newFB();
-    _depthMap->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _depthMap->toggleColorWrites(false);
 }
 
 CubeShadowMap::~CubeShadowMap() {}
 
 void CubeShadowMap::init(ShadowMapInfo* const smi) {
-    resolution(smi->resolution(), _light->shadowMapResolutionFactor());
     _init = true;
 }
 
-void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor) {
-    U16 resolutionTemp = resolution * resolutionFactor;
-    if (resolutionTemp != _resolution) {
-        _resolution = resolutionTemp;
-        // Initialize the FB's with a variable resolution
-        Console::printfn(Locale::get("LIGHT_INIT_SHADOW_FB"),
-                         _light->getGUID());
-        _depthMap->create(_resolution, _resolution);
-    }
-    ShadowMap::resolution(resolution, resolutionFactor);
-}
-
 void CubeShadowMap::render(SceneRenderState& renderState) {
-    GFX_DEVICE.generateCubeMap(*_depthMap,
+    GFX_DEVICE.generateCubeMap(*getDepthMap(),
+                                _arrayOffset,
                                 _light->getPosition(),
                                 vec2<F32>(0.1f, _light->getRange()),
                                 RenderStage::SHADOW);

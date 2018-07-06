@@ -26,9 +26,9 @@ void TenisScene::preRender() {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    _sun->setDirection(_sunvector);
+    _sun.lock()->getComponent<PhysicsComponent>()->setPosition(_sunvector);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector,
-                                                         _sun->getDiffuseColor());
+                                                         _sun.lock()->getNode<Light>()->getDiffuseColor());
 }
 
 void TenisScene::processGUI(const U64 deltaTime) {
@@ -271,8 +271,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
     // Add a light
-    _sun = addLight(LightType::DIRECTIONAL,
-               GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
+    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
     _currentSky = addSky();
 
     //    ResourceDescriptor tempLight1("Light omni");
@@ -393,7 +392,6 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(ballDescriptor);
     _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.5f, 0.5f, 1.0f));
-    _ball->getMaterialTpl()->setAmbient(vec4<F32>(0.5f, 0.5f, 0.5f, 1.0f));
     _ball->getMaterialTpl()->setShininess(0.2f);
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);

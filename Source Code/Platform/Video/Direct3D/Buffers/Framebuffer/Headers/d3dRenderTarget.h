@@ -44,7 +44,7 @@ class d3dRenderTarget : public Framebuffer {
     bool create(U16 width, U16 height);
 
     void destroy();
-    void drawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
+    void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
                      bool includeDepth = true);
     void setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                      TextureDescriptor::AttachmentType slot);
@@ -62,6 +62,7 @@ class d3dRenderTarget : public Framebuffer {
                   TextureDescriptor::AttachmentType slot =
                       TextureDescriptor::AttachmentType::Color0,
                   bool blitColor = true, bool blitDepth = false);
+    void clear() const override;
 
    protected:
     bool checkStatus() const;

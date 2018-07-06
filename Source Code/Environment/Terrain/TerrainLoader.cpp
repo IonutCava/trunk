@@ -158,8 +158,6 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
 
     terrainMaterial->setDiffuse(
         vec4<F32>(DefaultColors::WHITE().rgb() / 2, 1.0f));
-    terrainMaterial->setAmbient(
-        vec4<F32>(DefaultColors::WHITE().rgb() / 3, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
     terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);

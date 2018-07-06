@@ -45,55 +45,6 @@ enum class LightType : U32 {
     COUNT
 };
 
-enum class LightMode : U32 {
-    /// normal light. Can't be moved or changed at runtime
-    SIMPLE = 0,
-    /// can be switched on or off, change
-    /// brightness, color, range at runtime
-    TOGGLABLE = 1,
-    /// can change position at runtime / most expensive
-    MOVABLE = 2,
-    /// only shadow caster in scene
-    // DOMINANT = 3
-    COUNT
-};
-
-struct LightProperties {
-    /// rgb = diffuse,  w = ambientFactor;
-    vec4<F32> _diffuse;
-    /// Position is a direction for directional lights. w = reserved
-    vec4<F32> _position;
-    /// xyz = Used by spot lights, w = spotExponent
-    vec4<F32> _direction;
-    /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, zw - reserved;
-    vec4<I32> _options;
-    F32       _range;
-
-    inline void set(const LightProperties& other) {
-        _diffuse.set(other._diffuse);
-        _position.set(other._position);
-        _direction.set(other._direction);
-        _options.set(other._options);
-        _range = other._range;
-    }
-};
-
-struct LightShadowProperties {
-    /// light viewProjection matrices
-    mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];
-    /// light's position in world space
-    vec4<F32> _lightPosition[Config::Lighting::MAX_SPLITS_PER_LIGHT];
-    /// random float values (e.g. split distances)
-    vec4<F32> _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
-    inline void set(const LightShadowProperties& other) {
-        for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
-            _lightVP[i].set(other._lightVP[i]);
-            _lightPosition[i].set(other._lightPosition[i]);
-            _floatValues[i].set(other._floatValues[i]);
-        }
-    }
-};
-
 class Camera;
 class ImpostorSphere;
 class ParamHandler;
@@ -101,57 +52,67 @@ class SceneRenderState;
 /// A light object placed in the scene at a certain position
 class Light : public SceneNode {
    public:
+       struct ShadowProperties {
+           /// light viewProjection matrices
+           mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];
+           /// light's position in world space
+           vec4<F32> _lightPosition[Config::Lighting::MAX_SPLITS_PER_LIGHT];
+           /// random float values (e.g. split distances)
+           vec4<F32> _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
+           U32       _arrayOffset;
+
+           inline void set(const ShadowProperties& other) {
+               for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+                   _lightVP[i].set(other._lightVP[i]);
+                   _lightPosition[i].set(other._lightPosition[i]);
+                   _floatValues[i].set(other._floatValues[i]);
+                   _arrayOffset = other._arrayOffset;
+               }
+           }
+       };
+
     typedef vectorImpl<Light*> LightList;
 
-    /// Create a new light assigned to the specified slot with the specified
-    /// range
-    /// @param slot = the slot the light is assigned to (as in OpenGL slot for
-    /// example)
+    /// Create a new light assigned to the specified slot with the specified range
+    /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
     Light(const F32 range, const LightType& type);
     virtual ~Light();
 
     /// Is the light a shadow caster?
-    inline bool castsShadows() const { return _properties._options.y == 1; }
+    inline bool castsShadows() const { return _castsShadows; }
 
-    /// Get the entire property block
-    inline const LightProperties& getProperties() const { return _properties; }
-
-    inline const LightShadowProperties& getShadowProperties() const {
-        return _shadowProperties;
-    }
-
-    inline F32 getRange() const { return _properties._range; }
+    inline F32 getRange() const { return _positionAndRange.w; }
 
     void setRange(F32 range);
 
     /// Get light diffuse color
     inline vec3<F32> getDiffuseColor() const {
-        return _properties._diffuse.rgb();
+        return Util::ToFloatColor(_color.rgb());
     }
 
-    void setDiffuseColor(const vec3<F32>& newDiffuseColor);
+    void setDiffuseColor(const vec3<U8>& newDiffuseColor);
+    inline void setDiffuseColor(const vec3<F32>& newDiffuseColor) {
+        setDiffuseColor(Util::ToByteColor(newDiffuseColor));
+    }
 
-    /// Get light position for omni and spot or direction for a directional
-    /// light
-    inline vec3<F32> getPosition() const { return _properties._position.xyz(); }
-
-    void setPosition(const vec3<F32>& newPosition);
+    /// Get light position for omni and spot or direction for a directional light
+    inline vec3<F32> getPosition() const { return _positionAndRange.xyz(); }
 
     /// Get direction for spot lights
-    inline vec3<F32> getDirection() const {
-        return _properties._direction.xyz();
-    }
+    inline vec3<F32> getSpotDirection() const { return _spotProperties.xyz(); }
 
-    void setDirection(const vec3<F32>& newDirection);
+    void setSpotDirection(const vec3<F32>& newDirection);
 
+    inline F32 getSpotAngle() const { return _spotProperties.w; }
+
+    void setSpotAngle(F32 newAngle);
+    
     /// Light state (on/off)
     inline bool getEnabled() const { return _enabled; }
 
     /// Does this list cast shadows?
-    inline void setCastShadows(const bool state) {
-        _properties._options.y = (state ? 1 : 0);
-    }
+    inline void setCastShadows(const bool state) { _castsShadows = state; }
 
     /// Draw a sphere at the lights position
     /// The impostor has the range of the light's effect range and the diffuse
@@ -163,8 +124,6 @@ class Light : public SceneNode {
 
     /// Get the light type. (see LightType enum)
     inline const LightType& getLightType() const { return _type; }
-
-    inline const LightMode& getLightMode() const { return _mode; }
 
     /// Get a pointer to the light's impostor
     inline ImpostorSphere* const getImpostor() const { return _impostor; }
@@ -192,7 +151,12 @@ class Light : public SceneNode {
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
 
+    void validateOrCreateShadowMaps(SceneRenderState& sceneRenderState);
     virtual void generateShadowMaps(SceneRenderState& sceneRenderState);
+
+    inline const ShadowProperties& getShadowProperties() const {
+        return _shadowProperties;
+    }
 
     inline const mat4<F32>& getShadowVPMatrix(U8 index) const {
         return _shadowProperties._lightVP[index];
@@ -222,12 +186,6 @@ class Light : public SceneNode {
         _shadowProperties._lightPosition[index].set(newValue, 1.0f);
     }
 
-    inline void shadowMapResolutionFactor(U8 factor) {
-        _resolutionFactor = factor;
-    }
-
-    inline U8 shadowMapResolutionFactor() const { return _resolutionFactor; }
-
    protected:
     friend class LightManager;
     template <typename T>
@@ -239,28 +197,30 @@ class Light : public SceneNode {
     /// @param type Directional/Spot/Omni (see LightType enum)
     inline void setLightType(LightType type) {
         _type = type;
-        _properties._options.x = to_int(_type);
     }
 
-    /// Set light mode
-    /// @param mode Togglable, Movable, Simple, Dominant (see LightMode enum)
-    void setLightMode(const LightMode& mode);
     /// Get a ref to the shadow camera used by this light
     Camera* const shadowCamera() const { return _shadowCamera; }
-
+    
    protected:
-    LightProperties _properties;
-    LightShadowProperties _shadowProperties;
+    /// xyz - position/direction, w - range
+    vec4<F32> _positionAndRange;
+    /// xyz - direction, w - cone angle
+    vec4<F32> _spotProperties;
+    /// rgb - diffuse, w - reserved
+    vec4<U8>  _color;
+    // does this light casts shadows?
+    bool _castsShadows;
+    // Shadow mapping properties
+    ShadowProperties _shadowProperties;
+
     ShadowMapInfo* _shadowMapInfo;
 
     LightType _type;
-    LightMode _mode;
     bool _placementDirty;
 
    private:
-    U8 _resolutionFactor;
     bool _drawImpostor;
-    bool _updateLightBB;
     SceneGraphNode* _lightSGN;
     /// Used for debug rendering
     ImpostorSphere* _impostor;

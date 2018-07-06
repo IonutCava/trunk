@@ -47,8 +47,7 @@ class MainScene : public Scene {
           _beep(nullptr),
           _freeflyCamera(false),
           _updateLights(true),
-          _musicPlaying(false),
-          _sun(nullptr)
+          _musicPlaying(false)
     {
     }
 
@@ -75,7 +74,7 @@ class MainScene : public Scene {
     AudioDescriptor* _beep;
     vectorImpl<SceneGraphNode_wptr> _visibleTerrains;
     WaterPlane* _water;
-    DirectionalLight* _sun;
+    SceneGraphNode_wptr _sun;
     SceneGraphNode_wptr _waterGraphNode;
 };
 

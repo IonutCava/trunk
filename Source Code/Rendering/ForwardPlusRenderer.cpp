@@ -20,8 +20,8 @@ namespace {
     const I32 TILE_RES = 16;
     I32 numActivePointLights = 0;
     I32 numActiveSpotLights = 0;
-    std::array<PointLightData, Config::Lighting::NUM_POSSIBLE_LIGHTS> pointLightData;
-    std::array<SpotLightData, Config::Lighting::NUM_POSSIBLE_LIGHTS> spotLightData;
+    std::array<PointLightData, Config::Lighting::MAX_POSSIBLE_LIGHTS> pointLightData;
+    std::array<SpotLightData, Config::Lighting::MAX_POSSIBLE_LIGHTS> spotLightData;
 
     U32 getMaxNumLightsPerTile() {
         const U32 adjustmentMultipier = 32;
@@ -46,7 +46,7 @@ namespace {
 
     I32 getNextPointLightBufferIndex()
     {
-        if (numActivePointLights + numActiveSpotLights < Config::Lighting::NUM_POSSIBLE_LIGHTS)
+        if (numActivePointLights + numActiveSpotLights < Config::Lighting::MAX_POSSIBLE_LIGHTS)
         {
             ++numActivePointLights;
             return numActivePointLights - 1;
@@ -58,7 +58,7 @@ namespace {
 
     I32 getNextSpotLightBufferIndex()
     {
-        if (numActiveSpotLights + numActiveSpotLights + 1 < Config::Lighting::NUM_POSSIBLE_LIGHTS)
+        if (numActiveSpotLights + numActiveSpotLights + 1 < Config::Lighting::MAX_POSSIBLE_LIGHTS)
         {
             ++numActiveSpotLights;
             return numActiveSpotLights - 1;
@@ -77,10 +77,10 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
 
     _pointLightBuffer.reset(GFX_DEVICE.newSB("dvd_pointLightBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
-    _pointLightBuffer->create(Config::Lighting::NUM_POSSIBLE_LIGHTS, sizeof(PointLightData));
+    _pointLightBuffer->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(PointLightData));
 
     _spotLightBuffer.reset(GFX_DEVICE.newSB("dvd_spotLightBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
-    _spotLightBuffer->create(Config::Lighting::NUM_POSSIBLE_LIGHTS, sizeof(SpotLightData));
+    _spotLightBuffer->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(SpotLightData));
 
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
@@ -117,7 +117,7 @@ void ForwardPlusRenderer::preRender() {
         Light* light = spotLights[i];
         data.posAndCenter.set(light->getPosition(), light->getRange());
         data.color.set(light->getDiffuseColor());
-        data.params.set(light->getDirection(), light->getProperties()._direction.w);
+        data.params.set(light->getSpotDirection(), light->getSpotAngle());
     }
 
     GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)

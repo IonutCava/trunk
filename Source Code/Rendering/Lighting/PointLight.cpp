@@ -7,7 +7,6 @@
 namespace Divide {
 
 PointLight::PointLight(F32 range) : Light(range, LightType::POINT) {
-    _properties._position.set(0, 0, 0, 1.0f);
     // +x
     _direction[0].set(WORLD_X_AXIS);
     // -x

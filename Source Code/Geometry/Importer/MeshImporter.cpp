@@ -96,7 +96,6 @@ namespace Import {
         dataOut << _doubleSided;
         dataOut << _name;
         dataOut << _shadingData._diffuse;
-        dataOut << _shadingData._ambient;
         dataOut << _shadingData._specular;
         dataOut << _shadingData._emissive;
         dataOut << _shadingData._shininess;
@@ -119,7 +118,6 @@ namespace Import {
         dataIn >> _doubleSided;
         dataIn >> _name;
         dataIn >> _shadingData._diffuse;
-        dataIn >> _shadingData._ambient;
         dataIn >> _shadingData._specular;
         dataIn >> _shadingData._emissive;
         dataIn >> _shadingData._shininess;

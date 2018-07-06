@@ -50,7 +50,6 @@ class PingPongScene : public Scene {
         _ball = nullptr;
         _freeFlyCam = nullptr;
         _paddleCam = nullptr;
-        _sun = nullptr;
     }
 
     ~PingPongScene() {}
@@ -75,7 +74,7 @@ class PingPongScene : public Scene {
     SceneGraphNode_wptr _ballSGN;
     Camera* _freeFlyCam;
     Camera* _paddleCam;
-    DirectionalLight* _sun;
+    SceneGraphNode_wptr _sun;
 
    private:  // Game stuff:
     bool _directionTowardsAdversary;

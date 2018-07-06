@@ -71,8 +71,9 @@ class WarScene : public Scene {
     AI::AIEntity* findAI(SceneGraphNode_ptr node);
 
    private:
-    DirectionalLight* _sun;
+    SceneGraphNode_wptr _sun;
     GUIMessageBox* _infoBox;
+    vectorImpl<SceneGraphNode_wptr> _lightNodes;
 
    private:  // Game
     U32  _timeLimitMinutes;

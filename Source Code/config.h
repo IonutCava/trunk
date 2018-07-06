@@ -147,9 +147,8 @@ const bool SHOW_MESSAGE_BOX = false;
 };  // namespace Assert
 
 namespace Lighting {
-// How many lights (in order as passed to the shader for the node) should cast
-/// shadows
-const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
+// How many lights (in order as passed to the shader for the node) should cast shadows
+const unsigned int MAX_SHADOW_CASTING_LIGHTS = 10;
 /// Used for CSM or PSSM to determine the maximum number of frustum splits
 /// And cube map shadows as well
 const unsigned int MAX_SPLITS_PER_LIGHT = 6;
@@ -159,7 +158,7 @@ const unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
 
 /// the maximum number of lights supported, this is limited by constant buffer
 /// size, commonly this is 64kb, but AMD only seem to allow 2048 lights...
-const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
+const unsigned int MAX_POSSIBLE_LIGHTS = 1024;
 };  // namespace Lighting
 };  // namespace Config
 };  // namespace Divide

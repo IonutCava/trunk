@@ -4,6 +4,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Headers/CascadedShadowMaps.h"
+#include "Managers/Headers/LightManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -11,32 +12,159 @@
 
 namespace Divide {
 
+std::array<Framebuffer*, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMaps;
+std::array<ShadowMap::LayerUsageMask, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
+
+void ShadowMap::initShadowMaps() {
+    std::array<U16, to_const_uint(ShadowType::COUNT)> resolutions;
+    resolutions.fill(512);
+    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::ULTRA) {
+        // Cap cubemap resolution
+        resolutions.fill(2048);
+        resolutions[to_uint(ShadowType::CUBEMAP)] = 1024;
+    } else if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::HIGH) {
+        resolutions.fill(1024);
+    }
+
+    for (U32 i = 0; i < to_uint(ShadowType::COUNT); ++i) {
+        switch (static_cast<ShadowType>(i)) {
+            case ShadowType::SINGLE: {
+                SamplerDescriptor depthMapSampler;
+                depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.toggleMipMaps(false);
+                depthMapSampler._useRefCompare = true;
+                depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;
+                // Default filters, LINEAR is OK for this
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
+                                                     GFXImageFormat::DEPTH_COMPONENT,
+                                                     GFXDataFormat::UNSIGNED_INT);
+                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                depthMapDescriptor.setSampler(depthMapSampler);
+
+                _depthMaps[i] = GFX_DEVICE.newFB();
+                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
+                _depthMaps[i]->toggleColorWrites(false);
+            } break;
+
+            case ShadowType::LAYERED: {
+                SamplerDescriptor depthMapSampler;
+                depthMapSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
+                depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.setAnisotropy(8);
+                depthMapSampler._useRefCompare = false;
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
+                                                     GFXImageFormat::RG32F,
+                                                     GFXDataFormat::FLOAT_32);
+                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT *
+                                                 Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                depthMapDescriptor.setSampler(depthMapSampler);
+
+                _depthMaps[i] = GFX_DEVICE.newFB(false);
+                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Color0);
+                _depthMaps[i]->setClearColor(DefaultColors::WHITE());
+            } break;
+
+            case ShadowType::CUBEMAP: {
+                // Default filters, LINEAR is OK for this
+                SamplerDescriptor depthMapSampler;
+                depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.toggleMipMaps(false);
+                depthMapSampler._useRefCompare = true;  //< Use compare function
+                depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY,
+                                                     GFXImageFormat::DEPTH_COMPONENT,
+                                                     GFXDataFormat::UNSIGNED_INT);
+                depthMapDescriptor.setSampler(depthMapSampler);
+                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+
+                _depthMaps[i] = GFX_DEVICE.newFB();
+                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
+                _depthMaps[i]->toggleColorWrites(false);
+            } break;
+        };
+
+        _depthMaps[i]->create(resolutions[i], resolutions[i]);
+        _depthMapUsage[i].fill(false);
+    }
+}
+
+void ShadowMap::clearShadowMaps() {
+    for (U32 i = 0; i < to_uint(ShadowType::COUNT); ++i) {
+        MemoryManager::DELETE(_depthMaps[i]);
+    }
+}
+
+void ShadowMap::bindShadowMaps() {
+    LightManager& lightMgr = LightManager::getInstance();
+
+    for (U8 i = 0; i < to_ubyte(ShadowType::COUNT); ++i) {
+        TextureDescriptor::AttachmentType attachment
+            = static_cast<ShadowType>(i) == ShadowType::LAYERED
+                                          ? TextureDescriptor::AttachmentType::Color0
+                                          : TextureDescriptor::AttachmentType::Depth;
+        _depthMaps[i]->bind(lightMgr.getShadowBindSlotOffset(static_cast<ShadowType>(i)), attachment);
+    }
+}
+
+void ShadowMap::clearShadowMapBuffers() {
+    for (U8 i = 0; i < to_ubyte(ShadowType::COUNT); ++i) {
+        _depthMaps[i]->clear();
+    }
+}
+
+U32 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
+    LayerUsageMask& usageMask = _depthMapUsage[to_uint(shadowType)];
+    U32 layer = std::numeric_limits<U32>::max();
+    for (U32 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS; ++i) {
+        if (usageMask[i] == false) {
+            layer = i;
+            break;
+        }
+    }
+
+    return layer;
+}
+
+void ShadowMap::commitDepthMapLayer(ShadowType shadowType, U32 layer) {
+    DIVIDE_ASSERT(layer < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS,
+        "ShadowMap::commitDepthMapLayer error: Insufficient texture layers for shadow mapping");
+    LayerUsageMask& usageMask = _depthMapUsage[to_uint(shadowType)];
+    usageMask[layer] = true;
+}
+
+bool ShadowMap::freeDepthMapLayer(ShadowType shadowType, U32 layer) {
+    DIVIDE_ASSERT(layer < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS,
+        "ShadowMap::freeDepthMapLayer error: Invalid layer value");
+    LayerUsageMask& usageMask = _depthMapUsage[to_uint(shadowType)];
+    usageMask[layer] = false;
+
+    return true;
+}
+
 ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type)
     : _init(false),
       _light(light),
       _shadowCamera(shadowCamera),
       _shadowMapType(type),
-      _resolution(0),
+      _arrayOffset(0),
       _par(ParamHandler::getInstance())
 {
     _bias.bias();
+
+    _arrayOffset = findDepthMapLayer(_shadowMapType);
+    commitDepthMapLayer(_shadowMapType, _arrayOffset);
 }
 
 ShadowMap::~ShadowMap()
 {
-    MemoryManager::DELETE(_depthMap);
+    freeDepthMapLayer(_shadowMapType, _arrayOffset);
 }
 
 ShadowMapInfo::ShadowMapInfo(Light* light)
-    : _light(light), _shadowMap(nullptr) {
-    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::ULTRA) {
-        _resolution = 2048;
-    } else if (GFX_DEVICE.shadowDetailLevel() ==
-               RenderDetailLevel::HIGH) {
-        _resolution = 1024;
-    } else {
-        _resolution = 512;
-    }
+    : _light(light),
+      _shadowMap(nullptr)
+{
+
     _numLayers = 1;
 }
 
@@ -45,8 +173,7 @@ ShadowMapInfo::~ShadowMapInfo()
     MemoryManager::DELETE(_shadowMap);
 }
 
-ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
-    const SceneRenderState& renderState, Camera* shadowCamera) {
+ShadowMap* ShadowMapInfo::createShadowMap(const SceneRenderState& renderState, Camera* shadowCamera) {
     if (_shadowMap) {
         return _shadowMap;
     }
@@ -63,12 +190,10 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
         case LightType::DIRECTIONAL: {
             DirectionalLight* dirLight = static_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
-            _shadowMap = MemoryManager_NEW CascadedShadowMaps(
-                _light, shadowCamera, _numLayers);
+            _shadowMap = MemoryManager_NEW CascadedShadowMaps(_light, shadowCamera, _numLayers);
         } break;
         case LightType::SPOT: {
-            _shadowMap =
-                MemoryManager_NEW SingleShadowMap(_light, shadowCamera);
+            _shadowMap = MemoryManager_NEW SingleShadowMap(_light, shadowCamera);
         } break;
         default:
             break;
@@ -79,23 +204,4 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
     return _shadowMap;
 }
 
-void ShadowMapInfo::resolution(U16 resolution) {
-    _resolution = resolution;
-    if (_shadowMap) {
-        _shadowMap->resolution(_resolution, _light->shadowMapResolutionFactor());
-    }
-}
-
-bool ShadowMap::bind(U8 offset) {
-    return _depthMap ? bindInternal(offset) : false;
-}
-
-bool ShadowMap::bindInternal(U8 offset) {
-    _depthMap->bind(offset, TextureDescriptor::AttachmentType::Depth);
-    return true;
-}
-
-U16 ShadowMap::resolution() { return _depthMap->getWidth(); }
-
-void ShadowMap::postRender() {}
 };

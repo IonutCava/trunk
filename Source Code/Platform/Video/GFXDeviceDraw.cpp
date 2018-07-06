@@ -210,7 +210,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     // Since the normal matrix is 3x3, we can use the extra row and column
     // to store additional data
     normalMatrix.element(3, 2) = to_float(animComp ? animComp->boneCount() : 0);
-    // Get the color matrix (diffuse, ambient, specular, etc.)
+    // Get the color matrix (diffuse, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut.colorMatrix());
     // Get the material property matrix (alpha test, texture count,
     // texture operation, etc.)
@@ -236,6 +236,16 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     U32 lastUnit1Handle = 0;
     U32 lastUsedSlot = 0;
     RenderStage currentStage = getRenderStage();
+
+    if (currentStage == RenderStage::SHADOW) {
+        Light* shadowLight = LightManager::getInstance().currentShadowCastingLight();
+        assert(shadowLight != nullptr);
+        if (_gpuBlock._data._shadowArrayOffset != shadowLight->getShadowProperties()._arrayOffset) {
+            _gpuBlock._data._shadowArrayOffset = shadowLight->getShadowProperties()._arrayOffset;
+            _gpuBlock._updated = true;
+        }
+    }
+
     U32 nodeCount = 0; U32 cmdCount = 0;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
         [&](GFXDevice::VisibleNodeList::value_type& node) -> void {

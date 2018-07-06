@@ -333,14 +333,13 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         Console::d_printfn(Locale::get("MATERIAL_NO_DIFFUSE"), materialName.c_str());
     }
 
-    // default ambient color
-    data._ambient.set(0.0f, 0.0f, 0.0f, 1.0f);
-    // Load ambient color
+    // Ignore ambient color
+    vec4<F32> ambientTemp(0.0f, 0.0f, 0.0f, 1.0f);
     aiColor4D ambient;
     if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
-        data._ambient.setV(&ambient.r);
+        ambientTemp.setV(&ambient.r);
     } else {
-        Console::d_printfn(Locale::get("MATERIAL_NO_AMBIENT"), materialName.c_str());
+        // no ambient
     }
 
     // default specular color

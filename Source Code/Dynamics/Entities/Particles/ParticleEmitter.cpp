@@ -82,7 +82,6 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
         CreateResource<ImpostorBox>(ResourceDescriptor(_name + "_impostor"));
     _impostor->renderState().setDrawState(false);
     _impostor->getMaterialTpl()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-    _impostor->getMaterialTpl()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
 
     //_renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 

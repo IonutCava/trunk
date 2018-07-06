@@ -27,11 +27,11 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec2 dvd_invScreenDimensions;
     vec2 _reserverd_padding;
     vec4 dvd_clip_plane[MAX_CLIP_PLANES];
+    uint dvd_shadowArrayOffset;
 };
 
 layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 {
-    vec4 dvd_lightInfo;
     vec3 dvd_fogColor;
     float dvd_fogDensity;
     vec4 dvd_windDetails;
@@ -39,7 +39,7 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     uint dvd_time;
     uint dvd_showDebugInfo;
     bool dvd_shadowsEnabled;
-    uint _reserved_padding;
+    uint dvd_lightCount;
 };
 
 #if defined(VERT_SHADER)

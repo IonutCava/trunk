@@ -45,8 +45,6 @@ class SingleShadowMap : public ShadowMap {
     ~SingleShadowMap();
 
     void render(SceneRenderState& renderState);
-    /// Update depth maps
-    void resolution(U16 resolution, U8 resolutionFactor);
     void init(ShadowMapInfo* const smi);
     void previewShadowMaps();
 

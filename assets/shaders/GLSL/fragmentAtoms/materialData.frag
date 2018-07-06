@@ -28,7 +28,6 @@ layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
 struct MaterialProperties {
-    vec3 ambient;
     vec3 diffuse;
     vec3 specular;
     vec3 specularColor;

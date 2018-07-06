@@ -38,7 +38,7 @@ namespace Divide {
 
 class PhysXScene : public Scene {
    public:
-    PhysXScene() : Scene() { _sun = nullptr; _hasGroundPlane = false; }
+    PhysXScene() : Scene() { _hasGroundPlane = false; }
 
     void preRender();
 
@@ -55,7 +55,7 @@ class PhysXScene : public Scene {
    private:
     bool _hasGroundPlane;
     vec3<F32> _sunvector;
-    DirectionalLight* _sun;
+    SceneGraphNode_wptr _sun;
 };
 
 };  // namespace Divide

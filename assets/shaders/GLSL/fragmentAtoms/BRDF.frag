@@ -62,7 +62,6 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
 #endif
 
 #if defined(USE_SHADING_FLAT)
-        materialProp.ambient = dvd_MatAmbient;
         materialProp.diffuse = dvd_MatDiffuse.rgb;
         materialProp.specular = vec3(0.0);
 #else
@@ -72,9 +71,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
     }
 
 #endif
-    vec3 color = (materialProp.ambient + dvd_lightInfo.rgb * dvd_MatAmbient) + 
-                 (materialProp.diffuse * textureColor.rgb) + 
-                  materialProp.specular;
+    vec3 color = (materialProp.diffuse * textureColor.rgb) + materialProp.specular;
 
 #if defined(USE_REFLECTIVE_CUBEMAP)
     vec3 reflectDirection = reflect(normalize(_vertexWV.xyz), normal);
