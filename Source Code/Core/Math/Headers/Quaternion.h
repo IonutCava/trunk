@@ -28,8 +28,8 @@ Quaternion class based on code from " OpenGL:Tutorials:Using Quaternions to repr
 class Quaternion
 {
 public:
-	Quaternion(F32 x, F32 y, F32 z, F32 w) : _x(x), _y(y), _z(z), _w(w),_dirty(true),_mat(NULL) {}
-	Quaternion() : _x(0), _y(0), _z(0), _w(0),_dirty(true),_mat(NULL) {}
+	Quaternion(F32 x, F32 y, F32 z, F32 w) : _x(x), _y(y), _z(z), _w(w),_dirty(true) {}
+	Quaternion() : _x(0), _y(0), _z(0), _w(0),_dirty(true) {}
 
 	void       normalize();
 	Quaternion getConjugate() const;
@@ -49,7 +49,7 @@ public:
 	F32        getW() {return _w;}
 private:
 	F32 _x,_y,_z,_w;
-	mat4 *_mat;
+	mat4 _mat;
 	bool _dirty;
 };
 #endif
