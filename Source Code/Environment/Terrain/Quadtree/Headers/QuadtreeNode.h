@@ -100,7 +100,6 @@ class QuadtreeNode {
     bool isInView(U32 options, const SceneRenderState& sceneState) const;
 
    private:
-    F32 _terLoDOffset;  ///<Small offset to prevent wrong LoD selection on border cases
     U32 _targetChunkDimension;
     BoundingBox _boundingBox;        ///< Node BoundingBox
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere

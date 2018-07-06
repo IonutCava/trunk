@@ -117,22 +117,27 @@ constexpr unsigned int REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE = 256;
 /// buffer
 constexpr unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
 constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
+
+/// How many grass elements (3 quads p.e.) to add to each terrain element
+constexpr unsigned int MAX_GRASS_BATCHES = 2000000;
+/// SceneNode LOD selection
+/// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
+constexpr unsigned int SCENE_NODE_LOD = 3;
+/// Relative distance for LOD0->LOD1 selection
+constexpr unsigned int SCENE_NODE_LOD0 = 100;
+/// Relative distance for LOD1->LOD2 selection
+constexpr unsigned int SCENE_NODE_LOD1 = 180;
+/// Terrain LOD management
 /// Terrain LOD configuration
 /// Camera distance to the terrain chunk is calculated as follows:
 ///    vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance =
 ///    EyeToChunk.length();
 /// Number of LOD levels for the terrain
 constexpr unsigned int TERRAIN_CHUNKS_LOD = 3;
-/// How many grass elements (3 quads p.e.) to add to each terrain element
-constexpr unsigned int MAX_GRASS_BATCHES = 2000000;
-/// SceneNode LOD selection
-/// Distance computation is identical to the of the terrain (using SceneNode's
-/// bounding box)
-constexpr unsigned int SCENE_NODE_LOD = 3;
 /// Relative distance for LOD0->LOD1 selection
-constexpr unsigned int SCENE_NODE_LOD0 = 100;
-/// Relative distance for LOD0->LOD2 selection
-constexpr unsigned int SCENE_NODE_LOD1 = 180;
+constexpr unsigned int TERRAIN_LOD0 = 200;
+/// Relative distance for LOD1->LOD2 selection
+constexpr unsigned int TERRAIN_LOD1 = 400;
 /// Use "precompiled" shaders if possible
 constexpr bool USE_SHADER_BINARY = true;
 /// Use HW AA'ed lines

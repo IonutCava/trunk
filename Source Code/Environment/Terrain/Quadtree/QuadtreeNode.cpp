@@ -19,7 +19,6 @@ QuadtreeNode::QuadtreeNode()
     _children[to_const_U32(ChildPosition::CHILD_SW)] = nullptr;
     _children[to_const_U32(ChildPosition::CHILD_SE)] = nullptr;
 
-    _terLoDOffset = 0.0f;
     _targetChunkDimension = 0;
 }
 
@@ -50,8 +49,6 @@ void QuadtreeNode::Build(GFXDevice& context,
         nodesize.y++;
     }
     vec2<U32> newsize = nodesize / 2;
-
-    _terLoDOffset = (_targetChunkDimension * 5.0f) / Config::SCENE_NODE_LOD0;
 
     if (std::max(newsize.x, newsize.y) <= _targetChunkDimension) {
         _terrainChunk = MemoryManager_NEW TerrainChunk(context, terrain, this);
@@ -122,14 +119,14 @@ bool QuadtreeNode::computeBoundingBox() {
 }
 
 U8 QuadtreeNode::getLoD(const SceneRenderState& state) const {
-    F32 camDistance = _boundingSphere.getCenter().distance(Camera::activeCamera()->getEye()) - _terLoDOffset;
-    F32 sphereRadius = _boundingSphere.getRadius();
-    
-    return camDistance >= sphereRadius
-                        ? (camDistance >= (sphereRadius * 2) 
-                                        ? 2 
-                                        : 1)
-                        : 0;
+    static const U32 TERRAIN_LOD0_SQ = Config::TERRAIN_LOD0 * Config::TERRAIN_LOD0;
+    static const U32 TERRAIN_LOD1_SQ = Config::TERRAIN_LOD1 * Config::TERRAIN_LOD1;
+
+    F32 cameraDistanceSQ = _boundingSphere.getCenter().distanceSquared(Camera::activeCamera()->getEye());
+
+    return cameraDistanceSQ > TERRAIN_LOD0_SQ
+                            ? cameraDistanceSQ > TERRAIN_LOD1_SQ ? 2 : 1
+                            : 0;
 }
 
 void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
@@ -151,7 +148,7 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
             const vec3<F32>& eye = cam.getEye();
             F32 visibilityDistance = sceneRenderState.generalVisibility() + boundingRadius;
             if (boundingCenter.distance(eye) > visibilityDistance) {
-                if (_boundingBox.nearestDistanceFromPointSquared(eye) - _terLoDOffset > std::min(visibilityDistance, cam.getZPlanes().y)) {
+                if (_boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, cam.getZPlanes().y)) {
                     return false;
                 }
             }
