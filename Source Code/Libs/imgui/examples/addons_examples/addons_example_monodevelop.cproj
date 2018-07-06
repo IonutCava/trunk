@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D7AE0A2A-D9B5-4C62-A65C-469CB246B377}</ProjectGuid>
+    <Compiler>
+      <Compiler ctype="GppCompiler" />
+    </Compiler>
+    <Language>CPP</Language>
+    <Target>Bin</Target>
+    <Packages>
+      <Packages>
+        <Package file="/usr/lib/x86_64-linux-gnu/pkgconfig/gl.pc" name="gl" IsProject="False" />
+        <Package file="/usr/lib/x86_64-linux-gnu/pkgconfig/sdl2.pc" name="sdl2" IsProject="False" />
+      </Packages>
+    </Packages>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>.</OutputPath>
+    <OutputName>addons_example_monodevelop</OutputName>
+    <CompileTarget>Bin</CompileTarget>
+    <DefineSymbols>IMGUI_USE_SDL2_BINDING IMGUI_INCLUDE_IMGUI_USER_H IMGUI_INCLUDE_IMGUI_USER_INL</DefineSymbols>
+    <SourceDirectory>.</SourceDirectory>
+    <Includes>
+      <Includes>
+        <Include>../../</Include>
+      </Includes>
+    </Includes>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>.</OutputPath>
+    <OutputName>addons_example_monodevelop</OutputName>
+    <CompileTarget>Bin</CompileTarget>
+    <OptimizationLevel>3</OptimizationLevel>
+    <DefineSymbols>IMGUI_USE_SDL2_BINDING IMGUI_INCLUDE_IMGUI_USER_H IMGUI_INCLUDE_IMGUI_USER_INL</DefineSymbols>
+    <SourceDirectory>.</SourceDirectory>
+    <Includes>
+      <Includes>
+        <Include>../../</Include>
+      </Includes>
+    </Includes>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="main.cpp" />
+    <Compile Include="..\..\imgui.cpp">
+      <Link>imgui.cpp</Link>
+    </Compile>
+    <Compile Include="..\..\imgui_demo.cpp">
+      <Link>imgui_demo.cpp</Link>
+    </Compile>
+    <Compile Include="..\..\imgui_draw.cpp">
+      <Link>imgui_draw.cpp</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="main2.cpp" />
+    <None Include="main3.cpp" />
+    <None Include="README_FIRST.txt" />
+  </ItemGroup>
+</Project>

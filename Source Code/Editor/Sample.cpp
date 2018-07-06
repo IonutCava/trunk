@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Sample.h"
+#include "Headers/ImguiExtraConfig.h"
 
 #ifdef _WIN32
 #define ImwNewline "\r\n"

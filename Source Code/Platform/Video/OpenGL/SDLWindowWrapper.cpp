@@ -34,8 +34,6 @@
 #define HAVE_M_PI
 #include <SDL.h>
 
-#include <imgui.h>
-
 namespace Divide {
 namespace {
     const U32 g_maxVAOS = 512u;

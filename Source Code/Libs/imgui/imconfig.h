@@ -6,19 +6,16 @@
 
 #pragma once
 
-#include "Platform/Headers/PlatformDefines.h"
 
 //max verts IMGUI will ever render. Change for your specific use case scenario
 #define MAX_IMGUI_VERTS 65535 
-//---- Define assertion handler. Defaults to calling assert().
-#define IM_ASSERT(_EXPR)  Divide::DIVIDE_ASSERT(_EXPR, "IMGUI")
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 //#define IMGUI_API __declspec( dllexport )
 //#define IMGUI_API __declspec( dllimport )
 
 //---- Include imgui_user.h at the end of imgui.h
-//#define IMGUI_INCLUDE_IMGUI_USER_H
+#define IMGUI_INCLUDE_IMGUI_USER_H
 
 //---- Don't implement default handlers for Windows (so as not to link with OpenClipboard() and others Win32 functions)
 #define IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCS
@@ -34,22 +31,19 @@
 //---- Pack colors to BGRA instead of RGBA (remove need to post process vertex buffer in back ends)
 //#define IMGUI_USE_BGRA_PACKED_COLOR
 
+#define IM_VEC2_CLASS_EXTRA                                                 \
+        inline ImVec2 operator+(const ImVec2& rhs) const { return ImVec2(x + rhs.x, y + rhs.y); } \
+        inline ImVec2 operator-(const ImVec2& rhs) const { return ImVec2(x - rhs.x, y - rhs.y); }
+
+#define IM_VEC4_CLASS_EXTRA                                                 \
+        inline ImVec4 operator+(const ImVec4& rhs) const { return ImVec4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); } \
+        inline ImVec4 operator-(const ImVec4& rhs) const { return ImVec4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
+
+
 //---- Implement STB libraries in a namespace to avoid conflicts
 #define IMGUI_STB_NAMESPACE     ImGuiStb
 
 //---- Define constructor and implicit cast operators to convert back<>forth from your math types and ImVec2/ImVec4.
-
-#include "Core/Math/Headers/MathVectors.h"
-
-#define IM_VEC2_CLASS_EXTRA                                                 \
-        ImVec2(const Divide::vec2<Divide::F32>& f) { x = f.x; y = f.y; }            \
-        operator Divide::vec2<Divide::F32>() const { return Divide::vec2<Divide::F32>(x,y); } \
-        inline ImVec2 operator+(const ImVec2& rhs) { return ImVec2(x + rhs.x, y + rhs.y); } \
-        inline ImVec2 operator-(const ImVec2& rhs) { return ImVec2(x - rhs.x, y - rhs.y); }
-
-#define IM_VEC4_CLASS_EXTRA                                                        \
-        ImVec4(const Divide::vec4<Divide::F32>& f) { x = f.x; y = f.y; z = f.z; w = f.w; } \
-        operator Divide::vec4<Divide::F32>() const { return Divide::vec4<Divide::F32>(x,y,z,w); }
 
 //---- Use 32-bit vertex indices (instead of default: 16-bit) to allow meshes with more than 64K vertices
 //#define ImDrawIdx unsigned int

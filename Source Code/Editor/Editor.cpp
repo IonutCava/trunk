@@ -18,6 +18,7 @@
 
 #include "Rendering/Camera/Headers/Camera.h"
 
+#define DISABLE_IMWINDOW
 
 namespace Divide {
 
@@ -33,7 +34,9 @@ Editor::Editor(PlatformContext& context)
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
+#if !defined(DISABLE_IMWINDOW)
     _windowManager = std::make_unique<ImwWindowManagerDivide>(*this);
+#endif
     _mainWindow = nullptr;
     REGISTER_FRAME_LISTENER(this, 99999);
 }
@@ -122,12 +125,16 @@ bool Editor::init() {
 
     OnSize(size.width, size.height);
 
+#if !defined(DISABLE_IMWINDOW)
     if (_windowManager->Init()) {
         InitSample();
         return true;
     }
 
     return false;
+#else
+    return true;
+#endif
 }
 
 void Editor::close() {
@@ -148,12 +155,14 @@ void Editor::update(const U64 deltaTimeUS) {
     if (!_running) {
         return;
     }
-    _windowManager->update(deltaTimeUS);
-
     Time::ScopedTimer timer(_editorUpdateTimer);
-    if (_windowManager->Run(false))
-    {
 
+#if !defined(DISABLE_IMWINDOW)
+    _windowManager->update(deltaTimeUS);
+    if (_windowManager->Run(false))
+#endif
+
+    {
         ImGuiIO& io = ImGui::GetIO();
         io.DeltaTime = Time::MicrosecondsToSeconds<float>(deltaTimeUS);
 
@@ -161,7 +170,8 @@ void Editor::update(const U64 deltaTimeUS) {
         if (io.MouseDrawCursor)
         {
             _mainWindow->setCursorStyle(CursorStyle::NONE);
-        } else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f)
+        }
+        else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f)
         {
             switch (ImGui::GetCurrentContext()->MouseCursor)
             {
@@ -219,8 +229,10 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     Time::ScopedTimer timer(_editorRenderTimer);
 
+#if !defined(DISABLE_IMWINDOW)
     // Render ImWindow stuff
     if (_windowManager->Run(true))
+#endif
     {
         ImGui::NewFrame();
         static float f = 0.0f;
@@ -362,7 +374,11 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
     io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
     io.KeySuper = false;
 
-    return ImGui::GetIO().WantCaptureKeyboard || _windowManager->HasWantCaptureKeyboard();
+    bool ret = ImGui::GetIO().WantCaptureKeyboard;
+#if !defined(DISABLE_IMWINDOW)
+    ret = ret || _windowManager->HasWantCaptureKeyboard()
+#endif
+    return ret;
 }
 
 /// Key released: return true if input was consumed
@@ -388,7 +404,11 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 
     io.KeySuper = false;
 
-    return ImGui::GetIO().WantCaptureKeyboard || _windowManager->HasWantCaptureKeyboard();
+    bool ret = ImGui::GetIO().WantCaptureKeyboard;
+#if !defined(DISABLE_IMWINDOW)
+    ret = ret || _windowManager->HasWantCaptureKeyboard()
+#endif
+    return ret;
 }
 
 /// Mouse moved: return true if input was consumed
@@ -402,7 +422,11 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
                          (float)arg._event.state.Y.abs);
     io.MouseWheel += (float)arg._event.state.Z.rel / 60.0f;
 
-    return ImGui::GetIO().WantCaptureMouse || _windowManager->HasWantCaptureMouse();
+    bool ret = ImGui::GetIO().WantCaptureMouse;
+#if !defined(DISABLE_IMWINDOW)
+    ret = ret || _windowManager->HasWantCaptureMouse()
+#endif
+    return ret;
 }
 
 /// Mouse button pressed: return true if input was consumed
@@ -415,7 +439,11 @@ bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
 
-    return ImGui::GetIO().WantCaptureMouse || _windowManager->HasWantCaptureMouse();
+    bool ret = ImGui::GetIO().WantCaptureMouse;
+#if !defined(DISABLE_IMWINDOW)
+    ret = ret || _windowManager->HasWantCaptureMouse()
+#endif
+    return ret;
 }
 
 /// Mouse button released: return true if input was consumed
@@ -428,7 +456,11 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = false;
 
-    return ImGui::GetIO().WantCaptureMouse || _windowManager->HasWantCaptureMouse();
+    bool ret = ImGui::GetIO().WantCaptureMouse;
+#if !defined(DISABLE_IMWINDOW)
+    ret = ret || _windowManager->HasWantCaptureMouse()
+#endif
+    return ret;
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) {

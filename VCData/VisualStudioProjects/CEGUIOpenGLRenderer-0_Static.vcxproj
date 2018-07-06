@@ -62,7 +62,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -98,7 +98,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -132,7 +132,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Profile/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

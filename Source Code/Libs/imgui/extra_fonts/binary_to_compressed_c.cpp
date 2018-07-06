@@ -1,3 +1,4 @@
+#include "stdafx.h"
 // ImGui - binary_to_compressed_c.cpp
 // Helper tool to turn a file into a C array, if you want to embed font data in your source code.
 
@@ -18,13 +19,11 @@
 //   # binary_to_compressed_c.exe myfont.ttf MyFont > myfont.cpp
 //   # binary_to_compressed_c.exe -base85 myfont.ttf MyFont > myfont.cpp
 
-#include "stdafx.h"
-
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-//#include <string.h>
+//#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 
 // stb_compress* from stb.h - declaration
 typedef unsigned int stb_uint;
@@ -61,7 +60,7 @@ int main(int argc, char** argv)
 char Encode85Byte(unsigned int x) 
 {
     x = (x % 85) + 35;
-    return (char)((x>='\\') ? x+1 : x);
+    return (x>='\\') ? x+1 : x;
 }
 
 bool binary_to_compressed_c(const char* filename, const char* symbol, bool use_base85_encoding, bool use_compression)

@@ -152,6 +152,12 @@ typedef std::any AnyParam;
 
 #include <ConcurrentQueue/concurrentqueue.h>
 
+#ifndef IMGUI_INCLUDE_IMGUI_USER_H
+#define IMGUI_INCLUDE_IMGUI_USER_H
+#define IMGUI_INCLUDE_IMGUI_USER_INL
+#endif
+#include <imgui.h>
+
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/Headers/ConditionalWait.h"

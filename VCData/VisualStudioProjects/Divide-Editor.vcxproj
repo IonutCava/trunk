@@ -65,6 +65,62 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidock\imguidock.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.c" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.c" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguipanelmanager\imguipanelmanager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitabwindow\imguitabwindow.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiemscriptenpersistentfolder.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguifreetype.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguipdfviewer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisdf.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisqlite3.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imgui_freetype\imgui_freetype.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
@@ -101,12 +157,65 @@
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.h" />
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.h" />
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.h" />
+    <ClInclude Include="..\..\Source Code\Editor\Headers\ImguiExtraConfig.h" />
     <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\edtaa3func.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Direct3D9.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Glfw3.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Glut.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_SDL2.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_WinAPI.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\stb_image.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\utf8helper.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguidock\imguidock.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\dirent_portable.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\crypt.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguipanelmanager\imguipanelmanager.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguitabwindow\imguitabwindow.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiemscriptenpersistentfolder.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguifreetype.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_resize.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_write.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_ico.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_jpeg.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguipdfviewer.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisdf.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisqlite3.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_freetype\imgui_freetype.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_memory_editor\imgui_memory_editor.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_user.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\gen_spv.sh" />
     <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.frag" />
     <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.vert" />
+    <None Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguimodplug.cpp.inl" />
+    <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D8177F00-194F-42AE-8389-63B114DBEE63}</ProjectGuid>
@@ -184,13 +293,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ImWindow\ImWindow\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
@@ -233,7 +342,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ImWindow\ImWindow\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -243,7 +352,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -275,7 +384,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ImWindow\ImWindow\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -285,7 +394,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>

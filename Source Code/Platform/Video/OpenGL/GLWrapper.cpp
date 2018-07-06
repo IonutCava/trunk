@@ -38,8 +38,6 @@
 #endif
 #include <CEGUI/CEGUI.h>
 
-#include "imgui.h"
-
 namespace Divide {
 
 namespace {
