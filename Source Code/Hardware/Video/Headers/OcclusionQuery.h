@@ -22,7 +22,8 @@
 
 #ifndef _OCCLUSION_QUERY_H
 #define _OCCLUSION_QUERY_H
-#include "core.h"
+
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

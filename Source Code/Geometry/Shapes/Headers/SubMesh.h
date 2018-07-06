@@ -38,7 +38,6 @@ The SubMesh is composed of a VB object that contains vertx,normal and textcoord 
 and a name.
 */
 
-#include "core.h"
 #include "Mesh.h"
 
 namespace Divide {

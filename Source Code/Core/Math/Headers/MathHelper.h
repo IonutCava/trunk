@@ -34,6 +34,9 @@
 #include <cctype>
 #include <algorithm>
 
+#ifndef M_PI
+#define M_PI				3.141592653589793238462643383279f		//  PI
+#endif
 #define M_PIDIV2			1.570796326794896619231321691639f		//  PI / 2
 #define M_2PI				6.283185307179586476925286766559f		//  2 * PI
 #define M_PI2				9.869604401089358618834490999876f		//  PI ^ 2
@@ -109,6 +112,37 @@ inline T squared(T n){
     return n*n;
 }
 
+//Helper method to emulate GLSL
+inline F32 fract(F32 floatValue) {  
+    return (F32)fmod(floatValue, 1.0f); 
+}
+
+///Packs a floating point value into the [0...255] range (thx sqrt[-1] of opengl.org forums)
+inline U8 PACK_FLOAT(F32 floatValue) {
+    //Scale and bias
+  floatValue = (floatValue + 1.0f) * 0.5f;
+  return (U8)(floatValue*255.0f);
+}
+
+//Pack 3 values into 1 float
+inline F32 PACK_FLOAT(U8 x, U8 y, U8 z) {
+  U32 packedColor = (x << 16) | (y << 8) | z;
+  F32 packedFloat = (F32) ( ((D32)packedColor) / ((D32) (1 << 24)) );
+   return packedFloat;
+}
+
+//UnPack 3 values from 1 float
+inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b) {
+  r = fract(src);
+  g = fract(src * 256.0f);
+  b = fract(src * 65536.0f);
+
+  //Unpack to the -1..1 range
+  r = (r * 2.0f) - 1.0f;
+  g = (g * 2.0f) - 1.0f;
+  b = (b * 2.0f) - 1.0f;
+}
+
 /// Clamps value n between min and max
 template<typename T>
 inline void CLAMP(T& n, T min, T max){
@@ -145,6 +179,13 @@ template<typename T>
 class Quaternion;
 
 namespace Util {
+    /// a la Boost
+    template<typename T>
+    inline void hash_combine(std::size_t& seed, const T& v) {
+        std::hash<T> hasher;
+        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+
     inline void replaceStringInPlace(stringImpl& subject, 
                                      const stringImpl& search, 
                                      const stringImpl& replace ) {
@@ -199,22 +240,27 @@ namespace Util {
     }
 
     template<typename T>
-    inline std::string toString( const T& data ) {
-        _ssBuffer.str( "" );
-        _ssBuffer << data;
-        return _ssBuffer.str();
+    inline stringImpl toString(T data) {
+        return stringAlg::toString(data);
     }
 
-    template<> inline std::string toString(const U8&  data) { return std::to_string(static_cast<U32>(data)); }
-    template<> inline std::string toString(const U16& data) { return std::to_string(static_cast<U32>(data)); }
-    template<> inline std::string toString(const U32& data) { return std::to_string(data); }
-    template<> inline std::string toString(const U64& data) { return std::to_string(data); }
-    template<> inline std::string toString(const I8&  data) { return std::to_string(static_cast<I32>(data)); }
-    template<> inline std::string toString(const I16& data) { return std::to_string(static_cast<I32>(data)); }
-    template<> inline std::string toString(const I32& data) { return std::to_string(data); }
-    template<> inline std::string toString(const I64& data) { return std::to_string(data); }
-    template<> inline std::string toString(const F32& data) { return std::to_string(data); }
-    template<> inline std::string toString(const D32& data) { return std::to_string(data); }
+    template<> 
+    inline stringImpl toString(U8  data) { 
+        return stringAlg::toString(static_cast<U32>(data)); 
+    }
+
+    template<> 
+    inline stringImpl toString(U16 data) { 
+        return stringAlg::toString(static_cast<U32>(data)); 
+    }
+
+    template<> inline stringImpl toString(I8  data) { 
+        return stringAlg::toString(static_cast<I32>(data)); 
+    }
+
+    template<> inline stringImpl toString(I16 data) { 
+        return stringAlg::toString(static_cast<I32>(data)); 
+    }
 
     //U = to data type, T = from data type
     template<typename U, typename T>
@@ -244,22 +290,22 @@ namespace Util {
         }
     }
 
-	/// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+    /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
     inline stringImpl& ltrim( stringImpl& s ) {
         s.erase( s.begin(), std::find_if(s.begin(), s.end(), 
                                          std::not1( std::ptr_fun<int, int>( std::isspace ) ) ) );
         return s;
     }
 
-	inline stringImpl& rtrim(stringImpl& s) {
-		s.erase(std::find_if(s.rbegin(), s.rend(), 
+    inline stringImpl& rtrim(stringImpl& s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), 
                 std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-		return s;
-	}
+        return s;
+    }
 
-	inline stringImpl& trim(stringImpl& s) {
-		return ltrim(rtrim(s));
-	}
+    inline stringImpl& trim(stringImpl& s) {
+        return ltrim(rtrim(s));
+    }
 
     inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
         return DEGREES(2.0f * std::atan(tan(RADIANS(xfov) * 0.5f) / aspect));

@@ -1,5 +1,8 @@
 #include "Headers/WaypointGraph.h"
 
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
+
 namespace Divide {
 namespace Navigation {
 	WaypointGraph::WaypointGraph(){

@@ -15,16 +15,16 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
 #   if defined OIS_WIN32_PLATFORM
 		U32 hwnd = (U32)FindWindow(nullptr, ParamHandler::getInstance().getParam<stringImpl>("appTitle", "Divide").c_str());
         // Create OIS input manager
-        pl.insert(std::make_pair(std::string("WINDOW"), Util::toString(hwnd)));
-        pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND")));
-        pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_NONEXCLUSIVE")));
-        pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_FOREGROUND")));
-        pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_NONEXCLUSIVE")));
+        pl.insert(std::make_pair("WINDOW", stringAlg::fromBase(Util::toString(hwnd))));
+        pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND"));
+        pl.insert(std::make_pair("w32_mouse", "DISCL_NONEXCLUSIVE"));
+        pl.insert(std::make_pair("w32_keyboard", "DISCL_FOREGROUND"));
+        pl.insert(std::make_pair("w32_keyboard", "DISCL_NONEXCLUSIVE"));
 #   elif defined OIS_LINUX_PLATFORM
-        pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
-        pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
-        pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
-        pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
+        pl.insert(std::make_pair("x11_mouse_grab", "false"));
+        pl.insert(std::make_pair("x11_mouse_hide", "false"));
+        pl.insert(std::make_pair("x11_keyboard_grab", "false"));
+        pl.insert(std::make_pair("XAutoRepeatOn", "true"));
 #   endif
 
     _pInputInterface = OIS::InputManager::createInputSystem(pl);

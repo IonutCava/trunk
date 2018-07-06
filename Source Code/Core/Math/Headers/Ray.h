@@ -33,7 +33,7 @@
 #ifndef _RAY_H_
 #define _RAY_H_
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

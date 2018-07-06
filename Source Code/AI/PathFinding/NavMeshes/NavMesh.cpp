@@ -2,13 +2,15 @@
 #include "Headers/NavMeshDebugDraw.h"
 #include "../Headers/DivideRecast.h"
 
-#include <SimpleIni.h>
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include <ReCast/DebugUtils/Include/RecastDump.h>
 #include <ReCast/DebugUtils/Include/DetourDebugDraw.h>
 #include <ReCast/DebugUtils/Include/RecastDebugDraw.h>
+
+#include <SimpleIni.h>
 
 namespace Divide {
 namespace AI {

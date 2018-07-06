@@ -23,7 +23,6 @@
 #ifndef DIVIDE_LIGHT_H_
 #define DIVIDE_LIGHT_H_
 
-#include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
 namespace Divide {

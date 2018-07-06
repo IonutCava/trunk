@@ -24,7 +24,7 @@
 #define _RENDER_API_H_
 
 #include "RenderAPIEnums.h"
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

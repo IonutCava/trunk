@@ -4,6 +4,8 @@
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 
 #include "Core/Headers/Application.h"
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 
 // We are actually importing GL specific libraries in code mainly for maintenance reasons
 // We can easily adjust them as needed. Same thing with PhysX libs

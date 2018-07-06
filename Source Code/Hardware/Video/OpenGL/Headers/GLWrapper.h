@@ -23,7 +23,6 @@
 #ifndef _GL_WRAPPER_H_
 #define _GL_WRAPPER_H_
 
-#include "core.h"
 #include "glResources.h"
 #include "Hardware/Video/Headers/IMPrimitive.h"
 #include "Hardware/Video/OpenGL/Shaders/Headers/glShaderProgram.h"

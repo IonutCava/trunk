@@ -23,7 +23,6 @@
 #ifndef _MATERIAL_H_
 #define _MATERIAL_H_
 
-#include "core.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Utility/Headers/StateTracker.h"
 #include "Core/Resources/Headers/Resource.h"

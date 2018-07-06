@@ -7,6 +7,7 @@
 #include <assimp/postprocess.h>
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Mesh.h"

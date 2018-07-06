@@ -8,6 +8,7 @@
 #include "Core/Math/Headers/Plane.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Utility/Headers/ImageTools.h"
 #include "Managers/Headers/SceneManager.h"
 

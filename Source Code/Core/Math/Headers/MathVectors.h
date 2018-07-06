@@ -490,6 +490,6 @@ extern vec3<I32> iWORLD_Z_NEG_AXIS;
 }; //namespace Divide
 
 //Inline definitions
-#include "MathVectors-Inl.h"
+#include "MathVectors.inl"
 
 #endif

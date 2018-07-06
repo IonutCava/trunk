@@ -1,3 +1,4 @@
+#include "Core/Headers/Console.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 

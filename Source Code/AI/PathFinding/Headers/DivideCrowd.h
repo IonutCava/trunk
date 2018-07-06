@@ -58,7 +58,7 @@
 #ifndef _DIVIDE_CROWD_H_
 #define _DIVIDE_CROWD_H_
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include "ReCast/DetourCrowd/Include/DetourCrowd.h"
 #include "../NavMeshes/Headers/NavMesh.h"
 #include <vector>

@@ -23,7 +23,6 @@
 #ifndef _AI_MANAGER_H_
 #define _AI_MANAGER_G_
 
-#include "core.h"
 #include "AI/Headers/AIEntity.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 

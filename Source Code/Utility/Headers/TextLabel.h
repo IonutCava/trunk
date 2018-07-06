@@ -23,7 +23,7 @@
 #ifndef _TEXT_LABEL_H_
 #define _TEXT_LABEL_H_
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 class TextLabel {

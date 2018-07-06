@@ -23,7 +23,7 @@
 #ifndef _AUDIO_DESCRIPTOR_H_
 #define _AUDIO_DESCRIPTOR_H_
 
-#include "core.h"
+#include "Core/Headers/Application.h"
 #include "Core/Resources/Headers/Resource.h"
 
 namespace Divide {

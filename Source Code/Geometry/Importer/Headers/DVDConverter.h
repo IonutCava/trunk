@@ -42,7 +42,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DIVIDE_FORMAT_CONVERTER_H_
 #define _DIVIDE_FORMAT_CONVERTER_H_
 
-#include "core.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 

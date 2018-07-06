@@ -1,12 +1,18 @@
 #include "Headers/FrameListenerManager.h"
 
+#include "Core/Headers/Console.h"
+#include "Core/Math/Headers/MathHelper.h"
+#include "Utility/Headers/Localization.h"
+
+#include <algorithm>
+
 namespace Divide {
 
 ///Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 callOrder) {
     //Check if the listener has a name or we should assign an id
     if (listener->getName().empty()) {
-        listener->setName(stringAlg::toBase("generic_f_listener_" + Util::toString(_listeners.size())));
+        listener->setName("generic_f_listener_" + Util::toString(_listeners.size()));
     }  
 
     listener->setCallOrder(callOrder);

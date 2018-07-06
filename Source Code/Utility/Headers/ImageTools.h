@@ -23,7 +23,9 @@
 #ifndef _UTILITY_IMAGETOOLS_H
 #define _UTILITY_IMAGETOOLS_H
 
-#include "core.h"
+#include "Utility/Headers/String.h"
+#include "Core/Math/Headers/MathVectors.h"
+#include "Hardware/Platform/Headers/SharedMutex.h"
 
 namespace Divide {
     enum GFXImageFormat;

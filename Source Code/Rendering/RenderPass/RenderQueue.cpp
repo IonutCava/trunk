@@ -4,6 +4,9 @@
 #include "Headers/RenderBinDelegate.h"
 #include "Headers/RenderBinTranslucent.h"
 #include "Headers/RenderBinParticles.h"
+
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Object3D.h"

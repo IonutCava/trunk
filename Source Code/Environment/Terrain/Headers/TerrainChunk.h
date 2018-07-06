@@ -23,7 +23,6 @@
 #ifndef _TERRAIN_CHUNK_H
 #define _TERRAIN_CHUNK_H
 
-#include "core.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {

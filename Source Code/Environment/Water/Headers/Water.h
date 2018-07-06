@@ -23,8 +23,6 @@
 #ifndef _WATER_PLANE_H_
 #define _WATER_PLANE_H_
 
-#include "core.h"
-
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/Reflector.h"

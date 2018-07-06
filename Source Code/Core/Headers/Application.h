@@ -24,15 +24,19 @@
 #define _APPLICATION_H_
 
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include "Hardware/Platform/Headers/Thread.h"
 
 #include <fstream>
 
 namespace Divide {
 
+enum ErrorCode;
+
 class Kernel;
 enum ErrorCode;
+const char* getErrorCodeName(ErrorCode code);
+
 ///Lightweight singleton class that manages our application's kernel and window information
 DEFINE_SINGLETON( Application )
 
@@ -43,63 +47,46 @@ public:
     void run();
 
     ///Application resolution (either fullscreen resolution or window dimensions)
-    inline const vec2<U16>& getResolution()   const {return _resolution;}
-    inline const vec2<U16>& getScreenCenter() const {return _screenCenter;}
-    inline const vec2<U16>& getPreviousResolution() const { return _prevResolution; }
+    inline const vec2<U16>& getResolution()   const;
+    inline const vec2<U16>& getScreenCenter() const;
+    inline const vec2<U16>& getPreviousResolution() const;
 
-    inline void setResolutionWidth(U16 w) {
-         _prevResolution.set(_resolution);
-         _resolution.width = w;
-         _screenCenter.x = w / 2;
-    }
+    inline void setResolutionWidth(U16 w);
+    inline void setResolutionHeight(U16 h);
+    inline void setResolution(U16 w, U16 h);
 
-    inline void setResolutionHeight(U16 h) {
-        _prevResolution.set(_resolution); 
-        _resolution.height = h; 
-        _screenCenter.y = h / 2;
-    }
+    inline void RequestShutdown();
+    inline void CancelShutdown();
+    inline bool ShutdownRequested() const;
+    inline Kernel* const getKernel() const;
 
-    inline void setResolution(U16 w, U16 h) {
-        _prevResolution.set(_resolution); 
-        _resolution.set(w,h); 
-        _screenCenter.set(_resolution / 2);
-    }
+    inline bool isMainThread() const;
+    inline const std::thread::id&  getMainThreadId() const;
+    inline void setMemoryLogFile(const stringImpl& fileName);
 
-    inline void RequestShutdown()                   { _requestShutdown = true;  }
-    inline void CancelShutdown()                    { _requestShutdown = false; }
-    inline bool ShutdownRequested()           const { return _requestShutdown;  }
-    inline Kernel* const getKernel()          const { return _kernel; }
+    inline bool hasFocus() const;
+    inline void hasFocus(const bool state);
 
-    inline const std::thread::id&  getMainThreadId() const { return _threadId; }
-    inline bool isMainThread() const { return (_threadId == std::this_thread::get_id()); }
-    inline void setMemoryLogFile(const stringImpl& fileName) { _memLogBuffer = fileName; }
+    inline bool isFullScreen() const;
+    inline void isFullScreen(const bool state);
 
-    inline bool hasFocus()                 const { return _hasFocus; }
-    inline void hasFocus(const bool state)       { _hasFocus = state; }
+    inline bool mainLoopActive() const;
+    inline void mainLoopActive(bool state);
 
-    inline bool isFullScreen()                 const { return _isFullscreen;  }
-    inline void isFullScreen(const bool state)       { _isFullscreen = state; }
-
-    inline bool mainLoopActive()           const { return _mainLoopActive;  }
-    inline void mainLoopActive(bool state)       { _mainLoopActive = state; }
-
-    inline bool mainLoopPaused()           const { return _mainLoopPaused;  }
-    inline void mainLoopPaused(bool state)       { _mainLoopPaused = state; }
+    inline bool mainLoopPaused() const;
+    inline void mainLoopPaused(bool state);
 
     void snapCursorToPosition(U16 x, U16 y) const;
 
-    inline void snapCursorToCenter() const {
-        snapCursorToPosition(_screenCenter.x, _screenCenter.y);
-    }
+    inline void snapCursorToCenter() const;
 
-    inline void      throwError(ErrorCode err)       { _errorCode = err; }
-    inline ErrorCode errorCode()               const { return _errorCode; }
+    inline void throwError(ErrorCode err);
+    inline ErrorCode errorCode() const;
 
-	/// Add a list of callback functions that should be called when the application instance is destroyed
+    /// Add a list of callback functions that should be called when the application instance is destroyed
     /// (release hardware, file handlers, etc)
-	inline void registerShutdownCallback( const DELEGATE_CBK<>& cbk ) {
-		_shutdownCallback.push_back( cbk );
-	}
+    inline void registerShutdownCallback( const DELEGATE_CBK<>& cbk );
+
 private:
     Application();
     ~Application();
@@ -122,10 +109,12 @@ private:
     stringImpl _memLogBuffer;
     ///Main application thread id
     std::thread::id _threadId;
-	///A list of callback functions that get called when the application instance is destroyed
-	vectorImpl<DELEGATE_CBK<> > _shutdownCallback;
+    ///A list of callback functions that get called when the application instance is destroyed
+    vectorImpl<DELEGATE_CBK<> > _shutdownCallback;
 END_SINGLETON
 
 }; //namespace Divide
+
+#include "Application.inl"
 
 #endif

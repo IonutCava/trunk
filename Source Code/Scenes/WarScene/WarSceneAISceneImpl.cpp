@@ -3,6 +3,7 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 
 #include "Managers/Headers/AIManager.h"
+#include "Core/Headers/Console.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"

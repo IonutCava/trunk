@@ -8,6 +8,7 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Hardware/Video/Headers/GFXDevice.h"

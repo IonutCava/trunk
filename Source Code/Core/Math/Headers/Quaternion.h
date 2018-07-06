@@ -27,7 +27,7 @@
 http://gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation
 Quaternion class based on code from " OpenGL:Tutorials:Using Quaternions to represent rotation "
 */
-#include "core.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

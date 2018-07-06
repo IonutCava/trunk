@@ -30,7 +30,7 @@
 #ifndef _RENDER_BIN_H_
 #define _RENDER_BIN_H_
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 enum  RenderStage;

@@ -2,6 +2,7 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Core/Headers/ParamHandler.h"
 
 namespace Divide {

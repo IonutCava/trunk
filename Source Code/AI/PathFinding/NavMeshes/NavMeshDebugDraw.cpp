@@ -6,7 +6,6 @@
 #include "Headers/NavMeshDebugDraw.h"
 #include "Headers/NavMesh.h"
 
-#include "core.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 

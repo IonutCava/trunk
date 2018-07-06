@@ -22,7 +22,8 @@
 
 #ifndef _WEAPON_H_
 #define _WEAPON_H_
-#include "core.h"
+
+#include "Core/Math/Headers/MathHelper.h"
 
 namespace Divide {
 

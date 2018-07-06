@@ -107,12 +107,12 @@ namespace Divide {
                 MemoryTracker::Lock lock( *this );
                 WriteLock w_lock( _mutex );
                 if ( !_map.empty() ) {
-                    output.append( stringAlg::toBase( Util::toString( _map.size() ) + " memory leaks detected\n" ) );
+                    output.append(Util::toString( _map.size() ) + " memory leaks detected\n");
                     for ( iterator it = _map.begin(); it != _map.end(); ++it ) {
                         const Entry& entry = it->second;
                         output.append( entry.File() );
                         output.append( ", " );
-                        output.append( stringAlg::toBase( Util::toString( entry.Line() ) ) );
+                        output.append(Util::toString( entry.Line() ));
                         output.append( "\n" );
                         sizeLeaked += entry.Size();
                     }

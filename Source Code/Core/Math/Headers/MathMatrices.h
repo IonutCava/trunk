@@ -91,14 +91,10 @@
 
  */
 
-#ifndef _MATH_CLASSES_H_
-#define _MATH_CLASSES_H_
+#ifndef _MATH_MATRICES_H_
+#define _MATH_MATRICES_H_
 
 #include "config.h"
-#ifndef M_PI
-#define M_PI				3.141592653589793238462643383279f		//  PI
-#endif
-
 #include "Plane.h"
 
 namespace Divide {

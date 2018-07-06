@@ -25,6 +25,9 @@
 
 #include "ResourceLoader.h"
 #include "Hardware/Platform/Headers/Thread.h"
+#include "Hardware/Platform/Headers/SharedMutex.h"
+
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 

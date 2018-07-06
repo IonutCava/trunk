@@ -1,7 +1,9 @@
 #include "Headers/DivideCrowd.h"
 
-#include <core.h>
 #include "DetourCommon.h"
+
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 namespace AI {

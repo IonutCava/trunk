@@ -3,7 +3,8 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "core.h"
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 
 #include <iomanip> 
 

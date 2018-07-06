@@ -23,7 +23,6 @@
 #ifndef _SKY_H
 #define _SKY_H
 
-#include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
 namespace Divide {

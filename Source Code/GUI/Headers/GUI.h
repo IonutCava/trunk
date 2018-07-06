@@ -24,7 +24,7 @@
 #define GUI_H_
 
 #include "Utility/Headers/HashMap.h"
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
 #include "Hardware/Input/Headers/InputAggregatorInterface.h"

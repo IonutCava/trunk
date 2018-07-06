@@ -1,7 +1,6 @@
 #ifndef _DIVIDE_BOOST_ASIO_IMPL_H_
 #define _DIVIDE_BOOST_ASIO_IMPL_H_
 
-#include "core.h"
 #include "OPCodesImpl.h"
 #include <DivideNetworking\ASIO.h>
 

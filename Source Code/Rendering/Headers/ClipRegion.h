@@ -44,7 +44,7 @@
 #ifndef _ClipRegion_h_
 #define _ClipRegion_h_
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

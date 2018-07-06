@@ -1,5 +1,6 @@
 #include "Headers/PhysicsComponent.h"
 
+#include "Core/Headers/Console.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"

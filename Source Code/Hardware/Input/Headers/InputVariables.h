@@ -23,8 +23,8 @@
 #ifndef _INPUT_VARIABLES_H_
 #define _INPUT_VARIABLES_H_
 
-#include "core.h"
 #include "EventHandler.h"
+
 namespace Divide {
     namespace Input {
 //////////// Variable classes ////////////////////////////////////////////////////////

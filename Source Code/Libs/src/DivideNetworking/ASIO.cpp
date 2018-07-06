@@ -16,7 +16,7 @@
 #include "OPCodesTpl.h"
 #include "ASIO.h"
 #include "Client.h"
-#include "Core\Math\Headers\MathHelper.h"
+#include "Core/Math/Headers/MathHelper.h"
 #include <boost/archive/text_iarchive.hpp>
 
 namespace Divide {
@@ -81,8 +81,7 @@ void ASIO::sendPacket(WorldPacket& p)const {
 	_localClient->sendPacket(p);
 
 	if(_debugOutput){
-		std::string msg = "ASIO: sent opcode [ 0x" + Util::toString(p.getOpcode()) + "]";
-		std::cout << msg << std::endl;
+		std::cout << "ASIO: sent opcode [ 0x"  << Util::toString(p.getOpcode()).c_str() << "]" << std::endl;
 	}
 }
 

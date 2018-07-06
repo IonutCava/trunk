@@ -1,6 +1,5 @@
 #include "Headers/Localization.h"
 
-#include "core.h"
 #include "Core/Headers/Application.h"
 #include <SimpleIni.h>
 

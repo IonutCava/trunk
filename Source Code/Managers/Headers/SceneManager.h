@@ -23,7 +23,6 @@
 #ifndef _SCENE_MANAGER_H
 #define _SCENE_MANAGER_H
 
-#include "core.h"
 #include "Scenes/Headers/Scene.h"
 #include <boost/functional/factory.hpp>
 

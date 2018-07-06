@@ -23,7 +23,7 @@
 #ifndef _QUAD_TREE
 #define _QUAD_TREE
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {

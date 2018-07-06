@@ -1,6 +1,8 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
-#include "core.h"
 #include "Headers/glPixelBuffer.h"
+
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 namespace Divide {

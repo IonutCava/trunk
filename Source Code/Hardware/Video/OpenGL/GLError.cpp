@@ -1,5 +1,8 @@
 #include "Headers/GLWrapper.h"
 
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
+
 namespace Divide {
     namespace GLUtil {
         /// Print GLFW specific errors

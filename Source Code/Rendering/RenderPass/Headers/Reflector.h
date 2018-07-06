@@ -23,6 +23,7 @@
 #ifndef REFLECTOR_H_
 #define REFLECTOR_H_
 
+#include "Core/Math/Headers/Plane.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
 namespace Divide {

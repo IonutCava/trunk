@@ -23,7 +23,8 @@
 #ifndef _POST_EFFECTS_H
 #define _POST_EFFECTS_H
 
-#include "core.h"
+#include "Core/Headers/Singleton.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 

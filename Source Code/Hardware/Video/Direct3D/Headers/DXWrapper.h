@@ -25,7 +25,6 @@
 
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
-#include "core.h"
 #include "Hardware/Video/Direct3D/Buffers/Framebuffer/Headers/d3dRenderTarget.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h"

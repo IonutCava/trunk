@@ -5,6 +5,7 @@
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
@@ -253,7 +254,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     SceneNode* cylinderMeshSW = cylinder[3]->getNode();
     SceneNode* cylinderMeshSE = cylinder[4]->getNode();
 
-    std::string currentName;
+    stringImpl currentName;
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* baseNode = nullptr;
     SceneGraphNode* currentNode = nullptr;
@@ -285,7 +286,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
             currentPos.second = 200 - 40 * (i%30) - 50;
         }
 
-        currentNode = _sceneGraph->getRoot()->addNode(currentMesh, stringAlg::toBase(currentName));
+        currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
         assert(currentNode);
         currentNode->setSelectable(true);
         currentNode->usageContext(baseNode->usageContext());
@@ -390,7 +391,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
     vec3<F32> currentScale;
     NPC* soldier = nullptr;
-    std::string currentName;
+    stringImpl currentName;
     AI::AIEntity* aiSoldier = nullptr;
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
@@ -461,7 +462,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
                 zFactor = 2;
             }
 
-            currentNode = _sceneGraph->getRoot()->addNode(currentMesh, stringAlg::toBase(currentName));
+            currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
             currentNode->getComponent<PhysicsComponent>()->setScale(currentScale);
             DIVIDE_ASSERT(currentNode != nullptr, "WarScene error: INVALID SOLDIER NODE TEMPLATE!");
             currentNode->setSelectable(true);

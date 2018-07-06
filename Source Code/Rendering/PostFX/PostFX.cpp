@@ -4,6 +4,7 @@
 #include "Headers/PreRenderStageBuilder.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Managers/Headers/SceneManager.h"
@@ -76,12 +77,12 @@ void PostFX::init(const vec2<U16>& resolution) {
         ResourceDescriptor postFXShader("postProcessing");
         postFXShader.setThreadedLoading(false);
         std::stringstream ss;
-        ss << ("TEX_BIND_POINT_SCREEN "     + Util::toString((U32)TEX_BIND_POINT_SCREEN) + ", ");
-        ss << ("TEX_BIND_POINT_BLOOM "      + Util::toString((U32)TEX_BIND_POINT_BLOOM) + ", ");
-        ss << ("TEX_BIND_POINT_SSAO "       + Util::toString((U32)TEX_BIND_POINT_SSAO) + ", ");
-        ss << ("TEX_BIND_POINT_NOISE "      + Util::toString((U32)TEX_BIND_POINT_NOISE) + ", ");
-        ss << ("TEX_BIND_POINT_BORDER "     + Util::toString((U32)TEX_BIND_POINT_BORDER) + ", ");
-        ss << ("TEX_BIND_POINT_UNDERWATER " + Util::toString((U32)TEX_BIND_POINT_UNDERWATER));
+        ss << "TEX_BIND_POINT_SCREEN "     << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_SCREEN)) << ", ";
+        ss << "TEX_BIND_POINT_BLOOM "      << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_BLOOM)) << ", ";
+        ss << "TEX_BIND_POINT_SSAO "       << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_SSAO)) << ", ";
+        ss << "TEX_BIND_POINT_NOISE "      << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_NOISE)) << ", ";
+        ss << "TEX_BIND_POINT_BORDER "     << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_BORDER)) << ", ";
+        ss << "TEX_BIND_POINT_UNDERWATER " << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_UNDERWATER));
         postFXShader.setPropertyList(stringAlg::toBase(ss.str()));
         _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
 

@@ -30,6 +30,8 @@
 
 #if defined(STRING_IMP) && STRING_IMP == 0
     #include <EASTL/string.h>
+    #include <sstream>
+
     namespace stringAlg = eastl;
 
     typedef eastl::string stringImpl;
@@ -42,6 +44,11 @@ namespace eastl {
 
     inline const char* fromBase(const eastl::string& input) {
         return input.c_str();
+    }
+
+    template<typename T>
+    inline stringImpl toString(T data) {
+        return stringImpl(std::to_string(data).c_str());
     }
 
 };
@@ -60,6 +67,11 @@ namespace std {
    
     inline const char* fromBase(const std::string& input) {
         return input.c_str();
+    }
+
+    template<typename T>
+    inline stringImpl toString(T data) {
+        return std::to_string(data);
     }
 };
 #endif //defined(VECTOR_IMP)

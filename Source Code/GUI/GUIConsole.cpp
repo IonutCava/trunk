@@ -1,5 +1,4 @@
 #include <CEGUI/CEGUI.h>
-#include "core.h"
 
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIConsoleCommandParser.h"

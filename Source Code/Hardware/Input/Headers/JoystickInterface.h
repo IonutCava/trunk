@@ -24,6 +24,9 @@
 #define JOYSTICK_MANAGER_H_
 
 #include "InputVariables.h"
+#include "Utility/Headers/Localization.h"
+#include "Core/Headers/console.h"
+
 namespace Divide {
     namespace Input {
 //////////// Joystick manager class ////////////////////////////////////////////////////////

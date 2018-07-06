@@ -29,17 +29,5 @@ public:
 	F32 version;
 };
 
-namespace Util
-{
-    static std::stringstream _tempStream;
-    template<typename T>
-    stringImpl toString(T data)
-    {
-        _tempStream.str(stringImpl());
-        _tempStream << data;
-        return _tempStream.str();
-    }
-}
-
 }; //namespace Divide
 #endif

@@ -1,4 +1,7 @@
 #include "Headers/RenderBin.h"
+
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/LightManager.h"
 #include "Geometry/Shapes/Headers/Object3D.h"

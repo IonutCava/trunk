@@ -250,7 +250,7 @@ SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode* const parentNode
 		case LIGHT_TYPE_SPOT: lightType = "Default_spot_light_"; break;
 	}
 
-	ResourceDescriptor defaultLight(stringAlg::toBase(lightType + Util::toString(LightManager::getInstance().getLights().size())));
+	ResourceDescriptor defaultLight(lightType + Util::toString(LightManager::getInstance().getLights().size()));
 	defaultLight.setEnumValue(type);
 	return addLight(CreateResource<Light>(defaultLight), parentNode);
 }

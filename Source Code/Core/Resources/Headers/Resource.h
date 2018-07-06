@@ -24,7 +24,7 @@
 #define _RESOURCE_H_
 
 #include "Utility/Headers/HashMap.h"
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
 
 namespace Divide {

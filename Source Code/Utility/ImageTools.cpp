@@ -1,4 +1,7 @@
 #include "Headers/ImageTools.h"
+
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 
 #define IL_STATIC_LIB
@@ -202,7 +205,7 @@ namespace ImageTools {
         stringImpl newFilename(filename);
 		// compute the new filename by adding the
 		// series number and the extension
-		newFilename.append(stringAlg::toBase(Util::toString(savedImages) + ".tga"));
+		newFilename.append(Util::toString(savedImages) + ".tga");
 
 		// save the image
 		I8 status = SaveToTGA(newFilename.c_str(),dimensions,pixelDepth,imageData);

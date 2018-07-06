@@ -23,7 +23,6 @@
 #ifndef _PARTICLE_EMITTER_H_
 #define _PARTICLE_EMITTER_H_
 
-#include "core.h"
 #include "Particle.h"
 #include "Graphs/Headers/SceneNode.h"
 #include "Dynamics/Entities/Headers/Impostor.h"

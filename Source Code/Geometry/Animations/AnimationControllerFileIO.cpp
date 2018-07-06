@@ -1,6 +1,9 @@
 #include "Headers/AnimationController.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
+
 namespace Divide {
 
 void AnimEvaluator::Save(std::ofstream& file){

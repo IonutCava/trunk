@@ -58,7 +58,6 @@
 #ifndef _NAVIGATION_PATH_H_
 #define _NAVIGATION_PATH_H_
 
-#include "core.h"
 #include "../NavMeshes/Headers/NavMesh.h"
 
 namespace Divide {

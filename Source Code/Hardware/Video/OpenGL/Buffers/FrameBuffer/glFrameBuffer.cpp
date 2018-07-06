@@ -2,7 +2,6 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 
-#include "core.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
@@ -132,7 +131,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
 
     stringImpl attachmentName("Framebuffer_Att_");
     attachmentName.append(getAttachmentName(type));
-    attachmentName.append(stringAlg::toBase(Util::toString(getGUID())));
+    attachmentName.append(Util::toString(getGUID()));
 
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);

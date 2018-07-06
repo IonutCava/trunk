@@ -1,6 +1,8 @@
 #include "Headers/pxShapeScaling.h"
 
+#include "Core/Headers/Console.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Utility/Headers/Localization.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Dynamics/Physics/PhysX/Headers/PhysXSceneInterface.h"
 

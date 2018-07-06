@@ -3,6 +3,8 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
+#include "Core/Headers/ApplicationTimer.h"
+
 namespace Divide {
 
 using namespace AI;

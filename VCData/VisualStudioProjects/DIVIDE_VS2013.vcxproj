@@ -573,14 +573,13 @@
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\WaypointGraph.h" />
-    <ClInclude Include="..\..\Source Code\core.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ApplicationTimer.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h" />
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h" />
@@ -689,6 +688,7 @@
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAISceneImpl.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Colors.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h" />
@@ -705,7 +705,7 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ParamHandler.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Singleton.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathClasses.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathMatrices.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathHelper.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Quaternion.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Ray.h" />
@@ -746,6 +746,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />
+    <None Include="..\..\Source Code\Core\Headers\Application.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

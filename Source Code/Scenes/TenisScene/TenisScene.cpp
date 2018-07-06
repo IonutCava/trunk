@@ -8,6 +8,7 @@
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/AIManager.h"
 #include "GUI/Headers/GUIButton.h"

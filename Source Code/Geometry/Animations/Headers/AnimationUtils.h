@@ -30,7 +30,7 @@
 #define ANIMATION_TICKS_PER_SECOND 20.0f
 #define MAXBONESPERMESH 60
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include <assimp/types.h>
 
 namespace Divide {

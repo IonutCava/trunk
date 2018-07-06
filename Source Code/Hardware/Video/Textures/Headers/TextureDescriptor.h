@@ -25,6 +25,9 @@
 
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Utility/Headers/Colors.h"
+#include "Core/Math/Headers/MathHelper.h"
+
 #include <boost/functional/hash.hpp>
 
 namespace Divide {
@@ -113,23 +116,23 @@ public:
 
     inline size_t getHash() const {
         size_t hash = 0;
-        hash_combine(hash, _cmpFunc);
-        hash_combine(hash, _useRefCompare);
-		hash_combine(hash, _srgb);
-        hash_combine(hash, _wrapU);
-        hash_combine(hash, _wrapV);
-        hash_combine(hash, _wrapW);
-        hash_combine(hash, _minFilter);
-        hash_combine(hash, _magFilter);
-        hash_combine(hash, _minLOD);
-        hash_combine(hash, _maxLOD);
-        hash_combine(hash, _biasLOD);
-        hash_combine(hash, _anisotropyLevel);
-        hash_combine(hash, _generateMipMaps);
-        hash_combine(hash, _borderColor.r);
-        hash_combine(hash, _borderColor.g);
-        hash_combine(hash, _borderColor.b);
-        hash_combine(hash, _borderColor.a);
+        Util::hash_combine(hash, _cmpFunc);
+        Util::hash_combine(hash, _useRefCompare);
+		Util::hash_combine(hash, _srgb);
+        Util::hash_combine(hash, _wrapU);
+        Util::hash_combine(hash, _wrapV);
+        Util::hash_combine(hash, _wrapW);
+        Util::hash_combine(hash, _minFilter);
+        Util::hash_combine(hash, _magFilter);
+        Util::hash_combine(hash, _minLOD);
+        Util::hash_combine(hash, _maxLOD);
+        Util::hash_combine(hash, _biasLOD);
+        Util::hash_combine(hash, _anisotropyLevel);
+        Util::hash_combine(hash, _generateMipMaps);
+        Util::hash_combine(hash, _borderColor.r);
+        Util::hash_combine(hash, _borderColor.g);
+        Util::hash_combine(hash, _borderColor.b);
+        Util::hash_combine(hash, _borderColor.a);
         return hash;
     }
     /*

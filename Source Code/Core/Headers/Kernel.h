@@ -23,7 +23,7 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
-#include "core.h"
+#include "Core/Headers/Application.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Hardware/Platform/Headers/Task.h"
 #include "Hardware/Input/Headers/InputAggregatorInterface.h"

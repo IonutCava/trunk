@@ -2,6 +2,9 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Headers/AnimationUtils.h"
 
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
+
 #include <assimp/scene.h>
 
 namespace Divide {

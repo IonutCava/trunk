@@ -2,6 +2,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Material/Headers/Material.h"

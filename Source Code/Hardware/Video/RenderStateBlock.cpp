@@ -1,4 +1,5 @@
 #include "Headers/RenderStateBlock.h"
+#include "Core/Math/Headers/MathHelper.h"
 
 namespace Divide {
 
@@ -160,27 +161,27 @@ void RenderStateBlockDescriptor::clean() {
     }
 
     _cachedHash = 0;
-    hash_combine(_cachedHash, _colorWrite.i);
-    hash_combine(_cachedHash, _blendEnable);
-    hash_combine(_cachedHash, _blendSrc);
-    hash_combine(_cachedHash, _blendDest);
-    hash_combine(_cachedHash, _blendOp);
-    hash_combine(_cachedHash, _cullMode);
-    hash_combine(_cachedHash, _cullEnabled);
-    hash_combine(_cachedHash, _zEnable);
-    hash_combine(_cachedHash, _zWriteEnable);
-    hash_combine(_cachedHash, _zFunc);
-    hash_combine(_cachedHash, _zBias);
-    hash_combine(_cachedHash, _zUnits);
-    hash_combine(_cachedHash, _stencilEnable);
-    hash_combine(_cachedHash, _stencilRef);
-    hash_combine(_cachedHash, _stencilMask);
-    hash_combine(_cachedHash, _stencilWriteMask);
-    hash_combine(_cachedHash, _stencilFailOp);
-    hash_combine(_cachedHash, _stencilZFailOp);
-    hash_combine(_cachedHash, _stencilPassOp);
-    hash_combine(_cachedHash, _stencilFunc);
-    hash_combine(_cachedHash, _fillMode);
+    Util::hash_combine(_cachedHash, _colorWrite.i);
+    Util::hash_combine(_cachedHash, _blendEnable);
+    Util::hash_combine(_cachedHash, _blendSrc);
+    Util::hash_combine(_cachedHash, _blendDest);
+    Util::hash_combine(_cachedHash, _blendOp);
+    Util::hash_combine(_cachedHash, _cullMode);
+    Util::hash_combine(_cachedHash, _cullEnabled);
+    Util::hash_combine(_cachedHash, _zEnable);
+    Util::hash_combine(_cachedHash, _zWriteEnable);
+    Util::hash_combine(_cachedHash, _zFunc);
+    Util::hash_combine(_cachedHash, _zBias);
+    Util::hash_combine(_cachedHash, _zUnits);
+    Util::hash_combine(_cachedHash, _stencilEnable);
+    Util::hash_combine(_cachedHash, _stencilRef);
+    Util::hash_combine(_cachedHash, _stencilMask);
+    Util::hash_combine(_cachedHash, _stencilWriteMask);
+    Util::hash_combine(_cachedHash, _stencilFailOp);
+    Util::hash_combine(_cachedHash, _stencilZFailOp);
+    Util::hash_combine(_cachedHash, _stencilPassOp);
+    Util::hash_combine(_cachedHash, _stencilFunc);
+    Util::hash_combine(_cachedHash, _fillMode);
 }
 
 };

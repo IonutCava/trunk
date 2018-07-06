@@ -1,5 +1,8 @@
-#include "Headers/Kernel.h"
 #include "Headers/Application.h"
+
+#include "Headers/Kernel.h"
+#include "Headers/ApplicationTimer.h"
+
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/MemoryTracker.h"
 #include "Hardware/Video/Headers/GFXDevice.h"

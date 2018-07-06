@@ -23,7 +23,6 @@
 #ifndef _TERRAIN_DESCRIPTOR_H_
 #define _TERRAIN_DESCRIPTOR_H_
 
-#include "core.h"
 #include "Core/Resources/Headers/Resource.h"
 
 namespace Divide {

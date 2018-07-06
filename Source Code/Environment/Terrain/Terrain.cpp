@@ -82,7 +82,7 @@ void Terrain::buildQuadtree() {
         stringImpl layerIndex;
         for (U32 k = 0; k < _terrainTextures.size(); ++k) {
             layerOffset = k * 3 + textureOffset;
-            layerIndex = stringAlg::toBase(Util::toString(k));
+            layerIndex = Util::toString(k);
             TerrainTextureLayer* textureLayer = _terrainTextures[k];
             drawShader->UniformTexture("texBlend[" + layerIndex + "]", layerOffset);
             drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);

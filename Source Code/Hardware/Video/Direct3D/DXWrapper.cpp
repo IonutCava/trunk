@@ -1,6 +1,9 @@
 #include "Headers/DXWrapper.h"
 
 #include "GUI/Headers/GUI.h"
+#include "Core/Headers/Console.h"
+#include "Core/Headers/Application.h"
+#include "Utility/Headers/Localization.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"

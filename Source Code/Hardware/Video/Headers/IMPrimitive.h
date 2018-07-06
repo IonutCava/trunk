@@ -23,7 +23,7 @@
 #ifndef _IM_EMULATION_H_
 #define _IM_EMULATION_H_
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
 namespace Divide {

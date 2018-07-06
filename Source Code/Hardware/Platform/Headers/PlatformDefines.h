@@ -39,6 +39,21 @@
 #endif
 #endif
 
+#ifdef _DEBUG
+#define STUBBED(x) \
+do {\
+    static bool seen_this = false;\
+    if(!seen_this){\
+        seen_this = true; \
+        ERROR_FN("STUBBED: %s (%s : %d)\n", \
+                 x, __FILE__, __LINE__); \
+    }\
+} while (0);
+
+#else
+#define STUBBED(x)
+#endif
+
 namespace Divide {
 
 ///Data Types
@@ -56,12 +71,6 @@ typedef double   D32;
 
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
-/// a la Boost
-template<typename T>
-inline void hash_combine(std::size_t& seed, const T& v) {
-	std::hash<T> hasher;
-	seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-}
 /* See
  
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/
@@ -158,6 +167,8 @@ inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff)
     return (diff <= largest * maxRelDiff);
 }
 
+#define ACKNOWLEDGE_UNUSED(p) ((void)p)
+
 static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 
@@ -190,13 +201,13 @@ bool preAssert( const bool expression, const char* failMessage );
 /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
 inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
 #   if defined(_DEBUG)
-	if ( preAssert( expression, failMessage ) )
+    if ( preAssert( expression, failMessage ) )
 #   endif
     {
-		assert( expression && failMessage );
-	}
+        assert( expression && failMessage );
+    }
 
-	return expression;
+    return expression;
 }
 
 typedef struct packed_int {
@@ -210,17 +221,17 @@ typedef union {
 
 template<typename... Args>
 auto DELEGATE_BIND(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) {
-	return std::bind(std::forward<Args>(args)...);
+    return std::bind(std::forward<Args>(args)...);
 }
 
 template<typename... Args>
 auto DELEGATE_REF(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) {
-	return std::bind(std::forward<Args>(args)...);
+    return std::bind(std::forward<Args>(args)...);
 }
 
 template<typename... Args>
 auto DELEGATE_CREF(Args&&... args) -> decltype(std::cref(std::forward<Args>(args)...)) {
-	return std::cref(std::forward<Args>(args)...);
+    return std::cref(std::forward<Args>(args)...);
 }
 
 template<typename T = void>
@@ -266,15 +277,15 @@ Divide::I32 Vsnprintf8( char* pDestination, size_t n, const char* pFormat, va_li
 #if defined(NDEBUG)
 #   define MemoryManager_NEW new
 #else
-	void* operator new( size_t size );
-	void  operator delete( void *p );
-	void* operator new[]( size_t size );
-	void  operator delete[]( void *p );
+    void* operator new( size_t size );
+    void  operator delete( void *p );
+    void* operator new[]( size_t size );
+    void  operator delete[]( void *p );
 
-	void* operator new( size_t size, char* zFile, Divide::I32 nLine );
-	void  operator delete( void *ptr, char* zFile, Divide::I32 nLine );
-	void* operator new[]( size_t size, char* zFile, Divide::I32 nLine );
-	void  operator delete[]( void *ptr, char* zFile, Divide::I32 nLine );
+    void* operator new( size_t size, char* zFile, Divide::I32 nLine );
+    void  operator delete( void *ptr, char* zFile, Divide::I32 nLine );
+    void* operator new[]( size_t size, char* zFile, Divide::I32 nLine );
+    void  operator delete[]( void *ptr, char* zFile, Divide::I32 nLine );
 
 #   define MemoryManager_NEW new(__FILE__, __LINE__)
 #endif
@@ -283,12 +294,12 @@ namespace Divide {
     namespace MemoryManager {
 
     template<typename T>
-	inline void SAFE_FREE(T*& ptr){
-		if (ptr) {
-			free(ptr);
-			ptr = nullptr;
-		}
-	}
+    inline void SAFE_FREE(T*& ptr){
+        if (ptr) {
+            free(ptr);
+            ptr = nullptr;
+        }
+    }
     
     /// Deletes and nullifies the specified pointer
     template<typename T>

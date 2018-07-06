@@ -20,74 +20,16 @@
 
  */
 
-#ifndef CORE_H_
-#define CORE_H_
-
-#include "config.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <memory>
-#include <malloc.h>
-#include <time.h>
-
-#include "Hardware/Platform/Headers/PlatformDefines.h" //For data types
-#include "Hardware/Platform/Headers/SharedMutex.h"     //For multi-threading
-#include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
-#include "Core/Headers/ApplicationTimer.h"       //For time management
-#include "Core/Headers/Console.h"              //For printing to the standard output
-#include "Utility/Headers/Localization.h"      //For language parsing
+#ifndef _APPLICATION_INL_
+#define _APPLICATION_INL_
 
 namespace Divide {
-
-#ifdef _DEBUG
-#define STUBBED(x) \
-do {\
-    static bool seen_this = false;\
-    if(!seen_this){\
-        seen_this = true; \
-        ERROR_FN("STUBBED: %s (%s : %d)\n", \
-                 x, __FILE__, __LINE__); \
-    }\
-} while (0);
-
-#else
-#define STUBBED(x)
-#endif
-
-//Helper method to emulate GLSL
-inline F32 fract(F32 floatValue){  return (F32)fmod(floatValue, 1.0f); }
-///Packs a floating point value into the [0...255] range (thx sqrt[-1] of opengl.org forums)
-inline U8 PACK_FLOAT(F32 floatValue){
-    //Scale and bias
-  floatValue = (floatValue + 1.0f) * 0.5f;
-  return (U8)(floatValue*255.0f);
-}
-//Pack 3 values into 1 float
-inline F32 PACK_FLOAT(U8 x, U8 y, U8 z) {
-  U32 packedColor = (x << 16) | (y << 8) | z;
-  F32 packedFloat = (F32) ( ((D32)packedColor) / ((D32) (1 << 24)) );
-   return packedFloat;
-}
-
-//UnPack 3 values from 1 float
-inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b){
-  r = fract(src);
-  g = fract(src * 256.0f);
-  b = fract(src * 65536.0f);
-
-  //Unpack to the -1..1 range
-  r = (r * 2.0f) - 1.0f;
-  g = (g * 2.0f) - 1.0f;
-  b = (b * 2.0f) - 1.0f;
-}
-
 enum ErrorCode {
     NO_ERR = 0,
     MISSING_SCENE_DATA = -1,
     MISSING_SCENE_LOAD_CALL = -2,
-	GFX_NOT_SUPPORTED = -3,
-	GFX_NON_SPECIFIED = -4,
+    GFX_NOT_SUPPORTED = -3,
+    GFX_NON_SPECIFIED = -4,
     GLFW_INIT_ERROR = -5,
     GLFW_WINDOW_INIT_ERROR = -6,
     GLEW_INIT_ERROR = -7,
@@ -115,12 +57,12 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case MISSING_SCENE_LOAD_CALL : {
             return "The specified scene failed to load all of its data properly";
         };
-		case  GFX_NOT_SUPPORTED : {
-			return "The specified rendering API is not fully implemented and as such, it's not supported";
-		};
-		case GFX_NON_SPECIFIED: {
-			return "No rendering API specified before trying to initialize the GFX Device";
-		};
+        case  GFX_NOT_SUPPORTED : {
+            return "The specified rendering API is not fully implemented and as such, it's not supported";
+        };
+        case GFX_NON_SPECIFIED: {
+            return "No rendering API specified before trying to initialize the GFX Device";
+        };
         case GLFW_INIT_ERROR : {
             return "GLFW system failed to initialize";
         };
@@ -163,44 +105,110 @@ inline const char* getErrorCodeName(ErrorCode code) {
     };
 }
 
-namespace DefaultColors {
-    ///Random stuff added for convenience
-    inline vec4<F32> WHITE() { 
-        return vec4<F32>(1.0f,1.0f,1.0f,1.0f); 
-    }
+const vec2<U16>& Application::getResolution() const {
+    return _resolution;
+}
 
-    inline vec4<F32> BLACK() { 
-        return vec4<F32>(0.0f,0.0f,0.0f,1.0f);
-    }
+const vec2<U16>& Application::getScreenCenter() const {
+    return _screenCenter;
+}
 
-    inline vec4<F32> RED()   { 
-        return vec4<F32>(1.0f,0.0f,0.0f,1.0f);
-    }
+const vec2<U16>& Application::getPreviousResolution() const { 
+    return _prevResolution; 
+}
 
-    inline vec4<F32> GREEN() { 
-        return vec4<F32>(0.0f,1.0f,0.0f,1.0f); 
-    }
+void Application::setResolutionWidth(U16 w) {
+        _prevResolution.set(_resolution);
+        _resolution.width = w;
+        _screenCenter.x = w / 2;
+}
 
-    inline vec4<F32> BLUE()  { 
-        return vec4<F32>(0.0f,0.0f,1.0f,1.0f);
-    }
+void Application::setResolutionHeight(U16 h) {
+    _prevResolution.set(_resolution); 
+    _resolution.height = h; 
+    _screenCenter.y = h / 2;
+}
 
-    inline vec4<F32> DIVIDE_BLUE() { 
-        return vec4<F32>(0.1f,0.1f,0.8f,1.0f);
-    }
+void Application::setResolution(U16 w, U16 h) {
+    _prevResolution.set(_resolution); 
+    _resolution.set(w,h); 
+    _screenCenter.set(_resolution / 2);
+}
+ 
+void Application::RequestShutdown() {
+    _requestShutdown = true;  
+}
 
-    inline vec4<U8> RANDOM() {
-        return vec4<U8>(rand() % 256,
-                        rand() % 256,
-                        rand() % 256,
-                        255);
-    }
-    
-    inline vec4<F32> RANDOM_NORMALIZED() {
-        return Util::toFloatColor(RANDOM());
-    }
-};
+void Application::CancelShutdown() { 
+    _requestShutdown = false; 
+}
 
+bool Application::ShutdownRequested() const { 
+    return _requestShutdown;  
+}
+
+Kernel* const Application::getKernel() const { 
+    return _kernel; 
+}
+
+const std::thread::id&  Application::getMainThreadId() const { 
+    return _threadId; 
+}
+
+bool Application::isMainThread() const { 
+    return (_threadId == std::this_thread::get_id()); 
+}
+
+void Application::setMemoryLogFile(const stringImpl& fileName) { 
+    _memLogBuffer = fileName; 
+}
+
+bool Application::hasFocus() const { 
+    return _hasFocus; 
+}
+
+void Application::hasFocus(const bool state) { 
+    _hasFocus = state; 
+}
+
+bool Application::isFullScreen()  const { 
+    return _isFullscreen;  
+}
+
+void Application::isFullScreen(const bool state) { 
+    _isFullscreen = state; 
+}
+
+bool Application::mainLoopActive() const { 
+    return _mainLoopActive;  
+}
+
+void Application::mainLoopActive(bool state) { 
+    _mainLoopActive = state; 
+}
+
+bool Application::mainLoopPaused() const { 
+    return _mainLoopPaused;
+}
+
+void Application::mainLoopPaused(bool state) { 
+    _mainLoopPaused = state; 
+}
+
+void Application::snapCursorToCenter() const {
+    snapCursorToPosition(_screenCenter.x, _screenCenter.y);
+}
+
+void Application::throwError(ErrorCode err) { 
+    _errorCode = err; 
+}
+
+ErrorCode Application::errorCode() const { 
+    return _errorCode; 
+}
+
+void Application::registerShutdownCallback( const DELEGATE_CBK<>& cbk ) {
+    _shutdownCallback.push_back( cbk );
+}
 }; //namespace Divide
-
 #endif

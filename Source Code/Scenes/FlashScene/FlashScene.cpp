@@ -1,5 +1,7 @@
 #include "Headers/FlashScene.h"
+
 #include "Managers/Headers/SceneManager.h"
+#include "Core/Headers/ApplicationTimer.h"
 
 namespace Divide {
 

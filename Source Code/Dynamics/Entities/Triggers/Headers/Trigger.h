@@ -23,7 +23,6 @@
 #ifndef _TRIGGER_H_
 #define _TRIGGER_H_
 
-#include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
 namespace Divide {

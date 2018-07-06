@@ -28,6 +28,8 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Audio/Headers/AudioDescriptor.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 
 ///This class contains all the variables that define each scene's "unique"-ness:
 ///background music, wind information, visibility settings, camera movement,

@@ -50,9 +50,8 @@
 #elif defined(__GNUC__)
 #	pragma GCC diagnostic pop
 #endif
-
 //PhysX includes //
-#include "core.h"
+
 //PhysX libraries
 #ifdef _DEBUG
 #pragma comment(lib, "PhysXProfileSDKDEBUG.lib")

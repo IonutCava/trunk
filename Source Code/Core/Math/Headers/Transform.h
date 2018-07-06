@@ -24,8 +24,10 @@
 #define _TRANSFORM_H_
 
 #include "Quaternion.h"
+
 #include "Utility/Headers/GUIDWrapper.h"
-   
+#include "Hardware/Platform/Headers/SharedMutex.h"   
+
 namespace Divide {
 
 struct TransformValues {

@@ -2,6 +2,7 @@
 #include "Headers/SceneManager.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"

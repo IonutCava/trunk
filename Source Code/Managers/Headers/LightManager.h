@@ -23,7 +23,6 @@
 #ifndef _LIGHT_MANAGER_H_
 #define _LIGHT_MANAGER_H_
 
-#include "core.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Managers/Headers/FrameListenerManager.h"
 

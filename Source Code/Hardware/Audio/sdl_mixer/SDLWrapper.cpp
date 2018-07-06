@@ -1,4 +1,7 @@
 #include "Headers/SDLWrapper.h"
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
+
 #include <stdexcept>
 
 namespace Divide {

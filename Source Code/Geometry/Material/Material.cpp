@@ -1,9 +1,12 @@
 #include "Headers/Material.h"
 
 #include "Rendering/Headers/Renderer.h"
+#include "Utility/Headers/Localization.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+
+#include "Core/Headers/Console.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {

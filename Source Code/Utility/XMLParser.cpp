@@ -372,7 +372,7 @@ namespace XML {
         read_xml(file,pt);
         ptree::iterator itTerrain;
         ptree::iterator itTexture;
-        std::string assetLocation(ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/");
+        stringImpl assetLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/");
 
         for (itTerrain = pt.get_child("terrainList").begin(); 
              itTerrain != pt.get_child("terrainList").end(); 
@@ -390,98 +390,101 @@ namespace XML {
             ter->addVariable("terrainName", 
                              stringAlg::toBase(name));
             ter->addVariable("heightmap", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".heightmap")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".heightmap")));
             ter->addVariable("waterCaustics", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".waterCaustics")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".waterCaustics")));
             ter->addVariable("underwaterAlbedoTexture", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".underwaterAlbedoTexture")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".underwaterAlbedoTexture")));
             ter->addVariable("underwaterDetailTexture", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".underwaterDetailTexture")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".underwaterDetailTexture")));
+
             ter->addVariable("underwaterDiffuseScale", 
                              pt.get<F32>(name + ".underwaterDiffuseScale"));
 
             I32 i = 0;
-            std::string temp;
-            std::string layerOffsetStr;
+            stringImpl temp;
+            stringImpl layerOffsetStr;
             for (itTexture = pt.get_child(name + ".textureLayers").begin(); 
                  itTexture != pt.get_child(name + ".textureLayers").end(); 
                  ++itTexture, ++i) {
+
                 std::string layerName(itTexture->second.data());
-                std::string format(itTexture->first.data());
+                stringImpl format(stringAlg::toBase(itTexture->first.data()));
 
                 if (format.find("<xmlcomment>") != std::string::npos) {
                     i--;
                     continue;
                 }
-                layerName = name + ".textureLayers." + format;
+
+                layerName = name + ".textureLayers." + format.c_str();
 
                 layerOffsetStr = Util::toString(i);
-                temp = pt.get<std::string>(layerName + ".blendMap", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".blendMap", ""));
                 DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
-                ter->addVariable(stringAlg::toBase("blendMap" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                ter->addVariable("blendMap" + layerOffsetStr, assetLocation + temp);
 
-                temp = pt.get<std::string>(layerName + ".redAlbedo", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".redAlbedo", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("redAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("redAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
-                temp = pt.get<std::string>(layerName + ".redDetail", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".redDetail", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("redDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("redDetail" + layerOffsetStr, assetLocation + temp);
                 }
-                temp = pt.get<std::string>(layerName + ".greenAlbedo", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".greenAlbedo", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("greenAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("greenAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
-                temp = pt.get<std::string>(layerName + ".greenDetail", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".greenDetail", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("greenDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("greenDetail" + layerOffsetStr, assetLocation + temp);
                 }
-                temp = pt.get<std::string>(layerName + ".blueAlbedo", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".blueAlbedo", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("blueAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("blueAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
-                temp = pt.get<std::string>(layerName + ".blueDetail", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".blueDetail", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("blueDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("blueDetail" + layerOffsetStr, assetLocation + temp);
                 }
-                temp = pt.get<std::string>(layerName + ".alphaAlbedo", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".alphaAlbedo", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("alphaAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("alphaAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
-                temp = pt.get<std::string>(layerName + ".alphaDetail", "");
+                temp = stringAlg::toBase(pt.get<std::string>(layerName + ".alphaDetail", ""));
                 if (!temp.empty()) {
-                    ter->addVariable(stringAlg::toBase("alphaDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
+                    ter->addVariable("alphaDetail" + layerOffsetStr, assetLocation + temp);
                 }
 
-                ter->addVariable(stringAlg::toBase("diffuseScaleR" + layerOffsetStr), 
+                ter->addVariable("diffuseScaleR" + layerOffsetStr,
                                  pt.get<F32>(layerName + ".redDiffuseScale",   0.0f));
-                ter->addVariable(stringAlg::toBase("detailScaleR"  + layerOffsetStr), 
+                ter->addVariable("detailScaleR"  + layerOffsetStr,
                                  pt.get<F32>(layerName + ".redDetailScale",    0.0f));
-                ter->addVariable(stringAlg::toBase("diffuseScaleG" + layerOffsetStr), 
+                ter->addVariable("diffuseScaleG" + layerOffsetStr,
                                  pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
-                ter->addVariable(stringAlg::toBase("detailScaleG"  + layerOffsetStr), 
+                ter->addVariable("detailScaleG"  + layerOffsetStr,
                                  pt.get<F32>(layerName + ".greenDetailScale",  0.0f));
-                ter->addVariable(stringAlg::toBase("diffuseScaleB" + layerOffsetStr), 
+                ter->addVariable("diffuseScaleB" + layerOffsetStr,
                                  pt.get<F32>(layerName + ".blueDiffuseScale",  0.0f));
-                ter->addVariable(stringAlg::toBase("detailScaleB"  + layerOffsetStr), 
+                ter->addVariable("detailScaleB"  + layerOffsetStr,
                                  pt.get<F32>(layerName + ".blueDetailScale",   0.0f));
-                ter->addVariable(stringAlg::toBase("diffuseScaleA" + layerOffsetStr), 
+                ter->addVariable("diffuseScaleA" + layerOffsetStr,
                                  pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
-                ter->addVariable(stringAlg::toBase("detailScaleA"  + layerOffsetStr), 
+                ter->addVariable("detailScaleA"  + layerOffsetStr,
                                  pt.get<F32>(layerName + ".alphaDetailScale",  0.0f));
             }
 
             ter->setTextureLayerCount(i);
             ter->addVariable("grassMap", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.map")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".vegetation.map")));
             ter->addVariable("grassBillboard1", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard1", "")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".vegetation.grassBillboard1", "")));
             ter->addVariable("grassBillboard2", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard2", "")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".vegetation.grassBillboard2", "")));
             ter->addVariable("grassBillboard3", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard3", "")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".vegetation.grassBillboard3", "")));
             ter->addVariable("grassBillboard4", 
-                             stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard4", "")));
+                             assetLocation + stringAlg::toBase(pt.get<std::string>(name + ".vegetation.grassBillboard4", "")));
             ter->setGrassDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
             ter->setTreeDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
             ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));

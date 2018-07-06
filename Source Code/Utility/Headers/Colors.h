@@ -20,46 +20,49 @@
 
  */
 
-#ifndef _PROJECTILE_H_
-#define _PROJECTILE_H_
+#ifndef _COLORS_H_
+#define _COLORS_H_
 
-#include "Core/Math/Headers/MathHelper.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
+namespace DefaultColors {
+    ///Random stuff added for convenience
+    inline vec4<F32> WHITE() { 
+        return vec4<F32>(1.0f,1.0f,1.0f,1.0f); 
+    }
 
-/// Defines a projectile object (usually bullets or rockets)
-class Projectile {
-public:
-	/// The physical characteristics of this projectile
-	enum ProjectileType {
-		/// Use a raytrace scan to the target's hitbox (raygun, non-tracked bullets)
-		PROJECTILE_TYPE_RAYTRACE    = toBit(1),
-		/// Use a slow-moving object as projectile (e.g. rockets, arrows, spells)
-		PROJECTILE_TYPE_SLOW        = toBit(2),
-		/// Add new projectile types above
-		PROJECTILE_TYPE_PLACEHOLDER = toBit(10)
-	};
+    inline vec4<F32> BLACK() { 
+        return vec4<F32>(0.0f,0.0f,0.0f,1.0f);
+    }
 
-	enum ProjectileProperty {
-		/// Projectile is not affected by gravity (raygun, spells)
-		PROJECTILE_PROPERTYE_NO_GRAVITY = toBit(1),
-		/// Projectile is affected by gravity (rockets, boulders, sniperbullets)
-		PROJECTILE_PROPERTY_GRAVITY     = toBit(2),
-		/// Add new projectile properties above
-		PROJECTILE_PROPERTY_PLACEHOLDER = toBit(10)
-	};
+    inline vec4<F32> RED()   { 
+        return vec4<F32>(1.0f,0.0f,0.0f,1.0f);
+    }
 
-	Projectile(ProjectileType type);
-	~Projectile();
+    inline vec4<F32> GREEN() { 
+        return vec4<F32>(0.0f,1.0f,0.0f,1.0f); 
+    }
 
-	/// Add a specific property to this projectile
-	bool addProperties(U8 propertyMask);
+    inline vec4<F32> BLUE()  { 
+        return vec4<F32>(0.0f,0.0f,1.0f,1.0f);
+    }
 
-private:
-	ProjectileType _type;
-	U8 _properyMask; ///< weapon properties
-};
+    inline vec4<F32> DIVIDE_BLUE() { 
+        return vec4<F32>(0.1f,0.1f,0.8f,1.0f);
+    }
 
-}; //namespace Divide
+    inline vec4<U8> RANDOM() {
+        return vec4<U8>(rand() % 256,
+                        rand() % 256,
+                        rand() % 256,
+                        255);
+    }
+    
+    inline vec4<F32> RANDOM_NORMALIZED() {
+        return Util::toFloatColor(RANDOM());
+    }
+}; // namespace DefaultColors
+}; // namespace Divide
 
 #endif

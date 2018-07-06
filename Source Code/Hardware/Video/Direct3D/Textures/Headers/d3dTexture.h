@@ -23,7 +23,6 @@
 #ifndef _D3D_TEXTURE_H_
 #define _D3D_TEXTURE_H_
 
-#include "core.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
 namespace Divide {

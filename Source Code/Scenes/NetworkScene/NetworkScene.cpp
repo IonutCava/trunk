@@ -2,6 +2,7 @@
 #include "Headers/NetworkScene.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
 namespace Divide {

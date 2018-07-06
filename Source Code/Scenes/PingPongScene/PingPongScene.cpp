@@ -1,6 +1,7 @@
 #include "Headers/PingPongScene.h"
 
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"

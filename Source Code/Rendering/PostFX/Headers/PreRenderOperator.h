@@ -1,7 +1,7 @@
 #ifndef _PRE_RENDER_OPERATOR_H_
 #define _PRE_RENDER_OPERATOR_H_
 
-#include "Core/Math/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

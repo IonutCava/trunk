@@ -23,7 +23,7 @@
 #ifndef _AMMUNITION_H_
 #define _AMMUNITION_H_
 
-#include "core.h"
+#include "Core/Math/Headers/MathHelper.h"
 
 namespace Divide {
 

@@ -22,6 +22,7 @@
 /****************************************************************************/
 #include "Headers/LightGrid.h"
 #include "Rendering/Headers/ClipRegion.h"
+#include "Utility/Headers/Colors.h"
 
 namespace Divide {
 

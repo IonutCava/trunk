@@ -51,7 +51,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
         textureCountAlbedo = 0;
         textureCountDetail = 0;
 
-        layerOffsetStr = stringAlg::toBase(Util::toString(i));
+        layerOffsetStr = Util::toString(i);
         textureLayer = MemoryManager_NEW TerrainTextureLayer();
         
         ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name + "_layer_" + layerOffsetStr);
@@ -150,8 +150,8 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     terrainMaterial->setShadingMode(Material::SHADING_BLINN_PHONG);
     terrainMaterial->addShaderDefines("COMPUTE_TBN");
     terrainMaterial->addShaderDefines("SKIP_TEXTURES");
-    terrainMaterial->addShaderDefines(stringAlg::toBase("MAX_TEXTURE_LAYERS " + Util::toString(terrain->_terrainTextures.size())));
-    terrainMaterial->addShaderDefines(stringAlg::toBase("CURRENT_TEXTURE_COUNT " + Util::toString(textureCount)));
+    terrainMaterial->addShaderDefines("MAX_TEXTURE_LAYERS " + Util::toString(terrain->_terrainTextures.size()));
+    terrainMaterial->addShaderDefines("CURRENT_TEXTURE_COUNT " + Util::toString(textureCount));
     terrainMaterial->setShaderProgram("terrain", FINAL_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", SHADOW_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", Z_PRE_PASS_STAGE, true);

@@ -3,7 +3,6 @@
 #include "Headers/GLWrapper.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-#include "core.h"
 #include <glim.h>
 
 namespace Divide {

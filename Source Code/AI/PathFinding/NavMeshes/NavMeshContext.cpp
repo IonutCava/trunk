@@ -1,6 +1,8 @@
 #include "Headers/NavMeshContext.h"
 
-#include "core.h"
+#include "Core/Headers/Console.h"
+#include "Core/Headers/Applicationtimer.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 namespace AI {

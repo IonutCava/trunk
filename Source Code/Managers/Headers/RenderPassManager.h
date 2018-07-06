@@ -23,8 +23,11 @@
 #ifndef _MANAGERS_RENDER_PASS_MANAGER_H_
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
-#include "core.h"
+#include "Core/Headers/NonCopyable.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+
 #include <memory>
+#include <vector>
 
 namespace Divide {
 

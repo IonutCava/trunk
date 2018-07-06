@@ -23,8 +23,6 @@
 #ifndef _CAMERA_H
 #define _CAMERA_H
 
-#include "core.h"
-
 #include "Frustum.h"
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Resources/Headers/Resource.h"

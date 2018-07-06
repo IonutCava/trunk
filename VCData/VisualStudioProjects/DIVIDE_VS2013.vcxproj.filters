@@ -919,9 +919,6 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\Singleton.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathClasses.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathHelper.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
@@ -1126,7 +1123,6 @@
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceLoader.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\core.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
@@ -1286,9 +1282,6 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h">
       <Filter>AI\PathFinding\Headers</Filter>
     </ClInclude>
@@ -1397,10 +1390,22 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Colors.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathMatrices.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">
       <Filter>Languages</Filter>
+    </None>
+    <None Include="..\..\Source Code\Core\Headers\Application.inl">
+      <Filter>Core\Headers</Filter>
     </None>
   </ItemGroup>
 </Project>
