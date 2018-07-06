@@ -23,19 +23,17 @@ DefaultScene::DefaultScene(PlatformContext& context, ResourceCache& cache, Scene
 
 bool DefaultScene::load(const stringImpl& name) {
     bool loadState = SCENE_LOAD(name);
-    SceneGraphNode* light = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
-    _currentSky = addSky();
     // Add a light
     vec2<F32> sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     vec3<F32> sunvector(-cosf(sunAngle.x) * sinf(sunAngle.y),
                         -cosf(sunAngle.y),
                         -sinf(sunAngle.x) * sinf(sunAngle.y));
     
-    light->get<TransformComponent>()->setPosition(sunvector);
+    _sun->get<TransformComponent>()->setPosition(sunvector);
     PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
     constants.set("sun_vector", GFX::PushConstantType::VEC3, sunvector);
-    constants.set("sun_colour", GFX::PushConstantType::VEC3, light->getNode<Light>()->getDiffuseColour());
+    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
 
     state().saveLoadDisabled(true);
 

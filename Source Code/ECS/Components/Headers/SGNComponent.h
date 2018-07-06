@@ -59,8 +59,8 @@ enum class ComponentType : U32 {
     COUNT = 12
 };
 
-const char* getComponentTypeName(ComponentType type);
-ComponentType getComponentTypeByName(const char* name);
+inline const char* getComponentTypeName(ComponentType type);
+inline ComponentType getComponentTypeByName(const char* name);
 
 struct EntityOnUpdate;
 struct EntityActiveStateChange;
@@ -72,7 +72,7 @@ class SGNComponent : private NonCopyable,
 {
    public:
 
-    SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name);
+    SGNComponent(SceneGraphNode& parentSGN, ComponentType type);
     virtual ~SGNComponent();
 
     virtual void PreUpdate(const U64 deltaTime);

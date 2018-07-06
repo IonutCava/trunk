@@ -83,10 +83,10 @@ namespace Divide {
     }
 
     template<typename T>
-    SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name)
+    SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, ComponentType type)
         : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),
         _parentSGN(parentSGN),
-        _editorComponent(name),
+        _editorComponent(getComponentTypeName(type)),
         _enabled(true),
         _hasChanged(false)
     {

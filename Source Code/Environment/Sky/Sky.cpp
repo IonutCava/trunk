@@ -87,6 +87,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     SceneGraphNodeDescriptor skyNodeDescriptor;
     skyNodeDescriptor._node = _sky;
+    skyNodeDescriptor._name = sgn.name() + "_geometry";
     skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                        to_base(ComponentType::BOUNDS) |

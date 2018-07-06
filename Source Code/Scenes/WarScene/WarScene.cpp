@@ -347,10 +347,6 @@ bool WarScene::load(const stringImpl& name) {
 
     // Load scene resources
     bool loadState = SCENE_LOAD(name);
-    // Add a light
-    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
-    // Add a skybox
-    _currentSky = addSky();
     // Position camera
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);

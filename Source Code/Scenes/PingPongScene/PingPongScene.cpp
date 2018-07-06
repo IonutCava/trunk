@@ -282,9 +282,6 @@ bool PingPongScene::load(const stringImpl& name) {
 
     // Load scene resources
     bool loadState = SCENE_LOAD(name);
-    // Add a light
-    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
-    _currentSky = addSky();
 
     ResourceDescriptor minge("Ping Pong Ball");
     _ball = CreateResource<Sphere3D>(_resCache, minge);

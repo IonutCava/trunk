@@ -139,7 +139,7 @@ class Object3D : public SceneNode {
     static vector<SceneGraphNode*> filterByType(const vector<SceneGraphNode*>& nodes, ObjectType filter);
     static vectorEASTL<SceneGraphNode*> filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter);
 
-    bool isPrimitive();
+    bool isPrimitive() const;
 
    protected:
     void rebuild();

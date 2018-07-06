@@ -150,6 +150,22 @@ void SceneNode::onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const
     ACKNOWLEDGE_UNUSED(dataIn);
 }
 
+void SceneNode::saveToXML(boost::property_tree::ptree& pt) const {
+    ACKNOWLEDGE_UNUSED(pt);
+
+    // Only 3D objects for now
+    if (type() == SceneNodeType::TYPE_OBJECT3D) {
+        if (static_cast<const Object3D*>(this)->isPrimitive()) {
+            pt.put("model", static_cast<const Object3D*>(this)->getObjectType()._to_string());
+        } else {
+            pt.put("model", name());
+        }
+    }
+}
+
+void SceneNode::loadFromXML(const boost::property_tree::ptree& pt) {
+    ACKNOWLEDGE_UNUSED(pt);
+}
 
 void Attorney::SceneNodeSceneGraph::registerSGNParent(SceneNode& node, SceneGraphNode* sgn) {
     // prevent double add
@@ -174,4 +190,5 @@ void Attorney::SceneNodeSceneGraph::unregisterSGNParent(SceneNode& node, SceneGr
 
     node._sgnParents.erase(it);
 }
+
 };

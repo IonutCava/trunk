@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<model>models/cylinder.obj</model>
 <static>true</static>
+<model>models/flag_obj.obj</model>
 <TRANSFORM>
     <Transform>
-        <position x="100" y="0" z="-100"/>
+        <position x="0" y="0" z="0"/>
         <orientation x="0" y="0" z="0"/>
-        <scale x="3" y="3" z="3"/>
+        <scale x="0.00999999978" y="0.00999999978" z="0.00999999978"/>
     </Transform>
     <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>

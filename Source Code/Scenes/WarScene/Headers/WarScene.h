@@ -76,7 +76,6 @@ class WarScene : public Scene {
     bool deinitializeAI(bool continueOnErrors);
 
    private:
-    SceneGraphNode* _sun;
     GUIMessageBox* _infoBox;
     vector<SceneGraphNode*> _lightNodes;
     vector<std::pair<SceneGraphNode*, bool>> _lightNodes2;

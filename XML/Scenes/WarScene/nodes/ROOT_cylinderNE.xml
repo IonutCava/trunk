@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<model>models/Testwuson.X</model>
 <static>true</static>
+<model>models/cylinder.obj</model>
 <TRANSFORM>
     <Transform>
-        <position x="-3.5" y="0" z="7.5"/>
+        <position x="-100" y="0" z="-100"/>
         <orientation x="0" y="0" z="0"/>
         <scale x="2" y="2" z="2"/>
     </Transform>
@@ -21,3 +21,4 @@
         <parallaxFactor>0.00999999978</parallaxFactor>
     </Material>
 </RENDERING>
+<SELECTION/>

@@ -143,8 +143,8 @@ class Scene : public Resource, public PlatformContextComponent {
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
 
     // DIRECTIONAL lights have shadow mapping enabled automatically
-    SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode);
-    SceneGraphNode* addSky(const stringImpl& nodeName = "");
+    SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode, stringImpl nodeName = "");
+    SceneGraphNode* addSky(SceneGraphNode& parentNode, const stringImpl& nodeName = "");
 
     /// Object picking
     inline const vector<I64>& getCurrentSelection(PlayerIndex index = 0) {
@@ -198,8 +198,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool saveToCache(const stringImpl& name);
 
     virtual bool load(const stringImpl& name);
-    Object3D_ptr createPrimitive(const stringImpl& nodeName, const boost::property_tree::ptree& pt);
-    Object3D_ptr loadAsset(const XML::SceneNode& sceneNode, bool addToSceneGraph);
+    void loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent);
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)

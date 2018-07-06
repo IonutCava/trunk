@@ -246,7 +246,7 @@ void Scene::loadFromXML() {
     constexpr bool terrainThreadedLoading = true;
 
     while (!_xmlSceneGraph.empty()) {
-        loadAsset(_xmlSceneGraph.top(), true);
+        loadAsset(_xmlSceneGraph.top(), &_sceneGraph->getRoot());
         _xmlSceneGraph.pop();
     }
 
@@ -286,120 +286,134 @@ void Scene::loadFromXML() {
     }
 }
 
-bool isPrimitive(const stringImpl& modelName) {
-    static const stringImpl pritimiveNames[] = {
-        "BOX_3D",
-        //"PATCH_3D", <- Internal
-        "QUAD_3D",
-        "SPHERE_3D"
-    };
-    for (const stringImpl& it : pritimiveNames) {
-        if (Util::CompareIgnoreCase(modelName, it)) {
-            return true;
+namespace {
+    bool isPrimitive(const stringImpl& modelName) {
+        static const stringImpl pritimiveNames[] = {
+            "BOX_3D",
+            //"PATCH_3D", <- Internal
+            "QUAD_3D",
+            "SPHERE_3D"
+        };
+        for (const stringImpl& it : pritimiveNames) {
+            if (Util::CompareIgnoreCase(modelName, it)) {
+                return true;
+            }
         }
+
+        return false;
     }
+};
 
-    return false;
-}
 
-Object3D_ptr Scene::createPrimitive(const stringImpl& nodeName, const boost::property_tree::ptree& pt) {
-    auto loadModelComplete = [this](Resource_wptr res) {
-        ACKNOWLEDGE_UNUSED(res);
-        --_loadingTasks;
-    };
-
-    Object3D_ptr ret = nullptr;
-
-    stringImpl modelName = pt.get("model", "");
-
-    ResourceDescriptor item(nodeName);
-    item.setOnLoadCallback(loadModelComplete);
-    item.setResourceLocation(modelName);
-    if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
-        item.setPropertyList(Util::StringFormat("%2.2f", pt.get("size", 1.0f)));
-        ret = CreateResource<Box3D>(_resCache, item);
-    } else if (Util::CompareIgnoreCase(modelName, "SPHERE_3D")) {
-        ret = CreateResource<Sphere3D>(_resCache, item);
-        static_cast<Sphere3D*>(ret.get())->setRadius(pt.get("radius", 1.0f));
-    } else if (Util::CompareIgnoreCase(modelName, "QUAD_3D")) {
-        P32 quadMask;
-        quadMask.i = 0;
-        quadMask.b[0] = 1;
-        item.setBoolMask(quadMask);
-        ret = CreateResource<Quad3D>(_resCache, item);
-        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
-        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
-        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
-        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
-    } else {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), nodeName.c_str());
-    }
-
-    return ret;
-}
-
-Object3D_ptr Scene::loadAsset(const XML::SceneNode& sceneNode, bool addToSceneGraph) {
-    for (const XML::SceneNode& node : sceneNode.children) {
-        loadAsset(node, addToSceneGraph);
-    }
-
-    if (sceneNode.type == "ROOT" ||
-        sceneNode.type == "SUBMESH" ||
-        sceneNode.type == "SKY" ||
-        sceneNode.type == "LIGHT")
-    {
-        return nullptr;
-    }
+void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
+    assert(parent != nullptr);
 
     const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     std::string sceneLocation(scenePath + "/" + name().c_str());
-    std::string nodePath = sceneLocation + "/nodes/" + sceneNode.name + ".xml";
+    std::string nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
 
-    if (!fileExists(nodePath.c_str())) {
-        return nullptr;
-    }
+    SceneGraphNode* crtNode = parent;
+    if (fileExists(nodePath.c_str())) {
 
-    constexpr bool modelThreadedLoading = true;
+        static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
+                                      to_base(ComponentType::BOUNDS) |
+                                      to_base(ComponentType::RENDERING) |
+                                      to_base(ComponentType::NETWORKING);
 
-    static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
 
-    Object3D_ptr ret = nullptr;
-
-    ++_loadingTasks;
-    boost::property_tree::ptree nodeTree;
-    read_xml(nodePath, nodeTree);
-
-    if (isPrimitive(sceneNode.type)) {
-        ret = createPrimitive(sceneNode.name, nodeTree);
-
-        ResourceDescriptor materialDescriptor(sceneNode.name + "_material");
-        Material_ptr tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
-        tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-        ret->setMaterialTpl(tempMaterial);
-    } else {
         auto loadModelComplete = [this](Resource_wptr res) {
             ACKNOWLEDGE_UNUSED(res);
             --_loadingTasks;
         };
 
-        stringImpl modelName = nodeTree.get("model", "");
-        if (!modelName.empty()) {
-            ResourceDescriptor model(modelName);
-            model.setResourceLocation(Paths::g_assetsLocation + modelName);
-            model.setFlag(true);
-            model.setThreadedLoading(modelThreadedLoading);
-            model.setOnLoadCallback(loadModelComplete);
-            ret = std::static_pointer_cast<Object3D>(CreateResource<Mesh>(_resCache, model));
-        }
-    }
+        boost::property_tree::ptree nodeTree;
+        read_xml(nodePath, nodeTree);
 
-    if (!ret) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), sceneNode.name.c_str());
-    } else {
-        if (addToSceneGraph) {
+        stringImpl modelName = nodeTree.get("model", "");
+
+        SceneNode_ptr ret = nullptr;
+
+        bool skipAdd = true;
+        if (sceneNode.type == "ROOT") {
+            // Nothing to do with the root. It's good that it exists
+        }
+        // Primitive types (only top level)
+        else if (isPrimitive(sceneNode.type)) {
+            if (!modelName.empty()) {
+                ++_loadingTasks;
+                ResourceDescriptor item(sceneNode.name);
+                item.setOnLoadCallback(loadModelComplete);
+                item.setResourceLocation(modelName);
+                if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
+                    ret = CreateResource<Box3D>(_resCache, item);
+                } else if (Util::CompareIgnoreCase(modelName, "SPHERE_3D")) {
+                    ret = CreateResource<Sphere3D>(_resCache, item);
+                } else if (Util::CompareIgnoreCase(modelName, "QUAD_3D")) {
+                    P32 quadMask;
+                    quadMask.i = 0;
+                    quadMask.b[0] = 1;
+                    item.setBoolMask(quadMask);
+                    ret = CreateResource<Quad3D>(_resCache, item);
+                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
+                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
+                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
+                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
+                } else {
+                    Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), sceneNode.name.c_str());
+                }
+            }
+            if (ret != nullptr) {
+                ResourceDescriptor materialDescriptor(sceneNode.name + "_material");
+                Material_ptr tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
+                tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+                ret->setMaterialTpl(tempMaterial);
+            }
+    
+            skipAdd = false;
+        }
+        // Mesh types
+        else if (Util::CompareIgnoreCase(sceneNode.type, "MESH")) {
+            if (!modelName.empty()) {
+                ++_loadingTasks;
+                ResourceDescriptor model(modelName);
+                model.setResourceLocation(Paths::g_assetsLocation + modelName);
+                model.setFlag(true);
+                model.setThreadedLoading(true);
+                model.setOnLoadCallback(loadModelComplete);
+                ret = CreateResource<Mesh>(_resCache, model);
+            }
+
+            skipAdd = false;
+        }
+        // Submesh (change component properties, as the meshes should already be loaded)
+        else if (Util::CompareIgnoreCase(sceneNode.type, "SUBMESH")) {
+            SceneGraphNode* subMesh = parent->findChild(sceneNode.name, false, false);
+            if (subMesh != nullptr) {
+                subMesh->loadFromXML(nodeTree);
+            }
+        }
+        // Lights
+        else if (Util::CompareIgnoreCase(sceneNode.type, "LIGHT")) {
+            //ToDo: Change this - Currently, just load the default light.
+            if (!_sun) {
+                _sun = addLight(LightType::DIRECTIONAL, *parent , sceneNode.name);
+            }
+        }
+        // Sky
+        else if (Util::CompareIgnoreCase(sceneNode.type, "SKY")) {
+            //ToDo: Change this - Currently, just load the default sky.
+            _currentSky = addSky(*parent, sceneNode.name);
+        }
+
+        if (!ret) {
+            if (!skipAdd) {
+                Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), sceneNode.name.c_str());
+            } else {
+                // Loaded something else
+            }
+        } else {
+            ret->loadFromXML(nodeTree);
+
             SceneGraphNodeDescriptor nodeDescriptor;
             nodeDescriptor._node = ret;
             nodeDescriptor._name = sceneNode.name;
@@ -407,17 +421,20 @@ Object3D_ptr Scene::loadAsset(const XML::SceneNode& sceneNode, bool addToSceneGr
             
             for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
                 ComponentType type = static_cast<ComponentType>(1 << i);
-                if (!nodeTree.get(getComponentTypeName(type), "").empty()) {
+                if (nodeTree.count(getComponentTypeName(type)) != 0) {
                     nodeDescriptor._componentMask |= to_base(type);
                 }
             }
 
-            SceneGraphNode* node = _sceneGraph->getRoot().addNode(nodeDescriptor);
-            node->loadFromXML(nodeTree);
+            crtNode = parent->addNode(nodeDescriptor);
+            crtNode->loadFromXML(nodeTree);
         }
+
     }
 
-    return ret;
+    for (const XML::SceneNode& node : sceneNode.children) {
+        loadAsset(node, crtNode);
+    }
 }
 
 SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
@@ -451,26 +468,24 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
 }
 
 
-SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode) {
+SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode, stringImpl nodeName) {
 
-    const char* lightType = "";
-    switch (type) {
-        case LightType::DIRECTIONAL:
-            lightType = "_directional_light ";
-            break;
-        case LightType::POINT:
-            lightType = "_point_light_";
-            break;
-        case LightType::SPOT:
-            lightType = "_spot_light_";
-            break;
-    }
+    if (nodeName.empty()) {
+        switch (type) {
+            case LightType::DIRECTIONAL:
+                nodeName = "_directional_light_";
+                break;
+            case LightType::POINT:
+                nodeName = "_point_light_";
+                break;
+            case LightType::SPOT:
+                nodeName = "_spot_light_";
+                break;
+        }
+        nodeName = name() + nodeName + to_stringImpl(_lightPool->getLights(type).size());
+    } 
 
-    ResourceDescriptor defaultLight(
-        name() +
-        lightType +
-        to_stringImpl(_lightPool->getLights(type).size()));
-
+    ResourceDescriptor defaultLight(nodeName);
     defaultLight.setEnumValue(to_U32(type));
     defaultLight.setUserPtr(_lightPool);
     std::shared_ptr<Light> light = CreateResource<Light>(_resCache, defaultLight);
@@ -479,6 +494,7 @@ SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode) {
     }
 
     SceneGraphNodeDescriptor lightNodeDescriptor;
+    lightNodeDescriptor._name = nodeName;
     lightNodeDescriptor._node = light;
     lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
@@ -526,8 +542,8 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
     flashLight->getNode<Light>()->toggleEnabled();
 }
 
-SceneGraphNode* Scene::addSky(const stringImpl& nodeName) {
-    ResourceDescriptor skyDescriptor("Default Sky");
+SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, const stringImpl& nodeName) {
+    ResourceDescriptor skyDescriptor("DefaultSky");
     skyDescriptor.setID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
@@ -538,11 +554,11 @@ SceneGraphNode* Scene::addSky(const stringImpl& nodeName) {
     skyNodeDescriptor._name = nodeName;
     skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
-                                        to_base(ComponentType::BOUNDS) |
-                                        to_base(ComponentType::RENDERING) |
-                                        to_base(ComponentType::NETWORKING);
+                                       to_base(ComponentType::BOUNDS) |
+                                       to_base(ComponentType::RENDERING) |
+                                       to_base(ComponentType::NETWORKING);
 
-    SceneGraphNode* skyNode = _sceneGraph->getRoot().addNode(skyNodeDescriptor);
+    SceneGraphNode* skyNode = parentNode.addNode(skyNodeDescriptor);
     skyNode->lockVisibility(true);
 
     return skyNode;
@@ -861,6 +877,21 @@ bool Scene::load(const stringImpl& name) {
         idle();
     }
 
+    // We always add a sky
+    auto skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
+    if (skies.empty()) {
+        _currentSky = addSky(_sceneGraph->getRoot(), "DefaultSky");
+    } else {
+        _currentSky = skies[0];
+    }
+
+    // We always add at least one light
+    auto lights = sceneGraph().getNodesByType(SceneNodeType::TYPE_LIGHT);
+    if (lights.empty()) {
+        _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot(), "DefaultLight");
+    } else {
+        _sun = lights[0];
+    }
     _loadComplete = true;
 
     return _loadComplete;

@@ -95,6 +95,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
 struct SceneNode {
     std::string name;
     std::string type;
+
     vector<SceneNode> children;
 };
 

@@ -5,7 +5,7 @@
 namespace Divide {
 
 RagdollComponent::RagdollComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN, getComponentTypeName(ComponentType::RAGDOLL))
+    : SGNComponent(parentSGN, ComponentType::RAGDOLL)
 {
 }
 

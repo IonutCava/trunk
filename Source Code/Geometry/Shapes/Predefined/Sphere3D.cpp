@@ -97,4 +97,18 @@ void Sphere3D::updateBoundsInternal() {
     Object3D::updateBoundsInternal();
 }
 
+void Sphere3D::saveToXML(boost::property_tree::ptree& pt) const {
+    pt.put("radius", _radius);
+    pt.put("resolution", _resolution);
+
+    SceneNode::saveToXML(pt);
+}
+
+void Sphere3D::loadFromXML(const boost::property_tree::ptree& pt) {
+    setRadius(pt.get("radius", 1.0f));
+    setResolution(pt.get("resolution", 16u));
+
+    SceneNode::loadFromXML(pt);
+}
+
 }; //namespace Divide

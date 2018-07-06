@@ -34,7 +34,9 @@ MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManage
 }
 
 void MainScene::updateLights() {
-    if (!_updateLights) return;
+    if (!_updateLights) {
+        return;
+    }
 
     _sun_cosy = cosf(_sunAngle.y);
     _sunColour =
@@ -153,11 +155,9 @@ bool MainScene::load(const stringImpl& name) {
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
     baseCamera->setMoveSpeedFactor(10.0f);
 
-    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _sun->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.965f);
     _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
-    _currentSky = addSky();
 
     static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
                                   to_base(ComponentType::TRANSFORM) |

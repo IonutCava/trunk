@@ -63,7 +63,6 @@ class PingPongScene : public Scene {
     std::shared_ptr<Sphere3D> _ball;
     SceneGraphNode* _ballSGN;
     Camera* _paddleCam;
-    SceneGraphNode* _sun;
 
    private:  // Game stuff:
     bool _directionTowardsAdversary;

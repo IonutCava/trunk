@@ -125,6 +125,9 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
     inline const BoundingBox& getBoundsInternal() const { return _boundingBox; }
 
+    virtual void saveToXML(boost::property_tree::ptree& pt) const;
+    virtual void loadFromXML(const boost::property_tree::ptree& pt);
+
    protected:
     friend class BoundsSystem;
     /// Called from SceneGraph "sceneUpdate"

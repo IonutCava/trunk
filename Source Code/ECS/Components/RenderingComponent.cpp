@@ -29,7 +29,7 @@ hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 RenderingComponent::RenderingComponent(GFXDevice& context,
                                        Material_ptr materialInstance,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN, getComponentTypeName(ComponentType::RENDERING)),
+    : SGNComponent(parentSGN, ComponentType::RENDERING),
       _context(context),
       _lodLevel(0),
       _renderMask(0),

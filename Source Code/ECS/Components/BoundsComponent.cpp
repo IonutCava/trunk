@@ -8,7 +8,7 @@
 namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
-    : SGNComponent(sgn, "BOUNDS"),
+    : SGNComponent(sgn, ComponentType::BOUNDS),
      _ignoreTransform(false)
 {
     _boundingBoxNotDirty.clear();

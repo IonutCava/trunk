@@ -172,6 +172,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     UseProgramStageMask _stageMask;
 
+    mutable std::mutex _lockManagerMutex;
     glLockManager* _lockManager;
 };
 

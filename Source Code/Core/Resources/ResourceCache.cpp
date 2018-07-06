@@ -14,7 +14,10 @@ vector<size_t> ResourceLoadLock::_loadingHashes;
 
 void DeleteResource::operator()(CachedResource* res)
 {
+    WAIT_FOR_CONDITION(res->getState() == ResourceState::RES_LOADED);
+
     _context.remove(res);
+
     if (res && res->getType() != ResourceType::GPU_OBJECT) {
         MemoryManager::DELETE(res);
     }

@@ -206,6 +206,11 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
             // if we add a new type of texture recompute shaders
             computeShaders = true;
         }
+    } else {
+        // Skip adding same texture
+        if (_textures[slot]->getGUID() == texture->getGUID()) {
+            return true;
+        }
     }
 
     _textures[slot] = texture;
@@ -878,7 +883,7 @@ namespace {
                                const boost::property_tree::ptree& pt)
     {
         stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
-        stringImpl pathName(textureName.substr(0, textureName.rfind("/") + 1));
+        stringImpl pathName(textureName.substr(0, textureName.rfind("/")));
 
         TextureWrap wrapU = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapU", "REPEAT"));
         TextureWrap wrapV = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapV", "REPEAT"));
@@ -895,8 +900,9 @@ namespace {
         TextureDescriptor texDesc(TextureType::TEXTURE_2D);
         texDesc.setSampler(sampDesc);
 
-        ResourceDescriptor texture(img_name);
-        texture.setResourceLocation(pathName + img_name);
+        ResourceDescriptor texture(pathName + "/" + img_name);
+        texture.setResourceName(img_name);
+        texture.setResourceLocation(pathName);
         texture.setPropertyDescriptor(texDesc);
 
         return CreateResource<Texture>(targetCache, texture);
@@ -938,7 +944,10 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
             stringImpl textureNode = entryName + ".texture.";
             textureNode += getTexUsageName(usage);
 
-            pt.put(textureNode + ".name", tex.lock()->name());
+            pt.put(textureNode + ".name", tex.lock()->getResourceName());
+
+            pt.put(textureNode + ".path", tex.lock()->getResourceLocation());
+
             if (usage == ShaderProgram::TextureUsage::UNIT1) {
                 pt.put(textureNode + ".usage", getTextureOperationName(_operation));
             }
@@ -979,6 +988,8 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     setParallaxFactor(pt.get<F32>(entryName + ".parallaxFactor", 1.0f));
 
 
+    STUBBED("ToDo: Set texture is currently disabled!");
+
     for (U8 i = 0; i <= to_U8(ShaderProgram::TextureUsage::PROJECTION); ++i) {
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
 
@@ -988,7 +999,8 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
 
             stringImpl texName = pt.get<stringImpl>(textureNode + ".name", "");
             if (!texName.empty()) {
-                Texture_ptr tex = loadTextureXML(_context.parent().resourceCache(), textureNode, texName, pt);
+                stringImpl texLocation = pt.get<stringImpl>(textureNode + ".path", "");
+                Texture_ptr tex = loadTextureXML(_context.parent().resourceCache(), textureNode, texLocation + "/" + texName, pt);
                 if (tex != nullptr) {
                     if (usage == ShaderProgram::TextureUsage::UNIT1) {
                         TextureOperation op = getTextureOperationByName(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));

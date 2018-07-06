@@ -50,8 +50,24 @@ class Box3D : public Object3D {
 
    void updateBoundsInternal() override;
 
+   inline void saveToXML(boost::property_tree::ptree& pt) const override {
+       pt.put("halfExtent.<xmlattr>.x", _halfExtent.x);
+       pt.put("halfExtent.<xmlattr>.y", _halfExtent.y);
+       pt.put("halfExtent.<xmlattr>.z", _halfExtent.z);
+
+       SceneNode::saveToXML(pt);
+   }
+
+   inline void loadFromXML(const boost::property_tree::ptree& pt)  override {
+       setHalfExtent(vec3<F32>(pt.get("halfExtent.<xmlattr>.x", 1.0f),
+                               pt.get("halfExtent.<xmlattr>.y", 1.0f), 
+                               pt.get("halfExtent.<xmlattr>.z", 1.0f)));
+
+       SceneNode::loadFromXML(pt);
+   }
+
    private:
-    vec3<F32> _halfExtent;
+      vec3<F32> _halfExtent;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Box3D);

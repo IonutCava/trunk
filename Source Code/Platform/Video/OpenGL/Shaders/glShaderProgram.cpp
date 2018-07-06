@@ -59,9 +59,12 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
 
 glShaderProgram::~glShaderProgram()
 {
-    if (_lockManager) {
-        _lockManager->Wait(true);
-        MemoryManager::DELETE(_lockManager);
+    {
+        UniqueLock lock(_lockManagerMutex);
+        if (_lockManager) {
+            _lockManager->Wait(true);
+            MemoryManager::DELETE(_lockManager);
+        }
     }
 
     if (isBound()) {
@@ -133,9 +136,12 @@ bool glShaderProgram::validateInternal() {
 bool glShaderProgram::update(const U64 deltaTimeUS) {
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued && _shaderProgramID != 0) {
-        if (_lockManager) {
-            _lockManager->Wait(true);
-            MemoryManager::DELETE(_lockManager);
+        {
+            UniqueLock lock(_lockManagerMutex);
+            if (_lockManager) {
+                _lockManager->Wait(true);
+                MemoryManager::DELETE(_lockManager);
+            }
         }
         // Call the internal validation function
         validateInternal();
@@ -289,8 +295,11 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
     // Pass the rest of the loading steps to the parent class
-    if (_lockManager) {
-        _lockManager->Lock();
+    {
+        UniqueLock lock(_lockManagerMutex);
+        if (_lockManager) {
+            _lockManager->Lock();
+        }
     }
 
     if (!skipRegister) {
@@ -320,6 +329,7 @@ bool glShaderProgram::link() {
     // Same getLog() method is used
     if (linkStatus == GL_FALSE) {
         Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), name().c_str(), getLog().c_str(), getGUID());
+        UniqueLock lock(_lockManagerMutex);
         MemoryManager::SAFE_DELETE(_lockManager);
     } else {
         Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), name().c_str(), getLog().c_str(), getGUID());
@@ -521,9 +531,12 @@ bool glShaderProgram::recompileInternal() {
         _shaderProgramID = 0;
         return true;
     }
-    if (_lockManager) {
-        _lockManager->Wait(true);
-        MemoryManager::DELETE(_lockManager);
+    {
+        UniqueLock lock(_lockManagerMutex);
+        if (_lockManager) {
+            _lockManager->Wait(true);
+            MemoryManager::DELETE(_lockManager);
+        }
     }
 
     reloadShaders(true);
@@ -584,11 +597,13 @@ bool glShaderProgram::bind(bool& wasBound) {
         return false;
     }
 
-    if (_lockManager) {
-        _lockManager->Wait(true);
-        MemoryManager::DELETE(_lockManager);
+    {
+        UniqueLock lock(_lockManagerMutex);
+        if (_lockManager) {
+            _lockManager->Wait(true);
+            MemoryManager::DELETE(_lockManager);
+        }
     }
-
     // Set this program as the currently active one
     wasBound = GL_API::setActiveProgram(_shaderProgramID);
     // After using the shader at least once, validate the shader if needed

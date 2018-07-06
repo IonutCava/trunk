@@ -7,7 +7,7 @@
 
 namespace Divide {
 UnitComponent::UnitComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN, getComponentTypeName(ComponentType::UNIT))
+    : SGNComponent(parentSGN, ComponentType::UNIT)
 {
 }
 

@@ -45,7 +45,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     _children.reserve(INITIAL_CHILD_COUNT);
     RegisterEventCallbacks();
     
-    name(descriptor._name.empty() ? Util::StringFormat("%s_SGN_%d", _node->name().c_str(), getGUID()) : descriptor._name);
+    name(descriptor._name.empty() ? Util::StringFormat("%s_SGN", _node->name().c_str()) : descriptor._name);
 
     if (BitCompare(_componentMask, to_U32(ComponentType::ANIMATION))) {
         AddSGNComponent<AnimationComponent>(*this);
@@ -717,30 +717,19 @@ void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
     static boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
     boost::property_tree::ptree pt;
-
-    const SceneNode_ptr& sceneNode = getNode();
-    SceneNodeType type = sceneNode->type();
-    // Only 3D objects for now
-    if (type == SceneNodeType::TYPE_OBJECT3D) {
-        if (getNode<Object3D>()->isPrimitive()) {
-            pt.put("model", getNode<Object3D>()->getObjectType()._to_string());
-            if (Util::CompareIgnoreCase(sceneNode->name(), "Box3D")) {
-                pt.put("size", getNode<Box3D>()->getHalfExtent().x * 2);
-            } else if (Util::CompareIgnoreCase(sceneNode->name(), "Sphere3D")) {
-                pt.put("radius", getNode<Sphere3D>()->getRadius());
-            }
-        } else {
-            pt.put("model", sceneNode->name());
-        }
-    }
-
     pt.put("static", usageContext() == NodeUsageContext::NODE_STATIC);
+
+    getNode()->saveToXML(pt);
 
     for (EditorComponent* editorComponent : _editorComponents) {
         Attorney::EditorComponentSceneGraphNode::saveToXML(*editorComponent, pt);
     }
 
-    write_xml((sceneLocation + "/nodes/" + name() + ".xml").c_str(), pt, std::locale(), settings);
+    write_xml((sceneLocation + "/nodes/" + getParent()->name() + "_" + name() + ".xml").c_str(), pt, std::locale(), settings);
+
+    forEachChild([&sceneLocation](const SceneGraphNode& child){
+        child.saveToXML(sceneLocation);
+    });
 }
 
 void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {

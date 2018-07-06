@@ -74,7 +74,7 @@ Object3D::~Object3D()
 {
 }
 
-bool Object3D::isPrimitive() {
+bool Object3D::isPrimitive() const {
     return _geometryType._value == ObjectType::BOX_3D ||
            _geometryType._value == ObjectType::QUAD_3D ||
            _geometryType._value == ObjectType::PATCH_3D ||
