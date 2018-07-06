@@ -664,7 +664,7 @@ void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
     const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
 
     GFX::ReadAtomicCounterCommand readAtomicCounter;
-    readAtomicCounter._buffer = bufferData._cmdBuffer;
+    readAtomicCounter._buffer = bufferData._cmdBuffers[0];
     readAtomicCounter._target = &LAST_CULL_COUNT;
     readAtomicCounter._resetCounter = true;
     GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);

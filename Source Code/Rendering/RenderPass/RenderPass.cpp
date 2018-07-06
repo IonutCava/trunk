@@ -49,10 +49,11 @@ namespace {
 };
 
 RenderPass::BufferData::BufferData(GFXDevice& context, U32 sizeFactor, I32 index)
-  : _lastCommandCount(0)
+  : _sizeFactor(sizeFactor),
+    _lastCommandCount(0)
 {
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES * sizeFactor;
+    bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES * _sizeFactor;
     bufferDescriptor._primitiveSizeInBytes = sizeof(GFXDevice::NodeData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
@@ -62,10 +63,15 @@ RenderPass::BufferData::BufferData(GFXDevice& context, U32 sizeFactor, I32 index
     // Each pass should have its own set of buffers (shadows, reflection, etc)
     _renderData = context.newSB(bufferDescriptor);
 
+    bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES;
     bufferDescriptor._primitiveSizeInBytes = sizeof(IndirectDrawCommand);
-    bufferDescriptor._name = Util::StringFormat("CMD_DATA_%d", index).c_str();
-    _cmdBuffer = context.newSB(bufferDescriptor);
-    _cmdBuffer->addAtomicCounter(1, 5);
+    _cmdBuffers.reserve(_sizeFactor);
+
+    for (U32 i = 0; i < _sizeFactor; ++i) {
+        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%d_%d", index, i).c_str();
+        _cmdBuffers.push_back(context.newSB(bufferDescriptor));
+        _cmdBuffers.back()->addAtomicCounter(1, 5);
+    }
 }
 
 RenderPass::BufferData::~BufferData()
@@ -85,25 +91,16 @@ RenderPass::BufferDataPool::~BufferDataPool()
 }
 
 RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex, I32 bufferOffset) {
-    assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_I32(_buffers.size())));
-    assert(IS_IN_RANGE_INCLUSIVE(bufferOffset, 0, 6));
-
-    std::shared_ptr<BufferData>& buffer = _buffers[bufferIndex];
-    assert(buffer != nullptr);
-    buffer->_cmdElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
-    buffer->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
-    return *buffer;
+    std::shared_ptr<BufferData>& bufferData = _buffers[bufferIndex];
+    bufferData->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
+    return *bufferData;
 }
 
 const RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex, I32 bufferOffset) const {
-    assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_I32(_buffers.size())));
-    assert(IS_IN_RANGE_INCLUSIVE(bufferOffset, 0, 6));
+    const std::shared_ptr<BufferData>& bufferData = _buffers[bufferIndex];
+    bufferData->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
 
-    const std::shared_ptr<BufferData>& buffer = _buffers[bufferIndex];
-    assert(buffer != nullptr);
-    buffer->_cmdElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
-    buffer->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
-    return *buffer;
+    return *bufferData;
 }
 
 void RenderPass::BufferDataPool::initBuffers() {

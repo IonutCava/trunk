@@ -384,6 +384,7 @@ protected:
     friend class RenderPassManager;
 
     void occlusionCull(const RenderPass::BufferData& bufferData,
+                       U32 bufferIndex,
                        const Texture_ptr& depthBuffer,
                        GFX::CommandBuffer& bufferInOut) const;
 

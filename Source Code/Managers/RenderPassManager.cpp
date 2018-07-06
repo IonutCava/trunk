@@ -65,6 +65,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     U8 renderPassCount = to_U8(_renderPasses.size());
     {
         Time::ScopedTimer timeAll(*_renderPassTimer);
+
         for (U8 i = 0; i < renderPassCount; ++i) {
             CreateTask(pool,
                        &renderTask,
@@ -175,11 +176,12 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex, I32 b
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const {
+GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const {
     GFXDevice::NodeData dataOut;
 
     RenderingComponent* const renderable = node->get<RenderingComponent>();
     TransformComponent* const transform = node->get<TransformComponent>();
+    AnimationComponent* const animComp = node->get<AnimationComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -200,18 +202,11 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
             dataOut._normalMatrixWV.mat[15] = 0.0f;
         }
         dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
-
-        // Calculate the normal matrix (world * view)
-        dataOut._normalMatrixWV *= viewMatrix;
     }
+    dataOut._normalMatrixWV *= viewMatrix;
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    if (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS)) {
-        AnimationComponent* const animComp = node->get<AnimationComponent>();
-        dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0);
-    } else {
-        dataOut._normalMatrixWV.element(0, 3) = 0.0f;
-    }
+    dataOut._normalMatrixWV.element(0, 3) = playAnimations ? to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0) : 0.0f;
     dataOut._normalMatrixWV.setRow(3, node->get<BoundsComponent>()->getBoundingSphere().asVec4());
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
@@ -223,47 +218,46 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     return dataOut;
 }
 
-void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut) {
-    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
+void RenderPassManager::refreshNodeData(RenderStage stage, U32 bufferIndex, U32 passIndex, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut) {
+    bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
-    U16 queueSize = 0;
-    getQueue().getSortedQueues(stagePass._stage, g_sortedQueues, queueSize);
-
-    const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
     g_nodeData.resize(0);
-    g_nodeData.reserve(queueSize * Config::MAX_VISIBLE_NODES);
+    g_nodeData.reserve(Config::MAX_VISIBLE_NODES);
 
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
+    U16 queueSize = 0;
+    getQueue().getSortedQueues(stage, g_sortedQueues, queueSize);
     for (const vectorEASTL<SceneGraphNode*>& queue : g_sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
             Attorney::RenderingCompRenderPass::setDataIndex(renderable, to_U32(g_nodeData.size()));
-            if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stagePass._stage)) {
-                g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), sceneRenderState, viewMatrix));
-                Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stagePass._stage, g_drawCommands);
+            if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stage)) {
+                g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
+                Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stage, g_drawCommands);
             }
         }
     }
 
-    RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._passIndex, params._bufferIndex);
+    RenderPass::BufferData& bufferData = getBufferData(stage, passIndex, bufferIndex);
     bufferData._lastCommandCount = to_U32(g_drawCommands.size());
 
-    assert(bufferData._lastCommandCount >= to_U32(g_nodeData.size()));
-    bufferData._renderData->writeData(bufferData._renderDataElementOffset, g_nodeData.size(), g_nodeData.data());
+    U32 nodeCount = to_U32(g_nodeData.size());
 
-    bufferData._cmdBuffer->writeData(bufferData._cmdElementOffset, bufferData._lastCommandCount, g_drawCommands.data());
+    assert(bufferData._lastCommandCount >= nodeCount);
+    bufferData._renderData->writeData(bufferData._renderDataElementOffset, nodeCount, g_nodeData.data());
+
+    bufferData._cmdBuffers[bufferIndex]->writeData(0, bufferData._lastCommandCount, g_drawCommands.data());
 
     ShaderBufferBinding shaderBufferCmds;
     shaderBufferCmds._binding = ShaderBufferLocation::CMD_BUFFER;
-    shaderBufferCmds._buffer = bufferData._cmdBuffer;
-    shaderBufferCmds._range = vec2<U16>(bufferData._cmdElementOffset, to_U16(g_drawCommands.size()));
+    shaderBufferCmds._buffer = bufferData._cmdBuffers[bufferIndex];
 
     ShaderBufferBinding shaderBufferData;
     shaderBufferData._binding = ShaderBufferLocation::NODE_INFO;
     shaderBufferData._buffer = bufferData._renderData;
-    shaderBufferData._range = vec2<U16>(bufferData._renderDataElementOffset, to_U16(g_nodeData.size()));
+    shaderBufferData._range = vec2<U16>(bufferData._renderDataElementOffset, nodeCount);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set = _context.newDescriptorSet();
@@ -284,11 +278,10 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         }
     }
 
-    
     if (refresh) {
-        refreshNodeData(stagePass, params, bufferInOut);
+        const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
+        refreshNodeData(stagePass._stage, params._bufferIndex, params._passIndex, sceneRenderState, viewMatrix, bufferInOut);
     }
-    
 }
 
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
@@ -549,7 +542,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     if (params._occlusionCull) {
         _context.constructHIZ(params._target, bufferInOut);
-        _context.occlusionCull(getBufferData(params._stage, params._passIndex, params._bufferIndex), target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
+        _context.occlusionCull(getBufferData(params._stage, params._passIndex, params._bufferIndex), params._bufferIndex, target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
         if (params._stage == RenderStage::DISPLAY) {
             _context.updateCullCount(bufferInOut);
         }

@@ -55,11 +55,12 @@ class RenderPass : private NonCopyable {
            BufferData(GFXDevice& context, U32 sizeFactor, I32 index);
            ~BufferData();
 
-           U32 _cmdElementOffset = 0;
            U32 _renderDataElementOffset = 0;
-
            ShaderBuffer* _renderData;
-           ShaderBuffer* _cmdBuffer;
+
+           vectorEASTL<ShaderBuffer*> _cmdBuffers;
+
+           I32 _sizeFactor;
            U32 _lastCommandCount;
        };
    protected:

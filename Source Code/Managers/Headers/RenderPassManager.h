@@ -93,8 +93,9 @@ private:
     const RenderPass& getPassForStage(RenderStage renderStage) const;
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void refreshNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut);
-    GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const;
+    void refreshNodeData(RenderStage stage, U32 bufferIndex, U32 passIndex, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut);
+    GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const;
+
 private: //TEMP
     friend class RenderBin;
     U32  renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;

@@ -95,6 +95,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
 }
 
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
+                              U32 bufferIndex,
                               const Texture_ptr& depthBuffer,
                               GFX::CommandBuffer& bufferInOut) const {
 
@@ -113,8 +114,8 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     ShaderBufferBinding shaderBuffer;
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
-    shaderBuffer._buffer = bufferData._cmdBuffer;
-    shaderBuffer._range.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
+    shaderBuffer._buffer = bufferData._cmdBuffers[bufferIndex];
+    shaderBuffer._range.set(0, to_U16(bufferData._cmdBuffers[bufferIndex]->getPrimitiveCount()));
     shaderBuffer._atomicCounter.first = true;
     
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;

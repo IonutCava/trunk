@@ -141,10 +141,8 @@ protected:
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
 
-    /// Reset as much of the GL default state as possible within the limitations
-    /// given
+    /// Reset as much of the GL default state as possible within the limitations given
     void clearStates();
-    void registerCommandBuffer(GLuint commandBuffer) const;
 
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
