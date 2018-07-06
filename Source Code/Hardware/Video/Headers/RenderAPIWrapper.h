@@ -107,7 +107,7 @@ protected:
     virtual FrameBuffer*        newFB(bool multisampled) const = 0;
     virtual VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES) const = 0;
     virtual ShaderBuffer*       newSB(const bool unbound = false) const = 0;
-    virtual GenericVertexData*  newGVD() const = 0;
+    virtual GenericVertexData*  newGVD(const bool persistentMapped = false) const = 0;
     virtual PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D) const = 0;
     virtual Texture*            newTextureArray(const bool flipped = false) const = 0;
     virtual Texture*            newTexture2D(const bool flipped = false) const = 0;

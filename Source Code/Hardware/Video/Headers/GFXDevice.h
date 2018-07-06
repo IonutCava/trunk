@@ -89,7 +89,7 @@ public:
     inline FrameBuffer*        newFB(bool multisampled = false)              const { return _api.newFB(multisampled); }
     inline VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES)  const { return _api.newVB(type); }
     inline PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D)     const { return _api.newPB(type); }
-    inline GenericVertexData*  newGVD()                                      const { return _api.newGVD(); }
+    inline GenericVertexData*  newGVD(const bool persistentMapped)           const { return _api.newGVD(persistentMapped); }
     inline ShaderBuffer*       newSB(const bool unbound = false)             const { return _api.newSB(unbound); }
     inline Texture*            newTextureArray(const bool flipped = false)   const { return _api.newTextureArray(flipped); }
     inline Texture*            newTexture2D(const bool flipped = false)      const { return _api.newTexture2D(flipped); }

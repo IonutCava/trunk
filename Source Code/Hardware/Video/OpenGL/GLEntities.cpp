@@ -58,8 +58,8 @@ PixelBuffer* GL_API::newPB(const PBType& type) const {
     return New glPixelBuffer(type);
 }
 
-GenericVertexData* GL_API::newGVD() const {
-    return New glGenericVertexData();
+GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
+    return New glGenericVertexData(persistentMapped);
 }
 
 ShaderBuffer* GL_API::newSB(const bool unbound) const {

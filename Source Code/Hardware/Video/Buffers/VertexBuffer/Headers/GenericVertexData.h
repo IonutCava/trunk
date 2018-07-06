@@ -33,9 +33,10 @@
 
 class GenericVertexData : private boost::noncopyable, public FrameListener {
 public:
-    GenericVertexData() : FrameListener()
+    GenericVertexData(bool persistentMapped) : FrameListener(), _persistentMapped(persistentMapped)
     {
         REGISTER_FRAME_LISTENER(this, 4);
+        _doubleBufferedQuery = true;
     }
 
     virtual ~GenericVertexData()
@@ -48,8 +49,8 @@ public:
     virtual void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) = 0;
     virtual void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) = 0;
 
-    virtual void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream) = 0;
-    virtual void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool steam) = 0;
+    virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
+    virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool steam) = 0;
 
     virtual void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
     virtual void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
@@ -57,7 +58,12 @@ public:
     virtual U32  GetFeedbackPrimitiveCount(U8 queryID) = 0;
     /// Just before we render the frame
     virtual bool frameStarted(const FrameEvent& evt) { return true; }
+
+    inline void toggleDoubleBufferedQueries(const bool state) { _doubleBufferedQuery = state; }
+
 protected:
+    bool _persistentMapped;
+    bool _doubleBufferedQuery;
     vectorImpl<U32 > _feedbackBuffers;
     vectorImpl<U32 > _bufferObjects;
 };

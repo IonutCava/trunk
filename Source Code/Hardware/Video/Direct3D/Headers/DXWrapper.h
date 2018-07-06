@@ -58,7 +58,7 @@ protected:
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
     inline FrameBuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
-    inline GenericVertexData*  newGVD()                                      const { return New d3dGenericVertexData(); }
+    inline GenericVertexData*  newGVD(const bool persistentMapped = false)   const { return New d3dGenericVertexData(persistentMapped); }
     inline VertexBuffer*       newVB(const PrimitiveType& type)              const { return New d3dVertexBuffer(type); }
     inline PixelBuffer*        newPB(const PBType& type)                     const { return New d3dPixelBuffer(type); }
     inline ShaderBuffer*       newSB(const bool unbound = false)             const { return New d3dConstantBuffer(unbound); }

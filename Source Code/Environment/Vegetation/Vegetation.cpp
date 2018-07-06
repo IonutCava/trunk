@@ -36,8 +36,8 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
 {
     _map.create(details.map);
     _grassShaderName = details.grassShaderName;
-    _grassGPUBuffer = GFX_DEVICE.newGVD();
-    _treeGPUBuffer = GFX_DEVICE.newGVD();
+    _grassGPUBuffer = GFX_DEVICE.newGVD(false);
+    _treeGPUBuffer = GFX_DEVICE.newGVD(false);
     _grassMatrices = GFX_DEVICE.newSB(true);
     _grassMatrices->Create(false, false);
 
@@ -171,9 +171,6 @@ bool Vegetation::uploadGrassData(){
     const U32 posLocation   = 10;
     const U32 scaleLocation = 11;
     const U32 instLocation  = 12;
-    size_t positionSize = _instanceCountGrass * sizeof(vec4<F32>);
-    size_t scaleSize = _instanceCountGrass * sizeof(F32);
-    size_t instSize = _instanceCountGrass * sizeof(I32);
     U32 instanceDiv = 1;
 
     enum BufferUsage {
@@ -190,11 +187,11 @@ bool Vegetation::uploadGrassData(){
     _grassGPUBuffer->SetFeedbackBuffer(CulledSizeBuffer, 1);
     _grassGPUBuffer->SetFeedbackBuffer(CulledInstanceBuffer, 2);
 
-    _grassGPUBuffer->SetBuffer(UnculledPositionBuffer, positionSize, &_grassPositions[0],  false, false);
-    _grassGPUBuffer->SetBuffer(CulledPositionBuffer,   positionSize, NULL,                 true,  false); // "true, false" = DYNAMIC_COPY
-    _grassGPUBuffer->SetBuffer(UnculledSizeBuffer,     scaleSize,    &_grassScales[0],     false, false);
-    _grassGPUBuffer->SetBuffer(CulledSizeBuffer,       scaleSize,    NULL,                 true,  false); 
-    _grassGPUBuffer->SetBuffer(CulledInstanceBuffer,   instSize,     NULL,                 true,  false);
+    _grassGPUBuffer->SetBuffer(UnculledPositionBuffer, _instanceCountGrass, sizeof(vec4<F32>), &_grassPositions[0], false, false);
+    _grassGPUBuffer->SetBuffer(CulledPositionBuffer,   _instanceCountGrass, sizeof(vec4<F32>), NULL,                true,  false); // "true, false" = DYNAMIC_COPY
+    _grassGPUBuffer->SetBuffer(UnculledSizeBuffer,     _instanceCountGrass, sizeof(F32),       &_grassScales[0],    false, false);
+    _grassGPUBuffer->SetBuffer(CulledSizeBuffer,       _instanceCountGrass, sizeof(F32),       NULL,                true,  false);
+    _grassGPUBuffer->SetBuffer(CulledInstanceBuffer,   _instanceCountGrass, sizeof(I32),       NULL,                true,  false);
 
     _grassGPUBuffer->SetAttribute(posLocation,   CulledPositionBuffer, instanceDiv, 4, false, 0, 0, FLOAT_32);
     _grassGPUBuffer->SetAttribute(scaleLocation, CulledSizeBuffer,     instanceDiv, 1, false, 0, 0, FLOAT_32);
@@ -209,6 +206,8 @@ bool Vegetation::uploadGrassData(){
     _grassMatrices->bind(10);
     _grassMatricesTemp.clear();
     */
+
+    _grassGPUBuffer->toggleDoubleBufferedQueries(false);
 
     _grassPositions.clear();
     _grassScales.clear();

@@ -46,7 +46,7 @@ bool ParticleEmitter::initData(){
     // assert if double init!
     assert(_particleGPUBuffer != nullptr);
 
-    _particleGPUBuffer = GFX_DEVICE.newGVD();
+    _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/false);
     _particleGPUBuffer->Create(3);
     
     // Not using Quad3D to improve performance
@@ -57,7 +57,7 @@ bool ParticleEmitter::initData(){
          0.5f,  0.5f, 0.0f,
     };
 
-    _particleGPUBuffer->SetBuffer(0, sizeof(particleQuad), particleQuad, false, false);
+    _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), particleQuad, false, false);
     _particleGPUBuffer->SetAttribute(Divide::VERTEX_POSITION_LOCATION, 0, 0, 3, false, 0, 0, FLOAT_32);
 
     //Generate a render state
@@ -177,8 +177,8 @@ void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& 
 ///The descriptor defines the particle properties
 void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor){
     _descriptor = descriptor;
-    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 4 * sizeof(F32), nullptr, true, true);
-    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 4 * sizeof(U8), nullptr, true, true);
+    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount, 4 * sizeof(F32), nullptr, true, true, /*true*/false);
+    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount, 4 * sizeof(U8),  nullptr, true, true, /*true*/false);
     _particleGPUBuffer->SetAttribute(16, 1, 1, 4, false, 0, 0, FLOAT_32);
     _particleGPUBuffer->SetAttribute(Divide::VERTEX_COLOR_LOCATION, 2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
 
@@ -213,15 +213,8 @@ void ParticleEmitter::uploadToGPU(){
     if(_uploaded || !_created)
         return;
 
-    _particleGPUBuffer->UpdateBuffer(1, _descriptor._particleCount * attribSize_float,
-                                        &_particlePositionData[0], 0, 
-                                        _particlesCurrentCount * attribSize_float,
-                                        true, true);
-
-    _particleGPUBuffer->UpdateBuffer(2, _descriptor._particleCount * attribSize_char,
-                                        &_particleColorData[0], 0, 
-                                        _particlesCurrentCount * attribSize_char,
-                                        true, true);
+    _particleGPUBuffer->UpdateBuffer(1, _particlesCurrentCount, &_particlePositionData[0], 0, true, true);
+    _particleGPUBuffer->UpdateBuffer(2, _particlesCurrentCount, &_particleColorData[0],    0, true, true);
     _uploaded = true;
 }
 

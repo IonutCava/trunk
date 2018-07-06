@@ -31,20 +31,20 @@
 
 class glGenericVertexData : public GenericVertexData {
     enum GVDUsage {
-        GVD_USAGE_DRAW = 0,
+        GVD_USAGE_DRAW  = 0,
         GVD_USAGE_FDBCK = 1,
         GVD_USAGE_PLACEHOLDER = 2
     };
 
 public:
-    glGenericVertexData();
+    glGenericVertexData(bool persistentMapped);
     ~glGenericVertexData();
 
     void Create(U8 numBuffers = 1, U8 numQueries = 1);
     U32  GetFeedbackPrimitiveCount(U8 queryID);
 
-    void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream);
-    void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool stream);
+    void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false);
+    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool stream);
 
     inline void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) {
         UpdateAttribute(index, buffer, divisor, (GLsizei)size, normalized ? GL_TRUE : GL_FALSE, stride, (GLvoid*)offset, glDataFormat[type], false);
@@ -87,14 +87,21 @@ protected:
     /// Just before we render the frame
     bool frameStarted(const FrameEvent& evt);
 private:
-    GLuint _transformFeedback;
-    GLuint _numQueries;
-    GLuint _vertexArray[GVD_USAGE_PLACEHOLDER];
-
-    GLuint* _prevResult;
-    GLuint* _feedbackQueries[2];
-    bool*   _resultAvailable[2];
-    GLuint  _currentWriteQuery;
-    GLuint  _currentReadQuery;
+    GLuint   _transformFeedback;
+    GLuint   _numQueries;
+    GLuint   _vertexArray[GVD_USAGE_PLACEHOLDER];
+    bool*    _bufferSet;
+    bool*    _bufferPersistent;
+    GLuint*  _elementCount;
+    size_t*  _readOffset;
+    size_t*  _elementSize;
+    GLvoid** _bufferPersistentData;
+    GLuint*  _prevResult;
+    GLuint*  _feedbackQueries[2];
+    bool*    _resultAvailable[2];
+    GLuint   _currentWriteQuery;
+    GLuint   _currentReadQuery;
+    size_t*  _startDestOffset;
+    glBufferLockManager* _lockManager;
 };
 #endif

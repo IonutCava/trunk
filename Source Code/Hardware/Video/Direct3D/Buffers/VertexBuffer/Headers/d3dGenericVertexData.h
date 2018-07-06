@@ -28,7 +28,7 @@
 class d3dGenericVertexData : public GenericVertexData {
 
 public:
-    d3dGenericVertexData() : GenericVertexData()
+    d3dGenericVertexData(bool persistentMapped) : GenericVertexData(persistentMapped)
     {
     }
     ~d3dGenericVertexData()
@@ -44,10 +44,10 @@ public:
     void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false)
     {
     }
-    void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream)
+    void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false)
     {
     }
-    void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool steam)
+    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool steam)
     {
     }
     void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type)

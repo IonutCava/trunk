@@ -81,7 +81,7 @@ protected:
     FrameBuffer*        newFB(bool multisampled) const;
     VertexBuffer*       newVB(const PrimitiveType& type) const;
     PixelBuffer*        newPB(const PBType& type) const;
-    GenericVertexData*  newGVD() const;
+    GenericVertexData*  newGVD(const bool persistentMapped) const;
     ShaderBuffer*       newSB(const bool unbound = false) const;
 
     inline Texture*       newTextureArray(const bool flipped = false)   const {return New glTexture(glTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }
