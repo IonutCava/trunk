@@ -178,10 +178,12 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
 
                         processVisibleNode(*node, nodeCount, pkg.isOcclusionCullable());
 
-                        for (size_t cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
-                            const GenericDrawCommand& cmd = pkg.drawCommand(cmdIdx);
-                            for (U32 i = 0; i < cmd.drawCount(); ++i) {
-                                _drawCommandsCache[cmdCount++].set(cmd.cmd());
+                        for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
+                            const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
+                            for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
+                                for (U32 i = 0; i < drawCmd.drawCount(); ++i) {
+                                    _drawCommandsCache[cmdCount++].set(drawCmd.cmd());
+                                }
                             }
                         }
                     }

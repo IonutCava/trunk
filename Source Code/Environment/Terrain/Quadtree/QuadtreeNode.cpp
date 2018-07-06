@@ -194,7 +194,7 @@ void QuadtreeNode::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
                           _boundingBox.getMax(),
                           vec4<U8>(0, 128, 255, 255));
 
-    packageOut.commands().add(_bbPrimitive->toCommandBuffer());
+    packageOut.addCommandBuffer(_bbPrimitive->toCommandBuffer());
 
     if (!isALeaf()) {
         getChild(ChildPosition::CHILD_NW).drawBBox(context, packageOut);

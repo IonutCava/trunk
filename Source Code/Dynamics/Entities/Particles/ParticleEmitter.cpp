@@ -274,10 +274,11 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
 
         RenderingComponent* renderComp = sgn.get<RenderingComponent>();
         RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
-        GenericDrawCommand cmd = pkg.drawCommand(0);
+
+        GenericDrawCommand cmd = pkg.drawCommand(0, 0);
         cmd.cmd().primCount = to_U32(_particles->_renderingPositions.size());
         cmd.sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
-        pkg.drawCommand(0, cmd);
+        pkg.drawCommand(0, 0, cmd);
 
         prepareForRender(renderStagePass, *Camera::activeCamera());
 

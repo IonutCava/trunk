@@ -137,6 +137,9 @@ class Object3D : public SceneNode {
     static vectorImpl<SceneGraphNode_wptr> filterByType(const vectorImpl<SceneGraphNode_wptr>& nodes, ObjectType filter);
 
    protected:
+    void rebuild();
+    virtual void rebuildVB();
+
     bool isPrimitive();
     /// Use a custom vertex buffer for this object (e.g., a submesh uses the
     /// mesh's vb)
@@ -148,14 +151,13 @@ class Object3D : public SceneNode {
                                    RenderPackage& pkgInOut) override;
    protected:
     GFXDevice& _context;
-    bool _update;
+    bool _geometryDirty;
     bool _playAnimations;
     U32 _geometryFlagMask;
     U16 _geometryPartitionID;
     ObjectType _geometryType;
     RigidBodyShape _rigidBodyShape;
-    /// 3 indices, pointing to position values, that form a triangle in the
-    /// mesh.
+    /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
     vectorImpl<vec3<U32> > _geometryTriangles;
     /// A custom, override vertex buffer

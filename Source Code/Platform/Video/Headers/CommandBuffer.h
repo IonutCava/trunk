@@ -38,11 +38,6 @@ namespace Divide {
 
 namespace GFX {
 
-struct CommandEntry {
-    U32 _idx = 0;
-    CommandType _type = CommandType::COUNT;
-};
-
 class CommandBuffer {
     friend class CommandBufferPool;
 
@@ -51,7 +46,8 @@ class CommandBuffer {
     ~CommandBuffer();
 
     template<typename T>
-    inline void add(const T& command);
+    inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
+    add(const T& command);
 
     inline void add(const CommandBuffer& other);
 
@@ -70,25 +66,6 @@ class CommandBuffer {
     size_t _index = 0;
 
     vectorImpl<std::shared_ptr<Command>> _data;
-
-    vectorImplFast<CommandEntry> _buffer;
-    vectorImplFast<BindPipelineCommand> _bindPipelineCommands;
-    vectorImplFast<SendPushConstantsCommand> _sendPushConstantsCommands;
-    vectorImplFast<DrawCommand> _drawCommands;
-    vectorImplFast<SetViewportCommand> _setViewportCommands;
-    vectorImplFast<SetCameraCommand> _setCameraCommands;
-    vectorImplFast<SetClipPlanesCommand> _setClipPlanesCommand;
-    vectorImplFast<BeginRenderPassCommand> _beginRenderPassCommands;
-    vectorImplFast<EndRenderPassCommand> _endRenderPassCommands;
-    vectorImplFast<BeginRenderSubPassCommand> _beginRenderSubPassCommands;
-    vectorImplFast<EndRenderSubPassCommand> _endRenderSubPassCommands;
-    vectorImplFast<BlitRenderTargetCommand> _blitRenderTargetCommands;
-    vectorImplFast<SetScissorCommand> _setScissorCommands;
-    vectorImplFast<BindDescriptorSetsCommand> _bindDescriptorSetsCommands;
-    vectorImplFast<BeginDebugScopeCommand> _beginDebugScopeCommands;
-    vectorImplFast<EndDebugScopeCommand> _endDebugScopeCommands;
-    vectorImplFast<DrawTextCommand> _drawTextCommands;
-    vectorImplFast<DispatchComputeCommand> _dispatchComputeCommands;
 };
 
 void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd);

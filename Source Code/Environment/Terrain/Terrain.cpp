@@ -137,11 +137,11 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
         cameraUpdated = false;
     }
-
-    GenericDrawCommand cmd = pkg.drawCommand(0);
-    cmd.drawCount(tessellator.renderDepth());
-    pkg.drawCommand(0, cmd);
-
+    {
+        GenericDrawCommand cmd = pkg.drawCommand(0, 0);
+        cmd.drawCount(tessellator.renderDepth());
+        pkg.drawCommand(0, 0, cmd);
+    }
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
     STUBBED("This may cause stalls. Profile! -Ionut");
@@ -154,7 +154,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
         // draw infinite plane
-        assert(pkg.drawCommand(1).drawCount() == 1u);
+        assert(pkg.drawCommand(1, 0).drawCount() == 1u);
 
         const Pipeline& pipeline = pkg.pipeline(1);
         PipelineDescriptor descriptor = pipeline.toDescriptor();
@@ -165,10 +165,10 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         pkg.pipeline(1, _context.newPipeline(descriptor));
 
         U16 state = _drawBBoxes ? 1 : 0;
-        for (size_t i = 2; i < pkg.drawCommandCount(); ++i) {
-            GenericDrawCommand cmd = pkg.drawCommand(i);
+        for (I32 i = 2; i < pkg.drawCommandCount(); ++i) {
+            GenericDrawCommand cmd = pkg.drawCommand(i, 0);
             cmd.drawCount(state);
-            pkg.drawCommand(i, cmd);
+            pkg.drawCommand(i, 0, cmd);
         }
     }
 

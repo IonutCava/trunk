@@ -39,6 +39,7 @@ namespace Divide {
 enum class RenderStage : U32;
 class SceneGraphNode;
 class RenderStagePass;
+class SceneRenderState;
 
 class SGNComponent : private NonCopyable {
    public:

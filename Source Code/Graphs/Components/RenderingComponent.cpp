@@ -508,11 +508,13 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
 
     std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
     
-    for (size_t cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
-        GenericDrawCommand& cmd = pkg->drawCommand(cmdIdx);
-        cmd.commandOffset(cmdOffset++);
-        cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT, true);
-        cmd.cmd().baseInstance = cmdIndex;
+    for (I32 cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
+        GFX::DrawCommand& cmd = Attorney::RenderPackageRenderingComponent::drawCommand(*pkg, cmdIdx);
+        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+            drawCmd.commandOffset(cmdOffset++);
+            drawCmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT, true);
+            drawCmd.cmd().baseInstance = cmdIndex;
+        }
     }
 }
 
@@ -537,21 +539,27 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
             bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
 
-            for (size_t cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
-                GenericDrawCommand& cmd = pkg->drawCommand(cmdIdx);
-                cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
-                                 renderGeometry || cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+            for (I32 cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
+                GFX::DrawCommand& cmd = Attorney::RenderPackageRenderingComponent::drawCommand(*pkg, cmdIdx);
+                for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+                    drawCmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
+                                         renderGeometry || drawCmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
 
-                cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
-                                 renderWireframe || cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+                    drawCmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
+                                         renderWireframe || drawCmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
 
-                cmd.LoD(_lodLevel);
+                    drawCmd.LoD(_lodLevel);
+                }
             }
 
             if (pkg->drawCommandCount() > 0) {
                 pkg->isRenderable(true);
                 setDrawIDs(renderStagePass, commandOffset(), commandIndex());
             }
+            if (Attorney::RenderPackageRenderingComponent::buildCommandBuffer(*pkg)) {
+                //rebuild detected -Ionut
+            }
+            
         }
     }
 }

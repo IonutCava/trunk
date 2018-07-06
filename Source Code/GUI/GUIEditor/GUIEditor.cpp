@@ -946,7 +946,7 @@ bool GUIEditor::Handle_SaveSelection(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_DeleteSelection(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Deleting selection!");
-    _context.gui().activeScene()->sceneGraph().deleteNode(_currentSelection, false);
+    _context.gui().activeScene()->sceneGraph().removeNode(_currentSelection, false);
     return true;
 }
 

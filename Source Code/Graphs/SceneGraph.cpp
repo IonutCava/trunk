@@ -129,21 +129,27 @@ void SceneGraph::onNodeTransform(SceneGraphNode& node) {
 
 void SceneGraph::idle()
 {
-    if (!_pendingDeletionNodes.empty()) {
-        for (SceneGraphNode_wptr node : _pendingDeletionNodes) {
-            deleteNode(node, true);
+    if (!_pendingRemovalNodes.empty()) {
+        for (SceneGraphNode_wptr node : _pendingRemovalNodes) {
+            removeNode(node, false);
         }
       
-        _pendingDeletionNodes.clear();
+        _pendingRemovalNodes.clear();
     }
 }
 
-void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
+void SceneGraph::removeNodesByType(SceneNodeType nodeType) {
+    getRoot().removeNodesByType(nodeType);
+}
+
+void SceneGraph::removeNode(SceneGraphNode_wptr node, bool deferrRemoval) {
     SceneGraphNode_ptr sgn = node.lock();
     if (!sgn) {
         return;
     }
-    if (deleteOnAdd) {
+    if (deferrRemoval) {
+        _pendingRemovalNodes.push_back(node);
+    } else {
         SceneGraphNode_ptr parent = sgn->getParent().lock();
         if (parent) {
             parent->removeNode(*sgn, false);
@@ -151,8 +157,6 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 
         assert(sgn.unique());
         sgn.reset();
-    } else {
-        _pendingDeletionNodes.push_back(node);
     }
 }
 

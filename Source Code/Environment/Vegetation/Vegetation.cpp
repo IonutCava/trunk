@@ -416,10 +416,10 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
     buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
     buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
-    GenericDrawCommand cmd = pkg.drawCommand(0);
+    GenericDrawCommand cmd = pkg.drawCommand(0, 0);
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
     cmd.sourceBuffer(buffer);
-    pkg.drawCommand(0, cmd);
+    pkg.drawCommand(0, 0, cmd);
     
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||

@@ -101,9 +101,10 @@ bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& poi
     return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
 
-bool WaterPlane::onRender(const SceneRenderState& sceneRenderState,
+bool WaterPlane::onRender(SceneGraphNode& sgn, 
+                          const SceneRenderState& sceneRenderState,
                           const RenderStagePass& renderStagePass) {
-    return _plane->onRender(sceneRenderState, renderStagePass);
+    return _plane->onRender(sgn, sceneRenderState, renderStagePass);
 }
 
 void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
@@ -116,7 +117,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
+    pkgInOut.addDrawCommand(drawCommand);
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

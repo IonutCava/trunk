@@ -496,7 +496,7 @@ U16 Scene::registerInputActions() {
     _input->flushCache();
 
     auto none = [](InputParams param) {};
-    auto deleteSelection = [this](InputParams param) { _sceneGraph->deleteNode(_currentSelection[0], false); };
+    auto deleteSelection = [this](InputParams param) { _sceneGraph->removeNode(_currentSelection[0], false); };
     auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 

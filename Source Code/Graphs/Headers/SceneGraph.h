@@ -84,7 +84,8 @@ class SceneGraph : private NonCopyable,
     void intersect(const Ray& ray, F32 start, F32 end,
                    vectorImpl<SceneGraphNode_cwptr>& selectionHits) const;
 
-    void deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd);
+    void removeNode(SceneGraphNode_wptr node, bool deferrRemoval);
+    void removeNodesByType(SceneNodeType nodeType);
 
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
@@ -112,7 +113,7 @@ class SceneGraph : private NonCopyable,
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;
     vectorImpl<SceneGraphNode_wptr> _allNodes;
-    vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
+    vectorImpl<SceneGraphNode_wptr> _pendingRemovalNodes;
     vectorImpl<SceneGraphNode*> _orderedNodeList;
 
     std::array<vectorImpl<SceneGraphNode_wptr>, to_base(SceneNodeType::COUNT)> _nodesByType;

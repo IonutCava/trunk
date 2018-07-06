@@ -47,19 +47,21 @@ CommandBuffer* CommandBufferPool::allocateBuffer() {
 }
 
 void CommandBufferPool::deallocateBuffer(CommandBuffer*& buffer) {
+    if (buffer != nullptr) {
 #if defined(USE_MEMORY_POOL)
-    WriteLock lock(_mutex);
-    _pool.deleteElement(buffer);
+        WriteLock lock(_mutex);
+        _pool.deleteElement(buffer);
 #else
-    size_t index = buffer->_index;
-    buffer->clear();
+        size_t index = buffer->_index;
+        buffer->clear();
 
-    WriteLock lock(s_mutex);
-    s_freeList[index] = true;
+        WriteLock lock(s_mutex);
+        s_freeList[index] = true;
 #endif
 
-    buffer = nullptr;
-    _bufferCount--;
+        buffer = nullptr;
+        _bufferCount--;
+    }
 }
 
 ScopedCommandBuffer::ScopedCommandBuffer(bool useSecondaryBuffers)

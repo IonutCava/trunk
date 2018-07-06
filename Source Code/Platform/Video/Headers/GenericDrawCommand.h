@@ -95,8 +95,11 @@ public:
                        U32 indexCount,
                        U32 primCount = 1);
 
+    GenericDrawCommand(const GenericDrawCommand& other);
+
+    const GenericDrawCommand& operator= (const GenericDrawCommand& other);
+
     void reset();
-    void set(const GenericDrawCommand& base);
     bool compatible(const GenericDrawCommand& other) const;
 
     bool isEnabledOption(RenderOptions option) const;

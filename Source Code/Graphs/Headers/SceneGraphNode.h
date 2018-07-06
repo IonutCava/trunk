@@ -133,6 +133,8 @@ class SceneGraphNode : public GUIDWrapper,
     /// If this function returns true, the node will no longer be part of the scene hierarchy.
     bool removeNode(SceneGraphNode& node, bool recursive = true);
     
+    void removeNodesByType(SceneNodeType nodeType);
+
     /// Find a node in the graph based on the SceneGraphNode's name
     /// If sceneNodeName = true, find a node in the graph based on the
     /// SceneNode's name

@@ -150,7 +150,7 @@ bool WarScene::removeUnits(bool removeNodesOnCall) {
     for (U8 i = 0; i < 2; ++i) {
         for (SceneGraphNode_wptr npc : _armyNPCs[i]) {
             _aiManager->unregisterEntity(npc.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
-            _sceneGraph->deleteNode(npc, removeNodesOnCall);
+            _sceneGraph->removeNode(npc, removeNodesOnCall);
         }
         _armyNPCs[i].clear();
     }

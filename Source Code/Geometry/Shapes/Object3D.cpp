@@ -28,7 +28,7 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descri
 Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
     : SceneNode(parentCache, descriptorHash, name, resourceName, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
     _context(context),
-    _update(false),
+    _geometryDirty(false),
     _buffer(nullptr),
     _playAnimations(true),
     _geometryType(type),
@@ -89,6 +89,17 @@ void Object3D::postLoad(SceneGraphNode& sgn) {
      SceneNode::postLoad(sgn);
 }
 
+void Object3D::rebuildVB() {
+}
+
+void Object3D::rebuild() {
+    if (_geometryDirty) {
+        rebuildVB();
+        computeTriangleList(true);
+        _geometryDirty = false;
+    }
+}
+
 void Object3D::setGeometryVB(VertexBuffer* const vb) {
     DIVIDE_ASSERT(_buffer == nullptr,
                   "Object3D error: Please remove the previous vertex buffer of "
@@ -103,7 +114,7 @@ VertexBuffer* const Object3D::getGeometryVB() const {
 bool Object3D::onRender(SceneGraphNode& sgn,
                         const SceneRenderState& sceneRenderState,
                         const RenderStagePass& renderStagePass) {
-    
+    rebuild();
     if (getState() == ResourceState::RES_LOADED) {
         return SceneNode::onRender(sgn, sceneRenderState, renderStagePass);
     }
@@ -112,8 +123,8 @@ bool Object3D::onRender(SceneGraphNode& sgn,
 }
 
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,
-                                      const RenderStagePass& renderStagePass,
-                                      RenderPackage& pkgInOut) {
+                                 const RenderStagePass& renderStagePass,
+                                 RenderPackage& pkgInOut) {
     if (pkgInOut.drawCommandCount() == 0) {
         GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
@@ -128,8 +139,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
-// Create a list of triangles from the vertices + indices lists based on
-// primitive type
+// Create a list of triangles from the vertices + indices lists based on primitive type
 bool Object3D::computeTriangleList(bool force) {
     if (!_geometryTriangles.empty() && !force) {
         return true;

@@ -36,7 +36,19 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class RenderingComponent;
+namespace Attorney {
+    class RenderPackageRenderingComponent;
+};
+
 class RenderPackage {
+    friend class Attorney::RenderPackageRenderingComponent;
+public:
+    struct CommandEntry {
+        size_t _index = 0;
+        GFX::CommandType _type = GFX::CommandType::COUNT;
+    };
+
 public:
     explicit RenderPackage(GFXDevice& context, bool useSecondaryBuffers);
     ~RenderPackage();
@@ -54,9 +66,11 @@ public:
 
     const GFX::CommandBuffer& commands() const;
 
-    size_t drawCommandCount() const;
-    const GenericDrawCommand& drawCommand(I32 index) const;
-    void drawCommand(I32 index, const GenericDrawCommand cmd);
+    I32 drawCommandCount() const;
+    const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
+    void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd);
+
+    const GFX::DrawCommand& drawCommand(I32 index) const;
 
     const Pipeline& pipeline(I32 index) const;
     void pipeline(I32 index, const Pipeline& pipeline);
@@ -75,12 +89,12 @@ public:
     void addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes);
     void addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants);
     void addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets);
-
+    void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
+ 
 protected:
-    friend class RenderingComponent;
-    //eventually phase this out
-    GFX::CommandBuffer& commands();
-    GenericDrawCommand& drawCommand(I32 index);
+    // Return true if the command buffer was reconstructed
+    bool buildCommandBuffer();
+    GFX::DrawCommand& drawCommand(I32 cmdIdx);
 
 private:
     GFXDevice& _context;
@@ -88,27 +102,47 @@ private:
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
 
-    vectorImpl<GenericDrawCommand> _drawCommands;
+    vectorImpl<GFX::DrawCommand> _drawCommands;
     bool _drawCommandDirty = true;
 
-    vectorImpl<Pipeline> _pipelines;
+    vectorImpl<GFX::BindPipelineCommand> _pipelines;
     bool _pipelineDirty = true;
 
-    vectorImpl<ClipPlaneList> _clipPlanes;
+    vectorImpl<GFX::SetClipPlanesCommand> _clipPlanes;
     bool _clipPlanesDirty = true;
 
-    vectorImpl<PushConstants> _pushConstants;
+    vectorImpl<GFX::SendPushConstantsCommand> _pushConstants;
     bool _pushConstantsDirty = true;
 
-    vectorImpl<DescriptorSet> _descriptorSets;
+    vectorImpl<GFX::BindDescriptorSetsCommand> _descriptorSets;
     bool _descriptorSetsDirty = true;
 
-private:
+protected:
+    vectorImpl<CommandEntry> _commandOrdering;
     // Cached command buffer
     bool _commandBufferDirty = true;
     GFX::CommandBuffer* _commands;
 };
 
-}; //namespace Divide
+namespace Attorney {
+    class RenderPackageRenderingComponent {
+        private:
+        static GFX::CommandBuffer* commands(const RenderPackage& pkg) {
+            return pkg._commands;
+        }
+
+        // Return true if the command buffer was reconstructed
+        static bool buildCommandBuffer(RenderPackage& pkg) {
+            return pkg.buildCommandBuffer();
+        }
+
+        static GFX::DrawCommand& drawCommand(RenderPackage& pkg, I32 cmdIdx) {
+            return pkg.drawCommand(cmdIdx);
+        }
+
+        friend class Divide::RenderingComponent;
+    };
+}; // namespace Attorney
+}; // namespace Divide
 
 #endif //_RENDER_PACKAGE_H_

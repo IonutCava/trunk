@@ -45,14 +45,13 @@ class Sphere3D : public Object3D {
           _radius(radius),
           _resolution(resolution)
     {
-        _dirty = true;
         _vertexCount = resolution * resolution;
         getGeometryVB()->setVertexCount(_vertexCount);
         getGeometryVB()->reserveIndexCount(_vertexCount);
         if (_vertexCount + 1 > std::numeric_limits<U16>::max()) {
             getGeometryVB()->useLargeIndices(true);
         }
-        clean();
+        rebuild();
     }
 
     virtual ~Sphere3D() {}
@@ -60,32 +59,20 @@ class Sphere3D : public Object3D {
     inline U32 getResolution() { return _resolution; }
     inline void setRadius(F32 radius) {
         _radius = radius;
-        _dirty = true;
+        _geometryDirty = true;
     }
 
     inline void setResolution(U32 resolution) {
         _resolution = resolution;
-        _dirty = true;
-    }
-
-    bool onRender(SceneGraphNode& sgn,
-                  const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass) {
-        clean();
-        return Object3D::onRender(sgn, sceneRenderState, renderStagePass);
-    }
-
-   protected:
-    void clean() {
-        if (_dirty) {
-            createSphere(_resolution, _resolution);
-            _dirty = false;
-        }
+        _geometryDirty = true;
     }
 
    private:
     // SuperBible stuff
-    void createSphere(U32 slices, U32 stacks) {
+    void rebuildVB() override {
+        U32 slices = _resolution;
+        U32 stacks = _resolution;
+
         VertexBuffer* const vb = getGeometryVB();
 
         vb->reset();
@@ -153,7 +140,6 @@ class Sphere3D : public Object3D {
     F32 _radius;
     U32 _resolution;
     U32 _vertexCount;
-    bool _dirty;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Sphere3D);

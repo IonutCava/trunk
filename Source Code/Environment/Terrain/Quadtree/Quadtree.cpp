@@ -44,7 +44,7 @@ void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
                           _root->getBoundingBox().getMax(),
                           vec4<U8>(0, 64, 255, 255));
 
-    packageOut.commands().add(_bbPrimitive->toCommandBuffer());
+    packageOut.addCommandBuffer(_bbPrimitive->toCommandBuffer());
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {

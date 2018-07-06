@@ -62,19 +62,32 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     static_assert(sizeof(GenericDrawCommand) == 56, "Size of GenericDrawCommand is incorrect!");
 }
 
-void GenericDrawCommand::set(const GenericDrawCommand& base) {
-    _cmd.set(base._cmd);
-    _lodIndex = base._lodIndex;
-    _drawCount = base._drawCount;
-    _drawToBuffer = base._drawToBuffer;
-    _renderOptions = base._renderOptions;
-    _type = base._type;
-    _sourceBuffer = base._sourceBuffer;
-    _commandOffset = base._commandOffset;
+GenericDrawCommand::GenericDrawCommand(const GenericDrawCommand& other)
+    : _cmd(other._cmd),
+      _lodIndex(other._lodIndex),
+      _drawCount(other._drawCount),
+      _drawToBuffer(other._drawToBuffer),
+      _renderOptions(other._renderOptions),
+      _type(other._type),
+      _sourceBuffer(other._sourceBuffer),
+      _commandOffset(other._commandOffset)
+{
+}
+
+const GenericDrawCommand& GenericDrawCommand::operator= (const GenericDrawCommand& other) {
+    _cmd.set(other._cmd);
+    _lodIndex = other._lodIndex;
+    _drawCount = other._drawCount;
+    _drawToBuffer = other._drawToBuffer;
+    _renderOptions = other._renderOptions;
+    _type = other._type;
+    _sourceBuffer = other._sourceBuffer;
+    _commandOffset = other._commandOffset;
+    return *this;
 }
 
 void GenericDrawCommand::reset() {
-    set(GenericDrawCommand());
+    *this = GenericDrawCommand();
 }
 
 bool GenericDrawCommand::compatible(const GenericDrawCommand& other) const {

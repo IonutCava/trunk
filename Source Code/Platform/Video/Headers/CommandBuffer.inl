@@ -36,8 +36,8 @@ namespace Divide {
 namespace GFX {
 
 template<typename T>
-inline void CommandBuffer::add(const T& command) {
-    static_assert(std::is_base_of<Command, T>::value, "CommandBuffer error: Unknown command type!");
+inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
+CommandBuffer::add(const T& command) {
     _data.emplace_back(std::make_unique<T>(command));
 }
 

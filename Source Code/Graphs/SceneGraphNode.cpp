@@ -223,6 +223,27 @@ SceneGraphNode_ptr SceneGraphNode::addNode(const SceneNode_ptr& node, U32 compon
     return sceneGraphNode;
 }
 
+void SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
+    UpgradableReadLock ur_lock(_childLock);
+
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        if (_children[i]->getNode()->getType() == nodeType) {
+            {
+                UpgradeToWriteLock w_lock(ur_lock);
+                _children[i].reset();
+                _childCount = _childCount - 1;
+                std::swap(_children[_childCount], _children[i]);
+            }
+            invalidateRelationshipCache();
+        }
+    }
+
+    forEachChild([nodeType](SceneGraphNode& child) {
+        child.removeNodesByType(nodeType);
+    });
+}
+
 bool SceneGraphNode::removeNode(SceneGraphNode& node, bool recursive) {
     UpgradableReadLock ur_lock(_childLock);
     
@@ -498,7 +519,7 @@ bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
         }
     }
 
-    return _node->onRender(sceneRenderState, renderStagePass);
+    return _node->onRender(*this, sceneRenderState, renderStagePass);
 }
 
 void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,

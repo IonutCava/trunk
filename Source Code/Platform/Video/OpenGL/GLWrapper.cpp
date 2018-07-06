@@ -937,7 +937,8 @@ void GL_API::popDebugMessage(GFXDevice& context) {
 
 void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
-    for (const std::shared_ptr<GFX::Command>& cmd : commandBuffer()) {
+    const vectorImpl<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
+    for (const std::shared_ptr<GFX::Command>& cmd : commands) {
         switch (cmd->_type) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 GFX::BeginRenderPassCommand* crtCmd = static_cast<GFX::BeginRenderPassCommand*>(cmd.get());

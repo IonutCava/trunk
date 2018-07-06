@@ -208,7 +208,7 @@ class Light : public SceneNode {
     friend class ImplResourceLoader;
     bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     void postLoad(SceneGraphNode& sgn) override;
-    SceneGraphNode* getSGN() const { return _lightSGN; }
+
     /// Set light type
     /// @param type Directional/Spot/Omni (see LightType enum)
     inline void setLightType(LightType type) {

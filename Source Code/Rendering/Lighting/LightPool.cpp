@@ -113,18 +113,11 @@ bool LightPool::clear() {
         return true;
     }
 
-    SceneGraph& sceneGraph = _parentScene.sceneGraph();
+    _parentScene.sceneGraph().removeNodesByType(SceneNodeType::TYPE_LIGHT);
     for (Light::LightList& lightList : _lights) {
-        // Lights are removed by the sceneGraph
-        // (range_based for-loops will fail due to iterator invalidation
-        vectorAlg::vecSize lightCount = lightList.size();
-        for (vectorAlg::vecSize i = lightCount; i--> 0;) {
-            Light* crtLight = lightList[i];
-            sceneGraph.getRoot().removeNode(*crtLight->getSGN());
-
-        }
         lightList.clear();
     }
+
     _init = false;
     
     return true;
