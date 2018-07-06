@@ -57,7 +57,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 
     if (nodeSkinned) {
         primitiveStateBlock.setZRead(false);
-        primitiveStateBlock.setZWrite(true);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());

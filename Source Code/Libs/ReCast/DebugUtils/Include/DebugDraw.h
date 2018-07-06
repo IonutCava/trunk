@@ -35,8 +35,6 @@ struct duDebugDraw
 {
     virtual ~duDebugDraw() = 0;
     
-    virtual void depthMask(bool state) = 0;
-
     virtual void texture(bool state) = 0;
 
     /// Begin drawing primitives.
@@ -194,7 +192,6 @@ class duDisplayList : public duDebugDraw
     int m_size;
     int m_cap;
 
-    bool m_depthMask;
     duDebugDrawPrimitives m_prim;
     float m_primSize;
     
@@ -203,7 +200,6 @@ class duDisplayList : public duDebugDraw
 public:
     duDisplayList(int cap = 512);
     ~duDisplayList();
-    virtual void depthMask(bool state);
     virtual void begin(duDebugDrawPrimitives prim, float size = 1.0f);
     virtual void vertex(const float x, const float y, const float z, unsigned int color);
     virtual void vertex(const float* pos, unsigned int color);

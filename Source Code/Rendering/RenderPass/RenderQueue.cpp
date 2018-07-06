@@ -53,7 +53,8 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
         } break;
         case RenderBinType::RBT_WATER:
         case RenderBinType::RBT_VEGETATION_GRASS:
-        case RenderBinType::RBT_PARTICLES: {
+        case RenderBinType::RBT_PARTICLES:
+        case RenderBinType::RBT_TRANSLUCENT: {
             sortOrder = RenderingOrder::List::BACK_TO_FRONT;
         } break;
 

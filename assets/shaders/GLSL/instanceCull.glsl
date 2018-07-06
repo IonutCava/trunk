@@ -31,7 +31,7 @@ int occlusionCull() {
             return InstanceCloudReduction(OrigData0.xyz, ObjectExtent);
     };
 
-    return HiZOcclusionCull(OrigData0.xyz, ObjectExtent);
+    return zBufferCull(OrigData0.xyz, ObjectExtent);
                            
 }
 

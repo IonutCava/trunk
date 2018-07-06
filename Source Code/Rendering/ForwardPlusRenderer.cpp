@@ -40,7 +40,11 @@ void ForwardPlusRenderer::preRender() {
     lightMgr.uploadLightData(LightType::POINT, ShaderBufferLocation::LIGHT_CULL_POINT);
     lightMgr.uploadLightData(LightType::SPOT, ShaderBufferLocation::LIGHT_CULL_SPOT);
 
-    GFX_DEVICE.getHiZBuffer()->bind();
+    GFX_DEVICE.getRenderTarget(GFX_DEVICE.anaglyphEnabled() 
+                                 ? GFXDevice::RenderTarget::ANAGLYPH 
+                                 : GFXDevice::RenderTarget::SCREEN)
+        ->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+               TextureDescriptor::AttachmentType::Depth);
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();

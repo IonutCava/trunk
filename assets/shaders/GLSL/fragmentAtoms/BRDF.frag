@@ -8,6 +8,8 @@
 #include "shadowMapping.frag"
 #include "phong_lighting.frag"
 
+vec3 processedNormal;
+
 void getBRDFFactors(in int lightIndex,
                     in vec3 normalWV,
                     inout vec3 colorInOut)
@@ -36,6 +38,7 @@ uint GetNumLightsInThisTile(uint nTileIndex)
 }
 
 vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
+    processedNormal = normalWV;
     parseMaterial();
 
 #if defined(HAS_TRANSPARENCY)

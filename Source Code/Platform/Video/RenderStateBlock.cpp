@@ -23,7 +23,6 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _cullMode(other._cullMode),
      _cullEnabled(other._cullEnabled),
      _zEnable(other._zEnable),
-     _zWriteEnable(other._zWriteEnable),
      _zFunc(other._zFunc),
      _zBias(other._zBias),
      _zUnits(other._zUnits),
@@ -64,12 +63,6 @@ void RenderStateBlock::setCullMode(CullMode mode) {
 
 void RenderStateBlock::setZRead(const bool enable) {
     _zEnable = enable;
-
-    clean();
-}
-
-void RenderStateBlock::setZWrite(const bool enable) {
-    _zWriteEnable = enable;
 
     clean();
 }
@@ -149,7 +142,6 @@ void RenderStateBlock::setDefaultValues() {
              BlendProperty::ONE,
              BlendOperation::ADD);
     setZRead(true);
-    setZWrite(true);
     setCullMode(CullMode::CW);
     setFillMode(FillMode::SOLID);
     setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
@@ -178,7 +170,6 @@ void RenderStateBlock::clean() {
     Util::Hash_combine(_cachedHash, to_uint(_cullMode));
     Util::Hash_combine(_cachedHash, _cullEnabled);
     Util::Hash_combine(_cachedHash, _zEnable);
-    Util::Hash_combine(_cachedHash, _zWriteEnable);
     Util::Hash_combine(_cachedHash, to_uint(_zFunc));
     Util::Hash_combine(_cachedHash, zBias);
     Util::Hash_combine(_cachedHash, zUnits);

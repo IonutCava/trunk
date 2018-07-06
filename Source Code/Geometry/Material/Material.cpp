@@ -32,9 +32,7 @@ Material::Material()
     /// Normal state for final rendering
     RenderStateBlock stateDescriptor;
     stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
-    stateDescriptor.setZWrite(false);
     setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY);
-    stateDescriptor.setZWrite(true);
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
     setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION);

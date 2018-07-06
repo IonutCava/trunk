@@ -1,5 +1,4 @@
-uniform float dvd_frustumBias = 0.5;
-layout(binding = TEXTURE_UNIT0) uniform sampler2D HiZBuffer;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 
 vec4 BoundingBox[8];
 int PassThrough(const in vec3 position, const in vec3 extents) {
@@ -7,6 +6,7 @@ int PassThrough(const in vec3 position, const in vec3 extents) {
 }
 
 int InstanceCloudReduction(const in vec3 position, const in vec3 extents) {
+    const float frustumBias = 0.5;
 
     // create the bounding box of the object 
     BoundingBox[0] = dvd_ViewProjectionMatrix * vec4(position + vec3( extents.x,  extents.y,  extents.z), 1.0);
@@ -19,27 +19,32 @@ int InstanceCloudReduction(const in vec3 position, const in vec3 extents) {
     BoundingBox[7] = dvd_ViewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y, -extents.z), 1.0);
 
     // check how the bounding box resides regarding to the view frustum 
-    uint outOfBound[6] = uint[6](0, 0, 0, 0, 0, 0);
+    uvec2 outOfBoundX = uvec2(0);
+    uvec2 outOfBoundY = uvec2(0);
+    uvec2 outOfBoundZ = uvec2(0);
 
     vec4 crtBB;
     float frustumLimit = 0.0;
     for (uint i = 0; i < 8; i++) {
         crtBB = BoundingBox[i];
-        frustumLimit = crtBB.w + dvd_frustumBias;
-        if (crtBB.x >  frustumLimit) outOfBound[0]++;
-        if (crtBB.x < -frustumLimit) outOfBound[1]++;
-        if (crtBB.y >  frustumLimit) outOfBound[2]++;
-        if (crtBB.y < -frustumLimit) outOfBound[3]++;
-        if (crtBB.z >  frustumLimit) outOfBound[4]++;
-        if (crtBB.z < -frustumLimit) outOfBound[5]++;
+        frustumLimit = crtBB.w + frustumBias;
+        if (crtBB.x >  frustumLimit) outOfBoundX[0]++;
+        if (crtBB.x < -frustumLimit) outOfBoundX[1]++;
+        if (crtBB.y >  frustumLimit) outOfBoundY[0]++;
+        if (crtBB.y < -frustumLimit) outOfBoundY[1]++;
+        if (crtBB.z >  frustumLimit) outOfBoundZ[0]++;
+        if (crtBB.z < -frustumLimit) outOfBoundZ[1]++;
     }
 
-    return (outOfBound[0] == 8 || outOfBound[1] == 8 || outOfBound[2] == 8 ||
-            outOfBound[3] == 8 || outOfBound[4] == 8 || outOfBound[5] == 8) ? 0 : 1;
+    return (outOfBoundX[0] == 8 || outOfBoundX[1] == 8 ||
+            outOfBoundY[0] == 8 || outOfBoundY[1] == 8 ||
+            outOfBoundZ[0] == 8 || outOfBoundZ[0] == 8) 
+            ? 0
+            : 1;
 }
 
 //Return: 0 = culled, 1 = visible
-int HiZOcclusionCull(const in vec3 position, const in vec3 extents) {
+int zBufferCull(const in vec3 position, const in vec3 extents) {
     /* first do instance cloud reduction */
     if (InstanceCloudReduction(position, extents) == 0) {
         return 0;

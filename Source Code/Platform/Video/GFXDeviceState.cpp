@@ -116,13 +116,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 
     RenderStateBlock defaultStateNoDepth;
     defaultStateNoDepth.setZRead(false);
-    defaultStateNoDepth.setZWrite(true);
     _defaultStateNoDepthHash = defaultStateNoDepth.getHash();
 
     RenderStateBlock state2DRendering;
     state2DRendering.setCullMode(CullMode::NONE);
     state2DRendering.setZRead(false);
-    state2DRendering.setZWrite(true);
     _state2DRenderingHash = state2DRendering.getHash();
 
     RenderStateBlock stateDepthOnlyRendering;
@@ -146,22 +144,22 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
     _renderTarget[to_uint(RenderTarget::SCREEN)] = newFB(true);
+    _renderTarget[to_uint(RenderTarget::ANAGLYPH)] = newFB(true);
     // This is an environment cube map centered around the camera
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)] = newFB(false);
-    // Hold the HiZ buffer somewhere separate from the main render target
-    _hiZDepthBuffer = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS,
                                        GFXImageFormat::RGBA16F,
                                        GFXDataFormat::FLOAT_16);
-    TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D,
-                                    GFXImageFormat::RED32F,
+
+    TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D_MS,
+                                    GFXImageFormat::DEPTH_COMPONENT32F,
                                     GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor hiZSampler;
-    hiZSampler.setFilters(TextureFilter::NEAREST);
+    hiZSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST);
     hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.toggleMipMaps(true);
     hiZDescriptor.setSampler(hiZSampler);
@@ -177,27 +175,24 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
                                        GFXDataFormat::FLOAT_16);
     normalDescriptor.setSampler(screenSampler);
     
-    _hiZDepthBuffer->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _hiZDepthBuffer->useAutoDepthBuffer(false);
-    _hiZDepthBuffer->create(resolution.width, resolution.height);
-    _hiZDepthBuffer->setClearColor(DefaultColors::DIVIDE_BLUE());
-    Texture* hizTexture = _hiZDepthBuffer->getAttachment(TextureDescriptor::AttachmentType::Color0);
-    hizTexture->lockAutomaticMipMapGeneration(true);
-
     // Add the attachments to the render targets
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->useAutoDepthBuffer(true);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->setClearColor(DefaultColors::DIVIDE_BLUE());
+    Texture* hizTexture = _renderTarget[to_uint(RenderTarget::SCREEN)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    hizTexture->lockAutomaticMipMapGeneration(true);
 
     // If we enabled anaglyph rendering, we need a second target, identical to the screen target
     // used to render the scene at an offset
-    _renderTarget[to_uint(RenderTarget::ANAGLYPH)] = newFB(true);
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->useAutoDepthBuffer(false);
+    _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->setClearColor(DefaultColors::DIVIDE_BLUE());
+    hizTexture = _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    hizTexture->lockAutomaticMipMapGeneration(true);
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
                                             GFXImageFormat::RGBA16F,
@@ -301,7 +296,6 @@ void GFXDevice::closeRenderingAPI() {
     for (Framebuffer*& renderTarget : _renderTarget) {
         MemoryManager::DELETE(renderTarget);
     }
-    MemoryManager::DELETE(_hiZDepthBuffer);
 
     // Close the shader manager
     ShaderManager::getInstance().destroy();

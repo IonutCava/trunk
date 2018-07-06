@@ -42,6 +42,7 @@ void DX_API::beginFrame() {}
 
 void DX_API::endFrame() {}
 
+void DX_API::toggleDepthWrites(bool state) {}
 void DX_API::toggleRasterization(bool state) {}
 
 void DX_API::updateClipPlanes() {}

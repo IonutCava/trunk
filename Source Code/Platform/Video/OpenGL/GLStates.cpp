@@ -544,10 +544,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     if (oldBlock.zFunc() != newBlock.zFunc()) {
         glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.zFunc())]);
     }
-    // Check if we need to toggle the depth mask
-    if (oldBlock.zWriteEnable() != newBlock.zWriteEnable()) {
-        glDepthMask(newBlock.zWriteEnable() ? GL_TRUE : GL_FALSE);
-    }
+
     // Check if we need to change the stencil mask
     if (oldBlock.stencilWriteMask() != newBlock.stencilWriteMask()) {
         glStencilMask(newBlock.stencilWriteMask());

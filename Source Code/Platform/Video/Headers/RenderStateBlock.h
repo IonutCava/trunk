@@ -55,7 +55,6 @@ class RenderStateBlock : public GUIDWrapper {
 
     /// Depth
     bool _zEnable;
-    bool _zWriteEnable;
     ComparisonFunction _zFunc;
     F32 _zBias;
     F32 _zUnits;
@@ -91,7 +90,6 @@ class RenderStateBlock : public GUIDWrapper {
     void flipCullMode();
     void setCullMode(CullMode mode);
     void setZRead(const bool enable);
-    void setZWrite(const bool enable);
 
     void setBlend(
         bool enable,
@@ -137,9 +135,7 @@ class RenderStateBlock : public GUIDWrapper {
     inline bool zEnable() const {
         return _zEnable;
     }
-    inline bool zWriteEnable() const {
-        return _zWriteEnable;
-    }
+
     inline ComparisonFunction zFunc() const {
         return _zFunc;
     }

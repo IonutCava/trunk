@@ -16,6 +16,7 @@ namespace Divide {
 
 namespace {
     Framebuffer::FramebufferTarget _noDepthClear;
+    Framebuffer::FramebufferTarget _depthOnly;
 };
 
 RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags)
@@ -27,7 +28,12 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
     _lastTotalBinSize = 0;
 
     _noDepthClear._clearDepthBufferOnBind = false;
-    _noDepthClear._drawMask[1] = false;
+    _noDepthClear._clearColorBuffersOnBind = true;
+
+    _depthOnly._clearColorBuffersOnBind = true;
+    _depthOnly._clearDepthBufferOnBind = true;
+    _depthOnly._drawMask.fill(false);
+    _depthOnly._drawMask[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
 }
 
 RenderPass::~RenderPass() 
@@ -102,7 +108,8 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(Framebuffer::defaultPolicy());
+            GFX.toggleDepthWrites(true);
+            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(_depthOnly);
         } break;
     };
 
@@ -136,6 +143,7 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
             LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(), 
                                                                  GFX.getMatrix(MATRIX::VIEW));
             SceneManager::getInstance().getRenderer().preRender();
+            GFX.toggleDepthWrites(false);
         } break;
     };
 

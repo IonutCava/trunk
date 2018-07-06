@@ -473,6 +473,8 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv) = 0;
     virtual void closeRenderingAPI() = 0;
 
+
+    virtual void toggleDepthWrites(bool state) = 0;
     virtual void toggleRasterization(bool state) = 0;
     virtual void drawText(const TextLabel& textLabel,
                           const vec2<F32>& relativeOffset) = 0;

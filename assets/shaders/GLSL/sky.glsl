@@ -9,18 +9,13 @@ void main(void){
     gl_Position.w += 0.01;
 }
 
--- Fragment
+-- Fragment.Display
 
-
-#if defined (IS_PRE_PASS)
-layout(location = 1) out vec3 _normalWV;
-#else
 layout(location = 0) out vec4 _skyColor;
-#endif
+layout(location = 1) out vec3 _normalsOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSky;
 
-#if !defined (IS_PRE_PASS)
 uniform bool enable_sun;
 uniform vec3 sun_vector;
 uniform vec3 sun_color;
@@ -41,13 +36,9 @@ vec3 sunColor(){
         
     return day_factor + sun_color * sun_factor;
 }
-#endif
 
 void main (void){
-#if defined (IS_PRE_PASS)
-    _normalWV = normalize(f_in._normalWV);
-#else
     vec3 sky_color = texture(texSky, vec4(f_in._vertexW.xyz, 0)).rgb;
     _skyColor = vec4(ToSRGB(enable_sun ? sky_color * sunColor() : sky_color), 1.0);
-#endif
+    _normalsOut = normalize(f_in._normalWV);
 }

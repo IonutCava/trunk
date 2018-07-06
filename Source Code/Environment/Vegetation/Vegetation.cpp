@@ -91,7 +91,6 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
 
     _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
     _cullShader->Uniform("HiZBuffer", ShaderProgram::TextureUsage::UNIT0);
-    _cullShader->Uniform("dvd_frustumBias", 12.5f);
     _instanceRoutineIdx[to_uint(CullType::PASS_THROUGH)] = _cullShader->GetSubroutineIndex(
         ShaderType::VERTEX, "PassThrough");
     _instanceRoutineIdx[to_uint(CullType::INSTANCE_CLOUD_REDUCTION)] =

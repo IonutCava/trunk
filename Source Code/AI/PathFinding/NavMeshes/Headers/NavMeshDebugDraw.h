@@ -58,7 +58,6 @@ class NavMeshDebugDraw : public duDebugDraw {
     NavMeshDebugDraw();
     ~NavMeshDebugDraw();
 
-    void depthMask(bool state);
     void paused(bool state);
     void overrideColor(U32 col);
     void beginBatch();

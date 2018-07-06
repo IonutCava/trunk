@@ -30,6 +30,7 @@ void main()
                     1.0);
 
     dvd_Normal = vec3(1.0, 1.0, 1.0);
+    VAR._normalWV = dvd_NormalMatrixWV() * dvd_Normal;
 
     if (posOffset.y > 0.75) 
         computeFoliageMovementGrass(VAR._vertexW);
@@ -46,7 +47,8 @@ void main()
 #include "BRDF.frag"
 
 flat in int _arrayLayer;
-out vec4 _colorOut;
+layout(location = 0) out vec4 _colorOut;
+layout(location = 1) out vec4 _normalsOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
@@ -56,6 +58,7 @@ void main (void){
 
     //color = getPixelColor(VAR._texCoord, VAR._normalWV, color);
     _colorOut = applyFog(color);
+    _normalsOut = normalize(f_in._normalWV);
 }
 
 --Fragment.Shadow
@@ -87,11 +90,8 @@ flat in int _arrayLayer;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
-out vec4 _colorOut;
-
 void main(void){
     vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
     if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
-    _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, 0.0);
 }

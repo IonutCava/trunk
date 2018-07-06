@@ -122,8 +122,6 @@ static void drawMeshTile(duDebugDraw* dd, const dtNavMesh& mesh, const dtNavMesh
 
     int tileNum = mesh.decodePolyIdTile(base);
     
-    dd->depthMask(false);
-
     dd->begin(DU_DRAW_TRIS);
     for (int i = 0; i < tile->header->polyCount; ++i)
     {
@@ -234,8 +232,6 @@ static void drawMeshTile(duDebugDraw* dd, const dtNavMesh& mesh, const dtNavMesh
         dd->vertex(v[0], v[1], v[2], vcol);
     }
     dd->end();
-
-    dd->depthMask(true);
 }
 
 void duDebugDrawNavMesh(duDebugDraw* dd, const dtNavMesh& mesh, unsigned char flags)
@@ -449,8 +445,6 @@ void duDebugDrawNavMeshPoly(duDebugDraw* dd, const dtNavMesh& mesh, dtPolyRef re
     if (dtStatusFailed(mesh.getTileAndPolyByRef(ref, &tile, &poly)))
         return;
     
-    dd->depthMask(false);
-    
     const unsigned int c = (col & 0x00ffffff) | (64 << 24);
     const unsigned int ip = (unsigned int)(poly - tile->polys);
 
@@ -485,8 +479,6 @@ void duDebugDrawNavMeshPoly(duDebugDraw* dd, const dtNavMesh& mesh, dtPolyRef re
         dd->end();
     }
     
-    dd->depthMask(true);
-
 }
 
 static void debugDrawTileCachePortals(struct duDebugDraw* dd, const dtTileCacheLayer& layer, const float cs, const float ch)

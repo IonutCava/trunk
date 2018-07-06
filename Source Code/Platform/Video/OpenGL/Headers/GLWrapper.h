@@ -163,6 +163,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                       const stringImpl& name,
                       const ShaderType& type,
                       const bool optimise = false) const override;
+
+    inline void toggleDepthWrites(bool state) override {
+        glDepthMask(state ? GL_TRUE : GL_FALSE);
+    }
+
     /// Enable or disable rasterization (useful for transform feedback)
     inline void toggleRasterization(bool state) override {
         state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD);

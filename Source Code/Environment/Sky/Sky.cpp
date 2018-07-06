@@ -29,11 +29,9 @@ Sky::Sky(const stringImpl& name)
     // Generate a render state
     RenderStateBlock skyboxRenderState;
     skyboxRenderState.setCullMode(CullMode::CCW);
-    skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
-    skyboxRenderState.setZWrite(true);
+    skyboxRenderState.setZFunc(ComparisonFunction::LESS);
     _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
-
-    skyboxRenderState.setZWrite(false);
+    skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
     _skyboxRenderStateHash = skyboxRenderState.getHash();
 }
@@ -76,11 +74,10 @@ bool Sky::load() {
     skybox.setEnumValue(to_uint(_farPlane / 2.0f)); // radius
     _sky = CreateResource<Sphere3D>(skybox);
     
-    ResourceDescriptor skyShaderDescriptor("sky");
+    ResourceDescriptor skyShaderDescriptor("sky.Display");
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky.PrePass");
-    skyShaderPrePassDescriptor.setPropertyList("IS_PRE_PASS");
     _skyShaderPrePass = CreateResource<ShaderProgram>(skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);

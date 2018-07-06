@@ -238,6 +238,8 @@ DEFINE_SINGLETON(GFXDevice)
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D
     /// (Perspective) rendering
     void toggle2D(bool state);
+    /// Toggle writes to the depth buffer on or off
+    inline void toggleDepthWrites(bool state);
     /// Toggle hardware rasterization on or off.
     inline void toggleRasterization(bool state);
     /// Query rasterization state
@@ -378,11 +380,7 @@ DEFINE_SINGLETON(GFXDevice)
     inline Framebuffer* getRenderTarget(RenderTarget target) const {
         return _renderTarget[to_uint(target)];
     }
-
-    inline Framebuffer* getHiZBuffer() const {
-        return _hiZDepthBuffer;
-    }
-
+    
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
 
     void shadowDetailLevel(RenderDetailLevel detailLevel) {
@@ -502,7 +500,7 @@ DEFINE_SINGLETON(GFXDevice)
    protected:
     friend class SceneManager;
     friend class RenderPass;
-    void occlusionCull(U32 pass = 0);
+    void occlusionCull(U32 pass);
     void buildDrawCommands(VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
                            bool refreshNodeData,
@@ -562,7 +560,6 @@ DEFINE_SINGLETON(GFXDevice)
     GPUState _state;
     /* Rendering buffers*/
     std::array<Framebuffer*, to_const_uint(RenderTarget::COUNT)> _renderTarget;
-    Framebuffer* _hiZDepthBuffer;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
@@ -580,6 +577,7 @@ DEFINE_SINGLETON(GFXDevice)
     bool _enableAnaglyph;
     bool _2DRendering;
     bool _rasterizationEnabled;
+    bool _zWriteEnabled;
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS;
     U32 FRAME_DRAW_CALLS_PREV;

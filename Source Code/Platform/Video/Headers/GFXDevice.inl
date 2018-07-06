@@ -177,6 +177,18 @@ GFXDevice::rasterizationState() {
     return _rasterizationEnabled; 
 }
 
+/// Toggle writes to the depth buffer on or off
+inline void 
+GFXDevice::toggleDepthWrites(bool state) {
+    if(_zWriteEnabled == state) {
+        return;
+    }
+    _zWriteEnabled = state;
+
+    _api->toggleDepthWrites(state);
+}
+
+
 /// Toggle hardware rasterization on or off.
 inline void 
 GFXDevice::toggleRasterization(bool state) {

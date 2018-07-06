@@ -30,20 +30,19 @@ void main()
     }
     
     uint nodeIndex = dvd_drawCommands[ident].baseInstance;
-
-    vec3 center = dvd_Matrices[nodeIndex]._normalMatrix[3].xyz;
-    float radius = dvd_Matrices[nodeIndex]._normalMatrix[3].w;
+    vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrix[3];
+    vec3 center = bSphere.xyz;
+    float radius = bSphere.w;
 
     // Sphere clips against near plane, just assume visibility.
     if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_ZPlanesCombined.x) {
         return;
     }
 
-    if (HiZOcclusionCull(center, vec3(radius)) == 0) {
+    if (zBufferCull(center, vec3(radius)) == 0) {
         atomicCounterIncrement(culledCount);
         dvd_drawCommands[ident].instanceCount = 0;
         dvd_customData(nodeIndex) = 1.0;
-        return;
     }
 }
 

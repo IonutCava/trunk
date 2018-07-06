@@ -15,7 +15,7 @@ namespace Divide {
 
 namespace {
     U32 _readOffset = 0;
-    U32 _writeOffset = 2;
+    U32 _writeOffset = 4;
 }
 
 ParticleEmitter::ParticleEmitter()
@@ -30,7 +30,7 @@ ParticleEmitter::ParticleEmitter()
       _particleGPUBuffer(nullptr),
       _particleDepthShader(nullptr) {
     _readOffset = 0;
-    _writeOffset = 2;
+    _writeOffset = 4;
 }
 
 ParticleEmitter::~ParticleEmitter() { 
@@ -65,9 +65,9 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     // Generate a render state
     RenderStateBlock particleRenderState;
     particleRenderState.setCullMode(CullMode::NONE);
-    particleRenderState.setBlend(true, BlendProperty::SRC_ALPHA,
-                                  BlendProperty::INV_SRC_ALPHA);
-    particleRenderState.setZWrite(false);
+    particleRenderState.setBlend(true,
+                                 BlendProperty::SRC_ALPHA,
+                                 BlendProperty::INV_SRC_ALPHA);
     particleRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _particleStateBlockHash = particleRenderState.getHash();
 
@@ -99,8 +99,8 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     U32 particleCount = _particles->totalCount();
 
-    _particleGPUBuffer->setBuffer(1, particleCount * 3, 4 * sizeof(F32), 1, NULL, true, true, true);
-    _particleGPUBuffer->setBuffer(2, particleCount * 3, 4 * sizeof(U8), 1, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(1, particleCount * 5, 4 * sizeof(F32), 1, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(2, particleCount * 5, 4 * sizeof(U8), 1, NULL, true, true, true);
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 4 * sizeof(F32), 0, GFXDataFormat::FLOAT_32);
@@ -224,14 +224,13 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.cmd().primCount = particleCount;
+    cmd.stateHash(GFX_DEVICE.isDepthStage() ? _particleStateBlockHashDepth
+                                            : _particleStateBlockHash);
 
-    if (GFX_DEVICE.isDepthStage()) {
-        cmd.stateHash(_particleStateBlockHash);
-        cmd.shaderProgram(_particleDepthShader);
-    } else {
-        cmd.stateHash(_particleStateBlockHashDepth);
-        cmd.shaderProgram( _particleShader);
-    }
+    cmd.shaderProgram(renderStage != RenderStage::SHADOW
+                                   ? _particleShader
+                                   : _particleDepthShader);
+
     return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
@@ -253,8 +252,8 @@ void ParticleEmitter::uploadToGPU() {
     _particleGPUBuffer->getDrawAttribDescriptor(to_uint(AttribLocation::VERTEX_COLOR))
         .set(2, 1, 4, true, 4 * sizeof(U8), readOffset, GFXDataFormat::UNSIGNED_BYTE);
 
-    _writeOffset = (_writeOffset + 1) % 3;
-    _readOffset = (_readOffset + 1) % 3;
+    _writeOffset = (_writeOffset + 1) % 5;
+    _readOffset = (_readOffset + 1) % 5;
 
     _uploaded = true;
 }

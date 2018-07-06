@@ -24,7 +24,6 @@ void main()
     particleColor = inColorData;
 }
 
-
 -- Fragment.Depth
 // Ouput data
 out vec4 color;
@@ -44,7 +43,8 @@ void main(){
 in vec4 particleColor;
 
 // Ouput data
-out vec4 color;
+layout(location = 0) out vec4 color;
+layout(location = 1) out vec3 normal;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
@@ -57,7 +57,9 @@ void main(){
     color = particleColor;
 #endif
 
-    float d = textureLod(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw), 0).r - gl_FragCoord.z;
-    float softness = pow(1.0 - min(1.0, 40.0 * d), 2.0);
+    float d = texture(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw)).r - gl_FragCoord.z;
+    float softness = pow(1.0 - min(1.0, 200.0 * d), 2.0);
     color.a *= max(0.1, 1.0 - pow(softness, 2.0));
+
+    normal = vec3(0.0, 0.0, 1.0);
 }

@@ -41,14 +41,6 @@ void NavMeshDebugDraw::paused(bool state) {
     }
 }
 
-void NavMeshDebugDraw::depthMask(bool state) {
-    RenderStateBlock newDepthDesc(
-        GFX_DEVICE.getRenderStateBlock(_navMeshStateBlockHash));
-
-    newDepthDesc.setZWrite(state);
-    _navMeshStateBlockHash = newDepthDesc.getHash();
-}
-
 void NavMeshDebugDraw::beginBatch() {
     if (!_primitive) {
         _dirty = true;

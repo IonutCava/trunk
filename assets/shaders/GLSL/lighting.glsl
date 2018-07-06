@@ -29,6 +29,7 @@ void main(void){
 #endif
 
 layout(location = 0) out vec4 _colorOut;
+layout(location = 1) out vec3 _normalsOut;
 
 //subroutine vec4 MappingRoutineType();
 
@@ -69,4 +70,6 @@ void main (void){
 #else
     _colorOut = ToSRGB(applyFog(mappingFlat()));
 #endif
+
+    _normalsOut = processedNormal;
 }   

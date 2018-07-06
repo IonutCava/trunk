@@ -47,8 +47,6 @@ void main()
 
 #if defined(SHADOW_PASS)
 out vec2 _colorOut;
-#else
-layout(location = 1) out vec3 _colorOut;
 #endif
 
 #include "nodeBufferedInput.cmn"
@@ -100,19 +98,13 @@ void main() {
     vec4 opacityMap = texture(texOpacityMap, VAR._texCoord);
     alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
+    if (alpha < ALPHA_DISCARD_THRESHOLD) discard;
 #endif
-
 
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     //_colorOut = vec4(computeMoments(exp(DEPTH_EXP_WARP * gl_FragCoord.z)), 0.0, alpha);
     _colorOut = computeMoments(gl_FragCoord.z);
-#else
-#   if defined(COMPUTE_TBN)
-        _colorOut = normalize(2.0 * texture(texNormalMap, VAR._texCoord).rgb - 1.0);
-#   else
-        _colorOut = normalize(f_in._normalWV);
-#   endif
 #endif
 
 }

@@ -517,7 +517,6 @@ duDisplayList::duDisplayList(int cap) :
     m_color(0),
     m_size(0),
     m_cap(0),
-    m_depthMask(true),
     m_prim(DU_DRAW_LINES),
     m_primSize(1.0f)
 {
@@ -554,11 +553,6 @@ void duDisplayList::clear()
     m_size = 0;
 }
 
-void duDisplayList::depthMask(bool state)
-{
-    m_depthMask = state;
-}
-
 void duDisplayList::begin(duDebugDrawPrimitives prim, float size)
 {
     clear();
@@ -591,7 +585,6 @@ void duDisplayList::draw(struct duDebugDraw* dd)
 {
     if (!dd) return;
     if (!m_size) return;
-    dd->depthMask(m_depthMask);
     dd->begin(m_prim, m_primSize);
     for (int i = 0; i < m_size; ++i)
         dd->vertex(&m_pos[i*3], m_color[i]);

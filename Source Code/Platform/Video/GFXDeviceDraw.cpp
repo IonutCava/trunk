@@ -315,7 +315,12 @@ void GFXDevice::occlusionCull(U32 pass) {
     getCommandBuffer(currentStage, pass).bind(ShaderBufferLocation::GPU_COMMANDS);
     getCommandBuffer(currentStage, pass).bindAtomicCounter();
 
-    _hiZDepthBuffer->bind();
+    Framebuffer* screenTarget = _renderTarget[anaglyphEnabled()
+                                               ? to_uint(RenderTarget::ANAGLYPH)
+                                               : to_uint(RenderTarget::SCREEN)];
+    screenTarget->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+                       TextureDescriptor::AttachmentType::Depth);
+
     _HIZCullProgram->bind();
     _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
     _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);

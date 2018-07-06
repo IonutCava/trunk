@@ -16,7 +16,7 @@ void main(void)
 
 --Fragment
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D LastMip;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
 uniform ivec2 LastMipSize;
 
 void main(void)
