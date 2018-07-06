@@ -2,7 +2,7 @@
 #include "Headers/SubMesh.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 

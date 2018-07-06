@@ -5,6 +5,7 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/ParamHandler.h"
 
 namespace Divide {
@@ -108,8 +109,8 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
     Camera::activeCamera()->setRotation(-45 /*yaw*/, 10 /*pitch*/);
     Camera::activeCamera()->setEye(vec3<F32>(0, 30, -40));
     Camera::activeCamera()->setFixedYawAxis(true);
-    ParamHandler::instance().setParam(_ID("rendering.enableFog"), false);
-    ParamHandler::instance().setParam(_ID("postProcessing.bloomFactor"), 0.1f);
+    _context.config().rendering.enableFog = false;
+    _context.config().rendering.bloomFactor = 0.1f;
     return true;
 }
 

@@ -1,5 +1,6 @@
 #include "Core/Headers/Console.h"
-#include "Core/Headers/ParamHandler.h"
+
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -25,8 +26,7 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
             _descriptor.getResourceLocation().empty());
 
     if (s_defaultTexturePath.empty()) {
-        s_defaultTexturePath = _context.entryData().assetsLocation + "/" +
-                               _context.config().defaultTextureLocation;
+        s_defaultTexturePath = Util::StringFormat("%s/%s", Paths::g_assetsLocation, Paths::g_texturesLocation);
     }
 
     if (Texture::s_defaultTextureFilePath == nullptr) {

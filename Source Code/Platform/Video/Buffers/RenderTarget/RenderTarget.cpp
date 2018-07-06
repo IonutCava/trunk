@@ -1,7 +1,6 @@
 #include "Headers/RenderTarget.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {

@@ -45,9 +45,6 @@ class glShader : public GraphicsResource, public TrackedObject {
    public:
     typedef hashMapImpl<U64, glShader*> ShaderMap;
 
-    static const char* CACHE_LOCATION_TEXT;
-    static const char* CACHE_LOCATION_BIN;
-
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for

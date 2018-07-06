@@ -2,7 +2,6 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Application.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"

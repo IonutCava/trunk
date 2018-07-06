@@ -6,7 +6,6 @@
 #include "GUI/Headers/GUIMessageBox.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Math/Headers/MathHelper.h"
 
 #if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 #include <Allocator/xallocator.h>

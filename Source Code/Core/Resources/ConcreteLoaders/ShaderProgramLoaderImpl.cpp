@@ -1,3 +1,4 @@
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -20,8 +21,7 @@ Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     }
 
     if (s_defaultShaderProgramPath.empty()) {
-        s_defaultShaderProgramPath = _context.entryData().assetsLocation + "/" +
-                                     _context.config().defaultShadersLocation;
+        s_defaultShaderProgramPath = Util::StringFormat("%s/%s", Paths::g_assetsLocation, Paths::g_shadersLocation);
     }
 
     if (_descriptor.getResourceLocation().empty()) {

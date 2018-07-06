@@ -2,6 +2,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/XMLEntryData.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 
@@ -133,9 +134,7 @@ bool Scene::idle() {  // Called when application is idle
 
     _sceneGraph->idle();
 
-    Attorney::SceneRenderStateScene::playAnimations(
-        renderState(),
-        ParamHandler::instance().getParam<bool>(_ID("mesh.playAnimations"), true));
+    Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.config().debug.mesh.playAnimations);
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
@@ -634,10 +633,9 @@ void Scene::loadBaseCamera() {
 
     _baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
     _baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
-    _baseCamera->setProjection(_paramHandler.getParam<F32>(_ID("rendering.aspectRatio"), 1.77f),
-                               _paramHandler.getParam<F32>(_ID("rendering.verticalFOV")),
-                              vec2<F32>(_paramHandler.getParam<F32>(_ID("rendering.zNear")),
-                                        _paramHandler.getParam<F32>(_ID("rendering.zFar"))));
+    _baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
+                               _context.config().runtime.verticalFOV,
+                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 }
 
 bool Scene::load(const stringImpl& name) {

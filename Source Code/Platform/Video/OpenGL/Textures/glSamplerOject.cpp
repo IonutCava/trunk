@@ -1,7 +1,6 @@
 #include "Headers/glSamplerObject.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"

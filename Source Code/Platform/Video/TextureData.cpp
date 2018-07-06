@@ -2,7 +2,6 @@
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
-#include "Core/Math/Headers/MathHelper.h"
 
 namespace Divide {
 

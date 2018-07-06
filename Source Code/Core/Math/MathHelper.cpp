@@ -2,144 +2,13 @@
 #include "Headers/Quaternion.h"
 
 #include <boost/thread/tss.hpp>
-#include <cstdarg>
-#include <fstream>
+
 
 namespace Divide {
 namespace Util {
 
 static boost::thread_specific_ptr<vectorImpl<GlobalFloatEvent>> _globalFloatEvents;
 
-void GetPermutations(const stringImpl& inputString,
-                     vectorImpl<stringImpl>& permutationContainer) {
-    permutationContainer.clear();
-    stringImpl tempCpy(inputString);
-    std::sort(std::begin(tempCpy), std::end(tempCpy));
-    do {
-        permutationContainer.push_back(inputString);
-    } while (std::next_permutation(std::begin(tempCpy), std::end(tempCpy)));
-}
-
-bool IsNumber(const stringImpl& s) {
-    F32 number = 0.0f;
-    if (istringstreamImpl(s) >> number) {
-        return !(IS_ZERO(number) && s[0] != 0);
-    }
-    return false;
-}
-
-stringImpl GetTrailingCharacters(const stringImpl& input, size_t count) {
-    size_t inputLength = input.length();
-    count = std::min(inputLength, count);
-    assert(count > 0);
-    return input.substr(inputLength - count, inputLength);
-}
-
-void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut) {
-    std::ifstream inFile(filePath.c_str(), std::ios::in);
-
-    if (!inFile.eof() && !inFile.fail())
-    {
-        assert(inFile.good());
-        inFile.seekg(0, std::ios::end);
-        contentOut.reserve(inFile.tellg());
-        inFile.seekg(0, std::ios::beg);
-
-        contentOut.assign((std::istreambuf_iterator<char>(inFile)),
-                           std::istreambuf_iterator<char>());
-    }
-
-    inFile.close();
-}
-
-stringImpl ReadTextFile(const stringImpl& filePath) {
-    stringImpl content;
-    ReadTextFile(filePath, content);
-    return content;
-}
-
-void WriteTextFile(const stringImpl& filePath, const stringImpl& content) {
-    if (filePath.empty()) {
-        return;
-    }
-    std::ofstream outputFile(filePath.c_str(), std::ios::out);
-    outputFile << content;
-    outputFile.close();
-    assert(outputFile.good());
-}
-
-vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
-                              vectorImpl<stringImpl>& elems) {
-    elems.resize(0);
-    if (!input.empty()) {
-        istringstreamImpl ss(input);
-        stringImpl item;
-        while (std::getline(ss, item, delimiter)) {
-            vectorAlg::emplace_back(elems, item);
-        }
-    }
-
-    return elems;
-
-}
-
-vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
-    vectorImpl<stringImpl> elems;
-    Split(input, delimiter, elems);
-    return elems;
-}
-
-stringImpl StringFormat(const char *const format, ...) {
-    vectorImpl<char> temp;
-    std::size_t length = 63;
-    std::va_list args;
-    while (temp.size() <= length) {
-        temp.resize(length + 1);
-        va_start(args, format);
-        const auto status = std::vsnprintf(temp.data(), temp.size(), format, args);
-        va_end(args);
-        assert(status >= 0 && "string formatting error");
-        length = static_cast<std::size_t>(status);
-    }
-
-    return stringImpl(temp.data(), length);
-}
-
-std::pair<stringImpl/*fileName*/, stringImpl/*filePath*/>
-SplitPathToNameAndLocation(const stringImpl& input) {
-    size_t pathNameSplitPoint = input.find_last_of('/') + 1;
-
-    return std::make_pair(input.substr(pathNameSplitPoint + 1, stringImpl::npos),
-                          input.substr(0, pathNameSplitPoint));
-}
-
-bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {
-    if (a.length() == b.length()) {
-        return std::equal(std::cbegin(b), 
-                          std::cend(b),
-                          std::cbegin(a),
-                          [](unsigned char a, unsigned char b) {
-                              return std::tolower(a) == std::tolower(b);
-                          });
-    }
-    
-    return false;
-}
-
-
-bool HasExtension(const stringImpl& filePath, const stringImpl& extension) {
-    stringImpl ext("." + extension);
-    return CompareIgnoreCase(GetTrailingCharacters(filePath, ext.length()), ext);
-}
-
-void CStringRemoveChar(char* str, char charToRemove) {
-    char *pr = str, *pw = str;
-    while (*pr) {
-        *pw = *pr++;
-        pw += (*pw != charToRemove);
-    }
-    *pw = '\0';
-}
 
 void ToByteColour(const vec4<F32>& floatColour, vec4<U8>& colourOut) {
     colourOut.set(FLOAT_TO_CHAR(floatColour.r),
@@ -367,10 +236,6 @@ void PlotFloatEvents(const char* eventName,
                 crtEvent._eventValue);
         }
     }
-}
-
-bool FileExists(const char* filePath) {
-    return std::ifstream(filePath).good();
 }
 
 };  // namespace Util

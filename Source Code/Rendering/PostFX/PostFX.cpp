@@ -2,6 +2,7 @@
 #include "Headers/PreRenderOperator.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -85,25 +86,19 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.setResourceName("terrain_water_NM.jpg");
-    textureWaterCaustics.setResourceLocation(
-        par.getParam<stringImpl>(_ID("assetsLocation")) +
-        "/misc_images/");
+    textureWaterCaustics.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
     textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
      ResourceDescriptor noiseTexture("noiseTexture");
      noiseTexture.setResourceName("bruit_gaussien.jpg");
-     noiseTexture.setResourceLocation(
-            par.getParam<stringImpl>(_ID("assetsLocation")) +
-            "/misc_images/");
+     noiseTexture.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
      noiseTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _noise = CreateResource<Texture>(cache, noiseTexture);
 
      ResourceDescriptor borderTexture("borderTexture");
      borderTexture.setResourceName("vignette.jpg");
-     borderTexture.setResourceLocation(
-            par.getParam<stringImpl>(_ID("assetsLocation")) +
-            "/misc_images/");
+     borderTexture.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
      borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
@@ -155,7 +150,7 @@ void PostFX::apply(GFXDevice& context) {
     screenRT.end();
 }
 
-void PostFX::idle() {
+void PostFX::idle(const Configuration& config) {
     // Update states
     if (getFilterState(FilterType::FILTER_NOISE)) {
         _noiseTimer += Time::ElapsedMilliseconds();
@@ -169,7 +164,7 @@ void PostFX::idle() {
         _postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
     }
 
-    _preRenderBatch->idle();
+    _preRenderBatch->idle(config);
 }
 
 void PostFX::update(const U64 deltaTime) {

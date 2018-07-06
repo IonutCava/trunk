@@ -3,7 +3,7 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
 #include "Core/Headers/Application.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
@@ -71,8 +71,7 @@ bool GUIEditor::init() {
     CEGUI::WindowManager *pWindowManager =
         CEGUI::WindowManager::getSingletonPtr();
     // load the editor Window from the layout file
-    const stringImpl &layoutFile =
-        ParamHandler::instance().getParam<stringImpl>(_ID("GUI.editorLayout"));
+    const stringImpl &layoutFile = _context.config().gui.editorLayout;
     _editorWindow = pWindowManager->loadLayoutFromFile(layoutFile.c_str());
 
     if (_editorWindow) {
@@ -221,8 +220,7 @@ void GUIEditor::UpdateControls() {
     toggleButton(ToggleButtons::TOGGLE_POST_FX)
         ->setEnabled(false);
     toggleButton(ToggleButtons::TOGGLE_FOG)
-        ->setSelected(ParamHandler::instance().getParam<bool>(
-            _ID("rendering.enableFog"), false));
+        ->setSelected(_context.config().rendering.enableFog);
 
     toggleButton(ToggleButtons::TOGGLE_DEPTH_PREVIEW)
         ->setSelected(false);
@@ -1008,9 +1006,7 @@ bool GUIEditor::Handle_FogToggle(const CEGUI::EventArgs &e) {
         Console::d_printfn("[Editor]: Fog disabled!");
     }
 
-    ParamHandler::instance().setParam(
-        _ID("rendering.enableFog"),
-        toggleButton(ToggleButtons::TOGGLE_FOG)->isSelected());
+    _context.config().rendering.enableFog = toggleButton(ToggleButtons::TOGGLE_FOG)->isSelected());
 
     return true;
 }

@@ -9,7 +9,8 @@
 #include "GUIEditor/Headers/GUIEditor.h"
 
 #include "Scenes/Headers/Scene.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/XMLEntryData.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
@@ -208,7 +209,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
 
     onChangeResolution(renderResolution.width, renderResolution.height);
 
-    _enableCEGUIRendering = !(ParamHandler::instance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
+    _enableCEGUIRendering = !context.config().gui.cegui.skipRendering;
 
     _guiEditor = MemoryManager_NEW GUIEditor(context, cache);
     _console = MemoryManager_NEW GUIConsole(context, cache);
@@ -221,9 +222,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
         = static_cast<CEGUI::DefaultResourceProvider*>(
             CEGUI::System::getSingleton().getResourceProvider());
 
-    CEGUI::String CEGUIInstallSharePath(
-        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
-    CEGUIInstallSharePath += "/GUI/";
+    CEGUI::String CEGUIInstallSharePath(Util::StringFormat("%s/%s/", Paths::g_assetsLocation, Paths::g_GUILocation));
     rp->setResourceGroupDirectory("schemes",
                                   CEGUIInstallSharePath + "schemes/");
     rp->setResourceGroupDirectory("imagesets",
@@ -258,8 +257,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
         "DejaVuSans-10-NoScale.font");
     CEGUI::FontManager::getSingleton().createFromFile(
         "DejaVuSans-12-NoScale.font");
-    _defaultGUIScheme =
-        ParamHandler::instance().getParam<stringImpl>(_ID("GUI.defaultScheme"));
+    _defaultGUIScheme = context.config().gui.cegui.defaultGUIScheme;
     CEGUI::SchemeManager::getSingleton().createFromFile((_defaultGUIScheme + ".scheme").c_str());
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(

@@ -3,7 +3,9 @@
 #include "Headers/GUI.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Math/Headers/MathHelper.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
@@ -137,19 +139,21 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
-    stringImpl filename = _context.entryData().assetsLocation + "/" + args;
+    stringImpl filename(Paths::g_assetsLocation);
+    filename.append("/" + args);
+
     std::ifstream soundfile(filename.c_str());
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
         // still ...)
-        if (!Util::HasExtension(filename, "wav") &&
-            !Util::HasExtension(filename, "mp3") &&
-            !Util::HasExtension(filename, "ogg")) {
+        if (!HasExtension(filename, "wav") &&
+            !HasExtension(filename, "mp3") &&
+            !HasExtension(filename, "ogg")) {
             Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FORMAT")));
             return;
         }
 
-        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(filename);
+        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(filename);
         const stringImpl& name = fileResult.first;
         const stringImpl& path = fileResult.second;
 
@@ -234,7 +238,8 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     } else {
         scale = to_float(atof(args2.c_str()));
     }
-    stringImpl assetLocation(_context.entryData().assetsLocation + "/");
+    stringImpl assetLocation(Paths::g_assetsLocation);
+    assetLocation.append("/");
 
     FileData model;
     model.ItemName = args1 + "_console" + args;

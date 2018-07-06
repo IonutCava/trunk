@@ -1,7 +1,6 @@
 #include "Headers/Scene.h"
 #include "Headers/SceneInput.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Managers/Headers/SceneManager.h"
 

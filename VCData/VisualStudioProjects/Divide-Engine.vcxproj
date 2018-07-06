@@ -536,6 +536,7 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\StringHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Time\ApplicationTimer.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Time\FrameRateHandler.cpp" />
@@ -648,6 +649,7 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\StringHelper.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\WindowManager.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\XMLEntryData.h" />

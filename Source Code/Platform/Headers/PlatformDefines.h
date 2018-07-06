@@ -37,12 +37,12 @@
 #endif
 
 #include "Core/TemplateLibraries/Headers/Vector.h"
-#include "Core/TemplateLibraries/Headers/String.h"
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
 #include "Core/Headers/GUIDWrapper.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "ConditionalWait.h"
 
 #ifndef _USE_MATH_DEFINES

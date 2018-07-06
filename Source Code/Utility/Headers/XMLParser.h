@@ -41,6 +41,7 @@ namespace Divide {
 
 class Scene;
 class GFXDevice;
+class Configuration;
 class PlatformContext;
 FWD_DECLARE_MANAGED_CLASS(Material);
 
@@ -93,10 +94,10 @@ stringImpl loadScripts(PlatformContext& context, const stringImpl& file);
 
 /// Child Functions
 void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
-void loadScene(const stringImpl& scenePath, const stringImpl& sceneName, Scene* scene);
+void loadScene(const stringImpl& scenePath, const stringImpl& sceneName, Scene* scene, const Configuration& config);
 void loadGeometry(const stringImpl& file, Scene* const scene);
 void loadTerrain(const stringImpl& file, Scene* const scene);
-void loadMusicPlaylist(const stringImpl& file, Scene* const scene);
+void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configuration& config);
 
 Material_ptr loadMaterial(PlatformContext& context, const stringImpl& file);
 void dumpMaterial(PlatformContext& context, Material& mat);

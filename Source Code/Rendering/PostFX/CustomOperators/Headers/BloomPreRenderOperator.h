@@ -44,7 +44,7 @@ class BloomPreRenderOperator : public PreRenderOperator {
     BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~BloomPreRenderOperator();
 
-    void idle() override;
+    void idle(const Configuration& config) override;
     void execute() override;
     void reshape(U16 width, U16 height) override;
     void debugPreview(U8 slot) const;

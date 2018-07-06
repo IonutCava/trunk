@@ -1,6 +1,6 @@
 #include "Headers/Defines.h"
 
-#include "Core/Math/Headers/MathHelper.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 

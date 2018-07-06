@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -23,11 +24,8 @@ GUISplash::GUISplash(ResourceCache& cache,
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setThreadedLoading(false);
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
-    stringImpl splashImageLocation = 
-        Util::StringFormat("%s/misc_images/%s",
-                           ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str(),
-                           splashImageName.c_str());
-    splashImage.setResourceLocation(splashImageLocation);
+    splashImage.setResourceName(splashImageName);
+    splashImage.setResourceLocation(Util::StringFormat("%s/%s/", Paths::g_assetsLocation, "misc_images"));
     splashImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _splashImage = CreateResource<Texture>(cache, splashImage);
     ResourceDescriptor splashShader("fbPreview");

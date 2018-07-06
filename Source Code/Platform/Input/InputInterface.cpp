@@ -1,5 +1,6 @@
 #include "Headers/InputInterface.h"
-#include "Core/Headers/ParamHandler.h"
+
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 namespace Input {

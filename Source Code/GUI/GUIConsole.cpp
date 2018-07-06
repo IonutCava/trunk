@@ -2,8 +2,11 @@
 #include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
 
+#include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Utility/Headers/Localization.h"
 
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
@@ -57,8 +60,7 @@ void GUIConsole::CreateCEGUIWindow() {
         Console::errorfn(Locale::get(_ID("ERROR_CONSOLE_DOUBLE_INIT")));
     }
     // load the console Window from the layout file
-    const stringImpl& layoutFile =
-        ParamHandler::instance().getParam<stringImpl>(_ID("GUI.consoleLayout"));
+    const stringImpl& layoutFile = _context.config().gui.consoleLayoutFile;
     _consoleWindow =
         CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile.c_str());
 

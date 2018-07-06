@@ -5,15 +5,10 @@
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/OpenGL/Headers/glLockManager.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
-
-namespace {
-    const char* parentShaderLoc = "GLSL";
-};
 
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 

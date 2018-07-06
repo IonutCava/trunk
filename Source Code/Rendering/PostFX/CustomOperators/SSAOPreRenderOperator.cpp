@@ -2,7 +2,7 @@
 
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
@@ -105,7 +105,8 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator()
     _context.deallocateRT(_ssaoOutputBlurred);
 }
 
-void SSAOPreRenderOperator::idle() {
+void SSAOPreRenderOperator::idle(const Configuration& config) {
+    ACKNOWLEDGE_UNUSED(config);
 }
 
 void SSAOPreRenderOperator::reshape(U16 width, U16 height) {

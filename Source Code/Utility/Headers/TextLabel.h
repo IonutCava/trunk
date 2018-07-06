@@ -29,10 +29,11 @@
 
  */
 
-#ifndef _TEXT_LABEL_H_
-#define _TEXT_LABEL_H_
+#ifndef _UTILITY_TEXT_LABEL_H_
+#define _UTILITY_TEXT_LABEL_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 class TextLabel {
@@ -79,4 +80,4 @@ private:
 
 };  // namespace Divide
 
-#endif
+#endif //_UTILITY_TEXT_LABEL_H_

@@ -49,7 +49,6 @@ enum class LightType : U32 {
 
 class Camera;
 class LightPool;
-class ParamHandler;
 class ImpostorSphere;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position

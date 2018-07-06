@@ -2,7 +2,6 @@
 #include "Headers/TerrainLoader.h"
 #include "Headers/TerrainDescriptor.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 

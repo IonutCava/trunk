@@ -21,7 +21,6 @@
 #ifndef GLFONTSTASH_H
 #define GLFONTSTASH_H
 
-#include "Core/Math/Headers/MathHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 

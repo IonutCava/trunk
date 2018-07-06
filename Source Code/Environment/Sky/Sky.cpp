@@ -38,9 +38,8 @@ bool Sky::load() {
     if (_sky != nullptr) {
         return false;
     }
-    stringImpl location(
-        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
-        "/misc_images/");
+    stringImpl location(Paths::g_assetsLocation);
+    location.append("/misc_images/");
 
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);

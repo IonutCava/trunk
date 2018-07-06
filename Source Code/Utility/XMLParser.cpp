@@ -3,6 +3,7 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/XMLEntryData.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Scenes/Headers/SceneInput.h"
 #include "Rendering/Headers/Renderer.h"
@@ -300,7 +301,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     }
 }
 
-void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* scene) {
+void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* scene, const Configuration& config) {
     ParamHandler &par = ParamHandler::instance();
     
     ptree pt;
@@ -310,8 +311,8 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
-    if (!Util::FileExists(sceneDataFile.c_str())) {
-        loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene);
+    if (!FileExists(sceneDataFile.c_str())) {
+        loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene, config);
         return;
     }
 
@@ -362,35 +363,32 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
         par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.turn").c_str()), 35.0f);
     }
 
-    vec3<F32> fogColour;
-    F32 fogDensity;
+    vec3<F32> fogColour(config.rendering.fogColour);
+    F32 fogDensity = config.rendering.fogDensity;
+
     if (boost::optional<ptree &> fog = pt.get_child_optional("fog")) {
         fogDensity = pt.get("fog.fogDensity", 0.01f);
         fogColour.set(pt.get<F32>("fog.fogColour.<xmlattr>.r", 0.2f),
                       pt.get<F32>("fog.fogColour.<xmlattr>.g", 0.2f),
                       pt.get<F32>("fog.fogColour.<xmlattr>.b", 0.2f));
-    } else {
-        fogDensity = par.getParam<F32>(_ID("rendering.sceneState.fogDensity"));
-        fogColour.set(par.getParam<F32>(_ID("rendering.sceneState.fogColour.r")),
-                      par.getParam<F32>(_ID("rendering.sceneState.fogColour.g")),
-                      par.getParam<F32>(_ID("rendering.sceneState.fogColour.b")));
     }
-
     scene->state().fogDescriptor().set(fogColour, fogDensity);
+
     loadTerrain((sceneLocation + "/" + pt.get("terrain", "terrain.xml")).c_str(), scene);
     loadGeometry((sceneLocation + "/" + pt.get("assets", "assets.xml")).c_str(), scene);
-    loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene);
+    loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene, config);
 }
 
-void loadMusicPlaylist(const stringImpl& file, Scene* const scene) {
-    if (!Util::FileExists(file.c_str())) {
+void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configuration& config) {
+    if (!FileExists(file.c_str())) {
         return;
     }
     Console::printfn(Locale::get(_ID("XML_LOAD_MUSIC")), file.c_str());
     ptree pt;
     read_xml(file.c_str(), pt);
 
-    stringImpl assetLocation(ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
+    stringImpl assetLocation(Paths::g_assetsLocation);
+    assetLocation.append("/");
     for (const ptree::value_type & f : pt.get_child("backgroundThemes", empty_ptree()))
     {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
@@ -407,7 +405,8 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
     read_xml(file.c_str(), pt);
     ptree::iterator itTerrain;
     ptree::iterator itTexture;
-    stringImpl assetLocation(ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
+    stringImpl assetLocation(Paths::g_assetsLocation);
+    assetLocation.append("/");
 
     for (itTerrain = std::begin(pt.get_child("terrainList"));
          itTerrain != std::end(pt.get_child("terrainList")); ++itTerrain) {
@@ -527,9 +526,8 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
     read_xml(file.c_str(), pt);
     ptree::iterator it;
-    stringImpl assetLocation =
-        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
-        "/";
+    stringImpl assetLocation(Paths::g_assetsLocation);
+    assetLocation.append("/");
 
     if (boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
         for (it = std::begin(pt.get_child("geometry"));

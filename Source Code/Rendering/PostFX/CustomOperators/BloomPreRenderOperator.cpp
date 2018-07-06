@@ -3,7 +3,8 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
@@ -48,9 +49,8 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
     _context.deallocateRT(_bloomBlurBuffer[1]);
 }
 
-void BloomPreRenderOperator::idle() {
-    _bloomApply->Uniform("bloomFactor",
-                         ParamHandler::instance().getParam<F32>(_ID("postProcessing.bloomFactor"), 0.8f));
+void BloomPreRenderOperator::idle(const Configuration& config) {
+    _bloomApply->Uniform("bloomFactor", config.rendering.bloomFactor);
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {

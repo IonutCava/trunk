@@ -4,7 +4,6 @@
 #include "GUI/Headers/GUIText.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Headers/Application.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"

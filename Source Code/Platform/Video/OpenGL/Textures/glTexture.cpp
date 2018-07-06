@@ -7,8 +7,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
-#include "Core/Headers/ParamHandler.h"
-
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 

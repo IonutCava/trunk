@@ -10,6 +10,7 @@
 #include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Core/Time/Headers/ProfileTimer.h"
@@ -17,6 +18,7 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Physics/Headers/PXDevice.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
@@ -86,8 +88,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 
     FrameListenerManager::createInstance();
     OpenCLInterface::createInstance();
-    
-    ParamHandler::instance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 }
 
 Kernel::~Kernel()
@@ -102,9 +102,7 @@ void Kernel::idle() {
 
     FrameListenerManager::instance().idle();
 
-    ParamHandler& par = ParamHandler::instance();
-
-    bool freezeLoopTime = par.getParam(_ID("freezeLoopTime"), false);
+    bool freezeLoopTime = ParamHandler::instance().getParam(_ID("freezeLoopTime"), false);
     if (freezeLoopTime != _timingData._freezeLoopTime) {
         _timingData._freezeLoopTime = freezeLoopTime;
         _timingData._currentTimeFrozen = _timingData._currentTime;
@@ -531,9 +529,8 @@ void Kernel::warmup() {
     _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
     _timingData._keepAlive = true;
 
-    ParamHandler& par = ParamHandler::instance();
     RenderDetailLevel shadowLevel = _platformContext->gfx().shadowDetailLevel();
-    par.setParam(_ID("freezeLoopTime"), true);
+    ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
     _platformContext->gfx().shadowDetailLevel(RenderDetailLevel::OFF);
 
     onLoop();
@@ -549,15 +546,13 @@ void Kernel::warmup() {
         onLoop();
     }
 
-    par.setParam(_ID("freezeLoopTime"), false);
+    ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
     _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
-    ParamHandler& par = ParamHandler::instance();
-
     SysInfo& systemInfo = Application::instance().sysInfo();
     if (!CheckMemory(Config::REQUIRED_RAM_SIZE, systemInfo)) {
         return ErrorCode::NOT_ENOUGH_RAM;
@@ -582,43 +577,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Configuration& config = _platformContext->config();
     XML::loadFromXML(entryData, entryPoint.c_str());
     XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
+    Paths::updatePaths(*_platformContext);
 
     Locale::changeLanguage(config.language);
 
     _platformContext->gfx().shadowDetailLevel(config.rendering.shadowDetailLevel);
-    //Temp hack
-    par.setParam(_ID("assetsLocation"), entryData.assetsLocation);
-    par.setParam(_ID("scenesLocation"), entryData.scenesLocation);
-    par.setParam(_ID("mesh.playAnimations"), config.debug.mesh.playAnimations);
-    par.setParam(_ID("defaultTextureLocation"), config.defaultTextureLocation);
-    par.setParam(_ID("shaderLocation"), config.defaultShadersLocation);
-    par.setParam(_ID("rendering.PostAASamples"), config.rendering.postAASamples);
-    par.setParam(_ID("rendering.PostAAType"), config.rendering.postAAType);
-    par.setParam(_ID("GUI.CEGUI.ExtraStates"), config.gui.cegui.extraStates);
-    par.setParam(_ID("GUI.CEGUI.SkipRendering"), config.gui.cegui.skipRendering);
-    par.setParam(_ID("GUI.defaultScheme"),config.gui.cegui.defaultGUIScheme);
-    par.setParam(_ID("GUI.consoleLayout"), config.gui.consoleLayoutFile);
-    par.setParam(_ID("GUI.editorLayout"), config.gui.editorLayoutFile);
-    par.setParam(_ID("rendering.enableFog"), config.rendering.enableFog);
-    par.setParam(_ID("runtime.targetDisplay"), to_int(config.runtime.targetDisplay));
-    par.setParam(_ID("runtime.windowWidth"), to_int(config.runtime.resolution.w));
-    par.setParam(_ID("runtime.windowHeight"), to_int(config.runtime.resolution.h));
-    par.setParam(_ID("runtime.splashWidth"), to_int(config.runtime.splashScreen.w));
-    par.setParam(_ID("runtime.splashHeight"), to_int(config.runtime.splashScreen.h));
-    par.setParam(_ID("runtime.enableVSync"), config.runtime.enableVSync);
-    par.setParam(_ID("postProcessing.anaglyphOffset"), config.rendering.anaglyphOffset);
-    par.setParam(_ID("postProcessing.enableDepthOfField"), config.rendering.enableDepthOfField);
-    par.setParam(_ID("postProcessing.enableBloom"), config.rendering.enableBloom);
-    par.setParam(_ID("postProcessing.enableSSAO"), config.rendering.enableSSAO);
-    par.setParam(_ID("postProcessing.bloomFactor"), config.rendering.bloomFactor);
-    par.setParam(_ID("rendering.verticalFOV"), config.runtime.verticalFOV);
-    par.setParam(_ID("rendering.zNear"), config.runtime.zNear);
-    par.setParam(_ID("rendering.zFar"), config.runtime.zFar);
-    // global fog values
-    par.setParam(_ID("rendering.sceneState.fogDensity"), config.rendering.fogDensity);
-    par.setParam(_ID("rendering.sceneState.fogColour.r"), config.rendering.fogColour.r);
-    par.setParam(_ID("rendering.sceneState.fogColour.g"), config.rendering.fogColour.g);
-    par.setParam(_ID("rendering.sceneState.fogColour.b"), config.rendering.fogColour.b);
 
     // Create mem log file
     const stringImpl& mem = config.debug.memFile;
@@ -627,16 +590,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Fulscreen is automatically calculated
     ResolutionByType initRes;
-    initRes[to_const_uint(WindowType::WINDOW)].set(par.getParam<I32>(_ID("runtime.windowWidth"), 1024),
-                                                   par.getParam<I32>(_ID("runtime.windowHeight"), 768));
-    initRes[to_const_uint(WindowType::SPLASH)].set(par.getParam<I32>(_ID("runtime.splashWidth"), 400),
-                                                   par.getParam<I32>(_ID("runtime.splashHeight"), 300));
+    initRes[to_const_uint(WindowType::WINDOW)].set(config.runtime.resolution.w, config.runtime.resolution.h);
+    initRes[to_const_uint(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
 
-    I32 targetDisplay = par.getParam<I32>(_ID("runtime.targetDisplay"), 0);
     bool startFullScreen = !config.runtime.windowedMode;
     WindowManager& winManager = _APP.windowManager();
 
-    ErrorCode initError = winManager.init(*_platformContext, _platformContext->gfx().getAPI(), initRes, startFullScreen, targetDisplay);
+    ErrorCode initError = winManager.init(*_platformContext, _platformContext->gfx().getAPI(), initRes, startFullScreen, config.runtime.targetDisplay);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }

@@ -52,7 +52,7 @@ class NOINITVTABLE PreRenderOperator {
     PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache, FilterType operatorType);
     virtual ~PreRenderOperator();
 
-    virtual void idle() = 0;
+    virtual void idle(const Configuration& config) = 0;
     virtual void execute() = 0;
 
     virtual void reshape(U16 width, U16 height);

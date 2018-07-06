@@ -34,7 +34,6 @@
 
 #include "FrameRateHandler.h"
 
-#include "Core/Math/Headers/MathHelper.h"
 #include <chrono>
 
 // Code from http://www.gamedev.net/reference/articles/article1382.asp

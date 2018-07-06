@@ -1,7 +1,6 @@
 #include "Headers/CubeShadowMap.h"
 
 #include "Graphs/Headers/SceneGraph.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"

@@ -1,6 +1,7 @@
 #include "Headers/LightPool.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -95,10 +96,7 @@ void LightPool::init() {
     ResourceDescriptor iconImage("LightIconTexture");
     iconImage.setThreadedLoading(false);
     iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);
-    stringImpl iconImageLocation =
-        Util::StringFormat("%s/misc_images/",
-            ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
-    iconImage.setResourceLocation(iconImageLocation);
+    iconImage.setResourceLocation(Util::StringFormat("%s/%s", Paths::g_assetsLocation, "/misc_images/"));
     iconImage.setResourceName("lightIcons.png");
     iconImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);

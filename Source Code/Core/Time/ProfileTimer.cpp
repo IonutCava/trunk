@@ -2,7 +2,9 @@
 
 #include "Headers/ProfileTimer.h"
 #include "Headers/ApplicationTimer.h"
+
 #include "Core/Headers/Console.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 namespace Time {

@@ -5,7 +5,6 @@
 #include "Headers/OPCodesTpl.h"
 #include "Headers/ASIO.h"
 #include "Headers/Client.h"
-#include "Core/Math/Headers/MathHelper.h"
 
 namespace Divide {
 

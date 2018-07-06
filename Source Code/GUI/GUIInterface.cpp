@@ -155,10 +155,9 @@ GUIButton* GUIInterface::addButton(U64 guiID,
         parent = _context->rootSheet();
     }
 
-    stringImpl assetPath = ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation"));
     ResourceDescriptor beepSound("buttonClick");
     beepSound.setResourceName("beep.wav");
-    beepSound.setResourceLocation(assetPath + "/sounds/");
+    beepSound.setResourceLocation(Util::StringFormat("%s/%s/", Paths::g_assetsLocation, Paths::g_soundsLocation));
     beepSound.setFlag(false);
     AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
 

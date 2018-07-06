@@ -14,7 +14,7 @@ class PreRenderBatch {
     void init(RenderTargetID renderTarget);
     void destroy();
 
-    void idle();
+    void idle(const Configuration& config);
     void execute(const FilterStack& stack);
     void reshape(U16 width, U16 height);
 

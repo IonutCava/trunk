@@ -343,6 +343,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SharedMutex.h">
       <Filter>Threading\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileManagement.h">
+      <Filter>File\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -587,6 +590,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTAttachmentPool.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\File\FileManagement.cpp">
+      <Filter>File</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -865,6 +871,12 @@
     </Filter>
     <Filter Include="Video\RenderDocManager">
       <UniqueIdentifier>{7945316d-c736-408f-be14-e10c800a23a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File">
+      <UniqueIdentifier>{d56330da-8d58-4018-b2c3-1cbe04b721de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File\Headers">
+      <UniqueIdentifier>{1b5cc96f-9c4c-45df-b373-56e9f4373a01}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

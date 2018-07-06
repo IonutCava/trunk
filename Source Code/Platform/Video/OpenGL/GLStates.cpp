@@ -2,7 +2,6 @@
 
 #include "Headers/GLWrapper.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"

@@ -3,7 +3,6 @@
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/TaskPool.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"

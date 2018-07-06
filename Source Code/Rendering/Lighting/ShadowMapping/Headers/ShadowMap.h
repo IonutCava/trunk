@@ -49,7 +49,6 @@ enum class ShadowType : U32 {
 
 class Light;
 class Camera;
-class ParamHandler;
 class ShadowMapInfo;
 class SceneRenderState;
 
@@ -96,7 +95,6 @@ class NOINITVTABLE ShadowMap {
     /// Internal pointer to the parent light
     Light* _light;
     Camera* _shadowCamera;
-    ParamHandler& _par;
     bool _init;
 };
 

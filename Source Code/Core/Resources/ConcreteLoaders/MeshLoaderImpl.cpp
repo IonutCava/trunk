@@ -1,3 +1,4 @@
+#include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Mesh.h"

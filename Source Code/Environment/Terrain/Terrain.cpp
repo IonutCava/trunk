@@ -4,7 +4,6 @@
 
 #include "Quadtree/Headers/QuadtreeNode.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"

@@ -3,39 +3,13 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
+#include "Platform/File/Headers/FileManagement.h"
 
-#include "Core/Headers/ParamHandler.h"
-#include <regex>
+#include "Core/Headers/Console.h"
+#include "Core/Headers/StringHelper.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
-
-namespace {
-    // these must match the last 4 characters of the atom file
-    constexpr char* fragAtomExt = "frag";
-    constexpr char* vertAtomExt = "vert";
-    constexpr char* geomAtomExt = "geom";
-    constexpr char* tescAtomExt = "tesc";
-    constexpr char* teseAtomExt = "tese";
-    constexpr char* compAtomExt = ".cpt";
-    constexpr char* comnAtomExt = ".cmn";
-
-    // Shader subfolder name that contains shader files for OpenGL
-    const char* parentShaderLoc = "GLSL";
-    // Atom folder names in parent shader folder
-    const char* fragAtomLoc = "fragmentAtoms";
-    const char* vertAtomLoc = "vertexAtoms";
-    const char* geomAtomLoc = "geometryAtoms";
-    const char* tescAtomLoc = "tessellationCAtoms";
-    const char* teseAtomLoc = "tessellationEAtoms";
-    const char* compAtomLoc = "computeAtoms";
-    const char* comnAtomLoc = "common";
-    // include command regex pattern
-    const std::regex includePattern("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
-
-};
-
-const char* glShader::CACHE_LOCATION_TEXT = "shaderCache/Text/";
-const char* glShader::CACHE_LOCATION_BIN = "shaderCache/Binary/";
 
 SharedLock glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
@@ -80,21 +54,20 @@ glShader::glShader(GFXDevice& context,
     };
 
     if (shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)].empty()) {
-        ParamHandler& par = ParamHandler::instance();
-        stringImpl locPrefix = par.getParam<stringImpl>(_ID("assetsLocation"), "assets") +
-                               "/" +
-                               par.getParam<stringImpl>(_ID("shaderLocation"), "shaders") +
-                               "/" + 
-                               parentShaderLoc +
-                               "/";
+        stringImpl locPrefix(Paths::g_assetsLocation);
+        locPrefix.append("/");
+        locPrefix.append(Paths::g_shadersLocation);
+        locPrefix.append("/");
+        locPrefix.append(Paths::Shaders::GLSL::g_parentShaderLoc);
+        locPrefix.append("/");
 
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::FRAGMENT)] = locPrefix + fragAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)] = locPrefix + vertAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::GEOMETRY)] = locPrefix + geomAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_CTRL)] = locPrefix + tescAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_EVAL)] = locPrefix + teseAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::COMPUTE)] = locPrefix + compAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT)] = locPrefix + comnAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
     }
 }
 
@@ -118,7 +91,7 @@ bool glShader::load(const stringImpl& source) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-        ShaderProgram::shaderFileWrite(glShader::CACHE_LOCATION_TEXT + getName(), src);
+        ShaderProgram::shaderFileWrite(Paths::Shaders::g_CacheLocationText + getName(), src);
     }
 
     _compiled = false;
@@ -177,20 +150,20 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
 
     istringstreamImpl input(source);
     while (std::getline(input, line)) {
-        if (std::regex_search(line, matches, includePattern)) {
+        if (std::regex_search(line, matches, Paths::g_includePattern)) {
             include_file = matches[1].str().c_str();
 
             ShaderType typeIndex = ShaderType::COUNT;
             // switch will throw warnings due to promotion to int
             switch(_ID_RT(Util::GetTrailingCharacters(include_file, 4)))
             {
-                case _ID(fragAtomExt): typeIndex = ShaderType::FRAGMENT; break;
-                case _ID(vertAtomExt): typeIndex = ShaderType::VERTEX;  break;
-                case _ID(geomAtomExt): typeIndex = ShaderType::GEOMETRY; break;
-                case _ID(tescAtomExt): typeIndex = ShaderType::TESSELATION_CTRL; break;
-                case _ID(teseAtomExt): typeIndex = ShaderType::TESSELATION_EVAL; break;
-                case _ID(compAtomExt): typeIndex = ShaderType::COMPUTE; break;
-                case _ID(comnAtomExt): typeIndex = ShaderType::COUNT; break;
+                case _ID_RT(Paths::Shaders::GLSL::g_fragAtomExt): typeIndex = ShaderType::FRAGMENT; break;
+                case _ID_RT(Paths::Shaders::GLSL::g_vertAtomExt): typeIndex = ShaderType::VERTEX;  break;
+                case _ID_RT(Paths::Shaders::GLSL::g_geomAtomExt): typeIndex = ShaderType::GEOMETRY; break;
+                case _ID_RT(Paths::Shaders::GLSL::g_tescAtomExt): typeIndex = ShaderType::TESSELATION_CTRL; break;
+                case _ID_RT(Paths::Shaders::GLSL::g_teseAtomExt): typeIndex = ShaderType::TESSELATION_EVAL; break;
+                case _ID_RT(Paths::Shaders::GLSL::g_compAtomExt): typeIndex = ShaderType::COMPUTE; break;
+                case _ID_RT(Paths::Shaders::GLSL::g_comnAtomExt): typeIndex = ShaderType::COUNT; break;
                 default: DIVIDE_UNEXPECTED_CALL("Invalid shader include type"); break;
             };
 

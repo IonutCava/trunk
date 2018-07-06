@@ -24,7 +24,8 @@ DoFPreRenderOperator::~DoFPreRenderOperator()
 {
 }
 
-void DoFPreRenderOperator::idle() {
+void DoFPreRenderOperator::idle(const Configuration& config) {
+    ACKNOWLEDGE_UNUSED(config);
 }
 
 void DoFPreRenderOperator::reshape(U16 width, U16 height) {

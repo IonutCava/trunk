@@ -36,8 +36,6 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
     targetDisplay(std::max(std::min(targetDisplayIndex, SDL_GetNumVideoDisplays() - 1), 0));
 
-    // Most runtime variables are stored in the ParamHandler, including
-    // initialization settings retrieved from XML
     SysInfo& systemInfo = Application::instance().sysInfo();
     SDL_DisplayMode displayMode;
     SDL_GetCurrentDisplayMode(targetDisplay(), &displayMode);

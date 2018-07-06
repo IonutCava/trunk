@@ -572,6 +572,9 @@
     <ClCompile Include="..\..\Source Code\Core\XMLEntryData.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\StringHelper.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1013,6 +1016,9 @@
       <Filter>Core\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\XMLEntryData.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\StringHelper.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>

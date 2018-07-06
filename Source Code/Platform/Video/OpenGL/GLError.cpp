@@ -1,6 +1,7 @@
 #include "Headers/GLWrapper.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {

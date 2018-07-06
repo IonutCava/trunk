@@ -1,7 +1,6 @@
 #include "Headers/ShadowMap.h"
 #include "Headers/CubeShadowMap.h"
 #include "Headers/SingleShadowMap.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Headers/CascadedShadowMaps.h"
 #include "Rendering/Lighting/Headers/Light.h"
@@ -21,8 +20,7 @@ ShadowMap::ShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera, Sha
       _light(light),
       _shadowCamera(shadowCamera),
       _shadowMapType(type),
-      _arrayOffset(findDepthMapLayer(_shadowMapType)),
-      _par(ParamHandler::instance())
+      _arrayOffset(findDepthMapLayer(_shadowMapType))
 {
     commitDepthMapLayer(_shadowMapType, _arrayOffset);
 }

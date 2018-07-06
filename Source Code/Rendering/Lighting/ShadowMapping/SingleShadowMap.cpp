@@ -1,7 +1,6 @@
 #include "Headers/SingleShadowMap.h"
 
 #include "Scenes/Headers/SceneState.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Rendering/Headers/Renderer.h"

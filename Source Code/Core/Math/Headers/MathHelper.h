@@ -41,10 +41,8 @@
 
 #include "Platform/Headers/PlatformDefines.h"
 
-#include <sstream>
 #include <cctype>
 #include <cstring>
-#include <assert.h>
 #include <random>
 
 namespace Divide {
@@ -272,53 +270,10 @@ void PlotFloatEvents(const stringImpl& eventName,
 template <typename T>
 void Hash_combine(size_t& seed, const T& v);
 
-void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search,
-                          const stringImpl& replace);
-
-void GetPermutations(const stringImpl& inputString,
-                     vectorImpl<stringImpl>& permutationContainer);
-
-bool IsNumber(const stringImpl& s);
-
-stringImpl GetTrailingCharacters(const stringImpl& input, size_t count);
-
-template<class FwdIt, class Compare = std::less<typename std::iterator_traits<FwdIt>::value_type>>
-void insertion_sort(FwdIt first, FwdIt last, Compare cmp = Compare());
-
-void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut);
-stringImpl ReadTextFile(const stringImpl& filePath);
-void WriteTextFile(const stringImpl& filePath, const stringImpl& content);
-
-bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b);
-
-/// will add '.' automatically at the start of 'extension'
-bool HasExtension(const stringImpl& filePath, const stringImpl& extension);
-
 // U = to data type, T = from data type
 template <typename U, typename T>
 U ConvertData(const T& data);
 
-/// http://stackoverflow.com/questions/236129/split-a-string-in-c
-vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter);
-vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
-                              vectorImpl<stringImpl>& elems);
-/// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-stringImpl& Ltrim(stringImpl& s);
-stringImpl Ltrim(const stringImpl& s);
-
-stringImpl& Rtrim(stringImpl& s);
-stringImpl Rtrim(const stringImpl& s);
-
-stringImpl& Trim(stringImpl& s);
-stringImpl  Trim(const stringImpl& s);
-//format is passed by value to conform with the requirements of va_start.
-//ref: http://codereview.stackexchange.com/questions/115760/use-va-list-to-format-a-string
-stringImpl StringFormat(const char *const format, ...);
-
-std::pair<stringImpl/*fileName*/, stringImpl/*filePath*/> SplitPathToNameAndLocation(const stringImpl& input);
-
-void CStringRemoveChar(char* str, char charToRemove);
-bool FileExists(const char* filePath);
 /** Ogre3D
 @brief Normalise the selected rotations to be within the +/-180 degree range.
 @details The normalise uses a wrap around,

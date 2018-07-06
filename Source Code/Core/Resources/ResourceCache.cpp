@@ -1,6 +1,7 @@
 #include "Headers/ResourceCache.h"
-#include "Core/Headers/ParamHandler.h"
 
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 #include "Environment/Terrain/Headers/TerrainLoader.h"
 
 namespace Divide {

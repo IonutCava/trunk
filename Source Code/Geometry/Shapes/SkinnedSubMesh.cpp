@@ -1,7 +1,6 @@
 #include "Headers/SkinnedSubMesh.h"
 #include "Headers/Mesh.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 

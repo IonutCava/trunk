@@ -5,6 +5,8 @@
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/XMLEntryData.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/ScenePool.h"
@@ -14,6 +16,7 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
+#include "Platform/File/Headers/FileManagement.h"
 
 #include "Geometry/Importer/Headers/DVDConverter.h"
 
@@ -132,7 +135,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
         // Load default material
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
         _defaultMaterial = XML::loadMaterialXML(*_platformContext,
-                                                _platformContext->entryData().scriptLocation + "/defaultMaterial",
+                                                stringImpl(Paths::g_xmlDataLocation) + "/defaultMaterial",
                                                 false);
         _defaultMaterial->dumpToFile(false);
         _sceneData = MemoryManager_NEW SceneShaderData(platformContext.gfx());
@@ -178,7 +181,7 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
     if (sceneNotLoaded) {
         const XMLEntryData& entryData = _platformContext->entryData();
-        XML::loadScene(entryData.scriptLocation + "/" + entryData.scenesLocation, sceneName, loadingScene);
+        XML::loadScene(stringImpl(Paths::g_xmlDataLocation) + "/" + entryData.scenesLocation, sceneName, loadingScene, _platformContext->config());
         state = Attorney::SceneManager::load(*loadingScene, sceneName);
         if (state) {
             Attorney::SceneManager::postLoad(*loadingScene);
@@ -287,13 +290,10 @@ void SceneManager::initPostLoadState() {
 void SceneManager::onChangeResolution(U16 w, U16 h) {
     F32 aspectRatio = to_float(w) / h;
 
-    ParamHandler& par = ParamHandler::instance();
-    par.setParam<F32>(_ID("rendering.aspectRatio"), aspectRatio);
-
     if (_init) {
-        F32 fov = par.getParam<F32>(_ID("rendering.verticalFOV"));
-        vec2<F32> zPlanes(par.getParam<F32>(_ID("rendering.zNear")),
-                          par.getParam<F32>(_ID("rendering.zFar")));
+        
+        F32 fov = _platformContext->config().runtime.verticalFOV;;
+        vec2<F32> zPlanes(_platformContext->config().runtime.zNear, _platformContext->config().runtime.zFar);
 
         for (const Player_ptr& player : getPlayers()) {
             player->getCamera().setProjection(aspectRatio, fov, zPlanes);
@@ -405,7 +405,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
-    bool fogEnabled = par.getParam<bool>(_ID("rendering.enableFog"));
+    bool fogEnabled = _platformContext->config().rendering.enableFog;
     if (fog.dirty() || fogEnabled != fog.active()) {
         const vec3<F32>& colour = fog.colour();
         F32 density = fogEnabled ? fog.density() : 0.0f;

@@ -1,7 +1,5 @@
 #include "Headers/GOAPInterface.h"
 
-#include "Core/Math/Headers/MathHelper.h"
-
 namespace Divide {
 namespace AI {
 

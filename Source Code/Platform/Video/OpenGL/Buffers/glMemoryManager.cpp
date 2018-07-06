@@ -2,6 +2,7 @@
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 namespace GLUtil {

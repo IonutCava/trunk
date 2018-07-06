@@ -1,7 +1,5 @@
 #include "Headers/CascadedShadowMaps.h"
 
-#include "Core/Headers/ParamHandler.h"
-
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"

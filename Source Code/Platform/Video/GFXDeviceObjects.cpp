@@ -1,6 +1,5 @@
 #include "Headers/GFXDevice.h"
 
-#include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/Localization.h"
 
 #include "Platform/Video/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"

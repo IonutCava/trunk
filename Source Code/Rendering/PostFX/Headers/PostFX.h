@@ -61,7 +61,7 @@ DEFINE_SINGLETON(PostFX)
     void apply(GFXDevice& context);
 
     void init(GFXDevice& context, ResourceCache& cache);
-    void idle();
+    void idle(const Configuration& config);
     void update(const U64 deltaTime);
 
     void updateResolution(U16 newWidth, U16 newHeight);

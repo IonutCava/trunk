@@ -32,8 +32,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _MEMORY_TRACKER_H_
 #define _MEMORY_TRACKER_H_
 
-#include "Core/Math/Headers/MathHelper.h"
-#include <atomic>
+#include "Platform/Headers/PlatformDefines.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 // not totally compatible with smart pointers. Oh well ... -Ionut

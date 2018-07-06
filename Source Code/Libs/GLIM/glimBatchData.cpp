@@ -7,7 +7,7 @@
 #include "glimBatchData.h"
 #include "glimInterface.h"
 
-#include "Core/Math/Headers/MathHelper.h"
+#include "Core/Headers/StringHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 

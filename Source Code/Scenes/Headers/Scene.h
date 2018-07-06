@@ -70,6 +70,7 @@ class Sky;
 class Light;
 class Object3D;
 class LoadSave;
+class ParamHandler;
 class TerrainDescriptor;
 class ParticleEmitter;
 class PhysicsSceneInterface;

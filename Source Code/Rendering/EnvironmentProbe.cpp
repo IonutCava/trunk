@@ -2,6 +2,7 @@
 
 #include "Scenes/Headers/Scene.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/IMPrimitive.h"

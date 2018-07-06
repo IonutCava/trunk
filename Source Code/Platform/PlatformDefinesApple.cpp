@@ -1,7 +1,6 @@
 #if defined(__APPLE_CC__)
 
 #include "Headers/PlatformDefinesApple.h"
-#include "Core/Math/Headers/MathHelper.h"
 
 #include <SDL_syswm.h>
 

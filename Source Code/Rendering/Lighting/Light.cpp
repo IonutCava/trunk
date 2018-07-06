@@ -2,7 +2,6 @@
 #include "Headers/LightPool.h"
 
 #include "Graphs/Headers/SceneGraph.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"

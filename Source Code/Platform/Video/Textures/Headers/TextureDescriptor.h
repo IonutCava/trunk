@@ -35,9 +35,6 @@
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Utility/Headers/Colours.h"
-#include "Core/Math/Headers/MathHelper.h"
-
-#include <boost/functional/hash.hpp>
 
 namespace Divide {
 /// This class is used to define all of the sampler settings needed to use a

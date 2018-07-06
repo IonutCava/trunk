@@ -41,7 +41,7 @@ class DoFPreRenderOperator : public PreRenderOperator {
     DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~DoFPreRenderOperator();
 
-    void idle() override;
+    void idle(const Configuration& config) override;
     void execute() override;
     void reshape(U16 width, U16 height) override;
 

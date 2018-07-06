@@ -1,4 +1,6 @@
 #include "Headers/Player.h"
+
+#include "Core/Headers/StringHelper.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Rendering/Camera/Headers/Camera.h"
 

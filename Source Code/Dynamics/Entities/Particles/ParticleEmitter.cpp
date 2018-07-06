@@ -6,7 +6,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Time/Headers/ApplicationTimer.h"

@@ -5,6 +5,8 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -35,6 +37,8 @@ namespace Divide {
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution) {
     ErrorCode hardwareState = createAPIInstance();
+    const Configuration& config = _parent.platformContext().config();
+
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
         if (Config::ENABLE_GPU_VALIDATION) {
@@ -43,7 +47,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
            //                                      ".\\RenderDoc\\renderdoc.dll",
            //                                      L"\\RenderDoc\\Captures\\");
         }
-        hardwareState = _api->initRenderingAPI(argc, argv, _parent.platformContext().config());
+        hardwareState = _api->initRenderingAPI(argc, argv, config);
     }
 
     if (hardwareState != ErrorCode::NO_ERR) {
@@ -216,44 +220,35 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _HIZCullProgram = CreateResource<ShaderProgram>(cache, ResourceDescriptor("HiZOcclusionCull"));
     _displayShader = CreateResource<ShaderProgram>(cache, ResourceDescriptor("display"));
 
-    ParamHandler& par = ParamHandler::instance();
     PostFX& postFX = PostFX::instance();
 
     // Register a 2D function used for previewing the depth buffer.
     if (Config::Build::IS_DEBUG_BUILD) {
         add2DRenderFunction(GUID_DELEGATE_CBK([this]() { previewDepthBuffer(); }), 0);
     }
-
-    par.setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
+    
+    ParamHandler::instance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system
     postFX.init(*this, cache);
-    bool enablePostAA = par.getParam<I32>(_ID("rendering.PostAASamples"), 0) > 0;
-    bool enableSSR = false;
-    bool enableSSAO = par.getParam<bool>(_ID("postProcessing.enableSSAO"), false);
-    bool enableDoF = par.getParam<bool>(_ID("postProcessing.enableDepthOfField"), false);
-    bool enableMotionBlur = false;
-    bool enableBloom = par.getParam<bool>(_ID("postProcessing.enableBloom"), false);
-    bool enableLUT = false;
-
-    if (enablePostAA) {
+    if (config.rendering.postAASamples > 0) {
         postFX.pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
-    if (enableSSR) {
+    if (false) {
         postFX.pushFilter(FilterType::FILTER_SS_REFLECTIONS);
     }
-    if (enableSSAO) {
+    if (config.rendering.enableSSAO) {
         postFX.pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
     }
-    if (enableDoF) {
+    if (config.rendering.enableDepthOfField) {
         postFX.pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
     }
-    if (enableMotionBlur) {
+    if (false) {
         postFX.pushFilter(FilterType::FILTER_MOTION_BLUR);
     }
-    if (enableBloom) {
+    if (config.rendering.enableBloom) {
         postFX.pushFilter(FilterType::FILTER_BLOOM);
     }
-    if (enableLUT) {
+    if (false) {
         postFX.pushFilter(FilterType::FILTER_LUT_CORECTION);
     }
 
@@ -324,7 +319,7 @@ void GFXDevice::idle() {
     static const Task idleTask;
     _shaderComputeQueue->idle();
     // Pass the idle call to the post processing system
-    PostFX::instance().idle();
+    PostFX::instance().idle(_parent.platformContext().config());
     // And to the shader manager
     ShaderProgram::idle();
 

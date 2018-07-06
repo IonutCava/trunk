@@ -1,6 +1,8 @@
 #include "Headers/XMLParser.h"
 #include "Headers/Patch.h"
 #include <iostream>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 namespace Divide {
 namespace XML {

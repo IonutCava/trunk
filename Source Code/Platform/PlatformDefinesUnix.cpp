@@ -1,7 +1,6 @@
 #if !defined(_WIN32) && !defined(__APPLE_CC__)
 
 #include "Headers/PlatformDefinesUnix.h"
-#include "Core/Math/Headers/MathHelper.h"
 
 #include <SDL_syswm.h>
 #include <malloc.h>

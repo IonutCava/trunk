@@ -108,11 +108,11 @@ void PreRenderBatch::bindOutput(U8 slot) {
     }
 }
 
-void PreRenderBatch::idle() {
+void PreRenderBatch::idle(const Configuration& config) {
     for (OperatorBatch& batch : _operators) {
         for (PreRenderOperator* op : batch) {
             if (op != nullptr) {
-                op->idle();
+                op->idle(config);
             }
         }
     }

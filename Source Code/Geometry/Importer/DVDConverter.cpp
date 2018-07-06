@@ -9,8 +9,10 @@
 #include <assimp/Exporter.hpp>
 #include <assimp/postprocess.h>
 #include "Utility/Headers/XMLParser.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Console.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
@@ -396,8 +398,6 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                 _aiTextureMapMode_Force32Bit,
                                 _aiTextureMapMode_Force32Bit};
 
-    ParamHandler& par = ParamHandler::instance();
-
     U8 count = 0;
     // Compare load results with the standard success value
     aiReturn result = AI_SUCCESS;
@@ -414,7 +414,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         path.append("/");
         path.append(tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
         const stringImpl& img_name = fileResult.first;
         const stringImpl& img_path = fileResult.second;
 
@@ -461,7 +461,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         path.append("/");
         path.append(tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
         const stringImpl& img_name = fileResult.first;
         const stringImpl& img_path = fileResult.second;
 
@@ -493,7 +493,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         path.append("/");
         path.append(tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
         const stringImpl& img_name = fileResult.first;
         const stringImpl& img_path = fileResult.second;
 
@@ -529,7 +529,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             path.append("/");
             path.append(tName.data);
 
-            std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+            std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
             const stringImpl& img_name = fileResult.first;
             const stringImpl& img_path = fileResult.second;
 
@@ -562,7 +562,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         path.append("/");
         path.append(tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
         const stringImpl& img_name = fileResult.first;
         const stringImpl& img_path = fileResult.second;
 

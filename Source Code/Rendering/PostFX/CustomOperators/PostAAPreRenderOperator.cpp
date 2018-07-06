@@ -1,6 +1,8 @@
 #include "Headers/PostAAPreRenderOperator.h"
 
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
+#include "Core/Headers/Configuration.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
@@ -31,16 +33,16 @@ PostAAPreRenderOperator::~PostAAPreRenderOperator()
 {
 }
 
-void PostAAPreRenderOperator::idle() {
-    ParamHandler& par = ParamHandler::instance();
-    I32 samples= par.getParam<I32>(_ID("rendering.PostAASamples"), 0);
+void PostAAPreRenderOperator::idle(const Configuration& config) {
+    I32 samples = config.rendering.postAASamples;
+
     if (_postAASamples != samples) {
         _postAASamples = samples;
         _fxaa->Uniform("dvd_qualityMultiplier", _postAASamples);
     }
 
     if (_idleCount == 0) {
-        _useSMAA = par.getParam<U64>(_ID("rendering.PostAAType"), _ID("FXAA")) == _ID("SMAA");
+        _useSMAA = _ID_RT(config.rendering.postAAType) == _ID("SMAA");
     }
 
     _idleCount = (++_idleCount % 60);
