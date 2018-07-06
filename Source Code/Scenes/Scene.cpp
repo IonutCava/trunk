@@ -119,8 +119,8 @@ bool Scene::loadModel(const FileData& data){
     }
     
     SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj, data.ItemName);
-    meshNode->setCastsShadows(data.castsShadows);
-    meshNode->setReceivesShadows(data.receivesShadows);
+    meshNode->castsShadows(data.castsShadows);
+    meshNode->receivesShadows(data.receivesShadows);
     meshNode->getTransform()->setScale(data.scale);
     meshNode->getTransform()->setRotation(data.orientation);
     meshNode->getTransform()->setPosition(data.position);
@@ -181,8 +181,8 @@ bool Scene::loadGeometry(const FileData& data){
     thisObjSGN->getTransform()->setScale(data.scale);
     thisObjSGN->getTransform()->setRotation(data.orientation);
     thisObjSGN->getTransform()->setPosition(data.position);
-    thisObjSGN->setCastsShadows(data.castsShadows);
-    thisObjSGN->setReceivesShadows(data.receivesShadows);
+    thisObjSGN->castsShadows(data.castsShadows);
+    thisObjSGN->receivesShadows(data.receivesShadows);
     if(data.staticUsage){
         thisObjSGN->setUsageContext(SceneGraphNode::NODE_STATIC);
     }

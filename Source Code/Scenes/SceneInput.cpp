@@ -178,18 +178,9 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_F5:
             renderState().toggleAxisLines();
             break;
-        case OIS::KC_F6: {
-            static bool state = true;
-            PostFX::getInstance().toggleDepthPreview(state);
-            _paramHandler.setParam("postProcessing.fullScreenDepthBuffer", state);
-            state = !state;
-        }break;
         case OIS::KC_B:{
             renderState().toggleBoundingBoxes();
             }break;
-        case OIS::KC_F7:
-            GFX_DEVICE.postProcessingEnabled(!GFX_DEVICE.postProcessingEnabled());
-            break;
         case OIS::KC_F8:
             renderState().drawDebugLines(!renderState()._debugDrawLines);
             break;

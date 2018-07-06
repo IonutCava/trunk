@@ -125,21 +125,21 @@ GFXDevice::~GFXDevice()
 /// A draw command is composed of a target buffer and a command. The command part is processed here
 bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd._shaderProgram && cmd._shaderProgram->getId() != 0, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    DIVIDE_ASSERT(cmd.shaderProgram() && cmd.shaderProgram()->getId() != 0, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // We also need a valid draw command ID so we can index the node buffer properly
-    DIVIDE_ASSERT(cmd._drawID < (I32)_matricesData.size(), "GFXDevice error: Invalid draw ID encountered!");
+    DIVIDE_ASSERT(cmd.drawID() < (I32)_matricesData.size(), "GFXDevice error: Invalid draw ID encountered!");
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
-    if (!cmd._shaderProgram->bind()) {
+    if (!cmd.shaderProgram()->bind()) {
         return false;
     }
     // LoD level is only available when submitting the command, not on the visible node preprocess step.
     // This means that it's too complicated to add it to the nodeBuffer, so we need to pass it manually here
-    cmd._shaderProgram->Uniform("dvd_lodLevel", (I32)cmd._lodIndex);
+    cmd.shaderProgram()->Uniform("dvd_lodLevel", (I32)cmd.LoD());
     // In an ideal world, we bind the entire buffer once and just index into it in the shader with the drawID
     // This doesn't seem to work properly, for some reason now (08/2014)    
-    _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, std::max(cmd._drawID, 0), 1);
+    _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, std::max(cmd.drawID(), 0), 1);
     // Finally, set the proper render states
-    setStateBlock(cmd._stateHash);
+    setStateBlock(cmd.stateHash());
     // Continue with the draw call
     return true;
 }
@@ -158,11 +158,11 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const
         return;
     }
     // We create a default draw command without a draw ID
-    _defaultDrawCmd.setDrawID(-1);
+    _defaultDrawCmd.drawID(-1);
     // We require a state hash value to set proper states
-    _defaultDrawCmd.setStateHash(stateHash);
+    _defaultDrawCmd.stateHash(stateHash);
     // We also require a shader program (although it may already be bound. Better safe ...)
-    _defaultDrawCmd.setShaderProgram(shaderProgram);
+    _defaultDrawCmd.shaderProgram(shaderProgram);
     // If the draw command was successfully parsed
     if (setBufferData(_defaultDrawCmd) ) {
         // Tell the rendering API to upload the needed number of points
@@ -200,7 +200,7 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement) {
 void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd) {
     DIVIDE_ASSERT(buffer != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
     // We may choose the instance count programmatically, and it may turn out to be 0, so skip draw
-    if (cmd._cmd.instanceCount != 0 && setBufferData(cmd)) {
+    if (cmd.cmd().instanceCount != 0 && setBufferData(cmd)) {
         // Same rule about pre-processing the draw command apply
         buffer->Draw(cmd);
     }

@@ -49,8 +49,6 @@ public:
     void idle();
     void updateResolution(I32 newWidth, I32 newHeight);
 
-    inline void toggleDepthPreview(const bool state) {_depthPreview = state;}
-
 private:
     bool _enableBloom;
     bool _enableDOF;

@@ -127,7 +127,7 @@ void TerrainChunk::CreateDrawCommand(I8 lod) {
     if(lod > 0) lod--;
         
     GenericDrawCommand drawCommand(TRIANGLE_STRIP, _lodIndOffset[lod] + _chunkIndOffset, _lodIndCount[lod]);
-    drawCommand._lodIndex = lod;
+    drawCommand.LoD(lod);
     _parentTerrain->addDrawCommand(drawCommand);
 }
 

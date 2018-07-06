@@ -90,7 +90,7 @@ bool AnimationComponent::playNextAnimation() {
 }
 
 void AnimationComponent::renderSkeleton(){
-    if (!_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) {
+    if (!_skeletonAvailable || (!GET_ACTIVE_SCENE()->renderState().drawSkeletons() && !_parentSGN->renderSkeleton())) {
         return;
     }
 

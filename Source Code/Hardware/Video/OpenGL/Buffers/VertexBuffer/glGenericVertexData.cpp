@@ -181,13 +181,13 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, U32 elementCountOf
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind) {
     // Get the OpenGL specific command from the generic one
-    const IndirectDrawCommand& cmd = command._cmd;
+    const IndirectDrawCommand& cmd = command.cmd();
     // Instance count can be generated programmatically, so make sure it's valid
     if (cmd.instanceCount == 0) {
         return;
     }
     // Check if we are rendering to the screen or to a buffer
-    bool feedbackActive = (command._drawToBuffer && !_feedbackBuffers.empty());
+    bool feedbackActive = (command.drawToBuffer() && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we requested
     GL_API::setActiveVAO(_vertexArray[feedbackActive ? GVD_USAGE_FDBCK : GVD_USAGE_DRAW]);
     // Update vertex attributes if needed (e.g. if offsets changed)
@@ -202,21 +202,22 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     // Activate transform feedback if needed
     if (feedbackActive) {
        GL_API::setActiveTransformFeedback(_transformFeedback);
-       glBeginTransformFeedback(Divide::GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command._type]);
+       glBeginTransformFeedback(Divide::GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()]);
        // Count the number of primitives written to the buffer
-       glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][command._queryID]);
+       glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][command.queryID()]);
     }
     
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        glDrawArraysIndirect(Divide::GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command._type], &cmd);
+        GLenum type = command.renderWireframe() ? GL_LINE_LOOP : Divide::GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
+        glDrawArraysIndirect(type, &cmd);
     }
     // Deactivate transform feedback if needed
     if (feedbackActive) {
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
         // Mark the current query as completed and ready to be retrieved
-        _resultAvailable[_currentWriteQuery][command._queryID] = true;
+        _resultAvailable[_currentWriteQuery][command.queryID()] = true;
     }
     // Count the draw call
     GFX_DEVICE.registerDrawCall();    

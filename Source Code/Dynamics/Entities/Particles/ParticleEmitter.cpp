@@ -145,10 +145,11 @@ void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& 
         _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
 
-        _drawCommand.setStateHash(_particleStateBlockHash);
-        _drawCommand.setInstanceCount(_particlesCurrentCount);
-        _drawCommand.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-        _drawCommand.setShaderProgram(getDrawShader(currentRenderStage));
+        _drawCommand.renderWireframe(sgn->renderWireframe());
+        _drawCommand.stateHash(_particleStateBlockHash);
+        _drawCommand.instanceCount(_particlesCurrentCount);
+        _drawCommand.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
+        _drawCommand.shaderProgram(getDrawShader(currentRenderStage));
         GFX_DEVICE.submitRenderCommand(_particleGPUBuffer, _drawCommand);
     }
 }

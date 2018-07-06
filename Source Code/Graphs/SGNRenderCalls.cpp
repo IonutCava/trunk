@@ -18,18 +18,53 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void SceneGraphNode::setSelected(bool state) {
+void SceneGraphNode::setSelected(const bool state) {
     _selected = state;
-     FOR_EACH(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->setSelected(_selected);
     }
 }
 
-bool SceneGraphNode::getCastsShadows() const {
+void SceneGraphNode::renderSkeleton(const bool state) {
+    _renderSkeleton = state;
+    FOR_EACH(NodeChildren::value_type& it, _children){
+        it.second->renderSkeleton(_renderSkeleton);
+    }
+}
+
+void SceneGraphNode::renderWireframe(const bool state) {
+    _renderWireframe = state;
+    FOR_EACH(NodeChildren::value_type& it, _children){
+        it.second->renderWireframe(_renderWireframe);
+    }
+}
+
+void SceneGraphNode::renderBoundingBox(const bool state) {
+    _renderBoundingBox = state; 
+    FOR_EACH(NodeChildren::value_type& it, _children){
+        it.second->renderBoundingBox(_renderBoundingBox);
+    }
+}
+
+void SceneGraphNode::castsShadows(const bool state)    {
+    _castsShadows = state;
+    FOR_EACH(NodeChildren::value_type& it, _children){
+        it.second->castsShadows(_castsShadows);
+    }
+}
+
+void SceneGraphNode::receivesShadows(const bool state) {
+    _receiveShadows = state;
+    FOR_EACH(NodeChildren::value_type& it, _children){
+        it.second->receivesShadows(_receiveShadows);
+    }
+}
+
+bool SceneGraphNode::castsShadows() const {
     return _castsShadows && LightManager::getInstance().shadowMappingEnabled();
 }
 
-bool SceneGraphNode::getReceivesShadows() const {
+bool SceneGraphNode::receivesShadows() const {
     return _receiveShadows && LightManager::getInstance().shadowMappingEnabled();
 }
 
@@ -100,11 +135,12 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 }
 
 void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
-    //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
-    //Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
-    if(!onDraw(sceneRenderState, currentRenderStage))
-        return; //< If the SGN isn't ready for rendering, skip it this frame
-    
+    // Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
+    // Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
+    if (!onDraw(sceneRenderState, currentRenderStage)) {
+        // If the SGN isn't ready for rendering, skip it this frame
+        return; 
+    }
     _node->bindTextures();
     _node->render(this, sceneRenderState, currentRenderStage);
 
@@ -112,19 +148,23 @@ void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const Rend
 }
 
 bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage){
-    if (_drawReset[renderStage]){
+    if (_drawReset[renderStage]) {
         _drawReset[renderStage] = false;
-        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
-            FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, getParent()->getChildren())
-                if (it.second->getComponent<AnimationComponent>()) 
+        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
+            FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, getParent()->getChildren()) {
+                if (it.second->getComponent<AnimationComponent>()) {
                     it.second->getComponent<AnimationComponent>()->reset();
+                }
+            }
         }
             
     }
 
-    FOR_EACH(NodeComponents::value_type& it, _components)
-        if (it.second) it.second->onDraw(renderStage);
-    
+    FOR_EACH(NodeComponents::value_type& it, _components) {
+        if (it.second) {
+            it.second->onDraw(renderStage);
+        }
+    }
     //Call any pre-draw operations on the SceneNode (refresh VB, update materials, etc)
     Material* mat = _node->getMaterial();
     if (mat){
@@ -134,15 +174,16 @@ bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStag
         }
     }
 
-    if(_node->onDraw(this, renderStage))
+    if (_node->onDraw(this, renderStage)) {
         return _node->getDrawState(renderStage);
-
+    }
     return false;
 }
 
 void SceneGraphNode::postDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage){
     // Perform any post draw operations regardless of the draw state
     _node->postDraw(this, renderStage);
+
 #ifdef _DEBUG
     if (sceneRenderState.gizmoState() == SceneRenderState::ALL_GIZMO) {
         if (_node->getType() == SceneNodeType::TYPE_OBJECT3D) {
@@ -155,12 +196,12 @@ void SceneGraphNode::postDraw(const SceneRenderState& sceneRenderState, RenderSt
             _axisGizmo->paused(true);   
         }
     }
-#endif
-    //draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
-    //Draw the bounding box if it's always on or if the scene demands it
-    if (getBoundingBoxConst().getVisibility() || sceneRenderState.drawBBox()) {
+
+    // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
+    if (renderBoundingBox() || bitCompare(sceneRenderState.objectState(), SceneRenderState::DRAW_BOUNDING_BOX)) {
         _node->drawBoundingBox(this);
     }
+#endif
 
     if (getComponent<AnimationComponent>()) {
         getComponent<AnimationComponent>()->renderSkeleton();
@@ -175,7 +216,7 @@ void SceneGraphNode::isInViewCallback(){
     _materialColorMatrix.zero();
     _materialPropertyMatrix.zero();
 
-    _materialPropertyMatrix.setCol(0, vec4<F32>(isSelected() ? 1.0f : 0.0f, getReceivesShadows() ? 1.0f : 0.0f, 0.0f, 0.0f));
+    _materialPropertyMatrix.setCol(0, vec4<F32>(isSelected() ? 1.0f : 0.0f, receivesShadows() ? 1.0f : 0.0f, 0.0f, 0.0f));
 
     Material* mat = _node->getMaterial();
     

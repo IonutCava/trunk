@@ -51,23 +51,40 @@ struct IndirectDrawCommand {
 };
 
 struct GenericDrawCommand {
+private:
     U8     _queryID;
     U8     _lodIndex;
-    bool   _drawToBuffer;
     I32    _drawID;
+    bool   _drawToBuffer;
+    bool   _renderWireframe;
     size_t _stateHash;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
     ShaderProgram*      _shaderProgram;
 
-    inline void setLoD(U8 lod)                 { _lodIndex = lod; }
-    inline void setQueryID(U8 queryID)         { _queryID = queryID; }
-    inline void setStateHash(size_t hashValue) { _stateHash = hashValue; }
-    inline void setDrawToBuffer(bool state)    { _drawToBuffer = state; }
-    inline void setInstanceCount(U32 count)    { _cmd.instanceCount = count; }
-    inline void setDrawID(I32 drawID)          { _drawID = drawID; }
+public:
+    inline void LoD(U8 lod)                 { _lodIndex = lod; }
+    inline void queryID(U8 queryID)         { _queryID = queryID; }
+    inline void stateHash(size_t hashValue) { _stateHash = hashValue; }
+    inline void drawToBuffer(bool state)    { _drawToBuffer = state; }
+    inline void renderWireframe(bool state) { _renderWireframe = state; }
+    inline void instanceCount(U32 count)    { _cmd.instanceCount = count; }
+    inline void firstIndex(U32 index)       { _cmd.firstIndex = index; }
+    inline void indexCount(U32 count)       { _cmd.count = count; }
+    inline void drawID(I32 drawID)          { _drawID = drawID; }
+    inline void shaderProgram(ShaderProgram* const program) { _shaderProgram = program; }
 
-    inline void setShaderProgram(ShaderProgram* const program) { _shaderProgram = program; }
+    inline U8 LoD()               const { return _lodIndex; }
+    inline U8 queryID()           const { return _queryID; }
+    inline size_t stateHash()     const { return _stateHash; }
+    inline bool drawToBuffer()    const { return _drawToBuffer; }
+    inline bool renderWireframe() const { return _renderWireframe; }
+    inline U32 instanceCount()    const { return _cmd.instanceCount; }
+    inline I32 drawID()           const { return _drawID; }
+
+    inline const IndirectDrawCommand& cmd() const { return _cmd; }
+    inline ShaderProgram* shaderProgram()   const { return _shaderProgram; }
+    inline PrimitiveType  primitiveType()   const { return _type; }
 
     GenericDrawCommand() : GenericDrawCommand(TRIANGLE_STRIP, 0, 0)
     {
@@ -79,6 +96,7 @@ struct GenericDrawCommand {
                                                                                                       _queryID(0),
                                                                                                       _drawID(-1),
                                                                                                       _drawToBuffer(false),
+                                                                                                      _renderWireframe(false),
                                                                                                       _shaderProgram(nullptr)
     {
         _cmd.count = count;

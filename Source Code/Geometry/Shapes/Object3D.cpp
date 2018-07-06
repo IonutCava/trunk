@@ -36,16 +36,18 @@ VertexBuffer* const Object3D::getGeometryVB() const {
 void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     ShaderProgram* drawShader = getDrawShader(currentRenderStage);
 
-    if(drawCommands().empty()){
+    if (drawCommands().empty()) {
         GenericDrawCommand drawCmd;
-        drawCmd.setStateHash(getDrawStateHash(currentRenderStage));
-        drawCmd.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-        drawCmd.setShaderProgram(drawShader);
+        drawCmd.renderWireframe(sgn->renderWireframe());
+        drawCmd.stateHash(getDrawStateHash(currentRenderStage));
+        drawCmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
+        drawCmd.shaderProgram(drawShader);
         GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCmd);
-    }else{
-        for(GenericDrawCommand& cmd : _drawCommands)
-            cmd.setShaderProgram(drawShader);
-
+    } else {
+        for (GenericDrawCommand& cmd : _drawCommands) {
+            cmd.renderWireframe(sgn->renderWireframe());
+            cmd.shaderProgram(drawShader);
+        }
         GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCommands());
     }
 }

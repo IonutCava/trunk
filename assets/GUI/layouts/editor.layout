@@ -147,6 +147,7 @@
                 <Property name="Area" value="{{0,555},{0,5},{0,655},{0,30}}" />
                 <Property name="Font" value="DejaVuSans-12-NoScale" />
                 <Property name="Text" value="Granularity: " />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
                 <Property name="UpdateMode" value="Never" />
                 <Property name="FrameEnabled" value="true" />
                 <Property name="BackgroundEnabled" value="true" />
@@ -622,12 +623,12 @@
                 </AutoWindow>
             </Window>
             <Window type="GWEN/Checkbox" name="ToggleBoundingBoxes" >
-                <Property name="Area" value="{{0,1255},{0,25},{0,1270},{0,40}}" />
+                <Property name="Area" value="{{0,1140},{0,25},{0,1155},{0,40}}" />
             </Window>
             <Window type="GWEN/StaticText" name="ToggleBoundingBoxesLabel" >
-                <Property name="Area" value="{{0,1165},{0,25},{0.695038,363},{0.038235,37}}" />
+                <Property name="Area" value="{{0,1055},{0,25},{0.695038,245},{0.038235,37}}" />
                 <Property name="Font" value="OpenSans-8" />
-                <Property name="Text" value="Bounding Boxes:" />
+                <Property name="Text" value="Bounding Box:" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
                 <Property name="TextColours" value="tl:FF000032 tr:FF000032 bl:FF000078 br:FF000078" />
                 <Property name="FrameEnabled" value="false" />
@@ -647,7 +648,7 @@
                 </AutoWindow>
             </Window>
             <Window type="GWEN/StaticText" name="ToggleSkeletonsLabel" >
-                <Property name="Area" value="{{0,1165},{0,65},{0.695038,363},{0.038235,77}}" />
+                <Property name="Area" value="{{0,1055},{0,65},{0.695038,245},{0.038235,77}}" />
                 <Property name="Font" value="OpenSans-8" />
                 <Property name="Text" value="Skeleton Draw:" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
@@ -669,7 +670,7 @@
                 </AutoWindow>
             </Window>
             <Window type="GWEN/Checkbox" name="ToggleSkeletons" >
-                <Property name="Area" value="{{0,1255},{0,65},{0,1270},{0,80}}" />
+                <Property name="Area" value="{{0,1140},{0,65},{0,1155},{0,80}}" />
             </Window>
             <Window type="GWEN/StaticText" name="ToggleWireframeLabel" >
                 <Property name="Area" value="{{0,1055},{0,6},{0.695038,245},{0.038235,18}}" />
@@ -697,10 +698,10 @@
                 <Property name="Area" value="{{0,1140},{0,5},{0,1155},{0,20}}" />
             </Window>
             <Window type="GWEN/Checkbox" name="ToggleDepthPreview" >
-                <Property name="Area" value="{{0,1140},{0,25},{0,1155},{0,40}}" />
+                <Property name="Area" value="{{0,1255},{0,25},{0,1270},{0,40}}" />
             </Window>
             <Window type="GWEN/StaticText" name="ToggleDepthPreviewLabel" >
-                <Property name="Area" value="{{0,1055},{0,25},{0.695038,245},{0.038235,37}}" />
+                <Property name="Area" value="{{0,1165},{0,25},{0.695038,360},{0.038235,37}}" />
                 <Property name="Font" value="OpenSans-8" />
                 <Property name="Text" value="Depth Preview:" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
@@ -747,10 +748,10 @@
                 <Property name="Area" value="{{0,1140},{0,46},{0,1155},{0,61}}" />
             </Window>
             <Window type="GWEN/Checkbox" name="ToggleFog" >
-                <Property name="Area" value="{{0,1140},{0,65},{0,1155},{0,80}}" />
+                <Property name="Area" value="{{0,1255},{0,65},{0,1270},{0,80}}" />
             </Window>
             <Window type="GWEN/StaticText" name="ToggleFogLabel" >
-                <Property name="Area" value="{{0,1055},{0,65},{0.695038,245},{0.038235,77}}" />
+                <Property name="Area" value="{{0,1165},{0,65},{0.695038,360},{0.038235,77}}" />
                 <Property name="Font" value="OpenSans-8" />
                 <Property name="Text" value="Fog:" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />

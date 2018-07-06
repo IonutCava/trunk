@@ -151,13 +151,14 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
 
         std::sort(_drawCommands.begin(), _drawCommands.end(),
                   [](const GenericDrawCommand& a, const GenericDrawCommand& b) {
-                        return a._lodIndex < b._lodIndex;
+                        return a.LoD() < b.LoD();
                     });
 
         for(GenericDrawCommand& cmd : _drawCommands){
-            cmd.setStateHash(drawStateHash);
-            cmd.setShaderProgram(drawShader);
-            cmd.setDrawID(drawID);
+            cmd.renderWireframe(sgn->renderWireframe());
+            cmd.stateHash(drawStateHash);
+            cmd.shaderProgram(drawShader);
+            cmd.drawID(drawID);
         }
 
         GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCommands());
@@ -168,9 +169,10 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     // draw infinite plane
     if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) && _planeInView ){
         GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
-        cmd.setStateHash(drawStateHash);
-        cmd.setDrawID(drawID);
-        cmd.setShaderProgram(drawShader);
+        cmd.renderWireframe(sgn->renderWireframe());
+        cmd.stateHash(drawStateHash);
+        cmd.drawID(drawID);
+        cmd.shaderProgram(drawShader);
         GFX_DEVICE.submitRenderCommand(_plane->getGeometryVB(), cmd);
     }
 }

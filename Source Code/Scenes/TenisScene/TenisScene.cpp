@@ -263,7 +263,7 @@ bool TenisScene::load(const std::string& name, CameraManager* const cameraMgr, G
         //it.second->setReceivesShadows(false);
     //}
     _floor = _sceneGraph->findNode("Floor");
-    _floor->setCastsShadows(false);
+    _floor->castsShadows(false);
 
     AIManager::getInstance().pauseUpdate(false);
     return loadState;
@@ -397,11 +397,6 @@ bool TenisScene::loadResources(bool continueOnErrors){
 }
 
 bool TenisScene::onKeyUp(const OIS::KeyEvent& key){
-    switch(key.key)	{
-        case OIS::KC_F1: _sceneGraph->print();	break;
-        default: break;
-    }
-
     return Scene::onKeyUp(key);
 }
 

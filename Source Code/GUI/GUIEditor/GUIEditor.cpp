@@ -12,6 +12,7 @@
 GUIEditor::GUIEditor() : _init(false), 
                          _wasControlClick(false),
                          _createNavMeshQueued(false),
+                         _pauseSelectionTracking(false),
                          _editorWindow(nullptr),
                          _currentSelection(nullptr)
 {
@@ -80,7 +81,7 @@ bool GUIEditor::Handle_ChangeSelection(SceneGraphNode* const newNode) {
 }
 
 void GUIEditor::TrackSelection() {
-    if (_currentSelection) {
+    if (_currentSelection && !_pauseSelectionTracking) {
         Transform* selectionTransform = _currentSelection->getTransform();
         const vec3<F32>& localPosition = selectionTransform->getLocalPosition();
         const vec3<F32>& localScale = selectionTransform->getLocalScale();
@@ -105,16 +106,23 @@ void GUIEditor::TrackSelection() {
                 _valuesField[i][j]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[i][j]));
             }
         }
+        _toggleButtons[TOGGLE_SKELETONS]->setSelected(_currentSelection->renderSkeleton());
+        _toggleButtons[TOGGLE_SHADOW_MAPPING]->setSelected(_currentSelection->castsShadows());
+        _toggleButtons[TOGGLE_WIREFRAME]->setSelected(_currentSelection->renderWireframe());
+        _toggleButtons[TOGGLE_BOUNDING_BOXES]->setSelected(_currentSelection->renderBoundingBox());
     }
-    _toggleButtons[TOGGLE_POST_FX]->setSelected(GFX_DEVICE.postProcessingEnabled());
-    _toggleButtons[TOGGLE_FOG]->setSelected(ParamHandler::getInstance().getParam<bool>("rendering.enableFog", false));
 }
 
 void GUIEditor::UpdateControls() {
     bool hasValidTransform = false;
     if (_currentSelection) {
         hasValidTransform = (_currentSelection->getTransform() != nullptr);
+        _toggleButtons[TOGGLE_WIREFRAME]->setEnabled(true);
+        _toggleButtons[TOGGLE_BOUNDING_BOXES]->setEnabled(true);
+        _toggleButtons[TOGGLE_SKELETONS]->setEnabled(true);
+        _toggleButtons[TOGGLE_SHADOW_MAPPING]->setEnabled(LightManager::getInstance().shadowMappingEnabled());
     }
+
     if (!hasValidTransform) {
         for (U8 i = 0; i < TransformFields_PLACEHOLDER; ++i) {
             // Skip granularity
@@ -123,10 +131,18 @@ void GUIEditor::UpdateControls() {
                 _valuesField[i][j]->setEnabled(false);
                 _transformButtonsInc[i][j]->setEnabled(false);
                 _transformButtonsDec[i][j]->setEnabled(false);
-                _deleteSelectionButton->setEnabled(false);
-                _saveSelectionButton->setEnabled(false);
             }
         }
+        _deleteSelectionButton->setEnabled(false);
+        _saveSelectionButton->setEnabled(false);
+        _toggleButtons[TOGGLE_WIREFRAME]->setEnabled(false);
+        _toggleButtons[TOGGLE_WIREFRAME]->setSelected(false);
+        _toggleButtons[TOGGLE_BOUNDING_BOXES]->setEnabled(false);
+        _toggleButtons[TOGGLE_BOUNDING_BOXES]->setSelected(false);
+        _toggleButtons[TOGGLE_SKELETONS]->setEnabled(false);
+        _toggleButtons[TOGGLE_SKELETONS]->setSelected(false);
+        _toggleButtons[TOGGLE_SHADOW_MAPPING]->setEnabled(false);
+        _toggleButtons[TOGGLE_SHADOW_MAPPING]->setSelected(false);
     } else {
          for (U8 i = 0; i < TransformFields_PLACEHOLDER; ++i) {
             // Skip granularity
@@ -135,11 +151,14 @@ void GUIEditor::UpdateControls() {
                 _valuesField[i][j]->setEnabled(true);
                 _transformButtonsInc[i][j]->setEnabled(true);
                 _transformButtonsDec[i][j]->setEnabled(true);
-                _deleteSelectionButton->setEnabled(true);
-                _saveSelectionButton->setEnabled(true);
             }
         }
+        _deleteSelectionButton->setEnabled(true);
+        _saveSelectionButton->setEnabled(true);
     }
+    _toggleButtons[TOGGLE_POST_FX]->setSelected(GFX_DEVICE.postProcessingEnabled());
+    _toggleButtons[TOGGLE_FOG]->setSelected(ParamHandler::getInstance().getParam<bool>("rendering.enableFog", false));
+    _toggleButtons[TOGGLE_DEPTH_PREVIEW]->setSelected(ParamHandler::getInstance().getParam<bool>("postProcessing.fullScreenDepthBuffer", false));
 }
 
 void GUIEditor::setVisible(bool visible) {
@@ -271,18 +290,21 @@ void GUIEditor::RegisterHandlers() {
     {
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_X] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("XPositionValue"));
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_X]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_PositionXChange, this));
+        _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_X]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_X]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Y Position
     {
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Y] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("YPositionValue"));
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Y]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_PositionYChange, this));
+        _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Y]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Y]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Z Position
     {
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Z] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("ZPositionValue"));
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Z]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_PositionZChange, this));
+        _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Z]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Z]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Position Granularity
@@ -296,18 +318,21 @@ void GUIEditor::RegisterHandlers() {
     {
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("XRotationValue"));
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_RotationXChange, this));
+        _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Y Rotation
     {
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("YRotationValue"));
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_RotationYChange, this));
+        _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Z Rotation
     {
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("ZRotationValue"));
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_RotationZChange, this));
+        _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Rotation Granularity
@@ -321,18 +346,21 @@ void GUIEditor::RegisterHandlers() {
     {
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_X] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("XScaleValue"));
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_X]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_ScaleXChange, this));
+        _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_X]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_X]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Y Scale
     {
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Y] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("YScaleValue"));
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Y]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_ScaleYChange, this));
+        _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Y]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Y]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Z Scale
     {
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Z] = static_cast<CEGUI::Editbox*>(EditorBar->getChild("ZScaleValue"));
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Z]->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&GUIEditor::Handle_ScaleZChange, this));
+        _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Z]->subscribeEvent(CEGUI::Editbox::EventInputCaptureGained, CEGUI::Event::Subscriber(&GUIEditor::Handle_EditFieldClick, this));
         _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Z]->setValidationString(CEGUI::String("^[-+]?[0-9]{1,10}([.][0-9]{1,10})?$"));
     }
     // Type new Scale Granularity
@@ -469,6 +497,11 @@ bool GUIEditor::Handle_MenuBarClickOn(const CEGUI::EventArgs &e) {
     return true;
 }
 
+bool GUIEditor::Handle_EditFieldClick(const CEGUI::EventArgs &e) {
+    _pauseSelectionTracking = true;
+    return true;
+}
+
 bool GUIEditor::Handle_CreateNavMesh(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: NavMesh creation queued!");
 	GUI::getInstance().getConsole()->setVisible(true);
@@ -498,6 +531,7 @@ bool GUIEditor::Handle_ReloadScene(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_PrintSceneGraph(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]:Printing scene graph!");
+    GET_ACTIVE_SCENEGRAPH()->print();
     return true;
 }
 
@@ -506,6 +540,9 @@ bool GUIEditor::Handle_WireframeToggle(const CEGUI::EventArgs &e) {
         D_PRINT_FN("[Editor]: Wireframe rendering enabled!");
     } else {
         D_PRINT_FN("[Editor]: Wireframe rendering disabled!");
+    }
+    if (_currentSelection) {
+        _currentSelection->renderWireframe(_toggleButtons[TOGGLE_WIREFRAME]->isSelected());
     }
     return true;
 }
@@ -516,6 +553,7 @@ bool GUIEditor::Handle_DepthPreviewToggle(const CEGUI::EventArgs &e) {
     } else {
         D_PRINT_FN("[Editor]: Depth Preview disabled!");
     }
+    ParamHandler::getInstance().setParam("postProcessing.fullScreenDepthBuffer", _toggleButtons[TOGGLE_DEPTH_PREVIEW]->isSelected());
     return true;
 }
 
@@ -524,6 +562,9 @@ bool GUIEditor::Handle_ShadowMappingToggle(const CEGUI::EventArgs &e) {
         D_PRINT_FN("[Editor]: Shadow Mapping enabled!");
     } else {
         D_PRINT_FN("[Editor]: Shadow Mapping disabled!");
+    }
+    if (_currentSelection) {
+        _currentSelection->castsShadows(_toggleButtons[TOGGLE_SHADOW_MAPPING]->isSelected());
     }
     return true;
 }
@@ -556,6 +597,9 @@ bool GUIEditor::Handle_BoundingBoxesToggle(const CEGUI::EventArgs &e) {
     } else {
         D_PRINT_FN("[Editor]: Bounding Box rendering disabled!");
     }
+    if (_currentSelection) {
+        _currentSelection->renderBoundingBox(_toggleButtons[TOGGLE_BOUNDING_BOXES]->isSelected());
+    }
     return true;
 }
 
@@ -575,66 +619,118 @@ bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
     } else {
         D_PRINT_FN("[Editor]: Skeleton rendering disabled!");
     }
+
+    if (_currentSelection) {
+        _currentSelection->renderSkeleton(_toggleButtons[TOGGLE_SKELETONS]->isSelected());
+    }
     return true;
 }
 
 bool GUIEditor::Handle_PositionXChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_X]->getText());
+    _currentSelection->getTransform()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_PositionYChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Position Y changed via text edit!");
+    _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Y]->getText());
+    _currentSelection->getTransform()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_PositionZChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Position Z changed via text edit!");
+    _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Z]->getText());
+    _currentSelection->getTransform()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_PositionGranularityChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Position Granularity changed via text edit!");
+    _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY]->getText());
+    CLAMP<F32>(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY], 0.0000001f, 10000000.0f);
+    _valuesField[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY]));
     return true;
 }
 
 bool GUIEditor::Handle_RotationXChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Rotation X changed via text edit!");
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->getText());
+    CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X], -360.0f, 360.0f);
+    _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X]));
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_RotationYChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Rotation Y changed via text edit!");
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->getText());
+    CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y], -360.0f, 360.0f);
+    _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y]));
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_RotationZChange(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->getText());
+    CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z], -360.0f, 360.0f);
+    _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_RotationGranularityChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Rotation Granularity changed via text edit!");
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]->getText());
+    CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY], 0.0000001f, 359.0f);
+    _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]));
     return true;
 }
 
 bool GUIEditor::Handle_ScaleXChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Scale X changed via text edit!");
+    _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_X]->getText());
+    _currentSelection->getTransform()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_ScaleYChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Scale Y changed via text edit!");
+    _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Y]->getText());
+    _currentSelection->getTransform()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_ScaleZChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Scale Z changed via text edit!");
+    _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Z]->getText());
+    _currentSelection->getTransform()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
+    _pauseSelectionTracking = false;
     return true;
 }
 
 bool GUIEditor::Handle_ScaleGranularityChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    D_PRINT_FN("[Editor]: Scale Granularity changed via text edit!");
+    _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY] = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]->getText());
+    CLAMP<F32>(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY], 0.0000001f, 10000000.0f);
+    _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]));
     return true;
 }
 
@@ -708,38 +804,67 @@ bool GUIEditor::Handle_DecrementPositionGranularity(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_IncrementRotationX(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation X incremented via button!");
-    
+    assert(_currentSelection != nullptr);
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
 bool GUIEditor::Handle_DecrementRotationX(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation X decremented via button!");
+    assert(_currentSelection != nullptr);
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
 bool GUIEditor::Handle_IncrementRotationY(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Y incremented via button!");
+    assert(_currentSelection != nullptr);
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
 bool GUIEditor::Handle_DecrementRotationY(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Y decremented via button!");
+    assert(_currentSelection != nullptr);
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
 bool GUIEditor::Handle_IncrementRotationZ(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Z incremented via button!");
+    assert(_currentSelection != nullptr);
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
 bool GUIEditor::Handle_DecrementRotationZ(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Z decremented via button!");
+    assert(_currentSelection != nullptr);
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
+    _currentSelection->getTransform()->setRotation(vec3<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y],
+                                                             _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z]));
     return true;
 }
 
 bool GUIEditor::Handle_IncrementRotationGranularity(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: Rotation Granularity incremented via button!");
-    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] = std::min(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] * 10.0f, 10000000.0f);
+    _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] = std::min(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] * 10.0f, 359.0f);
     _valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]));
     return true;
 }

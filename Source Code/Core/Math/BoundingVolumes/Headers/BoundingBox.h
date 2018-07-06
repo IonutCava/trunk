@@ -32,7 +32,6 @@ class BoundingBox : public GUIDWrapper {
 public:
     BoundingBox() : GUIDWrapper(),
                     _computed(false),
-                    _visibility(false),
                     _pointsDirty(true)
     {
         _min.set(std::numeric_limits<F32>::max());
@@ -42,7 +41,6 @@ public:
 
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max) : GUIDWrapper(),
                                                               _computed(false),
-                                                              _visibility(false),
                                                               _pointsDirty(true),
                                                               _min(min),
                                                               _max(max)
@@ -63,7 +61,6 @@ public:
     BoundingBox(const BoundingBox& b) : GUIDWrapper() {
         //WriteLock w_lock(_lock);
         this->_computed = b._computed;
-        this->_visibility = b._visibility;
         this->_min = b._min;
         this->_max = b._max;
         this->_oldMatrix = b._oldMatrix;
@@ -75,7 +72,6 @@ public:
     void operator=(const BoundingBox& b){
         //WriteLock w_lock(_lock);
         this->_computed = b._computed;
-        this->_visibility = b._visibility;
         this->_min = b._min;
         this->_max = b._max;
         this->_oldMatrix = b._oldMatrix;
@@ -253,11 +249,6 @@ public:
         return _computed;
     }
 
-    inline bool  getVisibility() const {
-        /*ReadLock r_lock(_lock);*/
-        return _visibility;
-    }
-
     inline const vec3<F32>&  getMin() const {
         /*ReadLock r_lock(_lock);*/
         return _min;
@@ -296,11 +287,6 @@ public:
     inline F32   getDepth()  const {
         /*ReadLock r_lock(_lock);*/
         return _max.z - _min.z;
-    }
-
-    inline void setVisibility(bool visibility) {
-        /*WriteLock w_lock(_lock);*/
-        _visibility = visibility;
     }
 
     inline void setMin(const vec3<F32>& min)   {
@@ -369,7 +355,7 @@ protected:
     }
 
 private:
-    bool _computed, _visibility;
+    bool _computed;
     vec3<F32> _min, _max;
     mat4<F32> _oldMatrix;
 

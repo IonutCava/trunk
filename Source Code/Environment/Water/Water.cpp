@@ -126,9 +126,10 @@ void WaterPlane::render(SceneGraphNode* const sgn, const SceneRenderState& scene
     ShaderProgram* drawShader = getDrawShader(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE);
     drawShader->Uniform("underwater", _cameraUnderWater);
     GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
-    cmd.setStateHash(getMaterial()->getRenderStateBlock(FINAL_STAGE));
-    cmd.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-    cmd.setShaderProgram(drawShader);
+    cmd.renderWireframe(sgn->renderWireframe());
+    cmd.stateHash(getMaterial()->getRenderStateBlock(FINAL_STAGE));
+    cmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
+    cmd.shaderProgram(drawShader);
     GFX_DEVICE.submitRenderCommand(_plane->getGeometryVB(), cmd);
 }
 

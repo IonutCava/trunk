@@ -31,7 +31,7 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
 
     //Draw the entire queue;
     //Limited to 65536 (2^16) items per queue pass!
-    if(renderState.drawObjects()) {
+    if (!(bitCompare(renderState.objectState(), SceneRenderState::NO_DRAW))) {
         if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE) && renderBinCount > 0) {
             LightManager::getInstance().bindDepthMaps();
         }

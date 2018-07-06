@@ -253,9 +253,6 @@ bool MainScene::onKeyUp(const OIS::KeyEvent& key){
             _freeflyCamera = !_freeflyCamera;
             renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
             }break;
-        case OIS::KC_F1:
-            _sceneGraph->print();
-            break;
         case OIS::KC_T:
             for(Terrain* ter : _visibleTerrains){
                 ter->toggleBoundingBoxes();

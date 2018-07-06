@@ -172,7 +172,7 @@ namespace Navigation {
             _tempNavMesh = nullptr;
 
             bool navQueryComplete = createNavigationQuery();
-            assert(navQueryComplete);
+            DIVIDE_ASSERT(navQueryComplete, "NavigationMesh Error: Navigation query creation failed!");
         }
         _navigationMeshLock.unlock();
 

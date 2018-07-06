@@ -44,9 +44,9 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
 void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, SceneRenderState& sceneRenderState) {
     //No point in updating visual information if the scene disabled object rendering
     //or rendering of their bounding boxes
-    if(!sceneRenderState.drawObjects() && !sceneRenderState.drawBBox())
+    if (bitCompare(sceneRenderState.objectState(), SceneRenderState::NO_DRAW)) {
         return;
-
+    }
     currentNode->inView(false);
     //Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
@@ -61,7 +61,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
              //If the current SceneGraphNode isn't visible, it's children aren't visible as well
             skipChildren = true;
         }else{
-            if(currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && currentNode->getCastsShadows())){
+            if(currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && currentNode->castsShadows())){
                 //Perform visibility test on current node
                 if (node->isInView(sceneRenderState,
                                    currentNode->getBoundingBoxConst(), 

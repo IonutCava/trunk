@@ -308,10 +308,10 @@ void Vegetation::gpuCull(){
         buffer->BindFeedbackBufferRange(CulledSizeBuffer,     _instanceCountGrass * queryId, _instanceCountGrass);
         buffer->BindFeedbackBufferRange(CulledInstanceBuffer, _instanceCountGrass * queryId, _instanceCountGrass);
 
-        _cullDrawCommand.setInstanceCount(_instanceCountGrass);
-        _cullDrawCommand.setQueryID(queryId);
-        _cullDrawCommand.setDrawToBuffer(true);
-        _cullDrawCommand.setShaderProgram(_cullShader);
+        _cullDrawCommand.instanceCount(_instanceCountGrass);
+        _cullDrawCommand.queryID(queryId);
+        _cullDrawCommand.drawToBuffer(true);
+        _cullDrawCommand.shaderProgram(_cullShader);
         GFX_DEVICE.submitRenderCommand(buffer, _cullDrawCommand);
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //GFX_DEVICE.submitRenderCommand(_treeGPUBuffer, _cullDrawCommand);
@@ -333,12 +333,12 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
         return;
 
     _grassBillboards->Bind(0);
-
-    _renderDrawCommand.setStateHash(_grassStateBlockHash);
-    _renderDrawCommand.setInstanceCount(instanceCount);
-    _renderDrawCommand.setLoD(1);
-    _renderDrawCommand.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-    _renderDrawCommand.setShaderProgram(getDrawShader(currentRenderStage));
+    _renderDrawCommand.renderWireframe(sgn->renderWireframe());
+    _renderDrawCommand.stateHash(_grassStateBlockHash);
+    _renderDrawCommand.instanceCount(instanceCount);
+    _renderDrawCommand.LoD(1);
+    _renderDrawCommand.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
+    _renderDrawCommand.shaderProgram(getDrawShader(currentRenderStage));
     buffer->getDrawAttribDescriptor(posLocation).offset(_instanceCountGrass * queryId);
     buffer->getDrawAttribDescriptor(scaleLocation).offset(_instanceCountGrass * queryId);
     buffer->getDrawAttribDescriptor(instLocation).offset(_instanceCountGrass * queryId);

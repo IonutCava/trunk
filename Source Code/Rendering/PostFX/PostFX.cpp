@@ -231,17 +231,12 @@ void PostFX::displayScene() {
 }
 
 void PostFX::idle(){
-    if (!_gfx) {
+    if (!_gfx || !_gfx->postProcessingEnabled()) {
         return;
     }
 
     ParamHandler& par = ParamHandler::getInstance();
     //Update states
-    bool recompileShader = false;
-
-    if (!_gfx->postProcessingEnabled()) {
-        return;
-    }
 
     if (!_postProcessingShader) {
         init(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution());
@@ -251,8 +246,10 @@ void PostFX::idle(){
     _enableDOF  = par.getParam<bool>("postProcessing.enableDepthOfField");
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
     _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
+    _depthPreview = par.getParam<bool>("postProcessing.fullScreenDepthBuffer");
     _enableFXAA = _gfx->FXAAEnabled();
 
+    bool recompileShader = false;
     if (_enableBloom != par.getParam<bool>("postProcessing.enableBloom")) {
         _enableBloom = !_enableBloom;
         if (_enableBloom) {
@@ -308,5 +305,5 @@ void PostFX::idle(){
     _shaderFunctionSelection[2] = _enableBloom    ? _shaderFunctionList[2] : _shaderFunctionList[6];
     _shaderFunctionSelection[3] = _enableSSAO     ? _shaderFunctionList[3] : _shaderFunctionList[6];
     _shaderFunctionSelection[4] = _underwater     ? _shaderFunctionList[4] : _shaderFunctionList[5];
-    _shaderFunctionSelection[5] = _depthPreview   ? _shaderFunctionList[0] : _shaderFunctionList[7];
+    _shaderFunctionSelection[5] = _depthPreview   ? _shaderFunctionList[8] : _shaderFunctionList[7];
 }

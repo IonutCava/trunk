@@ -54,6 +54,7 @@ DEFINE_SINGLETON( GUIEditor )
         void TrackSelection();
 
         bool Handle_MenuBarClickOn(const CEGUI::EventArgs &e);
+        bool Handle_EditFieldClick(const CEGUI::EventArgs &e);
         bool Handle_CreateNavMesh(const CEGUI::EventArgs &e);
         bool Handle_SaveScene(const CEGUI::EventArgs &e);
         bool Handle_SaveSelection(const CEGUI::EventArgs &e);
@@ -134,6 +135,7 @@ DEFINE_SINGLETON( GUIEditor )
         bool _init;
         bool _wasControlClick;
         bool _createNavMeshQueued;
+        bool _pauseSelectionTracking;
         SceneGraphNode      *_currentSelection;
         CEGUI::Window       *_editorWindow;  //< This will be a pointer to the EditorRoot window.
         CEGUI::Window       *_saveSelectionButton;

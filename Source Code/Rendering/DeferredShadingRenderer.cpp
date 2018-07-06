@@ -166,9 +166,9 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     _lightTexture->Bind(4);
 
     GenericDrawCommand cmd;
-    cmd.setStateHash(GFX_DEVICE.getDefaultStateBlock(true));
-    cmd.setDrawID(GFX_DEVICE.getDrawID(0));
-    cmd.setShaderProgram(_previewDeferredShader);
+    cmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    cmd.drawID(GFX_DEVICE.getDrawID(0));
+    cmd.shaderProgram(_previewDeferredShader);
     if(_debugView){
         _previewDeferredShader->bind();
         _previewDeferredShader->UniformTexture("texDiffuse0",4);
@@ -184,7 +184,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     _deferredShader->bind();
         _deferredShader->Uniform("lightCount",(I32)_cachedLightCount);
 
-    cmd.setShaderProgram(_deferredShader);
+    cmd.shaderProgram(_deferredShader);
     if(_renderQuads[ _debugView ? 4 : 0]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
         GFX_DEVICE.submitRenderCommand(_renderQuads[ _debugView ? 4 : 0]->getGeometryVB(), cmd);
 

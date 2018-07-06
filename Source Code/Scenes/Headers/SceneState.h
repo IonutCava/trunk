@@ -39,8 +39,7 @@ struct FogDescriptor{
     vec3<F32> _fogColor;
 };
 
-///Contains all the information needed to render the scene:
-///camera position, render state, etc
+///Contains all the information needed to render the scene: camera position, render state, etc
 class SceneRenderState {
 public:
     enum GizmoState {
@@ -48,6 +47,13 @@ public:
         SCENE_GIZMO    = toBit(1),
         SELECTED_GIZMO = toBit(2),
         ALL_GIZMO      = SCENE_GIZMO | SELECTED_GIZMO
+    };
+    
+    enum ObjectRenderState {
+        NO_DRAW           = toBit(0),
+        DRAW_OBJECT       = toBit(1),
+        DRAW_BOUNDING_BOX = toBit(2),
+        DRAW_OBJECT_WITH_BOUNDING_BOX = DRAW_OBJECT | DRAW_BOUNDING_BOX
     };
 
     SceneRenderState(): _drawBB(false),
@@ -57,35 +63,37 @@ public:
                         _cameraMgr(nullptr)
     {
         _gizmoState = NO_GIZMO;
+        _objectState = DRAW_OBJECT;
     }
 
-    inline bool drawBBox()                const {return _drawBB;}
     inline bool drawSkeletons()           const {return  _drawSkeletons;}
-    inline bool drawObjects()             const {return _drawObjects;}
-    inline void drawBBox(bool visibility)       {_drawBB = visibility;}
     inline void drawSkeletons(bool visibility)  {_drawSkeletons = visibility;}
-    inline void drawObjects(bool visibility)    {_drawObjects = visibility;}
     inline void drawDebugLines(bool visibility) {_debugDrawLines = visibility;}
     inline GizmoState gizmoState()      const   { return _gizmoState; }
     inline void gizmoState(GizmoState newState) { _gizmoState = newState; }
-    ///Render skeletons for animated geometry
-    inline void toggleSkeletons() { D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS")); drawSkeletons(!drawSkeletons()); }
-    ///Show/hide bounding boxes
+    inline ObjectRenderState objectState()       const      { return _objectState; }
+    inline void objectState(ObjectRenderState newState)     { _objectState = newState; }
+    /// Render skeletons for animated geometry
+    inline void toggleSkeletons() {
+        D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
+        drawSkeletons(!drawSkeletons()); 
+    }
+
+    /// Show/hide bounding boxes and/or objects
     inline void toggleBoundingBoxes(){
         D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
-        if (!drawBBox() && drawObjects()){
-            drawBBox(true);
-        }else if (drawBBox() && drawObjects()){
-            drawBBox(true);
-            drawObjects(false);
-        }else if (drawBBox() && !drawObjects()){
-            drawBBox(false);
+        if (objectState() == NO_DRAW) {
+            objectState(DRAW_OBJECT);
+        } else if (objectState() == DRAW_OBJECT) {
+            objectState(DRAW_OBJECT_WITH_BOUNDING_BOX);
+        } else if (objectState() == DRAW_OBJECT_WITH_BOUNDING_BOX) {
+            objectState(DRAW_BOUNDING_BOX);
         } else {
-            drawBBox(false);
-            drawObjects(true);
+            objectState(NO_DRAW);
         }
     }
 
+    /// Show/hide axis gizmos
     inline void toggleAxisLines() {
         D_PRINT_FN(Locale::get("TOGGLE_SCENE_AXIS_GIZMO"));
         if (gizmoState() == NO_GIZMO) {
@@ -99,10 +107,10 @@ public:
         }
     }
 
-    inline       CameraManager& getCameraMgr()  { return *_cameraMgr;}
-    inline       Camera& getCamera()            { return *_cameraMgr->getActiveCamera(); }
-    inline const Camera& getCameraConst() const { return *_cameraMgr->getActiveCamera(); }
-    inline vec2<U16>& cachedResolution() {return _cachedResolution;}
+    inline CameraManager& getCameraMgr()         { return *_cameraMgr;}
+    inline       Camera&  getCamera()            { return *_cameraMgr->getActiveCamera(); }
+    inline const Camera&  getCameraConst() const { return *_cameraMgr->getActiveCamera(); }
+    inline vec2<U16>&    cachedResolution() {return _cachedResolution;}
 
 protected:
 
@@ -112,6 +120,7 @@ protected:
     bool _drawSkeletons;
     bool _debugDrawLines;
     GizmoState _gizmoState;
+    ObjectRenderState _objectState;
     CameraManager*  _cameraMgr;
     ///cached resolution
     vec2<U16> _cachedResolution;

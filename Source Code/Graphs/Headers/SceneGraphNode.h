@@ -114,7 +114,7 @@ public:
     void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
 
     ///Selection helper functions
-           void setSelected(bool state);
+           void setSelected(const bool state);
     inline bool isSelected()	                const {return _selected;}
     inline bool isSelectable()                  const {return _isSelectable;}
     inline void setSelectable(const bool state)       {_isSelectable = state;}
@@ -152,20 +152,28 @@ public:
     /*Transform management*/
 
     /*Node State*/
-    inline void setActive(bool state) {_wasActive = _active; _active = state;}
+    inline void setActive(const bool state) {_wasActive = _active; _active = state;}
     inline void restoreActive()       {_active = _wasActive;}
     inline void	scheduleDeletion()    {_shouldDelete = true;}
 
     inline bool inView()   const {return _inView;}
     inline bool isReady()  const {return _isReady;}
     inline bool isActive() const {return _active;}
+
+    void renderWireframe(const bool state);
+    inline bool renderWireframe() const { return _renderWireframe; }
+    void renderBoundingBox(const bool state);
+    inline bool renderBoundingBox() const { return _renderBoundingBox; }
+
+    void renderSkeleton(const bool state);
+    inline bool renderSkeleton() const { return _renderSkeleton; }
     /*Node State*/
 
-    inline void setCastsShadows(const bool state)    {_castsShadows = state;}
-    inline void setReceivesShadows(const bool state) {_receiveShadows = state;}
+    void castsShadows(const bool state);
+    void receivesShadows(const bool state);
 
-    bool getCastsShadows()    const;
-    bool getReceivesShadows() const;
+    bool castsShadows()    const;
+    bool receivesShadows() const;
 
     void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const;
 
@@ -234,6 +242,9 @@ private:
     bool _silentDispose;
     bool _castsShadows;
     bool _receiveShadows;
+    bool _renderWireframe;
+    bool _renderBoundingBox;
+    bool _renderSkeleton;
     boost::atomic<bool> _boundingBoxDirty;
     boost::atomic<bool> _isReady; //<is created and has a valid transform
     bool _shouldDelete;

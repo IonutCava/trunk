@@ -481,7 +481,6 @@ bool WarScene::onKeyUp(const OIS::KeyEvent& key){
     switch(key.key)	{
         default: break;
 
-        case OIS::KC_F1: _sceneGraph->print(); break;
         case OIS::KC_TAB:{
             if(_currentSelection != nullptr){
                 /*if(flyCameraActive){

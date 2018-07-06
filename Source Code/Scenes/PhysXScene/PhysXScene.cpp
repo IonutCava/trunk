@@ -111,7 +111,6 @@ void PhysXScene::createTower(U32 size){
 bool PhysXScene::onKeyUp(const OIS::KeyEvent& key){
     switch(key.key)	{
         default: break;
-        case OIS::KC_F1: _sceneGraph->print(); break;
         case OIS::KC_5:{
             _paramHandler.setParam("simSpeed", IS_ZERO(_paramHandler.getParam<F32>("simSpeed")) ? 1.0f : 0.0f);
             PHYSICS_DEVICE.updateTimeStep();

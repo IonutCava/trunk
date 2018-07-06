@@ -36,6 +36,9 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
                                                   _isReady(false),
                                                   _castsShadows(true),
                                                   _receiveShadows(true),
+                                                  _renderWireframe(false),
+                                                  _renderBoundingBox(false),
+                                                  _renderSkeleton(false),
                                                   _updateTimer(GETMSTIME()),
                                                   _childQueue(0),
                                                   _bbAddExclusionList(0),
@@ -124,8 +127,12 @@ void SceneGraphNode::getShadowCastersAndReceivers(vectorImpl<const SceneGraphNod
     }
 
     if (!visibleOnly || visibleOnly && _inView) {
-        if (getCastsShadows())    casters.push_back(this);
-        if (getReceivesShadows()) receivers.push_back(this);
+        if (castsShadows()) {
+            casters.push_back(this);
+        }
+        if (receivesShadows()) {
+            receivers.push_back(this);
+        }
     }
 }
 
