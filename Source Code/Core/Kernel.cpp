@@ -65,6 +65,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         &LightManager::onCameraUpdate, &LightManager::getInstance(), std::placeholders::_1));
     _cameraMgr->addCameraUpdateListener(
         DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
+    _cameraMgr->addCameraUpdateListener(
+        DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
     ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
 
     s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");

@@ -160,6 +160,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Rendering points is universally useful, so we have a function, and a VAO,
     /// dedicated to this process
     void drawPoints(U32 numPoints) override;
+    /// Renderinga single triangle is also universally useful, 
+    /// so we have a function dedicated to this process
+    void drawTriangle() override;
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is
     /// checked every 20 ms
@@ -306,7 +309,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     GLint _lineWidthLimit;
     /// Used to render points (e.g. to render full screen quads with geometry
     /// shaders)
-    GLuint _pointDummyVAO;
+    GLuint _dummyVAO;
     /// Number of available texture units
     static GLint _maxTextureUnits;
     /// Used to store all of the indirect draw commands

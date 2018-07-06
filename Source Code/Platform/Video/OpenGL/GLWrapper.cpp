@@ -63,7 +63,7 @@ GL_API::GL_API()
       _prevWidthNode(0),
       _prevWidthString(0),
       _lineWidthLimit(1),
-      _pointDummyVAO(0),
+    _dummyVAO(0),
       _enableCEGUIRendering(false),
       _internalMoveEvent(false),
       _externalResizeEvent(false),
@@ -460,6 +460,14 @@ bool GL_API::initShaders() {
             ") in uint inBoneIndiceData;",
         lineOffsets);
 
+    
+    appendToShaderHeader(
+        ShaderType::VERTEX,
+        "layout(location = " +
+            std::to_string(to_uint(AttribLocation::VERTEX_WIDTH)) +
+            ") in uint inLineWidthData;",
+        lineOffsets);
+
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes are defined in an external file included in every shader
     appendToShaderHeader(ShaderType::COUNT, "#include \"nodeDataInput.cmn\"",
@@ -606,8 +614,14 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
 /// Rendering points is universally useful, so we have a function, and a VAO,
 /// dedicated to this process
 void GL_API::drawPoints(GLuint numPoints) {
-    GL_API::setActiveVAO(_pointDummyVAO);
+    GL_API::setActiveVAO(_dummyVAO);
     glDrawArrays(GL_POINTS, 0, numPoints);
+    GFX_DEVICE.registerDrawCall();
+}
+
+void GL_API::drawTriangle() {
+    GL_API::setActiveVAO(_dummyVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     GFX_DEVICE.registerDrawCall();
 }
 

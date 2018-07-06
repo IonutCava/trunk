@@ -41,8 +41,8 @@ void SSAOPreRenderOperator::operation() {
     _outputFB->Begin(Framebuffer::defaultPolicy());
     _inputFB[0]->Bind(0);                            // screen
     _inputFB[1]->Bind(1, TextureDescriptor::AttachmentType::Depth);  // depth
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
-                          _ssaoShader);
+    GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
+                            _ssaoShader);
     _outputFB->End();
 }
 };

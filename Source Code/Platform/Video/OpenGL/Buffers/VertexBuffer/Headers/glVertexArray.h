@@ -47,6 +47,7 @@
 ///- Tangents     bound to location Divide::VERTEX_TANGENT
 ///- Bone weights bound to location Divide::VERTEX_BONE_WEIGHT
 ///- Bone indices bound to location Divide::VERTEX_BONE_INDICE
+///- Line width   bound to location Divide::VERTEX_WIDTH
 
 namespace Divide {
 
@@ -73,6 +74,7 @@ class glVertexArray : public VertexBuffer {
               bool useCmdBuffer = false);
 
    protected:
+    friend class GL_API;
     /// If we have a shader, we create a VAO, if not, we use simple VB + IB. If
     /// that fails, use VA
     bool refresh();
@@ -84,11 +86,15 @@ class glVertexArray : public VertexBuffer {
     void checkStatus();
     /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
     std::pair<bufferPtr, size_t> getMinimalData();
+
+    static GLuint getVao(size_t hash);
+    static void setVao(size_t hash, GLuint id);
+    static void clearVaos();
+
    protected:
     GLenum _formatInternal;
     GLuint _IBid;
     GLuint _VBid;
-    GLuint _VAOid;
     GLenum _usage;
     bool _refreshQueued;  ///< A refresh call might be called before "Create()".
                           ///This should help with that
@@ -96,8 +102,15 @@ class glVertexArray : public VertexBuffer {
     GLsizei _prevSizeIndices;
     GLsizei _bufferEntrySize;
     ByteBuffer _smallData;
-    std::array<bool, to_const_uint(VertexAttribute::COUNT)> _useAttribute;
-    std::array<size_t, to_const_uint(VertexAttribute::COUNT)> _attributeOffset;
+    typedef std::array<bool, to_const_uint(VertexAttribute::COUNT)> AttribFlags;
+    AttribFlags _useAttribute;
+    typedef std::array<size_t, to_const_uint(VertexAttribute::COUNT)> AttribValues;
+    AttribValues _attributeOffset;
+
+    size_t _vaoHash;
+    GLuint _vaoCache;
+    typedef hashMapImpl<size_t, GLuint> VaoMap;
+    static VaoMap _vaos;
 };
 
 };  // namespace Divide

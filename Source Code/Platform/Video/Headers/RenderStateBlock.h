@@ -52,7 +52,6 @@ class RenderStateBlock : public GUIDWrapper {
     /// Rasterizer
     CullMode _cullMode;
     bool _cullEnabled;
-    F32 _lineWidth;
 
     /// Depth
     bool _zEnable;
@@ -86,7 +85,6 @@ class RenderStateBlock : public GUIDWrapper {
 
     void setDefaultValues();
     
-    void setLineWidth(F32 width);
     void setFillMode(FillMode mode);
     void setZBias(F32 zBias, F32 zUnits);
     void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
@@ -135,9 +133,6 @@ class RenderStateBlock : public GUIDWrapper {
     }
     inline bool cullEnabled() const {
         return _cullEnabled;
-    }
-    inline F32 lineWidth() const {
-        return _lineWidth;
     }
     inline bool zEnable() const {
         return _zEnable;

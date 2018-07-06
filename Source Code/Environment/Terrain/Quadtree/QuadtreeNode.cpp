@@ -194,7 +194,6 @@ void QuadtreeNode::drawBBox() const {
     IMPrimitive* primitive = GFX_DEVICE.getOrCreatePrimitive();
     primitive->name("QuadtreeNodeBoundingBox");
     RenderStateBlock primitiveRenderState;
-    primitiveRenderState.setLineWidth(4.0f);
     primitive->stateHash(primitiveRenderState.getHash());
     GFX_DEVICE.drawBox3D(*primitive, 
                          _boundingBox.getMin(),

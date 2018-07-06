@@ -7,7 +7,50 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
+namespace std {
+    template<typename T, size_t N>
+    struct hash<array<T, N> >
+    {
+        typedef array<T, N> argument_type;
+        typedef size_t result_type;
+
+        result_type operator()(const argument_type& a) const
+        {
+            hash<T> hasher;
+            result_type h = 0;
+            for (result_type i = 0; i < N; ++i)
+            {
+                h = h * 31 + hasher(a[i]);
+            }
+            return h;
+        }
+    };
+};
+
 namespace Divide {
+
+glVertexArray::VaoMap glVertexArray::_vaos;
+
+GLuint glVertexArray::getVao(size_t hash) {
+    VaoMap::const_iterator result = _vaos.find(hash);
+    return result != std::end(_vaos) ? result->second
+                                     : 0;
+}
+
+void glVertexArray::setVao(size_t hash, GLuint id) {
+    std::pair<VaoMap::const_iterator, bool> result = 
+        hashAlg::emplace(_vaos, hash, id);
+    assert(result.second);
+}
+
+void glVertexArray::clearVaos() {
+    for (VaoMap::value_type& value : _vaos) {
+        if (value.second != 0) {
+            glDeleteVertexArrays(1, &value.second);
+        }
+    }
+    _vaos.clear();
+}
 
 /// Default destructor
 glVertexArray::glVertexArray()
@@ -20,7 +63,8 @@ glVertexArray::glVertexArray()
     _prevSize = -1;
     _prevSizeIndices = -1;
     _bufferEntrySize = -1;
-    _VAOid = _VBid = _IBid = 0;
+    _vaoCache = _VBid = _IBid = 0;
+    _vaoHash = -1;
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -35,10 +79,6 @@ glVertexArray::~glVertexArray()
 void glVertexArray::destroy() {
     GLUtil::freeBuffer(_IBid);
     GLUtil::freeBuffer(_VBid);
-    if (_VAOid > 0) {
-        glDeleteVertexArrays(1, &_VAOid);
-    }
-    _VAOid = 0;
 }
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
@@ -166,6 +206,17 @@ bool glVertexArray::refresh() {
     }
     _attribDirty.fill(false);
 
+    _vaoHash = std::hash<AttribFlags>()(_useAttribute);
+
+    Console::printfn("VAO HASH: %d", _vaoHash);
+
+    _vaoCache = getVao(_vaoHash);
+    if (_vaoCache == 0) {
+        // Generate a "Vertex Array Object"
+        glCreateVertexArrays(1, &_vaoCache);
+        DIVIDE_ASSERT(_vaoCache != 0, Locale::get("ERROR_VAO_INIT"));
+        setVao(_vaoHash, _vaoCache);
+    } 
     std::pair<bufferPtr, size_t> bufferData = getMinimalData();
     // If any of the VBO's components changed size, we need to recreate the
     // entire buffer.
@@ -221,14 +272,11 @@ bool glVertexArray::createInternal() {
     }
 
     _formatInternal = GLUtil::glDataFormat[to_uint(_format)];
-    // Generate a "Vertex Array Object"
-    glCreateVertexArrays(1, &_VAOid);
     // Generate a new Vertex Buffer Object
     glCreateBuffers(1, &_VBid);
     // Generate an "Index Buffer Object"
     glCreateBuffers(1, &_IBid);
     // Validate buffer creation
-    DIVIDE_ASSERT(_VAOid != 0, Locale::get("ERROR_VAO_INIT"));
     DIVIDE_ASSERT(_VBid != 0, Locale::get("ERROR_VB_INIT"));
     // Assert if the IB creation failed
     DIVIDE_ASSERT(_IBid != 0, Locale::get("ERROR_IB_INIT"));
@@ -307,22 +355,24 @@ bool glVertexArray::setActive() {
 
     // Bind the vertex array object that in turn activates all of the bindings
     // and pointers set on creation
-    if (GL_API::setActiveVAO(_VAOid)) {
+    if (GL_API::setActiveVAO(_vaoCache)) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
     }
+
+    // Bind the the vertex buffer and index buffer
+    //GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _VBid);
+    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
+
+    glBindVertexBuffer(0, _VBid, 0, _bufferEntrySize);
     return true;
 }
 
 /// Activate and set all of the required vertex attributes.
 void glVertexArray::uploadVBAttributes() {
     // Bind the current VAO to save our attributes
-    GL_API::setActiveVAO(_VAOid);
-    // Bind the the vertex buffer and index buffer
-    GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _VBid);
-    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
-
+    GL_API::setActiveVAO(_vaoCache);
     static const U32 positionLoc = to_const_uint(AttribLocation::VERTEX_POSITION);
     static const U32 colorLoc = to_const_uint(AttribLocation::VERTEX_COLOR);
     static const U32 normalLoc = to_const_uint(AttribLocation::VERTEX_NORMAL);
@@ -332,32 +382,37 @@ void glVertexArray::uploadVBAttributes() {
     static const U32 boneIndiceLoc = to_const_uint(AttribLocation::VERTEX_BONE_INDICE);
 
     glEnableVertexAttribArray(positionLoc);
-    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[positionLoc]));
+    glVertexAttribFormat(positionLoc, 3, GL_FLOAT, GL_FALSE, _attributeOffset[positionLoc]);
+    glVertexAttribBinding(positionLoc, 0);
 
     if (_useAttribute[colorLoc]) {
         glEnableVertexAttribArray(colorLoc);
-        glVertexAttribIPointer(colorLoc, 4, GL_UNSIGNED_BYTE, _bufferEntrySize, (bufferPtr)(_attributeOffset[colorLoc]));
+        glVertexAttribIFormat(colorLoc, 4, GL_UNSIGNED_BYTE, _attributeOffset[colorLoc]);
+        glVertexAttribBinding(colorLoc, 0);
     } else {
         glDisableVertexAttribArray(colorLoc);
     }
 
     if (_useAttribute[normalLoc]) {
         glEnableVertexAttribArray(normalLoc);
-        glVertexAttribPointer(normalLoc, 1, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[normalLoc]));
+        glVertexAttribFormat(normalLoc, 1, GL_FLOAT, GL_FALSE, _attributeOffset[normalLoc]);
+        glVertexAttribBinding(normalLoc, 0);
     } else {
         glDisableVertexAttribArray(normalLoc);
     }
 
     if (_useAttribute[texCoordLoc]) {
         glEnableVertexAttribArray(texCoordLoc);
-        glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[texCoordLoc]));
+        glVertexAttribFormat(texCoordLoc, 2, GL_FLOAT, GL_FALSE, _attributeOffset[texCoordLoc]);
+        glVertexAttribBinding(texCoordLoc, 0);
     } else {
         glDisableVertexAttribArray(texCoordLoc);
     }
 
     if (_useAttribute[tangentLoc]) {
         glEnableVertexAttribArray(tangentLoc);
-        glVertexAttribPointer(tangentLoc, 1, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[tangentLoc]));
+        glVertexAttribFormat(tangentLoc, 1, GL_FLOAT, GL_FALSE, _attributeOffset[tangentLoc]);
+        glVertexAttribBinding(tangentLoc, 0);
     } else {
         glDisableVertexAttribArray(tangentLoc);
     }
@@ -367,8 +422,10 @@ void glVertexArray::uploadVBAttributes() {
 
         glEnableVertexAttribArray(boneWeightLoc);
         glEnableVertexAttribArray(boneIndiceLoc);
-        glVertexAttribPointer(boneWeightLoc, 4, GL_FLOAT, GL_FALSE, _bufferEntrySize, (bufferPtr)(_attributeOffset[boneWeightLoc]));
-        glVertexAttribIPointer(boneIndiceLoc,1, GL_UNSIGNED_INT, _bufferEntrySize,  (bufferPtr)(_attributeOffset[boneIndiceLoc]));
+        glVertexAttribFormat(boneWeightLoc, 4, GL_FLOAT, GL_FALSE, _attributeOffset[boneWeightLoc]);
+        glVertexAttribIFormat(boneIndiceLoc,1, GL_UNSIGNED_INT, _attributeOffset[boneIndiceLoc]);
+        glVertexAttribBinding(boneWeightLoc, 0);
+        glVertexAttribBinding(boneIndiceLoc, 0);
     } else {
         glDisableVertexAttribArray(boneWeightLoc);
         glDisableVertexAttribArray(boneIndiceLoc);

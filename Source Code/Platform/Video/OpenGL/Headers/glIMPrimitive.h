@@ -64,6 +64,7 @@ class glIMPrimitive : public IMPrimitive {
     /// calling begin!
     /// Specify an attribute that will be applied to all vertex calls after this
     void attribute1i(U32 attribLocation, I32 value);
+    void attribute1f(U32 attribLocation, F32 value);
     /// Specify an attribute that will be applied to all vertex calls after this
     void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w);
     /// Specify an attribute that will be applied to all vertex calls after this

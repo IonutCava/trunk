@@ -132,7 +132,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
 
     void drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) override;
     void drawPoints(U32 numPoints) override;
-
+    void drawTriangle() override;
     void updateClipPlanes() override;
 
     void threadedLoadCallback() override;

@@ -196,6 +196,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 
     _commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
 
+    _axisGizmo = getOrCreatePrimitive(false);
+    _axisGizmo->name("GFXDeviceAxisGizmo");
+    RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
+    _axisGizmo->stateHash(primitiveDescriptor.getHash());
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }
@@ -204,6 +208,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 void GFXDevice::closeRenderingAPI() {
     DIVIDE_ASSERT(_api != nullptr,
                   "GFXDevice error: closeRenderingAPI called without init!");
+
+    _axisGizmo->_canZombify = true;
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
     // Destroy our post processing system
@@ -245,7 +251,9 @@ void GFXDevice::closeRenderingAPI() {
         } break;
         case RenderAPI::None: {
         } break;
-        default: { } break; };
+        default: { 
+        } break;
+    };
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to

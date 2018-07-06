@@ -70,6 +70,10 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
         _drawShader = shaderProgram;
     }
 
+    inline ShaderProgram* const drawShader() const {
+        return _drawShader;
+    }
+
     virtual void render(bool forceWireframe = false, U32 instanceCount = 1) = 0;
     virtual void beginBatch(bool reserveBuffers, unsigned int vertexCount) = 0;
 
@@ -79,6 +83,7 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
         vertex(vert.x, vert.y, vert.z);
     }
     virtual void attribute1i(U32 attribLocation, I32 value) = 0;
+    virtual void attribute1f(U32 attribLocation, F32 value) = 0;
     virtual void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z,  U8 w) = 0;
     virtual void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) = 0;
     inline void attribute4ub(U32 attribLocation, const vec4<U8>& value) {

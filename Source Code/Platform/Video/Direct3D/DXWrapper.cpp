@@ -51,6 +51,8 @@ void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
 
 void DX_API::drawPoints(U32 numPoints) {}
 
+void DX_API::drawTriangle() {}
+
 bool DX_API::initShaders() { return true; }
 
 bool DX_API::deInitShaders() { return true; }

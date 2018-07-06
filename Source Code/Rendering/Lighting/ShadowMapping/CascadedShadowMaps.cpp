@@ -279,7 +279,8 @@ void CascadedShadowMaps::postRender() {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _blurBuffer->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
                                  false);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
+        GFX_DEVICE.drawPoints(1, 
+                              GFX_DEVICE.getDefaultStateBlock(true),
                               _blurDepthMapShader);
     }
     _blurBuffer->End();
@@ -293,7 +294,8 @@ void CascadedShadowMaps::postRender() {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
                                false);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
+        GFX_DEVICE.drawPoints(1, 
+                              GFX_DEVICE.getDefaultStateBlock(true),
                               _blurDepthMapShader);
     }
     _depthMap->End();
@@ -317,8 +319,8 @@ void CascadedShadowMaps::previewShadowMaps() {
             "dvd_zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
 
         GFX::ScopedViewport viewport(256 * i, 1, 256, 256);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
-                              _previewDepthMapShader);
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
+                                _previewDepthMapShader);
     }
 }
 };

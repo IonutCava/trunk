@@ -69,6 +69,7 @@ namespace Time {
 
 namespace Attorney {
     class GFXDeviceGUI;
+    class GFXDeviceKernel;
     class GFXDeviceRenderStateBlock;
 };
 
@@ -76,6 +77,7 @@ namespace Attorney {
 /// and access to the GPU
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     friend class Attorney::GFXDeviceGUI;
+    friend class Attorney::GFXDeviceKernel;
     friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
     typedef hashMapImpl<size_t, RenderStateBlock*> RenderStateMap;
@@ -215,12 +217,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                    const vec4<U8>& color);
     void drawLines(IMPrimitive& primitive,
                    const vectorImpl<Line>& lines,
-                   const mat4<F32>& globalOffset,
                    const vec4<I32>& viewport,  //<only for ortho mode
                    const bool inViewport = false);
     void drawPoints(U32 numPoints, size_t stateHash,
                     ShaderProgram* const shaderProgram);
-
+    void drawTriangle(size_t stateHash,
+                      ShaderProgram* const shaderProgram);
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
     void addToRenderQueue(const RenderPackage& package);
@@ -430,6 +432,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         _api->drawPoints(numPoints); 
     }
 
+    inline void drawTriangle() override {
+        uploadGPUBlock();
+        _api->drawTriangle();
+    }
+
     inline void drawText(const TextLabel& text,
                          size_t stateHash,
                          const vec2<F32>& relativeOffset) {
@@ -457,6 +464,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// rendering
     void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio,
                             F32 verticalFoV, bool rightFrustum = false);
+    void onCameraUpdate(Camera& camera);
 
    protected:
     friend class SceneManager;
@@ -513,7 +521,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     bool _drawDebugAxis;
     bool _viewportUpdate;
     vectorImpl<Line> _axisLines;
-    vectorImpl<Line> _axisLinesTrasnformed;
+    IMPrimitive     *_axisGizmo;
 
   protected:
     RenderAPI _API_ID;
@@ -554,9 +562,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     vectorImpl<std::pair<U32, DELEGATE_CBK<> > > _2dRenderQueue;
 
     /// Immediate mode emulation shader
-    ShaderProgram* _imShader;
-    vectorImpl<IMPrimitive*>
-        _imInterfaces;  //<The interface that coverts IM calls to VB data
+    ShaderProgram *_imShader, *_imShaderLines;
+    /// The interface that coverts IM calls to VB data
+    vectorImpl<IMPrimitive*>  _imInterfaces;  
 
     /// Current viewport stack
     ViewportStack _viewport;
@@ -577,11 +585,10 @@ END_SINGLETON
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(GFXDevice& gfxDevice, 
-                             const TextLabel& text,
+        static void drawText(const TextLabel& text,
                              size_t stateHash,
                              const vec2<F32>& relativeOffset) {
-            return gfxDevice.drawText(text, stateHash, relativeOffset);
+            return GFXDevice::getInstance().drawText(text, stateHash, relativeOffset);
         }
 
         friend class Divide::GUI;
@@ -590,12 +597,21 @@ namespace Attorney {
 
     class GFXDeviceRenderStateBlock {
     private:
-        static bool registerStateBlock(GFXDevice& gfxDevice, const RenderStateBlock& block) {
-            return gfxDevice.registerRenderStateBlock(block);
+        static bool registerStateBlock(const RenderStateBlock& block) {
+            return GFXDevice::getInstance().registerRenderStateBlock(block);
         }
 
         friend class Divide::RenderStateBlock;
     };
+
+   class GFXDeviceKernel {
+   private:
+       static void onCameraUpdate(Camera& camera) {
+           GFXDevice::getInstance().onCameraUpdate(camera);
+       }
+       
+       friend class Divide::Kernel;
+  };
 };  // namespace Attorney
 };  // namespace Divide
 

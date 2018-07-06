@@ -35,13 +35,11 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
-    primitiveStateBlock.setLineWidth(4.0f);
 
     _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingBoxPrimitive->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
     if (_nodeSkinned) {
-        primitiveStateBlock.setLineWidth(2.0f);
         primitiveStateBlock.setZReadWrite(false, true);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
@@ -52,18 +50,17 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 #ifdef _DEBUG
     // Red X-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255)));
+        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 5.0f));
     // Green Y-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255)));
+        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 5.0f));
     // Blue Z-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
+        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
     _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
     // Prepare it for line rendering
     size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
     RenderStateBlock stateBlock(GFX_DEVICE.getRenderStateBlock(noDepthStateBlock));
-    stateBlock.setLineWidth(5.0f);
     _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
     _axisGizmo->stateHash(stateBlock.getHash());
     _axisGizmo->paused(true);
@@ -333,11 +330,11 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                     _parentSGN.getComponent<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
+                _skeletonPrimitive->worldMatrix(_parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix());
                 // Submit the skeleton lines to the GPU for rendering
                 GFX_DEVICE.drawLines(*_skeletonPrimitive, skeletonLines,
-                                     _parentSGN.getComponent<PhysicsComponent>()
-                                         ->getWorldMatrix(),
-                                     vec4<I32>(), false);
+                                     vec4<I32>(),
+                                     false);
                 parentStates.setTrackedValue(
                     StateTracker<bool>::State::SKELETON_RENDERED, true);
             }

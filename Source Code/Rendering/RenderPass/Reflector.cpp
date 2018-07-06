@@ -94,7 +94,7 @@ void Reflector::previewReflection() {
                                      to_int(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().y - height),
                                      to_int(_resolution.x * 0.333f),
                                      to_int(height));
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _previewReflectionShader);
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _previewReflectionShader);
     }
 #endif
 }

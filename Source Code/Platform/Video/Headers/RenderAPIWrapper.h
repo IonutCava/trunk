@@ -438,6 +438,8 @@ class NOINITVTABLE RenderAPIWrapper {
 
     virtual void drawPoints(U32 numPoints) = 0;
 
+    virtual void drawTriangle() = 0;
+
    protected:
     virtual void changeResolution(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;

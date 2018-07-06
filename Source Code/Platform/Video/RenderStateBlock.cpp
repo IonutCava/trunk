@@ -22,7 +22,6 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _blendOp(other._blendOp),
      _cullMode(other._cullMode),
      _cullEnabled(other._cullEnabled),
-     _lineWidth(other._lineWidth),
      _zEnable(other._zEnable),
      _zWriteEnable(other._zWriteEnable),
      _zFunc(other._zFunc),
@@ -72,12 +71,6 @@ void RenderStateBlock::setZEnable(const bool enable) {
 void RenderStateBlock::setZReadWrite(bool read, bool write) {
     _zEnable = read;
     _zWriteEnable = write;
-
-    clean();
-}
-
-void RenderStateBlock::setLineWidth(F32 width) {
-    _lineWidth = width;
 
     clean();
 }
@@ -161,7 +154,6 @@ void RenderStateBlock::setDefaultValues() {
     setFillMode(FillMode::SOLID);
     setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
     setStencil(false);
-    setLineWidth(1.0f);
     _lockHash = false;
 
     clean();
@@ -176,7 +168,6 @@ void RenderStateBlock::clean() {
     // Avoid small float rounding errors offsetting the general hash value
     U32 zBias = to_uint(floor((_zBias * 1000.0) + 0.5));
     U32 zUnits = to_uint(floor((_zUnits * 1000.0) + 0.5));
-    U32 lineWidth = to_uint(floor((_lineWidth * 1000.0) + 0.5));
 
     _cachedHash = 0;
     Util::Hash_combine(_cachedHash, _colorWrite.i);
@@ -184,7 +175,6 @@ void RenderStateBlock::clean() {
     Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
     Util::Hash_combine(_cachedHash, to_uint(_blendDest));
     Util::Hash_combine(_cachedHash, to_uint(_blendOp));
-    Util::Hash_combine(_cachedHash, lineWidth);
     Util::Hash_combine(_cachedHash, to_uint(_cullMode));
     Util::Hash_combine(_cachedHash, _cullEnabled);
     Util::Hash_combine(_cachedHash, _zEnable);
@@ -203,7 +193,7 @@ void RenderStateBlock::clean() {
     Util::Hash_combine(_cachedHash, to_uint(_fillMode));
 
     if (previousCache != _cachedHash) {
-        Attorney::GFXDeviceRenderStateBlock::registerStateBlock(GFX_DEVICE, *this);
+        Attorney::GFXDeviceRenderStateBlock::registerStateBlock(*this);
     }
 }
 };

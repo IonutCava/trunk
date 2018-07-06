@@ -503,10 +503,6 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     if (!oldBlock || oldBlock->zEnable() != newBlock.zEnable()) {
         toggle(newBlock.zEnable(), GL_DEPTH_TEST);
     }
-    // Check line width
-    if (!oldBlock || !COMPARE(oldBlock->lineWidth(), newBlock.lineWidth())) {
-        glLineWidth(std::min(newBlock.lineWidth(), to_float(_lineWidthLimit)));
-    }
     // Check separate blend functions
     if (!oldBlock ||
         oldBlock->blendSrc() != newBlock.blendSrc() ||

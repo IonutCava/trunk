@@ -385,6 +385,22 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
     }
 }
 
+/// This is just a short-circuit system (hack) to quickly send 3 vertices to the shader
+/// It's used, mostly, to draw full screen quads using vertex shaders
+void GFXDevice::drawTriangle(size_t stateHash,
+                             ShaderProgram* const shaderProgram) {
+    // We require a state hash value to set proper states
+    _defaultDrawCmd.stateHash(stateHash);
+    // We also require a shader program (although it may already be bound.
+    // Better safe ...)
+    _defaultDrawCmd.shaderProgram(shaderProgram);
+    // If the draw command was successfully parsed
+    if (setBufferData(_defaultDrawCmd)) {
+        // Tell the rendering API to upload the needed number of points
+        drawTriangle();
+    }
+
+}
 /// Draw the outlines of a box defined by min and max as extents using the
 /// specified world matrix
 void GFXDevice::drawBox3D(IMPrimitive& primitive,
@@ -428,16 +444,31 @@ void GFXDevice::drawBox3D(IMPrimitive& primitive,
 /// Render a list of lines within the specified constraints
 void GFXDevice::drawLines(IMPrimitive& primitive,
                           const vectorImpl<Line>& lines,
-                          const mat4<F32>& globalOffset,
                           const vec4<I32>& viewport,
                           const bool inViewport) {
 
+    static const vec3<F32> vertices[] = {
+        vec3<F32>(-1.0f, -1.0f,  1.0f),
+        vec3<F32>(1.0f, -1.0f,  1.0f),
+        vec3<F32>(-1.0f,  1.0f,  1.0f),
+        vec3<F32>(1.0f,  1.0f,  1.0f),
+        vec3<F32>(-1.0f, -1.0f, -1.0f),
+        vec3<F32>(1.0f, -1.0f, -1.0f),
+        vec3<F32>(-1.0f,  1.0f, -1.0f),
+        vec3<F32>(1.0f,  1.0f, -1.0f)
+    };
+
+    static const U16 indices[] = {
+        0, 1, 2,
+        3, 7, 1,
+        5, 4, 7,
+        6, 2, 4,
+        0, 1
+    };
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (!lines.empty()) {
         primitive.paused(false);
-        // Set the world matrix
-        primitive.worldMatrix(globalOffset);
         // If we need to render it into a specific viewport, set the pre and post
         // draw functions to set up the
         // needed viewport rendering (e.g. axis lines)
@@ -447,16 +478,34 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
                 DELEGATE_BIND(&GFXDevice::restoreViewport, this));
         }
         // Create the object containing all of the lines
-        primitive.beginBatch(true, to_uint(lines.size()) * 2);
+        primitive.beginBatch(true, to_uint(lines.size()) * 2 * 14);
         primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), lines[0]._colorStart);
         // Set the mode to line rendering
+        //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
         primitive.begin(PrimitiveType::LINES);
+        primitive.drawShader(_imShaderLines);
+        //vec3<F32> tempVertex;
         // Add every line in the list to the batch
         for (const Line& line : lines) {
             primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), line._colorStart);
+            /*for (U16 idx : indices) {
+                tempVertex.set(line._startPoint * vertices[idx]);
+                tempVertex *= line._widthStart;
+
+                primitive.vertex(tempVertex);
+            }*/
             primitive.vertex(line._startPoint);
+
             primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), line._colorEnd);
+            /*for (U16 idx : indices) {
+                tempVertex.set(line._endPoint * vertices[idx]);
+                tempVertex *= line._widthEnd;
+
+                primitive.vertex(tempVertex);
+            }*/
+
             primitive.vertex(line._endPoint);
+            
         }
         primitive.end();
         // Finish our object

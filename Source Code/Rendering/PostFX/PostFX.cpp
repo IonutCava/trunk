@@ -244,7 +244,7 @@ void PostFX::displayScene(bool applyFilters) {
         }
     }
 
-    _gfx->drawPoints(1, _gfx->getDefaultStateBlock(true), drawShader);
+    _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), drawShader);
 }
 
 void PostFX::idle() {

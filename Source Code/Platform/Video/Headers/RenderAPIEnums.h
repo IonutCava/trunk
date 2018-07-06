@@ -44,7 +44,8 @@ enum class AttribLocation : U32 {
     VERTEX_TEXCOORD = 3,
     VERTEX_TANGENT = 4,
     VERTEX_BONE_WEIGHT = 5,
-    VERTEX_BONE_INDICE = 6
+    VERTEX_BONE_INDICE = 6,
+    VERTEX_WIDTH = 7
 };
 
 enum class ShaderBufferLocation : U32 {

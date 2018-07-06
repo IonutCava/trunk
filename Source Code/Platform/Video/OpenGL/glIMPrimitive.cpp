@@ -29,6 +29,10 @@ void glIMPrimitive::vertex(F32 x, F32 y, F32 z) {
     _imInterface->Vertex(x, y, z);
 }
 
+void glIMPrimitive::attribute1f(U32 attribLocation, F32 value) {
+    _imInterface->Attribute1f(attribLocation, value);
+}
+
 void glIMPrimitive::attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) {
     _imInterface->Attribute4ub(attribLocation, x, y, z, w);
 }

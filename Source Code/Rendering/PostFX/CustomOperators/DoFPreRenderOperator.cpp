@@ -53,7 +53,7 @@ void DoFPreRenderOperator::operation() {
     _outputFB->Begin(Framebuffer::defaultPolicy());
     _samplerCopy->Bind(0);  // screenFB
     _inputFB[1]->Bind(1, TextureDescriptor::AttachmentType::Depth);  // depthFB
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
+    GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
     _outputFB->End();
 }
 };

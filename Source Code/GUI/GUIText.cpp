@@ -17,8 +17,7 @@ GUIText::GUIText(const stringImpl& id,
 
 
 void GUIText::draw() const {
-    Attorney::GFXDeviceGUI::drawText(GFX_DEVICE, 
-                                     *this,
+    Attorney::GFXDeviceGUI::drawText(*this,
                                      getStateBlockHash(),
                                      _relativePosition);
 }

@@ -154,11 +154,11 @@ const unsigned int LIGHT_GRID_TILE_DIM_Y = 64;
 // used for clustered forward
 const unsigned int LIGHT_GRID_MAX_DIM_Z = 256;
 
-// Max screen size of 1920x1080
+// Max screen size of 4K
 const unsigned int LIGHT_GRID_MAX_DIM_X =
-    ((1920 + LIGHT_GRID_TILE_DIM_X - 1) / LIGHT_GRID_TILE_DIM_X);
+    ((3840 + LIGHT_GRID_TILE_DIM_X - 1) / LIGHT_GRID_TILE_DIM_X);
 const unsigned int LIGHT_GRID_MAX_DIM_Y =
-    ((1080 + LIGHT_GRID_TILE_DIM_Y - 1) / LIGHT_GRID_TILE_DIM_Y);
+    ((2160 + LIGHT_GRID_TILE_DIM_Y - 1) / LIGHT_GRID_TILE_DIM_Y);
 
 /// the maximum number of lights supported, this is limited by constant buffer
 /// size, commonly this is 64kb, but AMD only seem to allow 2048 lights...

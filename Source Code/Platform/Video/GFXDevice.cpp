@@ -38,7 +38,9 @@ GFXDevice::GFXDevice()
     _defaultStateNoDepthHash = 0;
     _stateDepthOnlyRenderingHash = 0;
     // Pointers
+    _axisGizmo = nullptr;
     _imShader = nullptr;
+    _imShaderLines = nullptr;
     _nodeBuffer = nullptr;
     _gfxDataBuffer = nullptr;
     _HIZConstructProgram = nullptr;
@@ -79,13 +81,13 @@ GFXDevice::GFXDevice()
     // RenderPassManager::getInstance().addRenderPass("shadowPass",2);
     // Red X-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255)));
+        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 3.0f));
     // Green Y-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255)));
+        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 3.0f));
     // Blue Z-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
+        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 3.0f));
 }
 
 GFXDevice::~GFXDevice()
@@ -546,6 +548,17 @@ bool GFXDevice::postProcessingEnabled() const {
             getRenderer().getType() != RendererType::RENDERER_DEFERRED_SHADING;
 }
 
+void GFXDevice::onCameraUpdate(Camera& camera) {
+    if (drawDebugAxis()) {
+        // We need to transform the gizmo so that it always remains axis aligned
+        // Create a world matrix using a look at function with the eye position
+        // backed up from the camera's view direction
+        _axisGizmo->worldMatrix(
+            mat4<F32>(-camera.getViewDir() * 2, VECTOR3_ZERO, camera.getUpDir()) *
+            _gpuBlock._data._ViewMatrix.getInverse());
+    }
+}
+
 /// Depending on the context, either immediately call the function, or pass it
 /// to the loading thread via a queue
 bool GFXDevice::loadInContext(const CurrentContext& context,
@@ -630,9 +643,8 @@ void GFXDevice::ConstructHIZ() {
         // previous level
         _renderTarget[to_uint(RenderTarget::DEPTH)]->SetMipLevel(
             i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
-        // Dummy draw command as the full screen quad is generated completely by
-        // a geometry shader
-        drawPoints(1, _stateDepthOnlyRenderingHash, _HIZConstructProgram);
+        // Dummy draw command as the full screen quad is generated completely in the vertex shader
+        drawTriangle(_stateDepthOnlyRenderingHash, _HIZConstructProgram);
     }
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer

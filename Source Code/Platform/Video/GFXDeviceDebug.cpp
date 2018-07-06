@@ -36,7 +36,7 @@ void GFXDevice::previewDepthBuffer() {
         TextureDescriptor::AttachmentType::Depth);
 
     GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 256, 0,256, 256);
-    drawPoints(1, _defaultStateNoDepthHash, _previewDepthMapShader);
+    drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
 #endif
 }
 
@@ -60,7 +60,9 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         // Inform the primitive that we're using the imShader
         // A primitive can be rendered with any shader program available, so
         // make sure we actually use the right one for this stage
-        prim->drawShader(_imShader);
+        if (prim->drawShader() == nullptr) {
+            prim->drawShader(_imShader);
+        }
         // Set the primitive's render state block
         setStateBlock(prim->stateHash());
         // Call any "onDraw" function the primitive may have attached
@@ -91,24 +93,13 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     if (!drawDebugAxis()) {
         return;
     }
-    // We need to transform the gizmo so that it always remains axis aligned
-    const Camera& cam = sceneRenderState.getCameraConst();
-    // Create a world matrix using a look at function with the eye position
-    // backed up from the camera's view direction
-    mat4<F32> offset(-cam.getViewDir() * 2, VECTOR3_ZERO, cam.getUpDir());
+  
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
     U16 windowWidth = _renderTarget[to_uint(RenderTarget::SCREEN)]->getWidth();
-
-    IMPrimitive* primitive = getOrCreatePrimitive();
-    primitive->name("GFXDeviceAxisGizmo");
-    RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
-    primitiveDescriptor.setLineWidth(3.0f);
-    primitive->stateHash(primitiveDescriptor.getHash());
-    drawLines(*primitive,
+    drawLines(*_axisGizmo,
               _axisLines,
-              offset * _gpuBlock._data._ViewMatrix.getInverse(),
               vec4<I32>(windowWidth - 120, 8, 128, 128),
               true);
 }

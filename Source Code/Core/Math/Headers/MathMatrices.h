@@ -1142,6 +1142,8 @@ struct Line {
     vec3<F32> _endPoint;
     vec4<U8> _colorStart;
     vec4<U8> _colorEnd;
+    F32      _widthStart;
+    F32      _widthEnd;
 
     Line()
     {
@@ -1154,11 +1156,27 @@ struct Line {
     }
 
     Line(const vec3<F32> &startPoint, const vec3<F32> &endPoint,
+        const vec4<U8> &color, F32 width)
+        : Line(startPoint, endPoint, color, color, width)
+    {
+    }
+
+    Line(const vec3<F32> &startPoint, const vec3<F32> &endPoint,
+        const vec4<U8> &colorStart, const vec4<U8>& colorEnd,
+        F32 width)
+        : Line(startPoint, endPoint, colorStart, colorEnd)
+    {
+        _widthStart = _widthEnd = width;
+    }
+
+    Line(const vec3<F32> &startPoint, const vec3<F32> &endPoint,
          const vec4<U8> &colorStart, const vec4<U8>& colorEnd)
         : _startPoint(startPoint),
           _endPoint(endPoint),
           _colorStart(colorStart),
-          _colorEnd(colorEnd)
+          _colorEnd(colorEnd),
+          _widthStart(1.0f),
+          _widthEnd(1.0f)
     {
     }
 

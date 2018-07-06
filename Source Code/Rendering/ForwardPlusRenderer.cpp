@@ -163,8 +163,8 @@ void ForwardPlusRenderer::downSampleDepthBuffer(
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
             ->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
                    TextureDescriptor::AttachmentType::Depth);
-        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
-                              _depthRangesConstructProgram);
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
+                                _depthRangesConstructProgram);
 
         _depthRanges->ReadData(GFXImageFormat::RG, GFXDataFormat::FLOAT_32,
                                &depthRanges[0]);

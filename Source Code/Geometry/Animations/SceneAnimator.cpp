@@ -265,7 +265,7 @@ I32 SceneAnimator::createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
     }
 
     if (piNode->_parent) {
-        lines.push_back(Line(startPoint, endPoint, vec4<U8>(255, 0, 0, 255)));
+        lines.push_back(Line(startPoint, endPoint, vec4<U8>(255, 0, 0, 255), 2.0f));
     }
 
     // render all child nodes

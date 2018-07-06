@@ -60,8 +60,6 @@ Scene::Scene()
 #ifdef _DEBUG
 
     RenderStateBlock primitiveDescriptor;
-    primitiveDescriptor.setLineWidth(3.0f);
-
     _linesPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _linesPrimitive->name("LinesRayPick");
     _linesPrimitive->stateHash(primitiveDescriptor.getHash());
@@ -117,13 +115,11 @@ void Scene::preRender() {
 void Scene::postRender() {
 #ifdef _DEBUG
     if (renderState().drawDebugLines()) {
-        static mat4<F32> identity;
         static vec4<I32> nullViewport;
         static vectorImpl<Line> pickVec(1);
         pickVec[0] = _pickRayLine;
         GFX_DEVICE.drawLines(*_linesPrimitive,
                              pickVec, 
-                             identity,
                              nullViewport);
     }
 #endif
@@ -768,6 +764,8 @@ void Scene::findSelection() {
         _pickRayLine._endPoint.set(endRay);
         _pickRayLine._colorStart.set(0, 128, 0, 255);
         _pickRayLine._colorEnd.set(0, 255, 0, 255);
+        _pickRayLine._widthStart = 5.0f;
+        _pickRayLine._widthEnd = 2.0f;
 #endif
     }
 

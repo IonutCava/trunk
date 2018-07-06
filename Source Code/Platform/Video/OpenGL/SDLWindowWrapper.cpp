@@ -4,6 +4,7 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
@@ -436,7 +437,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Prepare immediate mode emulation rendering
     NS_GLIM::glim.SetVertexAttribLocation(to_uint(AttribLocation::VERTEX_POSITION));
     // We need a dummy VAO object for point rendering
-    glCreateVertexArrays(1, &_pointDummyVAO);
+    glCreateVertexArrays(1, &_dummyVAO);
     // Allocate a buffer for indirect draw used to store the query results
     // without a round-trip to the CPU
     glCreateBuffers(1, &_indirectDrawBuffer);
@@ -497,10 +498,11 @@ void GL_API::closeRenderingAPI() {
         glDeleteBuffers(1, &_indirectDrawBuffer);
         _indirectDrawBuffer = 0;
     }
-    if (_pointDummyVAO > 0) {
-        glDeleteVertexArrays(1, &_pointDummyVAO);
-        _pointDummyVAO = 0;
+    if (_dummyVAO > 0) {
+        glDeleteVertexArrays(1, &_dummyVAO);
+        _dummyVAO = 0;
     }
+    glVertexArray::clearVaos();
     // Destroy the OpenGL Context(s)
     destroyGLContext();
     // Destroy application windows and close SDL
