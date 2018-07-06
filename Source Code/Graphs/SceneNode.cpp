@@ -87,7 +87,7 @@ void SceneNode::setMaterialTpl(Material* const mat) {
         //UpgradableReadLock ur_lock(_materialLock);
         if (_materialTemplate) { //If we had an old material
             if (_materialTemplate->getGUID() != mat->getGUID()) { //if the old material isn't the same as the new one
-                PRINT_FN(Locale::get("REPLACE_MATERIAL"), _materialTemplate->getName().c_str(), mat->getName().c_str());
+                Console::printfn(Locale::get("REPLACE_MATERIAL"), _materialTemplate->getName().c_str(), mat->getName().c_str());
                 //UpgradeToWriteLock uw_lock(ur_lock);
                 UNREGISTER_TRACKED_DEPENDENCY(_materialTemplate);
                 RemoveResource(_materialTemplate);            //remove the old material

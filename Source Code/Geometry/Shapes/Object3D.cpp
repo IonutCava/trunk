@@ -51,7 +51,7 @@ void Object3D::getDrawCommands(SceneGraphNode* const sgn,
     drawCmd.stateHash(renderable->getDrawStateHash(currentRenderStage));
     drawCmd.shaderProgram(renderable->getDrawShader(currentRenderStage));
     drawCmd.sourceBuffer(vb);
-    drawCmd.indexCount((U32)(vb->getIndexCount()));
+    drawCmd.indexCount(static_cast<U32>(vb->getIndexCount()));
 
     drawCommandsOut.push_back(drawCmd);
 }

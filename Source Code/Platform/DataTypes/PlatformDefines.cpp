@@ -30,7 +30,7 @@ namespace Divide {
             return false;
         }
         if ( Config::Assert::LOG_ASSERTS ) {
-            ERROR_FN( "Assert: %s", failMessage );
+            Console::errorfn( "Assert: %s", failMessage );
         }
         if ( Config::Assert::SHOW_MESSAGE_BOX ) {
             if ( GUI::hasInstance() ) {

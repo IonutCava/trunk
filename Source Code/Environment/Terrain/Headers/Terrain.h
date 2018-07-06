@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -76,6 +76,7 @@ class Quadtree;
 class Transform;
 class VertexBuffer;
 class ShaderProgram;
+class SamplerDescriptor;
 class TerrainDescriptor;
 
 class Terrain : public Object3D {
@@ -96,8 +97,8 @@ public:
     vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
     vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
 
-           void  terrainSmooth(F32 k);
-           void  initializeVegetation(TerrainDescriptor* const terrain, SceneGraphNode* const terrainSGN);
+    void  terrainSmooth(F32 k);
+    void  initializeVegetation(TerrainDescriptor* const terrain, SceneGraphNode* const terrainSGN);
 
     inline Quadtree&           getQuadtree()   const {return *_terrainQuadtree;}
 
@@ -120,11 +121,15 @@ protected:
 
     bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true );
 
+    /// Per terrain albedo sampler
+    const SamplerDescriptor& getAlbedoSampler() const { return *_albedoSampler; }
+    const SamplerDescriptor& getNormalSampler() const { return *_normalSampler; }
 protected:
     friend class TerrainChunk;
     void registerTerrainChunk( TerrainChunk* const chunk ) {
         _terrainChunks.push_back( chunk );
     }
+
 protected:
     VegetationDetails _vegDetails;
 
@@ -145,6 +150,8 @@ protected:
     Quad3D*            _plane;
     F32             _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer* > _terrainTextures;
+    SamplerDescriptor* _albedoSampler;
+    SamplerDescriptor* _normalSampler;
 
     vectorImpl<TerrainChunk* > _terrainChunks;
     ///Normal rendering state

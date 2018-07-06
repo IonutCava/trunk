@@ -67,7 +67,7 @@ SceneGraphNode::~SceneGraphNode()
 {
     unload();
 
-    PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
+    Console::printfn(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
     // delete child nodes recursively
     MemoryManager::DELETE_HASHMAP(_children);
 
@@ -108,7 +108,7 @@ bool SceneGraphNode::unload(){
     }
     //Some debug output ...
     if ( !_silentDispose && getParent() ) {
-        PRINT_FN( Locale::get( "REMOVE_SCENEGRAPH_NODE" ), _node->getName().c_str(), getName().c_str() );
+        Console::printfn( Locale::get( "REMOVE_SCENEGRAPH_NODE" ), _node->getName().c_str(), getName().c_str() );
     }
 
     //if not root

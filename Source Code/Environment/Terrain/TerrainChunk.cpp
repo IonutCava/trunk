@@ -92,8 +92,8 @@ void TerrainChunk::Load( U8 depth, const vec2<U32>& pos, U32 minHMSize, const ve
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
 
-    U32 offset = (U32)std::pow(2.0f, (F32)(lod));
-    U32 div = (U32)std::pow(2.0f, (F32)(depth+lod));
+    U32 offset = static_cast<U32>(std::pow(2.0f, static_cast<F32>(lod)));
+    U32 div = static_cast<U32>(std::pow(2.0f, static_cast<F32>(depth+lod)));
     vec2<U32> heightmapDataSize = heightMapSize/(div);
 
     U32 nHMWidth   = heightmapDataSize.x + 1;
@@ -125,7 +125,10 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
         _terrainVB->addRestartIndex();
     }
 
-    if(lod > 0) _lodIndOffset[lod] = (U32)(_indice[lod-1].size() + _lodIndOffset[lod-1]);
+    if (lod > 0)
+    {
+        _lodIndOffset[lod] = static_cast<U32>(_indice[lod - 1].size() + _lodIndOffset[lod - 1]);
+    }
 
     _lodIndCount[lod] = (U32)_indice[lod].size();
     assert(nIndice == _lodIndCount[lod]);

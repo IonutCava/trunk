@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 DIVIDE-Studio
+Copyright (c) 2015 DIVIDE-Studio
 Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
@@ -28,32 +28,25 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class Texture;
-class SceneGraphNode;
-class SamplerDescriptor;
+class Terrain;
 class TerrainDescriptor;
-enum TerrainTextureUsage : I32;
-
-DEFINE_SINGLETON(TerrainLoader)
-    friend class Terrain;
+class TerrainLoader : private NonCopyable
+{
 public:
-    bool loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDescriptor);
+    static bool loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDescriptor);
 
 protected:
-    bool Save(const char* fileName);
-    bool Load(const char* filename);
-    
-    TerrainLoader();
-    ~TerrainLoader();
-private:
-    bool loadThreadedResources(Terrain* terrain, TerrainDescriptor* terrainDescriptor);
-    void initializeVegetation(Terrain* terrain, TerrainDescriptor* terrainDescriptor);
+    static bool Save(const char* fileName);
+    static bool Load(const char* filename);
 
 private:
-    SamplerDescriptor* _albedoSampler;
-    SamplerDescriptor* _normalSampler;
+    TerrainLoader() {}
+    ~TerrainLoader() {}
 
-END_SINGLETON
+    static bool loadThreadedResources(Terrain* terrain, TerrainDescriptor* terrainDescriptor);
+    static void initializeVegetation(Terrain* terrain, TerrainDescriptor* terrainDescriptor);
+
+};
 
 }; //namespace Divide
 

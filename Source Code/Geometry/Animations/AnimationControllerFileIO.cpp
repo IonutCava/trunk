@@ -55,7 +55,7 @@ void AnimEvaluator::Load(std::ifstream& file){
     file.read(temp, nsize);// the size of the animation name
     temp[nsize]=0;// null char
     _name=temp;
-    D_PRINT_FN(Locale::get("CREATE_ANIMATION_BEGIN"),_name.c_str());
+    Console::d_printfn(Locale::get("CREATE_ANIMATION_BEGIN"),_name.c_str());
     file.read(reinterpret_cast<char*>(&_duration), sizeof(_duration));// the duration
     file.read(reinterpret_cast<char*>(&_ticksPerSecond), sizeof(_ticksPerSecond));// the number of ticks per second
     file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number animation channels
@@ -127,7 +127,7 @@ void SceneAnimator::Load(std::ifstream& file){
     uint32_t nsize = 0;
     file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of animations
     _animations.resize(nsize);
-    D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_BEGIN"));
+    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_BEGIN"));
     for(uint32_t i(0); i< nsize; i++){
         _animations[i].Load(file);
     }
@@ -166,7 +166,7 @@ void SceneAnimator::Load(std::ifstream& file){
             }
         }
     }
-    D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
+    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
 }
 
 void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent) {

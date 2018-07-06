@@ -35,7 +35,7 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
                                                          containerID, 
                                                          node->getGUID()));
         } else {
-            ERROR_FN("VisualSensor: Added the same node to follow twice!");
+            Console::errorfn("VisualSensor: Added the same node to follow twice!");
         }
     } else {
         NodeContainer& newContainer = _nodeContainerMap[containerID];
@@ -59,10 +59,10 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
         if (nodeEntry != container->second.end()) {
             container->second.erase(nodeEntry);
         } else {
-            ERROR_FN("VisualSensor: Specified node does not exist in specified container!");
+            Console::errorfn("VisualSensor: Specified node does not exist in specified container!");
         }
     } else {
-        ERROR_FN("VisualSensor: Invalid container specified for unfollow!");
+        Console::errorfn("VisualSensor: Invalid container specified for unfollow!");
     }
 }
 

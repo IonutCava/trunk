@@ -148,12 +148,12 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
 void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const shaderProgram) {
     // We need a valid amount of points. Check lower limit
     if (numPoints == 0) {
-        ERROR_FN(Locale::get("ERROR_GFX_POINTS_UNDERFLOW"));
+        Console::errorfn(Locale::get("ERROR_GFX_POINTS_UNDERFLOW"));
         return;
     }
     // Also check upper limit
     if (numPoints > Config::MAX_POINTS_PER_BATCH) {
-        ERROR_FN(Locale::get("ERROR_GFX_POINTS_OVERFLOW"));
+        Console::errorfn(Locale::get("ERROR_GFX_POINTS_OVERFLOW"));
         return;
     }
     // We require a state hash value to set proper states
@@ -239,7 +239,7 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
         // Future formats must be added later (e.g. cube map arrays)
-        ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
+        Console::errorfn(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
         return;
     }
     // Calling this function without a callback is a programming error and should never happen

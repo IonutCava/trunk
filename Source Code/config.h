@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -54,7 +54,7 @@ namespace Config {
     /// Maximum number of instances of a single mesh with a single draw call
     const unsigned int MAX_INSTANCE_COUNT = 512;
     /// Maximum number of points that can be sent to the GPU per batch
-    const unsigned int MAX_POINTS_PER_BATCH = (unsigned int)(1 << 31);
+    const unsigned int MAX_POINTS_PER_BATCH = static_cast<unsigned int>(1 << 31);
     /// Maximum number of bones available per node
     const unsigned int MAX_BONE_COUNT_PER_NODE = 256;
     /// Estimated maximum number of visible objects per render pass (This includes debug primitives);
@@ -62,8 +62,8 @@ namespace Config {
     /// How many clip planes should the shaders us
     const unsigned int MAX_CLIP_PLANES = 6;
     /// Generic index value used to separate primitives within the same vertex buffer
-    const unsigned int PRIMITIVE_RESTART_INDEX_L = (unsigned int)(1 << 31);
-    const unsigned int PRIMITIVE_RESTART_INDEX_S = (unsigned int)(1 << 15);
+    const unsigned int PRIMITIVE_RESTART_INDEX_L = static_cast<unsigned int>(1 << 31);
+    const unsigned int PRIMITIVE_RESTART_INDEX_S = static_cast<unsigned int>(1 << 15);
     /// Terrain LOD configuration
     /// Camera distance to the terrain chunk is calculated as follows:
     ///    vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();

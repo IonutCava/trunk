@@ -54,12 +54,12 @@ bool Texture::generateHWResource(const stringImpl& name) {
         }
         // Cube maps have exactly 6 faces, so make sure all of them are loaded
         if (idx != 6 && _textureType == TEXTURE_CUBE_MAP) {
-            ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT"), getResourceLocation().c_str());
+            Console::errorfn(Locale::get("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT"), getResourceLocation().c_str());
             return false;
         }
         // Same logic applies to texture arrays
         if (idx != _numLayers && _textureType == TEXTURE_2D_ARRAY) {
-            ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT"), getResourceLocation().c_str());
+            Console::errorfn(Locale::get("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT"), getResourceLocation().c_str());
             return false;
         }
     } else {
@@ -83,7 +83,7 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     img.create(name);
     // Validate data
     if (!img.data()) {
-        ERROR_FN(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
+        Console::errorfn(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
         // Missing texture fallback.
         ParamHandler& par = ParamHandler::getInstance();
         img.flip(false);

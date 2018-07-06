@@ -2,8 +2,8 @@
  * @class WorldState
  * @brief A way of describing the "world" at any point in time.
  *
- * @date  July 2014
- * @copyright (c) 2014 Prylis Inc.. All rights reserved.
+ * @date  July 2015
+ * @copyright (c) 2015 Prylis Inc.. All rights reserved.
  */
 
 #pragma once

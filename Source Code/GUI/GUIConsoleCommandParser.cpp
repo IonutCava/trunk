@@ -69,46 +69,46 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString){
                 _commandMap["invalidcommand"](command);
             }
         } else    {
-            PRINT_FN("%s",commandString.c_str()); // no commands, just output what was typed
+            Console::printfn("%s",commandString.c_str()); // no commands, just output what was typed
         }
     }
     return true;
 }
 
 void GUIConsoleCommandParser::handleSayCommand(const stringImpl& args){
-    PRINT_FN(Locale::get("CONSOLE_SAY_NAME_TAG"),args.c_str());
+    Console::printfn(Locale::get("CONSOLE_SAY_NAME_TAG"),args.c_str());
 }
 
 void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args){
     if(!args.empty()){
         //quit command can take an extra argument. A reason, for example
-        PRINT_FN(Locale::get("CONSOLE_QUIT_COMMAND_ARGUMENT"), args.c_str());
+        Console::printfn(Locale::get("CONSOLE_QUIT_COMMAND_ARGUMENT"), args.c_str());
     }
     Application::getInstance().RequestShutdown();
 }
 
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args){
     if ( args.empty() ) {
-        PRINT_FN( Locale::get( "HELP_CONSOLE_COMMAND" ) );
+        Console::printfn( Locale::get( "HELP_CONSOLE_COMMAND" ) );
         for (const CommandMap::value_type& it : _commandMap) {
             if ( it.first.find( "invalid" ) == stringImpl::npos ) {
-                PRINT_FN( "/%s - %s", it.first.c_str(), _commandHelp[it.first] );
+                Console::printfn( "/%s - %s", it.first.c_str(), _commandHelp[it.first] );
             }
         }
     } else {
         if ( _commandHelp.find( args ) != _commandHelp.end() ) {
-            PRINT_FN( "%s", _commandHelp[args] );
+            Console::printfn( "%s", _commandHelp[args] );
         } else {
-            PRINT_FN( "%s", _commandHelp["invalidhelp"] );
+            Console::printfn( "%s", _commandHelp["invalidhelp"] );
         }
     }
 }
 
 void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args){
     if(ParamHandler::getInstance().isParam<stringImpl>(args)){
-        PRINT_FN(Locale::get("CONSOLE_EDITPARAM_FOUND"), args.c_str(), "N/A", "N/A", "N/A");
+        Console::printfn(Locale::get("CONSOLE_EDITPARAM_FOUND"), args.c_str(), "N/A", "N/A", "N/A");
     }else{
-        PRINT_FN(Locale::get("CONSOLE_EDITPARAM_NOT_FOUND"), args.c_str());
+        Console::printfn(Locale::get("CONSOLE_EDITPARAM_NOT_FOUND"), args.c_str());
     }
 }
 
@@ -120,7 +120,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args){
         if(filename.substr(filename.length()-4,filename.length()).compare(".wav") != 0 &&
            filename.substr(filename.length()-4,filename.length()).compare(".mp3") != 0 &&
            filename.substr(filename.length()-4,filename.length()).compare(".ogg") != 0){
-               ERROR_FN(Locale::get("CONSOLE_PLAY_SOUND_INVALID_FORMAT"));
+               Console::errorfn(Locale::get("CONSOLE_PLAY_SOUND_INVALID_FORMAT"));
                return;
         }
         if(_sound != nullptr) RemoveResource(_sound);
@@ -139,7 +139,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args){
             SFXDevice::getInstance().playSound(_sound);
         }
     }else{
-        ERROR_FN(Locale::get("CONSOLE_PLAY_SOUND_INVALID_FILE"),filename.c_str());
+        Console::errorfn(Locale::get("CONSOLE_PLAY_SOUND_INVALID_FILE"),filename.c_str());
     }
 }
 
@@ -148,7 +148,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args){
     if(!args.empty()){
         sgn = GET_ACTIVE_SCENEGRAPH()->findNode("args");
         if(!sgn){
-            ERROR_FN(Locale::get("CONSOLE_NAVMESH_NO_NODE"),args.c_str());
+            Console::errorfn(Locale::get("CONSOLE_NAVMESH_NO_NODE"),args.c_str());
             return;
         }
     }
@@ -180,7 +180,7 @@ void GUIConsoleCommandParser::handleShaderRecompileCommand(const stringImpl& arg
 
 void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args){
     if(!Util::isNumber(args)){
-        ERROR_FN(Locale::get("CONSOLE_INVALID_NUMBER"));
+        Console::errorfn(Locale::get("CONSOLE_INVALID_NUMBER"));
         return;
     }
     I32 FoV = (atoi(args.c_str()));
@@ -197,7 +197,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args){
 
     float scale = 1.0f;
     if(!Util::isNumber(args2.c_str())){
-        ERROR_FN(Locale::get("CONSOLE_INVALID_NUMBER"));
+        Console::errorfn(Locale::get("CONSOLE_INVALID_NUMBER"));
     }else{
         scale = (F32)atof(args2.c_str());
     }
@@ -222,7 +222,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args){
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args){
-    ERROR_FN(Locale::get("CONSOLE_INVALID_COMMAND"),args.c_str());
+    Console::errorfn(Locale::get("CONSOLE_INVALID_COMMAND"),args.c_str());
 }
 
 };

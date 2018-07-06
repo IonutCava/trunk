@@ -63,7 +63,7 @@ PostFX::~PostFX()
 void PostFX::init(const vec2<U16>& resolution) {
     _resolutionCache = resolution;
 
-    PRINT_FN(Locale::get("START_POST_FX"));
+    Console::printfn(Locale::get("START_POST_FX"));
     ParamHandler& par = ParamHandler::getInstance();
     _gfx = &GFX_DEVICE;
     _enableBloom = par.getParam<bool>("postProcessing.enableBloom");

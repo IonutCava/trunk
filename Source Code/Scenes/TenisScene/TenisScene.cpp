@@ -173,7 +173,7 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
         if(collisionTeam1 == collisionTeam2){
             collisionTeam1 = !_directionTeam1ToTeam2;
             collisionTeam2 = !collisionTeam1;
-            D_ERROR_FN("COLLISION ERROR");
+            Console::d_errorfn("COLLISION ERROR");
         }
 
         F32 sideDrift = 0;

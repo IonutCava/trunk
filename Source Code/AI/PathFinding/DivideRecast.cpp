@@ -100,7 +100,7 @@ namespace Navigation {
             _pathStore[pathSlot].PosY[nVert]=StraightPath[nIndex++];
             _pathStore[pathSlot].PosZ[nVert]=StraightPath[nIndex++];
 
-           //PRINT_FN("Path Vert %i, %f %f %f", nVert, m_PathStore[pathSlot].PosX[nVert],
+           //Console::printfn("Path Vert %i, %f %f %f", nVert, m_PathStore[pathSlot].PosX[nVert],
            //                                          m_PathStore[pathSlot].PosY[nVert],
            //                                          m_PathStore[pathSlot].PosZ[nVert]) ;
         }

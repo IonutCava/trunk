@@ -15,7 +15,7 @@ namespace Divide {
 glShader::glShader(const stringImpl& name, const ShaderType& type, const bool optimise) : Shader(name, type, optimise)
 {
     switch (type) {
-        default:      ERROR_FN(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),type);     break;
+        default:      Console::errorfn(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),type);     break;
         case VERTEX_SHADER   : _shader = glCreateShader(GL_VERTEX_SHADER);    break;
         case FRAGMENT_SHADER : _shader = glCreateShader(GL_FRAGMENT_SHADER);  break;
         case GEOMETRY_SHADER : _shader = glCreateShader(GL_GEOMETRY_SHADER);  break;
@@ -32,7 +32,7 @@ glShader::~glShader()
 
 bool glShader::load(const stringImpl& source){
     if(source.empty()){
-        ERROR_FN(Locale::get("ERROR_GLSL_SHADER_NOT_FOUND"),getName().c_str());
+        Console::errorfn(Locale::get("ERROR_GLSL_SHADER_NOT_FOUND"),getName().c_str());
         return false;
     }
     stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
@@ -49,7 +49,7 @@ bool glShader::load(const stringImpl& source){
             parsedSource = glslopt_get_output(shader);
         } else {
             stringImpl errorLog("\n -- "); errorLog.append(glslopt_get_log(shader));
-            ERROR_FN(Locale::get("ERROR_GLSL_OPTIMISE"), getName().c_str(), errorLog.c_str());
+            Console::errorfn(Locale::get("ERROR_GLSL_OPTIMISE"), getName().c_str(), errorLog.c_str());
         }
         glslopt_shader_delete (shader);
     }
@@ -87,16 +87,16 @@ void glShader::validate() {
     glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
     shaderLog.push_back('\n');
     if(status == GL_FALSE){
-        ERROR_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),&shaderLog[0]);
+        Console::errorfn(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),&shaderLog[0]);
     }else{
-        D_PRINT_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),&shaderLog[0]);
+        Console::d_printfn(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),&shaderLog[0]);
     }
 #endif
 }
 
 stringImpl glShader::preprocessIncludes( const stringImpl& source, const stringImpl& filename, I32 level /*= 0 */ ){
     if(level > 32){
-        ERROR_FN(Locale::get("ERROR_GLSL_INCLUD_LIMIT"));
+        Console::errorfn(Locale::get("ERROR_GLSL_INCLUD_LIMIT"));
     }
 
     static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
@@ -135,7 +135,7 @@ stringImpl glShader::preprocessIncludes( const stringImpl& source, const stringI
             include_string = ShaderManager::getInstance().shaderFileRead(include_file, shaderAtomLocationPrefix+loc);
 
             if(include_string.empty()){
-                ERROR_FN(Locale::get("ERROR_GLSL_NO_INCLUDE_FILE"), getName().c_str(), line_number, include_file.c_str());
+                Console::errorfn(Locale::get("ERROR_GLSL_NO_INCLUDE_FILE"), getName().c_str(), line_number, include_file.c_str());
             }
             output << stringAlg::fromBase(preprocessIncludes(include_string, include_file, level + 1)) << std::endl;
         }else{

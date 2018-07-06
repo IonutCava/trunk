@@ -27,9 +27,9 @@ SceneManager::~SceneManager()
 {
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
 
-    PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
-    //PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
-    PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
+    Console::printfn(Locale::get("STOP_SCENE_MANAGER"));
+    //Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
+    Console::printfn(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
     MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE( _renderPassCuller );
     //Destroy the model loader;
@@ -40,7 +40,7 @@ bool SceneManager::init(GUI* const gui){
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 1);
 
     //Load default material
-    PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
+    Console::printfn(Locale::get("LOAD_DEFAULT_MATERIAL"));
     _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial",
                                             false);
     _defaultMaterial->dumpToFile(false);
@@ -54,7 +54,7 @@ bool SceneManager::init(GUI* const gui){
 
 bool SceneManager::load(const stringImpl& sceneName, const vec2<U16>& resolution, CameraManager* const cameraMgr){
     assert(_init == true && _GUI != nullptr);
-    PRINT_FN(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
+    Console::printfn(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
     //Initialize the model importer:
     if(!DVDConverter::getInstance().init()){
         return false;

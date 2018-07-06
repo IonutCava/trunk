@@ -197,7 +197,7 @@ namespace XML {
 
     std::string loadScripts(const std::string& file) {
         ParamHandler &par = ParamHandler::getInstance();
-        PRINT_FN(Locale::get("XML_LOAD_SCRIPTS"));
+        Console::printfn(Locale::get("XML_LOAD_SCRIPTS"));
         read_xml(file.c_str(), pt);
         std::string activeScene("MainScene");
         par.setParam("testInt", 2);
@@ -216,7 +216,7 @@ namespace XML {
     void loadConfig(const std::string& file) {
         ParamHandler &par = ParamHandler::getInstance();
         pt.clear();
-        PRINT_FN(Locale::get("XML_LOAD_CONFIG"), file.c_str());
+        Console::printfn(Locale::get("XML_LOAD_CONFIG"), file.c_str());
         read_xml(file.c_str(),pt);
         par.setParam("locale",pt.get("language","enGB"));
         par.setParam("logFile",pt.get("debug.logFile","none"));
@@ -274,13 +274,13 @@ namespace XML {
     void loadScene(const std::string& sceneName, SceneManager& sceneMgr) {
         ParamHandler &par = ParamHandler::getInstance();
         pt.clear();
-        PRINT_FN(Locale::get("XML_LOAD_SCENE"), sceneName.c_str());
+        Console::printfn(Locale::get("XML_LOAD_SCENE"), sceneName.c_str());
         std::string sceneLocation(par.getParam<std::string>("scriptLocation") + "/" +
                                   par.getParam<std::string>("scenesLocation") + "/" + sceneName);
         try {
             read_xml(sceneLocation + ".xml", pt);
         } catch ( boost::property_tree::xml_parser_error & e) {
-            ERROR_FN(Locale::get("ERROR_XML_INVALID_SCENE"),sceneName.c_str());
+            Console::errorfn(Locale::get("ERROR_XML_INVALID_SCENE"),sceneName.c_str());
             std::string error(e.what());
             error += " [check error log!]";
             throw error.c_str();
@@ -290,7 +290,7 @@ namespace XML {
         Scene* scene = sceneMgr.createScene(sceneName.c_str());
 
         if (!scene)    {
-            ERROR_FN(Locale::get("ERROR_XML_LOAD_INVALID_SCENE"));
+            Console::errorfn(Locale::get("ERROR_XML_LOAD_INVALID_SCENE"));
             return;
         }
 
@@ -368,7 +368,7 @@ namespace XML {
     void loadTerrain(const std::string &file, Scene* const scene) {
         U8 count = 0;
         pt.clear();
-        PRINT_FN(Locale::get("XML_LOAD_TERRAIN"),file.c_str());
+        Console::printfn(Locale::get("XML_LOAD_TERRAIN"),file.c_str());
         read_xml(file,pt);
         ptree::iterator itTerrain;
         ptree::iterator itTexture;
@@ -507,12 +507,12 @@ namespace XML {
             count++;
         }
 
-        PRINT_FN(Locale::get("XML_TERRAIN_COUNT"),count);
+        Console::printfn(Locale::get("XML_TERRAIN_COUNT"),count);
     }
 
     void loadGeometry(const std::string &file, Scene* const scene) {
         pt.clear();
-        PRINT_FN(Locale::get("XML_LOAD_GEOMETRY"),file.c_str());
+        Console::printfn(Locale::get("XML_LOAD_GEOMETRY"),file.c_str());
         read_xml(file,pt);
         ptree::iterator it;
         std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/";
@@ -728,7 +728,7 @@ namespace XML {
 
         inp.close();
         bool skip = false;
-        PRINT_FN(Locale::get("XML_LOAD_MATERIAL"),matName.c_str());
+        Console::printfn(Locale::get("XML_LOAD_MATERIAL"),matName.c_str());
         read_xml(materialFile, pt);
 
         std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());

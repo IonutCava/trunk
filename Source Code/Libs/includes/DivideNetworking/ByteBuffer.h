@@ -398,9 +398,9 @@ class ByteBuffer
         void appendPackXYZ(F32 x, F32 y, F32 z)
         {
             U32 packed = 0;
-            packed |= ((I32)(x / 0.25f) & 0x7FF);
-            packed |= ((I32)(y / 0.25f) & 0x7FF) << 11;
-            packed |= ((I32)(z / 0.25f) & 0x3FF) << 22;
+            packed |= (static_cast<I32>(x / 0.25f) & 0x7FF);
+            packed |= (static_cast<I32>(y / 0.25f) & 0x7FF) << 11;
+            packed |= (static_cast<I32>(z / 0.25f) & 0x3FF) << 22;
             *this << packed;
         }
 
@@ -413,8 +413,8 @@ class ByteBuffer
             {
                 if (guid & 0xFF)
                 {
-                    packGUID[0] |= (U8)(1 << i);
-                    packGUID[size] = (U8)(guid & 0xFF);
+                    packGUID[0] |= static_cast<U8>(1 << i);
+                    packGUID[size] = static_cast<U8>(guid & 0xFF);
                     ++size;
                 }
 

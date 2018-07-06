@@ -30,7 +30,7 @@ void ShaderManager::destroy() {
 bool ShaderManager::init() {    
     // Avoid double init requests
     if (_init) {
-        ERROR_FN(Locale::get("WARNING_SHADER_MANAGER_DOUBLE_INIT"));
+        Console::errorfn(Locale::get("WARNING_SHADER_MANAGER_DOUBLE_INIT"));
         return false;
     }
     // Initialize the rendering-API specific shader loading system
@@ -68,7 +68,7 @@ void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
         _shaderPrograms.erase(it);
     } else {
         // Show an error if this isn't the case
-        ERROR_FN(Locale::get("ERROR_SHADER_REMOVE_NOT_FOUND"),name.c_str());
+        Console::errorfn(Locale::get("ERROR_SHADER_REMOVE_NOT_FOUND"),name.c_str());
     }
 }
 
@@ -100,7 +100,7 @@ bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
     }
     // If no shaders were found, show an error
     if ( !state ) {
-        ERROR_FN( Locale::get( "ERROR_SHADER_RECOMPILE_NOT_FOUND" ), name.c_str() );
+        Console::errorfn( Locale::get( "ERROR_SHADER_RECOMPILE_NOT_FOUND" ), name.c_str() );
     }
 
     return state;
@@ -212,7 +212,7 @@ Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
         if (!recompile) {
             // We don't need a ref count increase if we just recompile the shader
             it->second->AddRef();
-            D_PRINT_FN(Locale::get("SHADER_MANAGER_GET_SHADER_INC"),name.c_str(), it->second->GetRef());
+            Console::d_printfn(Locale::get("SHADER_MANAGER_GET_SHADER_INC"),name.c_str(), it->second->GetRef());
         }
         return it->second;
     }

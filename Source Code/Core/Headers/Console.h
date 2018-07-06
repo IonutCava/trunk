@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -24,67 +24,46 @@
 #ifndef _CORE_CONSOLE_H_
 #define _CORE_CONSOLE_H_
 
-#include "Core/Headers/Singleton.h"
+#include "Core/Headers/NonCopyable.h"
+
 #include <boost/thread/mutex.hpp>
 #include <functional>
 
 namespace Divide {
 
-DEFINE_SINGLETON(Console)
-    typedef std::function<void (const char*, bool)> consolePrintCallback;
+static const int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
+
+class Console : private NonCopyable
+{
+    typedef std::function<void(const char*, bool)> consolePrintCallback;
 
 public:
-    void printCopyrightNotice() const;
-    const char* printfn(const char* format, ...) const;
-    const char* printf(const char* format, ...) const;
-    const char* errorfn(const char* format, ...) const;
-    const char* errorf(const char* format, ...) const;
-#ifdef _DEBUG
-    const char* d_printfn(const char* format, ...) const;
-    const char* d_printf(const char* format, ...) const;
-    const char* d_errorfn(const char* format, ...) const;
-    const char* d_errorf(const char* format, ...) const;
-#endif
+    static void printCopyrightNotice();
+    static const char* printfn(const char* format, ...);
+    static const char* printf(const char* format, ...);
+    static const char* errorfn(const char* format, ...);
+    static const char* errorf(const char* format, ...);
 
-    inline void toggleTimeStamps(const bool state)  {_timestamps = state;}
-    inline void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {
+    static const char* d_printfn(const char* format, ...);
+    static const char* d_printf(const char* format, ...);
+    static const char* d_errorfn(const char* format, ...);
+    static const char* d_errorf(const char* format, ...);
+
+    static void toggleTimeStamps(const bool state) { _timestamps = state; }
+    static void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {
         _guiConsoleCallback = guiConsoleCallback;
     }
 
 protected:
-    Console();
-    ~Console();
-    const char* output(const char* text,const bool error = false) const;
+    static const char* output(const char* text, const bool error = false);
 
 private:
-    mutable boost::mutex io_mutex;
-    consolePrintCallback _guiConsoleCallback;
-    bool _timestamps;
-    char* _textBuffer;
+    static boost::mutex io_mutex;
+    static consolePrintCallback _guiConsoleCallback;
+    static bool _timestamps;
+    static char _textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE];
 
-END_SINGLETON
-
-/// General use
-#define PRINT_F(x, ...) Console::getInstance().printf(x, __VA_ARGS__);
-#define PRINT_FN(x, ...) Console::getInstance().printfn(x, __VA_ARGS__);
-#define ERROR_F(x, ...) Console::getInstance().errorf(x, __VA_ARGS__);
-#define ERROR_FN(x, ...) Console::getInstance().errorfn(x, __VA_ARGS__);
-
-#ifdef _DEBUG
-/// Debug only
-#define D_PRINT_F(x, ...) Console::getInstance().d_printf(x, __VA_ARGS__);
-#define D_PRINT_FN(x, ...) Console::getInstance().d_printfn(x, __VA_ARGS__);
-#define D_ERROR_F(x, ...) Console::getInstance().d_errorf(x, __VA_ARGS__);
-#define D_ERROR_FN(x, ...) Console::getInstance().d_errorfn(x, __VA_ARGS__);
-#else
-#define D_PRINT_F(x, ...) ;
-#define D_PRINT_FN(x, ...) ;
-#define D_ERROR_F(x, ...) ;
-#define D_ERROR_FN(x, ...) ;
-#endif
-/// Misc
-#define CONSOLE_TIMESTAMP_OFF() Console::getInstance().toggleTimeStamps(false)
-#define CONSOLE_TIMESTAMP_ON() Console::getInstance().toggleTimeStamps(true)
+};
 
 }; //namespace Divide
 

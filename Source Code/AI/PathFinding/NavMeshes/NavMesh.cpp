@@ -141,7 +141,7 @@ namespace Navigation {
                                CreationCallback creationCompleteCallback, 
                                bool threaded) {
         if (!loadConfigFromFile()) {
-            ERROR_FN(Locale::get("NAV_MESH_CONFIG_NOT_FOUND"));
+            Console::errorfn(Locale::get("NAV_MESH_CONFIG_NOT_FOUND"));
             return false;
         }
 
@@ -179,11 +179,11 @@ namespace Navigation {
         D32 timeStart = Time::ElapsedSeconds();
         bool success = generateMesh();
         if (!success) {
-            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), Time::ElapsedSeconds(true) - timeStart);
+            Console::errorfn(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), Time::ElapsedSeconds(true) - timeStart);
             return;
         }
 
-        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"), Time::ElapsedSeconds(true) - timeStart);
+        Console::printfn(Locale::get("NAV_MESH_GENERATION_COMPLETE"), Time::ElapsedSeconds(true) - timeStart);
 
         _navigationMeshLock.lock();
         {
@@ -218,11 +218,11 @@ namespace Navigation {
         D32 timeStart = Time::ElapsedSeconds();
         bool success = generateMesh();
         if (!success) {
-            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), Time::ElapsedSeconds(true) - timeStart);
+            Console::errorfn(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), Time::ElapsedSeconds(true) - timeStart);
             return false;
         }
 
-        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),  Time::ElapsedSeconds(true) - timeStart);
+        Console::printfn(Locale::get("NAV_MESH_GENERATION_COMPLETE"),  Time::ElapsedSeconds(true) - timeStart);
 
         _navigationMeshLock.lock();
         {
@@ -262,7 +262,7 @@ namespace Navigation {
         // Parse objects from level into RC-compatible format
         _fileName.append(nodeName);
         _fileName.append(".nm");
-        PRINT_FN(Locale::get("NAV_MESH_GENERATION_START"),nodeName.c_str());
+        Console::printfn(Locale::get("NAV_MESH_GENERATION_START"),nodeName.c_str());
 
         NavModelData data;
         stringImpl geometrySaveFile(_fileName);
@@ -273,7 +273,7 @@ namespace Navigation {
 
         if (!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())) {
             if (!NavigationMeshLoader::parse(_sgn->getBoundingBoxConst(), data, _sgn)) {
-                ERROR_FN(Locale::get("ERROR_NAV_PARSE_FAILED"), nodeName.c_str());
+                Console::errorfn(Locale::get("ERROR_NAV_PARSE_FAILED"), nodeName.c_str());
             }
         }
 
@@ -310,7 +310,7 @@ namespace Navigation {
         _saveIntermediates = _configParams.getKeepInterResults();
         rcCalcBounds(data.getVerts(), data.getVertCount(), cfg.bmin, cfg.bmax);
         rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
-        PRINT_FN(Locale::get("NAV_MESH_BOUNDS"), cfg.bmax[0], cfg.bmax[1], cfg.bmax[2],
+        Console::printfn(Locale::get("NAV_MESH_BOUNDS"), cfg.bmax[0], cfg.bmax[1], cfg.bmax[2],
                                                  cfg.bmin[0], cfg.bmin[1], cfg.bmin[2]);
 
         _extents = vec3<F32>(cfg.bmax[0] - cfg.bmin[0],
@@ -377,7 +377,7 @@ namespace Navigation {
         _heightField = rcAllocHeightfield();
 
         if (!_heightField) {
-            ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "rcAllocHeightfield", _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "rcAllocHeightfield", _fileName.c_str());
             return false;
         }
 
@@ -398,14 +398,14 @@ namespace Navigation {
                                  cfg.bmax, 
                                  cfg.cs, 
                                  cfg.ch)) {
-            ERROR_FN(Locale::get("ERROR_NAV_HEIGHTFIELD"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_HEIGHTFIELD"), _fileName.c_str());
             return false;
         }
 
         U8* areas = MemoryManager_NEW U8[data.getTriCount()];
 
         if (!areas) {
-            ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "areaFlag allocation", _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "areaFlag allocation", _fileName.c_str());
             return false;
         }
 
@@ -454,14 +454,14 @@ namespace Navigation {
                                                                cfg.walkableClimb, 
                                                                *_heightField, 
                                                                *_compactHeightField)) {
-            ERROR_FN(Locale::get("ERROR_NAV_COMPACT_HEIGHTFIELD"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_COMPACT_HEIGHTFIELD"), _fileName.c_str());
             return false;
         }
 
         if (!rcErodeWalkableArea(ctx,
                                  cfg.walkableRadius, 
                                  *_compactHeightField)) {
-            ERROR_FN(Locale::get("ERROR_NAV_WALKABLE"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_WALKABLE"), _fileName.c_str());
             return false;
         }
 
@@ -471,7 +471,7 @@ namespace Navigation {
                                         cfg.borderSize, 
                                         cfg.minRegionArea, 
                                         cfg.mergeRegionArea)) {
-                ERROR_FN(Locale::get("ERROR_NAV_REGIONS"), _fileName.c_str());
+                Console::errorfn(Locale::get("ERROR_NAV_REGIONS"), _fileName.c_str());
                 return false;
             }
         } else {
@@ -495,7 +495,7 @@ namespace Navigation {
                                               cfg.maxSimplificationError, 
                                               cfg.maxEdgeLen, 
                                               *_countourSet)) {
-            ERROR_FN(Locale::get("ERROR_NAV_COUNTOUR"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_COUNTOUR"), _fileName.c_str());
             return false;
         }
 
@@ -504,7 +504,7 @@ namespace Navigation {
                                            *_countourSet, 
                                            cfg.maxVertsPerPoly, 
                                            *_polyMesh)) {
-            ERROR_FN(Locale::get("ERROR_NAV_POLY_MESH"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_POLY_MESH"), _fileName.c_str());
             return false;
         }
 
@@ -515,7 +515,7 @@ namespace Navigation {
                                                       cfg.detailSampleDist, 
                                                       cfg.detailSampleMaxError, 
                                                       *_polyMeshDetail)) {
-            ERROR_FN(Locale::get("ERROR_NAV_POLY_MESH_DETAIL"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_POLY_MESH_DETAIL"), _fileName.c_str());
             return false;
         }
 
@@ -525,7 +525,7 @@ namespace Navigation {
         ctx->log(RC_LOG_PROGRESS, ">> Polymesh: %d vertices  %d polygons", _polyMesh->nverts,
                                                                            _polyMesh->npolys);
 
-        PRINT_FN("[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n",
+        Console::printfn("[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n",
                  _polyMesh->nverts,
                  _polyMesh->npolys, 
                  (F32)ctx->getAccumulatedTime(RC_TIMER_TOTAL)/1000.0f);
@@ -537,19 +537,19 @@ namespace Navigation {
         U8 *tileData = nullptr;
         I32 tileDataSize = 0;
         if (!dtCreateNavMeshData(&params, &tileData, &tileDataSize)) {
-            ERROR_FN(Locale::get("ERROR_NAV_MESH_DATA"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_MESH_DATA"), _fileName.c_str());
             return false;
         }
 
         _tempNavMesh = dtAllocNavMesh();
         if (!_tempNavMesh) {
-            ERROR_FN(Locale::get("ERROR_NAV_DT_OUT_OF_MEMORY"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_DT_OUT_OF_MEMORY"), _fileName.c_str());
             return false;
         }
 
         dtStatus s = _tempNavMesh->init(tileData, tileDataSize, DT_TILE_FREE_DATA);
         if (dtStatusFailed(s)) {
-            ERROR_FN(Locale::get("ERROR_NAV_DT_INIT"), _fileName.c_str());
+            Console::errorfn(Locale::get("ERROR_NAV_DT_INIT"), _fileName.c_str());
             return false;
         }
 

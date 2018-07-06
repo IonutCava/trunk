@@ -19,7 +19,7 @@ bool PhysX::createPlane(const vec3<F32>& position, U32 size){
                                      PxQuat(RADIANS(90), PxVec3(1,0,0))));*/
 
     if (!plane){
-        ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_PLANE"));
+        Console::errorfn(Locale::get("ERROR_PHYSX_CREATE_PLANE"));
         return false;
     }
 
@@ -47,7 +47,7 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size){
     actor->setLinearVelocity(PxVec3(0));
 
     if (!actor){
-        ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_BOX"));
+        Console::errorfn(Locale::get("ERROR_PHYSX_CREATE_BOX"));
         return false;
     }
 

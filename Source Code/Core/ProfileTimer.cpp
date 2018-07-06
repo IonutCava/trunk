@@ -61,7 +61,7 @@ namespace Time {
     void ProfileTimer::print() const {
 #if defined(_DEBUG) || defined(_PROFILE)
         if (!_paused) {
-            PRINT_FN("[ %s ] : [ %5.3f ms]", _name.c_str(), _timerAverage / _timerCounter);
+            Console::printfn("[ %s ] : [ %5.3f ms]", _name.c_str(), _timerAverage / _timerCounter);
         }
 #endif
     }

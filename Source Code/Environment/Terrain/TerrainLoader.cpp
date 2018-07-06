@@ -9,26 +9,6 @@
 
 namespace Divide {
 
-TerrainLoader::TerrainLoader() : Singleton()
-{
-    _albedoSampler = MemoryManager_NEW SamplerDescriptor();
-    _albedoSampler->setWrapMode(TEXTURE_REPEAT);
-    _albedoSampler->setAnisotropy(8);
-    _albedoSampler->toggleMipMaps(true);
-    _albedoSampler->toggleSRGBColorSpace(true);
-
-    _normalSampler = MemoryManager_NEW SamplerDescriptor();
-    _normalSampler->setWrapMode(TEXTURE_REPEAT);
-    _normalSampler->setAnisotropy(8);
-    _normalSampler->toggleMipMaps(true);
-}
-
-TerrainLoader::~TerrainLoader()
-{
-    MemoryManager::DELETE( _albedoSampler );
-    MemoryManager::DELETE( _normalSampler );
-}
-
 bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDescriptor){
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
   
@@ -97,7 +77,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
         textureTileMaps.setEnumValue(TEXTURE_2D_ARRAY);
         textureTileMaps.setId(textureCountAlbedo);
         textureTileMaps.setResourceLocation(arrayLocation);
-        textureTileMaps.setPropertyDescriptor(*_albedoSampler);
+        textureTileMaps.setPropertyDescriptor(terrain->getAlbedoSampler());
         textureLayer->setTileMaps(CreateResource<Texture>(textureTileMaps));
 
         arrayLocation.clear();
@@ -134,7 +114,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
         textureNormalMaps.setEnumValue(TEXTURE_2D_ARRAY);
         textureNormalMaps.setId(textureCountDetail);
         textureNormalMaps.setResourceLocation(arrayLocation);
-        textureNormalMaps.setPropertyDescriptor(*_normalSampler);
+        textureNormalMaps.setPropertyDescriptor(terrain->getNormalSampler());
         textureLayer->setNormalMaps(CreateResource<Texture>(textureTileMaps));
 
         terrain->_terrainTextures.push_back(textureLayer);
@@ -158,17 +138,17 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainDescriptor->getVariable("waterCaustics"));
-    textureWaterCaustics.setPropertyDescriptor(*_albedoSampler);
+    textureWaterCaustics.setPropertyDescriptor(terrain->getAlbedoSampler());
     terrainMaterial->setTexture(ShaderProgram::TEXTURE_UNIT0, CreateResource<Texture>(textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
     underwaterAlbedoTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
-    underwaterAlbedoTexture.setPropertyDescriptor(*_albedoSampler);
+    underwaterAlbedoTexture.setPropertyDescriptor(terrain->getAlbedoSampler());
     terrainMaterial->setTexture(ShaderProgram::TEXTURE_UNIT1, CreateResource<Texture>(underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
     underwaterDetailTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterDetailTexture"));
-    underwaterDetailTexture.setPropertyDescriptor(*_normalSampler);
+    underwaterDetailTexture.setPropertyDescriptor(terrain->getNormalSampler());
     terrainMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP, CreateResource<Texture>(underwaterDetailTexture));
 
     terrainMaterial->setShaderLoadThreaded(false);
@@ -261,7 +241,7 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
 
     if (terrain->_terrainWidth % 2 == 0)  terrain->_terrainWidth++;
     if (terrain->_terrainHeight % 2 == 0) terrain->_terrainHeight++;
-    D_PRINT_FN(Locale::get("TERRAIN_INFO"), terrain->_terrainWidth, terrain->_terrainHeight);
+    Console::d_printfn(Locale::get("TERRAIN_INFO"), terrain->_terrainWidth, terrain->_terrainHeight);
 
     I32 terrainWidth  = (I32)terrain->_terrainWidth;
     I32 terrainHeight = (I32)terrain->_terrainHeight;
@@ -320,7 +300,9 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
                 U32 idxIMG = TER_COORD<U32>(i < (I32)heightmapWidth ? i : i - 1, 
                                             j < (I32)heightmapHeight ? j : j - 1, heightmapWidth);
 
-                F32 h = (F32)(heightValues[idxIMG * 3 + 0] + heightValues[idxIMG * 3 + 1] + heightValues[idxIMG * 3 + 2]) / 3.0f;
+                F32 h = static_cast<F32>(heightValues[idxIMG * 3 + 0] + 
+                                         heightValues[idxIMG * 3 + 1] + 
+                                         heightValues[idxIMG * 3 + 2]) / 3.0f;
 
                 vertexData.y = minAltitude + altitudeRange * h / 255.0f;
                 vertexData.y *= yScaleFactor;
@@ -390,7 +372,7 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
     terrain->buildQuadtree();
 
     initializeVegetation(terrain, terrainDescriptor);
-    PRINT_FN(Locale::get("TERRAIN_LOAD_END"), terrain->getName().c_str());
+    Console::printfn(Locale::get("TERRAIN_LOAD_END"), terrain->getName().c_str());
     return true;
 }
 

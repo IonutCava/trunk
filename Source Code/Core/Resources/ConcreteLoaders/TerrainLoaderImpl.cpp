@@ -20,17 +20,15 @@ template<>
 bool ImplResourceLoader<Terrain>::load(Terrain* const res, const stringImpl& name) {
     res->setState(RES_LOADING);
 
-    PRINT_FN(Locale::get("TERRAIN_LOAD_START"),name.c_str());
+    Console::printfn(Locale::get("TERRAIN_LOAD_START"),name.c_str());
+
     TerrainDescriptor* terrain = GET_ACTIVE_SCENE()->getTerrainInfo(name);
-    if ( !terrain ) {
+
+    if (!terrain || !TerrainLoader::loadTerrain(res, terrain) ) {
+        Console::errorfn( Locale::get( "ERROR_TERRAIN_LOAD" ), name.c_str() );
         return false;
     }
-    bool loadState = TerrainLoader::getInstance().loadTerrain(res, terrain);
-
-    if ( !loadState ) {
-        ERROR_FN( Locale::get( "ERROR_TERRAIN_LOAD" ), name.c_str() );
-    }
-    return loadState;
+    return true;
 }
 
 };

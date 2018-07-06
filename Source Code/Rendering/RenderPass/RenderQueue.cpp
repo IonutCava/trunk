@@ -103,7 +103,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
         } break;
         default:
         case RenderBin::RBT_PLACEHOLDER : {
-            ERROR_FN(Locale::get("ERROR_INVALID_RENDER_BIN_CREATION"));
+            Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_CREATION"));
         } break;
     };
 

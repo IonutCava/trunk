@@ -32,7 +32,7 @@ GUI::GUI() : _init(false),
 
 GUI::~GUI()
 {
-    PRINT_FN(Locale::get("STOP_GUI"));
+    Console::printfn(Locale::get("STOP_GUI"));
     GUIEditor::destroyInstance();
     MemoryManager::DELETE( _console );
     RemoveResource(_guiShader);
@@ -91,7 +91,7 @@ void GUI::update(const U64 deltaTime) {
 
 bool GUI::init(const vec2<U16>& resolution) {
     if (_init) {
-        D_ERROR_FN(Locale::get("ERROR_GUI_DOUBLE_INIT"));
+        Console::d_errorfn(Locale::get("ERROR_GUI_DOUBLE_INIT"));
         return false;
     }
     _cachedResolution = resolution;

@@ -281,9 +281,9 @@ namespace Navigation {
 
             I32* dst = &modelData->_triangles[modelData->getTriCount()*3];
 
-            *dst++ = (I32)(triangleIndices.x + triangleIndexOffset);
-            *dst++ = (I32)(triangleIndices.y + triangleIndexOffset);
-            *dst++ = (I32)(triangleIndices.z + triangleIndexOffset);
+            *dst++ = static_cast<I32>(triangleIndices.x + triangleIndexOffset);
+            *dst++ = static_cast<I32>(triangleIndices.y + triangleIndexOffset);
+            *dst++ = static_cast<I32>(triangleIndices.z + triangleIndexOffset);
 
             modelData->getAreaTypes().push_back(areaType);
             modelData->_triangleCount++;
@@ -314,7 +314,7 @@ namespace Navigation {
 
             if(!bitCompare(allowedNodeType, nodeType)){
                 if(!bitCompare(ignoredNodeType, nodeType)){
-                    PRINT_FN(Locale::get("WARN_NAV_UNSUPPORTED"),sn->getName().c_str());
+                    Console::printfn(Locale::get("WARN_NAV_UNSUPPORTED"),sn->getName().c_str());
                     goto next;
                 }
             }
@@ -354,7 +354,7 @@ namespace Navigation {
                 sgn = sgn->getChildren()["waterPlane"];
             }
 
-            D_PRINT_FN(Locale::get("NAV_MESH_CURRENT_NODE"),sn->getName().c_str(), (U32)level);
+            Console::d_printfn(Locale::get("NAV_MESH_CURRENT_NODE"),sn->getName().c_str(), (U32)level);
 
             U32 currentTriangleIndexOffset = outData.getVertCount();
             
@@ -407,10 +407,10 @@ namespace Navigation {
                    }
                 }
             }else{
-                ERROR_FN(Locale::get("ERROR_RECAST_DETAIL_LEVEL"), level);
+                Console::errorfn(Locale::get("ERROR_RECAST_DETAIL_LEVEL"), level);
             }
 
-            PRINT_FN(Locale::get("NAV_MESH_ADD_NODE"), sn->getName().c_str());
+            Console::printfn(Locale::get("NAV_MESH_ADD_NODE"), sn->getName().c_str());
 
             //although labels are bad, skipping here using them is the easiest solution to follow -Ionut
             next:;

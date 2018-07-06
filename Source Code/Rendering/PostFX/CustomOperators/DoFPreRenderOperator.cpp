@@ -39,7 +39,7 @@ void DoFPreRenderOperator::operation(){
     if(!_enabled) return;
 
     if(_inputFB.empty()){
-        ERROR_FN(Locale::get("ERROR_DOF_INPUT_FB"));
+        Console::errorfn(Locale::get("ERROR_DOF_INPUT_FB"));
         return;
     }
 

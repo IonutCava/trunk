@@ -120,7 +120,7 @@ void ApplicationTimer::benchmarkInternal(U32 frameCount){
         g_averageFpsTotal += g_averageFps;
 
         F32 avgFPS = g_averageFpsTotal / g_averageCount;
-        PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, g_maxFps, g_minFps, 1000.0f / avgFPS);
+        Console::printfn(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, g_maxFps, g_minFps, 1000.0f / avgFPS);
 
 #        if defined(_DEBUG) || defined(_PROFILE)
         for (ProfileTimer* const timer : _profileTimers) {

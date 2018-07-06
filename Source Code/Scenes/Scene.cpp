@@ -128,7 +128,7 @@ bool Scene::loadModel( const FileData& data ) {
     model.setFlag( true );
     Mesh *thisObj = CreateResource<Mesh>( model );
     if ( !thisObj ) {
-        ERROR_FN( Locale::get( "ERROR_SCENE_LOAD_MODEL" ), data.ModelName.c_str() );
+        Console::errorfn( Locale::get( "ERROR_SCENE_LOAD_MODEL" ), data.ModelName.c_str() );
         return false;
     }
 
@@ -181,7 +181,7 @@ bool Scene::loadGeometry( const FileData& data ) {
         thisObj = CreateResource<Text3D>( item );
         static_cast<Text3D*>( thisObj )->getWidth() = data.data;
     } else {
-        ERROR_FN( Locale::get( "ERROR_SCENE_UNSUPPORTED_GEOM" ), data.ModelName.c_str() );
+        Console::errorfn( Locale::get( "ERROR_SCENE_UNSUPPORTED_GEOM" ), data.ModelName.c_str() );
         return false;
     }
     STUBBED("Load material from XML disabled for primitives! - Ionut")
@@ -432,7 +432,7 @@ void Scene::registerTask(Task_ptr taskItem) {
 }
 
 void Scene::clearTasks() {
-    PRINT_FN( Locale::get( "STOP_SCENE_TASKS" ) );
+    Console::printfn( Locale::get( "STOP_SCENE_TASKS" ) );
     // Calls the destructor for each task killing it's associated thread
     _tasks.clear();
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -82,13 +82,13 @@ public:
     inline void objectState(ObjectRenderState newState)     { _objectState = newState; }
     /// Render skeletons for animated geometry
     inline void toggleSkeletons() {
-        D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
+        Console::d_printfn(Locale::get("TOGGLE_SCENE_SKELETONS"));
         drawSkeletons(!drawSkeletons()); 
     }
 
     /// Show/hide bounding boxes and/or objects
     inline void toggleBoundingBoxes(){
-        D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
+        Console::d_printfn(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
         if (objectState() == NO_DRAW) {
             objectState(DRAW_OBJECT);
         } else if (objectState() == DRAW_OBJECT) {
@@ -102,7 +102,7 @@ public:
 
     /// Show/hide axis gizmos
     inline void toggleAxisLines() {
-        D_PRINT_FN(Locale::get("TOGGLE_SCENE_AXIS_GIZMO"));
+        Console::d_printfn(Locale::get("TOGGLE_SCENE_AXIS_GIZMO"));
         if (gizmoState() == NO_GIZMO) {
             gizmoState(SELECTED_GIZMO);
         } else if (gizmoState() == SELECTED_GIZMO) {

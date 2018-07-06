@@ -9,7 +9,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
         return NO_ERR;
     }
 
-    PRINT_FN(Locale::get("INPUT_CREATE_START"));
+    Console::printfn(Locale::get("INPUT_CREATE_START"));
 
     OIS::ParamList pl;
 #   if defined OIS_WIN32_PLATFORM
@@ -30,7 +30,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
     _pInputInterface = OIS::InputManager::createInputSystem(pl);
     DIVIDE_ASSERT(_pInputInterface != nullptr, "InputInterface error: Could not create OIS Input Interface");
 
-    PRINT_FN(Locale::get("INPUT_CREATE_OK"), _pInputInterface->inputSystemName().c_str());
+    Console::printfn(Locale::get("INPUT_CREATE_OK"), _pInputInterface->inputSystemName().c_str());
 
     // Create the event handler.
     _pEventHdlr = MemoryManager_NEW EventHandler(this, kernel);
@@ -41,7 +41,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
         _pKeyboard = static_cast<OIS::Keyboard*>(_pInputInterface->createInputObject(OIS::OISKeyboard, true));
         _pKeyboard->setEventCallback(_pEventHdlr);
     } catch (OIS::Exception &ex) {
-        PRINT_FN(Locale::get("ERROR_INPUT_CREATE_KB"), ex.eText);
+        Console::printfn(Locale::get("ERROR_INPUT_CREATE_KB"), ex.eText);
     }
 
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
@@ -55,13 +55,13 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
                 (*it)->setEventCallback(_pEventHdlr);
             }
         } catch (OIS::Exception &ex) {
-            PRINT_FN(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"), ex.eText);
+            Console::printfn(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"), ex.eText);
         }
 
         // Create the joystick manager.
         _pJoystickInterface = MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
         if (!_pJoystickInterface->wasFFDetected())    {
-            PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
+            Console::printfn(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
             MemoryManager::DELETE( _pJoystickInterface );
         } else{
             // Create force feedback effect manager.
@@ -78,7 +78,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
         ms.width = Application::getInstance().getResolution().width;
         ms.height = Application::getInstance().getResolution().height;
     } catch (OIS::Exception &ex) {
-        PRINT_FN(Locale::get("ERROR_INPUT_CREATE_MOUSE"), ex.eText);
+        Console::printfn(Locale::get("ERROR_INPUT_CREATE_MOUSE"), ex.eText);
     }
 
     _bIsInitialized = true;

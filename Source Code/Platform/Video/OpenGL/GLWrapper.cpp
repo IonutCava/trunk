@@ -111,7 +111,7 @@ bool GL_API::initShaders() {
     GLint glswState = glswInit();
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    glswAddDirectiveToken("","#version 430 core\n/*“Copyright 2009-2014 DIVIDE-Studio”*/");
+    glswAddDirectiveToken("","#version 430 core\n/*“Copyright 2009-2015 DIVIDE-Studio”*/");
     glswAddDirectiveToken("","#extension GL_ARB_shader_draw_parameters : require");
     // Add current build environment information to the shaders
 #   if defined(_DEBUG)
@@ -251,7 +251,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
         I32 tempFont = fonsAddFont(_fonsContext, fontName.c_str(), fontPath.c_str());
         // If the font is invalid, inform the user, but map it anyway, to avoid loading an invalid font file on every request
         if (tempFont == FONS_INVALID) {
-            ERROR_FN(Locale::get("ERROR_FONT_FILE"), fontName.c_str());
+            Console::errorfn(Locale::get("ERROR_FONT_FILE"), fontName.c_str());
         }
         // Save the font in the font cache
         hashAlg::pair<FontCache::iterator, bool> result = hashAlg::emplace(_fonts, fontName, tempFont);
@@ -341,7 +341,7 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
     // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
     samplerObjectMap::const_iterator it = _samplerMap.find(samplerHash);
     if (it == _samplerMap.end()) {
-        ERROR_FN(Locale::get("ERROR_NO_SAMPLER_OBJECT_FOUND"), samplerHash);
+        Console::errorfn(Locale::get("ERROR_NO_SAMPLER_OBJECT_FOUND"), samplerHash);
         return 0;
     }
     // Return the OpenGL handle for the sampler object matching the specified hash value

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -223,10 +223,10 @@ public:
         D32 c1c2 = c1*c2;
         D32 s1s2 = s1*s2;
 
-        W((T)(c1c2 * c3 - s1s2 * s3));
-        X((T)(c1c2 * s3 + s1s2 * c3));
-        Y((T)(s1 * c2 * c3 + c1 * s2 * s3));
-        Z((T)(c1 * s2 * c3 - s1 * c2 * s3));
+        W(static_cast<T>(c1c2 * c3 - s1s2 * s3));
+        X(static_cast<T>(c1c2 * s3 + s1s2 * c3));
+        Y(static_cast<T>(s1 * c2 * c3 + c1 * s2 * s3));
+        Z(static_cast<T>(c1 * s2 * c3 - s1 * c2 * s3));
 
         //normalize(); this method does produce a normalized quaternion
     }
@@ -260,10 +260,10 @@ public:
             size_t j = s_iNext[i];
             size_t k = s_iNext[j];
 
-            fRoot = (T)std::sqrtf((F32)(rotationMatrix.m[i][i] - 
-                                        rotationMatrix.m[j][j] - 
-                                        rotationMatrix.m[k][k] + 
-                                        1.0f));
+            fRoot = static_cast<T>(std::sqrtf(static_cast<F32>(rotationMatrix.m[i][i] - 
+                                                               rotationMatrix.m[j][j] - 
+                                                               rotationMatrix.m[k][k] + 
+                                                               1.0f)));
             T* apkQuat[3] = { &_elements.x, &_elements.y, &_elements.z };
             *apkQuat[i] = 0.5f*fRoot;
             fRoot = 0.5f/fRoot;

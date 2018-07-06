@@ -31,7 +31,7 @@ bool PhysXSceneInterface::init(){
     physx::PxPhysics* gPhysicsSDK = PhysX::getInstance().getSDK();
     //Create the scene
     if(!gPhysicsSDK){
-        ERROR_FN(Locale::get("ERROR_PHYSX_SDK"));
+        Console::errorfn(Locale::get("ERROR_PHYSX_SDK"));
         return false;
     }
 
@@ -40,7 +40,7 @@ bool PhysXSceneInterface::init(){
     if(!sceneDesc.cpuDispatcher) {
         _cpuDispatcher = PxDefaultCpuDispatcherCreate(3);
         if(!_cpuDispatcher){
-            ERROR_FN(Locale::get("ERROR_PHYSX_INTERFACE_CPU_DISPATCH"));
+            Console::errorfn(Locale::get("ERROR_PHYSX_INTERFACE_CPU_DISPATCH"));
         }
          sceneDesc.cpuDispatcher = _cpuDispatcher;
     }
@@ -52,7 +52,7 @@ bool PhysXSceneInterface::init(){
 
     _gScene = gPhysicsSDK->createScene(sceneDesc);
     if (!_gScene){
-        ERROR_FN(Locale::get("ERROR_PHYSX_INTERFACE_CREATE_SCENE"));
+        Console::errorfn(Locale::get("ERROR_PHYSX_INTERFACE_CREATE_SCENE"));
         return false;
     }
 
@@ -69,11 +69,11 @@ bool PhysXSceneInterface::init(){
 
 void PhysXSceneInterface::release() {
     if ( !_gScene ) {
-        ERROR_FN( Locale::get( "ERROR_PHYSX_CLOSE_INVALID_INTERFACE" ) );
+        Console::errorfn( Locale::get( "ERROR_PHYSX_CLOSE_INVALID_INTERFACE" ) );
         return;
     }
 
-    D_PRINT_FN( Locale::get( "STOP_PHYSX_SCENE_INTERFACE" ) );
+    Console::d_printfn( Locale::get( "STOP_PHYSX_SCENE_INTERFACE" ) );
 
     idle();
     for (PhysXActor* actor : _sceneRigidActors) {
@@ -255,7 +255,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
             outNode->getComponent<RenderingComponent>()->castsShadows(shadowState);
         }
         if(!outNode){
-            ERROR_FN(Locale::get("ERROR_ACTOR_CAST"), sgnName.c_str());
+            Console::errorfn(Locale::get("ERROR_ACTOR_CAST"), sgnName.c_str());
         }else{
             actor._actorName = sgnName;
             actor.getComponent()->setScale(actor._userData);

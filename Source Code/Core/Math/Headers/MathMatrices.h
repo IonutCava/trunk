@@ -70,7 +70,7 @@
  */
 
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -318,9 +318,9 @@ public:
             DegToRad( angle );
         }
 
-        T c = (T)std::cos( angle );
-        T s = (T)std::sin( angle );
-        T l = (T)std::sqrt( (D32)( x * x + y * y + z * z ) );
+        T c = static_cast<T>(std::cos( angle ));
+        T s = static_cast<T>(std::sin( angle ));
+        T l = static_cast<T>(std::sqrt(static_cast<D32>( x * x + y * y + z * z ) ));
 
         l = l < EPSILON ? 1 : 1 / l
 

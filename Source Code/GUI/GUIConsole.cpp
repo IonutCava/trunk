@@ -59,7 +59,7 @@ GUIConsole::~GUIConsole()
 
 void GUIConsole::CreateCEGUIWindow(){
     if (_init) {
-        ERROR_FN(Locale::get("ERROR_CONSOLE_DOUBLE_INIT"));
+        Console::errorfn(Locale::get("ERROR_CONSOLE_DOUBLE_INIT"));
     }
     // load the console Window from the layout file
     const std::string& layoutFile = ParamHandler::getInstance().getParam<std::string>("GUI.consoleLayout");
@@ -75,11 +75,11 @@ void GUIConsole::CreateCEGUIWindow(){
     }else{
         // Loading layout from file, failed, so output an error Message.
         CEGUI::Logger::getSingleton().logEvent("Error: Unable to load the ConsoleWindow from .layout");
-        ERROR_FN(Locale::get("ERROR_CONSOLE_LAYOUT_FILE"),layoutFile.c_str());
+        Console::errorfn(Locale::get("ERROR_CONSOLE_LAYOUT_FILE"),layoutFile.c_str());
     }
 
     _init = true;
-    PRINT_FN(Locale::get("GUI_CONSOLE_CREATED"));
+    Console::printfn(Locale::get("GUI_CONSOLE_CREATED"));
 }
 
 void GUIConsole::RegisterHandlers(){

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -63,7 +63,7 @@ public:
             try{
                 pJoy = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject( OIS::OISJoyStick, true ));
                 if(pJoy){
-                    PRINT_FN(Locale::get("INPUT_CREATE_BUFF_JOY"), 
+                    Console::printfn(Locale::get("INPUT_CREATE_BUFF_JOY"), 
                                 nJoyInd,
                                 pJoy->vendor().empty() ? "unknown vendor" : pJoy->vendor().c_str(),
                                 pJoy->getID());
@@ -71,7 +71,7 @@ public:
                     pFFDev = (OIS::ForceFeedback*)pJoy->queryInterface(OIS::Interface::ForceFeedback );
                 }
             }catch(OIS::Exception &ex){
-                PRINT_FN(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),ex.eText);
+                Console::printfn(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),ex.eText);
             }
 
             if( pFFDev ) {
@@ -82,19 +82,19 @@ public:
                 // Keep also the associated FF device
                 _vecFFDev.push_back(pFFDev);
                 // Dump FF supported effects and other info.
-                PRINT_FN(Locale::get("INPUT_JOY_NUM_FF_AXES"), pFFDev->getFFAxesNumber());
+                Console::printfn(Locale::get("INPUT_JOY_NUM_FF_AXES"), pFFDev->getFFAxesNumber());
                 const OIS::ForceFeedback::SupportedEffectList &lstFFEffects = pFFDev->getSupportedEffects();
                  
                 if (lstFFEffects.size() > 0) {
-                    PRINT_F(Locale::get("INPUT_JOY_SUPPORTED_EFFECTS"));
+                    Console::printf(Locale::get("INPUT_JOY_SUPPORTED_EFFECTS"));
                     OIS::ForceFeedback::SupportedEffectList::const_iterator itFFEff;
                     for(itFFEff = lstFFEffects.begin(); itFFEff != lstFFEffects.end(); ++itFFEff)
-                        PRINT_F(" %s\n",OIS::Effect::getEffectTypeName(itFFEff->second));
+                        Console::printf(" %s\n",OIS::Effect::getEffectTypeName(itFFEff->second));
                 }else{
-                    D_PRINT_FN(Locale::get("WARN_INPUT_NO_SUPPORTED_EFFECTS"));
+                    Console::d_printfn(Locale::get("WARN_INPUT_NO_SUPPORTED_EFFECTS"));
                 }
             } else {
-                D_PRINT_FN(Locale::get("WARN_INPUT_NO_FF_EFFECTS"));
+                Console::d_printfn(Locale::get("WARN_INPUT_NO_FF_EFFECTS"));
             }
         }
     }

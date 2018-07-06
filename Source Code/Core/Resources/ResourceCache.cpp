@@ -11,17 +11,15 @@ ResourceCache::ResourceCache()
 {
     //_loadingPool = MemoryManager_NEW boost::threadpool::pool(3);
     DVDConverter::createInstance();
-    TerrainLoader::createInstance();
 }
 
 ResourceCache::~ResourceCache()
 {
     DVDConverter::destroyInstance();
-    TerrainLoader::destroyInstance();
 
     Destroy();
     //DELETE(_loadingPool);
-    PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));
+    Console::printfn(Locale::get("RESOURCE_CACHE_DELETE"));
 }
 
 void ResourceCache::Destroy() {
@@ -30,7 +28,7 @@ void ResourceCache::Destroy() {
         return;
     }
 
-    PRINT_FN( Locale::get( "STOP_RESOURCE_CACHE" ) );
+    Console::printfn( Locale::get( "STOP_RESOURCE_CACHE" ) );
 
     for (ResourceMap::value_type& it : _resDB) {
         while ( it.second->GetRef() > 1 ) {
@@ -45,7 +43,7 @@ void ResourceCache::Destroy() {
 void ResourceCache::add( const stringImpl& name, Resource* const res ) {
     DIVIDE_ASSERT( !name.empty(), "ResourceCache add error: Invalid resource name!" );
     if(res == nullptr) {
-        ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
+        Console::errorfn(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
         return;
     }
     res->setName(name);
@@ -57,9 +55,9 @@ Resource* ResourceCache::loadResource(const stringImpl& name){
     Resource* res = find(name);
     if ( res ) {
         res->AddRef();
-        D_PRINT_FN(Locale::get("RESOURCE_CACHE_GET_RES_INC"), name.c_str(), res->GetRef());
+        Console::d_printfn(Locale::get("RESOURCE_CACHE_GET_RES_INC"), name.c_str(), res->GetRef());
     } else {
-        PRINT_FN( Locale::get( "RESOURCE_CACHE_GET_RES" ), name.c_str() );
+        Console::printfn( Locale::get( "RESOURCE_CACHE_GET_RES" ), name.c_str() );
     }
     return res;
 }
@@ -82,7 +80,7 @@ bool ResourceCache::remove( Resource* resource ) {
     // If it's not in the resource database, it must've been created manually
     ReadLock r_lock( _creationMutex );
     if ( _resDB.empty() ) {
-        ERROR_FN( Locale::get( "RESOURCE_CACHE_REMOVE_NO_DB" ), nameCpy.c_str() );
+        Console::errorfn( Locale::get( "RESOURCE_CACHE_REMOVE_NO_DB" ), nameCpy.c_str() );
         return false;
     }
     r_lock.unlock();
@@ -110,17 +108,17 @@ bool ResourceCache::removeInternal(Resource* const resource){
     U32 refCount = resource->GetRef();
     if ( refCount > 1 ) {
         resource->SubRef();
-        D_PRINT_FN( Locale::get( "RESOURCE_CACHE_REM_RES_DEC" ), nameCpy.c_str(), resource->GetRef() );
+        Console::d_printfn( Locale::get( "RESOURCE_CACHE_REM_RES_DEC" ), nameCpy.c_str(), resource->GetRef() );
         return false; //do not delete pointer
     }
 
     if (refCount == 1 ) {
-        PRINT_FN( Locale::get( "RESOURCE_CACHE_REM_RES" ), nameCpy.c_str() );
+        Console::printfn( Locale::get( "RESOURCE_CACHE_REM_RES" ), nameCpy.c_str() );
         resource->setState(RES_LOADING);
         if ( resource->unload() ) {
             resource->setState(RES_CREATED);
         } else {
-            ERROR_FN( Locale::get( "ERROR_RESOURCE_REM" ), nameCpy.c_str() );
+            Console::errorfn( Locale::get( "ERROR_RESOURCE_REM" ), nameCpy.c_str() );
             resource->setState(RES_UNKNOWN);
         }
     }

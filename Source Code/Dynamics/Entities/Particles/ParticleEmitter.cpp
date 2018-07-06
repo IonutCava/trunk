@@ -246,7 +246,7 @@ namespace Divide {
         F32 delta = Time::MicrosecondsToSeconds<F32>(deltaTime);
         F32 emissionVariance = random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
         I32 newParticles = _descriptor._emissionInterval + emissionVariance;
-        newParticles = (I32)(newParticles * delta) / (sgn->getComponent<RenderingComponent>()->lodLevel() + 1);
+        newParticles = static_cast<I32>(newParticles * delta) / (sgn->getComponent<RenderingComponent>()->lodLevel() + 1);
 
         
         const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();

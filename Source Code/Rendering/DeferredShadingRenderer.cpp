@@ -100,7 +100,7 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 
 DeferredShadingRenderer::~DeferredShadingRenderer()
 {
-    PRINT_FN(Locale::get("DEFERRED_RT_DELETE"));
+    Console::printfn(Locale::get("DEFERRED_RT_DELETE"));
     RemoveResource(_renderQuads[0]);
     RemoveResource(_renderQuads[1]);
     RemoveResource(_renderQuads[2]);

@@ -70,9 +70,9 @@ namespace Divide {
         /// As these messages are printed if a various range of conditions are not met,
         /// it's easier to just group them in a function
         void printGLInitError(GLuint err) {
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), glewGetErrorString(err));
-            PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
-            PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));
+            Console::errorfn(Locale::get("ERROR_GFX_DEVICE"), glewGetErrorString(err));
+            Console::printfn(Locale::get("WARN_SWITCH_D3D"));
+            Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
         }
         /// Release thread specific GLEW pointers
         void destroyGlew() {

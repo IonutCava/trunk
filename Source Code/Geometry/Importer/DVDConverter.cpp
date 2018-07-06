@@ -65,7 +65,7 @@ DVDConverter::~DVDConverter()
 
 bool DVDConverter::init(){
     if (_ppsteps != 0) {
-        ERROR_FN(Locale::get("ERROR_DOUBLE_IMPORTER_INIT"));
+        Console::errorfn(Locale::get("ERROR_DOUBLE_IMPORTER_INIT"));
         return false;
     }
 
@@ -100,7 +100,7 @@ bool DVDConverter::init(){
 
 Mesh* DVDConverter::load(const stringImpl& file){
     if (_ppsteps == 0) {
-        ERROR_FN(Locale::get("ERROR_NO_INIT_IMPORTER_LOAD"));
+        Console::errorfn(Locale::get("ERROR_NO_INIT_IMPORTER_LOAD"));
         return nullptr;
     }
     D32 start = 0.0;
@@ -130,10 +130,10 @@ Mesh* DVDConverter::load(const stringImpl& file){
         }
     }*/
 
-    D_PRINT_FN(Locale::get("LOAD_MESH_TIME"),_modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
+    Console::d_printfn(Locale::get("LOAD_MESH_TIME"),_modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
 
     if( !_aiScenePointer){
-        ERROR_FN(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(), importer->GetErrorString());
+        Console::errorfn(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(), importer->GetErrorString());
         return nullptr;
     }
     start = Time::ElapsedMilliseconds(true);
@@ -189,7 +189,7 @@ Mesh* DVDConverter::load(const stringImpl& file){
     tempMesh->getGeometryVB()->Create();
 
     elapsed = Time::ElapsedMilliseconds(true) - start;
-    D_PRINT_FN(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
+    Console::d_printfn(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
 
     return tempMesh;
 }
@@ -254,7 +254,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
     bool processTangents = true;
     if(!source->mTangents){
         processTangents = false;
-        D_PRINT_FN(Locale::get("SUBMESH_NO_TANGENT"), tempSubMesh->getName().c_str());
+        Console::d_printfn(Locale::get("SUBMESH_NO_TANGENT"), tempSubMesh->getName().c_str());
     }
 
     BoundingBox importBB;
@@ -380,7 +380,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
     if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_DIFFUSE, &diffuse)){
         tempColorVec4.setV(&diffuse.r);
     }else{
-        D_PRINT_FN(Locale::get("MATERIAL_NO_DIFFUSE"), materialName.c_str());
+        Console::d_printfn(Locale::get("MATERIAL_NO_DIFFUSE"), materialName.c_str());
     }
 
     tempMaterial->setDiffuse(tempColorVec4);
@@ -393,7 +393,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
     if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_AMBIENT,&ambient)){
         tempColorVec4.setV(&ambient.r);
     }else{
-        D_PRINT_FN(Locale::get("MATERIAL_NO_AMBIENT"), materialName.c_str());
+        Console::d_printfn(Locale::get("MATERIAL_NO_AMBIENT"), materialName.c_str());
     }
     tempMaterial->setAmbient(tempColorVec4);
 
@@ -405,7 +405,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
     if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_SPECULAR,&specular)){
         tempColorVec4.setV(&specular.r);
     }else{
-        D_PRINT_FN(Locale::get("MATERIAL_NO_SPECULAR"), materialName.c_str());
+        Console::d_printfn(Locale::get("MATERIAL_NO_SPECULAR"), materialName.c_str());
     }
     tempMaterial->setSpecular(tempColorVec4);
 

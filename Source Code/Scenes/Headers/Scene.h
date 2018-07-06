@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -218,19 +218,19 @@ protected:
                            const bool contOnErrorRes,
                            const bool contOnErrorTasks) {
         if(!Scene::load(name,cameraMgr,gui)) {
-            ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load function");
+            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"), "scene load function");
             return false;
         }
         if(!loadResources(contOnErrorRes)){
-            ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load resources");
+            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"), "scene load resources");
             if(!contOnErrorRes) return false;
         }
         if(!loadTasks(contOnErrorTasks)){
-            ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load tasks");
+            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"), "scene load tasks");
             if(!contOnErrorTasks) return false;
         }
         if(!loadPhysics(contOnErrorTasks)){
-            ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load physics");
+            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"), "scene load physics");
             if(!contOnErrorTasks) return false;
         }
         return true;

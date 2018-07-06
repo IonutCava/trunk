@@ -516,43 +516,43 @@ bool glFramebuffer::checkStatus() const {
             return true;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT : {
-            ERROR_FN(Locale::get("ERROR_FB_ATTACHMENT_INCOMPLETE"));
+            Console::errorfn(Locale::get("ERROR_FB_ATTACHMENT_INCOMPLETE"));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT : {
-            ERROR_FN(Locale::get("ERROR_FB_NO_IMAGE"));
+            Console::errorfn(Locale::get("ERROR_FB_NO_IMAGE"));
             return false;
         }
         case 0x8CD9 /*GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS*/ : {
-            ERROR_FN(Locale::get("ERROR_FB_DIMENSIONS"));
+            Console::errorfn(Locale::get("ERROR_FB_DIMENSIONS"));
             return false;
                                                   }
         case 0x8CDA /*GL_FRAMEBUFFER_INCOMPLETE_FORMATS*/ : {
-            ERROR_FN(Locale::get("ERROR_FB_FORMAT"));
+            Console::errorfn(Locale::get("ERROR_FB_FORMAT"));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER : {
-            ERROR_FN(Locale::get("ERROR_FB_INCOMPLETE_DRAW_BUFFER"));
+            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_DRAW_BUFFER"));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER : {
-            ERROR_FN(Locale::get("ERROR_FB_INCOMPLETE_READ_BUFFER"));
+            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_READ_BUFFER"));
             return false;
         }
         case GL_FRAMEBUFFER_UNSUPPORTED : {
-            ERROR_FN(Locale::get("ERROR_FB_UNSUPPORTED"));
+            Console::errorfn(Locale::get("ERROR_FB_UNSUPPORTED"));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE : {
-            ERROR_FN(Locale::get("ERROR_FB_INCOMPLETE_MULTISAMPLE"));
+            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_MULTISAMPLE"));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS : {
-            ERROR_FN(Locale::get("ERROR_FB_INCOMPLETE_LAYER_TARGETS"));
+            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_LAYER_TARGETS"));
             return false;
         }
         default : {
-            ERROR_FN(Locale::get("ERROR_UNKNOWN"));
+            Console::errorfn(Locale::get("ERROR_UNKNOWN"));
             return false;
         }
     };

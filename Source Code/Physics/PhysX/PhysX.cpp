@@ -42,7 +42,7 @@ PhysX::PhysX() : _gPhysicsSDK(nullptr),
 }
 
 ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
-    PRINT_FN(Locale::get("START_PHYSX_API"));
+    Console::printfn(Locale::get("START_PHYSX_API"));
 
     // create foundation object with default error and allocator callbacks.
     _foundation = PxCreateFoundation(PX_PHYSICS_VERSION, _gDefaultAllocatorCallback, _gDefaultErrorCallback);
@@ -59,7 +59,7 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
     _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *_foundation, PxTolerancesScale(), recordMemoryAllocations, _zoneManager);
 
     if (_gPhysicsSDK == nullptr) {
-        ERROR_FN(Locale::get("ERROR_START_PHYSX_API"));
+        Console::errorfn(Locale::get("ERROR_START_PHYSX_API"));
         return PHYSX_INIT_ERROR;
     }
   
@@ -73,13 +73,13 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
 
     if (_pvdConnection != nullptr) {
         if(PxVisualDebuggerExt::createConnection(_pvdConnection, "localhost", 5425, 10000) != nullptr) {
-             D_PRINT_FN(Locale::get("CONNECT_PVD_OK"));
+             Console::d_printfn(Locale::get("CONNECT_PVD_OK"));
         }
     }
 #endif
 
     if (!PxInitExtensions(*_gPhysicsSDK)) {
-        ERROR_FN(Locale::get("ERROR_EXTENSION_PHYSX_API"));
+        Console::errorfn(Locale::get("ERROR_EXTENSION_PHYSX_API"));
         return PHYSX_EXTENSION_ERROR;
     }
     
@@ -91,7 +91,7 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
     }
 
     updateTimeStep(targetFrameRate);
-    PRINT_FN(Locale::get("START_PHYSX_API_OK"));
+    Console::printfn(Locale::get("START_PHYSX_API_OK"));
 
     return NO_ERR;
 }
@@ -101,7 +101,7 @@ bool PhysX::closePhysicsApi() {
         return false;
     }
     
-    PRINT_FN(Locale::get("STOP_PHYSX_API"));
+    Console::printfn(Locale::get("STOP_PHYSX_API"));
     
     DIVIDE_ASSERT(_targetScene == nullptr, 
                   "PhysX error: target scene not destroyed before calling closePhysicsApi." 
@@ -224,12 +224,12 @@ bool PhysX::createActor(SceneGraphNode* const node,
         }
 
         if (!_cooking->cookTriangleMesh(meshDesc, stream)) {
-            ERROR_FN(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
+            Console::errorfn(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
             return false;
         }
         
     } else {
-        PRINT_FN(Locale::get("COLLISION_MESH_LOADED_FROM_FILE"), nodeName.c_str());
+        Console::printfn(Locale::get("COLLISION_MESH_LOADED_FROM_FILE"), nodeName.c_str());
     }
     
     PhysXSceneInterface* targetScene = dynamic_cast<PhysXSceneInterface* >(_targetScene);
@@ -271,7 +271,7 @@ bool PhysX::createActor(SceneGraphNode* const node,
     physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
 
     if (!triangleMesh) {
-        ERROR_FN(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
+        Console::errorfn(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
         return false;
     }
 

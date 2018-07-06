@@ -37,7 +37,7 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
 
 ShaderProgram::~ShaderProgram()
 {
-    D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
+    Console::d_printfn(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
     // Remove every shader attached to this program
     for (ShaderIdMap::value_type& it : _shaderIdMap) {
         ShaderManager::getInstance().removeShader( it.second );
@@ -146,7 +146,7 @@ void ShaderProgram::addShaderDefine(const stringImpl& define) {
         _definesList.push_back(define);
     } else {
         // If we did find it, we'll show an error message in debug builds about double add
-        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_ADD"), define.c_str(), getName().c_str());
+        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_DEFINE_ADD"), define.c_str(), getName().c_str());
     }
     
 }
@@ -160,7 +160,7 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
         _definesList.erase(it);
     } else {
         // If we did not find it, we'll show an error message in debug builds
-        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),define.c_str(),getName().c_str());
+        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),define.c_str(),getName().c_str());
     }
 }
 
@@ -172,7 +172,7 @@ void ShaderProgram::addShaderUniform(const stringImpl& uniform, const ShaderType
         _customUniforms[type].push_back(uniform);
     } else {
         // If we did find it, we'll show an error message in debug builds about double add
-        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_ADD"), uniform.c_str(), (U32)type, getName().c_str());
+        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_UNIFORM_ADD"), uniform.c_str(), (U32)type, getName().c_str());
     }
 }
 
@@ -185,7 +185,7 @@ void ShaderProgram::removeUniform(const stringImpl& uniform, const ShaderType& t
         _customUniforms[type].erase(it);
     } else {
         // If we did find it, we'll show an error message in debug builds about double add
-        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"), uniform.c_str(), (U32)type , getName().c_str());
+        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"), uniform.c_str(), (U32)type , getName().c_str());
     }
 }
 

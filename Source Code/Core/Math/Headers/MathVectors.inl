@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 DIVIDE-Studio
+/* Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -284,28 +284,30 @@ inline void vec3<T>::lerp(const vec3 &v,const vec3& factor) {
 /// rotate this vector on the X axis
 template<typename T>
 inline void vec3<T>::rotateX(D32 radians){
-    this->y = (T)( std::cos(radians)*this->y + std::sin(radians)*this->z);
-    this->z = (T)(-std::sin(radians)*this->y + std::cos(radians)*this->z);
+    this->y = static_cast<T>( std::cos(radians)*this->y + std::sin(radians)*this->z);
+    this->z = static_cast<T>(-std::sin(radians)*this->y + std::cos(radians)*this->z);
 }
 
 /// rotate this vector on the Y axis
 template<typename T>
 inline void vec3<T>::rotateY(D32 radians){
-    this->x = (T)(std::cos(radians)*this->x - std::sin(radians)*this->z);
-    this->z = (T)(std::sin(radians)*this->x + std::cos(radians)*this->z);
+    this->x = static_cast<T>(std::cos(radians)*this->x - std::sin(radians)*this->z);
+    this->z = static_cast<T>(std::sin(radians)*this->x + std::cos(radians)*this->z);
 }
 
 /// rotate this vector on the Z axis
 template<typename T>
 inline void vec3<T>::rotateZ(D32 radians){
-    this->x = (T)( std::cos(radians)*this->x + std::sin(radians)*this->y);
-    this->y = (T)(-std::sin(radians)*this->x + std::cos(radians)*this->y);
+    this->x = static_cast<T>( std::cos(radians)*this->x + std::sin(radians)*this->y);
+    this->y = static_cast<T>(-std::sin(radians)*this->x + std::cos(radians)*this->y);
 }
 
 /// round all three values
 template<typename T>
 inline void vec3<T>::round(){
-    set((T)std::roundf(this->x), (T)std::roundf(this->y), (T)std::roundf(this->z));
+    set(static_cast<T>(std::roundf(this->x)), 
+        static_cast<T>(std::roundf(this->y)),
+        static_cast<T>(std::roundf(this->z)));
 }
 
 /// swap the components  of this vector with that of the specified one
@@ -327,9 +329,9 @@ inline void vec3<T>::swap(vec3 *iv) {
 /// export the vector's components in the first 3 positions of the specified array
 template<typename T>
 inline void vec3<T>::get(T * v) const {
-    v[0] = (T)this->_v[0];
-    v[1] = (T)this->_v[1];
-    v[2] = (T)this->_v[2];
+    v[0] = static_cast<T>(this->_v[0]);
+    v[1] = static_cast<T>(this->_v[1]);
+    v[2] = static_cast<T>(this->_v[2]);
 }
 
 /// this calculates a vector between the two specified points and returns the result

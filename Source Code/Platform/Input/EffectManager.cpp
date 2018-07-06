@@ -43,15 +43,15 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
     pEffect->direction = OIS::Effect::North;
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
-    pEffect->replay_length = OIS::Effect::OIS_INFINITE; //(U32)(1000000.0/_nUpdateFreq); // Linux: Does not work.
+    pEffect->replay_length = OIS::Effect::OIS_INFINITE; //static_cast<U32>(1000000.0/_nUpdateFreq); // Linux: Does not work.
     pEffect->replay_delay = 0;
     pEffect->setNumAxes(1);
     pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
     pConstForce->level = 5000;  //-10K to +10k
-    pConstForce->envelope.attackLength = (U32)(1000000.0 / _nUpdateFreq / 2);
-    pConstForce->envelope.attackLevel = (U16)(pConstForce->level*0.1);
+    pConstForce->envelope.attackLength = static_cast<U32>(1000000.0 / _nUpdateFreq / 2);
+    pConstForce->envelope.attackLevel = static_cast<U16>(pConstForce->level*0.1);
     pConstForce->envelope.fadeLength = 0; // Never reached, actually.
-    pConstForce->envelope.fadeLevel = (U16)pConstForce->level; // Idem
+    pConstForce->envelope.fadeLevel = static_cast<U32>(pConstForce->level); // Idem
 
     mapVars.clear();
     mapVars["Force"] =
@@ -128,29 +128,29 @@ void EffectManager::checkPlayableEffects() {
 
     // Print details about playable effects
     if (_vecPlayableEffectInd.empty()) {
-        D_ERROR_FN(Locale::get("INPUT_EFFECT_TEST_FAIL"));
+        Console::d_errorfn(Locale::get("INPUT_EFFECT_TEST_FAIL"));
     } else {
-        PRINT_FN(Locale::get("INPUT_DEVICE_EFFECT_SUPPORT"));
+        Console::printfn(Locale::get("INPUT_DEVICE_EFFECT_SUPPORT"));
 
         vectorAlg::vecSize nEffIndInd = 0;
         for (; nEffIndInd < _vecPlayableEffectInd.size(); ++nEffIndInd) {
             printEffect(_vecPlayableEffectInd[nEffIndInd]);
         }
 
-        PRINT_FN("");
+        Console::printfn("");
     }
 }
 
 void EffectManager::selectEffect(EWhichEffect eWhich) {
     // Nothing to do if no joystick currently selected
     if (!_pJoystickInterface->getCurrentFFDevice()) {
-        D_PRINT_FN(Locale::get("INPUT_NO_JOYSTICK_SELECTED"));
+        Console::d_printfn(Locale::get("INPUT_NO_JOYSTICK_SELECTED"));
         return;
     }
 
     // Nothing to do if joystick cannot play any effect
     if (_vecPlayableEffectInd.empty()) {
-        D_PRINT_FN(Locale::get("INPUT_NO_PLAYABLE_EFFECTS"));
+        Console::d_printfn(Locale::get("INPUT_NO_PLAYABLE_EFFECTS"));
         return;
     }
 

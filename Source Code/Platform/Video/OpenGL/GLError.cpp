@@ -37,7 +37,7 @@ namespace Divide {
                     errorDesc = "GLFW_FORMAT_UNAVAILABLE";
                 } break;
             }
-            ERROR_FN(Locale::get("GLFW_ERROR"), errorDesc, msg);
+            Console::errorfn(Locale::get("GLFW_ERROR"), errorDesc, msg);
         }
         /// Print OpenGL specific messages
         void APIENTRY CALLBACK DebugCallback(GLenum source, 
@@ -87,7 +87,7 @@ namespace Divide {
                 gl_severity = "Low";
             }
             // Print the message and the details
-            ERROR_FN(Locale::get("ERROR_GENERIC_GL_DEBUG"),
+            Console::errorfn(Locale::get("ERROR_GENERIC_GL_DEBUG"),
                      (GLuint)(userParam) == 0 ? " [Main Thread] " : " [Loader Thread] ",
                      gl_source, gl_type, id, gl_severity,
                      message);

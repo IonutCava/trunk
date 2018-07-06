@@ -86,7 +86,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // buffer storage in 4.4 so fail if we are missing the required version
     if ((Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_3) || 
         (!Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_4)) {
-        ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
+        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
         return GLEW_OLD_HARDWARE;
     }
 
@@ -150,10 +150,10 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
                                                                  par.getParam<GLint>("rendering.anisotropicFilteringLevel", 1)));
     // OpenGL major version ( we do not support OpenGL versions lower than 4.x )
     if (GLUtil::getIntegerv(GL_MAJOR_VERSION) < 4) {
-        ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
+        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
         return GLEW_OLD_HARDWARE;
     } else {
-        PRINT_FN(Locale::get( "GL_MAX_VERSION" ), 
+        Console::printfn(Locale::get( "GL_MAX_VERSION" ), 
                  4, 
                  /*GLEW_VERSION_4_5 ? 5 :*/
                                       GLEW_VERSION_4_4 ? 4 : 
@@ -166,7 +166,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // Number of sample buffers associated with the framebuffer & MSAA sample count
     GLint samplerBuffers = GLUtil::getIntegerv(GL_SAMPLES);
     GLint sampleCount =  GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
-    PRINT_FN(Locale::get("GL_MULTI_SAMPLE_INFO"), sampleCount, samplerBuffers);
+    Console::printfn(Locale::get("GL_MULTI_SAMPLE_INFO"), sampleCount, samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
     U8 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
     if (samplerBuffers == 0 || sampleCount == 0) {
@@ -175,24 +175,24 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     GFX_DEVICE.initAA(par.getParam<I32>("rendering.FXAAsamples", 0), msaaSamples);
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
-    PRINT_FN(Locale::get("GL_MAX_UNIFORM"), GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
+    Console::printfn(Locale::get("GL_MAX_UNIFORM"), GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
     // How many varying floats can we use inside a shader program
-    PRINT_FN(Locale::get("GL_MAX_FRAG_VARYING"), GLUtil::getIntegerv(GL_MAX_VARYING_FLOATS));
+    Console::printfn(Locale::get("GL_MAX_FRAG_VARYING"), GLUtil::getIntegerv(GL_MAX_VARYING_FLOATS));
     // How many uniforms can we send to vertex shaders
-    PRINT_FN(Locale::get("GL_MAX_VERT_UNIFORM"),GLUtil::getIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
+    Console::printfn(Locale::get("GL_MAX_VERT_UNIFORM"),GLUtil::getIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
     // How many attributes can we send to a vertex shader
-    PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
+    Console::printfn(Locale::get("GL_MAX_VERT_ATTRIB"),GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
-    PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), 
+    Console::printfn(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), 
              par.getParam<I32>("rendering.maxTextureSlots", 16));
     // Query shading language version support
-    PRINT_FN(Locale::get("GL_GLSL_SUPPORT"), glGetString(GL_SHADING_LANGUAGE_VERSION));
+    Console::printfn(Locale::get("GL_GLSL_SUPPORT"), glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver
-    PRINT_FN(Locale::get("GL_VENDOR_STRING"), gpuVendorByte.c_str(), glGetString(GL_RENDERER), glGetString(GL_VERSION));
+    Console::printfn(Locale::get("GL_VENDOR_STRING"), gpuVendorByte.c_str(), glGetString(GL_RENDERER), glGetString(GL_VERSION));
     // In order: Maximum number of uniform buffer binding points, 
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
-    PRINT_FN(Locale::get("GL_UBO_INFO"), GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS), 
+    Console::printfn(Locale::get("GL_UBO_INFO"), GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS), 
                                          GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE) / 1024, 
                                          GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
 
@@ -200,13 +200,13 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     //           maximum size in basic machine units of a shader storage block,
     //           maximum total number of active shader storage blocks that may be accessed by all active shaders and 
     //           minimum required alignment for shader storage buffer sizes and offset.
-    PRINT_FN(Locale::get("GL_SSBO_INFO"), GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
+    Console::printfn(Locale::get("GL_SSBO_INFO"), GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
                                          (GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024, 
                                           GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS), 
                                           GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT));
 
     // Maximum number of subroutines and maximum number of subroutine uniform locations usable in a shader
-    PRINT_FN(Locale::get("GL_SUBROUTINE_INFO"), 
+    Console::printfn(Locale::get("GL_SUBROUTINE_INFO"), 
              GLUtil::getIntegerv(GL_MAX_SUBROUTINES), 
              GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
         
@@ -239,7 +239,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     GLint numberOfDisplayModes;
     const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &numberOfDisplayModes );
     DIVIDE_ASSERT(modes != nullptr, "GLFWWrapper error: No display modes found for the current monitor!");
-    PRINT_FN(Locale::get("AVAILABLE_VIDEO_MODES"), numberOfDisplayModes);
+    Console::printfn(Locale::get("AVAILABLE_VIDEO_MODES"), numberOfDisplayModes);
     // Register the display modes with the GFXDevice object
     GFXDevice::GPUVideoMode tempDisplayMode;
     for(U16 i = 0; i < numberOfDisplayModes; ++i){
@@ -249,7 +249,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
         tempDisplayMode._refreshRate =  temp.refreshRate;
         GFX_DEVICE.registerDisplayMode(tempDisplayMode);
         // Optionally, output to console/file each display mode
-        D_PRINT_FN(Locale::get("CURRENT_DISPLAY_MODE"), 
+        Console::d_printfn(Locale::get("CURRENT_DISPLAY_MODE"), 
                    temp.width, 
                    temp.height, 
                    temp.redBits, 
@@ -261,7 +261,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // Prepare font rendering subsystem
     createFonsContext();  
     if (_fonsContext == nullptr) {
-        ERROR_FN(Locale::get("ERROR_FONT_INIT"));
+        Console::errorfn(Locale::get("ERROR_FONT_INIT"));
         return GLFW_WINDOW_INIT_ERROR;
     }
 
@@ -293,7 +293,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 #   endif
 
     // That's it. Everything should be ready for draw calls
-    PRINT_FN(Locale::get("START_OGL_API_OK"));
+    Console::printfn(Locale::get("START_OGL_API_OK"));
 
     // Once OpenGL is ready for rendering, init CEGUI
     _enableCEGUIRendering =  !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));

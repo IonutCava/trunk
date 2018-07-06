@@ -17,8 +17,8 @@ CameraManager::CameraManager(Kernel* const kernelPtr) : FrameListener(),
 
 CameraManager::~CameraManager() {
     UNREGISTER_FRAME_LISTENER(this);
-    PRINT_FN(Locale::get("CAMERA_MANAGER_DELETE"));
-    PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
+    Console::printfn(Locale::get("CAMERA_MANAGER_DELETE"));
+    Console::printfn(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
     for (CameraPool::value_type& it : _cameraPool) {
         it.second->unload();
     }
@@ -61,7 +61,7 @@ void CameraManager::setActiveCamera(Camera* cam, bool callActivate) {
 
 void CameraManager::addNewCamera(const stringImpl& cameraName, Camera* const camera){
     if(camera == nullptr) {
-        ERROR_FN(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),cameraName.c_str());
+        Console::errorfn(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),cameraName.c_str());
         return;
     }
 

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -86,14 +86,6 @@ class LimitedVariable : public Variable
       else if (_dValue < _dMinValue)
         _dValue = _dMinValue;
     }
-
-/*    virtual string toString() const
-    {
-      ostringstream oss;
-      oss << setiosflags(ios_base::right) << setw(4)
-          << (I32)(200.0 * getValue()/(_dMaxValue - _dMinValue)); // [-100%, +100%]
-      return oss.str();
-    }*/
 };
 
 class TriangleVariable : public LimitedVariable

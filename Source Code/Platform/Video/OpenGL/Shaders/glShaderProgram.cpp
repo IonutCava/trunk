@@ -57,9 +57,9 @@ void glShaderProgram::validateInternal() {
     // we print errors in debug and in release, but everything else only in debug
     // the validation log is only retrieved if we request it. (i.e. in release, if the shader is validated, it isn't retrieved)
     if (status == GL_FALSE){
-        ERROR_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
+        Console::errorfn(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
     } else{
-        D_PRINT_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
+        Console::d_printfn(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
     }
     _validated = true;
 }
@@ -164,7 +164,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
             // and detach the shader
             detachShader(shader);
         }else{
-            ERROR_FN(Locale::get("ERROR_SHADER_RECOMPILE_NOT_FOUND_ATOM"),shader->getName().c_str());
+            Console::errorfn(Locale::get("ERROR_SHADER_RECOMPILE_NOT_FOUND_ATOM"),shader->getName().c_str());
         }
     }else{
         // If refresh == false, we are adding a new stage
@@ -221,7 +221,7 @@ void glShaderProgram::link(){
         glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
     }
 #   endif
-    D_PRINT_FN(Locale::get("GLSL_LINK_PROGRAM"), getName().c_str(), _shaderProgramIDTemp);
+    Console::d_printfn(Locale::get("GLSL_LINK_PROGRAM"), getName().c_str(), _shaderProgramIDTemp);
 
     // If we require specific outputs from the shader for transform feedback, we need to set them up before linking
     if (_outputCount > 0) {
@@ -240,9 +240,9 @@ void glShaderProgram::link(){
     glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
     // If linking failed, show an error, else print the result in debug builds. Same getLog() method is used
     if (linkStatus == GL_FALSE) {
-        ERROR_FN(Locale::get("GLSL_LINK_PROGRAM_LOG"), getName().c_str(), getLog().c_str());
+        Console::errorfn(Locale::get("GLSL_LINK_PROGRAM_LOG"), getName().c_str(), getLog().c_str());
     } else {
-        D_PRINT_FN(Locale::get("GLSL_LINK_PROGRAM_LOG"), getName().c_str(), getLog().c_str());
+        Console::d_printfn(Locale::get("GLSL_LINK_PROGRAM_LOG"), getName().c_str(), getLog().c_str());
         // The linked flag is set to true only if linking succeeded
         _linked = true;
     }
@@ -433,11 +433,11 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             }
             // Show a message, in debug, if we don't have a shader for this stage
             if (!_shaderStage[type]) { 
-                D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), shaderCompileName[type].c_str())
+                Console::d_printfn(Locale::get("WARN_GLSL_SHADER_LOAD"), shaderCompileName[type].c_str());
             } else {
                 // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple types)
                 if (!_shaderStage[type]->compile()) {
-                    ERROR_FN(Locale::get("ERROR_GLSL_SHADER_COMPILE"), _shaderStage[type]->getShaderId());
+                    Console::errorfn(Locale::get("ERROR_GLSL_SHADER_COMPILE"), _shaderStage[type]->getShaderId());
                 }
             }
         }   
@@ -851,7 +851,7 @@ bool glShaderProgram::checkSlotUsage(GLint location, GLushort slot) {
         _textureSlots[slot] = location;
         return true;
     }
-    ERROR_FN(Locale::get("ERROR_SHADER_TEXTURE_MULTI_BIND"));
+    Console::errorfn(Locale::get("ERROR_SHADER_TEXTURE_MULTI_BIND"));
     return false;
 #else
     return true;

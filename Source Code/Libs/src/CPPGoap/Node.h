@@ -2,8 +2,8 @@
  * @class Node
  * @brief A node is any point on the path between staring point and ending point (inclusive)
  *
- * @date July 2014
- * @copyright (c) 2014 Prylis Inc. All rights reserved.
+ * @date July 2015
+ * @copyright (c) 2015 Prylis Inc. All rights reserved.
  */
 
 #pragma once

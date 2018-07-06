@@ -15,7 +15,7 @@ Shader::Shader(const stringImpl& name, const ShaderType& type,const bool optimis
 
 Shader::~Shader()
 {
-    D_PRINT_FN(Locale::get("SHADER_DELETE"),getName().c_str());
+    Console::d_printfn(Locale::get("SHADER_DELETE"),getName().c_str());
     // never delete a shader if it's still in use by a program
     assert(_parentShaderPrograms.empty());
 }

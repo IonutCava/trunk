@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -62,7 +62,7 @@ public:
     void selectEffect(EWhichEffect eWhich);
 
     inline void printEffect(vectorAlg::vecSize nEffInd){
-        PRINT_FN(Locale::get("INPUT_PRINT_EFFECT"),nEffInd,_vecEffects[nEffInd]->getDescription());
+        Console::printfn(Locale::get("INPUT_PRINT_EFFECT"),nEffInd,_vecEffects[nEffInd]->getDescription());
     }
 
     inline void printEffects(){

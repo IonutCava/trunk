@@ -20,7 +20,7 @@ namespace Divide {
 
     SceneGraph::~SceneGraph()
     {
-        D_PRINT_FN(Locale::get("DELETE_SCENEGRAPH"));
+        Console::d_printfn(Locale::get("DELETE_SCENEGRAPH"));
         SceneNode* root = _root->getNode<SceneRoot>();
         // Should recursively call unload on the entire scene graph
         _root->unload();
@@ -48,10 +48,10 @@ namespace Divide {
     }
 
     void SceneGraph::print() {
-        PRINT_FN(Locale::get("SCENEGRAPH_TITLE"));
-        Console::getInstance().toggleTimeStamps(false);
+        Console::printfn(Locale::get("SCENEGRAPH_TITLE"));
+        Console::toggleTimeStamps(false);
         printInternal(_root);
-        Console::getInstance().toggleTimeStamps(true);
+        Console::toggleTimeStamps(true);
     }
 
     ///Prints out the SceneGraph structure to the Console
@@ -96,7 +96,7 @@ namespace Divide {
             }
         }
         //Print our current node's information
-        PRINT_FN(Locale::get("PRINT_SCENEGRAPH_NODE"), parent->getName().c_str(),
+        Console::printfn(Locale::get("PRINT_SCENEGRAPH_NODE"), parent->getName().c_str(),
             parent->getNode()->getName().c_str(),
             material.c_str(),
             shader.c_str(),
@@ -105,7 +105,7 @@ namespace Divide {
         //Based on our ancestor counting earlier
         for (SceneGraphNode::NodeChildren::value_type& it : parent->getChildren()) {
             for (U8 j = 0; j < i; j++) {
-                PRINT_F("-");
+                Console::printf("-");
             }
             printInternal(it.second);
         }

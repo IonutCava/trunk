@@ -73,7 +73,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 
     for(U8 row=0; row<3; row++)
         for(U8 col=0; col < 10; col++){
-            U8 lightId = (U8)(row*10+col);
+            U8 lightId = static_cast<U8>(row*10+col);
             std::stringstream ss; ss << (U32)lightId;
             ResourceDescriptor tempLight(stringAlg::toBase("Light Deferred " + ss.str()));
             tempLight.setEnumValue(LIGHT_TYPE_POINT);

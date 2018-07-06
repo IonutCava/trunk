@@ -163,13 +163,13 @@ void WarSceneAISceneImpl::requestOrders() {
     }
     GOAPGoal* goal = findRelevantGoal();
     if (goal != nullptr) {
-        D_PRINT_FN("Current goal for [%d ]: [ %s ]", _entity->getGUID(), goal->getName().c_str());
+        Console::d_printfn("Current goal for [%d ]: [ %s ]", _entity->getGUID(), goal->getName().c_str());
         if (replanGoal()) {
-            D_PRINT_FN("The Plan for [ %d ] involves [ %d ] actions.", _entity->getGUID(), getActiveGoal()->getCurrentPlan().size());
+            Console::d_printfn("The Plan for [ %d ] involves [ %d ] actions.", _entity->getGUID(), getActiveGoal()->getCurrentPlan().size());
             printPlan();
         }
         else {
-            PRINT_FN("Invalid [ %d ]", _entity->getGUID());
+            Console::printfn("Invalid [ %d ]", _entity->getGUID());
         }
     }
 }
@@ -180,35 +180,35 @@ bool WarSceneAISceneImpl::preAction(ActionType type, const WarSceneAction* warAc
 
     switch (type) {
         case ACTION_APPROACH_FLAG : {
-            D_PRINT_FN("Starting approach flag action [ %d ]", _entity->getGUID());
+            Console::d_printfn("Starting approach flag action [ %d ]", _entity->getGUID());
             _entity->updateDestination(_workingMemory._teamFlagPosition[1 - currentTeam->getTeamID()].value());
         } break;
         case ACTION_CAPTURE_FLAG : {
-            D_PRINT_FN("Starting capture flag action [ %d ]", _entity->getGUID());
+            Console::d_printfn("Starting capture flag action [ %d ]", _entity->getGUID());
         } break;
         case ACTION_RETURN_TO_BASE: {
-            D_PRINT_FN("Starting return to base action [ %d ]", _entity->getGUID());
+            Console::d_printfn("Starting return to base action [ %d ]", _entity->getGUID());
             _entity->updateDestination(_workingMemory._teamFlagPosition[currentTeam->getTeamID()].value());
         } break;
         case ACTION_RETURN_FLAG : {
-            D_PRINT_FN("Starting return flag action [ %d ]", _entity->getGUID());
+            Console::d_printfn("Starting return flag action [ %d ]", _entity->getGUID());
         } break;
         case ACTION_PROTECT_FLAG_CARRIER: {
-            D_PRINT_FN("Starting protect flag action [ %d ]", _entity->getGUID());
+            Console::d_printfn("Starting protect flag action [ %d ]", _entity->getGUID());
             assert(_workingMemory._flagCarrier.value() != nullptr);
             _entity->updateDestination(_workingMemory._flagCarrier.value()->getPosition());
             U8 temp = WorkingMemory::_flagProtectors[currentTeam->getTeamID()].value() + 1;
             WorkingMemory::_flagProtectors[currentTeam->getTeamID()].value(temp);
         } break;
         case ACTION_RECOVER_FLAG: {
-            D_PRINT_FN("Starting recover flag action [ %d ]", _entity->getGUID());
+            Console::d_printfn("Starting recover flag action [ %d ]", _entity->getGUID());
             assert(_workingMemory._enemyFlagCarrier.value() != nullptr);
             _entity->updateDestination(_workingMemory._enemyFlagCarrier.value()->getPosition());
             U8 temp = WorkingMemory::_flagRetrievers[currentTeam->getTeamID()].value() + 1;
             WorkingMemory::_flagRetrievers[currentTeam->getTeamID()].value(temp);
         } break;
         default : {
-            D_PRINT_FN("Starting normal action [ %d ]", _entity->getGUID());
+            Console::d_printfn("Starting normal action [ %d ]", _entity->getGUID());
         } break;
     };
         
@@ -221,10 +221,10 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
 
     switch (type) {
         case ACTION_APPROACH_FLAG : {
-            D_PRINT_FN("Approach flag action over [ %d ]", _entity->getGUID());
+            Console::d_printfn("Approach flag action over [ %d ]", _entity->getGUID());
         } break;
         case ACTION_CAPTURE_FLAG : {
-            D_PRINT_FN("Capture flag action over [ %d ]", _entity->getGUID());
+            Console::d_printfn("Capture flag action over [ %d ]", _entity->getGUID());
             assert(!_workingMemory._hasEnemyFlag.value());
             assert(!_workingMemory._teamMateHasFlag.value());
 
@@ -247,11 +247,11 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
             }
         } break;
         case ACTION_RETURN_TO_BASE: {
-            PRINT_FN("Return to base action over [ %d ]", _entity->getGUID());
+            Console::printfn("Return to base action over [ %d ]", _entity->getGUID());
         } break;
 
         case ACTION_RETURN_FLAG : {
-            PRINT_FN("Return flag action over [ %d ]", _entity->getGUID());
+            Console::printfn("Return flag action over [ %d ]", _entity->getGUID());
 
             U8 flag = 1 - currentTeam->getTeamID();
             PhysicsComponent* pComp = _workingMemory._flags[flag].value()->getComponent<PhysicsComponent>();
@@ -271,15 +271,15 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
             WorkingMemory::_flagRetrievers[currentTeam->getTeamID()].value(temp);
         } break;
         default : {
-            PRINT_FN("Normal action over [ %d ]", _entity->getGUID());
+            Console::printfn("Normal action over [ %d ]", _entity->getGUID());
         } break;
     };
 
-    PRINT_FN("   %s [ %d ]", warAction->name().c_str(), _entity->getGUID());
+    Console::printfn("   %s [ %d ]", warAction->name().c_str(), _entity->getGUID());
     for(GOAPAction::operationsIterator o = warAction->effects().begin(); o != warAction->effects().end(); o++) {
         performActionStep(o);
     }
-    PRINT_F("\n");
+    Console::printf("\n");
     return advanceGoal();
 }
 
@@ -340,7 +340,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction* planStep)
             }
         } break;
         default : {
-            PRINT_FN("Normal action check [ %d ]", _entity->getGUID());
+            Console::printfn("Normal action check [ %d ]", _entity->getGUID());
         } break;
     };
     if (state) {
@@ -466,7 +466,7 @@ bool WarSceneAISceneImpl::performActionStep(GOAPAction::operationsIterator step)
     GOAPValue newVal = step->second;
     GOAPValue oldVal = worldState().getVariable(crtFact);
     if (oldVal != newVal) {
-        PRINT_FN("\t\t [%d] Changing \"%s\" from \"%s\" to \"%s\"", 
+        Console::printfn("\t\t [%d] Changing \"%s\" from \"%s\" to \"%s\"", 
                  _entity->getGUID(), WarSceneFactName(crtFact), GOAPValueName(oldVal), GOAPValueName(newVal));
     }
     worldState().setVariable(crtFact, newVal);
@@ -474,22 +474,22 @@ bool WarSceneAISceneImpl::performActionStep(GOAPAction::operationsIterator step)
 }
 
 bool WarSceneAISceneImpl::printActionStats(const GOAPAction* planStep) const {
-    PRINT_FN("Action [ %s ] [ %d ]", planStep->name().c_str(), _entity->getGUID());
+    Console::printfn("Action [ %s ] [ %d ]", planStep->name().c_str(), _entity->getGUID());
     return true;
 }
 
 void WarSceneAISceneImpl::printWorkingMemory() const {
-    PRINT_FN("--------------- Working memory state for [ %d ] BEGIN ----------------------------", _entity->getGUID());
-    PRINT_FN("        Team Counts - 0: %d | 1: %d", _workingMemory._teamCount[0].value(),
+    Console::printfn("--------------- Working memory state for [ %d ] BEGIN ----------------------------", _entity->getGUID());
+    Console::printfn("        Team Counts - 0: %d | 1: %d", _workingMemory._teamCount[0].value(),
                                                     _workingMemory._teamCount[1].value());
-    PRINT_FN("        Current position: - [ %4.1f , %4.1f, %4.1f]", _entity->getPosition().x,
+    Console::printfn("        Current position: - [ %4.1f , %4.1f, %4.1f]", _entity->getPosition().x,
                                                                     _entity->getPosition().y,
                                                                     _entity->getPosition().z);
-    PRINT_FN("        Flag Protectors - 0: %d | 1: %d", _workingMemory._flagProtectors[0].value(), 
+    Console::printfn("        Flag Protectors - 0: %d | 1: %d", _workingMemory._flagProtectors[0].value(), 
                                                         _workingMemory._flagProtectors[1].value());
-    PRINT_FN("        Flag Retrievers - 0: %d | 1: %d", _workingMemory._flagRetrievers[0].value(), 
+    Console::printfn("        Flag Retrievers - 0: %d | 1: %d", _workingMemory._flagRetrievers[0].value(), 
                                                         _workingMemory._flagRetrievers[1].value());
-    PRINT_FN("        Flag Positions - 0 : [ %4.1f , %4.1f, %4.1f] | 1 : [ %4.1f , %4.1f, %4.1f]",  
+    Console::printfn("        Flag Positions - 0 : [ %4.1f , %4.1f, %4.1f] | 1 : [ %4.1f , %4.1f, %4.1f]",  
                                                                                      _workingMemory._teamFlagPosition[0].value().x,
                                                                                      _workingMemory._teamFlagPosition[0].value().y,
                                                                                      _workingMemory._teamFlagPosition[0].value().z,
@@ -498,28 +498,28 @@ void WarSceneAISceneImpl::printWorkingMemory() const {
                                                                                      _workingMemory._teamFlagPosition[1].value().z);
     
     if (_workingMemory._flagCarrier.value()) {
-        PRINT_FN("        Flag carrier : [ %d ] ", _workingMemory._flagCarrier.value()->getGUID());
+        Console::printfn("        Flag carrier : [ %d ] ", _workingMemory._flagCarrier.value()->getGUID());
     }
     if (_workingMemory._enemyFlagCarrier.value()) {
-        PRINT_FN("        Enemy flag carrier : [ %d ] ", _workingMemory._enemyFlagCarrier.value()->getGUID());
+        Console::printfn("        Enemy flag carrier : [ %d ] ", _workingMemory._enemyFlagCarrier.value()->getGUID());
     }
-    PRINT_FN("        Health : [ %d ]", _workingMemory._health.value());
+    Console::printfn("        Health : [ %d ]", _workingMemory._health.value());
     if (_workingMemory._currentTargetEntity.value()) {
-        PRINT_FN("        Current target : [ %d ] ", _workingMemory._currentTargetEntity.value()->getGUID());
+        Console::printfn("        Current target : [ %d ] ", _workingMemory._currentTargetEntity.value()->getGUID());
     }
-    PRINT_FN("        Current target position: - [ %4.1f , %4.1f, %4.1f]",  _workingMemory._currentTargetPosition.value().x,
+    Console::printfn("        Current target position: - [ %4.1f , %4.1f, %4.1f]",  _workingMemory._currentTargetPosition.value().x,
                                                                     _workingMemory._currentTargetPosition.value().y,
                                                                     _workingMemory._currentTargetPosition.value().z);
-    PRINT_FN("        Has enemy flag: [ %s ]", _workingMemory._hasEnemyFlag.value() ? "true" : "false");
-    PRINT_FN("        Enemy has flag: [ %s ]", _workingMemory._enemyHasFlag.value() ? "true" : "false");
-    PRINT_FN("        Teammate has flag: [ %s ]", _workingMemory._teamMateHasFlag.value() ? "true" : "false");
-    PRINT_FN("        Enemy flag near: [ %s ]", _workingMemory._enemyFlagNear.value() ? "true" : "false");
-    PRINT_FN("        Friendly flag near: [ %s ]", _workingMemory._friendlyFlagNear.value() ? "true" : "false");
+    Console::printfn("        Has enemy flag: [ %s ]", _workingMemory._hasEnemyFlag.value() ? "true" : "false");
+    Console::printfn("        Enemy has flag: [ %s ]", _workingMemory._enemyHasFlag.value() ? "true" : "false");
+    Console::printfn("        Teammate has flag: [ %s ]", _workingMemory._teamMateHasFlag.value() ? "true" : "false");
+    Console::printfn("        Enemy flag near: [ %s ]", _workingMemory._enemyFlagNear.value() ? "true" : "false");
+    Console::printfn("        Friendly flag near: [ %s ]", _workingMemory._friendlyFlagNear.value() ? "true" : "false");
 
     for (std::pair<GOAPFact, GOAPValue> var : worldStateConst().vars_){
-        PRINT_FN("        World state fact [ %s ] : [ %s ]", WarSceneFactName(var.first), var.second ? "true" : "false");
+        Console::printfn("        World state fact [ %s ] : [ %s ]", WarSceneFactName(var.first), var.second ? "true" : "false");
     }
-    PRINT_FN("--------------- Working memory state for [ %d ] END ----------------------------", _entity->getGUID());
+    Console::printfn("--------------- Working memory state for [ %d ] END ----------------------------", _entity->getGUID());
 }
     }; //namespace AI
 }; //namespace Divide

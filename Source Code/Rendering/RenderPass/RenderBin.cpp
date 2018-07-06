@@ -124,7 +124,7 @@ void RenderBin::sort(const RenderStage& currentRenderStage){
             //no need to sort
         } break;
         case RenderingOrder::ORDER_PLACEHOLDER : {
-            ERROR_FN(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"), 
+            Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"), 
                      renderBinTypeToNameMap[_rbType]);
         } break;
     };

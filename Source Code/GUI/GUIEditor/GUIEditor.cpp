@@ -43,11 +43,11 @@ GUIEditor::~GUIEditor()
 
 bool GUIEditor::init() {
     if (_init) {
-        ERROR_FN(Locale::get("ERROR_EDITOR_DOUBLE_INIT"));
+        Console::errorfn(Locale::get("ERROR_EDITOR_DOUBLE_INIT"));
         return false;
     }
 
-    PRINT_FN(Locale::get("GUI_EDITOR_INIT"));
+    Console::printfn(Locale::get("GUI_EDITOR_INIT"));
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience to reduce typing
     CEGUI::WindowManager *pWindowManager = CEGUI::WindowManager::getSingletonPtr();
     // load the editor Window from the layout file
@@ -62,14 +62,14 @@ bool GUIEditor::init() {
     } else {
          // Loading layout from file, failed, so output an error Message.
          CEGUI::Logger::getSingleton().logEvent("Error: Unable to load the Editor from .layout");
-         ERROR_FN(Locale::get("ERROR_EDITOR_LAYOUT_FILE"),layoutFile.c_str());
+         Console::errorfn(Locale::get("ERROR_EDITOR_LAYOUT_FILE"),layoutFile.c_str());
          return false;
     }
 
     setVisible(false);
 
     _init = true;
-    PRINT_FN(Locale::get("GUI_EDITOR_CREATED"));
+    Console::printfn(Locale::get("GUI_EDITOR_CREATED"));
     return true;
 }
 
@@ -619,43 +619,43 @@ bool GUIEditor::Handle_EditFieldClick(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_CreateNavMesh(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: NavMesh creation queued!");
+    Console::d_printfn("[Editor]: NavMesh creation queued!");
     GUI::getInstance().getConsole()->setVisible(true);
     _createNavMeshQueued = true;
     return true;
 }
 
 bool GUIEditor::Handle_SaveScene(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Saving scene!");
+    Console::d_printfn("[Editor]: Saving scene!");
     return true;
 }
 
 bool GUIEditor::Handle_SaveSelection(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Saving selection!");
+    Console::d_printfn("[Editor]: Saving selection!");
     return true;
 }
 
 bool GUIEditor::Handle_DeleteSelection(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Deleting selection!");
+    Console::d_printfn("[Editor]: Deleting selection!");
     return true;
 }
 
 bool GUIEditor::Handle_ReloadScene(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Reloading scene!");
+    Console::d_printfn("[Editor]: Reloading scene!");
     return true;
 }
 
 bool GUIEditor::Handle_PrintSceneGraph(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]:Printing scene graph!");
+    Console::d_printfn("[Editor]:Printing scene graph!");
     GET_ACTIVE_SCENEGRAPH()->print();
     return true;
 }
 
 bool GUIEditor::Handle_WireframeToggle(const CEGUI::EventArgs &e) {
     if ( _toggleButtons[TOGGLE_WIREFRAME]->isSelected() ) {
-        D_PRINT_FN("[Editor]: Wireframe rendering enabled!");
+        Console::d_printfn("[Editor]: Wireframe rendering enabled!");
     } else {
-        D_PRINT_FN("[Editor]: Wireframe rendering disabled!");
+        Console::d_printfn("[Editor]: Wireframe rendering disabled!");
     }
     if (_currentSelection) {
         _currentSelection->getComponent<RenderingComponent>()->renderWireframe(_toggleButtons[TOGGLE_WIREFRAME]->isSelected());
@@ -665,9 +665,9 @@ bool GUIEditor::Handle_WireframeToggle(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_DepthPreviewToggle(const CEGUI::EventArgs &e) {
     if ( _toggleButtons[TOGGLE_DEPTH_PREVIEW]->isSelected() ) {
-        D_PRINT_FN("[Editor]: Depth Preview enabled!");
+        Console::d_printfn("[Editor]: Depth Preview enabled!");
     } else {
-        D_PRINT_FN("[Editor]: Depth Preview disabled!");
+        Console::d_printfn("[Editor]: Depth Preview disabled!");
     }
     ParamHandler::getInstance().setParam("postProcessing.fullScreenDepthBuffer", 
                                          _toggleButtons[TOGGLE_DEPTH_PREVIEW]->isSelected());
@@ -676,9 +676,9 @@ bool GUIEditor::Handle_DepthPreviewToggle(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_ShadowMappingToggle(const CEGUI::EventArgs &e) {
     if ( _toggleButtons[TOGGLE_SHADOW_MAPPING]->isSelected() ) {
-        D_PRINT_FN("[Editor]: Shadow Mapping enabled!");
+        Console::d_printfn("[Editor]: Shadow Mapping enabled!");
     } else {
-        D_PRINT_FN("[Editor]: Shadow Mapping disabled!");
+        Console::d_printfn("[Editor]: Shadow Mapping disabled!");
     }
     if (_currentSelection) {
         _currentSelection->getComponent<RenderingComponent>()->castsShadows(_toggleButtons[TOGGLE_SHADOW_MAPPING]->isSelected());
@@ -688,9 +688,9 @@ bool GUIEditor::Handle_ShadowMappingToggle(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_FogToggle(const CEGUI::EventArgs &e) {
     if (_toggleButtons[TOGGLE_FOG]->isSelected() ) {
-        D_PRINT_FN("[Editor]: Fog enabled!");
+        Console::d_printfn("[Editor]: Fog enabled!");
     } else {
-        D_PRINT_FN("[Editor]: Fog disabled!");
+        Console::d_printfn("[Editor]: Fog disabled!");
     }
 
     ParamHandler::getInstance().setParam("rendering.enableFog", _toggleButtons[TOGGLE_FOG]->isSelected());
@@ -700,9 +700,9 @@ bool GUIEditor::Handle_FogToggle(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_PostFXToggle(const CEGUI::EventArgs &e) {
     if ( _toggleButtons[TOGGLE_POST_FX]->isSelected() ) {
-        D_PRINT_FN("[Editor]: PostFX enabled!");
+        Console::d_printfn("[Editor]: PostFX enabled!");
     } else {
-        D_PRINT_FN("[Editor]: PostFX disabled!");
+        Console::d_printfn("[Editor]: PostFX disabled!");
     }
     GFX_DEVICE.postProcessingEnabled(_toggleButtons[TOGGLE_POST_FX]->isSelected());
     return true;
@@ -710,9 +710,9 @@ bool GUIEditor::Handle_PostFXToggle(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_BoundingBoxesToggle(const CEGUI::EventArgs &e) {
     if ( _toggleButtons[TOGGLE_BOUNDING_BOXES]->isSelected() ) {
-        D_PRINT_FN("[Editor]: Bounding Box rendering enabled!");
+        Console::d_printfn("[Editor]: Bounding Box rendering enabled!");
     } else {
-        D_PRINT_FN("[Editor]: Bounding Box rendering disabled!");
+        Console::d_printfn("[Editor]: Bounding Box rendering disabled!");
     }
     if (_currentSelection) {
         RenderingComponent* rComp = _currentSelection->getComponent<RenderingComponent>();
@@ -723,9 +723,9 @@ bool GUIEditor::Handle_BoundingBoxesToggle(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
     if ( _toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected() ) {
-        D_PRINT_FN("[Editor]: NavMesh rendering enabled!");
+        Console::d_printfn("[Editor]: NavMesh rendering enabled!");
     } else {
-        D_PRINT_FN("[Editor]: NavMesh rendering disabled!");
+        Console::d_printfn("[Editor]: NavMesh rendering disabled!");
     }
     AI::AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
     return true;
@@ -733,9 +733,9 @@ bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
     if ( _toggleButtons[TOGGLE_SKELETONS]->isSelected() ) {
-        D_PRINT_FN("[Editor]: Skeleton rendering enabled!");
+        Console::d_printfn("[Editor]: Skeleton rendering enabled!");
     } else {
-        D_PRINT_FN("[Editor]: Skeleton rendering disabled!");
+        Console::d_printfn("[Editor]: Skeleton rendering disabled!");
     }
 
     if (_currentSelection) {
@@ -745,7 +745,7 @@ bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_PositionXChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    Console::d_printfn("[Editor]: Position X changed via text edit!");
     F32 x = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_X]->getText());
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] = x;
     _currentSelection->getComponent<PhysicsComponent>()->setPositionX(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X]);
@@ -754,7 +754,7 @@ bool GUIEditor::Handle_PositionXChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_PositionYChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Y changed via text edit!");
+    Console::d_printfn("[Editor]: Position Y changed via text edit!");
     F32 y = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Y]->getText());
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] = y;
     _currentSelection->getComponent<PhysicsComponent>()->setPositionY(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y]);
@@ -763,7 +763,7 @@ bool GUIEditor::Handle_PositionYChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_PositionZChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Z changed via text edit!");
+    Console::d_printfn("[Editor]: Position Z changed via text edit!");
     F32 z = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_Z]->getText());
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z] = z;
     _currentSelection->getComponent<PhysicsComponent>()->setPositionZ(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z]);
@@ -772,7 +772,7 @@ bool GUIEditor::Handle_PositionZChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_PositionGranularityChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Granularity changed via text edit!");
+    Console::d_printfn("[Editor]: Position Granularity changed via text edit!");
     F32 gran = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY]->getText());
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY] = gran;
     CLAMP<F32>(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY], 0.0000001f, 10000000.0f);
@@ -782,7 +782,7 @@ bool GUIEditor::Handle_PositionGranularityChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_RotationXChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation X changed via text edit!");
+    Console::d_printfn("[Editor]: Rotation X changed via text edit!");
     F32 x = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_X]->getText());
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] = x;
     CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X], -360.0f, 360.0f);
@@ -797,7 +797,7 @@ bool GUIEditor::Handle_RotationXChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_RotationYChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Y changed via text edit!");
+    Console::d_printfn("[Editor]: Rotation Y changed via text edit!");
     F32 y = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Y]->getText());
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] = y;
     CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y], -360.0f, 360.0f);
@@ -812,7 +812,7 @@ bool GUIEditor::Handle_RotationYChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_RotationZChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X changed via text edit!");
+    Console::d_printfn("[Editor]: Position X changed via text edit!");
     F32 z = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_Z]->getText());
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] = z;
     CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z], -360.0f, 360.0f);
@@ -827,7 +827,7 @@ bool GUIEditor::Handle_RotationZChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_RotationGranularityChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Granularity changed via text edit!");
+    Console::d_printfn("[Editor]: Rotation Granularity changed via text edit!");
     F32 gran = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]->getText());
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] = gran;
     CLAMP<F32>(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY], 0.0000001f, 359.0f);
@@ -837,7 +837,7 @@ bool GUIEditor::Handle_RotationGranularityChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_ScaleXChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale X changed via text edit!");
+    Console::d_printfn("[Editor]: Scale X changed via text edit!");
     F32 x = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_X]->getText());
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X] = x;
     _currentSelection->getComponent<PhysicsComponent>()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
@@ -846,7 +846,7 @@ bool GUIEditor::Handle_ScaleXChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_ScaleYChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Y changed via text edit!");
+    Console::d_printfn("[Editor]: Scale Y changed via text edit!");
     F32 y = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Y]->getText());
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y] = y;
     _currentSelection->getComponent<PhysicsComponent>()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
@@ -855,7 +855,7 @@ bool GUIEditor::Handle_ScaleYChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_ScaleZChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Z changed via text edit!");
+    Console::d_printfn("[Editor]: Scale Z changed via text edit!");
     F32 z = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_Z]->getText());
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z] = z;
     _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
@@ -864,7 +864,7 @@ bool GUIEditor::Handle_ScaleZChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_ScaleGranularityChange(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Granularity changed via text edit!");
+    Console::d_printfn("[Editor]: Scale Granularity changed via text edit!");
     F32 gran = CEGUI::PropertyHelper<F32>::fromString(_valuesField[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]->getText());
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY] = gran;
     CLAMP<F32>(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY], 0.0000001f, 10000000.0f);
@@ -874,7 +874,7 @@ bool GUIEditor::Handle_ScaleGranularityChange(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementPositionX(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X incremented via button!");
+    Console::d_printfn("[Editor]: Position X incremented via button!");
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] += _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
@@ -883,7 +883,7 @@ bool GUIEditor::Handle_IncrementPositionX(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementPositionX(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position X decremented via button!");
+    Console::d_printfn("[Editor]: Position X decremented via button!");
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] -= _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
@@ -892,7 +892,7 @@ bool GUIEditor::Handle_DecrementPositionX(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementPositionY(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Y incremented via button!");
+    Console::d_printfn("[Editor]: Position Y incremented via button!");
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] += _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
@@ -901,7 +901,7 @@ bool GUIEditor::Handle_IncrementPositionY(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementPositionY(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Y decremented via button!");
+    Console::d_printfn("[Editor]: Position Y decremented via button!");
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] -= _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
@@ -910,7 +910,7 @@ bool GUIEditor::Handle_DecrementPositionY(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementPositionZ(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Z incremented via button!");
+    Console::d_printfn("[Editor]: Position Z incremented via button!");
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z] += _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
@@ -919,7 +919,7 @@ bool GUIEditor::Handle_IncrementPositionZ(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementPositionZ(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Z decremented via button!");
+    Console::d_printfn("[Editor]: Position Z decremented via button!");
     // If we don't have a selection, the button is disabled
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Z] -= _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY];
@@ -928,7 +928,7 @@ bool GUIEditor::Handle_DecrementPositionZ(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementPositionGranularity(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Granularity incremented via button!");
+    Console::d_printfn("[Editor]: Position Granularity incremented via button!");
     F32 pos = std::min(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY] * 10.0f, 10000000.0f);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY] = pos;
     CEGUI::String posStr = CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY]);
@@ -937,7 +937,7 @@ bool GUIEditor::Handle_IncrementPositionGranularity(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementPositionGranularity(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Position Granularity decremented via button!");
+    Console::d_printfn("[Editor]: Position Granularity decremented via button!");
     F32 pos = std::max(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY] / 10.0f, 0.0000001f);
     _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY] = pos;
     CEGUI::String posStr = CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_POSITION][CONTROL_FIELD_GRANULARITY]);
@@ -946,7 +946,7 @@ bool GUIEditor::Handle_DecrementPositionGranularity(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementRotationX(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation X incremented via button!");
+    Console::d_printfn("[Editor]: Rotation X incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
     PhysicsComponent* pComp = _currentSelection->getComponent<PhysicsComponent>();
@@ -957,7 +957,7 @@ bool GUIEditor::Handle_IncrementRotationX(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementRotationX(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation X decremented via button!");
+    Console::d_printfn("[Editor]: Rotation X decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_X] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
     PhysicsComponent* pComp = _currentSelection->getComponent<PhysicsComponent>();
@@ -968,7 +968,7 @@ bool GUIEditor::Handle_DecrementRotationX(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementRotationY(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Y incremented via button!");
+    Console::d_printfn("[Editor]: Rotation Y incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
     PhysicsComponent* pComp = _currentSelection->getComponent<PhysicsComponent>();
@@ -979,7 +979,7 @@ bool GUIEditor::Handle_IncrementRotationY(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementRotationY(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Y decremented via button!");
+    Console::d_printfn("[Editor]: Rotation Y decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Y] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
     PhysicsComponent* pComp = _currentSelection->getComponent<PhysicsComponent>();
@@ -990,7 +990,7 @@ bool GUIEditor::Handle_DecrementRotationY(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementRotationZ(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Z incremented via button!");
+    Console::d_printfn("[Editor]: Rotation Z incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] += _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
     PhysicsComponent* pComp = _currentSelection->getComponent<PhysicsComponent>();
@@ -1001,7 +1001,7 @@ bool GUIEditor::Handle_IncrementRotationZ(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementRotationZ(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Z decremented via button!");
+    Console::d_printfn("[Editor]: Rotation Z decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_Z] -= _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY];
     PhysicsComponent* pComp = _currentSelection->getComponent<PhysicsComponent>();
@@ -1012,7 +1012,7 @@ bool GUIEditor::Handle_DecrementRotationZ(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementRotationGranularity(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Granularity incremented via button!");
+    Console::d_printfn("[Editor]: Rotation Granularity incremented via button!");
     F32 gran = std::min(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] * 10.0f, 359.0f);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] = gran;
     CEGUI::String granStr = CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]);
@@ -1021,7 +1021,7 @@ bool GUIEditor::Handle_IncrementRotationGranularity(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementRotationGranularity(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Rotation Granularity decremented via button!");
+    Console::d_printfn("[Editor]: Rotation Granularity decremented via button!");
     F32 gran = std::max(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] / 10.0f, 0.0000001f);
     _currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY] = gran;
     CEGUI::String granStr = CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_ROTATION][CONTROL_FIELD_GRANULARITY]);
@@ -1030,7 +1030,7 @@ bool GUIEditor::Handle_DecrementRotationGranularity(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementScaleX(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale X incremented via button!");
+    Console::d_printfn("[Editor]: Scale X incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X] += _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
     _currentSelection->getComponent<PhysicsComponent>()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
@@ -1038,7 +1038,7 @@ bool GUIEditor::Handle_IncrementScaleX(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementScaleX(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale X decremented via button!");
+    Console::d_printfn("[Editor]: Scale X decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X] -= _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
     _currentSelection->getComponent<PhysicsComponent>()->setScaleX(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_X]);
@@ -1046,7 +1046,7 @@ bool GUIEditor::Handle_DecrementScaleX(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementScaleY(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Y incremented via button!");
+    Console::d_printfn("[Editor]: Scale Y incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y] += _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
     _currentSelection->getComponent<PhysicsComponent>()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
@@ -1054,7 +1054,7 @@ bool GUIEditor::Handle_IncrementScaleY(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementScaleY(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Y decremented via button!");
+    Console::d_printfn("[Editor]: Scale Y decremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y] -= _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
     _currentSelection->getComponent<PhysicsComponent>()->setScaleY(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Y]);
@@ -1062,7 +1062,7 @@ bool GUIEditor::Handle_DecrementScaleY(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_IncrementScaleZ(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Z incremented via button!");
+    Console::d_printfn("[Editor]: Scale Z incremented via button!");
     assert(_currentSelection != nullptr);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z] += _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
     _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
@@ -1070,14 +1070,14 @@ bool GUIEditor::Handle_IncrementScaleZ(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementScaleZ(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Z decremented via button!");
+    Console::d_printfn("[Editor]: Scale Z decremented via button!");
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z] -= _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY];
     _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_Z]);
     return true;
 }
 
 bool GUIEditor::Handle_IncrementScaleGranularity(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Granularity incremented via button!");
+    Console::d_printfn("[Editor]: Scale Granularity incremented via button!");
     F32 gran = std::min(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY] * 10.0f, 10000000.0f);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY] = gran;
     CEGUI::String granStr = CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]);
@@ -1086,7 +1086,7 @@ bool GUIEditor::Handle_IncrementScaleGranularity(const CEGUI::EventArgs &e) {
 }
 
 bool GUIEditor::Handle_DecrementScaleGranularity(const CEGUI::EventArgs &e) {
-    D_PRINT_FN("[Editor]: Scale Granularity decremented via button!");
+    Console::d_printfn("[Editor]: Scale Granularity decremented via button!");
     F32 gran = std::max(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY] / 10.0f, 0.0000001f);
     _currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY] = gran;
     CEGUI::String granStr = CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]);

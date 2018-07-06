@@ -123,7 +123,7 @@ bool MainScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI
                 _visibleTerrains.push_back(terrainNode);
              }
         }else{
-            ERROR_FN(Locale::get("ERROR_MISSING_TERRAIN"), _terrainInfoArray[i]->getVariable("terrainName"));
+            Console::errorfn(Locale::get("ERROR_MISSING_TERRAIN"), _terrainInfoArray[i]->getVariable("terrainName"));
         }
     }
 

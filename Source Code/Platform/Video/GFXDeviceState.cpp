@@ -146,10 +146,10 @@ void GFXDevice::closeRenderingApi() {
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
     // Destroy our post processing system
-    PRINT_FN( Locale::get( "STOP_POST_FX" ) );
+    Console::printfn( Locale::get( "STOP_POST_FX" ) );
     PostFX::destroyInstance();
     // Delete the renderer implementation
-    PRINT_FN(Locale::get("CLOSING_RENDERER"));
+    Console::printfn(Locale::get("CLOSING_RENDERER"));
     MemoryManager::DELETE( _renderer );
     // Delete our default render state blocks
     MemoryManager::DELETE_HASHMAP(_stateBlockMap);
@@ -259,19 +259,19 @@ ErrorCode GFXDevice::createAPIInstance() {
         } break;
         case RenderAPI::Direct3D: {
             _api = &DX_API::getOrCreateInstance();
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
             return GFX_NOT_SUPPORTED;
         } break;
         case RenderAPI::Mantle: {
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
             return GFX_NOT_SUPPORTED;
         }break;
         case RenderAPI::None: {
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
             return GFX_NOT_SUPPORTED;
         }break;
         default: {
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
             return GFX_NON_SPECIFIED;
         }break;
     };

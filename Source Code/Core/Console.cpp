@@ -7,22 +7,15 @@
 
 namespace Divide {
 
-static const int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
-
-Console::Console() : Singleton()
-{
-    _textBuffer = MemoryManager_NEW char[CONSOLE_OUTPUT_BUFFER_SIZE];
-}
-
-Console::~Console()
-{
-    MemoryManager::DELETE_ARRAY( _textBuffer );
-}
+bool Console::_timestamps = false;
+boost::mutex Console::io_mutex;
+char Console::_textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE];
+Console::consolePrintCallback Console::_guiConsoleCallback;
 
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
-void Console::printCopyrightNotice() const {
+void Console::printCopyrightNotice() {
     std::cout << "------------------------------------------------------------------------------" << std::endl;
-    std::cout << "Copyright (c) 2014 DIVIDE-Studio" << std::endl;
+    std::cout << "Copyright (c) 2015 DIVIDE-Studio" << std::endl;
     std::cout << "Copyright (c) 2009 Ionut Cava" << std::endl;
     std::cout << std::endl;
     std::cout << "This file is part of DIVIDE Framework." << std::endl;
@@ -47,8 +40,8 @@ void Console::printCopyrightNotice() const {
     std::cout << std::endl;
 }
 
+const char* Console::d_printfn(const char* format, ...) {
 #ifdef _DEBUG
-const char* Console::d_printfn(const char* format, ...) const {
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) - 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
@@ -56,38 +49,52 @@ const char* Console::d_printfn(const char* format, ...) const {
     strcat(_textBuffer, "\n");
     va_end(args);
     return output(_textBuffer);
-}
-
-const char* Console::d_printf(const char* format, ...) const {
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
-    va_end(args);
-    return output(_textBuffer);
-}
-
-const char* Console::d_errorfn(const char* format, ...) const {
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
-    strcat(_textBuffer, "\n");
-    va_end(args);
-    return output(_textBuffer,true);
-}
-
-const char* Console::d_errorf(const char* format, ...) const {
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
-    va_end(args);
-    return output(_textBuffer,true);
-}
-
+#else
+    return "";
 #endif
-const char* Console::printfn(const char* format, ...) const {
+}
+
+const char* Console::d_printf(const char* format, ...) {
+#ifdef _DEBUG
+    va_list args;
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
+    va_end(args);
+    return output(_textBuffer);
+#else
+    return "";
+#endif
+}
+
+const char* Console::d_errorfn(const char* format, ...) {
+#ifdef _DEBUG
+    va_list args;
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
+    strcat(_textBuffer, "\n");
+    va_end(args);
+    return output(_textBuffer,true);
+#else
+    return "";
+#endif
+}
+
+const char* Console::d_errorf(const char* format, ...) {
+#ifdef _DEBUG
+    va_list args;
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(_textBuffer, sizeof(char)* CONSOLE_OUTPUT_BUFFER_SIZE, format, args);
+    va_end(args);
+    return output(_textBuffer,true);
+#else
+    return "";
+#endif
+}
+
+const char* Console::printfn(const char* format, ...) {
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
@@ -97,7 +104,7 @@ const char* Console::printfn(const char* format, ...) const {
     return output(_textBuffer);
 }
 
-const char* Console::printf(const char* format, ...) const {
+const char* Console::printf(const char* format, ...) {
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
@@ -106,7 +113,7 @@ const char* Console::printf(const char* format, ...) const {
     return output(_textBuffer);
 }
 
-const char* Console::errorfn(const char* format, ...) const {
+const char* Console::errorfn(const char* format, ...) {
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
@@ -116,7 +123,7 @@ const char* Console::errorfn(const char* format, ...) const {
     return output(_textBuffer, true);
 }
 
-const char* Console::errorf(const char* format, ...) const {
+const char* Console::errorf(const char* format, ...) {
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
@@ -125,7 +132,7 @@ const char* Console::errorf(const char* format, ...) const {
     return output(_textBuffer, true);
 }
 
-const char* Console::output(const char* output, const bool error) const {
+const char* Console::output(const char* output, const bool error) {
     if(_guiConsoleCallback){
         if(error){
             stringImpl outputString("Error: ");
@@ -140,12 +147,14 @@ const char* Console::output(const char* output, const bool error) const {
 
     std::ostream& outputStream = error ? std::cerr : std::cout;
 
-    if(_timestamps)
+    if (_timestamps) {
         outputStream << "[ " << std::setprecision(2) << Time::ElapsedSeconds(true) << " ] ";
+    }
 
     if (error) {
         outputStream << " Error: ";
     }
+
     outputStream << output << std::flush;
 
     return output;

@@ -115,7 +115,7 @@ void Light::onCameraChange(){
 void Light::setPosition(const vec3<F32>& newPosition){
     //Togglable lights can't be moved.
     if ( _mode == LIGHT_MODE_TOGGLABLE ) {
-        ERROR_FN( Locale::get( "WARNING_ILLEGAL_PROPERTY" ), getGUID(), "Light_Togglable", "LIGHT_POSITION" );
+        Console::errorfn( Locale::get( "WARNING_ILLEGAL_PROPERTY" ), getGUID(), "Light_Togglable", "LIGHT_POSITION" );
         return;
     }
 
@@ -142,7 +142,7 @@ void Light::setRange(F32 range) {
 void Light::setDirection(const vec3<F32>& newDirection){
     //Togglable lights can't be moved.
     if ( _mode == LIGHT_MODE_TOGGLABLE ) {
-        ERROR_FN( Locale::get( "WARNING_ILLEGAL_PROPERTY" ), getGUID(), "Light_Togglable", "LIGHT_DIRECTION" );
+        Console::errorfn( Locale::get( "WARNING_ILLEGAL_PROPERTY" ), getGUID(), "Light_Togglable", "LIGHT_DIRECTION" );
         return;
     }
     vec3<F32> newDirectionNormalized(newDirection);

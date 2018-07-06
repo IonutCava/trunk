@@ -93,7 +93,7 @@ bool LightManager::addLight(Light* const light){
     light->addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(light));
 
     if(_lights.find(light->getGUID()) != _lights.end()){
-        ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"), light->getGUID());
+        Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"), light->getGUID());
         return false;
     }
 
@@ -110,7 +110,7 @@ bool LightManager::removeLight(I64 lightGUID) {
     Light::LightMap::iterator it = _lights.find(lightGUID);
 
     if(it == _lights.end()){
-        ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"), lightGUID);
+        Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"), lightGUID);
         return false;
     }
 

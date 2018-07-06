@@ -21,7 +21,7 @@ int engineMain(int argc, char **argv) {
         Application::getInstance().destroyInstance();
     } else {
         //If any error occurred, close the application as details should already be logged
-        ERROR_FN("System failed to initialize properly. Error [ %s ] ", 
+        Console::errorfn("System failed to initialize properly. Error [ %s ] ", 
                   getErrorCodeName(returnCode));
     }
     

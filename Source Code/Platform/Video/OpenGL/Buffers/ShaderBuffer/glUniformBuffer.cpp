@@ -187,9 +187,9 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, ShaderBuffer
     std::sort(uniform_details.begin(), uniform_details.end());
 
     // Output details:
-    PRINT_FN("%s ( %d )", block_name.c_str(), block_size);
+    Console::printfn("%s ( %d )", block_name.c_str(), block_size);
     for (auto detail = uniform_details.begin(); detail != uniform_details.end(); ++detail) {
-        PRINT_FN("%s", (*detail).c_str());
+        Console::printfn("%s", (*detail).c_str());
     }
 }
 

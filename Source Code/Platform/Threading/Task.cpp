@@ -23,7 +23,7 @@ namespace Divide {
     Task::~Task()
     {
         if (_end != true) {
-            ERROR_FN(Locale::get("TASK_DELETE_ACTIVE"));
+            Console::errorfn(Locale::get("TASK_DELETE_ACTIVE"));
             stopTask();
         }
         while (!_done) {
@@ -33,7 +33,7 @@ namespace Divide {
     void Task::startTask(){
         DIVIDE_ASSERT(_tp != nullptr, "Task error: ThreadPool pointer is invalid!");
         if (!_tp->schedule(DELEGATE_BIND(&Task::run, this))) {
-            ERROR_FN(Locale::get("TASK_SCHEDULE_FAIL"));
+            Console::errorfn(Locale::get("TASK_SCHEDULE_FAIL"));
         }
     }
 
@@ -46,7 +46,7 @@ namespace Divide {
     }
 
     void Task::run(){
-        D_PRINT_FN(Locale::get("TASK_START_THREAD"), std::this_thread::get_id());
+        Console::d_printfn(Locale::get("TASK_START_THREAD"), std::this_thread::get_id());
         U64 lastCallTime = Time::ElapsedSeconds();
 
         // 0 == run forever
@@ -81,7 +81,7 @@ namespace Divide {
             }
         }
 
-        D_PRINT_FN(Locale::get("TASK_DELETE_THREAD"), std::this_thread::get_id());
+        Console::d_printfn(Locale::get("TASK_DELETE_THREAD"), std::this_thread::get_id());
 
         _completionSignal(getGUID());
         _done = true;

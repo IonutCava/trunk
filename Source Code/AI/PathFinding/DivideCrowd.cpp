@@ -17,7 +17,7 @@ namespace Navigation {
         assert(_recast);
         _crowd = dtAllocCrowd();
         if(!_crowd){
-            ERROR_FN(Locale::get("ERROR_DETOUR_CROWD_INSTANCE"));
+            Console::errorfn(Locale::get("ERROR_DETOUR_CROWD_INSTANCE"));
             assert(_crowd != nullptr);
         }
         _targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;

@@ -179,14 +179,14 @@ void Kernel::mainLoopApp() {
     _keepAlive = !APP.ShutdownRequested() && _keepAlive;
     ErrorCode err = APP.errorCode();
     if (err != NO_ERR) {
-        ERROR_FN("Error detected: [ %s ]", getErrorCodeName(err));
+        Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
         _keepAlive = false;
     }
     Time::STOP_TIMER(s_appLoopTimer);
 
 #if defined(_DEBUG) || defined(_PROFILE)  
     if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0){
-        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", Time::MicrosecondsToSeconds<F32>(GFX_DEVICE.getFrameDurationGPU()),
+        Console::printfn("GPU: [ %5.5f ] [DrawCalls: %d]", Time::MicrosecondsToSeconds<F32>(GFX_DEVICE.getFrameDurationGPU()),
                                                    GFX_DEVICE.getDrawCallCount());
     }
 #endif
@@ -404,10 +404,10 @@ void Kernel::submitRenderCall(const RenderStage& stage,
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
-    Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, 
-                                                            GUI::getInstance().getConsole(), 
-                                                            std::placeholders::_1, 
-                                                            std::placeholders::_2));
+    Console::bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, 
+                                              GUI::getInstance().getConsole(), 
+                                              std::placeholders::_1, 
+                                              std::placeholders::_2));
     //Using OpenGL for rendering as default
     _GFX.setApi(OpenGL);
     _GFX.setStateChangeExclusionMask(TYPE_LIGHT | 
@@ -423,7 +423,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     //Create mem log file
     const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
-    PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
+    Console::printfn(Locale::get("START_RENDER_INTERFACE"));
     vec2<U16> resolution = _APP.getResolution();
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
     ErrorCode initError = _GFX.initRenderingApi(vec2<U16>(400, 300), _argc, _argv);
@@ -432,7 +432,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
 
-    PRINT_FN(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
+    Console::printfn(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
     Camera* camera = MemoryManager_NEW FreeFlyCamera();
     camera->setProjection(aspectRatio, 
                           par.getParam<F32>("rendering.verticalFOV"), 
@@ -451,12 +451,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     LightManager::getInstance().init();
 
-    PRINT_FN(Locale::get("START_SOUND_INTERFACE"));
+    Console::printfn(Locale::get("START_SOUND_INTERFACE"));
     if((initError = _SFX.initAudioApi()) != NO_ERR) {
         return initError;
     }
 
-    PRINT_FN(Locale::get("START_PHYSICS_INTERFACE"));
+    Console::printfn(Locale::get("START_PHYSICS_INTERFACE"));
     if((initError =_PFX.initPhysicsApi(Config::TARGET_FRAME_RATE)) != NO_ERR) {
         return initError;
     }
@@ -469,29 +469,29 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _sceneMgr.init(&_GUI);
 
     if(!_sceneMgr.load(startupScene, resolution, _cameraMgr)){       //< Load the scene
-        ERROR_FN(Locale::get("ERROR_SCENE_LOAD"),startupScene.c_str());
+        Console::errorfn(Locale::get("ERROR_SCENE_LOAD"),startupScene.c_str());
         return MISSING_SCENE_DATA;
     }
 
     if(!_sceneMgr.checkLoadFlag()){
-        ERROR_FN(Locale::get("ERROR_SCENE_LOAD_NOT_CALLED"),startupScene.c_str());
+        Console::errorfn(Locale::get("ERROR_SCENE_LOAD_NOT_CALLED"),startupScene.c_str());
         return MISSING_SCENE_LOAD_CALL;
     }
 
     camera->setMoveSpeedFactor(par.getParam<F32>("options.cameraSpeed.move"));
     camera->setTurnSpeedFactor(par.getParam<F32>("options.cameraSpeed.turn"));
 
-    PRINT_FN(Locale::get("INITIAL_DATA_LOADED"));
-    PRINT_FN(Locale::get("CREATE_AI_ENTITIES_START"));
+    Console::printfn(Locale::get("INITIAL_DATA_LOADED"));
+    Console::printfn(Locale::get("CREATE_AI_ENTITIES_START"));
     //Initialize and start the AI
     _sceneMgr.initializeAI(true);
-    PRINT_FN(Locale::get("CREATE_AI_ENTITIES_END"));
+    Console::printfn(Locale::get("CREATE_AI_ENTITIES_END"));
 
     return initError;
 }
 
 void Kernel::runLogicLoop(){
-    PRINT_FN(Locale::get("START_RENDER_LOOP"));
+    Console::printfn(Locale::get("START_RENDER_LOOP"));
     Kernel::_nextGameTick = Time::ElapsedMicroseconds();
     //lock the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(true);
@@ -511,7 +511,7 @@ void Kernel::runLogicLoop(){
 void Kernel::shutdown() {
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
-    Console::getInstance().bindConsoleOutput(std::function<void (const char*, bool)>());
+    Console::bindConsoleOutput(std::function<void (const char*, bool)>());
     GUI::destroyInstance(); ///Deactivate GUI
     _sceneMgr.unloadCurrentScene();
     _sceneMgr.deinitializeAI(true);
@@ -520,15 +520,15 @@ void Kernel::shutdown() {
     try { 
         CEGUI::System::destroy();
     } catch( ... ) { 
-        D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); 
+        Console::d_errorfn(Locale::get("ERROR_CEGUI_DESTROY")); 
     }
     MemoryManager::DELETE( _cameraMgr );
     LightManager::destroyInstance();
-    PRINT_FN(Locale::get("STOP_ENGINE_OK"));
-    PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
+    Console::printfn(Locale::get("STOP_ENGINE_OK"));
+    Console::printfn(Locale::get("STOP_PHYSICS_INTERFACE"));
     _PFX.closePhysicsApi();
     PXDevice::destroyInstance();
-    PRINT_FN(Locale::get("STOP_HARDWARE"));
+    Console::printfn(Locale::get("STOP_HARDWARE"));
     _SFX.closeAudioApi();
     _GFX.closeRenderingApi();
     _mainTaskPool->wait();

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -38,7 +38,7 @@ T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
         const T& ret = it->second.constant_cast<T>(success);
 #           ifdef _DEBUG        
             if (!success) {
-                ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str());
+                Console::errorfn(Locale::get("ERROR_PARAM_CAST"),name.c_str());
                 DIVIDE_ASSERT(success, 
                                 "ParamHandler error: Can't cast requested param to specified type!");
             } 
@@ -47,7 +47,7 @@ T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
         return ret;
     } 
         
-    ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
+    Console::errorfn(Locale::get("ERROR_PARAM_GET"), name.c_str());
     return defaultValue; //integers will be 0, string will be empty, etc;
 }
 
@@ -69,10 +69,10 @@ void ParamHandler::delParam(const stringImpl& name) {
         WriteLock w_lock(_mutex);
         _params.erase(name);
         if (_logState) {
-            PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+            Console::printfn(Locale::get("PARAM_REMOVE"), name.c_str());
         }
     } else {
-        ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"),name.c_str());
+        Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"),name.c_str());
     }
 }
 
@@ -90,7 +90,7 @@ stringImpl ParamHandler::getParam(const stringImpl& name, stringImpl defaultValu
         return it->second;
     }
 
-    ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
+    Console::errorfn(Locale::get("ERROR_PARAM_GET"), name.c_str());
     return defaultValue;
 }
 
@@ -129,10 +129,10 @@ void ParamHandler::delParam<stringImpl>(const stringImpl& name) {
         WriteLock w_lock(_mutex);
         _paramsStr.erase(name);
         if (_logState) {
-            PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+            Console::printfn(Locale::get("PARAM_REMOVE"), name.c_str());
         }
     } else {
-        ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+        Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
     }
 }
 
@@ -150,7 +150,7 @@ bool ParamHandler::getParam(const stringImpl& name, bool defaultValue) const {
         return it->second;
     }
 
-    ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
+    Console::errorfn(Locale::get("ERROR_PARAM_GET"), name.c_str());
     return defaultValue;
 }
 
@@ -172,10 +172,10 @@ inline void ParamHandler::delParam<bool>(const stringImpl& name) {
         WriteLock w_lock(_mutex);
         _paramBool.erase(name);
         if (_logState) {
-            PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+            Console::printfn(Locale::get("PARAM_REMOVE"), name.c_str());
         }
     } else {
-        ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+        Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
     }
 }
 

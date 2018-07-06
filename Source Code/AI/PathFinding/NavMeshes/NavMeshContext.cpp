@@ -11,13 +11,13 @@ namespace Navigation {
         switch(category){
             default:
             case RC_LOG_PROGRESS:
-                PRINT_FN(Locale::get("RECAST_CONTEXT_LOG_PROGRESS"),msg);
+                Console::printfn(Locale::get("RECAST_CONTEXT_LOG_PROGRESS"),msg);
                 break;
             case RC_LOG_WARNING:
-                PRINT_FN(Locale::get("RECAST_CONTEXT_LOG_WARNING"),msg);
+                Console::printfn(Locale::get("RECAST_CONTEXT_LOG_WARNING"),msg);
                 break;
             case RC_LOG_ERROR:
-                ERROR_FN(Locale::get("RECAST_CONTEXT_LOG_ERROR"),msg);
+                Console::errorfn(Locale::get("RECAST_CONTEXT_LOG_ERROR"),msg);
                 break;
         }
     }

@@ -39,10 +39,10 @@ namespace ImageTools {
     }
 
     void ImageData::throwLoadError(const stringImpl& fileName){
-        ERROR_FN(Locale::get("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE"),fileName.c_str());
+        Console::errorfn(Locale::get("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE"),fileName.c_str());
         ILenum error;
         while((error = ilGetError()) != IL_NO_ERROR) {
-            ERROR_FN(Locale::get("ERROR_IMAGETOOLS_DEVIL"), iluErrorString(error));
+            Console::errorfn(Locale::get("ERROR_IMAGETOOLS_DEVIL"), iluErrorString(error));
         }
 
         ilDeleteImage(_ilTexture);
@@ -101,7 +101,9 @@ namespace ImageTools {
         // most formats do not have an alpha channel
         _alpha = (format == IL_RGBA || format == IL_LUMINANCE_ALPHA || format == IL_ALPHA);
         _format = textureFormatDevIL(format);
-        _imageSize = (size_t)(_dimensions.width) * (size_t)(_dimensions.height) * (size_t)(_bpp);
+        _imageSize = static_cast<size_t>(_dimensions.width) * 
+                     static_cast<size_t>(_dimensions.height) * 
+                     static_cast<size_t>(_bpp);
 
         _data = MemoryManager_NEW U8[_imageSize];
         memcpy(_data, ilGetData(), _imageSize);

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -125,7 +125,10 @@ public:
     virtual bool queueRefresh() = 0;
 
     inline bool usesLargeIndices()  const { return _largeIndices;}
-    inline U32  getIndexCount()     const { return (U32)(_largeIndices ? _hardwareIndicesL.size() : _hardwareIndicesS.size());}
+    inline U32  getIndexCount()     const { 
+        return static_cast<U32>(_largeIndices ? _hardwareIndicesL.size() :
+                                                _hardwareIndicesS.size());
+    }
     inline U32  getIndex(U32 index) const { return _largeIndices ? _hardwareIndicesL[index] : _hardwareIndicesS[index];}
     
     inline const vectorImpl<U32>&  getIndicesL() const { return _hardwareIndicesL; }
@@ -239,27 +242,27 @@ public:
     }
 
     inline U32 getPartitionCount(U16 partitionIdx){
-        if(_partitions.empty())
+        if (_partitions.empty()){
             return getIndexCount();
-
+        }
         DIVIDE_ASSERT(partitionIdx < _partitions.size(), "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionIdx].second;
     }
 
     inline U32 getPartitionOffset(U16 partitionIdx){
-        if(_partitions.empty())
+        if (_partitions.empty()){
             return 0;
-
+        }
         DIVIDE_ASSERT(partitionIdx < _partitions.size(), "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionIdx].first;
     }
 
     inline U32 getLastPartitionOffset(){
-        if(_partitions.empty())
+        if (_partitions.empty()) {
             return 0;
-
+        }
         if (_partitions.empty()) return 0;
-        return getPartitionOffset((U16)(_partitions.size() - 1));
+        return getPartitionOffset(static_cast<U16>(_partitions.size() - 1));
     }
 
     inline void Reset() {

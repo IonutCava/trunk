@@ -14,17 +14,17 @@ ErrorCode SDL_API::initAudioApi() {
         _chunk = nullptr;
         // Try HiFi sound
         if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) == -1) {
-            ERROR_FN("%s", Mix_GetError());
+            Console::errorfn("%s", Mix_GetError());
             // Try lower quality
             if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) == -1) {
-                ERROR_FN("%s", Mix_GetError());
+                Console::errorfn("%s", Mix_GetError());
                 return SDL_AUDIO_MIX_INIT_ERROR;
             }
         }
     
         return NO_ERR;
     } 
-    ERROR_FN("%s", Mix_GetError());
+    Console::errorfn("%s", Mix_GetError());
     return SDL_AUDIO_INIT_ERROR;
 }
 
@@ -49,7 +49,7 @@ void SDL_API::playMusic(AudioDescriptor* musicFile){
     Mix_VolumeMusic(musicFile->getVolume());
     if (nullptr != _music) {
         if ( Mix_PlayMusic(_music, musicFile->isLooping() ? -1 : 0) == -1 ) {
-            ERROR_FN("%s", Mix_GetError());
+            Console::errorfn("%s", Mix_GetError());
         }
     }
 }
@@ -66,11 +66,11 @@ void SDL_API::playSound(AudioDescriptor* sound){
     Mix_Volume(sound->getChannel(),sound->getVolume());
 
     if (_chunk == nullptr) {
-        ERROR_FN(Locale::get("ERROR_SDL_LOAD_SOUND") ,sound->getName().c_str());
+        Console::errorfn(Locale::get("ERROR_SDL_LOAD_SOUND") ,sound->getName().c_str());
     }
 
     if (Mix_PlayChannel( sound->getChannel(), _chunk, sound->isLooping() ? -1 : 0 ) == -1) {
-        ERROR_FN(Locale::get("ERROR_SDL_CANT_PLAY") ,sound->getName().c_str(),Mix_GetError());
+        Console::errorfn(Locale::get("ERROR_SDL_CANT_PLAY") ,sound->getName().c_str(),Mix_GetError());
     }
 }
 

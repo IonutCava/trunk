@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2014 DIVIDE-Studio
+   Copyright (c) 2015 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -45,7 +45,7 @@ do {\
     static bool seen_this = false;\
     if(!seen_this){\
         seen_this = true; \
-        ERROR_FN("STUBBED: %s (%s : %d)\n", \
+        Console::errorfn("STUBBED: %s (%s : %d)\n", \
                  x, __FILE__, __LINE__); \
     }\
 } while (0);
