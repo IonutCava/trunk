@@ -118,14 +118,17 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS"
+				StringPooling="true"
+				MinimalRebuild="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
 				OpenMP="true"
 				WarningLevel="3"
 				DebugInformationFormat="3"

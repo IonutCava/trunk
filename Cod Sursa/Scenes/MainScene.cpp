@@ -185,7 +185,7 @@ void MainScene::test(boost::any a, CallbackParam b)
 {
 	boost::mutex::scoped_lock l(_mutex);
 	vec3 pos = ModelArray[0]->getPosition();
-
+ 
 	if(!_switchFB)
 	{
 		if(pos.x < 300 && pos.z == 0)		   pos.x++;

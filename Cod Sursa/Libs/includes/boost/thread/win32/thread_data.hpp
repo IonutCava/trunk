@@ -150,12 +150,11 @@ namespace boost
             return (value<0)?0u:(unsigned long)value;
         }
 
-		inline int64_t pin_to_zero(int64_t value)
-		{
-	        return (value<0)?0ull:(int64_t)value;
-	    }
-
-    }
+	   inline int64_t pin_to_zero(int64_t value)
+	   {
+		   return (value<0)?0ull:(int64_t)value;
+	   }
+   }
 
     namespace this_thread
     {
@@ -170,16 +169,18 @@ namespace boost
         {
             interruptible_wait(detail::win32::invalid_handle_value,abs_time);
         }
-	    inline void interruptible_wait(int64_t milliseconds)
-		{
-			interruptible_wait(detail::win32::invalid_handle_value,milliseconds);
-		}
 
         template<typename TimeDuration>
         inline void sleep(TimeDuration const& rel_time)
         {
-            interruptible_wait(detail::pin_to_zero(rel_time.total_milliseconds()));
+            interruptible_wait(detail::pin_to_zero((long)rel_time.total_milliseconds()));
         }
+		
+		inline void interruptible_wait(int64_t milliseconds)
+		{
+	        interruptible_wait(detail::win32::invalid_handle_value,milliseconds);
+	    }
+
         inline void sleep(system_time const& abs_time)
         {
             interruptible_wait(abs_time);
