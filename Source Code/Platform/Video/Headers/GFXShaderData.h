@@ -49,14 +49,13 @@ class GFXShaderData {
         mat4<F32> _ViewMatrix;
         mat4<F32> _ViewProjectionMatrix;
         vec4<F32> _cameraPosition; // xyz - position, w - aspect ratio
+        vec4<F32> _renderProperties; //x - near plane, y - far plane, z - FoV, w - tan half FoV
         vec4<F32> _ViewPort;
-        vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
-        vec4<F32> _renderProperties; //x - unused, y - unused, z - FoV, w - tan half FoV
         vec4<F32> _frustumPlanes[to_base(Frustum::FrustPlane::COUNT)];
         vec4<F32> _clipPlanes[to_base(Frustum::FrustPlane::COUNT)];
 
         inline F32 aspectRatio() const;
-        inline vec2<F32> currentZPlanes() const;
+        inline vec2<F32> cameraZPlanes() const;
         inline F32 FoV() const;
         inline F32 tanHFoV() const;
 

@@ -6,6 +6,8 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/Configuration.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Utility/Headers/TextLabel.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -34,7 +36,6 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             // The LinearDepth variant converts the depth values to linear values
             // between the 2 scene z-planes
             ResourceDescriptor fbPreview("fbPreview.LinearDepth.ScenePlanes");
-            fbPreview.setPropertyList("USE_SCENE_ZPLANES");
             _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
             assert(_previewDepthMapShader != nullptr);
 
@@ -43,12 +44,14 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
             HiZ->_name = "Hierarchical-Z";
             HiZ->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
+            HiZ->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
             DebugView_ptr DepthPreview = std::make_shared<DebugView>();
             DepthPreview->_shader = _previewDepthMapShader;
             DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
             DepthPreview->_name = "Depth Buffer";
             DepthPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+            DepthPreview->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
             DebugView_ptr NormalPreview = std::make_shared<DebugView>();
             NormalPreview->_shader = _renderTargetDraw;
@@ -192,7 +195,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 }
 
 
-GFXDevice::DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
+DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
     _debugViews.push_back(view);
     if (_debugViews.back()->_sortIndex == -1) {
         _debugViews.back()->_sortIndex = to_I16(_debugViews.size());

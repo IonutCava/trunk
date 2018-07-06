@@ -49,12 +49,13 @@ void main()
 
 out vec4 _colourOut;
 uniform float lodLevel = 0;
+uniform vec2 zPlanes;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    float linearDepth = ToLinearDepth(textureLod(texDiffuse0, VAR._texCoord, lodLevel).r);
+    float linearDepth = ToLinearDepth(textureLod(texDiffuse0, VAR._texCoord, lodLevel).r, zPlanes);
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
@@ -81,10 +82,11 @@ out vec4 _colourOut;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 uniform float lodLevel = 0;
+uniform vec2 zPlanes;
 
 void main()
 {
-    float linearDepth = ToLinearDepth(textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r);
+    float linearDepth = ToLinearDepth(textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r, zPlanes);
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
@@ -97,12 +99,13 @@ out vec4 _colourOut;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 uniform float lodLevel = 0.0;
+uniform vec2 zPlanes;
 
 void main()
 {
     float depth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
-	float linearDepth = ToLinearDepth(depth);
+	float linearDepth = ToLinearDepth(depth, zPlanes);
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
@@ -115,13 +118,14 @@ out vec4 _colourOut;
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArrayShadow texDiffuse0;
 uniform int layer;
 uniform int face;
+uniform vec2 zPlanes;
 
 void main()
 {
 
     float depth = texture(texDiffuse0, vec4(VAR._texCoord, face, layer), 1.0);
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
-    float linearDepth = ToLinearDepth(depth);
+    float linearDepth = ToLinearDepth(depth, zPlanes);
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
@@ -133,10 +137,11 @@ out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArrayShadow texDiffuse0;
 uniform int layer;
+uniform vec2 zPlanes;
 
 void main()
 {
     float depth = texture(texDiffuse0, vec4(VAR._texCoord, layer, 1.0)).r;
-    float linearDepth = ToLinearDepth(depth);
+    float linearDepth = ToLinearDepth(depth, zPlanes);
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }

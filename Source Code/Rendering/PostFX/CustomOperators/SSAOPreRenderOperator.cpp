@@ -105,7 +105,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
     ssaoGenerate.setThreadedLoading(false);
-    ssaoGenerate.setPropertyList(Util::StringFormat("USE_SCENE_ZPLANES,KERNEL_SIZE %d", kernelSize));
+    ssaoGenerate.setPropertyList(Util::StringFormat("KERNEL_SIZE %d", kernelSize));
     _ssaoGenerateShader = CreateResource<ShaderProgram>(cache, ssaoGenerate);
 
     ResourceDescriptor ssaoBlur("SSAOPass.SSAOBlur");

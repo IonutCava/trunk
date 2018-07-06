@@ -493,10 +493,8 @@ Camera* SceneManager::playerCamera() const {
 
 void SceneManager::currentPlayerPass(PlayerIndex idx) {
     _currentPlayerPass = idx;
-    _platformContext->gfx().historyIndex(idx, true);
-    Camera& playerCam = _players[_currentPlayerPass]->getCamera();
-    _platformContext->gfx().setSceneZPlanes(playerCam.getZPlanes());
-    Attorney::SceneManager::currentPlayerPass(getActiveScene(), idx);
+    _platformContext->gfx().historyIndex(_currentPlayerPass, true);
+    Attorney::SceneManager::currentPlayerPass(getActiveScene(), _currentPlayerPass);
 }
 
 RenderPassCuller::VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {

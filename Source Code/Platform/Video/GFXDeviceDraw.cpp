@@ -102,6 +102,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
                               U32 bufferIndex,
                               const Texture_ptr& depthBuffer,
+                              const vec2<F32>& zPlanes,
                               GFX::CommandBuffer& bufferInOut) const {
 
     constexpr U32 GROUP_SIZE_AABB = 64;
@@ -133,6 +134,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     sendPushConstantsCmd._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
+    sendPushConstantsCmd._constants.set("dvd_zPlanes", GFX::PushConstantType::VEC2, zPlanes);
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd;

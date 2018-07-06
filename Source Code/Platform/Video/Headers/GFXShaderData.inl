@@ -38,8 +38,8 @@ inline F32 GFXShaderData::GPUData::aspectRatio() const {
     return _cameraPosition.w;
 }
 
-inline vec2<F32> GFXShaderData::GPUData::currentZPlanes() const {
-    return _ZPlanesCombined.xy();
+inline vec2<F32> GFXShaderData::GPUData::cameraZPlanes() const {
+    return _renderProperties.xy();
 }
 
 inline F32 GFXShaderData::GPUData::FoV() const {

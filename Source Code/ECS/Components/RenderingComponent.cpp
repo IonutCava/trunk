@@ -20,7 +20,7 @@
 
 namespace Divide {
 
-hashMap<U32, GFXDevice::DebugView*> RenderingComponent::s_debugViews[2];
+hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 
 RenderingComponent::RenderingComponent(GFXDevice& context,
                                        Material_ptr materialInstance,
@@ -120,7 +120,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         _previewRenderTargetColour = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionColour);
 
         ResourceDescriptor previewReflectionRefractionDepth("fbPreview.LinearDepth.ScenePlanes");
-        previewReflectionRefractionDepth.setPropertyList("USE_SCENE_ZPLANES");
         _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionDepth);
 
         // Red X-axis
@@ -590,9 +589,9 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     if (Config::Build::IS_DEBUG_BUILD) {
         const RenderTarget& target = _context.renderTargetPool().renderTarget(reflectRTID);
 
-        GFXDevice::DebugView* debugView = s_debugViews[0][reflectionIndex];
+        DebugView* debugView = s_debugViews[0][reflectionIndex];
         if (debugView == nullptr) {
-            GFXDevice::DebugView_ptr viewPtr = std::make_shared<GFXDevice::DebugView>();
+            DebugView_ptr viewPtr = std::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
@@ -607,6 +606,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                 if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
                     debugView->_shader = _previewRenderTargetDepth;
+                    debugView->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, camera->getZPlanes());
                 } else {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
                     debugView->_shader = _previewRenderTargetColour;
@@ -672,9 +672,9 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     if (Config::Build::IS_DEBUG_BUILD) {
         const RenderTarget& target = _context.renderTargetPool().renderTarget(refractRTID);
 
-        GFXDevice::DebugView* debugView = s_debugViews[1][refractionIndex];
+        DebugView* debugView = s_debugViews[1][refractionIndex];
         if (debugView == nullptr) {
-            GFXDevice::DebugView_ptr viewPtr = std::make_shared<GFXDevice::DebugView>();
+            DebugView_ptr viewPtr = std::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
@@ -688,6 +688,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
                 if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
                     debugView->_shader = _previewRenderTargetDepth;
+                    debugView->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, camera->getZPlanes());
                 } else {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
                     debugView->_shader = _previewRenderTargetColour;

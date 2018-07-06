@@ -24,6 +24,7 @@ float maxComponent(vec3 v) { return max(maxComponent(v.xy), v.z); }
 float maxComponent(vec4 v) { return max(maxComponent(v.xyz), v.w); }
 
 float ToLinearDepth(in float depthIn);
+float ToLinearDepth(in float depthIn, in vec2 depthRange);
 
 float overlay(float x, float y)
 {
@@ -79,16 +80,14 @@ vec4 applyFog(in float depth, in vec4 colour) {
     return vec4(mix(applyFogColour(depth, colour.rgb), colour.rgb, dvd_fogDensity), colour.a);
 }
 
-float ToLinearDepth(in float depthIn) {
-#if defined(USE_SCENE_ZPLANES)
-    float n = dvd_mainCameraZPlanes.x;
-    float f = dvd_mainCameraZPlanes.y * 0.5;
-#else
-    float n = dvd_zPlanes.x;
-    float f = dvd_zPlanes.y * 0.5;
-#endif
-
+float ToLinearDepth(in float depthIn, in vec2 depthRange) {
+    float n = depthRange.x;
+    float f = depthRange.y * 0.5;
     return (2 * n) / (f + n - (depthIn) * (f - n));
+}
+
+float ToLinearDepth(in float depthIn) {
+    return ToLinearDepth(depthIn, dvd_zPlanes);
 }
 
 float ToLinearDepth(in float depthIn, in mat4 projMatrix) {

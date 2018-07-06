@@ -491,12 +491,6 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     }
 }
 
-void GFXDevice::setSceneZPlanes(const vec2<F32>& zPlanes) {
-    GFXShaderData::GPUData& data = _gpuBlock._data;
-    data._ZPlanesCombined.zw(zPlanes);
-    _gpuBlock._needsUpload = true;
-}
-
 void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     // Tell the Rendering API to draw from our desired PoV
     if (_activeCameraSnapshot != cameraSnapshot) {
@@ -515,8 +509,8 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
         F32 FoV = cameraSnapshot._FoV;
         data._cameraPosition.set(cameraSnapshot._eye, cameraSnapshot._aspectRatio);
+        data._renderProperties.xy(cameraSnapshot._zPlanes);
         data._renderProperties.zw(FoV, std::tan(FoV * 0.5f));
-        data._ZPlanesCombined.xy(cameraSnapshot._zPlanes);
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
         data._ViewProjectionMatrix.getInverse(_gpuBlock._viewProjMatrixInv);
         Frustum::computePlanes(_gpuBlock._viewProjMatrixInv, data._frustumPlanes);

@@ -112,6 +112,29 @@ namespace TypeUtil {
     RenderPassType stringToRenderPassType(const char* pass);
 };
 
+struct DebugView {
+    DebugView()
+        : _textureBindSlot(0)
+        , _sortIndex(-1)
+    {
+    }
+
+    DebugView(U16 sortIndex)
+        : _textureBindSlot(0)
+        , _sortIndex(to_I16(sortIndex))
+    {
+    }
+
+    U8 _textureBindSlot;
+    Texture_ptr _texture;
+    ShaderProgram_ptr _shader;
+    PushConstants _shaderData;
+
+    I16 _sortIndex;
+    stringImpl _name;
+};
+
+FWD_DECLARE_MANAGED_STRUCT(DebugView);
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
@@ -148,30 +171,6 @@ public:
 
         void set(const NodeData& other);
     };
-
-    struct DebugView {
-        DebugView()
-            : _textureBindSlot(0)
-            , _sortIndex(-1)
-        {
-        }
-
-        DebugView(U16 sortIndex)
-            : _textureBindSlot(0)
-            , _sortIndex(to_I16(sortIndex))
-        {
-        }
-
-        U8 _textureBindSlot;
-        Texture_ptr _texture;
-        ShaderProgram_ptr _shader;
-        PushConstants _shaderData;
-
-        I16 _sortIndex;
-        stringImpl _name;
-    };
-
-    FWD_DECLARE_MANAGED_CLASS(DebugView);
 
 public:  // GPU interface
     explicit GFXDevice(Kernel& parent);
@@ -225,8 +224,6 @@ public:  // GPU interface
 
     inline F32 renderingAspectRatio() const;
     inline const vec2<U16>& renderingResolution() const;
-
-    void setSceneZPlanes(const vec2<F32>& zPlanes);
 
     /// Switch between fullscreen rendering
     void toggleFullScreen();
@@ -386,6 +383,7 @@ protected:
     void occlusionCull(const RenderPass::BufferData& bufferData,
                        U32 bufferIndex,
                        const Texture_ptr& depthBuffer,
+                       const vec2<F32>& zPlanes,
                        GFX::CommandBuffer& bufferInOut) const;
 
     void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const;

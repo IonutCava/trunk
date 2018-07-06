@@ -34,19 +34,19 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     _splitFrustumCornersVS.resize(8);
     _horizBlur = 0;
     _vertBlur = 0;
+    _debugViews.fill(nullptr);
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
-    shadowPreviewShader.setPropertyList("USE_SCENE_ZPLANES");
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
     for (U32 i = 0; i < _numSplits; ++i) {
-        GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
+        DebugView_ptr shadow = std::make_shared<DebugView>();
         shadow->_texture = getDepthMap().getAttachment(RTAttachmentType::Colour, 0).texture();
         shadow->_shader = _previewDepthMapShader;
         shadow->_shaderData.set("layer", GFX::PushConstantType::INT, i+ _arrayOffset);
         shadow->_shaderData.set("useScenePlanes", GFX::PushConstantType::BOOL, false);
         shadow->_name = Util::StringFormat("CSM_%d", i + _arrayOffset);
-        _context.addDebugView(shadow);
+        _debugViews[i] = _context.addDebugView(shadow);
     }
 
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
@@ -159,6 +159,8 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 
         ++drawParams._layer;
+
+        _debugViews[i]->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, _shadowCameras[i]->getZPlanes());
     }
     
     GFX::EndRenderPassCommand endRenderPassCmd;

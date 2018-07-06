@@ -44,6 +44,8 @@ class GFXDevice;
 class ShaderBuffer;
 class DirectionalLight;
 
+struct DebugView;
+
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// Directional lights can't deliver good quality shadows using a single shadow map.
@@ -80,6 +82,7 @@ class CascadedShadowMaps : public ShadowMap {
     vector<vec3<F32> > _splitFrustumCornersVS;
     vector<F32       > _splitDepths;
     std::array<mat4<F32>, Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowMatrices;
+    std::array<DebugView*, Config::Lighting::MAX_SPLITS_PER_LIGHT> _debugViews;
 };
 
 };  // namespace Divide

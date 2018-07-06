@@ -21,6 +21,8 @@ layout(location = 0) uniform uint dvd_numEntities;
 layout(binding = 0, offset = 0) uniform atomic_uint culledCount;
 layout(local_size_x = 64) in;
 
+uniform vec2 dvd_zPlanes;
+
 void cullNode(const in uint idx) {
 #if !defined(DEBUG_HIZ_CULLING)
     atomicCounterIncrement(culledCount);
@@ -49,7 +51,7 @@ void main()
     float radius = bSphere.w;
     
     // Sphere clips against near plane, just assume visibility.
-    if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_mainCameraZPlanes.x) {
+    if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -zPlanes.x) {
         return;
     }
 

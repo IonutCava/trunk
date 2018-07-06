@@ -541,7 +541,11 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     if (params._occlusionCull) {
         _context.constructHIZ(params._target, bufferInOut);
-        _context.occlusionCull(getBufferData(params._stage, params._passIndex, params._bufferIndex), params._bufferIndex, target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
+        _context.occlusionCull(getBufferData(params._stage, params._passIndex, params._bufferIndex),
+                               params._bufferIndex,
+                               target.getAttachment(RTAttachmentType::Depth, 0).texture(),
+                               params._camera->getZPlanes(),
+                               bufferInOut);
         if (params._stage == RenderStage::DISPLAY) {
             _context.updateCullCount(bufferInOut);
         }

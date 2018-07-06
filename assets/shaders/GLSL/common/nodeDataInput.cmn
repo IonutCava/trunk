@@ -39,9 +39,9 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     mat4  dvd_ViewMatrix;
     mat4  dvd_ViewProjectionMatrix;
     vec4  dvd_cameraPosition; ///xyz - position, w - aspect ratio
-    vec4  dvd_ViewPort;
-    vec4  dvd_ZPlanesCombined; //xy - current, zw - main scene
+    //x - nearPlane, y - farPlane, z - FoV, w - tan half FoV
     vec4  dvd_renderProperties;
+    vec4  dvd_ViewPort;
     vec4  dvd_frustumPlanes[MAX_CLIP_PLANES];
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
@@ -50,8 +50,7 @@ vec2 dvd_invScreenDimensions() {
     return dvd_ViewPort.zw * 0.5;
 }
 
-#define dvd_zPlanes vec2(dvd_ZPlanesCombined.xy)
-#define dvd_mainCameraZPlanes vec2(dvd_ZPlanesCombined.zw)
+#define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_aspectRatio dvd_cameraPosition.w
 #define dvd_fieldOfView dvd_renderProperties.z
 #define dvd_tanHalfFieldOfView dvd_renderProperties.w
@@ -64,9 +63,9 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    //x - elapsed time, y - debug render, z - renderer flag, w - reserved
+    //x - elapsed time, y - delta time, z - renderer flag, w - reserved
     vec4   dvd_otherData;
-    // x - delta time, y - detail level, z - shadow detail level, w - reserved
+    // x - debug render, y - detail level, z - shadow detail level, w - reserved
     vec4   dvd_otherData2;
     vec4   dvd_waterPositionsW/*[MAX_WATER_BODIES]*/;
     //x = width, y = length, z = depth
@@ -76,8 +75,8 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 #define dvd_fogColour dvd_fogDetails.xyz
 #define dvd_fogDensity dvd_fogDetails.w
 #define dvd_time int(dvd_otherData.x)
-#define dvd_showDebugInfo int(dvd_otherData.y)
-#define dvd_deltaTime (int(dvd_otherData2.x))
+#define dvd_deltaTime (int(dvd_otherData.y))
+#define dvd_showDebugInfo int(dvd_otherData2.x)
 #define dvd_renderDetailLevel (int(dvd_otherData2.y))
 #define dvd_shadowDetailLevel (int(dvd_otherData2.z))
 
