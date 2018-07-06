@@ -276,11 +276,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     friend class RenderingComponent;
     bool prepareDraw(const SceneRenderState& sceneRenderState,
                      RenderStage renderStage);
-
-   protected:
-    friend class SceneManager;
-    inline void firstDraw() { _firstDraw = true; }
-
    private:
     inline void setName(const stringImpl& name) { _name = name; }
 
@@ -317,11 +312,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     std::array<std::unique_ptr<SGNComponent>,
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
-    std::array<U32, to_const_uint(RenderStage::COUNT)> _renderPasses;
-
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
-    bool _firstDraw;
-
     StateTracker<bool> _trackedBools;
 };
 };  // namespace Divide

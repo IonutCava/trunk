@@ -41,7 +41,6 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
       _silentDispose(false),
       _boundingBoxDirty(true),
       _shouldDelete(false),
-      _firstDraw(false),
       _updateTimer(Time::ElapsedMilliseconds()),
       _childQueue(0),
       _bbAddExclusionList(0),
@@ -67,8 +66,6 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
             *this));
-
-    _renderPasses.fill(0);
 }
 
 /// If we are destroying the current graph node
@@ -303,21 +300,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     // update local time
     _elapsedTime += deltaTime;
 
-    if (_firstDraw) {
-        _firstDraw = false;
-        if (getParent()) {
-            if (getComponent<AnimationComponent>()) {
-                getComponent<AnimationComponent>()->resetTimers();
-            }
-            for (NodeChildren::value_type& it : _children) {
-                if (it.second->getComponent<AnimationComponent>()) {
-                    it.second->getComponent<AnimationComponent>()
-                        ->resetTimers();
-                }
-            }
-        }
-    }
-
     // update all of the internal components (animation, physics, etc)
     for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
         if (_components[i]) {
@@ -331,6 +313,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
             it.second->getComponent<PhysicsComponent>()->transformUpdated(true);
         }
     }
+
     assert(_node->getState() == ResourceState::RES_LOADED);
     // Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
 
@@ -362,15 +345,13 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
-    for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
-        if (_components[i]) {
-            if (!_components[i]->onDraw(renderStage)) {
-                return false;
-            }
+    for (std::unique_ptr<SGNComponent>& comp : _components) {
+        if (comp && !comp->onDraw(renderStage)) {
+            return false;
         }
     }
 
-    return (_renderPasses[to_uint(renderStage)]++ >= 3);
+    return true;
 }
 
 void SceneGraphNode::setInView(const bool state) {

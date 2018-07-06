@@ -155,7 +155,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     typedef hashMapImpl<stringImpl, Scene*> SceneMap;
     bool _init;
     bool _processInput;
-    bool _loadPreRenderComplete;
     /// Pointer to the currently active scene
     Scene* _activeScene;
     /// Pointer to the GUI interface

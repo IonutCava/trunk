@@ -135,6 +135,7 @@ class Material : public Resource {
 
         ShaderProgram* _shaderRef;
         stringImpl _shader;
+        RenderStage _stage;
         ShaderCompilationStage _shaderCompStage;
         vectorImpl<stringImpl> _shaderDefines;
 
@@ -142,7 +143,8 @@ class Material : public Resource {
 
         inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-        ShaderInfo() {
+        ShaderInfo()
+        {
             _shaderRef = nullptr;
             _shader = "";
             _shaderCompStage = ShaderCompilationStage::UNHANDLED;
@@ -287,24 +289,21 @@ class Material : public Resource {
     inline void setShaderLoadThreaded(const bool state) {
         _shaderThreadedLoad = state;
     }
+
     void setShaderProgram(
         const stringImpl& shader,
         RenderStage renderStage,
-        const bool computeOnAdd,
-        const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>());
+        const bool computeOnAdd);
+
     inline void setShaderProgram(
         const stringImpl& shader,
-        const bool computeOnAdd,
-        const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()) {
-        setShaderProgram(shader, RenderStage::DISPLAY, computeOnAdd,
-                         shaderCompileCallback);
-        setShaderProgram(shader, RenderStage::Z_PRE_PASS, computeOnAdd,
-                         shaderCompileCallback);
-        setShaderProgram(shader, RenderStage::SHADOW, computeOnAdd,
-                         shaderCompileCallback);
-        setShaderProgram(shader, RenderStage::REFLECTION, computeOnAdd,
-                         shaderCompileCallback);
+        const bool computeOnAdd) {
+        setShaderProgram(shader, RenderStage::DISPLAY, computeOnAdd);
+        setShaderProgram(shader, RenderStage::Z_PRE_PASS, computeOnAdd);
+        setShaderProgram(shader, RenderStage::SHADOW, computeOnAdd);
+        setShaderProgram(shader, RenderStage::REFLECTION, computeOnAdd);
     }
+
     size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,
                                RenderStage renderStage);
 
@@ -323,7 +322,7 @@ class Material : public Resource {
     }
 
     inline F32 getParallaxFactor() const { return _parallaxFactor; }
-    inline U8 getTextureCount() const { return _shaderData._textureCount; }
+    inline U8  getTextureCount()   const { return _shaderData._textureCount; }
 
     size_t getRenderStateBlock(RenderStage currentStage);
     inline Texture* const getTexture(ShaderProgram::TextureUsage textureUsage) {
@@ -351,14 +350,9 @@ class Material : public Resource {
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
     bool computeShader(RenderStage renderStage,
-                       const bool computeOnAdd,
-                       const DELEGATE_CBK<>& shaderCompileCallback);
+                       const bool computeOnAdd);
 
-    static void unlockShaderQueue() { _shaderQueueLocked = false; }
-    static void serializeShaderLoad(const bool state) {
-        _serializeShaderLoad = state;
-    }
-
+    bool canDraw(RenderStage renderStage);
    private:
     void getTextureData(ShaderProgram::TextureUsage slot,
                         TextureDataContainer& container);
@@ -367,24 +361,10 @@ class Material : public Resource {
     void computeShaderInternal();
     void setShaderProgramInternal(const stringImpl& shader,
                                   RenderStage renderStage,
-                                  const bool computeOnAdd,
-                                  const DELEGATE_CBK<>& shaderCompileCallback);
-
-    static bool isShaderQueueLocked() { return _shaderQueueLocked; }
-
-    static void lockShaderQueue() {
-        if (_serializeShaderLoad) {
-            _shaderQueueLocked = true;
-        }
-    }
+                                  const bool computeOnAdd);
 
    private:
-    static bool _shaderQueueLocked;
-    static bool _serializeShaderLoad;
-    static I32 _invalidShaderKey;
-
-    typedef std::tuple<U32, ResourceDescriptor, DELEGATE_CBK<>>
-        ShaderQueueElement;
+    typedef std::pair<U32, ResourceDescriptor> ShaderQueueElement;
     std::deque<ShaderQueueElement> _shaderComputeQueue;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"

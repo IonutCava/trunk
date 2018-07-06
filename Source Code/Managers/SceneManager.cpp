@@ -16,7 +16,6 @@ SceneManager::SceneManager()
       _renderPassCuller(nullptr),
       _renderPassManager(nullptr),
       _defaultMaterial(nullptr),
-      _loadPreRenderComplete(false),
       _processInput(false),
       _init(false)
 
@@ -92,7 +91,7 @@ bool SceneManager::unloadCurrentScene() {
 
 void SceneManager::initPostLoadState() {
     Material::serializeShaderLoad(true);
-    _loadPreRenderComplete = _processInput = true;
+    _processInput = true;
 }
 
 bool SceneManager::deinitializeAI(bool continueOnErrors) {
@@ -112,11 +111,6 @@ bool SceneManager::framePreRenderStarted(const FrameEvent& evt) {
 
 bool SceneManager::frameEnded(const FrameEvent& evt) {
     _renderPassCuller->refresh();
-
-    if (_loadPreRenderComplete) {
-        Material::unlockShaderQueue();
-    }
-
     return Attorney::SceneManager::frameEnded(*_activeScene);
 }
 

@@ -11,10 +11,6 @@
 
 namespace Divide {
 
-bool Material::_shaderQueueLocked = false;
-bool Material::_serializeShaderLoad = false;
-I32  Material::_invalidShaderKey = -std::numeric_limits<I16>::max();
-
 Material::Material()
     : Resource("temp_material"),
       _parallaxFactor(1.0f),
@@ -26,7 +22,8 @@ Material::Material()
       _dumpToFile(true),
       _translucencyCheck(false),
       _shadingMode(ShadingMode::COUNT),
-      _bumpMethod(BumpMethod::NONE) {
+      _bumpMethod(BumpMethod::NONE)
+{
     _textures.resize(to_uint(ShaderProgram::TextureUsage::COUNT), nullptr);
 
     _operation = TextureOperation::REPLACE;
@@ -56,7 +53,8 @@ Material::Material()
         GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor);
 }
 
-Material::~Material() {
+Material::~Material()
+{
 }
 
 Material* Material::clone(const stringImpl& nameSuffix) {
@@ -190,19 +188,16 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 // Here we set the shader's name
 void Material::setShaderProgram(const stringImpl& shader,
                                 RenderStage renderStage,
-                                const bool computeOnAdd,
-                                const DELEGATE_CBK<>& shaderCompileCallback) {
+                                const bool computeOnAdd) {
     _shaderInfo[to_uint(renderStage)]._shaderCompStage =
         ShaderInfo::ShaderCompilationStage::CUSTOM;
-    setShaderProgramInternal(shader, renderStage, computeOnAdd,
-                             shaderCompileCallback);
+    setShaderProgramInternal(shader, renderStage, computeOnAdd);
 }
 
 void Material::setShaderProgramInternal(
     const stringImpl& shader,
     RenderStage renderStage,
-    const bool computeOnAdd,
-    const DELEGATE_CBK<>& shaderCompileCallback) {
+    const bool computeOnAdd) {
 
     U32 stageIndex = to_uint(renderStage);
     ShaderInfo& info = _shaderInfo[stageIndex];
@@ -232,7 +227,7 @@ void Material::setShaderProgramInternal(
     shaderDescriptor.setPropertyList(stringAlg::toBase(ss.str()));
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
-    ShaderQueueElement queueElement(stageIndex, shaderDescriptor, shaderCompileCallback);
+    ShaderQueueElement queueElement(stageIndex, shaderDescriptor);
 
     if (computeOnAdd) {
         _shaderComputeQueue.push_front(queueElement);
@@ -267,11 +262,24 @@ void Material::recomputeShaders() {
     }
 }
 
+bool Material::canDraw(RenderStage renderStage) {
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        ShaderInfo& info = _shaderInfo[i];
+        if (info._shaderCompStage != 
+            ShaderInfo::ShaderCompilationStage::COMPUTED) {
+            computeShader(static_cast<RenderStage>(i), false);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /// If the current material doesn't have a shader associated with it, then add
 /// the default ones.
 bool Material::computeShader(RenderStage renderStage,
-                             const bool computeOnAdd,
-                             const DELEGATE_CBK<>& shaderCompileCallback) {
+                             const bool computeOnAdd){
+
     ShaderInfo& info = _shaderInfo[to_uint(renderStage)];
     if (info._shaderCompStage ==
         ShaderInfo::ShaderCompilationStage::UNHANDLED) {
@@ -331,7 +339,7 @@ bool Material::computeShader(RenderStage renderStage,
     }
     if (depthPassShader) {
         renderStage == RenderStage::Z_PRE_PASS ? shader += ".PrePass"
-                                                     : shader += ".Shadow";
+                                               : shader += ".Shadow";
     }
     // What kind of effects do we need?
     if (_textures[slot0]) {
@@ -422,14 +430,13 @@ bool Material::computeShader(RenderStage renderStage,
         shader += _shaderModifier;
     }
 
-    setShaderProgramInternal(shader, renderStage, computeOnAdd,
-                             shaderCompileCallback);
+    setShaderProgramInternal(shader, renderStage, computeOnAdd);
 
     return false;
 }
 
 void Material::computeShaderInternal() {
-    if (_shaderComputeQueue.empty() /* || Material::isShaderQueueLocked()*/) {
+    if (_shaderComputeQueue.empty()) {
         return;
     }
     // Material::lockShaderQueue();
@@ -443,10 +450,6 @@ void Material::computeShaderInternal() {
                                 ? ShaderInfo::ShaderCompilationStage::COMPUTED
                                 : ShaderInfo::ShaderCompilationStage::PENDING;
     REGISTER_TRACKED_DEPENDENCY(info._shaderRef);
-    const DELEGATE_CBK<>& callback = std::get<2>(currentItem);
-    if (callback) {
-        callback();
-    }
 
     _shaderComputeQueue.pop_front();
 }
@@ -517,7 +520,7 @@ bool Material::unload() {
     return true;
 }
 
-void Material::setDoubleSided(bool state, const bool useAlphaTest) {
+void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     if (_doubleSided == state && _useAlphaTest == useAlphaTest) {
         return;
     }
@@ -578,13 +581,15 @@ bool Material::isTranslucent() {
 }
 
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
+    static const I16 invalidShaderKey = -std::numeric_limits<I16>::max();
+
     const ShaderInfo& info = _shaderInfo[to_uint(RenderStage::DISPLAY)];
 
     shaderKey = info._shaderRef ? info._shaderRef->getID()
-                                : Material::_invalidShaderKey;
+                                : invalidShaderKey;
 
     U32 textureSlot = to_uint(ShaderProgram::TextureUsage::UNIT0);
     textureKey = _textures[textureSlot] ? _textures[textureSlot]->getHandle()
-                                        : Material::_invalidShaderKey;
+                                        : invalidShaderKey;
 }
 };

@@ -25,7 +25,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _renderData._textureData.reserve(ParamHandler::getInstance().getParam<I32>(
         "rendering.maxTextureSlots", 16));
 
-    _firstDrawCbk = DELEGATE_BIND(&SceneGraphNode::firstDraw, &parentSGN);
 #ifdef _DEBUG
     // Red X-axis
     _axisLines.push_back(
@@ -109,7 +108,7 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
     Material* mat = getMaterialInstance();
     if (mat) {
-        if (!mat->computeShader(renderStage, false, _firstDrawCbk)) {
+        if (!mat->canDraw(renderStage)) {
             return false;
         }
     }
