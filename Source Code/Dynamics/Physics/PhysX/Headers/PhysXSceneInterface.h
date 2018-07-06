@@ -34,8 +34,8 @@ class Transform;
 class PhysXSceneInterface : public PhysicsSceneInterface {
 public:
     PhysXSceneInterface(Scene* parentScene) : PhysicsSceneInterface(parentScene),
-                                              _gScene(NULL),
-                                              _cpuDispatcher(NULL)
+                                              _gScene(nullptr),
+                                              _cpuDispatcher(nullptr)
     {
     }
 

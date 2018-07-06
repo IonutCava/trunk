@@ -7,13 +7,13 @@
 
 AICoordination::AICoordination(U32 id) : _teamID(id){
     _team.clear();
-    _enemyTeam = NULL;
+    _enemyTeam = nullptr;
     AIManager::getInstance().registerTeam(this);
     // attach navmeshes here
     for(I32 i = 0; i < maxAgentRadiusCount; ++i){
         Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(i);
         if(!navMesh)
-            _teamCrowd[i] = NULL;
+            _teamCrowd[i] = nullptr;
         else
             _teamCrowd[i] = New Navigation::DivideDtCrowd(navMesh);
     }

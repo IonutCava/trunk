@@ -14,7 +14,7 @@ ResourceCache::~ResourceCache(){
 
 void ResourceCache::add(const std::string& name,Resource* const res){
     UpgradableReadLock ur_lock(_creationMutex);
-    if(res == NULL) {
+    if(res == nullptr) {
         ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
         return;
     }
@@ -54,11 +54,11 @@ Resource* const ResourceCache::find(const std::string& name){
     if(resDBiter != _resDB.end()){
         return resDBiter->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 bool ResourceCache::scheduleDeletion(Resource* const resource,bool force){
-    if(resource == NULL) return false;
+    if(resource == nullptr) return false;
     ResourceMap::const_iterator resDBiter = _resDB.find(resource->getName());
      /// it's already deleted. Double-deletion should be safe
     if(resDBiter == _resDB.end())
@@ -72,7 +72,7 @@ bool ResourceCache::scheduleDeletion(Resource* const resource,bool force){
 }
 
 bool ResourceCache::remove(Resource* const resource,bool force){
-    assert(resource != NULL);
+    assert(resource != nullptr);
 
     std::string name(resource->getName());
 
@@ -106,7 +106,7 @@ bool ResourceCache::remove(Resource* const resource,bool force){
 }
 
 bool ResourceCache::load(Resource* const res, const std::string& name) {
-    assert(res != NULL);
+    assert(res != nullptr);
     res->setName(name);
     return true;
 }

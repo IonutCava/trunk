@@ -11,7 +11,7 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
                                                                          _sortKey( sortKey ),
                                                                          _stateHash(0)//< Defaulting to a null state hash
 {
-    RenderStateBlock* currentStateBlock = NULL;
+    RenderStateBlock* currentStateBlock = nullptr;
     Material* mat = _node->getSceneNode()->getMaterial();
     // If we do not have a material, no need to continue
     if(!mat) return;
@@ -24,7 +24,7 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
         if(!currentStateBlock){
             // all materials should have at least one final render state
             currentStateBlock = mat->getRenderState(FINAL_STAGE);
-            assert(currentStateBlock != NULL);
+            assert(currentStateBlock != nullptr);
         }
     }else if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)){
         // Check if we have a shadow state
@@ -41,7 +41,7 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
     }else{
         // all materials should have at least one final render state
         currentStateBlock = mat->getRenderState(FINAL_STAGE);
-        assert(currentStateBlock != NULL);
+        assert(currentStateBlock != nullptr);
     }
     // Save the render state hash value for sorting
     _stateHash = currentStateBlock->getGUID();
@@ -147,8 +147,8 @@ void RenderBin::preRender(){
 }
 
 void RenderBin::render(const RenderStage& currentRenderStage){
-    SceneNode* sn = NULL;
-    SceneGraphNode* sgn = NULL;
+    SceneNode* sn = nullptr;
+    SceneGraphNode* sgn = nullptr;
     LightManager& lightMgr = LightManager::getInstance();
     //if needed, add more stages to which lighting is applied
     U32 lightValidStages = DISPLAY_STAGE | REFLECTION_STAGE;
@@ -212,7 +212,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 }
 
 void RenderBin::postRender(){
-    SceneGraphNode* sgn = NULL;
+    SceneGraphNode* sgn = nullptr;
 
     for(U16 j = 0; j < getBinSize(); j++){
         sgn = getItem(j)._node;

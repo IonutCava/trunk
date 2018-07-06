@@ -18,9 +18,9 @@
 
 SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _elapsedTime(0ULL),
-                                                  _parent(NULL),
-                                                  _transform(NULL),
-                                                  _transformPrevious(NULL),
+                                                  _parent(nullptr),
+                                                  _transform(nullptr),
+                                                  _transformPrevious(nullptr),
                                                   _loaded(true),
                                                   _wasActive(true),
                                                   _active(true),
@@ -44,7 +44,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
 {
     _animationTransforms.clear();
     _animationTransforms.reserve(40);
-    assert(_node != NULL);
+    assert(_node != nullptr);
 }
 
 ///If we are destroyng the current graph node
@@ -118,7 +118,7 @@ void SceneGraphNode::print(){
     U8 i = 0;
     //Count how deep in the graph we are
     //by counting how many ancestors we have before the "root" node
-    while(parent != NULL){
+    while(parent != nullptr){
         parent = parent->getParent();
         i++;
     }
@@ -235,7 +235,7 @@ void SceneGraphNode::removeNode(SceneGraphNode* node){
 //or to true if we search by a SceneNode's name
 SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNodeName){
     //Null return value as default
-    SceneGraphNode* returnValue = NULL;
+    SceneGraphNode* returnValue = nullptr;
      //Make sure a name exists
     if (!name.empty()){
         //check if it is the name we are looking for
@@ -255,8 +255,8 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
         //The current node isn't the one we wan't, so recursively check all children
         for_each(NodeChildren::value_type& it, _children){
             returnValue = it.second->findNode(name);
-                if(returnValue != NULL){
-                    // if it is not NULL it is the node we are looking for
+                if(returnValue != nullptr){
+                    // if it is not nullptr it is the node we are looking for
                     // so just pass it through
                     return returnValue;
             }
@@ -264,8 +264,8 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
     }
 
     // no children's name matches or there are no more children
-    // so return NULL, indicating that the node was not found yet
-    return NULL;
+    // so return nullptr, indicating that the node was not found yet
+    return nullptr;
 }
 
 void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
@@ -284,7 +284,7 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
 }
 
 const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
-    assert(_node != NULL);
+    assert(_node != nullptr);
 
     if(getNode<Object3D>()->getType() != Object3D::SUBMESH ||
        (getNode<Object3D>()->getType() == Object3D::SUBMESH &&
@@ -336,7 +336,7 @@ Transform* const SceneGraphNode::getPrevTransform(){
 
 //Get the node's transform
 Transform* const SceneGraphNode::getTransform(){
-    //A node does not necessarily have a transform. If this is the case, we can either create a default one or return NULL.
+    //A node does not necessarily have a transform. If this is the case, we can either create a default one or return nullptr.
     //When creating a node we can specify if we do not want a default transform
     if(!_noDefaultTransform && !_transform){
         _transform = New Transform();

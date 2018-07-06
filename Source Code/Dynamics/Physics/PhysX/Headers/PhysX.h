@@ -88,8 +88,8 @@
 class Transform;
 class PhysXActor {
 public:
-    PhysXActor() : _actor(NULL),
-                   _transform(NULL),
+    PhysXActor() : _actor(nullptr),
+                   _transform(nullptr),
                    _isDynamic(false),
                    _isInScene(false),
                    _userData(0.0f)

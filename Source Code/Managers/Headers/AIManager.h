@@ -49,7 +49,7 @@ public:
     inline void registerTeam(AICoordination* const team) {_aiTeams[team->getTeamID()] = team;}
     ///Add a nav mesh
     bool addNavMesh(Navigation::NavigationMesh* const navMesh);
-    Navigation::NavigationMesh* getNavMesh(U16 index) const {return (index >= _navMeshes.size() ? NULL : _navMeshes[index]);}
+    Navigation::NavigationMesh* getNavMesh(U16 index) const {return (index >= _navMeshes.size() ? nullptr : _navMeshes[index]);}
     ///Remove a nav mesh
     void destroyNavMesh(Navigation::NavigationMesh* const navMesh);
  

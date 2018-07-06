@@ -49,7 +49,7 @@ public:
 
     QuadtreeNode*	FindLeaf(const vec2<F32>& pos);
 
-    Quadtree()	{_root = NULL; _parentShaderProgram = NULL; _parentVBO = NULL; _chunkCount = 0;}
+    Quadtree()	{_root = nullptr; _parentShaderProgram = nullptr; _parentVBO = nullptr; _chunkCount = 0;}
     ~Quadtree()	{Destroy();}
 
 protected:

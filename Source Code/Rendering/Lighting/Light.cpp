@@ -17,13 +17,13 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
                                                    _slot(slot),
                                                    _drawImpostor(false),
                                                    _updateLightBB(false),
-                                                   _lightSGN(NULL),
-                                                   _impostor(NULL),
+                                                   _lightSGN(nullptr),
+                                                   _impostor(nullptr),
                                                    _id(0),
-                                                   _impostorSGN(NULL),
+                                                   _impostorSGN(nullptr),
                                                    _castsShadows(true),
                                                    _par(ParamHandler::getInstance()),
-                                                   _shadowMapInfo(NULL),
+                                                   _shadowMapInfo(nullptr),
                                                    _score(0.0f)
 {
     //All lights default to fully dynamic for now.
@@ -74,7 +74,7 @@ void Light::postLoad(SceneGraphNode* const sgn) {
 }
 
 void Light::updateState(const bool force){
-    assert(_lightSGN != NULL);
+    assert(_lightSGN != nullptr);
 
     if(force) _dirty = true;
 
@@ -91,7 +91,7 @@ void Light::updateState(const bool force){
             _lightSGN->getTransform()->setPosition(_properties._position);
 
         if(_drawImpostor){
-            Sphere3D* lightDummy = NULL;
+            Sphere3D* lightDummy = nullptr;
             if(!_impostor){
                 _impostor = New Impostor(_name,_properties._specular.w);
                 lightDummy = _impostor->getDummy();
@@ -271,7 +271,7 @@ bool Light::computeBoundingBox(SceneGraphNode* const sgn){
 }
 
 bool Light::isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck){
-    return ((_impostorSGN != NULL) && _drawImpostor);
+    return ((_impostorSGN != nullptr) && _drawImpostor);
 }
 
 void Light::render(SceneGraphNode* const sgn){

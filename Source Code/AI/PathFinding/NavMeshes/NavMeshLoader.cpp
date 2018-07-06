@@ -162,7 +162,7 @@ namespace Navigation {
                 return false;
 
             // Create the file if it doesn't exists
-            FILE *fp = NULL;
+            FILE *fp = nullptr;
             fopen_s(&fp,filename,"w");
             fclose(fp);
 
@@ -277,7 +277,7 @@ namespace Navigation {
 
         const vec3<F32> borderOffset(BORDER_PADDING);
         bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
-            assert(sgn != NULL);
+            assert(sgn != nullptr);
             
             //Ignore if specified
             if(sgn->getNavigationContext() == SceneGraphNode::NODE_IGNORE)  goto next;
@@ -303,7 +303,7 @@ namespace Navigation {
             }
 
             MeshDetailLevel level = DETAIL_ABSOLUTE;
-            VertexBufferObject* geometry = NULL;
+            VertexBufferObject* geometry = nullptr;
             SamplePolyAreas areType = SAMPLE_AREA_OBSTACLE;
 
             switch(nodeType){
@@ -333,7 +333,7 @@ namespace Navigation {
                 if(nodeType == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVBO();
                 else if(nodeType == TYPE_TERRAIN) geometry = dynamic_cast<Terrain* >(sn)->getGeometryVBO();
                 else /*nodeType == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVBO();
-                assert(geometry != NULL);
+                assert(geometry != nullptr);
 
                 const vectorImpl<vec3<F32> >& vertices  = geometry->getPosition();
                 if(vertices.empty()) return false;

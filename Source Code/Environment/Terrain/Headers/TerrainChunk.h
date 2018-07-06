@@ -41,7 +41,7 @@ struct ChunkGrassData{
     F32                           _grassVisibility;
     inline bool empty() {return _grassIndices.empty();}
 
-    ChunkGrassData() : _grassVBO(NULL)
+    ChunkGrassData() : _grassVBO(nullptr)
     {
     }
 

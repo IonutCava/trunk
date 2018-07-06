@@ -36,8 +36,8 @@ public:
 		_touchedOwnTableHalf = false;
 		_touchedAdversaryTableHalf = false;
 		_lost = false;
-		_ballSGN = NULL;
-		_ball = NULL;
+		_ballSGN = nullptr;
+		_ball = nullptr;
 	}
 
 	~PingPongScene() {}

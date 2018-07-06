@@ -78,7 +78,7 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
     GL_API::setActiveVBO(gl->glfons_vboID);
-    glBufferData(GL_ARRAY_BUFFER, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, NULL, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, nullptr, GL_STREAM_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0,                vertDataSize,                       verts);
     glBufferSubData(GL_ARRAY_BUFFER, vertDataSize,     vertDataSize,                       tcoords);
     glBufferSubData(GL_ARRAY_BUFFER, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, colors);
@@ -86,9 +86,9 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (void*)(0));
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (char *)NULL + (vertDataSize));
+    glVertexAttribPointer(3, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (char *)nullptr + (vertDataSize));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char *)NULL + (2 * vertDataSize));
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char *)nullptr + (2 * vertDataSize));
 
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 
@@ -118,7 +118,7 @@ struct FONScontext* glfonsCreate(int width, int height, int flags)
     struct GLFONScontext* gl;
 
     gl = (struct GLFONScontext*)malloc(sizeof(struct GLFONScontext));
-    if (gl == NULL) goto error;
+    if (gl == nullptr) goto error;
     memset(gl, 0, sizeof(struct GLFONScontext));
 
     memset(&params, 0, sizeof(params));
@@ -134,8 +134,8 @@ struct FONScontext* glfonsCreate(int width, int height, int flags)
     return fonsCreateInternal(&params);
 
 error:
-    if (gl != NULL) free(gl);
-    return NULL;
+    if (gl != nullptr) free(gl);
+    return nullptr;
 }
 
 void glfonsDelete(struct FONScontext* ctx)

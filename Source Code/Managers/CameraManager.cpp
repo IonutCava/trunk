@@ -3,7 +3,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
-CameraManager::CameraManager() : _camera(NULL)
+CameraManager::CameraManager() : _camera(nullptr)
 {
 }
 
@@ -49,7 +49,7 @@ void CameraManager::setActiveCamera(const std::string& name) {
 }
 
 void CameraManager::addNewCamera(const std::string& cameraName, Camera* const camera){
-    if(camera == NULL) {
+    if(camera == nullptr) {
         ERROR_FN(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),cameraName.c_str());
         return;
     }

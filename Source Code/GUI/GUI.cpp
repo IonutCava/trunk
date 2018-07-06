@@ -16,7 +16,7 @@
 
 GUI::GUI() : _init(false),
              _enableCEGUIRendering(false),
-             _rootSheet(NULL),
+             _rootSheet(nullptr),
              _console(New GUIConsole()),
              _textRenderInterval(getMsToUs(10))
 {
@@ -232,7 +232,7 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
 GUIButton* GUI::addButton(const std::string& id, const std::string& text,
                     const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
                     ButtonCallback callback,const std::string& rootSheetId){
-    CEGUI::Window* parent = NULL;
+    CEGUI::Window* parent = nullptr;
     if(!rootSheetId.empty()){
         parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(rootSheetId);
     }
@@ -271,7 +271,7 @@ GUIFlash* GUI::addFlash(const std::string& id, std::string movie, const vec2<U32
 }
 
 GUIText* GUI::modifyText(const std::string& id, char* format, ...){
-    if(_guiStack.find(id) == _guiStack.end()) return NULL;
+    if(_guiStack.find(id) == _guiStack.end()) return nullptr;
 
     va_list args;
     std::string fmt_text;

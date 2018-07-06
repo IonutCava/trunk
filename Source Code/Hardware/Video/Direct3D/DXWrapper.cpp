@@ -10,7 +10,7 @@
 I8 DX_API::initHardware(const vec2<U16>& resolution, I32 argc, char **argv){
     PRINT_FN(Locale::get("START_D3D_API"));
     D3D_ENUM_TABLE::fill();
-    //CEGUI::Direct3D10Renderer& renderer = CEGUI::Direct3D10Renderer::create( /*myD3D10Device*/NULL );
+    //CEGUI::Direct3D10Renderer& renderer = CEGUI::Direct3D10Renderer::create( /*myD3D10Device*/nullptr );
     //GUI::getInstance().bindRenderer(renderer);
     return DX_INIT_ERROR;
 }
@@ -136,7 +136,7 @@ void DX_API::Screenshot(char *filename, const vec4<F32>& rect)
 
 RenderStateBlock* DX_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor)
 {
-    return NULL;
+    return nullptr;
 }
 
 void DX_API::updateStateInternal(RenderStateBlock* block, bool force)

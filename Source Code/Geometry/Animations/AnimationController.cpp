@@ -39,7 +39,7 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
     if(!pScene->HasAnimations()) return;
     Release();
 
-    _skeleton = CreateBoneTree( pScene->mRootNode, NULL);
+    _skeleton = CreateBoneTree( pScene->mRootNode, nullptr);
     ExtractAnimations(pScene);
 
     const aiMesh* mesh = pScene->mMeshes[meshPointer];
@@ -175,7 +175,7 @@ Bone* SceneAnimator::GetBoneByName(const std::string& bname) const {
 	if(found != _bonesByName.end()) 
 		return found->second; 
 	else 
-		return NULL;
+		return nullptr;
 }
 
 I32 SceneAnimator::GetBoneIndex(const std::string& bname) const {

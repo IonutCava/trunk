@@ -11,7 +11,7 @@ Mesh* ImplResourceLoader<Mesh>::operator()(){
     }else{
         if(_descriptor.getFlag()){
             ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-            ptr->setMaterial(NULL);
+            ptr->setMaterial(nullptr);
         }
         ptr->setResourceLocation(_descriptor.getResourceLocation());
     }

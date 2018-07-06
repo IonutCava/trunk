@@ -21,7 +21,7 @@ ShadowMap::~ShadowMap()
 }
 
 ShadowMapInfo::ShadowMapInfo(Light* light) : _light(light),
-                                             _shadowMap(NULL)
+                                             _shadowMap(nullptr)
 {
      _resolution = 1024;
      _numSplits = 3;
@@ -34,7 +34,7 @@ ShadowMapInfo::~ShadowMapInfo(){
 ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderState){
     if(_shadowMap) return _shadowMap;
 
-    if(!_light->castsShadows()) return NULL;
+    if(!_light->castsShadows()) return nullptr;
 
     switch(_light->getLightType()){
         case LIGHT_TYPE_POINT:

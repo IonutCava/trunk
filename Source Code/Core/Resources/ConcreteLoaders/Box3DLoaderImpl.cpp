@@ -16,7 +16,7 @@ Box3D* ImplResourceLoader<Box3D>::operator()(){
     }else{
         if(_descriptor.getFlag()){
             ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-            ptr->setMaterial(NULL);
+            ptr->setMaterial(nullptr);
         }
     }
 

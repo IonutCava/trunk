@@ -289,13 +289,13 @@ namespace Navigation {
           * At the moment this will issue an immediate update of the navmesh at the
           * corresponding tiles. (the alternative is adding a request that is processed as deferred command)
           **/
-        void buildTiles(SceneGraphNode* const  inputGeom, const BoundingBox *areaToUpdate = NULL);
+        void buildTiles(SceneGraphNode* const  inputGeom, const BoundingBox *areaToUpdate = nullptr);
 
         /**
           * Build or rebuild tile from list of entities.
           * @see{buildTiles(InputGeom*, const Ogre::AxisAlignedBox*)}
           **/
-        //void buildTiles(std::vector<Ogre::Entity*> srcEntities, const BoundingBox *areaToUpdate = NULL);
+        //void buildTiles(std::vector<Ogre::Entity*> srcEntities, const BoundingBox *areaToUpdate = nullptr);
 
     // TODO maybe also add a unloadAllTilesExcept(boundingBox) method
 
@@ -427,13 +427,13 @@ namespace Navigation {
           * Remove convex obstacle with specified id from the tileCache. The affected navmesh tiles will be rebuilt.
           * If removedObstacle is a valid pointer it will contain a reference to the removed obstacle.
           **/
-        bool removeConvexShapeObstacleById(I32 obstacleIndex, ConvexVolume** removedObstacle = NULL);
+        bool removeConvexShapeObstacleById(I32 obstacleIndex, ConvexVolume** removedObstacle = nullptr);
 
         /**
           * Raycast the inputGeom and remove the hit convex obstacle. The affected navmesh tiles will be rebuilt.
           * If removedObstacle is a valid pointer it will contain a reference to the removed obstacle.
           **/
-        I32 removeConvexShapeObstacle(vec3<F32> raySource, vec3<F32> rayHit, ConvexVolume** removedObstacle = NULL);
+        I32 removeConvexShapeObstacle(vec3<F32> raySource, vec3<F32> rayHit, ConvexVolume** removedObstacle = nullptr);
 
         /**
           * Returns the id of the specified convex obstacle. Returns -1 if this obstacle is not currently added to the tilecache.

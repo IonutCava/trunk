@@ -19,7 +19,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
     _shaderProgramId = Divide::GL::_invalidObjectID;
     //3 buffers: Matrices, Materials and Lights
     _UBOLocation.resize(UBO_PLACEHOLDER,-1);
-    _uniformBufferObjects.resize(UBO_PLACEHOLDER, NULL);
+    _uniformBufferObjects.resize(UBO_PLACEHOLDER, nullptr);
     GL_API& glApi = GL_API::getInstance();
     _uniformBufferObjects[Lights_UBO]    = glApi.getUBO(Lights_UBO);
     _uniformBufferObjects[Matrices_UBO]  = glApi.getUBO(Matrices_UBO);
@@ -53,7 +53,7 @@ U8 glShaderProgram::update(const U64 deltaTime){
     
             GLCheck(glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength));
             binary = (void*)malloc(binaryLength);
-            GLCheck(glGetProgramBinary(_shaderProgramId, binaryLength, NULL, &_binaryFormat, binary));
+            GLCheck(glGetProgramBinary(_shaderProgramId, binaryLength, nullptr, &_binaryFormat, binary));
  
             std::string outFileName("shaderCache/Binary/"+getName()+".bin");
             outFile = fopen(outFileName.c_str(), "wb");
@@ -75,7 +75,7 @@ std::string glShaderProgram::getLog() const {
     if(length > 1){
         validationBuffer = "\n -- ";
         vectorImpl<char> shaderProgramLog(length);
-        GLCheck(glGetProgramInfoLog(_threadedLoadComplete ? _shaderProgramId : _shaderProgramIdTemp, length, NULL, &shaderProgramLog[0]));
+        GLCheck(glGetProgramInfoLog(_threadedLoadComplete ? _shaderProgramId : _shaderProgramIdTemp, length, nullptr, &shaderProgramLog[0]));
         validationBuffer.append(&shaderProgramLog[0]);
         if(validationBuffer.size() > Console::CONSOLE_OUTPUT_BUFFER_SIZE){
             validationBuffer.resize(Console::CONSOLE_OUTPUT_BUFFER_SIZE - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10);
@@ -219,7 +219,7 @@ void glShaderProgram::link(){
 bool glShaderProgram::generateHWResource(const std::string& name){
     _name = name;
     _threadedLoading = false;
-    //NULL shader means use shaderProgram(0)
+    //nullptr shader means use shaderProgram(0)
     if(name.compare("NULL_SHADER") == 0){
         _validationQueued = false;
         _shaderProgramId = 0;
@@ -297,7 +297,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
     vertexProperties += shaderProperties;
 
     if(_useVertex){
-        Shader* vertexShader = NULL;
+        Shader* vertexShader = nullptr;
         //Load the Vertex Shader
         std::string vertexShaderName = shaderName+".Vertex"+vertexProperties;
 
@@ -312,7 +312,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
             //Use glsw to read the vertex part of the effect
             const char* vs = glswGetShader(vertexShaderName.c_str(),lineCountOffset + lineCountOffsetVert,_refreshVert);
             if(!vs) ERROR_FN("[GLSL]  %s",glswGetError());
-            assert(vs != NULL);
+            assert(vs != nullptr);
 
             //If reading was succesfull
             std::string vsString(vs);
@@ -323,7 +323,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         }
 
         if(!vertexShader) ERROR_FN(Locale::get("ERROR_GLSL_SHADER_LOAD"),vertexShaderName.c_str());
-        assert(vertexShader != NULL);
+        assert(vertexShader != nullptr);
 
         //If the vertex shader loaded ok attach it to the program if needed
         if(!refresh || refresh && _refreshVert){
@@ -332,7 +332,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
     }
 
     if(_useFragment){
-        Shader* fragmentShader = NULL;
+        Shader* fragmentShader = nullptr;
         //Load the Fragment Shader
         std::string fragmentShaderName = shaderName+".Fragment"+shaderProperties;
         //Recycle shaders only if we do not request a refresh for them
@@ -344,7 +344,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
             //Get our shader source
             const char* fs = glswGetShader(fragmentShaderName.c_str(),lineCountOffset + lineCountOffsetFrag, _refreshFrag);
             if(!fs) ERROR_FN("[GLSL] %s",glswGetError());
-            assert(fs != NULL);
+            assert(fs != nullptr);
 
             std::string fsString(fs);
             //Insert our custom defines in the special define slot
@@ -355,7 +355,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         }
 
         if(!fragmentShader) ERROR_FN(Locale::get("ERROR_GLSL_SHADER_LOAD"),fragmentShaderName.c_str());
-        assert(fragmentShader != NULL);
+        assert(fragmentShader != nullptr);
         //attach it to the program if needed
         if(!refresh || refresh && _refreshFrag){
             attachShader(fragmentShader, _refreshFrag);
@@ -363,7 +363,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
     }
 
     if(_useGeometry){
-        Shader* geometryShader = NULL;
+        Shader* geometryShader = nullptr;
         //Load the Geometry Shader
         std::string geometryShaderName = shaderName+".Geometry"+shaderProperties;
         //Recycle shaders only if we do not request a refresh for them
@@ -373,7 +373,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 
         if(!geometryShader){
             const char* gs = glswGetShader(geometryShaderName.c_str(),lineCountOffset,_refreshGeom);
-            if(gs != NULL){
+            if(gs != nullptr){
                 std::string gsString(gs);
                 Util::replaceStringInPlace(gsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
                 geometryShader = ShaderManager::getInstance().loadShader(geometryShaderName,gsString,GEOMETRY_SHADER,_refreshGeom);
@@ -393,7 +393,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
     }
 
     if(_useTessellation){
-        Shader* tessellationShader = NULL;
+        Shader* tessellationShader = nullptr;
         //Load the Tessellation Shader
         std::string tessellationShaderName = shaderName+".Tessellation"+shaderProperties;
         //Recycle shaders only if we do not request a refresh for them
@@ -403,7 +403,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 
         if(!tessellationShader){
             const char* ts = glswGetShader(tessellationShaderName.c_str(),lineCountOffset,_refreshTess);
-            if(ts != NULL){
+            if(ts != nullptr){
                 std::string tsString(ts);
                 Util::replaceStringInPlace(tsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
                 tessellationShader = ShaderManager::getInstance().loadShader(tessellationShaderName,tsString,TESSELATION_SHADER,_refreshTess);
@@ -464,7 +464,7 @@ void glShaderProgram::bind() {
 void glShaderProgram::unbind(bool resetActiveProgram) {
     if(!_bound) return;
 
-    if(resetActiveProgram) GL_API::setActiveProgram(NULL);
+    if(resetActiveProgram) GL_API::setActiveProgram(nullptr);
 
     ShaderProgram::unbind(resetActiveProgram);
 }

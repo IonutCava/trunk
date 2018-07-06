@@ -22,7 +22,7 @@
 
 #ifndef _GUI_EDITOR_INTERFACE_H_
 #define _GUI_EDITOR_INTERFACE_H_
-#define NULL 0
+
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 namespace CEGUI{
 	class Window;
@@ -30,9 +30,9 @@ namespace CEGUI{
 ///Abstract interface for various editor plugins, suchs as light managers, ai managers, scene graph interface, etc
 class GUIEditorInterface {
 protected:
-	GUIEditorInterface() : _parent(NULL) {}
+	GUIEditorInterface() : _parent(nullptr) {}
 	virtual ~GUIEditorInterface() {}
-	virtual bool init(CEGUI::Window *parent) {_parent = parent; return (_parent != NULL);}
+	virtual bool init(CEGUI::Window *parent) {_parent = parent; return (_parent != nullptr);}
 	///Handle tick with time difference from last call
 	virtual bool update(const U64 deltaTime) = 0;
 	CEGUI::Window *_parent;

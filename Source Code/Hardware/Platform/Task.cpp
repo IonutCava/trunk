@@ -9,7 +9,7 @@ Task::~Task(){
 }
 
 void Task::startTask(){
-    assert(_tp != NULL);
+    assert(_tp != nullptr);
     if(!_tp->schedule(DELEGATE_BIND(&Task::run,DELEGATE_REF(*this)))){
         ERROR_FN(Locale::get("TASK_SCHEDULE_FAIL"));
     }

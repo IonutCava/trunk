@@ -47,9 +47,9 @@ DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
 private:
 
     GL_API() : RenderAPIWrapper(),
-               _currentGLRenderStateBlock(NULL),
-               _state2DRendering(NULL),
-               _defaultStateNoDepth(NULL),
+               _currentGLRenderStateBlock(nullptr),
+               _state2DRendering(nullptr),
+               _defaultStateNoDepth(nullptr),
                 _2DRendering(false),
                _prevWidthNode(0),
                _prevWidthString(0),

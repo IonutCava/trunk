@@ -41,7 +41,7 @@ struct RenderBinItem{
     P32              _sortKey;
     I64              _stateHash;
 
-    RenderBinItem() : _node(NULL){}
+    RenderBinItem() : _node(nullptr){}
     RenderBinItem(P32 sortKey, SceneGraphNode *node );
 };
 

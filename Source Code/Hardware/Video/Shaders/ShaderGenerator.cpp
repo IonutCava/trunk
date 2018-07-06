@@ -33,5 +33,5 @@ Shader* ShaderGenerator::generateShader(const vectorImpl<ShaderStageDescriptor> 
 				break;
 		}
 	}
-	return NULL;
+	return nullptr;
 }

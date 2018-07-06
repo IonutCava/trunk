@@ -21,31 +21,31 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _alphaTexturePresent(false),
     _terrainWidth(0),
     _terrainHeight(0),
-    _groundVBO(NULL),
+    _groundVBO(nullptr),
     _terrainQuadtree(New Quadtree()),
-    _plane(NULL),
+    _plane(nullptr),
     _drawBBoxes(false),
     _shadowMapped(true),
     _drawReflected(false),
-    _vegetationGrassNode(NULL),
-    _planeTransform(NULL),
-    _terrainTransform(NULL),
-    _node(NULL),
-    _planeSGN(NULL),
-    _terrainRenderState(NULL),
-    _terrainDepthRenderState(NULL),
-    _terrainReflectionRenderState(NULL),
+    _vegetationGrassNode(nullptr),
+    _planeTransform(nullptr),
+    _terrainTransform(nullptr),
+    _node(nullptr),
+    _planeSGN(nullptr),
+    _terrainRenderState(nullptr),
+    _terrainDepthRenderState(nullptr),
+    _terrainReflectionRenderState(nullptr),
     _stateRefreshIntervalBuffer(0ULL),
     _diffuseUVScale(1.0f),
     _normalMapUVScale(1.0f),
     _stateRefreshInterval(getSecToUs(0.5)) ///<Every half a second
 {
-    _terrainTextures[TERRAIN_TEXTURE_DIFFUSE]   = NULL;
-    _terrainTextures[TERRAIN_TEXTURE_NORMALMAP] = NULL;
-    _terrainTextures[TERRAIN_TEXTURE_CAUSTICS]  = NULL;
-    _terrainTextures[TERRAIN_TEXTURE_RED]       = NULL;
-    _terrainTextures[TERRAIN_TEXTURE_GREEN]     = NULL;
-    _terrainTextures[TERRAIN_TEXTURE_BLUE]      = NULL;
+    _terrainTextures[TERRAIN_TEXTURE_DIFFUSE]   = nullptr;
+    _terrainTextures[TERRAIN_TEXTURE_NORMALMAP] = nullptr;
+    _terrainTextures[TERRAIN_TEXTURE_CAUSTICS]  = nullptr;
+    _terrainTextures[TERRAIN_TEXTURE_RED]       = nullptr;
+    _terrainTextures[TERRAIN_TEXTURE_GREEN]     = nullptr;
+    _terrainTextures[TERRAIN_TEXTURE_BLUE]      = nullptr;
 }
 
 Terrain::~Terrain()
@@ -190,7 +190,7 @@ void Terrain::drawGround() const{
 }
 
 Vegetation* const Terrain::getVegetation() const {
-    assert(_vegetationGrassNode != NULL);
+    assert(_vegetationGrassNode != nullptr);
     return _vegetationGrassNode->getNode<Vegetation>();
 }
 
@@ -200,7 +200,7 @@ void Terrain::addVegetation(SceneGraphNode* const sgn, Vegetation* veg, std::str
 }
 
 void Terrain::toggleVegetation(bool state){ 
-    assert(_vegetationGrassNode != NULL);
+    assert(_vegetationGrassNode != nullptr);
     _vegetationGrassNode->getNode<Vegetation>()->toggleRendering(state);
 }
 

@@ -156,7 +156,7 @@ namespace ImageTools {
 
 		// open file and check for errors
 		FILE *file = fopen(filename, "wb");
-		if (file == NULL) {
+		if (file == nullptr) {
 			return(-1);
 		}
 

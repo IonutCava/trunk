@@ -29,7 +29,7 @@ class AIEntity;
 class NPC : public Character {
 public:
     /// NPCs don't need AI by default
-    NPC(SceneGraphNode* const node, AIEntity* const aiEntity = NULL);
+    NPC(SceneGraphNode* const node, AIEntity* const aiEntity = nullptr);
     ~NPC();
     void update(const U64 deltaTime);
 

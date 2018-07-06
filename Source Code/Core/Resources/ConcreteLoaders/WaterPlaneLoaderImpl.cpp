@@ -38,13 +38,13 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
     waterPlane.setFlag(true); //No default material
     waterPlane.setBoolMask(quadMask);
     Texture2D* waterNM = CreateResource<Texture2D>(waterTexture);
-    assert(waterNM != NULL);
+    assert(waterNM != nullptr);
 
     ShaderProgram* waterShaderProgram = CreateResource<ShaderProgram>(waterShader);
-    assert(waterShaderProgram != NULL);
+    assert(waterShaderProgram != nullptr);
 
     Material* waterMat = CreateResource<Material>(waterMaterial);
-    assert(waterMat != NULL);
+    assert(waterMat != nullptr);
     //The material is responsible for the destruction of the textures and shaders it receives!!!!
     res->setMaterial(waterMat);
     res->setWaterNormalMap(waterNM);

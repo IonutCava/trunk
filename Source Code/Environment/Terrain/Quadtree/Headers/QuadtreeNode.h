@@ -65,7 +65,7 @@ public:
     inline QuadtreeNode*	getChildren()				{return _children;}
     inline TerrainChunk*	getChunk()					{return _terrainChunk;}
 
-    QuadtreeNode()  {_children = NULL; _terrainChunk = NULL; _LOD = 0;}
+    QuadtreeNode()  {_children = nullptr; _terrainChunk = nullptr; _LOD = 0;}
     ~QuadtreeNode() {Destroy();}
 
 protected:

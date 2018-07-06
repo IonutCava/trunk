@@ -57,9 +57,9 @@ namespace {
 
 static U64 _totalTime = 0ULL;
 
-GUIConsole::GUIConsole() : _consoleWindow(NULL),
-                           _editBox(NULL),
-                           _outputWindow(NULL),
+GUIConsole::GUIConsole() : _consoleWindow(nullptr),
+                           _editBox(nullptr),
+                           _outputWindow(nullptr),
                            _init(false),
                            _inputHistoryIndex(0)
 {
@@ -119,7 +119,7 @@ void GUIConsole::CreateCEGUIWindow(){
 }
 
 void GUIConsole::RegisterHandlers(){
-    assert(_editBox != NULL);
+    assert(_editBox != nullptr);
     //We need to monitor text/command submission from the editBox
     _editBox->subscribeEvent(CEGUI::Editbox::EventTextAccepted,
                              CEGUI::Event::Subscriber(&GUIConsole::Handle_TextSubmitted,this));
@@ -129,7 +129,7 @@ void GUIConsole::RegisterHandlers(){
 }
 
 bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs &e){
-    assert(_editBox != NULL);
+    assert(_editBox != nullptr);
     const CEGUI::KeyEventArgs* keyEvent = static_cast<const CEGUI::KeyEventArgs*>(&e);
     //Just get the current text string from the editbox at each keypress. Performance isn't a issue for console commands
     if(!_inputHistory.empty()){
@@ -152,7 +152,7 @@ bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs &e){
 }
 
 bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
-    assert(_editBox != NULL);
+    assert(_editBox != nullptr);
     // Since we have that string, lets send it to the TextParser which will handle it from here
     _cmdParser->processCommand(_inputBuffer.c_str());
     // Now that we've finished with the text, we need to ensure that we clear out the EditBox.
@@ -174,7 +174,7 @@ void GUIConsole::setVisible(bool visible){
     if(!_inputBuffer.empty())
         return;
 
-    assert(_editBox != NULL);
+    assert(_editBox != nullptr);
     _consoleWindow->setVisible(visible);
 
     if(visible){
@@ -227,7 +227,7 @@ void GUIConsole::update(const U64 deltaTime){
     static bool lastMsgError = false;
     static std::string lastMsg;
 
-    MessageStruct* outMsg = NULL;
+    MessageStruct* outMsg = nullptr;
     while(_outputBuffer.pop(outMsg)){
         if(!outMsg) continue;
             

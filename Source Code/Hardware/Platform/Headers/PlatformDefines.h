@@ -22,10 +22,9 @@
 
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
-
+#include "boost/config/compiler/visualc.hpp"
 #include <limits>
 #include <boost/function.hpp>
-
 ///Data Types
 #ifndef U8
 #define U8   unsigned char
@@ -108,10 +107,10 @@ void log_delete(size_t t,char* zFile, I32 nLine);
 #else
 #define LOG(X)
 #endif
-#define SAFE_DELETE(R)	           if(R){ LOG(R); Del R; R=NULL; }
-#define SAFE_DELETE_ARRAY(R)	   if(R){ LOG(R); Del [] R; R=NULL; }
-#define SAFE_DELETE_CHECK(R)       if(R){ LOG(R); Del R; R=NULL; return true;}else{return false;}
-#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ LOG(R); Del [] R; R=NULL; return true;}else{return false;}
+#define SAFE_DELETE(R)	           if(R){ LOG(R); Del R; R=nullptr; }
+#define SAFE_DELETE_ARRAY(R)	   if(R){ LOG(R); Del [] R; R=nullptr; }
+#define SAFE_DELETE_CHECK(R)       if(R){ LOG(R); Del R; R=nullptr; return true;}else{return false;}
+#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ LOG(R); Del [] R; R=nullptr; return true;}else{return false;}
 #define SAFE_DELETE_vector(R)      for(size_t r_iter(0); r_iter< R.size(); r_iter++){ LOG(R); Del R[r_iter]; }
 #define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ LOG(OLD); Del OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 

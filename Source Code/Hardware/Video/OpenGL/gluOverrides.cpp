@@ -26,8 +26,8 @@ namespace Divide {
         bool _applicationClosing = false;
         bool _contextAvailable = false;
         bool _useDebugOutputCallback = false;
-        GLFWwindow* _mainWindow     = NULL;
-        GLFWwindow* _loaderWindow   = NULL;
+        GLFWwindow* _mainWindow     = nullptr;
+        GLFWwindow* _loaderWindow   = nullptr;
 
         /*----------- GLU overrides ------*/
         ///Matrix management

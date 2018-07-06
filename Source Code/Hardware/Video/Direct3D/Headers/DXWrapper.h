@@ -87,7 +87,7 @@ private:
                    const bool orthoMode = false,
                    const bool disableDepth = false);
     void debugDraw();
-    IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return NULL; }
+    IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return nullptr; }
 
     void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback);
     void updateClipPlanes();

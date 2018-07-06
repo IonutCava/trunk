@@ -135,7 +135,7 @@ public:
                           const bool disableDepth = false) {_api.drawLines(pointsA,pointsB,colors,globalOffset,orthoMode,disableDepth);}
     ///Usefull to perform pre-draw operations on the model if it's drawn outside the scenegraph
     void renderInstance(RenderInstance* const instance);
-    void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
+    void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = nullptr);
     void renderGUIElement(U64 renderInterval, GUIElement* const guiElement,ShaderProgram* const guiShader);
     ///The render callback must update all visual information and populate the "RenderBin"'s!
     void render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState);
@@ -154,7 +154,7 @@ public:
     inline U32          getPrevShaderId()                {return _prevShaderId;}
     inline void         setPrevTextureId(const U32& id)  {_prevTextureId = id;}
     inline U32          getPrevTextureId()               {return _prevTextureId;}
-    inline Renderer*    getRenderer()                    {assert(_renderer != NULL); return _renderer;}
+    inline Renderer*    getRenderer()                    {assert(_renderer != nullptr); return _renderer;}
            void         setRenderer(Renderer* const renderer);
            void         closeRenderer();
 
@@ -209,9 +209,9 @@ public:
     ///Same as setStateBlock(RenderStateBlock* block), but uses a blank description
     RenderStateBlock* setStateBlockByDesc(const RenderStateBlockDescriptor &desc);
     ///Set previous state block - (deep, I know -Ionut)
-    inline RenderStateBlock* setPreviousStateBlock(bool forceUpdate = false) {assert(_previousStateBlock != NULL);return setStateBlock(_previousStateBlock,forceUpdate);}
+    inline RenderStateBlock* setPreviousStateBlock(bool forceUpdate = false) {assert(_previousStateBlock != nullptr);return setStateBlock(_previousStateBlock,forceUpdate);}
     ///Sets a standard state block
-    inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false) {assert(_defaultStateBlock != NULL);return setStateBlock(_defaultStateBlock,forceUpdate);}
+    inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false) {assert(_defaultStateBlock != nullptr);return setStateBlock(_defaultStateBlock,forceUpdate);}
     ///Update the graphics pipeline using the current rendering API with the state block passed
     inline void updateStateInternal(RenderStateBlock* block, bool force = false) {_api.updateStateInternal(block,force);}
     ///If a new state has been set, update the Graphics pipeline

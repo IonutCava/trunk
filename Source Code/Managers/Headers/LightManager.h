@@ -63,7 +63,7 @@ public:
     inline void setDominantLight(Light* const light) {_dominantLight = light;}
 
     ///shadow mapping
-    void previewShadowMaps(Light* light = NULL);
+    void previewShadowMaps(Light* light = nullptr);
     inline void togglePreviewShadowMaps() {_previewShadowMaps = !_previewShadowMaps;}
 
     inline       F32                     getLigthOrthoHalfExtent()              const {return _worldHalfExtent;}

@@ -31,10 +31,10 @@ bool GUIEditorAIInterface::update(const U64 deltaTime){
 		AIManager::getInstance().toggleNavMeshDebugDraw(_debugDrawCheckbox->isSelected());
 		Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
 		temp->setFileName(GET_ACTIVE_SCENE()->getName());
-		bool loaded = temp->load(NULL);//<Start from root for now
+		bool loaded = temp->load(nullptr);//<Start from root for now
 
 		if(!loaded){
-			loaded = temp->build(NULL,false);
+			loaded = temp->build(nullptr,false);
 			temp->save();
 		}
 

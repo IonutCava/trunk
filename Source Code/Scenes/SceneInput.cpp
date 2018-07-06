@@ -31,7 +31,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
         std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), selectionQueueDistanceFrontToBack());
         _currentSelection = _sceneSelectionCandidates[0];
     }else{
-        _currentSelection = NULL;
+        _currentSelection = nullptr;
     }
      // set it's state to selected
     if(_currentSelection) _currentSelection->setSelected(true);

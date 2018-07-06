@@ -21,7 +21,7 @@ Unit::~Unit()
 /// Pathfinding, collision detection, animation playback should all be controlled from here
 bool Unit::moveTo(const vec3<F32>& targetPosition){
     // We should always have a node
-    assert(_node != NULL);
+    assert(_node != nullptr);
     WriteLock w_lock(_unitUpdateMutex);
     // We receive move request every frame for now (or every task tick)
     // Start plotting a course from our current position
@@ -111,7 +111,7 @@ bool Unit::moveToZ(const F32 targetPosition){
 /// Further improvements may imply a cooldown and collision detection at destination (thus the if-check at the end)
 bool Unit::teleportTo(const vec3<F32>& targetPosition){
     /// We should always have a node
-    assert(_node != NULL);
+    assert(_node != nullptr);
     WriteLock w_lock(_unitUpdateMutex);
     /// We receive move request every frame for now (or every task tick)
     /// Check if the current request is already processed

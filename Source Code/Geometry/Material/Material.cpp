@@ -29,10 +29,10 @@ Material::Material() : Resource(),
                                          _shaderData[0]._emissive.z));
 
    for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-       _textures[i] = NULL;
+       _textures[i] = nullptr;
    for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0; ++i)
        _operations[i] = TextureOperation_Replace;
-   //std::fill(_textures, _textures + Config::MAX_TEXTURE_STORAGE, static_cast<Texture2D*>(NULL));
+   //std::fill(_textures, _textures + Config::MAX_TEXTURE_STORAGE, static_cast<Texture2D*>(nullptr));
    //std::fill(_operations, _operations + (Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0), TextureOperation_Replace);
 
    /// Normal state for final rendering
@@ -52,14 +52,14 @@ Material::Material() : Resource(),
    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    
 
-    assert(_defaultRenderStates[FINAL_STAGE] != NULL);
-    assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != NULL);
-    assert(_defaultRenderStates[SHADOW_STAGE] != NULL);
-    assert(_defaultRenderStates[REFLECTION_STAGE] != NULL);
+    assert(_defaultRenderStates[FINAL_STAGE] != nullptr);
+    assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != nullptr);
+    assert(_defaultRenderStates[SHADOW_STAGE] != nullptr);
+    assert(_defaultRenderStates[REFLECTION_STAGE] != nullptr);
 
-    _shaderRef[FINAL_STAGE] = NULL;
-    _shaderRef[Z_PRE_PASS_STAGE] = NULL;
-    _shaderRef[SHADOW_STAGE] = NULL;
+    _shaderRef[FINAL_STAGE] = nullptr;
+    _shaderRef[Z_PRE_PASS_STAGE] = nullptr;
+    _shaderRef[SHADOW_STAGE] = nullptr;
 
     _computedShader[0] = false;
     _computedShader[1] = false;
@@ -160,9 +160,9 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
 void Material::clean() {
     if(_dirty){
         isTranslucent();
-        _matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
-        _matId[1].i = (_shaderRef[Z_PRE_PASS_STAGE] != NULL ?  _shaderRef[Z_PRE_PASS_STAGE]->getId() : 0);
-        _matId[2].i = (_shaderRef[SHADOW_STAGE] != NULL ?  _shaderRef[SHADOW_STAGE]->getId() : 0);
+        _matId[0].i = (_shaderRef[FINAL_STAGE] != nullptr ?  _shaderRef[FINAL_STAGE]->getId() : 0);
+        _matId[1].i = (_shaderRef[Z_PRE_PASS_STAGE] != nullptr ?  _shaderRef[Z_PRE_PASS_STAGE]->getId() : 0);
+        _matId[2].i = (_shaderRef[SHADOW_STAGE] != nullptr ?  _shaderRef[SHADOW_STAGE]->getId() : 0);
         dumpToXML();
        _dirty = false;
     }
@@ -258,7 +258,7 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 
 ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
     ShaderProgram* shaderPtr = _shaderRef[renderStage];
-    return shaderPtr == NULL ? ShaderManager::getInstance().getDefaultShader() : shaderPtr;
+    return shaderPtr == nullptr ? ShaderManager::getInstance().getDefaultShader() : shaderPtr;
 }
 
 void Material::setBumpMethod(U32 newBumpMethod,bool force){
@@ -307,7 +307,7 @@ void Material::addShaderDefines(U8 shaderId, const std::string& shaderDefines, b
 
 bool Material::unload(){
     for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
-        if(_textures[i] != NULL){
+        if(_textures[i] != nullptr){
             UNREGISTER_TRACKED_DEPENDENCY(_textures[i]);
             RemoveResource(_textures[i]);
         }

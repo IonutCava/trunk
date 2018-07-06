@@ -132,7 +132,7 @@ bool glPixelBufferObject::Create(GLushort width, GLushort height,GLushort depth,
         GLCheck(glTexParameteri(_textureType, GL_TEXTURE_WRAP_R, GL_REPEAT));
     }
 
-    void *pixels = NULL;
+    void *pixels = nullptr;
 
     switch(_dataType){
         case GL_FLOAT: pixels = New GLfloat[size]; break;

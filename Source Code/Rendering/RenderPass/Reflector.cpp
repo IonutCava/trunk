@@ -8,7 +8,7 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
                                                                      _resolution(resolution),
                                                                      _updateTimer(0),
                                                                      _updateInterval(45), /// 45 milliseconds?
-                                                                     _reflectedTexture(NULL),
+                                                                     _reflectedTexture(nullptr),
                                                                      _createdFBO(false),
                                                                      _updateSelf(false),
                                                                      _planeDirty(true),
@@ -46,7 +46,7 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
         }
     }
     ///We should never have an invalid FBO
-    assert(_reflectedTexture != NULL);
+    assert(_reflectedTexture != nullptr);
     /// mark ourselves as reflection target only if we do not wish to reflect ourself back
     _updateSelf = !_excludeSelfReflection;
     /// recompute the plane equation

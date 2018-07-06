@@ -7,10 +7,10 @@ static I32 axisDeadZone = 256;
 EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) :
 												   _kernel(kernel),
 												   _pApplication(pApp),
-												   _pJoystickInterface(NULL),
-												   _pEffectMgr(NULL)
+												   _pJoystickInterface(nullptr),
+												   _pEffectMgr(nullptr)
 {
-	assert(kernel != NULL);
+	assert(kernel != nullptr);
 }
 
 void EventHandler::initialize(JoystickInterface* pJoystickInterface, EffectManager* pEffectMgr){

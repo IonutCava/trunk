@@ -91,13 +91,13 @@ void GL_API::debugDraw(){
             GLCheck(glLineWidth(std::min(priv->_lineWidth, (F32)_lineWidthLimit)));
         }
 
-        bool texture = (priv->_texture != NULL);
+        bool texture = (priv->_texture != nullptr);
 
         if(texture){
             priv->_texture->Bind(0);
         }
 
-        _imShader->Uniform("useTexture", texture != NULL);
+        _imShader->Uniform("useTexture", texture);
 
         _imShader->uploadNodeMatrices();
 

@@ -57,7 +57,7 @@ namespace anyimpl
     struct big_any_policy : typed_base_any_policy<T>
     {
         virtual void static_delete(void** x) { if (*x)
-            delete(*reinterpret_cast<T**>(x)); *x = NULL; }
+            delete(*reinterpret_cast<T**>(x)); *x = nullptr; }
         virtual void copy_from_value(void const* src, void** dest) {
            *dest = new T(*reinterpret_cast<T const*>(src)); }
         virtual void clone(void* const* src, void** dest) {
@@ -127,26 +127,26 @@ public:
     /// Initializing constructor.
     template <typename T>
     any(const T& x)
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(nullptr)
     {
         assign(x);
     }
 
     /// Empty constructor.
     any()
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(nullptr)
     { }
 
     /// Special initializing constructor for string literals.
     any(const char* x)
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(nullptr)
     {
         assign(x);
     }
 
     /// Copy constructor.
     any(const any& x)
-        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
+        : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(nullptr)
     {
         assign(x);
     }
@@ -212,7 +212,7 @@ public:
         return policy == anyimpl::get_policy<anyimpl::empty_any>();
     }
 
-    /// Frees any allocated memory, and sets the value to NULL.
+    /// Frees any allocated memory, and sets the value to nullptr.
     void reset() {
         policy->static_delete(&object);
         policy = anyimpl::get_policy<anyimpl::empty_any>();

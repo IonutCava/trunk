@@ -61,7 +61,7 @@ public:
     CommunicationInterface* getCommunicationInterface() {return _comInterface;}
 
     inline AICoordination* getTeam() {return _coordination; }
-    inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return 0; }
+    inline U32  getTeamID() const    {if(_coordination != nullptr) { return _coordination->getTeamID();} return 0; }
 
     ///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first
     void setTeam(AICoordination* const coordination);
@@ -83,7 +83,7 @@ public:
     inline const dtCrowdAgent* getAgent() const { return _agent; }
     inline bool  isAgentLoaded() const { return _agentID >= 0; }
      /// Set the crowd object
-    void   resetCrowd(Navigation::DivideDtCrowd* const crowd = NULL);
+    void   resetCrowd(Navigation::DivideDtCrowd* const crowd = nullptr);
     /// The height of the agent for this character.
     D32 getAgentHeight() const;
     /// The radius of the agent for this character.

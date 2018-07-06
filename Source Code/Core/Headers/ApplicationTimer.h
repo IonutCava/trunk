@@ -156,7 +156,7 @@ protected:
         public:
             inline void pause(const bool state) {}
     };
-    inline ProfileTimer* ADD_TIMER(const char* timerName) {return NULL;}
+    inline ProfileTimer* ADD_TIMER(const char* timerName) {return nullptr;}
     inline void START_TIMER(ProfileTimer* const timer)  {}
     inline void STOP_TIMER(ProfileTimer* const timer)   {}
     inline void PRINT_TIMER(ProfileTimer* const timer)  {}

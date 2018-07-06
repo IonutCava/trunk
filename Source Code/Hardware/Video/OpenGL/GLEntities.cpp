@@ -18,7 +18,7 @@ IMPrimitive* GL_API::createPrimitive(bool allowPrimitiveRecycle) {
 }
 
 glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
-    glIMPrimitive* tempPriv = NULL;
+    glIMPrimitive* tempPriv = nullptr;
     //Find a zombified primitive
     vectorImpl<glIMPrimitive* >::iterator it = std::find_if(_glimInterfaces.begin(),_glimInterfaces.end(),IMPrimitiveValidation::isValid);
     if(allowPrimitiveRecycle && it != _glimInterfaces.end()){//If we have one ...
@@ -30,7 +30,7 @@ glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
         tempPriv = New glIMPrimitive();
         _glimInterfaces.push_back(tempPriv);
     }
-    assert(tempPriv != NULL);
+    assert(tempPriv != nullptr);
     tempPriv->_setupStates.clear();
     tempPriv->_resetStates.clear();
     tempPriv->_canZombify = allowPrimitiveRecycle;

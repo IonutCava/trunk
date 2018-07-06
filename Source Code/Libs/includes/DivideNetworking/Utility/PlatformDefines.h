@@ -49,10 +49,10 @@
 #define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
 #define FLOAT_COMPARE_TOLERANCE(X,Y,TOLERANCE) (fabs(X - Y) < TOLERANCE)
 
-#define SAFE_DELETE(R)	           if(R){ delete R; R=NULL; }
-#define SAFE_DELETE_ARRAY(R)	   if(R){ delete [] R; R=NULL; }
-#define SAFE_DELETE_CHECK(R)       if(R){ delete R; R=NULL; return true;}else{return false;}
-#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ delete [] R; R=NULL; return true;}else{return false;}
+#define SAFE_DELETE(R)	           if(R){ delete R; R=nullptr; }
+#define SAFE_DELETE_ARRAY(R)	   if(R){ delete [] R; R=nullptr; }
+#define SAFE_DELETE_CHECK(R)       if(R){ delete R; R=nullptr; return true;}else{return false;}
+#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ delete [] R; R=nullptr; return true;}else{return false;}
 #define SAFE_DELETE_vector(R)      for(size_t r_iter(0); r_iter< R.size(); r_iter++){ delete R[r_iter]; }
 #define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ delete OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 

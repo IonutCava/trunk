@@ -24,15 +24,15 @@ namespace Navigation {
         _renderConnections = false;
         _renderMode = RENDER_NAVMESH;
         _debugDrawInterface = New NavMeshDebugDraw();
-        assert(_debugDrawInterface != NULL);
-        _heightField  = NULL;
-        _compactHeightField = NULL;
-        _countourSet  = NULL;
-        _polyMesh  = NULL;
-        _polyMeshDetail = NULL;
-        _navMesh  = NULL;
-        _tempNavMesh = NULL;
-        _navQuery = NULL;
+        assert(_debugDrawInterface != nullptr);
+        _heightField  = nullptr;
+        _compactHeightField = nullptr;
+        _countourSet  = nullptr;
+        _polyMesh  = nullptr;
+        _polyMeshDetail = nullptr;
+        _navMesh  = nullptr;
+        _tempNavMesh = nullptr;
+        _navQuery = nullptr;
         _building = false;
     }
 
@@ -43,8 +43,8 @@ namespace Navigation {
         freeIntermediates(true);
         dtFreeNavMesh(_navMesh);
         dtFreeNavMesh(_tempNavMesh);
-        _navMesh = NULL;
-        _tempNavMesh = NULL;
+        _navMesh = nullptr;
+        _tempNavMesh = nullptr;
         if(_navQuery){
             dtFreeNavMeshQuery(_navQuery);
             _navQuery = 0 ;
@@ -57,16 +57,16 @@ namespace Navigation {
 
         rcFreeHeightField(_heightField);
         rcFreeCompactHeightfield(_compactHeightField);
-        _heightField = NULL;
-        _compactHeightField = NULL;
+        _heightField = nullptr;
+        _compactHeightField = nullptr;
 
         if(!_saveIntermediates || freeAll)	{
             rcFreeContourSet(_countourSet);
             rcFreePolyMesh(_polyMesh);
             rcFreePolyMeshDetail(_polyMeshDetail);
-            _countourSet = NULL;
-            _polyMesh = NULL;
-            _polyMeshDetail = NULL;
+            _countourSet = nullptr;
+            _polyMesh = nullptr;
+            _polyMeshDetail = nullptr;
         }
 
         _navigationMeshLock.unlock();
@@ -114,7 +114,7 @@ namespace Navigation {
             return false;
         }
 
-        _sgn = (sgn != NULL) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
+        _sgn = (sgn != nullptr) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
         _loadCompleteClbk = creationCompleteCallback;
 
         if(_buildThreaded && threaded){
@@ -162,7 +162,7 @@ namespace Navigation {
         _navMesh = _tempNavMesh;
         dtFreeNavMesh(old);
         _debugDrawInterface->setDirty(true);
-        _tempNavMesh = NULL;
+        _tempNavMesh = nullptr;
 #ifdef _DEBUG
         bool navQueryComplete = createNavigationQuery();
         assert(navQueryComplete);
@@ -183,7 +183,7 @@ namespace Navigation {
     }
 
     bool NavigationMesh::generateMesh(){
-        assert(_sgn != NULL);
+        assert(_sgn != nullptr);
 
         std::string nodeName((_sgn->getSceneNode()->getType() != TYPE_ROOT) ? "_node_[_" + _sgn->getName() + "_]" : "_root_node");
         // Parse objects from level into RC-compatible format
@@ -446,7 +446,7 @@ namespace Navigation {
     }
 
     bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams &params){
-        U8 *tileData = NULL;
+        U8 *tileData = nullptr;
         I32 tileDataSize = 0;
         if(!dtCreateNavMeshData(&params, &tileData, &tileDataSize)){
             ERROR_FN(Locale::get("ERROR_NAV_MESH_DATA"), _fileName.c_str());
@@ -533,7 +533,7 @@ namespace Navigation {
 
         std::string file = _fileName;
 
-        if(sgn == NULL){
+        if(sgn == nullptr){
             file.append("_root_node");
         }else{
             file.append("_node_[_" + sgn->getName() + "_]");

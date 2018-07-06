@@ -17,7 +17,7 @@ bool Patch::compareData(const PatchData& data)
 				if((*_iter).version != data.version[i]) // if the version differs
 				{
 					if((*_iter).ModelName == data.name[i])
-						(*_iter).ModelName == "NULL"; //Don't update modelNames
+						(*_iter).ModelName == "nullptr"; //Don't update modelNames
 
 					updated = false;
 					continue;

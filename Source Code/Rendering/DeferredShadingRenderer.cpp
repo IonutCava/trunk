@@ -135,7 +135,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     RemoveResource(_renderQuads[4]);
     _renderQuads.clear();
     SAFE_DELETE(_deferredBuffer);
-    if(_deferredShader != NULL){
+    if(_deferredShader != nullptr){
         RemoveResource(_deferredShader);
     }
     RemoveResource(_previewDeferredShader);

@@ -7,7 +7,7 @@
 using namespace physx;
 
 bool PhysX::createPlane(const vec3<F32>& position, U32 size){
-    assert(_targetScene != NULL);
+    assert(_targetScene != nullptr);
 
     PxRigidStatic* plane = PxCreatePlane(*_gPhysicsSDK,PxPlane(PxVec3(0,1,0),position.y),
                                          *(static_cast<PhysXSceneInterface* >(_targetScene)->getMaterials()[1]));
@@ -29,7 +29,7 @@ bool PhysX::createPlane(const vec3<F32>& position, U32 size){
 }
 
 bool PhysX::createBox(const vec3<F32>& position, F32 size){
-    assert(_targetScene != NULL);
+    assert(_targetScene != nullptr);
     PxReal density = 1.0f;
     PxTransform transform(PxVec3(position.x,position.y,position.z), PxQuat::createIdentity());
     PxVec3 dimensions(size);

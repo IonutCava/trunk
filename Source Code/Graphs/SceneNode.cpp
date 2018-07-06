@@ -10,14 +10,14 @@
 #include "Geometry/Material/Headers/Material.h"
 
 SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
-                                           _material(NULL),
-                                           _customShader(NULL),
+                                           _material(nullptr),
+                                           _customShader(nullptr),
                                            _refreshMaterialData(true),
                                            _type(type),
                                            _lodLevel(0),
                                            _LODcount(1), ///<Defaults to 1 LOD level
                                            _sgnReferenceCount(0),
-                                           _physicsAsset(NULL)
+                                           _physicsAsset(nullptr)
 {
     U8 i = 0, j = 0;
     for(; i <  Material::TEXTURE_UNIT0; ++i)
@@ -28,14 +28,14 @@ SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
 }
 
 SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resource(name),
-                                                             _material(NULL),
-                                                             _customShader(NULL),
+                                                             _material(nullptr),
+                                                             _customShader(nullptr),
                                                              _refreshMaterialData(true),
                                                              _type(type),
                                                              _lodLevel(0),
                                                              _LODcount(1), ///<Defaults to 1 LOD level
                                                              _sgnReferenceCount(0),
-                                                             _physicsAsset(NULL)
+                                                             _physicsAsset(nullptr)
 {
     U8 i = 0, j = 0;
     for(; i <  Material::TEXTURE_UNIT0; ++i)
@@ -106,7 +106,7 @@ bool SceneNode::isInView(const BoundingBox& boundingBox,const BoundingSphere& sp
 
 Material* SceneNode::getMaterial(){
     //UpgradableReadLock ur_lock(_materialLock);
-    if(_material == NULL){
+    if(_material == nullptr){
         if(!_renderState._noDefaultMaterial){
             ResourceDescriptor defaultMat("defaultMaterial");
             //UpgradeToWriteLock uw_lock(ur_lock);
@@ -143,7 +143,7 @@ void SceneNode::setMaterial(Material* const m){
 }
 
 void SceneNode::clearMaterials(){
-    setMaterial(NULL);
+    setMaterial(nullptr);
 }
 
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
@@ -162,9 +162,9 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
     s->bind();
 
-    Texture2D* texture = NULL;
+    Texture2D* texture = nullptr;
     for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        if((texture = _material->getTexture(i)) != NULL){
+        if((texture = _material->getTexture(i)) != nullptr){
             texture->Bind(i);
 
             if(i >= Material::TEXTURE_UNIT0)
@@ -213,9 +213,9 @@ void SceneNode::releaseMaterial(){
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material) return;
 
-    Texture2D* texture = NULL;
+    Texture2D* texture = nullptr;
     for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        if((texture = _material->getTexture(i)) != NULL)
+        if((texture = _material->getTexture(i)) != nullptr)
             texture->Unbind(i);
 }
 
@@ -233,7 +233,7 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     SET_STATE_BLOCK(_material->getRenderState(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
 
     ShaderProgram* s = _material->getShaderProgram(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE);
-    assert(s != NULL);
+    assert(s != nullptr);
     s->bind();
 
     if(_material->isTranslucent()){

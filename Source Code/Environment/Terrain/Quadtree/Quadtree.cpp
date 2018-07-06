@@ -34,7 +34,7 @@ QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {
         }
 
         if(i>=4) {
-            return NULL;
+            return nullptr;
         }
     }
 

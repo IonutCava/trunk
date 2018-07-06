@@ -15,7 +15,7 @@ AITenisSceneAIActionList::AITenisSceneAIActionList(SceneGraphNode* target) : Act
 }
 
 void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
-    assert(entity != NULL);
+    assert(entity != nullptr);
     _entity = entity;
     VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
     if(visualSensor){
@@ -25,7 +25,7 @@ void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
 
 //Process message from sender to receiver
 void AITenisSceneAIActionList::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content){
-    AICoordination* currentTeam = NULL;
+    AICoordination* currentTeam = nullptr;
     switch(msg){
         case REQUEST_DISTANCE_TO_TARGET:
                 updatePositions();
@@ -86,7 +86,7 @@ void AITenisSceneAIActionList::updatePositions(){
 void AITenisSceneAIActionList::processInput(const U64 deltaTime){
     updatePositions();
     AICoordination* currentTeam = _entity->getTeam();
-    assert(currentTeam != NULL);
+    assert(currentTeam != nullptr);
     _entity->getTeam()->getMemberVariable()[_entity] = distanceToBall(_initialPosition,_ballPosition);
     for_each(AICoordination::teamMap::value_type& member, currentTeam->getTeam()){
         ///Ask all of our team-mates to send us their distance to the ball

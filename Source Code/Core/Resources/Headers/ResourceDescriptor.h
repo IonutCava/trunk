@@ -67,7 +67,7 @@ public:
     template<class T>
     inline const  T*  getPropertyDescriptor()  const {return dynamic_cast<T*>(_propertyDescriptor); }
 
-    inline bool hasPropertyDescriptor()         const {return _propertyDescriptor != NULL;}
+    inline bool hasPropertyDescriptor()         const {return _propertyDescriptor != nullptr;}
     inline bool getFlag()					    const {return _flag;}
     inline bool getThreaded()                   const {return _threaded;}
     inline U8   getEnumValue()                  const {return _enumValue;}

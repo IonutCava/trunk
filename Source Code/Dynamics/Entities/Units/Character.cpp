@@ -43,7 +43,7 @@ bool Character::frameRenderingQueued(const FrameEvent& evt) {
         return false;
 
     Transform* t = getBoundNode()->getTransform();
-    assert(t != NULL);
+    assert(t != nullptr);
 
     vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;

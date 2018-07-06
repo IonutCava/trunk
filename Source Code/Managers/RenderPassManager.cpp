@@ -39,7 +39,7 @@ void RenderPassManager::render(const SceneRenderState& sceneRenderState, SceneGr
 }
 
 void RenderPassManager::addRenderPass(RenderPass* const renderPass, U8 orderKey) {
-    assert(renderPass != NULL);
+    assert(renderPass != nullptr);
     _renderPasses.push_back(RenderPassItem(orderKey,renderPass));
     std::sort(_renderPasses.begin(), _renderPasses.end(), RenderPassCallOrder());
 }

@@ -19,20 +19,20 @@ physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
 physx::PxProfileZone* PhysX::getOrCreateProfileZone(PxFoundation& inFoundation) 
 { 	
 #ifdef PHYSX_PROFILE_SDK
-    if ( _profileZone == NULL )
+    if ( _profileZone == nullptr )
         _profileZone = &physx::PxProfileZone::createProfileZone( &inFoundation, "SampleProfileZone", gProfileNameProvider );
 #endif
     return _profileZone;
 }
 
 
-PhysX::PhysX() : _gPhysicsSDK(NULL),
-                 _foundation(NULL),
-                 _zoneManager(NULL),
-                 _cooking(NULL),
-                 _profileZone(NULL),
-                 _pvdConnection(NULL),
-                 _targetScene(NULL),
+PhysX::PhysX() : _gPhysicsSDK(nullptr),
+                 _foundation(nullptr),
+                 _zoneManager(nullptr),
+                 _cooking(nullptr),
+                 _profileZone(nullptr),
+                 _pvdConnection(nullptr),
+                 _targetScene(nullptr),
                  _accumulator(0.0f),
                  _timeStepFactor(0.0f),
                  _timeStep(0.0f)
@@ -44,14 +44,14 @@ I8 PhysX::initPhysics(U8 targetFrameRate) {
 
     // create foundation object with default error and allocator callbacks.
     _foundation = PxCreateFoundation(PX_PHYSICS_VERSION, _gDefaultAllocatorCallback, _gDefaultErrorCallback);
-    assert(_foundation != NULL);
+    assert(_foundation != nullptr);
     
     bool recordMemoryAllocations = false;
 
 #ifdef _DEBUG
     recordMemoryAllocations = true;
     _zoneManager = &PxProfileZoneManager::createProfileZoneManager(_foundation);
-    assert(_zoneManager != NULL);
+    assert(_zoneManager != nullptr);
 #endif
 
     _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION,
@@ -59,7 +59,7 @@ I8 PhysX::initPhysics(U8 targetFrameRate) {
                                    PxTolerancesScale(),
                                    recordMemoryAllocations,
                                    _zoneManager);
-    if(_gPhysicsSDK == NULL) {
+    if(_gPhysicsSDK == nullptr) {
         ERROR_FN(Locale::get("ERROR_START_PHYSX_API"));
         return PHYSX_INIT_ERROR;
     }
@@ -69,8 +69,8 @@ I8 PhysX::initPhysics(U8 targetFrameRate) {
         _zoneManager->addProfileZone(*_profileZone);
     _pvdConnection = _gPhysicsSDK->getPvdConnectionManager();
     _gPhysicsSDK->getPvdConnectionManager()->addHandler(*this);
-    if(_pvdConnection != NULL){
-        if(PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000) != NULL){
+    if(_pvdConnection != nullptr){
+        if(PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000) != nullptr){
              D_PRINT_FN(Locale::get("CONNECT_PVD_OK"));
         }
     }
@@ -150,8 +150,8 @@ void PhysX::initScene(){
 }
 
 bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask, PhysicsCollisionGroup group){
-    assert(node != NULL);
-    assert(_targetScene != NULL);
+    assert(node != nullptr);
+    assert(_targetScene != nullptr);
     Object3D* sNode = node->getNode<Object3D>();
 
     //Load cached version from file first
@@ -211,8 +211,8 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     }
     
     PhysXSceneInterface* targetScene = dynamic_cast<PhysXSceneInterface* >(_targetScene);
-    PhysXActor* tempActor = NULL;
-    Transform* nodeTransform = NULL;
+    PhysXActor* tempActor = nullptr;
+    Transform* nodeTransform = nullptr;
     if(sNode->getType() == Object3D::SUBMESH){
         tempActor = targetScene->getOrCreateRigidActor(node->getParent()->getName());
         nodeTransform = node->getParent()->getTransform();
@@ -220,8 +220,8 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
         tempActor = targetScene->getOrCreateRigidActor(node->getName());
         nodeTransform = node->getTransform();
     }
-    assert(tempActor != NULL);
-    assert(nodeTransform != NULL);
+    assert(tempActor != nullptr);
+    assert(nodeTransform != nullptr);
     tempActor->_transform = nodeTransform;
 
     if(!tempActor->_actor) {
@@ -250,7 +250,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     
 	assert(tempActor->_actor);
 
-    physx::PxGeometry* geometry = NULL;
+    physx::PxGeometry* geometry = nullptr;
     if(!isSkinnedMesh){
         PxToolkit::FileInputData stream(nodeName.c_str());
         physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
@@ -268,7 +268,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
        geometry = New PxBoxGeometry(maxBB.getWidth(),maxBB.getHeight(),maxBB.getDepth());
     }
 
-    assert(geometry != NULL);
+    assert(geometry != nullptr);
 
     static physx::PxMaterial* material = _gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f);
 
@@ -283,7 +283,7 @@ namespace PxToolkit
 ///////////////////////////////////////////////////////////////////////////////
 
     MemoryOutputStream::MemoryOutputStream() :
-        mData		(NULL),
+        mData		(nullptr),
         mSize		(0),
         mCapacity	(0)
     {
@@ -303,7 +303,7 @@ namespace PxToolkit
             mCapacity = expectedSize + 4096;
 
             PxU8* newData = new PxU8[mCapacity];
-            PX_ASSERT(newData!=NULL);
+            PX_ASSERT(newData!=nullptr);
 
             if(newData)
             {
@@ -353,7 +353,7 @@ namespace PxToolkit
 
     FileOutputStream::FileOutputStream(const char* filename)
     {
-        mFile = NULL;
+        mFile = nullptr;
         physx::Ps::fopen_s(&mFile, filename, "wb");
     }
 
@@ -370,14 +370,14 @@ namespace PxToolkit
 
     bool FileOutputStream::isValid()
     {
-        return mFile != NULL;
+        return mFile != nullptr;
     }
 
 ///////////////////////////////////////////////////////////////////////////////
 
     FileInputData::FileInputData(const char* filename)
     {
-        mFile = NULL;
+        mFile = nullptr;
         Ps::fopen_s(&mFile, filename, "rb");
 
         if(mFile)
@@ -423,7 +423,7 @@ namespace PxToolkit
 
     bool FileInputData::isValid() const
     {
-        return mFile != NULL;
+        return mFile != nullptr;
     }
 
 };

@@ -178,7 +178,7 @@ void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
 
 void PSShadowMaps::postRender(){
     return; //needs more work
-    _renderQuad->setCustomShader(_blurDepthMapShader);
+    /*_renderQuad->setCustomShader(_blurDepthMapShader);
 
     _blurDepthMapShader->bind();
     
@@ -189,7 +189,7 @@ void PSShadowMaps::postRender(){
     _blurBuffer->Begin(FrameBufferObject::defaultPolicy());
     _depthMap->Bind(0, TextureDescriptor::Color0);
     _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
-    for(U8 i = 0; i < 1/*_numSplits*/; i++) {
+    for(U8 i = 0; i < _numSplits; i++) {
         _blurDepthMapShader->Uniform("layer", i);
         _blurBuffer->DrawToLayer(TextureDescriptor::Color0, i);
         GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
@@ -202,7 +202,7 @@ void PSShadowMaps::postRender(){
     //Blur vertically
     _depthMap->Begin(FrameBufferObject::defaultPolicy());
     _blurBuffer->Bind(0, TextureDescriptor::Color0);
-    for(U8 i = 0; i < 1/*_numSplits*/; i++) {
+    for(U8 i = 0; i < _numSplits; i++) {
         _blurDepthMapShader->Uniform("layer", i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, false);
         GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
@@ -213,6 +213,7 @@ void PSShadowMaps::postRender(){
     GFX_DEVICE.toggle2D(false);
 
     _blurDepthMapShader->unbind();
+    */
 }
 
 void PSShadowMaps::previewShadowMaps(){

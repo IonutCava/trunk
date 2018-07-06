@@ -45,7 +45,7 @@ public:
     ///default value will be a GL_DYNAMIC_DRAW, as most data will change once every few frames
     ///(lights might change per frame, so stream will be better in that case)
     void Create(GLint bufferIndex, bool dynamic = true, bool stream = false);
-    ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with NULL values
+    ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with nullptr values
     virtual void ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const;
     virtual void ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data) const;
     virtual bool bindUniform(GLuint shaderProgramHandle, GLuint uboLocation) const;

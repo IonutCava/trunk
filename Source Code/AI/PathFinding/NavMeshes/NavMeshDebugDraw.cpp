@@ -11,7 +11,7 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
 namespace Navigation {
-    NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _paused(false), _color(0), _primitive(NULL)
+    NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _paused(false), _color(0), _primitive(nullptr)
     {
         //Generate a render state
         RenderStateBlockDescriptor navigationDebugDesc;
@@ -58,7 +58,7 @@ namespace Navigation {
                                       DELEGATE_BIND(&NavMeshDebugDraw::releaseMaterial,this));
       }
 
-      assert(_primitive != NULL);
+      assert(_primitive != nullptr);
 
       if(_dirty) _primitive->beginBatch();
    }

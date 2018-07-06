@@ -143,8 +143,8 @@ void WarScene::updateSceneState(const U64 deltaTime){
         Navigation::NavigationMesh* navMesh = New Navigation::NavigationMesh();
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
-        if(!navMesh->load(NULL)) //<Start from root for now
-            navMesh->build(NULL, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
+        if(!navMesh->load(nullptr)) //<Start from root for now
+            navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
         else{
             AIManager::getInstance().addNavMesh(navMesh);
 #ifdef _DEBUG
@@ -217,9 +217,9 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     SceneNode* cylinderMeshSE = cylinderSE->getSceneNode();
 
     std::string currentName;
-    SceneNode* currentMesh = NULL;
-    SceneGraphNode* baseNode = NULL;
-    SceneGraphNode* currentNode = NULL;
+    SceneNode* currentMesh = nullptr;
+    SceneGraphNode* baseNode = nullptr;
+    SceneGraphNode* currentNode = nullptr;
     std::pair<I32, I32> currentPos;
     for(U8 i = 0; i < 40; ++i){
         if(i < 10){
@@ -262,8 +262,8 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 
     /*_bobNode = _sceneGraph->findNode("Soldier3");
     _bobNodeBody = _sceneGraph->findNode("Soldier3_Bob.md5mesh-submesh-0");
-    _lampLightNode = NULL;
-    if(_bobNodeBody != NULL){
+    _lampLightNode = nullptr;
+    if(_bobNodeBody != nullptr){
         ResourceDescriptor tempLight("Light_lamp");
         tempLight.setId(2);
         tempLight.setEnumValue(LIGHT_TYPE_POINT);
@@ -317,11 +317,11 @@ bool WarScene::initializeAI(bool continueOnErrors){
     assert(soldierMesh1 && soldierMesh2 && soldierMesh3);
 
     vec3<F32> currentScale;
-    NPC* soldier = NULL;
+    NPC* soldier = nullptr;
     std::string currentName;
-    AIEntity* aiSoldier = NULL;
-    SceneNode* currentMesh = NULL;
-    SceneGraphNode* currentNode = NULL;
+    AIEntity* aiSoldier = nullptr;
+    SceneNode* currentMesh = nullptr;
+    SceneGraphNode* currentNode = nullptr;
     for(U8 k = 0; k < 2; ++k) {
         for(U8 i = 0; i < 15; ++i){
             F32 speed = 5.5f; // 5.5 m/s
@@ -501,7 +501,7 @@ bool WarScene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_E: state()._roll   = 0; break;
         case OIS::KC_F1: _sceneGraph->print(); break;
         case OIS::KC_TAB:{
-            if(_currentSelection != NULL){
+            if(_currentSelection != nullptr){
                 /*if(flyCameraActive){
                     _cameraMgr->setActiveCamera("fpsCamera");
                     flyCameraActive = false; fpsCameraActive = true;

@@ -12,7 +12,7 @@
 #include <gtc/type_ptr.hpp>
 #include <gtc/matrix_transform.hpp>
 
-glShaderProgram* GL_API::_activeShaderProgram = NULL;
+glShaderProgram* GL_API::_activeShaderProgram = nullptr;
 GLuint GL_API::_activeVAOId = 0;
 GLuint GL_API::_activeVBOId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
@@ -27,7 +27,7 @@ bool GL_API::_shaderBinarySupported = false;
 
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
     if(!skipShader || forceAll) {
-        setActiveProgram(NULL,forceAll);
+        setActiveProgram(nullptr,forceAll);
     }
 
     if(!skipTextures || forceAll){
@@ -54,10 +54,10 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 }
 
 void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
-    assert(block != NULL);
+    assert(block != nullptr);
 
     glRenderStateBlock* glBlock = static_cast<glRenderStateBlock*>(block);
-    glRenderStateBlock* glCurrent = NULL;
+    glRenderStateBlock* glCurrent = nullptr;
     if(!force){
         glCurrent = static_cast<glRenderStateBlock*>(GFX_DEVICE._currentStateBlock);
     }
@@ -89,7 +89,7 @@ void GL_API::toggle2D(bool state){
 
 ///Update OpenGL light state
 void GL_API::setLight(Light* const light){
-    assert(light != NULL);
+    assert(light != nullptr);
 
     LightProperties crtLight = light->getProperties();
     
@@ -279,12 +279,12 @@ bool GL_API::setActiveVBO(GLuint id,const bool force){
 }
 
 bool GL_API::setActiveProgram(glShaderProgram* const program,const bool force){
-    GLuint newProgramId = (program != NULL) ? program->getId() : 0;
-    GLuint oldProgramId = (_activeShaderProgram != NULL) ? _activeShaderProgram->getId() : 0;
+    GLuint newProgramId = (program != nullptr) ? program->getId() : 0;
+    GLuint oldProgramId = (_activeShaderProgram != nullptr) ? _activeShaderProgram->getId() : 0;
     if(oldProgramId == newProgramId && !force)
         return false; //<prevent double bind
 
-    if(_activeShaderProgram != NULL) _activeShaderProgram->unbind(false);
+    if(_activeShaderProgram != nullptr) _activeShaderProgram->unbind(false);
 
     _activeShaderProgram = program;
 

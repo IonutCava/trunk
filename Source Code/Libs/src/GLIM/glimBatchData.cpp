@@ -7,7 +7,7 @@
 #include "glimBatchData.h"
 #include "glimInterface.h"
 
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 
 namespace NS_GLIM
 {
@@ -103,11 +103,11 @@ namespace NS_GLIM
         m_bCreatedVBOs = false;
 
 #ifdef AE_RENDERAPI_D3D11
-        m_pVertexBuffer = NULL;
-        m_pIndexBuffer_Points = NULL;
-        m_pIndexBuffer_Lines = NULL;
-        m_pIndexBuffer_Triangles = NULL;
-        m_pIndexBuffer_Wireframe = NULL;
+        m_pVertexBuffer = nullptr;
+        m_pIndexBuffer_Points = nullptr;
+        m_pIndexBuffer_Lines = nullptr;
+        m_pIndexBuffer_Triangles = nullptr;
+        m_pIndexBuffer_Wireframe = nullptr;
 #endif
 
         Reset ();
@@ -163,31 +163,31 @@ namespace NS_GLIM
         {
             GLIM_Interface::s_ReleaseResourceCallback (m_pVertexBuffer);
             //m_pVertexBuffer->Release ();
-            m_pVertexBuffer = NULL;
+            m_pVertexBuffer = nullptr;
         }
         if (m_pIndexBuffer_Points)
         {
             GLIM_Interface::s_ReleaseResourceCallback (m_pIndexBuffer_Points);
             //m_pIndexBuffer_Points->Release ();
-            m_pIndexBuffer_Points = NULL;
+            m_pIndexBuffer_Points = nullptr;
         }
         if (m_pIndexBuffer_Lines)
         {
             GLIM_Interface::s_ReleaseResourceCallback (m_pIndexBuffer_Lines);
             //m_pIndexBuffer_Lines->Release ();
-            m_pIndexBuffer_Lines = NULL;
+            m_pIndexBuffer_Lines = nullptr;
         }
         if (m_pIndexBuffer_Triangles)
         {
             GLIM_Interface::s_ReleaseResourceCallback (m_pIndexBuffer_Triangles);
             //m_pIndexBuffer_Triangles->Release ();
-            m_pIndexBuffer_Triangles = NULL;
+            m_pIndexBuffer_Triangles = nullptr;
         }
         if (m_pIndexBuffer_Wireframe)
         {
             GLIM_Interface::s_ReleaseResourceCallback (m_pIndexBuffer_Wireframe);
             //m_pIndexBuffer_Wireframe->Release ();
-            m_pIndexBuffer_Wireframe = NULL;
+            m_pIndexBuffer_Wireframe = nullptr;
         }
 
         m_Signature.clear ();
@@ -472,7 +472,7 @@ namespace NS_GLIM
         }
             
         glBindBuffer (GL_ARRAY_BUFFER, m_uiVertexBufferID);
-        glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, NULL, GL_STATIC_DRAW);
+        glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, nullptr, GL_STATIC_DRAW);
 
         // first upload the position data
         unsigned int uiOffset = uiVertices * sizeof (float) * 3;

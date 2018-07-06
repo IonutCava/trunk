@@ -1,7 +1,7 @@
 #ifndef _RESOURCE_H_
 #define _RESOURCE_H_
 
-#define GETTIME() start_time - time_t(NULL)
+#define GETTIME() start_time - time_t(nullptr)
 
 #if defined(_MSC_VER)
 #	pragma warning( push )

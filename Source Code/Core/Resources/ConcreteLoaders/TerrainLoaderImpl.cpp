@@ -23,7 +23,7 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
     vectorImpl<TerrainDescriptor*>& terrains = GET_ACTIVE_SCENE()->getTerrainInfoArray();
     PRINT_FN(Locale::get("TERRAIN_LOAD_START"),name.c_str());
 
-    TerrainDescriptor* terrain = NULL;
+    TerrainDescriptor* terrain = nullptr;
     for(U8 i = 0; i < terrains.size(); i++)
         if(name.compare(terrains[i]->getVariable("terrainName")) == 0){
             terrain = terrains[i];

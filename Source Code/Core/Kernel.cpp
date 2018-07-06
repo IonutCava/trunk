@@ -31,7 +31,7 @@ bool Kernel::_applicationReady = false;
 bool Kernel::_renderingPaused = false;
 
 DELEGATE_CBK Kernel::_mainLoopCallback;
-ProfileTimer* s_appLoopTimer = NULL;
+ProfileTimer* s_appLoopTimer = nullptr;
 
 #if USE_FIXED_TIMESTEP
 static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
@@ -57,7 +57,7 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     //Unloading the lights is a scene level responsibility
     LightManager::createInstance();
 
-    assert(_cameraMgr != NULL);
+    assert(_cameraMgr != nullptr);
     //If camera has been changed, set a callback to inform the current scene
     _cameraMgr->addCameraChangeListener(DELEGATE_BIND(&SceneManager::updateCameras, //update camera
                                                       DELEGATE_REF(_sceneMgr)));
@@ -206,7 +206,7 @@ void Kernel::displayScene(){
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
     
-    assert(_GFX.getScreenBuffer(0) != NULL);
+    assert(_GFX.getScreenBuffer(0) != nullptr);
 
     _GFX.isDepthPrePass(true);
 

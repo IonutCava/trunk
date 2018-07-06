@@ -34,7 +34,7 @@ public:
                                               _playAnimation(true),
                                               _currentAnimationID(0),
                                               _currentFrameIndex(0),
-                                              _animator(NULL)
+                                              _animator(nullptr)
     {
     }
 

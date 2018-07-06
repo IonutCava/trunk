@@ -31,10 +31,10 @@ ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
                                     _enabled(false),
                                     _uploaded(false),
                                     _created(false),
-                                    _impostorSGN(NULL),
-                                    _particleTexture(NULL),
-                                    _particleShader(NULL),
-                                    _particleDepthShader(NULL)
+                                    _impostorSGN(nullptr),
+                                    _particleTexture(nullptr),
+                                    _particleShader(nullptr),
+                                    _particleDepthShader(nullptr)
 {
 
 }
@@ -73,7 +73,7 @@ bool ParticleEmitter::initData(){
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
     _impostor = New Impostor(_name);
     _renderState.addToDrawExclusionMask(Z_PRE_PASS_STAGE);
-    return (_particleShader != NULL);
+    return (_particleShader != nullptr);
 }
 
 bool ParticleEmitter::unload(){
@@ -186,8 +186,8 @@ void ParticleEmitter::render(SceneGraphNode* const sgn){
 ///The descriptor defines the particle properties
 void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor){
     _descriptor = descriptor;
-    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 4 * sizeof(F32), NULL, true, true);
-    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 4 * sizeof(U8), NULL, true, true);
+    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 4 * sizeof(F32), nullptr, true, true);
+    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 4 * sizeof(U8), nullptr, true, true);
     _particleGPUBuffer->SetAttribute(Divide::VERTEX_NORMAL_LOCATION, 1, 1, 4, false, 0, 0, FLOAT_32);
     _particleGPUBuffer->SetAttribute(Divide::VERTEX_COLOR_LOCATION, 2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
 

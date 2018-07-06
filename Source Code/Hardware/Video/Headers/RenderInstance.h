@@ -28,13 +28,13 @@
 
 class Object3D;
 class Transform;
-#define NULL 0
+
 ///Wraps geometry with transform and additional rendering params. Pass to the rendering API for presenting to screen
 class RenderInstance : private boost::noncopyable{
 public:
     RenderInstance(Object3D* const geometry) : _geometry(geometry),
-                                               _transform(NULL),
-                                               _prevTransform(NULL),
+                                               _transform(nullptr),
+                                               _prevTransform(nullptr),
                                                _preDraw(false),
                                                _draw2D(false)
     {
@@ -42,7 +42,7 @@ public:
 
     ~RenderInstance()
     {
-        _geometry = NULL;
+        _geometry = nullptr;
     }
 
     ///Model transform manipulation

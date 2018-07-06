@@ -9,7 +9,7 @@ Trigger* ImplResourceLoader<Trigger>::operator()(){
         SAFE_DELETE(ptr);
     }else{
         ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-        ptr->setMaterial(NULL);
+        ptr->setMaterial(nullptr);
     }
 
     return ptr;

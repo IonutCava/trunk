@@ -7,11 +7,11 @@
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 SceneManager::SceneManager() : FrameListener(),
-                               _GUI(NULL),
-                               _activeScene(NULL),
-                               _renderPassCuller(NULL),
-                               _renderPassManager(NULL),
-                               _defaultMaterial(NULL),
+                               _GUI(nullptr),
+                               _activeScene(nullptr),
+                               _renderPassCuller(nullptr),
+                               _renderPassManager(nullptr),
+                               _defaultMaterial(nullptr),
                                _init(false),
                                _previewDepthBuffer(false),
                                _frameCount(0)
@@ -46,7 +46,7 @@ bool SceneManager::init(GUI* const gui){
 }
 
 bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolution, CameraManager* const cameraMgr){
-    assert(_init == true && _GUI != NULL);
+    assert(_init == true && _GUI != nullptr);
     PRINT_FN(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
     //Initialize the model importer:
     if(!DVDConverter::getInstance().init()){
@@ -61,12 +61,12 @@ bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolutio
 }
 
 Scene* SceneManager::createScene(const std::string& name){
-    Scene* scene = NULL;
+    Scene* scene = nullptr;
 
     if(!name.empty())
         scene = _sceneFactory[name]();
 
-    if(scene != NULL)
+    if(scene != nullptr)
         _sceneMap.insert(std::make_pair(name, scene));
 
     return scene;
@@ -105,7 +105,7 @@ void SceneManager::renderVisibleNodes() {
 }
 
 void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
-    assert(_activeScene != NULL);
+    assert(_activeScene != nullptr);
 
     static DELEGATE_CBK renderFunction;
     if(renderFunction.empty()){

@@ -43,7 +43,7 @@ public:
                             _computeTriangles(true),
                             _largeIndices(false),
                             _format(UNSIGNED_SHORT),
-                            _currentShader(NULL),
+                            _currentShader(nullptr),
                             _firstElement(0),
                             _instanceCount(1),
                             _indexDelimiter(0)
@@ -58,7 +58,7 @@ public:
     {
         _VBOid = _DepthVBOid = _IBOid = 0;
         _LODcount = 1;
-        _currentShader = NULL;
+        _currentShader = nullptr;
         Reset();
     }
 

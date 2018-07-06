@@ -56,9 +56,9 @@ public:
       _shadowMapped(true),
       _threadedLoadComplete(false),
       _stopLoadingRequest(false),
-      _terrain(NULL),
-      _terrainSGN(NULL),
-      _grassShader(NULL),
+      _terrain(nullptr),
+      _terrainSGN(nullptr),
+      _grassShader(nullptr),
       _stateRefreshIntervalBuffer(0ULL),
       _stateRefreshInterval(getSecToUs(1)) ///<Every second?
       {

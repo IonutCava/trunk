@@ -8,12 +8,12 @@
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 
-ProfileTimer* s_shadowPassTimer = NULL;
+ProfileTimer* s_shadowPassTimer = nullptr;
 
 LightManager::LightManager() : FrameListener(),
                                _shadowMapsEnabled(true),
                                _previewShadowMaps(false),
-                               _dominantLight(NULL),
+                               _dominantLight(nullptr),
                                _worldHalfExtent(0.0f)
 {
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
@@ -157,7 +157,7 @@ void LightManager::previewShadowMaps(Light* light) {
     if(_dominantLight){
         localLight = _dominantLight;
     }else{
-        if(localLight == NULL)
+        if(localLight == nullptr)
             localLight = _lights[0];
     }
 

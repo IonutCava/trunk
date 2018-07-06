@@ -38,7 +38,7 @@ U16 RenderQueue::getRenderQueueStackSize() {
 }
 
 RenderBin* RenderQueue::getBin(RenderBin::RenderBinType rbType){
-    RenderBin* temp = NULL;
+    RenderBin* temp = nullptr;
     RenderBinMap::iterator binMapiter = _renderBins.find(rbType);
     if(binMapiter != _renderBins.end()){
         temp = binMapiter->second;
@@ -47,7 +47,7 @@ RenderBin* RenderQueue::getBin(RenderBin::RenderBinType rbType){
 }
 
 SceneGraphNode* RenderQueue::getItem(U16 renderBin, U16 index){
-    SceneGraphNode* temp = NULL;
+    SceneGraphNode* temp = nullptr;
     if(renderBin < _renderBins.size()){
         RenderBin* tempBin = _renderBins[_renderBinId[renderBin]];
         if(index < tempBin->getBinSize()){
@@ -58,7 +58,7 @@ SceneGraphNode* RenderQueue::getItem(U16 renderBin, U16 index){
 }
 
 RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
-    RenderBin* temp = NULL;
+    RenderBin* temp = nullptr;
     RenderBinMap::iterator binMapiter = _renderBins.find(rbType);
     if(binMapiter != _renderBins.end()){
         temp = binMapiter->second;
@@ -137,11 +137,11 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
             return getOrCreateBin(RenderBin::RBT_MESH);
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
-    assert(sgn != NULL);
+    assert(sgn != nullptr);
     RenderBin* rb = getBinForNode(sgn->getSceneNode());
     if(rb) rb->addNodeToBin(sgn);
     _isSorted = false;

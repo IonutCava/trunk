@@ -37,7 +37,7 @@
 
 namespace Mat4{
     
-    inline F32* Multiply(const F32 *a, const F32 *b, F32 *r = NULL){
+    inline F32* Multiply(const F32 *a, const F32 *b, F32 *r = nullptr){
         static F32 temp[16];
         r = temp;
         U32 row, column, row_offset;

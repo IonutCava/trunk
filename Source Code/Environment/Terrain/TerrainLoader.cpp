@@ -21,7 +21,7 @@ bool Terrain::unload(){
 
     assert(!_terrainTextures.empty());
     for_each(TerrainTextureMap::value_type& it, _terrainTextures){
-        if(it.second != NULL){///Remember kids, alpha channel is optional ;) -Ionut
+        if(it.second != nullptr){///Remember kids, alpha channel is optional ;) -Ionut
             RemoveResource(it.second);
         }
     }
@@ -32,7 +32,7 @@ bool Terrain::unload(){
 
 /// Visual resources must be loaded in the rendering thread to gain acces to the current graphic context
 void Terrain::loadVisualResources(){
-    _alphaTexturePresent = (_terrainTextures[TERRAIN_TEXTURE_ALPHA] != NULL);
+    _alphaTexturePresent = (_terrainTextures[TERRAIN_TEXTURE_ALPHA] != nullptr);
 
     //Generate a render state
     RenderStateBlockDescriptor terrainDesc;
@@ -248,7 +248,7 @@ void Terrain::initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNo
 }
 
 void Terrain::addTexture(TerrainTextureUsage channel, Texture2D* const texture) {
-    assert(texture != NULL);
+    assert(texture != nullptr);
     std::pair<TerrainTextureMap::iterator, bool > result;
     //Try and add it to the map
     result = _terrainTextures.insert(std::make_pair(channel,texture));

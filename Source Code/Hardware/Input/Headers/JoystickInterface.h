@@ -53,8 +53,8 @@ public:
     {
         _bFFFound = false;
         for( U8 nJoyInd = 0; nJoyInd < _pInputInterface->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd )  {
-            OIS::JoyStick* pJoy = NULL;
-            OIS::ForceFeedback* pFFDev = NULL;
+            OIS::JoyStick* pJoy = nullptr;
+            OIS::ForceFeedback* pFFDev = nullptr;
                 
             try{
                 pJoy = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject( OIS::OISJoyStick, true ));

@@ -107,7 +107,7 @@ void SceneAnimator::Save(std::ofstream& file){
 
 void SceneAnimator::Load(std::ifstream& file){
 	Release();// make sure to clear this before writing new data
-	_skeleton = LoadSkeleton(file, NULL);
+	_skeleton = LoadSkeleton(file, nullptr);
 	uint32_t nsize = 0;
 	file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of animations
 	_animations.resize(nsize);

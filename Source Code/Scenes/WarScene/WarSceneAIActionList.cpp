@@ -11,8 +11,8 @@ static const D32 ATTACK_RADIUS = 4 * 4;
 
 WarSceneAIActionList::WarSceneAIActionList() : ActionList(),
                                               _tickCount(0),
-                                              _navMesh(NULL),
-                                              _currentEnemyTarget(NULL),
+                                              _navMesh(nullptr),
+                                              _currentEnemyTarget(nullptr),
                                               _deltaTime(0ULL),
                                               _indexInMap(-1)
 {

@@ -27,14 +27,14 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
    _prevShaderId = 0;
    _prevTextureId = 0;
    _interpolationFactor = 1.0;
-   _currentStateBlock = NULL;
-   _depthBuffer = NULL;
-   _screenBuffer[0] = NULL;
-   _screenBuffer[1] = NULL;
-   _newStateBlock = NULL;
-   _previousStateBlock = NULL;
-   _previewDepthMapShader = NULL;
-   _renderQuad = NULL;
+   _currentStateBlock = nullptr;
+   _depthBuffer = nullptr;
+   _screenBuffer[0] = nullptr;
+   _screenBuffer[1] = nullptr;
+   _newStateBlock = nullptr;
+   _previousStateBlock = nullptr;
+   _previewDepthMapShader = nullptr;
+   _renderQuad = nullptr;
    _stateBlockDirty = false;
    _drawDebugAxis = false;
    _enablePostProcessing = false;
@@ -43,7 +43,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
    _clippingPlanesDirty = true;
    _isDepthPrePass = false;
    _previewDepthBuffer = false;
-   _renderer = NULL;
+   _renderer = nullptr;
    _renderStage = INVALID_STAGE;
    _worldMatrices.push(mat4<F32>(/*identity*/));
    _isUniformedScaled = true;
@@ -162,7 +162,7 @@ void GFXDevice::idle() {
 
 void GFXDevice::renderInstance(RenderInstance* const instance){
     //All geometry is stored in VBO format
-    assert(instance->object3D() != NULL);
+    assert(instance->object3D() != nullptr);
     Object3D* model = instance->object3D();
  
     if(instance->preDraw())
@@ -199,7 +199,7 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     }
 
     VertexBufferObject* VBO = model->getGeometryVBO();
-    assert(VBO != NULL);
+    assert(VBO != nullptr);
     //Send our transformation matrixes (projection, world, view, inv model view, etc)
     VBO->currentShader()->uploadNodeMatrices();
     //Render our current vertex array object
@@ -209,7 +209,7 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
 }
 
 void GFXDevice::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform){
-    assert(vbo != NULL);
+    assert(vbo != nullptr);
 
     if(_stateBlockDirty)
         updateStates();
@@ -259,7 +259,7 @@ bool GFXDevice::isCurrentRenderStage(U8 renderStageMask){
 }
 
 void GFXDevice::setRenderer(Renderer* const renderer) {
-    assert(renderer != NULL);
+    assert(renderer != nullptr);
     SAFE_UPDATE(_renderer,renderer);
 }
 
@@ -339,7 +339,7 @@ RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& 
 }
 
 RenderStateBlock* GFXDevice::setStateBlock(RenderStateBlock* block, bool forceUpdate) {
-   assert(block != NULL);
+   assert(block != nullptr);
 
    if (block != _currentStateBlock) {
       _deviceStateDirty = true;
@@ -384,7 +384,7 @@ bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){
 }
 
 void GFXDevice::changeResolution(U16 w, U16 h) {
-    if(_screenBuffer[0] != NULL) {
+    if(_screenBuffer[0] != nullptr) {
         if(w == _screenBuffer[0]->getWidth() && h == _screenBuffer[0]->getHeight()) return;
 
         _depthBuffer->Create(w, h);
@@ -477,7 +477,7 @@ void GFXDevice::previewDepthBufferInternal(){
     if(!_previewDepthMapShader){
         ResourceDescriptor shadowPreviewShader("fboPreview.LinearDepth");
         _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
-        assert(_previewDepthMapShader != NULL);
+        assert(_previewDepthMapShader != nullptr);
         ResourceDescriptor mrt("DepthBufferPreviewQuad");
         mrt.setFlag(true); //No default Material;
         _renderQuad = CreateResource<Quad3D>(mrt);

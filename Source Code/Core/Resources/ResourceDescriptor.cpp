@@ -2,7 +2,7 @@
 
 ResourceDescriptor::ResourceDescriptor(const std::string& name,
                                        const std::string& resourceLocation,
-                                       bool flag, U32 id, U8 enumValue) : _propertyDescriptor(NULL),
+                                       bool flag, U32 id, U8 enumValue) : _propertyDescriptor(nullptr),
                                                                           _name(name),
                                                                           _resourceLocation(resourceLocation),
                                                                           _flag(flag),
@@ -18,7 +18,7 @@ ResourceDescriptor::~ResourceDescriptor()
     SAFE_DELETE(_propertyDescriptor);
 }
 
-ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propertyDescriptor(NULL)
+ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propertyDescriptor(nullptr)
 {
     _name = old._name;
     _resourceLocation = old._resourceLocation;
@@ -28,7 +28,7 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propert
     _id = old._id;
     _mask = old._mask;
     _enumValue = old._enumValue;
-    if(old._propertyDescriptor != NULL)	_propertyDescriptor = old._propertyDescriptor->clone();
+    if(old._propertyDescriptor != nullptr)	_propertyDescriptor = old._propertyDescriptor->clone();
 }
 
  ResourceDescriptor& ResourceDescriptor::operator= (ResourceDescriptor const& old) {
@@ -41,7 +41,7 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propert
         _id = old._id;
         _mask = old._mask;
         _enumValue = old._enumValue;
-        if(old._propertyDescriptor != NULL)	 SAFE_UPDATE(_propertyDescriptor, old._propertyDescriptor->clone());
+        if(old._propertyDescriptor != nullptr)	 SAFE_UPDATE(_propertyDescriptor, old._propertyDescriptor->clone());
       }
 
       return *this;

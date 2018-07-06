@@ -11,7 +11,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
-GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
+GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr)
 {
     _commandMap.insert(std::make_pair("say",DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand,this,_1)));
     _commandMap.insert(std::make_pair("quit",DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand,this,_1)));
@@ -38,7 +38,7 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 
 GUIConsoleCommandParser::~GUIConsoleCommandParser()
 {
-    if(_sound != NULL){
+    if(_sound != nullptr){
         RemoveResource(_sound);
     }
 }
@@ -118,7 +118,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
                ERROR_FN(Locale::get("CONSOLE_PLAY_SOUND_INVALID_FORMAT"));
                return;
         }
-        if(_sound != NULL) RemoveResource(_sound);
+        if(_sound != nullptr) RemoveResource(_sound);
 
         //The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");
@@ -139,7 +139,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
 }
 
 void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
-    SceneGraphNode* sgn = NULL;
+    SceneGraphNode* sgn = nullptr;
     if(!args.empty()){
         sgn = GET_ACTIVE_SCENEGRAPH()->findNode("args");
         if(!sgn){

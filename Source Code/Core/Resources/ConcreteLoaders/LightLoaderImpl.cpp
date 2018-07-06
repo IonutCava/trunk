@@ -5,7 +5,7 @@
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
 
 Light* ImplResourceLoader<Light>::operator()(){
-    Light* ptr = NULL;
+    Light* ptr = nullptr;
     //descriptor ID is not the same as light ID. This is the light's slot!!
     switch(_descriptor.getEnumValue()){
         case -1:
@@ -20,13 +20,13 @@ Light* ImplResourceLoader<Light>::operator()(){
             ptr = New SpotLight(_descriptor.getId());
             break;
     };
-    assert(ptr != NULL);
+    assert(ptr != nullptr);
 
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{
         ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-        ptr->setMaterial(NULL);
+        ptr->setMaterial(nullptr);
     }
 
     return ptr;

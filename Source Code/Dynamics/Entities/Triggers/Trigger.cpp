@@ -5,8 +5,8 @@
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 
-Trigger::Trigger() : SceneNode(TYPE_TRIGGER), _drawImpostor(false), _triggerImpostor(NULL),
-                                              _enabled(true),		_impostorSGN(NULL)
+Trigger::Trigger() : SceneNode(TYPE_TRIGGER), _drawImpostor(false), _triggerImpostor(nullptr),
+                                              _enabled(true),		_impostorSGN(nullptr)
 {
 }
 

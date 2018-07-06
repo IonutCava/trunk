@@ -34,7 +34,7 @@ bool glShader::load(const std::string& source){
 
     if((_type == FRAGMENT_SHADER || _type == VERTEX_SHADER) && _optimise){
         glslopt_ctx* ctx = GL_API::getGLSLOptContext();
-        assert(ctx != NULL);
+        assert(ctx != nullptr);
         glslopt_shader_type shaderType = (_type == FRAGMENT_SHADER ? kGlslOptShaderFragment : kGlslOptShaderVertex);
         glslopt_shader* shader = glslopt_optimize (ctx, shaderType, parsedSource.c_str(), 0);
         if (glslopt_get_status (shader)) {
@@ -48,7 +48,7 @@ bool glShader::load(const std::string& source){
 
 #endif
     const char* src = parsedSource.c_str();
-    GLCheck(glShaderSource(_shader, 1, &src, NULL));
+    GLCheck(glShaderSource(_shader, 1, &src, nullptr));
     ShaderManager::getInstance().shaderFileWrite((char*)(std::string("shaderCache/Text/"+getName()).c_str()), src);
 
     return true;
@@ -74,7 +74,7 @@ void glShader::validate() {
     GLCheck(glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length));
     if(length <= 1) return;
     vectorImpl<char> shaderLog(length);
-    GLCheck(glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]));
+    GLCheck(glGetShaderInfoLog(_shader, length, nullptr, &shaderLog[0]));
     shaderLog.push_back('\n');
     if(status == GL_FALSE){
         ERROR_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),&shaderLog[0]);

@@ -6,7 +6,7 @@
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
 Texture* ImplResourceLoader<Texture>::operator()(){
-    Texture* ptr = NULL;
+    Texture* ptr = nullptr;
 
     if(_descriptor.getEnumValue() == TEXTURE_CUBE_MAP){
         ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());

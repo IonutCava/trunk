@@ -8,7 +8,7 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 
-GUIEditor::GUIEditor() : _init(false), _editorWindow(NULL)
+GUIEditor::GUIEditor() : _init(false), _editorWindow(nullptr)
 {
     GUIEditorAIInterface::createInstance();
     GUIEditorLightInterface::createInstance();

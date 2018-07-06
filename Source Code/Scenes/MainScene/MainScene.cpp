@@ -163,7 +163,7 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GU
     _water->setParams(200.0f,vec2<F32>(85.0f, 92.5f),vec2<F32>(0.4f,0.35f),0.34f);
     _waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
     _waterGraphNode->useDefaultTransform(false);
-    _waterGraphNode->setTransform(NULL);
+    _waterGraphNode->setTransform(nullptr);
     _waterGraphNode->setUsageContext(SceneGraphNode::NODE_STATIC);
     _waterGraphNode->setNavigationContext(SceneGraphNode::NODE_IGNORE);
     ///General rendering callback
@@ -184,7 +184,7 @@ void MainScene::test(boost::any a, CallbackParam b){
     static bool switchAB = false;
     vec3<F32> pos;
     SceneGraphNode* boxNode = _sceneGraph->findNode("box");
-    Object3D* box = NULL;
+    Object3D* box = nullptr;
     if(boxNode) box = boxNode->getNode<Object3D>();
     if(box) pos = boxNode->getTransform()->getPosition();
 

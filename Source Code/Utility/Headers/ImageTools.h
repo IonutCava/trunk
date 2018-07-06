@@ -34,7 +34,7 @@ namespace ImageTools {
                            _bpp(0),
                            _ilTexture(0),
                            _compressed(false),
-                           _data(NULL)
+                           _data(nullptr)
             {
                 _dimensions.set(0,0);
             }

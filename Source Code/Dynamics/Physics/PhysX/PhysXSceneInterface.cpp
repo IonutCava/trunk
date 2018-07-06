@@ -176,7 +176,7 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor, bool threaded) 
 
 PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const std::string& actorName) {
     if(!_gScene)
-        return NULL;
+        return nullptr;
 
     for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it){
         if((*it)->_actorName.compare(actorName) == 0)
@@ -191,8 +191,8 @@ PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const std::string& actorN
 #pragma message("ToDo: Only 1 shape per actor for now. Fix This! -Ionut")
 SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
 
-    SceneNode* sceneNode = NULL;
-    SceneGraphNode* tempNode = NULL;
+    SceneNode* sceneNode = nullptr;
+    SceneGraphNode* tempNode = nullptr;
 
     _gScene->addActor(*(actor._actor));
     U32 nbActors = _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC |

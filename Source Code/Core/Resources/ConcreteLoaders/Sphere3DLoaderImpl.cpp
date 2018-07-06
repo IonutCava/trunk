@@ -9,7 +9,7 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
 
     if(_descriptor.getFlag()){
         ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-        ptr->setMaterial(NULL);
+        ptr->setMaterial(nullptr);
     }else{
         ResourceDescriptor sphere3DMaterial("Sphere3DMaterial");
         ptr->setMaterial(CreateResource<Material>(sphere3DMaterial));

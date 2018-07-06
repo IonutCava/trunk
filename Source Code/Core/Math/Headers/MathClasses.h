@@ -364,7 +364,7 @@ public:
 template<class T>
 class mat4 {
 public:
-    mat4()/* : mat(NULL)*/{
+    mat4()/* : mat(nullptr)*/{
         allocateMem();
         mat[0] = 1.0; mat[4] = 0.0; mat[8]  = 0.0; mat[12] = 0.0;
         mat[1] = 0.0; mat[5] = 1.0; mat[9]  = 0.0; mat[13] = 0.0;
@@ -375,7 +375,7 @@ public:
     mat4(T m0, T m1, T m2, T m3,
          T m4, T m5, T m6, T m7,
          T m8, T m9, T m10,T m11,
-         T m12,T m13,T m14,T m15)/* : mat(NULL)*/{
+         T m12,T m13,T m14,T m15)/* : mat(nullptr)*/{
         allocateMem();
         mat[0] = m0; mat[4] = m4; mat[8]  = m8;  mat[12] = m12;
         mat[1] = m1; mat[5] = m5; mat[9]  = m9;  mat[13] = m13;
@@ -383,7 +383,7 @@ public:
         mat[3] = m3; mat[7] = m7; mat[11] = m11; mat[15] = m15;
     }
 
-    mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4)/* : mat(NULL)*/{
+    mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4)/* : mat(nullptr)*/{
         allocateMem();
         mat[0] = col1.x; mat[4] = col2.x; mat[8]  = col3.x; mat[12] = col4.x;
         mat[1] = col1.y; mat[5] = col2.y; mat[9]  = col3.y; mat[13] = col4.y;
@@ -391,27 +391,27 @@ public:
         mat[3] = col1.w; mat[7] = col2.w; mat[11] = col3.w; mat[15] = col4.w;
     }
 
-    mat4(const vec3<T> &v)/* : mat(NULL)*/{
+    mat4(const vec3<T> &v)/* : mat(nullptr)*/{
         allocateMem();
         setTranslation(v);
     }
 
-    mat4(T x,T y,T z)/* : mat(NULL)*/{
+    mat4(T x,T y,T z)/* : mat(nullptr)*/{
         allocateMem();
         setTranslation(x,y,z);
     }
 
-    mat4(const vec3<T> &axis,T angle, bool inDegrees = true)/* : mat(NULL)*/{
+    mat4(const vec3<T> &axis,T angle, bool inDegrees = true)/* : mat(nullptr)*/{
         allocateMem();
         rotate(axis,angle,inDegrees);
     }
 
-    mat4(T x,T y,T z,T angle, bool inDegrees = true)/* : mat(NULL)*/{
+    mat4(T x,T y,T z,T angle, bool inDegrees = true)/* : mat(nullptr)*/{
         allocateMem();
         rotate(x,y,z,angle,inDegrees);
     }
 
-    mat4(const mat3<T> &m)/* : mat(NULL)*/{
+    mat4(const mat3<T> &m)/* : mat(nullptr)*/{
         allocateMem();
         mat[0] = m[0]; mat[4] = m[3]; mat[8]  = m[6]; mat[12] = 0.0;
         mat[1] = m[1]; mat[5] = m[4]; mat[9]  = m[7]; mat[13] = 0.0;
@@ -419,7 +419,7 @@ public:
         mat[3] = 0.0;  mat[7] = 0.0;  mat[11] = 0.0;  mat[15] = 1.0;
     }
 
-    mat4(const T *m)/* : mat(NULL)*/{
+    mat4(const T *m)/* : mat(nullptr)*/{
         allocateMem();
         mat[0] = m[0]; mat[4] = m[4]; mat[8]  = m[8];  mat[12] = m[12];
         mat[1] = m[1]; mat[5] = m[5]; mat[9]  = m[9];  mat[13] = m[13];
@@ -427,7 +427,7 @@ public:
         mat[3] = m[3]; mat[7] = m[7]; mat[11] = m[11]; mat[15] = m[15];
     }
 
-    mat4(const mat4 &m)/* : mat(NULL)*/{
+    mat4(const mat4 &m)/* : mat(nullptr)*/{
         allocateMem();
         mat[0] = m[0]; mat[4] = m[4]; mat[8]  = m[8];  mat[12] = m[12];
         mat[1] = m[1]; mat[5] = m[5]; mat[9]  = m[9];  mat[13] = m[13];
@@ -827,7 +827,7 @@ public:
         DEL_ALIGN(mat);
     }
 */
-    inline void allocateMem() { /*if(mat != NULL) DEL_ALIGN(mat); mat = NEW_ALIGN(T,16);*/}
+    inline void allocateMem() { /*if(mat != nullptr) DEL_ALIGN(mat); mat = NEW_ALIGN(T,16);*/}
 };
 
 template<class T>

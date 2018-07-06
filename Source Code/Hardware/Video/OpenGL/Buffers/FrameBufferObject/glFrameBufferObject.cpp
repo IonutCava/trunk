@@ -111,7 +111,7 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
             case GL_TEXTURE_1D:{
                 GLCheck(glTexImage1D(GL_TEXTURE_1D, 0, internalFormat,
                                         _width,        0, format,
-                                        dataType, NULL));
+                                        dataType, nullptr));
             }break;
             case GL_TEXTURE_2D_MULTISAMPLE:{
                 GLubyte samples = ParamHandler::getInstance().getParam<GLubyte>("rendering.FSAAsamples",2);
@@ -121,27 +121,27 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
             case GL_TEXTURE_2D:{
                 GLCheck(glTexImage2D(_textureType,    0, internalFormat,
                                         _width, _height, 0, format,
-                                        dataType, NULL));
+                                        dataType, nullptr));
             }break;
             case GL_TEXTURE_CUBE_MAP:{
                 for(GLubyte j=0; j<6; j++){
                         GLCheck(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+j,
                                                 0, internalFormat, _width, _height,
-                                                0, format, dataType, NULL));
+                                                0, format, dataType, nullptr));
                     }
             }break;
             case GL_TEXTURE_2D_ARRAY:
             case GL_TEXTURE_3D:{
                 GLCheck(glTexImage3D(_textureType,   0, internalFormat,
                                         _width, _height, _imageLayers,//Use as depth for GL_TEXTURE_3D
-                                        0, format, dataType, NULL));
+                                        0, format, dataType, nullptr));
             }break;
             case GL_TEXTURE_CUBE_MAP_ARRAY: {
                 assert(false); //not implemented yet
                 for(GLubyte j=0; j<6; j++){
                     GLCheck(glTexImage3D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+j,
                                             0, internalFormat, _width, _height,
-                                            _imageLayers, 0, format, dataType, NULL));
+                                            _imageLayers, 0, format, dataType, nullptr));
                 }
             }break;
         };
@@ -198,7 +198,7 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
     _clearBufferMask = 0;
     assert(!_attachement.empty());
                     
-    if(glGenerateMipmap == NULL){
+    if(glGenerateMipmap == nullptr){
         ERROR_FN(Locale::get("ERROR_NO_MIP_MAPS"));
         assert(glGenerateMipmap);
     }

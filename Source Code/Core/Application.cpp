@@ -3,7 +3,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-Application::Application() : _kernel(NULL),
+Application::Application() : _kernel(nullptr),
                              _mainWindowId(-1),
                              _totalMemoryOcuppied(0),
                              _requestShutdown(false),
@@ -34,7 +34,7 @@ I8 Application::initialize(const std::string& entryPoint, I32 argc, char **argv)
     PRINT_FN(Locale::get("START_APPLICATION"));
     //Create a new kernel
     _kernel = New Kernel(argc,argv,this->getInstance());
-    assert(_kernel != NULL);
+    assert(_kernel != nullptr);
     //and load it via an XML file config
     _mainWindowId = _kernel->initialize(entryPoint);
     return _mainWindowId;

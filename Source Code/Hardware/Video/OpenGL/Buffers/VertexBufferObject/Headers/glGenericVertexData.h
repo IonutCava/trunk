@@ -54,7 +54,7 @@ public:
         assert(!_dataWriteActive);
         _dataWriteActive = true;
         GL_API::setActiveVBO(_bufferObjects[buffer]);
-        GLCheck(glBufferData(GL_ARRAY_BUFFER, dataSize, NULL, dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW));
+        GLCheck(glBufferData(GL_ARRAY_BUFFER, dataSize, nullptr, dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW));
         GLCheck(glBufferSubData(GL_ARRAY_BUFFER, offset, currentSize, data));
         _dataWriteActive = false;
     }

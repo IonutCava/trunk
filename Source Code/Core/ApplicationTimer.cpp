@@ -91,7 +91,7 @@ void ApplicationTimer::init(U8 targetFrameRate) {
 //#elif defined( OS_APPLE ) // Apple OS X
     //??
 #else //Linux
-    gettimeofday(&_startupTicks,NULL);
+    gettimeofday(&_startupTicks,nullptr);
 #endif
 
     _ticksPerMicrosecond = static_cast<D32>(_ticksPerSecond.QuadPart / 1000000.0);
@@ -115,7 +115,7 @@ U64 ApplicationTimer::getElapsedTimeInternal() {
 //#elif defined( OS_APPLE ) // Apple OS X
     //??
 #else
-    gettimeofday(&_currentTicks,NULL);
+    gettimeofday(&_currentTicks,nullptr);
 #endif
 
     return static_cast<U64>((_currentTicks.QuadPart -_startupTicks.QuadPart) / _ticksPerMicrosecond);

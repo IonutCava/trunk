@@ -24,18 +24,18 @@
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v90</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v90</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v90</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -109,7 +109,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>Divide-Hardware_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;IL_d.lib;ILU_d.lib;jpeg_d.lib;libpng_d.lib;libmng_d.lib;libtiff_d.lib;SDL_d.lib;SDL_mixer_d.lib;zlib_d.lib;assimp_d.lib;glu32.lib;opengl32.lib;glfw3_d.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre_d.lib;expat_d.lib;freetype_d.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Hardware_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;DevIL.lib;ILU.lib;jpeg_d.lib;libpng_d.lib;libmng_d.lib;libtiff_d.lib;SDL_d.lib;SDL_mixer_d.lib;zlib_d.lib;assimp_d.lib;glu32.lib;opengl32.lib;glfw3_d.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre_d.lib;expat_d.lib;freetype_d.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
@@ -147,7 +147,7 @@
       <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Divide-Hardware.lib;Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Hardware.lib;Divide-Networking.lib;Divide-ReCast.lib;DevIL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -185,7 +185,7 @@
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Divide-Hardware.lib;Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Hardware.lib;Divide-Networking.lib;Divide-ReCast.lib;DevIL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>

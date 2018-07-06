@@ -10,7 +10,7 @@ Text3D* ImplResourceLoader<Text3D>::operator()(){
     }else{
         if(_descriptor.getFlag()){
             ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-            ptr->setMaterial(NULL);
+            ptr->setMaterial(nullptr);
         }
         ptr->getText() = _descriptor.getPropertyListString();
     }

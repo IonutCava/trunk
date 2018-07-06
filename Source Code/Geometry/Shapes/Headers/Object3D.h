@@ -52,7 +52,7 @@ public:
 
     virtual ~Object3D();
 
-    inline  VertexBufferObject* const getGeometryVBO()  const {assert(_geometry != NULL); return _geometry;}
+    inline  VertexBufferObject* const getGeometryVBO()  const {assert(_geometry != nullptr); return _geometry;}
     inline  ObjectType                getType()         const {return _geometryType;}
     inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
     inline  RenderInstance*   const   renderInstance()  const {return _renderInstance;}

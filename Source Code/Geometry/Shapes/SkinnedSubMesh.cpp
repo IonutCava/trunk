@@ -28,7 +28,7 @@ void SkinnedSubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn,
 }
 
 const mat4<F32>& SkinnedSubMesh::getCurrentBoneTransform(SceneGraphNode* const sgn, const std::string& name){
-    assert(_animator != NULL);
+    assert(_animator != nullptr);
     I32 boneIndex = _animator->GetBoneIndex(name);
     if(boneIndex == -1){
         static mat4<F32> cacheIdentity;
@@ -39,12 +39,12 @@ const mat4<F32>& SkinnedSubMesh::getCurrentBoneTransform(SceneGraphNode* const s
 }
 
 Bone* SkinnedSubMesh::getBoneByName(const std::string& bname) const {
-    return _animator ? _animator->GetBoneByName(bname) : NULL;
+    return _animator ? _animator->GetBoneByName(bname) : nullptr;
 }
 
 /// Create a mesh animator from assimp imported data
 bool SkinnedSubMesh::createAnimatorFromScene(const aiScene* scene,U8 subMeshPointer){
-    assert(scene != NULL);
+    assert(scene != nullptr);
     /// Delete old animator if any
     SAFE_UPDATE(_animator,New SceneAnimator());
     _animator->Init(scene,subMeshPointer);

@@ -18,7 +18,7 @@ void TrackedObject::AddRef() {
     std::list<TrackedObject *>::iterator it;
     for(it = _dependencyList.begin(); it != _dependencyList.end(); ++it) {
         /// We should never have a null object in our dependency map
-        assert(*it != NULL);
+        assert(*it != nullptr);
         /// Increase it's ref count
         (*it)->AddRef();
     }
@@ -34,7 +34,7 @@ bool TrackedObject::SubRef(bool recursive) {
     if(recursive)
         for(it = _dependencyList.begin(); it != _dependencyList.end(); ) {
             /// We should never have a null object in our dependency map
-            assert(*it != NULL);
+            assert(*it != nullptr);
             /// substract ref count for every sub object on the first tier only!
             if((*it)->SubRef(false)){
                /// if it's no longer used, remove it from the dependecy list

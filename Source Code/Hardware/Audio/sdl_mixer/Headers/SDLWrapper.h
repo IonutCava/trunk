@@ -32,11 +32,11 @@ public:
 	I8 initHardware();
 
 	void closeAudioApi(){
-		if(_music != NULL){
+		if(_music != nullptr){
 			Mix_HaltMusic();
 			Mix_FreeMusic(_music);
 		}
-		if(_chunk != NULL)
+		if(_chunk != nullptr)
 			Mix_FreeChunk(_chunk);
 		Mix_Quit();
 	}

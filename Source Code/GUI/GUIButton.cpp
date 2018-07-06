@@ -12,7 +12,7 @@ GUIButton::GUIButton(const std::string& id, const std::string& text,const std::s
                                                 _callbackFunction(callback),
                                                 _highlight(false),
                                                 _pressed(false),
-                                                _btnWindow(NULL)
+                                                _btnWindow(nullptr)
 {
   _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(guiScheme+"/Button",id);
   _btnWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(0,position.x),CEGUI::UDim(1,-1.0f * position.y)));

@@ -31,9 +31,9 @@ class WaterPlane;
 class MainScene : public Scene {
 public:
     MainScene() : Scene(),
-                  _waterGraphNode(NULL),
-                  _water(NULL),
-                  _beep(NULL),
+                  _waterGraphNode(nullptr),
+                  _water(nullptr),
+                  _beep(nullptr),
                   _freeflyCamera(false){}
 
     /*General Scene Requirement*/

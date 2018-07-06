@@ -5,7 +5,7 @@
 
 namespace Navigation {
  
-    DivideDtCrowd::DivideDtCrowd(NavigationMesh *navMesh) : _crowd(NULL),
+    DivideDtCrowd::DivideDtCrowd(NavigationMesh *navMesh) : _crowd(nullptr),
                                                             _recast(navMesh),
                                                             _targetRef(0),
                                                             _activeAgents(0)
@@ -14,7 +14,7 @@ namespace Navigation {
         _targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;
         if(!_crowd){
             ERROR_FN(Locale::get("ERROR_DETOUR_CROWD_INSTANCE"));
-            assert(_crowd != NULL);
+            assert(_crowd != nullptr);
         }
 
         // Set default agent parameters
@@ -153,7 +153,7 @@ namespace Navigation {
     vectorImpl<I32> DivideDtCrowd::getActiveAgentIds() {
         vectorImpl<I32> result = std::vector<I32>();
 
-        const dtCrowdAgent* agent = NULL;
+        const dtCrowdAgent* agent = nullptr;
         for(I32 i = 0; i < getMaxNbAgents(); i++) {
             agent = _crowd->getAgent(i);
             if(agent->active)
@@ -255,6 +255,6 @@ namespace Navigation {
     }
 
     bool DivideDtCrowd::isValidNavMesh() const {
-        return _recast->getNavQuery().getAttachedNavMesh() != NULL;
+        return _recast->getNavQuery().getAttachedNavMesh() != nullptr;
     }
 };

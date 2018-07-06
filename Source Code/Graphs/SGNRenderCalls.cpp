@@ -23,7 +23,7 @@ void SceneGraphNode::updateTransforms(){
     //Better version: move to new thread with DoubleBuffering?
     //Get our transform and our parent's as well
     if(getTransform()){
-        if(_transform->isDirty() || _transform->setParentTransform((_parent != NULL ? _parent->getTransform() : NULL)))
+        if(_transform->isDirty() || _transform->setParentTransform((_parent != nullptr ? _parent->getTransform() : nullptr)))
             updateBoundingBoxTransform(_transform->getGlobalMatrix());
     }
 

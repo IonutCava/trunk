@@ -31,7 +31,7 @@ Vegetation::~Vegetation(){
 
 void Vegetation::initialize(const std::string& grassShader, Terrain* const terrain, SceneGraphNode* const terrainSGN) {
     assert(terrain);
-    assert(_map.data() != NULL);
+    assert(_map.data() != nullptr);
 
     U32 size = (U32) _grassDensity * _billboardCount * 12;
     _grassShader  = CreateResource<ShaderProgram>(ResourceDescriptor(grassShader));
@@ -88,7 +88,7 @@ void Vegetation::render(SceneGraphNode* const sgn){
     for(U32 index = 0; index < _billboardCount; index++){
         _grassBillboards[index]->Bind(0);
 
-        _terrain->getQuadtree().DrawGrass(index, NULL);
+        _terrain->getQuadtree().DrawGrass(index, nullptr);
 
         _grassBillboards[index]->Unbind(0);
     }
@@ -152,7 +152,7 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
             ChunkGrassData& chunkGrassData = chunk->getGrassData();
 
             if(chunkGrassData.empty()){
-                assert(chunkGrassData._grassVBO == NULL);
+                assert(chunkGrassData._grassVBO == nullptr);
 
                 U32 chunkSize = size / _terrain->getQuadtree().getChunkCount();
                 chunkGrassData._grassIndices.resize(_billboardCount);

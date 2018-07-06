@@ -4,7 +4,7 @@
 
 Material* ImplResourceLoader<Material>::operator()(){
     Material* ptr = New Material();
-    assert(ptr != NULL);
+    assert(ptr != nullptr);
 
     if(!load(ptr,_descriptor.getName())){
        SAFE_DELETE(ptr);

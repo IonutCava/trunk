@@ -33,14 +33,14 @@ class NPC;
 class WarScene : public Scene {
 public:
     WarScene() : Scene(),
-        _groundPlaceholder(NULL),
-        _faction1(NULL),
-        _faction2(NULL),
-        _bobNode(NULL),
-        _bobNodeBody(NULL),
-        _lampLightNode(NULL),
-        _lampTransform(NULL),
-        _lampTransformNode(NULL),
+        _groundPlaceholder(nullptr),
+        _faction1(nullptr),
+        _faction2(nullptr),
+        _bobNode(nullptr),
+        _bobNodeBody(nullptr),
+        _lampLightNode(nullptr),
+        _lampTransform(nullptr),
+        _lampTransformNode(nullptr),
         _sceneReady(false)
     {
         _scorTeam1 = 0;

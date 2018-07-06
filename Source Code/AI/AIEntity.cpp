@@ -14,12 +14,12 @@ static const D32 DESTINATION_RADIUS = 1.5 * 1.5;
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  : GUIDWrapper(),
                                               _name(name),
-                                              _actionProcessor(NULL),
-                                              _unitRef(NULL),
-                                              _coordination(NULL),
-                                              _comInterface(NULL),
-                                              _detourCrowd(NULL),
-                                              _agent(NULL),
+                                              _actionProcessor(nullptr),
+                                              _unitRef(nullptr),
+                                              _coordination(nullptr),
+                                              _comInterface(nullptr),
+                                              _detourCrowd(nullptr),
+                                              _agent(nullptr),
                                               _agentID(-1),
                                               _distanceToTarget(-1.f),
                                               _previousDistanceToTarget(-1.f),
@@ -35,7 +35,7 @@ AIEntity::~AIEntity()
         _detourCrowd->removeAgent(getAgentID());
 
     _agentID = -1;
-    _agent = NULL;
+    _agent = nullptr;
 
     SAFE_DELETE(_comInterface);
     SAFE_DELETE(_actionProcessor);
@@ -66,7 +66,7 @@ void AIEntity::unload() {
 
     _detourCrowd->removeAgent(getAgentID());
     _agentID = -1;
-    _agent = NULL;
+    _agent = nullptr;
 }
 
 void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content){
@@ -95,7 +95,7 @@ Sensor* AIEntity::getSensor(SensorType type){
     if(_sensorList.find(type) != _sensorList.end()){
         return _sensorList[type];
     }
-    return NULL;
+    return nullptr;
 }
 
 bool AIEntity::addSensor(SensorType type, Sensor* sensor){
@@ -200,7 +200,7 @@ void AIEntity::resetCrowd(Navigation::DivideDtCrowd* const crowd){
 
     if(_detourCrowd){
         _destination = _detourCrowd->getLastDestination();
-        load(_unitRef != NULL ? _unitRef->getPosition() : vec3<F32>());
+        load(_unitRef != nullptr ? _unitRef->getPosition() : vec3<F32>());
     }
 }
 
@@ -300,14 +300,14 @@ void AIEntity::setDestination(const vec3<F32>& destination) {
 }
 
 void AIEntity::moveForward(){
-    vec3<F32> lookDirection = _unitRef != NULL ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
+    vec3<F32> lookDirection = _unitRef != nullptr ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
     lookDirection.normalize();
 
     setVelocity(lookDirection * getMaxSpeed());
 }
 
 void AIEntity::moveBackwards(){
-    vec3<F32> lookDirection = _unitRef != NULL ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
+    vec3<F32> lookDirection = _unitRef != nullptr ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
     lookDirection.normalize();
 
     setVelocity(lookDirection * getMaxSpeed() * -1.0f);

@@ -44,7 +44,7 @@
 #	endif //_DEBUG
 #endif //GLEW_MX
 
-glslopt_ctx* GL_API::_GLSLOptContex = NULL;
+glslopt_ctx* GL_API::_GLSLOptContex = nullptr;
 
 #ifdef GLEW_MX
 ///GLEW_MX requirement
@@ -68,7 +68,7 @@ namespace Divide{
         void initGlew(){
 #ifdef GLEW_MX
             GLEWContext * currentGLEWContextsPtr =  _GLEWContextPtr.get();
-            if (currentGLEWContextsPtr == NULL)	{
+            if (currentGLEWContextsPtr == nullptr)	{
                 currentGLEWContextsPtr = New GLEWContext;
                 _GLEWContextPtr.reset(currentGLEWContextsPtr);
                 ZeroMemory(currentGLEWContextsPtr, sizeof(GLEWContext));
@@ -90,7 +90,7 @@ namespace Divide{
     #if defined( OS_WINDOWS )
 
             WGLEWContext * currentWGLEWContextsPtr =  _WGLEWContextPtr.get();
-            if (currentWGLEWContextsPtr == NULL)	{
+            if (currentWGLEWContextsPtr == nullptr)	{
                 currentWGLEWContextsPtr = New WGLEWContext;
                 _WGLEWContextPtr.reset(currentWGLEWContextsPtr);
                 ZeroMemory(currentWGLEWContextsPtr, sizeof(WGLEWContext));
@@ -106,7 +106,7 @@ namespace Divide{
 #	else //_WIN32
 
             GLXEWContext * currentGLXEWContextsPtr =  _GLXEWContextPtr.get();
-            if (currentGLXEWContextsPtr == NULL)	{
+            if (currentGLXEWContextsPtr == nullptr)	{
                 currentGLXEWContextsPtr = New GLXEWContext;
                 _GLXEWContextPtr.reset(currentGLXEWContextsPtr);
                 ZeroMemory(currentGLXEWContextsPtr, sizeof(GLXEWContext));
@@ -168,8 +168,8 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     Divide::GL::_mainWindow = glfwCreateWindow( resolution.width,
                                                 resolution.height,
                                                 par.getParam<std::string>("appTitle").c_str(),
-                                                window ? NULL : glfwGetPrimaryMonitor(),
-                                                NULL);
+                                                window ? nullptr : glfwGetPrimaryMonitor(),
+                                                nullptr);
     boost::this_thread::sleep(boost::posix_time::milliseconds(20));
     if(!Divide::GL::_mainWindow){
         glfwTerminate();
@@ -187,7 +187,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     }
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-    Divide::GL::_loaderWindow = glfwCreateWindow(1,1,"divide-res-loader",NULL, Divide::GL::_mainWindow);
+    Divide::GL::_loaderWindow = glfwCreateWindow(1,1,"divide-res-loader",nullptr, Divide::GL::_mainWindow);
     if(!Divide::GL::_loaderWindow){
         glfwTerminate();
         return( GLFW_WINDOW_INIT_ERROR );
@@ -202,7 +202,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
                                          GL_DEBUG_TYPE_ERROR_ARB,
                                          GL_DONT_CARE,
                                          0,
-                                         NULL,
+                                         nullptr,
                                          GL_FALSE));
         Divide::GL::_useDebugOutputCallback = true;
     }else{
@@ -217,7 +217,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     glfwSetWindowPos(Divide::GL::_mainWindow, (width - resolution.width)*0.5f,(height - resolution.height)*0.5f);
 
 #if defined( OS_WINDOWS )
-    _hwnd = FindWindow(NULL,par.getParam<std::string>("appTitle").c_str());
+    _hwnd = FindWindow(nullptr,par.getParam<std::string>("appTitle").c_str());
     _hdc = GetDC(_hwnd);
 #elif defined( OS_APPLE ) // Apple OS X
 ///??
@@ -352,7 +352,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     //OpenGL is up and ready
     Divide::GL::_contextAvailable = true;
 
-    _uniformBufferObjects.resize(UBO_PLACEHOLDER,NULL);
+    _uniformBufferObjects.resize(UBO_PLACEHOLDER,nullptr);
     _uniformBufferObjects[Matrices_UBO] = New glUniformBufferObject();
     _uniformBufferObjects[Matrices_UBO]->Create(Matrices_UBO, true,false);
     _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(3 * 16, sizeof(GLfloat)); //View, Projection and ViewProjection 3 x 16 float values
@@ -425,7 +425,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     GFX_DEVICE.changeResolution(resolution.width,resolution.height);
 
      _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
-    if (_fonsContext == NULL) {
+    if (_fonsContext == nullptr) {
         ERROR_FN(Locale::get("ERROR_FONT_INIT"));
         return GLFW_WINDOW_INIT_ERROR;
     }
@@ -435,7 +435,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
 void GL_API::exitRenderLoop(bool killCommand) {
     glfonsDelete(_fonsContext);
-    _fonsContext = NULL;
+    _fonsContext = nullptr;
     Divide::GL::_applicationClosing = true;
     glfwSetWindowShouldClose(Divide::GL::_mainWindow,true);
     glfwSetWindowShouldClose(Divide::GL::_loaderWindow,true);
@@ -473,7 +473,7 @@ void GL_API::closeRenderingApi(){
 }
 
 void GL_API::initDevice(GLuint targetFrameRate){
-    assert(_imShader != NULL);
+    assert(_imShader != nullptr);
     _imShader->Uniform("tex",0);
     while(!glfwWindowShouldClose(Divide::GL::_mainWindow)) {
         Kernel::mainLoopStatic();
@@ -515,7 +515,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Vertex","//__CUSTOM_VERTEX_UNIFORMS__");
 
     GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES);
-    if(glswState == 1 && GL_API::_GLSLOptContex != NULL){
+    if(glswState == 1 && GL_API::_GLSLOptContex != nullptr){
         return true;
     }
     return false;
@@ -588,7 +588,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position){
     fonsClearState(_fonsContext);
     fonsSetSize(_fonsContext, textLabel._height);
     fonsSetFont(_fonsContext, font);
-    fonsVertMetrics(_fonsContext, NULL, NULL, &lh);
+    fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
     dx = position.x;
     dy = _cachedResolution.y - (position.y + lh);
     fonsSetColor(_fonsContext, textLabel._color.r * 255, textLabel._color.g * 255, textLabel._color.b * 255, textLabel._color.a * 255);
@@ -601,7 +601,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position){
     if(textLabel._alignFlag != 0){
         fonsSetAlign(_fonsContext, textLabel._alignFlag);
     }
-    fonsDrawText(_fonsContext, dx,dy,textLabel._text.c_str(),NULL);
+    fonsDrawText(_fonsContext, dx,dy,textLabel._text.c_str(),nullptr);
 }
 
 vec3<GLfloat> GL_API::unproject(const vec3<GLfloat>& windowCoord) const {
@@ -648,5 +648,5 @@ void GL_API::loadInContextInternal(){
             glFlush();
         }
     }
-   // glfwMakeContextCurrent(NULL);
+   // glfwMakeContextCurrent(nullptr);
 }

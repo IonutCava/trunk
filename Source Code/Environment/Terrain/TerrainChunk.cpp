@@ -80,7 +80,7 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 }
 
 void TerrainChunk::GenerateGrassIndexBuffer(U32 bilboardCount) {
-	if(_grassData._grassVBO == NULL)
+	if(_grassData._grassVBO == nullptr)
 		return;
 
     // the first offset is always 0;
@@ -131,7 +131,7 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 distance, U32 index, Transform* const 
     U32 indicesCount = _grassData._grassIndexSize[index];
 
     if(indicesCount > 0){
-		assert(_grassData._grassVBO != NULL);
+		assert(_grassData._grassVBO != nullptr);
 		_grassData._grassVBO->currentShader()->Uniform("grassVisibilityRange", _grassData._grassVisibility);
         _grassData._grassVBO->setFirstElement(_grassData._grassIndexOffset[index]);
         _grassData._grassVBO->setRangeCount(indicesCount);

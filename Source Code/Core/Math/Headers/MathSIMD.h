@@ -31,7 +31,6 @@
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 #define IsAligned(p) ((((unsigned long)(p)) & 15) == 0)
-#define NULL    0
 
     inline D32 __declspec (naked) __fastcall square_root(D32 n){
         _asm fld qword ptr [esp+4]
@@ -134,12 +133,12 @@
         }
 
         //ToDo: Align memory!!!!
-        inline F32*	Multiply(const F32 * a, const F32 * b, F32 * r = NULL) {
+        inline F32*	Multiply(const F32 * a, const F32 * b, F32 * r = nullptr) {
             static F32 temp[16];
 
-            assert(a != NULL &&
-                   b != NULL &&
-                   r != NULL);
+            assert(a != nullptr &&
+                   b != nullptr &&
+                   r != nullptr);
             r = temp;
             __m128 a_line, b_line, r_line;
             for (I32 i=0; i<16; i+=4) {

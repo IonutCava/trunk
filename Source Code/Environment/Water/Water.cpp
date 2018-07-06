@@ -9,8 +9,8 @@
 #pragma message("ToDo: check water visibility - Ionut")
 
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)),
-                           _plane(NULL),_texture(NULL), _shader(NULL),_planeTransform(NULL),
-                           _node(NULL),_planeSGN(NULL),_waterLevel(0),_waterDepth(0),_clippingPlaneID(-1),_reflectionRendering(false){}
+                           _plane(nullptr),_texture(nullptr), _shader(nullptr),_planeTransform(nullptr),
+                           _node(nullptr),_planeSGN(nullptr),_waterLevel(0),_waterDepth(0),_clippingPlaneID(-1),_reflectionRendering(false){}
 
 void WaterPlane::postLoad(SceneGraphNode* const sgn){
     assert(_texture && _shader && _plane);

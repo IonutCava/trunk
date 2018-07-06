@@ -82,7 +82,7 @@ bool DVDConverter::init(){
 Mesh* DVDConverter::load(const std::string& file){
     if(!_init){
         ERROR_FN(Locale::get("ERROR_NO_INIT_IMPORTER_LOAD"));
-        return NULL;
+        return nullptr;
     }
 
     _fileLocation = file;
@@ -95,10 +95,10 @@ Mesh* DVDConverter::load(const std::string& file){
 
     if( !_aiScenePointer){
         ERROR_FN(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(), importer->GetErrorString());
-        return NULL;
+        return nullptr;
     }
     start = GETMSTIME(true);
-    Mesh* tempMesh = NULL;
+    Mesh* tempMesh = nullptr;
     for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
         //Skip points and lines ... for now -Ionut
         if(_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_LINE ||
@@ -125,7 +125,7 @@ Mesh* DVDConverter::load(const std::string& file){
             tempMesh->addSubMesh(s);
         }
     }
-    assert(tempMesh != NULL);
+    assert(tempMesh != nullptr);
     tempMesh->getSceneNodeRenderState().setDrawState(true);
     elapsed = GETMSTIME(true) - start;
     D_PRINT_FN(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
@@ -135,7 +135,7 @@ Mesh* DVDConverter::load(const std::string& file){
 
 ///If we are loading a LOD variant of a submesh, find it first, append LOD geometry,
 ///but do not return the mesh again as it will be duplicated in the Mesh parent object
-///instead, return NULL and mesh and material creation for this instance will be skipped.
+///instead, return nullptr and mesh and material creation for this instance will be skipped.
 SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
     ///VERY IMPORTANT: default submesh, LOD0 should always be created first!!
     ///an assert is added in the LODn, where n >= 1, loading code to make sure the LOD0 submesh exists first
@@ -151,13 +151,13 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
         temp = ss.str();
     }
 
-    SubMesh* tempSubMesh = NULL;
+    SubMesh* tempSubMesh = nullptr;
     bool skinned = source->HasBones();
     if(temp.find(".LOD1") != std::string::npos ||
         temp.find(".LOD2") != std::string::npos/* ||
         temp.find(".LODn") != std::string::npos*/){ ///Add as many LOD levels as you please
         tempSubMesh = FindResourceImpl<SubMesh>(_fileLocation.substr(0,_fileLocation.rfind(".LOD")));
-        assert(tempSubMesh != NULL);
+        assert(tempSubMesh != nullptr);
         tempSubMesh->incLODcount();
     }else{
         //Submesh is created as a resource when added to the scenegraph
@@ -166,7 +166,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
         submeshdesc.setId(count);
         if(skinned) submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
         tempSubMesh = CreateResource<SubMesh>(submeshdesc);
-        if(!tempSubMesh) return NULL;
+        if(!tempSubMesh) return nullptr;
         ///it may be already loaded
         if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
             return tempSubMesh;
@@ -238,7 +238,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
         dynamic_cast<SkinnedSubMesh*>(tempSubMesh)->createAnimatorFromScene(_aiScenePointer,count);
     }
 
-    if(source->mTextureCoords[0] != NULL){
+    if(source->mTextureCoords[0] != nullptr){
         tempSubMesh->getGeometryVBO()->getTexcoord().reserve(source->mNumVertices);
         vec2<F32> texCoord;
         for(U32 j = 0; j < source->mNumVertices; j++){
@@ -272,7 +272,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
     tempSubMesh->getGeometryVBO()->setIndiceLimits(vec2<U32>(lowestInd,highestInd), tempSubMesh->getLODcount() - 1);
 
     if(baseMeshLoading)	return tempSubMesh;
-    else  		        return NULL;
+    else  		        return nullptr;
 }
 
 /// Load the material for the current SubMesh
@@ -410,8 +410,8 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture2D* textureRes = CreateResource<Texture2D>(texture);
-            assert(tempMaterial != NULL);
-            assert(textureRes != NULL);
+            assert(tempMaterial != nullptr);
+            assert(textureRes != nullptr);
             //The first texture is always "Replace"
             tempMaterial->setTexture(item,textureRes, count == 0 ? Material::TextureOperation_Replace : aiTextureOperationTable[op]);
         }//endif

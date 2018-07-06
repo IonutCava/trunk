@@ -619,7 +619,7 @@ namespace XML {
         if(inp.fail()){
             inp.clear(std::ios::failbit);
             inp.close();
-            return NULL;
+            return nullptr;
         }
         inp.close();
         bool skip = false;
@@ -653,7 +653,7 @@ namespace XML {
 
         mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
 
-        Texture* tempTexture = NULL;
+        Texture* tempTexture = nullptr;
         if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){
             tempTexture = loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none"));
             mat->setTexture(Material::TEXTURE_UNIT0, tempTexture,
@@ -716,26 +716,26 @@ namespace XML {
         pt_writer.put("material.emissive.<xmlattr>.b", mat.getMaterialMatrix().getCol(3).w);
         pt_writer.put("material.doubleSided", mat.isDoubleSided());
 
-        Texture* texture = NULL;
+        Texture* texture = nullptr;
 
-        if((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != NULL){
+        if((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != nullptr){
             saveTextureXML("diffuseTexture1",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0)), texture, pt_writer);
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_UNIT0 + 1)) != NULL){
+        if((texture = mat.getTexture(Material::TEXTURE_UNIT0 + 1)) != nullptr){
             saveTextureXML("diffuseTexture2",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0 + 1)), texture, pt_writer);
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != NULL){
+        if((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != nullptr){
             saveTextureXML("bumpMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_NORMALMAP)), texture, pt_writer);
             pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != NULL){
+        if((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != nullptr){
             saveTextureXML("opacityMap",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_OPACITY)), texture, pt_writer);
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != NULL){
+        if((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != nullptr){
             saveTextureXML("specularMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_SPECULAR)), texture, pt_writer);
         }
 

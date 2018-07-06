@@ -12,17 +12,17 @@
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-PostFX::PostFX(): _underwaterTexture(NULL),
-    _renderQuad(NULL),
-    _anaglyphShader(NULL),
-    _postProcessingShader(NULL),
-    _noise(NULL),
-    _screenBorder(NULL),
-    _bloomFBO(NULL),
-    _SSAO_FBO(NULL),
-    _fxaaOP(NULL),
-    _dofOP(NULL),
-    _bloomOP(NULL),
+PostFX::PostFX(): _underwaterTexture(nullptr),
+    _renderQuad(nullptr),
+    _anaglyphShader(nullptr),
+    _postProcessingShader(nullptr),
+    _noise(nullptr),
+    _screenBorder(nullptr),
+    _bloomFBO(nullptr),
+    _SSAO_FBO(nullptr),
+    _fxaaOP(nullptr),
+    _dofOP(nullptr),
+    _bloomOP(nullptr),
     _underwater(false),
     _depthPreview(false),
     _gfx(GFX_DEVICE)

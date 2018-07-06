@@ -32,9 +32,9 @@ Scene::Scene() :  Resource(),
                  _loadComplete(false),
                  _cookCollisionMeshesScheduled(false),
                  _paramHandler(ParamHandler::getInstance()),
-                 _currentSelection(NULL),
-                 _physicsInterface(NULL),
-                 _cameraMgr(NULL),
+                 _currentSelection(nullptr),
+                 _physicsInterface(nullptr),
+                 _cameraMgr(nullptr),
                  _sceneGraph(New SceneGraph())
 {
     _mousePressed[OIS::MB_Left]    = false;
@@ -199,7 +199,7 @@ ParticleEmitter* Scene::getParticleEmitter(const std::string& name){
     if(emitterIt != _particleEmitters.end()){
         return _particleEmitters[name];
     }
-    return NULL;
+    return nullptr;
 }
 
 ParticleEmitter* Scene::addParticleEmitter(const std::string& name, const ParticleEmitterDescriptor& descriptor){
@@ -216,7 +216,7 @@ ParticleEmitter* Scene::addParticleEmitter(const std::string& name, const Partic
 }
 
 SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const parentNode){
-    SceneGraphNode* returnNode = NULL;
+    SceneGraphNode* returnNode = nullptr;
     if(parentNode)
         returnNode = parentNode->addNode(lightItem);
     else
@@ -296,7 +296,7 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
             Terrain* temp = CreateResource<Terrain>(terrain);
             SceneGraphNode* terrainTemp = root->addNode(temp);
             terrainTemp->useDefaultTransform(false);
-            terrainTemp->setTransform(NULL);
+            terrainTemp->setTransform(nullptr);
             terrainTemp->setActive(_terrainInfoArray[i]->getActive());
             terrainTemp->setUsageContext(SceneGraphNode::NODE_STATIC);
             terrainTemp->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
@@ -400,7 +400,7 @@ void Scene::updateSceneState(const U64 deltaTime){
 }
 
 void Scene::deleteSelection(){
-    if(_currentSelection != NULL){
+    if(_currentSelection != nullptr){
         _currentSelection->scheduleDeletion();
     }
 }

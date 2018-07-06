@@ -33,18 +33,18 @@ class NPC;
 class AITenisScene : public Scene {
 public:
     AITenisScene() : Scene(),
-        _aiPlayer1(NULL),
-        _aiPlayer2(NULL),
-        _aiPlayer3(NULL),
-        _aiPlayer4(NULL),
-        _player1(NULL),
-        _player2(NULL),
-        _player3(NULL),
-        _player4(NULL),
-        _floor(NULL),
-        _net(NULL),
-        _ballSGN(NULL),
-        _ball(NULL){
+        _aiPlayer1(nullptr),
+        _aiPlayer2(nullptr),
+        _aiPlayer3(nullptr),
+        _aiPlayer4(nullptr),
+        _player1(nullptr),
+        _player2(nullptr),
+        _player3(nullptr),
+        _player4(nullptr),
+        _floor(nullptr),
+        _net(nullptr),
+        _ballSGN(nullptr),
+        _ball(nullptr){
         _sideImpulseFactor = 0;
         _directionTeam1ToTeam2 = true;
         _upwardsDirection = true;

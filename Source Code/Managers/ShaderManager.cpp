@@ -3,7 +3,7 @@
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-ShaderManager::ShaderManager() : _nullShader(NULL), _init(false)
+ShaderManager::ShaderManager() : _nullShader(nullptr), _init(false)
 {
 }
 
@@ -72,16 +72,16 @@ char* ShaderManager::shaderFileRead(const std::string &atomName, const std::stri
     }
 
     if(location.empty()){
-        return NULL;
+        return nullptr;
     }
 
     std::string file = location+"/"+atomName;
-    FILE *fp = NULL;
+    FILE *fp = nullptr;
     fopen_s(&fp,file.c_str(),"r");
 
-    char *content = NULL;
+    char *content = nullptr;
 
-    if (fp != NULL) {
+    if (fp != nullptr) {
       fseek(fp, 0, SEEK_END);
       I32 count = ftell(fp);
       rewind(fp);
@@ -99,13 +99,13 @@ char* ShaderManager::shaderFileRead(const std::string &atomName, const std::stri
 }
 
 I8  ShaderManager::shaderFileWrite(char *atomName, const char *s){
-    FILE *fp = NULL;
+    FILE *fp = nullptr;
     I8 status = 0;
 
-    if (atomName != NULL) {
+    if (atomName != nullptr) {
         fopen_s(&fp,atomName,"w");
 
-        if (fp != NULL) {
+        if (fp != nullptr) {
             if (fwrite(s,sizeof(char),strlen(s),fp) == strlen(s))
                 status = 1;
             fclose(fp);
@@ -134,14 +134,14 @@ Shader* ShaderManager::findShader(const std::string& name,const bool recompile){
         }
         return it->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 Shader* ShaderManager::loadShader(const std::string& name, const std::string& source,const ShaderType& type,const bool recompile){
     Shader* shader = findShader(name,recompile);
 
     if(!recompile){
-        if(shader != NULL) return shader;
+        if(shader != nullptr) return shader;
 
         shader = GFX_DEVICE.newShader(name, type);
     }
@@ -172,8 +172,8 @@ bool ShaderManager::recompileShaderProgram(const std::string& name) {
 bool ShaderManager::unbind(){
     if(!_nullShader){
         _nullShader = CreateResource<ShaderProgram>(ResourceDescriptor("NULL_SHADER"));
-        ///the null shader should never be NULL!!!!
-        assert(_nullShader != NULL); //LoL -Ionut
+        ///the null shader should never be nullptr!!!!
+        assert(_nullShader != nullptr); //LoL -Ionut
     }
     //Should use program 0 and set previous shader ID to 0 as well
     _nullShader->bind();

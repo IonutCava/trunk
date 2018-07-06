@@ -1,7 +1,6 @@
 #ifndef _SCENE_NODE_RENDER_STATE_H_
 #define _SCENE_NODE_RENDER_STATE_H_
 
-#define NULL 0
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
 class SceneNodeRenderState {
@@ -9,8 +8,8 @@ public:
     SceneNodeRenderState() : _drawState(true),
                              _noDefaultMaterial(false),
                              _exclusionMask(0),
-                             _depthStateBlock(NULL),
-                             _shadowStateBlock(NULL),
+                             _depthStateBlock(nullptr),
+                             _shadowStateBlock(nullptr),
                              _isVisible(true),
                              _hasWaterReflection(true)
     {

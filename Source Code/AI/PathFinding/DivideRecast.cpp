@@ -65,7 +65,7 @@ namespace Navigation {
         if(nPathCount==0)
             return PATH_ERROR_COULD_NOT_FIND_PATH; // couldn't find a path
 
-        status = navQuery.findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, NULL, NULL, &nVertCount, MAX_PATHVERT) ;
+        status = navQuery.findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, nullptr, nullptr, &nVertCount, MAX_PATHVERT) ;
         if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
             return PATH_ERROR_NO_STRAIGHT_PATH_CREATE; // couldn't create a path
         if(nVertCount==0)
@@ -115,7 +115,7 @@ namespace Navigation {
     }
 
     vec3<F32> DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh){
-        if(navMesh.getNavQuery().getAttachedNavMesh() == NULL)
+        if(navMesh.getNavQuery().getAttachedNavMesh() == nullptr)
             return VECTOR3_ZERO;
 
         F32 resultPoint[3];
@@ -131,7 +131,7 @@ namespace Navigation {
     }
 
     bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt, dtPolyRef &resultPoly){
-        if(navMesh.getNavQuery().getAttachedNavMesh() == NULL){
+        if(navMesh.getNavQuery().getAttachedNavMesh() == nullptr){
             resultPt.set(VECTOR3_ZERO);
             return false;
         }

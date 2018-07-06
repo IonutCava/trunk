@@ -20,7 +20,7 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
         _terrainChunk = New TerrainChunk();
         _terrainChunk->Load(depth, pos, HMsize, groundVBO);
 		chunkCount++;
-        _children = NULL;
+        _children = nullptr;
         return;
     }
 
@@ -52,12 +52,12 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
 bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
     assert(!vertices.empty());
 
-    if(_terrainChunk != NULL) {
+    if(_terrainChunk != nullptr) {
         _boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x, _terrainChunk->getMinHeight(),_boundingBox.getMin().z));
         _boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x, _terrainChunk->getMaxHeight(),_boundingBox.getMax().z));
     }
 
-    if(_children != NULL) {
+    if(_children != nullptr) {
         for(I8 i=0; i<4; i++) {
             _children[i].computeBoundingBox(vertices);
 

@@ -14,7 +14,7 @@ Transform::Transform()	: GUIDWrapper(),
     _orientation.identity();
     _worldMatrix.identity();
     WriteLock w_lock(_parentLock);
-    _parentTransform = NULL;
+    _parentTransform = nullptr;
 }
 
 Transform::Transform(const Quaternion<F32>& orientation,
@@ -32,7 +32,7 @@ Transform::Transform(const Quaternion<F32>& orientation,
 {
     _worldMatrix.identity();
     WriteLock w_lock(_parentLock);
-    _parentTransform = NULL;
+    _parentTransform = nullptr;
 }
 
 Transform::~Transform()

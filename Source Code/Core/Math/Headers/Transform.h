@@ -171,7 +171,7 @@ public:
             ReadLock r_lock(_parentLock);
             return _parentTransform;
         }
-        return NULL;
+        return nullptr;
     }
     ///Set the parent's global transform (the parent's transform with its parent's transform applied and so on)
     inline bool setParentTransform(Transform* transform) {
@@ -181,7 +181,7 @@ public:
         if(_parentTransform && transform && _parentTransform->getGUID() == transform->getGUID()) return false;
 
         _parentTransform = transform;
-        _hasParentTransform = (transform != NULL);
+        _hasParentTransform = (transform != nullptr);
         return true;
     }
 
@@ -213,7 +213,7 @@ private:
     inline bool hasParentTransform() const {
 #ifdef _DEBUG
         //ReadLock r_lock(_parentLock);
-        assert(_hasParentTransform && _parentTransform != NULL || !_hasParentTransform && _parentTransform == NULL); 
+        assert(_hasParentTransform && _parentTransform != nullptr || !_hasParentTransform && _parentTransform == nullptr); 
 #endif
         return _hasParentTransform;
     }

@@ -51,7 +51,7 @@ public:
                         _drawSkeletons(false),
                         _drawObjects(true),
                         _debugDrawLines(false),
-                        _camera(NULL),
+                        _camera(nullptr),
                         _shadowMapResolutionFactor(1)
     {
     }

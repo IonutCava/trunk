@@ -35,7 +35,7 @@ public :
     }
 
     inline static bool hasInstance() {
-        return _instance != NULL;
+        return _instance != nullptr;
     }
 
     inline static T& getInstance() {

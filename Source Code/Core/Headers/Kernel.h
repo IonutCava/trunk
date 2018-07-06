@@ -87,7 +87,7 @@ public:
     inline U64 getCurrentTime()      const {return _currentTime;}
     inline U64 getCurrentTimeDelta() const {return _currentTimeDelta;}
     /// get a pointer to the kernel's threadpool to add,remove,pause or stop tasks
-    inline boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != NULL); return _mainTaskPool;}
+    inline boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != nullptr); return _mainTaskPool;}
 
 public: ///Input
     ///Key pressed

@@ -11,11 +11,11 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
                                                const vec2<U16>& resolution,
                                                SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,target,resolution,sampler),
                                                                                    _outputFBO(result),
-                                                                                   _tempHDRFBO(NULL),
+                                                                                   _tempHDRFBO(nullptr),
                                                                                    _luminaMipLevel(0)
 {
-    _luminaFBO[0] = NULL;
-    _luminaFBO[1] = NULL;
+    _luminaFBO[0] = nullptr;
+    _luminaFBO[1] = nullptr;
     F32 width = _resolution.width;
     F32 height = _resolution.height;
 

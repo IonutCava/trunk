@@ -8,7 +8,7 @@ IMPrimitive::IMPrimitive() : _inUse(false),
                              _paused(false),
                              _zombieCounter(0),
                              _lineWidth(1.0f),
-                             _texture(NULL)
+                             _texture(nullptr)
 {
 }
 

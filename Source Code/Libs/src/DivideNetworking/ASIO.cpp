@@ -18,7 +18,7 @@
 #include "Client.h"
 #include <boost/archive/text_iarchive.hpp>
 
-ASIO::ASIO() : _connected(false), _debugOutput(true), _localClient(NULL)
+ASIO::ASIO() : _connected(false), _debugOutput(true), _localClient(nullptr)
 {
 }
 
@@ -29,7 +29,7 @@ ASIO::~ASIO()
 	_localClient->stop();
 	io_service_.stop();
 	delete _localClient;
-	_localClient = NULL;
+	_localClient = nullptr;
 }
 
 void ASIO::disconnect(){

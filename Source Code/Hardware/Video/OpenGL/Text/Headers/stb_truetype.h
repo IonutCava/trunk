@@ -1051,7 +1051,7 @@ int stbtt_GetGlyphShape(const stbtt_fontinfo *info, int glyph_index, stbtt_verte
    int num_vertices=0;
    int g = stbtt__GetGlyfOffset(info, glyph_index);
 
-   *pvertices = NULL;
+   *pvertices = nullptr;
 
    if (g < 0) return 0;
 
@@ -1468,7 +1468,7 @@ static void stbtt__fill_active_edges(unsigned char *scanline, int len, stbtt__ac
 
 static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e, int n, int vsubsample, int off_x, int off_y, void *userdata)
 {
-   stbtt__active_edge *active = NULL;
+   stbtt__active_edge *active = nullptr;
    int y,j=0;
    int max_weight = (255 / vsubsample);  // weight per vertical scanline
    int s; // vertical subsample index
@@ -1528,7 +1528,7 @@ static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e,
             if (e->y1 > scan_y) {
                stbtt__active_edge *z = new_active(e, off_x, scan_y, userdata);
                // find insertion point
-               if (active == NULL)
+               if (active == nullptr)
                   active = z;
                else if (z->x < active->x) {
                   // insert at front
@@ -1689,7 +1689,7 @@ stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, float o
       float x=0,y=0;
       if (pass == 1) {
          points = (stbtt__point *) STBTT_malloc(num_points * sizeof(points[0]), userdata);
-         if (points == NULL) goto error;
+         if (points == nullptr) goto error;
       }
       num_points = 0;
       n= -1;
@@ -1727,7 +1727,7 @@ error:
    STBTT_free(*contour_lengths, userdata);
    *contour_lengths = 0;
    *num_contours = 0;
-   return NULL;
+   return nullptr;
 }
 
 void stbtt_Rasterize(stbtt__bitmap *result, float flatness_in_pixels, stbtt_vertex *vertices, int num_verts, float scale_x, float scale_y, float shift_x, float shift_y, int x_off, int y_off, int invert, void *userdata)
@@ -1756,7 +1756,7 @@ unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, float sc
 
    if (scale_x == 0) scale_x = scale_y;
    if (scale_y == 0) {
-      if (scale_x == 0) return NULL;
+      if (scale_x == 0) return nullptr;
       scale_y = scale_x;
    }
 
@@ -1765,7 +1765,7 @@ unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, float sc
    // now we get the size
    gbm.w = (ix1 - ix0);
    gbm.h = (iy1 - iy0);
-   gbm.pixels = NULL; // in case we error
+   gbm.pixels = nullptr; // in case we error
 
    if (width ) *width  = gbm.w;
    if (height) *height = gbm.h;
@@ -1962,7 +1962,7 @@ const char *stbtt_GetFontNameString(const stbtt_fontinfo *font, int *length, int
    stbtt_uint8 *fc = font->data;
    stbtt_uint32 offset = font->fontstart;
    stbtt_uint32 nm = stbtt__find_table(fc, offset, "name");
-   if (!nm) return NULL;
+   if (!nm) return nullptr;
 
    count = ttUSHORT(fc+nm+2);
    stringOffset = nm + ttUSHORT(fc+nm+4);
@@ -1974,7 +1974,7 @@ const char *stbtt_GetFontNameString(const stbtt_fontinfo *font, int *length, int
          return (const char *) (fc+stringOffset+ttUSHORT(fc+loc+10));
       }
    }
-   return NULL;
+   return nullptr;
 }
 
 static int stbtt__matchpair(stbtt_uint8 *fc, stbtt_uint32 nm, stbtt_uint8 *name, stbtt_int32 nlen, stbtt_int32 target_id, stbtt_int32 next_id)

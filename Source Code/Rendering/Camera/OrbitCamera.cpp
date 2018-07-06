@@ -10,7 +10,7 @@ OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye) : Camera(
                                                                          _maxRadius(10.0f),
                                                                          _minRadius(0.1f),
                                                                          _curRadius(8.0f),
-                                                                         _targetNode(NULL),
+                                                                         _targetNode(nullptr),
                                                                          _rotationDirty(true)
 {
     setMouseSensitivity(0.5f);
@@ -18,7 +18,7 @@ OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye) : Camera(
 
 
 void OrbitCamera::setTarget(SceneGraphNode* const sgn, const vec3<F32>& offsetDirection) {
-    assert(sgn != NULL);
+    assert(sgn != nullptr);
     _targetNode = sgn;
     _offsetDir = offsetDirection;
     _offsetDir.normalize();
@@ -39,7 +39,7 @@ void OrbitCamera::updateViewMatrix() {
 void OrbitCamera::update(const U64 deltaTime) {
     Camera::update(deltaTime);
 
-    Transform* trans = NULL;
+    Transform* trans = nullptr;
     if(!_targetNode)
         return;
     else

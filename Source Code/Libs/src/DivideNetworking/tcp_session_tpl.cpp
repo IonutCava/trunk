@@ -7,7 +7,7 @@
 //									 TCP											 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
-tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service, channel& ch) :  start_time(time(NULL)),
+tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service, channel& ch) :  start_time(time(nullptr)),
                                          channel_(ch),
                                          socket_(io_service),
                                          input_deadline_(io_service),

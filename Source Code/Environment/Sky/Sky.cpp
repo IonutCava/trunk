@@ -11,9 +11,9 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
-                                    _skyShader(NULL),
-                                    _skybox(NULL),
-                                    _skyGeom(NULL),
+                                    _skyShader(nullptr),
+                                    _skybox(nullptr),
+                                    _skyGeom(nullptr),
                                     _init(false),
                                     _exclusionMask(0)
 {

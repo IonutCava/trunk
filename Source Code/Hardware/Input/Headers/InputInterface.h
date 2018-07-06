@@ -279,12 +279,12 @@ DEFINE_SINGLETON( InputInterface )
     // if we want to be able to calmly study effect changes ...
     static const U8 _nEffectUpdateFreq = 5; // Hz
 
-    InputInterface() : _pInputInterface(NULL),
-                       _pEventHdlr(NULL),
-                       _pKeyboard(NULL),
-                       _pJoystickInterface(NULL),
-                       _pMouse(NULL),
-                       _pEffectMgr(NULL),
+    InputInterface() : _pInputInterface(nullptr),
+                       _pEventHdlr(nullptr),
+                       _pKeyboard(nullptr),
+                       _pJoystickInterface(nullptr),
+                       _pMouse(nullptr),
+                       _pEffectMgr(nullptr),
                        _bMustStop(false),
                        _bIsInitialized(false),
                        _nStatus(0)
@@ -434,15 +434,15 @@ public:
 
         try {
             // This fires off buffered events for keyboards
-            if(_pKeyboard != NULL)  _pKeyboard->capture();
-            if(_pMouse != NULL)     _pMouse->capture();
+            if(_pKeyboard != nullptr)  _pKeyboard->capture();
+            if(_pMouse != nullptr)     _pMouse->capture();
             if(_pJoysticks.size() > 0){
                 for(vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); it++){
                     (*it)->capture();
                 }
 
                 // This fires off buffered events for each joystick we have
-                if(_pJoystickInterface != NULL)  {
+                if(_pJoystickInterface != nullptr)  {
                     _pJoystickInterface->captureEvents();
                     // Update currently selected effects if time has come to.
                     if (!nEffectUpdateCnt) {
@@ -463,8 +463,8 @@ public:
 
     void terminate() {
         if (_pInputInterface) {
-            _pInputInterface->destroyInputObject( _pKeyboard ); _pKeyboard = NULL;
-            _pInputInterface->destroyInputObject( _pMouse );    _pMouse = NULL;
+            _pInputInterface->destroyInputObject( _pKeyboard ); _pKeyboard = nullptr;
+            _pInputInterface->destroyInputObject( _pMouse );    _pMouse = nullptr;
 
             if( _pJoysticks.size() > 0 ) {
                 for(vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); it++){
@@ -474,7 +474,7 @@ public:
                 SAFE_DELETE(_pJoystickInterface);
             }
             
-            OIS::InputManager::destroyInputSystem(_pInputInterface); _pInputInterface = NULL;
+            OIS::InputManager::destroyInputSystem(_pInputInterface); _pInputInterface = nullptr;
         }
 
         SAFE_DELETE(_pEffectMgr);

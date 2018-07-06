@@ -50,7 +50,7 @@ public:
 									   _visibleToNetwork(true),
 									   _render(true),
 									   _id(0),
-									   _parentMesh(NULL)
+									   _parentMesh(nullptr)
 	{
 	}
 
