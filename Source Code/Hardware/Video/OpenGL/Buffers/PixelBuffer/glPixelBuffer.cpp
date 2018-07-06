@@ -93,9 +93,9 @@ void glPixelBuffer::Bind(GLubyte unit) const {
 }
 
 bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXImageFormat internalFormatEnum, GFXImageFormat formatEnum,GFXDataFormat dataTypeEnum) {
-    _internalFormat = glImageFormatTable[internalFormatEnum];
-    _format         = glImageFormatTable[formatEnum];
-    _dataType       = glDataFormat[dataTypeEnum];
+    _internalFormat = Divide::GLUtil::GL_ENUM_TABLE::glImageFormatTable[internalFormatEnum];
+    _format         = Divide::GLUtil::GL_ENUM_TABLE::glImageFormatTable[formatEnum];
+    _dataType       = Divide::GLUtil::GL_ENUM_TABLE::glDataFormat[dataTypeEnum];
 
     Destroy();
     PRINT_FN(Locale::get("GL_PB_GEN"),width,height);

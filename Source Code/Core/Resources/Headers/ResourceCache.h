@@ -34,7 +34,7 @@ DEFINE_SINGLETON( ResourceCache )
 
 public:
     ///Each resource entity should have a 'resource name'Loader implementation.
-    template<class T>
+    template<typename T>
     inline T* loadResource(const ResourceDescriptor& descriptor) {
         ///Check cache first to avoit loading the same resource twice
         T* ptr = dynamic_cast<T*>(loadResource(descriptor.getName()));
@@ -77,7 +77,7 @@ protected:
 
 END_SINGLETON
 
-template<class T>
+template<typename T>
 inline void RemoveResource(T*& resource, bool force = false){
     DIVIDE_ASSERT(ResourceCache::hasInstance(), "ResourceCache error: RemoveResource called without a valid ResourceCache available!");
     try {
@@ -89,12 +89,12 @@ inline void RemoveResource(T*& resource, bool force = false){
 	}
 }
 
-template<class T>
+template<typename T>
 inline T* CreateResource(const ResourceDescriptor& descriptor){
     return ResourceCache::getInstance().loadResource<T>(descriptor);
 }
 
-template<class T>
+template<typename T>
 inline T* const FindResourceImpl(const std::string& name){
     return static_cast<T*>(ResourceCache::getInstance().find(name));
 }

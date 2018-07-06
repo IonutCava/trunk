@@ -220,7 +220,7 @@ void glShaderProgram::link(){
             vars.push_back(strdup(std::string("outData" + Util::toString(i)).c_str()));
         }
         // Only separate attributes are supported for now. Interleaved not top prio
-        glTransformFeedbackVaryings(_shaderProgramIDTemp, _outputCount, &vars.front(), GL_SEPARATE_ATTRIBS);
+        glTransformFeedbackVaryings(_shaderProgramIDTemp, _outputCount, vars.data(), GL_SEPARATE_ATTRIBS);
     }
     // Link the program
     glLinkProgram(_shaderProgramIDTemp);
@@ -495,7 +495,7 @@ void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& ind
     DIVIDE_ASSERT(_bound && isValid(), "glShaderProgram error: tried to set subroutines on an unbound or unlinked program!");
     // Validate data and send to GPU
     if (!indices.empty() && indices[0] != Divide::GLUtil::_invalidObjectID) {
-        glUniformSubroutinesuiv(_shaderStageTable[type], (GLsizei)indices.size(), &indices.front());
+        glUniformSubroutinesuiv(_shaderStageTable[type], (GLsizei)indices.size(), indices.data());
     }
     
 }
@@ -715,9 +715,9 @@ void glShaderProgram::Uniform(GLint location, const vectorImpl<GLint >& values) 
     }
 
     if (!_bound) {
-        glProgramUniform1iv(_shaderProgramId, location, (GLsizei)values.size(), &values.front());
+        glProgramUniform1iv(_shaderProgramId, location, (GLsizei)values.size(), values.data());
     } else {
-        glUniform1iv(location, (GLsizei)values.size(), &values.front());
+        glUniform1iv(location, (GLsizei)values.size(), values.data());
     }
 }
 
@@ -728,9 +728,9 @@ void glShaderProgram::Uniform(GLint location, const vectorImpl<GLfloat >& values
     }
 
     if (!_bound) {
-        glProgramUniform1fv(_shaderProgramId, location, (GLsizei)values.size(), &values.front());
+        glProgramUniform1fv(_shaderProgramId, location, (GLsizei)values.size(), values.data());
     } else {
-        glUniform1fv(location, (GLsizei)values.size(), &values.front());
+        glUniform1fv(location, (GLsizei)values.size(), values.data());
     }
 }
 

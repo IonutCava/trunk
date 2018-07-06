@@ -469,7 +469,7 @@ namespace NS_GLIM
         unsigned int uiOffset = uiVertices * sizeof (float) * 3;
 
         // offset is zero, but can use uiOffset as size
-        glBufferSubData (GL_ARRAY_BUFFER, 0, uiOffset, &m_PositionData.front());
+        glBufferSubData (GL_ARRAY_BUFFER, 0, uiOffset, m_PositionData.data());
         // the buffer in RAM can be cleared now
         m_PositionData.clear ();
         
@@ -505,28 +505,28 @@ namespace NS_GLIM
         // upload the index buffer for the points
         if (m_uiPointElements > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Points);
-            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiPointElements * sizeof(unsigned int), &m_IndexBuffer_Points.front(), GL_STATIC_DRAW);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiPointElements * sizeof(unsigned int), m_IndexBuffer_Points.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Points.clear ();
         }
             
         // upload the index buffer for the lines
         if (m_uiLineElements > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Lines);
-            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiLineElements * sizeof(unsigned int), &m_IndexBuffer_Lines.front(), GL_STATIC_DRAW);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiLineElements * sizeof(unsigned int), m_IndexBuffer_Lines.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Lines.clear ();
         }
 
         // upload the index buffer for the triangles
         if (m_uiTriangleElements > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Triangles);
-            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiTriangleElements * sizeof(unsigned int), &m_IndexBuffer_Triangles.front(), GL_STATIC_DRAW);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiTriangleElements * sizeof(unsigned int), m_IndexBuffer_Triangles.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Triangles.clear ();
         }
 
         // upload the index buffer for the wireframe
         if (m_uiWireframeElements > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Wireframe);
-            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiWireframeElements * sizeof(unsigned int), &m_IndexBuffer_Wireframe.front(), GL_STATIC_DRAW);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiWireframeElements * sizeof(unsigned int), m_IndexBuffer_Wireframe.data(), GL_STATIC_DRAW);
             m_IndexBuffer_Wireframe.clear ();
         }
     }

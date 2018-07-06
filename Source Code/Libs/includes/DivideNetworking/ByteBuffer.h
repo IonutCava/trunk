@@ -51,7 +51,7 @@ class ByteBufferException
         size_t size;
 };
 
-template<class T>
+template<typename T>
 struct Unused
 {
     Unused() {}
@@ -245,7 +245,7 @@ class ByteBuffer
             return *this;
         }
 
-        template<class T>
+        template<typename T>
         ByteBuffer &operator>>(Unused<T> const&)
         {
             read_skip<T>();
@@ -354,7 +354,7 @@ class ByteBuffer
             return append((const U8 *)src, cnt);
         }
 
-        template<class T> void append(const T *src, size_t cnt)
+        template<typename T> void append(const T *src, size_t cnt)
         {
             return append((const U8 *)src, cnt * sizeof(T));
         }

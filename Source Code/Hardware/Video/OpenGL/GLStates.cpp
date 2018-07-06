@@ -368,23 +368,24 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
     TOGGLE_WITH_CHECK(_zEnable,       GL_DEPTH_TEST);
     // Check separate blend functions
     if (SHOULD_TOGGLE_2(_blendSrc, _blendDest)) {
-        glBlendFuncSeparate(glBlendTable[newDescriptor._blendSrc], glBlendTable[newDescriptor._blendDest], GL_ONE, GL_ZERO);
+        glBlendFuncSeparate(Divide::GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendSrc], 
+                            Divide::GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendDest], GL_ONE, GL_ZERO);
     }
     // Check the blend equation
     if (SHOULD_TOGGLE(_blendOp)) {
-        glBlendEquation(glBlendOpTable[newDescriptor._blendOp]);
+        glBlendEquation(Divide::GLUtil::GL_ENUM_TABLE::glBlendOpTable[newDescriptor._blendOp]);
     }
     // Check culling mode (back (CW) / front (CCW) by default) 
     if (SHOULD_TOGGLE(_cullMode)) {
-        glCullFace(glCullModeTable[newDescriptor._cullMode]);
+        glCullFace(Divide::GLUtil::GL_ENUM_TABLE::glCullModeTable[newDescriptor._cullMode]);
     }
     // Check rasterization mode
     if (SHOULD_TOGGLE(_fillMode)) {
-        glPolygonMode(GL_FRONT_AND_BACK, glFillModeTable[newDescriptor._fillMode]);
+        glPolygonMode(GL_FRONT_AND_BACK, Divide::GLUtil::GL_ENUM_TABLE::glFillModeTable[newDescriptor._fillMode]);
     }
     // Check the depth function
     if (SHOULD_TOGGLE(_zFunc)) {
-        glDepthFunc(glCompareFuncTable[newDescriptor._zFunc]);
+        glDepthFunc(Divide::GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._zFunc]);
     }
     // Check if we need to toggle the depth mask
     if (SHOULD_TOGGLE(_zWriteEnable)) {
@@ -396,11 +397,13 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
     }
     // Stencil function is dependent on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFunc, _stencilRef, _stencilMask)) {
-        glStencilFunc(glCompareFuncTable[newDescriptor._stencilFunc], newDescriptor._stencilRef, newDescriptor._stencilMask);
+        glStencilFunc(Divide::GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._stencilFunc], newDescriptor._stencilRef, newDescriptor._stencilMask);
     }
     // Stencil operation is also dependent  on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFailOp, _stencilZFailOp, _stencilPassOp)) {
-        glStencilOp(glStencilOpTable[newDescriptor._stencilFailOp], glStencilOpTable[newDescriptor._stencilZFailOp], glStencilOpTable[newDescriptor._stencilPassOp]);
+        glStencilOp(Divide::GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilFailOp], 
+                    Divide::GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilZFailOp], 
+                    Divide::GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilPassOp]);
     }
     // Check and set polygon offset
     if (SHOULD_TOGGLE(_zBias)) {

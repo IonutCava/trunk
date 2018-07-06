@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if !defined(__gl_h_) && !defined(__GL_H__) && !defined(__X_GL_H)
-
 #include <stack>
 #ifndef GLEW_STATIC
 #define GLEW_STATIC
@@ -43,6 +41,7 @@
 
 #include <GL/glfw3.h>
 #include "Utility/Headers/Vector.h"
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 #include <boost/thread/tss.hpp>
@@ -55,34 +54,57 @@
 #	pragma GCC diagnostic push
 #		//pragma GCC diagnostic ignored "-Wall"
 #endif
-
+namespace NS_GLIM {
+    class GLIM_BATCH;
+    enum GLIM_ENUM;
+};
 
 namespace Divide {
     namespace GLUtil {
-
+        /// Wrapper for glGetIntegerv
         GLint getIntegerv(GLenum param);
+        /// This function is called when the window's close button is pressed
         void glfw_close_callback(GLFWwindow *window);
-        void glfw_focus_callback(GLFWwindow *window, I32);
+        /// This function is called when the window loses focus
+        void glfw_focus_callback(GLFWwindow *window, I32 focusState);
+        /// This function is called if GLFW throws an error
         void glfw_error_callback(GLint error, const char* description);
+        /// Initialize GLEW and all needed data (GLEW_MX case handled here)
         void initGlew();
-
-#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
         /// Check the current operation for errors
         void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
-#endif
-
         /// Half float conversion from: http://www.opengl.org/discussion_boards/archive/index.php/t-154530.html [thx gking]
+        /// Half-float to float
         static GLfloat htof(GLhalf val);
-        static GLhalf ftoh(GLfloat val);
+        /// Float to half-float
+        static GLhalf  ftoh(GLfloat val);
+        /// Pack a float value in an unsigned int
         //static GLuint ftopacked(GLfloat val);
-
-        /*--------- Object Management-------*/
         /// Invalid object value. Used to compare handles and determine if they were properly created
         extern GLuint _invalidObjectID;
         /// Main rendering window
         extern GLFWwindow* _mainWindow;
         /// Background thread for loading resources
         extern GLFWwindow* _loaderWindow;
+        /// GFXDevice enums to OpenGL enum translation tables
+        namespace GL_ENUM_TABLE {
+            /// Populate enumeration tables with appropriate API values
+            void fill();
+
+            extern GLenum glBlendTable[BlendProperty_PLACEHOLDER];
+            extern GLenum glBlendOpTable[BlendOperation_PLACEHOLDER];
+            extern GLenum glCompareFuncTable[ComparisonFunction_PLACEHOLDER];
+            extern GLenum glStencilOpTable[StencilOperation_PLACEHOLDER];
+            extern GLenum glCullModeTable[CullMode_PLACEHOLDER];
+            extern GLenum glFillModeTable[FillMode_PLACEHOLDER];
+            extern GLenum glTextureTypeTable[TextureType_PLACEHOLDER];
+            extern GLenum glImageFormatTable[GFXImageFormat_PLACEHOLDER];
+            extern GLenum glPrimitiveTypeTable[PrimitiveType_PLACEHOLDER];
+            extern GLenum glDataFormat[GDF_PLACEHOLDER];
+            extern GLenum glWrapTable[TextureWrap_PLACEHOLDER];
+            extern GLenum glTextureFilterTable[TextureFilter_PLACEHOLDER];
+            extern NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
+        }
     }
 }
 
@@ -95,7 +117,6 @@ namespace Divide {
 #define P1010102(x,y,z,w) (P10(x) | (P10(y) << 10) | (P10(z) << 20) | (P2(w) << 30))
 #define PN1010102(x,y,z,w) (P10(x) | (P10(y) << 10) | (P10(z) << 20) | (PN2(w) << 30))
 #define UP1010102(x,y,z,w) (UP10(x) | (UP10(y) << 10) | (UP10(z) << 20) | (UP2(w) << 30))
-#define BUFFER_OFFSET(i) reinterpret_cast<void*>(i)
 
 #ifdef GLEW_MX
     GLEWContext* glewGetContext();
@@ -112,5 +133,4 @@ namespace Divide {
 #	pragma GCC diagnostic pop
 #endif
 
-#endif
 #endif

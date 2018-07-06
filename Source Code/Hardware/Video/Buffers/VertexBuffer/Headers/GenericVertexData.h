@@ -105,9 +105,10 @@ public:
         for(const GenericDrawCommand& cmd : commands)
             Draw(cmd, skipBind);
     }
-
-    virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
-    virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam, bool invalidateRange = false) = 0;
+    
+    /// When reading and writing to the same buffer, we use a round-robin approach and offset the reading and writing to multiple copies of the data
+    virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, U8 sizeFactor, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
+    virtual void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, void* data, bool invalidateRange = false) = 0;
 
     virtual void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) = 0;
 

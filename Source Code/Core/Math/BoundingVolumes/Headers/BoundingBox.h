@@ -348,7 +348,7 @@ public:
     }
 
     inline F32 nearestDistanceFromPoint( const vec3<F32> &pos) const {
-        return square_root_tpl(nearestDistanceFromPointSquared(pos));
+        return std::sqrtf(nearestDistanceFromPointSquared(pos));
     }
 
 protected:

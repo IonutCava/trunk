@@ -60,7 +60,7 @@ bool ParticleEmitter::initData(){
          0.5f,  0.5f, 0.0f,
     };
 
-    _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), particleQuad, false, false);
+    _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false, false);
     _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_POSITION_LOCATION).set(0, 0, 3, false, 0, 0, FLOAT_32);
 
     //Generate a render state
@@ -156,8 +156,8 @@ void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& 
 ///The descriptor defines the particle properties
 void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor){
     _descriptor = descriptor;
-    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 3, 4 * sizeof(F32), NULL, true, true, /*true*/false);
-    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 3, 4 * sizeof(U8),  NULL, true, true, /*true*/false);
+    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 3, 4 * sizeof(F32), 1, NULL, true, true, /*true*/false);
+    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 3, 4 * sizeof(U8),  1, NULL, true, true, /*true*/false);
 
     _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, 0, FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
@@ -196,8 +196,8 @@ void ParticleEmitter::uploadToGPU(){
     U32 writeOffset = _writeOffset * (U32)_particles.size();
     U32 readOffset  = _readOffset  * (U32)_particles.size();
 
-    _particleGPUBuffer->UpdateBuffer(1, _particlesCurrentCount, &_particlePositionData[0], writeOffset, true, true);
-    _particleGPUBuffer->UpdateBuffer(2, _particlesCurrentCount, &_particleColorData[0],    writeOffset, true, true);
+    _particleGPUBuffer->UpdateBuffer(1, _particlesCurrentCount, writeOffset, &_particlePositionData[0]);
+    _particleGPUBuffer->UpdateBuffer(2, _particlesCurrentCount, writeOffset, &_particleColorData[0]);
         
     _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, readOffset, FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, readOffset, UNSIGNED_BYTE);

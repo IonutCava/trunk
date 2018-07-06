@@ -615,7 +615,7 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
         _sgnToDrawIDMap[crtNode->getGUID()] = (I32)_matricesData.size() - 1;
     }
     // Once the CPU-side buffer is filled, upload the buffer to the GPU, flushing the old data
-    _nodeBuffer->UpdateData(0,  _matricesData.size() * sizeof(NodeData), &_matricesData.front(), true);
+    _nodeBuffer->UpdateData(0,  _matricesData.size() * sizeof(NodeData), _matricesData.data(), true);
 }
 
 /// Depending on the context, either immediately call the function, or pass it to the loading thread via a queue

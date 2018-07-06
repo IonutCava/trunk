@@ -73,7 +73,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         // Upload the primitive's world matrix to the shader
         _imShader->Uniform("dvd_WorldMatrix", priv->worldMatrix());
         // Submit the render call. We do not support instancing yet!
-        priv->render(1, priv->forceWireframe());
+        priv->render(priv->forceWireframe(), 1);
         // Reset line width if needed
         if (priv->_hasLines) {
             restoreLineWidth();

@@ -99,9 +99,9 @@ public:
     /// Called when the camera updates the view matrix and/or the projection matrix
     void onCameraChange();
     /*Node Management*/
-    template<class T = SceneNode>
     ///Always use the level of redirection needed to reduce virtual function overhead
     ///Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
+    template<typename T = SceneNode>
     inline T* getNode() const {assert(_node != nullptr); return dynamic_cast<T*>(_node);}
 
     SceneGraphNode* addNode(SceneNode* const node,const std::string& name = "");
@@ -183,7 +183,7 @@ public:
 
     inline void setComponent(SGNComponent::ComponentType type, SGNComponent* component) { SAFE_UPDATE(_components[type], component); }
 
-    template<class T>
+    template<typename T>
     inline T* getComponent() { assert(false && "INVALID COMPONENT"); return nullptr; }
     template<>
     inline AnimationComponent* getComponent() { return dynamic_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); }

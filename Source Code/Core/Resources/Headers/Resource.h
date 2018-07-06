@@ -44,7 +44,7 @@ enum ResourceState{
 class Resource : public TrackedObject {
     friend class ResourceCache;
     friend class ResourceLoader;
-    template<class X>
+    template<typename X>
     friend class ImplResourceLoader;
 
 public:

@@ -26,12 +26,10 @@
 #include "core.h"
 #include "glResources.h"
 #include "Hardware/Video/Headers/IMPrimitive.h"
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Hardware/Video/OpenGL/Shaders/Headers/glShaderProgram.h"
 #include "Hardware/Video/OpenGL/Shaders/Headers/glShader.h"
 #include "Hardware/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 #include "Hardware/Video/OpenGL/Textures/Headers/glTexture.h"
-#include "Hardware/Video/OpenGL/Headers/glEnumTable.h"
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 #include <boost/lockfree/spsc_queue.hpp>
 

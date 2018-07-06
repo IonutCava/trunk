@@ -57,9 +57,9 @@ public:
         _drawShader = shaderProgram;
     }
 
-    virtual void render(U32 instanceCount = 1, bool forceWireframe = false) = 0;
+    virtual void render(bool forceWireframe = false, U32 instanceCount = 1) = 0;
 
-    virtual void beginBatch() = 0;
+    virtual void beginBatch()  { _inUse = true; _zombieCounter = 0; }
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(const vec3<F32>& vert) = 0;
     virtual void attribute1i(const std::string& attribName, I32 value) = 0;
@@ -110,6 +110,10 @@ public:
     F32            _lineWidth;
 
 protected:
+    //render in wireframe mode
+    bool         _forceWireframe;
+
+private:
     ///after rendering an IMPrimitive, it's "inUse" flag is set to false.
     ///If the API tries to render it again, we just increment the _zombieCounter
     ///If the _zombieCounter reaches 3, we remove it from the vector as it is not needed
@@ -120,8 +124,6 @@ protected:
     bool         _inUse; //<For caching
     ///If _pause is true, rendering for the current primitive is skipped and nothing is modified (e.g. zombie counters)
     bool         _paused;
-    //render in wireframe mode
-    bool         _forceWireframe;
     ///2 functions used to setup or reset states
     DELEGATE_CBK _setupStates;
     DELEGATE_CBK _resetStates;

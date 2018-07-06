@@ -25,7 +25,7 @@
 
 #include "Vector.h"
 
-template<class T>
+template<typename T>
 class StateTracker {
 public:
     StateTracker() 

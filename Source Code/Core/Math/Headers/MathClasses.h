@@ -105,7 +105,7 @@
 /******************************//**
 /* mat3
 /*********************************/
-template<class T>
+template<typename T>
 class mat3 {
 public:
     mat3() 
@@ -269,11 +269,13 @@ public:
     }
 
     void rotate(T x,T y,T z,T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
+        if (inDegrees) {
+            DegToRad(angle);
+        }
 
         T c = (T)cos(angle);
         T s = (T)sin(angle);
-        T l = square_root_tpl(x * x + y * y + z * z);
+        T l = (T)std::sqrt((D32)(x * x + y * y + z * z));
         if (l < EPSILON) l = 1;
         else l = 1 / l;
         x *= l;
@@ -367,7 +369,7 @@ public:
 /***************
 /* mat4
 /***************/
-template<class T>
+template<typename T>
 class mat4 {
 public:
     mat4() 

@@ -31,7 +31,7 @@
 class Texture : public HardwareResource {
     friend class ResourceCache;
     friend class ResourceLoader;
-    template<class X>
+    template<typename X>
     friend class ImplResourceLoader;
 public:
     /// Bind the texture to the specified texture unit

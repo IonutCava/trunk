@@ -206,11 +206,11 @@ bool Vegetation::uploadGrassData(){
         buffer->SetFeedbackBuffer(CulledSizeBuffer,     1);
         buffer->SetFeedbackBuffer(CulledInstanceBuffer, 2);
 
-        buffer->SetBuffer(UnculledPositionBuffer, _instanceCountGrass,     sizeof(vec4<F32>), &_grassPositions[0], false, false);
-        buffer->SetBuffer(UnculledSizeBuffer,     _instanceCountGrass,     sizeof(F32),       &_grassScales[0],    false, false);
-        buffer->SetBuffer(CulledPositionBuffer,   _instanceCountGrass * 3, sizeof(vec4<F32>), NULL,                true,  false); // "true, false" = DYNAMIC_COPY
-        buffer->SetBuffer(CulledSizeBuffer,       _instanceCountGrass * 3, sizeof(F32),       NULL,                true,  false);
-        buffer->SetBuffer(CulledInstanceBuffer,   _instanceCountGrass * 3, sizeof(I32),       NULL,                true,  false);
+        buffer->SetBuffer(UnculledPositionBuffer, _instanceCountGrass,     sizeof(vec4<F32>), 3, &_grassPositions[0], false, false);
+        buffer->SetBuffer(UnculledSizeBuffer,     _instanceCountGrass,     sizeof(F32),       3, &_grassScales[0],    false, false);
+        buffer->SetBuffer(CulledPositionBuffer,   _instanceCountGrass * 3, sizeof(vec4<F32>), 3, NULL,                true,  false); // "true, false" = DYNAMIC_COPY
+        buffer->SetBuffer(CulledSizeBuffer,       _instanceCountGrass * 3, sizeof(F32),       3, NULL,                true,  false);
+        buffer->SetBuffer(CulledInstanceBuffer,   _instanceCountGrass * 3, sizeof(I32),       3, NULL,                true,  false);
 
         buffer->getDrawAttribDescriptor(posLocation).set(CulledPositionBuffer,   instanceDiv, 4, false, 0, 0, FLOAT_32);
         buffer->getDrawAttribDescriptor(scaleLocation).set(CulledSizeBuffer,     instanceDiv, 1, false, 0, 0, FLOAT_32);

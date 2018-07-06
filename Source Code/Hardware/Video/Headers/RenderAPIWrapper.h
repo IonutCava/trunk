@@ -113,7 +113,7 @@ class GenericVertexData;
 enum ShaderType;
 enum ErrorCodes;
 
-template<class T> class Plane;
+template<typename T> class Plane;
 typedef vectorImpl<Plane<F32> > PlaneList;
 ///FWD DECLARE STRUCTS
 class RenderStateBlockDescriptor;

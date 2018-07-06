@@ -26,15 +26,15 @@
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <string>
 
-class Quad3D;
+
+template<typename T>
+class vec2;
 class Texture;
 class ShaderProgram;
-template<class T>
-class vec2;
 
 class GUISplash {
 public:
-    GUISplash(const std::string& splashImageName,const vec2<U16>& dimensions);
+    GUISplash(const std::string& splashImageName, const vec2<U16>& dimensions);
     ~GUISplash();
     void render();
 

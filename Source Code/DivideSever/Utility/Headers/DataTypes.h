@@ -32,7 +32,7 @@ public:
 namespace Util
 {
     static std::stringstream _tempStream;
-    template<class T>
+    template<typename T>
     string toString(T data)
     {
         _tempStream.str(std::string());

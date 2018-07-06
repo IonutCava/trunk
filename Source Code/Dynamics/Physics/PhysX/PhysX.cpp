@@ -200,7 +200,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
         meshDesc.points.data      = &nodeVB->getPosition()[0];
         meshDesc.triangles.count  = (PxU32)triangles.size();
         meshDesc.triangles.stride = 3*sizeof(U32);
-        meshDesc.triangles.data   = &triangles.front();
+        meshDesc.triangles.data   = triangles.data();
         if (!nodeVB->usesLargeIndices()) {
             //meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
         }

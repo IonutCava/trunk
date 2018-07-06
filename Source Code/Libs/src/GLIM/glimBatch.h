@@ -19,7 +19,7 @@ namespace NS_GLIM
         GLIM_BATCH ();
         virtual ~GLIM_BATCH ();
 
-        //! Begins defining one piece of geometry that can later be rendered with one set of states.
+        // Begins defining one piece of geometry that can later be rendered with one set of states.
         virtual void BeginBatch (void);
         //! Ends defining the batch. After this call "RenderBatch" can be called to actually render it.
         virtual void EndBatch (void);

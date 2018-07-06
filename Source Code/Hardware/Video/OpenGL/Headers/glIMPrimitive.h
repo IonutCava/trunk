@@ -31,8 +31,7 @@ namespace NS_GLIM {
     enum GLIM_ENUM;
 };
 
-extern NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
-
+/// An Implementation of the NS_GLIM library.
 class glIMPrimitive : public IMPrimitive {
 
 public:
@@ -40,27 +39,31 @@ public:
     ~glIMPrimitive();
 
 public:
+    /// Begins defining one piece of geometry that can later be rendered with one set of states.
     void beginBatch();
-    void begin(PrimitiveType type);
-    void vertex(const vec3<F32>& vert);
-    ///Specify each attribute at least once(even with dummy values) before calling begin!
-    void attribute1i(const std::string& attribName, I32 value);
-    void attribute4ub(const std::string& attribName, const vec4<U8>& value);
-    void attribute4f(const std::string& attribName, const vec4<F32>& value);
-    void end();
+    /// Ends defining the batch. After this call "RenderBatch" can be called to actually render it.
     void endBatch();
+    /// Begins gathering information about the given type of primitives. 
+    void begin(PrimitiveType type);
+    /// Ends gathering information about the primitives.
+    void end();
+    /// Specify the position of a vertex belonging to this primitive
+    void vertex(const vec3<F32>& vert);
+    /// Specify each attribute at least once(even with dummy values) before calling begin!
+    /// Specify an attribute that will be applied to all vertex calls after this
+    void attribute1i(const std::string& attribName, I32 value);
+    /// Specify an attribute that will be applied to all vertex calls after this
+    void attribute4ub(const std::string& attribName, const vec4<U8>& value);
+    /// Specify an attribute that will be applied to all vertex calls after this
+    void attribute4f(const std::string& attribName, const vec4<F32>& value);
+    /// Restore the primitive to it's initial state
     void clear();
-
-    inline void render(U32 instanceCount = 1, bool forceWireframe = false) {
-        instanceCount > 1 ? renderBatchInstanced(instanceCount, forceWireframe) : renderBatch(forceWireframe);
-    }
+    /// Submit the created batch to the GPU for rendering
+    void render(bool forceWireframe = false, U32 instanceCount = 1);
 
 protected:
-    void renderBatch(bool wireframe = false);
-    void renderBatchInstanced(I32 count, bool wireframe = false);
-
-protected:
-    NS_GLIM::GLIM_BATCH*  _imInterface;//< Rendering API specific implementation
+    /// Rendering API specific implementation
+    NS_GLIM::GLIM_BATCH*  _imInterface;
 };
 
 #endif

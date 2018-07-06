@@ -116,7 +116,7 @@ private:
     vec2<U16>   _dimensions;
 };
 
-template<class T>
+template<typename T>
 inline T TER_COORD(T x, T y, T w) { return ((y)*(w)+(x)); }
 
 #endif

@@ -64,8 +64,10 @@ public:
     inline const  std::string&         getResourceLocation()    const {return _resourceLocation;}
     inline const  std::string&         getName()			    const {return _name;}
 
-    template<class T>
-    inline const  T*  getPropertyDescriptor()  const {return dynamic_cast<T*>(_propertyDescriptor); }
+    template<typename T>
+    inline const T* getPropertyDescriptor() const {
+        return dynamic_cast<T*>(_propertyDescriptor); 
+    }
 
     inline bool hasPropertyDescriptor()         const {return _propertyDescriptor != nullptr;}
     inline bool getFlag()					    const {return _flag;}
@@ -83,7 +85,7 @@ public:
     inline void setBoolMask(P32 mask)                                     {_mask = mask;}
     inline void setThreadedLoading(const bool threaded)                   {_threaded = threaded;}
 
-    template<class T>
+    template<typename T>
     inline void setPropertyDescriptor(const T& descriptor) {
         _propertyDescriptor = New T(descriptor);
     }

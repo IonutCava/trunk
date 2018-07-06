@@ -36,7 +36,7 @@
 ///This class is equivalent to a vector, the plane's normal,
 ///whose x, y and z components equate to the coefficients A, B and C respectively
 ///and a constant (D) which is the distance along the normal you have to go to move the plane back to the origin.
-template<class T>
+template<typename T>
 class Plane {
 public:
     /** From Ogre3D: The "positive side" of the plane is the half space to which the

@@ -356,7 +356,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glIMPrimitive.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h" />
@@ -405,7 +404,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glIMPrimitive.cpp" />

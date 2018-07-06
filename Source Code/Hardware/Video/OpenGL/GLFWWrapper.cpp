@@ -11,7 +11,7 @@
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 ErrorCodes GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
-    GL_ENUM_TABLE::fill();
+    Divide::GLUtil::GL_ENUM_TABLE::fill();
     // Most runtime variables are stored in the ParamHandler, including initialization settings retrieved from XML
     ParamHandler& par = ParamHandler::getInstance();
     // Setup error callback function before window creation  to make sure any GLFW init errors are handled.
@@ -317,7 +317,7 @@ void GL_API::createLoaderThread() {
 #   ifdef GLEW_MX
         Divide::GLUtil::initGlew();
         // Enable OpenGL debug callbacks for this context as well
-#      if defined(_DEBUG) || defined(_PROFILE)
+#       if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             // Debug callback in a separate thread requires a flag to distinguish it from the main thread's callbacks
             glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (void*)(1));

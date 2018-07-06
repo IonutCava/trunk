@@ -102,7 +102,7 @@ void AnimationComponent::onDraw(RenderStage currentStage) {
     _skeletonAvailable = false;
 
     _boneTransformBuffer[_writeBuffer]->UpdateData(0, _animationTransforms.size() * sizeof(mat4<F32>),
-                                                   &_animationTransforms.front().mat, true);
+                                                   _animationTransforms.data(), true);
     _boneTransformBuffer[_readBuffer]->Bind(Divide::SHADER_BUFFER_BONE_TRANSFORMS);
 
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations || _currentTimeStamp < 0.0)

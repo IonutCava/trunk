@@ -15,11 +15,11 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor)
     glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());
-    glSamplerParameteri(_samplerID, GL_TEXTURE_MIN_FILTER, glTextureFilterTable[descriptor.minFilter()]);
-    glSamplerParameteri(_samplerID, GL_TEXTURE_MAG_FILTER, glTextureFilterTable[descriptor.magFilter()]);
-    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_S, glWrapTable[descriptor.wrapU()]);
-    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_T, glWrapTable[descriptor.wrapV()]);
-    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_R, glWrapTable[descriptor.wrapW()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_MIN_FILTER, Divide::GLUtil::GL_ENUM_TABLE::glTextureFilterTable[descriptor.minFilter()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_MAG_FILTER, Divide::GLUtil::GL_ENUM_TABLE::glTextureFilterTable[descriptor.magFilter()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_S, Divide::GLUtil::GL_ENUM_TABLE::glWrapTable[descriptor.wrapU()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_T, Divide::GLUtil::GL_ENUM_TABLE::glWrapTable[descriptor.wrapV()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_R, Divide::GLUtil::GL_ENUM_TABLE::glWrapTable[descriptor.wrapW()]);
     if (descriptor.wrapU() == TEXTURE_CLAMP_TO_BORDER ||
         descriptor.wrapV() == TEXTURE_CLAMP_TO_BORDER ||
         descriptor.wrapW() == TEXTURE_CLAMP_TO_BORDER){
@@ -28,7 +28,7 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor)
 
     if(descriptor._useRefCompare){
         glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,  GL_COMPARE_R_TO_TEXTURE);
-        glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_FUNC,  glCompareFuncTable[descriptor._cmpFunc]);
+        glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_FUNC,  Divide::GLUtil::GL_ENUM_TABLE::glCompareFuncTable[descriptor._cmpFunc]);
     }
 
     if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {

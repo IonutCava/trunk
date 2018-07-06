@@ -41,77 +41,74 @@
 #define M_180DIVPI			57.295779513082320876798154814105f		//  180 / PI
 #define M_PIDIV360          0.00872664625997164788461845384244f     //  PI / 180 / 2 - PI / 360
 
-template<class T>
-inline void DegToRad(T& a)	{ a*=M_PIDIV180; }
-template<class T>
-inline void RadToDeg(T& a)	{ a*=M_180DIVPI; }
-template<class T>
-inline F32 RADIANS(T a)	    { return a*M_PIDIV180;}
-template<class T>
-inline F32 DEGREES(T a)	    { return a*M_180DIVPI; }
-template<class T>
-inline F32 kilometre(T a)   { return a*1000.0f; }
-template<class T>
-inline F32 metre(T a)		{ return a*1.0f; }
-template<class T>
-inline F32 decimetre(T a)   { return a*0.1f; }
-template<class T>
-inline F32 centimetre(T a)  { return a*0.01f; }
-template<class T>
-inline F32 millimeter(T a)  { return a*0.001f; }
-
-template<class T>
-inline D32 getUsToSec(T a) {return a * 0.000001; }
-
-template<class T>
-inline D32 getUsToMs(T a)  {return getMsToSec(a); }
-
-template<class T>
+template<typename T>
+inline void DegToRad(T& a) { a*=M_PIDIV180; }
+template<typename T>
+inline void RadToDeg(T& a) { a*=M_180DIVPI; }
+template<typename T>
+inline F32 RADIANS(T a)	   { return a*M_PIDIV180;}
+template<typename T>
+inline F32 DEGREES(T a)	   { return a*M_180DIVPI; }
+template<typename T>
+inline F32 kilometre(T a)  { return a*1000.0f; }
+template<typename T>
+inline F32 metre(T a)	   { return a*1.0f; }
+template<typename T>
+inline F32 decimetre(T a)  { return a*0.1f; }
+template<typename T>
+inline F32 centimetre(T a) { return a*0.01f; }
+template<typename T>
+inline F32 millimeter(T a) { return a*0.001f; }
+template<typename T>
+inline D32 getUsToSec(T a) { return a * 0.000001; }
+template<typename T>
+inline D32 getUsToMs(T a)  { return getMsToSec(a); }
+template<typename T>
 inline D32 getMsToSec(T a) { return a*0.001; }
-
-template<class T>
+template<typename T>
 inline D32 getSecToMs(T a) { return a*1000.0; }
-
-template<class T>
+template<typename T>
 inline D32 getSecToUs(T a) { return a * 1000000.0;}
-
-template<class T>
+template<typename T>
 inline D32 getMsToUs(T a)  { return getSecToMs(a);}
-
-template<class T>
+template<typename T>
 inline void MsToSec(T& a)  { a*=0.001; }
-
-template<class T>
+template<typename T>
 inline void SecToMs(T& a)  { a*=1000.0; }
-
-template<class T>
+template<typename T>
 inline void UsToSec(T& a)  { a*=0.000001; }
-
-template<class T>
+template<typename T>
 inline void SecToUs(T& a)  { a*=1000000.0; }
-
-template<class T>
+template<typename T>
 inline void UsToMs(T& a)   { MsToSec(a); }
-
-template<class T>
+template<typename T>
 inline void MsToUs(T& a)   { SecToMs(a); }
-
 
 const  F32 INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
 
-inline F32 random(F32 max=1.0)      { return max * rand() * INV_RAND_MAX; }
-inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * rand(); }
-inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
+inline F32 random(F32 max=1.0)      { 
+    return max * rand() * INV_RAND_MAX; 
+}
 
-inline bool bitCompare(U32 bitMask, U32 bit) {return ((bitMask & bit) == bit);}
+inline F32 random(F32 min, F32 max) { 
+    return min + (max - min) * INV_RAND_MAX * rand(); 
+}
 
-template <class T>
+inline I32 random(I32 max = RAND_MAX) { 
+    return rand()%(max+1); 
+}
+
+inline bool bitCompare(U32 bitMask, U32 bit) {
+    return ((bitMask & bit) == bit);
+}
+
+template <typename T>
 inline T squared(T n){
     return n*n;
 }
 
 /// Clamps value n between min and max
-template <class T>
+template <typename T>
 inline void CLAMP(T& n, T min, T max){
     n = std::min(std::max(n, min), max);
 }
@@ -137,15 +134,6 @@ template <typename T>
 class vec3;
 template <typename T>
 class Quaternion;
-
-inline D32 square_root(D32 n){
-    return sqrt(n);
-}
-
-template<class T>
-inline T square_root_tpl(T n){
-    return (T)square_root((D32)n);
-}
 
 namespace Util {
     inline void replaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
@@ -192,7 +180,7 @@ namespace Util {
         return true;
     }
 
-    template<class T>
+    template<typename T>
     inline std::string toString(const T& data){
         _ssBuffer.str(std::string());
         _ssBuffer << data;
@@ -200,7 +188,7 @@ namespace Util {
     }
 
     //U = to data type, T = from data type
-    template<class U, class T>
+    template<typename U, typename T>
     inline U convertData(const T& data){
         std::istringstream  iStream(data);
         U floatValue;
@@ -227,9 +215,9 @@ namespace Util {
 
     namespace Mat4 {
         // ----------------------------------------------------------------------------------------
-        template<class T>
+        template<typename T>
         void decompose (const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position);
-        template<class T>
+        template<typename T>
         void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position);
 
         inline F32* Multiply(const F32 *a, const F32 *b, F32 *r = nullptr){

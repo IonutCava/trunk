@@ -29,7 +29,7 @@ Quaternion class based on code from " OpenGL:Tutorials:Using Quaternions to repr
 */
 #include "core.h"
 
-template<class T>
+template<typename T>
 class Quaternion
 {
 public:
@@ -232,7 +232,7 @@ public:
 
         if ( fTrace > 0.0 ){
             // |w| > 1/2, may as well choose w > 1/2
-            fRoot = (T)square_root_tpl((F32)fTrace + 1.0f);  // 2w
+            fRoot = (T)std::sqrtf((F32)fTrace + 1.0f);  // 2w
             W(0.5f*fRoot);
             fRoot = 0.5f/fRoot;  // 1/(4w)
             X((rotationMatrix.m[2][1]-rotationMatrix.m[1][2]) * fRoot);
@@ -249,7 +249,7 @@ public:
             size_t j = s_iNext[i];
             size_t k = s_iNext[j];
 
-            fRoot = (T)square_root_tpl((F32)(rotationMatrix.m[i][i]-rotationMatrix.m[j][j]-rotationMatrix.m[k][k] + 1.0f));
+            fRoot = (T)std::sqrtf((F32)(rotationMatrix.m[i][i]-rotationMatrix.m[j][j]-rotationMatrix.m[k][k] + 1.0f));
             T* apkQuat[3] = { &_elements.x, &_elements.y, &_elements.z };
             *apkQuat[i] = 0.5f*fRoot;
             fRoot = 0.5f/fRoot;
@@ -352,7 +352,7 @@ private:
 };
 
 /// get the shortest arc quaternion to rotate vector 'v' to the target vector 'u'(from Ogre3D!)
-template<class T>
+template<typename T>
 inline Quaternion<T> rotationFromVToU(const vec3<T>& v, const vec3<T>& u, const vec3<T> fallbackAxis = VECTOR3_ZERO) {
   // Based on Stan Melax's article in Game Programming Gems
     Quaternion<T> q;
@@ -382,7 +382,7 @@ inline Quaternion<T> rotationFromVToU(const vec3<T>& v, const vec3<T>& u, const 
             q.fromAxisAngle(axis,RADIANS(M_PI));
         }
     } else {
-        F32 s = square_root_tpl( (1+d)*2 );
+        F32 s = std::sqrtf( (1+d)*2 );
         F32 invs = 1 / s;
  
         vec3<T> c(::cross(v0, v1) * invs);
@@ -393,13 +393,13 @@ inline Quaternion<T> rotationFromVToU(const vec3<T>& v, const vec3<T>& u, const 
     return q;
 }
 
-template<class T>
+template<typename T>
 inline Quaternion<T> slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t){
     Quaternion<T> temp; temp.slerp(q0, q1, t);
     return temp;
 }
 
-template<class T>
+template<typename T>
 inline mat4<T> getMatrix(const Quaternion<T>& q) {
     mat4<T> temp; q.getMatrix(temp);
     return temp;

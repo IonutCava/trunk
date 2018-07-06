@@ -47,25 +47,25 @@
 
 #include "MathHelper.h"
 
-template<class T>
+template<typename T>
 class Plane;
-template<class T>
+template<typename T>
 class vec2;
-template<class T>
+template<typename T>
 class vec3;
-template<class T>
+template<typename T>
 class vec4;
-template<class T>
+template<typename T>
 class mat3;
-template<class T>
+template<typename T>
 class mat4;
-template<class T>
+template<typename T>
 class Quaternion;
 /***********************************************************************
 /* vec2 -  A 2-tuple used to represent things like a vector in 2D space,
 /* a point in 2D space or just 2 values linked together
 /***********************************************************************/
-template<class T>
+template<typename T>
 class vec2 {
 public:
     vec2() : x(0), y(0) { }
@@ -114,7 +114,7 @@ public:
     /// set the 2 components of the vector back to 0
     inline void reset()                    { this->x = this->y = 0; }
     /// return the vector's length
-    inline T    length()             const { return square_root_tpl(this->x * this->x + this->y * this->y); }
+    inline T    length()             const { return std::sqrt(this->x * this->x + this->y * this->y); }
     /// return the angle defined by the 2 components
     inline T    angle()              const { return (T)atan2(this->y,this->x); }
     /// return the angle defined by the 2 components
@@ -218,7 +218,7 @@ public:
     /// set all the components back to 0
     inline void reset()                 { this->x = this->y = this->z = 0; }
     /// return the vector's length
-    inline T    length()          const {return square_root_tpl(lengthSquared()); }
+    inline T    length()          const {return std::sqrt(lengthSquared()); }
     /// return true if length is zero
     inline bool isZeroLength()    const { return lengthSquared() < EPSILON_F32; }
     /// compare 2 vectors within the specified tolerance
@@ -382,7 +382,7 @@ public:
     /// calculate the dot product between this vector and the specified one
     inline T    dot(const vec4 &v) const;
     /// return the vector's length
-    inline T    length()    const {return square_root_tpl(lengthSquared()); }
+    inline T    length()    const {return std::sqrt(lengthSquared()); }
     /// return the squared distance of the vector
     inline T    lengthSquared() const;
     /// round all four values
