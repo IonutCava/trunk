@@ -602,7 +602,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
 
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
-        pipeline = &newPipeline(pipelineDesc);
+        pipeline = newPipeline(pipelineDesc);
         firstRun = false;
     }
 

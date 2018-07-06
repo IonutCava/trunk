@@ -44,7 +44,6 @@ CachedResource::CachedResource(ResourceType type,
     : Resource(type, name),
       _descriptorHash(descriptorHash)
 {
-    _loadingCallbacks.fill(DELEGATE_CBK<void, Resource_wptr>());
 }
 
 CachedResource::CachedResource(ResourceType type,

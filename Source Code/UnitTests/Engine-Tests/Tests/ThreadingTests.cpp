@@ -24,7 +24,7 @@ TEST(TaskPoolContructionTest)
     CHECK_TRUE(init);
 
     // Double init
-    init = test.init(HARDWARE_THREAD_COUNT(), false);
+    init = test.init(to_U8(HARDWARE_THREAD_COUNT()), false);
     CHECK_FALSE(init);
 }
 
@@ -33,7 +33,7 @@ TEST(ParallelForTest)
     Console::toggleErrorStream(false);
 
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
+    bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), false);
     CHECK_TRUE(init);
 
     const U32 partitionSize = 4;
@@ -58,7 +58,7 @@ TEST(ParallelForTest)
 TEST(TaskCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
+    bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), false);
     CHECK_TRUE(init);
 
     std::atomic_bool testValue = false;
@@ -102,6 +102,7 @@ namespace {
         }
 
         void threadedFunction(const Task& parentTask) {
+            ACKNOWLEDGE_UNUSED(parentTask);
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
             _testValue = true;
         }
@@ -113,14 +114,13 @@ namespace {
 TEST(TaskClassMemberCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
+    bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), false);
     CHECK_TRUE(init);
 
     ThreadedTest testObj;
 
-    TaskHandle job = CreateTask(test,
-        DELEGATE_BIND(&ThreadedTest::threadedFunction, &testObj, std::placeholders::_1));
-    job.startTask(DELEGATE_BIND(&ThreadedTest::setTestValue, &testObj, false));
+    TaskHandle job = CreateTask(test, [&testObj](const Task& parentTask) { testObj.threadedFunction(parentTask); } );
+    job.startTask( [&testObj]() { testObj.setTestValue(false); } );
 
     CHECK_FALSE(testObj.getTestValue());
 
@@ -135,10 +135,9 @@ TEST(TaskClassMemberCallbackTest)
 
 TEST(TaskSpeedTest)
 {
-    
     {
         TaskPool test;
-        bool init = test.init(HARDWARE_THREAD_COUNT(), false);
+        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), false);
         CHECK_TRUE(init);
 
         Time::ProfileTimer timer;
@@ -165,7 +164,7 @@ TEST(TaskSpeedTest)
     }
     {
         TaskPool test;
-        bool init = test.init(HARDWARE_THREAD_COUNT(), true);
+        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), true);
         CHECK_TRUE(init);
 
         Time::ProfileTimer timer;
@@ -190,12 +189,50 @@ TEST(TaskSpeedTest)
         F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (lockfree): 60K tasks completed in: " << durationMS << " ms." << std::endl;
     }
+    {
+        TaskPool test;
+        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), false);
+        CHECK_TRUE(init);
+
+        const U32 partitionSize = 256;
+        const U32 loopCount = partitionSize * 8192 + 2;
+
+        Time::ProfileTimer timer;
+        timer.start();
+        parallel_for(test,
+                     [](const Task& parentTask, U32 start, U32 end) {
+                        // NOP
+                     },
+                     loopCount,
+                     partitionSize);
+        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        std::cout << "Threading speed test (parallel_for - blocking): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
+    }
+    {
+        TaskPool test;
+        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), true);
+        CHECK_TRUE(init);
+
+        const U32 partitionSize = 256;
+        const U32 loopCount = partitionSize * 8192 + 2;
+
+        Time::ProfileTimer timer;
+        timer.start();
+        parallel_for(test,
+                    [](const Task& parentTask, U32 start, U32 end) {
+                        // NOP
+                    },
+                    loopCount,
+                    partitionSize);
+        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        std::cout << "Threading speed test (parallel_for - lockfree): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
+    }
 }
 
 TEST(TaskPriorityTest)
 {
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT(), false);
+    bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), false);
     CHECK_TRUE(init);
 
     U32 callbackValue = 0;

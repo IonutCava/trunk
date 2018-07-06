@@ -219,6 +219,10 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
                                         const bool computeOnAdd) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
+    if (shader.empty()) {
+        int a;
+        a = 5;
+    }
     ResourceDescriptor shaderDescriptor(shader.empty() ? "NULL" : shader);
 
     if (!info._shaderDefines.empty()) {

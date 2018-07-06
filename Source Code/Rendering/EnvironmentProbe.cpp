@@ -41,7 +41,7 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
 
     _boundingBoxPrimitive = _context.newIMP();
     _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
-    _boundingBoxPrimitive->pipeline(_context.newPipeline(pipelineDescriptor));
+    _boundingBoxPrimitive->pipeline(*_context.newPipeline(pipelineDescriptor));
 
     _impostor = CreateResource<ImpostorSphere>(parentScene.resourceCache(),
                                                ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID())));
@@ -160,7 +160,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._shaderProgramHandle = _impostorShader->getID();
 
     GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;

@@ -13,7 +13,7 @@
 namespace Divide {
 
 namespace {
-    static const U32 g_nodesPerCullingPartition = 64u;
+    static const U32 g_nodesPerCullingPartition = 16u;
 
     template <typename T>
     constexpr T&&

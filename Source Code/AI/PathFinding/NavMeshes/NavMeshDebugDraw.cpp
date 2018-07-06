@@ -52,8 +52,7 @@ void NavMeshDebugDraw::beginBatch() {
         PipelineDescriptor pipeDesc;
         pipeDesc._stateHash = navigationDebugStateBlock.getHash();
 
-        Pipeline pipeline = _context.newPipeline(pipeDesc);
-        _primitive->pipeline(pipeline);
+        _primitive->pipeline(*_context.newPipeline(pipeDesc));
     }
 
     assert(_primitive != nullptr);

@@ -559,7 +559,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
     GFX::EnqueueCommand(buffer, blendCmd);
 
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDesc);
+    pipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDesc);
     GFX::EnqueueCommand(buffer, pipelineCmd);
 
     GFX::SetViewportCommand viewportCmd;

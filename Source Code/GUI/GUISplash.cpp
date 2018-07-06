@@ -55,7 +55,7 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     GFX::CommandBuffer& buffer = sBuffer();
 
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = &context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(buffer, pipelineCmd);
 
 

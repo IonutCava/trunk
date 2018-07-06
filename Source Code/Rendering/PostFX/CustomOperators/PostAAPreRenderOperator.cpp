@@ -74,7 +74,7 @@ void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._shaderProgramHandle = (_useSMAA ? _smaa : _fxaa)->getID();
 
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::BlitRenderTargetCommand blitRTCommand;

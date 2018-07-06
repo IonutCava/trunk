@@ -236,7 +236,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     pipelineDescriptor._shaderProgramHandle = _previewDeferredShader->getID();
 
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);;
+    pipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);;
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -270,7 +270,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     }
 
     pipelineDescriptor._shaderProgramHandle = _deferredShader->getID();
-    pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     pushConstantsCommand._constants.set("lightCount", GFX::PushConstantType::INT, (I32)_cachedLightCount);

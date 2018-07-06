@@ -219,21 +219,25 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
     return temp;
 }
 
-Pipeline& GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
+Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
     // Pipeline with not shader is no pipeline at all
     DIVIDE_ASSERT(descriptor._shaderProgramHandle != 0, "Missing shader handle during pipeline creation!");
 
     size_t hash = descriptor.getHash();
+
+    UpgradableReadLock ur_lock(_pipelineCacheLock);
     hashMap<size_t, Pipeline>::iterator it = _pipelineCache.find(hash);
 
     if (it == std::cend(_pipelineCache)) {
-        return hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;
+        UpgradeToWriteLock w_lock(ur_lock);
+        return &hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;
     }
 
-    return it->second;
+    return &it->second;
 }
 
 DescriptorSet_ptr GFXDevice::newDescriptorSet() const {
+    WriteLock w_lock(_descriptorSetPoolLock);
     std::shared_ptr<DescriptorSet> ptr(_descriptorSetPool.newElement(), DeleteDescriptorSet(_descriptorSetPool));
     return ptr;
 }

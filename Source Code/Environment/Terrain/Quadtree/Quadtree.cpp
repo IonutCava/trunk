@@ -37,7 +37,7 @@ void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
         RenderStateBlock primitiveRenderState;
         PipelineDescriptor pipeDesc;
         pipeDesc._stateHash = primitiveRenderState.getHash();
-        _bbPrimitive->pipeline(context.newPipeline(pipeDesc));
+        _bbPrimitive->pipeline(*context.newPipeline(pipeDesc));
     }
 
     _bbPrimitive->fromBox(_root->getBoundingBox().getMin(),

@@ -166,7 +166,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
                                                                    ? _planeDepthShader
                                                                    : _planeShader)->getID();
 
-        pkg.pipeline(1, _context.newPipeline(descriptor));
+        pkg.pipeline(1, *_context.newPipeline(descriptor));
 
         // draw bounding boxes;
         U16 state = _drawBBoxes ? 1 : 0;
@@ -221,7 +221,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                      : _planeShader)->getID();
         {
             GFX::BindPipelineCommand pipelineCommand;
-            pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);
+            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
             pkgInOut.addPipelineCommand(pipelineCommand);
         }
         //infinite plane
@@ -241,7 +241,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
         {
             GFX::BindPipelineCommand pipelineCommand;
-            pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);
+            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
             pkgInOut.addPipelineCommand(pipelineCommand);
         }
 

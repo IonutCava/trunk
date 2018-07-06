@@ -105,6 +105,10 @@ struct BindPipelineCommand final : Command {
     void onAdd(CommandBuffer& buffer) override {
         ACKNOWLEDGE_UNUSED(buffer);
         assert(_pipeline != nullptr);
+        if (_pipeline->shaderProgramHandle() == 0) {
+            int a;
+            a = 5;
+        }
     }
 
     const Pipeline* _pipeline = nullptr;

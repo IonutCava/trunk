@@ -100,7 +100,7 @@ bool Finished(const Task *task) {
 }
 
 TaskHandle& TaskHandle::startTask(TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction) {
-    assert(task != nullptr);
+    assert(_task != nullptr);
     assert(_task->_unfinishedJobs.load() > 0 && "StartTask error: double start call detected!");
 
     Start(_task, *_tp, prio, onCompletionFunction);

@@ -355,12 +355,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     pipelineDesc._stateHash = primitiveDescriptor.getHash();
     pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
 
-    Pipeline primitivePipeline = newPipeline(pipelineDesc);
-    _axisGizmo->pipeline(primitivePipeline);
+    Pipeline* primitivePipeline = newPipeline(pipelineDesc);
+    _axisGizmo->pipeline(*primitivePipeline);
 
     _debugFrustumPrimitive = newIMP();
     _debugFrustumPrimitive->name("DebugFrustum");
-    _debugFrustumPrimitive->pipeline(primitivePipeline);
+    _debugFrustumPrimitive->pipeline(*primitivePipeline);
 
     ResourceDescriptor previewNormalsShader("fbPreview");
     previewNormalsShader.setThreadedLoading(false);
@@ -375,7 +375,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     PipelineDescriptor descriptor;
     descriptor._shaderProgramHandle = _textRenderShader->getID();
     descriptor._stateHash = get2DStateBlock();
-    _textRenderPipeline = &newPipeline(descriptor);
+    _textRenderPipeline = newPipeline(descriptor);
 
 
     SizeChangeParams params;

@@ -251,7 +251,7 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     pointsCmd.drawCount(1);
     
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     // Blur horizontally
@@ -282,7 +282,7 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
 
     // Blur vertically
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _vertBlur;
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)0);

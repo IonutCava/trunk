@@ -138,7 +138,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
         pipeDesc._shaderProgramHandle = _skyShader->getID();
     }
 
-    pkgInOut.pipeline(0, _context.newPipeline(pipeDesc));
+    pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

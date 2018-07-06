@@ -308,7 +308,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
         pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
 
         GFX::BindPipelineCommand bindPipelineCmd;
-        bindPipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+        bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
 
         GFX::DrawCommand drawCmd;
         GenericDrawCommand drawCommand;

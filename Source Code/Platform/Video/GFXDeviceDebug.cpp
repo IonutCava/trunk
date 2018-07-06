@@ -128,7 +128,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             DebugView& view = *_debugViews[idx];
             pipelineDesc._shaderProgramHandle = view._shader->getID();
 
-            bindPipeline._pipeline = &newPipeline(pipelineDesc);
+            bindPipeline._pipeline = newPipeline(pipelineDesc);
             GFX::EnqueueCommand(bufferInOut, bindPipeline);
             pushConstants._constants = view._shaderData;
             GFX::EnqueueCommand(bufferInOut, pushConstants);

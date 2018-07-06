@@ -112,7 +112,7 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
 
      _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
      _drawCommand.drawCount(1);
-     _drawPipeline = &context.newPipeline(pipelineDescriptor);
+     _drawPipeline = context.newPipeline(pipelineDescriptor);
 
      _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -147,7 +147,7 @@ void PostFX::apply() {
 
         PipelineDescriptor desc = _drawPipeline->descriptor();
         desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = _shaderFunctionSelection;
-        _drawPipeline = &_gfx->newPipeline(desc);
+        _drawPipeline = _gfx->newPipeline(desc);
         _filtersDirty = false;
     }
 

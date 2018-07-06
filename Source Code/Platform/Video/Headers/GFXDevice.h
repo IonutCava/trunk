@@ -350,7 +350,7 @@ public:
                                         bool asyncLoad) const;
     ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
 
-    Pipeline&          newPipeline(const PipelineDescriptor& descriptor) const;
+    Pipeline*          newPipeline(const PipelineDescriptor& descriptor) const;
     DescriptorSet_ptr  newDescriptorSet() const;
 
     // Shortcuts
@@ -520,8 +520,10 @@ protected:
 
     Time::ProfileTimer& _commandBuildTimer;
 
+    mutable SharedLock _descriptorSetPoolLock;
     mutable DescriptorSetPool _descriptorSetPool;
     
+    mutable SharedLock _pipelineCacheLock;
     mutable hashMap<size_t, Pipeline> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;

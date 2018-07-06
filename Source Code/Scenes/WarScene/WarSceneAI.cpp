@@ -260,14 +260,13 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
 
-#if 0
     SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier1"));
     SceneGraphNode* animalNode(_sceneGraph->findNode("Soldier2"));
     SceneGraphNode* heavyNode(_sceneGraph->findNode("Soldier3"));
 
     SceneNode_ptr lightNodeMesh = lightNode->getNode();
     SceneNode_ptr animalNodeMesh = animalNode->getNode();
-    SceneNode_ptrheavyNodeMesh = heavyNode->getNode();
+    SceneNode_ptr heavyNodeMesh = heavyNode->getNode();
     assert(lightNodeMesh && animalNodeMesh && heavyNodeMesh);
 
     AIEntity* aiSoldier = nullptr;
@@ -324,7 +323,15 @@ bool WarScene::addUnits() {
                 damage = 15;
             }
 
-            SceneGraphNode* currentNode = root.addNode(currentMesh, normalMask, PhysicsGroup::GROUP_KINEMATIC, currentName);
+            SceneGraphNodeDescriptor npcNodeDescriptor;
+            npcNodeDescriptor._node = currentMesh;
+            npcNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+            npcNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
+            npcNodeDescriptor._isSelectable = true;
+            npcNodeDescriptor._componentMask = normalMask;
+            npcNodeDescriptor._name = currentName;
+
+            SceneGraphNode* currentNode = root.addNode(npcNodeDescriptor);
             currentNode->setSelectable(true);
 
             TransformComponent* tComp =
@@ -373,8 +380,6 @@ bool WarScene::addUnits() {
 
     //----------------------- AI controlled units ---------------------//
     return !(_armyNPCs[0].empty() || _armyNPCs[1].empty());
-#endif
-    return true;
 }
 
 AI::AIEntity* WarScene::findAI(SceneGraphNode* node) {

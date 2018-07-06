@@ -96,7 +96,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     pipelineDescriptor._shaderProgramHandle = _bloomCalc->getID();
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
      // Step 1: generate bloom
@@ -124,7 +124,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Blur horizontally
     pipelineDescriptor._shaderProgramHandle = _blur->getID();
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     data = _bloomOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
@@ -146,7 +146,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Blur vertically (recycle the render target. We have a copy)
     pipelineDescriptor._shaderProgramHandle = _blur->getID();
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     data = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
@@ -178,7 +178,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     pipelineDescriptor._shaderProgramHandle = _bloomApply->getID();
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].clear();
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     _bloomApplyConstants.set("bloomFactor", GFX::PushConstantType::FLOAT, _bloomFactor);

@@ -231,7 +231,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     GFX::BindPipelineCommand bindPipelineCmd;
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getID();
-    bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     ShaderBufferBinding shaderBuffer;
@@ -330,7 +330,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;

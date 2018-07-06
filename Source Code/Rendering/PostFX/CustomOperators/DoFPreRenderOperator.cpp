@@ -62,7 +62,7 @@ void DoFPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pointsCmd.drawCount(1);
 
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;

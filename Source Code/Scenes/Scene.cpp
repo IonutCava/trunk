@@ -97,7 +97,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
         pipeDesc._stateHash = primitiveDescriptor.getHash();
         pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
 
-        _linesPrimitive->pipeline(_context.gfx().newPipeline(pipeDesc));
+        _linesPrimitive->pipeline(*_context.gfx().newPipeline(pipeDesc));
         _linesPrimitive->paused(true);
     } else {
         _linesPrimitive = nullptr;
