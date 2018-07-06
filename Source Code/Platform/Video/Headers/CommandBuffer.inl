@@ -62,6 +62,7 @@ template<typename T>
 inline void CommandBuffer::registerType() {
     if (!_commands.is_registered<T>()) {
         _commands.register_types<T>();
+        _commands.reserve(typeid(T), 10);
     }
 }
 inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {

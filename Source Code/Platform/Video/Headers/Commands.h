@@ -52,7 +52,7 @@ namespace GFX {
 
 // beware of macros!
 #define REGISTER_COMMAND(Type, PoolSize)
-#define TYPE_HANDLER(T) virtual const std::type_info& type() { return typeid(T); }
+#define TYPE_HANDLER(T) const std::type_info& type() override { return typeid(T); }
 
 enum class CommandType : U8 {
     BEGIN_RENDER_PASS = 0,
@@ -87,7 +87,7 @@ struct Command {
     }
     virtual ~Command() = default;
 
-    TYPE_HANDLER(Command);
+    virtual const std::type_info& type() = 0;
 
     CommandType _type = CommandType::COUNT;
 };

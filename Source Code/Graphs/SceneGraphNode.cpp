@@ -509,14 +509,6 @@ void SceneGraphNode::onCameraUpdate(const U64 cameraNameHash,
     Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraNameHash, cameraEye, cameraView);
 }
 
-void SceneGraphNode::onCameraChange(const Camera& cam) {
-    forEachChild([&cam](SceneGraphNode& child) {
-        child.onCameraChange(cam);
-    });
-
-    Attorney::SceneNodeSceneGraph::onCameraChange(*this, *_node, cam);
-}
-
 void SceneGraphNode::onNetworkSend(U32 frameCount) {
     forEachChild([frameCount](SceneGraphNode& child) {
         child.onNetworkSend(frameCount);

@@ -391,9 +391,6 @@ protected:
     void stepResolution(bool increment);
 
 protected:
-    void onCameraUpdate(const Camera& camera);
-    void onCameraChange(const Camera& camera);
-
     void blitToScreen(const Rect<I32>& targetViewport);
 
     void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport);
@@ -543,14 +540,6 @@ namespace Attorney {
 
     class GFXDeviceKernel {
     private:
-        static void onCameraUpdate(GFXDevice& device, const Camera& camera) {
-            device.onCameraUpdate(camera);
-        }
-
-        static void onCameraChange(GFXDevice& device, const Camera& camera) {
-            device.onCameraChange(camera);
-        }
-
         static void blitToScreen(GFXDevice& device, const Rect<I32>& targetViewport) {
             device.blitToScreen(targetViewport);
         }

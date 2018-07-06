@@ -666,8 +666,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     vec2<U16> renderResolution(mainWindow.getDimensions());
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
 
-    Camera::addUpdateListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraUpdate(_platformContext->gfx(), cam); });
-    Camera::addChangeListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraChange(_platformContext->gfx(), cam); });
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;

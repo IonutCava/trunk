@@ -148,12 +148,6 @@ void SceneNode::onCameraUpdate(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(rotationOffset);
 }
 
-void SceneNode::onCameraChange(SceneGraphNode& sgn,
-                               const Camera& cam) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(cam);
-}
-
 void SceneNode::onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(dataOut);

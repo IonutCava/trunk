@@ -348,8 +348,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                         const vec3<F32>& cameraEye,
                         const mat4<F32>& cameraView);
 
-    void onCameraChange(const Camera& cam);
-
     void onNetworkSend(U32 frameCount);
 
     inline void setUpdateFlag(UpdateFlag flag) {

@@ -138,8 +138,6 @@ class NOINITVTABLE SceneNode : public CachedResource {
                                 const U64 cameraNameHash,
                                 const vec3<F32>& posOffset,
                                 const mat4<F32>& rotationOffset);
-    virtual void onCameraChange(SceneGraphNode& sgn,
-                                const Camera& cam);
 
     virtual void setBoundsChanged();
 
@@ -191,12 +189,6 @@ class SceneNodeSceneGraph {
                                const vec3<F32>& posOffset,
                                const mat4<F32>& rotationOffset) {
         node.onCameraUpdate(sgn, cameraNameHash, posOffset, rotationOffset);
-    }
-
-    static void onCameraChange(SceneGraphNode& sgn,
-                               SceneNode& node,
-                               const Camera& cam) {
-        node.onCameraChange(sgn, cam);
     }
 
     friend class Divide::SceneGraph;

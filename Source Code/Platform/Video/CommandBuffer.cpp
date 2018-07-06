@@ -10,7 +10,6 @@ namespace GFX {
 
 CommandBuffer::CommandBuffer()
 {
-    _commands.reserve(25);
 }
 
 CommandBuffer::~CommandBuffer()
