@@ -26,7 +26,7 @@ AnimationComponent::AnimationComponent(SceneAnimator& animator,
 
     _dataRange = to_int(_animator.boneCount());
 
-    I32 alignmentOffset = (_dataRange * sizeof(mat4<F32>)) % ShaderBuffer::getTargetDataAlignment();
+    I32 alignmentOffset = (_dataRange * sizeof(mat4<F32>)) % ShaderBuffer::getTargetDataAlignment(/*true*/);
 
     if (alignmentOffset > 0) {
         _dataRange += (ShaderBuffer::getTargetDataAlignment() - alignmentOffset) / sizeof(mat4<F32>);

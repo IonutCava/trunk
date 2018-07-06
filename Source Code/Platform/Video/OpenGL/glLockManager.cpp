@@ -5,9 +5,10 @@ namespace Divide {
 
 GLuint64 kOneSecondInNanoSeconds = 1000000000;
 
-glLockManager::glLockManager(bool cpuUpdates) : _CPUUpdates(cpuUpdates) 
+glLockManager::glLockManager(bool cpuUpdates) : _CPUUpdates(cpuUpdates),
+                                                _defaultSync(nullptr)
+
 {
-    _defaultSync = nullptr;
 }
 
 glLockManager::~glLockManager()

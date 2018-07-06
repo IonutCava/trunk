@@ -126,7 +126,7 @@ class glGenericVertexData : public GenericVertexData {
     vectorImpl<U32> _fdbkBindPoints;
 
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
-    std::unique_ptr<glBufferLockManager> _lockManager;
+    vectorImpl<std::unique_ptr<glBufferLockManager> > _lockManagers;
 };
 
 };  // namespace Divide

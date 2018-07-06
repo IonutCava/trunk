@@ -16,10 +16,7 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
       _elementSize(nullptr),
       _bufferPersistentData(nullptr),
       _prevResult(nullptr),
-      _startDestOffset(nullptr),
-      _lockManager(_persistentMapped
-                       ? MemoryManager_NEW glBufferLockManager(true)
-                       : nullptr)
+      _startDestOffset(nullptr)
 {
     _numQueries = 0;
     _indexBuffer = 0;
@@ -86,6 +83,7 @@ glGenericVertexData::~glGenericVertexData() {
 
     _bufferObjects.clear();
     _feedbackBuffers.clear();
+    _lockManagers.clear();
 }
 
 /// Create the specified number of buffers and queries and attach them to this
@@ -146,8 +144,16 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Persistently mapped data (array of void* pointers)
     _bufferPersistentData =
         (bufferPtr*)malloc(sizeof(bufferPtr) * numBuffers);
+
     for (U8 i = 0; i < numBuffers; ++i) {
         _bufferPersistentData[i] = nullptr;
+    }
+
+    if (_persistentMapped) {
+        _lockManagers.reserve(numBuffers);
+        for (U8 i = 0; i < numBuffers; ++i) {
+            _lockManagers.push_back(std::make_unique<glBufferLockManager>(true));
+        }
     }
 }
 
@@ -190,6 +196,13 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
     // Instance count can be generated programmatically, so make sure it's valid
     if (cmd.primCount == 0) {
         return;
+    }
+
+    if (_persistentMapped) {
+        vectorAlg::vecSize bufferCount = _bufferObjects.size();
+        for(vectorAlg::vecSize i = 0; i < bufferCount; ++i) {
+            _lockManagers[i]->WaitForLockedRange();
+        }
     }
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (command.drawToBuffer() && !_feedbackBuffers.empty());
@@ -354,13 +367,14 @@ void glGenericVertexData::setBuffer(U32 buffer,
         DIVIDE_ASSERT(data != nullptr,
                       "glGenericVertexData error: persistent mapping failed "
                       "when setting the current buffer!");
+        _lockManagers[buffer]->WaitForLockedRange(0, bufferSize * sizeFactor);
         // Create sizeFactor copies of the data and store them in the buffer
         for (U8 i = 0; i < sizeFactor; ++i) {
             U8* dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
             memcpy(dst, data, bufferSize);
         }
         // Make sure we synchronize the write commands
-        _lockManager->LockRange(0, bufferSize * sizeFactor);
+        _lockManagers[buffer]->LockRange(0, bufferSize * sizeFactor);
     } else {
         GLenum flag =
             isFeedbackBuffer(buffer)
@@ -403,7 +417,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
     } else {
         // Wait for the target part of the buffer to become available for
         // writing
-        _lockManager->WaitForLockedRange(_startDestOffset[buffer], bufferSize);
+        _lockManagers[buffer]->WaitForLockedRange(_startDestOffset[buffer], bufferSize);
         // Offset the data pointer by the required offset taking in account the
         // current data copy we are writing into
         bufferPtr dst = (U8*)_bufferPersistentData[buffer] +
@@ -412,7 +426,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
         memcpy(dst, data, dataCurrentSize);
         // Lock the current buffer copy until uploading to GPU visible memory is
         // finished
-        _lockManager->LockRange(_startDestOffset[buffer], bufferSize);
+        _lockManagers[buffer]->LockRange(_startDestOffset[buffer], bufferSize);
     }
     // Update offset pointers for reading and writing
     _startDestOffset[buffer] = (_startDestOffset[buffer] + bufferSize) %
