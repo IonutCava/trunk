@@ -41,7 +41,10 @@ public:
 	inline bool isHWInitComplete() const {return _hardwareInitComplete;}
 	///Use this as a callback for multi-threaded loading.
 	///Generate hardware elements (buffers, textures, shaders etc. after joining main loading thread.
-	virtual bool generateHWResource(const stringImpl& name)  {_hardwareInitComplete = true; return true;}
+	virtual bool generateHWResource(const stringImpl& name) {
+        _hardwareInitComplete = true; 
+        return true;
+    }
 
 private:
 	std::atomic_bool _hardwareInitComplete;

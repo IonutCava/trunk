@@ -39,26 +39,21 @@ PostFX::~PostFX()
     if (_postProcessingShader) {
         RemoveResource(_postProcessingShader);
 
-        if (_underwaterTexture) {
-            RemoveResource(_underwaterTexture);
-        }
-
         if (_gfx->anaglyphEnabled()) {
             RemoveResource(_anaglyphShader);
         }
 
-        if (_enableBloom) {
-            MemoryManager::SAFE_DELETE( _bloomFB );
-        }
-
-        if (_enableSSAO) {
-            MemoryManager::SAFE_DELETE( _SSAO_FB );
+        if (_underwaterTexture) {
+            RemoveResource(_underwaterTexture);
         }
 
         if (_enableNoise) {
             RemoveResource(_noise);
             RemoveResource(_screenBorder);
         }
+
+        MemoryManager::DELETE(_bloomFB);
+        MemoryManager::DELETE(_SSAO_FB);
     }
 
     PreRenderStageBuilder::getInstance().destroyInstance();
@@ -146,7 +141,8 @@ void PostFX::createOperators(){
 
     if (_enableSSAO && !_SSAO_FB) {
         _SSAO_FB = _gfx->newFB();
-        PreRenderOperator* ssaoOP = stageBuilder.addPreRenderOperator<SSAOPreRenderOperator>(_enableSSAO, _SSAO_FB, _resolutionCache);
+        PreRenderOperator* ssaoOP = nullptr;
+        ssaoOP = stageBuilder.addPreRenderOperator<SSAOPreRenderOperator>(_enableSSAO, _SSAO_FB, _resolutionCache);
         ssaoOP->addInputFB(screenBuffer);
         ssaoOP->addInputFB(depthBuffer);
     }
@@ -204,8 +200,9 @@ void PostFX::displayScene() {
 
     #ifdef _DEBUG
         _gfx->getRenderTarget(_depthPreview ? GFXDevice::RENDER_TARGET_DEPTH : 
-                                              GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_SCREEN, _depthPreview ? TextureDescriptor::Depth :
-                                                                                                                            TextureDescriptor::Color0);
+                                              GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_SCREEN,
+                                                                                     _depthPreview ? TextureDescriptor::Depth :
+                                                                                                     TextureDescriptor::Color0);
     #else
         _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_SCREEN);
     #endif

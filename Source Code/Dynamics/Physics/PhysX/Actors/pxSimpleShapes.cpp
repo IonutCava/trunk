@@ -21,7 +21,7 @@ bool PhysX::createPlane(const vec3<F32>& position, U32 size){
         return false;
     }
 
-    PhysXActor* actorWrapper = New PhysXActor();
+    PhysXActor* actorWrapper = MemoryManager_NEW PhysXActor();
     actorWrapper->_type = PxGeometryType::ePLANE;
     actorWrapper->_actor = plane;
     actorWrapper->_isDynamic = false;
@@ -49,7 +49,7 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size){
         return false;
     }
 
-    PhysXActor* actorWrapper = New PhysXActor();
+    PhysXActor* actorWrapper = MemoryManager_NEW PhysXActor();
     actorWrapper->_type = PxGeometryType::eBOX;
     actorWrapper->_actor = actor;
     actorWrapper->_isDynamic = true;

@@ -44,17 +44,22 @@ public:
     Reflector(ReflectorType type,const vec2<U16>& resolution);
     virtual ~Reflector();
 
-    ///This function should be unique to every reflector. Portals may need special effects, mirrors some special lighting, etc
+    /// This function should be unique to every reflector. 
+    /// Portals may need special effects, mirrors some special lighting, etc
     virtual void updateReflection() = 0;
-    ///Each reflector has a certain plane equation. Update this after each transform to obtain proper reflections
+    /// Each reflector has a certain plane equation.
+    /// Update this after each transform to obtain proper reflections
     virtual void updatePlaneEquation() = 0;
-    ///Retrieves the reflection texture
+    /// Retrieves the reflection texture
     inline Framebuffer*       getReflectionFB()    {return _reflectedTexture;}
     inline const Plane<F32>&  getReflectionPlane() {return _reflectionPlane;}
-    ///Rendering callback is that function in the scene used to render the reflection
-    ///The SceneGraph is not the default rendering class for reflections as some elements (i.e. Sky) are not part of it
-    ///As the sky and other elements should be included in the reflection, we should set a custom callback
-    ///Another example would be the player model. It is not rendered when in First Person, but it should show up in reflections
+    /// Rendering callback is that function in the scene used to render the reflection
+    /// The SceneGraph is not the default rendering class for reflections as some elements 
+    // (i.e. Sky) are not part of it
+    /// As the sky and other elements should be included in the reflection, 
+    /// we should set a custom callback
+    /// Another example would be the player model. It is not rendered when in First Person,
+    /// but it should show up in reflections
 	inline void setRenderCallback(const DELEGATE_CBK<>& callback) { _renderCallback = callback; }
 
     void togglePreviewReflection() {_previewReflection = !_previewReflection;}

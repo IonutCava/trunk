@@ -35,16 +35,17 @@ namespace Divide {
 DEFINE_SINGLETON (ParamHandler)
 typedef hashMapImpl<stringImpl, cdiggins::any> ParamMap;
 /// A special map for string types (small perf. optimization for add/retrieve)
-typedef hashMapImpl<stringImpl, stringImpl >   ParamStringMap;
-/// A special map for boolean types (small perf. optimization for add/retrieve. Used a lot as option toggles)
-typedef hashMapImpl<stringImpl, bool >         ParamBoolMap;
+typedef hashMapImpl<stringImpl, stringImpl > ParamStringMap;
+/// A special map for boolean types (small perf. optimization for add/retrieve) 
+/// Used a lot as option toggles
+typedef hashMapImpl<stringImpl, bool > ParamBoolMap;
 
 public:
 	inline void setDebugOutput(bool logState) {
 		_logState = logState;
 	}
 
-	template <typename T>
+	template<typename T>
 	inline T getParam(const stringImpl& name, T defaultValue = T()) const {
 		ReadLock r_lock(_mutex);
 		ParamMap::const_iterator it = _params.find(name);
@@ -54,7 +55,8 @@ public:
 #           ifdef _DEBUG		
 		        if (!success) {
 			        ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str());
-					DIVIDE_ASSERT(success, "ParamHandler error: Can't cast requested param to specified type!");
+					DIVIDE_ASSERT(success, 
+                                  "ParamHandler error: Can't cast requested param to specified type!");
 		        } 
 #           endif
 
@@ -70,7 +72,8 @@ public:
 		WriteLock w_lock(_mutex);
 		ParamMap::iterator it = _params.find(name); 
         if (it == _params.end()) {
-			DIVIDE_ASSERT(emplace(_params, name, cdiggins::any(value)).second, "ParamHandler error: can't add specified value to map!");
+			DIVIDE_ASSERT(emplace(_params, name, cdiggins::any(value)).second,
+                          "ParamHandler error: can't add specified value to map!");
         } else {
 			it->second = cdiggins::any(value);
         }
@@ -112,7 +115,8 @@ public:
 		WriteLock w_lock(_mutex);
 		ParamStringMap::iterator it = _paramsStr.find(name);
 		if (it == _paramsStr.end()) {
-			DIVIDE_ASSERT(emplace(_paramsStr, name, value).second, "ParamHandler error: can't add specified value to map!");
+			DIVIDE_ASSERT(emplace(_paramsStr, name, value).second, 
+                          "ParamHandler error: can't add specified value to map!");
 		} else {
 			it->second = value;
 		}
@@ -171,7 +175,8 @@ public:
 		WriteLock w_lock(_mutex);
 		ParamBoolMap::iterator it = _paramBool.find(name);
 		if (it == _paramBool.end()) {
-			DIVIDE_ASSERT(emplace(_paramBool, name, value).second, "ParamHandler error: can't add specified value to map!");
+			DIVIDE_ASSERT(emplace(_paramBool, name, value).second,
+                          "ParamHandler error: can't add specified value to map!");
 		} else {
 			it->second = value;
 		}

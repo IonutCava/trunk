@@ -20,10 +20,7 @@ AITeam::~AITeam()
 	AIManager::getInstance().unregisterTeam(this);
 	{
 		WriteLock w1_lock(_crowdMutex);
-		for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
-			MemoryManager::SAFE_DELETE(it.second);
-		}
-		_aiTeamCrowd.clear();
+        MemoryManager::DELETE_HASHMAP(_aiTeamCrowd);
 	}
 	{
 		WriteLock w2_lock(_updateMutex);
@@ -36,14 +33,16 @@ AITeam::~AITeam()
 }
 
 void AITeam::addCrowd(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* navMesh) {
-    DIVIDE_ASSERT(_aiTeamCrowd.find(radius) == _aiTeamCrowd.end(), "AITeam error: DtCrowd already existed for new navmesh!");
-    hashAlg::emplace(_aiTeamCrowd, radius, New Navigation::DivideDtCrowd(navMesh));
+    DIVIDE_ASSERT(_aiTeamCrowd.find(radius) == _aiTeamCrowd.end(), 
+                  "AITeam error: DtCrowd already existed for new navmesh!");
+    hashAlg::emplace(_aiTeamCrowd, radius, MemoryManager_NEW Navigation::DivideDtCrowd(navMesh));
 }
 
 void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
     AITeamCrowd::iterator it =  _aiTeamCrowd.find(radius);
-    DIVIDE_ASSERT(it != _aiTeamCrowd.end(), "AITeam error: DtCrowd does not exist for specified navmesh!");
-    MemoryManager::SAFE_DELETE( it->second );
+    DIVIDE_ASSERT(it != _aiTeamCrowd.end(), 
+                  "AITeam error: DtCrowd does not exist for specified navmesh!");
+    MemoryManager::DELETE( it->second );
     _aiTeamCrowd.erase(it);
 }
 

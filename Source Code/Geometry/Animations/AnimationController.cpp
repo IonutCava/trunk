@@ -6,23 +6,22 @@
 
 namespace Divide {
 
-void SceneAnimator::Release(){// this should clean everything up
-	for (LineCollection::value_type& it : _skeletonLines) {
-		for (LineMap::value_type& it2 : it.second) {
-            it2.second.clear();
-        }
-    }
+void SceneAnimator::Release(){
+    // this should clean everything up
     _skeletonLines.clear();
-    _animations.clear();// clear all animations
+    _skeletonLinesContainer.clear();
+    // clear all animations
+    _animations.clear();
     _bonesByName.clear();
     _bonesToIndex.clear();
     _animationNameToId.clear();
     _transforms.clear();
     // This node will delete all children recursivly
-    MemoryManager::SAFE_DELETE( _skeleton );
+    MemoryManager::DELETE( _skeleton );
 }
 
-bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
+/// This will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
+bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){
     if(!pScene->HasAnimations()) return false;
     Release();
 
@@ -106,7 +105,7 @@ void SceneAnimator::Calculate(I32 animationIndex, const D32 pTime){
 // ------------------------------------------------------------------------------------------------
 // Recursively creates an internal node structure matching the current scene and animation.
 Bone* SceneAnimator::CreateBoneTree( aiNode* pNode, Bone* parent){
-    Bone* internalNode = New Bone(pNode->mName.data);// create a node
+    Bone* internalNode = MemoryManager_NEW Bone(pNode->mName.data);// create a node
     internalNode->_parent = parent; //set the parent, in the case this is theroot node, it will be null
     _bonesByName[internalNode->_name] = internalNode;// use the name as a key
     internalNode->_localTransform =  pNode->mTransformation;
@@ -158,7 +157,8 @@ I32 SceneAnimator::GetBoneIndex(const stringImpl& bname) const {
 void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
     child->_globalTransform = child->_localTransform;
     Bone* parent = child->_parent;
-    // this will climb the nodes up along through the parents concatenating all the matrices to get the Object to World transform, or in this case, the Bone To World transform
+    // This will climb the nodes up along through the parents concatenating all the matrices to get the Object to World transform,
+    // or in this case, the Bone To World transform
     if(GFX_DEVICE.getApi() == Direct3D){
         while( parent ){
             child->_globalTransform *= parent->_localTransform;
@@ -173,17 +173,26 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 }
 
 ///Renders the current skeleton pose at time index dt
-const vectorImpl<Line >& SceneAnimator::getSkeletonLines(U32 animationIndex, const D32 dt) {
+const vectorImpl<Line >& SceneAnimator::getSkeletonLines(I32 animationIndex, const D32 dt) {
+
+    // typedef hashMapImpl<I32/*frameIndex*/, vectorAlg::vecSize/*vectorIntex*/> LineMap;
+    // typedef hashMapImpl<I32/*animationId*/, LineMap> LineCollection;
+    // LineCollection _skeletonLines;
+    // vectorImpl<vectorImpl<Line >> _skeletonLinesContainer;
+
     I32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
-    LineCollection::iterator it = _skeletonLines.find(animationIndex);
-    if (it == _skeletonLines.end()) {
-        hashAlg::pair<LineCollection::iterator, bool> result = hashAlg::insert(_skeletonLines, hashAlg::makePair(animationIndex, LineMap()));
-        assert(result.second);
-        it = result.first;
+    LineMap& lineMap = _skeletonLines[animationIndex];
+    LineMap::iterator it = lineMap.find(frameIndex);
+
+    if (it == lineMap.end()) {
+        vectorAlg::vecSize lineEntry = static_cast<vectorAlg::vecSize>(_skeletonLinesContainer.size());
+        it = hashAlg::insert(lineMap, hashAlg::makePairCpy(frameIndex, lineEntry)).first;
+
+        _skeletonLinesContainer.push_back(vectorImpl<Line>());
     }
 
     // create all the needed points
-    vectorImpl<Line >& lines = it->second[frameIndex];
+    vectorImpl<Line >& lines = _skeletonLinesContainer[it->second];
     if (lines.empty()){
         lines.reserve(_bones.size());
         // Construct skeleton

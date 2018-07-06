@@ -13,19 +13,19 @@ Light* ImplResourceLoader<Light>::operator()(){
         case -1:
         case LIGHT_TYPE_POINT:
         default:
-            ptr = New PointLight();
+            ptr = MemoryManager_NEW PointLight();
         break;
         case LIGHT_TYPE_DIRECTIONAL:
-            ptr = New DirectionalLight();
+            ptr = MemoryManager_NEW DirectionalLight();
             break;
         case LIGHT_TYPE_SPOT:
-            ptr = New SpotLight();
+            ptr = MemoryManager_NEW SpotLight();
             break;
     };
     assert(ptr != nullptr);
 
     if ( !ptr->load( _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         ptr->renderState().useDefaultMaterial( false );
     }

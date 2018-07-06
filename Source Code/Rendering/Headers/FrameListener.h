@@ -25,8 +25,9 @@
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
-///As you might of guessed it, it's the same system used in Ogre3D (http://www.ogre3d.org/docs/api/html/OgreFrameListener_8h_source.html)
-///I'm sorry for using it, but it's so simple to implement, I decided to use something that people already know and are comfortable with
+/// As you might of guessed it, it's the same system used in Ogre3D
+/// (http://www.ogre3d.org/docs/api/html/OgreFrameListener_8h_source.html)
+/// I decided to use something that people already know and are comfortable with
 ///-Ionut
 
 namespace Divide {
@@ -50,8 +51,9 @@ struct FrameEvent {
 };
 
 /// FrameListener class.
-///Has 3 events, associated with the start of rendering a frame, the end of rendering and the end of buffer swapping after frames
-///All events have timers associated with them for update timing
+/// Has 3 events, associated with the start of rendering a frame, 
+/// the end of rendering and the end of buffer swapping after frames
+/// All events have timers associated with them for update timing
 class FrameListener{
 public:
 	///Either give it a name

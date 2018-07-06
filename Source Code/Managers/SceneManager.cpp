@@ -30,11 +30,8 @@ SceneManager::~SceneManager()
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
     //PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
     PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
-	for (SceneMap::value_type& it : _sceneMap) {
-        MemoryManager::SAFE_DELETE( it.second );
-    }
-    MemoryManager::SAFE_DELETE( _renderPassCuller );
-    _sceneMap.clear();
+    MemoryManager::DELETE_HASHMAP(_sceneMap);
+    MemoryManager::DELETE( _renderPassCuller );
     //Destroy the model loader;
     DVDConverter::getInstance().destroyInstance();
 }
@@ -44,11 +41,12 @@ bool SceneManager::init(GUI* const gui){
 
     //Load default material
     PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
-    _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial", false);
+    _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial",
+                                            false);
     _defaultMaterial->dumpToFile(false);
 
     _GUI = gui;
-    _renderPassCuller = New RenderPassCuller();
+    _renderPassCuller = MemoryManager_NEW RenderPassCuller();
     _renderPassManager = &RenderPassManager::getOrCreateInstance();
     _init = true;
     return true;

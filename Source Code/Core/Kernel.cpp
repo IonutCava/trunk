@@ -53,15 +53,17 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 	//General light management and rendering (individual lights are handled by each scene)
 	//Unloading the lights is a scene level responsibility
 	LightManager::createInstance();
-    _cameraMgr = New CameraManager(this);               //Camera manager
+    _cameraMgr = MemoryManager_NEW CameraManager(this);               //Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange, &LightManager::getInstance()));
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&SceneManager::onCameraChange, &SceneManager::getInstance()));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange,
+                                                      &LightManager::getInstance()));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&SceneManager::onCameraChange, 
+                                                      &SceneManager::getInstance()));
     //We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
     //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
-    _mainTaskPool = New boost::threadpool::pool(Config::THREAD_LIMIT + 1 /*A.I.*/);
+    _mainTaskPool = MemoryManager_NEW boost::threadpool::pool(Config::THREAD_LIMIT + 1 /*A.I.*/);
 
 	ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
 
@@ -73,7 +75,7 @@ Kernel::~Kernel()
 	_mainTaskPool->clear();
 	while (_mainTaskPool->active() > 0) {
 	}
-    MemoryManager::SAFE_DELETE( _mainTaskPool );
+    MemoryManager::DELETE( _mainTaskPool );
     REMOVE_TIMER(s_appLoopTimer);
 }
 
@@ -168,7 +170,8 @@ void Kernel::mainLoopApp() {
 
 #if defined(_DEBUG) || defined(_PROFILE)  
     if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0){
-        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()), GFX_DEVICE.getDrawCallCount());
+        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()),
+                                                   GFX_DEVICE.getDrawCallCount());
     }
 #endif
 }
@@ -211,7 +214,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     } // while
 
 	if (Config::USE_FIXED_TIMESTEP) {
-		_GFX.setInterpolation(std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) / static_cast<D32>(deltaTime), 1.0));
+		_GFX.setInterpolation(std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) /
+                                       static_cast<D32>(deltaTime), 1.0));
 	}
     
     // Get input events
@@ -231,7 +235,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 }
 
 void Kernel::renderScene() {
-    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : 
+                                                                                   FINAL_STAGE;
     bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
     if (_GFX.anaglyphEnabled() && postProcessing) {
@@ -243,7 +248,8 @@ void Kernel::renderScene() {
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
     
-    /// Lock the render pass manager because the Z_PRE_PASS and the FINAL_STAGE pass must render the exact same geometry
+    /// Lock the render pass manager because the Z_PRE_PASS and the FINAL_STAGE pass must render 
+    /// the exact same geometry
     RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
@@ -267,7 +273,8 @@ void Kernel::renderScene() {
 }
 
 void Kernel::renderSceneAnaglyph(){
-    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : 
+                                                                                   FINAL_STAGE;
 
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
@@ -348,7 +355,8 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
 void Kernel::firstLoop() {
     ParamHandler& par = ParamHandler::getInstance();
     bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
-    //Skip two frames, one without and one with shadows, so all resources can be built while the splash screen is displayed
+    // Skip two frames, one without and one with shadows, so all resources can be built while 
+    // the splash screen is displayed
     par.setParam("freezeGUITime", true);
     par.setParam("freezeLoopTime", true);
     par.setParam("rendering.enableShadows",false);
@@ -370,7 +378,9 @@ void Kernel::firstLoop() {
     _currentTime = _nextGameTick = GETUSTIME();
 }
 
-void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK<>& sceneRenderCallback) const {
+void Kernel::submitRenderCall(const RenderStage& stage, 
+                              const SceneRenderState& sceneRenderState, 
+                              const DELEGATE_CBK<>& sceneRenderCallback) const {
     _GFX.setRenderStage(stage);
     _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
 }
@@ -378,10 +388,18 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
-	Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), std::placeholders::_1, std::placeholders::_2));
+	Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, 
+                                                            GUI::getInstance().getConsole(), 
+                                                            std::placeholders::_1, 
+                                                            std::placeholders::_2));
     //Using OpenGL for rendering as default
     _GFX.setApi(OpenGL);
-    _GFX.setStateChangeExclusionMask(TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY | TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES);
+    _GFX.setStateChangeExclusionMask(TYPE_LIGHT | 
+                                     TYPE_TRIGGER | 
+                                     TYPE_PARTICLE_EMITTER | 
+                                     TYPE_SKY | 
+                                     TYPE_VEGETATION_GRASS | 
+                                     TYPE_VEGETATION_TREES);
     //Target FPS is usually 60. So all movement is capped around that value
     ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     //Load info from XML files
@@ -399,8 +417,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     PRINT_FN(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
-    Camera* camera = New FreeFlyCamera();
-    camera->setProjection(aspectRatio, par.getParam<F32>("rendering.verticalFOV"), vec2<F32>(par.getParam<F32>("rendering.zNear"), par.getParam<F32>("rendering.zFar")));
+    Camera* camera = MemoryManager_NEW FreeFlyCamera();
+    camera->setProjection(aspectRatio, 
+                          par.getParam<F32>("rendering.verticalFOV"), 
+                          vec2<F32>(par.getParam<F32>("rendering.zNear"), 
+                                    par.getParam<F32>("rendering.zFar")));
     camera->setFixedYawAxis(true);
     //As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
     _cameraMgr->addNewCamera("defaultCamera", camera);
@@ -485,7 +506,7 @@ void Kernel::shutdown() {
     } catch( ... ) { 
         D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); 
     }
-    MemoryManager::SAFE_DELETE( _cameraMgr );
+    MemoryManager::DELETE( _cameraMgr );
     LightManager::destroyInstance();
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));

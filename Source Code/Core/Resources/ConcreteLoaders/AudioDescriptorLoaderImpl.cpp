@@ -6,11 +6,11 @@ namespace Divide {
 
 template<>
 AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()(){
-    AudioDescriptor* ptr = New AudioDescriptor(_descriptor.getResourceLocation());
+    AudioDescriptor* ptr = MemoryManager_NEW AudioDescriptor(_descriptor.getResourceLocation());
     assert(ptr != nullptr);
 
     if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         ptr->isLooping() = _descriptor.getFlag();
     }

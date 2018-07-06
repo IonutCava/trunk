@@ -48,18 +48,19 @@ protected:
     bool _locked;
 };
 
-class AITeam : public GUIDWrapper{
+class AITeam : public GUIDWrapper {
 public:
 
 public:
-    typedef hashMapImpl<AIEntity::PresetAgentRadius, Navigation::DivideDtCrowd*, hashAlg::hash<I32> > AITeamCrowd;
+    typedef Navigation::DivideDtCrowd* CrowdPtr;
+    typedef hashMapImpl<AIEntity::PresetAgentRadius, CrowdPtr, hashAlg::hash<I32> > AITeamCrowd;
     typedef hashMapImpl<AIEntity*, F32 > MemberVariable;
     typedef hashMapImpl<I64, AIEntity*> TeamMap;
 
     AITeam(U32 id);
     ~AITeam();
 
-    inline Navigation::DivideDtCrowd* const getCrowd(AIEntity::PresetAgentRadius radius) const {
+    inline CrowdPtr const getCrowd(AIEntity::PresetAgentRadius radius) const {
         ReadLock r_lock(_crowdMutex);
         AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
         if (it != _aiTeamCrowd.end()) {
@@ -121,18 +122,22 @@ protected:
     void removeCrowd(AIEntity::PresetAgentRadius radius);
 
 protected:
+
     inline vectorImpl<Order* >::iterator findOrder(Order* const order) {
         assert(order != nullptr);
         U32 orderId = order->getId();
-        return vectorAlg::find_if( _orders.begin(), _orders.end(), [&orderId]( Order* const order )->bool {
-                                                                     return orderId == order->getId(); 
-                                                                  });
+        return vectorAlg::find_if(_orders.begin(), _orders.end(), 
+                                  [&orderId]( Order* const order )->bool {
+                                    return orderId == order->getId(); 
+                                  });
     }
+
     inline vectorImpl<U32 >::iterator AITeam::findEnemyTeamEntry(U32 enemyTeamID) {
         ReadLock r_lock(_enemyTeamLock);
-        return vectorAlg::find_if( _enemyTeams.begin(), _enemyTeams.end(), [&enemyTeamID]( U32 id )->bool {
-                                                                            return id == enemyTeamID; 
-                                                                           });
+        return vectorAlg::find_if(_enemyTeams.begin(), _enemyTeams.end(),
+                                  [&enemyTeamID]( U32 id )->bool {
+                                    return id == enemyTeamID; 
+                                  });
     }
 
 protected:

@@ -105,7 +105,8 @@ int HiZOcclusionCull(const in vec3 position) {
 
     /* now we calculate the bounding rectangle size in viewport coordinates */
     /* now we calculate the texture LOD used for lookup in the depth buffer texture */
-    float LOD = ceil(log2(max((BoundingRect[1].x - BoundingRect[0].x) * dvd_ViewPort.y, (BoundingRect[1].y - BoundingRect[0].y) * dvd_ViewPort.z) / 2.0));
+    float LOD = ceil(log2(max((BoundingRect[1].x - BoundingRect[0].x) * dvd_ViewPort.y, 
+                              (BoundingRect[1].y - BoundingRect[0].y) * dvd_ViewPort.z) / 2.0));
 
     /* finally fetch the depth texture using explicit LOD lookups */
     /* if the instance depth is bigger than the depth in the texture discard the instance */
@@ -123,7 +124,9 @@ void main(void) {
     OrigData1 = instanceData2;
     OrigData2 = gl_InstanceID;
     //objectVisible = CullRoutine(OrigData.xyz);
-    objectVisible = cullType > 0 ? (cullType > 1 ? HiZOcclusionCull(OrigData0.xyz) : InstanceCloudReduction(OrigData0.xyz)) : PassThrough(OrigData0.xyz);
+    objectVisible = cullType > 0 ? (cullType > 1 ? HiZOcclusionCull(OrigData0.xyz) : 
+                                                   InstanceCloudReduction(OrigData0.xyz)) : 
+                                   PassThrough(OrigData0.xyz);
 }
 
 -- Geometry

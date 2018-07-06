@@ -29,17 +29,23 @@
 
 namespace Divide {
 
-///When "CreateResource" is called, the resource is in "RES_UNKNOWN" state. Once it has been instantiated it will move to the "RES_CREATED" state.
-///Calling "load" on a non-created resource will fail. After "load" is called, the resource is move to the "RES_LOADING" state
-///Nothing can be done to the resource when it's in "RES_LOADING" state!
-///Once loading is complete, preferably in another thread, the resource state will become "RES_LOADED" and ready to be used (e.g. added to the SceneGraph)
-///Calling "unload" is only available for "RES_LOADED" state resources. Calling this method will set the state to "RES_LOADING"
-///Once unloading is complete, the resource will become "RES_CREATED". It will still exist, but won't contain any data.
-///RES_UNKNOWN and RES_CREATED are safe to delete
+/// When "CreateResource" is called, the resource is in "RES_UNKNOWN" state. 
+/// Once it has been instantiated it will move to the "RES_CREATED" state.
+/// Calling "load" on a non-created resource will fail.
+/// After "load" is called, the resource is move to the "RES_LOADING" state
+/// Nothing can be done to the resource when it's in "RES_LOADING" state!
+/// Once loading is complete, preferably in another thread, 
+/// the resource state will become "RES_LOADED" and ready to be used (e.g. added to the SceneGraph)
+/// Calling "unload" is only available for "RES_LOADED" state resources. 
+/// Calling this method will set the state to "RES_LOADING"
+/// Once unloading is complete, the resource will become "RES_CREATED". 
+/// It will still exist, but won't contain any data.
+/// RES_UNKNOWN and RES_CREATED are safe to delete
+
 enum ResourceState{
     RES_UNKNOWN   = 0, //<The resource exists, but it's state is undefined
     RES_CREATED   = 1, //<The pointer has been created and instantiated, but no data has been loaded
-    RES_LOADING   = 2, //<The resource is in loading or unloading stage, creating or deleting data, parsing scripts, etc
+    RES_LOADING   = 2, //<The resource is loading or unloading, creating or deleting data, parsing scripts, etc
     RES_LOADED    = 3  //<The resource is loaded and available
 };
 
@@ -64,19 +70,40 @@ public:
     virtual bool unload() = 0;
 
     ///Name management
-    const  stringImpl& getName()                       const {return _name;}
-    inline void        setName(const stringImpl& name)       {_name = name;}
-    ///Physical file location
-    const stringImpl& getResourceLocation()                                   const {return _resourceLocation;}
-          void        setResourceLocation(const stringImpl& resourceLocation)       {_resourceLocation = resourceLocation;}
+    const  stringImpl& getName() const {
+        return _name;
+    }
 
-    inline ResourceState getState() const {return _resourceState;}
+    inline void        setName(const stringImpl& name) {
+        _name = name;
+    }
+
+    ///Physical file location
+    const stringImpl& getResourceLocation() const { 
+        return _resourceLocation; 
+    }
+    
+    void setResourceLocation(const stringImpl& resourceLocation) {
+        _resourceLocation = resourceLocation;
+    }
+
+    inline ResourceState getState() const {
+        return _resourceState;
+    }
+
     ///Toggle loading in background thread
-    inline  void enableThreadedLoading(const bool enableThreadedLoading) {_threadedLoading = enableThreadedLoading;}
-    virtual void threadedLoad(const stringImpl& name)                  {_threadedLoadComplete = true;}
+    inline  void enableThreadedLoading(const bool enableThreadedLoading) {
+        _threadedLoading = enableThreadedLoading;
+    }
+
+    virtual void threadedLoad(const stringImpl& name) {
+        _threadedLoadComplete = true;
+    }
 
 protected:
-    inline  void setState(const ResourceState& currentState) {_resourceState = currentState;}
+    inline  void setState(const ResourceState& currentState) {
+        _resourceState = currentState;
+    }
 
 protected:
     stringImpl	 _name;
@@ -108,16 +135,24 @@ struct FileData {
     F32 version;
     bool castsShadows;
     bool receivesShadows;
-    bool staticUsage; //<Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
-    bool navigationUsage; //< Used to determine if the object should be added to the nav mesh generation process or not
-    bool physicsUsage;   //< Used to determine if the object should be added to physics simulations
-    bool physicsPushable; //< If physicsUsage is true, this determines if the node can be pushed around by other actors or if it is a static(fixed in space) actor
-    bool useHighDetailNavMesh; //< Used to force a geometry level parsing for nav mesh creation instead of the default bounding-box level
+    /// Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
+    bool staticUsage; 
+    /// Used to determine if the object should be added to the nav mesh generation process or not
+    bool navigationUsage;
+    /// Used to determine if the object should be added to physics simulations 
+    bool physicsUsage;   
+    /// If physicsUsage is true, this determines if the node can be pushed around by other actors 
+    /// or if it is a static(fixed in space) actor
+    bool physicsPushable; 
+    /// Used to force a geometry level parsing for nav mesh creation instead of the default 
+    /// bounding-box level
+    bool useHighDetailNavMesh; 
 };
 
 struct TerrainInfo {
     TerrainInfo(){position.set(0,0,0);}
-    ///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
+    /// "variables" contains the various strings needed for each terrain such as texture names, 
+    /// terrain name etc.
     hashMapImpl<stringImpl,stringImpl> variables;
     F32  grassDensity;
     F32  treeDensity;

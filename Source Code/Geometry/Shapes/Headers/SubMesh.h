@@ -68,7 +68,10 @@ protected:
     mat4<F32> _sceneRootMatrix;
     
     inline void setGeometryLimits(const vec3<F32>& min, const vec3<F32>& max) { _importBB.set(min, max);}
-    void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    void getDrawCommands(SceneGraphNode* const sgn, 
+                         const RenderStage& currentRenderStage, 
+                         SceneRenderState& sceneRenderState, 
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
 
 protected:
     bool _visibleToNetwork;

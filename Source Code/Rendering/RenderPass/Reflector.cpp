@@ -29,7 +29,7 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
 Reflector::~Reflector()
 {
     UNREGISTER_FRAME_LISTENER(this);
-    MemoryManager::SAFE_DELETE( _reflectedTexture );
+    MemoryManager::DELETE( _reflectedTexture );
     RemoveResource(_previewReflectionShader);
 }
 
@@ -63,8 +63,8 @@ bool Reflector::build(){
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
-
-    TextureDescriptor reflectionDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); //Less precision for reflections
+    //Less precision for reflections
+    TextureDescriptor reflectionDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); 
 
     reflectionDescriptor.setSampler(reflectionSampler);
 
@@ -81,12 +81,17 @@ void Reflector::previewReflection() {
         if (_previewReflection) {
             F32 height = _resolution.y * 0.333f;
             _reflectedTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
-            vec4<I32> viewport(0, Application::getInstance().getResolution().y - height, _resolution.x  * 0.333f, height);
-			GFX_DEVICE.renderInViewport(viewport, DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))&GFXDevice::drawPoints,
-                                                                &GFX_DEVICE,
-                                                                1,
-                                                                GFX_DEVICE.getDefaultStateBlock(true),
-                                                                _previewReflectionShader));
+            vec4<I32> viewport(0, 
+                              Application::getInstance().getResolution().y - height, 
+                              _resolution.x  * 0.333f, 
+                              height);
+			GFX_DEVICE.renderInViewport(viewport,
+                                        DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))
+                                                      &GFXDevice::drawPoints,
+                                                      &GFX_DEVICE,
+                                                      1,
+                                                      GFX_DEVICE.getDefaultStateBlock(true),
+                                                      _previewReflectionShader));
         }
 #   endif
 }

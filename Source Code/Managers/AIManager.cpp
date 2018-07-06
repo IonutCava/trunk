@@ -27,14 +27,14 @@ void AIManager::Destroy() {
     {
         WriteLock w_lock(_updateMutex);
 		for (AITeamMap::value_type& entity : _aiTeams) {
-            MemoryManager::SAFE_DELETE( entity.second );
+            MemoryManager::DELETE( entity.second );
         }
         _aiTeams.clear();
     }
     {
         WriteLock w_lock(_navMeshMutex);
 		for (NavMeshMap::value_type& it : _navMeshes) {
-            MemoryManager::SAFE_DELETE( it.second );
+            MemoryManager::DELETE( it.second );
         }
         _navMeshes.clear();
 
@@ -136,7 +136,7 @@ void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     WriteLock w_lock(_navMeshMutex);
     NavMeshMap::iterator it = _navMeshes.find(radius);
     DIVIDE_ASSERT(it != _navMeshes.end(), "AIManager error: Can't destroy NavMesh for specified radius (NavMesh not found)!");
-    MemoryManager::SAFE_DELETE( it->second );
+    MemoryManager::DELETE( it->second );
     _navMeshes.erase(it);
     w_lock.unlock();
     

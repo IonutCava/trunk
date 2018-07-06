@@ -81,7 +81,7 @@ namespace Navigation {
             I32 bufSize = ftell(fp);
             fseek(fp, 0, SEEK_SET);
 
-            char* buf = New char[bufSize];
+            char* buf = MemoryManager_NEW char[bufSize];
             if (!buf)  {
                 fclose(fp);
                 return false;
@@ -128,10 +128,10 @@ namespace Navigation {
                 }
             }
 
-            MemoryManager::SAFE_DELETE_ARRAY( buf );
+            MemoryManager::DELETE_ARRAY( buf );
 
             // Calculate normals.
-            outData._normals = New F32[outData._triangleCount*3];
+            outData._normals = MemoryManager_NEW F32[outData._triangleCount * 3];
 
             for (I32 i = 0; i < (I32)outData._triangleCount*3; i += 3)   {
                 const F32* v0 = &outData._vertices[outData._triangles[i]*3];
@@ -202,7 +202,7 @@ namespace Navigation {
 
                 while(newCap < totalVertCt)	newCap *= 2;
 
-                mergedData._vertices = New F32[newCap*3];
+                mergedData._vertices = MemoryManager_NEW F32[newCap * 3];
                 mergedData._vertexCapacity = newCap;
                 mergedData._vertexCount = totalVertCt;
 
@@ -214,7 +214,7 @@ namespace Navigation {
 
                 while(newCap < totalTriCt)	newCap *= 2;
 
-                mergedData._triangles = New I32[newCap*3];
+                mergedData._triangles = MemoryManager_NEW I32[newCap * 3];
                 mergedData._triangleCapacity = newCap;
                 mergedData._triangleCount = totalTriCt;
                 I32 aFaceSize = a.getTriCount() * 3;
@@ -242,13 +242,13 @@ namespace Navigation {
             if (modelData->getVertCount()+1 > modelData->_vertexCapacity)  {
                 modelData->_vertexCapacity = ! modelData->_vertexCapacity ? 8 : modelData->_vertexCapacity*2;
 
-                F32* nv = New F32[modelData->_vertexCapacity*3];
+                F32* nv = MemoryManager_NEW F32[modelData->_vertexCapacity * 3];
 
                 if ( modelData->getVertCount() ) {
                     memcpy( nv, modelData->getVerts(), modelData->getVertCount() * 3 * sizeof( F32 ) );
                 }
                 if ( modelData->getVerts() ) {
-                    MemoryManager::SAFE_DELETE_ARRAY( modelData->_vertices );
+                    MemoryManager::DELETE_ARRAY( modelData->_vertices );
                 }
                 modelData->_vertices = nv;
             }
@@ -261,16 +261,20 @@ namespace Navigation {
             modelData->_vertexCount++;
         }
 
-        void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices, U32 triangleIndexOffset, const SamplePolyAreas& areaType){
+        void addTriangle(NavModelData* modelData, 
+                         const vec3<U32>& triangleIndices, 
+                         U32 triangleIndexOffset, 
+                         const SamplePolyAreas& areaType) {
+
             if (modelData->getTriCount() + 1 > modelData->_triangleCapacity)  {
                 modelData->_triangleCapacity = !modelData->_triangleCapacity ? 8 : modelData->_triangleCapacity*2;
-                I32* nv = New I32[modelData->_triangleCapacity*3];
+                I32* nv = MemoryManager_NEW I32[modelData->_triangleCapacity * 3];
 
                 if ( modelData->getTriCount() ) {
                     memcpy( nv, modelData->_triangles, modelData->getTriCount() * 3 * sizeof( I32 ) );
                 }
                 if ( modelData->getTris() ) {
-                    MemoryManager::SAFE_DELETE_ARRAY( modelData->_triangles );
+                    MemoryManager::DELETE_ARRAY( modelData->_triangles );
                 }
                 modelData->_triangles = nv;
             }
@@ -297,8 +301,16 @@ namespace Navigation {
             SceneNode* sn = sgn->getNode();
 
             SceneNodeType nodeType = sn->getType();
-            U32 ignoredNodeType = TYPE_LIGHT | TYPE_ROOT | TYPE_PARTICLE_EMITTER | TYPE_TRIGGER | TYPE_SKY | TYPE_VEGETATION_GRASS;
-            U32 allowedNodeType = TYPE_WATER | TYPE_OBJECT3D | TYPE_VEGETATION_TREES;
+            U32 ignoredNodeType = TYPE_ROOT | 
+                                  TYPE_LIGHT | 
+                                  TYPE_PARTICLE_EMITTER | 
+                                  TYPE_TRIGGER | 
+                                  TYPE_SKY | 
+                                  TYPE_VEGETATION_GRASS;
+
+            U32 allowedNodeType = TYPE_WATER | 
+                                  TYPE_OBJECT3D | 
+                                  TYPE_VEGETATION_TREES;
 
             if(!bitCompare(allowedNodeType, nodeType)){
                 if(!bitCompare(ignoredNodeType, nodeType)){
@@ -324,11 +336,13 @@ namespace Navigation {
                     }break;
                 case TYPE_OBJECT3D : {
                     //Check if we need to override detail level
-                    if (!sgn->getComponent<NavigationComponent>()->navMeshDetailOverride() && sgn->usageContext() == SceneGraphNode::NODE_STATIC){
+                    if (!sgn->getComponent<NavigationComponent>()->navMeshDetailOverride() && 
+                         sgn->usageContext() == SceneGraphNode::NODE_STATIC){
                         level = DETAIL_BOUNDINGBOX;
                     }
-                    if(dynamic_cast<Object3D*>(sn)->getType() == Object3D::TERRAIN)
+                    if (dynamic_cast<Object3D*>(sn)->getType() == Object3D::TERRAIN) {
                         areType = SAMPLE_POLYAREA_GROUND;
+                    }
                     }break;
                 default:{
                     assert(false);//we should never reach this due to the bit checks above
@@ -336,22 +350,31 @@ namespace Navigation {
             };
 
             //I should remove this hack - Ionut
-            if(nodeType == TYPE_WATER) sgn = sgn->getChildren()["waterPlane"];
+            if(nodeType == TYPE_WATER) {
+                sgn = sgn->getChildren()["waterPlane"];
+            }
+
             D_PRINT_FN(Locale::get("NAV_MESH_CURRENT_NODE"),sn->getName().c_str(), (U32)level);
 
             U32 currentTriangleIndexOffset = outData.getVertCount();
             
             if(level == DETAIL_ABSOLUTE){
-                if(nodeType == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVB();
-                else /*nodeType == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVB();
+                if(nodeType == TYPE_OBJECT3D)  {
+                    geometry = dynamic_cast<Object3D* >(sn)->getGeometryVB();
+                } else /*nodeType == TYPE_WATER*/ {
+                    geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVB();
+                }
                 assert(geometry != nullptr);
 
                 const vectorImpl<vec3<F32> >& vertices  = geometry->getPosition();
-                if(vertices.empty()) return false;
-                
+                if(vertices.empty()) {
+                    return false;
+                }
+
                 dynamic_cast<Object3D* >(sn)->computeTriangleList();
                 const vectorImpl<vec3<U32> >& triangles = dynamic_cast<Object3D* >(sn)->getTriangles();
-                if(nodeType != TYPE_OBJECT3D || (nodeType == TYPE_OBJECT3D && dynamic_cast<Object3D* >(sn)->getType() != Object3D::TERRAIN)){
+                if(nodeType != TYPE_OBJECT3D || 
+                   (nodeType == TYPE_OBJECT3D && dynamic_cast<Object3D* >(sn)->getType() != Object3D::TERRAIN)){
                     mat4<F32> nodeTransform = sgn->getComponent<PhysicsComponent>()->getWorldMatrix();
                     for (U32 i = 0; i < vertices.size(); ++i ){
                         //Apply the node's transform and add the vertex to the NavMesh
@@ -377,7 +400,10 @@ namespace Navigation {
                 for(U32 f = 0; f < 6; f++){
                    for(U32 v = 2; v < 4; v++){
                        // Note: We reverse the normal on the polygons to prevent things from going inside out
-                       addTriangle(&outData, vec3<U32>(cubeFaces[f][0], cubeFaces[f][v-1], cubeFaces[f][v]), currentTriangleIndexOffset, areType);
+                       addTriangle(&outData, 
+                                   vec3<U32>(cubeFaces[f][0], cubeFaces[f][v-1], cubeFaces[f][v]),
+                                   currentTriangleIndexOffset, 
+                                   areType);
                    }
                 }
             }else{

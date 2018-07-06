@@ -32,7 +32,7 @@ class WorldPacket : public ByteBuffer
 
         void SetOpcode(U16 opcode) { m_opcode = opcode; }
 
-        template <class Archive>
+        template<typename Archive>
         void serialize(Archive& ar,  unsigned int version  )
         {
             ar & _rpos;

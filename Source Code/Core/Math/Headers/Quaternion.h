@@ -251,7 +251,10 @@ public:
             size_t j = s_iNext[i];
             size_t k = s_iNext[j];
 
-            fRoot = (T)std::sqrtf((F32)(rotationMatrix.m[i][i]-rotationMatrix.m[j][j]-rotationMatrix.m[k][k] + 1.0f));
+            fRoot = (T)std::sqrtf((F32)(rotationMatrix.m[i][i] - 
+                                        rotationMatrix.m[j][j] - 
+                                        rotationMatrix.m[k][k] + 
+                                        1.0f));
             T* apkQuat[3] = { &_elements.x, &_elements.y, &_elements.z };
             *apkQuat[i] = 0.5f*fRoot;
             fRoot = 0.5f/fRoot;
@@ -355,7 +358,9 @@ private:
 
 /// get the shortest arc quaternion to rotate vector 'v' to the target vector 'u'(from Ogre3D!)
 template<typename T>
-inline Quaternion<T> rotationFromVToU(const vec3<T>& v, const vec3<T>& u, const vec3<T> fallbackAxis = VECTOR3_ZERO) {
+inline Quaternion<T> rotationFromVToU(const vec3<T>& v, 
+                                      const vec3<T>& u, 
+                                      const vec3<T> fallbackAxis = VECTOR3_ZERO) {
   // Based on Stan Melax's article in Game Programming Gems
     Quaternion<T> q;
     // Copy, since cannot modify local

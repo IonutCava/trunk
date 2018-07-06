@@ -31,7 +31,7 @@ layout(binding = SHADER_BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_M
 
 // x - isSelected; y - isShadowMapped; z - lodLevel, w - reserved
 #define buffer_integerValues dvd_NodeData._matrix4[0] 
-#define dvd_lodLevel (buffer_integerValues.z)
+#define dvd_lodLevel int(buffer_integerValues.z)
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor

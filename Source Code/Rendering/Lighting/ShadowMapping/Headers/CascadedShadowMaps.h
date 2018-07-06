@@ -34,7 +34,8 @@ class ShaderProgram;
 class SceneGraphNode;
 
 class DirectionalLight;
-///Directional lights can't deliver good quality shadows using a single shadow map. This technique offers an implementation of the CSM method
+/// Directional lights can't deliver good quality shadows using a single shadow map. 
+/// This technique offers an implementation of the CSM method
 class CascadedShadowMaps : public ShadowMap {
 public:
     CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 numSplits);

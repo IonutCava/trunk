@@ -76,12 +76,11 @@ void PhysXSceneInterface::release() {
 	D_PRINT_FN( Locale::get( "STOP_PHYSX_SCENE_INTERFACE" ) );
 
 	idle();
-	for ( RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it ) {
-		( *it )->_actor->release();
-        MemoryManager::SAFE_DELETE( *it );
+	for (PhysXActor* actor : _sceneRigidActors) {
+        actor->_actor->release();
 	}
 
-	_sceneRigidActors.clear();
+    MemoryManager::DELETE_VECTOR(_sceneRigidActors);
 
 	if ( _cpuDispatcher ) {
 		_cpuDispatcher->release();
@@ -117,7 +116,7 @@ void PhysXSceneInterface::update(const U64 deltaTime){
 }
 
 namespace {
-    PxShape* g_shapes[2048];// = New PxShape*[nShapes];
+    PxShape* g_shapes[2048];// = MemoryManager_NEW PxShape*[nShapes];
 }
 void PhysXSceneInterface::updateActor(PhysXActor& actor){
     STUBBED("ToDo: Add a better synchronization method between SGN's transform and PhysXActor's pose!! -Ionut")
@@ -189,7 +188,7 @@ PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorNa
 		}
     }
 
-    PhysXActor* newActor = New  PhysXActor();
+    PhysXActor* newActor = MemoryManager_NEW PhysXActor();
     newActor->_actorName = actorName;
     return newActor;
 }
@@ -201,7 +200,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
     _gScene->addActor(*(actor._actor));
     U32 nbActors = _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC |
                                         PxActorTypeSelectionFlag::eRIGID_STATIC);
-    PxShape** shapes=New PxShape*[actor._actor->getNbShapes()];
+    PxShape** shapes = MemoryManager_NEW PxShape*[actor._actor->getNbShapes()];
     actor._actor->getShapes(shapes, actor._actor->getNbShapes());
 
     stringImpl sgnName = "";
@@ -247,7 +246,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
         }break;
     }
 
-    MemoryManager::SAFE_DELETE_ARRAY( shapes );
+    MemoryManager::DELETE_ARRAY( shapes );
 
     if(actor._type != PxGeometryType::eTRIANGLEMESH) {
         if(sceneNode){

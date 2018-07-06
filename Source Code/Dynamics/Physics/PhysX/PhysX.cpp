@@ -84,10 +84,10 @@ ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
     }
     
     if (!_cooking) {
-        PxCookingParams* cookparams = New PxCookingParams(PxTolerancesScale());
+        PxCookingParams* cookparams = MemoryManager_NEW PxCookingParams(PxTolerancesScale());
         cookparams->targetPlatform = PxPlatform::ePC;
         _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, *cookparams);
-        MemoryManager::SAFE_DELETE( cookparams );
+        MemoryManager::DELETE( cookparams );
     }
 
     updateTimeStep(targetFrameRate);
@@ -103,7 +103,9 @@ bool PhysX::closePhysicsApi() {
     
     PRINT_FN(Locale::get("STOP_PHYSX_API"));
 	
-	DIVIDE_ASSERT( _targetScene == nullptr, "PhysX error: target scene not destroyed before calling closePhysicsApi. Call \"setPhysicsScene( nullptr )\" first" );
+	DIVIDE_ASSERT(_targetScene == nullptr, 
+                  "PhysX error: target scene not destroyed before calling closePhysicsApi." 
+                  "Call \"setPhysicsScene( nullptr )\" first" );
 
     if (_cooking) {
         _cooking->release();
@@ -153,12 +155,12 @@ void PhysX::idle(){
 }
 
 PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
-    return New PhysXSceneInterface(scene);
+    return MemoryManager_NEW PhysXSceneInterface(scene);
 }
 
 void PhysX::setPhysicsScene( PhysicsSceneInterface* const targetScene ) {
 	if ( _targetScene ) {
-        MemoryManager::SAFE_DELETE( _targetScene );
+        MemoryManager::DELETE( _targetScene );
 	}
 	_targetScene = targetScene;
 }
@@ -168,7 +170,10 @@ void PhysX::initScene() {
     _targetScene->init();
 }
 
-bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName, PhysicsActorMask mask, PhysicsCollisionGroup group) {
+bool PhysX::createActor(SceneGraphNode* const node, 
+                        const stringImpl& sceneName, 
+                        PhysicsActorMask mask, 
+                        PhysicsCollisionGroup group) {
     assert(node != nullptr);
     assert(_targetScene != nullptr);
 
@@ -251,7 +256,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
         }
 
         if (!tempActor->_actor) {
-            MemoryManager::SAFE_DELETE( tempActor );
+            MemoryManager::DELETE( tempActor );
             return false;
         }
 

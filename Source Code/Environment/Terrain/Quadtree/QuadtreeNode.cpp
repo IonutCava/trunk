@@ -22,14 +22,19 @@ QuadtreeNode::QuadtreeNode()
 
 QuadtreeNode::~QuadtreeNode()
 {
-    MemoryManager::SAFE_DELETE( _children[CHILD_NW] );
-    MemoryManager::SAFE_DELETE( _children[CHILD_NE] );
-    MemoryManager::SAFE_DELETE( _children[CHILD_SW] );
-    MemoryManager::SAFE_DELETE( _children[CHILD_SE] );
-    MemoryManager::SAFE_DELETE( _terrainChunk );
+    MemoryManager::DELETE( _children[CHILD_NW] );
+    MemoryManager::DELETE( _children[CHILD_NE] );
+    MemoryManager::DELETE( _children[CHILD_SW] );
+    MemoryManager::DELETE( _children[CHILD_SE] );
+    MemoryManager::DELETE( _terrainChunk );
 }
 
-void QuadtreeNode::Build( U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, Terrain* const terrain, U32& chunkCount ) {
+void QuadtreeNode::Build(U8 depth, 
+                         const vec2<U32>& pos, 
+                         const vec2<U32>& HMsize, 
+                         U32 minHMSize, 
+                         Terrain* const terrain, 
+                         U32& chunkCount ) {
     _LOD = 0;
     _minHMSize = minHMSize;
     U32 div = (U32)std::pow(2.0f, (F32)depth);
@@ -41,23 +46,25 @@ void QuadtreeNode::Build( U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsiz
     _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
 
     if (std::max(newsize.x, newsize.y) < _minHMSize)	{
-        _terrainChunk = New TerrainChunk(terrain, this);
+        _terrainChunk = MemoryManager_NEW TerrainChunk(terrain, this);
         _terrainChunk->Load(depth, pos, _minHMSize, HMsize, terrain);
 		chunkCount++;
         return;
     }
 
     // Create 4 children
-    _children[CHILD_NW] = New QuadtreeNode();
-    _children[CHILD_NE] = New QuadtreeNode();
-    _children[CHILD_SW] = New QuadtreeNode();
-    _children[CHILD_SE] = New QuadtreeNode();
+    _children[CHILD_NW] = MemoryManager_NEW QuadtreeNode();
+    _children[CHILD_NE] = MemoryManager_NEW QuadtreeNode();
+    _children[CHILD_SW] = MemoryManager_NEW QuadtreeNode();
+    _children[CHILD_SE] = MemoryManager_NEW QuadtreeNode();
 
     // Compute children bounding boxes
     const vec3<F32>& center = _boundingBox.getCenter();
     _children[CHILD_NW]->setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
-    _children[CHILD_NE]->setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
-    _children[CHILD_SW]->setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
+    _children[CHILD_NE]->setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z),
+                                                    vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
+    _children[CHILD_SW]->setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), 
+                                                    vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
     _children[CHILD_SE]->setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
     // Compute children positions
     vec2<U32> tNewHMpos[4];
@@ -82,11 +89,15 @@ bool QuadtreeNode::computeBoundingBox(){
             _children[i]->computeBoundingBox();
 
             if (_boundingBox.getMin().y > _children[i]->_boundingBox.getMin().y){
-                _boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x, _children[i]->_boundingBox.getMin().y, _boundingBox.getMin().z));
+                _boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x, 
+                                              _children[i]->_boundingBox.getMin().y,
+                                              _boundingBox.getMin().z));
             }
 
             if (_boundingBox.getMax().y < _children[i]->_boundingBox.getMax().y){
-                _boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x, _children[i]->_boundingBox.getMax().y, _boundingBox.getMax().z));
+                _boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x,
+                                              _children[i]->_boundingBox.getMax().y,
+                                              _boundingBox.getMax().z));
             }
         }
     }
@@ -117,7 +128,8 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
             const vec3<F32>& eye = cam.getEye();
             F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + _boundingSphere.getRadius();
             if (_boundingSphere.getCenter().distance(eye) > visibilityDistance){
-                if (_boundingBox.nearestDistanceFromPointSquared(eye) - _terLoDOffset > std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y))
+                if (_boundingBox.nearestDistanceFromPointSquared(eye) - _terLoDOffset > 
+                    std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y))
                     return false;
             }
         }
@@ -151,15 +163,18 @@ void QuadtreeNode::drawBBox() const {
     }
 }
 
-void QuadtreeNode::createDrawCommand(U32 options, const SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-
+void QuadtreeNode::createDrawCommand(U32 options, 
+                                     const SceneRenderState& sceneRenderState,
+                                     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     if (!isInView(options, sceneRenderState)) {
         return;
     }
 
     if (isALeaf()) {
         assert(_terrainChunk);
-        _terrainChunk->createDrawCommand(bitCompare(options, CHUNK_BIT_WATERREFLECTION) ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD, drawCommandsOut);
+        _terrainChunk->createDrawCommand(bitCompare(options, CHUNK_BIT_WATERREFLECTION) ? Config::TERRAIN_CHUNKS_LOD - 1 : 
+                                                                                          _LOD,
+                                         drawCommandsOut);
     }else{
         _children[CHILD_NW]->createDrawCommand(options, sceneRenderState, drawCommandsOut);
         _children[CHILD_NE]->createDrawCommand(options, sceneRenderState, drawCommandsOut);

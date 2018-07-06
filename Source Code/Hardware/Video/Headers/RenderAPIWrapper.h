@@ -169,13 +169,14 @@ protected:
 	}
 
     /*Application display frame*/
-    ///Clear buffers, set default states, etc
+    /// Clear buffers, set default states, etc
     virtual void beginFrame() = 0;
-    ///Clear shaders, restore active texture units, etc
+    /// Clear shaders, restore active texture units, etc
     virtual void endFrame() = 0;
-    ///Change the window's position
+    /// Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
-    ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
+    /// Platform specific cursor manipulation. 
+    /// Set's the cursor's location to the specified X and Y relative to the edge of the window
     virtual void setCursorPosition(U16 x, U16 y) const = 0;
     virtual IMPrimitive*        newIMP() const = 0;
     virtual Framebuffer*        newFB(bool multisampled) const = 0;

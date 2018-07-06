@@ -10,13 +10,13 @@ namespace Divide {
 
 glIMPrimitive::glIMPrimitive() : IMPrimitive()
 {
-    _imInterface = New NS_GLIM::GLIM_BATCH();
+    _imInterface = MemoryManager_NEW NS_GLIM::GLIM_BATCH();
     _imInterface->SetVertexAttribLocation(VERTEX_POSITION_LOCATION);
 }
 
 glIMPrimitive::~glIMPrimitive()
 {
-    MemoryManager::SAFE_DELETE( _imInterface );
+    MemoryManager::DELETE( _imInterface );
 }
 
 void glIMPrimitive::beginBatch() {

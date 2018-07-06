@@ -73,17 +73,17 @@ namespace Divide {
             _triangleCapacity = _triangleCount = 0;
 
 			if (del) {
-                MemoryManager::SAFE_DELETE_ARRAY( _vertices );
+                MemoryManager::DELETE_ARRAY( _vertices );
 			} else {
 				_vertices = 0;
 			}
 			if (del) {
-                MemoryManager::SAFE_DELETE_ARRAY( _triangles );
+                MemoryManager::DELETE_ARRAY( _triangles );
 			} else {
 				_triangles = 0;
 			}
 			if (del) {
-                MemoryManager::SAFE_DELETE_ARRAY( _normals );
+                MemoryManager::DELETE_ARRAY( _normals );
 			} else {
 				_normals = 0;
 			}
@@ -126,18 +126,37 @@ namespace Divide {
         };
 
         ///Load the input geometry from file (Wavefront OBJ format) and save it in 'outData'
-        bool loadMeshFile(NavModelData& outData, const char* fileName);
+        bool loadMeshFile(NavModelData& outData, 
+                          const char* fileName);
         ///Save the navigation input geometry in Wavefront OBJ format
-        bool saveMeshFile(const NavModelData& inData, const char* filename);
+        bool saveMeshFile(const NavModelData& inData, 
+                          const char* filename);
         ///Merge the data from two navigation geometry sources
-        NavModelData mergeModels(NavModelData& a,NavModelData& b, bool delOriginals = false);
+        NavModelData mergeModels(NavModelData& a,
+                                 NavModelData& b, 
+                                 bool delOriginals = false);
         ///Parsing method that calls itself recursively untill all geometry has been parsed
-        bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn);
+        bool parse(const BoundingBox& box, 
+                   NavModelData& outData, 
+                   SceneGraphNode* sgn);
 
-        void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
-        void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, U32 triangleIndexOffset = 0, const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
-        char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
-        I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
+        void addVertex(NavModelData* modelData,
+                       const vec3<F32>& vertex);
+
+        void addTriangle(NavModelData* modelData,
+                         const vec3<U32>& triangleIndices,
+                         U32 triangleIndexOffset = 0, 
+                         const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
+
+        char* parseRow(char* buf, 
+                       char* bufEnd,
+                       char* row,
+                       I32 len);
+
+        I32 parseFace(char* row, 
+                      I32* data, 
+                      I32 n, 
+                      I32 vcnt);
     };
         }; //namespace Navigation
     }; //namespace AI

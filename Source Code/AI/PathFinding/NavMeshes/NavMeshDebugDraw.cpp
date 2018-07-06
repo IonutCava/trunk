@@ -13,7 +13,11 @@
 namespace Divide {
 namespace AI {
 namespace Navigation {
-    NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _paused(false), _color(0), _primitive(nullptr)
+    NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false),
+                                           _dirty(true),
+                                           _paused(false), 
+                                           _color(0), 
+                                           _primitive(nullptr)
     {
         //Generate a render state
         RenderStateBlockDescriptor navigationDebugDesc;

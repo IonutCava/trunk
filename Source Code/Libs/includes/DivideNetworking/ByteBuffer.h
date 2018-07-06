@@ -85,7 +85,8 @@ class ByteBuffer
             _rpos = _wpos = 0;
         }
 
-        template <typename T> void put(size_t pos,T value)
+        template<typename T> 
+        void put(size_t pos,T value)
         {
             EndianConvert(value);
             put(pos,(U8 *)&value,sizeof(value));
@@ -308,14 +309,16 @@ class ByteBuffer
             _rpos += skip;
         }
 
-        template <typename T> T read()
+        template<typename T> 
+        T read()
         {
             T r = read<T>(_rpos);
             _rpos += sizeof(T);
             return r;
         }
 
-        template <typename T> T read(size_t pos) const
+        template<typename T> 
+        T read(size_t pos) const
         {
             if(pos + sizeof(T) > size())
                 throw ByteBufferException(false, pos, sizeof(T), size());
@@ -440,8 +443,9 @@ class ByteBuffer
         {
         }
     private:
-        // limited for internal use because can "append" any unexpected type (like pointer and etc) with hard detection problem
-        template <typename T> void append(T value)
+        /// limited for internal use because can "append" any unexpected type (like pointer and etc) with hard detection problem
+        template<typename T> 
+        void append(T value)
         {
             EndianConvert(value);
             append((U8 *)&value, sizeof(value));
@@ -452,7 +456,7 @@ class ByteBuffer
         std::vector<U8> _storage;
 };
 
-template <typename T>
+template<typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, Networking::vector3 const& v)
 {
    b << v.x;
@@ -461,7 +465,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, Networking::vector3 const& v)
    return b;
 }
 
-template <typename T>
+template<typename T>
 inline ByteBuffer &operator>>(ByteBuffer &b,Networking::vector3 &v)
 {
     b >> v.x;
@@ -470,7 +474,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b,Networking::vector3 &v)
     return b;
 }
 
-template <typename T>
+template<typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> const& v)
 {
     b << (U32)v.size();
@@ -481,7 +485,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> const& v)
     return b;
 }
 
-template <typename T>
+template<typename T>
 inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<T> &v)
 {
     U32 vsize;
@@ -496,7 +500,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<T> &v)
     return b;
 }
 
-template <typename T>
+template<typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const& v)
 {
     b << (U32)v.size();
@@ -507,7 +511,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const& v)
     return b;
 }
 
-template <typename T>
+template<typename T>
 inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v)
 {
     U32 vsize;
@@ -522,7 +526,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v)
     return b;
 }
 
-template <typename K, typename V>
+template<typename K, typename V>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m)
 {
     b << (U32)m.size();
@@ -533,7 +537,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m)
     return b;
 }
 
-template <typename K, typename V>
+template<typename K, typename V>
 inline ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m)
 {
     U32 msize;

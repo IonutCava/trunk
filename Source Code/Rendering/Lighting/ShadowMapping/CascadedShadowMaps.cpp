@@ -19,7 +19,11 @@
 
 namespace Divide {
 
-CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 numSplits) : ShadowMap(light, shadowCamera, SHADOW_TYPE_CSM)
+CascadedShadowMaps::CascadedShadowMaps(Light* light, 
+                                       Camera* shadowCamera, 
+                                       F32 numSplits) : ShadowMap(light, 
+                                                                  shadowCamera, 
+                                                                  SHADOW_TYPE_CSM)
 {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
     _splitLogFactor = _dirLight->csmSplitLogFactor();
@@ -33,8 +37,9 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 n
     _shadowFloatValues.resize(_numSplits);
     _horizBlur = 0;
     _vertBlur = 0;
-    _renderPolicy = New Framebuffer::FramebufferTarget(Framebuffer::defaultPolicy());
-    _renderPolicy->_clearBuffersOnBind = false; //<we clear the FB on each face draw call, not on Begin()
+    _renderPolicy = MemoryManager_NEW Framebuffer::FramebufferTarget(Framebuffer::defaultPolicy());
+    // We clear the FB on each face draw call, not on Begin()
+    _renderPolicy->_clearBuffersOnBind = false; 
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM");
     shadowPreviewShader.setThreadedLoading(false);
@@ -79,21 +84,21 @@ CascadedShadowMaps::~CascadedShadowMaps()
 {
     RemoveResource(_previewDepthMapShader);
     RemoveResource(_blurDepthMapShader);
-    MemoryManager::SAFE_DELETE( _blurBuffer );
-    MemoryManager::SAFE_DELETE( _renderPolicy );
+    MemoryManager::DELETE( _blurBuffer );
+    MemoryManager::DELETE( _renderPolicy );
 }
 
-void CascadedShadowMaps::init(ShadowMapInfo* const smi){
+void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _numSplits = smi->numLayers();
     resolution(smi->resolution(), _light->shadowMapResolutionFactor());
     _init = true;
 }
 
-void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor){
+void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
     U16 tempResolution = resolution * resolutionFactor;
-    if(_resolution != tempResolution){
+    if (_resolution != tempResolution) {
         _resolution = tempResolution;
-        //Initialize the FB's with a variable resolution
+        // Initialize the FB's with a variable resolution
         PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getGUID());
         _depthMap->Create(_resolution, _resolution);
         vec2<U16> screenResolution = GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution();
@@ -102,14 +107,16 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor){
         _blurBuffer->Create(_resolution, _resolution);
         updateResolution(screenResolution.width, screenResolution.height);
     }
+
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void CascadedShadowMaps::updateResolution(I32 newWidth, I32 newHeight){
+void CascadedShadowMaps::updateResolution(I32 newWidth, I32 newHeight) {
     ShadowMap::updateResolution(newWidth, newHeight);
 }
 
-void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction){
+void CascadedShadowMaps::render(SceneRenderState& renderState, 
+                                const DELEGATE_CBK<>& sceneRenderFunction) {
     //Only if we have a valid callback;
     if (!sceneRenderFunction) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
@@ -120,7 +127,8 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CB
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
     const vec2<F32>& currentPlanes = renderState.getCameraConst().getZPlanes();
-    if (_sceneZPlanes != currentPlanes){
+
+    if (_sceneZPlanes != currentPlanes) {
         _sceneZPlanes = currentPlanes;
         CalculateSplitDepths(sceneCamera);
     }
@@ -132,17 +140,18 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CB
 
     _depthMap->Begin(*_renderPolicy);
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
-    for (U8 i = 0; i < _numSplits; ++i){
+    for (U8 i = 0; i < _numSplits; ++i) {
         ApplyFrustumSplit(i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, true);
         GFX_DEVICE.getRenderer()->render(sceneRenderFunction, renderState);
         LightManager::getInstance().registerShadowPass();
     }
     _depthMap->End();
+
     renderState.getCameraMgr().popActiveCamera();
 }
 
-void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam){
+void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam) {
     const mat4<F32>& projMatrixCache = cam.getProjectionMatrix();
 
     F32 N = _numSplits;
@@ -150,49 +159,72 @@ void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam){
     F32 farPlane  = _sceneZPlanes.y;
     _splitDepths[0] = nearPlane;
     _splitDepths[_numSplits] = farPlane;
-    for (I32 i = 1; i < (I32)_numSplits; ++i)
-        _splitDepths[i] = _splitLogFactor * nearPlane * (F32)std::pow(farPlane / nearPlane, i / N) + (1.0f - _splitLogFactor) * ((nearPlane + (i / N)) * (farPlane - nearPlane));
-    for (U8 i = 0; i < _numSplits; ++i)
-        _light->setShadowFloatValue(i, 0.5f*(-_splitDepths[i + 1] * projMatrixCache.mat[10] + projMatrixCache.mat[14]) / _splitDepths[i + 1] + 0.5f);
+    for (I32 i = 1; i < (I32)_numSplits; ++i) {
+        _splitDepths[i] = _splitLogFactor * 
+                          nearPlane * 
+                          (F32)std::pow(farPlane / nearPlane, i / N) + 
+                          (1.0f - _splitLogFactor) * 
+                          ((nearPlane + (i / N)) * 
+                          (farPlane - nearPlane));
+    }
+
+    for (U8 i = 0; i < _numSplits; ++i) {
+        _light->setShadowFloatValue(i, 
+                                    0.5f * 
+                                    (-_splitDepths[i + 1] * 
+                                    projMatrixCache.mat[10] + 
+                                    projMatrixCache.mat[14]) / 
+                                    _splitDepths[i + 1] + 0.5f);
+    }
 }
 
-void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
+void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
     F32 minZ = _splitDepths[pass];
     F32 maxZ = _splitDepths[pass + 1];
 
-    for (U8 i = 0; i < 4; i++)
+    for (U8 i = 0; i < 4; ++i) {
         _splitFrustumCornersVS[i] = _frustumCornersVS[i + 4] * (minZ / _sceneZPlanes.y);
+    }
 
-    for (U8 i = 4; i < 8; i++)
+    for (U8 i = 4; i < 8; ++i) {
         _splitFrustumCornersVS[i] = _frustumCornersVS[i] * (maxZ / _sceneZPlanes.y);
+    }
 
-    for (U8 i = 0; i < 8; i++)
+    for (U8 i = 0; i < 8; ++i) {
         _frustumCornersWS[i].set(_viewInvMatrixCache.transform(_splitFrustumCornersVS[i]));
+    }   
 
     vec3<F32> frustumCentroid(0.0f);
-    for (U8 i = 0; i < 8; ++i)
+
+    for (U8 i = 0; i < 8; ++i) {
         frustumCentroid += _frustumCornersWS[i];
+    }
     // Find the centroid
     frustumCentroid /= 8;
 
-    // Position the shadow-caster camera so that it's looking at the centroid, and backed up in the direction of the sunlight
-    F32 distFromCentroid = std::max((maxZ - minZ), _splitFrustumCornersVS[4].distance(_splitFrustumCornersVS[5]));// + _nearClipOffset;
+    // Position the shadow-caster camera so that it's looking at the centroid, 
+    // and backed up in the direction of the sunlight
+    F32 distFromCentroid = std::max((maxZ - minZ), 
+                                    _splitFrustumCornersVS[4].distance(_splitFrustumCornersVS[5]));
+                                    // + _nearClipOffset;
     vec3<F32> currentEye = frustumCentroid - (_lightPosition * distFromCentroid);
     const mat4<F32>& viewMatrix = _shadowCamera->lookAt(currentEye, frustumCentroid);
     // Determine the position of the frustum corners in light space
-    for (U8 i = 0; i < 8; i++){
+    for (U8 i = 0; i < 8; ++i) {
         _frustumCornersLS[i].set(viewMatrix.transform(_frustumCornersWS[i]));
     }
     // Create an orthographic camera for use as a shadow caster
     vec2<F32> clipPlanes;
     vec4<F32> clipRect;
+
     if ( _dirLight->csmStabilize() ) {
         BoundingSphere frustumSphere( _frustumCornersLS );
         clipPlanes.set( 0.0f, frustumSphere.getDiameter() );
         clipPlanes += _nearClipOffset;
         clipRect.set( UNIT_RECT * frustumSphere.getRadius() );
     } else {
-        // Calculate an orthographic projection by sizing a bounding box to the frustum coordinates in light space
+        // Calculate an orthographic projection by sizing a bounding box to the 
+        // frustum coordinates in light space
         BoundingBox frustumBox( _frustumCornersLS );
         vec3<F32> maxes = frustumBox.getMax();
         vec3<F32> mins = frustumBox.getMin();
@@ -216,9 +248,10 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
     _shadowCamera->renderLookAt();
 }
 
-void CascadedShadowMaps::postRender(){
-    if (GFX_DEVICE.shadowDetailLevel() == DETAIL_LOW)
+void CascadedShadowMaps::postRender() {
+    if (GFX_DEVICE.shadowDetailLevel() == DETAIL_LOW) {
         return;
+    }
 
     GFX_DEVICE.toggle2D(true);
 
@@ -265,11 +298,13 @@ void CascadedShadowMaps::previewShadowMaps() {
     for (U8 i = 0; i < _numSplits; ++i){
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform("zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
-		GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))&GFXDevice::drawPoints,
-                                                                     &GFX_DEVICE,
-                                                                     1,
-                                                                     GFX_DEVICE.getDefaultStateBlock(true),
-                                                                     _previewDepthMapShader));
+		GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), 
+                                     DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))
+                                                   &GFXDevice::drawPoints,
+                                                   &GFX_DEVICE,
+                                                   1,
+                                                   GFX_DEVICE.getDefaultStateBlock(true),
+                                                   _previewDepthMapShader));
     }
 }
 

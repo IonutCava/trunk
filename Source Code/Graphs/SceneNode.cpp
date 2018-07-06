@@ -44,7 +44,8 @@ bool SceneNode::isInView( const SceneRenderState& sceneRenderState, SceneGraphNo
     F32  cameraDistance = center.distance( eye );
     F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
     if ( distanceCheck && cameraDistance > visibilityDistance ) {
-        if ( boundingBox.nearestDistanceFromPointSquared( eye ) > std::min( visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y ) ) {
+        if ( boundingBox.nearestDistanceFromPointSquared( eye ) > std::min(visibilityDistance, 
+                                                                           sceneRenderState.getCameraConst().getZPlanes().y)) {
             return false;
         }
     }
@@ -62,8 +63,9 @@ bool SceneNode::isInView( const SceneRenderState& sceneRenderState, SceneGraphNo
         }
     }
 
-    if (sgn->getComponent<RenderingComponent>()) {
-        sgn->getComponent<RenderingComponent>()->lodLevel((cameraDistance > Config::SCENE_NODE_LOD0) ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1) : 0);
+    RenderingComponent* rComp = sgn->getComponent<RenderingComponent>();
+    if (rComp) {
+        rComp->lodLevel((cameraDistance > Config::SCENE_NODE_LOD0) ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1) : 0);
     }
 
     return true;

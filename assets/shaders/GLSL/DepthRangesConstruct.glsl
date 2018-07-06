@@ -63,7 +63,12 @@ out vec2 resultMinMax;
 
 vec3 unProject(vec2 fragmentPos, float fragmentDepth)
 {
-  vec4 pt = dvd_ProjectionMatrixInverse * vec4(fragmentPos.x * 2.0 - 1.0, fragmentPos.y * 2.0 - 1.0, 2.0 * fragmentDepth - 1.0, 1.0);
+  vec4 pt = dvd_ProjectionMatrixInverse * 
+            vec4(fragmentPos.x * 2.0 - 1.0, 
+                 fragmentPos.y * 2.0 - 1.0, 
+                 2.0 * fragmentDepth - 1.0, 
+                 1.0);
+
   return vec3(pt.x, pt.y, pt.z) / pt.w;
 }
 

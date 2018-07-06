@@ -27,7 +27,8 @@
 
 namespace Divide {
 
-///The classic first person camera. Similar to the "Free fly" camera, but more restrained in it's movement.
+/// The classic first person camera. 
+/// Similar to the "Free fly" camera, but more restrained in it's movement.
 class FirstPersonCamera : public Camera {
 public:
 	FirstPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);

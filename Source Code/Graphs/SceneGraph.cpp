@@ -7,7 +7,7 @@
 namespace Divide {
     SceneGraph::SceneGraph()
     {
-        _root = New SceneGraphNode(this, New SceneRoot(), "ROOT");
+        _root = MemoryManager_NEW SceneGraphNode(this, MemoryManager_NEW SceneRoot(), "ROOT");
         _root->getComponent<RenderingComponent>()->castsShadows(false);
         _root->getComponent<RenderingComponent>()->receivesShadows(false);
         _root->setBBExclusionMask(TYPE_SKY |
@@ -25,18 +25,18 @@ namespace Divide {
         // Should recursively call unload on the entire scene graph
         _root->unload();
         // Should recursively call delete on the entire scene graph
-        MemoryManager::SAFE_DELETE(_root);
+        MemoryManager::DELETE(_root);
         // Delete the root scene node
-        MemoryManager::SAFE_DELETE(root);
+        MemoryManager::DELETE(root);
     }
 
     void SceneGraph::idle() {
         for (SceneGraphNode*& it : _pendingDeletionNodes) {
             it->unload();
             it->getParent()->removeNode(it);
-            MemoryManager::SAFE_DELETE(it);
         }
-        _pendingDeletionNodes.clear();
+
+        MemoryManager::DELETE_VECTOR(_pendingDeletionNodes);
     }
 
     void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState){

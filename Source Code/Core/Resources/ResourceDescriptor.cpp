@@ -17,7 +17,7 @@ ResourceDescriptor::ResourceDescriptor(const stringImpl& name,
 
 ResourceDescriptor::~ResourceDescriptor()
 {
-    MemoryManager::SAFE_DELETE( _propertyDescriptor );
+    MemoryManager::DELETE( _propertyDescriptor );
 }
 
 ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propertyDescriptor(nullptr)

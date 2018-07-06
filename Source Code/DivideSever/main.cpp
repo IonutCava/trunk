@@ -6,18 +6,33 @@
 
 using namespace Divide;
 
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned int debugFlags, const char* file, int line)
+void* operator new[](size_t size, 
+                     size_t alignment, 
+                     size_t alignmentOffset, 
+                     const char* pName, 
+                     int flags, 
+                     unsigned int debugFlags, 
+                     const char* file, 
+                     int line)
 {
     // this allocator doesn't support alignment
     EASTL_ASSERT(alignment <= 8);
     return malloc(size);
 }
-void* operator new[](size_t size, const char* pName, int flags, unsigned int debugFlags, const char* file, int line)
+void* operator new[](size_t size, 
+                     const char* pName, 
+                     int flags, 
+                     unsigned int debugFlags, 
+                     const char* file, 
+                     int line)
 {
   return malloc(size);
 }
 // E
-int Vsnprintf8(char* pDestination, size_t n, const char* pFormat, va_list arguments)
+int Vsnprintf8(char* pDestination, 
+               size_t n, 
+               const char* pFormat, 
+               va_list arguments)
 {
     #ifdef _MSC_VER
     return _vsnprintf(pDestination, n, pFormat, arguments);

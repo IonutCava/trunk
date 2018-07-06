@@ -66,12 +66,12 @@ public:
     inline void updateSceneState(const U64 deltaTime)     { _activeScene->updateSceneState(deltaTime); }
 
     ///Gather input events and process them in the current scene
-    inline void processInput(const U64 deltaTime)   { _activeScene->processInput(deltaTime); _activeScene->updateCameraControls(); }
-    inline void processTasks(const U64 deltaTime)   { _activeScene->processTasks(deltaTime); }
-    inline void processGUI(const U64 deltaTime)     { _activeScene->processGUI(deltaTime); }
+    inline void processInput(const U64 deltaTime) { _activeScene->processInput(deltaTime); _activeScene->updateCameraControls(); }
+    inline void processTasks(const U64 deltaTime) { _activeScene->processTasks(deltaTime); }
+    inline void processGUI(const U64 deltaTime)   { _activeScene->processGUI(deltaTime); }
     inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
     ///Insert a new scene factory method for the given name
-    template<class DerivedScene>
+    template<typename DerivedScene>
     inline bool registerScene(const stringImpl& sceneName) {
         _sceneFactory[sceneName] = boost::factory<DerivedScene*>();
         return true;

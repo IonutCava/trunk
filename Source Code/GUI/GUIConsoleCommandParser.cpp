@@ -22,10 +22,12 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr)
 	_commandMap["editparam"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand, this, std::placeholders::_1);
 	_commandMap["playsound"] = DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand, this, std::placeholders::_1);
 	_commandMap["createnavmesh"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand, this, std::placeholders::_1);
-	_commandMap["recompileshader"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand, this, std::placeholders::_1);
 	_commandMap["setfov"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand, this, std::placeholders::_1);
 	_commandMap["invalidcommand"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand, this, std::placeholders::_1);
 	_commandMap["addobject"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, std::placeholders::_1);
+    _commandMap["recompileshader"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand, 
+                                                   this,
+                                                   std::placeholders::_1);
 
     _commandHelp["say"] = Locale::get("CONSOLE_SAY_COMMAND_HELP");
     _commandHelp["quit"] = Locale::get("CONSOLE_QUIT_COMMAND_HELP");
@@ -154,7 +156,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args){
     AI::Navigation::NavigationMesh* temp = AI::AIManager::getInstance().getNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
     if (!temp) {
-		temp = New AI::Navigation::NavigationMesh();
+        temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
     }
     // Set it's file name
 	temp->setFileName(GET_ACTIVE_SCENE()->getName());
@@ -203,7 +205,8 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args){
 
     FileData model;
     model.ItemName = stringAlg::toBase(args1 + "_console" + args2);
-    model.ModelName  = stringAlg::toBase(((args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0) ? "" : assetLocation) + args1);
+    model.ModelName  = stringAlg::toBase(((args1.compare("Box3D") == 0 ||
+                                          args1.compare("Sphere3D") == 0) ? "" : assetLocation) + args1);
     model.position = GET_ACTIVE_SCENE()->state().getRenderState().getCamera().getEye();
     model.data = 1.0f;
     model.scale    = vec3<F32>(scale);

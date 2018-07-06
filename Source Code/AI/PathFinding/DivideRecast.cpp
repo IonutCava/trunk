@@ -11,11 +11,12 @@ namespace Navigation {
     DivideRecast::DivideRecast()
     {
         // Setup the default query filter
-        _filter = New dtQueryFilter();
+        _filter = MemoryManager_NEW dtQueryFilter();
         _filter->setIncludeFlags(0xFFFF);    // Include all
         _filter->setExcludeFlags(0);         // Exclude none
         // Area flags for polys to consider in search, and their cost
-        _filter->setAreaCost(SAMPLE_POLYAREA_GROUND, 1.0f);       // TODO have a way of configuring the filter
+        // TODO have a way of configuring the filter
+        _filter->setAreaCost(SAMPLE_POLYAREA_GROUND, 1.0f);       
         _filter->setAreaCost(DT_TILECACHE_WALKABLE_AREA, 1.0f);
         
         // Init path store. MaxVertex 0 means empty path slot
@@ -27,7 +28,7 @@ namespace Navigation {
 
     DivideRecast::~DivideRecast()
     {
-        MemoryManager::SAFE_DELETE( _filter );
+        MemoryManager::DELETE( _filter );
     }
 
     PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh, 
@@ -61,18 +62,37 @@ namespace Navigation {
         if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
             return PATH_ERROR_NO_NEAREST_POLY_END; // couldn't find a polygon
 
-        status = navQuery.findPath(StartPoly, EndPoly, StartNearest, EndNearest, _filter, PolyPath, &nPathCount, MAX_PATHPOLY) ;
-        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
+        status = navQuery.findPath(StartPoly, 
+                                   EndPoly, 
+                                   StartNearest, 
+                                   EndNearest, 
+                                   _filter,
+                                   PolyPath, 
+                                   &nPathCount, 
+                                   MAX_PATHPOLY) ;
+        if ((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK)) {
             return PATH_ERROR_COULD_NOT_CREATE_PATH; // couldn't create a path
-        if(nPathCount==0)
+        }
+
+        if (nPathCount == 0) {
             return PATH_ERROR_COULD_NOT_FIND_PATH; // couldn't find a path
-
-        status = navQuery.findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, nullptr, nullptr, &nVertCount, MAX_PATHVERT) ;
-        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
+        }
+        status = navQuery.findStraightPath(StartNearest, 
+                                           EndNearest, 
+                                           PolyPath, 
+                                           nPathCount, 
+                                           StraightPath, 
+                                           nullptr, 
+                                           nullptr, 
+                                           &nVertCount, 
+                                           MAX_PATHVERT) ;
+        if ((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK)) {
             return PATH_ERROR_NO_STRAIGHT_PATH_CREATE; // couldn't create a path
-        if(nVertCount==0)
-            return PATH_ERROR_NO_STRAIGHT_PATH_FIND; // couldn't find a path
+        }
 
+        if (nVertCount == 0) {
+            return PATH_ERROR_NO_STRAIGHT_PATH_FIND; // couldn't find a path
+        }
         // At this point we have our path.  Copy it to the path store
         I32 nIndex=0 ;
         for(I32 nVert = 0; nVert < nVertCount; nVert++) {
@@ -80,7 +100,9 @@ namespace Navigation {
             _pathStore[pathSlot].PosY[nVert]=StraightPath[nIndex++];
             _pathStore[pathSlot].PosZ[nVert]=StraightPath[nIndex++];
 
-           //PRINT_FN("Path Vert %i, %f %f %f", nVert, m_PathStore[pathSlot].PosX[nVert], m_PathStore[pathSlot].PosY[nVert], m_PathStore[pathSlot].PosZ[nVert]) ;
+           //PRINT_FN("Path Vert %i, %f %f %f", nVert, m_PathStore[pathSlot].PosX[nVert],
+           //                                          m_PathStore[pathSlot].PosY[nVert],
+           //                                          m_PathStore[pathSlot].PosZ[nVert]) ;
         }
    
         _pathStore[pathSlot].MaxVertex=nVertCount;
@@ -126,7 +148,12 @@ namespace Navigation {
         return true;
     }
 
-    bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius, const vec3<F32>& extents, vec3<F32>& resultPt, U8 maxIters) {
+    bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh, 
+                                                  const vec3<F32>& centerPosition,
+                                                  F32 radius, 
+                                                  const vec3<F32>& extents,
+                                                  vec3<F32>& resultPt, 
+                                                  U8 maxIters) {
         const dtNavMeshQuery& query = navMesh.getNavQuery();
         if (query.getAttachedNavMesh() == nullptr) {
             return false;
@@ -137,7 +164,13 @@ namespace Navigation {
         findNearestPolyOnNavmesh(navMesh, centerPosition, extents, resultPt, resultPoly);
         U8 i = 0;
         for (i = 0; i < maxIters; ++i) {
-            query.findRandomPointAroundCircle(resultPoly, centerPosition._v, radius, _filter, frand,  &resultPoly, resultPt._v);
+            query.findRandomPointAroundCircle(resultPoly, 
+                                              centerPosition._v,
+                                              radius, 
+                                              _filter, 
+                                              frand,  
+                                              &resultPoly, 
+                                              resultPt._v);
             if (centerPosition.distanceSquared(resultPt) <= radiusSq) {
                 break;
             }
@@ -145,10 +178,19 @@ namespace Navigation {
         return (i != maxIters);
     }
 
-    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, F32 delta, vec3<F32>& resultPt, dtPolyRef &resultPoly) {
+    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, 
+                                                 const vec3<F32>& position, 
+                                                 const vec3<F32>& extents, 
+                                                 F32 delta, 
+                                                 vec3<F32>& resultPt, 
+                                                 dtPolyRef &resultPoly) {
         if (findNearestPolyOnNavmesh(navMesh, position, extents, resultPt, resultPoly) ){
             if (position.distanceSquared(resultPt) > (delta * delta)) {
-                if (findNearestPolyOnNavmesh(navMesh, position, &navMesh.getExtents()[0], resultPt, resultPoly)) {
+                if (findNearestPolyOnNavmesh(navMesh, 
+                                             position,
+                                             &navMesh.getExtents()[0], 
+                                             resultPt, 
+                                             resultPoly)) {
                     if (position.distanceSquared(resultPt) <= (delta * delta)) {
                         return true;
                     }
@@ -159,13 +201,21 @@ namespace Navigation {
         return false;
     }
 
-    bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, vec3<F32>& resultPt, dtPolyRef &resultPoly) {
+    bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh, 
+                                                const vec3<F32>& position, 
+                                                const vec3<F32>& extents, 
+                                                vec3<F32>& resultPt, 
+                                                dtPolyRef &resultPoly) {
         if(navMesh.getNavQuery().getAttachedNavMesh() == nullptr){
             resultPt.set(VECTOR3_ZERO);
             return false;
         }
 
-        dtStatus status = navMesh.getNavQuery().findNearestPoly(position._v, extents._v, _filter, &resultPoly, resultPt._v);
+        dtStatus status = navMesh.getNavQuery().findNearestPoly(position._v, 
+                                                                extents._v,
+                                                                _filter, 
+                                                                &resultPoly, 
+                                                                resultPt._v);
         if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {
             return false; // couldn't find a polygon
         }

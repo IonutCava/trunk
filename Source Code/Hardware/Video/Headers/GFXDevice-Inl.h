@@ -33,7 +33,8 @@ inline void GFXDevice::renderInViewport(const vec4<I32>& rect, const DELEGATE_CB
 }
 /// Compare the current render stage flag with the given mask
 inline bool GFXDevice::isCurrentRenderStage(U8 renderStageMask) {
-    DIVIDE_ASSERT((renderStageMask & ~(INVALID_STAGE - 1)) == 0, "GFXDevice error: render stage query received an invalid bitmask!"); 
+    DIVIDE_ASSERT((renderStageMask & ~(INVALID_STAGE - 1)) == 0,
+                  "GFXDevice error: render stage query received an invalid bitmask!"); 
     return bitCompare(renderStageMask, _renderStage);
 }
 /// Change the width of rendered lines to the specified value

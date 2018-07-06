@@ -45,7 +45,12 @@ const float div_factor = 3.0 ;
 const float maxz2 =  maxz * div_factor;
  
 float LinearizeDepth(in float z) {
-    return (2.0 * dvd_ZPlanesCombined.x ) / (dvd_ZPlanesCombined.y + dvd_ZPlanesCombined.x - z * (dvd_ZPlanesCombined.y - dvd_ZPlanesCombined.x));
+    return (2.0 * dvd_ZPlanesCombined.x ) / 
+           (dvd_ZPlanesCombined.y + 
+            dvd_ZPlanesCombined.x - 
+            z * 
+            (dvd_ZPlanesCombined.y - 
+             dvd_ZPlanesCombined.x));
 }
  
 float CompareDepth(in float crtDepth, in vec2 uv1) {

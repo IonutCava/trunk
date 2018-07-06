@@ -24,6 +24,7 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "core.h"
+#include <memory>
 
 namespace Divide {
 
@@ -31,12 +32,21 @@ class SceneGraph;
 
 class RenderPass;
 
-struct RenderPassItem{
-    RenderPass* _rp;
+class RenderPassItem : private NonCopyable {
+
+public:
+    RenderPassItem(const stringImpl& renderPassName, U8 sortKey);
+    RenderPassItem(RenderPassItem&& other);
+    ~RenderPassItem();
+    RenderPassItem& operator=(RenderPassItem&& other);
+
+    inline U8 sortKey() const { return _sortKey; }
+
+    inline RenderPass& renderPass() const { return *_renderPass; }
+
+private:
     U8 _sortKey;
-    RenderPassItem(U8 sortKey, RenderPass *rp ) : _rp(rp), _sortKey(sortKey)
-    {
-    }
+    std::unique_ptr<RenderPass> _renderPass;
 };
 
 class SceneRenderState;
@@ -47,11 +57,9 @@ public:
     ///Call every renderqueue's render function in order
     void render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph);
     ///Add a new pass with the specified key
-    void addRenderPass(RenderPass* const renderPass, U8 orderKey);
-    ///Remove a renderpass from the manager, optionally not deleting it
-    void removeRenderPass(RenderPass* const renderPass,bool deleteRP = true);
-    ///Find a renderpass by name and remove it from the manager, optionally not deleting it
-    void removeRenderPass(const stringImpl& name,bool deleteRP = true);
+    void addRenderPass(const stringImpl& renderPassName, U8 orderKey);
+    ///Find a renderpass by name and remove it from the manager
+    void removeRenderPass(const stringImpl& name);
     U16 getLastTotalBinSize(U8 renderPassId) const;
 
     ///Lock or unlock the render bin (if nothing changes: camera, nodes' positions, etc)
@@ -61,17 +69,20 @@ public:
     void unlock(bool resetNodes = false);
     ///simple lock check
     inline bool isLocked() const {return _renderPassesLocked;}
+
 protected:
     friend class RenderPassCuller;
     ///simple node reset flag
     inline bool isResetQueued()           const {return _renderPassesResetQueued;}
     inline void isResetQueued(bool state)       {_renderPassesResetQueued  = state;}
+
 private:
     RenderPassManager();
     ~RenderPassManager();
 
 private:
-    vectorImpl<RenderPassItem > _renderPasses;
+    // Some vector implementations are not move-awarem so use STL in this case
+    std::vector<RenderPassItem > _renderPasses;
     bool _renderPassesLocked;
     bool _renderPassesResetQueued;
 

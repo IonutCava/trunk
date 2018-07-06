@@ -17,7 +17,8 @@ GUISplash::GUISplash(const stringImpl& splashImageName,const vec2<U16>& dimensio
     splashImage.setFlag(true);
     splashImage.setThreadedLoading(false);
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
-    stringImpl splashImageLocation = stringAlg::toBase(ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/misc_images/");
+    stringImpl splashImageLocation = stringAlg::toBase(ParamHandler::getInstance().getParam<std::string>("assetsLocation") +
+                                                       "/misc_images/");
     splashImageLocation += splashImageName;
     splashImage.setResourceLocation(splashImageLocation);
 

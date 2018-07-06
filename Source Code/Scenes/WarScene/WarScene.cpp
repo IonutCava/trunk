@@ -51,7 +51,8 @@ void WarScene::processGUI(const U64 deltaTime){
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         //const vec3<F32>& lampPos = _lampLightNode->getComponent<PhysicsComponent>()->getPosition();
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
+                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _GUI->modifyText("camPosition", "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
@@ -134,12 +135,12 @@ void WarScene::startSimulation() {
             previousMesh = true;
             AI::AIManager::getInstance().destroyNavMesh(_army[0][0]->getAgentRadiusCategory());
         }
-        navMesh = New AI::Navigation::NavigationMesh();
+        navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh();
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
         if (!navMesh->load(nullptr)) {
             loadedFromFile = false;
-            navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, _army[0][0]->getAgentRadiusCategory(), navMesh));
+            navMesh->build(nullptr,DELEGATE_BIND(navMeshCreationCompleteCallback,_army[0][0]->getAgentRadiusCategory(),navMesh));
         } else {
             AI::AIManager::getInstance().addNavMesh(_army[0][0]->getAgentRadiusCategory(), navMesh);
 #       ifdef _DEBUG
@@ -171,7 +172,11 @@ void WarScene::startSimulation() {
             }
         }
     } else {    
-        _infoBox->setMessage(stringAlg::toBase("Can't reload the navigation mesh this soon.\n Please wait \\[ " + Util::toString(getUsToSec<U64>(diffTime)) + " ] seconds more!"));
+        stringImpl info("Can't reload the navigation mesh this soon.\n Please wait \\[ ");
+        info.append(Util::toString(getUsToSec<U64>(diffTime)).c_str());
+        info.append(" ] seconds more!");
+
+        _infoBox->setMessage(info);
         _infoBox->setMessageType(GUIMessageBox::MESSAGE_WARNING);
         _infoBox->show();
     }
@@ -284,30 +289,38 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
         assert(currentNode);
         currentNode->setSelectable(true);
         currentNode->usageContext(baseNode->usageContext());
-        currentNode->getComponent<PhysicsComponent>()->physicsGroup(baseNode->getComponent<PhysicsComponent>()->physicsGroup());
-        currentNode->getComponent<NavigationComponent>()->navigationContext(baseNode->getComponent<NavigationComponent>()->navigationContext());
-        currentNode->getComponent<NavigationComponent>()->navigationDetailOverride(baseNode->getComponent<NavigationComponent>()->navMeshDetailOverride());
+        PhysicsComponent* pComp = currentNode->getComponent<PhysicsComponent>();
+        NavigationComponent* nComp = currentNode->getComponent<NavigationComponent>();
+        pComp->physicsGroup(baseNode->getComponent<PhysicsComponent>()->physicsGroup());
+        nComp->navigationContext(baseNode->getComponent<NavigationComponent>()->navigationContext());
+        nComp->navigationDetailOverride(baseNode->getComponent<NavigationComponent>()->navMeshDetailOverride());
         
-        currentNode->getComponent<PhysicsComponent>()->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
-        currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
+        pComp->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
+        pComp->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
     SceneGraphNode* baseFlagNode = cylinder[1];
     _flag[0] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team1Flag");
     _flag[0]->setSelectable(false);
     _flag[0]->usageContext(baseFlagNode->usageContext());
-    _flag[0]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
-    _flag[0]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
-    _flag[0]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
-    _flag[0]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
+    PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
+    NavigationComponent* flagNComp = _flag[0]->getComponent<NavigationComponent>();
+    flagPComp->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
+    flagNComp->navigationContext(NavigationComponent::NODE_IGNORE);
+    flagPComp->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
 
     _flag[1] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team2Flag");      
     _flag[1]->setSelectable(false);
     _flag[1]->usageContext(baseFlagNode->usageContext());
-    _flag[1]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
-    _flag[1]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
-    _flag[1]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
-    _flag[1]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
+
+    flagPComp = _flag[1]->getComponent<PhysicsComponent>();
+    flagNComp = _flag[1]->getComponent<NavigationComponent>();
+
+    flagPComp->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
+    flagNComp->navigationContext(NavigationComponent::NODE_IGNORE);
+    flagPComp->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
     AI::WarSceneAISceneImpl::registerFlags(_flag[0], _flag[1]);
 
@@ -324,7 +337,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
         light->setCastShadows(false);
         light->setRange(2.0f);
         light->setDiffuseColor(vec3<F32>(1.0f, 0.5f, 0.0f));
-        _lampTransform = New SceneTransform();
+        _lampTransform = MemoryManager_NEW SceneTransform();
         // Add it to Bob's body
         _lampTransformNode = _bobNodeBody->addNode(_lampTransform, "lampTransform");
         _lampLightNode = addLight(light, _lampTransformNode);
@@ -361,7 +374,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
     // Create 2 AI teams
     for (U8 i = 0; i < 2; ++i) {
-        _faction[i] = New AI::AITeam(i);
+        _faction[i] = MemoryManager_NEW AI::AITeam(i);
     }
     // Make the teams fight each other
     _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
@@ -454,7 +467,9 @@ bool WarScene::initializeAI(bool continueOnErrors){
             currentNode->setSelectable(true);
             I8 side = k == 0 ? -1 : 1;
 
-            currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-125 + 25*(i%5), -0.01f, 200 * side + 25*zFactor*side));
+            currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-125 + 25 * (i % 5), 
+                                                                                 -0.01f,
+                                                                                 200 * side + 25 * zFactor * side));
             if (side == 1) {
                  currentNode->getComponent<PhysicsComponent>()->rotateY(180);
                  currentNode->getComponent<PhysicsComponent>()->translateX(100);
@@ -462,11 +477,13 @@ bool WarScene::initializeAI(bool continueOnErrors){
           
             currentNode->getComponent<PhysicsComponent>()->translateX(25 * side);
 
-            aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getPosition(), currentNode->getName());
+            aiSoldier = MemoryManager_NEW AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getPosition(),
+                                                       currentNode->getName());
             aiSoldier->addSensor(AI::VISUAL_SENSOR);
-            k == 0 ? currentNode->getComponent<RenderingComponent>()->renderBoundingBox(true) : currentNode->getComponent<RenderingComponent>()->renderSkeleton(true);
+            k == 0 ? currentNode->getComponent<RenderingComponent>()->renderBoundingBox(true) : 
+                     currentNode->getComponent<RenderingComponent>()->renderSkeleton(true);
 
-            AI::WarSceneAISceneImpl* brain = New AI::WarSceneAISceneImpl();
+            AI::WarSceneAISceneImpl* brain = MemoryManager_NEW AI::WarSceneAISceneImpl();
 
 			//GOAP
 			brain->worldState().setVariable(AI::GOAPFact(AI::AtHomeFlagLoc),   AI::GOAPValue(true));
@@ -489,7 +506,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
             brain->registerGoal(retrieveFlag);
 
             aiSoldier->addAISceneImpl(brain);
-            soldier = New NPC(currentNode, aiSoldier);
+            soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
             soldier->setMovementSpeed(speed * 2); 
             _armyNPCs[k].push_back(soldier);
             _army[k].push_back(aiSoldier);
@@ -512,11 +529,11 @@ bool WarScene::initializeAI(bool continueOnErrors){
     _sceneGraph->getRoot()->deleteNode( soldierNode3 );
 
     for (U8 i = 0; i < 2; ++i) {
-        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_FIND_ENEMY_FLAG));
-        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG));
-        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_RETURN_ENEMY_FLAG));
-        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER));
-        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_RETRIEVE_FLAG));
+        _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(AI::WarSceneOrder::ORDER_FIND_ENEMY_FLAG));
+        _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(AI::WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG));
+        _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(AI::WarSceneOrder::ORDER_RETURN_ENEMY_FLAG));
+        _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(AI::WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER));
+        _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(AI::WarSceneOrder::ORDER_RETRIEVE_FLAG));
     }
 
     return state;
@@ -528,23 +545,14 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
     while (AI::AIManager::getInstance().updating()) {
     }
     for (U8 i = 0; i < 2; ++i) {
-        for(U8 j = 0; j < _armyNPCs[i].size(); ++j){
-            MemoryManager::SAFE_DELETE( _armyNPCs[i][j] );
+        for (Divide::AI::AIEntity* entity : _army[i]) {
+            AI::AIManager::getInstance().unregisterEntity(entity);
         }
-        _armyNPCs[i].clear();
 
-        for(U8 j = 0; j < _army[i].size(); ++j) {
-            AI::AIManager::getInstance().unregisterEntity(_army[i][j]);
-            MemoryManager::SAFE_DELETE( _army[i][j] );
-        }
-        _army[i].clear();
-    
-        MemoryManager::SAFE_DELETE( _faction[i] );
-
-        for(AI::WarSceneOrder*& order : _orders[i]) {
-            MemoryManager::SAFE_DELETE( order );
-        }
-        _orders[i].clear();
+        MemoryManager::DELETE_VECTOR(_armyNPCs[i]);
+        MemoryManager::DELETE_VECTOR(_army[i]);
+        MemoryManager::DELETE_VECTOR(_orders[i]);
+        MemoryManager::DELETE( _faction[i] );
     }
 
     return Scene::deinitializeAI(continueOnErrors);
@@ -588,13 +596,13 @@ bool WarScene::loadResources(bool continueOnErrors){
                   0.0f, 0.0f, 0.0f);
     _infoBox = _GUI->addMsgBox("infoBox", "Info", "Blabla");
     //Add a first person camera
-    Camera* cam = New FirstPersonCamera();
+    Camera* cam = MemoryManager_NEW FirstPersonCamera();
     cam->fromCamera(renderState().getCameraConst());
     cam->setMoveSpeedFactor(10.0f);
     cam->setTurnSpeedFactor(10.0f);
     renderState().getCameraMgr().addNewCamera("fpsCamera", cam);
     //Add a third person camera
-    cam = New ThirdPersonCamera();
+    cam = MemoryManager_NEW ThirdPersonCamera();
     cam->fromCamera(renderState().getCameraConst());
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);

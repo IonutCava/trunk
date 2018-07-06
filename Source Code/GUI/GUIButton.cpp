@@ -16,7 +16,7 @@ GUIButton::GUIButton(const stringImpl& id, const stringImpl& text,const stringIm
                                                 _pressed(false),
                                                 _btnWindow(nullptr)
 {
-  _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(stringAlg::fromBase(guiScheme+"/Button"), stringAlg::fromBase(id));
+  _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(stringAlg::fromBase(guiScheme+"/Button"),stringAlg::fromBase(id));
   _btnWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(0,position.x),CEGUI::UDim(1,-1.0f * position.y)));
   _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(0,dimensions.x),CEGUI::UDim(0,dimensions.y)));
   _btnWindow->setText(text.c_str());

@@ -51,18 +51,41 @@ public:
         NEGATIVE_SIDE
     };
 
-    Plane() : _distance(0), _active(false), _index(0) {}
-    Plane(const Plane& rhs) : _normal(rhs._normal), _distance(rhs._distance), _active(rhs._active), _index(rhs._index) {}
+    Plane() : _distance(0), _active(false), _index(0)
+    {
+    }
+
+    Plane(const Plane& rhs) : _normal(rhs._normal),
+                              _distance(rhs._distance), 
+                              _active(rhs._active), 
+                              _index(rhs._index) 
+    {
+    }
+
     ///distance is stored as the negative of the specified value
-    Plane(const vec3<T>& normal, T distance) : _normal(normal), _distance(distance), _active(false), _index(0) {}
+    Plane(const vec3<T>& normal, T distance) : _normal(normal), 
+                                               _distance(distance), 
+                                               _active(false), 
+                                               _index(0) 
+    {
+    }
+
     ///distance is stored as the negative of the specified value
-    Plane(T a, T b, T c, T distance) : Plane(vec3<T>(a,b,c), distance) {}
-    Plane(const vec4<T>& plane) : Plane(plane.xyz(), plane.w) {}
-    Plane(const vec3<T>& normal, const vec3<T>& point) : _active(false), _index(0)
+    Plane(T a, T b, T c, T distance) : Plane(vec3<T>(a,b,c), distance) 
+    {
+    }
+
+    Plane(const vec4<T>& plane) : Plane(plane.xyz(), plane.w) 
+    {
+    }
+
+    Plane(const vec3<T>& normal, const vec3<T>& point) : _active(false),
+                                                         _index(0)
     {
         redefine(normal, point);
     }
-    Plane(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) : _active(false), _index(0)
+    Plane(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) : _active(false), 
+                                                                                 _index(0)
     {
         redefine(point0, point1, point2);
     }
@@ -99,8 +122,13 @@ public:
     inline I32  getIndex()          const {return _index;}
     inline void setIndex(I32 index)       {_index = index;}
     /// Comparison operator
-    bool operator==(const Plane& rhs) const { return (rhs._distance == _distance && rhs._normal == _normal); }
-    bool operator!=(const Plane& rhs) const { return (rhs._distance != _distance || rhs._normal != _normal); }
+    bool operator==(const Plane& rhs) const { 
+        return (rhs._distance == _distance && rhs._normal == _normal); 
+    }
+
+    bool operator!=(const Plane& rhs) const {
+        return (rhs._distance != _distance || rhs._normal != _normal); 
+    }
 
     T normalize() {
         T length = _normal.length();

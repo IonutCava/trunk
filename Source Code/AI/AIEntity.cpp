@@ -43,18 +43,18 @@ AIEntity::~AIEntity()
     _agentID = -1;
     _agent = nullptr;
 
-    MemoryManager::SAFE_DELETE( _AISceneImpl );
-	for (SensorMap::value_type& it : _sensorList) {
-        MemoryManager::SAFE_DELETE( it.second );
-    }
-    _sensorList.clear();
+    MemoryManager::DELETE( _AISceneImpl );
+    MemoryManager::DELETE_HASHMAP(_sensorList);
 }
 
 void AIEntity::load(const vec3<F32>& position) {
     setPosition(position);
 
     if (!isAgentLoaded() && _detourCrowd) {
-        _agentID = _detourCrowd->addAgent(position, _unitRef ? _unitRef->getMovementSpeed() : (_detourCrowd->getAgentHeight() / 2)*3.5f, 10.0f);
+        _agentID = _detourCrowd->addAgent(position, 
+                                          _unitRef ? _unitRef->getMovementSpeed() : 
+                                                     (_detourCrowd->getAgentHeight() / 2) * 3.5f,
+                                          10.0f);
         _agent = _detourCrowd->getAgent(_agentID);
         _destination = position;
     }
@@ -102,10 +102,10 @@ bool AIEntity::addSensor(SensorType type) {
     Sensor* sensor = nullptr;
     switch (type) {
         case AUDIO_SENSOR: {
-            sensor = New AudioSensor(this);
+            sensor = MemoryManager_NEW AudioSensor(this);
         } break;
         case VISUAL_SENSOR: {
-            sensor = New VisualSensor(this);
+            sensor = MemoryManager_NEW VisualSensor(this);
         } break;
     };
 
@@ -160,7 +160,8 @@ void AIEntity::update(const U64 deltaTime){
 }
 
 void AIEntity::init() {
-    DIVIDE_ASSERT(_AISceneImpl != nullptr, "AIEntity error: Can't init entity without a proper AISceneImpl");
+    DIVIDE_ASSERT(_AISceneImpl != nullptr, 
+                  "AIEntity error: Can't init entity without a proper AISceneImpl");
     _AISceneImpl->init();
 }
  
@@ -265,8 +266,15 @@ bool AIEntity::updateDestination(const vec3<F32>& destination, bool updatePrevio
     }
     vec3<F32> result;
     // Find position on navmesh
-    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, DESTINATION_RADIUS, vec3<F32>(5), result, 10)) {
-        if (!_detourCrowd->getNavMesh().getClosestPosition(destination, vec3<F32>(5), DESTINATION_RADIUS, result)) {
+    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, 
+                                                             DESTINATION_RADIUS, 
+                                                             vec3<F32>(5), 
+                                                             result, 
+                                                             10)) {
+        if (!_detourCrowd->getNavMesh().getClosestPosition(destination, 
+                                                           vec3<F32>(5), 
+                                                           DESTINATION_RADIUS, 
+                                                           result)) {
             return false;
         }
     }

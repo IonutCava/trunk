@@ -25,7 +25,8 @@ void PhysXScene::preRender(){
 void PhysXScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_guiTimers[0] >= FpsDisplay){
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
+                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
     }

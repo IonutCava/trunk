@@ -12,12 +12,12 @@ static const int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
 
 Console::Console() : Singleton()
 {
-    _textBuffer = New char[CONSOLE_OUTPUT_BUFFER_SIZE];
+    _textBuffer = MemoryManager_NEW char[CONSOLE_OUTPUT_BUFFER_SIZE];
 }
 
 Console::~Console()
 {
-    MemoryManager::SAFE_DELETE_ARRAY( _textBuffer );
+    MemoryManager::DELETE_ARRAY( _textBuffer );
 }
 
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio

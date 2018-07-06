@@ -11,7 +11,10 @@
 
 namespace Divide {
 
-SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_Single)
+SingleShadowMap::SingleShadowMap(Light* light,
+                                 Camera* shadowCamera) : ShadowMap(light, 
+                                                                   shadowCamera, 
+                                                                   SHADOW_TYPE_Single)
 {
     PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
     ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
@@ -20,10 +23,10 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap
     SamplerDescriptor depthMapSampler;
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(false);
-    depthMapSampler._useRefCompare = true; //< Use compare function
-    depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-
-    TextureDescriptor depthMapDescriptor(TEXTURE_2D, DEPTH_COMPONENT, UNSIGNED_INT); ///Default filters, LINEAR is OK for this
+    depthMapSampler._useRefCompare = true; 
+    depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; 
+    // Default filters, LINEAR is OK for this
+    TextureDescriptor depthMapDescriptor(TEXTURE_2D, DEPTH_COMPONENT, UNSIGNED_INT); 
 
     depthMapDescriptor.setSampler(depthMapSampler);
     _depthMap = GFX_DEVICE.newFB();
@@ -36,34 +39,38 @@ SingleShadowMap::~SingleShadowMap()
     RemoveResource(_previewDepthMapShader);
 }
 
-void SingleShadowMap::init(ShadowMapInfo* const smi){
+void SingleShadowMap::init(ShadowMapInfo* const smi) {
     resolution(smi->resolution(), _light->shadowMapResolutionFactor());
     _init = true;
 }
 
-void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor){
+void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor) { 
     U16 resolutionTemp = resolution * resolutionFactor;
-    if (resolutionTemp != _resolution){
+    if (resolutionTemp != _resolution) {
         _resolution = resolutionTemp;
         //Initialize the FB's with a variable resolution
         PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getGUID());
         _depthMap->Create(_resolution, _resolution);
     }
+
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void SingleShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction){
+void SingleShadowMap::render(SceneRenderState& renderState, 
+                             const DELEGATE_CBK<>& sceneRenderFunction) {
     ///Only if we have a valid callback;
-    if(!sceneRenderFunction) {
+    if (!sceneRenderFunction) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
         return;
     }
+
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
     renderInternal(renderState, sceneRenderFunction);
     renderState.getCameraMgr().popActiveCamera(false);
 }
 
-void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction) {
+void SingleShadowMap::renderInternal(const SceneRenderState& renderState, 
+                                     const DELEGATE_CBK<>& sceneRenderFunction) {
     _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getDirection());
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
     _shadowCamera->renderLookAt();
@@ -76,7 +83,7 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const 
     LightManager::getInstance().registerShadowPass();
 }
 
-void SingleShadowMap::previewShadowMaps(){
+void SingleShadowMap::previewShadowMaps() {
     _depthMap->Bind(ShaderProgram::TEXTURE_UNIT0);
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _previewDepthMapShader);
 }

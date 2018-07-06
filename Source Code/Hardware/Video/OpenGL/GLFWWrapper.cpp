@@ -62,8 +62,12 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glfwWindowHint(GLFW_DEPTH_BITS,  24);
     
     // Open an OpenGL window; resolution and windowed mode is specified in the external XML files
-	GLUtil::_mainWindow = glfwCreateWindow(resolution.width, resolution.height, par.getParam<stringImpl>("appTitle", "Divide").c_str(),
-                                           par.getParam<bool>("runtime.windowedMode", true) ? nullptr : glfwGetPrimaryMonitor(), nullptr);
+	GLUtil::_mainWindow = glfwCreateWindow(resolution.width, 
+                                           resolution.height, 
+                                           par.getParam<stringImpl>("appTitle", "Divide").c_str(),
+                                           par.getParam<bool>("runtime.windowedMode", true) ? nullptr : 
+                                                                                              glfwGetPrimaryMonitor(), 
+                                           nullptr);
     // Check if we have a valid window
     if (!GLUtil::_mainWindow) {
         glfwTerminate();
@@ -78,13 +82,16 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glfwSetWindowCloseCallback(GLUtil::_mainWindow, GLUtil::glfw_close_callback);
     // Bind our focus change callback to GLFW's internal wiring
     glfwSetWindowFocusCallback(GLUtil::_mainWindow, GLUtil::glfw_focus_callback);
-    // Geometry shaders became core in version 3.3, shader storage buffers in 4.3, buffer storage in 4.4 so fail if we are missing the required version
-    if ((Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_3) || (!Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_4)) {
+    // Geometry shaders became core in version 3.3, shader storage buffers in 4.3, 
+    // buffer storage in 4.4 so fail if we are missing the required version
+    if ((Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_3) || 
+        (!Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_4)) {
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
         return GLEW_OLD_HARDWARE;
     }
 
-    // We also create a loader thread in the background with its own GL context. To do this with GLFW, we'll create a second, invisible, window
+    // We also create a loader thread in the background with its own GL context. 
+    // To do this with GLFW, we'll create a second, invisible, window
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     // The loader window will share context lists with the main window
     GLUtil::_loaderWindow = glfwCreateWindow(1, 1, "divide-res-loader", nullptr, GLUtil::_mainWindow);
@@ -97,7 +104,9 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // Get the current display mode used by the focused monitor
     const GLFWvidmode* return_struct = glfwGetVideoMode(glfwGetPrimaryMonitor());
     // Attempt to position the window in the center of the screen. Useful for the splash screen
-    glfwSetWindowPos(GLUtil::_mainWindow, (return_struct->width - resolution.width) * 0.5f, (return_struct->height - resolution.height) * 0.5f);
+    glfwSetWindowPos(GLUtil::_mainWindow, 
+                     (return_struct->width - resolution.width) * 0.5f, 
+                     (return_struct->height - resolution.height) * 0.5f);
 
     // OpenGL has a nifty error callback system, available in every build configuration if required
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
@@ -144,7 +153,14 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
         return GLEW_OLD_HARDWARE;
     } else {
-        PRINT_FN( Locale::get( "GL_MAX_VERSION" ), 4, /*GLEW_VERSION_4_5 ? 5 : */GLEW_VERSION_4_4 ? 4 : GLEW_VERSION_4_3 ? 3 : GLEW_VERSION_4_2 ? 2 : GLEW_VERSION_4_1 ? 1 : 0 );
+        PRINT_FN(Locale::get( "GL_MAX_VERSION" ), 
+                 4, 
+                 /*GLEW_VERSION_4_5 ? 5 :*/
+                                      GLEW_VERSION_4_4 ? 4 : 
+                                                         GLEW_VERSION_4_3 ? 3 : 
+                                                                            GLEW_VERSION_4_2 ? 2 : 
+                                                                                               GLEW_VERSION_4_1 ? 1 : 
+                                                                                                                  0 );
     }
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
@@ -167,7 +183,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // How many attributes can we send to a vertex shader
     PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
-	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), par.getParam<I32>("rendering.maxTextureSlots", 16));
+	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), 
+             par.getParam<I32>("rendering.maxTextureSlots", 16));
     // Query shading language version support
     PRINT_FN(Locale::get("GL_GLSL_SUPPORT"), glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver
@@ -179,7 +196,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
                                          GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE) / 1024, 
                                          GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
 
-    // In order: Maximum number of shader storage buffer binding points, maximum size in basic machine units of a shader storage block,
+    // In order: Maximum number of shader storage buffer binding points, 
+    //           maximum size in basic machine units of a shader storage block,
     //           maximum total number of active shader storage blocks that may be accessed by all active shaders and 
     //           minimum required alignment for shader storage buffer sizes and offset.
     PRINT_FN(Locale::get("GL_SSBO_INFO"), GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
@@ -188,7 +206,9 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
                                           GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT));
 
     // Maximum number of subroutines and maximum number of subroutine uniform locations usable in a shader
-    PRINT_FN(Locale::get("GL_SUBROUTINE_INFO"), GLUtil::getIntegerv(GL_MAX_SUBROUTINES), GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
+    PRINT_FN(Locale::get("GL_SUBROUTINE_INFO"), 
+             GLUtil::getIntegerv(GL_MAX_SUBROUTINES), 
+             GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
         
     // Set the clear color to the blue color used since the initial OBJ loader days
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
@@ -209,7 +229,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
     // Culling is enabled by default, but RenderStateBlocks can toggle it on a per-draw call basis
     glEnable(GL_CULL_FACE);
-    // Primitive restart indexes can either be a predefined short value (_S) or a predefined int value (_L), depending on the index buffer
+    // Primitive restart indexes can either be a predefined short value (_S) or a predefined int value (_L),
+    // depending on the index buffer
     glPrimitiveRestartIndex(Config::PRIMITIVE_RESTART_INDEX_S);
     // Vsync is toggled on or off via the external config file
     glfwSwapInterval(par.getParam<bool>("runtime.enableVSync",false) ? 1 : 0);
@@ -228,7 +249,13 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
         tempDisplayMode._refreshRate =  temp.refreshRate;
         GFX_DEVICE.registerDisplayMode(tempDisplayMode);
         // Optionally, output to console/file each display mode
-        D_PRINT_FN(Locale::get("CURRENT_DISPLAY_MODE"), temp.width, temp.height, temp.redBits, temp.greenBits, temp.blueBits, temp.refreshRate);
+        D_PRINT_FN(Locale::get("CURRENT_DISPLAY_MODE"), 
+                   temp.width, 
+                   temp.height, 
+                   temp.redBits, 
+                   temp.greenBits, 
+                   temp.blueBits, 
+                   temp.refreshRate);
     }
 
     // Prepare font rendering subsystem
@@ -247,7 +274,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glGenBuffers(1, &_indirectDrawBuffer);
     // In debug, we also have various performance counters to profile GPU rendering operations
 #   ifdef _DEBUG
-        // We have multiple counter buffers, and each can be multi-buffered (currently, only double-buffered, front and back) to avoid pipeline stalls
+        // We have multiple counter buffers, and each can be multi-buffered (currently, only double-buffered, front and back)
+        // to avoid pipeline stalls
         for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
             glGenQueries(PERFORMANCE_COUNTERS, _queryID[i]);
             DIVIDE_ASSERT(_queryID[i][0] != 0, "GLFWWrapper error: Invalid performance counter query ID!");
@@ -288,10 +316,7 @@ void GL_API::closeRenderingApi() {
     }
 
     // Destroy sampler objects
-    for (samplerObjectMap::value_type& it : _samplerMap ) {
-        MemoryManager::SAFE_DELETE( it.second );
-    }
-    _samplerMap.clear();
+    MemoryManager::DELETE_HASHMAP(_samplerMap);
 
     // Destroy the text rendering system
     deleteFonsContext();

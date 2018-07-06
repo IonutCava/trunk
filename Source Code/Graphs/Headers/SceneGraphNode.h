@@ -54,7 +54,10 @@ namespace Divide {
     protected:
         void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) {}
         void postLoad(SceneGraphNode* const sgn)  { SceneNode::postLoad(sgn); }
-        void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& renderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
+        void getDrawCommands(SceneGraphNode* const sgn, 
+                             const RenderStage& renderStage, 
+                             SceneRenderState& sceneRenderState, 
+                             vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
     };
 
     // Add as many SceneTransform nodes are needed as parent nodes for any scenenode to create complex transforms in the scene
@@ -107,7 +110,7 @@ namespace Divide {
         void			removeNode(SceneGraphNode* node);
         inline void     deleteNode(SceneGraphNode*& node) {
             removeNode(node);
-            MemoryManager::SAFE_DELETE(node);
+            MemoryManager::DELETE(node);
         }
         ///Find a node in the graph based on the SceneGraphNode's name
         ///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
@@ -183,13 +186,21 @@ namespace Divide {
         template<typename T>
         inline T* getComponent() const { assert(false && "INVALID COMPONENT"); return nullptr; }
         template<>
-        inline AnimationComponent*  getComponent() const { return static_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); }
+        inline AnimationComponent*  getComponent() const { 
+            return static_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); 
+        }
         template<>
-        inline NavigationComponent* getComponent() const { return static_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); }
+        inline NavigationComponent* getComponent() const { 
+            return static_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); 
+        }
         template<>
-        inline PhysicsComponent*    getComponent() const { return static_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
+        inline PhysicsComponent*    getComponent() const { 
+            return static_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); 
+        }
         template<>
-        inline RenderingComponent*  getComponent() const { return static_cast<RenderingComponent*>(_components[SGNComponent::SGN_COMP_RENDERING]); }
+        inline RenderingComponent*  getComponent() const { 
+            return static_cast<RenderingComponent*>(_components[SGNComponent::SGN_COMP_RENDERING]); 
+        }
 
         inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
@@ -206,8 +217,11 @@ namespace Divide {
         }
 
     protected:
-        SET_SAFE_DELETE_FRIEND
+        SET_DELETE_FRIEND
         SET_SAFE_UPDATE_FRIEND
+        SET_DELETE_VECTOR_FRIEND
+        SET_DELETE_HASHMAP_FRIEND
+
         friend class SceneGraph;
         friend vectorImpl<SceneGraphNode>;
         explicit SceneGraphNode(SceneGraph* const sg, SceneNode* const node, const stringImpl& name);

@@ -102,7 +102,9 @@ namespace Divide {
         inline void setFileName(const stringImpl& fileName) {_fileName.append(fileName);}
         /// Initiates the NavigationMesh build process, which includes notifying the
         /// clients and posting a task.
-        bool build(SceneGraphNode* const sgn, CreationCallback creationCompleteCallback, bool threaded = true);
+        bool build(SceneGraphNode* const sgn, 
+                   CreationCallback creationCompleteCallback, 
+                   bool threaded = true);
         /// Save the NavigationMesh to a file.
         bool save();
         /// Load a saved NavigationMesh from a file.
@@ -124,8 +126,17 @@ namespace Divide {
         inline const dtNavMeshQuery& getNavQuery() const {return *_navQuery;}
 
         bool getRandomPosition(vec3<F32>& result) const;
-        bool getClosestPosition(const vec3<F32>& destination, const vec3<F32>& extents, F32 delta, vec3<F32>& result) const;
-        bool getRandomPositionInCircle(const vec3<F32>& center, F32 radius, const vec3<F32>& extents, vec3<F32>& result, U8 maxIters = 15) const;
+
+        bool getClosestPosition(const vec3<F32>& destination,
+                                const vec3<F32>& extents,
+                                F32 delta,
+                                vec3<F32>& result) const;
+
+        bool getRandomPositionInCircle(const vec3<F32>& center,
+                                       F32 radius,
+                                       const vec3<F32>& extents,
+                                       vec3<F32>& result,
+                                       U8 maxIters = 15) const;
 
         NavigationMesh();
         ~NavigationMesh();

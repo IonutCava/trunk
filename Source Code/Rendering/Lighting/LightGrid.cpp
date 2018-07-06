@@ -25,7 +25,12 @@
 
 namespace Divide {
 
-LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(const mat4<F32>& projection, const vec3<F32>& pt, F32 rad, I32 width, I32 height, F32 nearPlane) {
+LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(const mat4<F32>& projection,
+                                                       const vec3<F32>& pt,
+                                                       F32 rad, 
+                                                       I32 width, 
+                                                       I32 height, 
+                                                       F32 nearPlane) {
     vec4<F32> reg = computeClipRegion(pt, rad, nearPlane, projection);
     reg = -reg;
 
@@ -49,7 +54,8 @@ LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(const mat4<F32>& projecti
 }
 
 inline bool testDepthBounds(const vec2<F32>& zRange, const LightGrid::LightInternal& light) {
-    // Note that since in view space greater depth means _smaller_ z value (i.e. larger _negative_ Z values), it all gets turned inside out. 
+    // Note that since in view space greater depth means _smaller_ z value (i.e. larger _negative_ Z values), 
+    // it all gets turned inside out. 
     // Fairly easy to get confused...
     F32 lightMin = light.position.z + light.range;
     F32 lightMax = light.position.z - light.range;
@@ -58,7 +64,8 @@ inline bool testDepthBounds(const vec2<F32>& zRange, const LightGrid::LightInter
 }
 
 void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, const Lights& lights,
-                      const mat4<F32>& modelView, const mat4<F32>& projection, F32 nearPlane, const vectorImpl<vec2<F32> >& gridMinMaxZ) {
+                      const mat4<F32>& modelView, const mat4<F32>& projection, F32 nearPlane, 
+                      const vectorImpl<vec2<F32> >& gridMinMaxZ) {
 
     m_gridMinMaxZ = gridMinMaxZ;
     m_minMaxGridValid = !gridMinMaxZ.empty();
@@ -228,7 +235,11 @@ void LightGrid::pruneFarOnly(F32 aNear, const vectorImpl<vec2<F32> >& gridMinMax
     #undef GRID_OFFSETS
 }
 
-void LightGrid::buildRects(const vec2<U16>& resolution, const Lights& lights, const mat4<F32>& modelView, const mat4<F32>& projection, F32 nearPlane) {
+void LightGrid::buildRects(const vec2<U16>& resolution, 
+                           const Lights& lights, 
+                           const mat4<F32>& modelView,
+                           const mat4<F32>& projection,
+                           F32 nearPlane) {
 
     m_viewSpaceLights.clear();
     m_viewSpaceLights.reserve(lights.size());
@@ -245,7 +256,7 @@ void LightGrid::buildRects(const vec2<U16>& resolution, const Lights& lights, co
         {
             m_screenRects.push_back(rect);
             // save light in model space
-            m_viewSpaceLights.push_back(make_light(vp, l));
+            m_viewSpaceLights.push_back(makeLight(vp, l));
         }
     }
 }

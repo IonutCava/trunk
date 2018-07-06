@@ -67,7 +67,9 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
        
         //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_minShadowVariance);
         //float shadowWarpedz1 = exp(shadow_coord.w * DEPTH_EXP_WARP);
-        //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance), 1.0, clamp(((gl_FragCoord.z + dvd_shadowFadeDist) - dvd_shadowMaxDist) / dvd_shadowFadeDist, 0.0, 1.0));
+        //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance), 
+                     1.0, 
+                     clamp(((gl_FragCoord.z + dvd_shadowFadeDist) - dvd_shadowMaxDist) / dvd_shadowFadeDist, 0.0, 1.0));
         return chebyshevUpperBound(moments,  shadow_coord.w, dvd_minShadowVariance);
     }
 

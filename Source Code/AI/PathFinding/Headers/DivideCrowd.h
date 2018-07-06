@@ -90,11 +90,11 @@ namespace Divide {
           **/
         DivideDtCrowd(NavigationMesh *navMesh);
         ~DivideDtCrowd();
-        /// Add an agent to the crowd:  Returns ID of created agent (-1 if maximum agents is already created)
+        /// Add an agent to the crowd: Returns ID of created agent
+        /// (-1 if maximum agents is already created)
         I32 addAgent(const vec3<F32>& position, F32 maxSpeed, F32 acceleration);
         /// Retrieve agent with specified ID from the crowd.
         inline const dtCrowdAgent* getAgent(I32 id) const { return _crowd->getAgent(id); }
-
         /// Remove agent with specified ID from the crowd.
         void removeAgent(const I32 idx);
         /**
@@ -169,7 +169,8 @@ namespace Divide {
         vectorImpl<dtCrowdAgent* > getActiveAgents(void);
         /// Get the IDs of all (active) agents in this crowd.
         vectorImpl<I32 > getActiveAgentIds(void);
-        /// The last set destination for the crowd. This is the destination that will be assigned to newly added agents.
+        /// The last set destination for the crowd.
+        /// This is the destination that will be assigned to newly added agents.
         inline vec3<F32> DivideDtCrowd::getLastDestination() const { return vec3<F32>(_targetPos); }
         /// Reference to the DetourCrowd object that is wrapped.
         dtCrowd* _crowd;

@@ -128,14 +128,16 @@ enum BlendProperty{
    BLEND_PROPERTY_ONE,
    BLEND_PROPERTY_SRC_COLOR,
    BLEND_PROPERTY_INV_SRC_COLOR,
-   /// Transparency is best implemented using blend function (SRC_ALPHA, ONE_MINUS_SRC_ALPHA) with primitives sorted from farthest to nearest.
+   /// Transparency is best implemented using blend function (SRC_ALPHA, ONE_MINUS_SRC_ALPHA) 
+   /// with primitives sorted from farthest to nearest.
    BLEND_PROPERTY_SRC_ALPHA,
    BLEND_PROPERTY_INV_SRC_ALPHA,
    BLEND_PROPERTY_DEST_ALPHA,
    BLEND_PROPERTY_INV_DEST_ALPHA,
    BLEND_PROPERTY_DEST_COLOR,
    BLEND_PROPERTY_INV_DEST_COLOR,
-   /// Polygon antialiasing is optimized using blend function (SRC_ALPHA_SATURATE, GL_ONE) with polygons sorted from nearest to farthest.
+   /// Polygon antialiasing is optimized using blend function (SRC_ALPHA_SATURATE, GL_ONE) 
+   /// with polygons sorted from nearest to farthest.
    BLEND_PROPERTY_SRC_ALPHA_SAT,
    ///Place all properties above this.
    BlendProperty_PLACEHOLDER

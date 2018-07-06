@@ -72,7 +72,13 @@ namespace Divide {
         /// Initialize GLEW and all needed data (GLEW_MX case handled here)
         void initGlew();
         /// Check the current operation for errors
-        void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+        void APIENTRY CALLBACK DebugCallback(GLenum source, 
+                                             GLenum type, 
+                                             GLuint id, 
+                                             GLenum severity, 
+                                             GLsizei length, 
+                                             const GLchar* message, 
+                                             const void* userParam);
         /// Half float conversion from: http://www.opengl.org/discussion_boards/archive/index.php/t-154530.html [thx gking]
         /// Half-float to float
         static GLfloat htof(GLhalf val);

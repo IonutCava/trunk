@@ -30,7 +30,9 @@ namespace Divide {
 ///All transparent or semi-transparent SceneNodes are added to this rendering bin
 class RenderBinTranslucent : public RenderBin {
 public:
-	RenderBinTranslucent(const RenderBinType& rbType,const RenderingOrder::List& renderOrder, D32 drawKey);
+	RenderBinTranslucent(const RenderBinType& rbType,
+                         const RenderingOrder::List& renderOrder, 
+                         D32 drawKey);
 	~RenderBinTranslucent();
 };
 

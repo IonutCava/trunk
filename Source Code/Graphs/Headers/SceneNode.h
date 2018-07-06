@@ -68,11 +68,16 @@ public:
     virtual	bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
     virtual	bool getDrawState(const RenderStage& currentStage);
-    virtual void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
+    virtual void getDrawCommands(SceneGraphNode* const sgn, 
+                                 const RenderStage& currentRenderStage, 
+                                 SceneRenderState& sceneRenderState, 
+                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
     /*//Rendering/Processing*/
 
     virtual	bool	  unload();
-    virtual bool	  isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true );
+    virtual bool	  isInView(const SceneRenderState& sceneRenderState, 
+                               SceneGraphNode* const sgn, 
+                               const bool distanceCheck = true);
     virtual	void	  setMaterialTpl(Material* const m);
     Material*   const getMaterialTpl();
 
@@ -99,7 +104,9 @@ protected:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     /*Rendering/Processing*/
-    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) = 0; //Sounds are played, geometry is displayed etc.
+    virtual void render(SceneGraphNode* const sgn, 
+                        const SceneRenderState& sceneRenderState, 
+                        const RenderStage& currentRenderStage) = 0;
 
     virtual void onCameraChange(SceneGraphNode* const sgn) {}
 

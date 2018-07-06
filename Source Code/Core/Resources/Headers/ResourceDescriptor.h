@@ -92,20 +92,24 @@ public:
 
     template<typename T>
     inline void setPropertyDescriptor(const T& descriptor) {
-		MemoryManager::SAFE_UPDATE(_propertyDescriptor, New T(descriptor));
+        MemoryManager::SAFE_UPDATE(_propertyDescriptor, MemoryManager_NEW T(descriptor));
     }
 
 private:
-    stringImpl _name;			   ///< Item name
-    stringImpl _resourceLocation; ///< Physical file location
-    stringImpl _properties;       ///< Comma separated list of properties
+    /// Item name
+    stringImpl _name;			   
+    /// Physical file location
+    stringImpl _resourceLocation; 
+    /// Comma separated list of properties
+    stringImpl _properties;       
     bool        _flag;
     bool        _threaded;
     U32         _id;
-    P32         _mask;             ///<4 bool values representing  ... anything ...
+    /// 4 bool values representing  ... anything ...
+    P32         _mask;             
     U8          _enumValue;
-
-    PropertyDescriptor* _propertyDescriptor; ///< Use for extra resource properties: textures, samplers, terrain etc.
+    /// Use for extra resource properties: textures, samplers, terrain etc.
+    PropertyDescriptor* _propertyDescriptor; 
 };
 
 }; //namespace Divide

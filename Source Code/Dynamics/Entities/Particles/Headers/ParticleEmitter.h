@@ -35,16 +35,22 @@ namespace Divide {
 /// By default , every PE node is inert until you pass it a descriptor
 class ParticleEmitterDescriptor : public PropertyDescriptor{
 public:
-    U32 _particleCount;            ///< maximum number of particles for this emitter
-    I32 _emissionInterval;         ///< particles per second
-    I32 _emissionIntervalVariance; ///< particles per second used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance, _emissionIntervalVariance))
+    /// maximum number of particles for this emitter
+    U32 _particleCount;
+    /// particles per second
+    I32 _emissionInterval;         
+    /// particles per second used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance,_emissionIntervalVariance))
+    I32 _emissionIntervalVariance; 
 
     F32 _spread;
-    F32 _velocity;				   ///< particle velocity on emission
-    F32 _velocityVariance;		   ///< velocity variance (_velocity + rand(-_velocityVariance, _velocityVariance))
-
-    I32 _lifetime;                  ///< lifetime , in milliseconds of each particle
-    I32 _lifetimeVariance;          ///< liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
+    /// particle velocity on emission
+    F32 _velocity;				   
+    /// velocity variance (_velocity + rand(-_velocityVariance, _velocityVariance))
+    F32 _velocityVariance;		   
+    /// lifetime, in milliseconds of each particle
+    I32 _lifetime;                  
+    /// liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
+    I32 _lifetimeVariance;          
     stringImpl _textureFileName;
 
 public:
@@ -63,7 +69,7 @@ public:
 	}
 
 	ParticleEmitterDescriptor* clone() const { 
-		return New ParticleEmitterDescriptor( *this ); 
+        return MemoryManager_NEW ParticleEmitterDescriptor(*this);
 	}
 };
 
@@ -109,8 +115,13 @@ protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
-    void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    virtual void render(SceneGraphNode* const sgn, 
+                        const SceneRenderState& sceneRenderState,
+                        const RenderStage& currentRenderStage);
+    void getDrawCommands(SceneGraphNode* const sgn,
+                         const RenderStage& currentRenderStage,
+                         SceneRenderState& sceneRenderState,
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
     void onCameraChange(SceneGraphNode* const sgn);
 
 private:

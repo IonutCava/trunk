@@ -53,7 +53,7 @@ public:
         _borderColor.set(DefaultColors::BLACK());
     }
 
-    SamplerDescriptor* clone() const {return New SamplerDescriptor(*this);}
+    SamplerDescriptor* clone() const { return MemoryManager_NEW SamplerDescriptor(*this); }
 
     /*
     *  Sampler states (LOD, wrap modes, anisotropy levels, etc
@@ -155,14 +155,22 @@ public:
 
 protected:
     //Sampler states
-    TextureFilter  _minFilter, _magFilter; ///Texture filtering mode
-    TextureWrap    _wrapU, _wrapV, _wrapW; ///<Or S-R-T
-    bool           _generateMipMaps;       ///<If it's set to true we create automatic MipMaps
-	bool           _srgb; //< Use SRGB color space
-    U8             _anisotropyLevel;       ///<The value must be in the range [0...255] and is automatically clamped by the max HW supported level
-    F32            _minLOD,_maxLOD;        ///<OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
-    F32            _biasLOD;               ///<OpenGL eg: used by TEXTURE_LOD_BIAS
-    vec4<F32>      _borderColor;           ///<Used with CLAMP_TO_BORDER as the background color outside of the texture border
+    /// Texture filtering mode
+    TextureFilter  _minFilter, _magFilter; 
+    /// Texture wrap mode (Or S-R-T)
+    TextureWrap    _wrapU, _wrapV, _wrapW; 
+    /// If it's set to true we create automatic MipMaps
+    bool           _generateMipMaps;       
+    /// Use SRGB color space
+	bool           _srgb; 
+    /// The value must be in the range [0...255] and is automatically clamped by the max HW supported level
+    U8             _anisotropyLevel;       
+    /// OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
+    F32            _minLOD,_maxLOD;        
+    /// OpenGL eg: used by TEXTURE_LOD_BIAS
+    F32            _biasLOD;               
+    /// Used with CLAMP_TO_BORDER as the background color outside of the texture border
+    vec4<F32>      _borderColor;           
 };
 
 ///Use to define a texture with details such as type, image formats, etc
@@ -194,7 +202,7 @@ public:
         setDefaultValues();
     }
 
-    TextureDescriptor* clone() const {return New TextureDescriptor(*this);}
+    TextureDescriptor* clone() const { return MemoryManager_NEW TextureDescriptor(*this); }
 
     ///Pixel alignment and miplevels are set to match what the HW sets by default
     inline void setDefaultValues(){

@@ -23,12 +23,13 @@ Object3D::Object3D(const stringImpl& name, const ObjectType& type, U32 flag) : S
 Object3D::~Object3D()
 {
 	if ( !bitCompare( _geometryFlagMask, OBJECT_FLAG_NO_VB ) ) {
-        MemoryManager::SAFE_DELETE( _buffer );
+        MemoryManager::DELETE( _buffer );
 	}
 }
 
 void Object3D::setGeometryVB(VertexBuffer* const vb) {
-	DIVIDE_ASSERT(_buffer == nullptr, "Object3D error: Please remove the previous vertex buffer of this Object3D before specifying a new one!");
+	DIVIDE_ASSERT(_buffer == nullptr, 
+                  "Object3D error: Please remove the previous vertex buffer of this Object3D before specifying a new one!");
 	_buffer = vb;
 }
 
@@ -36,7 +37,10 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-void Object3D::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Object3D::getDrawCommands(SceneGraphNode* const sgn, 
+                               const RenderStage& currentRenderStage, 
+                               SceneRenderState& sceneRenderState, 
+                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
@@ -66,7 +70,8 @@ void Object3D::computeNormals() {
     vec3<F32> v1 , v2, normal;
     //Code from http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
 
-    vectorImpl<vec3<F32> >* normal_buffer = New vectorImpl<vec3<F32> >[getGeometryVB()->getPosition().size()];
+    vectorImpl<vec3<F32> >* normal_buffer = nullptr;
+    normal_buffer = MemoryManager_NEW vectorImpl<vec3<F32> >[getGeometryVB()->getPosition().size()];
 
     for( U32 i = 0; i < getGeometryVB()->getIndexCount(); i += 3 ) {
         // get the three vertices that make the faces
@@ -97,7 +102,7 @@ void Object3D::computeNormals() {
 
         getGeometryVB()->modifyNormalValue(i, currentNormal);
     }
-    MemoryManager::SAFE_DELETE_ARRAY( normal_buffer );
+    MemoryManager::DELETE_ARRAY( normal_buffer );
 }
 
 void Object3D::computeTangents(){
@@ -156,7 +161,8 @@ bool Object3D::computeTriangleList(bool force){
     U32 partitionCount  = geometry->getPartitionCount(_geometryPartitionId);
     PrimitiveType type  = (_geometryType == MESH || _geometryType == SUBMESH ? TRIANGLES : TRIANGLE_STRIP);
     //We can't have a VB without vertex positions
-    DIVIDE_ASSERT(!geometry->getPosition().empty(), "Object3D error: computeTriangleList called with no position data available!");
+    DIVIDE_ASSERT(!geometry->getPosition().empty(), 
+                  "Object3D error: computeTriangleList called with no position data available!");
 
     if(!_geometryTriangles.empty() && force) 
         _geometryTriangles.resize(0);

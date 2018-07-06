@@ -25,7 +25,7 @@
 
 namespace Divide {
 
-template <class T>
+template<typename T>
 class Singleton {
 public :
     inline static T& getOrCreateInstance() {
@@ -77,7 +77,7 @@ private :
     static T* _instance;
 };
 
-template <class T> T* Singleton<T>::_instance = 0;
+template<typename T> T* Singleton<T>::_instance = 0;
 
 #define DEFINE_SINGLETON(class_name) \
     class class_name : public Singleton<class_name> { \

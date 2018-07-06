@@ -72,8 +72,13 @@ public:
     bool computeTriangleList(bool force = false);
 
 protected:
-    virtual	void  render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
-    virtual void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    virtual	void render(SceneGraphNode* const sgn, 
+                        const SceneRenderState& sceneRenderState, 
+                        const RenderStage& currentRenderStage);
+    virtual void getDrawCommands(SceneGraphNode* const sgn, 
+                                 const RenderStage& currentRenderStage, 
+                                 SceneRenderState& sceneRenderState, 
+                                 vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();
     virtual void computeTangents();
 	/// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)

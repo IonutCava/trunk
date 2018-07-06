@@ -8,9 +8,9 @@
 namespace Divide {
 
 Terrain* ImplResourceLoader<Terrain>::operator()() {
-    Terrain* ptr = New Terrain();
+    Terrain* ptr = MemoryManager_NEW Terrain();
     if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     }
 
     return ptr;

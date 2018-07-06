@@ -59,7 +59,8 @@ namespace Divide {
     class ParticleEmitterDescriptor;
     class PhysicsSceneInterface;
 
-///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
+/// The scene is a resource (to enforce load/unload and setName) and it has a 2 states: 
+/// one for game information and one for rendering information
 class Scene : public Resource, public Input::InputAggregatorInterface {
 protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
@@ -128,7 +129,9 @@ public:
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
-	SceneGraphNode* const addParticleEmitter( const stringImpl& name, const ParticleEmitterDescriptor& descriptor, SceneGraphNode* parentNode );
+	SceneGraphNode* const addParticleEmitter(const stringImpl& name, 
+                                             const ParticleEmitterDescriptor& descriptor,
+                                             SceneGraphNode* parentNode );
 
     TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() { return _vegetationDataArray; }
@@ -209,7 +212,11 @@ protected:
 
    
     ///simple function to load the scene elements.
-    inline bool SCENE_LOAD(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui, const bool contOnErrorRes, const bool contOnErrorTasks){
+    inline bool SCENE_LOAD(const stringImpl& name, 
+                           CameraManager* const cameraMgr,
+                           GUI* const gui,
+                           const bool contOnErrorRes,
+                           const bool contOnErrorTasks) {
         if(!Scene::load(name,cameraMgr,gui)) {
             ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load function");
             return false;
@@ -255,7 +262,8 @@ protected: //Input
 ///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
 ///									  -B is the name used to refer to that scene in the XML files
 ///Call this function after each scene declaration
-#define REGISTER_SCENE_W_NAME(scene, sceneName) bool scene ## _registered = SceneManager::getOrCreateInstance().registerScene<scene>(#sceneName);
+#define REGISTER_SCENE_W_NAME(scene, sceneName) bool scene ## _registered = \
+                                                SceneManager::getOrCreateInstance().registerScene<scene>(#sceneName);
 ///same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
 #define REGISTER_SCENE(scene) bool scene ## _registered = SceneManager::getOrCreateInstance().registerScene<scene>(#scene);
 

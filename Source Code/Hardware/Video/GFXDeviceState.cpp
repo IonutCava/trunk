@@ -27,13 +27,18 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     _imShader = ShaderManager::getInstance().getDefaultShader();
     DIVIDE_ASSERT(_imShader != nullptr, "GFXDevice error: No immediate mode emulation shader available!");
 	PostFX::createInstance();
-    // Create a shader buffer to store the following info: ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
-    // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping. (Many small updates with BufferSubData are recommended with the target usage of the buffer)
+    // Create a shader buffer to store the following info: 
+    // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, 
+    // ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
+    // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping. 
+    // (Many small updates with BufferSubData are recommended with the target usage of the buffer)
     _gfxDataBuffer = newSB(false, false);
     _gfxDataBuffer->Create(1, sizeof(GPUBlock)); 
     _gfxDataBuffer->Bind(SHADER_BUFFER_GPU_BLOCK);
-    // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
-    // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
+    // Every visible node will first update this buffer with required data
+    // (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
+    // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently 
+    // and coherently mapped
     _nodeBuffer = newSB(true);
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     _nodeBuffer->Bind(SHADER_BUFFER_NODE_INFO);
@@ -56,12 +61,16 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     // Block with hash 0 is null, and it's used to force a block update, bypassing state comparison with previous blocks
     _stateBlockMap[0] = nullptr;
     // The general purpose render state blocks are both mandatory and must differ from each other at a state hash level
-    DIVIDE_ASSERT(_stateDepthOnlyRenderingHash != _state2DRenderingHash,    "GFXDevice error: Invalid default state hash detected!");
-    DIVIDE_ASSERT(_state2DRenderingHash        != _defaultStateNoDepthHash, "GFXDevice error: Invalid default state hash detected!");
-    DIVIDE_ASSERT(_defaultStateNoDepthHash     != _defaultStateBlockHash,   "GFXDevice error: Invalid default state hash detected!");
+    DIVIDE_ASSERT(_stateDepthOnlyRenderingHash != _state2DRenderingHash,    
+                  "GFXDevice error: Invalid default state hash detected!");
+    DIVIDE_ASSERT(_state2DRenderingHash        != _defaultStateNoDepthHash, 
+                  "GFXDevice error: Invalid default state hash detected!");
+    DIVIDE_ASSERT(_defaultStateNoDepthHash     != _defaultStateBlockHash, 
+                  "GFXDevice error: Invalid default state hash detected!");
     // Activate the default render states
     setStateBlock(_defaultStateBlockHash);
-    // Our default render targets hold the screen buffer, depth buffer, and a special, on demand, down-sampled version of the depth buffer
+    // Our default render targets hold the screen buffer, depth buffer, and a special, on demand, 
+    // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
     _renderTarget[RENDER_TARGET_SCREEN]       = newFB(true);
     // The depth buffer should probably be merged into the screen buffer
@@ -92,42 +101,43 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     depthSamplerHiZ.toggleMipMaps(true);
     TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
     depthDescriptorHiZ.setSampler(depthSamplerHiZ);
-    /// Add the attachments to the render targets
+    // Add the attachments to the render targets
     _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
     _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(depthDescriptor,  TextureDescriptor::Depth);
     _renderTarget[RENDER_TARGET_SCREEN]->Create(resolution.width, resolution.height);
     _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptorHiZ, TextureDescriptor::Depth);
     _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
     _renderTarget[RENDER_TARGET_DEPTH]->Create(resolution.width, resolution.height);
-    /// If we enabled anaglyph rendering, we need a second target, identical to the screen target used to render the scene at an offset
+    // If we enabled anaglyph rendering, we need a second target, identical to the screen target 
+    // used to render the scene at an offset
     if(_enableAnaglyph){
         _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(true);
         _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
         _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(depthDescriptor,  TextureDescriptor::Depth);
         _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width, resolution.height);
     }
-    /// If render targets ready, we initialize our post processing system    
+    // If render targets ready, we initialize our post processing system    
     PostFX::getInstance().init(resolution);
-    /// We also add a couple of useful cameras used by this class. One for rendering in 2D and one for generating cube maps
+    // We also add a couple of useful cameras used by this class. One for rendering in 2D and one for generating cube maps
 	
     Application::getInstance().getKernel()->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
 	Application::getInstance().getKernel()->getCameraMgr().addNewCamera("_gfxCubeCamera", _cubeCamera);
-    /// Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
+    // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZConstructProgram->UniformTexture("LastMip", 0);
-    /// Store our target z distances
+    // Store our target z distances
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
-    /// Create a separate loading thread that shares resources with the main rendering context
-    _loaderThread = New std::thread(&GFXDevice::createLoaderThread, this);
-    /// Register a 2D function used for previewing the depth buffer.
+    // Create a separate loading thread that shares resources with the main rendering context
+    _loaderThread = MemoryManager_NEW std::thread(&GFXDevice::createLoaderThread, this);
+    // Register a 2D function used for previewing the depth buffer.
 #   ifdef _DEBUG
         add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #   endif
     // We start of with a forward plus renderer
-    setRenderer(New ForwardPlusRenderer());
+    setRenderer(MemoryManager_NEW ForwardPlusRenderer());
 	ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer", false);
-    /// Everything is ready from the rendering point of view
+    // Everything is ready from the rendering point of view
     return NO_ERR;
 }
 
@@ -140,26 +150,20 @@ void GFXDevice::closeRenderingApi() {
 	PostFX::destroyInstance();
     // Delete the renderer implementation
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
-    MemoryManager::SAFE_DELETE( _renderer );
+    MemoryManager::DELETE( _renderer );
     // Delete our default render state blocks
-	for (RenderStateMap::value_type& it : _stateBlockMap) {
-        MemoryManager::SAFE_DELETE( it.second );
-    }
-    _stateBlockMap.clear();
+    MemoryManager::DELETE_HASHMAP(_stateBlockMap);
     // Destroy all of the immediate mode emulation primitives created during runtime
-    for ( IMPrimitive*& priv : _imInterfaces ) {
-        MemoryManager::SAFE_DELETE( priv );
-    }
-    _imInterfaces.clear();
+    MemoryManager::DELETE_VECTOR(_imInterfaces);
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets
     for ( Framebuffer*& renderTarget : _renderTarget ) {
-        MemoryManager::SAFE_DELETE( renderTarget );
+        MemoryManager::DELETE( renderTarget );
     }
     // Delete our shader buffers
-    MemoryManager::SAFE_DELETE( _gfxDataBuffer );
-    MemoryManager::SAFE_DELETE( _nodeBuffer );
+    MemoryManager::DELETE( _gfxDataBuffer );
+    MemoryManager::DELETE( _nodeBuffer );
     // Close the shader manager
 	ShaderManager::getInstance().destroy();
 	// Close the rendering API
@@ -167,7 +171,7 @@ void GFXDevice::closeRenderingApi() {
 	// Wait for the loading thread to terminate
 	_loaderThread->join();
 	// And delete it
-    MemoryManager::SAFE_DELETE( _loaderThread );
+    MemoryManager::DELETE( _loaderThread );
 
 	switch ( _apiId ) {
 		case RenderAPI::OpenGL:
@@ -223,7 +227,7 @@ void GFXDevice::endFrame() {
                                                                     });
         //2) For every zombie object, free the memory it's using
         for ( vectorImpl<IMPrimitive *>::iterator i = zombie ; i != _imInterfaces.end(); ++i ) {
-            MemoryManager::SAFE_DELETE( *i );
+            MemoryManager::DELETE( *i );
         }
         //3) Remove all the zombie objects once the memory is freed
         _imInterfaces.erase(zombie, _imInterfaces.end());

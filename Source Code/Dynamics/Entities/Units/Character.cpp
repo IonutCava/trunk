@@ -55,7 +55,8 @@ bool Character::frameRenderingQueued(const FrameEvent& evt) {
     _oldPosition.set( nodePhysicsComponent->getPosition() );
     _oldPosition.lerp(_curPosition, GFX_DEVICE.getInterpolation());  
     nodePhysicsComponent->setPosition(_oldPosition);
-    nodePhysicsComponent->rotateSlerp( nodePhysicsComponent->getOrientation() * rotationFromVToU( sourceDirection, _curVelocity ), GFX_DEVICE.getInterpolation() );
+    nodePhysicsComponent->rotateSlerp(nodePhysicsComponent->getOrientation() * rotationFromVToU( sourceDirection, _curVelocity ), 
+                                      GFX_DEVICE.getInterpolation());
     return true;
 }
 

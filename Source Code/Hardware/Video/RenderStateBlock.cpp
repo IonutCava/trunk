@@ -122,8 +122,12 @@ void RenderStateBlockDescriptor::setStencilReadWriteMask(U32 read, U32 write) {
     clean();
 }
 
-void RenderStateBlockDescriptor::setStencil(bool enable, U32 stencilRef, StencilOperation stencilFailOp, StencilOperation stencilZFailOp, 
-                                                                         StencilOperation stencilPassOp, ComparisonFunction stencilFunc) {
+void RenderStateBlockDescriptor::setStencil(bool enable,
+                                            U32 stencilRef, 
+                                            StencilOperation stencilFailOp,
+                                            StencilOperation stencilZFailOp, 
+                                            StencilOperation stencilPassOp, 
+                                            ComparisonFunction stencilFunc) {
     _stencilEnable = enable;
     _stencilRef = stencilRef;
     _stencilFailOp = stencilFailOp;

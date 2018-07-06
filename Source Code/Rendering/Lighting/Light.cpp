@@ -32,7 +32,7 @@ Light::Light(const F32 range, const LightType& type) : SceneNode(TYPE_LIGHT),
     }
     _shadowProperties._floatValues.set(-1.0f);
 
-    _shadowCamera = New FreeFlyCamera();
+    _shadowCamera = MemoryManager_NEW FreeFlyCamera();
     _shadowCamera->setMoveSpeedFactor(0.0f);
     _shadowCamera->setTurnSpeedFactor(0.0f);
     _shadowCamera->setFixedYawAxis(true);
@@ -66,7 +66,7 @@ bool Light::unload(){
         return true;
     }
 
-    //SAFE_DELETE(_shadowCamera); <-- deleted by the camera manager
+    //DELETE(_shadowCamera); <-- deleted by the camera manager
     LightManager::getInstance().removeLight(getGUID());
         
     removeShadowMapInfo();
@@ -200,7 +200,8 @@ void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRende
         _impostor->renderState().setDrawState( true );
         _lightSGN->addNode( _impostor )->setActive( true );
     }
-    Material* const impostorMaterialInst = _lightSGN->getChildren().begin()->second->getComponent<RenderingComponent>()->getMaterialInstance();
+    SceneGraphNode* impostorSGN = _lightSGN->getChildren().begin()->second;
+    Material* const impostorMaterialInst = impostorSGN->getComponent<RenderingComponent>()->getMaterialInstance();
     impostorMaterialInst->setDiffuse(getDiffuseColor());
     impostorMaterialInst->setAmbient(getDiffuseColor());
 
@@ -215,7 +216,7 @@ void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo){
 }
 
 bool Light::removeShadowMapInfo(){
-    MemoryManager::SAFE_DELETE( _shadowMapInfo );
+    MemoryManager::DELETE( _shadowMapInfo );
     return true;
 }
 void Light::updateResolution(I32 newWidth, I32 newHeight){

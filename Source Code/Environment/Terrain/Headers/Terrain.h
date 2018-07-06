@@ -106,7 +106,10 @@ public:
 protected:
 
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {}
-    void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    void getDrawCommands(SceneGraphNode* const sgn, 
+                         const RenderStage& currentRenderStage, 
+                         SceneRenderState& sceneRenderState, 
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 

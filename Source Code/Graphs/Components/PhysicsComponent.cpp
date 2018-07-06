@@ -14,13 +14,13 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode* const parentSGN) : SGNCompone
                                                                        _physicsAsset(nullptr),
                                                                        _transform(nullptr)
 {
-    _transform = New Transform();
+    _transform = MemoryManager_NEW Transform();
     reset();
 }
 
 PhysicsComponent::~PhysicsComponent()
 {
-    MemoryManager::SAFE_DELETE( _transform );
+    MemoryManager::DELETE( _transform );
 }
 
 void PhysicsComponent::reset() {
@@ -35,23 +35,24 @@ void PhysicsComponent::reset() {
 
 void PhysicsComponent::useDefaultTransform(const bool state) {
     if (state && !_transform) {
-       _transform = New Transform();
+        _transform = MemoryManager_NEW Transform();
        reset();
     } else if (!state && _transform) {
-        MemoryManager::SAFE_DELETE(_transform);
+        MemoryManager::DELETE(_transform);
         reset();
     }
 }
 
 void PhysicsComponent::physicsAsset(PhysicsAsset* const asset) {
-    DIVIDE_ASSERT(_physicsAsset == nullptr, "PhysicsComponent error: Double set physics asset detected! remove the previous one first!");
+    DIVIDE_ASSERT(_physicsAsset == nullptr, 
+                  "PhysicsComponent error: Double set physics asset detected! remove the previous one first!");
     _physicsAsset = asset;
 	if ( _physicsAsset ) {
 		_physicsAsset->setParent( this );
 	}
 }
 
-void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName){
+void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
 	for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()) {
         it.second->getComponent<PhysicsComponent>()->cookCollisionMesh( sceneName );
@@ -305,8 +306,12 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix( D32 interpolationFactor, cons
         if (interpolationFactor < 0.95) {
             _worldMatrix.identity();
             _worldMatrix.setScale(lerp(_prevTransformValues._scale, _transform->getScale(), (F32)interpolationFactor));
-            _worldMatrix *= Divide::getMatrix(slerp(_prevTransformValues._orientation, _transform->getOrientation(), (F32)interpolationFactor));
-            _worldMatrix.setTranslation(lerp(_prevTransformValues._translation, _transform->getPosition(), (F32)interpolationFactor));
+            _worldMatrix *= Divide::getMatrix(slerp(_prevTransformValues._orientation, 
+                                                    _transform->getOrientation(), 
+                                                    (F32)interpolationFactor));
+            _worldMatrix.setTranslation(lerp(_prevTransformValues._translation, 
+                                             _transform->getPosition(), 
+                                             (F32)interpolationFactor));
         } else {
             _worldMatrix.set(_transform->getMatrix());
         }

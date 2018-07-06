@@ -27,7 +27,6 @@
 #include "Core/Headers/Application.h"
 
 #if defined OIS_WIN32_PLATFORM
-    #include <windows.h>
 LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 //////////////////////////////////////////////////////////////////////

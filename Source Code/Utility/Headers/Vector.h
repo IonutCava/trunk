@@ -141,5 +141,8 @@ namespace std {
 };
 #endif //defined(VECTOR_IMP)
 
-#define SET_VECTOR_EMPLACE_FRIEND template<typename T, class... Args> friend typename vectorImpl<T>::iterator vectorAlg::emplace_back(vectorImpl<T>& inputVector, Args&&... args);
+#define SET_VECTOR_EMPLACE_FRIEND template<typename T, typename... Args>  \
+                                  friend typename vectorImpl<T>::iterator \
+                                  vectorAlg::emplace_back(vectorImpl<T>& inputVector, \
+                                                          Args&&... args);
 #endif

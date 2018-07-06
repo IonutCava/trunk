@@ -4,6 +4,25 @@
 
 namespace Divide {
 
+RenderPassItem::RenderPassItem(const stringImpl& renderPassName, U8 sortKey) : _sortKey(sortKey)
+{
+    _renderPass = std::make_unique<RenderPass>(renderPassName);
+}
+
+RenderPassItem::RenderPassItem(RenderPassItem &&other) : _renderPass(std::move(other._renderPass))
+{
+}
+
+RenderPassItem& RenderPassItem::operator=(RenderPassItem &&other)
+{
+    _renderPass = std::move(other._renderPass);
+    return *this;
+}
+
+RenderPassItem::~RenderPassItem()
+{
+}
+
 RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPassesResetQueued(false)
 {
     RenderQueue::createInstance();
@@ -11,9 +30,6 @@ RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPass
 
 RenderPassManager::~RenderPassManager()
 {
-    for ( RenderPassItem& rpi : _renderPasses ) {
-        MemoryManager::SAFE_DELETE( rpi._rp );
-    }
     _renderPasses.clear();
     RenderQueue::destroyInstance();
 }
@@ -30,34 +46,24 @@ void RenderPassManager::unlock(bool resetNodes) {
 }
 
 void RenderPassManager::render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph) {
-    for(RenderPassItem& rpi : _renderPasses)
-        rpi._rp->render(sceneRenderState, activeSceneGraph);
-}
-
-void RenderPassManager::addRenderPass(RenderPass* const renderPass, U8 orderKey) {
-    assert(renderPass != nullptr);
-    _renderPasses.push_back(RenderPassItem(orderKey,renderPass));
-    std::sort(_renderPasses.begin(), _renderPasses.end(), [](const RenderPassItem& a, const RenderPassItem& b) -> bool { return a._sortKey < b._sortKey; });
-}
-
-void RenderPassManager::removeRenderPass(RenderPass* const renderPass,bool deleteRP) {
-    for(vectorImpl<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++){
-        if(it->_rp->getName().compare(renderPass->getName()) == 0){
-            if(deleteRP){
-                MemoryManager::SAFE_DELETE( it->_rp );
-            }
-            _renderPasses.erase(it);
-            break;
-        }
+    for (RenderPassItem& rpi : _renderPasses) {
+        rpi.renderPass().render(sceneRenderState, activeSceneGraph);
     }
 }
 
-void RenderPassManager::removeRenderPass( const stringImpl& name, bool deleteRP ) {
-    for ( vectorImpl<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++ ) {
-        if ( it->_rp->getName().compare( name ) == 0 ) {
-            if ( deleteRP ) {
-                MemoryManager::SAFE_DELETE( it->_rp );
-            }
+void RenderPassManager::addRenderPass(const stringImpl& renderPassName, U8 orderKey) {
+    assert(!renderPassName.empty());
+
+    _renderPasses.push_back(RenderPassItem(renderPassName, orderKey));
+    std::sort(_renderPasses.begin(), _renderPasses.end(), 
+              [](const RenderPassItem& a, const RenderPassItem& b) -> bool { 
+                return a.sortKey() < b.sortKey(); 
+              });
+}
+
+void RenderPassManager::removeRenderPass( const stringImpl& name) {
+    for (std::vector<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++ ) {
+        if ( it->renderPass().getName().compare( name ) == 0 ) {
             _renderPasses.erase( it );
             break;
         }
@@ -65,8 +71,9 @@ void RenderPassManager::removeRenderPass( const stringImpl& name, bool deleteRP 
 }
 
 U16 RenderPassManager::getLastTotalBinSize(U8 renderPassId) const {
-    if(renderPassId < _renderPasses.size())
-        return _renderPasses[renderPassId]._rp->getLasTotalBinSize();
+    if (renderPassId < _renderPasses.size()) {
+        return _renderPasses[renderPassId].renderPass().getLasTotalBinSize();
+    }
     
     return 0;
 }

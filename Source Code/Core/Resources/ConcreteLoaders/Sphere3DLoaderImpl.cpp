@@ -7,7 +7,7 @@
 namespace Divide {
 
 Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
-    Sphere3D* ptr = New Sphere3D(1,32);
+    Sphere3D* ptr = MemoryManager_NEW Sphere3D(1, 32);
 
     if ( _descriptor.getFlag() ) {
         ptr->renderState().useDefaultMaterial( false );
@@ -18,7 +18,7 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
     }
 
     if(!load(ptr,_descriptor.getName())){
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     }
 
     return ptr;

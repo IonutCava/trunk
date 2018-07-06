@@ -74,7 +74,9 @@ void main(){
 /*---------------------------------------------------------*/
     float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * dvd_fxaaReduceMul), dvd_fxaaReduceMin);
     float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);
-    dir = min(vec2( dvd_fxaaSpanMax,  dvd_fxaaSpanMax), max(vec2(-dvd_fxaaSpanMax, -dvd_fxaaSpanMax), dir * rcpDirMin)) * dvd_invScreenDimension.xy;
+    dir = min(vec2( dvd_fxaaSpanMax,  dvd_fxaaSpanMax), 
+              max(vec2(-dvd_fxaaSpanMax, -dvd_fxaaSpanMax), 
+                  dir * rcpDirMin)) * dvd_invScreenDimension.xy;
 /*--------------------------------------------------------*/
     vec3 rgbA = (1.0/2.0) * ( FxaaTexLod0(texScreen, _posPos.xy + dir * (1.0/3.0 - 0.5)).xyz +
                               FxaaTexLod0(texScreen, _posPos.xy + dir * (2.0/3.0 - 0.5)).xyz);

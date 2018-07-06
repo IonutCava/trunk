@@ -36,7 +36,8 @@ namespace AI {
     {
     }
 
-	ProtectFlagCarrier::ProtectFlagCarrier(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_PROTECT_FLAG_CARRIER, name, cost)
+	ProtectFlagCarrier::ProtectFlagCarrier(const stringImpl& name,
+                                           F32 cost) : WarSceneAction(ACTION_PROTECT_FLAG_CARRIER, name, cost)
     {
     }
 

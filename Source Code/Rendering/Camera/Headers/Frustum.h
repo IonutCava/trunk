@@ -48,13 +48,17 @@ public:
     FrustCollision ContainsBoundingBox(const BoundingBox& bbox) const;
     FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius) const;
 
-    // get the frustum corners in WorldSpace. cornerWS must be a vector with at least 8 allocated slots
+    // Get the frustum corners in WorldSpace. cornerWS must be a vector with at least 8 allocated slots
     void getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS);
-    // get the frustum corners in ViewSpace. cornerVS must be a vector with at least 8 allocated slots
+    // Get the frustum corners in ViewSpace. cornerVS must be a vector with at least 8 allocated slots
     void getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS);
 
 private:
-    void intersectionPoint(const Plane<F32> & a, const Plane<F32> & b, const Plane<F32> & c, vec3<F32>& outResult);
+    /// Get the point where the 3 specified planes intersect
+    void intersectionPoint(const Plane<F32> & a, 
+                           const Plane<F32> & b, 
+                           const Plane<F32> & c, 
+                           vec3<F32>& outResult);
     void updatePoints();
 
 private:

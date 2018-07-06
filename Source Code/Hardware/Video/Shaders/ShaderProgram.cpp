@@ -190,7 +190,11 @@ void ShaderProgram::removeUniform(const stringImpl& uniform, const ShaderType& t
 }
 
 /// Rebuild the specified shader stages from source code
-void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool geometry, const bool tessellation, const bool compute){
+void ShaderProgram::recompile(const bool vertex, 
+                              const bool fragment, 
+                              const bool geometry, 
+                              const bool tessellation, 
+                              const bool compute) {
     _linked = false;
     // Remember bind state
     bool wasBound = _bound;

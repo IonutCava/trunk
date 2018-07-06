@@ -106,19 +106,35 @@ namespace Divide {
             /**
             * Returns a random point on the navmesh.
             **/
-            bool getRandomNavMeshPoint(const NavigationMesh& navMesh, vec3<F32>& resultPt);
+            bool getRandomNavMeshPoint(const NavigationMesh& navMesh, 
+                                       vec3<F32>& resultPt);
             /**
             * Returns a random point on the navmesh contained withing the specified circle
             **/
-            bool getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius, const vec3<F32>& extents, vec3<F32>& resultPt, U8 maxIters);
+            bool getRandomPointAroundCircle(const NavigationMesh& navMesh,
+                                            const vec3<F32>& centerPosition,
+                                            F32 radius,
+                                            const vec3<F32>& extents,
+                                            vec3<F32>& resultPt,
+                                            U8 maxIters);
             /**
             * Find a point on the navmesh closest to the specified point position, within predefined
             * bounds.
             * Returns true if such a point is found (returned as resultPt), returns false
             * if no point is found. When false is returned, resultPt is not altered.
             **/
-            bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, F32 delta, vec3<F32>& resultPt, dtPolyRef &resultPoly);
-            bool findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, vec3<F32>& resultPt, dtPolyRef &resultPoly);
+            bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, 
+                                                         const vec3<F32>& position,
+                                                         const vec3<F32>& extents,
+                                                         F32 delta, 
+                                                         vec3<F32>& resultPt,
+                                                         dtPolyRef &resultPoly);
+
+            bool findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
+                                          const vec3<F32>& position, 
+                                          const vec3<F32>& extents,
+                                          vec3<F32>& resultPt,
+                                          dtPolyRef &resultPoly);
 
         protected:
             DivideRecast();

@@ -29,14 +29,20 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
         NodeContainer::const_iterator nodeEntry = container->second.find(node->getGUID());
         if (nodeEntry == container->second.end()) {
             hashAlg::emplace(container->second, node->getGUID(), node);
-			node->registerDeletionCallback( DELEGATE_BIND( &VisualSensor::unfollowSceneGraphNode, this, containerID, node->getGUID() ) );
+			node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode,
+                                                         this,
+                                                         containerID, 
+                                                         node->getGUID()));
         } else {
             ERROR_FN("VisualSensor: Added the same node to follow twice!");
         }
     } else {
         NodeContainer& newContainer = _nodeContainerMap[containerID];
         hashAlg::emplace(newContainer, node->getGUID(), node);
-		node->registerDeletionCallback( DELEGATE_BIND( &VisualSensor::unfollowSceneGraphNode, this, containerID, node->getGUID() ) );
+		node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, 
+                                                     this, 
+                                                     containerID, 
+                                                     node->getGUID() ) );
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];

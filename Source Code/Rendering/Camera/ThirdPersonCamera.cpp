@@ -24,7 +24,7 @@ bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
 
     Application::getInstance().snapCursorToCenter();
 
-    if (IS_ZERO(mousePos.x) && IS_ZERO(mousePos.y)){
+    if (IS_ZERO(mousePos.x) && IS_ZERO(mousePos.y)) {
         return OrbitCamera::mouseMoved(arg);
     }
 
@@ -32,21 +32,23 @@ bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
 
     if (!IS_ZERO(mousePos.y)) {
         F32 targetRoll = _cameraRotation.roll - mousePos.y;
-        if(targetRoll > -rotationLimitRollLower && targetRoll < rotationLimitRollUpper){
+        if (targetRoll > -rotationLimitRollLower && targetRoll < rotationLimitRollUpper) {
             _cameraRotation.roll -= mousePos.y; //why roll? beats me.
             _rotationDirty = true;
         }
     }
+
     if (!IS_ZERO(mousePos.x)) {
         F32 targetYaw = _cameraRotation.yaw - mousePos.x;
-        if(targetYaw > -rotationLimitYaw && targetYaw < rotationLimitYaw){
+        if (targetYaw > -rotationLimitYaw && targetYaw < rotationLimitYaw) {
             _cameraRotation.yaw -= mousePos.x;
             _rotationDirty = true;
         }
     }
      
-    if(_rotationDirty)
+    if (_rotationDirty) {
         Util::normalize(_cameraRotation, false,true, false, true);
+    }
 
     return OrbitCamera::mouseMoved(arg);
 }

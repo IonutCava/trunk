@@ -10,7 +10,9 @@ namespace Divide {
 
 BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
                                                const vec2<U16>& resolution,
-                                               SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,resolution,sampler),
+                                               SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,
+                                                                                                     resolution,
+                                                                                                     sampler),
                                                                                    _outputFB(result),
                                                                                    _tempHDRFB(nullptr),
                                                                                    _luminaMipLevel(0)
@@ -50,10 +52,10 @@ BloomPreRenderOperator::~BloomPreRenderOperator()
 {
     RemoveResource(_bright);
     RemoveResource(_blur);
-    MemoryManager::SAFE_DELETE( _tempBloomFB );
-    MemoryManager::SAFE_DELETE( _luminaFB[0] );
-    MemoryManager::SAFE_DELETE( _luminaFB[1] );
-    MemoryManager::SAFE_DELETE( _tempHDRFB );
+    MemoryManager::DELETE( _tempBloomFB );
+    MemoryManager::DELETE( _luminaFB[0] );
+    MemoryManager::DELETE( _luminaFB[1] );
+    MemoryManager::DELETE( _tempHDRFB );
 }
 
 U32 nextPOW2(U32 n) {

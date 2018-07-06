@@ -32,7 +32,7 @@
     #include <EASTL/string.h>
     namespace stringAlg = eastl;
 
-    typedef stringAlg::string stringImpl;
+    typedef eastl::string stringImpl;
 
 namespace eastl {
     typedef eastl_size_t stringSize;
@@ -50,7 +50,7 @@ namespace eastl {
     #include <string>
     namespace stringAlg = std;
 
-    typedef stringAlg::string stringImpl;
+    typedef std::string stringImpl;
 
 namespace std {
     typedef size_t stringSize;

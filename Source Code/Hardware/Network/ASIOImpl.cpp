@@ -30,7 +30,8 @@ void ASIOImpl::HandlePongOpCode(WorldPacket& p){
 	F32 time = 0;
 	p >> time;
 	D32 result = GETMSTIME() - time;
-	ParamHandler::getInstance().setParam("serverResponse", "Server says: Pinged with : " + Util::toString(floor(result+0.5f)) + " ms latency");
+	ParamHandler::getInstance().setParam("serverResponse", 
+                                         "Server says: Pinged with : " + Util::toString(floor(result+0.5f)) + " ms latency");
 }
 
 void ASIOImpl::HandleDisconnectOpCode(WorldPacket& p){

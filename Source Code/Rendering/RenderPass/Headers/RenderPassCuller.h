@@ -25,7 +25,8 @@
 
 #include "Utility/Headers/Vector.h"
 
-/// This class performs all the necessary visibility checks on the scene's scenegraph to decide what get's rendered and what not
+/// This class performs all the necessary visibility checks on the scene's scenegraph 
+/// to decide what get's rendered and what not
 /// All node's that should be rendered, will be added to the RenderQueue
 namespace Divide {
 class SceneState;
@@ -37,7 +38,8 @@ class RenderPassCuller {
 public:
     RenderPassCuller();
     ~RenderPassCuller();
-    /// This method performs the visibility check on the given node and all of it's children and adds them to the RenderQueue
+    /// This method performs the visibility check on the given node and all of it's children and 
+    /// adds them to the RenderQueue
     void cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState);
     void refresh();
     

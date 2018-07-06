@@ -27,7 +27,7 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const par
 
     VegetationDetails vegDetails = parentTerrain->_vegDetails;
     vegDetails.name += stringAlg::toBase("_chunk_" + Util::toString(_chunkID));
-    _vegetation = New Vegetation(vegDetails); //<Deleted by the sceneGraph on "unload"
+    _vegetation = MemoryManager_NEW Vegetation(vegDetails); //<Deleted by the sceneGraph on "unload"
     _vegetation->renderState().useDefaultMaterial(false);
     _vegetation->setMaterialTpl(nullptr);
     assert(_vegetation != nullptr);
@@ -35,9 +35,10 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const par
 
 TerrainChunk::~TerrainChunk()
 {
-    for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++)
+    for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
         _indice[i].clear();
-    
+    }
+
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     _chunkIndOffset = 0;

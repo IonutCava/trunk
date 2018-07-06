@@ -12,7 +12,8 @@ Texture* ImplResourceLoader<Texture>::operator()(){
 
     if(_descriptor.getEnumValue() == TEXTURE_CUBE_MAP){
         ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());
-    }else if(_descriptor.getEnumValue() == TEXTURE_2D_ARRAY || _descriptor.getEnumValue() == TEXTURE_2D_ARRAY_MS) {
+    }else if(_descriptor.getEnumValue() == TEXTURE_2D_ARRAY ||
+             _descriptor.getEnumValue() == TEXTURE_2D_ARRAY_MS) {
         ptr = GFX_DEVICE.newTextureArray(_descriptor.getFlag());
         ptr->setNumLayers(_descriptor.getId());
     }else{
@@ -28,8 +29,10 @@ Texture* ImplResourceLoader<Texture>::operator()(){
     }
 
     if ( !load( ptr, _descriptor.getName() ) ) {
-        ERROR_FN( Locale::get( "ERROR_TEXTURE_LOADER_FILE" ), _descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str() );
-        MemoryManager::SAFE_DELETE( ptr );
+        ERROR_FN(Locale::get( "ERROR_TEXTURE_LOADER_FILE" ), 
+                 _descriptor.getResourceLocation().c_str(),
+                 _descriptor.getName().c_str() );
+        MemoryManager::DELETE( ptr );
     }
 
     return ptr;

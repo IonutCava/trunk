@@ -7,8 +7,8 @@
 namespace Divide {
 
 PreRenderStageBuilder::PreRenderStageBuilder(){
-	_renderStage = New PreRenderStage();
-	_screenSampler = New SamplerDescriptor;
+    _renderStage = MemoryManager_NEW PreRenderStage();
+    _screenSampler = MemoryManager_NEW SamplerDescriptor;
 	_screenSampler->setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     _screenSampler->setFilters(TEXTURE_FILTER_NEAREST);
 	_screenSampler->toggleMipMaps(false); //it's a flat texture on a full screen quad. really?
@@ -16,8 +16,8 @@ PreRenderStageBuilder::PreRenderStageBuilder(){
 }
 
 PreRenderStageBuilder::~PreRenderStageBuilder(){
-    MemoryManager::SAFE_DELETE( _renderStage );
-    MemoryManager::SAFE_DELETE( _screenSampler );
+    MemoryManager::DELETE( _renderStage );
+    MemoryManager::DELETE( _screenSampler );
 }
 
 PreRenderOperator* PreRenderStageBuilder::addToStage(PreRenderOperator* op, bool& state){

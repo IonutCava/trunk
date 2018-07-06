@@ -18,10 +18,7 @@ RenderQueue::RenderQueue() : _renderQueueLocked(false), _isSorted(false)
 
 RenderQueue::~RenderQueue()
 {
-	for (RenderBinMap::value_type& renderBins : _renderBins) {
-        MemoryManager::SAFE_DELETE( renderBins.second );
-    }
-    _renderBins.clear();
+    MemoryManager::DELETE_HASHMAP( _renderBins );
 }
 
 U16 RenderQueue::getRenderQueueStackSize() const {
@@ -63,43 +60,43 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
     switch(rbType) {
         case RenderBin::RBT_MESH : {
             // By state varies based on the current rendering stage
-            temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::BY_STATE, 0.0f); 
+            temp = MemoryManager_NEW RenderBinMesh(RenderBin::RBT_MESH, RenderingOrder::BY_STATE, 0.0f);
         } break;
         case RenderBin::RBT_TERRAIN : {
-            temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::FRONT_TO_BACK, 1.0f);
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_TERRAIN, RenderingOrder::FRONT_TO_BACK, 1.0f);
         } break;
         case RenderBin::RBT_DELEGATE : {
-            temp = New RenderBinDelegate(RenderBin::RBT_DELEGATE,RenderingOrder::FRONT_TO_BACK, 2.0f);
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_DELEGATE, RenderingOrder::FRONT_TO_BACK, 2.0f);
         } break;
         case RenderBin::RBT_SHADOWS : {
-            temp = New RenderBinDelegate(RenderBin::RBT_SHADOWS,RenderingOrder::NONE, 3.0f);
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_SHADOWS, RenderingOrder::NONE, 3.0f);
         } break;
         case RenderBin::RBT_DECALS : {
-            temp = New RenderBinMesh(RenderBin::RBT_DECALS,RenderingOrder::FRONT_TO_BACK, 4.0f);
+            temp = MemoryManager_NEW RenderBinMesh(RenderBin::RBT_DECALS, RenderingOrder::FRONT_TO_BACK, 4.0f);
         } break;
         case RenderBin::RBT_SKY : {
-            //Draw sky after opaque but before translucent to prevent overdraw
-            temp = New RenderBinDelegate(RenderBin::RBT_SKY,RenderingOrder::NONE, 5.0f);
+            // Draw sky after opaque but before translucent to prevent overdraw
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_SKY, RenderingOrder::NONE, 5.0f);
         } break;
         case RenderBin::RBT_WATER : {
-            //Water does not count as translucency, because rendering is very specific
-            temp = New RenderBinDelegate(RenderBin::RBT_WATER,RenderingOrder::BACK_TO_FRONT, 6.0f);
+            // Water does not count as translucency, because rendering is very specific
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_WATER, RenderingOrder::BACK_TO_FRONT, 6.0f);
         } break;
         case RenderBin::RBT_VEGETATION_GRASS : {
-            temp = New RenderBinDelegate(RenderBin::RBT_VEGETATION_GRASS,RenderingOrder::BACK_TO_FRONT, 7.0f);
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_VEGETATION_GRASS, RenderingOrder::BACK_TO_FRONT, 7.0f);
         } break;
         case RenderBin::RBT_VEGETATION_TREES : {
-            temp = New RenderBinDelegate(RenderBin::RBT_VEGETATION_TREES,RenderingOrder::BACK_TO_FRONT, 7.5f);
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_VEGETATION_TREES, RenderingOrder::BACK_TO_FRONT, 7.5f);
         } break;
         case RenderBin::RBT_PARTICLES : {
-            temp = New RenderBinParticles(RenderBin::RBT_PARTICLES,RenderingOrder::BACK_TO_FRONT, 8.0f);
+            temp = MemoryManager_NEW RenderBinParticles(RenderBin::RBT_PARTICLES, RenderingOrder::BACK_TO_FRONT, 8.0f);
         } break;
         case RenderBin::RBT_TRANSLUCENT : {
-            ///When rendering translucent objects, we should also sort each object's polygons depending on it's distance from the camera
-            temp = New RenderBinTranslucent(RenderBin::RBT_TRANSLUCENT,RenderingOrder::BACK_TO_FRONT, 9.0f);
+            // When rendering translucent objects we should sort each object's polygons depending on it's distance to the camera
+            temp = MemoryManager_NEW RenderBinTranslucent(RenderBin::RBT_TRANSLUCENT, RenderingOrder::BACK_TO_FRONT, 9.0f);
         } break;
         case RenderBin::RBT_IMPOSTOR : {
-            temp = New RenderBinDelegate(RenderBin::RBT_IMPOSTOR,RenderingOrder::FRONT_TO_BACK, 9.9f);
+            temp = MemoryManager_NEW RenderBinDelegate(RenderBin::RBT_IMPOSTOR, RenderingOrder::FRONT_TO_BACK, 9.9f);
         } break;
         default:
         case RenderBin::RBT_PLACEHOLDER : {
@@ -160,7 +157,10 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node, Material* const mat
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
     assert(sgn != nullptr);
-    RenderBin* rb = getBinForNode(sgn->getNode(), sgn->getComponent<RenderingComponent>() ? sgn->getComponent<RenderingComponent>()->getMaterialInstance() : nullptr);
+    RenderingComponent* renderingCmp = sgn->getComponent<RenderingComponent>();
+    RenderBin* rb = getBinForNode(sgn->getNode(), 
+                                  renderingCmp ? renderingCmp->getMaterialInstance() :
+                                                 nullptr);
     if (rb) {
         rb->addNodeToBin(sgn, eyePos);
     }

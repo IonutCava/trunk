@@ -31,7 +31,9 @@ class Resource;
 class HardwareResource;
 class ResourceLoader : private NonCopyable {
 public:
-    ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor) {}
+    ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor)
+    {
+    }
 
     virtual Resource* operator()() = 0;
 
@@ -42,7 +44,10 @@ protected:
 template<typename ResourceType>
 class ImplResourceLoader : public ResourceLoader {
 public:
-    ImplResourceLoader(const ResourceDescriptor& descriptor)  : ResourceLoader(descriptor) {}
+    ImplResourceLoader(const ResourceDescriptor& descriptor)  : ResourceLoader(descriptor)
+    {
+    }
+
     ResourceType* operator()();
 
 protected:

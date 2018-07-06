@@ -21,7 +21,7 @@ Terrain::Terrain() : Object3D(TERRAIN),
     _alphaTexturePresent(false),
     _terrainWidth(0),
     _terrainHeight(0),
-    _terrainQuadtree(New Quadtree()),
+    _terrainQuadtree(MemoryManager_NEW Quadtree()),
     _plane(nullptr),
     _drawBBoxes(false),
     _vegetationGrassNode(nullptr),
@@ -40,12 +40,8 @@ Terrain::~Terrain()
 }
 
 bool Terrain::unload() {
-    MemoryManager::SAFE_DELETE( _terrainQuadtree );
-
-    for ( TerrainTextureLayer*& terrainTextures : _terrainTextures ) {
-        MemoryManager::SAFE_DELETE( terrainTextures );
-    }
-    _terrainTextures.clear();
+    MemoryManager::DELETE( _terrainQuadtree );
+    MemoryManager::DELETE_VECTOR(_terrainTextures);
 
     RemoveResource( _vegDetails.grassBillboards );
     return SceneNode::unload();
@@ -70,7 +66,9 @@ void Terrain::buildQuadtree() {
 
     Material* mat = getMaterialTpl();
     for (U8 i = 0; i < 3; ++i){
-        ShaderProgram* const drawShader = mat->getShaderInfo(i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE)).getProgram();
+        ShaderProgram* const drawShader = mat->getShaderInfo(i == 0 ? FINAL_STAGE : 
+                                                                      (i == 1 ? SHADOW_STAGE : 
+                                                                                Z_PRE_PASS_STAGE)).getProgram();
         drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
@@ -119,19 +117,25 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Terrain::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Terrain::getDrawCommands(SceneGraphNode* const sgn, 
+                              const RenderStage& currentRenderStage, 
+                              SceneRenderState& sceneRenderState, 
+                              vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     size_t drawStateHash = 0;
 
     if (bitCompare(currentRenderStage, DEPTH_STAGE)) {
-        drawStateHash = bitCompare(currentRenderStage, Z_PRE_PASS_STAGE) ? _terrainRenderStateHash : _terrainDepthRenderStateHash;
+        drawStateHash = bitCompare(currentRenderStage, Z_PRE_PASS_STAGE) ? _terrainRenderStateHash : 
+                                                                           _terrainDepthRenderStateHash;
     }else{
-        drawStateHash = bitCompare(currentRenderStage, REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash;
+        drawStateHash = bitCompare(currentRenderStage, REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : 
+                                                                           _terrainRenderStateHash;
     }
 
     RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
-    ShaderProgram* drawShader = renderable->getDrawShader(bitCompare(currentRenderStage, REFLECTION_STAGE) ? FINAL_STAGE : currentRenderStage);
+    ShaderProgram* drawShader = renderable->getDrawShader(bitCompare(currentRenderStage, REFLECTION_STAGE) ? FINAL_STAGE : 
+                                                                                                             currentRenderStage);
 
     if (_terrainInView){
         vectorImpl<GenericDrawCommand> tempCommands;

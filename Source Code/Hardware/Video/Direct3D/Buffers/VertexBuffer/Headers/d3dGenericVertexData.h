@@ -43,13 +43,26 @@ public:
     void Draw(const GenericDrawCommand& command, bool skipBind = false) 
     {
     }
-    void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, U8 sizeFactor, void* data, bool dynamic, bool stream, bool persistentMapped = false)
+    void SetBuffer(U32 buffer, 
+                   U32 elementCount, 
+                   size_t elementSize, 
+                   U8 sizeFactor, 
+                   void* data, 
+                   bool dynamic, 
+                   bool stream, 
+                   bool persistentMapped = false)
     {
     }
-    void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount)
+    void BindFeedbackBufferRange(U32 buffer, 
+                                 U32 elementCountOffset, 
+                                 size_t elementCount)
     {
     }
-    void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, void* data, bool invalidateRange = false)
+    void UpdateBuffer(U32 buffer, 
+                      U32 elementCount, 
+                      U32 elementCountOffset, 
+                      void* data, 
+                      bool invalidateRange = false)
     {
     }
     void SetFeedbackBuffer(U32 buffer, U32 bindPoint)

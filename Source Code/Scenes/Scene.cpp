@@ -35,7 +35,7 @@ Scene::Scene() :  Resource("temp_scene"),
                  _paramHandler(ParamHandler::getInstance()),
                  _currentSelection(nullptr),
 				 _currentSky(nullptr),
-                 _sceneGraph(New SceneGraph())
+                 _sceneGraph(MemoryManager_NEW SceneGraph())
 {
     _mousePressed[OIS::MB_Left]    = false;
     _mousePressed[OIS::MB_Right]   = false;
@@ -146,7 +146,8 @@ bool Scene::loadModel( const FileData& data ) {
         meshNode->getComponent<NavigationComponent>()->navigationContext( NavigationComponent::NODE_OBSTACLE );
     }
     if ( data.physicsUsage ) {
-        meshNode->getComponent<PhysicsComponent>()->physicsGroup( data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH );
+        meshNode->getComponent<PhysicsComponent>()->physicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : 
+                                                                                        PhysicsComponent::NODE_COLLIDE_NO_PUSH );
     }
     if ( data.useHighDetailNavMesh ) {
         meshNode->getComponent<NavigationComponent>()->navigationDetailOverride( true );
@@ -201,21 +202,24 @@ bool Scene::loadGeometry( const FileData& data ) {
     thisObjSGN->getComponent<RenderingComponent>()->castsShadows(data.castsShadows);
     thisObjSGN->getComponent<RenderingComponent>()->receivesShadows(data.receivesShadows);
     if ( data.staticUsage ) {
-        thisObjSGN->usageContext( SceneGraphNode::NODE_STATIC );
+        thisObjSGN->usageContext(SceneGraphNode::NODE_STATIC);
     }
     if ( data.navigationUsage ) {
-        thisObjSGN->getComponent<NavigationComponent>()->navigationContext( NavigationComponent::NODE_OBSTACLE );
+        thisObjSGN->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_OBSTACLE);
     }
     if ( data.physicsUsage ) {
-        thisObjSGN->getComponent<PhysicsComponent>()->physicsGroup( data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH );
+        thisObjSGN->getComponent<PhysicsComponent>()->physicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : 
+                                                                                          PhysicsComponent::NODE_COLLIDE_NO_PUSH);
     }
     if ( data.useHighDetailNavMesh ) {
-        thisObjSGN->getComponent<NavigationComponent>()->navigationDetailOverride( true );
+        thisObjSGN->getComponent<NavigationComponent>()->navigationDetailOverride(true);
     }
     return true;
 }
 
-SceneGraphNode* const Scene::addParticleEmitter( const stringImpl& name, const ParticleEmitterDescriptor& descriptor, SceneGraphNode* parentNode ) {
+SceneGraphNode* const Scene::addParticleEmitter(const stringImpl& name, 
+                                                const ParticleEmitterDescriptor& descriptor, 
+                                                SceneGraphNode* parentNode) {
     assert( parentNode != nullptr && !name.empty() );
 
     ResourceDescriptor particleEmitter( name );
@@ -272,14 +276,19 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
     SceneGraphNode* root = _sceneGraph->getRoot();
     //Add terrain from XML
     if ( !_terrainInfoArray.empty() ) {
-        for ( U8 i = 0; i < _terrainInfoArray.size(); i++ ) {
-            ResourceDescriptor terrain( _terrainInfoArray[i]->getVariable( "terrainName" ) );
+        for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
+            ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>( terrain );
             SceneGraphNode* terrainTemp = root->createNode( temp );
-            terrainTemp->setActive( _terrainInfoArray[i]->getActive() );
+            terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext( SceneGraphNode::NODE_STATIC );
-            terrainTemp->getComponent<NavigationComponent>()->navigationContext( NavigationComponent::NODE_OBSTACLE );
-            terrainTemp->getComponent<PhysicsComponent>()->physicsGroup( _terrainInfoArray[i]->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH : PhysicsComponent::NODE_COLLIDE_IGNORE );
+
+            NavigationComponent* nComp = terrainTemp->getComponent<NavigationComponent>();
+            nComp->navigationContext(NavigationComponent::NODE_OBSTACLE);
+
+            PhysicsComponent* pComp = terrainTemp->getComponent<PhysicsComponent>();
+            pComp->physicsGroup(terrainInfo->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH :
+                                                                  PhysicsComponent::NODE_COLLIDE_IGNORE);
         }
     }
     //Camera position is overridden in the scene's XML configuration file
@@ -299,9 +308,14 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
 
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
-	_aiTask.reset(kernel->AddTask(getMsToUs(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 0, DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance())));
+	_aiTask.reset(kernel->AddTask(getMsToUs(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 
+                                  0, 
+                                  DELEGATE_BIND(&AI::AIManager::update, 
+                                                &AI::AIManager::getInstance())));
 
-    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &GUI::getInstance(), this));
+    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, 
+                                       &GUI::getInstance(), 
+                                       this));
     _loadComplete = true;
     return _loadComplete;
 }
@@ -356,17 +370,18 @@ bool Scene::deinitializeAI(bool continueOnErrors) {	///Shut down AIManager threa
     return true;
 }
 
-void Scene::clearObjects(){
+void Scene::clearObjects() {
     for ( U8 i = 0; i < _terrainInfoArray.size(); ++i ) {
         RemoveResource( _terrainInfoArray[i] );
     }
     _terrainInfoArray.clear();
+
     while ( !_modelDataArray.empty() ) {
         _modelDataArray.pop();
     }
     _vegetationDataArray.clear();
 
-    MemoryManager::SAFE_DELETE( _sceneGraph );
+    MemoryManager::DELETE( _sceneGraph );
 }
 
 void Scene::clearLights(){
@@ -419,9 +434,7 @@ void Scene::registerTask(Task_ptr taskItem) {
 
 void Scene::clearTasks() {
     PRINT_FN( Locale::get( "STOP_SCENE_TASKS" ) );
-    for ( Task_ptr task : _tasks ) {
-        task->stopTask();
-    }
+    // Calls the destructor for each task killing it's associated thread
     _tasks.clear();
 }
 

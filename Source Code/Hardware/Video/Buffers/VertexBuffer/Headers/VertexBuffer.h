@@ -72,16 +72,22 @@ public:
     virtual void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false) = 0;
 
     inline void setLODCount(const U8 LODcount)               {_LODcount = LODcount;}
+
     inline void useLargeIndices(bool state = true)           {
         DIVIDE_ASSERT(!_created, "VertexBuffer error: Index format type specified before buffer creation!");
         _largeIndices = state; _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;
     }
+
     inline void reservePositionCount(U32 size)  {_dataPosition.reserve(size);}
     inline void reserveColourCount(U32 size)    {_dataColor.reserve(size);}
     inline void reserveNormalCount(U32 size)    {_dataNormal.reserve(size);}
     inline void reserveTangentCount(U32 size)   {_dataTangent.reserve(size);}
     inline void reserveBiTangentCount(U32 size) {_dataBiTangent.reserve(size);}
-    inline void reserveIndexCount(U32 size)     {_largeIndices ? _hardwareIndicesL.reserve(size) :_hardwareIndicesS.reserve(size);}
+
+    inline void reserveIndexCount(U32 size)     {
+        _largeIndices ? _hardwareIndicesL.reserve(size) :
+                        _hardwareIndicesS.reserve(size);
+    }
 
     inline void resizePositionCount(U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO)  {
         _dataPosition.resize(size,defaultValue);

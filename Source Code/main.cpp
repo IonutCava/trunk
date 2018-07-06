@@ -10,10 +10,13 @@ int main(int argc, char **argv) {
     output = freopen(OUTPUT_LOG_FILE, "w", stdout);
 	output = freopen(ERROR_LOG_FILE, "w", stderr);
 	//Initialize our application based on XML configuration. Error codes are always less than 0
-	Divide::ErrorCode returnCode = Divide::Application::getOrCreateInstance().initialize("main.xml",argc,argv);
+	Divide::ErrorCode returnCode = Divide::Application::getOrCreateInstance().initialize("main.xml",
+                                                                                         argc,
+                                                                                         argv);
 	if(returnCode != Divide::NO_ERR){
 		//If any error occurred, close the application as details should already be logged
-        Divide::ERROR_FN("System failed to initialize properly. Error [ %s ] ", getErrorCodeName(returnCode));
+        Divide::ERROR_FN("System failed to initialize properly. Error [ %s ] ", 
+                         getErrorCodeName(returnCode));
 		return returnCode;
 	}
 	Divide::Application::getInstance().run();

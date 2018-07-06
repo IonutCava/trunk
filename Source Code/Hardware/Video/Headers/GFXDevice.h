@@ -90,8 +90,11 @@ public:
 	/// Render specified function inside of a viewport of specified dimensions and position
 	inline void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK<>& callback);
 
-    /// Returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
-    /// AllowPrimitiveRecycle = do not reuse old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
+    /**
+     *@brief Returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
+     *@param allowPrimitiveRecycle If false, do not reuse old primitives and do not delete it after x-frames. 
+     *(Don't use the primitive zombie feature)
+     */
     IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
 
     inline void setInterpolation(const D32 interpolation)       {_interpolationFactor = interpolation; }
@@ -126,7 +129,9 @@ public:
     ///@param renderStageMask Is a bitmask of the stages we whish to check if active
     inline bool isCurrentRenderStage(U8 renderStageMask);
 	/// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
-	inline bool excludeFromStateChange(const SceneNodeType& currentType) { return (_stateExclusionMask & currentType) == currentType ? true : false; }
+	inline bool excludeFromStateChange(const SceneNodeType& currentType) { 
+        return (_stateExclusionMask & currentType) == currentType; 
+    }
 	inline void setStateChangeExclusionMask(I32 stateMask) { _stateExclusionMask = stateMask; }
 
     inline void setPrevShaderId(const U32& id)  { _prevShaderId = id; }
@@ -159,11 +164,15 @@ public:
     inline bool anaglyphEnabled() const { return _enableAnaglyph; }
     inline void anaglyphEnabled(const bool state) { _enableAnaglyph = state; }
  
-	/// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
+	/// Return or create a new state block using the given descriptor. 
+    /// DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
     size_t getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
     const RenderStateBlockDescriptor& getStateBlockDescriptor(size_t renderStateBlockHash) const;
     ///returns the standard state block
-    inline size_t getDefaultStateBlock(bool noDepth = false)      { return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash; } 
+    inline size_t getDefaultStateBlock(bool noDepth = false) { 
+        return noDepth ? _defaultStateNoDepthHash : 
+                         _defaultStateBlockHash; 
+    } 
 	inline Framebuffer* getRenderTarget(RenderTarget target)  const { return _renderTarget[target]; }
 
     ///Generate a cubemap from the given position
@@ -269,7 +278,9 @@ protected:
     }
 
     inline void loadingThreadAvailable(bool state)  { _loadingThreadAvailable = state; }
-    inline void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const { _api->uploadDrawCommands(drawCommands); }
+    inline void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const { 
+        _api->uploadDrawCommands(drawCommands); 
+    }
 
 protected:
     friend class Kernel;
@@ -307,8 +318,12 @@ private:
 	/// returns false if there was an invalid state detected that could prevent rendering
 	bool setBufferData(const GenericDrawCommand& cmd);
     ///Update the graphics pipeline using the current rendering API with the state block passed
-    inline void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock)  const { _api->activateStateBlock(newBlock, oldBlock); }
-    inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) { _api->drawText(textLabel, position); }
+    inline void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const { 
+        _api->activateStateBlock(newBlock, oldBlock); 
+    }
+    inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) { 
+        _api->drawText(textLabel, position); 
+    }
     ///Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash);
 	ErrorCode createAPIInstance();

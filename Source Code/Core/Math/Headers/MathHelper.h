@@ -104,20 +104,22 @@ inline bool bitCompare(U32 bitMask, U32 bit) {
     return ((bitMask & bit) == bit);
 }
 
-template <typename T>
+template<typename T>
 inline T squared(T n){
     return n*n;
 }
 
 /// Clamps value n between min and max
-template <typename T>
+template<typename T>
 inline void CLAMP(T& n, T min, T max){
     n = std::min(std::max(n, min), max);
 }
-template <typename T>
+
+template<typename T>
 inline T CLAMPED(const T& n, T min, T max){
     return std::min(std::max(n, min), max);
 }
+
 // bit manipulation
 #define ToBit(posn)      (1 << posn)
 #define BitSet(arg,posn) (arg |=  1 << posn)
@@ -133,17 +135,19 @@ inline T CLAMPED(const T& n, T min, T max){
 #define BitMaskFlip(arg,mask) ((arg) ^= (mask))
 #define BitMaskCheck(arg,mask) ((arg) & (mask))
 
-template <typename T>
+template<typename T>
 class mat4;
-template <typename T>
+template<typename T>
 class vec3;
-template <typename T>
+template<typename T>
 class vec4;
-template <typename T>
+template<typename T>
 class Quaternion;
 
 namespace Util {
-    inline void replaceStringInPlace( stringImpl& subject, const stringImpl& search, const stringImpl& replace ) {
+    inline void replaceStringInPlace(stringImpl& subject, 
+                                     const stringImpl& search, 
+                                     const stringImpl& replace ) {
         stringAlg::stringSize pos = 0;
         while ( ( pos = subject.find( search, pos ) ) != stringImpl::npos ) {
             subject.replace( pos, search.length(), replace );
@@ -157,7 +161,10 @@ namespace Util {
         *second = temp;
     }
 
-    inline void permute( char* input, U32 startingIndex, U32 stringLength, vectorImpl<stringImpl>& container ) {
+    inline void permute(char* input, 
+                        U32 startingIndex, 
+                        U32 stringLength, 
+                        vectorImpl<stringImpl>& container ) {
         if ( startingIndex == stringLength - 1 ) {
             container.push_back( input );
         } else {
@@ -169,7 +176,8 @@ namespace Util {
         }
     }
 
-    inline void getPermutations( const stringImpl& inputString, vectorImpl<stringImpl>& permutationContainer ) {
+    inline void getPermutations(const stringImpl& inputString, 
+                                vectorImpl<stringImpl>& permutationContainer ) {
         permutationContainer.clear();
         permute( (char*)inputString.c_str(), 0, (U32)inputString.length() - 1, permutationContainer );
     }
@@ -218,7 +226,9 @@ namespace Util {
     }
 
     /// http://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
-    inline void split( const stringImpl& input, const char* delimiter, vectorImpl<stringImpl>& outputVector ) {
+    inline void split(const stringImpl& input, 
+                      const char* delimiter, 
+                      vectorImpl<stringImpl>& outputVector ) {
         stringAlg::stringSize delLen = static_cast<stringAlg::stringSize>( strlen( delimiter ) );
         assert( !input.empty() && delLen > 0 );
 
@@ -226,7 +236,9 @@ namespace Util {
         while ( end != stringImpl::npos ) {
             end = input.find( delimiter, start );
             // If at end, use length=maxLength.  Else use length=end-start.
-            outputVector.push_back( input.substr( start, ( end == stringImpl::npos ) ? stringImpl::npos : end - start ) );
+            outputVector.push_back(input.substr(start, 
+                                                (end == stringImpl::npos) ? stringImpl::npos : 
+                                                                            end - start ) );
             // If at end, use start=maxSize.  Else use start=end+delimiter.
             start = ( ( end > ( stringImpl::npos - delLen ) ) ? stringImpl::npos : end + delLen );
         }
@@ -234,12 +246,14 @@ namespace Util {
 
 	/// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
     inline stringImpl& ltrim( stringImpl& s ) {
-        s.erase( s.begin(), std::find_if( s.begin(), s.end(), std::not1( std::ptr_fun<int, int>( std::isspace ) ) ) );
+        s.erase( s.begin(), std::find_if(s.begin(), s.end(), 
+                                         std::not1( std::ptr_fun<int, int>( std::isspace ) ) ) );
         return s;
     }
 
 	inline stringImpl& rtrim(stringImpl& s) {
-		s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+		s.erase(std::find_if(s.rbegin(), s.rend(), 
+                std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 		return s;
 	}
 
@@ -257,12 +271,17 @@ namespace Util {
 
     /** Ogre3D
     @brief Normalise the selected rotations to be within the +/-180 degree range.
-    @details The normalise uses a wrap around, so for example a yaw of 360 degrees becomes 0 degrees, and -190 degrees becomes 170.
+    @details The normalise uses a wrap around, 
+    @details so for example a yaw of 360 degrees becomes 0 degrees, and -190 degrees becomes 170.
     @param normYaw If false, the yaw isn't normalized.
     @param normPitch If false, the pitch isn't normalized.
     @param normRoll If false, the roll isn't normalized.
     */
-    void normalize(vec3<F32>& inputRotation, bool degrees = false, bool normYaw = true, bool normPitch = true, bool normRoll = true);
+    void normalize(vec3<F32>& inputRotation, 
+                   bool degrees = false, 
+                   bool normYaw = true, 
+                   bool normPitch = true, 
+                   bool normRoll = true);
     
     vec4<U8>  toByteColor(const vec4<F32>& floatColor);
     vec3<U8>  toByteColor(const vec3<F32>& floatColor);

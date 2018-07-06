@@ -45,10 +45,24 @@ public:
     void Create(U8 numBuffers = 1, U8 numQueries = 1);
     U32  GetFeedbackPrimitiveCount(U8 queryID);
 
-    void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, U8 sizeFactor, void* data, bool dynamic, bool stream, bool persistentMapped = false);
-    void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, void* data, bool invalidateRange = false);
+    void SetBuffer(U32 buffer, 
+                   U32 elementCount, 
+                   size_t elementSize, 
+                   U8 sizeFactor, 
+                   void* data, 
+                   bool dynamic, 
+                   bool stream, 
+                   bool persistentMapped = false);
 
-    void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount);
+    void UpdateBuffer(U32 buffer, 
+                      U32 elementCount, 
+                      U32 elementCountOffset, 
+                      void* data, 
+                      bool invalidateRange = false);
+
+    void BindFeedbackBufferRange(U32 buffer, 
+                                 U32 elementCountOffset, 
+                                 size_t elementCount);
 
     inline void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {
         if (!isFeedbackBuffer(buffer)){

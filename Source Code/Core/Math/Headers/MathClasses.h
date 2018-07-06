@@ -307,9 +307,9 @@ public:
     }
 
     inline bool isIdentity() const {
-        return ( FLOAT_COMPARE( this->mat[0], 1.0 ) && IS_ZERO( this->mat[1] )            && IS_ZERO( this->mat[2] ) &&
-                 IS_ZERO( this->mat[3] )            && FLOAT_COMPARE( this->mat[4], 1.0 ) && IS_ZERO( this->mat[5] ) &&
-                 IS_ZERO( this->mat[6] )            && IS_ZERO( this->mat[7] )            && FLOAT_COMPARE( this->mat[8], 1.0 ) );
+        return (FLOAT_COMPARE(this->mat[0], 1.0) && IS_ZERO(this->mat[1])            && IS_ZERO(this->mat[2]) &&
+                IS_ZERO(this->mat[3])            && FLOAT_COMPARE(this->mat[4], 1.0) && IS_ZERO(this->mat[5]) &&
+                IS_ZERO(this->mat[6])            && IS_ZERO(this->mat[7])            && FLOAT_COMPARE(this->mat[8], 1.0));
             
     }
 
@@ -632,17 +632,19 @@ public:
     }
 
     mat4 operator+(const mat4 &matrix) const {
-        return mat4(this->mat[0]  + matrix[0],  this->mat[1]  + matrix[1],  this->mat[2]  + matrix[2],  this->mat[3]  + matrix[3],
-                    this->mat[4]  + matrix[4],  this->mat[5]  + matrix[5],  this->mat[6]  + matrix[6],  this->mat[7]  + matrix[7],
-                    this->mat[8]  + matrix[8],  this->mat[9]  + matrix[9],  this->mat[10] + matrix[10], this->mat[11] + matrix[11],
-                    this->mat[12] + matrix[12], this->mat[13] + matrix[13], this->mat[14] + matrix[14], this->mat[15] + matrix[15]);
+        F32* m = this->mat;
+        return mat4(m[ 0] + matrix[ 0], m[ 1] + matrix[ 1], m[ 2] + matrix[ 2], m[ 3] + matrix[ 3],
+                    m[ 4] + matrix[ 4], m[ 5] + matrix[ 5], m[ 6] + matrix[ 6], m[ 7] + matrix[ 7],
+                    m[ 8] + matrix[ 8], m[ 9] + matrix[ 9], m[10] + matrix[10], m[11] + matrix[11],
+                    m[12] + matrix[12], m[13] + matrix[13], m[14] + matrix[14], m[15] + matrix[15]);
     }
 
     mat4 operator-(const mat4 &matrix) const {
-        return mat4(this->mat[0]  - matrix[0],  this->mat[1]  - matrix[1],  this->mat[2]  - matrix[2],  this->mat[3]  - matrix[3],
-                    this->mat[4]  - matrix[4],  this->mat[5]  - matrix[5],  this->mat[6]  - matrix[6],  this->mat[7]  - matrix[7],
-                    this->mat[8]  - matrix[8],  this->mat[9]  - matrix[9],  this->mat[10] - matrix[10], this->mat[11] - matrix[11],
-                    this->mat[12] - matrix[12], this->mat[13] - matrix[13], this->mat[14] - matrix[14], this->mat[15] - matrix[15]);
+        F32* m = this->mat;
+        return mat4(m[ 0] - matrix[ 0], m[ 1] - matrix[ 1], m[ 2] - matrix[ 2], m[ 3] - matrix[ 3],
+                    m[ 4] - matrix[ 4], m[ 5] - matrix[ 5], m[ 6] - matrix[ 6], m[ 7] - matrix[ 7],
+                    m[ 8] - matrix[ 8], m[ 9] - matrix[ 9], m[10] - matrix[10], m[11] - matrix[11],
+                    m[12] - matrix[12], m[13] - matrix[13], m[14] - matrix[14], m[15] - matrix[15]);
     }
 
     inline T &element(I8 row, I8 column, bool rowMajor = false)	{
@@ -991,7 +993,7 @@ public:
 
 /// Converts a point from world coordinates to projection coordinates
 ///(from Y = depth, Z = up to Y = up, Z = depth)
-template <class T>
+template<typename T>
 inline void projectPoint( const vec3<T>& position, vec3<T>& output ) {
     output.set( position.x, position.z, position.y );
 }
@@ -1005,9 +1007,11 @@ struct Line {
     {
     }
 
-    Line( const vec3<F32>& startPoint, const vec3<F32>& endPoint, const vec4<U8>& color ) : _startPoint( startPoint ),
-                                                                                            _endPoint( endPoint ),
-                                                                                            _color( color ) 
+    Line( const vec3<F32>& startPoint, 
+          const vec3<F32>& endPoint, 
+          const vec4<U8>& color ) : _startPoint( startPoint ),
+                                    _endPoint( endPoint ),
+                                    _color( color ) 
     {
     }
 };
@@ -1020,8 +1024,11 @@ namespace Util {
 
     namespace Mat4 {
         // ----------------------------------------------------------------------------------------
-        template <typename T>
-        inline void decompose( const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position ) {
+        template<typename T>
+        inline void decompose( const mat4<T>& matrix, 
+                               vec3<T>& scale, 
+                               Quaternion<T>& rotation, 
+                               vec3<T>& position ) {
 
             // extract translation
             position.set( matrix.m[0][3], matrix.m[1][3], matrix.m[2][3] );
@@ -1060,8 +1067,10 @@ namespace Util {
         }
 
         // ----------------------------------------------------------------------------------------
-        template <typename T>
-        inline void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position) {
+        template<typename T>
+        inline void decomposeNoScaling(const mat4<T>& matrix, 
+                                       Quaternion<T>& rotation,
+                                       vec3<T>& position) {
             // extract translation
             position.set( matrix.m[0][3], matrix.m[1][3], matrix.m[2][3] );
             // extract rotation

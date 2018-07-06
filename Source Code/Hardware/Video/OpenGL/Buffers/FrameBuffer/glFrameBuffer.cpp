@@ -62,7 +62,7 @@ glFramebuffer::glFramebuffer(glFramebuffer* resolveBuffer) : Framebuffer(resolve
 
 glFramebuffer::~glFramebuffer()
 {
-    MemoryManager::SAFE_DELETE( _resolveBuffer );
+    MemoryManager::DELETE( _resolveBuffer );
     Destroy();
 }
 
@@ -100,7 +100,10 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
         }
     }
     
-    bool isLayeredTexture = (currentType == TEXTURE_2D_ARRAY || currentType == TEXTURE_2D_ARRAY_MS || currentType == TEXTURE_CUBE_ARRAY || currentType == TEXTURE_3D);
+    bool isLayeredTexture = (currentType == TEXTURE_2D_ARRAY || 
+                             currentType == TEXTURE_2D_ARRAY_MS || 
+                             currentType == TEXTURE_CUBE_ARRAY || 
+                             currentType == TEXTURE_3D);
 
     SamplerDescriptor sampler = texDescriptor.getSampler();
 	GFXImageFormat internalFormat = texDescriptor._internalFormat;
@@ -140,9 +143,16 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     Texture* tex = _attachmentTexture[slot];
     tex->setNumLayers(texDescriptor._layerCount);
     _mipMapLevel[slot].set(texDescriptor._mipMinLevel,
-                           texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : 1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
+                           texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : 
+                                                            1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
     
-	tex->loadData(isLayeredTexture ? 0 : GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType], NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], internalFormat, internalFormat);
+	tex->loadData(isLayeredTexture ? 0 : GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType], 
+                  NULL, 
+                  vec2<U16>(_width, _height), 
+                  _mipMapLevel[slot], 
+                  internalFormat, 
+                  internalFormat);
+
     tex->refreshMipMaps();
     tex->Bind(0); 
 
@@ -170,7 +180,8 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
                 _colorBuffers.push_back(attachPoint);
             }
             _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
-        } else { // if we require layered rendering, or have a non-layered / non-cubemap texture, attach it to a single binding point
+        // If we require layered rendering, or have a non-layered / non-cubemap texture, attach it to a single binding point
+        } else { 
             glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, tex->getHandle(), 0);
             _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 + slot);
         }
@@ -332,13 +343,31 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB, TextureDescriptor::Attachment
         for (U8 i = 0; i < this->_colorBuffers.size(); ++i) {
             glDrawBuffer(this->_colorBuffers[i]);
             glReadBuffer(input->_colorBuffers[i]);
-            glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0, this->_width, this->_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            glBlitFramebuffer(0, 
+                              0, 
+                              input->_width, 
+                              input->_height, 
+                              0, 
+                              0, 
+                              this->_width, 
+                              this->_height, 
+                              GL_COLOR_BUFFER_BIT, 
+                              GL_NEAREST);
             GFX_DEVICE.registerDrawCall();
         }
     }
 
     if (blitDepth && _hasDepth) {
-        glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0, this->_width, this->_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 
+                          0, 
+                          input->_width, 
+                          input->_height, 
+                          0, 
+                          0, 
+                          this->_width, 
+                          this->_height,
+                          GL_DEPTH_BUFFER_BIT, 
+                          GL_NEAREST);
         GFX_DEVICE.registerDrawCall();
     }
 
@@ -355,8 +384,10 @@ void glFramebuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
 }
 
 void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
-    DIVIDE_ASSERT(_framebufferHandle != 0, "glFramebuffer error: Tried to bind and invalid framebuffer!");
-    DIVIDE_ASSERT(!glFramebuffer::_bufferBound, "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
+    DIVIDE_ASSERT(_framebufferHandle != 0, 
+                  "glFramebuffer error: Tried to bind and invalid framebuffer!");
+    DIVIDE_ASSERT(!glFramebuffer::_bufferBound, 
+                  "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
 
     if (drawPolicy._changeViewport) {
         GFX_DEVICE.setViewport(vec4<GLint>(0, 0, _width, _height));
@@ -420,7 +451,11 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
     bool useColorLayer = (_hasColor && slot < TextureDescriptor::Depth);
 
     if (useDepthLayer && _isLayeredDepth) {
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _attachmentTexture[TextureDescriptor::Depth]->getHandle(), 0, layer);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, 
+                                  GL_DEPTH_ATTACHMENT, 
+                                  _attachmentTexture[TextureDescriptor::Depth]->getHandle(), 
+                                  0, 
+                                  layer);
     }
 
     if (useColorLayer) {
@@ -442,7 +477,11 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
     }
 }
 
-void glFramebuffer::SetMipLevel(GLushort mipLevel,  GLushort mipMaxLevel, GLushort writeLevel, TextureDescriptor::AttachmentType slot) {
+void glFramebuffer::SetMipLevel(GLushort mipLevel, 
+                                GLushort mipMaxLevel, 
+                                GLushort writeLevel, 
+                                TextureDescriptor::AttachmentType slot) {
+
     GLuint textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]->getTextureType()];
     // Only 2D texture support for now
     DIVIDE_ASSERT(textureType == GL_TEXTURE_2D, "glFramebuffer error: Changing mip level is only available for 2D textures!");

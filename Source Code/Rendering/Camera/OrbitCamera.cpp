@@ -22,6 +22,7 @@ OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye) : Camera(
 
 void OrbitCamera::setTarget(SceneGraphNode* const sgn, const vec3<F32>& offsetDirection) {
     assert(sgn != nullptr);
+
     _targetNode = sgn;
     _offsetDir = offsetDirection;
     _offsetDir.normalize();
@@ -52,7 +53,7 @@ void OrbitCamera::update(const U64 deltaTime) {
 
     static vec3<F32> newTargetOrientation;
 
-    if(/*trans->changedLastFrame() || */_rotationDirty || true){
+    if (/*trans->changedLastFrame() || */_rotationDirty || true) {
         trans->getOrientation().getEuler(&newTargetOrientation);
         newTargetOrientation.yaw = M_PI - newTargetOrientation.yaw;
         newTargetOrientation += _cameraRotation;
@@ -67,9 +68,10 @@ void OrbitCamera::update(const U64 deltaTime) {
 
 bool OrbitCamera::mouseMoved(const Input::MouseEvent& arg) {
     I32 zoom = arg.state.Z.rel;
-    if (zoom != 0)
+    if (zoom != 0) {
         curRadius(_curRadius += (zoom * _cameraZoomSpeed * -0.01f));
-    
+    }
+
     return Camera::mouseMoved(arg);
 }
 

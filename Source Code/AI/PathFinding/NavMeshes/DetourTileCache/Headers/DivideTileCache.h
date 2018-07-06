@@ -103,7 +103,7 @@ namespace Divide {
         ~RasterizationContext()
         {
             rcFreeHeightField(solid);
-            SAFE_DELETE_ARRAY(triareas);
+            DELETE_ARRAY(triareas);
             rcFreeHeightfieldLayerSet(lset);
             rcFreeCompactHeightfield(chf);
             for (I32 i = 0; i < MAX_LAYERS; ++i)
@@ -417,7 +417,8 @@ namespace Divide {
           * The current implementation of convex obstacles is very simple and not deferred. Also obstacles
           * are stored in the inputGeom, which is not really nice.
           **/
-    //TODO by adding deferred tasking to add and removeConvexShapeObstacle one can add multiple shapes at once to the same tile without it being rebuilt multiple times
+        // TODO by adding deferred tasking to add and remove ConvexShapeObstacle
+        // one can add multiple shapes at once to the same tile without it being rebuilt multiple times
         int addConvexShapeObstacle(ConvexVolume *obstacle);
 
         /**
@@ -518,12 +519,23 @@ namespace Divide {
           * This process uses a large part of the recast navmesh building pipeline (implemented in OgreRecast::NavMeshBuild()),
           * up till step 4.
           **/
-        int rasterizeTileLayers(SceneGraphNode* const geom, const I32 tx, const I32 ty, const rcConfig& cfg, TileCacheData* tiles, const I32 maxTiles);
+        I32 rasterizeTileLayers(SceneGraphNode* const geom, 
+                                const I32 tx, 
+                                const I32 ty, 
+                                const rcConfig& cfg,
+                                TileCacheData* tiles,
+                                const I32 maxTiles);
 
         /**
           * Debug draw a navmesh poly
           **/
-        void drawPolyMesh(const stringImpl& tileName, const struct dtTileCachePolyMesh &mesh, const F32 *orig, const F32 cs, const F32 ch, const struct dtTileCacheLayer &regionLayers, bool colorRegions=true);
+        void drawPolyMesh(const stringImpl& tileName, 
+                          const struct dtTileCachePolyMesh &mesh,
+                          const F32 *orig,
+                          const F32 cs,
+                          const F32 ch,
+                          const struct dtTileCacheLayer &regionLayers,
+                          bool colorRegions = true);
 
         /**
           * Inits the tilecache. Helper used by constructors.
@@ -538,7 +550,9 @@ namespace Divide {
           * In the future this variable will probably disappear.
           **/
         SceneGraphNode* m_geom;
-    // TODO maybe in the future I don't want to store inputgeom anymore, at the moment it's only used for adding convex shapes (what really should be done from compressed tiles instead of rebuilding from input geom) The whole navmesh can be stored as compressed tiles, the input geom does not need to be stored.
+       // TODO maybe in the future I don't want to store inputgeom anymore, at the moment it's only used for adding convex shapes
+       // (what really should be done from compressed tiles instead of rebuilding from input geom) 
+       // The whole navmesh can be stored as compressed tiles, the input geom does not need to be stored.
 
         /**
           * Set to true to keep intermediary results from navmesh build for debugging purposes.

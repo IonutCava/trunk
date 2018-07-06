@@ -195,7 +195,7 @@ bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
     return true;
 }
 
-/// Bind a texture specified by a GL handle and GL type to the specified unit using the desired sampler object defined by hash value  
+/// Bind a texture specified by a GL handle and GL type to the specified unit using the sampler object defined by hash value  
 bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false because this might be related to a bad algorithm
 	DIVIDE_ASSERT(unit < static_cast<GLuint>(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16)),
@@ -239,7 +239,8 @@ bool GL_API::setActiveFB(GLuint id, Framebuffer::FramebufferUsage usage) {
     // Bind the requested buffer to the appropriate target
     switch ( usage ) {
         case Framebuffer::FB_READ_WRITE: {
-            // According to documentation this is equivalent to independent calls to bindFramebuffer(read, id) and bindFramebuffer(write, id)
+            // According to documentation this is equivalent to independent calls to 
+            // bindFramebuffer(read, id) and bindFramebuffer(write, id)
             glBindFramebuffer( GL_FRAMEBUFFER, id );
             // This also overrides the read and write bindings
             _activeFBId[Framebuffer::FB_READ_ONLY] = id;
@@ -317,7 +318,8 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
 bool GL_API::setActiveProgram(glShaderProgram* const program) {
     // Check if we are binding a new program or unbinding all shaders
     GLuint newProgramId = (program != nullptr) ? program->getId() : 0;
-    // Get the previous program's handle to compare against. The active program is stored in the GFXDevice object, so indirects are unavoidable
+    // Get the previous program's handle to compare against. The active program is stored in the GFXDevice object, 
+    // so indirects are unavoidable
     ShaderProgram* previousProgram = GFX_DEVICE.activeShaderProgram();
     GLuint oldProgramId = (previousProgram != nullptr) ? previousProgram->getId() : 0;
     // Prevent double bind
@@ -338,7 +340,8 @@ bool GL_API::setActiveProgram(glShaderProgram* const program) {
 
 /// Change the clear color
 void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-    DIVIDE_ASSERT(0 < Config::MAX_RENDER_TARGETS, "GLStates error: invalid render target ID. Increase Config::MAX_RENDER_TARGETS!");
+    DIVIDE_ASSERT(0 < Config::MAX_RENDER_TARGETS, 
+                  "GLStates error: invalid render target ID. Increase Config::MAX_RENDER_TARGETS!");
     // Prevent setting the clear color to the exact same value again
     if ( _prevClearColor != vec4<F32>( r, g, b, a ) ) {
         // Remember the current clear color for this target for future reference
@@ -367,7 +370,8 @@ void GL_API::changeViewport(const vec4<I32>& newViewport) const {
     #define TOGGLE_WITH_CHECK(state, enumValue) if(SHOULD_TOGGLE(state)) TOGGLE_NO_CHECK(state, enumValue);
 #endif
 
-/// A state block should contain all rendering state changes needed for the next draw call. Some may be redundant, so we check each one individually 
+/// A state block should contain all rendering state changes needed for the next draw call.
+/// Some may be redundant, so we check each one individually 
 void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const {
     // Get the new block's descriptor
     const RenderStateBlockDescriptor& newDescriptor = newBlock.getDescriptor();
@@ -407,7 +411,9 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
     }
     // Stencil function is dependent on 3 state parameters set together
     if ( SHOULD_TOGGLE_3( _stencilFunc, _stencilRef, _stencilMask ) ) {
-        glStencilFunc( GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._stencilFunc], newDescriptor._stencilRef, newDescriptor._stencilMask );
+        glStencilFunc(GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._stencilFunc], 
+                      newDescriptor._stencilRef, 
+                      newDescriptor._stencilMask );
     }
     // Stencil operation is also dependent  on 3 state parameters set together
     if ( SHOULD_TOGGLE_3( _stencilFailOp, _stencilZFailOp, _stencilPassOp ) ) {

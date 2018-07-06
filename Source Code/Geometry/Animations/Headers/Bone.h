@@ -55,7 +55,7 @@ public:
 
     ~Bone() 
     {
-        MemoryManager::SAFE_DELETE_VECTOR( _children );
+        MemoryManager::DELETE_VECTOR( _children );
     }
 };
 

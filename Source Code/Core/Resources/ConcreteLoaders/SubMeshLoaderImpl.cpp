@@ -8,13 +8,13 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()(){
     SubMesh* ptr = nullptr;
 
     if ( _descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED ) {
-        ptr = New SkinnedSubMesh( _descriptor.getName() );
+        ptr = MemoryManager_NEW SkinnedSubMesh(_descriptor.getName());
     } else {
-        ptr = New SubMesh( _descriptor.getName() );
+        ptr = MemoryManager_NEW SubMesh(_descriptor.getName());
     }
 
     if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         if ( _descriptor.getFlag() ) {
             ptr->renderState().useDefaultMaterial( false );

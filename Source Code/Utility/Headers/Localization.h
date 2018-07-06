@@ -36,7 +36,9 @@ namespace Locale {
 	///Default language can be set at compile time
 	static stringImpl _localeFile = DEFAULT_LANG;
 	///clear the language table
-	inline void clear(){ _languageTable.clear(); }
+	inline void clear() { 
+        _languageTable.clear(); 
+    }
 	///Altough the language can be set at compile time, in-game options may support language changes
 	inline void changeLanguage(const stringImpl& newLanguage){
 		///Set the new language code

@@ -22,7 +22,13 @@ void main()
     vec3 posOffset = positionOffsets[gl_VertexID];
     _arrayLayer = int(instanceData.w);
     _texCoord = texCoordOffsets[gl_VertexID];
-    _vertexW = /* transform[gl_InstanceID]* */ vec4(rotationMatrices[instanceID % 18] * positionOffsets[gl_VertexID] * instanceScale + instanceData.xyz, 1.0);
+    _vertexW = /* transform[gl_InstanceID]* */ 
+               vec4(rotationMatrices[instanceID % 18] * 
+                    positionOffsets[gl_VertexID] * 
+                    instanceScale + 
+                    instanceData.xyz, 
+                    1.0);
+
     dvd_Normal = vec3(1.0, 1.0, 1.0);
 
     if (posOffset.y > 0.75) 

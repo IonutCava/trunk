@@ -3,13 +3,12 @@
 
 namespace Divide {
 
-PreRenderStage::~PreRenderStage(){
-	for(PreRenderOperator*& op : _operators){
-        MemoryManager::SAFE_DELETE( op );
-	}
+PreRenderStage::~PreRenderStage()
+{
+    MemoryManager::DELETE_VECTOR(_operators);
 }
 
-void PreRenderStage::execute(){
+void PreRenderStage::execute() {
 	for(PreRenderOperator* op : _operators){
 		op->operation();
 	}

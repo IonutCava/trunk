@@ -6,11 +6,11 @@
 namespace Divide {
 
 Material* ImplResourceLoader<Material>::operator()(){
-    Material* ptr = New Material();
+    Material* ptr = MemoryManager_NEW Material();
     assert(ptr != nullptr);
 
     if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         if ( _descriptor.getFlag() ) {
             ptr->setShaderProgram( "", true );

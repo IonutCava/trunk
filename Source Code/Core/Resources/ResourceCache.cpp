@@ -9,7 +9,7 @@ namespace Divide {
 
 ResourceCache::ResourceCache()
 {
-    //_loadingPool = New boost::threadpool::pool(3);
+    //_loadingPool = MemoryManager_NEW boost::threadpool::pool(3);
     DVDConverter::createInstance();
     TerrainLoader::createInstance();
 }
@@ -20,7 +20,7 @@ ResourceCache::~ResourceCache()
     TerrainLoader::destroyInstance();
 
     Destroy();
-    //SAFE_DELETE(_loadingPool);
+    //DELETE(_loadingPool);
     PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));
 }
 
@@ -37,9 +37,9 @@ void ResourceCache::Destroy() {
             it.second->SubRef();
         }
         removeInternal( it.second );
-        MemoryManager::SAFE_DELETE( it.second );
     }
-    _resDB.clear();
+
+    MemoryManager::DELETE_HASHMAP(_resDB);
 }
 
 void ResourceCache::add( const stringImpl& name, Resource* const res ) {
@@ -91,7 +91,7 @@ bool ResourceCache::remove( Resource* resource ) {
         WriteLock w_lock( _creationMutex );
         _resDB.erase( _resDB.find( nameCpy ) );
         w_lock.unlock();
-        MemoryManager::SAFE_DELETE( resource );
+        MemoryManager::DELETE( resource );
     } else {
         return false;
     }

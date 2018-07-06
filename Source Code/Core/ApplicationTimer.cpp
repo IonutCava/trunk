@@ -68,9 +68,10 @@ void ApplicationTimer::addTimer(ProfileTimer* const timer) {
 
 void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
 	const stringImpl& timerName = timer->name();
-	_profileTimers.erase(std::remove_if(_profileTimers.begin(), _profileTimers.end(), [&timerName](ProfileTimer* tTimer)->bool {
-																							return tTimer->name().compare(timerName) == 0;
-																						}),
+	_profileTimers.erase(std::remove_if(_profileTimers.begin(), _profileTimers.end(),
+                         [&timerName](ProfileTimer* tTimer)->bool {
+						    return tTimer->name().compare(timerName) == 0;
+						 }),
 						_profileTimers.end());
 }
 
@@ -124,7 +125,8 @@ void ApplicationTimer::update(U32 frameCount) {
 	LI currentTicks = getCurrentTicksInternal();
 	_elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
-	_speedfactor = static_cast<F32>((currentTicks.QuadPart - _frameDelay.QuadPart) / (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
+	_speedfactor = static_cast<F32>((currentTicks.QuadPart - _frameDelay.QuadPart) / 
+                                    (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
 	_frameDelay = currentTicks;
 
 	if (_speedfactor <= 0.0f) {

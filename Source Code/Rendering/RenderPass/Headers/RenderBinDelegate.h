@@ -31,7 +31,9 @@ namespace Divide {
 ///This bin delegates the rendering to the asset itself
 class RenderBinDelegate : public RenderBin {
 public:
-	RenderBinDelegate(const RenderBinType& rbType,const RenderingOrder::List& renderOrder, D32 drawKey);
+	RenderBinDelegate(const RenderBinType& rbType,
+                      const RenderingOrder::List& renderOrder,
+                      D32 drawKey);
 	~RenderBinDelegate();
 };
 

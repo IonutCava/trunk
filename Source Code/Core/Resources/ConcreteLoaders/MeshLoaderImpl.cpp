@@ -9,7 +9,7 @@ Mesh* ImplResourceLoader<Mesh>::operator()(){
     Mesh* ptr = DVDConverter::getInstance().load(_descriptor.getResourceLocation());
 
     if ( !load( ptr, _descriptor.getName() ) || !ptr ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         if ( _descriptor.getFlag() ) {
             ptr->renderState().useDefaultMaterial( false );

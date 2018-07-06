@@ -103,7 +103,8 @@ public:
     bool destinationReached();
     /// Place agent at new position.
     bool setPosition(const vec3<F32> position);
-    /// The current position of the agent. Is only up to date once update() has been called in a frame.
+    /// The current position of the agent.
+    /// Is only up to date once update() has been called in a frame.
     const vec3<F32>& getPosition() const;
     /// The maximum speed this character can attain.
     /// This parameter is configured for the agent controlling this character.
@@ -127,7 +128,8 @@ public:
     void moveForward();
     /// Manually control the character moving it backwards.
     void moveBackwards();
-    /// Stop any movement this character is currently doing. This means losing the requested velocity or target destination.
+    /// Stop any movement this character is currently doing. 
+    /// This means losing the requested velocity or target destination.
     void stop();
     /// The current velocity (speed and direction) this character is traveling at.
     vec3<F32> getVelocity() const;

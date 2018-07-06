@@ -6,14 +6,16 @@
 
 namespace Divide {
 
-AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, parentSGN),
-                                                                  _animator(animator),
-                                                                  _skeletonAvailable(false),
-                                                                  _playAnimations(true),
-                                                                  _currentTimeStamp(-1.0),
-                                                                  _currentAnimationID(0),
-                                                                  _currentFrameIndex(0),
-                                                                  _currentAnimIndex(0)
+AnimationComponent::AnimationComponent(SceneAnimator* animator,
+                                       SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, 
+                                                                                       parentSGN),
+                                                                          _animator(animator),
+                                                                          _skeletonAvailable(false),
+                                                                          _playAnimations(true),
+                                                                          _currentTimeStamp(-1.0),
+                                                                          _currentAnimationID(0),
+                                                                          _currentFrameIndex(0),
+                                                                          _currentAnimIndex(0)
 {
     assert(_animator != nullptr);
 
@@ -21,7 +23,8 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* 
     _animationTransforms.reserve(40);
     _readBuffer  = 1;
     _writeBuffer = 0;
-    DIVIDE_ASSERT(_animator->GetBoneCount() <= Config::MAX_BONE_COUNT_PER_NODE, "AnimationComponent error: Too many bones for current node! Increase MAX_BONE_COUNT_PER_NODE in Config!"); 
+    DIVIDE_ASSERT(_animator->GetBoneCount() <= Config::MAX_BONE_COUNT_PER_NODE, 
+                  "AnimationComponent error: Too many bones for current node! Increase MAX_BONE_COUNT_PER_NODE in Config!"); 
 
     _boneTransformBuffer[_writeBuffer] = GFX_DEVICE.newSB();
     _boneTransformBuffer[_writeBuffer]->Create((U32)_animator->GetBoneCount(), sizeof(mat4<F32>));
@@ -32,8 +35,8 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* 
 
 AnimationComponent::~AnimationComponent()
 {
-    MemoryManager::SAFE_DELETE( _boneTransformBuffer[0] );
-    MemoryManager::SAFE_DELETE( _boneTransformBuffer[1] );
+    MemoryManager::DELETE( _boneTransformBuffer[0] );
+    MemoryManager::DELETE( _boneTransformBuffer[1] );
 }
 
 void AnimationComponent::update(const U64 deltaTime) {
@@ -93,7 +96,9 @@ bool AnimationComponent::playNextAnimation() {
 }
 
 void AnimationComponent::renderSkeleton(){
-    if (!_skeletonAvailable || (!GET_ACTIVE_SCENE()->renderState().drawSkeletons() && !_parentSGN->getComponent<RenderingComponent>()->renderSkeleton())) {
+    if (!_skeletonAvailable || 
+        (!GET_ACTIVE_SCENE()->renderState().drawSkeletons() && 
+         !_parentSGN->getComponent<RenderingComponent>()->renderSkeleton())) {
         return;
     }
 
@@ -141,7 +146,9 @@ const mat4<F32>& AnimationComponent::getBoneTransform(const stringImpl& name) {
     Object3D* node = _parentSGN->getNode<Object3D>();
     assert(node != nullptr);
 
-    if (node->getObjectType() != Object3D::SUBMESH || (node->getObjectType() == Object3D::SUBMESH && !bitCompare(node->getFlagMask(), Object3D::OBJECT_FLAG_SKINNED))){
+    if (node->getObjectType() != Object3D::SUBMESH || 
+        (node->getObjectType() == Object3D::SUBMESH && 
+         !bitCompare(node->getFlagMask(), Object3D::OBJECT_FLAG_SKINNED))) {
         return _parentSGN->getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 

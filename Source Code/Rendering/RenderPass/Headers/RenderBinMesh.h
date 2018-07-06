@@ -30,7 +30,9 @@ namespace Divide {
 ///This particular Rendering Bin handles imported geometry, be it skinned or otherwise
 class RenderBinMesh : public RenderBin {
 public:
-	RenderBinMesh(const RenderBinType& rbType,const RenderingOrder::List& renderOrder, D32 drawKey);
+	RenderBinMesh(const RenderBinType& rbType,
+                  const RenderingOrder::List& renderOrder, 
+                  D32 drawKey);
 	~RenderBinMesh();
 };
 

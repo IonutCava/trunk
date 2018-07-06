@@ -11,13 +11,13 @@ namespace Divide {
 
 TerrainLoader::TerrainLoader() : Singleton()
 {
-	_albedoSampler = New SamplerDescriptor();
+    _albedoSampler = MemoryManager_NEW SamplerDescriptor();
 	_albedoSampler->setWrapMode(TEXTURE_REPEAT);
 	_albedoSampler->setAnisotropy(8);
 	_albedoSampler->toggleMipMaps(true);
 	_albedoSampler->toggleSRGBColorSpace(true);
 
-	_normalSampler = New SamplerDescriptor();
+    _normalSampler = MemoryManager_NEW SamplerDescriptor();
 	_normalSampler->setWrapMode(TEXTURE_REPEAT);
 	_normalSampler->setAnisotropy(8);
 	_normalSampler->toggleMipMaps(true);
@@ -25,8 +25,8 @@ TerrainLoader::TerrainLoader() : Singleton()
 
 TerrainLoader::~TerrainLoader()
 {
-    MemoryManager::SAFE_DELETE( _albedoSampler );
-    MemoryManager::SAFE_DELETE( _normalSampler );
+    MemoryManager::DELETE( _albedoSampler );
+    MemoryManager::DELETE( _normalSampler );
 }
 
 bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDescriptor){
@@ -52,7 +52,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
         textureCountDetail = 0;
 
         layerOffsetStr = stringAlg::toBase(Util::toString(i));
-        textureLayer = New TerrainTextureLayer();
+        textureLayer = MemoryManager_NEW TerrainTextureLayer();
         
         ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name + "_layer_" + layerOffsetStr);
         textureBlendMap.setResourceLocation(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
@@ -65,28 +65,32 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
             arrayLocation = currentTexture;
             textureCount++;
             textureCountAlbedo++;
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_RED_CHANNEL, terrainDescriptor->getVariablef("diffuseScaleR" + layerOffsetStr));
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_RED_CHANNEL, 
+                                          terrainDescriptor->getVariablef("diffuseScaleR" + layerOffsetStr));
         }
         currentTexture = terrainDescriptor->getVariable("greenAlbedo" + layerOffsetStr);
         if (!currentTexture.empty()){
             arrayLocation += "," + currentTexture;
             textureCount++;
             textureCountAlbedo++;
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_GREEN_CHANNEL, terrainDescriptor->getVariablef("diffuseScaleG" + layerOffsetStr));
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_GREEN_CHANNEL, 
+                                          terrainDescriptor->getVariablef("diffuseScaleG" + layerOffsetStr));
         }
         currentTexture = terrainDescriptor->getVariable("blueAlbedo" + layerOffsetStr);
         if (!currentTexture.empty()){
             arrayLocation += "," + currentTexture;
             textureCount++;
             textureCountAlbedo++;
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_BLUE_CHANNEL, terrainDescriptor->getVariablef("diffuseScaleB" + layerOffsetStr));
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_BLUE_CHANNEL, 
+                                          terrainDescriptor->getVariablef("diffuseScaleB" + layerOffsetStr));
         }
         currentTexture = terrainDescriptor->getVariable("alphaAlbedo" + layerOffsetStr);
         if (!currentTexture.empty()){
             arrayLocation += "," + currentTexture;
             textureCount++;
             textureCountAlbedo++;
-            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_ALPHA_CHANNEL, terrainDescriptor->getVariablef("diffuseScaleA" + layerOffsetStr));
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TEXTURE_ALPHA_CHANNEL, 
+                                          terrainDescriptor->getVariablef("diffuseScaleA" + layerOffsetStr));
         }
 
         ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name + "_layer_" + layerOffsetStr);
@@ -101,25 +105,29 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
 		if (!currentTexture.empty()){
 			arrayLocation += "," + currentTexture;
 			textureCountDetail++;
-			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_RED_CHANNEL, terrainDescriptor->getVariablef("detailScaleR" + layerOffsetStr));
+			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_RED_CHANNEL, 
+                                         terrainDescriptor->getVariablef("detailScaleR" + layerOffsetStr));
 		}
 		currentTexture = terrainDescriptor->getVariable("greenDetail" + layerOffsetStr);
 		if (!currentTexture.empty()){
 			arrayLocation += "," + currentTexture;
 			textureCountDetail++;
-			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_GREEN_CHANNEL, terrainDescriptor->getVariablef("detailScaleG" + layerOffsetStr));
+			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_GREEN_CHANNEL, 
+                                         terrainDescriptor->getVariablef("detailScaleG" + layerOffsetStr));
 		}
 		currentTexture = terrainDescriptor->getVariable("blueDetail" + layerOffsetStr);
 		if (!currentTexture.empty()){
 			arrayLocation += "," + currentTexture;
 			textureCountDetail++;
-			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_BLUE_CHANNEL, terrainDescriptor->getVariablef("detailScaleB" + layerOffsetStr));
+			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_BLUE_CHANNEL, 
+                                         terrainDescriptor->getVariablef("detailScaleB" + layerOffsetStr));
 		}
 		currentTexture = terrainDescriptor->getVariable("alphaDetail" + layerOffsetStr);
 		if (!currentTexture.empty()){
 			arrayLocation += "," + currentTexture;
 			textureCountDetail++;
-			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_ALPHA_CHANNEL, terrainDescriptor->getVariablef("detailScaleA" + layerOffsetStr));
+			textureLayer->setDetailScale(TerrainTextureLayer::TEXTURE_ALPHA_CHANNEL, 
+                                         terrainDescriptor->getVariablef("detailScaleA" + layerOffsetStr));
 		}
 
 		ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name + "_layer_" + layerOffsetStr);
@@ -214,7 +222,8 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
     if ( terrainDescriptor->is16Bit() ) {
         assert( heightmapWidth != 0 && heightmapHeight != 0 );
         stringImpl terrainRawFile( terrainDescriptor->getVariable( "heightmap" ) );
-        assert( terrainRawFile.substr( terrainRawFile.length() - 4, terrainRawFile.length() ).compare( ".raw" ) == 0 ); // only raw files for 16 bit support
+        // only raw files for 16 bit support
+        assert( terrainRawFile.substr( terrainRawFile.length() - 4, terrainRawFile.length() ).compare( ".raw" ) == 0 ); 
         // Read File Data
         FILE* terrainFile = nullptr;
         fopen_s( &terrainFile, terrainRawFile.c_str(), "rb" );
@@ -224,7 +233,7 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
         U32 positionCount = ftell( terrainFile );
         fseek( terrainFile, lCurPos, SEEK_SET );
         heightValues.reserve( positionCount / 2 );
-        U8* dataTemp = New U8[positionCount];
+        U8* dataTemp = MemoryManager_NEW U8[positionCount];
         rewind( terrainFile );
         assert( dataTemp );
         fread( dataTemp, 1, positionCount, terrainFile );
@@ -232,7 +241,7 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
         for ( U32 i = 0; i < positionCount + 1; i += 2 ) {
             heightValues.push_back( ( (U8)dataTemp[i + 1] << 8 ) | (U8)dataTemp[i] );
         }
-        MemoryManager::SAFE_DELETE_ARRAY( dataTemp );
+        MemoryManager::DELETE_ARRAY( dataTemp );
     } else {
         ImageTools::ImageData img;
         img.create( terrainDescriptor->getVariable( "heightmap" ) );
@@ -286,7 +295,8 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
                 vertexData.x = bMin.x + ((F32)i) * (bMax.x - bMin.x) / (terrainWidth - 1);
                 vertexData.z = bMin.z + ((F32)j) * (bMax.z - bMin.z) / (terrainHeight - 1);
 
-                U32 idxIMG = TER_COORD<U32>(i < (I32)heightmapWidth ? i : i - 1, j < (I32)heightmapHeight ? j : j - 1, heightmapWidth);
+                U32 idxIMG = TER_COORD<U32>(i < (I32)heightmapWidth ? i : i - 1, 
+                                            j < (I32)heightmapHeight ? j : j - 1, heightmapWidth);
 
                 vertexData.y = minAltitude + altitudeRange * (F32)heightValues[idxIMG] / 65536.0f;
                 vertexData.y *= yScaleFactor;
@@ -307,7 +317,8 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
                 vertexData.x = bMin.x + ((F32)i) * (bMax.x - bMin.x) / (terrainWidth - 1);
                 vertexData.z = bMin.z + ((F32)j) * (bMax.z - bMin.z) / (terrainHeight - 1);
 
-                U32 idxIMG = TER_COORD<U32>(i < (I32)heightmapWidth ? i : i - 1, j < (I32)heightmapHeight ? j : j - 1, heightmapWidth);
+                U32 idxIMG = TER_COORD<U32>(i < (I32)heightmapWidth ? i : i - 1, 
+                                            j < (I32)heightmapHeight ? j : j - 1, heightmapWidth);
 
                 F32 h = (F32)(heightValues[idxIMG * 3 + 0] + heightValues[idxIMG * 3 + 1] + heightValues[idxIMG * 3 + 2]) / 3.0f;
 

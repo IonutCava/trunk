@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------
 namespace Divide {
 
-template <class charT, class traits = std::char_traits<charT> >
+template<typename charT, typename traits = std::char_traits<charT> >
 class basic_teebuf : public std::basic_streambuf<charT, traits>
 {
 public:
@@ -93,7 +93,7 @@ typedef basic_teebuf<wchar_t> woutbuf;
 
 //------------------------------------------------------------------------------
 
-template <class charT, class traits = std::char_traits<charT> >
+template<typename charT, typename traits = std::char_traits<charT> >
 struct scoped_basic_streambuf_assignment
 {
     typedef std::basic_ostream<charT, traits> ostream_type;

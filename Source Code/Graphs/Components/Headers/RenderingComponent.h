@@ -72,7 +72,9 @@ namespace Divide {
         inline void getMaterialPropertyMatrix(mat4<F32>& matOut) const { return matOut.set(_materialPropertyMatrix); }
         inline Material* const getMaterialInstance() { return _materialInstance; }
 
-        const vectorImpl<GenericDrawCommand>& getDrawCommands(vectorAlg::vecSize commandOffset, SceneRenderState& sceneRenderState, RenderStage renderStage);
+        const vectorImpl<GenericDrawCommand>& getDrawCommands(vectorAlg::vecSize commandOffset, 
+                                                              SceneRenderState& sceneRenderState,
+                                                              RenderStage renderStage);
         
 #ifdef _DEBUG
         void drawDebugAxis();

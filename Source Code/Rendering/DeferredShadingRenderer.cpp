@@ -34,14 +34,14 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     gBufferSampler.toggleMipMaps(false);
 
     TextureDescriptor gBuffer[4]; /// 4 Gbuffer elements (mipmaps are ignored for deferredBuffers)
-    //Albedo
-    gBuffer[0] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);  //R8G8B8A8, 32bit format for diffuse
-    //Position
-    gBuffer[1] = TextureDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32); //R32G32B32A32, HDR 128bit format for position data
-    //Normals
-    gBuffer[2] = TextureDescriptor(TEXTURE_2D, RGBA16F, FLOAT_32); //R16G16B16A16, 64bit format for normals
-    //Blend (for transparent objects - unused for now)
-    gBuffer[3] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); //R8G8B8A8, 32bit format for blend
+    //Albedo R8G8B8A8, 32bit format for diffuse
+    gBuffer[0] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);
+    //Position R32G32B32A32, HDR 128bit format for position data
+    gBuffer[1] = TextureDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32); 
+    //Normals R16G16B16A16, 64bit format for normals
+    gBuffer[2] = TextureDescriptor(TEXTURE_2D, RGBA16F, FLOAT_32); 
+    //Blend (for transparent objects - unused for now) R8G8B8A8, 32bit format for blend
+    gBuffer[3] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); 
 
     for(U8 i = 0; i < 4; i++) gBuffer[i].setSampler(gBufferSampler);
 
@@ -107,15 +107,16 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     RemoveResource(_renderQuads[3]);
     RemoveResource(_renderQuads[4]);
     _renderQuads.clear();
-    MemoryManager::SAFE_DELETE( _deferredBuffer );
+    MemoryManager::DELETE( _deferredBuffer );
     if(_deferredShader != nullptr){
         RemoveResource(_deferredShader);
     }
     RemoveResource(_previewDeferredShader);
-    MemoryManager::SAFE_DELETE( _lightTexture );
+    MemoryManager::DELETE( _lightTexture );
 }
 
-void DeferredShadingRenderer::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock) {
+void DeferredShadingRenderer::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, 
+                                                  const GFXDevice::GPUBlock& gpuBlock) {
     GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
 
     Light::LightMap& lights = LightManager::getInstance().getLights();
@@ -142,13 +143,15 @@ void DeferredShadingRenderer::processVisibleNodes(const vectorImpl<SceneGraphNod
     _lightTexture->End();
 }
 
-void DeferredShadingRenderer::render(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState) {
+void DeferredShadingRenderer::render(const DELEGATE_CBK<>& renderCallback, 
+                                     const SceneRenderState& sceneRenderState) {
 
     firstPass(renderCallback, sceneRenderState);
     secondPass(sceneRenderState);
 }
 
-void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState){
+void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<>& renderCallback, 
+                                        const SceneRenderState& sceneRenderState) {
     //Pass 1
     //Draw the geometry, saving parameters into the buffer
     _deferredBuffer->Begin(Framebuffer::defaultPolicy());
@@ -158,7 +161,7 @@ void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<>& renderCallback, co
 
 void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderState){
     //Pass 2
-    //Draw a 2D fullscreen quad that has the lighting shader applied to it and all generated textures bound to that shader
+    //Draw a 2D fullscreen quad with lighting shader applied and all generated textures bound to that shader
     GFX_DEVICE.toggle2D(true);
 
     _deferredBuffer->Bind(0, TextureDescriptor::Color0);
@@ -230,7 +233,8 @@ void DeferredShadingRenderer::updateResolution(U16 width, U16 height){
     _renderQuads[3]->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
     _renderQuads[3]->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(width / 2, height / 2, 0));
     _renderQuads[3]->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, height / 2, 0));
-    //Using a separate, smaller render quad for debug view because it's faster than resizing a quad back and forth -Ionut
+    // Using a separate, smaller render quad for debug view because it's faster 
+    // than resizing a quad back and forth -Ionut
     _renderQuads[4]->setDimensions(vec4<F32>(0, 0, width / 2, height / 2));
 }
 

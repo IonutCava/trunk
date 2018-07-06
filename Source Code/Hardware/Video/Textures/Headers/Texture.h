@@ -76,7 +76,7 @@ public:
     inline void refreshMipMaps() { _mipMapsDirty = true; }
 
 protected:
-    SET_SAFE_DELETE_FRIEND
+    SET_DELETE_FRIEND
 
     /// Use DevIL to load a file into a Texture Object
     bool LoadFile(U32 target, const stringImpl& name);

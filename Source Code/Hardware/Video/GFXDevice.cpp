@@ -96,10 +96,10 @@ GFXDevice::GFXDevice() : _api(nullptr),
    _GPUVendor = GPU_VENDOR_PLACEHOLDER;
    _apiId = GFX_RENDER_API_PLACEHOLDER;
    // Utility cameras
-   _2DCamera = New FreeFlyCamera();
+   _2DCamera = MemoryManager_NEW FreeFlyCamera();
    _2DCamera->lockView(true);
    _2DCamera->lockFrustum(true);
-   _cubeCamera = New FreeFlyCamera();
+   _cubeCamera = MemoryManager_NEW FreeFlyCamera();
    // Clipping planes
    _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0,0,0,0));
    // Render targets
@@ -107,8 +107,8 @@ GFXDevice::GFXDevice() : _api(nullptr),
        renderTarget = nullptr;
    }
    // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-   RenderPassManager::getOrCreateInstance().addRenderPass(New RenderPass("diffusePass"), 1);
-   //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
+   RenderPassManager::getOrCreateInstance().addRenderPass("diffusePass", 1);
+   //RenderPassManager::getInstance().addRenderPass("shadowPass",2);
    // Red X-axis
    _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255)));
    // Green Y-axis
@@ -124,12 +124,14 @@ GFXDevice::~GFXDevice()
 /// A draw command is composed of a target buffer and a command. The command part is processed here
 bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // We also need a valid draw command ID so we can index the node buffer properly
-    DIVIDE_ASSERT(cmd.drawID() < std::max((I32)_matricesData.size(), 1) && cmd.drawID() >= 0, "GFXDevice error: Invalid draw ID encountered!");
+    DIVIDE_ASSERT(cmd.drawID() < std::max((I32)_matricesData.size(), 1) && cmd.drawID() >= 0, 
+                  "GFXDevice error: Invalid draw ID encountered!");
     if (cmd.instanceCount() == 0) {
         return false;
     }
     // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd.shaderProgram() != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    DIVIDE_ASSERT(cmd.shaderProgram() != nullptr, 
+                  "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     if (!cmd.shaderProgram()->bind()) {
         return false;
@@ -202,7 +204,8 @@ void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
 
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain or batched meshes)
 void GFXDevice::submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds) {
-    // Ideally, we would merge all of the draw commands in a command buffer, sort by state, shader, etc, and submit a single render call
+    // Ideally, we would merge all of the draw commands in a command buffer, 
+    // sort by state/shader/etc and submit a single render call
     STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");    
     // That feature will be added later, so, for now, submit each command manually
     for(const GenericDrawCommand& cmd : cmds) {
@@ -212,7 +215,11 @@ void GFXDevice::submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds) 
 }
 
 /// Generate a cube texture and store it in the provided framebuffer
-void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, const DELEGATE_CBK<>& renderFunction, const vec2<F32>& zPlanes, const RenderStage& renderStage) {
+void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, 
+                                 const vec3<F32>& pos, 
+                                 const DELEGATE_CBK<>& renderFunction, 
+                                 const vec2<F32>& zPlanes, 
+                                 const RenderStage& renderStage) {
     // Only the first color attachment or the depth attachment is used for now and it must be a cube map texture
     Texture* colorAttachment = cubeMap.GetAttachment(TextureDescriptor::Color0);
     Texture* depthAttachment = cubeMap.GetAttachment(TextureDescriptor::Depth);
@@ -291,7 +298,7 @@ size_t GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descri
     // Find the corresponding render state block
     if (_stateBlockMap.find(hashValue) == _stateBlockMap.end()) {
         // Create a new one if none are found. The GFXDevice class is responsible for deleting these!
-        hashAlg::emplace(_stateBlockMap, hashValue, New RenderStateBlock(descriptor));
+        hashAlg::emplace(_stateBlockMap, hashValue, MemoryManager_NEW RenderStateBlock(descriptor));
     }
     // Return the descriptor's hash value
     return hashValue;
@@ -309,7 +316,8 @@ size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
         _currentStateBlockHash = stateBlockHash;
         RenderStateMap::const_iterator currentStateIt = _stateBlockMap.find(_currentStateBlockHash);
         RenderStateMap::const_iterator previousStateIt = _stateBlockMap.find(_previousStateBlockHash);
-        DIVIDE_ASSERT(currentStateIt != _stateBlockMap.end() && previousStateIt != _stateBlockMap.end(), "GFXDevice error: Invalid state blocks detected on activation!");
+        DIVIDE_ASSERT(currentStateIt != _stateBlockMap.end() && previousStateIt != _stateBlockMap.end(),
+                      "GFXDevice error: Invalid state blocks detected on activation!");
         // Activate the new render state block in an rendering API dependent way
         activateStateBlock(*currentStateIt->second, previousStateIt->second);
     }
@@ -317,12 +325,14 @@ size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
     return _previousStateBlockHash;
 }
 
-/// Return the descriptor of the render state block defined by the specified hash value. The state block must be created prior to calling this!
+/// Return the descriptor of the render state block defined by the specified hash value. 
+/// The state block must be created prior to calling this!
 const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(size_t renderStateBlockHash) const {
     // Find the render state block associated with the received hash value
     RenderStateMap ::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
     // Assert if it doesn't exist. Avoids programming errors.
-    DIVIDE_ASSERT(it != _stateBlockMap.end(), "GFXDevice error: Invalid render state block hash specified for getStateBlockDescriptor!");
+    DIVIDE_ASSERT(it != _stateBlockMap.end(), 
+                  "GFXDevice error: Invalid render state block hash specified for getStateBlockDescriptor!");
     // Return the state block's descriptor
     return it->second->getDescriptor(); 
 }
@@ -331,7 +341,8 @@ const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(size_t rend
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
     if(_renderTarget[RENDER_TARGET_SCREEN] != nullptr) {
-        // Update resolution only if it's different from the current one. Avoid resolution change on minimize so we don't thrash render targets
+        // Update resolution only if it's different from the current one. 
+        // Avoid resolution change on minimize so we don't thrash render targets
         if (vec2<U16>(w, h) == _renderTarget[RENDER_TARGET_SCREEN]->getResolution() || !(w > 1 && h > 1)) {
             return;
         }
@@ -499,7 +510,8 @@ void GFXDevice::toggle2D(bool state) {
     // Remember the previous state hash
     static size_t previousStateBlockHash = 0;
     // Prevent double 2D toggle to the same state (e.g. in a loop)
-    DIVIDE_ASSERT((state && !_2DRendering) || (!state && _2DRendering), "GFXDevice error: double toggle2D call with same value detected!");
+    DIVIDE_ASSERT((state && !_2DRendering) || (!state && _2DRendering),
+                  "GFXDevice error: double toggle2D call with same value detected!");
 	Kernel* const kernel = Application::getInstance().getKernel();
     _2DRendering = state;
     // If we need to enable 2D rendering
@@ -609,7 +621,9 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
         }
         // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
         temp._matrix[1].element(3,2,true) = static_cast<F32>(LightManager::getInstance().getLights().size());
-        temp._matrix[1].element(3,3,true) = static_cast<F32>(crtNode->getComponent<AnimationComponent>() ? crtNode->getComponent<AnimationComponent>()->boneCount() : 0);
+        temp._matrix[1].element(3,3,true) = static_cast<F32>(crtNode->getComponent<AnimationComponent>() ?
+                                                                        crtNode->getComponent<AnimationComponent>()->boneCount() :
+                                                                        0);
         RenderingComponent* const renderable = crtNode->getComponent<RenderingComponent>();
         if (renderable) {
             // Get the color matrix (diffuse, ambient, specular, etc.)
@@ -637,7 +651,9 @@ void GFXDevice::buildDrawCommands(const vectorImpl<SceneGraphNode* >& visibleNod
         if (!renderable) {
             continue;
         }
-        const vectorImpl<GenericDrawCommand>& nodeDrawCommands = renderable->getDrawCommands(1 + i, sceneRenderState, getRenderStage());
+        const vectorImpl<GenericDrawCommand>& nodeDrawCommands = renderable->getDrawCommands(1 + i, 
+                                                                                             sceneRenderState,
+                                                                                             getRenderStage());
         for (const GenericDrawCommand& cmd : nodeDrawCommands) {
             drawCommands[cmd.drawID()] = cmd.cmd();
         }
@@ -673,7 +689,8 @@ void GFXDevice::ConstructHIZ() {
     vec2<U16> resolution = _renderTarget[RENDER_TARGET_DEPTH]->getResolution();
     // We use a special shader that downsamples the buffer
     _HIZConstructProgram->bind();
-    // We will use a state block that disables color writes as we will render only a depth image, disables depth testing but allows depth writes
+    // We will use a state block that disables color writes as we will render only a depth image,
+    // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
     _renderTarget[RENDER_TARGET_DEPTH]->Begin(hizTarget);
     // Bind the depth texture to the first texture unit
@@ -699,7 +716,8 @@ void GFXDevice::ConstructHIZ() {
         _renderTarget[RENDER_TARGET_DEPTH]->SetMipLevel(i - 1, i - 1, i, TextureDescriptor::Depth);
         // Dummy draw command as the full screen quad is generated completely by a geometry shader
         drawPoints(1, _stateDepthOnlyRenderingHash, _HIZConstructProgram);
-        // Restore the viewport to it's original value (should only be called once outside the loop, but our stack based system is preventing us from doing that
+        // Restore the viewport to it's original value
+        // (should only be called once outside the loop, but our stack based system is preventing us from doing that
         restoreViewport();
     }
     // Reset mipmap level range for the depth buffer
@@ -776,7 +794,11 @@ void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max, const vec4
 }
 
 /// Render a list of lines within the specified constraints
-void GFXDevice::drawLines(const vectorImpl<Line >& lines, const mat4<F32>& globalOffset, const vec4<I32>& viewport, const bool inViewport, const bool disableDepth) {
+void GFXDevice::drawLines(const vectorImpl<Line >& lines, 
+                          const mat4<F32>& globalOffset, 
+                          const vec4<I32>& viewport, 
+                          const bool inViewport,
+                          const bool disableDepth) {
     // Check if we have a valid list. The list can be programmatically generated, so this check is required
     if (lines.empty()) {
         return;
@@ -789,7 +811,8 @@ void GFXDevice::drawLines(const vectorImpl<Line >& lines, const mat4<F32>& globa
     priv->stateHash(getDefaultStateBlock(disableDepth));
     // Set the world matrix
     priv->worldMatrix(globalOffset);
-    // If we need to render it into a specific viewport, set the pre and post draw functions to set up the needed viewport rendering (e.g. axis lines)
+    // If we need to render it into a specific viewport, set the pre and post draw functions to set up the 
+    // needed viewport rendering (e.g. axis lines)
     if (inViewport) {
         priv->setRenderStates(DELEGATE_BIND(&GFXDevice::setViewport, this, viewport),
                               DELEGATE_BIND(&GFXDevice::restoreViewport, this));            
@@ -816,13 +839,13 @@ void GFXDevice::Screenshot(char* filename){
     const vec2<U16>& resolution = _renderTarget[RENDER_TARGET_SCREEN]->getResolution();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = resolution.width * resolution.height * 4;
-    U8  *imageData = New U8[bufferSize];
+    U8  *imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
     _renderTarget[RENDER_TARGET_SCREEN]->ReadData(RGBA, UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename, vec2<U16>(resolution.width, resolution.height), 32, imageData);
     // Delete local buffers
-    MemoryManager::SAFE_DELETE_ARRAY( imageData );
+    MemoryManager::DELETE_ARRAY( imageData );
 }
 
 };

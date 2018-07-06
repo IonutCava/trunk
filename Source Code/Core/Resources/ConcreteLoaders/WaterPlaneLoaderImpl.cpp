@@ -7,10 +7,10 @@
 namespace Divide {
 
 WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
-    WaterPlane* ptr = New WaterPlane();
+    WaterPlane* ptr = MemoryManager_NEW WaterPlane();
 
     if(!load(ptr, _descriptor.getName())){
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     }
 
     return ptr;
@@ -18,6 +18,7 @@ WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
 
 template<>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const stringImpl& name) {
+    ParamHandler& param = ParamHandler::getInstance();
     res->setState(RES_LOADING);
 
     SamplerDescriptor defaultSampler;
@@ -27,9 +28,11 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const stringImp
     ResourceDescriptor waterShader( "water_" + name );
     ResourceDescriptor waterTexture( "waterTexture_" + name );
     ResourceDescriptor waterTextureDUDV( "waterTextureDUDV_" + name );
-	waterTexture.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
+    waterTexture.setResourceLocation(param.getParam<stringImpl>("assetsLocation") + 
+                                     "/misc_images/terrain_water_NM.jpg");
     waterTexture.setPropertyDescriptor(defaultSampler);
-	waterTextureDUDV.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/water_dudv.jpg");
+    waterTextureDUDV.setResourceLocation(param.getParam<stringImpl>("assetsLocation") + 
+                                         "/misc_images/water_dudv.jpg");
     waterTextureDUDV.setPropertyDescriptor(defaultSampler);
     
     Texture* waterNM = CreateResource<Texture>(waterTexture);

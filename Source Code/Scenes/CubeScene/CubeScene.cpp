@@ -61,7 +61,7 @@ void CubeScene::processInput(const U64 deltaTime){
 }
 
 bool CubeScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
-    GFX_DEVICE.setRenderer(New DeferredShadingRenderer());
+    GFX_DEVICE.setRenderer(MemoryManager_NEW DeferredShadingRenderer());
     //Load scene resources
     return SCENE_LOAD(name,cameraMgr,gui,true,true);
 }

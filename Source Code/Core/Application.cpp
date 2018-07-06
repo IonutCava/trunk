@@ -32,7 +32,8 @@ Application::~Application(){
 	size_t sizeLeaked = 0;
     stringImpl allocLog = MemoryManager::AllocTracer.Dump( leakDetected, sizeLeaked );
 	if ( leakDetected ) {
-		ERROR_FN( Locale::get( "ERROR_MEMORY_NEW_DELETE_MISMATCH" ), static_cast<I32>(std::ceil(sizeLeaked / 1024.0f)) );
+		ERROR_FN(Locale::get( "ERROR_MEMORY_NEW_DELETE_MISMATCH" ),
+                 static_cast<I32>(std::ceil(sizeLeaked / 1024.0f)));
 	}
 	std::ofstream memLog;
 	memLog.open( _memLogBuffer.c_str() );
@@ -54,7 +55,7 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char *
     CONSOLE_TIMESTAMP_ON();
     PRINT_FN(Locale::get("START_APPLICATION"));
     //Create a new kernel
-    _kernel = New Kernel(argc,argv,this->getInstance());
+    _kernel = MemoryManager_NEW Kernel(argc, argv, this->getInstance());
     assert(_kernel != nullptr);
     //and load it via an XML file config
     return _kernel->initialize(entryPoint);
@@ -70,7 +71,7 @@ void Application::snapCursorToPosition(U16 x, U16 y) const {
 
 void Application::deinitialize() {
 	PRINT_FN( Locale::get( "STOP_KERNEL" ) );
-    MemoryManager::SAFE_DELETE( _kernel );
+    MemoryManager::DELETE( _kernel );
 	for ( DELEGATE_CBK<>& cbk : _shutdownCallback ) {
 		cbk();
 	}

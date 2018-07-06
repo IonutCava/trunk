@@ -12,7 +12,7 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
     OIS::ConstantEffect* pConstForce;
     OIS::PeriodicEffect* pPeriodForce;
 
-    pEffect = New OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
+    pEffect = MemoryManager_NEW OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
     pEffect->direction = OIS::Effect::North;
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
@@ -28,17 +28,18 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
 
     mapVars.clear();
     mapVars["Force"] =
-        New TriangleVariable(0.0, // F0
+        MemoryManager_NEW TriangleVariable(0.0, // F0
         4 * 10000 / _nUpdateFreq / 20.0, // dF for a 20s-period triangle
         -10000.0, // Fmin
         10000.0); // Fmax
-    mapVars["AttackFactor"] = New Constant(1.0);
+    mapVars["AttackFactor"] = MemoryManager_NEW Constant(1.0);
 
-    _vecEffects.push_back(New VariableEffect("Constant force on 1 axis with 20s-period triangle oscillations "
-        "of its signed amplitude in [-10K, +10K]",
-        pEffect, mapVars, forceVariableApplier));
+    _vecEffects.push_back(MemoryManager_NEW
+                         VariableEffect("Constant force on 1 axis with 20s-period triangle oscillations "
+                                        "of its signed amplitude in [-10K, +10K]",
+                                        pEffect, mapVars, forceVariableApplier));
 
-    pEffect = New OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
+    pEffect = MemoryManager_NEW OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
     pEffect->direction = OIS::Effect::North;
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
@@ -54,17 +55,18 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
 
     mapVars.clear();
     mapVars["Force"] =
-        New TriangleVariable(0.0, // F0
+        MemoryManager_NEW TriangleVariable(0.0, // F0
         4 * 10000 / _nUpdateFreq / 20.0, // dF for a 20s-period triangle
         -10000.0, // Fmin
         10000.0); // Fmax
-    mapVars["AttackFactor"] = New Constant(0.1);
+    mapVars["AttackFactor"] = MemoryManager_NEW Constant(0.1);
 
-    _vecEffects.push_back(New VariableEffect("Constant force on 1 axis with noticeable attack (app update period / 2)"
-        "and 20s-period triangle oscillations of its signed amplitude in [-10K, +10K]",
-        pEffect, mapVars, forceVariableApplier));
+    _vecEffects.push_back(MemoryManager_NEW
+                          VariableEffect("Constant force on 1 axis with noticeable attack (app update period / 2)"
+                                         "and 20s-period triangle oscillations of its signed amplitude in [-10K, +10K]",
+                                         pEffect, mapVars, forceVariableApplier));
 
-    pEffect = New OIS::Effect(OIS::Effect::PeriodicForce, OIS::Effect::Triangle);
+    pEffect = MemoryManager_NEW OIS::Effect(OIS::Effect::PeriodicForce, OIS::Effect::Triangle);
     pEffect->direction = OIS::Effect::North;
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
@@ -83,55 +85,55 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
 
     mapVars.clear();
     mapVars["Period"] =
-        New TriangleVariable(1 * 1000.0, // P0
+        MemoryManager_NEW TriangleVariable(1 * 1000.0, // P0
         4 * (400 - 10)*1000.0 / _nUpdateFreq / 40.0, // dP for a 40s-period triangle
         10 * 1000.0, // Pmin
         400 * 1000.0); // Pmax
-    _vecEffects.push_back(New VariableEffect("Periodic force on 1 axis with 40s-period triangle oscillations "
-        "of its period in [10, 400] ms, and constant amplitude",
-        pEffect, mapVars, periodVariableApplier));
+    _vecEffects.push_back(MemoryManager_NEW
+                          VariableEffect("Periodic force on 1 axis with 40s-period triangle oscillations "
+                                         "of its period in [10, 400] ms, and constant amplitude",
+                                         pEffect, mapVars, periodVariableApplier));
 }
 
 EffectManager::~EffectManager()
 {
-    for ( VariableEffect* iterEffs : _vecEffects ) {
-        MemoryManager::SAFE_DELETE( iterEffs );
-    }
-    _vecEffects.clear();
+    MemoryManager::DELETE_VECTOR(_vecEffects);
 }
 
 void EffectManager::updateActiveEffects() {
-
-    for (vectorImpl<VariableEffect*>::iterator iterEffs = _vecEffects.begin();
-        iterEffs != _vecEffects.end();
-        ++iterEffs)
-    if ((*iterEffs)->isActive()){
-        (*iterEffs)->update();
-        _pJoystickInterface->getCurrentFFDevice()->modify((*iterEffs)->getFFEffect());
+    vectorImpl<VariableEffect*>::iterator iterEffs;;
+    for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); ++iterEffs) {
+        if ((*iterEffs)->isActive()){
+            (*iterEffs)->update();
+            _pJoystickInterface->getCurrentFFDevice()->modify((*iterEffs)->getFFEffect());
+        }
     }
 }
 
 void EffectManager::checkPlayableEffects() {
     // Nothing to do if no joystick currently selected
-    if (!_pJoystickInterface->getCurrentFFDevice()) return;
+    if (!_pJoystickInterface->getCurrentFFDevice()) {
+        return;
+    }
 
     // Get the list of indices of effects that the selected device can play
     _vecPlayableEffectInd.clear();
     for (vectorAlg::vecSize nEffInd = 0; nEffInd < _vecEffects.size(); ++nEffInd) {
         const OIS::Effect::EForce& eForce = _vecEffects[nEffInd]->getFFEffect()->force;
         const OIS::Effect::EType& eType  = _vecEffects[nEffInd]->getFFEffect()->type;
-        if (_pJoystickInterface->getCurrentFFDevice()->supportsEffect(eForce, eType))
+        if (_pJoystickInterface->getCurrentFFDevice()->supportsEffect(eForce, eType)) {
             _vecPlayableEffectInd.push_back(nEffInd);
+        }
     }
 
     // Print details about playable effects
     if (_vecPlayableEffectInd.empty()) {
         D_ERROR_FN(Locale::get("INPUT_EFFECT_TEST_FAIL"));
-    }
-    else {
+    } else {
         PRINT_FN(Locale::get("INPUT_DEVICE_EFFECT_SUPPORT"));
 
-        for (vectorAlg::vecSize nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); ++nEffIndInd) {
+        vectorAlg::vecSize nEffIndInd = 0;
+        for (; nEffIndInd < _vecPlayableEffectInd.size(); ++nEffIndInd) {
             printEffect(_vecPlayableEffectInd[nEffIndInd]);
         }
 
@@ -153,24 +155,29 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
     }
 
     // If no effect selected, and next or previous requested, select the first one.
-    if (eWhich != eNone && _nCurrEffectInd < 0)
+    if (eWhich != eNone && _nCurrEffectInd < 0) {
         _nCurrEffectInd = 0;
     // Otherwise, remove the current one from the device and then select the requested one if any.
-    else if (_nCurrEffectInd >= 0) {
-        _pJoystickInterface->getCurrentFFDevice()->remove(_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect());
+    }  else if (_nCurrEffectInd >= 0) {
+        OIS::Effect* effect = _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect();
+        _pJoystickInterface->getCurrentFFDevice()->remove(effect);
+
         _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(false);
         _nCurrEffectInd += eWhich;
-        if (_nCurrEffectInd < -1 || _nCurrEffectInd >= (I16)_vecPlayableEffectInd.size())
+        if (_nCurrEffectInd < -1 || _nCurrEffectInd >= (I16)_vecPlayableEffectInd.size()) {
             _nCurrEffectInd = -1;
+        }
     }
 
     // If no effect must be selected, reset the selection index
-    if (eWhich == eNone)
+    if (eWhich == eNone) {
         _nCurrEffectInd = -1;
     // Otherwise, upload the new selected effect to the device if any.
-    else if (_nCurrEffectInd >= 0) {
+    } else if (_nCurrEffectInd >= 0) {
         _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(true);
-        _pJoystickInterface->getCurrentFFDevice()->upload(_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect());
+
+        OIS::Effect* effect = _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect();
+        _pJoystickInterface->getCurrentFFDevice()->upload(effect);
     }
 }
 

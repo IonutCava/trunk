@@ -37,7 +37,11 @@ public:
         U32  _numColorChannels;
         bool _clearBuffersOnBind;
         bool _changeViewport;
-        FramebufferTarget() : _depthOnly(false), _colorOnly(false), _clearBuffersOnBind(true), _changeViewport(true), _numColorChannels(1)
+        FramebufferTarget() : _depthOnly(false), 
+                              _colorOnly(false), 
+                              _clearBuffersOnBind(true), 
+                              _changeViewport(true), 
+                              _numColorChannels(1)
         {
         }
     };
@@ -56,8 +60,10 @@ public:
     virtual bool Create(U16 width, U16 height) = 0;
 
     virtual void Destroy() = 0;
-    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) = 0; ///<Use by multilayered FB's
-    inline  void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) {  ///<Used by cubemap FB's    
+    /// Use by multilayered FB's
+    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) = 0; 
+    /// Used by cubemap FB's
+    inline  void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) {  
         DrawToLayer(slot, nFace, includeDepth);
     }
 
@@ -74,7 +80,10 @@ public:
         ReadData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType, outData);
     }
 
-    virtual void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false) = 0;
+    virtual void BlitFrom(Framebuffer* inputFB, 
+                          TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, 
+                          bool blitColor = true, 
+                          bool blitDepth = false) = 0;
     //If true, array texture and/or cubemaps are bound to a single attachment and shader based layered rendering should be used
     virtual void toggleLayeredRendering(const bool state) {_layeredRendering = state;}
     //Enable/Disable color writes

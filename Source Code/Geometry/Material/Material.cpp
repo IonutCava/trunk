@@ -29,14 +29,17 @@ Material::Material() : Resource("temp_material"),
 
     /// Normal state for final rendering
     RenderStateBlockDescriptor stateDescriptor;
-    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(FINAL_STAGE, GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
+    hashAlg::insert(_defaultRenderStates, 
+                    hashAlg::makePair(FINAL_STAGE, GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlockDescriptor reflectorDescriptor(stateDescriptor);
-    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(REFLECTION_STAGE, GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor)));
+    hashAlg::insert(_defaultRenderStates, 
+                    hashAlg::makePair(REFLECTION_STAGE, GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor)));
     /// the z-pre-pass descriptor does not process colors
     RenderStateBlockDescriptor zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColorWrites(false, false, false, false);
-    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(Z_PRE_PASS_STAGE, GFX_DEVICE.getOrCreateStateBlock(zPrePassDescriptor)));
+    hashAlg::insert(_defaultRenderStates, 
+                    hashAlg::makePair(Z_PRE_PASS_STAGE, GFX_DEVICE.getOrCreateStateBlock(zPrePassDescriptor)));
     /// A descriptor used for rendering to depth map
     RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CULL_MODE_CCW);
@@ -44,7 +47,8 @@ Material::Material() : Resource("temp_material"),
     //shadowDescriptor.setZBias(1.0f, 2.0f);
     /// ignore colors - Some shadowing techniques require drawing to the a color buffer
     shadowDescriptor.setColorWrites(true, true, false, false);
-    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
+    hashAlg::insert(_defaultRenderStates, 
+                    hashAlg::makePair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
    
     assert(_defaultRenderStates[FINAL_STAGE]      != 0);
     assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != 0);
@@ -170,12 +174,18 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot, Texture*
 }
 
 //Here we set the shader's name
-void Material::setShaderProgram(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback) {
+void Material::setShaderProgram(const stringImpl& shader, 
+                                const RenderStage& renderStage,
+                                const bool computeOnAdd,
+                                const DELEGATE_CBK<>& shaderCompileCallback) {
     _shaderInfo[renderStage]._isCustomShader = true;
     setShaderProgramInternal(shader, renderStage, computeOnAdd, shaderCompileCallback);
 }
 
-void Material::setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback) {
+void Material::setShaderProgramInternal(const stringImpl& shader, 
+                                        const RenderStage& renderStage, 
+                                        const bool computeOnAdd, 
+                                        const DELEGATE_CBK<>& shaderCompileCallback) {
     ShaderProgram* shaderReference = _shaderInfo[renderStage]._shaderRef;
     //if we already had a shader assigned ...
     if (!_shaderInfo[renderStage]._shader.empty()){
@@ -235,7 +245,9 @@ void Material::recomputeShaders() {
 
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
-bool Material::computeShader(const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback){
+bool Material::computeShader(const RenderStage& renderStage, 
+                             const bool computeOnAdd, 
+                             const DELEGATE_CBK<>& shaderCompileCallback) {
     if ( _shaderInfo[renderStage]._shaderCompStage == ShaderInfo::SHADER_STAGE_COMPUTED ) {
         return true;
     }
@@ -492,8 +504,10 @@ bool Material::isTranslucent() {
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     shaderInfoMap::const_iterator it = _shaderInfo.find(FINAL_STAGE);
 
-    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() : -std::numeric_limits<I8>::max();
-	textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : -std::numeric_limits<I8>::max();
+    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() :
+                                                                      -std::numeric_limits<I8>::max();
+	textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : 
+                                                           -std::numeric_limits<I8>::max();
 }
 
 };

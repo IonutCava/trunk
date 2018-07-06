@@ -22,7 +22,7 @@ namespace Divide {
 GUI::GUI() : _init(false),
              _rootSheet(nullptr),
 			 _defaultMsgBox(nullptr),
-             _console(New GUIConsole()),
+             _console(MemoryManager_NEW GUIConsole()),
              _textRenderInterval(getMsToUs(10))
 {
     //500ms
@@ -34,12 +34,9 @@ GUI::~GUI()
 {
     PRINT_FN(Locale::get("STOP_GUI"));
 	GUIEditor::destroyInstance();
-    MemoryManager::SAFE_DELETE( _console );
+    MemoryManager::DELETE( _console );
     RemoveResource(_guiShader);
-	for (guiMap::value_type& it : _guiStack) {
-        MemoryManager::SAFE_DELETE( it.second );
-    }
-    _guiStack.clear();
+    MemoryManager::DELETE_HASHMAP(_guiStack);
 	_defaultMsgBox = nullptr;
 }
 
@@ -51,7 +48,8 @@ void GUI::onResize(const vec2<U16>& newResolution) {
         return;
     }
 
-    vec2<I32> difDimensions((I32)_cachedResolution.width - newResolution.width, (I32)_cachedResolution.height - newResolution.height);
+    vec2<I32> difDimensions((I32)_cachedResolution.width - newResolution.width,
+                            (I32)_cachedResolution.height - newResolution.height);
 
 	for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->onResize( difDimensions );
@@ -101,7 +99,8 @@ bool GUI::init(const vec2<U16>& resolution) {
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 #endif
-    CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>( CEGUI::System::getSingleton().getResourceProvider() ) ;
+    CEGUI::DefaultResourceProvider* rp = nullptr;
+    rp = static_cast<CEGUI::DefaultResourceProvider*>( CEGUI::System::getSingleton().getResourceProvider() ) ;
     CEGUI::String CEGUIInstallSharePath(ParamHandler::getInstance().getParam<std::string>("assetsLocation"));
     CEGUIInstallSharePath += "/GUI/" ;
     rp->setResourceGroupDirectory( "schemes",    CEGUIInstallSharePath + "schemes/" ) ;
@@ -281,7 +280,7 @@ GUIButton* GUI::addButton(const stringImpl& id, const stringImpl& text,
     if (!parent) {
         parent = _rootSheet;
     }
-    GUIButton* btn = New GUIButton(id, text, _defaultGUIScheme,position,dimensions,color,parent,callback);
+    GUIButton* btn = MemoryManager_NEW GUIButton(id, text, _defaultGUIScheme, position, dimensions, color, parent, callback);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
         MemoryManager::SAFE_UPDATE( it->second, btn );
@@ -292,8 +291,11 @@ GUIButton* GUI::addButton(const stringImpl& id, const stringImpl& text,
     return btn;
 }
 
-GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title, const stringImpl& message, const vec2<I32>& offsetFromCentre ) {
-    GUIMessageBox* box = New GUIMessageBox(id, title, message, offsetFromCentre, _rootSheet);
+GUIMessageBox* GUI::addMsgBox(const stringImpl& id, 
+                              const stringImpl& title,
+                              const stringImpl& message,
+                              const vec2<I32>& offsetFromCentre ) {
+    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(id, title, message, offsetFromCentre, _rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
         MemoryManager::SAFE_UPDATE( it->second, box );
@@ -304,19 +306,24 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title, con
     return box;
 }
 
-GUIText* GUI::addText(const stringImpl& id,const vec2<I32> &position, const stringImpl& font,const vec3<F32> &color, char* format, ...){
+GUIText* GUI::addText(const stringImpl& id,
+                      const vec2<I32> &position, 
+                      const stringImpl& font,
+                      const vec3<F32> &color,
+                      char* format, 
+                      ...) {
     va_list args;
     stringImpl fmt_text;
 
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;
-    char *text = New char[len];
+    char *text = MemoryManager_NEW char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-    MemoryManager::SAFE_DELETE_ARRAY( text );
+    MemoryManager::DELETE_ARRAY( text );
     va_end(args);
 
-    GUIText *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
+    GUIText *t = MemoryManager_NEW GUIText(id, fmt_text, position, font, color, _rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
         MemoryManager::SAFE_UPDATE( it->second, t );
@@ -330,7 +337,7 @@ GUIText* GUI::addText(const stringImpl& id,const vec2<I32> &position, const stri
 }
 
 GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>& position, const vec2<U32>& extent){
-    GUIFlash *flash = New GUIFlash(_rootSheet);
+    GUIFlash *flash = MemoryManager_NEW GUIFlash(_rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
         MemoryManager::SAFE_UPDATE( it->second, flash );
@@ -349,10 +356,10 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
 
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;
-    char * text = New char[len];
+    char * text = MemoryManager_NEW char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-    MemoryManager::SAFE_DELETE_ARRAY( text );
+    MemoryManager::DELETE_ARRAY( text );
     va_end(args);
 	
     GUIElement* element = _guiStack[id];

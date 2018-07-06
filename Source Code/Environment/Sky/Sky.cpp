@@ -87,7 +87,10 @@ bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
     return _sky->onDraw(sgn, currentStage);
 }
 
-void Sky::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Sky::getDrawCommands(SceneGraphNode* const sgn, 
+                          const RenderStage& currentRenderStage, 
+                          SceneRenderState& sceneRenderState, 
+                          vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     GenericDrawCommand cmd;
     cmd.renderWireframe(sgn->getComponent<RenderingComponent>()->renderWireframe());
     cmd.stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);

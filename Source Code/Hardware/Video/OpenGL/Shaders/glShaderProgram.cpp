@@ -72,13 +72,15 @@ bool glShaderProgram::update(const U64 deltaTime){
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
         if (!_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
-            STUBBED("GLSL binary dump/load is only enabled for nVidia GPUS. Catalyst 14.x destroys uniforms on shader dump, for whatever reason. - Ionut")
+            STUBBED("GLSL binary dump/load is only enabled for nVidia GPUS. "
+                    "Catalyst 14.x destroys uniforms on shader dump, for whatever reason. - Ionut")
             // Get the size of the binary code
             GLint binaryLength = 0;
             glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
             // allocate a big enough buffer to hold it
             void* binary = (void*)malloc(binaryLength);
-            DIVIDE_ASSERT(binary != NULL, "glShaderProgram error: could not allocate memory for the program binary!");
+            DIVIDE_ASSERT(binary != NULL, 
+                          "glShaderProgram error: could not allocate memory for the program binary!");
             // and fill the buffer with the binary code
             glGetProgramBinary(_shaderProgramId, binaryLength, NULL, &_binaryFormat, binary);
             // dump the buffer to file
@@ -117,7 +119,7 @@ stringImpl glShaderProgram::getLog() const {
     if (length > 1) {
         // Delete our OK string, and start on a new line
         validationBuffer = "\n -- ";
-        // This little trick avoids a "New/Delete" set of calls and still gives us a linear array of char's
+        // This little trick avoids a "NEW/DELETE" set of calls and still gives us a linear array of char's
         vectorImpl<char> shaderProgramLog(length);
         glGetProgramInfoLog(_shaderProgramIDTemp, length, NULL, &shaderProgramLog[0]);
         // Append the program's log to the output message
@@ -125,7 +127,10 @@ stringImpl glShaderProgram::getLog() const {
         // To avoid overflowing the output buffers (both CEGUI and Console), limit the maximum output size
         if (validationBuffer.size() > 4096 * 16) {
             // On some systems, the program's disassembly is printed, and that can get quite large
-            validationBuffer.resize(static_cast<stringAlg::stringSize>(4096 * 16 - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10));
+            validationBuffer.resize(static_cast<stringAlg::stringSize>(4096 * 
+                                                                       16 - 
+                                                                       strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 
+                                                                       10));
             // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
             validationBuffer.append(" ... ");
         }
@@ -136,7 +141,8 @@ stringImpl glShaderProgram::getLog() const {
 
 /// Remove a shader stage from this program
 void glShaderProgram::detachShader(Shader* const shader) {
-    DIVIDE_ASSERT(_threadedLoadComplete, "glShaderProgram error: tried to detach a shader from a program that didn't finish loading!");
+    DIVIDE_ASSERT(_threadedLoadComplete, 
+                  "glShaderProgram error: tried to detach a shader from a program that didn't finish loading!");
     glDetachShader(_shaderProgramId, shader->getShaderId());
     shader->removeParentProgram(this);
 }
@@ -373,7 +379,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         stringAlg::stringSize propPositionVertex = name.find_first_of(",");
         // Get the position of the first "." symbol
         stringAlg::stringSize propPosition = name.find_first_of(".");
-        // If we have effect properties, we extract them from the name (starting from the first "." symbol to the first "," symbol)
+        // If we have effect properties, we extract them from the name 
+        // (starting from the first "." symbol to the first "," symbol)
         if (propPosition != stringImpl::npos) {
             shaderProperties = "." + name.substr(propPosition + 1, propPositionVertex - propPosition - 1);
         }
@@ -407,7 +414,9 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             // If this is the first time this shader is loaded ...
             if (!_shaderStage[type]){
                 // Use GLSW to read the appropriate part of the effect file based on the specified stage and properties
-                const char* sourceCode = glswGetShader(shaderCompileName[type].c_str(), lineCountOffset[type], _refreshStage[type]);
+                const char* sourceCode = glswGetShader(shaderCompileName[type].c_str(), 
+                                                       lineCountOffset[type], 
+                                                       _refreshStage[type]);
                 // GLSW may fail for various reasons (not a valid effect stage, invalid name, etc)
                 if (sourceCode) {
                     // If reading was successful, grab the entire code in a string
@@ -416,7 +425,10 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
                     Util::replaceStringInPlace(codeString, "//__CUSTOM_DEFINES__",  shaderSourceHeader);
                     Util::replaceStringInPlace(codeString, "//__CUSTOM_UNIFORMS__", shaderSourceUniforms[type]);
                     // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                    _shaderStage[type] = ShaderManager::getInstance().loadShader(shaderCompileName[type], codeString, type, _refreshStage[type]);
+                    _shaderStage[type] = ShaderManager::getInstance().loadShader(shaderCompileName[type],
+                                                                                 codeString, 
+                                                                                 type, 
+                                                                                 _refreshStage[type]);
                 }
             }
             // Show a message, in debug, if we don't have a shader for this stage
@@ -432,7 +444,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
     }
 
     // try to link the program in a separate thread
-    return GFX_DEVICE.loadInContext(_threadedLoading && !_loadedFromBinary ? GFX_RENDERING_CONTEXT/*GFX_LOADING_CONTEXT*/ : GFX_RENDERING_CONTEXT, 
+    return GFX_DEVICE.loadInContext(/*_threadedLoading && !_loadedFromBinary ? GFX_LOADING_CONTEXT : */
+                                                                               GFX_RENDERING_CONTEXT, 
                                     DELEGATE_BIND(&glShaderProgram::threadedLoad, this, name));
 }
     
@@ -453,7 +466,8 @@ GLint glShaderProgram::cachedLoc(const stringImpl& name, const bool uniform) {
         return -1;
     }
 
-    DIVIDE_ASSERT(_threadedLoadComplete, "glShaderProgram error: tried to query a shader program before threaded load completed!");
+    DIVIDE_ASSERT(_threadedLoadComplete, 
+                  "glShaderProgram error: tried to query a shader program before threaded load completed!");
 
     // Check the cache for the location
     ShaderVarMap::const_iterator it = _shaderVars.find(name);
@@ -462,7 +476,8 @@ GLint glShaderProgram::cachedLoc(const stringImpl& name, const bool uniform) {
     }
 
     // Cache miss. Query OpenGL for the location
-    GLint location = uniform ? glGetUniformLocation(_shaderProgramId, name.c_str()) : glGetAttribLocation(_shaderProgramId, name.c_str());
+    GLint location = uniform ? glGetUniformLocation(_shaderProgramId, name.c_str()) :
+                               glGetAttribLocation(_shaderProgramId, name.c_str());
 
     // Save it for later reference
     hashAlg::emplace(_shaderVars, name, location);

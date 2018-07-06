@@ -43,10 +43,14 @@ enum GUIType
 };
 
 struct GUIEvent {
-   U16                  ascii;            ///< ascii character code 'a', 'A', 'b', '*', etc (if device==keyboard) - possibly a uchar or something
-   U8                   modifier;         ///< SI_LSHIFT, etc
-   U16                  keyCode;          ///< for unprintables, 'tab', 'return', ...
-   vec2<F32>            mousePoint;       ///< for mouse events
+   /// ascii character code 'a', 'A', 'b', '*', etc (if device==keyboard) - possibly a uchar or something
+   U16                  ascii;            
+   /// SI_LSHIFT, etc
+   U8                   modifier;         
+   /// for unprintables, 'tab', 'return', ...
+   U16                  keyCode;          
+   /// for mouse events
+   vec2<F32>            mousePoint;       
    U8                   mouseClickCount;
 };
 

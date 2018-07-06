@@ -54,21 +54,52 @@ protected:
     void beginFrame();
     void endFrame();
 
-    inline ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const { return New d3dConstantBuffer(unbound, persistentMapped); }
+    inline ShaderBuffer* newSB(const bool unbound = false, const bool persistentMapped = true) const { 
+        return MemoryManager_NEW d3dConstantBuffer(unbound, persistentMapped); 
+    }
 
-    inline IMPrimitive*        newIMP()                                      const { return nullptr; }
-    inline Framebuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
-    inline GenericVertexData*  newGVD(const bool persistentMapped = false)   const { return New d3dGenericVertexData(persistentMapped); }
-    inline VertexBuffer*       newVB()                                       const { return New d3dVertexBuffer(); }
-    inline PixelBuffer*        newPB(const PBType& type)                     const { return New d3dPixelBuffer(type); }
-    inline Texture*            newTextureArray(const bool flipped = false)   const { return New d3dTexture(TEXTURE_2D_ARRAY, flipped); }
-    inline Texture*            newTexture2D(const bool flipped = false)      const { return New d3dTexture(TEXTURE_2D, flipped); }
-    inline Texture*            newTextureCubemap(const bool flipped = false) const { return New d3dTexture(TEXTURE_CUBE_MAP, flipped); }
-    inline ShaderProgram*      newShaderProgram(const bool optimise = false) const { return New d3dShaderProgram(optimise); }
+    inline IMPrimitive* newIMP() const { 
+        return nullptr; 
+    }
 
-    inline Shader*             newShader(const stringImpl& name,const  ShaderType& type,const bool optimise = false) const {return New d3dShader(name,type,optimise);}
-           bool                initShaders();
-           bool                deInitShaders();
+    inline Framebuffer* newFB(bool multisampled) const { 
+        return MemoryManager_NEW d3dRenderTarget(multisampled); 
+    }
+
+    inline GenericVertexData* newGVD(const bool persistentMapped = false) const { 
+        return MemoryManager_NEW d3dGenericVertexData(persistentMapped); 
+    }
+
+    inline VertexBuffer* newVB() const { 
+        return MemoryManager_NEW d3dVertexBuffer(); 
+    }
+
+    inline PixelBuffer* newPB(const PBType& type)  const {
+        return MemoryManager_NEW d3dPixelBuffer(type); 
+    }
+
+    inline Texture* newTextureArray(const bool flipped = false) const { 
+        return MemoryManager_NEW d3dTexture(TEXTURE_2D_ARRAY, flipped); 
+    }
+
+    inline Texture* newTexture2D(const bool flipped = false) const { 
+        return MemoryManager_NEW d3dTexture(TEXTURE_2D, flipped); 
+    }
+
+    inline Texture* newTextureCubemap(const bool flipped = false) const {
+        return MemoryManager_NEW d3dTexture(TEXTURE_CUBE_MAP, flipped); 
+    }
+
+    inline ShaderProgram* newShaderProgram(const bool optimise = false) const { 
+        return MemoryManager_NEW d3dShaderProgram(optimise); 
+    }
+
+    inline Shader* newShader(const stringImpl& name, const  ShaderType& type, const bool optimise = false) const { 
+        return MemoryManager_NEW d3dShader(name, type, optimise); 
+    }
+
+    bool initShaders();
+    bool deInitShaders();
 
     F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
     F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);

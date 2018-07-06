@@ -46,7 +46,10 @@ public:
 
     void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
     void ReadData(const vec4<GLushort>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData);
-    void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
+    void BlitFrom(Framebuffer* inputFB, 
+                  TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, 
+                  bool blitColor = true, 
+                  bool blitDepth = false);
 
 protected:
     void resolve();

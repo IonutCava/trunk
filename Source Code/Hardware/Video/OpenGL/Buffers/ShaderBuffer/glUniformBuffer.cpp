@@ -19,7 +19,7 @@ glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped) : ShaderBu
     }
 
     if (persistentMapped) {
-        _lockManager = New glBufferLockManager(true);
+        _lockManager = MemoryManager_NEW glBufferLockManager(true);
     }
 }
 
@@ -34,7 +34,7 @@ glUniformBuffer::~glUniformBuffer()
         _UBOid = 0;
     }
 
-    MemoryManager::SAFE_DELETE( _lockManager );
+    MemoryManager::DELETE( _lockManager );
 }
 
 void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
@@ -60,12 +60,14 @@ void glUniformBuffer::DiscardAllData() {
 }
 
 void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) {
-    DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, "glUniformBuffer error: DiscardSubData was called with an invalid range (buffer overflow)!");
+    DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, 
+                  "glUniformBuffer error: DiscardSubData was called with an invalid range (buffer overflow)!");
     glInvalidateBufferSubData(_UBOid, offset, size);
 }
 
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const void *data, const bool invalidateBuffer) const {
-    DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, "glUniformBuffer error: ChangeSubData was called with an invalid range (buffer overflow)!");
+    DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, 
+                  "glUniformBuffer error: ChangeSubData was called with an invalid range (buffer overflow)!");
 
     if (invalidateBuffer) {
         if (_persistentMapped) {
@@ -131,7 +133,8 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, ShaderBuffer
     glGetActiveUniformBlockiv(prog, block_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &active_uniforms);
     
     vectorImpl<GLuint> uniform_indices(active_uniforms, 0);
-    glGetActiveUniformBlockiv(prog, block_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, reinterpret_cast<GLint*>(&uniform_indices[0]));
+    glGetActiveUniformBlockiv(prog, block_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, 
+                              reinterpret_cast<GLint*>(uniform_indices.data()));
 
     vectorImpl<GLint> name_lengths(uniform_indices.size(), 0);
     glGetActiveUniformsiv(prog, (GLsizei)uniform_indices.size(), &uniform_indices[0], GL_UNIFORM_NAME_LENGTH, &name_lengths[0]);
@@ -158,7 +161,16 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, ShaderBuffer
         glGetActiveUniformName(prog, uniform_index, name_lengths[i], NULL, &name[0]);
 
         std::ostringstream details;
-        details << std::setfill('0') << std::setw(4) << offsets[i] << ": " << std::setfill(' ') << std::setw(5) << types[i] << " " << name.c_str();
+        details << 
+        std::setfill('0') << 
+        std::setw(4) << 
+        offsets[i] << 
+        ": " << 
+        std::setfill(' ') << 
+        std::setw(5) << 
+        types[i] << 
+        " " << 
+        name.c_str();
 
         if (sizes[i] > 1) {
             details << "[" << sizes[i] << "]";

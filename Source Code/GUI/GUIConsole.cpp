@@ -40,7 +40,7 @@ GUIConsole::GUIConsole() : _init(false),
                            _outputBuffer(_CEGUI_MAX_CONSOLE_ENTRIES)
 {
     // we need a default command parser, so just create it here
-    _cmdParser = New GUIConsoleCommandParser();
+    _cmdParser = MemoryManager_NEW GUIConsoleCommandParser();
 }
 
 GUIConsole::~GUIConsole()
@@ -51,9 +51,9 @@ GUIConsole::~GUIConsole()
 		setVisible(false);
 		_init = false;
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
-		MemoryManager::SAFE_DELETE(_consoleWindow);
+		MemoryManager::DELETE(_consoleWindow);
     }
-    MemoryManager::SAFE_DELETE( _cmdParser );
+    MemoryManager::DELETE( _cmdParser );
 
     _outputBuffer.clear();
 }

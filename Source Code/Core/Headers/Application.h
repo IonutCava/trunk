@@ -46,18 +46,33 @@ public:
     inline const vec2<U16>& getResolution()   const {return _resolution;}
     inline const vec2<U16>& getScreenCenter() const {return _screenCenter;}
     inline const vec2<U16>& getPreviousResolution() const { return _prevResolution; }
-    inline void setResolutionWidth(U16 w)           { _prevResolution.set(_resolution); _resolution.width = w; _screenCenter.x = w / 2;}
-    inline void setResolutionHeight(U16 h)          { _prevResolution.set(_resolution); _resolution.height = h; _screenCenter.y = h / 2;}
-    inline void setResolution(U16 w, U16 h)         { _prevResolution.set(_resolution); _resolution.set(w,h); _screenCenter.set(_resolution / 2);}
+
+    inline void setResolutionWidth(U16 w) {
+         _prevResolution.set(_resolution);
+         _resolution.width = w;
+         _screenCenter.x = w / 2;
+    }
+
+    inline void setResolutionHeight(U16 h) {
+        _prevResolution.set(_resolution); 
+        _resolution.height = h; 
+        _screenCenter.y = h / 2;
+    }
+
+    inline void setResolution(U16 w, U16 h) {
+        _prevResolution.set(_resolution); 
+        _resolution.set(w,h); 
+        _screenCenter.set(_resolution / 2);
+    }
 
     inline void RequestShutdown()                   { _requestShutdown = true;  }
     inline void CancelShutdown()                    { _requestShutdown = false; }
     inline bool ShutdownRequested()           const { return _requestShutdown;  }
     inline Kernel* const getKernel()          const { return _kernel; }
 
-    inline const std::thread::id&  getMainThreadId()          const { return _threadId; }
-    inline bool isMainThread()                                const { return (_threadId == std::this_thread::get_id()); }
-    inline void setMemoryLogFile(const stringImpl& fileName)        { _memLogBuffer = fileName; }
+    inline const std::thread::id&  getMainThreadId() const { return _threadId; }
+    inline bool isMainThread() const { return (_threadId == std::this_thread::get_id()); }
+    inline void setMemoryLogFile(const stringImpl& fileName) { _memLogBuffer = fileName; }
 
     inline bool hasFocus()                 const { return _hasFocus; }
     inline void hasFocus(const bool state)       { _hasFocus = state; }
@@ -80,7 +95,8 @@ public:
     inline void      throwError(ErrorCode err)       { _errorCode = err; }
     inline ErrorCode errorCode()               const { return _errorCode; }
 
-	/// Add a list of callback functions that should be called when the application instance is destroyed (release hardware, file handlers, etc)
+	/// Add a list of callback functions that should be called when the application instance is destroyed
+    /// (release hardware, file handlers, etc)
 	inline void registerShutdownCallback( const DELEGATE_CBK<>& cbk ) {
 		_shutdownCallback.push_back( cbk );
 	}
@@ -102,7 +118,7 @@ private:
     vec2<U16> _screenCenter;
     vec2<U16> _prevResolution;
     Kernel*   _kernel;
-    ///buffer to register all of the memory allocations recorded via "New"
+    ///buffer to register all of the memory allocations recorded via "MemoryManager_NEW"
     stringImpl _memLogBuffer;
     ///Main application thread id
     std::thread::id _threadId;

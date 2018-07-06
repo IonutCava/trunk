@@ -55,20 +55,24 @@ public:
     inline GOAPWorldState& worldState() { return _worldState; }
 	inline const GOAPWorldState& worldStateConst() const { return _worldState; }
 
-    /// Register a specific action. This only holds a reference to the action itself and does not create a local copy!
+    /// Register a specific action.
+    /// This only holds a reference to the action itself and does not create a local copy!
     virtual void registerAction(GOAPAction* const action) {
         _actionSet.push_back(action);
     }
-    /// Register a specific action. This only holds a reference to the action itself and does not create a local copy!
+    /// Register a specific action.
+    /// This only holds a reference to the action itself and does not create a local copy!
     virtual void registerGoal(const GOAPGoal& goal) {
         _goals.push_back(goal);
     }
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
         vectorImpl<GOAPGoal >::iterator it;
-        it = std::find_if( _goals.begin(), _goals.end(), [&goalName]( const GOAPGoal& goal )->bool {
-                                                            return goal.getName().compare(goalName.c_str()) == 0; 
-                                                        });
+        it = std::find_if(_goals.begin(), _goals.end(), 
+                          [&goalName]( const GOAPGoal& goal )->bool {
+                            return goal.getName().compare(goalName.c_str()) == 0; 
+                          });
+
         if (it != _goals.end()) {
             return &(*it);
         }
@@ -90,7 +94,8 @@ protected:
             activateGoal(stringAlg::toBase(goal.getName()));
         }
     }
-    /// Although we want the goal to be activated, it might not be the most relevant in the current scene state
+    /// Although we want the goal to be activated, 
+    /// it might not be the most relevant in the current scene state
     inline bool activateGoal(const stringImpl& name) {
         GOAPGoal* goal = findGoal(name);
         if (goal != nullptr) {
@@ -105,9 +110,12 @@ protected:
         if (_activeGoals.empty()) {
             return nullptr;
         }
-        std::sort(_activeGoals.begin(), _activeGoals.end(), [](GOAPGoal const* a, GOAPGoal const* b) {
-                                                                return a->relevancy() < b->relevancy();
-                                                            });
+
+        std::sort(_activeGoals.begin(), _activeGoals.end(), 
+                  [](GOAPGoal const* a, GOAPGoal const* b) {
+                    return a->relevancy() < b->relevancy();
+                  });
+
         _activeGoal = _activeGoals.back();
         _currentStep = -1;
         return _activeGoal;
@@ -121,9 +129,11 @@ protected:
             return false;
         }
         vectorImpl<GOAPGoal* >::iterator it;
-        it = vectorAlg::find_if(_activeGoals.begin(), _activeGoals.end(), [goal](GOAPGoal const* actGoal) { 
-                                                                                return actGoal->getName().compare(goal->getName()) == 0; 
-                                                                           });
+        it = vectorAlg::find_if(_activeGoals.begin(), _activeGoals.end(),
+                                [goal](GOAPGoal const* actGoal) { 
+                                    return actGoal->getName().compare(goal->getName()) == 0; 
+                                });
+
         if (it == _activeGoals.end()) {
             return false;
         }

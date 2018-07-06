@@ -61,54 +61,64 @@ public:
     ErrorCode initialize(const stringImpl& entryPoint);
 
     void runLogicLoop();
-    ///Our main application rendering loop. Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
-            static void mainLoopApp();
-    ///Called after a swap-buffer call and before a clear-buffer call.
-    ///In a GPU-bound application, the CPU will wait on the GPU to finish processing the frame so this should keep it busy (old-GLUT heritage)
-            static void idle();
-    ///Update all engine components that depend on the current resolution
-            static void updateResolutionCallback(I32 w, I32 h);
+    /// Our main application rendering loop.
+    /// Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
+    static void mainLoopApp();
+    /// Called after a swap-buffer call and before a clear-buffer call.
+    /// In a GPU-bound application, the CPU will wait on the GPU to finish processing the frame 
+    /// so this should keep it busy (old-GLUT heritage)
+    static void idle();
+    /// Update all engine components that depend on the current resolution
+    static void updateResolutionCallback(I32 w, I32 h);
 
     GFXDevice& getGFXDevice() const {return _GFX;}
     SFXDevice& getSFXDevice() const {return _SFX;}
     PXDevice&  getPXDevice()  const {return _PFX;}
-    /// get elapsed time since kernel initialization
+    /// Get elapsed time since kernel initialization
     inline U64 getCurrentTime()      const {return _currentTime;}
     inline U64 getCurrentTimeDelta() const {return _currentTimeDelta;}
-    /// get a pointer to the kernel's threadpool to add,remove,pause or stop tasks
-    inline boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != nullptr); return _mainTaskPool;}
+    /// Get a pointer to the kernel's threadpool to add,remove,pause or stop tasks
+    inline boost::threadpool::pool* const getThreadPool() {
+        assert(_mainTaskPool != nullptr);
+        return _mainTaskPool;
+    }
 
     CameraManager& getCameraMgr() { return *_cameraMgr; }
 
     bool setCursorPosition(U16 x, U16 y) const;
-    ///Key pressed
+    /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
-    ///Key released
+    /// Key released
     bool onKeyUp(const Input::KeyEvent& key);
-    ///Joystick axis change
+    /// Joystick axis change
     bool joystickAxisMoved(const Input::JoystickEvent& arg,I8 axis);
-    ///Joystick direction change
+    /// Joystick direction change
     bool joystickPovMoved(const Input::JoystickEvent& arg,I8 pov);
-    ///Joystick button pressed
+    /// Joystick button pressed
     bool joystickButtonPressed(const Input::JoystickEvent& arg,I8 button);
-    ///Joystick button released
+    /// Joystick button released
     bool joystickButtonReleased(const Input::JoystickEvent& arg, I8 button);
     bool joystickSliderMoved( const Input::JoystickEvent &arg, I8 index);
     bool joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index);
-    ///Mouse moved
+    /// Mouse moved
     bool mouseMoved(const Input::MouseEvent& arg);
-    ///Mouse button pressed
+    /// Mouse button pressed
     bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
-    ///Mouse button released
+    /// Mouse button released
     bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
-	inline Task* AddTask(U64 tickInterval, I32 numberOfTicks, const DELEGATE_CBK<>& threadedFunction, const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
-         Task* taskPtr = New Task(getThreadPool(), tickInterval, numberOfTicks, threadedFunction);
-         taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
-         if (!onCompletionFunction){
-            emplace(_threadedCallbackFunctions, static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
-         }
-         return taskPtr;
+	inline Task* AddTask(U64 tickInterval, 
+                         I32 numberOfTicks, 
+                         const DELEGATE_CBK<>& threadedFunction, 
+                         const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
+        Task* taskPtr = MemoryManager_NEW Task(getThreadPool(), tickInterval, numberOfTicks, threadedFunction);
+        taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
+        if (onCompletionFunction){
+            emplace(_threadedCallbackFunctions, 
+                    static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
+        }
+        
+        return taskPtr;
     }
 
 private:
@@ -122,7 +132,9 @@ private:
 
 private:
     friend class SceneManager;
-	void submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK<>& sceneRenderCallback) const;
+	void submitRenderCall(const RenderStage& stage,
+                          const SceneRenderState& sceneRenderState, 
+                          const DELEGATE_CBK<>& sceneRenderCallback) const;
     
 private:
     Application&    _APP;

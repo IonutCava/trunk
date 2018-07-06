@@ -37,9 +37,10 @@ private:
 
     D32 _elapsed;
     D32 _delay;
-
-    D32 _repeatDelay;  //< Time intervals between key injections
-    D32 _initialDelay; //< The time after begin() and before repeatKey() is called. If end() is called in that interval, the key will not repeat
+    /// Time intervals between key injections
+    D32 _repeatDelay;  
+    /// The time after begin() and before repeatKey() is called. If end() is called in that interval, the key will not repeat
+    D32 _initialDelay; 
 
 protected:
     ///Override this to define custom events for key repeats

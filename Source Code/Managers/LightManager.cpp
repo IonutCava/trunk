@@ -23,9 +23,11 @@ LightManager::LightManager() : FrameListener(),
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
     // SHADER_BUFFER_NORMAL holds general info about the currently active lights: position, color, etc.
 	_lightShaderBuffer[SHADER_BUFFER_NORMAL] = nullptr;
-    // SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: ViewProjection Matrices, View Space Position, etc
+    // SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: 
+    // ViewProjection Matrices, View Space Position, etc
 	_lightShaderBuffer[SHADER_BUFFER_SHADOW] = nullptr;
-    // We bind shadow maps to the last available texture slots that the hardware supports. Starting offsets for each texture type is stored here
+    // We bind shadow maps to the last available texture slots that the hardware supports. 
+    // Starting offsets for each texture type is stored here
     _cubeShadowLocation  = 255;
     _normShadowLocation  = 255;
     _arrayShadowLocation = 255;
@@ -36,8 +38,8 @@ LightManager::~LightManager()
 {
     clear();
     REMOVE_TIMER(s_shadowPassTimer);
-    MemoryManager::SAFE_DELETE( _lightShaderBuffer[SHADER_BUFFER_NORMAL] );
-    MemoryManager::SAFE_DELETE( _lightShaderBuffer[SHADER_BUFFER_SHADOW] );
+    MemoryManager::DELETE( _lightShaderBuffer[SHADER_BUFFER_NORMAL] );
+    MemoryManager::DELETE( _lightShaderBuffer[SHADER_BUFFER_SHADOW] );
 }
 
 void LightManager::init(){
@@ -51,7 +53,8 @@ void LightManager::init(){
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
 	// SHADER_BUFFER_NORMAL holds general info about the currently active lights: position, color, etc.
 	_lightShaderBuffer[SHADER_BUFFER_NORMAL] = GFX_DEVICE.newSB();
-	// SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: ViewProjection Matrices, View Space Position, etc
+	// SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: 
+    // ViewProjection Matrices, View Space Position, etc
 	_lightShaderBuffer[SHADER_BUFFER_SHADOW] = GFX_DEVICE.newSB();
 
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
@@ -85,7 +88,7 @@ bool LightManager::clear(){
 }
 
 bool LightManager::addLight(Light* const light){
-    light->addShadowMapInfo(New ShadowMapInfo(light));
+    light->addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(light));
 
     if(_lights.find(light->getGUID()) != _lights.end()){
         ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"), light->getGUID());
@@ -128,7 +131,7 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight){
 }
 
 U8 LightManager::getShadowBindSlotOffset(ShadowSlotType type) {
-    if ( _cubeShadowLocation == _normShadowLocation && _normShadowLocation == _arrayShadowLocation && _arrayShadowLocation == 255 ) {
+    if (_cubeShadowLocation == _normShadowLocation && _normShadowLocation == _arrayShadowLocation && _arrayShadowLocation == 255) {
         U32 maxTextureStorage = ParamHandler::getInstance().getParam<I32>( "rendering.maxTextureSlots", 16 );
         _cubeShadowLocation  = maxTextureStorage - ( Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 3 );
         _normShadowLocation  = maxTextureStorage - ( Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 2 );
@@ -257,20 +260,20 @@ bool LightManager::shadowMappingEnabled() const {
 }
 
 Light* LightManager::getLight(I64 lightGUID) {
-	Light::LightMap::const_iterator it = std::find_if(_lights.begin(), _lights.end(), [&lightGUID](const Light::LightMap::value_type vt)->bool
-																					  {
-																						  return vt.second->getGUID() == lightGUID; 
-																					  });
+	Light::LightMap::const_iterator it = std::find_if(_lights.begin(), _lights.end(),
+                                                      [&lightGUID](const Light::LightMap::value_type vt)->bool {
+													    return vt.second->getGUID() == lightGUID; 
+													  });
     assert(it != _lights.end());
     return it->second;
 }
 
 void LightManager::updateAndUploadLightData( const mat4<F32>& viewMatrix ) {
     _lightProperties.clear();
-    _lightProperties.reserve(_lights.size());
+    _lightProperties.reserve(static_cast<vectorAlg::vecSize>(_lights.size()));
 
     _lightShadowProperties.clear();
-    _lightShadowProperties.reserve(_lights.size());
+    _lightShadowProperties.reserve(static_cast<vectorAlg::vecSize>(_lights.size()));
 
 	for (Light::LightMap::value_type& lightIt : _lights) {
         Light* light = lightIt.second;
@@ -295,10 +298,16 @@ void LightManager::updateAndUploadLightData( const mat4<F32>& viewMatrix ) {
     }
 
     if ( !_lightProperties.empty() ) {
-        _lightShaderBuffer[SHADER_BUFFER_NORMAL]->UpdateData( 0, _lightProperties.size() * sizeof( LightProperties ), _lightProperties.data(), true );
+        _lightShaderBuffer[SHADER_BUFFER_NORMAL]->UpdateData(0, 
+                                                             _lightProperties.size() * sizeof( LightProperties ),
+                                                             _lightProperties.data(),
+                                                             true );
     }
     if ( !_lightShadowProperties.empty() ) {
-        _lightShaderBuffer[SHADER_BUFFER_SHADOW]->UpdateData( 0, _lightShadowProperties.size() * sizeof( LightShadowProperties ), _lightShadowProperties.data(), true );
+        _lightShaderBuffer[SHADER_BUFFER_SHADOW]->UpdateData(0, 
+                                                             _lightShadowProperties.size() * sizeof( LightShadowProperties ),
+                                                             _lightShadowProperties.data(),
+                                                             true );
     }
 }
 

@@ -54,12 +54,12 @@ DVDConverter::DVDConverter() : _ppsteps(0)
     aiTextureOperationTable[aiTextureOp_SignedAdd] = Material::TextureOperation_SignedAdd;
     aiTextureOperationTable[/*aiTextureOp_Replace*/7] = Material::TextureOperation_Replace;
 
-    importer = New Assimp::Importer();
+    importer = MemoryManager_NEW Assimp::Importer();
 }
 
 DVDConverter::~DVDConverter()
 {
-    MemoryManager::SAFE_DELETE( importer );
+    MemoryManager::DELETE( importer );
 }
 
 bool DVDConverter::init(){
@@ -69,13 +69,14 @@ bool DVDConverter::init(){
     }
 
     bool removeLinesAndPoints = true;
-    importer->SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
+    importer->SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 
+                                                                                  0 );
     importer->SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS , 1);
     importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
     _ppsteps = aiProcess_TransformUVCoords        | // preprocess UV transformations (scaling, translation ...)
                aiProcess_FindInstances            | // search for instanced meshes and remove them by references to one master
                aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
-               aiProcess_OptimizeGraph            | // Nodes with no animations, bones, lights or cameras assigned are collapsed and joined.
+               aiProcess_OptimizeGraph            | // Nodes without animations/bones/lights/cameras are collapsed & joined.
                aiProcess_CalcTangentSpace		  |
                aiProcess_GenSmoothNormals         |
                aiProcess_JoinIdenticalVertices    |
@@ -135,7 +136,8 @@ Mesh* DVDConverter::load(const stringImpl& file){
         return nullptr;
     }
     start = GETMSTIME(true);
-    Mesh* tempMesh = New Mesh(_aiScenePointer->HasAnimations() ? Object3D::OBJECT_FLAG_SKINNED : Object3D::OBJECT_FLAG_NONE);
+    Mesh* tempMesh = MemoryManager_NEW Mesh(_aiScenePointer->HasAnimations() ? Object3D::OBJECT_FLAG_SKINNED : 
+                                                                               Object3D::OBJECT_FLAG_NONE);
     tempMesh->setName(_modelName);
     tempMesh->setResourceLocation(_fileLocation);
 
@@ -171,7 +173,9 @@ Mesh* DVDConverter::load(const stringImpl& file){
 
         if (tempSubMesh){
             if(!tempSubMesh->getMaterialTpl()){
-                tempSubMesh->setMaterialTpl(loadSubMeshMaterial(skinned, _aiScenePointer->mMaterials[currentMesh->mMaterialIndex], stringImpl(tempSubMesh->getName() + "_material")));
+                tempSubMesh->setMaterialTpl(loadSubMeshMaterial(skinned, 
+                                                                _aiScenePointer->mMaterials[currentMesh->mMaterialIndex], 
+                                                                stringImpl(tempSubMesh->getName() + "_material")));
             }
           
             tempMesh->addSubMesh(tempSubMesh);
@@ -581,7 +585,8 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
         if (tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)){
             if(!(flags & aiTextureFlags_IgnoreAlpha) &&
                 tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)->hasTransparency()){
-                    Texture* textureRes = CreateResource<Texture>(ResourceDescriptor(tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)->getName()));
+                    ResourceDescriptor texDesc(tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)->getName());
+                    Texture* textureRes = CreateResource<Texture>(texDesc);
                     tempMaterial->setTexture(ShaderProgram::TEXTURE_OPACITY, textureRes);
             }
         }

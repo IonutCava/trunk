@@ -37,7 +37,13 @@ namespace Divide {
             ERROR_FN(Locale::get("GLFW_ERROR"), errorDesc, msg);
         }
         /// Print OpenGL specific messages
-        void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+        void APIENTRY CALLBACK DebugCallback(GLenum source, 
+                                             GLenum type, 
+                                             GLuint id, 
+                                             GLenum severity, 
+                                             GLsizei length, 
+                                             const GLchar* message, 
+                                             const void* userParam) {
             // Translate message source
             const char* gl_source = "Unknown Source";
             if (source == GL_DEBUG_SOURCE_API) {

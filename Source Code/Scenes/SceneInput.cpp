@@ -43,10 +43,15 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
 
     // see if we select another one
     _sceneSelectionCandidates.clear();
-    // Cast the picking ray and find items between the nearPlane (with a small offset) and limit the range to half of the far plane
-    _sceneGraph->Intersect(Ray(startRay, startRay.direction(endRay)), zPlanes.x + 0.5f, zPlanes.y * 0.5f, _sceneSelectionCandidates); 
+    // Cast the picking ray and find items between the nearPlane (with an offset) and limit the range to half of the far plane
+    _sceneGraph->Intersect(Ray(startRay, startRay.direction(endRay)), 
+                           zPlanes.x + 0.5f, 
+                           zPlanes.y * 0.5f, 
+                           _sceneSelectionCandidates); 
+
     if(!_sceneSelectionCandidates.empty()){
-        std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), selectionQueueDistanceFrontToBack(renderState().getCameraConst().getEye()));
+        std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), 
+                  selectionQueueDistanceFrontToBack(renderState().getCameraConst().getEye()));
         _currentSelection = _sceneSelectionCandidates[0];
         // set it's state to selected
         _currentSelection->setSelected(true);
@@ -170,16 +175,19 @@ bool Scene::onKeyDown(const Input::KeyEvent& key){
 bool Scene::onKeyUp(const Input::KeyEvent& key){
     switch( key._key ) {
 		case KeyCode::KC_P: {
-			_paramHandler.setParam("freezeLoopTime", !_paramHandler.getParam("freezeLoopTime", false));
+			_paramHandler.setParam("freezeLoopTime", 
+                                   !_paramHandler.getParam("freezeLoopTime", false));
 		} break;
 		case KeyCode::KC_F2: {
 			renderState().toggleSkeletons();
 		} break;
 		case KeyCode::KC_F3: {
-			_paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
+			_paramHandler.setParam("postProcessing.enableDepthOfField", 
+                                   !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
 		} break;
 		case KeyCode::KC_F4: {
-			_paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
+			_paramHandler.setParam("postProcessing.enableBloom", 
+                                   !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
 		} break;
 		case KeyCode::KC_F5: {
 			renderState().toggleAxisLines();
@@ -198,8 +206,10 @@ bool Scene::onKeyUp(const Input::KeyEvent& key){
 			} break;
 #		endif
 		case KeyCode::KC_F10: {
+            ParamHandler& param = ParamHandler::getInstance();
 			LightManager::getInstance().togglePreviewShadowMaps();
-			ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer", !ParamHandler::getInstance().getParam<bool>("rendering.previewDepthBuffer", false));
+            param.setParam<bool>("rendering.previewDepthBuffer", 
+                                 !param.getParam<bool>("rendering.previewDepthBuffer", false));
 		} break;
         case KeyCode::KC_F7: {
             GFX_DEVICE.Screenshot("screenshot_");

@@ -5,9 +5,9 @@
 namespace Divide {
 
 	Sky* ImplResourceLoader<Sky>::operator()() {
-		Sky* ptr = New Sky(_descriptor.getName());
+        Sky* ptr = MemoryManager_NEW Sky(_descriptor.getName());
         if ( !load( ptr, _descriptor.getName() ) ) {
-            MemoryManager::SAFE_DELETE( ptr );
+            MemoryManager::DELETE( ptr );
         }
 
 		return ptr;

@@ -30,28 +30,37 @@
     
     namespace hashAlg = boost;
 
-    template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-    using hashMapImpl = hashAlg::unordered_map<K, V, HashFun>;
+    template<typename K, typename V, typename HashFun = boost::hash<K> >
+    using hashMapImpl = boost::unordered_map<K, V, HashFun>;
 
     namespace boost {
+
+#   if defined(STRING_IMP) && STRING_IMP == 0
+        template<>
+        struct hash<stringImpl>
+        {
+            size_t operator()(const stringImpl& v) const {
+                return std::hash<std::string>()(v.c_str());
+            }
+        };
+#   endif
+
+        template<typename K, typename V, typename HashFun = boost::hash<K> >
+        using hashPairReturn = std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
+
 		template<typename T1, typename T2>
 		using pair = std::pair<T1, T2>;
-#if defined(STRING_IMP) && STRING_IMP == 0
-		template<>
-		struct hash<stringImpl>
-		{
-			size_t operator()(const stringImpl& v) const {
-				return std::hash<std::string>()(v.c_str());
-			}
-		};
-#endif
+
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-        inline std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool> emplace(hashMapImpl<K, V, HashFun>& map, K key, const V& val){
+        inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map, 
+                                                     K key, 
+                                                     const V& val) {
             return map.emplace(key, val);
         }
 
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-        inline std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool> insert(hashMapImpl<K, V, HashFun>& map, const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
+        inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map,
+                                                    const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
             return map.insert(valuePair);
         }
 
@@ -59,6 +68,7 @@
         inline void fastClear(hashMapImpl<K, V,HashFun>& map){
             map.clear();
         }
+
 #	ifndef BOOST_PAIR_FUNCS
 #	define BOOST_PAIR_FUNCS
 			template<typename K, typename V>
@@ -77,37 +87,46 @@
 
     #include <EASTL/hash_map.h>
 
-    namespace hashAlg  = eastl;
+    namespace hashAlg = eastl;
 
-    template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-    using hashMapImpl = hashAlg::hash_map<K, V, HashFun>;
+    template<typename K, typename V, typename HashFun = eastl::hash<K> >
+    using hashMapImpl = eastl::hash_map<K, V, HashFun>;
 
     namespace eastl {
 
-        template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-        inline eastl::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool> emplace(hashMapImpl<K, V, HashFun>& map, K key, const V& val) {
+        template<>
+        struct hash<std::string>
+        {
+            size_t operator()(const std::string & x) const
+            {
+                return std::hash<std::string>()(x);
+            }
+        };
+
+        template<typename K, typename V, typename HashFun = eastl::hash<K> >
+        using hashPairReturn = eastl::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
+
+        template<typename K, typename V, typename HashFun = eastl::hash<K> >
+        inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map,
+                                                     K key, 
+                                                     const V& val) {
             hashMapImpl<K, V, HashFun>::value_type value(key);
             value.second = val;
             return map.insert(value); 
         }
     
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-        inline eastl::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool> insert(hashMapImpl<K, V, HashFun>& map, const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
+        inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map,
+                                                    const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
             return map.insert(valuePair);
         }
     
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
         inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
-            //map.reset(); <- leaks memory -Ionut
+            //map.reset(); // leaks memory -Ionut
 			map.clear();
         }
-		template <> struct hash<std::string>
-		{
-			size_t operator()(const std::string & x) const
-			{
-				return std::hash<std::string>()(x);
-			}
-		};
+
 #	ifndef EASTL_PAIR_FUNCS
 #	define EASTL_PAIR_FUNCS
 			template<typename K, typename V>
@@ -127,17 +146,33 @@
 
     namespace hashAlg = std;
 
-    template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-    using hashMapImpl = hashAlg::unordered_map<K, V, HashFun>;
+    template<typename K, typename V, typename HashFun = std::hash<K> >
+    using hashMapImpl = std::unordered_map<K, V, HashFun>;
 
     namespace std {
+
+        template<>
+        struct hash<eastl::string>
+        {
+            size_t operator()(const eastl::string & x) const
+            {
+                return std::hash<std::string>()(x.c_str());
+            }
+        };
+
+        template<typename K, typename V, typename HashFun = std::hash<K> >
+        using hashPairReturn = std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
+
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-        inline std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool> emplace(hashMapImpl<K, V, HashFun>& map, K key, const V& val){
+        inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map,
+                                                    K key, 
+                                                    const V& val) {
             return map.emplace(key, val);
         }
 
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
-        inline std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool> insert(hashMapImpl<K, V, HashFun>& map, const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
+        inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map, 
+                                                    const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
             return map.insert(valuePair);
         }
 
@@ -145,6 +180,7 @@
         inline void fastClear(hashMapImpl<K, V, HashFun>& map){
             map.clear();
         }
+
 #	ifndef STD_PAIR_FUNCS
 #	define STD_PAIR_FUNCS
 			template<typename K, typename V>

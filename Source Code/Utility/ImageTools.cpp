@@ -100,7 +100,7 @@ namespace ImageTools {
 		_format = textureFormatDevIL(format);
 		_imageSize = (size_t)(_dimensions.width) * (size_t)(_dimensions.height) * (size_t)(_bpp);
 
-        _data = New U8[_imageSize];
+        _data = MemoryManager_NEW U8[_imageSize];
         memcpy(_data, ilGetData(), _imageSize);
 
 		ilBindImage(0);
@@ -134,7 +134,7 @@ namespace ImageTools {
     void ImageData::destroy() {
         ilDeleteImage( _ilTexture );
 		_ilTexture = 0;
-        MemoryManager::SAFE_DELETE_ARRAY( _data );
+        MemoryManager::DELETE_ARRAY( _data );
     }
 
 	vec4<U8> ImageData::getColor(U16 x, U16 y) const {

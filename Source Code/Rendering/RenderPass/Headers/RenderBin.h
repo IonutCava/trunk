@@ -20,7 +20,8 @@
 
  */
 
-/*The system is similar to the one used in Torque3D (RenderPassMgr / RenderBinManager) as it was used as an inspiration.
+/*The system is similar to the one used in Torque3D (RenderPassMgr / RenderBinManager) 
+  as it was used as an inspiration.
   All credit goes to GarageGames for the idea:
   - http://garagegames.com/
   - https://github.com/GarageGames/Torque3D
@@ -57,7 +58,7 @@ struct RenderingOrder{
 };
 
 class SceneRenderState;
-///This class contains a list of "RenderBinItem"'s and stores them sorted depending on the desired designation
+/// This class contains a list of "RenderBinItem"'s and stores them sorted depending on designation
 class RenderBin {
     typedef vectorImpl< RenderBinItem > RenderBinStack;
 public:
@@ -96,14 +97,25 @@ public:
     virtual void refresh();
 
     virtual void addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos);
-    inline  const RenderBinItem& getItem(U16 index) const {assert(index < _renderBinStack.size());	return _renderBinStack[index]; }
 
-    inline U16 getBinSize()   const {return (U16)_renderBinStack.size();}
-    inline D32 getSortOrder() const {return _drawKey;}
+    inline  const RenderBinItem& getItem(U16 index) const {
+        assert(index < _renderBinStack.size());	
+        return _renderBinStack[index]; 
+    }
 
-    inline const RenderBinType&  getType() const {return _rbType;}
+    inline U16 getBinSize() const {
+        return (U16)_renderBinStack.size();
+    }
 
-    bool operator< (const RenderBin& rhs){
+    inline D32 getSortOrder() const {
+        return _drawKey;
+    }
+
+    inline const RenderBinType&  getType() const {
+        return _rbType;
+    }
+
+    bool operator< (const RenderBin& rhs) {
         return (_drawKey < rhs._drawKey); 
     };
 

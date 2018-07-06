@@ -24,53 +24,55 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-SceneGraphNode::SceneGraphNode( SceneGraph* const sg, SceneNode* const node, const stringImpl& name ) : GUIDWrapper(),
-                                                                                                       _sceneGraph(sg),
-                                                                                                       _node(node),
-                                                                                                       _elapsedTime(0ULL),
-                                                                                                       _parent(nullptr),
-                                                                                                       _loaded(true),
-                                                                                                       _wasActive(true),
-                                                                                                       _active(true),
-                                                                                                       _inView(false),
-                                                                                                       _selected(false),
-                                                                                                       _isSelectable(false),
-                                                                                                       _sorted(false),
-                                                                                                       _silentDispose(false),
-                                                                                                       _boundingBoxDirty(true),
-                                                                                                       _shouldDelete(false),
-                                                                                                       _updateTimer(GETMSTIME()),
-                                                                                                       _childQueue(0),
-                                                                                                       _bbAddExclusionList(0),
-                                                                                                       _usageContext(NODE_DYNAMIC)
+SceneGraphNode::SceneGraphNode(SceneGraph* const sg, 
+                               SceneNode* const node, 
+                               const stringImpl& name ) : GUIDWrapper(),
+                                                         _sceneGraph(sg),
+                                                         _node(node),
+                                                         _elapsedTime(0ULL),
+                                                         _parent(nullptr),
+                                                         _loaded(true),
+                                                         _wasActive(true),
+                                                         _active(true),
+                                                         _inView(false),
+                                                         _selected(false),
+                                                         _isSelectable(false),
+                                                         _sorted(false),
+                                                         _silentDispose(false),
+                                                         _boundingBoxDirty(true),
+                                                         _shouldDelete(false),
+                                                         _updateTimer(GETMSTIME()),
+                                                         _childQueue(0),
+                                                         _bbAddExclusionList(0),
+                                                         _usageContext(NODE_DYNAMIC)
 {
     
     assert(_node != nullptr);
 
     setName( name );
     _instanceID = (node->GetRef() - 1);
-    Material* const materialTemplate = _node->getMaterialTpl();
+    Material* const materialTpl = _node->getMaterialTpl();
     _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
-    _components[SGNComponent::SGN_COMP_RENDERING]  = New RenderingComponent(materialTemplate != nullptr ? materialTemplate->clone("_instance_" + name) : nullptr, this);
-    _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
-    _components[SGNComponent::SGN_COMP_PHYSICS]    = New PhysicsComponent(this);
+    _components[SGNComponent::SGN_COMP_NAVIGATION] = MemoryManager_NEW NavigationComponent(this);
+    _components[SGNComponent::SGN_COMP_PHYSICS]    = MemoryManager_NEW PhysicsComponent(this);
+    _components[SGNComponent::SGN_COMP_RENDERING]  = MemoryManager_NEW RenderingComponent(materialTpl != nullptr ? 
+                                                                                          materialTpl->clone("_instance_" + name) :
+                                                                                          nullptr,
+                                                                                          this);
 }
 
-///If we are destroying the current graph node
+/// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
     unload();
 
     PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
-    //delete children nodes recursively
-    for ( NodeChildren::value_type& it : _children ) {
-        MemoryManager::SAFE_DELETE( it.second );
+    // delete child nodes recursively
+    MemoryManager::DELETE_HASHMAP(_children);
+
+    for (SGNComponent*& component : _components) {
+        MemoryManager::DELETE( component );
     }
-    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
-        MemoryManager::SAFE_DELETE( _components[i] );
-        _components[i] = nullptr;
-    }
-    _children.clear();
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& type) {
@@ -166,7 +168,10 @@ SceneGraphNode* SceneGraphNode::createNode( SceneNode* const node, const stringI
     //Create a new SceneGraphNode with the SceneNode's info
     //We need to name the new SceneGraphNode
     //If we did not supply a custom name use the SceneNode's name
-    SceneGraphNode* sceneGraphNode = New SceneGraphNode( _sceneGraph, node, name.empty() ? node->getName() : name );
+    SceneGraphNode* sceneGraphNode = MemoryManager_NEW SceneGraphNode(_sceneGraph, 
+                                                                      node, 
+                                                                      name.empty() ? node->getName() : 
+                                                                                     name);
     //Set the current node as the new node's parent
     sceneGraphNode->setParent(this);
     //Do all the post load operations on the SceneNode

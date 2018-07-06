@@ -69,8 +69,10 @@ void MainScene::processGUI(const U64 deltaTime){
     D32 TimeDisplay = getSecToMs(1.0);
 
     if (_guiTimers[0] >= FpsDisplay){
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]", state()._cameraUnderwater ? "true" : "false", state().getWaterLevel());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
+                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]",
+                         state()._cameraUnderwater ? "true" : "false", state().getWaterLevel());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
     }

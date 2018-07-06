@@ -19,22 +19,28 @@ void AnimEvaluator::Save(std::ofstream& file){
 		nsize =static_cast<uint32_t>(_channels[j]._positionKeys.size());
 		file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of position keys
 		for(vectorAlg::vecSize i(0); i< nsize; i++){// for each channel
-			file.write(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mTime), sizeof(_channels[j]._positionKeys[i].mTime));// pos key
-			file.write(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mValue), sizeof(_channels[j]._positionKeys[i].mValue));// pos key
+			file.write(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mTime), 
+                       sizeof(_channels[j]._positionKeys[i].mTime));// pos key
+			file.write(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mValue), 
+                       sizeof(_channels[j]._positionKeys[i].mValue));// pos key
 		}
 
 		nsize =static_cast<uint32_t>(_channels[j]._rotationKeys.size());
 		file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of position keys
 		for(vectorAlg::vecSize i(0); i< nsize; i++){// for each channel
-			file.write(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mTime), sizeof(_channels[j]._rotationKeys[i].mTime));// rot key
-			file.write(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mValue), sizeof(_channels[j]._rotationKeys[i].mValue));// rot key
+			file.write(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mTime), 
+                       sizeof(_channels[j]._rotationKeys[i].mTime));// rot key
+			file.write(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mValue), 
+                       sizeof(_channels[j]._rotationKeys[i].mValue));// rot key
 		}
 
 		nsize =static_cast<uint32_t>(_channels[j]._scalingKeys.size());
 		file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of position keys
 		for(vectorAlg::vecSize i(0); i< nsize; i++){// for each channel
-			file.write(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mTime), sizeof(_channels[j]._scalingKeys[i].mTime));// rot key
-			file.write(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mValue), sizeof(_channels[j]._scalingKeys[i].mValue));// rot key
+			file.write(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mTime), 
+                       sizeof(_channels[j]._scalingKeys[i].mTime));// rot key
+			file.write(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mValue),
+                       sizeof(_channels[j]._scalingKeys[i].mValue));// rot key
 		}
 	}
 }
@@ -62,24 +68,30 @@ void AnimEvaluator::Load(std::ifstream& file){
 		file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of position keys
 		_channels[j]._positionKeys.resize(nsize);
 		for(vectorAlg::vecSize i(0); i< nsize; i++){// for each channel
-			file.read(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mTime), sizeof(_channels[j]._positionKeys[i].mTime));// pos key
-			file.read(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mValue), sizeof(_channels[j]._positionKeys[i].mValue));// pos key
+			file.read(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mTime), 
+                      sizeof(_channels[j]._positionKeys[i].mTime));// pos key
+			file.read(reinterpret_cast<char*>(&_channels[j]._positionKeys[i].mValue), 
+                      sizeof(_channels[j]._positionKeys[i].mValue));// pos key
 		}
 
 		nsize =static_cast<uint32_t>(_channels[j]._rotationKeys.size());
 		file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of position keys
 		_channels[j]._rotationKeys.resize(nsize);
 		for(vectorAlg::vecSize i(0); i< nsize; i++){// for each channel
-			file.read(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mTime), sizeof(_channels[j]._rotationKeys[i].mTime));// pos key
-			file.read(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mValue), sizeof(_channels[j]._rotationKeys[i].mValue));// pos key
+			file.read(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mTime), 
+                      sizeof(_channels[j]._rotationKeys[i].mTime));// pos key
+			file.read(reinterpret_cast<char*>(&_channels[j]._rotationKeys[i].mValue), 
+                      sizeof(_channels[j]._rotationKeys[i].mValue));// pos key
 		}
 
 		nsize =static_cast<uint32_t>(_channels[j]._scalingKeys.size());
 		file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of position keys
 		_channels[j]._scalingKeys.resize(nsize);
 		for(vectorAlg::vecSize i(0); i< nsize; i++){// for each channel
-			file.read(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mTime), sizeof(_channels[j]._scalingKeys[i].mTime));// pos key
-			file.read(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mValue), sizeof(_channels[j]._scalingKeys[i].mValue));// pos key
+			file.read(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mTime), 
+                      sizeof(_channels[j]._scalingKeys[i].mTime));// pos key
+			file.read(reinterpret_cast<char*>(&_channels[j]._scalingKeys[i].mValue),
+                      sizeof(_channels[j]._scalingKeys[i].mValue));// pos key
 		}
 	}
 	_lastPositions.resize( _channels.size(), vec3<U32>());
@@ -116,7 +128,8 @@ void SceneAnimator::Load(std::ifstream& file){
 	for(uint32_t i(0); i< nsize; i++){
 		_animations[i].Load(file);
 	}
-	for(uint32_t i(0); i< _animations.size(); i++){// get all the animation names so I can reference them by name and get the correct id
+    // get all the animation names so I can reference them by name and get the correct id
+	for(uint32_t i(0); i< _animations.size(); i++){
 		_animationNameToId.insert(hashMapImpl<stringImpl, uint32_t>::value_type(_animations[i]._name, i));
 	}
 
@@ -153,20 +166,28 @@ void SceneAnimator::Load(std::ifstream& file){
 	D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
 }
 
-void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent){
+void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent) {
 	uint32_t nsize = static_cast<uint32_t>(parent->_name.size());
-	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of chars
-	file.write(parent->_name.c_str(), nsize);// the name of the bone
-	file.write(reinterpret_cast<char*>(&parent->_offsetMatrix), sizeof(parent->_offsetMatrix));// the bone offsets
-	file.write(reinterpret_cast<char*>(&parent->_originalLocalTransform), sizeof(parent->_originalLocalTransform));// original bind pose
-	nsize = static_cast<uint32_t>(parent->_children.size());// number of children
-	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of children
-	for( vectorImpl<Bone*>::iterator it = parent->_children.begin(); it != parent->_children.end(); ++it)// continue for all children
+    // the number of chars
+	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));
+    // the name of the bone
+	file.write(parent->_name.c_str(), nsize);
+    // the bone offsets
+	file.write(reinterpret_cast<char*>(&parent->_offsetMatrix), sizeof(parent->_offsetMatrix));
+    // original bind pose
+	file.write(reinterpret_cast<char*>(&parent->_originalLocalTransform), sizeof(parent->_originalLocalTransform));
+    // number of children
+	nsize = static_cast<uint32_t>(parent->_children.size());
+    // the number of children
+	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));
+    // continue for all children
+    for (vectorImpl<Bone*>::iterator it = parent->_children.begin(); it != parent->_children.end(); ++it) {
 		SaveSkeleton(file, *it);
+    }
 }
 
 Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent){
-	Bone* internalNode = New Bone();// create a node
+    Bone* internalNode = MemoryManager_NEW Bone();// create a node
 	internalNode->_parent = parent; //set the parent, in the case this is theroot node, it will be null
 	uint32_t nsize=0;
 	file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of chars
@@ -175,16 +196,19 @@ Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent){
 	temp[nsize]=0;
 	internalNode->_name = temp;
 	_bonesByName[internalNode->_name] = internalNode;// use the name as a key
-	file.read(reinterpret_cast<char*>(&internalNode->_offsetMatrix), sizeof(internalNode->_offsetMatrix));// the bone offsets
-	file.read(reinterpret_cast<char*>(&internalNode->_originalLocalTransform), sizeof(internalNode->_originalLocalTransform));// original bind pose
-
-	internalNode->_localTransform = internalNode->_originalLocalTransform;// a copy saved
+    // the bone offsets
+	file.read(reinterpret_cast<char*>(&internalNode->_offsetMatrix), sizeof(internalNode->_offsetMatrix));
+    // original bind pose
+	file.read(reinterpret_cast<char*>(&internalNode->_originalLocalTransform), sizeof(internalNode->_originalLocalTransform));
+    // a copy saved
+	internalNode->_localTransform = internalNode->_originalLocalTransform;
 	CalculateBoneToWorldTransform(internalNode);
+    // the number of children
+	file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));
 
-	file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of children
-
+    // recursivly call this function on all children
 	// continue for all child nodes and assign the created internal nodes as our children
-	for( U32 a = 0; a < nsize && file; a++){// recursivly call this function on all children
+	for( U32 a = 0; a < nsize && file; a++) {
 		internalNode->_children.push_back(LoadSkeleton(file, internalNode));
 	}
 	return internalNode;

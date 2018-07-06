@@ -33,7 +33,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
     PRINT_FN(Locale::get("INPUT_CREATE_OK"), _pInputInterface->inputSystemName().c_str());
 
     // Create the event handler.
-    _pEventHdlr = New EventHandler(this, kernel);
+    _pEventHdlr = MemoryManager_NEW EventHandler(this, kernel);
     DIVIDE_ASSERT(_pEventHdlr != nullptr, "InputInterface error: EventHandler allocation failed!");
 
     try {
@@ -59,13 +59,13 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
         }
 
         // Create the joystick manager.
-        _pJoystickInterface = New JoystickInterface(_pInputInterface, _pEventHdlr);
+        _pJoystickInterface = MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
         if (!_pJoystickInterface->wasFFDetected())	{
             PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
-            MemoryManager::SAFE_DELETE( _pJoystickInterface );
+            MemoryManager::DELETE( _pJoystickInterface );
         } else{
             // Create force feedback effect manager.
-            _pEffectMgr = New EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
+            _pEffectMgr = MemoryManager_NEW EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
             // Initialize the event handler.
             _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
         }
@@ -150,15 +150,15 @@ void InputInterface::terminate() {
                 _pInputInterface->destroyInputObject(*it);
             }
             _pJoysticks.clear();
-            MemoryManager::SAFE_DELETE( _pJoystickInterface );
+            MemoryManager::DELETE( _pJoystickInterface );
         }
 
         OIS::InputManager::destroyInputSystem(_pInputInterface);
         _pInputInterface = nullptr;
     }
 
-    MemoryManager::SAFE_DELETE( _pEffectMgr );
-    MemoryManager::SAFE_DELETE( _pEventHdlr );
+    MemoryManager::DELETE( _pEffectMgr );
+    MemoryManager::DELETE( _pEventHdlr );
 
 #if defined OIS_LINUX_PLATFORM
     // Be nice to X and clean up the x window

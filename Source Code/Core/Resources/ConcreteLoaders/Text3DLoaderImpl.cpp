@@ -5,10 +5,10 @@
 namespace Divide {
 
 Text3D* ImplResourceLoader<Text3D>::operator()(){
-    Text3D* ptr = New Text3D(_descriptor.getName(),_descriptor.getResourceLocation());
+    Text3D* ptr = MemoryManager_NEW Text3D(_descriptor.getName(), _descriptor.getResourceLocation());
 
     if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         if ( _descriptor.getFlag() ) {
             ptr->renderState().useDefaultMaterial( false );

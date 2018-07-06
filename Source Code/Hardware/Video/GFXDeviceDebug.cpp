@@ -30,7 +30,12 @@ void GFXDevice::previewDepthBuffer() {
         _renderTarget[RENDER_TARGET_DEPTH]->Bind(ShaderProgram::TEXTURE_UNIT0, TextureDescriptor::Depth);
 
 		renderInViewport(vec4<I32>(Application::getInstance().getResolution().width - 256, 0, 256, 256), 
-			             DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))&GFXDevice::drawPoints, this, 1, _defaultStateNoDepthHash, _previewDepthMapShader));
+			             DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))
+                                       &GFXDevice::drawPoints,
+                                       this, 
+                                       1,
+                                       _defaultStateNoDepthHash,
+                                       _previewDepthMapShader));
 #   endif
 }
 
@@ -102,7 +107,11 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     mat4<F32> offset(- cam.getViewDir() * 2, VECTOR3_ZERO, cam.getUpDir());
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower right corner
-    drawLines(_axisLines, offset * _gpuBlock._ViewMatrix.getInverse(), vec4<I32>(_renderTarget[RENDER_TARGET_SCREEN]->getWidth() - 128, 0, 128, 128), true, true);
+    drawLines(_axisLines, 
+              offset * _gpuBlock._ViewMatrix.getInverse(),
+              vec4<I32>(_renderTarget[RENDER_TARGET_SCREEN]->getWidth() - 128, 0, 128, 128),
+              true,
+              true);
 }
 
 };

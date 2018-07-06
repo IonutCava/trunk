@@ -76,10 +76,12 @@ protected:
     VertexBuffer*       newVB() const;
     /// Create and return a new pixel buffer using the requested format. The callee is responsible for it's deletion!
     PixelBuffer*        newPB(const PBType& type) const;
-    /// Create and return a new generic vertex data object and, optionally set it as persistently mapped. The callee is responsible for it's deletion!
+    /// Create and return a new generic vertex data object and, optionally set it as persistently mapped.
+    /// The callee is responsible for it's deletion!
     GenericVertexData*  newGVD(const bool persistentMapped) const;
     /// Create and return a new shader buffer. The callee is responsible for it's deletion!
-    /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false or a 'Shader Storage Block Object' otherwise
+    /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false 
+    /// or a 'Shader Storage Block Object' otherwise
     ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const;
     /// Create and return a new texture array (optionally, flipped vertically). The callee is responsible for it's deletion!
     Texture*            newTextureArray(const bool flipped = false) const;
@@ -89,7 +91,8 @@ protected:
     Texture*            newTextureCubemap(const bool flipped = false) const;
     /// Create and return a new shader program (optionally, post load optimised). The callee is responsible for it's deletion!
     ShaderProgram*      newShaderProgram(const bool optimise = false) const;
-    /// Create and return a new shader of the specified type by loading the specified name (optionally, post load optimised). The callee is responsible for it's deletion!
+    /// Create and return a new shader of the specified type by loading the specified name (optionally, post load optimised). 
+    /// The callee is responsible for it's deletion!
     Shader*             newShader(const stringImpl& name, const ShaderType& type, const bool optimise = false) const;
     /// Enable or disable rasterization (useful for transform feedback)
     inline void toggleRasterization(bool state) { state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD); }
@@ -99,7 +102,8 @@ protected:
     static size_t getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
     /// Clipping planes are only enabled/disabled if they differ from the current state
     void updateClipPlanes();
-    /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash) with his OpenGL frontend adapted for core context profiles
+    /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash) 
+    /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextLabel& textLabel, const vec2<I32>& position);
     /// Rendering points is universally useful, so we have a function, and a VAO, dedicated to this process
     void drawPoints(GLuint numPoints);
@@ -150,7 +154,8 @@ public:
     static bool setActiveTransformFeedback(GLuint id);
     /// Change the currently active shader program. Passing null will unbind shaders (will use program 0)
     static bool setActiveProgram(glShaderProgram* const program);
-    /// A state block should contain all rendering state changes needed for the next draw call. Some may be redundant, so we check each one individually 
+    /// A state block should contain all rendering state changes needed for the next draw call. 
+    /// Some may be redundant, so we check each one individually 
     void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
     /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelPackUnpackAlignment(GLint packAlignment = 1, GLint unpackAlignment = 1) {
@@ -160,7 +165,7 @@ public:
     static bool setPixelPackAlignment(GLint packAlignment = 1, GLint rowLength = 0, GLint skipRows = 0, GLint skipPixels = 0);
     /// Pixel unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelUnpackAlignment(GLint unpackAlignment = 1, GLint rowLength = 0, GLint skipRows = 0, GLint skipPixels = 0);
-    /// Bind a texture specified by a GL handle and GL type to the specified unit using the desired sampler object defined by hash value  
+    /// Bind a texture specified by a GL handle and GL type to the specified unit using the sampler object defined by hash value  
     static bool bindTexture(GLuint unit, GLuint handle, GLenum type, size_t samplerHash = 0);
     /// Bind the sampler object described by the hash value to the specified unit
     static bool bindSampler(GLuint unit, size_t samplerHash);

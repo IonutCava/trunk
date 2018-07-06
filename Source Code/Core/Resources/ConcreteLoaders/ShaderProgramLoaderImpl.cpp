@@ -36,7 +36,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
     }
 
     if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         ShaderManager::getInstance().registerShaderProgram( ptr->getName(), ptr );
     }

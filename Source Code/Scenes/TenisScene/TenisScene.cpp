@@ -32,7 +32,8 @@ void TenisScene::preRender(){
 void TenisScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = 0.7;
     if (_guiTimers[0] >= FpsDisplay){
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
+                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
     }
@@ -70,7 +71,9 @@ void TenisScene::resetGame(){
     _applySideImpulse = false;
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
-    _ballSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>((random(0,10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
+    _ballSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>((random(0,10) >= 5) ? 3.0f : -3.0f, 
+                                                                      0.2f,
+                                                                      _lostTeam1 ? -7.0f : 7.0f));
     _directionTeam1ToTeam2 = !_lostTeam1;
     _lostTeam1 = false;
     s_gameStarted = true;
@@ -285,22 +288,22 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     player[2]->setSelectable(true);
     player[3]->setSelectable(true);
 
-    _aiPlayer1 = New AI::AIEntity(player[0]->getComponent<PhysicsComponent>()->getPosition(), "Player1");
-    _aiPlayer2 = New AI::AIEntity(player[1]->getComponent<PhysicsComponent>()->getPosition(), "Player2");
-    _aiPlayer3 = New AI::AIEntity(player[2]->getComponent<PhysicsComponent>()->getPosition(), "Player3");
-    _aiPlayer4 = New AI::AIEntity(player[3]->getComponent<PhysicsComponent>()->getPosition(), "Player4");
+    _aiPlayer1 = MemoryManager_NEW AI::AIEntity(player[0]->getComponent<PhysicsComponent>()->getPosition(), "Player1");
+    _aiPlayer2 = MemoryManager_NEW AI::AIEntity(player[1]->getComponent<PhysicsComponent>()->getPosition(), "Player2");
+    _aiPlayer3 = MemoryManager_NEW AI::AIEntity(player[2]->getComponent<PhysicsComponent>()->getPosition(), "Player3");
+    _aiPlayer4 = MemoryManager_NEW AI::AIEntity(player[3]->getComponent<PhysicsComponent>()->getPosition(), "Player4");
     _aiPlayer1->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer2->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer3->addSensor(AI::VISUAL_SENSOR);
     _aiPlayer4->addSensor(AI::VISUAL_SENSOR);
 
-    _aiPlayer1->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer2->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer3->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer4->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer1->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer2->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer3->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer4->addAISceneImpl(MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
 
-    _team1 = New AI::AITeam(1);
-    _team2 = New AI::AITeam(2);
+    _team1 = MemoryManager_NEW AI::AITeam(1);
+    _team2 = MemoryManager_NEW AI::AITeam(2);
 
     if(state || continueOnErrors){
         state = AI::AIManager::getInstance().registerEntity(0, _aiPlayer1);
@@ -316,10 +319,10 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     }
     if(state || continueOnErrors){
     //----------------------- AI controlled units (NPC's) ---------------------//
-        _player1 = New NPC(player[0], _aiPlayer1);
-        _player2 = New NPC(player[1], _aiPlayer2);
-        _player3 = New NPC(player[2], _aiPlayer3);
-        _player4 = New NPC(player[3], _aiPlayer4);
+        _player1 = MemoryManager_NEW NPC(player[0], _aiPlayer1);
+        _player2 = MemoryManager_NEW NPC(player[1], _aiPlayer2);
+        _player3 = MemoryManager_NEW NPC(player[2], _aiPlayer3);
+        _player4 = MemoryManager_NEW NPC(player[3], _aiPlayer4);
 
         _player1->setMovementSpeed(1.45f);
         _player2->setMovementSpeed(1.5f);
@@ -338,16 +341,16 @@ bool TenisScene::deinitializeAI(bool continueOnErrors){
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer2);
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer3);
     AI::AIManager::getInstance().unregisterEntity(_aiPlayer4);
-    MemoryManager::SAFE_DELETE( _aiPlayer1 );
-    MemoryManager::SAFE_DELETE( _aiPlayer2 );
-    MemoryManager::SAFE_DELETE( _aiPlayer3 );
-    MemoryManager::SAFE_DELETE( _aiPlayer4 );
-    MemoryManager::SAFE_DELETE( _player1 );
-    MemoryManager::SAFE_DELETE( _player2 );
-    MemoryManager::SAFE_DELETE( _player3 );
-    MemoryManager::SAFE_DELETE( _player4 );
-    MemoryManager::SAFE_DELETE( _team1 );
-    MemoryManager::SAFE_DELETE( _team2 );
+    MemoryManager::DELETE( _aiPlayer1 );
+    MemoryManager::DELETE( _aiPlayer2 );
+    MemoryManager::DELETE( _aiPlayer3 );
+    MemoryManager::DELETE( _aiPlayer4 );
+    MemoryManager::DELETE( _player1 );
+    MemoryManager::DELETE( _player2 );
+    MemoryManager::DELETE( _player3 );
+    MemoryManager::DELETE( _player4 );
+    MemoryManager::DELETE( _team1 );
+    MemoryManager::DELETE( _team2 );
     return Scene::deinitializeAI(continueOnErrors);
 }
 

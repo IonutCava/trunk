@@ -29,11 +29,13 @@
 namespace Divide {
 
 struct TransformValues {
-    ///The object's position in the world as a 3 component vector
+    /// The object's position in the world as a 3 component vector
     vec3<F32> _translation;
-    ///Scaling is stored as a 3 component vector. This helps us check more easily if it's an uniform scale or not
+    /// Scaling is stored as a 3 component vector.
+    /// This helps us check more easily if it's an uniform scale or not
     vec3<F32> _scale;
-    ///All orientation/rotation info is stored in a Quaternion (because they are awesome and also have an internal mat4 if needed)
+    /// All orientation/rotation info is stored in a Quaternion 
+    /// (because they are awesome and also have an internal mat4 if needed)
     Quaternion<F32> _orientation;
 
     void operator=(const TransformValues& other) {
@@ -79,12 +81,14 @@ public:
         rebuildMatrix(); 
     }
 
-    /// Set the local orientation using the Axis-Angle system. The angle can be in either degrees(default) or radians
+    /// Set the local orientation using the Axis-Angle system. 
+    /// The angle can be in either degrees(default) or radians
     void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) { 
         setRotation(Quaternion<F32>(axis, degrees, inDegrees));
     }
 
-    /// Set the local orientation using the Euler system. The angles can be in either degrees(default) or radians
+    /// Set the local orientation using the Euler system.
+    /// The angles can be in either degrees(default) or radians
     void setRotation(const vec3<F32>& euler, bool inDegrees = true)  { 
         setRotation(Quaternion<F32>(euler.pitch, euler.yaw, euler.roll, inDegrees));
     }
@@ -113,12 +117,14 @@ public:
         rebuildMatrix(); 
     }
 
-    /// Apply the specified Axis-Angle rotation starting from the current orientation. The angles can be in either degrees(default) or radians
+    /// Apply the specified Axis-Angle rotation starting from the current orientation. 
+    /// The angles can be in either degrees(default) or radians
     void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) { 
         rotate(Quaternion<F32>(axis, degrees, inDegrees));
     }
 
-    /// Apply the specified Euler rotation starting from the current orientation. The angles can be in either degrees(default) or radians
+    /// Apply the specified Euler rotation starting from the current orientation. 
+    /// The angles can be in either degrees(default) or radians
     void rotate(const vec3<F32>& euler, bool inDegrees = true) { 
         rotate(Quaternion<F32>(euler.pitch, euler.yaw, euler.roll, inDegrees));
     }
@@ -137,7 +143,8 @@ public:
         rebuildMatrix();
     }
 
-    /// If a non-uniform scaling factor is currently set (either locally or in the parent transform), return false
+    /// If a non-uniform scaling factor is currently set (either locally or in the parent transform), 
+    // return false
     inline bool isUniformScaled() const {
         return getScale().isUniform();
     }
@@ -304,13 +311,13 @@ private:
     }
 
 private:
-    ///The actual scale, rotation and translation values
+    /// The actual scale, rotation and translation values
     TransformValues _transformValues;
-    ///This is the actual model matrix, but it will not convert to world space as it depends on it's parent in graph
+    /// This is the actual model matrix, but it will not convert to world space as it depends on it's parent in graph
     mat4<F32> _worldMatrix;
-    ///_dirty is set to true whenever a translation, rotation or scale is applied
+    /// _dirty is set to true whenever a translation, rotation or scale is applied
     std::atomic_bool _dirty;
-    ///_rebuildMatrix is set to true only when a rotation or scale is applied to avoid rebuilding matrices on translation only
+    /// _rebuildMatrix is true when a rotation or scale is applied to avoid rebuilding matrices on translation
     std::atomic_bool _rebuildMatrix;
     mutable SharedLock _lock;
 };

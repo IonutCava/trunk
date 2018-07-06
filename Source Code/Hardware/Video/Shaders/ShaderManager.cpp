@@ -154,7 +154,7 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl &atomName, cons
     rewind(fp);
 	assert(count > 0);
 
-    char* content = New char[count+1];
+    char* content = MemoryManager_NEW char[count + 1];
     count = (I32)(fread(content,sizeof(char),count,fp));
     content[count] = '\0';
 	fclose(fp);
@@ -162,7 +162,7 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl &atomName, cons
     // Add the code to the atom cache for future reference
 	hashAlg::pair<AtomMap::iterator, bool> result = hashAlg::emplace(_atoms, atomName, stringImpl(content));
 	assert(result.second);
-    MemoryManager::SAFE_DELETE_ARRAY( content );
+    MemoryManager::DELETE_ARRAY( content );
     
     // Return the source code
 	return result.first->second;
@@ -198,7 +198,7 @@ void ShaderManager::removeShader(Shader* s) {
         // Subtract one reference from it. 
         if (s->SubRef()) {
             // If the new reference count is 0, delete the shader
-            MemoryManager::SAFE_DELETE( it->second );
+            MemoryManager::DELETE( it->second );
             _shaderNameMap.erase(name);
         }
     }
@@ -235,7 +235,7 @@ Shader* ShaderManager::loadShader(const stringImpl& name, const stringImpl& sour
     // At this stage, we have a valid Shader object, so load the source code
     if (!shader->load(source)) {
         // If loading the source code failed, delete it
-        MemoryManager::SAFE_DELETE( shader );
+        MemoryManager::DELETE( shader );
     } else {
         // If we loaded the source code successfully, either update it (if we recompiled) or register it
         if(recompile) {

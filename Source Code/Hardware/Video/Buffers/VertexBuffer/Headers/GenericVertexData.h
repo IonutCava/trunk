@@ -42,7 +42,14 @@ public:
         {
         }
 
-        void set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement, bool normalized, size_t stride, U32 elementCountOffset, GFXDataFormat dataType) {
+        void set(U32 bufferIndex, 
+                 U32 instanceDivisor, 
+                 U32 componentsPerElement, 
+                 bool normalized, 
+                 size_t stride, 
+                 U32 elementCountOffset, 
+                 GFXDataFormat dataType) {
+
             this->bufferIndex(bufferIndex);
             this->instanceDivisor(instanceDivisor);
             this->componentsPerElement(componentsPerElement);
@@ -52,16 +59,53 @@ public:
             this->dataType(dataType);
         }
 
-        inline void attribIndex(U32 index)                         { _index = index; _dirty = true; }
-        inline void offset(U32 elementCountOffset)                 { _elementCountOffset = elementCountOffset; _dirty = true; }
-        inline void bufferIndex(U32 bufferIndex)                   { _parentBuffer = bufferIndex; _dirty = true; }
-        inline void instanceDivisor(U32 instanceDivisor)           { _divisor = instanceDivisor; _dirty = true; }
-        inline void componentsPerElement(U32 componentsPerElement) { _componentsPerElement = componentsPerElement; _dirty = true; }
-        inline void normalized(bool normalized)                    { _normalized = normalized; _dirty = true; }
-        inline void stride(size_t stride)                          { _stride = stride; _dirty = true; }
-        inline void dataType(GFXDataFormat type)                   { _type = type; _dirty = true; }
-        inline void wasSet(bool wasSet)                            { _wasSet = wasSet; }
-        inline void clean()                                        { _dirty = false; }
+        inline void attribIndex(U32 index) {
+            _index = index; 
+            _dirty = true; 
+        }
+
+        inline void offset(U32 elementCountOffset) { 
+            _elementCountOffset = elementCountOffset; 
+            _dirty = true; 
+        }
+
+        inline void bufferIndex(U32 bufferIndex) { 
+            _parentBuffer = bufferIndex; 
+            _dirty = true; 
+        }
+
+        inline void instanceDivisor(U32 instanceDivisor) { 
+            _divisor = instanceDivisor; 
+            _dirty = true; 
+        }
+
+        inline void componentsPerElement(U32 componentsPerElement) { 
+            _componentsPerElement = componentsPerElement; 
+            _dirty = true; 
+        }
+
+        inline void normalized(bool normalized) { 
+            _normalized = normalized; 
+            _dirty = true; 
+        }
+
+        inline void stride(size_t stride) {
+            _stride = stride; 
+            _dirty = true; 
+        }
+
+        inline void dataType(GFXDataFormat type) { 
+            _type = type; 
+            _dirty = true; 
+        }
+
+        inline void wasSet(bool wasSet) { 
+            _wasSet = wasSet; 
+        }
+
+        inline void clean() { 
+            _dirty = false; 
+        }
 
         inline U32           attribIndex()          const { return _index; }
         inline U32           offset()               const { return _elementCountOffset; }
@@ -73,6 +117,7 @@ public:
         inline GFXDataFormat dataType()             const { return _type; }
         inline bool          wasSet()               const { return _wasSet; }
         inline bool          dirty()                const { return _dirty; }
+
     protected:
         U32 _index;
         U32 _divisor;
@@ -87,7 +132,8 @@ public:
     
     };
 
-    GenericVertexData(bool persistentMapped) : VertexDataInterface(), _persistentMapped(persistentMapped)
+    GenericVertexData(bool persistentMapped) : VertexDataInterface(), 
+                                               _persistentMapped(persistentMapped)
     {
         _doubleBufferedQuery = true;
     }
@@ -109,17 +155,34 @@ public:
         }
     }
     
-    /// When reading and writing to the same buffer, we use a round-robin approach and offset the reading and writing to multiple copies of the data
-    virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, U8 sizeFactor, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
-    virtual void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, void* data, bool invalidateRange = false) = 0;
+    /// When reading and writing to the same buffer, we use a round-robin approach and 
+    /// offset the reading and writing to multiple copies of the data
+    virtual void SetBuffer(U32 buffer, 
+                           U32 elementCount, 
+                           size_t elementSize, 
+                           U8 sizeFactor, 
+                           void* data, 
+                           bool dynamic, 
+                           bool stream, 
+                           bool persistentMapped = false) = 0;
 
-    virtual void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) = 0;
+    virtual void UpdateBuffer(U32 buffer, 
+                              U32 elementCount, 
+                              U32 elementCountOffset, 
+                              void* data, 
+                              bool invalidateRange = false) = 0;
+
+    virtual void BindFeedbackBufferRange(U32 buffer, 
+                                         U32 elementCountOffset, 
+                                         size_t elementCount) = 0;
 
     virtual U32  GetFeedbackPrimitiveCount(U8 queryID) = 0;
     /// Just before we render the frame
     virtual bool frameStarted(const FrameEvent& evt) { return true; }
 
-    inline void toggleDoubleBufferedQueries(const bool state) { _doubleBufferedQuery = state; }
+    inline void toggleDoubleBufferedQueries(const bool state) { 
+        _doubleBufferedQuery = state; 
+    }
 
     inline AttributeDescriptor& getDrawAttribDescriptor(U32 attribIndex) { 
         AttributeDescriptor& desc = _attributeMapDraw[attribIndex]; 

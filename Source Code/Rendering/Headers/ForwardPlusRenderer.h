@@ -25,7 +25,8 @@
 
 #include "Renderer.h"
 #include "Rendering/Lighting/Headers/LightGrid.h"
-/// This class implements the forward plus renderer that creates a list of all important lights in screen space 
+/// This class implements the forward plus renderer that creates a list of all important lights
+/// in screen space 
 /// Details: http://mynameismjp.wordpress.com/2012/03/31/light-indexed-deferred-rendering/
 
 namespace Divide {
@@ -35,8 +36,13 @@ class ForwardPlusRenderer : public Renderer {
 public:
 	ForwardPlusRenderer();
 	~ForwardPlusRenderer();
-    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock);
-	void render(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState);
+
+    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, 
+                             const GFXDevice::GPUBlock& gpuBlock);
+
+	void render(const DELEGATE_CBK<>& renderCallback,
+                const SceneRenderState& sceneRenderState);
+
     void updateResolution(U16 width, U16 height);
 
 protected:

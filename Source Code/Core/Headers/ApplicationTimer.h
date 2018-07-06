@@ -25,10 +25,6 @@
 
 #include "Core\Math\Headers\MathHelper.h"
 
-#if defined ( OS_WINDOWS )
-    #include <windows.h>
-#endif
-
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
@@ -139,7 +135,7 @@ protected:
 };
 
 inline ProfileTimer* ADD_TIMER(const char* timerName) {
-	ProfileTimer* timer = New ProfileTimer();
+    ProfileTimer* timer = MemoryManager_NEW ProfileTimer();
 	timer->create(timerName);
 	return timer;
 }
@@ -160,7 +156,7 @@ inline void PRINT_TIMER(ProfileTimer* const timer)  {
 }
 
 inline void REMOVE_TIMER(ProfileTimer*& timer) { 
-	MemoryManager::SAFE_DELETE(timer);  
+	MemoryManager::DELETE(timer);  
 }
 
 inline U64 GETUSTIME() {
@@ -175,7 +171,8 @@ inline D32 GETMSTIME() {
 	return getUsToMs(GETUSTIME());
 }
 
-/// The following functions force a timer update (a call to query performance timer. Use these for profiling!
+/// The following functions force a timer update (a call to query performance timer. 
+/// Use these for profiling!
 inline U64 GETUSTIME(bool state) {
 	return ApplicationTimer::getInstance().getElapsedTime(state);
 }

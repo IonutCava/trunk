@@ -94,7 +94,13 @@ void glPixelBuffer::Bind(GLubyte unit) const {
     GL_API::bindTexture(unit, _textureId, _textureType);
 }
 
-bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXImageFormat internalFormatEnum, GFXImageFormat formatEnum,GFXDataFormat dataTypeEnum) {
+bool glPixelBuffer::Create(GLushort width, 
+                           GLushort height,
+                           GLushort depth, 
+                           GFXImageFormat internalFormatEnum, 
+                           GFXImageFormat formatEnum,
+                           GFXDataFormat dataTypeEnum) {
+
     _internalFormat = GLUtil::GL_ENUM_TABLE::glImageFormatTable[internalFormatEnum];
     _format         = GLUtil::GL_ENUM_TABLE::glImageFormatTable[formatEnum];
     _dataType       = GLUtil::GL_ENUM_TABLE::glDataFormat[dataTypeEnum];
@@ -131,13 +137,13 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
     void *pixels = nullptr;
 
     switch(_dataType){
-        default: pixels = New GLubyte[size]; break;
-        case GL_FLOAT: pixels = New GLfloat[size]; break;
-        case GL_UNSIGNED_INT: pixels = New GLuint[size]; break;
-        case GL_UNSIGNED_SHORT: pixels = New GLushort[size]; break;
-        case GL_BYTE: pixels = New GLbyte[size]; break;
-        case GL_SHORT: pixels = New GLshort[size]; break;
-        case GL_INT: pixels = New GLint[size]; break;
+        default                : pixels = MemoryManager_NEW GLubyte[size];  break;
+        case GL_FLOAT          : pixels = MemoryManager_NEW GLfloat[size];  break;
+        case GL_UNSIGNED_INT   : pixels = MemoryManager_NEW GLuint[size];   break;
+        case GL_UNSIGNED_SHORT : pixels = MemoryManager_NEW GLushort[size]; break;
+        case GL_BYTE           : pixels = MemoryManager_NEW GLbyte[size];   break;
+        case GL_SHORT          : pixels = MemoryManager_NEW GLshort[size];  break;
+        case GL_INT            : pixels = MemoryManager_NEW GLint[size];    break;
     };
 
     memset(pixels, 0, size * sizeOf(_dataType) );
@@ -153,7 +159,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
             glTexImage3D(_textureType, 0, _internalFormat, _width, _height,_depth, 0, _format, _dataType, pixels);
             break;
     };
-    MemoryManager::SAFE_DELETE_ARRAY( pixels );
+    MemoryManager::DELETE_ARRAY( pixels );
 
     glGenBuffers(1, &_pixelBufferHandle);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);

@@ -7,7 +7,7 @@ namespace Divide {
 
     template<>
     Impostor* ImplResourceLoader<Impostor>::operator()() {
-        Impostor* ptr = New Impostor( _descriptor.getName(), 1.0f );
+        Impostor* ptr = MemoryManager_NEW Impostor(_descriptor.getName(), 1.0f);
 
         if ( _descriptor.getFlag() ) {
             ptr->renderState().useDefaultMaterial( false );
@@ -18,7 +18,7 @@ namespace Divide {
         }
 
         if ( !load( ptr, _descriptor.getName() ) ) {
-            MemoryManager::SAFE_DELETE( ptr );
+            MemoryManager::DELETE( ptr );
         }
 
         return ptr;

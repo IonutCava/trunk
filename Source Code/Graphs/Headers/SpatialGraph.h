@@ -31,14 +31,14 @@ namespace Divide {
 //public:
 //	SpatialGraph()
 //	{
-//		_root = New SceneGraphNode(New SceneRoot());
+//		_root = MemoryManager_NEW SceneGraphNode(MemoryManager_NEW SceneRoot());
 //	}
 //
 //	~SceneGraph()
 //	{
 //		_root->unload();
 //		/// Should recursivelly call delete on the entire scene
-//		SAFE_DELETE(_root);
+//		DELETE(_root);
 //	}
 //
 //	inline SceneGraphNode* getRoot(){ return _root; }

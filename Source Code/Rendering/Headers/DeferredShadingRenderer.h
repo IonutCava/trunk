@@ -37,13 +37,19 @@ class DeferredShadingRenderer : public Renderer {
 public:
 	DeferredShadingRenderer();
 	~DeferredShadingRenderer();
-    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, const GFXDevice::GPUBlock& gpuBlock);
-	void render(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState);
+
+    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, 
+                             const GFXDevice::GPUBlock& gpuBlock);
+
+	void render(const DELEGATE_CBK<>& renderCallback, 
+                const SceneRenderState& sceneRenderState);
+
 	void toggleDebugView();
     void updateResolution(U16 width, U16 height);
 
 private:
-	void firstPass(const DELEGATE_CBK<>& renderCallback, const SceneRenderState& sceneRenderState);
+	void firstPass(const DELEGATE_CBK<>& renderCallback, 
+                   const SceneRenderState& sceneRenderState);
 	void secondPass(const SceneRenderState& sceneRenderState);
 
 private:

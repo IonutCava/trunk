@@ -40,15 +40,23 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 vec4 ParallaxMapping(in uint bumpMapLightId, in vec2 uv){
     vec3 lightVecTBN = vec3(0.0);
     switch (dvd_LightSource[bumpMapLightId]._options.x){
-        case LIGHT_DIRECTIONAL      : lightVecTBN = -normalize(dvd_LightSource[bumpMapLightId]._position.xyz); break;
+        case LIGHT_DIRECTIONAL      : 
+            lightVecTBN = -normalize(dvd_LightSource[bumpMapLightId]._position.xyz); 
+            break;
         case LIGHT_OMNIDIRECTIONAL  : 
-        case LIGHT_SPOT             : lightVecTBN = normalize(_viewDirection + dvd_LightSource[bumpMapLightId]._position.xyz); break;
+        case LIGHT_SPOT             : 
+            lightVecTBN = normalize(_viewDirection + dvd_LightSource[bumpMapLightId]._position.xyz); 
+            break;
     };
 
     vec3 viewVecTBN = normalize(_viewDirection);
     
     //Offset, scale and bias
-    vec2 vTexCoord = uv + ((texture(texNormalMap, uv).a - 0.5) * dvd_parallaxFactor * (vec2(viewVecTBN.x, -viewVecTBN.y) / viewVecTBN.z));
+    vec2 vTexCoord = uv + 
+                    ((texture(texNormalMap, uv).a - 0.5) * 
+                     dvd_parallaxFactor * 
+                     (vec2(viewVecTBN.x, -viewVecTBN.y) / 
+                     viewVecTBN.z));
 
     //Normal mapping in TBN space
     return getPixelColor(vTexCoord, normalize(2.0 * texture(texNormalMap, vTexCoord).xyz - 1.0));

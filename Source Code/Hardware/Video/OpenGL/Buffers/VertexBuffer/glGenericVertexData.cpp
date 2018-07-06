@@ -32,7 +32,7 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped) : GenericVertexD
     }
     // Persistently mapped buffers require explicit synchronization
     if (persistentMapped) {
-        _lockManager = New glBufferLockManager(true);
+        _lockManager = MemoryManager_NEW glBufferLockManager(true);
     }
 }
 
@@ -76,21 +76,21 @@ glGenericVertexData::~glGenericVertexData()
     if (_numQueries > 0) {
         for (U8 i = 0; i < 2; ++i) {
             glDeleteQueries(_numQueries, _feedbackQueries[i]);
-            MemoryManager::SAFE_DELETE_ARRAY( _feedbackQueries[i] );
-            MemoryManager::SAFE_DELETE_ARRAY( _resultAvailable[i] );
+            MemoryManager::DELETE_ARRAY( _feedbackQueries[i] );
+            MemoryManager::DELETE_ARRAY( _resultAvailable[i] );
         }
     }
 
     // Delete the rest of the data
-    MemoryManager::SAFE_DELETE_ARRAY( _prevResult );
-    MemoryManager::SAFE_DELETE_ARRAY( _bufferSet );
-    MemoryManager::SAFE_DELETE_ARRAY( _bufferPersistent );
-    MemoryManager::SAFE_DELETE_ARRAY( _elementCount );
-    MemoryManager::SAFE_DELETE_ARRAY( _elementSize );
-    MemoryManager::SAFE_DELETE_ARRAY( _sizeFactor );
-    MemoryManager::SAFE_DELETE_ARRAY( _startDestOffset );
-    MemoryManager::SAFE_DELETE_ARRAY( _readOffset );
-    MemoryManager::SAFE_DELETE( _lockManager );
+    MemoryManager::DELETE_ARRAY( _prevResult );
+    MemoryManager::DELETE_ARRAY( _bufferSet );
+    MemoryManager::DELETE_ARRAY( _bufferPersistent );
+    MemoryManager::DELETE_ARRAY( _elementCount );
+    MemoryManager::DELETE_ARRAY( _elementSize );
+    MemoryManager::DELETE_ARRAY( _sizeFactor );
+    MemoryManager::DELETE_ARRAY( _startDestOffset );
+    MemoryManager::DELETE_ARRAY( _readOffset );
+    MemoryManager::DELETE( _lockManager );
     if (_bufferPersistentData != nullptr) {
         free(_bufferPersistentData);
     }
@@ -114,8 +114,8 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     // Prepare our generic queries
     _numQueries = numQueries;
     for (U8 i = 0; i < 2; ++i) {
-        _feedbackQueries[i] = New GLuint[_numQueries];
-        _resultAvailable[i] = New bool[_numQueries];
+        _feedbackQueries[i] = MemoryManager_NEW GLuint[_numQueries];
+        _resultAvailable[i] = MemoryManager_NEW bool[_numQueries];
     }
     // Create our generic query objects
     for (U8 i = 0; i < 2; ++i) {
@@ -124,29 +124,29 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
         glGenQueries(_numQueries, _feedbackQueries[i]);
     }
     // How many times larger should the buffer be than the actual data to offset reading and writing
-    _sizeFactor = New GLuint[numBuffers];
+    _sizeFactor = MemoryManager_NEW GLuint[numBuffers];
     memset(_sizeFactor, 0, numBuffers * sizeof(GLuint));
     // Allocate buffers for all possible data that we may use with this object
     // Query results from the previous frame
-    _prevResult = New GLuint[_numQueries];
+    _prevResult = MemoryManager_NEW GLuint[_numQueries];
     memset(_prevResult, 0, sizeof(GLuint) * _numQueries);
     // Flags to verify if each buffer was created
-    _bufferSet = New bool[numBuffers];
+    _bufferSet = MemoryManager_NEW bool[numBuffers];
     memset(_bufferSet, false, numBuffers * sizeof(bool));
     // The element count for each buffer
-    _elementCount = New GLuint[numBuffers];
+    _elementCount = MemoryManager_NEW GLuint[numBuffers];
     memset(_elementCount, 0, numBuffers * sizeof(GLuint));
     // The element size for each buffer (in bytes)
-    _elementSize = New size_t[numBuffers];
+    _elementSize = MemoryManager_NEW size_t[numBuffers];
     memset(_elementSize, 0, numBuffers * sizeof(size_t));
     // Current buffer write head position for 3x buffer updates
-    _startDestOffset = New size_t[numBuffers];
+    _startDestOffset = MemoryManager_NEW size_t[numBuffers];
     memset(_startDestOffset, 0, numBuffers * sizeof(size_t));
     // Current buffer read head position for 3x buffer updates
-    _readOffset = New size_t[numBuffers];
+    _readOffset = MemoryManager_NEW size_t[numBuffers];
     memset(_readOffset, 0, numBuffers * sizeof(size_t));
     // A flag to check if the buffer is or isn't persistently mapped
-    _bufferPersistent = New bool[numBuffers];
+    _bufferPersistent = MemoryManager_NEW bool[numBuffers];
     memset(_bufferPersistent, false, numBuffers * sizeof(bool));
     // Persistently mapped data (array of void* pointers)
     _bufferPersistentData = (void**)malloc(sizeof(void*) * numBuffers);
@@ -163,13 +163,18 @@ bool glGenericVertexData::frameStarted(const FrameEvent& evt) {
     return GenericVertexData::frameStarted(evt);
 }
 
-/// Bind a specific range of the transform feedback buffer for writing (specified in the number of elements to offset by and the number of elements to be written)
+/// Bind a specific range of the transform feedback buffer for writing 
+/// (specified in the number of elements to offset by and the number of elements to be written)
 void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) {
     // Only feedback buffers can be used with this method
     DIVIDE_ASSERT(isFeedbackBuffer(buffer), "glGenericVertexData error: called bind buffer range for non-feedback buffer!");
 
     GL_API::setActiveTransformFeedback(_transformFeedback);
-    glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, getBindPoint(_bufferObjects[buffer]), _bufferObjects[buffer], elementCountOffset * _elementSize[buffer], elementCount * _elementSize[buffer]);
+    glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 
+                      getBindPoint(_bufferObjects[buffer]), 
+                      _bufferObjects[buffer], 
+                      elementCountOffset * _elementSize[buffer], 
+                      elementCount * _elementSize[buffer]);
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
@@ -197,7 +202,9 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        GLenum type = command.renderWireframe() ? GL_LINE_LOOP : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
+        GLenum type = command.renderWireframe() ? GL_LINE_LOOP : 
+                                                  GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
+
         glDrawArraysIndirect(type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)));
     }
 
@@ -213,16 +220,26 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
 }
 
 /// Specify the structure and data of the given buffer
-void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, U8 sizeFactor, void* data, bool dynamic, bool stream, bool persistentMapped) {
+void glGenericVertexData::SetBuffer(U32 buffer, 
+                                    U32 elementCount, 
+                                    size_t elementSize, 
+                                    U8 sizeFactor, 
+                                    void* data, 
+                                    bool dynamic, 
+                                    bool stream, 
+                                    bool persistentMapped) {
     // Make sure the buffer exists
-    DIVIDE_ASSERT(buffer >= 0 && buffer < _bufferObjects.size(), "glGenericVertexData error: set buffer called for invalid buffer index!");
+    DIVIDE_ASSERT(buffer >= 0 && buffer < _bufferObjects.size(), 
+                  "glGenericVertexData error: set buffer called for invalid buffer index!");
     // glBufferData on persistentMapped buffers is not allowed
-    DIVIDE_ASSERT(!_bufferSet[buffer], "glGenericVertexData error: set buffer called for an already created buffer!");
+    DIVIDE_ASSERT(!_bufferSet[buffer], 
+                  "glGenericVertexData error: set buffer called for an already created buffer!");
     // Make sure we allow persistent mapping
     if (persistentMapped) {
         persistentMapped = _persistentMapped;
     }
-    DIVIDE_ASSERT((persistentMapped && _persistentMapped) || !persistentMapped, "glGenericVertexData error: persistent map flag is not compatible with object details!");
+    DIVIDE_ASSERT((persistentMapped && _persistentMapped) || !persistentMapped, 
+                  "glGenericVertexData error: persistent map flag is not compatible with object details!");
     // Remember the element count and size for the current buffer
     _elementCount[buffer] = elementCount;
     _elementSize[buffer] = elementSize;
@@ -236,7 +253,8 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
         glNamedBufferStorageEXT(currentBuffer, bufferSize * sizeFactor, NULL, flag);
         // Map the entire buffer range
         _bufferPersistentData[buffer] = glMapNamedBufferRangeEXT(currentBuffer, 0, bufferSize * 3, flag);
-        DIVIDE_ASSERT(data != nullptr, "glGenericVertexData error: persistent mapping failed when setting the current buffer!");
+        DIVIDE_ASSERT(data != nullptr, 
+                      "glGenericVertexData error: persistent mapping failed when setting the current buffer!");
         // Create sizeFactor copies of the data and store them in the buffer
         for(U8 i = 0; i < sizeFactor; ++i) {
             U8* dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
@@ -302,7 +320,8 @@ void glGenericVertexData::SetAttributes(bool feedbackPass) {
 
 /// Update internal attribute data
 void glGenericVertexData::SetAttributeInternal(AttributeDescriptor& descriptor) {
-    DIVIDE_ASSERT(_elementSize[descriptor.bufferIndex()] != 0, "glGenericVertexData error: attribute's parent buffer has an invalid element size!");
+    DIVIDE_ASSERT(_elementSize[descriptor.bufferIndex()] != 0, 
+                  "glGenericVertexData error: attribute's parent buffer has an invalid element size!");
     // Early out if the attribute didn't change
     if (!descriptor.dirty()) {
         return;
@@ -333,7 +352,8 @@ void glGenericVertexData::SetAttributeInternal(AttributeDescriptor& descriptor) 
 
 /// Return the number of primitives written to a transform feedback buffer that used the specified query ID
 U32 glGenericVertexData::GetFeedbackPrimitiveCount(U8 queryID) {
-    DIVIDE_ASSERT(queryID < _numQueries && !_bufferObjects.empty(), "glGenericVertexData error: Current object isn't ready for query processing!");
+    DIVIDE_ASSERT(queryID < _numQueries && !_bufferObjects.empty(), 
+                  "glGenericVertexData error: Current object isn't ready for query processing!");
     // Double buffered queries return the results from the previous draw call to avoid stalling the GPU pipeline
     U32 queryEntry = _doubleBufferedQuery ? _currentReadQuery : _currentWriteQuery;
     // If the requested query has valid data available, retrieve that data from the GPU

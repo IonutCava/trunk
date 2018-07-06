@@ -27,7 +27,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
 DoFPreRenderOperator::~DoFPreRenderOperator()
 {
     RemoveResource(_dofShader);
-    MemoryManager::SAFE_DELETE( _samplerCopy );
+    MemoryManager::DELETE( _samplerCopy );
 }
 
 void DoFPreRenderOperator::reshape(I32 width, I32 height){

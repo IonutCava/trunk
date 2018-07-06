@@ -24,6 +24,7 @@ namespace Divide {
     {
         if (_end != true) {
             ERROR_FN(Locale::get("TASK_DELETE_ACTIVE"));
+            stopTask();
         }
         while (!_done) {
         }
@@ -53,12 +54,16 @@ namespace Divide {
             _numberOfTicks = -1;
         }
 
+        _done = false;
+
         while (true) {
             if (_numberOfTicks == 0) {
                 _end = true;
             }
 
-            while ((_paused && !_end) || (Application::getInstance().mainLoopPaused() && !Application::getInstance().ShutdownRequested())) {
+            while ((_paused && !_end) || 
+                   (Application::getInstance().mainLoopPaused() && 
+                    !Application::getInstance().ShutdownRequested())) {
                 continue;
             }
             if (_end || Application::getInstance().ShutdownRequested()) {

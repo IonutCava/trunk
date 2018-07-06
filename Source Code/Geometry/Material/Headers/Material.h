@@ -168,13 +168,20 @@ public:
     Material();
     ~Material();
 
-    /// Return a new instance of this material with the name composed of the base material's name appended with the give name suffix.
+    /// Return a new instance of this material with the name composed of the base material's name and the give name suffix.
     /// Call RemoveResource on the returned pointer to free memory. (clone calls CreateResource internally!)
     Material* clone(const stringImpl& nameSuffix);
     bool unload();
     void update(const U64 deltaTime);
 
-    inline void setDiffuse(const vec4<F32>& value)  { _dirty = true; _shaderData._diffuse = value;  if (value.a < 0.95f) _translucencyCheck  = false; }
+    inline void setDiffuse(const vec4<F32>& value)  { 
+        _dirty = true; 
+        _shaderData._diffuse = value;  
+        if (value.a < 0.95f) {
+            _translucencyCheck  = false;
+        }
+    }
+
     inline void setAmbient(const vec4<F32>& value)  { _dirty = true; _shaderData._ambient = value;  }
     inline void setSpecular(const vec4<F32>& value) { _dirty = true; _shaderData._specular = value; }
     inline void setEmissive(const vec3<F32>& value) { _dirty = true; _shaderData._emissive = value; }
@@ -187,7 +194,9 @@ public:
     inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
-    void setTexture(ShaderProgram::TextureUsage textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace);
+    void setTexture(ShaderProgram::TextureUsage textureUsageSlot, 
+                    Texture* const texture, 
+                    const TextureOperation& op = TextureOperation_Replace);
     /// Add a texture <-> bind slot pair to be bound with the default textures on each "bindTexture" call
     inline void addCustomTexture(Texture* texture, U32 offset) {
         // custom textures are not material dependencies!
@@ -233,8 +242,13 @@ public:
 
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
-    void setShaderProgram(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>());
-    inline void setShaderProgram(const stringImpl& shader, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()){
+    void setShaderProgram(const stringImpl& shader, 
+                          const RenderStage& renderStage, 
+                          const bool computeOnAdd, 
+                          const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>());
+    inline void setShaderProgram(const stringImpl& shader, 
+                                 const bool computeOnAdd, 
+                                 const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()){
         setShaderProgram(shader, FINAL_STAGE, computeOnAdd, shaderCompileCallback);
         setShaderProgram(shader, Z_PRE_PASS_STAGE, computeOnAdd, shaderCompileCallback);
         setShaderProgram(shader, SHADOW_STAGE, computeOnAdd, shaderCompileCallback);
@@ -276,7 +290,7 @@ public:
     inline bool useAlphaTest()  const {return _useAlphaTest;}
 
     // Checks if the shader needed for the current stage is already constructed. Returns false if the shader was already ready.
-    bool computeShader(const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback); //Set shaders;
+    bool computeShader(const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback); 
     
     static void unlockShaderQueue()   {_shaderQueueLocked = false; }
     static void serializeShaderLoad(const bool state) { _serializeShaderLoad = state; }
@@ -284,9 +298,20 @@ public:
 private:
     void recomputeShaders();
     void computeShaderInternal();
-    void setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback);
-    static bool isShaderQueueLocked() {return _shaderQueueLocked; }
-    static void lockShaderQueue()     {if(_serializeShaderLoad) _shaderQueueLocked = true; }
+    void setShaderProgramInternal(const stringImpl& shader, 
+                                  const RenderStage& renderStage, 
+                                  const bool computeOnAdd, 
+                                  const DELEGATE_CBK<>& shaderCompileCallback);
+
+    static bool isShaderQueueLocked() {
+        return _shaderQueueLocked; 
+    }
+
+    static void lockShaderQueue() {
+        if(_serializeShaderLoad) {
+        _shaderQueueLocked = true; 
+        }
+    }
     
 private:
     static bool _shaderQueueLocked;

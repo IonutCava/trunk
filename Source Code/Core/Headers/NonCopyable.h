@@ -26,7 +26,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide 
 {
-	/// Inherit from this class to avoid any form of object copying. (deletes thecopy constructor and assignment operator)
+	/// Inherit from this class to avoid any form of object copying.
+    /// (deletes thecopy constructor and assignment operator)
 	class NonCopyable
 	{
 	protected:

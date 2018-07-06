@@ -71,15 +71,23 @@ public:
     inline void Uniform(const stringImpl& ext, const vec2<U16>& value) { Uniform(cachedLoc(ext), value); }
     inline void Uniform(const stringImpl& ext, const vec3<F32>& value) { Uniform(cachedLoc(ext), value); }
     inline void Uniform(const stringImpl& ext, const vec4<F32>& value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const stringImpl& ext, const mat3<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
-    inline void Uniform(const stringImpl& ext, const mat4<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
+    inline void Uniform(const stringImpl& ext, const mat3<F32>& value, bool rowMajor = false) { 
+        Uniform(cachedLoc(ext), value, rowMajor); 
+    }
+    inline void Uniform(const stringImpl& ext, const mat4<F32>& value, bool rowMajor = false) { 
+        Uniform(cachedLoc(ext), value, rowMajor); 
+    }
     inline void Uniform(const stringImpl& ext, const vectorImpl<I32 >& values) { Uniform(cachedLoc(ext), values); }
     inline void Uniform(const stringImpl& ext, const vectorImpl<F32 >& values) { Uniform(cachedLoc(ext), values); }
     inline void Uniform(const stringImpl& ext, const vectorImpl<vec2<F32> >& values) { Uniform(cachedLoc(ext), values); }
     inline void Uniform(const stringImpl& ext, const vectorImpl<vec3<F32> >& values) { Uniform(cachedLoc(ext), values); }
     inline void Uniform(const stringImpl& ext, const vectorImpl<vec4<F32> >& values) { Uniform(cachedLoc(ext), values); }
-    inline void Uniform(const stringImpl& ext, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
-    inline void Uniform(const stringImpl& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) { 
+        Uniform(cachedLoc(ext), values, rowMajor); 
+    }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) { 
+        Uniform(cachedLoc(ext), values, rowMajor); 
+    }
     ///Uniform Texture
     inline void UniformTexture(const stringImpl& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
     ///Subroutine
@@ -125,7 +133,11 @@ public:
     ///Is the shader ready for drawing?
     virtual bool isValid() const = 0;
     ///  Calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
-    void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
+    void recompile(const bool vertex, 
+                   const bool fragment, 
+                   const bool geometry = false, 
+                   const bool tessellation = false, 
+                   const bool compute = false);
     /// Add a define to the shader. The defined must not have been added previously
     void addShaderDefine(const stringImpl& define);
     /// Remove a define from the shader. The defined must have been added previously
@@ -155,10 +167,12 @@ public:
     inline void setFunctionIndex(ShaderType shader, U8 LoD, U32 index, U32 functionEntry){
         if(_functionIndex[shader][LoD].empty()) return;
 
-        DIVIDE_ASSERT(index < _functionIndex[shader][LoD].size(), "ShaderProgram error: Invalid function index specified for update!");
+        DIVIDE_ASSERT(index < _functionIndex[shader][LoD].size(), 
+                      "ShaderProgram error: Invalid function index specified for update!");
         if(_availableFunctionIndex[shader].empty()) return;
 
-        DIVIDE_ASSERT(functionEntry < _availableFunctionIndex[shader].size(), "ShaderProgram error: Specified function entry does not exist!");
+        DIVIDE_ASSERT(functionEntry < _availableFunctionIndex[shader].size(), 
+                      "ShaderProgram error: Specified function entry does not exist!");
         _functionIndex[shader][LoD][index] = _availableFunctionIndex[shader][functionEntry];
     }
 

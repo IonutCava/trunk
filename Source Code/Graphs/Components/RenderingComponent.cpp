@@ -9,14 +9,16 @@
 
 namespace Divide {
 
-    RenderingComponent::RenderingComponent(Material* const materialInstance, SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, parentSGN),
-                                                                                                                _lodLevel(0),
-                                                                                                                _castsShadows(true),
-                                                                                                                _receiveShadows(true),
-                                                                                                                _renderWireframe(false),
-                                                                                                                _renderBoundingBox(false),
-                                                                                                                _renderSkeleton(false),
-                                                                                                                _materialInstance(materialInstance)
+    RenderingComponent::RenderingComponent(Material* const materialInstance, 
+                                           SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, 
+                                                                                           parentSGN),
+                                                                              _lodLevel(0),
+                                                                              _castsShadows(true),
+                                                                              _receiveShadows(true),
+                                                                              _renderWireframe(false),
+                                                                              _renderBoundingBox(false),
+                                                                              _renderSkeleton(false),
+                                                                              _materialInstance(materialInstance)
     {
 
 #   ifdef _DEBUG
@@ -71,7 +73,9 @@ namespace Divide {
         //Call any pre-draw operations on the SceneNode (refresh VB, update materials, etc)
         Material* mat = getMaterialInstance();
         if (mat) {
-            if (!mat->computeShader(currentStage, false, DELEGATE_BIND(&SceneGraphNode::scheduleReset, _parentSGN, currentStage))) {
+            if (!mat->computeShader(currentStage, false, DELEGATE_BIND(&SceneGraphNode::scheduleReset, 
+                                                                       _parentSGN, 
+                                                                       currentStage))) {
                 return false;
             }
             if (mat->getShaderInfo(currentStage)._shaderCompStage != Material::ShaderInfo::SHADER_STAGE_COMPUTED) {
@@ -210,15 +214,21 @@ namespace Divide {
         bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
 
         if (!_materialInstance && depthPass) {
-            return shadowStage ? _parentSGN->getNode()->renderState().getShadowStateBlock() : _parentSGN->getNode()->renderState().getDepthStateBlock();
+            return shadowStage ? _parentSGN->getNode()->renderState().getShadowStateBlock() : 
+                                 _parentSGN->getNode()->renderState().getDepthStateBlock();
         }
 
         bool reflectionStage = GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE);
 
-        return _materialInstance->getRenderStateBlock(depthPass ? (shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE) : (reflectionStage ? REFLECTION_STAGE : FINAL_STAGE));
+        return _materialInstance->getRenderStateBlock(depthPass ? (shadowStage ? SHADOW_STAGE : 
+                                                                                 Z_PRE_PASS_STAGE) : 
+                                                                  (reflectionStage ? REFLECTION_STAGE : 
+                                                                                     FINAL_STAGE));
     }
 
-    const vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(vectorAlg::vecSize commandOffset, SceneRenderState& sceneRenderState, RenderStage renderStage) {
+    const vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(vectorAlg::vecSize commandOffset, 
+                                                                              SceneRenderState& sceneRenderState, 
+                                                                              RenderStage renderStage) {
         _drawCommandsCache.clear();
         _parentSGN->getNode()->getDrawCommands(_parentSGN, renderStage, sceneRenderState, _drawCommandsCache);
         vectorAlg::vecSize i = 0;
@@ -232,14 +242,23 @@ namespace Divide {
         _materialColorMatrix.zero();
         _materialPropertyMatrix.zero();
 
-        _materialPropertyMatrix.setCol(0, vec4<F32>(_parentSGN->isSelected() ? 1.0f : 0.0f, receivesShadows() ? 1.0f : 0.0f, static_cast<F32>(lodLevel()), 0.0f));
+        _materialPropertyMatrix.setCol(0, 
+                                      vec4<F32>(_parentSGN->isSelected() ? 1.0f : 0.0f, 
+                                                receivesShadows() ? 1.0f : 0.0f, 
+                                                static_cast<F32>(lodLevel()), 
+                                                0.0f));
 
         Material* mat = getMaterialInstance();
 
         if (mat){
             mat->getMaterialMatrix(_materialColorMatrix);
-            _materialPropertyMatrix.setCol(1, vec4<F32>((mat->isTranslucent() ? (mat->useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) : false) ? 1.0f : 0.0f,
-                (F32)mat->getTextureOperation(), (F32)mat->getTextureCount(), mat->getParallaxFactor()));
+            bool isTranslucent = mat->isTranslucent() ? (mat->useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) : 
+                                                        false;
+            _materialPropertyMatrix.setCol(1, 
+                                           vec4<F32>(isTranslucent ? 1.0f : 0.0f,
+                                                     (F32)mat->getTextureOperation(), 
+                                                     (F32)mat->getTextureCount(), 
+                                                     mat->getParallaxFactor()));
         }
     }
 

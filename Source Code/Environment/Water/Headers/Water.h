@@ -60,7 +60,7 @@ public:
 	inline void setRefractionCallback(const DELEGATE_CBK<>& callback) { _refractionCallback = callback; }
 
 protected:
-    SET_SAFE_DELETE_FRIEND
+    SET_DELETE_FRIEND
 
     template<typename T>
     friend class ImplResourceLoader;
@@ -69,9 +69,16 @@ protected:
     ~WaterPlane() 
     {
     }
-    void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    void getDrawCommands(SceneGraphNode* const sgn, 
+                         const RenderStage& currentRenderStage, 
+                         SceneRenderState& sceneRenderState, 
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
+
+    void render(SceneGraphNode* const sgn,
+                const SceneRenderState& sceneRenderState,
+                const RenderStage& currentRenderStage);
+
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     void postLoad(SceneGraphNode* const sgn);
     void previewReflection();
 

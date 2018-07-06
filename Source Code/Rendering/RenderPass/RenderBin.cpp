@@ -8,10 +8,13 @@
 
 namespace Divide {
 
-RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, SceneGraphNode* const node) : _node(node),
-                                                                                                        _sortKeyA( sortKeyA ),
-                                                                                                        _sortKeyB( sortKeyB ),
-                                                                                                        _distanceToCameraSq(distToCamSq)
+RenderBinItem::RenderBinItem(I32 sortKeyA,
+                             I32 sortKeyB, 
+                             F32 distToCamSq, 
+                             SceneGraphNode* const node) : _node(node),
+                                                           _sortKeyA( sortKeyA ),
+                                                           _sortKeyB( sortKeyB ),
+                                                           _distanceToCameraSq(distToCamSq)
 {
     _stateHash = 0;
     RenderingComponent* const renderable = _node->getComponent<RenderingComponent>();
@@ -65,14 +68,17 @@ struct RenderQueueKeyCompare{
             return false;
         }
 
-        // If both the shader are the same and the state hashes match, we sort by the secondary key (usually the texture id)
+        // If both the shader are the same and the state hashes match, 
+        // we sort by the secondary key (usually the texture id)
         return (a._sortKeyB < b._sortKeyB);
     }
 };
 
-RenderBin::RenderBin(const RenderBinType& rbType,const RenderingOrder::List& renderOrder,D32 drawKey) : _rbType(rbType),
-                                                                                                        _renderOrder(renderOrder),
-                                                                                                        _drawKey(drawKey)
+RenderBin::RenderBin(const RenderBinType& rbType,
+                     const RenderingOrder::List& renderOrder,
+                     D32 drawKey) : _rbType(rbType),
+                                    _renderOrder(renderOrder),
+                                    _drawKey(drawKey)
 {
     _renderBinStack.reserve(125);
     renderBinTypeToNameMap[RBT_PLACEHOLDER] = "Invalid Bin";
@@ -96,22 +102,27 @@ void RenderBin::sort(const RenderStage& currentRenderStage){
         default :
         case RenderingOrder::BY_STATE : {
             if (GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
-                std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceFrontToBack());
+                std::sort(_renderBinStack.begin(), _renderBinStack.end(), 
+                          RenderQueueDistanceFrontToBack());
             } else {
-                std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueKeyCompare());
+                std::sort(_renderBinStack.begin(), _renderBinStack.end(),
+                          RenderQueueKeyCompare());
             }
         } break;
         case RenderingOrder::BACK_TO_FRONT : {
-            std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceBacktoFront());
+            std::sort(_renderBinStack.begin(), _renderBinStack.end(),
+                      RenderQueueDistanceBacktoFront());
         } break;
         case RenderingOrder::FRONT_TO_BACK : {
-            std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceFrontToBack());
+            std::sort(_renderBinStack.begin(), _renderBinStack.end(),
+                      RenderQueueDistanceFrontToBack());
         } break;
         case RenderingOrder::NONE : {
             //no need to sort
         } break;
         case RenderingOrder::ORDER_PLACEHOLDER : {
-            ERROR_FN(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"), renderBinTypeToNameMap[_rbType]);
+            ERROR_FN(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"), 
+                     renderBinTypeToNameMap[_rbType]);
         } break;
     };
 }
@@ -132,7 +143,10 @@ void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos)
             nodeMaterial->getSortKeys(keyA, keyB);
         }
     }
-	_renderBinStack.push_back(RenderBinItem(keyA, keyB, sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos), sgn));
+	_renderBinStack.push_back(RenderBinItem(keyA,
+                                            keyB, 
+                                            sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos), 
+                                            sgn));
 }
 
 void RenderBin::preRender(const RenderStage& currentRenderStage){

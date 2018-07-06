@@ -32,6 +32,13 @@
 #include <functional>
 #include <atomic>
 
+#if defined ( OS_WINDOWS )
+#include <windows.h>
+#ifdef DELETE
+#undef DELETE
+#endif
+#endif
+
 namespace Divide {
 
 ///Data Types
@@ -50,9 +57,8 @@ typedef double   D32;
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
 /// a la Boost
-template <class T>
-inline void hash_combine(std::size_t& seed, const T& v)
-{
+template<typename T>
+inline void hash_combine(std::size_t& seed, const T& v) {
 	std::hash<T> hasher;
 	seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
@@ -194,35 +200,63 @@ typedef union {
     packed_int b;
 } P32;
 
-template <typename... Args>
+template<typename... Args>
 auto DELEGATE_BIND(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) {
 	return std::bind(std::forward<Args>(args)...);
 }
 
-template <typename... Args>
+template<typename... Args>
 auto DELEGATE_REF(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) {
 	return std::bind(std::forward<Args>(args)...);
 }
 
-template <typename... Args>
+template<typename... Args>
 auto DELEGATE_CREF(Args&&... args) -> decltype(std::cref(std::forward<Args>(args)...)) {
 	return std::cref(std::forward<Args>(args)...);
 }
 
-template <typename T = void>
+template<typename T = void>
 using DELEGATE_CBK = std::function<T()>;
 
 }; //namespace Divide
 
-void* operator new[]( size_t size, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
-void  operator delete[]( void* ptr, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
-void* operator new[]( size_t size, size_t alignment, size_t alignmentOffset, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
-void  operator delete[]( void* ptr, size_t alignment, size_t alignmentOffset, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
+void* operator new[](size_t size,
+                     const char* pName,
+                     Divide::I32 flags,
+                     Divide::U32 debugFlags,
+                     const char* file,
+                     Divide::I32 line);
+
+void  operator delete[](void* ptr,
+                        const char* pName,
+                        Divide::I32 flags,
+                        Divide::U32 debugFlags,
+                        const char* file,
+                        Divide::I32 line);
+
+void* operator new[](size_t size,
+                     size_t alignment,
+                     size_t alignmentOffset,
+                     const char* pName,
+                     Divide::I32 flags,
+                     Divide::U32 debugFlags,
+                     const char* file,
+                     Divide::I32 line);
+
+void  operator delete[](void* ptr,
+                        size_t alignment,
+                        size_t alignmentOffset,
+                        const char* pName,
+                        Divide::I32 flags,
+                        Divide::U32 debugFlags,
+                        const char* file,
+                        Divide::I32 line);
+
 // EASTL also wants us to define this (see string.h line 197)
 Divide::I32 Vsnprintf8( char* pDestination, size_t n, const char* pFormat, va_list arguments );
 
 #if defined(NDEBUG)
-#   define New new
+#   define MemoryManager_NEW new
 #else
 	void* operator new( size_t size );
 	void  operator delete( void *p );
@@ -234,62 +268,93 @@ Divide::I32 Vsnprintf8( char* pDestination, size_t n, const char* pFormat, va_li
 	void* operator new[]( size_t size, char* zFile, Divide::I32 nLine );
 	void  operator delete[]( void *ptr, char* zFile, Divide::I32 nLine );
 
-#   define New new(__FILE__, __LINE__)
+#   define MemoryManager_NEW new(__FILE__, __LINE__)
 #endif
 
 namespace Divide {
     namespace MemoryManager {
 
-	template<class T>
+    template<typename T>
 	inline void SAFE_FREE(T*& ptr){
 		if (ptr) {
 			free(ptr);
 			ptr = nullptr;
 		}
 	}
-    template<class T>
-    /// Deletes and nullifies the specified pointer only if it's not null
-    inline void SAFE_DELETE( T*& ptr ) {
-        if ( ptr ) {
-            delete ptr;
-            ptr = nullptr;
-        }
+    
+    /// Deletes and nullifies the specified pointer
+    template<typename T>
+    inline void DELETE( T*& ptr ) {
+        delete ptr;
+        ptr = nullptr;
     }
-#   define SET_SAFE_DELETE_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE( T*& ptr );
-    template<class T>
-    /// Deletes and nullifies the specified array pointer only if it's not null
-    inline void SAFE_DELETE_ARRAY( T*& ptr ) {
-        if ( ptr ) {
-            delete[] ptr;
-            ptr = nullptr;
-        }
+#   define SET_DELETE_FRIEND template<typename T> \
+                             friend void MemoryManager::DELETE( T*& ptr );
+
+    /// Deletes and nullifies the specified pointer
+    template<typename T>
+    inline void SAFE_DELETE(T*& ptr) {
+        DIVIDE_ASSERT(ptr != nullptr, "SAFE_DELETE: null pointer received");
+
+        delete ptr;
+        ptr = nullptr;
     }
-#   define SET_SAFE_DELETE_ARRAY_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_ARRAY( T*& ptr );
-    template<class T>
-    /// Deletes and nullifies the specified pointer only if it's not null. Returns "true" if deletion was successful
-    inline bool SAFE_DELETE_CHECK( T*& ptr ) {
-        if ( ptr ) {
-            delete ptr;
-            ptr = nullptr;
-            return true;
-        }
-        return false;
+#   define SET_SAFE_DELETE_FRIEND template<typename T> \
+                                  friend void MemoryManager::DELETE( T*& ptr );
+
+    /// Deletes and nullifies the specified array pointer
+    template<typename T>
+    inline void DELETE_ARRAY( T*& ptr ) {
+        delete[] ptr;
+        ptr = nullptr;
     }
-#   define SET_SAFE_DELETE_CHECK_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_CHECK( T*& ptr );
-    template<class T>
-    /// Deletes and nullifies the specified array pointer only if it's not null. Returns "true" if deletion was successful
-    inline bool SAFE_DELETE_ARRAY_CHECK( T*& ptr ) {
-        if ( ptr ) {
-            delete[] ptr;
-            ptr = nullptr;
-            return true;
-        }
-        return false;
+#   define SET_DELETE_ARRAY_FRIEND template<typename T> \
+                                   friend void MemoryManager::DELETE_ARRAY( T*& ptr );
+
+    /// Deletes and nullifies the specified array pointer
+    template<typename T>
+    inline void SAFE_DELETE_ARRAY(T*& ptr) {
+        DIVIDE_ASSERT(ptr != nullptr, "SAFE_DELETE_ARRAY: null pointer received");
+
+        delete[] ptr;
+        ptr = nullptr;
     }
-#   define SET_SAFE_DELETE_ARRAY_CHECK_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_ARRAY_CHECK( T*& ptr );
-    template<class T>
+#   define SET_SAFE_DELETE_ARRAY_FRIEND template<typename T> \
+                                        friend void MemoryManager::DELETE_ARRAY( T*& ptr );
+
+    /// Deletes and nullifies the specified pointer. Returns "false" if the pointer was already null
+    template<typename T>
+    inline bool DELETE_CHECK( T*& ptr ) {
+        if ( ptr == nullptr) {
+            return false;
+        }
+
+        delete ptr;
+        ptr = nullptr;
+
+        return true;
+    }
+#   define SET_DELETE_CHECK_FRIEND template<typename T> \
+                                   friend void MemoryManager::DELETE_CHECK( T*& ptr );
+
+    /// Deletes and nullifies the specified array pointer. Returns "false" if the pointer was already null
+    template<typename T>
+    inline bool DELETE_ARRAY_CHECK( T*& ptr ) {
+        if (ptr == nullptr) {
+            return false;
+        }
+         
+        delete[] ptr;
+        ptr = nullptr;
+
+        return true;
+    }
+
+#   define SET_DELETE_ARRAY_CHECK_FRIEND template<typename T> \
+                                         friend void MemoryManager::DELETE_ARRAY_CHECK( T*& ptr );
     /// Deletes every element from the vector and clears it at the end
-    inline void SAFE_DELETE_VECTOR( vectorImpl<T*>& vec ) {
+    template<typename T>
+    inline void DELETE_VECTOR( vectorImpl<T*>& vec ) {
         if ( !vec.empty() ) {
             for ( T* iter : vec ) {
                 delete iter;
@@ -297,30 +362,45 @@ namespace Divide {
             vec.clear();
         }
     }
-#   define SET_SAFE_DELETE_VECTOR_FRIEND template<class T> friend void MemoryManager::SAFE_DELETE_VECTOR( vectorImpl<T*>& vec );
-    template<class T, class U>
+#   define SET_DELETE_VECTOR_FRIEND template<typename T> \
+                                    friend void MemoryManager::DELETE_VECTOR( vectorImpl<T*>& vec );
+
+    /// Deletes every element from the map and clears it at the end
+    template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
+    inline void DELETE_HASHMAP(hashMapImpl<K, V, HashFun>& map) {
+        if (!map.empty()) {
+            for (hashMapImpl<K, V, HashFun>::value_type& iter : map) {
+                delete iter.second;
+            }
+            hashAlg::fastClear(map);
+        }
+    }
+#   define SET_DELETE_HASHMAP_FRIEND template<typename K, typename V, typename HashFun = hashAlg::hash<K> > \
+                                     friend void MemoryManager::DELETE_HASHMAP( hashMapImpl<K, V, HashFun>& map );
+
     /// Deletes the object pointed to by "OLD" and redirects that pointer to the object pointed by "NEW"
     /// "NEW" must be a derived (or same) class of OLD
-    inline void SAFE_UPDATE( T*& OLD, U* const NEW ) {
-        static_assert( std::is_base_of<T, U>::value, "SAFE_UPDATE error: T must be a descendant of U" );
-        if ( OLD ) {
-            delete OLD;
-        }
+    template<typename Base, typename Derived>
+    inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
+        static_assert(std::is_base_of<Base, Derived>::value, "SAFE_UPDATE error: New must be a descendant of Old");
+
+        delete OLD;
         OLD = NEW;
     }
-#   define SET_SAFE_UPDATE_FRIEND template<class T, class U> friend void MemoryManager::SAFE_UPDATE( T*& OLD, U* const NEW );
+#   define SET_SAFE_UPDATE_FRIEND template<typename Base, typename Derived> \
+                                  friend void MemoryManager::SAFE_UPDATE( Base*& OLD, Derived* const NEW );
 
     }; //namespace MemoryManager
 }; //namespace Divide
 #if defined(_MSC_VER)
 
-#	pragma warning(disable:4103) ///<Boost alignment shouts
+#	pragma warning(disable:4103) //< Boost alignment shouts
 #	pragma warning(disable:4244)
-#	pragma warning(disable:4996) ///< strcpy
-#	pragma warning(disable:4201) ///<nameless struct
-#	pragma warning(disable:4100) ///<unreferenced formal param
-#	pragma warning(disable:4505) ///<unreferenced local function removal
-#	pragma warning(disable:4127) ///<Constant conditional expressions
+#	pragma warning(disable:4996) //< strcpy
+#	pragma warning(disable:4201) //< nameless struct
+#	pragma warning(disable:4100) //< unreferenced formal param
+#	pragma warning(disable:4505) //< unreferenced local function removal
+#	pragma warning(disable:4127) //< Constant conditional expressions
 #elif defined(__GNUC__)
 //#	pragma GCC diagnostic ignored "-Wall"
 #endif

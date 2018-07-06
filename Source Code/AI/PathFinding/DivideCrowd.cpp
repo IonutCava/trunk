@@ -47,7 +47,8 @@ namespace Navigation {
             crowd->init(MAX_AGENTS, navMesh->getConfigParams().getAgentRadius(), nav);
             // Make polygons with 'disabled' flag invalid.
             crowd->getEditableFilter(0)->setExcludeFlags(SAMPLE_POLYFLAGS_DISABLED);
-            // Create different avoidance settings presets. The crowd object can store multiple, identified by an index number.
+            // Create different avoidance settings presets. The crowd object can store multiple,
+            // identified by an index number.
             // Setup local avoidance params to different qualities.
             dtObstacleAvoidanceParams params;
             // Use mostly default settings, copy from dtCrowd.
@@ -131,7 +132,8 @@ namespace Navigation {
         I32 idx = _crowd->addAgent(p, &ap);
         if (idx != -1) {
             // If a move target is defined: move agent towards it
-            // TODO do we want to set newly added agent's destination to previously set target? or remove this behaviour?
+            // TODO: do we want to set newly added agent's destination to previously set target? 
+            // or remove this behaviour?
             if (_targetRef)
                 _crowd->requestMoveTarget(idx, _targetRef, _targetPos);
             
@@ -147,11 +149,11 @@ namespace Navigation {
     }
     
     vectorImpl<dtCrowdAgent*> DivideDtCrowd::getActiveAgents() {
-        dtCrowdAgent** resultEntries = New dtCrowdAgent*[getMaxNbAgents()];
+        dtCrowdAgent** resultEntries = MemoryManager_NEW dtCrowdAgent*[getMaxNbAgents()];
         I32 size = _crowd->getActiveAgents(resultEntries,getMaxNbAgents());
 
         vectorImpl<dtCrowdAgent*> result(resultEntries, resultEntries + size);
-        MemoryManager::SAFE_DELETE_ARRAY( resultEntries );
+        MemoryManager::DELETE_ARRAY( resultEntries );
         return result;
     }
 

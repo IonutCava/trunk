@@ -26,7 +26,8 @@ void PingPongScene::preRender(){
 void PingPongScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_guiTimers[0] >= FpsDisplay){
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
+                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -240,7 +241,7 @@ bool PingPongScene::load(const stringImpl& name, CameraManager* const cameraMgr,
 	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
 	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     _freeFlyCam = &renderState().getCamera();
-    _paddleCam = New FreeFlyCamera();
+    _paddleCam = MemoryManager_NEW FreeFlyCamera();
     _paddleCam->fromCamera(*_freeFlyCam);
     //Position the camera
     //renderState().getCamera().setPitch(-90);

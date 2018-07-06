@@ -36,8 +36,8 @@ public:
 	~RenderPass();
 
 	virtual void render(const SceneRenderState& renderState, SceneGraph* activeSceneGraph);
-	inline U16 getLasTotalBinSize()     const {return _lastTotalBinSize;}
-	inline const stringImpl& getName() const {return _name;}
+	inline U16 getLasTotalBinSize()    const { return _lastTotalBinSize; }
+	inline const stringImpl& getName() const { return _name; }
 
 private:
 	stringImpl _name;

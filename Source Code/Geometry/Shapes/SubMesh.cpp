@@ -45,7 +45,10 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void SubMesh::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void SubMesh::getDrawCommands(SceneGraphNode* const sgn, 
+                              const RenderStage& currentRenderStage, 
+                              SceneRenderState& sceneRenderState, 
+                              vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_parentMesh != nullptr);
 
     RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();

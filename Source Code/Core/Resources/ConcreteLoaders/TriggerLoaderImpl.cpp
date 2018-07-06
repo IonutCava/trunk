@@ -5,10 +5,10 @@
 namespace Divide {
 
 Trigger* ImplResourceLoader<Trigger>::operator()(){
-    Trigger* ptr = New Trigger();
+    Trigger* ptr = MemoryManager_NEW Trigger();
 
     if ( !load( ptr, _descriptor.getName() ) ) {
-        MemoryManager::SAFE_DELETE( ptr );
+        MemoryManager::DELETE( ptr );
     } else {
         ptr->renderState().useDefaultMaterial( false );
     }

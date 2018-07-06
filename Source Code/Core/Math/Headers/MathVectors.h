@@ -148,19 +148,19 @@ public:
 };
 
 /// return the closest point on the line defined by the 2 points (A, B) and this vector
-template <class T>
+template<typename T>
 inline vec2<T> closestPointOnLine(const vec2<T> &vA, const vec2<T> &vB);
 /// return the closest point on the line segment defined between the 2 points (A, B) and this vector
-template <class T>
+template<typename T>
 inline vec2<T> closestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB);
 /// lerp between the 2 specified vectors by the specified amount
-template <class T>
+template<typename T>
 inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, T factor);
 /// lerp between the 2 specified vectors by the specified amount for each component
-template <class T>
+template<typename T>
 inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T>& factor);
 
-template <class T>
+template<typename T>
 inline vec2<T> normalize(vec2<T>& vector) {
     vector.normalize();
     return vector;
@@ -170,7 +170,7 @@ inline vec2<T> normalize(vec2<T>& vector) {
 /* vec3 -  A 3-tuple used to represent things like a vector in 3D space,
 /* a point in 3D space or just 3 values linked together
 /***********************************************************************/
-template <class T>
+template<typename T>
 class vec3 {
 public:
     vec3() : x(0), y(0), z(0) { }
@@ -295,19 +295,19 @@ public:
 };
 
 /// return the closest point on the line defined by the 2 points (A, B) and this vector
-template <class T>
+template<typename T>
 inline vec3<T> closestPointOnLine(const vec3<T> &vA, const vec3<T> &vB);
 /// return the closest point on the line segment created between the 2 points (A, B) and this vector
-template <class T>
+template<typename T>
 inline vec3<T> closestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB);
 /// lerp between the 2 specified vectors by the specified amount
-template <class T>
+template<typename T>
 inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, T factor);
 /// lerp between the 2 specified vectors by the specified amount for each component
-template <class T>
+template<typename T>
 inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T>& factor);
-template <class T>
 
+template<typename T>
 inline vec3<T> normalize(vec3<T>& vector) {
     vector.normalize();
     return vector;
@@ -317,7 +317,7 @@ inline vec3<T> normalize(vec3<T>& vector) {
 /* vec4 -  A 4-tuple used to represent things like a vector in 4D space (w-component)
 /* or just 4 values linked together
 /************************************************************************************/
-template <class T>
+template<typename T>
 class vec4 {
 public:
     vec4() : x(0), y(0), z(0), w(1)                             { }
@@ -444,21 +444,21 @@ public:
 };
 
 /// lerp between the 2 specified vectors by the specified amount
-template <class T>
+template<typename T>
 inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, T factor);
 /// lerp between the 2 specified vectors by the specified amount for each component
-template <class T>
+template<typename T>
 inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T>& factor);
 /// min/max functions
-template <class T>
+template<typename T>
 inline vec4<T> min(const vec4<T> &v1, const vec4<T> &v2) {
     return vec4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z), std::min(v1.w, v2.w)); 
 }
-template <class T>
+template<typename T>
 inline vec4<T> max(const vec4<T> &v1, const vec4<T> &v2) { 
     return vec4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z), std::max(v1.w, v2.w));
 }
-template <class T>
+template<typename T>
 inline vec4<T> normalize(vec4<T>& vector) {
     vector.normalize();
     return vector;

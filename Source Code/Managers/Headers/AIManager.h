@@ -39,11 +39,14 @@ public:
     void Destroy();
     /// Called at a fixed interval (preferably in a separate thread);
     void update();
-    /// Add an AI Entity to a specific team. Entities can be added to multiple teams. Caller is responsible for the lifetime of entity
+    /// Add an AI Entity to a specific team. 
+    /// Entities can be added to multiple teams. Caller is responsible for the lifetime of entity
     bool registerEntity(U32 teamId, AIEntity* entity);
-    /// Remove an AI Entity from a specific teams. Entities can be added to multiple teams. Caller is responsible for the lifetime of entity
+    /// Remove an AI Entity from a specific teams. Entities can be added to multiple teams.
+    /// Caller is responsible for the lifetime of entity
     void unregisterEntity(U32 teamId, AIEntity* entity);
-    /// Remove an AI Entity from all teams. Entities can be added to multiple teams. Caller is responsible for the lifetime of entity
+    /// Remove an AI Entity from all teams. Entities can be added to multiple teams. 
+    /// Caller is responsible for the lifetime of entity
     void unregisterEntity(AIEntity* entity);
     inline AITeam* const getTeamByID(I32 AITeamID) {
         if (AITeamID != -1) {
@@ -70,7 +73,8 @@ public:
     inline void pauseUpdate(bool state)       { _pauseUpdate = state;}
     inline bool updatePaused()          const { return _pauseUpdate; }
     inline bool updating()              const { return _updating; }
-    /// Handle any debug information rendering (nav meshes, AI paths, etc). Called by Scene::postRender after depth map preview call
+    /// Handle any debug information rendering (nav meshes, AI paths, etc). 
+    /// Called by Scene::postRender after depth map preview call
     void debugDraw(bool forceAll = true);
 	inline bool isDebugDraw() const { return _navMeshDebugDraw; }
     /// Toggle debug draw for all NavMeshes

@@ -7,7 +7,10 @@
 
 namespace Divide {
 
-CameraManager::CameraManager(Kernel* const kernelPtr) : FrameListener(), _kernelPtr(kernelPtr), _camera(nullptr), _addNewListener(false)
+CameraManager::CameraManager(Kernel* const kernelPtr) : FrameListener(), 
+                                                        _kernelPtr(kernelPtr),
+                                                        _camera(nullptr),
+                                                        _addNewListener(false)
 {
     REGISTER_FRAME_LISTENER(this, 0);
 }
@@ -18,9 +21,8 @@ CameraManager::~CameraManager() {
     PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
 	for (CameraPool::value_type& it : _cameraPool) {
         it.second->unload();
-        MemoryManager::SAFE_DELETE( it.second );
     }
-    _cameraPool.clear();
+    MemoryManager::DELETE_HASHMAP(_cameraPool);
     _cameraPoolGUID.clear();
 }
 

@@ -89,7 +89,8 @@ public:
             case BOTTOM_RIGHT: return getGeometryVB()->getPosition()[3];
             default: break;
         }
-        return getGeometryVB()->getPosition()[0]; //default returns top left corner. Why? Don't care ... seems like a good idea. - Ionut
+        // Default returns top left corner. Why? Don't care ... seems like a good idea. - Ionut
+        return getGeometryVB()->getPosition()[0]; 
     }
 
     void setNormal(CornerLocation corner, const vec3<F32>& normal){

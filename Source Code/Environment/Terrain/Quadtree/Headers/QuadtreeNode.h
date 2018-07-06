@@ -55,7 +55,13 @@ class SceneRenderState;
 class QuadtreeNode {
 public:
     ///recursive node building function
-    void Build( const U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, Terrain* const terrain, U32& chunkCount );
+    void Build(const U8 depth, 
+               const vec2<U32>& pos, 
+               const vec2<U32>& HMsize, 
+               U32 minHMSize, 
+               Terrain* const terrain, 
+               U32& chunkCount );
+
     bool computeBoundingBox();
     void Destroy();
 
@@ -64,7 +70,10 @@ public:
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
-    inline bool isALeaf() const							{ return !(_children[CHILD_NW] && _children[CHILD_NE] && _children[CHILD_SW] && _children[CHILD_SE]); }
+    inline bool isALeaf() const	{ 
+        return !(_children[CHILD_NW] && _children[CHILD_NE] && _children[CHILD_SW] && _children[CHILD_SE]); 
+    }
+
     inline BoundingBox&	getBoundingBox()         		{return _boundingBox;}
     inline void setBoundingBox(const BoundingBox& bbox)	{_boundingBox = bbox;}
     inline TerrainChunk*	getChunk()					{return _terrainChunk;}

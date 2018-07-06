@@ -41,17 +41,19 @@ enum CallbackParam {
     TYPE_DOUBLE,
     TYPE_CHAR
 };
-///Using std::atomic for thread-shared data to avoid locking
+/**
+ *@brief Using std::atomic for thread-shared data to avoid locking
+ */
 class Task : public GUIDWrapper, public boost::enable_shared_from_this<Task>
 {
     typedef boost::signals2::signal<void(U64)> SendCompleted;
 public:
-    /// <summary>
-    /// Creates a new Task that runs in a separate thread
-    /// </summary>
-    /// <param name="tickInterval">The delay (in microseconds) between each callback</param>
-    /// <param name="numberOfTicks">The number of times to call the callback function before the Task is deleted. 0 = run forever</param>
-    /// <param name="*f">The callback function</param>
+    /**
+     * @brief Creates a new Task that runs in a separate thread
+     * @param tickInterval The delay (in microseconds) between each callback
+     * @param numberOfTicks The number of times to call the callback function before the Task is deleted. 0 = run forever
+     * @param f The callback function
+     */
     Task(boost::threadpool::pool* tp, U64 tickInterval, I32 numberOfTicks, const DELEGATE_CBK<>& f);
     ~Task();
 

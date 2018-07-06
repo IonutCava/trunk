@@ -68,12 +68,27 @@ public:
     /// Main update call
     void update(const U64 deltaTime);
     /// Add a text label
-    GUIText* addText(const stringImpl& id,const vec2<I32>& position, const stringImpl& font,const vec3<F32>& color, char* format, ...);
+    GUIText* addText(const stringImpl& id,
+                     const vec2<I32>& position,
+                     const stringImpl& font,
+                     const vec3<F32>& color,
+                     char* format, ...);
     /// Modify a text label
     GUIText* modifyText(const stringImpl& id, char* format, ...);
-    GUIMessageBox* addMsgBox(const stringImpl& id, const stringImpl& title, const stringImpl& message, const vec2<I32>& offsetFromCentre = vec2<I32>(0));
-    /// Add a button with a specific callback. The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up from the bottom
-    GUIButton* addButton(const stringImpl& id,const stringImpl& text,const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,ButtonCallback callback,const stringImpl& rootSheetId = "");
+    GUIMessageBox* addMsgBox(const stringImpl& id,
+                             const stringImpl& title,
+                             const stringImpl& message,
+                             const vec2<I32>& offsetFromCentre = vec2<I32>(0));
+    /// Add a button with a specific callback. 
+    /// The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up
+    /// from the bottom
+    GUIButton* addButton(const stringImpl& id,
+                         const stringImpl& text,
+                         const vec2<I32>& position,
+                         const vec2<U32>& dimensions,
+                         const vec3<F32>& color,
+                         ButtonCallback callback,
+                         const stringImpl& rootSheetId = "");
     /// Add a flash element -DEPRECATED-
     GUIFlash* addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>& position, const vec2<U32>& extent);
     /// Called on window resize to adjust the dimensions of all the GUI elements

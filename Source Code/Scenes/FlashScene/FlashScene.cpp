@@ -17,7 +17,8 @@ void FlashScene::processInput(const U64 deltaTime){
 void FlashScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_guiTimers[0] >= FpsDisplay)	{
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
+                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _guiTimers[0] = 0.0;
     }
 }

@@ -46,8 +46,10 @@ public:
 	const char* d_errorf(const char* format, ...) const;
 #endif
 
-	inline void toggleTimeStamps(const bool state)                                {_timestamps = state;}
-	inline void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {_guiConsoleCallback = guiConsoleCallback;}
+	inline void toggleTimeStamps(const bool state)  {_timestamps = state;}
+	inline void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {
+        _guiConsoleCallback = guiConsoleCallback;
+    }
 
 protected:
     Console();
