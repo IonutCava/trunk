@@ -35,6 +35,8 @@ public:
     bool Create(GLushort width, GLushort height);
     void Destroy();
     void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true);
+    void SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot);
+    void ResetMipLevel(TextureDescriptor::AttachmentType slot);
     void AddDepthBuffer();
 
     void Begin(const FrameBufferTarget& drawPolicy);
@@ -54,7 +56,9 @@ protected:
     GLuint _textureId[5];  ///<4 color attachments and 1 depth
     GLuint _textureType[5];
     GLuint _clearBufferMask;
-    GLuint _totalLayerCount;
+    GLint  _attOffset[5];
+    GLint  _mipMaxLevel[5];
+    GLint  _mipMinLevel[5];
     bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
     bool   _mipMapsDirty[5];
     bool   _hasDepth;

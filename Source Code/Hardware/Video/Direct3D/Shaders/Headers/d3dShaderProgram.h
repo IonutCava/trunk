@@ -37,6 +37,7 @@ public:
     void detachShader(Shader* const shader) {}
     //Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {}
+    void SetSubroutine(ShaderType type, U32 index) const {}
     U32  GetSubroutineIndex(ShaderType type, const std::string& name) const { return 0; }
     //Attributes
     void Attribute(I32 location, D32 value) const {}
@@ -63,7 +64,7 @@ public:
     void Uniform(I32 location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) const {}
     void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const {}
     //Uniform Texture
-    void UniformTexture(I32 location, U16 slot) const {}
+    void UniformTexture(I32 location, U16 slot) {}
 
 private:
     I32  cachedLoc(const std::string& name, const bool uniform = true) { return -1; }

@@ -1,4 +1,4 @@
-uniform float dvd_lightBleedBias = 0.0001;
+uniform float dvd_lightBleedBias = 0.2;
 uniform float dvd_minShadowVariance = 0.00002;
 uniform float dvd_shadowMaxDist = 250.0;
 uniform float dvd_shadowFadeDist = 150.0;
@@ -12,61 +12,61 @@ float reduceLightBleeding(float pMax, float amount) {
     return linstep(amount, 1.0f, pMax);
 }
 
-float chebyshevUpperBound(vec2 moments, float compare, float minVariance)
-{
+float chebyshevUpperBound(vec2 moments, float compare, float minVariance) {
     float p = step(compare, moments.x);
     float variance = max(moments.y - (moments.x * moments.x), minVariance);
     
     float d = (compare - moments.x);
 
-    float pMax = linstep(dvd_lightBleedBias, 1.0, variance / (variance + d*d));
-
+    float pMax = reduceLightBleeding(variance / (variance + d*d), dvd_lightBleedBias);
+    
     return min(max(p, pMax), 1.0);
 }
 
-void applyShadowDirectional(in int shadowIndex, inout float shadow) {
+float applyShadowDirectional(const in int lightIndex, const in Shadow currentShadowSource) {
+    // find the appropriate depth map to look up in based on the depth of this fragment
+    if (gl_FragCoord.z < currentShadowSource._floatValues.x)      {
+        _shadowTempInt = 0;
+    }else if (gl_FragCoord.z < currentShadowSource._floatValues.y) {
+        _shadowTempInt = 1;
+    }else if (gl_FragCoord.z < currentShadowSource._floatValues.z) {
+        _shadowTempInt = 2;
+    }else /*(gl_FragCoord.z < currentShadowSource._floatValues.w)*/{
+        _shadowTempInt = 3;
+    }
 
     // GLOBAL
     const int SplitPowLookup[8] = { 0, 1, 1, 2, 2, 2, 2, 3 };
-
-    float currentDistance = gl_FragCoord.z;
-    Shadow currentShadowSource = dvd_ShadowSource[dvd_lightIndex[shadowIndex]];
-    vec4 shadow_coord;
-    // find the appropriate depth map to look up in based on the depth of this fragment
-    if (currentDistance < currentShadowSource._floatValues.x)      {
-        _shadowTempInt = 0;
-        shadow_coord = currentShadowSource._lightVP0 * _vertexW;
-    }else if (currentDistance < currentShadowSource._floatValues.y) {
-        _shadowTempInt = 1;
-        shadow_coord = currentShadowSource._lightVP1 * _vertexW;
-    }else if (currentDistance < currentShadowSource._floatValues.z) {
-        _shadowTempInt = 2;
-        shadow_coord = currentShadowSource._lightVP2 * _vertexW;
-    }else /*(currentDistance < currentShadowSource._floatValues.w)*/{
-        _shadowTempInt = 3;
-        shadow_coord = currentShadowSource._lightVP3 * _vertexW;
-    }
-    
-    // Ensure that every fragment in the quad choses the same split so that
-    // derivatives will be meaningful for proper texture filtering and LOD
-    // selection.
+    // Ensure that every fragment in the quad choses the same split so that derivatives
+    // will be meaningful for proper texture filtering and LOD selection.
     int SplitPow = 1 << _shadowTempInt;
-    int SplitX   = int (abs(dFdx(SplitPow)));
-    int SplitY   = int (abs(dFdy(SplitPow)));
-    int SplitXY  = int (abs(dFdx(SplitY)));
+    int SplitX = int(abs(dFdx(SplitPow)));
+    int SplitY = int(abs(dFdy(SplitPow)));
+    int SplitXY = int(abs(dFdx(SplitY)));
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
     _shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
 
-    shadow_coord.w = shadow_coord.z;
-    shadow_coord.z = _shadowTempInt;
-    if (shadow_coord.w > 0.0){
-        vec2 moments = texture(texDepthMapFromLightArray, shadow_coord.xyz).rg;
+    vec4 shadow_coord;
+    switch (_shadowTempInt){
+        case 0: shadow_coord = currentShadowSource._lightVP0 * _vertexW; break;
+        case 1: shadow_coord = currentShadowSource._lightVP1 * _vertexW; break;
+        case 2: shadow_coord = currentShadowSource._lightVP2 * _vertexW; break;
+        case 3: shadow_coord = currentShadowSource._lightVP3 * _vertexW; break;
+        default: return 1.0;
+    };
+    
+    if (shadow_coord.z > 0.0){
+        shadow_coord.w = shadow_coord.z;
+        shadow_coord.z = _shadowTempInt;
+
+        vec2 moments = texture(texDepthMapFromLightArray[lightIndex], shadow_coord.xyz).rg;
         //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_minShadowVariance);
         //float shadowWarpedz1 = exp(shadow_coord.w * DEPTH_EXP_WARP);
-        float shadowWarpedz1 = shadow_coord.w;
-        //shadow = mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance), 1.0, clamp(((currentDistance + dvd_shadowFadeDist) - dvd_shadowMaxDist) / dvd_shadowFadeDist, 0.0, 1.0));
-        shadow = chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance);
+        //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance), 1.0, clamp(((gl_FragCoord.z + dvd_shadowFadeDist) - dvd_shadowMaxDist) / dvd_shadowFadeDist, 0.0, 1.0));
+        return chebyshevUpperBound(moments, shadow_coord.w, dvd_minShadowVariance);
     }
+
+    return 1.0;
 }
 
 

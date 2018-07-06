@@ -2,8 +2,8 @@
 <assets>assets.xml</assets>
 
 <vegetation>
-	<grassVisibility>80</grassVisibility>
-	<treeVisibility>80</treeVisibility>
+	<grassVisibility>180</grassVisibility>
+	<treeVisibility>280</treeVisibility>
 </vegetation>
 
 <wind>

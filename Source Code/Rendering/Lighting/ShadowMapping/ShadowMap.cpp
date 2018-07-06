@@ -10,7 +10,6 @@
 #include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
 ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type) : _init(false),
-                                                                            _isBound(false),
                                                                             _light(light),
                                                                             _shadowCamera(shadowCamera),
                                                                             _shadowMapType(type),
@@ -73,17 +72,14 @@ void ShadowMapInfo::resolution(U16 resolution) {
 }
 
 bool ShadowMap::Bind(U8 offset){
-    if (_isBound || !_depthMap)
+    if (!_depthMap)
         return false;
 
-    _isBound = true;
+    return BindInternal(offset);
+}
 
-    if (getShadowMapType() == SHADOW_TYPE_CSM){
-        _depthMap->Bind(offset, TextureDescriptor::Color0 );
-    } else {
-        _depthMap->Bind(offset, TextureDescriptor::Depth);
-    }
-
+bool ShadowMap::BindInternal(U8 offset){
+    _depthMap->Bind(offset, TextureDescriptor::Depth);
     return true;
 }
 

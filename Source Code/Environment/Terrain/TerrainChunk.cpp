@@ -7,12 +7,27 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Environment/Vegetation/Headers/Vegetation.h"
 
-TerrainChunk::TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain) : _terrainVB(groundVB), _parentTerrain(parentTerrain)
+U32 TerrainChunk::_chunkID = 0;
+
+TerrainChunk::TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain, QuadtreeNode* const parentNode) : _terrainVB(groundVB),
+                                                                                                                         _parentTerrain(parentTerrain),
+                                                                                                                         _parentNode(parentNode),
+                                                                                                                         _vegetation(nullptr)
 {
+    _chunkID++;
+    _LoD = 0;
+    _xOffset = _yOffset = _sizeX = _sizeY = 0;
     _chunkIndOffset = 0;
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
+    VegetationDetails vegDetails = _parentTerrain->_vegDetails;
+    vegDetails.name += "_chunk_" + Util::toString(_chunkID);
+    _vegetation = New Vegetation(vegDetails); //<Deleted by the sceneGraph on "unload"
+    _vegetation->getSceneNodeRenderState().useDefaultMaterial(false);
+    _vegetation->setMaterial(nullptr);
+    assert(_vegetation != nullptr);
 }
 
 TerrainChunk::~TerrainChunk()
@@ -26,10 +41,16 @@ TerrainChunk::~TerrainChunk()
     _terrainVB = nullptr;
 }
 
-void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize){
+void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, SceneGraphNode* const parentTerrainSGN){
 
     _chunkIndOffset = _terrainVB->getIndexCount();
 
+    _xOffset = (F32)pos.x;
+    _yOffset = (F32)pos.y;
+    _sizeX = (F32)minHMSize;
+    _sizeY = (F32)minHMSize;
+
+    
     for(U8 i=0; i < Config::TERRAIN_CHUNKS_LOD; i++)
         ComputeIndicesArray(i, depth, pos, HMsize);
 
@@ -53,6 +74,8 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize)
     for(U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++){
         _indice[i].clear();
     }
+    parentTerrainSGN->addNode(_vegetation);
+    _vegetation->initialize(this, parentTerrainSGN);
 }
 
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){
@@ -97,50 +120,12 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
     assert(nIndice == _lodIndCount[lod]);
 }
 
-void TerrainChunk::DrawGround(I8 lod) const {
+void TerrainChunk::CreateDrawCommand(I8 lod) {
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
     if(lod > 0) lod--;
-
-    _terrainVB->setFirstElement(_lodIndOffset[lod] + _chunkIndOffset);
-    _terrainVB->setRangeCount(_lodIndCount[lod]);
-    _parentTerrain->renderChunkCallback(lod);
-}
-
-void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree, SceneGraphNode* parentNode){
-    typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
-
-    ResourceDescriptor model(tree.ItemName);
-    model.setResourceLocation(tree.ModelName);
-    model.setFlag(false);
-    Mesh* tempTree = CreateResource<Mesh>(model);
-    if(tempTree){
-        std::stringstream ss; ss << "_" << tempTree->getRefCount();
-        std::string treeName(tempTree->getName()+ss.str());
-        ss.clear();
-        SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
-        PRINT_FN(Locale::get("TREE_ADDED"),treeNode->getName().c_str());
-        Transform* treeTransform = treeNode->getTransform();
-        treeTransform->scale(scale * tree.scale);
-        treeTransform->rotateY(pos.w);
-        treeTransform->translate(vec3<F32>(pos));
-        FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, treeNode->getChildren()){
-            assert(it.second);
-            Material* m = (it.second)->getNode()->getMaterial();
-            if(m){
-                m->addShaderDefines("ADD_FOLIAGE, IS_TREE");
-                m->addShaderModifier("Tree");///<Just to create a different shader in the ResourceCahe
-            }
-        }
-        if(tree.staticUsage){
-            treeNode->setUsageContext(SceneGraphNode::NODE_STATIC);
-        }
-        if(tree.navigationUsage){
-            treeNode->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
-        }
-        if(tree.physicsUsage){
-            treeNode->getComponent<PhysicsComponent>()->setPhysicsGroup(PhysicsComponent::NODE_COLLIDE_NO_PUSH);
-        }
-    }else{
-        ERROR_FN(Locale::get("ERROR_ADD_TREE"),tree.ModelName.c_str());
-    }
+    
+    _drawCommand._signedData = lod;
+    _drawCommand._cmd.firstIndex = _lodIndOffset[lod] + _chunkIndOffset;
+    _drawCommand._cmd.count = _lodIndCount[lod];
+    _parentTerrain->addDrawCommand(_drawCommand);
 }

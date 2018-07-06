@@ -28,12 +28,13 @@
 #include "Utility/Headers/Vector.h"
 
 enum ShaderType {
-    FRAGMENT_SHADER,
-    VERTEX_SHADER,
-    GEOMETRY_SHADER,
-    TESSELATION_CTRL_SHADER,
-    TESSELATION_EVAL_SHADER,
-    COMPUTE_SHADER
+    FRAGMENT_SHADER = 0,
+    VERTEX_SHADER   = 1,
+    GEOMETRY_SHADER = 2,
+    TESSELATION_CTRL_SHADER = 3,
+    TESSELATION_EVAL_SHADER = 4,
+    COMPUTE_SHADER = 5,
+    ShaderType_PLACEHOLDER = 6
 };
 
 class ShaderProgram;

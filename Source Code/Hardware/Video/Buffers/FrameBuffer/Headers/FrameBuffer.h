@@ -37,7 +37,8 @@ public:
         bool _colorOnly;
         U32  _numColorChannels;
         bool _clearBuffersOnBind;
-        FrameBufferTarget() : _depthOnly(false), _colorOnly(false), _clearBuffersOnBind(true), _numColorChannels(1)
+        bool _changeViewport;
+        FrameBufferTarget() : _depthOnly(false), _colorOnly(false), _clearBuffersOnBind(true), _changeViewport(true), _numColorChannels(1)
         {
         }
     };
@@ -52,6 +53,9 @@ public:
     inline void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) {  ///<Used by cubemap FB's    
         DrawToLayer(slot, nFace, includeDepth);
     }
+
+    virtual void SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot) = 0;
+    virtual void ResetMipLevel(TextureDescriptor::AttachmentType slot) = 0;
 
     virtual void Begin(const FrameBufferTarget& drawPolicy) = 0;
     virtual void End() = 0;

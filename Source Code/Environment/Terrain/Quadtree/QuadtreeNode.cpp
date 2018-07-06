@@ -27,7 +27,7 @@ QuadtreeNode::~QuadtreeNode()
     SAFE_DELETE(_terrainChunk);
 }
 
-void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, U32& chunkCount){
+void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, SceneGraphNode* const parentTerrainSGN, U32& chunkCount){
     _LOD = 0;
     _minHMSize = minHMSize;
     U32 div = (U32)pow(2.0f, (F32)depth);
@@ -36,14 +36,14 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
     if(nodesize.y%2==0) nodesize.y++;
     vec2<U32> newsize = nodesize/2;
 
+    _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
+
     if (std::max(newsize.x, newsize.y) < _minHMSize)	{
-        _terrainChunk = New TerrainChunk(groundVB, parentTerrain);
-        _terrainChunk->Load(depth, pos, HMsize);
+        _terrainChunk = New TerrainChunk(groundVB, parentTerrain, this);
+        _terrainChunk->Load(depth, pos, _minHMSize, HMsize, parentTerrainSGN);
 		chunkCount++;
         return;
     }
-
-    _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
 
     // Create 4 children
     _children[CHILD_NW] = New QuadtreeNode();
@@ -63,10 +63,10 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
     tNewHMpos[CHILD_NE] = pos + vec2<U32>(newsize.x, 0);
     tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
     tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
-    _children[CHILD_NW]->Build(depth + 1, tNewHMpos[CHILD_NW], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
-    _children[CHILD_NE]->Build(depth + 1, tNewHMpos[CHILD_NE], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
-    _children[CHILD_SW]->Build(depth + 1, tNewHMpos[CHILD_SW], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
-    _children[CHILD_SE]->Build(depth + 1, tNewHMpos[CHILD_SE], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
+    _children[CHILD_NW]->Build(depth + 1, tNewHMpos[CHILD_NW], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
+    _children[CHILD_NE]->Build(depth + 1, tNewHMpos[CHILD_NE], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
+    _children[CHILD_SW]->Build(depth + 1, tNewHMpos[CHILD_SW], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
+    _children[CHILD_SE]->Build(depth + 1, tNewHMpos[CHILD_SE], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
 }
 
 bool QuadtreeNode::computeBoundingBox(){
@@ -95,20 +95,32 @@ bool QuadtreeNode::computeBoundingBox(){
 }
 
 void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+    
     F32 camDistance = _boundingSphere.getCenter().distance(sceneState.getRenderState().getCameraConst().getEye()) - _terLoDOffset;
-    _LOD = camDistance > _boundingSphere.getRadius() ? (camDistance > _boundingSphere.getDiameter() ? 2 : 1) : 0;
+    F32 sphereRadius = _boundingSphere.getRadius();
+    _LOD = camDistance >= sphereRadius ? (camDistance >= (sphereRadius * 2) ? 2 : 1) : 0;
 
     if (!isALeaf()) {
         _children[CHILD_NW]->sceneUpdate(deltaTime, sgn, sceneState);
         _children[CHILD_NE]->sceneUpdate(deltaTime, sgn, sceneState);
         _children[CHILD_SW]->sceneUpdate(deltaTime, sgn, sceneState);
         _children[CHILD_SE]->sceneUpdate(deltaTime, sgn, sceneState);
+    }else{
+        _terrainChunk->setLoD(_LOD);
     }
 }
 
 bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderState) const {
-	if(options & CHUNK_BIT_TESTCHILDREN) {
+	if(bitCompare(options, CHUNK_BIT_TESTCHILDREN)) {
         const Camera& cam = sceneRenderState.getCameraConst();
+        if (!bitCompare(options, CHUNK_BIT_SHADOWMAP)) {
+            const vec3<F32>& eye = cam.getEye();
+            F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + _boundingSphere.getRadius();
+            if (_boundingSphere.getCenter().distance(eye) > visibilityDistance){
+                if (_boundingBox.nearestDistanceFromPointSquared(eye) - _terLoDOffset > std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y))
+                    return false;
+            }
+        }
         if (!_boundingBox.ContainsPoint(cam.getEye()))	{
             const Frustum& frust = cam.getFrustumConst();
             switch (frust.ContainsSphere(_boundingSphere.getCenter(), _boundingSphere.getRadius())) {
@@ -123,7 +135,7 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
             };//outer case
         }//if
     }//CHUNK_BIT_TESTCHILDREN option
-
+    
 	return true;
 }
 
@@ -139,18 +151,18 @@ void QuadtreeNode::DrawBBox() const {
     }
 }
 
-void QuadtreeNode::DrawGround(U32 options, const SceneRenderState& sceneRenderState) const {
+void QuadtreeNode::CreateDrawCommand(U32 options, const SceneRenderState& sceneRenderState) {
 
     if (!isInView(options, sceneRenderState))
         return;
 
     if (isALeaf()) {
         assert(_terrainChunk);
-        _terrainChunk->DrawGround(options & CHUNK_BIT_WATERREFLECTION ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD);
+        _terrainChunk->CreateDrawCommand(bitCompare(options, CHUNK_BIT_WATERREFLECTION) ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD);
     }else{
-        _children[CHILD_NW]->DrawGround(options, sceneRenderState);
-        _children[CHILD_NE]->DrawGround(options, sceneRenderState);
-        _children[CHILD_SW]->DrawGround(options, sceneRenderState);
-        _children[CHILD_SE]->DrawGround(options, sceneRenderState);
+        _children[CHILD_NW]->CreateDrawCommand(options, sceneRenderState);
+        _children[CHILD_NE]->CreateDrawCommand(options, sceneRenderState);
+        _children[CHILD_SW]->CreateDrawCommand(options, sceneRenderState);
+        _children[CHILD_SE]->CreateDrawCommand(options, sceneRenderState);
     }
 }

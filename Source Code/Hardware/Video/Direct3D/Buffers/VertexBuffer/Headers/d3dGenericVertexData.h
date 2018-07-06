@@ -60,9 +60,9 @@ public:
     {
     }
 
-    I32  GetFeedbackPrimitiveCount(U8 queryID)
+    U32  GetFeedbackPrimitiveCount(U8 queryID)
     {
-        return -1;
+        return 0;
     }
 };
 #endif

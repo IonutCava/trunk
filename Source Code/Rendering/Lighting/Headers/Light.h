@@ -154,12 +154,12 @@ public:
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
     virtual void generateShadowMaps(SceneRenderState& sceneRenderState);
-    inline const mat4<F32>& getVPMatrix(U8 index)   const { return _shadowProperties._lightVP[index]; }
-    inline const vec4<F32>& getFloatValues()        const { return _shadowProperties._floatValues; }
-    inline const vec3<F32>& getLightPos(U8 index)   const { return _shadowProperties._lightPosition[index]; }
-    inline void setVPMatrix(U8 index, const mat4<F32>& newValue)   { _shadowProperties._lightVP[index].set(newValue);  }
-    inline void setFloatValue(U8 index, F32 newValue)              { _shadowProperties._floatValues[index] = newValue; }
-    inline void setLightPos(U8 index, const vec3<F32>& newValue)   { _shadowProperties._lightPosition[index].set(newValue); }
+    inline const mat4<F32>& getShadowVPMatrix(U8 index)   const { return _shadowProperties._lightVP[index]; }
+    inline const vec4<F32>& getShadowFloatValues()        const { return _shadowProperties._floatValues; }
+    inline const vec3<F32>& getShadowLightPos(U8 index)   const { return _shadowProperties._lightPosition[index]; }
+    inline       void       setShadowVPMatrix(U8 index, const mat4<F32>& newValue)   { _shadowProperties._lightVP[index].set(newValue);  }
+    inline       void       setShadowFloatValue(U8 index, F32 newValue)              { _shadowProperties._floatValues[index] = newValue; }
+    inline       void       setShadowLightPos(U8 index, const vec3<F32>& newValue)   { _shadowProperties._lightPosition[index].set(newValue); }
     inline void shadowMapResolutionFactor(U8 factor)       {_resolutionFactor = factor;}
     inline U8   shadowMapResolutionFactor()          const {return _resolutionFactor;}
 

@@ -68,7 +68,7 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const Boundin
     F32  cameraDistance = center.distance(eye);
     F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
     if(distanceCheck && cameraDistance > visibilityDistance){
-        if(boundingBox.nearestDistanceFromPointSquared(eye) > visibilityDistance)
+        if (boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y))
             return false;
     }
 
@@ -198,14 +198,10 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     s->ApplyMaterial(_material);
     s->SetLOD(getCurrentLOD());
     if (_material->isTranslucent()){
-        switch (_material->getTranslucencySource()){
-        case Material::TRANSLUCENT_OPACITY_MAP:
+        if (_material->getTexture(Material::TEXTURE_OPACITY)) 
             _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);
-            break;
-        case Material::TRANSLUCENT_DIFFUSE_MAP:
+        if (_material->getTexture(Material::TEXTURE_UNIT0))
             _material->getTexture(Material::TEXTURE_UNIT0)->Bind(Material::TEXTURE_UNIT0);
-            break;
-        };
     }
 
     AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();

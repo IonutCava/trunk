@@ -1,13 +1,13 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
-#include "Headers/glUniformBufferObject.h"
+#include "Headers/glUniformBuffer.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "core.h"
 
-glUniformBufferObject::glUniformBufferObject() : GUIDWrapper(), _UBOid(0)
+glUniformBuffer::glUniformBuffer(const bool unbound) : ShaderBuffer(unbound), _UBOid(0)
 {
 }
 
-glUniformBufferObject::~glUniformBufferObject()
+glUniformBuffer::~glUniformBuffer()
 {
     if(_UBOid > 0) {
         glDeleteBuffers(1, &_UBOid);
@@ -15,8 +15,8 @@ glUniformBufferObject::~glUniformBufferObject()
     }
 }
 
-void glUniformBufferObject::printUniformBlockInfo(GLint prog, GLint block_index) {
-    if (prog <= 0 || block_index < 0)
+void glUniformBuffer::printUniformBlockInfo(GLint prog, GLint block_index) {
+    if (prog <= 0 || block_index < 0 || _unbound)
         return;
 
     // Fetch uniform block name:
@@ -85,38 +85,39 @@ void glUniformBufferObject::printUniformBlockInfo(GLint prog, GLint block_index)
         PRINT_FN("%s", (*detail).c_str());
 }
 
-void glUniformBufferObject::Create(bool dynamic, bool stream){
+void glUniformBuffer::Create(bool dynamic, bool stream){
     assert(_UBOid == 0);
     _usage = (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
     glGenBuffers(1, &_UBOid); // Generate the buffer
+    _target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
     assert(_UBOid != 0);
 }
 
-void glUniformBufferObject::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const {
-    assert(_UBOid != 0);
-    glBindBuffer(GL_UNIFORM_BUFFER, _UBOid);
-    glBufferData(GL_UNIFORM_BUFFER, primitiveSize * primitiveCount, nullptr, _usage);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+void glUniformBuffer::setActive() const {
+    _unbound ? GL_API::setActiveBuffer(GL_SHADER_STORAGE_BUFFER, _UBOid) : GL_API::setActiveBuffer(GL_UNIFORM_BUFFER, _UBOid);
 }
 
-void glUniformBufferObject::ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data) const {
+void glUniformBuffer::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const {
     assert(_UBOid != 0);
-    glBindBuffer(GL_UNIFORM_BUFFER, _UBOid);
-    glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+
+    setActive();
+    glBufferData(_target, primitiveSize * primitiveCount, nullptr, _usage);
 }
 
-void glUniformBufferObject::unbind() {
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+void glUniformBuffer::ChangeSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data) const {
+    assert(_UBOid != 0);
+    setActive();
+    glBufferSubData(_target, offset, size, data);
 }
 
-bool glUniformBufferObject::bindBufferRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const {
-    assert(_UBOid != 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, bindIndex, _UBOid, offset, size);
+bool glUniformBuffer::bindRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const {
+    assert(_UBOid != 0); 
+    glBindBufferRange(_target, bindIndex, _UBOid, offset, size);
     return true;
 }
 
-bool glUniformBufferObject::bindBufferBase(GLuint bindIndex) const {
+bool glUniformBuffer::bind(GLuint bindIndex) const {
     assert(_UBOid != 0);
-    glBindBufferBase(GL_UNIFORM_BUFFER, bindIndex, _UBOid);
+    glBindBufferBase(_target, bindIndex, _UBOid);
     return true;
 }

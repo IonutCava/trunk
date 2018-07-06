@@ -103,12 +103,6 @@ public:
         TextureOperation_PLACEHOLDER = 0x10
     };
 
-    enum GeometryShaderType {
-        GS_TRIANGLES = 0,
-        GS_LINES,
-        GS_POINTS
-    };
-
     enum TranslucencySource {
         TRANSLUCENT_DIFFUSE = 0,
         TRANSLUCENT_OPACITY,
@@ -140,13 +134,12 @@ public:
     void update(const U64 deltaTime);
 
     inline void setAmbient(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._ambient = value;  _materialMatrix[index].setCol(0, value); }
-    inline void setDiffuse(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._diffuse = value;  _materialMatrix[index].setCol(1, value); }
+    inline void setDiffuse(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._diffuse = value;  _materialMatrix[index].setCol(1, value); if (value.a < 0.95f) _translucencyCheck  = false; }
     inline void setSpecular(const vec4<F32>& value, U8 index = 0) { _dirty = true; _shaderData[index]._specular = value; _materialMatrix[index].setCol(2, value); }
     inline void setEmissive(const vec3<F32>& value, U8 index = 0) { _dirty = true; _shaderData[index]._emissive = value; _materialMatrix[index].setCol(3, vec4<F32>(_shaderData[index]._shininess, value.x, value.y, value.z)); }
 
-    inline void setGeometryInputType(GeometryShaderType gsType)   { _dirty = true; _gsInputType = gsType; }
     inline void setHardwareSkinning(const bool state) { _dirty = true; _hardwareSkinning = state; }
-    inline void setOpacity(F32 value, U8 index = 0)   { _dirty = true; _shaderData[index]._opacity = value; }
+    inline void setOpacity(F32 value, U8 index = 0)   { _dirty = true; _shaderData[index]._opacity = value; _translucencyCheck = false; }
     inline void setShininess(F32 value, U8 index = 0) {
         _dirty = true;
         _shaderData[index]._shininess = value;
@@ -213,7 +206,6 @@ public:
     inline bool isDirty()       const {return _dirty;}
     inline bool isDoubleSided() const {return _doubleSided;}
     inline bool useAlphaTest()  const {return _useAlphaTest;}
-    inline TranslucencySource   getTranslucencySource() const {return _translucencySource;}
 
     // Checks if the shader needed for the current stage is already constructed. Returns false if the shader was already ready.
     bool computeShader(bool force = false,const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
@@ -226,14 +218,13 @@ private:
     vectorImpl<mat4<F32> > _materialMatrix; /* all properties bundled togheter */
     ShadingMode _shadingMode;
     std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
-    TranslucencySource _translucencySource;
+    vectorImpl<TranslucencySource > _translucencySource;
     bool _dirty;
     bool _dumpToFile;
     bool _translucencyCheck;
     bool _useAlphaTest; //< use discard if true / blend if otherwise
     bool _doubleSided;
     bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
-    GeometryShaderType _gsInputType;        ///< Use triangles, lines or points as geometry shader input
     Unordered_map<RenderStage, ShaderInfo > _shaderInfo;
 
     bool        _shaderThreadedLoad;

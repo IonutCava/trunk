@@ -4,14 +4,8 @@
 //n -> add texDiffuse0 + texDiffuse1 + ... texDiffuse(n-1)
 uniform int textureCount;
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
-layout(binding = TEXTURE_UNIT2) uniform sampler2D texDiffuse2;
-
-uniform int  textureOperation0;
-uniform int  textureOperation1;
-uniform int  textureOperation2;
-
+uniform sampler2D texDiffuse[3];
+uniform int  textureOperation[3];
 uniform vec4 dvd_TextureEnvColor[3];
 
 const int MODULATE   = 0;
@@ -55,4 +49,15 @@ void applyTexture(in sampler2D texUnit, in int type, in int index, in vec2 uv, i
         
         default         : color = clamp(texture(texUnit,uv) * color, 0.0, 1.0); break;
     }
+}
+
+vec4 getTextureColor(in vec2 texCoord){
+    vec4 color;
+    for (int i = 0; i < 3; ++i){
+        if (textureCount == i) break;
+        //Get the texture color. use Replace for the first texture
+        applyTexture(texDiffuse[i], textureOperation[i], 0, texCoord, color);
+    }
+
+    return color;
 }

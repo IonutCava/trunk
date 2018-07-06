@@ -6,95 +6,98 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
-Vegetation::Vegetation(const std::string& name, U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale,
-    const std::string& map, Texture* grassBillboards,
-    const std::string& grassShaderName) : SceneNode(name, TYPE_VEGETATION_GRASS),
-    _billboardCount(billboardCount),
-    _grassDensity(grassDensity),
-    _grassScale(grassScale),
-    _treeScale(treeScale),
-    _treeDensity(treeDensity),
-    _grassBillboards(grassBillboards),
+Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.name, TYPE_VEGETATION_GRASS),
+    _billboardCount(details.billboardCount),
+    _grassDensity(details.grassDensity),
+    _grassScale(details.grassScale),
+    _treeScale(details.treeScale),
+    _treeDensity(details.treeDensity),
+    _grassBillboards(details.grassBillboards),
+    _terrain(details.parentTerrain),
     _render(false),
     _success(false),
     _culledFinal(false),
     _shadowMapped(true),
     _threadedLoadComplete(false),
     _stopLoadingRequest(false),
-    _terrain(nullptr),
     _terrainSGN(nullptr),
+    _terrainChunk(nullptr),
     _instanceCountGrass(0),
     _instanceCountTrees(0),
-    _billboardDivisor(0),
     _stateRefreshIntervalBuffer(0ULL),
     _stateRefreshInterval(getSecToUs(1)) ///<Every second?
 {
-    _shadowQueryID = 0;
-    _drawQueryID = 1;
-    _map.create(map);
-    _grassShaderName = grassShaderName;
-    _grassShader[0] = nullptr;
-    _grassShader[1] = nullptr;
-    _grassShader[2] = nullptr;
+    _map.create(details.map);
+    _grassShaderName = details.grassShaderName;
     _grassGPUBuffer = GFX_DEVICE.newGVD();
     _treeGPUBuffer = GFX_DEVICE.newGVD();
+    _grassMatrices = GFX_DEVICE.newSB(true);
+    _grassMatrices->Create(false, false);
+
+    memset(_instanceRoutineIdx, 0, CullType_PLACEHOLDER * sizeof(U32));
+
     ResourceDescriptor instanceCullShader("instanceCull");
     instanceCullShader.setThreadedLoading(false);
-    instanceCullShader.setId(2);
+    instanceCullShader.setId(3);
     _cullShader = CreateResource<ShaderProgram>(instanceCullShader);
 }
 
 Vegetation::~Vegetation(){
-    PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getName().c_str());
+    PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"), getName().c_str());
     _stopLoadingRequest = true;
+    U32 timer = 0;
     while(!_threadedLoadComplete){
         // wait for the loading thread to finish first;
         boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+        timer += 10;
+        if (timer > 1500) break;
     }
-
-    _grassTextureIdx.clear();
+    assert(_threadedLoadComplete);
     _grassPositions.clear();
-    _grassSizes.clear();
     RemoveResource(_cullShader);
-    RemoveResource(_grassShader[0/*FINAL_STAGE*/]);
-    RemoveResource(_grassShader[1/*SHADOW_STAGE*/]);
-    RemoveResource(_grassShader[2/*Z_PRE_PASS_STAGE*/]);
-    RemoveResource(_grassBillboards);
 
     SAFE_DELETE(_grassGPUBuffer);
     SAFE_DELETE(_treeGPUBuffer);
+    SAFE_DELETE(_grassMatrices);
     PRINT_FN(Locale::get("UNLOAD_VEGETATION_END"));
 }
 
-void Vegetation::initialize(Terrain* const terrain, SceneGraphNode* const terrainSGN) {
-    assert(terrain);
+void Vegetation::initialize(TerrainChunk* const terrainChunk, SceneGraphNode* const terrainSGN) {
+    assert(terrainChunk);
     assert(_map.data() != nullptr);
 
-    ResourceDescriptor grassDepthPass(_grassShaderName + ".Depth.Shadow");
-    ResourceDescriptor grassPrePass(_grassShaderName+ ".Depth.PrePass");
-
-    _grassShader[0/*INAL_STAGE*/] = CreateResource<ShaderProgram>(ResourceDescriptor(_grassShaderName));
-    _grassShader[1/*SHADOW_STAGE*/] = CreateResource<ShaderProgram>(grassDepthPass);
-    _grassShader[2/*Z_PRE_PASS_STAGE*/] = CreateResource<ShaderProgram>(grassPrePass);
-
-    _grassDensity = _grassDensity/_billboardCount;
-    _terrain = terrain;
+    _terrainChunk = terrainChunk;
     _terrainSGN = terrainSGN;
-    for (U8 i = 0; i < 3; ++i){
-        _grassShader[i]->Uniform("lod_metric", 100.0f);
-        _grassShader[i]->Uniform("dvd_lightCount", 1);
-        _grassShader[i]->UniformTexture("texDiffuse", 0);
-    }
-    _cullShader->Uniform("ObjectExtent", vec3<F32>(2.0f, 2.0f, 2.0f));
+    
+    _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
+    _cullShader->UniformTexture("HiZBuffer", 0);
+
     RenderStateBlockDescriptor transparent;
     transparent.setCullMode(CULL_MODE_CW);
+    //transparent.setBlend(true);
     _grassStateBlock = GFX_DEVICE.getOrCreateStateBlock( transparent );
+
+    ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
+    Material* vegMaterial = CreateResource<Material>(vegetationMaterial);
+
+    vegMaterial->setDiffuse(DefaultColors::WHITE());
+    vegMaterial->setAmbient(DefaultColors::WHITE() / 3);
+    vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
+    vegMaterial->setShininess(5.0f);
+    vegMaterial->addShaderDefines("SKIP_TEXTURES");
+    vegMaterial->setShaderProgram(_grassShaderName, FINAL_STAGE, true);
+    vegMaterial->setShaderProgram(_grassShaderName + ".Shadow", SHADOW_STAGE, true);
+    vegMaterial->setShaderProgram(_grassShaderName + ".PrePass", Z_PRE_PASS_STAGE, true);
+    vegMaterial->setShaderLoadThreaded(false);
+    vegMaterial->dumpToFile(false);
+    setMaterial(vegMaterial);
 
     Kernel* kernel = Application::getInstance().getKernel();
     _generateVegetation.reset(kernel->AddTask(0, true, true, DELEGATE_BIND(&Vegetation::generateGrass, this), DELEGATE_BIND(&Vegetation::uploadGrassData, this)));
@@ -102,8 +105,10 @@ void Vegetation::initialize(Terrain* const terrain, SceneGraphNode* const terrai
 }
 
 bool Vegetation::uploadGrassData(){
-    if (_grassPositions.empty())
+    if (_grassPositions.empty()){
+        _threadedLoadComplete = true;
         return false;
+    }
 
     static const vec2<F32> pos000(cosf(RADIANS(0.000f)), sinf(RADIANS(0.000f)));
     static const vec2<F32> pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
@@ -126,72 +131,90 @@ bool Vegetation::uploadGrassData(){
     for (U8 j = 0; j < 3; ++j) {
         indexOffset = (j * 4);
         for (U8 l = 0; l < 12; ++l) {
-            grassBlades.push_back(vertices[indices[l] + indexOffset] * _grassScale);
+            grassBlades.push_back(vertices[indices[l] + indexOffset]);
             texCoord.push_back(texcoords[(indices[l] + indexOffset) % 4]);
         }
     }
-    vectorImpl<F32 > angles;
-    angles.resize(18, 0.0f);
-    for (U8 i = 0; i < 18; ++i){
-        F32 temp = random(360.0f);
-        while (std::find(angles.begin(), angles.end(), temp) != angles.end()){
-            temp = random(360.0f);
-        }
-        angles[i] = temp;
-    }
     
-    mat3<F32> temp;
-    vectorImpl<mat3<F32> > rotationMatrices;
-    for (U8 i = 0; i < 18; ++i){
-        temp.identity();
-        temp.rotate_y(angles[i]);
-        rotationMatrices.push_back(temp);
+    static vectorImpl<mat3<F32> > rotationMatrices;
+    if (rotationMatrices.empty()){
+        vectorImpl<F32 > angles;
+        angles.resize(18, 0.0f);
+        for (U8 i = 0; i < 18; ++i){
+            F32 temp = random(360.0f);
+            while (std::find(angles.begin(), angles.end(), temp) != angles.end()){
+                temp = random(360.0f);
+            }
+            angles[i] = temp;
+        }
+
+        mat3<F32> temp;
+        for (U8 i = 0; i < 18; ++i){
+            temp.identity();
+            temp.rotate_y(angles[i]);
+            rotationMatrices.push_back(temp);
+        }
     }
 
+    Material* mat = getMaterial();
     for (U8 i = 0; i < 3; ++i){
-        _grassShader[i]->Uniform("positionOffsets",  grassBlades);
-        _grassShader[i]->Uniform("texCoordOffsets",  texCoord);
-        _grassShader[i]->Uniform("rotationMatrices", rotationMatrices);
+        RenderStage stage = (i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
+        
+        mat->getShaderProgram(stage)->Uniform("positionOffsets", grassBlades);
+        mat->getShaderProgram(stage)->Uniform("texCoordOffsets", texCoord);
+        mat->getShaderProgram(stage)->Uniform("rotationMatrices", rotationMatrices);
+        mat->getShaderProgram(stage)->Uniform("lod_metric", 100.0f);
+        mat->getShaderProgram(stage)->Uniform("dvd_lightCount", 1);
+        mat->getShaderProgram(stage)->UniformTexture("texDiffuse", 0);
     }
 
-    const U32 posLocation   = Divide::VERTEX_POSITION_LOCATION;
-    const U32 sizeLocation  = 11;
-    const U32 texLocation   = 12;
-
-    size_t textureSize  = std::min((I32)_billboardCount, 4) * sizeof(I32);
-    size_t scaleSize    = _instanceCountGrass * sizeof(F32);
-    size_t positionSize = scaleSize * 3;
-
-    U32 billboardDiv = _billboardDivisor;
+    const U32 posLocation   = 10;
+    const U32 scaleLocation = 11;
+    const U32 instLocation  = 12;
+    size_t positionSize = _instanceCountGrass * sizeof(vec4<F32>);
+    size_t scaleSize = _instanceCountGrass * sizeof(F32);
+    size_t instSize = _instanceCountGrass * sizeof(I32);
     U32 instanceDiv = 1;
 
     enum BufferUsage {
-        TextureIDBuffer = 0,
-        UnculledScaleBuffer = 1,
-        UnculledPositionBuffer = 2,
-        CulledPositionBuffer = 3,
-        CulledSizeBuffer = 4,
+        UnculledPositionBuffer = 0,
+        CulledPositionBuffer = 1,
+        UnculledSizeBuffer = 2,
+        CulledSizeBuffer = 3,
+        CulledInstanceBuffer = 4,
         BufferUsage_PLACEHOLDER = 5
     };
-
-    _grassGPUBuffer->Create(BufferUsage_PLACEHOLDER, 2);
+    
+    _grassGPUBuffer->Create(BufferUsage_PLACEHOLDER, 3);
     _grassGPUBuffer->SetFeedbackBuffer(CulledPositionBuffer, 0); // position culled will be generated using transform feedback using shader output 'posLocation' writing to buffer "CulledPositionBuffer"
-    _grassGPUBuffer->SetFeedbackBuffer(CulledSizeBuffer,     1);
+    _grassGPUBuffer->SetFeedbackBuffer(CulledSizeBuffer, 1);
+    _grassGPUBuffer->SetFeedbackBuffer(CulledInstanceBuffer, 2);
 
-    _grassGPUBuffer->SetBuffer(TextureIDBuffer,        textureSize,  &_grassTextureIdx[0], false, false);
-    _grassGPUBuffer->SetBuffer(UnculledScaleBuffer,    scaleSize,    &_grassSizes[0],      false, false);
     _grassGPUBuffer->SetBuffer(UnculledPositionBuffer, positionSize, &_grassPositions[0],  false, false);
-    _grassGPUBuffer->SetBuffer(CulledSizeBuffer,       scaleSize,    NULL,                 true,  false);
     _grassGPUBuffer->SetBuffer(CulledPositionBuffer,   positionSize, NULL,                 true,  false); // "true, false" = DYNAMIC_COPY
+    _grassGPUBuffer->SetBuffer(UnculledSizeBuffer,     scaleSize,    &_grassScales[0],     false, false);
+    _grassGPUBuffer->SetBuffer(CulledSizeBuffer,       scaleSize,    NULL,                 true,  false); 
+    _grassGPUBuffer->SetBuffer(CulledInstanceBuffer,   instSize,     NULL,                 true,  false);
 
-    _grassGPUBuffer->SetAttribute(texLocation,  TextureIDBuffer,      billboardDiv, 1, false, 0, 0, SIGNED_INT);
-    _grassGPUBuffer->SetAttribute(sizeLocation, CulledSizeBuffer,     instanceDiv,  1, false, 0, 0, FLOAT_32);
-    _grassGPUBuffer->SetAttribute(posLocation,  CulledPositionBuffer, instanceDiv,  3, false, 0, 0, FLOAT_32);
+    _grassGPUBuffer->SetAttribute(posLocation,   CulledPositionBuffer, instanceDiv, 4, false, 0, 0, FLOAT_32);
+    _grassGPUBuffer->SetAttribute(scaleLocation, CulledSizeBuffer,     instanceDiv, 1, false, 0, 0, FLOAT_32);
+    _grassGPUBuffer->SetAttribute(instLocation,  CulledInstanceBuffer, instanceDiv, 1, false, 0, 0, SIGNED_INT);
 
-    _grassGPUBuffer->SetFeedbackAttribute(sizeLocation, UnculledScaleBuffer, instanceDiv, 1, false, 0, 0, FLOAT_32);
-    _grassGPUBuffer->SetFeedbackAttribute(posLocation,  UnculledPositionBuffer, instanceDiv, 3, false, 0, 0, FLOAT_32);
+    _grassGPUBuffer->SetFeedbackAttribute(posLocation,   UnculledPositionBuffer, instanceDiv, 4, false, 0, 0, FLOAT_32);
+    _grassGPUBuffer->SetFeedbackAttribute(scaleLocation, UnculledSizeBuffer,     instanceDiv, 1, false, 0, 0, FLOAT_32);
+
+    /*
+    _grassMatrices->ReserveBuffer((I32)_grassMatricesTemp.size(), sizeof(_grassMatricesTemp[0]));
+    _grassMatrices->ChangeSubData(0, _grassMatricesTemp.size() * sizeof(_grassMatricesTemp[0]), &_grassMatricesTemp[0]);
+    _grassMatrices->bind(10);
+    _grassMatricesTemp.clear();
+    */
+
+    _grassPositions.clear();
+    _grassScales.clear();
 
     _render = _threadedLoadComplete = true;
+
     return true;
 }
 
@@ -210,202 +233,165 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
         _windX = sceneState.getWindDirX();
         _windZ = sceneState.getWindDirZ();
         _windS = sceneState.getWindSpeed();
-        _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows") && sgn->getReceivesShadows();
-        _grassShader[0]->Uniform("dvd_enableShadowMapping", _shadowMapped);
+        Material* mat = getMaterial();
         for (U8 i = 0; i < 3; ++i){
-            _grassShader[i]->Uniform("windDirection",vec2<F32>(_windX,_windZ));
-            _grassShader[i]->Uniform("windSpeed", _windS);
-            _grassShader[i]->Uniform("grassScale", _grassSize);
+            RenderStage stage = (i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
+            mat->getShaderProgram(stage)->Uniform("windDirection",vec2<F32>(_windX,_windZ));
+            mat->getShaderProgram(stage)->Uniform("windSpeed", _windS);
+            mat->getShaderProgram(stage)->Uniform("grassScale",/* _grassSize*/1.0f);
         }
+        _instanceRoutineIdx[PASS_THROUGH]             = _cullShader->GetSubroutineIndex(VERTEX_SHADER, "PassThrough");
+        _instanceRoutineIdx[INSTANCE_CLOUD_REDUCTION] = _cullShader->GetSubroutineIndex(VERTEX_SHADER, "InstanceCloudReduction");
+        _instanceRoutineIdx[HI_Z_CULL]                = _cullShader->GetSubroutineIndex(VERTEX_SHADER, "HiZOcclusionCull");
         _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }
     _stateRefreshIntervalBuffer += deltaTime;
+
+    _culledFinal = false;
+}
+
+U32 Vegetation::getQueryID(){
+    switch (GFX_DEVICE.getRenderStage()){
+        case SHADOW_STAGE: return 0;
+        case REFLECTION_STAGE: return 1;
+        default: return 2;
+    };
 }
 
 void Vegetation::gpuCull(){
+    U32 queryId = getQueryID();
+
+    if (GFX_DEVICE.is2DRendering()) return;
+
     bool draw = false;
-    U8 currentQuery = _shadowQueryID;
-    if (GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)){
-        if (LightManager::getInstance().currentShadowPass() == 0){
+    switch (queryId){
+        case 0/*SHADOW_STAGE*/: {
+            draw = LightManager::getInstance().currentShadowPass() == 0;
+            _culledFinal = false;
+        }break;
+        case 1/*REFLECTION_STAGE*/:{
             draw = true;
             _culledFinal = false;
-        }
+        }break;
+        default:{
+            draw = !_culledFinal;
+            _culledFinal = true;
+        }break;
     }
-    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE)){
-        draw = !_culledFinal;
-        currentQuery = _drawQueryID;
-        _culledFinal = true;
-    }
-    if (draw){
+
+    if (draw && _threadedLoadComplete && _terrainChunk->getLoD() == 0){
+        F32 grassDist = GET_ACTIVE_SCENE()->state().getGrassVisibility();
         _cullShader->bind();
+        //_cullShader->SetSubroutine(VERTEX_SHADER, _instanceRoutineIdx[HI_Z_CULL]);
+        _cullShader->Uniform("cullType", queryId);
+        _cullShader->Uniform("dvd_visibilityDistance", queryId == 0 ? grassDist * grassDist : grassDist);
         _cullShader->uploadNodeMatrices();
         GFX_DEVICE.toggleRasterization(false);
-        _grassGPUBuffer->DrawInstanced(API_POINTS, _instanceCountGrass, 0, 1, currentQuery, true);
-        //_treeGPUBuffer->DrawInstanced(API_POINTS, _instanceCountTrees, 0, 1, currentQuery, true);
+        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(0, TextureDescriptor::Depth);
+        _grassGPUBuffer->DrawInstanced(API_POINTS, _instanceCountGrass, 0, 1, queryId, true);
+        //_treeGPUBuffer->DrawInstanced(API_POINTS,  _instanceCountTrees, 0, 1, queryId, true);
         GFX_DEVICE.toggleRasterization(true);
     }
 }
 
 bool Vegetation::onDraw(SceneGraphNode* const sgn, const RenderStage& renderStage){
-    return !(!_render || !_success || !_threadedLoadComplete);
+   return !(!_render || !_success || !_threadedLoadComplete || _terrainChunk->getLoD() > 0);
+}
+
+bool Vegetation::setMaterialInternal(SceneGraphNode* const sgn) {
+    bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
+    bool depthPrePass = GFX_DEVICE.isDepthPrePass();
+
+    LightManager& lightMgr = LightManager::getInstance();
+    ShaderProgram* grassShader = getMaterial()->getShaderProgram(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE);
+    if (!depthPass){
+        grassShader->ApplyMaterial(getMaterial());
+        grassShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
+        grassShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
+        grassShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
+        grassShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
+        grassShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
+    }
+    if (grassShader->bind()){
+        grassShader->SetLOD(1);
+        grassShader->uploadNodeMatrices();
+        return true;
+    }
+    return false;
 }
 
 void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
-    U8 currentShader = 0;
-    if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) 
-        currentShader = 1;
-    else if (GFX_DEVICE.isCurrentRenderStage(Z_PRE_PASS_STAGE))
-        currentShader = 2;
+    U32 queryId = getQueryID();
+    //gpuCull();
+    I32 instanceCount = _grassGPUBuffer->GetFeedbackPrimitiveCount(queryId);
+    if (instanceCount == 0)
+        return;
 
-    SET_STATE_BLOCK(*_grassStateBlock);
-
-    _grassShader[currentShader]->bind();
-    _grassShader[currentShader]->uploadNodeMatrices();
+    SET_STATE_BLOCK(*_grassStateBlock, true);
 
     _grassBillboards->Bind(0);
-
-    _grassGPUBuffer->DrawInstanced(TRIANGLES, _grassGPUBuffer->GetFeedbackPrimitiveCount(currentShader == 1 ? _shadowQueryID : _drawQueryID), 0, 12 * 3);
-
+    if(setMaterialInternal(sgn))
+        _grassGPUBuffer->DrawInstanced(TRIANGLES, instanceCount, 0, 12 * 3);
 }
 
 void Vegetation::generateTrees(){
-    /*
-    //--> Unique position generation
-    vectorImpl<vec3<F32> > positions;
-    //<-- End unique position generation
-    vectorImpl<FileData>& DA = GET_ACTIVE_SCENE()->getVegetationDataArray();
-    if(DA.empty()){
-        ERROR_FN(Locale::get("ERROR_CREATE_TREE_NO_GEOM"));
-        return;
-    }
-    PRINT_FN(Locale::get("CREATE_TREE_START"), _treeDensity);
 
-    for(U16 k=0; k<(U16)_treeDensity; k++) {
-        I16 map_x = (I16)random((F32)_map.dimensions().width);
-        I16 map_y = (I16)random((F32)_map.dimensions().height);
-        I32 map_color = _map.getColor(map_x, map_y).g;
-
-        if(map_color < 55) {
-            k--;
-            continue;
-        }
-
-        vec3<F32> P = _terrain->getPosition(((F32)map_x)/_map.dimensions().width, ((F32)map_y)/_map.dimensions().height);
-        P.y -= 0.2f;
-        if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel()){
-            k--;
-            continue;
-        }
-        bool continueLoop = true;
-        for(vec3<F32>& it : positions){
-            if(it.compare(P) || (it.distance(P) < 0.02f)){
-                k--;
-                continueLoop = false;
-                break; //iterator for
-            }
-        }
-        if(!continueLoop) continue;
-        positions.push_back(P);
-        QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
-        assert(node);
-        TerrainChunk* chunk = node->getChunk();
-        assert(chunk);
-        chunk->addTree(vec4<F32>(P, random(360.0f)), _treeScale, DA[(U16)(rand() % DA.size())], _terrainSGN);
-    }
-
-    positions.clear();
-    PRINT_FN(Locale::get("CREATE_TREE_END"));
-    DA.empty();
-    return;
-    */
 }
 
 void Vegetation::generateGrass(){
-    PRINT_FN(Locale::get("CREATE_GRASS_BEGIN"), (U32)_grassDensity * _billboardCount);
+    const vec2<F32>& chunkPos  = _terrainChunk->getOffsetAndSize().xy();
+    const vec2<F32>& chunkSize = _terrainChunk->getOffsetAndSize().zw();
+    const F32 waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel() + 1.0f;
+    const I32 currentCount = std::min((I32)_billboardCount, 4);
+    const U16 mapWidth = _map.dimensions().width;
+    const U16 mapHeight = _map.dimensions().height;
+    const U32 grassElements = _grassDensity * chunkSize.x * chunkSize.y;
 
-    I32 currentCount = std::min((I32)_billboardCount, 4);
-    _billboardDivisor = (U32)(_grassDensity / currentCount);
+    PRINT_FN(Locale::get("CREATE_GRASS_BEGIN"), grassElements);
 
-    F32 waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel() + 1.0f;
-    _grassTextureIdx.reserve(currentCount);
-    _grassPositions.reserve(_billboardDivisor * currentCount);
-    _grassSizes.reserve(_billboardDivisor * currentCount);
-
-    U16 mapWidth = _map.dimensions().width;
-    U16 mapHeight = _map.dimensions().height;
-    F32 densityFactor = (mapWidth * mapHeight) / (_grassDensity * _billboardCount);
+    _grassPositions.reserve(grassElements);
+    //_grassMatricesTemp.reserve(grassElements);
+    F32 densityFactor = 1.0f / _grassDensity;
     #pragma omp parallel for
     for (I32 index = 0; index < currentCount; ++index){
-        vec3<F32> position;
-        F32 textureOffset = index * random(2.0f);
-        _grassTextureIdx.push_back(index);
-        for (F32 width = 0.0f; width < (F32)(_map.dimensions().width) - 1 ; width += densityFactor){
-            for (F32 height = 0.0f; height < (F32)(_map.dimensions().height) - 1; height += densityFactor){
-                if (_stopLoadingRequest){
+        densityFactor += 0.1f;
+        for (F32 width = 0; width < chunkSize.x - densityFactor; width += densityFactor){
+            for (F32 height = 0; height < chunkSize.y - densityFactor; height += densityFactor){
+                if (_stopLoadingRequest)
                     continue;
-                }
-                F32 x = width  + random(1.0f) + textureOffset;
-                F32 y = height + random(1.0f) + textureOffset;
-                CLAMP<F32>(x, 0.0f, (F32)mapWidth);
-                CLAMP<F32>(y, 0.0f, (F32)mapHeight);
-                F32 x_fac = x  / _map.dimensions().width;
-                F32 y_fac = y / _map.dimensions().height;
-                I32 map_color = _map.getColor((U16)x, (U16)y)[index];
-
                 
+                F32 x = width  + random(densityFactor) + chunkPos.x;
+                F32 y = height + random(densityFactor) + chunkPos.y;
+                CLAMP<F32>(x, 0.0f, (F32)mapWidth  - 1.0f);
+                CLAMP<F32>(y, 0.0f, (F32)mapHeight - 1.0f);
+                F32 x_fac = x  / _map.dimensions().width;
+                F32 y_fac = y  / _map.dimensions().height;
+
+                I32 map_color = _map.getColor((U16)x, (U16)y)[index];
+                if (map_color < 150) continue;
+
                 const vec3<F32>& P = _terrain->getPosition(x_fac, y_fac);
+                if (P.y < waterLevel) continue;
+
                 const vec3<F32>& N = _terrain->getNormal(x_fac, y_fac);
-                if (P.y < waterLevel || N.y < 0.9f || map_color < 50){
-                    random(10.0f); random(100.0f); random(1000.0f);
-                    continue;
-                }
-
-                position.set(P);
-
-                F32 grassScale = ((map_color + 1) / 256.0f);
-                assert(grassScale > 0.001f);
+                if (N.y < 0.7f) continue;
+                    
                 #pragma omp critical 
                 {
-                    _grassPositions.push_back(position);
-                    _grassSizes.push_back(grassScale);
+                    /*position.set(P);
+                    mat4<F32> matRot1;
+                    matRot1.scale(vec3<F32>(grassScale));
+                    mat4<F32> matRot2;
+                    matRot2.rotate_y(random(360.0f));
+                    _grassMatricesTemp.push_back(matRot1 * matRot2 * rotationFromVToU(WORLD_Y_AXIS, N).getMatrix());*/
+
+                    _grassPositions.push_back(vec4<F32>(P, index));
+                    _grassScales.push_back(((map_color + 1) / 256.0f));
                     _instanceCountGrass++;
                 }
             }
         }
     }
-    /*#pragma omp parallel for
-    for (I32 index = 0; index < currentCount; index++){
-        _grassTextureIdx.push_back(index);
-        for (U32 k = 0; k < _billboardDivisor; k++) {
-            if (_stopLoadingRequest){
-                continue;
-            }
-
-            F32 x_fac = random(1.0f);
-            F32 y_fac = random(1.0f);
-            U16 x = static_cast<U16>(x_fac * mapWidth);
-            U16 y = static_cast<U16>(x_fac * mapHeight);
-
-            I32 map_color = _map.getColor(x, y)[index];
-
-            const vec3<F32>& P = _terrain->getPosition(x_fac, y_fac);
-            const vec3<F32>& N = _terrain->getNormal(x_fac, y_fac);
-
-            if (P.y < waterLevel || N.y < 0.7f || map_color < 50){
-                random(10.0f); random(100.0f); random(1000.0f);
-                k--;
-                continue;
-            }
-            F32 grassScale = ((map_color + 1) / 256.0f) * _grassScale;
-            assert(grassScale > 0.001f);
-            #pragma omp critical 
-            {
-                _grassPositions.push_back(P);
-                _grassSizes.push_back(grassScale);
-                _instanceCountGrass++;
-           }
-        }
-    }*/
 
     PRINT_FN(Locale::get("CREATE_GRASS_END"));
 }

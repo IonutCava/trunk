@@ -33,6 +33,14 @@ void d3dRenderTarget::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 lay
 {
 }
 
+void d3dRenderTarget::SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot) 
+{
+}
+
+void d3dRenderTarget::ResetMipLevel(TextureDescriptor::AttachmentType slot) 
+{
+}
+
 bool d3dRenderTarget::checkStatus() const
 {
 	return true;

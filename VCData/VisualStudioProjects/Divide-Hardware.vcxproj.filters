@@ -211,6 +211,27 @@
     <Filter Include="Video\OpenGL\Buffers\VertexBuffer\Headers">
       <UniqueIdentifier>{8d0b775f-5ad3-48f0-8bb5-a933322fb674}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Video\Buffers\ShaderBuffer">
+      <UniqueIdentifier>{5927108a-b568-4fe3-8850-cff6777e2949}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\Buffers\ShaderBuffer\Headers">
+      <UniqueIdentifier>{c42def13-5bca-4656-aeff-f71b451201c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\OpenGL\Buffers\ShaderBuffer">
+      <UniqueIdentifier>{8d18289b-56eb-4179-8084-108b7b4a1138}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\OpenGL\Buffers\ShaderBuffer\Headers">
+      <UniqueIdentifier>{c513491a-d88a-4d26-867c-9bbaa3655050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\Direct3D\Buffers\ShaderBuffer">
+      <UniqueIdentifier>{99d53d2a-a023-4b94-b899-17927cc9c701}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\Direct3D\Buffers\ShaderBuffer\Headers">
+      <UniqueIdentifier>{4b47ad64-5212-4a3f-bbb8-208bca322106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\OpenGL\Buffers\Headers">
+      <UniqueIdentifier>{8b6ac35d-2bf6-4dd8-a2bc-b9c87fa8154a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Hardware\Audio\fmod\Headers\FmodWrapper.h">
@@ -253,9 +274,6 @@
       <Filter>Video\OpenGL\Shaders\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShaderProgram.h">
-      <Filter>Video\OpenGL\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glUniformBufferObject.h">
       <Filter>Video\OpenGL\Shaders\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glSamplerObject.h">
@@ -414,6 +432,18 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h">
       <Filter>Video\OpenGL\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\ShaderBuffer\Headers\ShaderBuffer.h">
+      <Filter>Video\Buffers\ShaderBuffer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\ShaderBuffer\Headers\d3dConstantBuffer.h">
+      <Filter>Video\Direct3D\Buffers\ShaderBuffer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h">
+      <Filter>Video\OpenGL\Buffers\ShaderBuffer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\Headers\glBufferLockManager.h">
+      <Filter>Video\OpenGL\Buffers\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp">
@@ -462,9 +492,6 @@
       <Filter>Video\OpenGL\Shaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShaderProgram.cpp">
-      <Filter>Video\OpenGL\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp">
       <Filter>Video\OpenGL\Shaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glSamplerOject.cpp">
@@ -551,6 +578,15 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp">
       <Filter>Video\OpenGL\Buffers\VertexBuffer</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\ShaderBuffer\d3dConstantBuffer.cpp">
+      <Filter>Video\Direct3D\Buffers\ShaderBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp">
+      <Filter>Video\OpenGL\Buffers\ShaderBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\glBufferLockManager.cpp">
+      <Filter>Video\OpenGL\Buffers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
@@ -607,19 +643,10 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
@@ -674,6 +701,9 @@
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\HiZConstruct.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
   </ItemGroup>

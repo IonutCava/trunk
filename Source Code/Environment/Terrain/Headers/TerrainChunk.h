@@ -28,25 +28,34 @@
 
 class Mesh;
 class Terrain;
-struct FileData;
 class Transform;
+class Vegetation;
 class ShaderProgram;
 class SceneGraphNode;
+class QuadtreeNode;
+struct FileData;
 
 class TerrainChunk{
 public:
-    TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain);
+    TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain, QuadtreeNode* const parentNode);
     ~TerrainChunk();
-    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize);
+    void Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, SceneGraphNode* const parentTerrainSGN);
     void Destroy();
 
-    void DrawGround(I8 lod) const;
+    void CreateDrawCommand(I8 lod);
     
     void addObject(Mesh* obj);
-    void addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
 
     inline F32 getMinHeight() const {return _heightBounds.x;}
     inline F32 getMaxHeight() const {return _heightBounds.y;}
+
+    inline vec4<F32> getOffsetAndSize() const { return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);}
+
+    inline U8 getLoD() const { return _LoD; }
+
+protected:
+    friend class QuadtreeNode;
+    inline void setLoD(U8 lod) { _LoD = lod; }
 
 private:
     void ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
@@ -56,9 +65,19 @@ private:
     U32                 _lodIndOffset[Config::TERRAIN_CHUNKS_LOD];
     U32                 _lodIndCount[Config::TERRAIN_CHUNKS_LOD];
     U32                 _chunkIndOffset;
+    F32                 _xOffset;
+    F32                 _yOffset;
+    F32                 _sizeX;
+    F32                 _sizeY;
+    U8                  _LoD;
     vec2<F32>           _heightBounds; //< 0 = minHeight, 1 = maxHeight
     VertexBuffer*       _terrainVB;
     Terrain*            _parentTerrain;
+    QuadtreeNode*       _parentNode;
+    Vegetation*         _vegetation;
+    static U32          _chunkID;
+
+    VertexBuffer::DeferredDrawCommand _drawCommand;
 };
 
 #endif

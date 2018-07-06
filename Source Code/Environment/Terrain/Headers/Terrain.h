@@ -25,29 +25,19 @@
 
 #include "Graphs/Headers/SceneNode.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
+#include "Environment/Vegetation/Headers/Vegetation.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 struct TerrainTextureLayer {
     TerrainTextureLayer()
     {
         _lastOffset = 0;
-
-        for (U8 i = 0; i < TEXTURE_USAGE_PLACEHOLDER; ++i)
-            _texture[i] = nullptr;
-
-        memset(_diffuseUVScale, 0.0f, (4) * sizeof(F32));
-        memset(_detailUVScale,  0.0f, (4) * sizeof(F32));
+        _blendMap = nullptr;
+        _tileMaps = nullptr;
     }
 
     ~TerrainTextureLayer();
-
-    enum TerrainTextureUsage {
-        TEXTURE_BLEND_MAP = 0,
-        TEXTURE_ALBEDO_MAPS = 1,
-        TEXTURE_DETAIL_MAPS = 2,
-        TEXTURE_USAGE_PLACEHOLDER = 3
-    };
 
     enum TerrainTextureChannel {
         TEXTURE_RED_CHANNEL = 0,
@@ -58,30 +48,20 @@ struct TerrainTextureLayer {
 
     void bindTextures(U32 offset);
 
-    inline void setTexture(TerrainTextureUsage textureUsage, Texture* texture){
-        assert(textureUsage < TEXTURE_USAGE_PLACEHOLDER && textureUsage >= TEXTURE_BLEND_MAP);
-        _texture[textureUsage] = texture;
-    }
+    inline void setBlendMap(Texture* texture) { _blendMap = texture; }
+    inline void setTileMaps(Texture* texture) { _tileMaps = texture; }
+    inline void setDiffuseScale(TerrainTextureChannel textureChannel, F32 scale) { _diffuseUVScale[textureChannel] = scale; }
+    inline void setDetailScale(TerrainTextureChannel textureChannel, F32 scale)  { _detailUVScale[textureChannel]  = scale; }
 
-    inline void setTextureScale(TerrainTextureUsage textureUsage, TerrainTextureChannel textureChannel, F32 scale) {
-        assert(textureUsage < TEXTURE_USAGE_PLACEHOLDER && textureUsage > TEXTURE_BLEND_MAP);
-
-        if (textureUsage == TEXTURE_ALBEDO_MAPS) _diffuseUVScale[textureChannel] = scale;
-        else                                     _detailUVScale[textureChannel] = scale;
-    }
-
-    inline F32 getTextureScale(TerrainTextureUsage textureUsage, TerrainTextureChannel textureChannel) {
-        assert(textureUsage < TEXTURE_USAGE_PLACEHOLDER && textureUsage > TEXTURE_BLEND_MAP);
-
-        if (textureUsage == TEXTURE_ALBEDO_MAPS) return _diffuseUVScale[textureChannel];
-        else                                     return _detailUVScale[textureChannel];
-    }
+    inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }
+    inline const vec4<F32>& getDetailScales()  const { return _detailUVScale;  }
 
 private:
     U32 _lastOffset;
-    F32 _diffuseUVScale[4];
-    F32 _detailUVScale[4];
-    Texture* _texture[TEXTURE_USAGE_PLACEHOLDER];
+    vec4<F32> _diffuseUVScale;
+    vec4<F32> _detailUVScale;
+    Texture*  _blendMap;
+    Texture*  _tileMaps;
 };
 
 class Quad3D;
@@ -100,7 +80,7 @@ public:
 
     bool unload();
 
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; }
     void drawBoundingBox(SceneGraphNode* const sgn) const;
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
 
@@ -111,22 +91,16 @@ public:
     vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
 
            void  terrainSmooth(F32 k);
-           void  initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNode* const terrainSGN);
+           void  initializeVegetation(TerrainDescriptor* const terrain, SceneGraphNode* const terrainSGN);
 
     inline VertexBuffer* const getGeometryVB() {return _groundVB;}
     inline Quadtree&           getQuadtree()   const {return *_terrainQuadtree;}
 
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
-	Vegetation* const getVegetation() const;
-    void toggleVegetation(bool state);
-
 protected:
 
-    void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
-
-    void drawGround(const SceneRenderState& sceneRenderState) const;
-    void drawInfinitePlain(const SceneRenderState& sceneRenderState) const;
+    void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {}
 
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     bool prepareMaterial(SceneGraphNode* const sgn);
@@ -144,8 +118,10 @@ protected:
 
 protected:
     friend class TerrainChunk;
-    void renderChunkCallback(U8 lod);
-
+    inline void addDrawCommand(const VertexBuffer::DeferredDrawCommand& cmd) {
+        cmd._signedData == 0 ? _drawCommands[0].push_back(cmd) : _drawCommands[1].push_back(cmd);
+    }
+    
 protected:
 
     U8            _lightCount;
@@ -157,32 +133,24 @@ protected:
 
     vec2<F32> _terrainScaleFactor;
     F32	 _farPlane;
-    U64  _stateRefreshInterval;
-    U64  _stateRefreshIntervalBuffer;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
-    bool _shadowMapped;
 
-    Vegetation*       _vegetation;
     SceneGraphNode*   _vegetationGrassNode;
     BoundingBox       _boundingBox;
     Quad3D*		      _plane;
-    Transform*		  _planeTransform;
     Transform*        _terrainTransform;
-    SceneGraphNode*   _node;
-    SceneGraphNode*	  _planeSGN;
-
-    Texture*           _causticsTex;
-    Texture*           _underwaterAlbedoTex;
-    Texture*           _underwaterDetailTex;
-    F32                _underwaterDiffuseScale;
+    VegetationDetails _vegDetails;
+    Texture*          _causticsTex;
+    Texture*          _underwaterAlbedoTex;
+    Texture*          _underwaterDetailTex;
+    F32               _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer* > _terrainTextures;
+    vectorImpl<VertexBuffer::DeferredDrawCommand >  _drawCommands[2]; // one for LoD 0 and one for LoD > 0
     ///Normal rendering state
     RenderStateBlock* _terrainRenderState;
     ///Depth map rendering state
     RenderStateBlock* _terrainDepthRenderState;
-    ///PrePass rendering state
-    RenderStateBlock* _terrainPrePassRenderState;
     ///Reflection rendering state
     RenderStateBlock*  _terrainReflectionRenderState;
 };

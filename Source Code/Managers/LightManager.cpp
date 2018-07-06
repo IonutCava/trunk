@@ -7,6 +7,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 ProfileTimer* s_shadowPassTimer = nullptr;
 
@@ -17,17 +18,41 @@ LightManager::LightManager() : FrameListener(),
                                _currentShadowPass(0)
 {
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
+    _lightShaderBuffer  = GFX_DEVICE.newSB();
+    _shadowShaderBuffer = GFX_DEVICE.newSB();
+
+    memset(normShadowLocation, -1,  Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
+    memset(cubeShadowLocation, -1,  Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
+    memset(arrayShadowLocation, -1, Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
 }
 
 LightManager::~LightManager()
 {
     clear();
     REMOVE_TIMER(s_shadowPassTimer);
+    SAFE_DELETE(_lightShaderBuffer);
+    SAFE_DELETE(_shadowShaderBuffer);
 }
 
 void LightManager::init(){
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
+    _lightShaderBuffer->Create(true, false);
+    _shadowShaderBuffer->Create(true, false);
+    _lightShaderBuffer->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+    _shadowShaderBuffer->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
+    _lightShaderBuffer->bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
+    _shadowShaderBuffer->bind(Divide::SHADER_BUFFER_LIGHT_SHADOW);
+
+    I32 maxTextureStorage = GFX_DEVICE.getMaxTextureUnits();
+    I32 maxSlotsPerLight = 3;
+    maxTextureStorage -= Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * maxSlotsPerLight;
+
+    for (U8 i = 0; i < Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
+        normShadowLocation[i]  = maxTextureStorage + 0 + (i * maxSlotsPerLight);
+        cubeShadowLocation[i]  = maxTextureStorage + 1 + (i * maxSlotsPerLight);
+        arrayShadowLocation[i] = maxTextureStorage + 2 + (i * maxSlotsPerLight);
+    }
 }
 
 bool LightManager::clear(){
@@ -110,6 +135,8 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight){
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
 void LightManager::update(const bool force){
+    GFX_DEVICE.getMatrix(VIEW_MATRIX, _viewMatrixCache);
+
     for(Light* light : _currLightsPerNode){
         assert(light != nullptr);
         light->updateState(force);
@@ -185,12 +212,12 @@ void LightManager::previewShadowMaps(Light* light) {
 
 //If we have computed shadowmaps, bind them before rendering any geometry;
 //Always bind shadowmaps to slots Config::MAX_TEXTURE_STORAGE, Config::MAX_TEXTURE_STORAGE+1, Config::MAX_TEXTURE_STORAGE+2 ...
-void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool overrideDominant){
+void LightManager::bindDepthMaps(U8 lightIndex, bool overrideDominant){
     //Skip applying shadows if we are rendering to depth map, or we have shadows disabled
     if(!_shadowMapsEnabled)
         return;
 
-    Light* lightLocal = light;
+    Light* lightLocal = getLightForCurrentNode(lightIndex);
     ///If we have a dominant light, then both shadow casting lights are the same = the dominant one
     ///Shadow map binding has a failsafe check for this, so it's ok to call bind twice
     if(_dominantLight && !overrideDominant)
@@ -199,14 +226,9 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
     if(!lightLocal->castsShadows())
         return;
 
-    if(lightLocal->getLightType() == LIGHT_TYPE_DIRECTIONAL)
-        offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
-
-    if(lightLocal->getLightType() == LIGHT_TYPE_POINT)
-        offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE + 1;
     ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
     if(sm)
-        sm->Bind(offset);
+        sm->Bind(getShadowBindSlot(lightLocal->getLightType(), lightIndex));
 }
 
 bool LightManager::shadowMappingEnabled() const {
@@ -302,4 +324,22 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     }
 
     return (U8)maxLights;
+}
+
+///Update OpenGL light state
+void LightManager::setLight(Light* const light, bool shadowPass){
+    assert(light != nullptr);
+    if (shadowPass){
+        _shadowShaderBuffer->ChangeSubData(light->getSlot() * sizeof(LightShadowProperties), sizeof(LightShadowProperties), (GLvoid*)&light->getShadowProperties());
+    }else{
+        LightProperties temp = light->getProperties();
+
+        if (light->getLightType() == LIGHT_TYPE_DIRECTIONAL){
+            temp._position.set(vec3<F32>(_viewMatrixCache * temp._position), temp._position.w);
+        }
+        else if (light->getLightType() == LIGHT_TYPE_SPOT){
+            temp._direction.set(vec3<F32>(_viewMatrixCache * temp._direction), temp._direction.w);
+        }
+        _lightShaderBuffer->ChangeSubData(light->getSlot() * sizeof(LightProperties), sizeof(LightProperties), (GLvoid*)&temp);
+    }
 }

@@ -32,11 +32,11 @@ public:
                            _active(false),
                            _addToPhysics(false),
                            _is16Bit(false),
-                           _grassDensity(0),
+                           _grassDensity(0.0f),
                            _chunkSize(0),
                            _treeScale(1.0f),
                            _grassScale(1.0f),
-                           _treeDensity(1),
+                           _treeDensity(0.0f),
                            _textureLayers(1)
     {
     }
@@ -58,8 +58,8 @@ public:
     void setAltitudeRange(const vec2<F32>& dim) { _altitudeRange = dim; }
     void setPosition(const vec3<F32>& position) { _position = position; }
     void setScale(const vec2<F32>& scale)	    { _scale = scale; }
-    void setGrassDensity(U32 grassDensity)      { _grassDensity = grassDensity; }
-    void setTreeDensity(U16 treeDensity)        { _treeDensity = treeDensity; }
+    void setGrassDensity(F32 grassDensity)      { _grassDensity = grassDensity; }
+    void setTreeDensity(F32 treeDensity)        { _treeDensity = treeDensity; }
     void setGrassScale(F32 grassScale)          { _grassScale = grassScale; }
     void setTreeScale(F32 treeScale)            { _treeScale = treeScale; }
     void setActive(bool active)                 { _active = active; }
@@ -68,8 +68,8 @@ public:
     void set16Bit(bool state)                   { _is16Bit = state;}
     
     U8    getTextureLayerCount() const { return _textureLayers; }
-    U32   getGrassDensity()      const { return _grassDensity; }
-    U16   getTreeDensity()       const { return _treeDensity; }
+    F32   getGrassDensity()      const { return _grassDensity; }
+    F32   getTreeDensity()       const { return _treeDensity; }
     F32   getGrassScale()        const { return _grassScale; }
     F32   getTreeScale()         const { return _treeScale; }
     bool  getActive()            const { return _active; }
@@ -101,9 +101,9 @@ public:
 private:
     Unordered_map<std::string, std::string> _variables;
     Unordered_map<std::string, F32>         _variablesf;
-    U32    _grassDensity;
+    F32    _grassDensity;
     U32    _chunkSize;
-    U16    _treeDensity;
+    F32    _treeDensity;
     F32	   _grassScale;
     F32    _treeScale;
     bool   _is16Bit;

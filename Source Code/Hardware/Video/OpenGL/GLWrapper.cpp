@@ -133,12 +133,6 @@ void GL_API::flush(){
     clearStates(false,false,false,false);
 }
 
-void GL_API::renderInViewport(const vec4<GLint>& rect, const DELEGATE_CBK& callback){
-    setViewport(rect);
-    callback();
-    restoreViewport();
-}
-
 void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset){
     IMPrimitive* priv = getOrCreateIMPrimitive();
 
@@ -186,7 +180,7 @@ void GL_API::setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawSt
     SET_STATE_BLOCK(*drawState);
 
     if(ortho){
-        setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
+        GFX_DEVICE.setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
         Divide::GLUtil::_matrixMode(VIEW_MATRIX);
         Divide::GLUtil::_pushMatrix();
         Divide::GLUtil::_loadIdentity();
@@ -196,7 +190,7 @@ void GL_API::setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawSt
 void GL_API::releaseLineState(const bool ortho){
     GFX_DEVICE.popWorldMatrix();
     if(ortho){
-        restoreViewport();
+        GFX_DEVICE.restoreViewport();
         Divide::GLUtil::_matrixMode(VIEW_MATRIX);
         Divide::GLUtil::_popMatrix();
     }

@@ -36,6 +36,8 @@ public:
 
     void Destroy();
     void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true);
+    void SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot);
+    void ResetMipLevel(TextureDescriptor::AttachmentType slot);
     void Begin(const FrameBufferTarget& drawPolicy);
     void End();
 

@@ -27,12 +27,19 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
+class ShaderBuffer;
 class SceneGraphNode;
 class SceneRenderState;
 
 DEFINE_SINGLETON_EXT1(LightManager,FrameListener)
 
 public:
+    enum ShadowSlotType {
+        SHADOW_SLOT_TYPE_NORMAL = 0,
+        SHADOW_SLOT_TYPE_CUBE = 1,
+        SHADOW_SLOT_TYPE_ARRAY = 2
+    };
+
     typedef Unordered_map<U32, Light*> LightMap;
 
     void init();
@@ -63,7 +70,7 @@ public:
     void updateResolution(I32 newWidth, I32 newHeight);
 
     ///shadow mapping
-    void bindDepthMaps(Light* light,U8 lightIndex, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
+    void bindDepthMaps(U8 lightIndex, bool overrideDominant = false);
     bool shadowMappingEnabled() const;
     inline void setDominantLight(Light* const light) {_dominantLight = light;}
 
@@ -80,6 +87,32 @@ public:
 
     inline U8   currentShadowPass()  const { return _currentShadowPass; }
     inline void registerShadowPass()       { _currentShadowPass++; }
+
+    void setLight(Light* const light, bool shadowPass = false);
+
+    /// Get the appropriate shadow bind slot for every light's shadow
+    inline I32 getShadowBindSlot(ShadowSlotType type, U8 lightIndex) {
+        assert(lightIndex < Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
+        I32 retValue = -1;
+        switch (type){
+            case SHADOW_SLOT_TYPE_NORMAL: retValue = normShadowLocation[lightIndex];  break;
+            case SHADOW_SLOT_TYPE_CUBE  : retValue = cubeShadowLocation[lightIndex];  break;
+            case SHADOW_SLOT_TYPE_ARRAY : retValue = arrayShadowLocation[lightIndex]; break;
+        };
+
+        return retValue;
+    }
+    /// Get the appropriate shadow bind slot for every light's shadow
+    inline I32 getShadowBindSlot(LightType lightType, U8 lightIndex) {
+        ShadowSlotType type = SHADOW_SLOT_TYPE_NORMAL;
+        switch (lightType){
+            case LIGHT_TYPE_DIRECTIONAL : type = SHADOW_SLOT_TYPE_ARRAY; break;
+            case LIGHT_TYPE_POINT : type = SHADOW_SLOT_TYPE_CUBE; break;
+            case LIGHT_TYPE_SPOT  : type = SHADOW_SLOT_TYPE_NORMAL; break;
+        };
+        return getShadowBindSlot(type, lightIndex);
+    }
+
 protected:
     ///This is inherited from FrameListener and is used to queue up reflection on every frame start
     bool framePreRenderEnded(const FrameEvent& evt);
@@ -95,12 +128,22 @@ private:
     Light*    _currLight;
     bool      _shadowMapsEnabled;
     vec4<F32> _ambientLight;
+    mat4<F32> _viewMatrixCache;
     U8        _currentShadowPass; //<used by CSM. Resets to 0 for every light
     vectorImpl<I32>         _currLightTypes;
     vectorImpl<I32>         _currShadowLights;
     vectorImpl<I32>         _currLightIndices;
     vectorImpl<Light* >     _currLightsPerNode;
     vectorImpl<Light* >     _tempLightsPerNode;
+
+    ShaderBuffer*           _lightShaderBuffer;
+    ShaderBuffer*           _shadowShaderBuffer;
+
+
+    I32 normShadowLocation[Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
+    I32 cubeShadowLocation[Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
+    I32 arrayShadowLocation[Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
+
 END_SINGLETON
 
 #endif

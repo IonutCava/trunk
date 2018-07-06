@@ -156,12 +156,8 @@ void RenderBin::render(const SceneRenderState& renderState, const RenderStage& c
             //Only 2 sets of shadow maps for every node
             CLAMP<U8>(lightCount, 0, Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
             //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
-            if(isLightValidStage){
-                U8 offset = 9;
-                for(U8 n = 0; n < lightCount; n++, offset++){
-                    lightMgr.bindDepthMaps(lightMgr.getLightForCurrentNode(n), n, offset);
-                }
-            }
+            for (U8 lightIndex = 0; lightIndex < lightCount && isLightValidStage; lightIndex++)
+                lightMgr.bindDepthMaps(lightIndex);
 
             //setup materials and render the node
             //As nodes are sorted, this should be very fast

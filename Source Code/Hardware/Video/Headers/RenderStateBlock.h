@@ -65,7 +65,6 @@ protected:
 
 private:
     U32  _cachedHash;
-    bool _dirty;
     bool _lockHash;
 
     void clean();
@@ -78,7 +77,8 @@ public:
     void fromDescriptor( const RenderStateBlockDescriptor& descriptor );
 
     void setFillMode(FillMode mode);
-    void setZBias(F32 zBias, F32 zUnits, ComparisonFunction zFunc = CMP_FUNC_LEQUAL);
+    void setZBias(F32 zBias, F32 zUnits);
+    void setZFunc(ComparisonFunction zFunc = CMP_FUNC_LEQUAL);
     void flipCullMode();
     void setCullMode(CullMode mode);
     void setZEnable(bool enable);

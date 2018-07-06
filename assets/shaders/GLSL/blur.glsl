@@ -121,35 +121,31 @@ layout(triangle_strip, max_vertices = 4) out;
 uniform int layer;
 uniform float blurSize;
 
-out vec3 _blurCoords[9];
+out vec3 _blurCoords[7];
 
 subroutine void BlurRoutineType(in float texCoordX, in float texCoordY);
 subroutine uniform BlurRoutineType BlurRoutine;
 
 subroutine(BlurRoutineType)
 void computeCoordsH(in float texCoordX, in float texCoordY){
-    _blurCoords[0] = vec3(texCoordX, texCoordY - 4.0*blurSize, layer);
-    _blurCoords[1] = vec3(texCoordX, texCoordY - 3.0*blurSize, layer);
-    _blurCoords[2] = vec3(texCoordX, texCoordY - 2.0*blurSize, layer);
-    _blurCoords[3] = vec3(texCoordX, texCoordY - blurSize, layer);
-    _blurCoords[4] = vec3(texCoordX, texCoordY, layer);
-    _blurCoords[5] = vec3(texCoordX, texCoordY + blurSize, layer);
-    _blurCoords[6] = vec3(texCoordX, texCoordY + 2.0*blurSize, layer);
-    _blurCoords[7] = vec3(texCoordX, texCoordY + 3.0*blurSize, layer);
-    _blurCoords[8] = vec3(texCoordX, texCoordY + 4.0*blurSize, layer);
+    _blurCoords[0] = vec3(texCoordX, texCoordY - 3.0 * blurSize, layer);
+    _blurCoords[1] = vec3(texCoordX, texCoordY - 2.0 * blurSize, layer);
+    _blurCoords[2] = vec3(texCoordX, texCoordY - 1.0 * blurSize, layer);
+    _blurCoords[3] = vec3(texCoordX, texCoordY,                  layer);
+    _blurCoords[4] = vec3(texCoordX, texCoordY + 1.0 * blurSize, layer);
+    _blurCoords[5] = vec3(texCoordX, texCoordY + 2.0 * blurSize, layer);
+    _blurCoords[6] = vec3(texCoordX, texCoordY + 3.0 * blurSize, layer);
 }
 
 subroutine(BlurRoutineType)
 void computeCoordsV(in float texCoordX, in float texCoordY){
-    _blurCoords[0] = vec3(texCoordX - 4.0*blurSize, texCoordY, layer);
-    _blurCoords[1] = vec3(texCoordX - 3.0*blurSize, texCoordY, layer);
-    _blurCoords[2] = vec3(texCoordX - 2.0*blurSize, texCoordY, layer);
-    _blurCoords[3] = vec3(texCoordX - blurSize, texCoordY, layer);
-    _blurCoords[4] = vec3(texCoordX, texCoordY, layer);
-    _blurCoords[5] = vec3(texCoordX + blurSize, texCoordY, layer);
-    _blurCoords[6] = vec3(texCoordX + 2.0*blurSize, texCoordY, layer);
-    _blurCoords[7] = vec3(texCoordX + 3.0*blurSize, texCoordY, layer);
-    _blurCoords[8] = vec3(texCoordX + 4.0*blurSize, texCoordY, layer);
+    _blurCoords[0] = vec3(texCoordX - 3.0*blurSize, texCoordY, layer);
+    _blurCoords[1] = vec3(texCoordX - 2.0*blurSize, texCoordY, layer);
+    _blurCoords[2] = vec3(texCoordX - 1.0*blurSize, texCoordY, layer);
+    _blurCoords[3] = vec3(texCoordX,                texCoordY, layer);
+    _blurCoords[4] = vec3(texCoordX + 1.0*blurSize, texCoordY, layer);
+    _blurCoords[5] = vec3(texCoordX + 2.0*blurSize, texCoordY, layer);
+    _blurCoords[6] = vec3(texCoordX + 3.0*blurSize, texCoordY, layer);
 }
 
 void main() {
@@ -174,7 +170,7 @@ void main() {
 
 --Fragment.GaussBlur
 
-in vec3 _blurCoords[9];
+in vec3 _blurCoords[7];
 
 out vec2 _outColor;
 
@@ -183,13 +179,11 @@ uniform sampler2DArray texScreen;
 void main(void)
 {
 
-    _outColor  = texture(texScreen, _blurCoords[0]).rg * 0.05;
-    _outColor += texture(texScreen, _blurCoords[1]).rg * 0.09;
-    _outColor += texture(texScreen, _blurCoords[2]).rg * 0.12;
-    _outColor += texture(texScreen, _blurCoords[3]).rg * 0.15;
-    _outColor += texture(texScreen, _blurCoords[4]).rg * 0.16;
-    _outColor += texture(texScreen, _blurCoords[5]).rg * 0.15;
-    _outColor += texture(texScreen, _blurCoords[6]).rg * 0.12;
-    _outColor += texture(texScreen, _blurCoords[7]).rg * 0.09;
-    _outColor += texture(texScreen, _blurCoords[8]).rg * 0.05;
+    _outColor  = texture(texScreen, _blurCoords[0]).rg * (1.0  / 64.0);
+    _outColor += texture(texScreen, _blurCoords[1]).rg * (6.0  / 64.0);
+    _outColor += texture(texScreen, _blurCoords[2]).rg * (15.0 / 64.0);
+    _outColor += texture(texScreen, _blurCoords[3]).rg * (20.0 / 64.0);
+    _outColor += texture(texScreen, _blurCoords[4]).rg * (15.0 / 64.0);
+    _outColor += texture(texScreen, _blurCoords[5]).rg * (6.0  / 64.0);
+    _outColor += texture(texScreen, _blurCoords[6]).rg * (1.0  / 64.0);
 }

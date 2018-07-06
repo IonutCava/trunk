@@ -37,6 +37,7 @@ U64 GUIConsole::_totalTime = 0ULL;
 I32 GUIConsole::_currentItem = 0;
 boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<GUIConsole::_messageQueueCapacity> >  GUIConsole::_outputBuffer;
 vectorImpl<std::pair<std::string, bool > > GUIConsole::_outputTempBuffer;
+SharedLock GUIConsole::_outputLock;
 
 GUIConsole::GUIConsole() : _consoleWindow(nullptr),
                            _editBox(nullptr),
@@ -47,7 +48,7 @@ GUIConsole::GUIConsole() : _consoleWindow(nullptr),
 {
     // we need a default command parser, so just create it here
     _cmdParser = New GUIConsoleCommandParser();
-    _outputTempBuffer.reserve(1024);
+    _outputTempBuffer.reserve(1024 + 512);
 
     for(U16 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES; ++i){
         _newItem.push_back(New CEGUI::FormattedListboxTextItem("",CEGUI::HTF_WORDWRAP_LEFT_ALIGNED));
@@ -191,19 +192,20 @@ void GUIConsole::printText(const char* output, bool error){
         while (_flushing) {}
         std::string outString(output);
         assert(!outString.empty());
+        WriteLock w_lock(_outputLock);
         _outputTempBuffer.push_back(std::make_pair(outString, error));
-        return;
+    }else{
+        PushText(New MessageStruct(output, error));
     }
-
-    PushText(New MessageStruct(output, error));
- }
+}
 
 void GUIConsole::PushText(MessageStruct* msg){
     U64 startTimer = GETUSTIME(true);
     if (_tempBufferSize > _CEGUI_MAX_CONSOLE_ENTRIES){
         _flushing = true;
-        for (I32 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES * 0.5f; ++i)
-            if (!_outputTempBuffer.empty()) _outputTempBuffer.erase(_outputTempBuffer.end());
+        WriteLock w_lock(_outputLock);
+        for (I32 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES / 2; ++i)
+            if (!_outputTempBuffer.empty()) _outputTempBuffer.erase(_outputTempBuffer.begin());
         _flushing = false;
     }
     _tempBufferSize++;
@@ -240,9 +242,10 @@ void GUIConsole::update(const U64 deltaTime){
     static bool lastMsgError = false;
     static std::string lastMsg;
 
+    WriteLock w_lock(_outputLock);
     while(!_outputTempBuffer.empty()){
         _flushing = true;
-        std::pair<std::string, bool>& message = _outputTempBuffer.front();
+        std::pair<std::string, bool> message = _outputTempBuffer.front();
         if (lastMsgError != message.second){
             lastMsgError = message.second;
             assert(!message.first.empty());

@@ -12,8 +12,6 @@ WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,v
                            _reflectionPlaneID(-1), _reflectionRendering(false), _refractionRendering(false), _refractionTexture(nullptr), _dirty(true), _cameraUnderWater(false),
                            _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
 {
-    STUBBED("ToDo: check water visibility - Ionut")
-
     //Set water plane to be single-sided
     P32 quadMask;
     quadMask.i = 0;
@@ -126,11 +124,6 @@ void WaterPlane::postDraw(SceneGraphNode* const sgn, const RenderStage& currentS
 
 bool WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
 
-    //Prepare the main light (directional light only, sun) for now.
-    //Find the most influential light for the terrain. Usually the Sun
-    _lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
-    //Update lights for this node
-    LightManager::getInstance().update();
     Material* waterMat = getMaterial();
     ShaderProgram* shader = waterMat->getShaderProgram();
     waterMat->getTexture(Material::TEXTURE_UNIT0)->Bind(0);
@@ -195,24 +188,24 @@ void WaterPlane::updateRefraction(){
 /// Update water reflections
 void WaterPlane::updateReflection(){
     // Early out check for render callback
-    if(_renderCallback.empty()) return;
-    //ToDo: this will cause problems later with multiple reflectors. Fix it! -Ionut
-    _reflectionRendering = true;
+    if (!_renderCallback.empty()){
+        //ToDo: this will cause problems later with multiple reflectors. Fix it! -Ionut
+        _reflectionRendering = true;
     
-    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(_cameraUnderWater ? FINAL_STAGE : REFLECTION_STAGE);
-    GFX_DEVICE.enableClipPlane(_reflectionPlaneID);
+        RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(_cameraUnderWater ? FINAL_STAGE : REFLECTION_STAGE);
+        GFX_DEVICE.enableClipPlane(_reflectionPlaneID);
 
-    _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt() : _cameraMgr.getActiveCamera()->renderLookAtReflected(getReflectionPlane());
+        _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt() : _cameraMgr.getActiveCamera()->renderLookAtReflected(getReflectionPlane());
 
-    _reflectedTexture->Begin(FrameBuffer::defaultPolicy());
-        _renderCallback(); //< render to the reflective texture
-    _reflectedTexture->End();
+        _reflectedTexture->Begin(FrameBuffer::defaultPolicy());
+            _renderCallback(); //< render to the reflective texture
+        _reflectedTexture->End();
 
-    GFX_DEVICE.disableClipPlane(_reflectionPlaneID);
-    GFX_DEVICE.setRenderStage(prevRenderStage);
+        GFX_DEVICE.disableClipPlane(_reflectionPlaneID);
+        GFX_DEVICE.setRenderStage(prevRenderStage);
     
-    _reflectionRendering = false;
-
+        _reflectionRendering = false;
+    }
     updateRefraction();
 }
 

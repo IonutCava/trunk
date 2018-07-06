@@ -55,8 +55,6 @@ public:
     inline  FrameBuffer*           getDepthMap()                { return _depthMap; }
     inline  const vectorImpl<F32>& getShadowFloatValues() const { return _shadowFloatValues; }
 
-    inline  bool isBound() {return _isBound;}
-
             U16  resolution();
     virtual void resolution(U16 resolution, U8 resolutionFactor) {}
 
@@ -65,6 +63,9 @@ public:
     virtual void previewShadowMaps() = 0;
     virtual void togglePreviewShadowMaps(bool state) {}
     virtual void updateResolution(I32 newWidth, I32 newHeight) {}
+
+protected:
+    virtual bool BindInternal(U8 offset);
 
 protected:
     ShadowType _shadowMapType;
@@ -76,7 +77,6 @@ protected:
     Camera* _shadowCamera;
     ParamHandler& _par;
     bool _init;
-    bool _isBound;
     mat4<F32> _bias;
     // _shadowFloatValues are generic floating point values needed for shadow mapping such as farBounds, biases, etc.
     vectorImpl<F32>        _shadowFloatValues;

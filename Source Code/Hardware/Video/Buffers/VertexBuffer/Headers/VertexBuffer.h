@@ -37,7 +37,26 @@ class ShaderProgram;
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER / D3DVERTEXBUFFER
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.: OGL uses a vertex array object for this)
 class VertexBuffer : public GUIDWrapper {
+protected:
+    struct IndirectDrawCommand {
+        IndirectDrawCommand() : count(0), instanceCount(0), firstIndex(0), baseVertex(0), baseInstance(0) {}
+        U32  count;
+        U32  instanceCount;
+        U32  firstIndex;
+        U32  baseVertex;
+        U32  baseInstance;
+    };
+
 public:
+    struct DeferredDrawCommand {
+        DeferredDrawCommand() : _signedData(0), _unsignedData(0), _floatData(0.0f) {}
+
+        IndirectDrawCommand _cmd;
+        I32                 _signedData;
+        U32                 _unsignedData;
+        F32                 _floatData;
+    };
+
     VertexBuffer(const PrimitiveType& type) : GUIDWrapper(),
                             _type(type),
                             _computeTriangles(true),
@@ -70,6 +89,7 @@ public:
 
     virtual void Draw(bool skipBind = false, const U8 LODindex = 0) = 0;
     virtual void DrawRange(bool skipBind = false) = 0;
+    virtual void DrawCommands(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false) = 0;
 
     virtual void setShaderProgram(ShaderProgram* const shaderProgram) = 0;
     inline ShaderProgram* const currentShader()  {return _currentShader;}

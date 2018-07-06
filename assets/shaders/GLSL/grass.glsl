@@ -1,40 +1,95 @@
 -- Vertex
+#include "foliage.vert"
+#include "vbInputData.vert"
+#include "lightingDefaults.vert"
 
-layout(location = 11) in float bladeScale;
-layout(location = 12) in int   bladeTextureId;
+layout(location = 10) in vec4 instanceData;
+layout(location = 11) in float instanceScale;
+layout(location = 12) in int  instanceID;
+/*layout(std430, binding = 10) buffer dvd_transformBlock{
+    coherent readonly mat4 transform[];
+};*/
 
-uniform mat4 dvd_WorldViewProjectionMatrix;
 uniform vec3 positionOffsets[36];
 uniform vec2 texCoordOffsets[36];
 uniform mat3 rotationMatrices[18];
+uniform float dvd_visibilityDistance;
 
-out vec3 _texCoord;
+flat out int _arrayLayer;
 
 void main()
 {
-    _texCoord = vec3(texCoordOffsets[gl_VertexID], bladeTextureId);
-    vec3 currentBlade = rotationMatrices[gl_InstanceID % 18] * positionOffsets[gl_VertexID];
-    currentBlade = currentBlade * bladeScale + inVertexData;
-    gl_Position = dvd_WorldViewProjectionMatrix *  vec4(currentBlade, 1.0);
+    vec3 posOffset = positionOffsets[gl_VertexID];
+    _arrayLayer = int(instanceData.w);
+    _texCoord = texCoordOffsets[gl_VertexID];
+    _vertexW = /* transform[gl_InstanceID]* */ vec4(rotationMatrices[instanceID % 18] * positionOffsets[gl_VertexID] * instanceScale + instanceData.xyz, 1.0);
+    dvd_Normal = vec3(1.0, 1.0, 1.0);
+
+    if (posOffset.y > 0.75) 
+        computeFoliageMovementGrass(_vertexW);
+
+    setClipPlanes(_vertexW);
+
+    //computeLightVectors();
+
+    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 }
 
 -- Fragment
 
-in vec3 _texCoord;
+#include "phong_lighting.frag"
+#include "lightingDefaults.frag"
+
+flat in int _arrayLayer;
+out vec4 _colorOut;
+
+uniform sampler2DArray texDiffuseGrass;
+
+void main (void){
+    vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
+    if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
+
+    //color = Phong(_texCoord, _normalWV, color);
+    applyFog(color);
+    _colorOut = color;
+}
+
+--Fragment.Shadow
+
+in vec2 _texCoord;
+flat in int _arrayLayer;
+
+uniform sampler2DArray texDiffuseGrass;
+
+out vec2 _colorOut;
+
+vec2 computeMoments(in float depth) {
+    // Compute partial derivatives of depth.  
+    float dx = dFdx(depth);
+    float dy = dFdy(depth);
+    // Compute second moment over the pixel extents.  
+    return vec2(depth, depth*depth + 0.25*(dx*dx + dy*dy));
+}
+
+void main(void){
+    vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
+    if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
+
+    _colorOut = computeMoments(gl_FragCoord.z);
+}
+
+--Fragment.PrePass
+
+in vec2 _texCoord;
+flat in int _arrayLayer;
+
+uniform sampler2DArray texDiffuseGrass;
 
 out vec4 _colorOut;
 
-uniform sampler2DArray texDiffuse;
+void main(void){
+    vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
+    if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
-void main (void){
-    
-    vec4 cBase = texture(texDiffuse, _texCoord);
-    // SHADOW MAPPING
-    float shadow = 1.0;
-    //applyShadowDirectional(0, shadow);
-    
-    if (cBase.a < ALPHA_DISCARD_THRESHOLD) discard;
-    _colorOut = cBase;
-    //_colorOut.rgb = cBase.rgb *(0.2 + 0.8 * shadow);
-   // _colorOut.a = _grassAlpha * cBase.a;
+    _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, 0.0);
 }

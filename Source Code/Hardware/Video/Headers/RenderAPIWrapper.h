@@ -54,6 +54,7 @@ class IMPrimitive;
 class PixelBuffer;
 class FrameBuffer;
 class VertexBuffer;
+class ShaderBuffer;
 class ShaderProgram;
 class SceneGraphNode;
 class SceneRenderState;
@@ -94,7 +95,7 @@ protected:
     ///Clear buffers,shaders, etc.
     virtual void flush() = 0;
 
-    virtual F32* lookAt(const mat4<F32>& viewMatrix) = 0;
+    virtual F32* lookAt(const mat4<F32>& viewMatrix) const = 0;
    
     virtual void idle() = 0;
     virtual void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) = 0;
@@ -105,6 +106,7 @@ protected:
     virtual void setMousePosition(U16 x, U16 y) const = 0;
     virtual FrameBuffer*        newFB(bool multisampled) const = 0;
     virtual VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES) const = 0;
+    virtual ShaderBuffer*       newSB(const bool unbound = false) const = 0;
     virtual GenericVertexData*  newGVD() const = 0;
     virtual PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D) const = 0;
     virtual Texture*            newTextureArray(const bool flipped = false) const = 0;
@@ -121,16 +123,15 @@ protected:
     virtual void initDevice(U32 targetFrameRate) = 0;
 
     /*State Matrix Manipulation*/
-    virtual F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes) = 0;
-    virtual F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) = 0;
+    virtual F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes) const = 0;
+    virtual F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) const = 0;
     /*State Matrix Manipulation*/
 
     virtual void toggleRasterization(bool state) = 0;
     virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
     /*Object viewing*/
-    virtual void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback) = 0;
-    virtual void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) = 0;
+    virtual void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) const = 0;
     virtual void updateClipPlanes() = 0;
     /*Object viewing*/
 
@@ -149,23 +150,21 @@ protected:
     virtual IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) = 0;
     /*Immediate Mode Emmlation*/
 
-    /*Light Management*/
-    virtual void setLight(Light* const light, bool shadowPass = false) = 0;
-    /*Light Management*/
     virtual void Screenshot(char *filename, const vec4<F32>& rect) = 0;
     virtual ~RenderAPIWrapper(){};
-    virtual bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) = 0;
 
     virtual U64 getFrameDurationGPU() const = 0;
     virtual I32 getDrawCallCount() const = 0;
     virtual U32 getFrameCount() const = 0;
-    virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) = 0;
+    virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const = 0;
 
     virtual void drawPoints(U32 numPoints) = 0;
 
 protected:
     ///Change the resolution and reshape all graphics data
     virtual void changeResolutionInternal(U16 w, U16 h) = 0;
+    virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
+    virtual void loadInContextInternal() = 0;
 
 private:
     RenderAPI        _apiId;

@@ -202,7 +202,6 @@ namespace Divide {
     namespace GLUtil {
     /*----------- GLU overrides ------*/
     typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
-    typedef std::stack<vec3<GLfloat>, vectorImpl<vec3<GLfloat> > > vector3Stack;
 
     /*--------- Object Management-------*/
     extern GLuint _invalidObjectID;

@@ -175,7 +175,7 @@ private:
    static D32 _nextGameTick;
 
    static Unordered_map<U64, DELEGATE_CBK > _threadedCallbackFunctions;
-   static boost::lockfree::queue<U64, boost::lockfree::capacity<5> >  _callbackBuffer;
+   static boost::lockfree::queue<U64, boost::lockfree::capacity<Config::THREAD_LIMIT + 1> >  _callbackBuffer;
    U8 _loops;
    //Command line arguments
    I32    _argc;

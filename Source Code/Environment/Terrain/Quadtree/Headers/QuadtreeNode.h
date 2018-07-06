@@ -37,7 +37,7 @@ enum ChildPosition{
 enum ChunkBit{
     CHUNK_BIT_TESTCHILDREN = toBit(1),
     CHUNK_BIT_WATERREFLECTION = toBit(2),
-    CHUNK_BIT_DEPTHMAP = toBit(3)
+    CHUNK_BIT_SHADOWMAP = toBit(3)
 };
 
 class Terrain;
@@ -52,11 +52,11 @@ class SceneRenderState;
 class QuadtreeNode {
 public:
     ///recursive node building function
-    void Build(const U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, U32& chunkCount);
+    void Build(const U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, SceneGraphNode* const parentTerrainSGN, U32& chunkCount);
     bool computeBoundingBox();
     void Destroy();
 
-    void DrawGround(U32 options, const SceneRenderState& sceneRenderState) const;
+    void CreateDrawCommand(U32 options, const SceneRenderState& sceneRenderState);
     void DrawBBox() const;
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);

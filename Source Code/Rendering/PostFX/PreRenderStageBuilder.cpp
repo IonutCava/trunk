@@ -8,7 +8,9 @@ PreRenderStageBuilder::PreRenderStageBuilder(){
 	_renderStage = New PreRenderStage();
 	_screenSampler = New SamplerDescriptor;
 	_screenSampler->setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    _screenSampler->setFilters(TEXTURE_FILTER_NEAREST);
 	_screenSampler->toggleMipMaps(false); //it's a flat texture on a full screen quad. really?
+    _screenSampler->setAnisotropy(0);
 }
 
 PreRenderStageBuilder::~PreRenderStageBuilder(){

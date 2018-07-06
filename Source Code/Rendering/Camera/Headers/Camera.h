@@ -182,7 +182,7 @@ public:
             vec3<F32> unProject(const vec3<F32>& winCoords, const vec4<I32>& viewport) const;
 
 protected:
-    virtual void lookAtInternal(bool reflection);
+    virtual void lookAtInternal();
     virtual bool updateViewMatrix();
     virtual void updateProjection(bool force = false);
     inline  void updateMatrices() {

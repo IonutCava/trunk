@@ -24,8 +24,8 @@ void Task::pauseTask(bool state){
 }
 
 void Task::run(){
-    D_PRINT_FN(Locale::get("TASK_START_THREAD"), boost::this_thread::get_id());
-    try	{
+    //try	{ //< threadpool does not support exceptions
+        D_PRINT_FN(Locale::get("TASK_START_THREAD"), boost::this_thread::get_id());
         while(true){
             if(_end) break;
 
@@ -45,7 +45,7 @@ void Task::run(){
                 //_numberOfTicks == -1, run forever
             }
         }
-    }catch(const boost::thread_interrupted&){}
+    //}catch(const boost::thread_interrupted&){}
 
     D_PRINT_FN(Locale::get("TASK_DELETE_THREAD"), boost::this_thread::get_id());
 

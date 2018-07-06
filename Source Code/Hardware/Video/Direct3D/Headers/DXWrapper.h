@@ -29,6 +29,7 @@
 #include "Hardware/Video/Direct3D/Buffers/FrameBuffer/Headers/d3dRenderTarget.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h"
+#include "Hardware/Video/Direct3D/Buffers/ShaderBuffer/Headers/d3dConstantBuffer.h"
 #include "Hardware/Video/Direct3D/Buffers/PixelBuffer/Headers/d3dPixelBuffer.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShader.h"
@@ -45,21 +46,22 @@ protected:
     void closeRenderingApi();
     void initDevice(U32 targetFrameRate);
     void changeResolutionInternal(U16 w, U16 h);
+    void changeViewport(const vec4<I32>& newViewport) const;
     void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
-    F32* lookAt(const mat4<F32>& viewMatrix);
+    F32* lookAt(const mat4<F32>& viewMatrix) const;
     void idle();
     void flush();
     void beginFrame();
     void endFrame();
-    void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll) {}
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
     inline FrameBuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
     inline GenericVertexData*  newGVD()                                      const { return New d3dGenericVertexData(); }
     inline VertexBuffer*       newVB(const PrimitiveType& type)              const { return New d3dVertexBuffer(type); }
     inline PixelBuffer*        newPB(const PBType& type)                     const { return New d3dPixelBuffer(type); }
+    inline ShaderBuffer*       newSB(const bool unbound = false)             const { return New d3dConstantBuffer(unbound); }
     inline Texture*            newTextureArray(const bool flipped = false)   const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }
     inline Texture*            newTexture2D(const bool flipped = false)      const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D], flipped); }
     inline Texture*            newTextureCubemap(const bool flipped = false) const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP], flipped); }
@@ -69,9 +71,9 @@ protected:
            bool                initShaders();
            bool                deInitShaders();
 
-    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
-    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
-    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
+    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes) const;
+    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) const;
+    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) const;
 
     void toggleRasterization(bool state);
 
@@ -88,23 +90,20 @@ protected:
     void debugDraw(const SceneRenderState& sceneRenderState);
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return nullptr; }
 
-    void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback);
     void updateClipPlanes();
     friend class GFXDevice;
     typedef void (*callback)();
     void dxCommand(callback f){(*f)();};
 
-    void setLight(Light* const light, bool shadowPass = false){};
-
     void Screenshot(char *filename, const vec4<F32>& rect);
 
-    bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
+    void loadInContextInternal();
 
     U64 getFrameDurationGPU() const { return 0; }
     U32 getFrameCount()       const { return 0; }
     I32 getDrawCallCount()    const { return 0; }
 
-    void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);
+    void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
 
 END_SINGLETON
 

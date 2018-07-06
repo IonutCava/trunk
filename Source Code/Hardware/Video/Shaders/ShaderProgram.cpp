@@ -25,7 +25,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
                                                     _elapsedTimeMS(0.0f)
 {
     _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
-    _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = _refreshComp = false;
+    
+    memset(_refreshStage, false, ShaderType_PLACEHOLDER * sizeof(bool));
 
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 
@@ -46,19 +47,17 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _zPlanesLoc          = -1;
     _sceneZPlanesLoc     = -1;
     _screenDimensionLoc  = -1;
-    _texDepthMapFromLightArrayLoc = -1;
-    _texDepthMapFromLightCubeLoc  = -1;
     _fogColorLoc       = -1;
     _fogDensityLoc     = -1;
     _prevLOD           = 250;
-    _lod0VertLight.resize(1);
-    _lod1VertLight.resize(1);
+    _lodVertLight.resize(2);
+    _lodFragLight.resize(2);
     I32 i = 0, j = 0;
     for (; i < Material::TEXTURE_UNIT0; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation[%d]", Material::TEXTURE_UNIT0 + i);
 
     for (i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation[%d]", j++);
 }
 
 ShaderProgram::~ShaderProgram()
@@ -84,29 +83,39 @@ U8 ShaderProgram::update(const U64 deltaTime){
 
     _activeCamera = Application::getInstance().getKernel()->getCameraMgr().getActiveCamera();
     ParamHandler& par = ParamHandler::getInstance();
+    LightManager& lightMgr = LightManager::getInstance();
     bool enableFog = par.getParam<bool>("rendering.enableFog");
 #ifdef _DEBUG
     this->Uniform("dvd_showShadowSplits", par.getParam<bool>("rendering.debug.showSplits"));
 #endif
     this->Uniform(_timeLoc, _elapsedTimeMS);
     this->Uniform(_enableFogLoc, enableFog);
-    this->Uniform(_lightAmbientLoc, LightManager::getInstance().getAmbientLight());
+    this->Uniform(_lightAmbientLoc, lightMgr.getAmbientLight());
     if(_dirty){
         this->Uniform(_screenDimensionLoc, Application::getInstance().getResolution());
 
-        U8 shadowMapSlot = Config::MAX_TEXTURE_STORAGE;
         //Apply global shader values valid throughout application runtime:
-        char depthMapSampler[32];
+        char depthMapSampler1[32], depthMapSampler2[32], depthMapSampler3[32];
         for(I32 i = 0; i < Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
-            sprintf_s(depthMapSampler, "texDepthMapFromLight[%d]", i);
+            sprintf_s(depthMapSampler1, "texDepthMapFromLight[%d]",      i);
+            sprintf_s(depthMapSampler2, "texDepthMapFromLightArray[%d]", i);
+            sprintf_s(depthMapSampler3, "texDepthMapFromLightCube[%d]",  i);
              //Shadow Maps always bound from the last texture slot upwards
-            this->UniformTexture(depthMapSampler,shadowMapSlot++);
+            this->UniformTexture(depthMapSampler1, lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_NORMAL, i));
+            this->UniformTexture(depthMapSampler2, lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_ARRAY,  i));
+            this->UniformTexture(depthMapSampler3, lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_CUBE,   i));
         }
-        shadowMapSlot =  Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
-        //Reserve first for directional shadows
-        this->UniformTexture(_texDepthMapFromLightArrayLoc, shadowMapSlot);
-         //Reserve second for point shadows
-        this->UniformTexture(_texDepthMapFromLightCubeLoc, shadowMapSlot + 1);
+
+        char textureSampler[32];
+        for (I32 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
+            sprintf_s(textureSampler, "texDiffuse[%d]", i);
+            //Shadow Maps always bound from the last texture slot upwards
+            this->UniformTexture(textureSampler, Material::TEXTURE_UNIT0 + i);
+        }
+        this->Uniform("dvd_lightBleedBias", 0.0000002f);
+        this->Uniform("dvd_minShadowVariance", 0.0002f);
+        this->Uniform("dvd_shadowMaxDist", 250.0f);
+        this->Uniform("dvd_shadowFadeDist",150.0f);
 
         if(enableFog){
             this->Uniform(_fogColorLoc, vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
@@ -136,7 +145,7 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _extendedMatrixEntry[WVP_MATRIX]    = this->cachedLoc("dvd_WorldViewProjectionMatrix");
     _extendedMatrixEntry[NORMAL_MATRIX] = this->cachedLoc("dvd_NormalMatrix");
     _timeLoc             = this->cachedLoc("dvd_time");
-    _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition", false);
+    _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition");
     _clipPlanesLoc       = this->cachedLoc("dvd_clip_plane");
     _clipPlaneCountLoc   = this->cachedLoc("dvd_clip_plane_count");
     _enableFogLoc        = this->cachedLoc("dvd_enableFog");
@@ -144,14 +153,14 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _zPlanesLoc          = this->cachedLoc("dvd_zPlanes");
     _sceneZPlanesLoc     = this->cachedLoc("dvd_sceneZPlanes");
     _screenDimensionLoc  = this->cachedLoc("screenDimension");
-    _texDepthMapFromLightArrayLoc = this->cachedLoc("texDepthMapFromLightArray");
-    _texDepthMapFromLightCubeLoc  = this->cachedLoc("texDepthMapFromLightCube");
     _fogColorLoc       = this->cachedLoc("fogColor");
     _fogDensityLoc     = this->cachedLoc("fogDensity");
 
-    _lod0VertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD0");
-    _lod1VertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD1");
+    _lodVertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD0");
+    _lodVertLight[1] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD1");
 
+    _lodFragLight[0] = GetSubroutineIndex(FRAGMENT_SHADER, "computeLightInfoLOD0Frag");
+    _lodFragLight[1] = GetSubroutineIndex(FRAGMENT_SHADER, "computeLightInfoLOD1Frag");
     _dirty = true;
 
     return true;
@@ -166,7 +175,7 @@ void ShaderProgram::uploadNodeMatrices(){
     assert(_bound);
     GFXDevice& GFX = GFX_DEVICE;
 
-    this->Attribute(_cameraLocationLoc, _cachedCamEye);
+    this->Uniform(_cameraLocationLoc, _cachedCamEye);
     this->Uniform(_zPlanesLoc, _cachedZPlanes);
     this->Uniform(_sceneZPlanesLoc, _cachedSceneZPlanes);
 
@@ -184,7 +193,7 @@ void ShaderProgram::uploadNodeMatrices(){
             this->Uniform(currentLocation, GFX.getMatrix4(WORLD_MATRIX));
         }
 
-        currentLocation = _extendedMatrixEntry[WV_INV_MATRIX];
+        currentLocation = _extendedMatrixEntry[WV_MATRIX];
         if (currentLocation != -1){
             this->Uniform(currentLocation, GFX.getMatrix4(WV_MATRIX));
         }
@@ -201,7 +210,6 @@ void ShaderProgram::uploadNodeMatrices(){
 
         _extendedMatricesDirty = false;
     }
-    
     /*Get and upload clip plane data*/
     if (_clipPlanesDirty == true){
         _clipPlanesDirty = false;
@@ -219,6 +227,8 @@ void ShaderProgram::uploadNodeMatrices(){
 }
 
 void ShaderProgram::ApplyMaterial(Material* const material){
+    if (!material) return;
+
     for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
         if (material->getTexture(i)){
             if (i >= Material::TEXTURE_UNIT0)
@@ -236,7 +246,8 @@ void ShaderProgram::ApplyMaterial(Material* const material){
 }
 
 void ShaderProgram::SetLOD(U8 currentLOD){
-    SetSubroutines(VERTEX_SHADER, currentLOD == 0 ? _lod0VertLight : _lod1VertLight);
+    SetSubroutine(VERTEX_SHADER, currentLOD == 0 ? _lodVertLight[0] : _lodVertLight[1]);
+    SetSubroutine(FRAGMENT_SHADER, currentLOD == 0 ? _lodFragLight[0] : _lodFragLight[1]);
 
     if (currentLOD != _prevLOD){
         Uniform("lodLevel", (I32)currentLOD);
@@ -267,21 +278,13 @@ void ShaderProgram::removeShaderDefine(const std::string& define){
 }
 
 void ShaderProgram::addShaderUniform(const std::string& uniform, const ShaderType& type) {
-    if(type == FRAGMENT_SHADER) _fragUniforms.push_back(uniform);
-    else                        _vertUniforms.push_back(uniform);
+    _customUniforms[type].push_back(uniform);
 }
 
 void ShaderProgram::removeUniform(const std::string& uniform, const ShaderType& type) {
-    vectorImpl<std::string >::iterator it;
-    if(type == FRAGMENT_SHADER){
-        it = find(_fragUniforms.begin(), _fragUniforms.end(), uniform);
-        if (it != _fragUniforms.end()) _fragUniforms.erase(it);
-        else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"),uniform.c_str(),"fragment", getName().c_str());
-    }else{
-        it = find(_vertUniforms.begin(), _vertUniforms.end(), uniform);
-        if (it != _vertUniforms.end()) _vertUniforms.erase(it);
-        else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),uniform.c_str(), "vertex", getName().c_str());
-    }
+    vectorImpl<std::string >::const_iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
+    if (it != _customUniforms[type].end()) _customUniforms[type].erase(it);
+    else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"), uniform.c_str(), (U32)type , getName().c_str());
 }
 
 void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool geometry, const bool tessellation, const bool compute){
@@ -291,11 +294,12 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool
     if(_wasBound) unbind();
 
     //update refresh tags
-    _refreshVert = vertex;
-    _refreshFrag = fragment;
-    _refreshGeom = geometry;
-    _refreshTess = tessellation;
-    _refreshComp = compute;
+    _refreshStage[VERTEX_SHADER] = vertex;
+    _refreshStage[FRAGMENT_SHADER] = fragment;
+    _refreshStage[GEOMETRY_SHADER] = geometry;
+    _refreshStage[TESSELATION_CTRL_SHADER] = tessellation;
+    _refreshStage[TESSELATION_EVAL_SHADER] = tessellation;
+    _refreshStage[COMPUTE_SHADER] = compute;
     //recreate all the needed shaders
     generateHWResource(getName());
 

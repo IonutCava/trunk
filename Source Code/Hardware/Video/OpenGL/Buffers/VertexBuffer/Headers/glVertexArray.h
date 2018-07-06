@@ -51,6 +51,7 @@ public:
 
     void Draw(bool skipBind = false, const U8 LODindex = 0);
     void DrawRange(bool skipBind = false);
+    void DrawCommands(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false);
 
     ///Never call Refresh() just queue it and the data will update before drawing
     inline bool queueRefresh() {_refreshQueued = true; return true;}
@@ -98,6 +99,10 @@ protected:
     GLsizei _prevSizeBoneWeights;
     GLsizei _prevSizeBoneIndices;
     GLsizei _prevSizeIndices;
+
+    const static U32 MAX_DRAW_COMMANDS = 128 * 8;
+    vectorImpl<GLsizei > _multiCount;
+    vectorImpl<const GLvoid* > _multiIndices;
 };
 
 #endif

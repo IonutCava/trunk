@@ -102,6 +102,7 @@ class GUIConsole{
         static const I32 _messageQueueCapacity = 512;
         static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<_messageQueueCapacity> >  _outputBuffer;
         static vectorImpl<std::pair<std::string, bool > > _outputTempBuffer;
+        static SharedLock _outputLock;
 };
 
 #endif

@@ -46,7 +46,7 @@ public:
     void init(ShadowMapInfo* const smi);
 
 protected:
-
+    bool BindInternal(U8 offset);
     void CalculateSplitDepths(Camera& cam);
     void ApplyFrustumSplit(U8 pass);
     void updateResolution(I32 newWidth, I32 newHeight);
@@ -55,6 +55,8 @@ protected:
     U8  _numSplits;
     F32 _splitLogFactor;
     F32 _nearClipOffset;
+    U32 _horizBlur;
+    U32 _vertBlur;
     vec2<F32> _sceneZPlanes;
     vec3<F32> _lightPosition;
     mat4<F32> _viewInvMatrixCache;
@@ -70,8 +72,7 @@ protected:
     vectorImpl<vec3<F32> > _frustumCornersLS;
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
     vectorImpl<F32 >       _splitDepths;
-    vectorImpl<U32 >       _horizBlur;
-    vectorImpl<U32 >       _vertBlur;
+    
 
 };
 #endif 

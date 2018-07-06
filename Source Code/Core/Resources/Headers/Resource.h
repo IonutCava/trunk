@@ -117,8 +117,8 @@ struct TerrainInfo {
     TerrainInfo(){position.set(0,0,0);}
     ///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
     Unordered_map<std::string,std::string> variables;
-    U32  grassDensity;
-    U16  treeDensity;
+    F32  grassDensity;
+    F32  treeDensity;
     F32  grassScale;
     F32  treeScale;
     vec3<F32>   position;

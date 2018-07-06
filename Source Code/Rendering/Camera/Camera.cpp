@@ -243,30 +243,29 @@ void Camera::renderLookAt() {
         _reflectionRendering = false;
         _frustumDirty = true;
     }
-    lookAtInternal(false);
+    lookAtInternal();
 }
 
 void Camera::renderLookAtReflected(const Plane<F32>& reflectionPlane){
     _reflectionRendering = true;
     _reflectedViewMatrix.reflect(reflectionPlane);
     _reflectedEye        = _reflectedViewMatrix * _eye;
-    _reflectedViewMatrix = _reflectedViewMatrix * _viewMatrix;
     _frustumDirty = true;
 
-    lookAtInternal(true);
+    lookAtInternal();
 }
 
-void Camera::lookAtInternal(bool reflection) {
+void Camera::lookAtInternal() {
     assert(_isActive);
-
     updateMatrices();
 
     //Tell the Rendering API to draw from our desired PoV
-    GFX_DEVICE.lookAt(reflection ? _reflectedViewMatrix : _viewMatrix);
+    GFX_DEVICE.lookAt(_reflectionRendering ? (_reflectedViewMatrix * _viewMatrix) : _viewMatrix);
 
     updateFrustum();
     //Inform all listeners of a new event
     updateListeners();
+
 }
 
 void Camera::setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes, bool updateOnSet){

@@ -93,22 +93,21 @@ bool Sky::prepareMaterial(SceneGraphNode* const sgn) {
 }
 
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
-    Light* l = LightManager::getInstance().getLight(0);
-    if (l && _sun->getMaterial()) _sun->getMaterial()->setDiffuse(l->getDiffuseColor());
+    if (!_drawSky && _drawSun){
+        Light* l = LightManager::getInstance().getLight(0);
+        if (l && _sun->getMaterial()) _sun->getMaterial()->setDiffuse(l->getDiffuseColor());
+    }
 }
 
 bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
-    _sun->onDraw(sgn, currentStage);
+    if(!_drawSky && _drawSun) _sun->onDraw(sgn, currentStage);
     return _sky->onDraw(sgn, currentStage);
 }
 
 void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
-    const vec3<F32>& eyeTemp = sceneRenderState.getCameraConst().getEye();
-    sgn->getTransform()->setPosition(eyeTemp);
-
+     const vec3<F32>& eyeTemp = sceneRenderState.getCameraConst().getEye();
+     sgn->getTransform()->setPosition(eyeTemp);
     _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
-    _sun->renderInstance()->transform(_sunNode->getTransform());
-
     if (_drawSky){
         _sky->renderInstance()->transform(sgn->getTransform());
 
@@ -116,7 +115,10 @@ void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderS
         _skybox->Bind(0);
         GFX_DEVICE.renderInstance(_sky->renderInstance());
     }else{
-        if (_drawSun) GFX_DEVICE.renderInstance(_sun->renderInstance());
+        if (_drawSun){
+            _sun->renderInstance()->transform(_sunNode->getTransform());
+            GFX_DEVICE.renderInstance(_sun->renderInstance());
+        }
     }
 }
 

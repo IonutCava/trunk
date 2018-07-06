@@ -52,7 +52,7 @@ GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
     assert(nFace<6);
     glBindTexture(_textureType, _textureId);
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch(_pbtype){
         case PB_TEXTURE_1D:
             glTexSubImage1D(_textureType, 0, 0, _width, _format, _dataType, 0);
@@ -65,7 +65,7 @@ GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
             break;
     };
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch(_pbtype){
         case PB_TEXTURE_1D:
             glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
@@ -84,7 +84,7 @@ GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
 void glPixelBuffer::End(GLubyte nFace) const {
     assert(nFace<6);
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release the mapped buffer
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     glBindTexture(_textureType, 0);
 }
 
@@ -154,18 +154,18 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
     SAFE_DELETE_ARRAY(pixels);
 
     glGenBuffers(1, &_pixelBufferHandle);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, size * sizeOf(_dataType), 0, GL_STREAM_DRAW);
 
     glBindTexture(_textureType, 0);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     return true;
 }
 
 void glPixelBuffer::updatePixels(const GLfloat * const pixels) {
     glBindTexture(_textureType, _textureId);
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch(_pbtype){
         case PB_TEXTURE_1D:
             glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
@@ -184,5 +184,5 @@ void glPixelBuffer::updatePixels(const GLfloat * const pixels) {
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release the mapped buffer
     }
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }

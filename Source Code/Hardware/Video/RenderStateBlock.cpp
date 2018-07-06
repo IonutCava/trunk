@@ -77,9 +77,14 @@ void RenderStateBlockDescriptor::setColorWrites( bool red, bool green, bool blue
     clean();
 }
 
-void RenderStateBlockDescriptor::setZBias(F32 zBias, F32 zUnits, ComparisonFunction zFunc){
+void RenderStateBlockDescriptor::setZBias(F32 zBias, F32 zUnits){
     _zBias = zBias;
     _zUnits = zUnits;
+
+    clean();
+}
+
+void RenderStateBlockDescriptor::setZFunc(ComparisonFunction zFunc){
     _zFunc = zFunc;
 
     clean();
@@ -113,6 +118,7 @@ void RenderStateBlockDescriptor::setStencil(bool enable, U32 stencilRef, Stencil
 void RenderStateBlockDescriptor::setDefaultValues(){
     _lockHash = true;
     setZBias(0.0f, 1.0f);
+    setZFunc();
     setColorWrites(true, true, true, true);
     setBlend(false, BLEND_PROPERTY_ONE, BLEND_PROPERTY_ONE, BLEND_OPERATION_ADD);
     setZReadWrite(true, true);

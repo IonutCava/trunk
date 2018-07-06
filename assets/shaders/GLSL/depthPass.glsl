@@ -34,21 +34,24 @@ void main(void){
 
 -- Fragment.Shadow
 
-#if defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
 in vec2 _texCoord;
-#endif
+out vec2 _colorOut;
 
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#define HAS_TRANSPARENCY
 #if defined(USE_OPACITY)
 uniform float opacity = 1.0;
-#elif defined(USE_OPACITY_MAP)
-layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
-#elif defined(USE_OPACITY_DIFFUSE_MAP)
-layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
-#elif defined(USE_OPACITY_DIFFUSE)
-uniform mat4      material;
 #endif
-
-out vec2 _colorOut;
+#if defined(USE_OPACITY_DIFFUSE)
+uniform mat4 material;
+#endif
+#if defined(USE_OPACITY_MAP)
+layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
+#endif
+#if defined(USE_OPACITY_DIFFUSE_MAP)
+layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
+#endif
+#endif
 
 vec2 computeMoments(in float depth) {
     // Compute partial derivatives of depth.  
@@ -60,16 +63,24 @@ vec2 computeMoments(in float depth) {
 
 void main(){
 
-#if defined(USE_OPACITY_DIFFUSE)
-    if (material[1].w < ALPHA_DISCARD_THRESHOLD) discard;
-#elif defined(USE_OPACITY)
-    if (opacity < ALPHA_DISCARD_THRESHOLD) discard;
-#elif defined(USE_OPACITY_MAP)
-    vec4 opacityMap = texture(texOpacityMap, _texCoord);
-    if (max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a)) < ALPHA_DISCARD_THRESHOLD) discard;
-#elif defined(USE_OPACITY_DIFFUSE_MAP)
-    if (texture(texDiffuse0, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
+#if defined(HAS_TRANSPARENCY)
+    float alpha = 1.0;
+#if defined(USE_OPACITY_DIFFUSE_MAP)
+    alpha *= texture(texDiffuse0, _texCoord).a;
 #endif
+#if defined(USE_OPACITY_DIFFUSE)
+    alpha *= material[1].w;
+#endif
+#if defined(USE_OPACITY)
+    alpha *= opacity;
+#endif
+#if defined(USE_OPACITY_MAP)
+    vec4 opacityMap = texture(texOpacityMap, _texCoord);
+    alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
+#endif
+    if (alpha < ALPHA_DISCARD_THRESHOLD) discard;
+#endif
+
 
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     float linearz = gl_FragCoord.z;
@@ -83,32 +94,48 @@ void main(){
 
 void main() {
 
-    computeData();    gl_Position = dvd_WorldViewProjectionMatrix * dvd_Vertex;}
+    computeData();    gl_Position = dvd_ViewProjectionMatrix * _vertexW;}
 
 -- Fragment.PrePass
 
 in vec2 _texCoord;
 in vec4 _vertexW;
-
-uniform float opacity = 1.0;
-layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
-layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
-uniform mat4      material;
-
 out vec4 _colorOut;
 
-void main(){
-
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#define HAS_TRANSPARENCY
+#if defined(USE_OPACITY)
+uniform float opacity = 1.0;
+#endif
 #if defined(USE_OPACITY_DIFFUSE)
-    if (material[1].w < ALPHA_DISCARD_THRESHOLD) discard;
-#elif defined(USE_OPACITY)
-    if (opacity < ALPHA_DISCARD_THRESHOLD) discard;
-#elif defined(USE_OPACITY_MAP)
-    vec4 opacityMap = texture(texOpacityMap, _texCoord);
-    if (max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a)) < ALPHA_DISCARD_THRESHOLD) discard;
-#elif defined(USE_OPACITY_DIFFUSE_MAP)
-    if (texture(texDiffuse0, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
+uniform mat4 material;
+#endif
+#if defined(USE_OPACITY_MAP)
+layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
+#endif
+#if defined(USE_OPACITY_DIFFUSE_MAP)
+layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
+#endif
 #endif
 
-    _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, 0.0);
+void main(){
+    float alpha = 1.0;
+#if defined(HAS_TRANSPARENCY)
+#if defined(USE_OPACITY_DIFFUSE_MAP)
+    alpha *= texture(texDiffuse0, _texCoord).a;
+#endif
+#if defined(USE_OPACITY_DIFFUSE)
+    alpha *= material[1].w;
+#endif
+#if defined(USE_OPACITY)
+    alpha *= opacity;
+#endif
+#if defined(USE_OPACITY_MAP)
+    vec4 opacityMap = texture(texOpacityMap, _texCoord);
+    alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
+#endif
+    if (alpha < ALPHA_DISCARD_THRESHOLD) discard;
+#endif
+
+    _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, alpha);
 }

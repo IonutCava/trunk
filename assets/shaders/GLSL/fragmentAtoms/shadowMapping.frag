@@ -1,5 +1,5 @@
-uniform sampler2DArray       texDepthMapFromLightArray;
-uniform samplerCubeShadow    texDepthMapFromLightCube;
+uniform sampler2DArray       texDepthMapFromLightArray[MAX_SHADOW_CASTING_LIGHTS];
+uniform samplerCubeShadow    texDepthMapFromLightCube[MAX_SHADOW_CASTING_LIGHTS];
 uniform sampler2DShadow      texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
 uniform sampler2D            texDiffuseProjected;
 

@@ -1,10 +1,16 @@
 #include "Headers/glGenericVertexData.h"
 
-glGenericVertexData::glGenericVertexData() : GenericVertexData(), _feedbackQueries(nullptr), _resultAvailable(nullptr), _prevResult(nullptr)
+glGenericVertexData::glGenericVertexData() : GenericVertexData(), _prevResult(nullptr)
 {
     _vertexArray[GVD_USAGE_DRAW] = _vertexArray[GVD_USAGE_FDBCK] = 0;
     _transformFeedback = 0;
-    _numQueries = 0;
+    _numQueries  = 0;
+    _currentWriteQuery = 0;
+    _currentReadQuery = 0;
+    for (U8 i = 0; i < 2; ++i){
+        _feedbackQueries[i] = nullptr;
+        _resultAvailable[i] = nullptr;
+    }
 }
 
 glGenericVertexData::~glGenericVertexData()
@@ -15,35 +21,59 @@ glGenericVertexData::~glGenericVertexData()
         _vertexArray[GVD_USAGE_DRAW] = _vertexArray[GVD_USAGE_FDBCK] = 0;
     }
     glDeleteTransformFeedbacks(1, &_transformFeedback);
-    glDeleteQueries(_numQueries, _feedbackQueries);
+
+    for (U8 i = 0; i < 2; ++i)
+        glDeleteQueries(_numQueries, _feedbackQueries[i]);
+
     _transformFeedback = 0;
     _bufferObjects.clear();
     _feedbackBuffers.clear();
-    _feedbackBindPoints.clear();
-    SAFE_DELETE_ARRAY(_feedbackQueries);
-    SAFE_DELETE_ARRAY(_resultAvailable);
+
+    for (U8 i = 0; i < 2; ++i){
+        SAFE_DELETE_ARRAY(_feedbackQueries[i]);
+        SAFE_DELETE_ARRAY(_resultAvailable[i]);
+    }
     SAFE_DELETE_ARRAY(_prevResult);
 }
 
 void glGenericVertexData::Create(U8 numBuffers, U8 numQueries){
     assert(_bufferObjects.empty()); //< double create is not implemented yet as I don't quite need it. -Ionut
     _numQueries = numQueries;
-    _feedbackQueries = New GLuint[_numQueries];
-    _resultAvailable = New bool[_numQueries];
-    _prevResult      = New GLint[_numQueries];
 
-    memset(_feedbackQueries, 0,     sizeof(GLuint) * _numQueries);
-    memset(_resultAvailable, false, sizeof(bool)   * _numQueries);
-    memset(_prevResult,      0,     sizeof(GLint)  * _numQueries);
+    for (U8 i = 0; i < 2; ++i){
+        _feedbackQueries[i] = New GLuint[_numQueries];
+        _resultAvailable[i] = New bool[_numQueries];
+    }
+
+    _prevResult = New GLuint[_numQueries];
+    for (U8 i = 0; i < 2; ++i){
+        memset(_feedbackQueries[i], 0,     sizeof(GLuint) * _numQueries);
+        memset(_resultAvailable[i], false, sizeof(bool)   * _numQueries);
+    }
+
+    memset(_prevResult, 0, sizeof(GLuint) * _numQueries);
 
     _bufferObjects.resize(numBuffers, 0);
-    glGenQueries(_numQueries, _feedbackQueries);
+
+    for (U8 i = 0; i < 2; ++i)
+        glGenQueries(_numQueries, _feedbackQueries[i]);
+
     glGenVertexArrays(GVD_USAGE_PLACEHOLDER, &_vertexArray[0]);
     glGenBuffers(numBuffers, &_bufferObjects[0]);
     glGenTransformFeedbacks(1, &_transformFeedback);
 }
 
+bool glGenericVertexData::frameStarted(const FrameEvent& evt) {
+    if (!_bufferObjects.empty()){
+        _currentWriteQuery = (_currentWriteQuery + 1) % 2;
+        _currentReadQuery  = (_currentWriteQuery + 1) % 2;
+    }
+
+    return GenericVertexData::frameStarted(evt);
+}
+
 void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 max, U32 instanceCount, U8 queryID, bool drawToBuffer) {
+    if (instanceCount == 0) return;
 
     bool feedbackActive = (drawToBuffer && !_feedbackBuffers.empty());
 
@@ -52,18 +82,18 @@ void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 m
     if (feedbackActive){
        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _transformFeedback);
        glBeginTransformFeedback(glPrimitiveTypeTable[type]);
-       glBeginQueryIndexed(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, queryID, _feedbackQueries[queryID]);
+       glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][queryID]);
     } 
     
-    glDrawArraysInstanced(glPrimitiveTypeTable[type], min, max, std::max(instanceCount, (GLuint)1));
+    glDrawArraysInstanced(glPrimitiveTypeTable[type], min, max, instanceCount);
 
     GL_API::registerDrawCall();
 
     if (feedbackActive) {
-        glEndQueryIndexed(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, queryID);
+        glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
-        _resultAvailable[queryID] = true;
+        _resultAvailable[_currentWriteQuery][queryID] = true;
     }
 }
 
@@ -74,7 +104,7 @@ void glGenericVertexData::SetBuffer(U32 buffer, size_t dataSize, void* data, boo
                                              (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
                                              
 
-    GL_API::setActiveVB(_bufferObjects[buffer]);
+    GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, flag);
 }
 
@@ -85,21 +115,18 @@ void glGenericVertexData::UpdateBuffer(U32 buffer, size_t dataSize, void* data, 
 
 void glGenericVertexData::UpdateAttribute(U32 index, U32 buffer, U32 divisor, GLsizei size, GLboolean normalized, U32 stride, GLvoid* offset, GLenum type, bool feedbackAttrib) {
     GL_API::setActiveVAO(_vertexArray[feedbackAttrib ? GVD_USAGE_FDBCK : GVD_USAGE_DRAW]);
-    GL_API::setActiveVB(_bufferObjects[buffer]);
+    GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
     glEnableVertexAttribArray(index);
     glVertexAttribPointer(index, size, type, normalized, stride, offset);
     if (divisor > 0) glVertexAttribDivisor(index, divisor);
 }
 
-I32 glGenericVertexData::GetFeedbackPrimitiveCount(U8 queryID) {
+U32 glGenericVertexData::GetFeedbackPrimitiveCount(U8 queryID) {
     assert(queryID < _numQueries && !_bufferObjects.empty());
-    
-    if (_resultAvailable[queryID]){
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _transformFeedback);
+    if (_resultAvailable[_currentReadQuery][queryID]){
         // get the result of the previous query about the generated primitive count
-        glGetQueryIndexediv(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, queryID, GL_CURRENT_QUERY, &_prevResult[queryID]);
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
-        _resultAvailable[queryID] = false;
+        glGetQueryObjectuiv(_feedbackQueries[_currentReadQuery][queryID], GL_QUERY_RESULT, &_prevResult[queryID]);
+        _resultAvailable[_currentReadQuery][queryID] = false;
     }
     return _prevResult[queryID];
 }

@@ -26,7 +26,7 @@
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
 enum  UBO_NAME;
-class glUniformBufferObject;
+class glUniformBuffer;
 class glShaderProgram : public ShaderProgram {
 public:
     glShaderProgram(const bool optimise = false);
@@ -40,6 +40,7 @@ public:
     void detachShader(Shader* const shader);
     //Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const;
+    void SetSubroutine(ShaderType type, U32 index) const;
     U32  GetSubroutineIndex(ShaderType type, const std::string& name) const;
     //Attributes
     void Attribute(GLint location, GLdouble value) const;
@@ -66,7 +67,7 @@ public:
     void Uniform(GLint location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) const;
     void Uniform(GLint location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const;
     //Uniform Texture
-    void UniformTexture(GLint location, GLushort slot) const;
+    void UniformTexture(GLint location, GLushort slot);
 
     inline void  flushLocCache()                               { _shaderVars.clear();}
 
@@ -76,18 +77,18 @@ protected:
     void validateInternal();
     std::string getLog() const;
 
+    /// Prevent binding multiple textures to the same slot.
+    bool checkSlotUsage(GLint location, GLushort slot);
+
 private:
     typedef Unordered_map<std::string, GLint > ShaderVarMap;
+    typedef Unordered_map<GLushort, GLint >   TextureSlotMap;
     ShaderVarMap _shaderVars;
+    TextureSlotMap _textureSlots;
     boost::atomic_bool _validationQueued;
     GLenum _binaryFormat;
     bool   _loadedFromBinary;
-    Shader* _vertexShader;
-    Shader* _fragmentShader;
-    Shader* _geometryShader;
-    Shader* _tessellationControlShader;
-    Shader* _tessellationEvaluationShader;
-    Shader* _computeShader;
+    Shader* _shaderStage[ShaderType_PLACEHOLDER];
     GLuint  _shaderProgramIDTemp;
     GLenum  _shaderStageTable[6];
 

@@ -12,7 +12,6 @@ Material::Material() : Resource("temp_material"),
                        _hardwareSkinning(false),
                        _useAlphaTest(false),
                        _dumpToFile(true),
-                       _gsInputType(GS_TRIANGLES),
                        _translucencyCheck(false),
                        _shadingMode(SHADING_PHONG), /// phong shading by default
                        _bumpMethod(BUMP_NONE),
@@ -111,6 +110,9 @@ void Material::setTexture(U32 textureUsageSlot, Texture* const texture, const Te
         texture ? _shaderData[index]._textureCount++ : _shaderData[index]._textureCount--;
     }
 
+    if (textureUsageSlot == TEXTURE_OPACITY || textureUsageSlot == TEXTURE_UNIT0){
+        _translucencyCheck = false;
+    }
     if(texture){
         REGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
     }
@@ -168,11 +170,7 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
     //bool forwardPassShader = !deferredPassShader && !depthPassShader;
 
-    if (_shaderInfo[renderStage]._computedShader && !force)
-        return false;
-
-
-    if (_shaderInfo[renderStage]._shader.empty() || (renderStage == FINAL_STAGE && !_computedShaderTextures)){
+    if (force || ((_shaderInfo[renderStage]._shader.empty() || (renderStage == FINAL_STAGE && !_computedShaderTextures)) || !_shaderInfo[renderStage]._computedShader)) {
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
   
@@ -199,40 +197,29 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
         }
 
         if (isTranslucent()){
-            switch (_translucencySource){
-                case TRANSLUCENT_DIFFUSE:{
-                    shader += ".OpacityDiffuse";
+            for (Material::TranslucencySource source : _translucencySource){
+                if(source == TRANSLUCENT_DIFFUSE ){
+                    shader += ".DiffuseAlpha";
                     addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE");
-                }break;
-                case TRANSLUCENT_OPACITY:{
-                    shader += ".Opacity";
+                }
+                if (source == TRANSLUCENT_OPACITY){
+                    shader += ".OpacityValue";
                     addShaderDefines(renderStage, "USE_OPACITY");
-                }break;
-                case TRANSLUCENT_OPACITY_MAP:{
+                }
+                if (source == TRANSLUCENT_OPACITY_MAP){
                     shader += ".OpacityMap";
                     addShaderDefines(renderStage, "USE_OPACITY_MAP");
-                }break;
-                case TRANSLUCENT_DIFFUSE_MAP:{
-                    shader += ".OpacityDiffuseMap";
+                }
+                if (source == TRANSLUCENT_DIFFUSE_MAP){
+                    shader += ".TextureAlpha";
                     addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE_MAP");
-                }break;
+                }
             }
         }
 
         if (_textures[TEXTURE_SPECULAR]){
             shader += ".Specular";
             addShaderDefines(renderStage, "USE_SPECULAR_MAP");
-        }
-
-        //if this is true, geometry shader will take a triangle strip as input, else it will use triangles
-        if (_gsInputType == GS_TRIANGLES){
-            addShaderDefines(renderStage, "USE_GEOMETRY_TRIANGLE_INPUT");
-        }else if (_gsInputType == GS_LINES){
-            shader += ".Lines";
-            addShaderDefines(renderStage, "USE_GEOMETRY_LINE_INPUT");
-        }else{
-            shader += ".Points";
-            addShaderDefines(renderStage, "USE_GEOMETRY_POINT_INPUT");
         }
 
         //Add the GPU skinning module to the vertex shader?
@@ -326,47 +313,48 @@ void Material::setDoubleSided(bool state) {
 }
 
 bool Material::isTranslucent(U8 index) {
-    bool state = false;
+    if (!_translucencyCheck){
+        _translucencySource.clear();
+        // In order of importance (less to more)!
+        // diffuse channel alpha
+        if(_materialMatrix[index].getCol(1).a < 0.95f) {
+            _translucencySource.push_back(TRANSLUCENT_DIFFUSE);
+            _useAlphaTest = (getOpacityValue() < 0.15f);
+        }
 
-    // In order of importance (less to more)!
-    // diffuse channel alpha
-    if(_materialMatrix[index].getCol(1).a < 0.98f) {
-        state = true;
-        _translucencySource = TRANSLUCENT_DIFFUSE;
-        _useAlphaTest = (getOpacityValue() < 0.15f);
-    }
+        // base texture is translucent
+        if (_textures[TEXTURE_UNIT0] && _textures[TEXTURE_UNIT0]->hasTransparency()){
+            _translucencySource.push_back(TRANSLUCENT_DIFFUSE_MAP);
+            _useAlphaTest = true;
+        }
 
-    // base texture is translucent
-    if(_textures[TEXTURE_UNIT0]){
-        if(_textures[TEXTURE_UNIT0]->hasTransparency()) state = true;
-        _translucencySource = TRANSLUCENT_DIFFUSE_MAP;
-    }
+        // opacity map
+        if(_textures[TEXTURE_OPACITY]){
+            _translucencySource.push_back(TRANSLUCENT_OPACITY_MAP);
+            _useAlphaTest = false;
+        }
 
-    // opacity map
-    if(_textures[TEXTURE_OPACITY]){
-        state = true;
-        _translucencySource = TRANSLUCENT_OPACITY_MAP;
-    }
+        // if we have a global opacity value
+        if(getOpacityValue() < 0.95f){
+            _translucencySource.push_back(TRANSLUCENT_OPACITY);
+            _useAlphaTest = (getOpacityValue() < 0.15f);
+        }
 
-    // if we have a global opacity value
-    if(getOpacityValue() < 0.98f){
-        state = true;
-        _translucencySource = TRANSLUCENT_OPACITY;
-        _useAlphaTest = (getOpacityValue() < 0.15f);
-    }
-
-    // Disable culling for translucent items
-    if(state && !_translucencyCheck){
-        typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
-        FOR_EACH(stateValue& it, _defaultRenderStates){
-            RenderStateBlockDescriptor descriptor(it.second->getDescriptor());
-            if (it.first != SHADOW_STAGE) descriptor.setCullMode(CULL_MODE_NONE);
-            if (!_useAlphaTest) descriptor.setBlend(true);
-            setRenderStateBlock(descriptor, it.first);
+        // Disable culling for translucent items
+        if (!_translucencySource.empty()){
+            typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
+            FOR_EACH(stateValue& it, _defaultRenderStates){
+                RenderStateBlockDescriptor descriptor(it.second->getDescriptor());
+                if (it.first != SHADOW_STAGE) descriptor.setCullMode(CULL_MODE_NONE);
+                if (!_useAlphaTest) descriptor.setBlend(true);
+                setRenderStateBlock(descriptor, it.first);
+            }
         }
         _translucencyCheck = true;
+        _computedShaderTextures = false;
     }
-    return state;
+
+    return !_translucencySource.empty();
 }
 
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {

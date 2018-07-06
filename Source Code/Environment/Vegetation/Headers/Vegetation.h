@@ -32,22 +32,36 @@ class Texture;
 class Transform;
 class SceneState;
 class FrameBuffer;
+class ShaderBuffer;
+class TerrainChunk;
 class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 class GenericVertexData;
 enum RenderStage;
+
+struct VegetationDetails {
+    U16 billboardCount;
+    F32 grassDensity;
+    F32 grassScale;
+    F32 treeDensity;
+    F32 treeScale;
+    std::string map;
+    std::string name;
+    std::string grassShaderName;
+    Terrain* parentTerrain;
+    Texture* grassBillboards;
+};
+
 ///Generates grass and trees on the terrain.
 ///Grass VB's + all resources are stored locally in the class.
 ///Trees are added to the SceneGraph and handled by the scene.
 class Vegetation : public SceneNode {
 public:
-    Vegetation(const std::string& name, U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, 
-               const std::string& map, Texture* grassBillboards,
-               const std::string& grassShaderName);
+    Vegetation(const VegetationDetails& details);
     ~Vegetation();
     void postLoad(SceneGraphNode* const sgn) { SceneNode::postLoad(sgn); }
-    void initialize(Terrain* const terrain,SceneGraphNode* const terrainSGN);
+    void initialize(TerrainChunk* const terrainChunk, SceneGraphNode* const terrainSGN);
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
@@ -56,21 +70,33 @@ public:
 protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& renderStage);
+    void gpuCull();
+    //bool prepareMaterial(SceneGraphNode* const sgn);
+    //bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    bool setMaterialInternal(SceneGraphNode* const sgn);
 
 private:
     bool uploadGrassData();
     void generateTrees();
     void generateGrass();
-    void gpuCull();
+
+    U32  getQueryID();
 
 private:
+    enum CullType {
+        PASS_THROUGH = 0,
+        INSTANCE_CLOUD_REDUCTION = 1,
+        HI_Z_CULL = 2,
+        CullType_PLACEHOLDER = 3
+    };
     //variables
     bool _render; ///< Toggle vegetation rendering On/Off
     bool _success;
     boost::atomic_bool _threadedLoadComplete, _stopLoadingRequest;
     SceneGraphNode* _terrainSGN;
     Terrain*        _terrain;
-    D32 _grassDensity, _treeDensity;
+    TerrainChunk*   _terrainChunk;
+    F32 _grassDensity, _treeDensity;
     U16 _billboardCount;          ///< Vegetation cumulated density
     F32 _grassSize,_grassScale, _treeScale;
     F32 _windX, _windZ, _windS, _time;
@@ -78,25 +104,22 @@ private:
     U64 _stateRefreshIntervalBuffer;
     ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
     Texture*              _grassBillboards;
-    ShaderProgram*		  _grassShader[3];
     ShaderProgram*        _cullShader;
     std::string           _grassShaderName;
     bool _shadowMapped;
     RenderStateBlock*     _grassStateBlock;
 
-
     bool                   _culledFinal;
-    U32                    _shadowQueryID;
-    U32                    _drawQueryID;
-    U32                    _billboardDivisor;
     U32                    _instanceCountGrass;
     U32                    _instanceCountTrees;
-    vectorImpl<I32 >       _grassTextureIdx;
-    vectorImpl<F32 >       _grassSizes;
-    vectorImpl<vec3<F32> > _grassPositions;
+    U32                    _instanceRoutineIdx[CullType_PLACEHOLDER];
+    vectorImpl<F32 >       _grassScales;
+    vectorImpl<vec4<F32> > _grassPositions;
+    //vectorImpl<mat4<F32> > _grassMatricesTemp;
     GenericVertexData*     _grassGPUBuffer;
     GenericVertexData*     _treeGPUBuffer;
     Task_ptr               _generateVegetation;
+    ShaderBuffer*          _grassMatrices;
 };
 
 #endif

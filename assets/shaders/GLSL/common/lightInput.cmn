@@ -29,14 +29,15 @@ layout(binding = SHADER_BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     Shadow dvd_ShadowSource[MAX_LIGHTS_PER_SCENE];
 }; 
+
+uniform vec4 dvd_lightAmbient;
+uniform bool dvd_enableShadowMapping = false;
+uniform bool dvd_lightCastsShadows[MAX_LIGHTS_PER_SCENE];
 #endif
 
 uniform int  dvd_lightIndex[MAX_LIGHTS_PER_SCENE]; //<What lights to use from the light UBO for the current geometry
 uniform int  dvd_lightType[MAX_LIGHTS_PER_SCENE];
-uniform bool dvd_lightCastsShadows[MAX_LIGHTS_PER_SCENE];
 uniform int  dvd_lightCount;
-uniform vec4 dvd_lightAmbient;
-uniform bool dvd_enableShadowMapping = false;
 
 #if defined(VERT_SHADER)
 #define VARYING out
@@ -46,9 +47,9 @@ uniform bool dvd_enableShadowMapping = false;
 
 /// Light Info is used internally to communicate between vertex and fragment shaders
 VARYING LightInfo {
-    vec3  _lightDirection;
-    smooth float _attenuation;
-} _lightInfo[MAX_LIGHTS_PER_NODE];
+    vec3  _lightDirection[MAX_LIGHTS_PER_NODE];
+    smooth float _attenuation[MAX_LIGHTS_PER_NODE];
+} _lightInfo;
 
 
 VARYING vec3 _normalWV;

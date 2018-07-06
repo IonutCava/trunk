@@ -74,14 +74,14 @@ namespace ImageTools {
             /// the image format as given by DevIL
             inline GFXImageFormat  format()      const {return _format;}
             /// get the texel color at the specified offset from the origin
-            vec3<I32>	getColor(U16 x, U16 y)   const;
+            vec4<U8> getColor(U16 x, U16 y)   const;
 
         private:
             /// this is called by either of the create functions to prepare DevIL for loading
             bool prepareInternalData();
             /// this is called by either of the create functions to set the image info (depth, resolution, pixel data, etc)
             bool setInternalData();
-            /// outputs a generic error and sets DevIL's iamge handle back to 0 so it can be reused on the next "create" call
+            /// outputs a generic error and sets DevIL's image handle back to 0 so it can be reused on the next "create" call
             void throwLoadError(const std::string& fileName);
 
         private:

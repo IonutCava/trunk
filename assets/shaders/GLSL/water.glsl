@@ -90,9 +90,8 @@ void main (void)
     // add Specular
     _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[dvd_lightIndex[0]]._specular.rgb * material[2].rgb * iSpecular, vec3(0.0), vec3(1.0));
     // shadow mapping
-    float shadow = 1.0;
     if (!underwater){
-        applyShadowDirectional(0, shadow);
+        float shadow = applyShadowDirectional(0, dvd_ShadowSource[0]);
       //  _colorOut.rgb *= (0.2 + 0.8 * shadow);
     }
     // add Fog

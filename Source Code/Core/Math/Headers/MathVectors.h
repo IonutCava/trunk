@@ -327,11 +327,20 @@ public:
     inline vec2<T> xz()  const { return this->rb();}
     inline vec2<T> gb()  const { return vec2<T>(this->g, this->b);}
     inline vec2<T> yz()  const { return this->gb();}
+    inline vec2<T> ra()  const { return vec2<T>(this->r, this->a); }
+    inline vec2<T> xw()  const { return this->ra(); }
+    inline vec2<T> ga()  const { return vec2<T>(this->g, this->a); }
+    inline vec2<T> yw()  const { return this->ga(); }
+    inline vec2<T> ba()  const { return vec2<T>(this->b, this->a); }
+    inline vec2<T> zw()  const { return this->ba(); }
     inline vec3<T> rgb() const {return vec3<T>(this->r,this->g,this->b);}
     inline vec3<T> xyz() const {return this->rgb();}
     inline vec3<T> bgr() const {return vec3<T>(this->b,this->g,this->r);}
     inline vec3<T> zyx() const {return this->bgr();}
-
+    inline vec3<T> rga() const { return vec3<T>(this->r, this->g, this->a); }
+    inline vec3<T> xyw() const { return this->rga(); }
+    inline vec3<T> gba() const { return vec3<T>(this->g, this->b, this->a); }
+    inline vec3<T> yzw() const { return this->gba(); }
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
     inline void setV(const T* v)         { this->x = v[0]; this->y = v[1]; this->z = v[2]; if(v[3]) this->w = v[3]; else this->w = 1.0f; }
     /// set the 4 components of the vector manually

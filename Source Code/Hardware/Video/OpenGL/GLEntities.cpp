@@ -6,6 +6,7 @@
 
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
+#include "Hardware/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Hardware/Video/OpenGL/Buffers/FrameBuffer/Headers/glFrameBuffer.h"
 #include "Hardware/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 
@@ -59,4 +60,8 @@ PixelBuffer* GL_API::newPB(const PBType& type) const {
 
 GenericVertexData* GL_API::newGVD() const {
     return New glGenericVertexData();
+}
+
+ShaderBuffer* GL_API::newSB(const bool unbound) const {
+    return New glUniformBuffer(unbound);
 }

@@ -139,7 +139,8 @@ void Light::updateState(const bool force){
 
     //Do not set API lights for deferred rendering
     if(getEnabled() && GFX_DEVICE.getRenderer()->getType() == RENDERER_FORWARD && _dirty)
-        GFX_DEVICE.setLight(this);
+        LightManager::getInstance().setLight(this, false);
+
     _dirty = false;
 }
 
@@ -328,7 +329,8 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState){
 
     sm->render(sceneRenderState, _callback);
     sm->postRender();
-    GFX_DEVICE.setLight(this, true);
+
+    LightManager::getInstance().setLight(this, true);
 }
 
 void Light::setLightMode(const LightMode& mode) {

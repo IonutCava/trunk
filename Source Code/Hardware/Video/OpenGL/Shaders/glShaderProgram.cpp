@@ -1,10 +1,10 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/OpenGL/glsw/Headers/glsw.h"
+#include "Hardware/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 
 #include "core.h"
 #include <glsl/glsl_optimizer.h>
 #include "Headers/glShaderProgram.h"
-#include "Headers/glUniformBufferObject.h"
 
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 #include "Core/Headers/ParamHandler.h"
@@ -16,12 +16,6 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
                                                         _loadedFromBinary(false),
                                                         _shaderProgramIDTemp(0)
 {
-    _vertexShader = nullptr;
-    _fragmentShader = nullptr;
-    _geometryShader = nullptr;
-    _tessellationControlShader = nullptr;
-    _tessellationEvaluationShader = nullptr;
-    _computeShader = nullptr;
     _shaderProgramId = Divide::GLUtil::_invalidObjectID;
 
     _shaderStageTable[VERTEX_SHADER] = GL_VERTEX_SHADER;
@@ -30,6 +24,14 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
     _shaderStageTable[TESSELATION_CTRL_SHADER] = GL_TESS_CONTROL_SHADER;
     _shaderStageTable[TESSELATION_EVAL_SHADER] = GL_TESS_EVALUATION_SHADER;
     _shaderStageTable[COMPUTE_SHADER] = GL_COMPUTE_SHADER;
+
+    _shaderStage[VERTEX_SHADER] = nullptr;
+    _shaderStage[FRAGMENT_SHADER] = nullptr;
+    _shaderStage[GEOMETRY_SHADER] = nullptr;
+    _shaderStage[TESSELATION_CTRL_SHADER] = nullptr;
+    _shaderStage[TESSELATION_EVAL_SHADER] = nullptr;
+    _shaderStage[COMPUTE_SHADER] = nullptr;
+
 }
 
 glShaderProgram::~glShaderProgram()
@@ -142,14 +144,12 @@ void glShaderProgram::threadedLoad(const std::string& name){
         if (_shaderProgramId == Divide::GLUtil::_invalidObjectID)
             _shaderProgramIDTemp = glCreateProgram();
 
-        // Attach, compile and validate shaders into this program and update state
-        attachShader(_vertexShader, _refreshVert);
-        attachShader(_fragmentShader, _refreshFrag);
-        attachShader(_geometryShader, _refreshGeom);
-        attachShader(_tessellationControlShader, _refreshTess);
-        attachShader(_tessellationEvaluationShader, _refreshTess);
-        attachShader(_computeShader, _refreshComp);
-        _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = _refreshComp = false;
+        for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i){
+            // Attach, compile and validate shaders into this program and update state
+            attachShader(_shaderStage[i], _refreshStage[i]);
+            _refreshStage[i] = false;
+        }
+        
         link();
     }
 
@@ -189,8 +189,8 @@ void glShaderProgram::link(){
 bool glShaderProgram::generateHWResource(const std::string& name){
     _name = name;
     
-    //nullptr shader means use shaderProgram(0)
-    if(name.compare("NULL_SHADER") == 0){
+    //NULL_SHADER shader means use shaderProgram(0)
+    if (name.compare("NULL_SHADER") == 0){
         _validationQueued = false;
         _shaderProgramId = 0;
         _threadedLoadComplete = HardwareResource::generateHWResource(name);
@@ -199,8 +199,15 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 
     //Set the compilation state
     _linked = false;
+
     //check for refresh flags
-    bool refresh = _refreshVert || _refreshFrag || _refreshGeom || _refreshTess || _refreshComp;
+    bool refresh = false;
+    for(U8 i = 0; i < ShaderType_PLACEHOLDER; ++i){
+        if (_refreshStage[i]){
+            refresh = true;
+            break;
+        }
+    }
 
 #ifdef NDEBUG
     //Load the program from the binary file, if available, to avoid linking
@@ -227,16 +234,18 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         }
     }
 #endif
+
     if (!_linked){
         //Use the specified shader path
         glswSetPath(std::string(getResourceLocation() + "GLSL/").c_str(), ".glsl");
         //Mirror initial shader defines to match line count
-        GLint lineCountOffset = 11;
-        GLint lineCountOffsetFrag = 9;
-        GLint lineCountOffsetVert = 8;
-        GLint lineCountOffsetGeom = 0;
+        GLint lineCountOffset[ShaderType_PLACEHOLDER];
+        std::string shaderSourceUniforms[ShaderType_PLACEHOLDER];
+
+        GLint initialOffset = 16;
+        
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
-            lineCountOffset += 6;
+            initialOffset += 6;
         }
 
         std::string shaderSourceHeader;
@@ -244,28 +253,20 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         for (U8 i = 0; i < _definesList.size(); i++){
             if (_definesList[i].compare("DEFINE_PLACEHOLDER") == 0) continue;
 
-            shaderSourceHeader.append("#define ");
-            shaderSourceHeader.append(_definesList[i]);
-            shaderSourceHeader.append("\n");
-            lineCountOffset++;
+            shaderSourceHeader.append("#define " + _definesList[i] + "\n" );
+            initialOffset++;
         }
 
-        std::string shaderSourceVertUniforms;
-        //get all of the preprocessor defines
-        for (U8 i = 0; i < _vertUniforms.size(); i++){
-            shaderSourceVertUniforms.append("uniform ");
-            shaderSourceVertUniforms.append(_vertUniforms[i]);
-            shaderSourceVertUniforms.append(";\n");
-            lineCountOffsetVert++;
+        for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i){
+            lineCountOffset[i] = initialOffset;
+            for (U8 j = 0; j < _customUniforms[i].size(); j++){
+                shaderSourceUniforms[i].append("uniform " + _customUniforms[i][j] + ";\n");
+                lineCountOffset[i]++;
+            }
         }
-        std::string shaderSourceFragUniforms;
-        //get all of the preprocessor defines
-        for (U8 i = 0; i < _fragUniforms.size(); i++){
-            shaderSourceFragUniforms.append("uniform ");
-            shaderSourceFragUniforms.append(_fragUniforms[i]);
-            shaderSourceFragUniforms.append(";\n");
-            lineCountOffsetFrag++;
-        }
+
+        lineCountOffset[VERTEX_SHADER] += 8;
+        lineCountOffset[FRAGMENT_SHADER] += 9;
 
         //Split the shader name to get the effect file name and the effect properties
         std::string shaderName = name.substr(0, name.find_first_of(".,"));
@@ -284,131 +285,41 @@ bool glShaderProgram::generateHWResource(const std::string& name){
             vertexProperties += "." + name.substr(propPositionVertex + 1);
         }
 
-        _vertexShader = nullptr;
         //Load the Vertex Shader
-        std::string vertexShaderName = shaderName + ".Vertex" + vertexProperties;
+        std::string shaderCompileName[ShaderType_PLACEHOLDER];
+        shaderCompileName[VERTEX_SHADER]   = shaderName + ".Vertex" + vertexProperties;
+        shaderCompileName[FRAGMENT_SHADER] = shaderName + ".Fragment" + shaderProperties;
+        shaderCompileName[GEOMETRY_SHADER] = shaderName + ".Geometry" + shaderProperties;
+        shaderCompileName[TESSELATION_CTRL_SHADER] = shaderName + ".TessellationC" + shaderProperties;
+        shaderCompileName[TESSELATION_EVAL_SHADER] = shaderName + ".TessellationE" + shaderProperties;
+        shaderCompileName[COMPUTE_SHADER] = shaderName + ".Compute" + shaderProperties;
 
-        //Recycle shaders only if we do not request a refresh for them
-        if (!_refreshVert) {
-            //See if it already exists in a compiled state
-            _vertexShader = ShaderManager::getInstance().findShader(vertexShaderName, refresh);
-        }
+        for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
+            ShaderType type = (ShaderType)(i);
 
-        //If it doesn't
-        if (!_vertexShader){
-            //Use glsw to read the vertex part of the effect
-            const char* vs = glswGetShader(vertexShaderName.c_str(), lineCountOffset + lineCountOffsetVert, _refreshVert);
-            if (!vs) ERROR_FN("[GLSL]  %s", glswGetError());
-            assert(vs != nullptr);
-
-            //If reading was successful
-            std::string vsString(vs);
-            Util::replaceStringInPlace(vsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-            Util::replaceStringInPlace(vsString, "//__CUSTOM_VERTEX_UNIFORMS__",shaderSourceVertUniforms);
-            //Load our shader and save it in the manager in case a new Shader Program needs it
-            _vertexShader = ShaderManager::getInstance().loadShader(vertexShaderName, vsString, VERTEX_SHADER, _refreshVert);
-        }
-
-        if (!_vertexShader) ERROR_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), vertexShaderName.c_str());
-        assert(_vertexShader != nullptr);
-        
-
-        _fragmentShader = nullptr;
-        //Load the Fragment Shader
-        std::string fragmentShaderName = shaderName + ".Fragment" + shaderProperties;
-        //Recycle shaders only if we do not request a refresh for them
-        if (!_refreshFrag) {
-            _fragmentShader = ShaderManager::getInstance().findShader(fragmentShaderName, refresh);
-        }
-
-        if (!_fragmentShader){
-            //Get our shader source
-            const char* fs = glswGetShader(fragmentShaderName.c_str(), lineCountOffset + lineCountOffsetFrag, _refreshFrag);
-            if (fs){
-                std::string fsString(fs);
-                //Insert our custom defines in the special define slot
-                Util::replaceStringInPlace(fsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                Util::replaceStringInPlace(fsString, "//__CUSTOM_FRAGMENT_UNIFORMS__", shaderSourceFragUniforms);
-                //Load and compile the shader
-                _fragmentShader = ShaderManager::getInstance().loadShader(fragmentShaderName, fsString, FRAGMENT_SHADER, _refreshFrag);
-            }else{
-                D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), fragmentShaderName.c_str())
+            //Recycle shaders only if we do not request a refresh for them
+            if (!_refreshStage[type]) //See if it already exists in a compiled state
+                _shaderStage[type] = ShaderManager::getInstance().findShader(shaderCompileName[type], refresh);
+           
+            //If it doesn't ...
+            if (!_shaderStage[type]){
+                //Use glsw to read the vertex part of the effect
+                const char* sourceCode = glswGetShader(shaderCompileName[type].c_str(), lineCountOffset[type], _refreshStage[type]);
+                if (sourceCode) {
+                    //If reading was successful
+                    std::string codeString(sourceCode);
+                    Util::replaceStringInPlace(codeString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
+                    Util::replaceStringInPlace(codeString, "//__CUSTOM_UNIFORMS__", shaderSourceUniforms[type]);
+                    //Load our shader and save it in the manager in case a new Shader Program needs it
+                    _shaderStage[type] = ShaderManager::getInstance().loadShader(shaderCompileName[type], codeString, type, _refreshStage[type]);
+                }
             }
-        }
 
-        if (!_fragmentShader) PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), fragmentShaderName.c_str());
-
-        _geometryShader = nullptr;
-        //Load the Geometry Shader
-        std::string geometryShaderName = shaderName + ".Geometry" + shaderProperties;
-        //Recycle shaders only if we do not request a refresh for them
-        if (!_refreshGeom) {
-            _geometryShader = ShaderManager::getInstance().findShader(geometryShaderName, refresh);
-        }
-
-        if (!_geometryShader){
-            const char* gs = glswGetShader(geometryShaderName.c_str(), lineCountOffset + lineCountOffsetGeom, _refreshGeom);
-            if (gs != nullptr){
-                std::string gsString(gs);
-                Util::replaceStringInPlace(gsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                _geometryShader = ShaderManager::getInstance().loadShader(geometryShaderName, gsString, GEOMETRY_SHADER, _refreshGeom);
-            }else{
-                D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), geometryShaderName.c_str());
-            }
-        }
-
-        _tessellationControlShader = nullptr;
-        _tessellationEvaluationShader = nullptr;
-        //Load the Tessellation Shader
-        std::string tessellationShaderControlName = shaderName + ".TessellationC" + shaderProperties;
-        std::string tessellationShaderEvalName = shaderName + ".TessellationE" + shaderProperties;
-        //Recycle shaders only if we do not request a refresh for them
-        if (!_refreshTess) {
-            _tessellationControlShader = ShaderManager::getInstance().findShader(tessellationShaderControlName, refresh);
-            _tessellationEvaluationShader = ShaderManager::getInstance().findShader(tessellationShaderEvalName, refresh);
-        }
-
-        if (!_tessellationControlShader){
-            const char* ts = glswGetShader(tessellationShaderControlName.c_str(), lineCountOffset, _refreshTess);
-            if (ts != nullptr){
-                std::string tsString(ts);
-                Util::replaceStringInPlace(tsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                _tessellationControlShader = ShaderManager::getInstance().loadShader(tessellationShaderControlName, tsString, TESSELATION_CTRL_SHADER, _refreshTess);
-            }
-        }
-        if (_tessellationControlShader && !_tessellationEvaluationShader){
-            const char* ts = glswGetShader(tessellationShaderEvalName.c_str(), lineCountOffset, _refreshTess);
-            if (ts != nullptr){
-                std::string tsString(ts);
-                Util::replaceStringInPlace(tsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                _tessellationEvaluationShader = ShaderManager::getInstance().loadShader(tessellationShaderEvalName, tsString, TESSELATION_EVAL_SHADER, _refreshTess);
-            }
-        }
-        if (!_tessellationControlShader || _tessellationEvaluationShader){
-            D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), std::string(tessellationShaderControlName + " / " + tessellationShaderEvalName).c_str());
-        }
-        
-        _computeShader = nullptr;
-        //Load the Geometry Shader
-        std::string computeShaderName = shaderName + ".Compute" + shaderProperties;
-        //Recycle shaders only if we do not request a refresh for them
-        if (!_refreshComp) {
-            _computeShader = ShaderManager::getInstance().findShader(computeShaderName, refresh);
-        }
-
-        if (!_computeShader){
-            const char* cs = glswGetShader(computeShaderName.c_str(), lineCountOffset, _refreshComp);
-            if (cs != nullptr){
-                std::string csString(cs);
-                Util::replaceStringInPlace(csString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                _computeShader = ShaderManager::getInstance().loadShader(computeShaderName, csString, COMPUTE_SHADER, _refreshComp);
-            }else{
-                D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), computeShaderName.c_str());
-            }
+            if (!_shaderStage[type]) D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), shaderCompileName[type].c_str())
         }
     }
-    _threadedLoading = false;
-    return GFX_DEVICE.loadInContext(_threadedLoading ? GFX_LOADING_CONTEXT : GFX_RENDERING_CONTEXT, DELEGATE_BIND(&glShaderProgram::threadedLoad, this, name));
+
+    return GFX_DEVICE.loadInContext(/*_threadedLoading ? GFX_LOADING_CONTEXT : */GFX_RENDERING_CONTEXT, DELEGATE_BIND(&glShaderProgram::threadedLoad, this, name));
 }
 
 ///Cache uniform/attribute locations for shader programs
@@ -420,7 +331,7 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform){
     
     assert(_linked && _threadedLoadComplete);
 
-    const ShaderVarMap::iterator& it = _shaderVars.find(name);
+    const ShaderVarMap::const_iterator& it = _shaderVars.find(name);
 
     if(it != _shaderVars.end())	return it->second;
 
@@ -489,7 +400,18 @@ void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& ind
     
 }
 
+void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
+    static U32 value[1];
+    assert(_bound && _linked);
+    if (index != GL_INVALID_INDEX){
+        value[0] = index;
+        glUniformSubroutinesuiv(_shaderStageTable[type], 1, value);
+    }
+}
+
 U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const std::string& name) const {
+    assert(_linked);
+
     return glGetSubroutineIndex(_shaderProgramId, _shaderStageTable[type], name.c_str());
 }
 
@@ -612,9 +534,20 @@ void glShaderProgram::Uniform(GLint location, const vectorImpl<mat4<GLfloat> >& 
     else         glUniformMatrix4fv(location, (GLsizei)values.size(), rowMajor, values.front());
 }
 
-void glShaderProgram::UniformTexture(GLint location, GLushort slot) const {
+void glShaderProgram::UniformTexture(GLint location, GLushort slot) {
     if (location == -1) return;
+
+    assert(checkSlotUsage(location, slot));
 
     if(!_bound) glProgramUniform1i(_shaderProgramId, location, slot);
     else        glUniform1i(location, slot);
+}
+
+bool glShaderProgram::checkSlotUsage(GLint location, GLushort slot) {
+    const TextureSlotMap::const_iterator& it = _textureSlots.find(slot);
+    if (it == _textureSlots.end() || it->second == location){
+        _textureSlots[slot] = location;
+        return true;
+    }
+    return false;
 }

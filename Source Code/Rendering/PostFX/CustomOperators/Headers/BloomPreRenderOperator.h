@@ -49,9 +49,9 @@ private:
 	FrameBuffer* _tempBloomFB;
 	FrameBuffer* _tempHDRFB;
 	FrameBuffer* _luminaFB[2];
-	U32          _luminaMipLevel;
-    vectorImpl<U32 > _horizBlur;
-    vectorImpl<U32 > _vertBlur;
+	U32 _luminaMipLevel;
+    U32 _horizBlur;
+    U32 _vertBlur;
 };
 
 #endif

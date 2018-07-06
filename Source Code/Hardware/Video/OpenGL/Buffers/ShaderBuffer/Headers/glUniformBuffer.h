@@ -24,14 +24,13 @@
 #define GL_UNIFORM_BUFFER_OBJECT_H_
 
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
-#include "Utility/Headers/GUIDWrapper.h"
-#include "Utility/Headers/Vector.h"
+#include "Hardware/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 ///Base class for shader uniform blocks
-class glUniformBufferObject : public GUIDWrapper {
+class glUniformBuffer : public ShaderBuffer {
 public:
-    glUniformBufferObject();
-    ~glUniformBufferObject();
+    glUniformBuffer(const bool unbound);
+    ~glUniformBuffer();
     ///Create a new buffer object to hold our uniform shader data
     ///if "dynamic" is false, the buffer will be created using GL_STATIC_DRAW
     ///if "dynamic" is true, the buffer will use either GL_STREAM_DRAW or GL_DYNAMIC_DRAW depending on the "stream" param
@@ -41,14 +40,17 @@ public:
     ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with nullptr values
     virtual void ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const;
     virtual void ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data) const;
-    virtual bool bindBufferRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const;
-    virtual bool bindBufferBase(GLuint bindIndex) const;
-    static  void unbind();
+    virtual bool bindRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const;
+    virtual bool bind(GLuint bindIndex) const;
 
     void printUniformBlockInfo(GLint prog, GLint block_index);
 
 protected:
+    void setActive() const;
+
+protected:
     GLuint _UBOid;
     GLenum _usage;
+    GLenum _target;
 };
 #endif

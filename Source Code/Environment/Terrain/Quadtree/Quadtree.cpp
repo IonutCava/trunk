@@ -18,9 +18,15 @@ void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Scene
     _root->sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Quadtree::DrawGround(const SceneRenderState& sceneRenderState) const {
+void Quadtree::CreateDrawCommands(const SceneRenderState& sceneRenderState) {
     assert(_root);
-    _root->DrawGround(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? CHUNK_BIT_WATERREFLECTION : 0, sceneRenderState);
+    U32 options = CHUNK_BIT_TESTCHILDREN;
+    if (GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
+        options |= CHUNK_BIT_WATERREFLECTION;
+    else if (GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE))
+        options |= CHUNK_BIT_SHADOWMAP;
+
+    _root->CreateDrawCommand(options, sceneRenderState);
 }
 
 void Quadtree::DrawBBox() const {
@@ -50,11 +56,11 @@ QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {
     return node;
 }
 
-void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain){
+void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, SceneGraphNode* const parentTerrainSGN){
     _root = New QuadtreeNode();
     _root->setBoundingBox(terrainBBox);
 
-    _root->Build(0, vec2<U32>(0, 0), HMsize, minHMSize, groundVB, parentTerrain, _chunkCount);
+    _root->Build(0, vec2<U32>(0, 0), HMsize, minHMSize, groundVB, parentTerrain, parentTerrainSGN, _chunkCount);
 
     // Generate index buffer
     const U32 terrainWidth = HMsize.x;

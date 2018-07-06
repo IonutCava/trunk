@@ -6,18 +6,15 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
-#include "Hardware/Video/OpenGL/Shaders/Headers/glUniformBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include <gtc/type_ptr.hpp>
 #include <gtc/matrix_transform.hpp>
 
 GLuint GL_API::_activeVAOId = 0;
 GLuint GL_API::_activeFBId = 0;
-GLuint GL_API::_activeVBId = 0;
-GLuint GL_API::_activeTBId = 0;
+GLuint GL_API::_activeBufferId[] = {0, 0, 0, 0, 0, 0};
 GLuint GL_API::_activeTextureUnit = 0;
 
-bool GL_API::_viewportForced = false;
-bool GL_API::_viewportUpdateGL = false;
 bool GL_API::_lastRestartIndexSmall = true;
 bool GL_API::_primitiveRestartEnabled = false;
 
@@ -38,9 +35,13 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 
     if(!skipBuffers || forceAll){
         setActiveVAO(0,forceAll);
-        setActiveVB(0,forceAll);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glUniformBufferObject::unbind();
+        setActiveFB(0, true, true, forceAll);
+        setActiveBuffer(GL_ARRAY_BUFFER, 0, forceAll);
+        setActiveBuffer(GL_TEXTURE_BUFFER, 0, forceAll);
+        setActiveBuffer(GL_UNIFORM_BUFFER, 0, forceAll);
+        setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0, forceAll);
+        setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0, forceAll);
+        setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0, forceAll);
     }
 
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
@@ -58,24 +59,6 @@ void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
     }
 }
 
-///Update OpenGL light state
-void GL_API::setLight(Light* const light, bool shadowPass){
-    assert(light != nullptr);
-    if (shadowPass){
-        _uniformBufferObjects[Shadow_UBO]->ChangeSubData(light->getSlot() * sizeof(LightShadowProperties), sizeof(LightShadowProperties), (GLvoid*)&light->getShadowProperties());
-    }else{
-        LightProperties temp = light->getProperties();
-        mat4<F32> viewMat;
-        getMatrix(VIEW_MATRIX, viewMat);
-        if (light->getLightType() == LIGHT_TYPE_DIRECTIONAL){
-            temp._position.set(vec3<F32>(viewMat * temp._position), temp._position.w);
-        }else if (light->getLightType() == LIGHT_TYPE_SPOT){
-            temp._direction.set(vec3<F32>(viewMat * temp._direction), temp._direction.w);
-        }
-        _uniformBufferObjects[Lights_UBO]->ChangeSubData(light->getSlot() * sizeof(LightProperties), sizeof(LightProperties), (GLvoid*)&temp);
-    }
-}
-
 void GL_API::updateProjectionMatrix(){
     assert(Divide::GLUtil::_contextAvailable);
     const size_t mat4Size = 16 * sizeof(GLfloat);
@@ -88,9 +71,7 @@ void GL_API::updateProjectionMatrix(){
     memcpy(matrixDataProjection + 16, glm::value_ptr(Divide::GLUtil::_viewMatrix.top()), mat4Size);
     memcpy(matrixDataProjection + 32, _ViewProjectionCacheMatrix.mat, mat4Size);
 
-    _uniformBufferObjects[Matrices_UBO]->ChangeSubData(0, 3 * mat4Size, matrixDataProjection);
-
-    GFX_DEVICE.setProjectionDirty(true);
+    GFX_DEVICE.updateProjMatrix(matrixDataProjection);
 }
 
 void GL_API::updateViewMatrix(){
@@ -104,17 +85,7 @@ void GL_API::updateViewMatrix(){
     memcpy(matrixDataView, glm::value_ptr(Divide::GLUtil::_viewMatrix.top()), mat4Size);
     memcpy(matrixDataView + 16, _ViewProjectionCacheMatrix.mat, mat4Size);
 
-    _uniformBufferObjects[Matrices_UBO]->ChangeSubData(mat4Size, 2 * mat4Size, matrixDataView);
-
-    GFX_DEVICE.setViewDirty(true);
-}
-
-void GL_API::updateViewport(const vec4<GLint>& viewport){
-    assert(Divide::GLUtil::_contextAvailable);
-    const size_t vec4Size = 4 * sizeof(GLfloat);
-    const size_t mat4Size = 16 * sizeof(GLfloat);
-
-    _uniformBufferObjects[Matrices_UBO]->ChangeSubData(3 * mat4Size, vec4Size, &viewport[0]);
+    GFX_DEVICE.updateViewMatrix(matrixDataView);
 }
 
 void GL_API::getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat) {
@@ -207,22 +178,23 @@ bool GL_API::setActiveVAO(GLuint id, const bool force){
     return true;
 }
 
-bool GL_API::setActiveTB(GLuint id, const bool force){
-    if (_activeTBId == id && !force)
+bool GL_API::setActiveBuffer(GLenum target, GLuint id, const bool force){
+    GLint index = -1;
+    switch (target){
+        case GL_ARRAY_BUFFER          : index = 0; break;
+        case GL_TEXTURE_BUFFER        : index = 1; break;
+        case GL_UNIFORM_BUFFER        : index = 2; break;
+        case GL_SHADER_STORAGE_BUFFER : index = 3; break;
+        case GL_ELEMENT_ARRAY_BUFFER  : index = 4; break;
+        case GL_PIXEL_UNPACK_BUFFER   : index = 5; break;
+    };
+
+    assert(index != -1);
+    if (_activeBufferId[index] == id && !force)
         return false; //<prevent double bind
 
-    _activeTBId = id;
-    glBindBuffer(GL_TEXTURE_BUFFER, id);
-
-    return true;
-}
-
-bool GL_API::setActiveVB(GLuint id,const bool force){
-    if(_activeVBId == id && !force)
-        return false; //<prevent double bind
-        
-    _activeVBId = id;
-    glBindBuffer(GL_ARRAY_BUFFER, id);
+    _activeBufferId[index] = id;
+    glBindBuffer(target, id);
 
     return true;
 }
@@ -249,49 +221,27 @@ void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint rende
     }
 }
 
-void GL_API::restoreViewport(){
-    if(!_viewportUpdateGL)  return;
-
-    if(!_viewportForced) GFX_DEVICE._viewport.pop(); //push / pop only if new viewport (not-forced)
-
-    const vec4<GLint>& prevViewport = GFX_DEVICE._viewport.top();
-    glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w);
-    GL_API::getInstance().updateViewport(prevViewport);
-}
-
-vec4<GLint> GL_API::setViewport(const vec4<GLint>& viewport, bool force){
-    _viewportUpdateGL = !viewport.compare(GFX_DEVICE._viewport.top());
-
-    if(_viewportUpdateGL) {
-
-        _viewportForced = force;
-        if (!_viewportForced) GFX_DEVICE._viewport.push(viewport); //push / pop only if new viewport (not-forced)
-        else                  GFX_DEVICE._viewport.top() = viewport;
-        
-        glViewport(viewport.x,viewport.y,viewport.z,viewport.w);
-        GL_API::getInstance().updateViewport(viewport);
-    }
-    
-    return viewport;
-}
-
-GLfloat* GL_API::lookAt(const mat4<GLfloat>& viewMatrix) {
+GLfloat* GL_API::lookAt(const mat4<GLfloat>& viewMatrix) const {
     return Divide::GLUtil::_lookAt(viewMatrix.mat); 
 }
 
 //Setting ortho projection:
-GLfloat* GL_API::setProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes) {
+GLfloat* GL_API::setProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes) const {
     return Divide::GLUtil::_ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
 }
 
 //Setting perspective projection:
-GLfloat* GL_API::setProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes) {
+GLfloat* GL_API::setProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes) const {
     return Divide::GLUtil::_perspective(FoV, aspectRatio, planes.x, planes.y);
 }
 
 //Setting anaglyph frustum for specified eye
-void GL_API::setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) {
+void GL_API::setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) const {
     Divide::GLUtil::_anaglyph(camIOD, (GLdouble)zPlanes.x, (GLdouble)zPlanes.y, aspectRatio, verticalFoV, rightFrustum);
+}
+
+void GL_API::changeViewport(const vec4<I32>& newViewport) const {
+    glViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
 }
 
 #ifndef SHOULD_TOGGLE
@@ -303,7 +253,7 @@ void GL_API::setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 as
     #define TOGGLE_WITH_CHECK(state, enumValue) if(SHOULD_TOGGLE(state)) TOGGLE_NO_CHECK(state, enumValue);
 #endif
 
-void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock){
+void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const {
     // ------------------- PASS INDEPENDENT STATES -------------------------------------- //
     const RenderStateBlockDescriptor& newDescriptor = newBlock.getDescriptor();
 

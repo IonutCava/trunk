@@ -26,14 +26,16 @@
 #include "Utility/Headers/Vector.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Managers/Headers/FrameListenerManager.h"
 /// This class is used to upload generic VB data to the GPU that can be rendered directly or instanced.
 /// Use this class to create precise VB data with specific usage (such as particle systems)
 /// Use IMPrimitive for on-the-fly geometry creation
 
-class GenericVertexData : private boost::noncopyable {
+class GenericVertexData : private boost::noncopyable, public FrameListener {
 public:
-    GenericVertexData()
+    GenericVertexData() : FrameListener()
     {
+        REGISTER_FRAME_LISTENER(this, 4);
     }
 
     virtual ~GenericVertexData()
@@ -52,11 +54,11 @@ public:
     virtual void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
     virtual void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
     
-    virtual I32  GetFeedbackPrimitiveCount(U8 queryID) = 0;
-
+    virtual U32  GetFeedbackPrimitiveCount(U8 queryID) = 0;
+    /// Just before we render the frame
+    virtual bool frameStarted(const FrameEvent& evt) { return true; }
 protected:
     vectorImpl<U32 > _feedbackBuffers;
-    vectorImpl<U32 > _feedbackBindPoints;
     vectorImpl<U32 > _bufferObjects;
 };
 #endif

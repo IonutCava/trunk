@@ -27,6 +27,10 @@ void DX_API::changeResolutionInternal(U16 w, U16 h)
 {
 }
 
+void DX_API::changeViewport(const vec4<I32>& newViewport) const
+{
+}
+
 void DX_API::setWindowPos(U16 w, U16 h) const
 {
 }
@@ -35,7 +39,7 @@ void DX_API::setMousePosition(U16 x, U16 y) const
 {
 }
 
-F32* DX_API::lookAt(const mat4<F32>& viewMatrix)
+F32* DX_API::lookAt(const mat4<F32>& viewMatrix) const
 {
     return nullptr;
 }
@@ -64,17 +68,17 @@ void DX_API::toggleRasterization(bool state)
 {
 }
 
-F32* DX_API::setProjection(const vec4<F32>& rect, const vec2<F32>& planes)
+F32* DX_API::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) const
 {
     return nullptr;
 }
 
-F32* DX_API::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes)
+F32* DX_API::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) const
 {
     return nullptr;
 }
 
-void DX_API::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum)
+void DX_API::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) const
 {
 }
 
@@ -102,10 +106,6 @@ void DX_API::debugDraw(const SceneRenderState& sceneRenderState)
 {
 }
 
-void DX_API::renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback)
-{
-}
-
 void DX_API::initDevice(U32 targetFrameRate)
 {
 }
@@ -124,18 +124,11 @@ void DX_API::Screenshot(char *filename, const vec4<F32>& rect)
 {
 }
 
-bool DX_API::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback)
+void DX_API::loadInContextInternal()
 {
-    switch(context){
-        case GFX_RENDERING_CONTEXT:
-            break;
-        case GFX_LOADING_CONTEXT:
-            break;
-    };
-    return false;
 }
 
-void DX_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock)
+void DX_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const
 {
 
 }

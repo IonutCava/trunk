@@ -247,7 +247,7 @@ namespace XML {
         par.setParam("GUI.consoleLayout",pt.get("GUI.consoleLayoutFile","console.layout"));
         par.setParam("GUI.editorLayout",pt.get("GUI.editorLayoutFile","editor.layout"));
         par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
-        par.setParam("rendering.anisotropicFilteringLevel", std::min(pt.get<GLint>("rendering.anisotropicFilteringLevel", 1), 0));
+        par.setParam("rendering.anisotropicFilteringLevel", std::max(pt.get<GLint>("rendering.anisotropicFilteringLevel", 1), 1));
         par.setParam("rendering.fogDetailLevel",pt.get<U8>("rendering.fogDetailLevel",DETAIL_HIGH));
         par.setParam("rendering.mipMapDetailLevel",pt.get<U8>("rendering.mipMapDetailLevel",DETAIL_HIGH));
         par.setParam("rendering.shadowDetailLevel",shadowDetailLevel);
@@ -436,8 +436,8 @@ namespace XML {
             ter->addVariable("grassBillboard2", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard2", ""));
             ter->addVariable("grassBillboard3", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard3", ""));
             ter->addVariable("grassBillboard4", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard4", ""));
-            ter->setGrassDensity(pt.get<U32>(name + ".vegetation.<xmlattr>.grassDensity"));
-            ter->setTreeDensity(pt.get<U16>(name + ".vegetation.<xmlattr>.treeDensity"));
+            ter->setGrassDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
+            ter->setTreeDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
             ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
             ter->setTreeScale(pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
             ter->set16Bit(pt.get<bool>(name + ".is16Bit", false));

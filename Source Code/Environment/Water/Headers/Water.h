@@ -75,8 +75,6 @@ private:
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
 private:
-    /// number of lights in the scene
-    U8               _lightCount;
     /// the hw clip-plane index for the water
     I32              _reflectionPlaneID;
     I32              _refractionPlaneID;

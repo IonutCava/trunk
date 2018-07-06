@@ -17,8 +17,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(FrameBuffer* result,
     _luminaFB[1] = nullptr;
     F32 width = _resolution.width;
     F32 height = _resolution.height;
-    _horizBlur.resize(1);
-    _vertBlur.resize(1);
+    _horizBlur = 0;
+    _vertBlur = 0;
     _tempBloomFB = GFX_DEVICE.newFB();
 
     TextureDescriptor tempBloomDescriptor(TEXTURE_2D,
@@ -41,8 +41,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(FrameBuffer* result,
     _bright->UniformTexture("texPrevExposure", 2);
     _blur->UniformTexture("texScreen", 0);
     _blur->Uniform("kernelSize", 10);
-    _horizBlur[0] = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurHorizontal");
-    _vertBlur[0]  = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurVertical");
+    _horizBlur = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurHorizontal");
+    _vertBlur  = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurVertical");
     reshape(width, height);
 }
 
@@ -102,13 +102,13 @@ void BloomPreRenderOperator::operation(){
     _inputFB[0]->Bind(0);
     GFX_DEVICE.drawPoints(1);
     _blur->bind();
-    _blur->SetSubroutines(FRAGMENT_SHADER, _horizBlur);
+    _blur->SetSubroutine(FRAGMENT_SHADER, _horizBlur);
     //Blur horizontally
     _tempBloomFB->Begin(FrameBuffer::defaultPolicy());
     //bright spots
     _outputFB->Bind(0);
     GFX_DEVICE.drawPoints(1);
-    _blur->SetSubroutines(FRAGMENT_SHADER, _vertBlur);
+    _blur->SetSubroutine(FRAGMENT_SHADER, _vertBlur);
     //Blur vertically
     _outputFB->Begin(FrameBuffer::defaultPolicy());
     //horizontally blurred bright spots

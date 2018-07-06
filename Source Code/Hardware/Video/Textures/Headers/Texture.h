@@ -55,7 +55,7 @@ public:
     inline U8  getBitDepth()      const {return _bitDepth;}
     inline bool isFlipped()       const {return _flipped;}
     inline bool hasTransparency() const {return _hasTransparency;}
-
+    
 protected:
     template<typename T>
     friend class ImplResourceLoader;

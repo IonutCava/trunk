@@ -27,6 +27,7 @@
 
 #include "Core/Math/Headers/MathHelper.h"
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
+#include "Hardware/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 
 class glGenericVertexData : public GenericVertexData {
     enum GVDUsage {
@@ -40,7 +41,7 @@ public:
     ~glGenericVertexData();
 
     void Create(U8 numBuffers = 1, U8 numQueries = 1);
-    I32  GetFeedbackPrimitiveCount(U8 queryID);
+    U32  GetFeedbackPrimitiveCount(U8 queryID);
 
     void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream);
     void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool stream);
@@ -54,7 +55,7 @@ public:
     }
 
     inline void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) {
-        DrawInternal(type, min, max, 0, queryID, drawToBuffer);
+        DrawInternal(type, min, max, 1, queryID, drawToBuffer);
     }
 
     inline void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) {
@@ -64,7 +65,6 @@ public:
     inline void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {
         if (!isFeedbackBuffer(buffer)){
              _feedbackBuffers.push_back(_bufferObjects[buffer]);
-             _feedbackBindPoints.push_back(bindPoint);
         }
 
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _transformFeedback);
@@ -84,13 +84,17 @@ protected:
         return false;
     }
 
+    /// Just before we render the frame
+    bool frameStarted(const FrameEvent& evt);
 private:
     GLuint _transformFeedback;
     GLuint _numQueries;
     GLuint _vertexArray[GVD_USAGE_PLACEHOLDER];
 
-    GLint*  _prevResult;
-    GLuint* _feedbackQueries;
-    bool*   _resultAvailable;
+    GLuint* _prevResult;
+    GLuint* _feedbackQueries[2];
+    bool*   _resultAvailable[2];
+    GLuint  _currentWriteQuery;
+    GLuint  _currentReadQuery;
 };
 #endif

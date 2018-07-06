@@ -134,15 +134,14 @@ namespace NS_GLIM
         }
 
 
-        (glBindBuffer (GL_ARRAY_BUFFER, m_Data.m_uiVertexBufferID));
+        (GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_Data.m_uiVertexBufferID));
 
         if (!bWireframe)
         {
             // render all triangles
             if (m_Data.m_uiTriangleElements > 0)
             {
-                (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles));
-
+                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
                 (glDrawElements (GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, 0));
             }
         }
@@ -151,8 +150,7 @@ namespace NS_GLIM
             // render all triangles
             if (m_Data.m_uiWireframeElements > 0)
             {
-                (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe));
-
+                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
                 (glDrawElements (GL_LINES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, 0));
             }
         }
@@ -160,16 +158,14 @@ namespace NS_GLIM
         // render all lines
         if (m_Data.m_uiLineElements > 0)
         {
-            (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines));
-
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
             (glDrawElements (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, 0));
         }
 
         // render all points
         if (m_Data.m_uiPointElements > 0)
         {
-            (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points));
-
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
             (glDrawElements (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, 0));
         }
 
@@ -191,8 +187,7 @@ namespace NS_GLIM
             // render all triangles
             if (m_Data.m_uiTriangleElements > 0)
             {
-                (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles));
-
+                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
                 (glDrawElementsInstanced(GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, 0, iInstances));
             }
         }
@@ -201,8 +196,7 @@ namespace NS_GLIM
             // render all triangles
             if (m_Data.m_uiWireframeElements > 0)
             {
-                (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe));
-
+                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
                 (glDrawElementsInstanced (GL_TRIANGLES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, 0, iInstances));
             }
         }
@@ -210,16 +204,14 @@ namespace NS_GLIM
         // render all points
         if (m_Data.m_uiPointElements > 0)
         {
-            (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points));
-
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
             (glDrawElementsInstanced (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, 0, iInstances));
         }
 
         // render all lines
         if (m_Data.m_uiLineElements > 0)
         {
-            (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines));
-
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
             (glDrawElementsInstanced (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, 0, iInstances));
         }
 

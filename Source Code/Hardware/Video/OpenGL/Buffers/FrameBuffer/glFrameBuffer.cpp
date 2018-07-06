@@ -23,7 +23,10 @@ glFrameBuffer::glFrameBuffer(glFrameBuffer* resolveBuffer) : FrameBuffer(resolve
     memset(_textureId, 0, 5 * sizeof(GLuint));
     memset(_textureType, 0, 5 * sizeof(GLuint));
     memset(_mipMapEnabled, false, 5 * sizeof(bool));
+    memset(_mipMaxLevel, 0, 5 * sizeof(GLint));
+    memset(_mipMinLevel, 0, 5 * sizeof(GLint));
     memset(_mipMapsDirty, false, 5 * sizeof(bool));
+    memset(_attOffset, 0, 5 * sizeof(GLuint));
 }
 
 glFrameBuffer::~glFrameBuffer()
@@ -135,36 +138,41 @@ void glFrameBuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     };
             
     //Generate mipmaps if needed (first call to glGenerateMipMap allocates all levels)
-    if (_mipMapEnabled[slot]) {
-        I32 maxMipLevel = (GLint)floorf(log2f(fmaxf((F32)_width, (F32)_height)));
-        glTexParameteri(textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel);
-        glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : maxMipLevel);
-        glGenerateMipmap(textureType);
-    }
+    I32 maxMipLevel = (GLint)floorf(log2f(fmaxf((F32)_width, (F32)_height)));
+    _mipMaxLevel[slot] = texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : maxMipLevel;
+    _mipMinLevel[slot] = texDescriptor._mipMinLevel;
+    glTexParameteri(textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel);
+    glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, _mipMaxLevel[slot]);
+
+    if (_mipMapEnabled[slot]) glGenerateMipmap(textureType);
         
     //unbind the texture
     glBindTexture(textureType, 0);
 
+    GLint offset = 0;
+    if (slot > TextureDescriptor::Color0){
+        offset = _attOffset[slot - 1];
+    }
     //Attach to frame buffer
     if (type == TextureDescriptor::Depth){
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureId[slot], 0);
         _isLayeredDepth = (currentType == TEXTURE_2D_ARRAY || currentType == TEXTURE_2D_ARRAY_MS || currentType == TEXTURE_CUBE_ARRAY || currentType == TEXTURE_3D);
     }else{
         
-        _totalLayerCount += texDescriptor._layerCount;
-
         if(texDescriptor.isCubeTexture() && !_layeredRendering ){
             for (GLuint i = 0; i < 6; ++i){
-                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + slot + i;
+                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + i + offset;
                 glFramebufferTexture2D(GL_FRAMEBUFFER, attachPoint, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, _textureId[slot], 0);
                 _colorBuffers.push_back(attachPoint);
             }
+            _attOffset[slot] = _attOffset[slot - 1] + 6;
         }else if (texDescriptor._layerCount > 1 && !_layeredRendering){
             for (GLuint i = 0; i < texDescriptor._layerCount; ++i){
-                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + slot + i;
+                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + i + offset;
                 glFramebufferTextureLayer(GL_FRAMEBUFFER, attachPoint, _textureId[slot], 0, i);
                 _colorBuffers.push_back(attachPoint);
             }
+            _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
         }else{ // if we require layered rendering, or have a non-layered / non-cubemap texture, attach it to a single binding point
             glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, _textureId[slot], 0);
             _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 + slot);
@@ -203,7 +211,6 @@ void glFrameBuffer::AddDepthBuffer(){
 
 bool glFrameBuffer::Create(GLushort width, GLushort height) {
 
-    _totalLayerCount = 0;
     _hasDepth = false;
     _hasColor = false;
     _resolved = false;
@@ -249,7 +256,6 @@ bool glFrameBuffer::Create(GLushort width, GLushort height) {
         InitAttachment((TextureDescriptor::AttachmentType)i, _attachment[i]);
     }
 
-    assert(_maxColorAttachments > (I32)_totalLayerCount);
     //If we either specify a depth texture or request a depth buffer ...
     if(_useDepthBuffer && !_hasDepth) AddDepthBuffer();
 
@@ -334,6 +340,8 @@ void glFrameBuffer::BlitFrom(FrameBuffer* inputFB, TextureDescriptor::Attachment
     if (blitDepth && _hasDepth)
         glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0, this->_width, this->_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
+    _mipMapsDirty[slot] = _mipMapEnabled[slot];
+
     GL_API::setActiveFB(previousFB, true, true, true);
 }
 
@@ -354,12 +362,14 @@ void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
     assert(_frameBufferHandle != 0);
    
     if(_viewportChanged){
-        GL_API::restoreViewport();
+        GFX_DEVICE.restoreViewport();
         _viewportChanged = false;
     }
 
-    GL_API::setViewport(vec4<GLint>(0, 0, _width, _height));
-    _viewportChanged = true;
+    if (drawPolicy._changeViewport){
+        GFX_DEVICE.setViewport(vec4<GLint>(0, 0, _width, _height));
+        _viewportChanged = true;
+    }
 
     GL_API::setActiveFB(_frameBufferHandle, false, true);
     // this is checked so it isn't called twice on the GPU
@@ -376,9 +386,10 @@ void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
 
 void glFrameBuffer::End() {
     GL_API::setActiveFB(0, true, true);
-    GL_API::restoreViewport();
-    _viewportChanged = false;
-
+    if (_viewportChanged){
+        GFX_DEVICE.restoreViewport();
+        _viewportChanged = false;
+    }
     resolve();
 }
 
@@ -393,7 +404,8 @@ void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
 
     if (useDepthLayer && _isLayeredDepth)  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureId[TextureDescriptor::Depth], 0, layer);
     if (useColorLayer) {
-        glDrawBuffer(_colorBuffers[layer]);
+        GLint offset = slot > TextureDescriptor::Color0 ? _attOffset[slot - 1] : 0;
+        glDrawBuffer(_colorBuffers[layer + offset]);
         _mipMapsDirty[slot] = true;
     }
 
@@ -409,6 +421,26 @@ void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
         }
         GL_API::registerDrawCall();
     }
+}
+
+void glFrameBuffer::SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot){
+    // Only 2D texture support for now
+    assert(_textureType[slot] == GL_TEXTURE_2D);
+
+    glTexParameteri(_textureType[slot], GL_TEXTURE_BASE_LEVEL, mipLevel);
+    glTexParameteri(_textureType[slot], GL_TEXTURE_MAX_LEVEL,  mipLevel);
+    glFramebufferTexture(GL_FRAMEBUFFER, slot == TextureDescriptor::Depth ? GL_DEPTH_ATTACHMENT : _colorBuffers[slot], _textureId[slot], mipLevel + 1);
+}
+
+void glFrameBuffer::ResetMipLevel(TextureDescriptor::AttachmentType slot) {
+    // Only 2D texture support for now
+    assert(_textureType[slot] == GL_TEXTURE_2D);
+
+    // reset mipmap level range for the depth image
+    glTexParameteri(_textureType[slot], GL_TEXTURE_BASE_LEVEL, _mipMinLevel[slot]);
+    glTexParameteri(_textureType[slot], GL_TEXTURE_MAX_LEVEL,  _mipMaxLevel[slot]);
+    // reset the framebuffer configuration
+    glFramebufferTexture(GL_FRAMEBUFFER, slot == TextureDescriptor::Depth ? GL_DEPTH_ATTACHMENT : _colorBuffers[slot], _textureId[slot], 0);
 }
 
 void glFrameBuffer::UpdateMipMaps(TextureDescriptor::AttachmentType slot) {

@@ -35,7 +35,7 @@
 
 class Text3D;
 class glIMPrimitive;
-class glUniformBufferObject;
+class glUniformBuffer;
 
 struct glslopt_ctx;
 
@@ -51,14 +51,8 @@ DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
     friend class glSamplerObject;
     friend class glGenericVertexData;
 protected:
-    enum UBO_NAME {
-        Matrices_UBO = 0,
-        Lights_UBO   = 1,
-        Shadow_UBO   = 2,
-    };
 
     GL_API() : RenderAPIWrapper(),
-               _loaderThread(nullptr),
                _prevWidthNode(0),
                _prevWidthString(0),
                _prevSizeNode(0),
@@ -81,7 +75,6 @@ protected:
     void endFrame();
     void idle();
     void flush();
-    void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll);
 
     void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
 
@@ -89,6 +82,7 @@ protected:
     VertexBuffer*       newVB(const PrimitiveType& type) const;
     PixelBuffer*        newPB(const PBType& type) const;
     GenericVertexData*  newGVD() const;
+    ShaderBuffer*       newSB(const bool unbound = false) const;
 
     inline Texture*       newTextureArray(const bool flipped = false)   const {return New glTexture(glTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }
     inline Texture*       newTexture2D(const bool flipped = false)      const {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
@@ -101,13 +95,13 @@ protected:
     void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true);
     void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true);
 
-    GLfloat* lookAt(const mat4<GLfloat>& viewMatrix);
+    GLfloat* lookAt(const mat4<GLfloat>& viewMatrix) const;
     //Setting ortho projection:
-    GLfloat* GL_API::setProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
+    GLfloat* GL_API::setProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes) const;
     //Setting perspective projection:
-    GLfloat* GL_API::setProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes);
+    GLfloat* GL_API::setProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes) const;
     //Setting anaglyph frustum for specified eye
-    void setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
+    void setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) const;
 
     void updateClipPlanes();
 
@@ -128,13 +122,9 @@ protected:
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
     /*immediate mode emmlation end*/
 
-    void renderInViewport(const vec4<GLint>& rect, const DELEGATE_CBK& callback);
-
-    void setLight(Light* const light, bool shadowPass = false);
-
     void Screenshot(char *filename, const vec4<GLfloat>& rect);
 
-    bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
+    void loadInContextInternal();
 
     inline GLuint64 getFrameDurationGPU() const { 
 #ifdef _DEBUG
@@ -149,8 +139,6 @@ protected:
 
     inline static GLuint getActiveVAOId()              {return _activeVAOId;}
 
-    static void restoreViewport();
-    static vec4<GLint> setViewport(const vec4<GLint>& viewport, bool force = false);
     static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget = 0, bool force = false);
     inline static void clearColor(const vec4<GLfloat>& color, GLuint renderTarget = 0, bool force = false) {
         clearColor(color.r,color.g,color.b,color.a,renderTarget,force);
@@ -158,8 +146,7 @@ protected:
     inline static GLuint getActiveFB() { return _activeFBId; }
 
 
-    inline static glslopt_ctx* getGLSLOptContext()                    {return _GLSLOptContex;}
-    inline        glUniformBufferObject* getUBO(const UBO_NAME& name) {return _uniformBufferObjects[name]; }
+    inline static glslopt_ctx*     getGLSLOptContext()          {return _GLSLOptContex;}
 
     inline static GLuint getActiveTextureUnit() {return _activeTextureUnit;}
 
@@ -167,14 +154,12 @@ public:
     static void togglePrimitiveRestart(bool state, bool smallIndices);
     static bool setActiveTextureUnit(GLuint unit,const bool force = false);
     static bool setActiveVAO(GLuint id, const bool force = false);
-    static bool setActiveVB(GLuint id, const bool force = false);
-    static bool setActiveTB(GLuint id, const bool force = false);
+    static bool setActiveBuffer(GLenum target, GLuint id, const bool force = false);
     static bool setActiveFB(GLuint id, const bool read = true, const bool write = true, const bool force = false);
     static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
            void updateProjectionMatrix();
            void updateViewMatrix();
-           void updateViewport(const vec4<GLint>& viewport);
-           void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);
+           void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
 
     static bool bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID);
 
@@ -182,9 +167,6 @@ protected:
            static bool unbindTexture(GLuint unit);
     inline static bool checkBinding(U16 unit, U32 handle) { return textureBoundMap[unit].first != handle; }
 
-    void loadInContextInternal();
-    boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > _loadQueue;
-    boost::thread *_loaderThread;
     boost::atomic_bool _closeLoadingThread;
 
     I32 getFont(const std::string& fontName);
@@ -196,12 +178,12 @@ protected:
     void setupLineStateViewPort(const mat4<F32>& mat);
     void releaseLineStateViewPort();
     void changeResolutionInternal(GLushort w, GLushort h);
+    void changeViewport(const vec4<GLint>& newViewport) const;
+    void clearStates(const bool skipShader, const bool skipTextures, const bool skipBuffers, const bool forceAll);
 
 private: //OpenGL specific:
 
     ///Text Rendering
-    ///The previous plain text string's relative position on screen
-    //FTPoint* _prevPointString;
     ///The previous Text3D node's font face size
     GLfloat _prevSizeNode;
     ///The previous plain text string's font face size
@@ -217,7 +199,6 @@ private: //OpenGL specific:
     vectorImpl<vec3<GLfloat> > _pointsA, _axisPointsA;
     vectorImpl<vec3<GLfloat> > _pointsB, _axisPointsB;
     vectorImpl<vec4<GLubyte> > _colors, _axisColors;
-    vectorImpl<glUniformBufferObject* > _uniformBufferObjects;
     //Immediate mode emulation
     ShaderProgram*               _imShader;       //<The shader used to render VB data
     vectorImpl<glIMPrimitive* >  _glimInterfaces; //<The interface that coverts IM calls to VB data
@@ -231,12 +212,10 @@ private: //OpenGL specific:
     static glslopt_ctx* _GLSLOptContex;
     static GLuint _activeVAOId;
     static GLuint _activeFBId;
-    static GLuint _activeVBId;
-    static GLuint _activeTBId;
+    static GLuint _activeBufferId[6]; //< VB, IB, SB, TB, UB, PUB
     static GLuint _activeTextureUnit;
     static Unordered_map<GLuint, vec4<GLfloat> > _prevClearColor;
-    static bool _viewportForced;
-    static bool _viewportUpdateGL;
+
     static bool _lastRestartIndexSmall;
     static bool _primitiveRestartEnabled;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];

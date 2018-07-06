@@ -7,6 +7,8 @@
 #include "glimBatchData.h"
 #include "glimInterface.h"
 
+#include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
+
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 
 namespace NS_GLIM
@@ -371,8 +373,8 @@ namespace NS_GLIM
 
     void glimBatchData::UnbindOGL (void)
     {
-        glBindBuffer (GL_ARRAY_BUFFER, 0);
-        glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         for (int i = 0; i < 16; ++i)
             glDisableVertexAttribArray (i);
@@ -389,8 +391,7 @@ namespace NS_GLIM
             //glDisableClientState (GL_ELEMENT_ARRAY_UNIFIED_NV);
         }
 
-        glBindBuffer (GL_ARRAY_BUFFER, m_uiVertexBufferID);
-
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
         std::map<std::string, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
@@ -471,7 +472,7 @@ namespace NS_GLIM
             glGenBuffers (1, &m_uiElementBufferID_Wireframe);
         }
             
-        glBindBuffer (GL_ARRAY_BUFFER, m_uiVertexBufferID);
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
         glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, nullptr, GL_STREAM_DRAW);
 
         // first upload the position data
@@ -512,8 +513,7 @@ namespace NS_GLIM
         m_uiWireframeElements = 0;
 
         // upload the index buffer for the points
-        glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Points);
-
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Points);
         if (!m_IndexBuffer_Points.empty ())
         {
             m_uiPointElements = (unsigned int) m_IndexBuffer_Points.size ();
@@ -522,8 +522,7 @@ namespace NS_GLIM
         }
             
         // upload the index buffer for the lines
-        glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Lines);
-
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Lines);
         if (!m_IndexBuffer_Lines.empty ())
         {
             m_uiLineElements = (unsigned int) m_IndexBuffer_Lines.size ();
@@ -533,8 +532,7 @@ namespace NS_GLIM
 
 
         // upload the index buffer for the triangles
-        glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Triangles);
-
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Triangles);
         if (!m_IndexBuffer_Triangles.empty ())
         {
             m_uiTriangleElements = (unsigned int) m_IndexBuffer_Triangles.size ();

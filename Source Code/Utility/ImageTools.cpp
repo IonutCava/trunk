@@ -135,9 +135,9 @@ namespace ImageTools {
 		SAFE_DELETE_ARRAY(_data);
 	}
 
-	vec3<I32> ImageData::getColor(U16 x, U16 y) const {
+	vec4<U8> ImageData::getColor(U16 x, U16 y) const {
 		I32 idx = (y * _dimensions.width + x) * _bpp;
-		return vec3<I32>( _data[idx+0], _data[idx+1], _data[idx+2]);
+        return vec4<U8>(_data[idx + 0], _data[idx + 1], _data[idx + 2], _alpha ? _data[idx + 3] : 255);
 	}
 
 	void ImageData::resize(U16 width, U16 height) {

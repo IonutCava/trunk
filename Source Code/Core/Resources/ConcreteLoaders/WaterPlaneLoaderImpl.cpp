@@ -18,7 +18,6 @@ WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
 
 template<>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::string& name) {
-    STUBBED("HACK: ToDo: add proper water alpha controls")
     res->setState(RES_LOADING);
 
     SamplerDescriptor defaultSampler;

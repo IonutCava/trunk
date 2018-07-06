@@ -26,11 +26,11 @@
 #include "Utility/Headers/Vector.h"
 #include "Core/Resources/Headers/HardwareResource.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Hardware/Video/Shaders/Headers/Shader.h"
 
 class Shader;
 class Camera;
 class Material;
-enum ShaderType;
 enum MATRIX_MODE;
 
 class ShaderProgram : public HardwareResource {
@@ -73,6 +73,7 @@ public:
     inline void UniformTexture(const std::string& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
     ///Subroutine
     virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
+    virtual void SetSubroutine(ShaderType type, U32 index) const = 0;
     virtual U32  GetSubroutineIndex(ShaderType type, const std::string& name) const = 0;
     ///Attribute+Uniform+UniformTexture implementation
     virtual void Attribute(I32 location, D32 value) const = 0;
@@ -97,7 +98,7 @@ public:
     virtual void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) const = 0;
     virtual void Uniform(I32 location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) const = 0;
     virtual void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const = 0;
-    virtual void UniformTexture(I32, U16 slot) const = 0;
+    virtual void UniformTexture(I32, U16 slot) = 0;
 
     inline void Uniform(I32 location, bool value) const { Uniform(location, value ? 1 : 0); }
 
@@ -145,11 +146,7 @@ protected:
     void updateMatrices();
 
 protected:
-    bool _refreshVert;
-    bool _refreshFrag;
-    bool _refreshGeom;
-    bool _refreshTess;
-    bool _refreshComp;
+    bool _refreshStage[ShaderType_PLACEHOLDER];
     bool _optimise;
     bool _dirty;
     bool _wasBound;
@@ -162,18 +159,16 @@ protected:
     U8  _outputCount;
     ///A list of preprocessor defines
     vectorImpl<std::string > _definesList;
-    ///A list of vertex shader uniforms
-    vectorImpl<std::string > _vertUniforms;
-    ///A list of fragment shader uniforms
-    vectorImpl<std::string > _fragUniforms;
+    ///A list of custom shader uniforms
+    vectorImpl<std::string > _customUniforms[ShaderType_PLACEHOLDER];
     ///ID<->shaders pair
     typedef Unordered_map<U32, Shader* > ShaderIdMap;
     ShaderIdMap _shaderIdMap;
     ///cached clipping planes
     vectorImpl<vec4<F32> > _clipPlanes;
     ///light computation subroutines
-    vectorImpl<U32 >       _lod0VertLight;
-    vectorImpl<U32 >       _lod1VertLight;
+    vectorImpl<U32 >  _lodVertLight;
+    vectorImpl<U32 >  _lodFragLight;
     ///Active camera's cached eye position
     static vec3<F32> _cachedCamEye;
     ///Active camera's cached zPlanes
@@ -196,8 +191,6 @@ private:
     I32 _zPlanesLoc;
     I32 _sceneZPlanesLoc;
     I32 _screenDimensionLoc;
-    I32 _texDepthMapFromLightArrayLoc;
-    I32 _texDepthMapFromLightCubeLoc;
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
     U8  _prevLOD;

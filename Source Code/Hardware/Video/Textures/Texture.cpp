@@ -38,16 +38,21 @@ bool Texture::LoadFile(U32 target, const std::string& name){
     _bitDepth = img.bpp();
 
     if(img.alpha()){
-        U32 imgSize = _bitDepth * _width * _height;
         #pragma omp parallel for
-        for(U32 i = 0; i < imgSize; i += _bitDepth){
-            if (img.data()[i + _bitDepth - 1] < 255){
-                _hasTransparency = true;
-                break;
+        for(I32 i = 0; i < _width; i++){
+            for (I32 j = 0; j < _height; j++){
+                vec4<U8> color = img.getColor(i, j);
+                if (color.a < 250){
+                    #pragma omp critical
+                    {
+                        _hasTransparency = true;
+                        goto foundAlpha;
+                    }
+                }
             }
         }
     }
-    
+    foundAlpha:
     GFXImageFormat texture_format = img.format();
     // Create a new API-dependent texture object
     loadData(target, img.data(), img.dimensions(), _bitDepth, texture_format);

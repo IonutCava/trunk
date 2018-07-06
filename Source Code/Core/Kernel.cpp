@@ -33,7 +33,7 @@ bool Kernel::_freezeGUITime = false;
 DELEGATE_CBK Kernel::_mainLoopCallback;
 ProfileTimer* s_appLoopTimer = nullptr;
 
-boost::lockfree::queue<U64, boost::lockfree::capacity<5> >  Kernel::_callbackBuffer;
+boost::lockfree::queue<U64, boost::lockfree::capacity<Config::THREAD_LIMIT + 1> >  Kernel::_callbackBuffer;
 Unordered_map<U64, DELEGATE_CBK > Kernel::_threadedCallbackFunctions;
 
 #if USE_FIXED_TIMESTEP
@@ -80,7 +80,9 @@ Kernel::~Kernel(){
 }
 
 void Kernel::threadPoolCompleted(U64 onExitTaskID){
-   _callbackBuffer.push(onExitTaskID);
+    while (!_callbackBuffer.push(onExitTaskID)){
+        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+    }
 }
 
 void Kernel::idle(){
@@ -168,7 +170,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     
     //Process physics
     _PFX.process(_freezeLoopTime ? 0ULL : _currentTimeDelta);
-
 #if USE_FIXED_TIMESTEP
     _loops = 0;
     U64 deltaTime = SKIP_TICKS;
@@ -233,7 +234,7 @@ void Kernel::renderScene(){
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(FrameBuffer::defaultPolicy());
         SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
-   
+    _GFX.ConstructHIZ();
     _GFX.isDepthPrePass(false);
 
     if(!postProcessing){
