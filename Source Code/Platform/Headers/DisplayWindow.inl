@@ -83,6 +83,14 @@ namespace Divide {
         return _windowPosition[to_base(windowType)];
     }
 
+    inline bool DisplayWindow::swapBuffers() const {
+        return _swapBuffers;
+    }
+
+    inline void DisplayWindow::swapBuffers(const bool state) {
+        _swapBuffers = state;
+    }
+
     inline bool DisplayWindow::hasFocus() const {
         return _hasFocus;
     }

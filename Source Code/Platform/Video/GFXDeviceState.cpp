@@ -429,7 +429,7 @@ void GFXDevice::beginFrame() {
     _api->setStateBlock(_defaultStateBlockHash);
 }
 
-void GFXDevice::endFrame(bool swapBuffers) {
+void GFXDevice::endFrame() {
     FRAME_COUNT++;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     FRAME_DRAW_CALLS = 0;
@@ -445,7 +445,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
         }
     }
 
-    _api->endFrame(swapBuffers);
+    _api->endFrame();
 
     if (Config::ENABLE_GPU_VALIDATION) {
         if (_renderDocManager) {

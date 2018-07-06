@@ -542,6 +542,11 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
                 const BindingState& state = getAttachmentState(static_cast<GLenum>(attachment->binding()));
                 attachment->mipWriteLevel(writeLevel);
                 toggleAttachment(attachment, state._attState);
+            } else {
+                //nVidia still has issues if attachments are not all at the same mip level -Ionut
+                if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
+                    toggleAttachment(attachment, AttachmentState::STATE_DISABLED);
+                }
             }
         }
     }

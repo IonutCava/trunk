@@ -3,6 +3,8 @@
 #include "Headers/Server.h"
 #include "Headers/Session.h"
 
+#include "Networking/Headers/ASIO.h"
+
 using namespace boost::asio;
 
 namespace Divide {
@@ -55,13 +57,15 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
         }));
 
     } catch (std::exception& e) {
-        std::cout << "SERVER: " << e.what() << std::endl;
+        ASIO::LOG_PRINT((std::string("SERVER: ") + e.what()).c_str(), true);
     }
 }
 
 void Server::handle_accept(tcp_session_ptr session, const boost::system::error_code& ec) {
     if (!ec) {
-        if (_debugOutput) std::cout << "New TCP session accepted" << std::endl;
+        if (_debugOutput) {
+            ASIO::LOG_PRINT("New TCP session accepted");
+        }
         session->start();
 
         tcp_session_ptr new_session(new Session(io_service_, _channel));
@@ -70,7 +74,9 @@ void Server::handle_accept(tcp_session_ptr session, const boost::system::error_c
             new_session->getSocket(),
             boost::bind(&Server::handle_accept, this, new_session, _1));
     } else {
-        std::cout << "ERROR: " << ec << std::endl;
+        std::stringstream ss;
+        ss << "ERROR: " << ec;
+        ASIO::LOG_PRINT(ss.str().c_str());
     }
 }
 

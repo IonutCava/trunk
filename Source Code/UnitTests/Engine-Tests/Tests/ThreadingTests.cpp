@@ -101,7 +101,8 @@ namespace {
         }
 
         void threadedFunction(const Task& parentTask) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            _testValue = true;
         }
       private:
         std::atomic_bool _testValue;
@@ -119,18 +120,18 @@ TEST(TaskClassMemberCallbackTest)
 
         TaskHandle job = CreateTask(test,
             DELEGATE_BIND(&ThreadedTest::threadedFunction, &testObj, std::placeholders::_1),
-            DELEGATE_BIND(&ThreadedTest::setTestValue, &testObj, true));
+            DELEGATE_BIND(&ThreadedTest::setTestValue, &testObj, false));
         job.startTask();
 
         CHECK_FALSE(testObj.getTestValue());
 
         job.wait();
 
-        CHECK_FALSE(testObj.getTestValue());
+        CHECK_TRUE(testObj.getTestValue());
 
         test.flushCallbackQueue();
 
-        CHECK_TRUE(testObj.getTestValue());
+        CHECK_FALSE(testObj.getTestValue());
     }
 }
 

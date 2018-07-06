@@ -109,6 +109,7 @@ bool PlatformClose() {
     if (PlatformCloseImpl()) {
         Console::stop();
         Locale::clear();
+        return true;
     }
 
     return false;

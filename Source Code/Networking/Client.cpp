@@ -81,8 +81,8 @@ void Client::handle_read_packet(const boost::system::error_code& ec,
             ar & packet;
         } catch (std::exception& e) {
             if (_debugOutput) {
-                std::cout << e.what() << std::endl;
-                std::cout << "ASIO: Received invalid packet!" << std::endl;
+                ASIO::LOG_PRINT(e.what(), true);
+                ASIO::LOG_PRINT("ASIO: Received invalid packet!", true);
             }
         }
 
@@ -105,29 +105,38 @@ void Client::handle_read_file(const boost::system::error_code& ec,
                               size_t bytes_transfered) {
     ACKNOWLEDGE_UNUSED(ec);
 
-    std::cout << __FUNCTION__ << "(" << bytes_transfered << ")"
-              << ", in_avail=" << _requestBuf.in_avail()
-              << ", size=" << _requestBuf.size()
-              << ", max_size=" << _requestBuf.max_size() << ".\n";
+    std::stringstream ss;
+    ss << __FUNCTION__ << "(" << bytes_transfered << ")"
+       << ", in_avail=" << _requestBuf.in_avail()
+       << ", size=" << _requestBuf.size()
+       << ", max_size=" << _requestBuf.max_size() << ".";
+    ASIO::LOG_PRINT(ss.str().c_str());
+
     std::istream request_stream(&_requestBuf);
     stringImpl file_path;
     request_stream >> file_path;
     request_stream >> _fileSize;
     request_stream.read(_buf.c_array(), 2);  // eat the "\n\n"
-    std::cout << file_path << " size is " << _fileSize
-              << ", tellg=" << request_stream.tellg() << std::endl;
+
+    ss.clear();
+    ss << file_path << " size is " << _fileSize
+       << ", tellg=" << request_stream.tellg();
+    ASIO::LOG_PRINT(ss.str().c_str());
+
     size_t pos = file_path.find_last_of('\\');
     if (pos != stringImpl::npos) file_path = file_path.substr(pos + 1);
     _outputFile.open(file_path.c_str(), std::ios_base::binary);
     if (!_outputFile) {
-        std::cout << "failed to open " << file_path << std::endl;
+        ASIO::LOG_PRINT(("failed to open " + file_path).c_str(), true);
         return;
     }
     // write extra bytes to file
     do {
+        ss.clear();
         request_stream.read(_buf.c_array(), (std::streamsize)_buf.size());
-        std::cout << __FUNCTION__ << " write " << request_stream.gcount()
-                  << " bytes.\n";
+        ss << __FUNCTION__ << " write " << request_stream.gcount() << " bytes.";
+        ASIO::LOG_PRINT(ss.str().c_str());
+
         _outputFile.write(_buf.c_array(), request_stream.gcount());
     } while (request_stream.gcount() > 0);
 
@@ -141,20 +150,15 @@ void Client::handle_read_file_content(const boost::system::error_code& err,
                                       std::size_t bytes_transferred) {
     if (bytes_transferred > 0) {
         _outputFile.write(_buf.c_array(), (std::streamsize)bytes_transferred);
-        std::cout << __FUNCTION__ << " recv " << _outputFile.tellp()
-                  << " bytes." << std::endl;
+        std::stringstream ss;
+        ss << __FUNCTION__ << " recv " << _outputFile.tellp() << " bytes.";
+        ASIO::LOG_PRINT(ss.str().c_str());
         if (_outputFile.tellp() >= (std::streamsize)_fileSize) {
             return;
         }
     }
     if (err) stop();
     start_read();
-}
-
-void handle_error(const stringImpl& function_name,
-                  const boost::system::error_code& err) {
-    std::cout << __FUNCTION__ << " in " << function_name << " due to "
-              << err << " " << err.message() << std::endl;
 }
 
 void Client::start_write() {
@@ -193,7 +197,7 @@ void Client::handle_write(const boost::system::error_code& ec) {
         _heartbeatTimer.async_wait(boost::bind(&Client::start_write, this));
     } else {
         if (_debugOutput) {
-            std::cout << "Error on packet: " << ec.message() << "\n";
+            ASIO::LOG_PRINT(("Error on packet: " + ec.message()).c_str(), true);
             stop();
         }
     }
@@ -224,7 +228,9 @@ void Client::check_deadline() {
 void Client::start_connect(tcp::resolver::iterator endpoint_iter) {
     if (endpoint_iter != tcp::resolver::iterator()) {
         if (_debugOutput) {
-            std::cout << "Trying " << endpoint_iter->endpoint() << "...\n";
+            std::stringstream ss;
+            ss << "Trying " << endpoint_iter->endpoint() << "...";
+            ASIO::LOG_PRINT(ss.str().c_str());
         }
         // Set a deadline for the connect operation.
         _deadline.expires_from_now(boost::posix_time::seconds(60));
@@ -249,7 +255,7 @@ void Client::handle_connect(const boost::system::error_code& ec,
     // the timeout handler must have run first.
     if (!_socket.is_open()) {
         if (_debugOutput) {
-            std::cout << "Connect timed out\n";
+            ASIO::LOG_PRINT("Connect timed out");
         }
         // Try the next available endpoint.
         start_connect(++endpoint_iter);
@@ -258,7 +264,7 @@ void Client::handle_connect(const boost::system::error_code& ec,
     // Check if the connect operation failed before the deadline expired.
     else if (ec) {
         if (_debugOutput) {
-            std::cout << "Connect error: " << ec.message() << "\n";
+            ASIO::LOG_PRINT(("Connect error: " + ec.message()).c_str(), true);
         }
         // We need to close the socket used in the previous connection attempt
         // before starting a new one.
@@ -271,7 +277,9 @@ void Client::handle_connect(const boost::system::error_code& ec,
     // Otherwise we have successfully established a connection.
     else {
         if (_debugOutput) {
-            std::cout << "Connected to " << endpoint_iter->endpoint() << "\n";
+            std::stringstream ss;
+            ss << "Connected to " << endpoint_iter->endpoint();
+            ASIO::LOG_PRINT(ss.str().c_str());
         }
         // Start the input actor.
         start_read();

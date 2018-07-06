@@ -89,20 +89,16 @@ void Terrain::buildQuadtree() {
     const vec3<F32>& bbMin = _boundingBox.getMin();
     const vec3<F32>& bbExtent = _boundingBox.getExtent();
 
-    U8 textureOffset = to_U8(ShaderProgram::TextureUsage::COUNT);
     TerrainTextureLayer* textureLayer = _terrainTextures;
-    getMaterialTpl()->addCustomTexture(textureLayer->blendMaps(),  textureOffset + 0);
-    getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(),   textureOffset + 1);
-    getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), textureOffset + 2);
+    getMaterialTpl()->addCustomTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0);
+    getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(),   to_U8(ShaderProgram::TextureUsage::COUNT) + 1);
+    getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2);
     
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass::stagePass(i)).getProgram();
 
         drawShader->Uniform("bbox_min", bbMin);
         drawShader->Uniform("bbox_extent", bbExtent);
-        drawShader->Uniform("texBlendMaps",  textureOffset + 0);
-        drawShader->Uniform("texTileMaps",   textureOffset + 1);
-        drawShader->Uniform("texNormalMaps", textureOffset + 2);
         drawShader->Uniform("diffuseScale", copy_array_to_vector(textureLayer->getDiffuseScales()));
         drawShader->Uniform("detailScale", copy_array_to_vector(textureLayer->getDetailScales()));
     }

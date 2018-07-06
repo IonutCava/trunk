@@ -5,6 +5,8 @@
 #include "Headers/OPCodesImpl.h"
 #include "Headers/Patch.h"
 
+#include "Networking/Headers/ASIO.h"
+
 #include "Core/Resources/Headers/Resource.h"
 #include <iostream>
 
@@ -33,8 +35,7 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
     PatchData data;
     p >> data.sceneName;
     p >> data.size;
-    std::cout << "Received [ CMSG_GEOMERTY_LIST ] with : " << data.size
-              << " models" << std::endl;
+    ASIO::LOG_PRINT(("Received [ CMSG_GEOMERTY_LIST ] with : " + to_stringImpl(data.size) + " models").c_str());
     for (U32 i = 0; i < data.size; i++) {
         stringImpl name, modelname;
         U32 version = 0;
@@ -74,8 +75,7 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
             }
             r << (*_iter).version;
         }
-        std::cout << "Sending [SMSG_GEOMETRY_APPEND] with : "
-                  << PatchData.size() << " models to update" << std::endl;
+        ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + to_stringImpl(PatchData.size()) + " models to update").c_str());
         sendPacket(r);
         Patch::instance().reset();
     }
@@ -85,7 +85,7 @@ void Session::HandleRequestGeometry(WorldPacket& p) {
     stringImpl file;
     p >> file;
 
-    std::cout << "Sending SMSG_SEND_FILE with item: " << file << std::endl;
+    ASIO::LOG_PRINT(("Sending SMSG_SEND_FILE with item: " + file).c_str());
     WorldPacket r(OPCodesEx::SMSG_SEND_FILE);
     r << (U8)0;
     sendPacket(r);

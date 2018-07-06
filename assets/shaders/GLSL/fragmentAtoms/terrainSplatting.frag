@@ -11,9 +11,9 @@ layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 
-uniform sampler2DArray texBlendMaps;
-uniform sampler2DArray texTileMaps;
-uniform sampler2DArray texNormalMaps;
+layout(binding = TEXTURE_COUNT + 0) uniform sampler2DArray texBlendMaps;
+layout(binding = TEXTURE_COUNT + 1) uniform sampler2DArray texTileMaps;
+layout(binding = TEXTURE_COUNT + 2) uniform sampler2DArray texNormalMaps;
 
 vec4 getFinalColour1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {
     return texture(texTileMaps, vec3(scaledTextureCoords(VAR._texCoord, diffSize.r), 0 + index));

@@ -74,6 +74,7 @@ void main(void)
         ldsZMax = 0;
         ldsLightIdxCounter = 0;
     }
+    barrier();
 
     vec4 frustumEqn[4];
     {

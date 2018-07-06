@@ -21,6 +21,7 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
  : GUIDWrapper(),
    _parent(parent),
    _context(context),
+   _swapBuffers(true),
    _hasFocus(true),
    _minimized(false),
    _hidden(true),

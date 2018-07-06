@@ -80,6 +80,9 @@ namespace TypeUtil {
 };
 D64 GFXDevice::s_interpolationFactor = 1.0;
 
+GPUVendor GFXDevice::_GPUVendor = GPUVendor::COUNT;
+GPURenderer GFXDevice::_GPURenderer = GPURenderer::COUNT;
+
 GFXDevice::GFXDevice(Kernel& parent)
    : KernelComponent(parent), 
     _api(nullptr),
@@ -123,8 +126,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
     _renderDetailLevel = RenderDetailLevel::HIGH;
-    _GPUVendor = GPUVendor::COUNT;
-    _GPURenderer = GPURenderer::COUNT;
     _API_ID = RenderAPI::COUNT;
     // To allow calls to "setBaseViewport"
     _viewport.push(vec4<I32>(-1));

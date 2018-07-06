@@ -54,7 +54,7 @@ protected:
     void changeViewport(const vec4<I32>& newViewport) const override;
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
     void beginFrame() override;
-    void endFrame(bool swapBuffers) override;
+    void endFrame() override;
 
     void drawText(const vectorImpl<GUITextBatchEntry>& batch) override;
     bool draw(const GenericDrawCommand& cmd);

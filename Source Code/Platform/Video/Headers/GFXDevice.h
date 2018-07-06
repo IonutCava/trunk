@@ -189,7 +189,7 @@ public:  // GPU interface
 
     void idle();
     void beginFrame();
-    void endFrame(bool swapBuffers);
+    void endFrame();
 
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D (Perspective) rendering
     /// Returns true if the state was changed or false if it was already set
@@ -283,11 +283,11 @@ public:  // Accessors and Mutators
     static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
 
-    inline void setGPUVendor(GPUVendor gpuvendor) { _GPUVendor = gpuvendor; }
-    inline GPUVendor getGPUVendor() const { return _GPUVendor; }
+    static void setGPUVendor(GPUVendor gpuvendor) { _GPUVendor = gpuvendor; }
+    static GPUVendor getGPUVendor() { return _GPUVendor; }
 
-    inline void setGPURenderer(GPURenderer gpurenderer) { _GPURenderer = gpurenderer; }
-    inline GPURenderer getGPURenderer() const { return _GPURenderer; }
+    static void setGPURenderer(GPURenderer gpurenderer) { _GPURenderer = gpurenderer; }
+    static GPURenderer getGPURenderer() { return _GPURenderer; }
 
     inline void debugDrawFrustum(Frustum* frustum) { _debugFrustum = frustum; }
 
@@ -477,8 +477,6 @@ private:
 
 protected:
     RenderAPI _API_ID;
-    GPUVendor _GPUVendor;
-    GPURenderer _GPURenderer;
     GPUState _state;
     /* Rendering buffers.*/
     GFXRTPool* _rtPool;
@@ -547,6 +545,8 @@ protected:
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;
 
     static D64 s_interpolationFactor;
+    static GPUVendor _GPUVendor;
+    static GPURenderer _GPURenderer;
 };
 
 namespace Attorney {

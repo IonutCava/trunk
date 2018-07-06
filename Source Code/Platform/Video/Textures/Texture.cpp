@@ -79,6 +79,9 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
     stringstreamImpl textureFileList(getResourceName());
 
     bool loadFromFile = false;
+
+    vectorImpl<stringImpl> fileNames;
+
     // We loop over every texture in the above list and store it in this
     // temporary string
     stringImpl currentTextureFile;
@@ -87,27 +90,34 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
     while (std::getline(textureLocationList, currentTextureLocation, ',') &&
            std::getline(textureFileList, currentTextureFile, ','))
     {
-        loadFromFile = true;
         Util::Trim(currentTextureFile);
+
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
-            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation
-                                                                     : currentTextureLocation) +
-                                     "/" +
-                                     currentTextureFile;
+            fileNames.push_back(
+                (currentTextureLocation.empty() ? Paths::g_texturesLocation
+                                                : currentTextureLocation) +
+                "/" +
+                currentTextureFile);
+        }
+    }
 
-                // Attempt to load the current entry
-                if (!loadFile(info, currentTextureFullPath)) {
-                    // Invalid texture files are not handled yet, so stop loading
-                    return;
-                }
-                info._layerIndex++;
-                if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
-                    if (info._layerIndex == 6) {
-                        info._layerIndex = 0;
-                        info._cubeMapCount++;
-                    }
-                }
+    loadFromFile = !fileNames.empty();
+
+    hashMapImpl<U64, ImageTools::ImageData> dataStorage;
+
+    for(const stringImpl& file : fileNames) {
+        // Attempt to load the current entry
+        if (!loadFile(info, file, dataStorage[_ID_RT(file.c_str())])) {
+            // Invalid texture files are not handled yet, so stop loading
+            return;
+        }
+        info._layerIndex++;
+        if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+            if (info._layerIndex == 6) {
+                info._layerIndex = 0;
+                info._cubeMapCount++;
+            }
         }
     }
 
@@ -143,72 +153,76 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
     }
 }
 
-bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
-    // Create a new imageData object
-    ImageTools::ImageData img;
-    // Flip image if needed
-    img.flip(_flipped);
-    // Save file contents in  the "img" object
-    ImageTools::ImageDataInterface::CreateImageData(name, img);
+bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, ImageTools::ImageData& fileData) {
+    // If we haven't already loaded this file, do so
+    if (!fileData.data()) {
+        // Flip image if needed
+        fileData.flip(_flipped);
+        // Save file contents in  the "img" object
+        ImageTools::ImageDataInterface::CreateImageData(name, fileData);
 
-    // Validate data
-    if (!img.data()) {
-        if (info._layerIndex > 0) {
-            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
-            return false;
+        // Validate data
+        if (!fileData.data()) {
+            if (info._layerIndex > 0) {
+                Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
+                return false;
+            }
+            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
+            // Missing texture fallback.
+            fileData.flip(false);
+            // missing_texture.jpg must be something that really stands out
+            ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, fileData);
+
         }
-        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
-        // Missing texture fallback.
-        img.flip(false);
-        // missing_texture.jpg must be something that really stands out
-        ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, img);
 
-    }
-    
-    // Extract width, height and bitdepth
-    U16 width = img.dimensions().width;
-    U16 height = img.dimensions().height;
-    // If we have an alpha channel, we must check for translucency/transparency
+        // Extract width, height and bitdepth
+        U16 width = fileData.dimensions().width;
+        U16 height = fileData.dimensions().height;
+        // If we have an alpha channel, we must check for translucency/transparency
 
-    if (img.alpha()) {
-        auto findAlpha = [this, &img, height](const Task& parent, U32 start, U32 end) {
-            U8 tempA;
-            for (U32 i = start; i < end; ++i) {
-                for (I32 j = 0; j < height; ++j) {
-                    if (_hasTransparency && _hasTranslucency) {
-                        return;
-                    }
-                    img.getAlpha(i, j, tempA);
-                    if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
-                        _hasTransparency = true;
-                        _hasTranslucency = tempA > 0;
-                        if (_hasTranslucency) {
+        if (fileData.alpha()) {
+            auto findAlpha = [this, &fileData, height](const Task& parent, U32 start, U32 end) {
+                U8 tempA;
+                for (U32 i = start; i < end; ++i) {
+                    for (I32 j = 0; j < height; ++j) {
+                        if (_hasTransparency && _hasTranslucency) {
                             return;
                         }
+                        fileData.getAlpha(i, j, tempA);
+                        if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
+                            _hasTransparency = true;
+                            _hasTranslucency = tempA > 1;
+                            if (_hasTranslucency) {
+                                return;
+                            }
+                        }
+                    }
+                    if (parent.stopRequested()) {
+                        break;
                     }
                 }
-                if (parent.stopRequested()) {
-                    break;
-                }
-            }
-        };
+            };
 
-        parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize);
+            parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize);
+        }
+
+        Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
+                                        name.c_str(),
+                                        _hasTransparency ? "yes" : "no",
+                                        _hasTranslucency ? "yes" : "no");
     }
 
-    Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
-                       name.c_str(),
-                       _hasTransparency ? "yes" : "no",
-                       _hasTranslucency ? "yes" : "no");
-
     // Create a new Rendering API-dependent texture object
-    _descriptor._type = _textureData._textureType;
-    _descriptor._mipLevels.max = to_U16(img.mipCount());
+    if (info._layerIndex == 0) {
+        _descriptor._type = _textureData._textureType;
+        _descriptor._mipLevels.max = to_U16(fileData.mipCount());
 
-    _descriptor.internalFormat(img.format());
-    
+        _descriptor.internalFormat(fileData.format());
+    } else {
+        DIVIDE_ASSERT(_descriptor._type == _textureData._textureType, "Texture::loadFile error: Texture Layer with diferent type detected!");
+    }
     // Uploading to the GPU dependents on the rendering API
-    loadData(info, img.imageLayers());
+    loadData(info, fileData.imageLayers());
     
     // We will always return true because we load the "missing_texture.jpg" in case of errors
     return true;

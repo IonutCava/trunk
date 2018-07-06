@@ -10,6 +10,8 @@
 
 namespace Divide {
 
+ASIO::LOG_CBK ASIO::_logCBK;
+
 ASIO::ASIO() : _connected(false),
                _debugOutput(true),
                _localClient(nullptr)
@@ -48,7 +50,7 @@ bool ASIO::init(const stringImpl& address, U16 port) {
         _connected = true;
     } catch (std::exception& e) {
         if (_debugOutput) {
-            std::cout << "ASIO Exception: " << e.what() << std::endl;
+            LOG_PRINT((std::string("ASIO Exception: ") + e.what()).c_str(), true);
         }
         _connected = false;
     }
@@ -80,8 +82,7 @@ bool ASIO::sendPacket(WorldPacket& p) const {
     if (_localClient->sendPacket(p)) {
 
         if (_debugOutput) {
-            std::cout << "ASIO: sent opcode [ 0x"
-                << to_stringImpl(p.opcode()) << "]" << std::endl;
+            LOG_PRINT(("ASIO: sent opcode [ 0x" + to_stringImpl(p.opcode()) + "]").c_str());
         }
         return true;
     }
@@ -92,6 +93,18 @@ bool ASIO::sendPacket(WorldPacket& p) const {
 void ASIO::toggleDebugOutput(const bool debugOutput) {
     _debugOutput = debugOutput;
     _localClient->toggleDebugOutput(_debugOutput);
+}
+
+void ASIO::SET_LOG_FUNCTION(const LOG_CBK& cbk) {
+    _logCBK = cbk;
+}
+
+void ASIO::LOG_PRINT(const char* msg, bool error) {
+    if (_logCBK) {
+        _logCBK(msg, error);
+    }  else {
+        (error ? std::cerr : std::cout) << msg << std::endl;
+    }
 }
 
 };  // namespace Divide

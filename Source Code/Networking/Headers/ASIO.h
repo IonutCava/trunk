@@ -28,6 +28,11 @@ class ASIO {
     /// Toggle the printing of debug information
     virtual void toggleDebugOutput(const bool debugOutput);
 
+
+    typedef DELEGATE_CBK<void, const char* /*msg*/, bool /*is_error*/> LOG_CBK;
+    static void SET_LOG_FUNCTION(const LOG_CBK& cbk);
+    static void LOG_PRINT(const char* msg, bool error = false);
+
    protected:
     ASIO();
     virtual ~ASIO();
@@ -49,6 +54,8 @@ class ASIO {
     bool _debugOutput;
     boost::asio::io_service io_service_;
     stringImpl _address, _port;
+
+    static LOG_CBK _logCBK;
 };
 
 };  // namespace Divide

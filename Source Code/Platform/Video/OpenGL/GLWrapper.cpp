@@ -113,13 +113,14 @@ void GL_API::beginFrame() {
 }
 
 /// Finish rendering the current frame
-void GL_API::endFrame(bool swapBuffers) {
+void GL_API::endFrame() {
     // Revert back to the default OpenGL states
     clearStates();
     // Swap buffers
-    if (swapBuffers) {
+    const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getActiveWindow();
+    if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
         Time::ScopedTimer time(_swapBufferTimer);
-        SDL_GL_SwapWindow(_context.parent().platformContext().app().windowManager().getActiveWindow().getRawWindow());
+        SDL_GL_SwapWindow(window.getRawWindow());
     }
 
     // End the timing query started in beginFrame() in debug builds
@@ -277,7 +278,7 @@ bool GL_API::initShaders() {
                          Util::StringFormat("#define GPU_VENDOR_OTHER %d", to_base(GPUVendor::OTHER)),
                          lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
-                         Util::StringFormat("#define GPU_VENDOR %d", to_U32(_context.getGPUVendor())),
+                         Util::StringFormat("#define GPU_VENDOR %d", to_U32(GFXDevice::getGPUVendor())),
                          lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_OFF   %d", to_base(RenderDetailLevel::OFF)),    lineOffsets);
@@ -316,7 +317,7 @@ bool GL_API::initShaders() {
                          lineOffsets);
 
     // Add some nVidia specific pragma directives
-    if (_context.getGPUVendor() == GPUVendor::NVIDIA) {
+    if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
         appendToShaderHeader(ShaderType::COUNT,
                              "//#pragma optionNV(fastmath on)", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT,
@@ -548,14 +549,20 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
+        "#define SHADOW_LAYERED_MAP_ARRAY " +
+            to_stringImpl(to_U32(ShaderProgram::TextureUsage::SHADOW_LAYERED)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
             to_stringImpl(to_U32(ShaderProgram::TextureUsage::SHADOW_SINGLE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define SHADOW_LAYERED_MAP_ARRAY " +
-            to_stringImpl( to_U32(ShaderProgram::TextureUsage::SHADOW_LAYERED)),
+        "#define TEXTURE_COUNT " +
+            to_stringImpl(to_U32(ShaderProgram::TextureUsage::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(

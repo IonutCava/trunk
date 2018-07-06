@@ -3,6 +3,8 @@
 #include "Headers/tcp_session_tpl.h"
 #include "Headers/OPCodesTpl.h"
 
+#include "Networking/Headers/ASIO.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////
 //                                     TCP                                           //
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -96,14 +98,14 @@ void tcp_session_tpl::handle_read_packet(const boost::system::error_code& ec,
 
     if (!ec) {
         _inputBuffer.commit(_header);
-        std::cout << "Buffer size: " << _header << std::endl;
+        ASIO::LOG_PRINT(("Buffer size: " + to_stringImpl(_header)).c_str());
         std::istream is(&_inputBuffer);
         WorldPacket packet;
         try {
             boost::archive::text_iarchive ar(is);
             ar& packet;
         } catch (std::exception& e) {
-            std::cout << e.what() << std::endl;
+            ASIO::LOG_PRINT(e.what(), true);
         }
 
         handlePacket(packet);
@@ -152,7 +154,7 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
     source_file.open(filePath.c_str(),
                      std::ios_base::binary | std::ios_base::ate);
     if (!source_file) {
-        std::cout << "failed to open " << filePath << std::endl;
+        ASIO::LOG_PRINT(("failed to open " + filePath).c_str());
         return;
     }
     size_t file_size = sizeof(source_file);  //.tellg();
@@ -160,7 +162,7 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
     // first send file name and file size to server
     std::ostream request_stream(&request_);
     request_stream << filePath << "\n" << file_size << "\n\n";
-    std::cout << "request size:" << request_.size() << std::endl;
+    ASIO::LOG_PRINT(("request size:" + to_stringImpl(request_.size())).c_str());
 
     // Start an asynchronous resolve to translate the server and service names
     // into a list of endpoints.
@@ -241,11 +243,11 @@ void udp_broadcaster::sendPacket(const WorldPacket& p) {
 void tcp_session_tpl::handlePacket(WorldPacket& p) {
     switch (p.opcode()) {
         case OPCodes::MSG_HEARTBEAT:
-            std::cout << "Received [ MSG_HEARTBEAT ]" << std::endl;
+            ASIO::LOG_PRINT("Received [ MSG_HEARTBEAT ]");
             HandleHeartBeatOpCode(p);
             break;
         case OPCodes::CMSG_PING:
-            std::cout << "Received [ CMSG_PING ]" << std::endl;
+            ASIO::LOG_PRINT("Received [ CMSG_PING ]");
             HandlePingOpCode(p);
             break;
         case OPCodes::CMSG_REQUEST_DISCONNECT:
@@ -264,7 +266,7 @@ void tcp_session_tpl::HandleHeartBeatOpCode(WorldPacket& p) {
     ACKNOWLEDGE_UNUSED(p);
 
     WorldPacket r(OPCodes::MSG_HEARTBEAT);
-    std::cout << "Sending  [ MSG_HEARTBEAT]" << std::endl;
+    ASIO::LOG_PRINT("Sending  [ MSG_HEARTBEAT]");
     r << (I8)0;
     sendPacket(r);
 }
@@ -272,7 +274,7 @@ void tcp_session_tpl::HandleHeartBeatOpCode(WorldPacket& p) {
 void tcp_session_tpl::HandlePingOpCode(WorldPacket& p) {
     F32 time = 0;
     p >> time;
-    std::cout << "Sending  [ SMSG_PONG ] with data: " << time << std::endl;
+    ASIO::LOG_PRINT(("Sending  [ SMSG_PONG ] with data: " + to_stringImpl(time)).c_str());
     WorldPacket r(OPCodes::SMSG_PONG);
     r << time;
     sendPacket(r);
@@ -281,7 +283,7 @@ void tcp_session_tpl::HandlePingOpCode(WorldPacket& p) {
 void tcp_session_tpl::HandleDisconnectOpCode(WorldPacket& p) {
     stringImpl client;
     p >> client;
-    std::cout << "Received [ CMSG_REQUEST_DISCONNECT ] from: [ " << client << " ]" << std::endl;
+    ASIO::LOG_PRINT(("Received [ CMSG_REQUEST_DISCONNECT ] from: [ " + client + " ]").c_str());
     WorldPacket r(OPCodes::SMSG_DISCONNECT);
     r << (U8)0;  // this will be the error code returned after safely saving
                  // client
@@ -289,7 +291,7 @@ void tcp_session_tpl::HandleDisconnectOpCode(WorldPacket& p) {
 }
 
 void tcp_session_tpl::HandleEntityUpdateOpCode(WorldPacket& p) {
-    std::cout << "Received [ CMSG_ENTITY_UPDATE ] !" << std::endl;
+    ASIO::LOG_PRINT("Received [ CMSG_ENTITY_UPDATE ] !");
     UpdateEntities(p);
 }
 

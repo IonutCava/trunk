@@ -94,7 +94,7 @@ protected:
     /// Prepare the GPU for rendering a frame
     void beginFrame() override;
     /// Finish rendering the current frame
-    void endFrame(bool swapBuffers) override;
+    void endFrame() override;
 
     /// Verify if we have a sampler object created and available for the given
     /// descriptor

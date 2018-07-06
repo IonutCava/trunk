@@ -176,7 +176,7 @@ void Kernel::onLoop() {
 
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
         }
-        _platformContext->gfx().endFrame(_platformContext->app().mainLoopActive());
+        _platformContext->gfx().endFrame();
         _platformContext->sfx().endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
@@ -599,6 +599,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         _platformContext->gfx().setAPI(Config::USE_OPENGL_ES ? RenderAPI::OpenGLES
                                                              : RenderAPI::OpenGL);
     }
+
+    ASIO::SET_LOG_FUNCTION([](const char* msg, bool is_error) {
+        is_error ? Console::errorfn(msg) : Console::printfn(msg);
+    });
+
     // Load info from XML files
     XMLEntryData& entryData = _platformContext->entryData();
     Configuration& config = _platformContext->config();
@@ -673,7 +678,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Load and render the splash screen
     _platformContext->gfx().beginFrame();
     GUISplash(*_resCache, "divideLogo.jpg", initRes[to_base(WindowType::SPLASH)]).render(_platformContext->gfx());
-    _platformContext->gfx().endFrame(true);
+    _platformContext->gfx().endFrame();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
     initError = _platformContext->sfx().initAudioAPI(*_platformContext);

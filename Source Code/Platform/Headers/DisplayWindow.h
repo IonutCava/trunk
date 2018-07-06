@@ -67,6 +67,10 @@ public:
     ErrorCode destroyWindow();
 
     inline SDL_Window* getRawWindow() const;
+
+    inline bool swapBuffers() const;
+    inline void swapBuffers(const bool state);
+
     inline bool hasFocus() const;
     inline void hasFocus(const bool state);
 
@@ -114,6 +118,7 @@ private:
     WindowType _type;
     WindowType _previousType;
     WindowType _queuedType;
+    bool _swapBuffers;
     /// this is false if the window/application lost focus (e.g. clicked another
     /// window, alt + tab, etc)
     bool _hasFocus;

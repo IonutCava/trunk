@@ -108,8 +108,10 @@ void Application::warmup() {
     Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
     //Make sure we are displaying a splash screen
     _windowManager.getActiveWindow().type(WindowType::SPLASH);
+    _windowManager.getActiveWindow().swapBuffers(false);
     Attorney::KernelApplication::warmup(*_kernel);
     //Restore to normal window
+    _windowManager.getActiveWindow().swapBuffers(true);
     _windowManager.getActiveWindow().previousType();
 }
 

@@ -71,7 +71,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     /// Clear buffers, set default states, etc
     virtual void beginFrame() = 0;
     /// Clear shaders, restore active texture units, etc
-    virtual void endFrame(bool swapBuffers) = 0;
+    virtual void endFrame() = 0;
 
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;

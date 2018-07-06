@@ -236,8 +236,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         renderer = GPURenderer::UNKNOWN;
     }
 
-    _context.setGPURenderer(renderer);
-    _context.setGPUVendor(vendor);
+    GFXDevice::setGPURenderer(renderer);
+    GFXDevice::setGPUVendor(vendor);
+
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel, to_U8(1), to_U8(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;

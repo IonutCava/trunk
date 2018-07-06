@@ -32,9 +32,7 @@ void DX_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
 
 void DX_API::beginFrame() {}
 
-void DX_API::endFrame(bool swapBuffers) {
-    ACKNOWLEDGE_UNUSED(swapBuffers);
-}
+void DX_API::endFrame() {}
 
 void DX_API::updateClipPlanes() {}
 
