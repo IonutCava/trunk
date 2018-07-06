@@ -70,7 +70,7 @@ namespace NS_GLIM
     typedef void (*GLIM_CALLBACK)(void);
 
 #ifdef AE_RENDERAPI_D3D11
-    typedef void (*GLIM_CALLBACK_SETINPUTLAYOUT)(GLIM_Interface* pBatch, const vectorImpl<D3D11_INPUT_ELEMENT_DESC>& Signature);
+    typedef void (*GLIM_CALLBACK_SETINPUTLAYOUT)(GLIM_Interface* pBatch, const vector<D3D11_INPUT_ELEMENT_DESC>& Signature);
     typedef void (*GLIM_CALLBACK_RELEASERESOURCE)(ID3D11Resource* pResource);
 #endif
 

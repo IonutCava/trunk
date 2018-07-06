@@ -92,7 +92,7 @@ class RenderStagePass;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
-    typedef vectorImpl<RenderBinItem> RenderBinStack;
+    typedef vector<RenderBinItem> RenderBinStack;
 
    public:
 
@@ -116,7 +116,7 @@ class RenderBin {
         return _renderBinStack[index];
     }
 
-    void getSortedNodes(vectorImpl<SceneGraphNode*>& nodes) const;
+    void getSortedNodes(vector<SceneGraphNode*>& nodes) const;
 
     inline U16 getBinSize() const { return (U16)_renderBinStack.size(); }
 

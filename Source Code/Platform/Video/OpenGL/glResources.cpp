@@ -36,7 +36,7 @@ void VAOBindings::init(U32 maxBindings) {
 
 const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, GLuint index) {
     VAOBufferData& data = _bindings[vao];
-    vectorAlg::vecSize count = data.size();
+    vec_size count = data.size();
     if (count > 0) {
         assert(index <= count);
         return data[index];
@@ -49,7 +49,7 @@ const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, G
 
 void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams) {
     VAOBufferData& data = _bindings[vao];
-    vectorAlg::vecSize count = data.size();
+    vec_size count = data.size();
     assert(count > 0 && count > index);
     ACKNOWLEDGE_UNUSED(count);
 
@@ -321,12 +321,12 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
                               GLenum internalFormat,
                               GLuint indexBuffer) {
     //ToDo: This seems really wrong -Ionut
-    vectorImpl<GLsizei> count(drawCount, cmd.indexCount);
+    vector<GLsizei> count(drawCount, cmd.indexCount);
     if (indexBuffer > 0) {
-        vectorImpl<U32> indices(drawCount, cmd.baseInstance);
+        vector<U32> indices(drawCount, cmd.baseInstance);
         glMultiDrawElements(mode, count.data(), internalFormat, (bufferPtr*)(indices.data()), drawCount);
     } else {
-        vectorImpl<I32> first(drawCount, cmd.firstIndex);
+        vector<I32> first(drawCount, cmd.firstIndex);
         glMultiDrawArrays(mode, first.data(), count.data(), drawCount);
     }
 }

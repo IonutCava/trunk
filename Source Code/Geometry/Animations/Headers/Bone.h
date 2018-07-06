@@ -53,7 +53,7 @@ class Bone {
     aiMatrix4x4 _originalLocalTransform;
 
     Bone* _parent;
-    vectorImpl<Bone*> _children;
+    vector<Bone*> _children;
 
     // index in the current animation's channel array.
     Bone(const stringImpl& name)
@@ -101,7 +101,7 @@ class Bone {
         return nullptr;
     }
 
-    inline void createBoneList(vectorImpl<Bone*>& boneList) {
+    inline void createBoneList(vector<Bone*>& boneList) {
         boneList.push_back(this);
         for (Bone* child : _children) {
             child->createBoneList(boneList);

@@ -31,7 +31,7 @@ InputInterface::InputInterface(DisplayWindow& parent)
       _pEffectMgr(nullptr),
       _bMustStop(false),
       _bIsInitialized(false),
-      _keys(vectorImpl<KeyEvent>(KeyCode_PLACEHOLDER, KeyEvent(0)))
+      _keys(vector<KeyEvent>(KeyCode_PLACEHOLDER, KeyEvent(0)))
 {
     for (U16 i = 0; i < KeyCode_PLACEHOLDER; ++i) {
         _keys[i]._key = static_cast<KeyCode>(i);
@@ -331,7 +331,7 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
         return JoystickElement(JoystickElementType::VECTOR_MOVE);
     } 
 
-    vectorImpl<stringImpl> buttonElements = Util::Split(elementName, '_');
+    vector<stringImpl> buttonElements = Util::Split(elementName, '_');
     assert(buttonElements.size() == 2 && "Invalid joystick element name!");
     assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
 

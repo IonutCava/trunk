@@ -103,7 +103,7 @@ struct DrawCommand : Command {
     {
     }
 
-    vectorImpl<GenericDrawCommand> _drawCommands;
+    vector<GenericDrawCommand> _drawCommands;
 };
 
 struct SetViewportCommand : Command {

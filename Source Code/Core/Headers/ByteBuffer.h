@@ -133,7 +133,7 @@ class ByteBuffer {
 
    protected:
     size_t _rpos, _wpos;
-    vectorImpl<Byte> _storage;
+    vector<Byte> _storage;
 };
 
 };  // namespace Divide

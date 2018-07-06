@@ -13,7 +13,7 @@ void Patch::addGeometry(const FileData& data) {
 bool Patch::compareData(const PatchData& data) {
     bool updated = true;
     /*XML::loadScene(data.sceneName);
-    for (vectorImpl<FileData>::iterator _iter = std::begin(ModelData);
+    for (vector<FileData>::iterator _iter = std::begin(ModelData);
          _iter != std::end(ModelData); _iter++) {
         for (U32 i = 0; i < data.size; i++) {
             // for each item in the scene
@@ -39,6 +39,6 @@ bool Patch::compareData(const PatchData& data) {
     return updated;
 }
 
-const vectorImpl<FileData>& Patch::updateClient() { return ModelData; }
+const vector<FileData>& Patch::updateClient() { return ModelData; }
 
 };  // namespace Divide

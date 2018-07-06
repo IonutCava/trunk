@@ -132,7 +132,7 @@ class glGenericVertexData : public GenericVertexData {
     std::array<bool*, 2> _resultAvailable;
     GLuint _currentWriteQuery;
     GLuint _currentReadQuery;
-    vectorImpl<glGenericBuffer*> _bufferObjects;
+    vector<glGenericBuffer*> _bufferObjects;
     std::array<GLuint, to_base(GVDUsage::COUNT)> _vertexArray;
 };
 

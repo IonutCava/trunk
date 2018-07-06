@@ -39,7 +39,7 @@ namespace NS_GLIM
         // the current value that shall be used for all new elements
         Glim4ByteData m_CurrentValue[4];
         // the actual array of accumulated elements
-        vectorImpl<Glim4ByteData> m_ArrayData;
+        vector<Glim4ByteData> m_ArrayData;
 
         // the offset into the GL buffer, needed for binding it
         unsigned int m_uiBufferOffset;
@@ -107,16 +107,16 @@ namespace NS_GLIM
         hashMap<unsigned int, GlimArrayData> m_Attributes;
 
         // Position data is stored separately, not as an attribute.
-        vectorImpl<Glim4ByteData> m_PositionData;
+        vector<Glim4ByteData> m_PositionData;
 
         // Index Buffer for points.
-        vectorImpl<unsigned int> m_IndexBuffer_Points;
+        vector<unsigned int> m_IndexBuffer_Points;
         // Index Buffer for Lines.
-        vectorImpl<unsigned int> m_IndexBuffer_Lines;
+        vector<unsigned int> m_IndexBuffer_Lines;
         // Index Buffer for Triangles.
-        vectorImpl<unsigned int> m_IndexBuffer_Triangles;
+        vector<unsigned int> m_IndexBuffer_Triangles;
         // Index Buffer for wireframe rendering of polygons.
-        vectorImpl<unsigned int> m_IndexBuffer_Wireframe;
+        vector<unsigned int> m_IndexBuffer_Wireframe;
 
         // Number of Points to render. Used after m_IndexBuffer_Points has been cleared. 
         unsigned int m_uiPointElements;
@@ -131,7 +131,7 @@ namespace NS_GLIM
         bool m_bUploadedToGPU;
         // Whether VBOs where ever created.
         bool m_bCreatedVBOs;
-        vectorImpl<Glim4ByteData> m_bufferData;
+        vector<Glim4ByteData> m_bufferData;
 #ifdef AE_RENDERAPI_OPENGL
         unsigned int m_VertexArrayObjectID;
         // GL attrib location of the vertex data in the shader program
@@ -160,7 +160,7 @@ namespace NS_GLIM
         ID3D11Buffer* m_pIndexBuffer_Triangles;
         ID3D11Buffer* m_pIndexBuffer_Wireframe;
 
-        vectorImpl<D3D11_INPUT_ELEMENT_DESC> m_Signature;
+        vector<D3D11_INPUT_ELEMENT_DESC> m_Signature;
 #endif
 
         // AABB 

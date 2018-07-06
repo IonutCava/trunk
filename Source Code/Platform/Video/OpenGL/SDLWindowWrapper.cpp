@@ -87,7 +87,7 @@ namespace {
 
     private:
         SharedLock _glContextLock;
-        vectorImpl<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
+        vector<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
     } g_ContextPool;
 };
 

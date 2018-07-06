@@ -76,7 +76,7 @@ JoystickInterface::JoystickInterface(OIS::InputManager* pInputInterface, EventHa
 
 JoystickInterface::~JoystickInterface()
 {
-    for (vectorAlg::vecSize nJoyInd = 0; nJoyInd < _vecJoys.size();
+    for (vec_size nJoyInd = 0; nJoyInd < _vecJoys.size();
         ++nJoyInd) {
         _pInputInterface->destroyInputObject(_vecJoys[nJoyInd]);
     }

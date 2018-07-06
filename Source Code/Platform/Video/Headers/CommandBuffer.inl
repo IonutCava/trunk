@@ -49,11 +49,11 @@ inline void CommandBuffer::add(const CommandBuffer& other) {
     }
 }
 
-inline vectorImplFast<std::shared_ptr<Command>>& CommandBuffer::operator()() {
+inline vectorFast<std::shared_ptr<Command>>& CommandBuffer::operator()() {
     return _data;
 }
 
-inline const vectorImplFast<std::shared_ptr<Command>>& CommandBuffer::operator()() const {
+inline const vectorFast<std::shared_ptr<Command>>& CommandBuffer::operator()() const {
     return _data;
 }
 

@@ -50,7 +50,7 @@ TerrainChunk::~TerrainChunk()
 }
 
 void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimension, const vec2<U32>& HMsize) {
-    vectorImpl<U32>& indices = _terrain->_physicsIndices[_ID];
+    vector<U32>& indices = _terrain->_physicsIndices[_ID];
     _chunkIndOffset = to_U32(indices.size());
 
     _xOffset = to_F32(pos.x);
@@ -98,7 +98,7 @@ void TerrainChunk::ComputeIndicesArray(U8 depth,
     U32 nHMOffsetX = position.x;
     U32 nHMOffsetY = position.y;
 
-    vectorImpl<U32>& indices = _terrain->_physicsIndices[_ID];
+    vector<U32>& indices = _terrain->_physicsIndices[_ID];
 
     U32 nHMTotalWidth = heightMapSize.x;
     U32 nIndice = (nHMWidth) * (nHMHeight - 1) * 2;

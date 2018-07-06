@@ -10,12 +10,12 @@
 namespace Divide {
 
 namespace {
-    vectorImpl<TwBar*> g_TweakWindows;
-    hashMap<vectorAlg::vecSize, I64> g_barToGroupMap;
+    vector<TwBar*> g_TweakWindows;
+    hashMap<vec_size, I64> g_barToGroupMap;
     hashMap<I64, DELEGATE_CBK<void, void*>> g_varToCallbackMap;
 
     inline TwBar* getBar(I64 groupID) {
-        for (hashMap<vectorAlg::vecSize, I64>::value_type& entry : g_barToGroupMap) {
+        for (hashMap<vec_size, I64>::value_type& entry : g_barToGroupMap) {
             if (entry.second == groupID) {
                 return g_TweakWindows[entry.first];
             }

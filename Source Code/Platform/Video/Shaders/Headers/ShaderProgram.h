@@ -67,9 +67,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class Attorney::ShaderProgramKernel;
 
    public:
-    typedef vectorImpl<ShaderProgram_wptr> ShaderProgramMap;
+    typedef vector<ShaderProgram_wptr> ShaderProgramMap;
     typedef hashMap<U64, stringImpl> AtomMap;
-    typedef std::stack<ShaderProgram_ptr, vectorImpl<ShaderProgram_ptr> > ShaderQueue;
+    typedef std::stack<ShaderProgram_ptr, vector<ShaderProgram_ptr> > ShaderQueue;
     /// A list of built-in sampler slots. Use these if possible
     enum class TextureUsage : U8 {
         UNIT0 = 0,
@@ -129,17 +129,17 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     void removeShaderDefine(const stringImpl& define);
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
-    inline vectorAlg::vecSize getFunctionCount(ShaderType shader, U8 LoD) {
+    inline vec_size getFunctionCount(ShaderType shader, U8 LoD) {
         return _functionIndex[to_U32(shader)][LoD].size();
     }
 
     inline void setFunctionCount(ShaderType shader,
                                  U8 LoD,
-                                 vectorAlg::vecSize count) {
+                                 vec_size count) {
         _functionIndex[to_U32(shader)][LoD].resize(count, 0);
     }
 
-    inline void setFunctionCount(ShaderType shader, vectorAlg::vecSize count) {
+    inline void setFunctionCount(ShaderType shader, vec_size count) {
         for (U8 i = 0; i < Config::SCENE_NODE_LOD; ++i) {
             setFunctionCount(shader, i, count);
         }
@@ -203,7 +203,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static void rebuildAllShaders();
 
-    static vectorImpl<stringImpl> getAllAtomLocations();
+    static vector<stringImpl> getAllAtomLocations();
 
    protected:
      virtual bool recompileInternal() = 0;
@@ -237,16 +237,16 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
     // with a mutex or something
     /// A list of preprocessor defines
-    vectorImpl<stringImpl> _definesList;
+    vector<stringImpl> _definesList;
     /// A list of atoms used by this program. (All stages are added toghether)
-    vectorImpl<stringImpl> _usedAtoms;
+    vector<stringImpl> _usedAtoms;
 
     static bool s_useShaderTextCache;
     static bool s_useShaderBinaryCache;
 
    private:
-    std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_base(ShaderType::COUNT)> _functionIndex;
-    std::array<vectorImpl<U32>, to_base(ShaderType::COUNT)>  _availableFunctionIndex;
+    std::array<std::array<vector<U32>, Config::SCENE_NODE_LOD>, to_base(ShaderType::COUNT)> _functionIndex;
+    std::array<vector<U32>, to_base(ShaderType::COUNT)>  _availableFunctionIndex;
 
     static I64 s_shaderFileWatcherID;
 };

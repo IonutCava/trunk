@@ -82,7 +82,7 @@ namespace GFX {
         template<typename T>
         PushConstant(const stringImplFast& binding,
                      PushConstantType type,
-                     const vectorImpl<T>& values,
+                     const vector<T>& values,
                      bool flag = false)
             : _binding(binding),
               _bindingHash(_ID_RT(binding.c_str())),
@@ -99,7 +99,7 @@ namespace GFX {
         template<>
         PushConstant(const stringImplFast& binding,
                      PushConstantType type,
-                     const vectorImpl<bool>& values,
+                     const vector<bool>& values,
                      bool flag)
             : _binding(binding),
               _bindingHash(_ID_RT(binding.c_str())),
@@ -177,7 +177,7 @@ namespace GFX {
         U64              _bindingHash;
         stringImplFast   _binding;
         PushConstantType _type = PushConstantType::COUNT;
-        vectorImpl<char> _buffer;
+        vector<char> _buffer;
         union {
             bool _flag = false;
             bool _transpose;

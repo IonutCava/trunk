@@ -84,7 +84,7 @@ void RenderPassCuller::frustumCull(PlatformContext& context,
 
         SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
-        vectorImpl<VisibleNodeList>& nodes = _perThreadNodeList[to_U32(stage)];
+        vector<VisibleNodeList>& nodes = _perThreadNodeList[to_U32(stage)];
         nodes.resize(childCount);
 
         auto cullIterFunction = [this, &root, &camera, &nodes, &stage, cullMaxDistance](const Task& parentTask, U32 start, U32 end) {

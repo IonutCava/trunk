@@ -44,7 +44,7 @@ namespace Divide {
 
 DEFINE_SINGLETON(FrameListenerManager)
 
-    typedef vectorImplFast<U64> EventTimeMap;
+    typedef vectorFast<U64> EventTimeMap;
 
   public:
     void registerFrameListener(FrameListener* listener, U32 callOrder);
@@ -78,7 +78,7 @@ DEFINE_SINGLETON(FrameListenerManager)
 
    private:
     mutable SharedLock _listenerLock;
-    vectorImpl<FrameListener*> _listeners;
+    vector<FrameListener*> _listeners;
     std::array<EventTimeMap, to_base(FrameEventType::FRAME_EVENT_ENDED) + 1> _eventTimers;
 
 END_SINGLETON

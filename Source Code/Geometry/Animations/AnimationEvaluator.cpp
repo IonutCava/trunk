@@ -85,10 +85,10 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
         bonePadding++;
     }
 
-    vectorImplBest<mat4<F32>> animationData;
+    vectorBest<mat4<F32>> animationData;
     animationData.reserve((boneCount + bonePadding) * frameCount());
 
-    for (const vectorImplBest<mat4<F32>>& frameTransforms : _transforms) {
+    for (const vectorBest<mat4<F32>>& frameTransforms : _transforms) {
         animationData.insert(std::cend(animationData), std::cbegin(frameTransforms), std::cend(frameTransforms));
         for (U32 i = 0; i < bonePadding; ++i) {
             animationData.push_back(mat4<F32>());

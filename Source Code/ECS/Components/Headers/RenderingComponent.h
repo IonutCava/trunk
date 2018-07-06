@@ -230,7 +230,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     RenderCallback _refractionCallback;
 
     EnvironmentProbeList _envProbes;
-    vectorImpl<Line> _axisLines;
+    vector<Line> _axisLines;
     IMPrimitive* _axisGizmo;
 
     size_t _depthStateBlockHash;

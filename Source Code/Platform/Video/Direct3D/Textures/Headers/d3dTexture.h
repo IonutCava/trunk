@@ -61,7 +61,7 @@ class d3dTexture final : public Texture {
     void refreshMipMaps(bool immediate) override { ACKNOWLEDGE_UNUSED(immediate); }
 
     void loadData(const TextureLoadInfo& info,
-                  const vectorImpl<ImageTools::ImageLayer>& imageLayers) override {}
+                  const vector<ImageTools::ImageLayer>& imageLayers) override {}
 
     void loadData(const TextureLoadInfo& info,
                   const bufferPtr data,

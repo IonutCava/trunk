@@ -18,7 +18,7 @@ bool Console::_errorStreamEnabled = true;
 
 std::thread Console::_printThread;
 std::atomic_bool Console::_running = false;
-vectorImpl<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
+vector<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue

@@ -60,14 +60,14 @@ protected:
 
     void init();
 
-    vectorImpl<stringImpl> sceneNameList(bool sorted) const;
+    vector<stringImpl> sceneNameList(bool sorted) const;
 
 private:
     /// Pointer to the currently active scene
     Scene* _activeScene;
     Scene* _loadedScene;
     Scene* _defaultScene;
-    vectorImpl<Scene*> _createdScenes;
+    vector<Scene*> _createdScenes;
 
     SceneManager& _parentMgr;
 

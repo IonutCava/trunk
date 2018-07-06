@@ -64,7 +64,7 @@ struct GraphPlot2D : public GraphPlot {
     {
     }
 
-    vectorImpl<vec2<F32>> _coords;
+    vector<vec2<F32>> _coords;
      
     bool empty() const  noexcept {
         return _coords.empty();
@@ -79,7 +79,7 @@ struct GraphPlot3D : public GraphPlot {
     {
     }
 
-    vectorImpl<vec3<F32>> _coords;
+    vector<vec3<F32>> _coords;
 
     bool empty() const noexcept {
         return _coords.empty();

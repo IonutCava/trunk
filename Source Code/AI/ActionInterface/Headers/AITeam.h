@@ -67,7 +67,7 @@ class AITeam : public GUIDWrapper {
     typedef hashMap<AIEntity*, F32> MemberVariable;
     typedef hashMap<I64, AIEntity*> TeamMap;
     typedef std::shared_ptr<Order> OrderPtr;
-    typedef vectorImpl<OrderPtr> OrderList;
+    typedef vector<OrderPtr> OrderList;
    public:
     AITeam(U32 id, AIManager& parentManager);
     ~AITeam();
@@ -132,7 +132,7 @@ class AITeam : public GUIDWrapper {
     void removeCrowd(AIEntity::PresetAgentRadius radius);
 
    protected:
-    vectorImpl<AIEntity*> getEntityList() const;
+    vector<AIEntity*> getEntityList() const;
 
     inline OrderList::iterator findOrder(const Order& order) {
         return findOrder(order.getID());
@@ -147,7 +147,7 @@ class AITeam : public GUIDWrapper {
             });
     }
 
-    inline vectorImpl<U32>::iterator findEnemyTeamEntry(U32 enemyTeamID) {
+    inline vector<U32>::iterator findEnemyTeamEntry(U32 enemyTeamID) {
         return vectorAlg::find_if(
             std::begin(_enemyTeams), std::end(_enemyTeams),
             [&enemyTeamID](U32 id) -> bool { return id == enemyTeamID; });
@@ -165,7 +165,7 @@ class AITeam : public GUIDWrapper {
     AITeamCrowd _aiTeamCrowd;
     mutable SharedLock _updateMutex;
     mutable SharedLock _crowdMutex;
-    vectorImpl<U32> _enemyTeams;
+    vector<U32> _enemyTeams;
     OrderList _orders;
 };
 

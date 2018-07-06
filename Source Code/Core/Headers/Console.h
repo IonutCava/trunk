@@ -143,7 +143,7 @@ class Console : private NonCopyable {
     static void outThread();
 
    private:
-    static vectorImpl<ConsolePrintCallback> _guiConsoleCallbacks;
+    static vector<ConsolePrintCallback> _guiConsoleCallbacks;
     static bool _timestamps;
     static bool _threadID;
     static bool _enabled;

@@ -439,9 +439,9 @@ private:
 
     RenderStagePass _renderStagePass;
     RenderStagePass _prevRenderStagePass;
-    vectorImpl<Line> _axisLines;
+    vector<Line> _axisLines;
     IMPrimitive     *_axisGizmo;
-    vectorImpl<Line> _axisLinesTransformed;
+    vector<Line> _axisLinesTransformed;
 
     Frustum         *_debugFrustum;
     IMPrimitive     *_debugFrustumPrimitive;
@@ -455,7 +455,7 @@ protected:
     std::pair<vec2<U16>, bool> _resolutionChangeQueued;
 
     U8 _historyIndex;
-    vectorImpl<Texture_ptr> _prevDepthBuffers;
+    vector<Texture_ptr> _prevDepthBuffers;
 
     /*State management */
     bool _stateBlockByDescription;
@@ -488,7 +488,7 @@ protected:
     RenderDetailLevel _renderDetailLevel;
     
     SharedLock _graphicsResourceMutex;
-    vectorImpl<std::pair<GraphicsResource::Type, I64>> _graphicResources;
+    vector<std::pair<GraphicsResource::Type, I64>> _graphicResources;
 
     /// Current viewport stack
     Rect<I32> _viewport;
@@ -506,7 +506,7 @@ protected:
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
-    vectorImpl<DebugView_ptr> _debugViews;
+    vector<DebugView_ptr> _debugViews;
 
     std::array<std::unique_ptr<RenderPackageQueue>, to_base(RenderBinType::COUNT)> _renderQueues;
 
@@ -576,7 +576,7 @@ namespace Attorney {
 
        static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID) {
            WriteLock w_lock(device._graphicsResourceMutex);
-           vectorImpl<std::pair<GraphicsResource::Type, I64>>::iterator it;
+           vector<std::pair<GraphicsResource::Type, I64>>::iterator it;
            it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),
                 [type, GUID](const std::pair<GraphicsResource::Type, I64> crtEntry) -> bool {

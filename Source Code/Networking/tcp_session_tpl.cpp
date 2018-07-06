@@ -129,7 +129,7 @@ void tcp_session_tpl::start_write() {
     ar& p;  // Archive the packet
 
     size_t header = buf.size();
-    vectorImpl<boost::asio::const_buffer> buffers;
+    vector<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
     buffers.push_back(buf.data());
     // Start an asynchronous operation to send a message.
@@ -233,7 +233,7 @@ void udp_broadcaster::sendPacket(const WorldPacket& p) {
     ar& p;  // Archive the packet
 
     size_t header = buf.size();
-    vectorImpl<boost::asio::const_buffer> buffers;
+    vector<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
     buffers.push_back(buf.data());
     boost::system::error_code ignored_ec;

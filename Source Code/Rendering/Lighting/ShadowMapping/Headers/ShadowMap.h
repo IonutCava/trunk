@@ -95,7 +95,7 @@ class NOINITVTABLE ShadowMap {
    protected:
     GFXDevice& _context;
 
-    typedef vectorImpl<bool> LayerUsageMask;
+    typedef vector<bool> LayerUsageMask;
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> _depthMapUsage;
     
     ShadowType _shadowMapType;
@@ -105,7 +105,7 @@ class NOINITVTABLE ShadowMap {
     const ShadowCameraPool& _shadowCameras;
     bool _init;
 
-    static vectorImpl<RenderTargetHandle> s_shadowMaps;
+    static vector<RenderTargetHandle> s_shadowMaps;
 };
 
 class ShadowMapInfo {

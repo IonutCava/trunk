@@ -117,8 +117,8 @@ DEFINE_SINGLETON(PostFX)
     Texture_ptr _underwaterTexture;
     GFXDevice* _gfx;
     vec2<U16> _resolutionCache;
-    vectorImpl<U32> _shaderFunctionSelection;
-    vectorImpl<I32> _shaderFunctionList;
+    vector<U32> _shaderFunctionSelection;
+    vector<I32> _shaderFunctionList;
 
     RTDrawDescriptor _postFXTarget;
 

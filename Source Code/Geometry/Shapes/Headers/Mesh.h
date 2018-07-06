@@ -93,7 +93,7 @@ class Mesh : public Object3D {
     bool _visibleToNetwork;
     /// Animation player to animate the mesh if necessary
     std::shared_ptr<SceneAnimator> _animator;
-    vectorImpl<SubMesh_ptr> _subMeshList;
+    vector<SubMesh_ptr> _subMeshList;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Mesh);

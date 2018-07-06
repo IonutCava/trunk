@@ -55,7 +55,7 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     virtual void process(const U64 deltaTimeUS);
 
     void addRigidActor(PhysXActor* const actor, bool threaded = true);
-    inline const vectorImpl<physx::PxMaterial*> getMaterials() {
+    inline const vector<physx::PxMaterial*> getMaterials() {
         return _materials;
     }
     inline physx::PxScene* getPhysXScene() { return _gScene; }
@@ -66,8 +66,8 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     void addToScene(PhysXActor& actor);
 
    private:
-    typedef vectorImpl<PhysXActor*> RigidMap;
-    typedef vectorImpl<physx::PxMaterial*> MaterialMap;
+    typedef vector<PhysXActor*> RigidMap;
+    typedef vector<physx::PxMaterial*> MaterialMap;
     physx::PxScene* _gScene;
     physx::PxDefaultCpuDispatcher* _cpuDispatcher;
     MaterialMap _materials;

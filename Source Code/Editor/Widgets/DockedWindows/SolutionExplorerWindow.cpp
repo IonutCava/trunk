@@ -88,7 +88,7 @@ namespace Divide {
             ImGui::TreePop();
         }
 
-        const vectorImpl<stringImpl>& scenes = sceneManager.sceneNameList();
+        const vector<stringImpl>& scenes = sceneManager.sceneNameList();
         for (const stringImpl& scene : scenes) {
             if (scene != activeScene.name()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {
@@ -110,7 +110,7 @@ namespace Divide {
         const F32 ms_per_frame_avg = ms_per_frame_accum / 120;
         _framerateBuffer.push_back(ms_per_frame_avg);
 
-        vectorImpl<F32> data(_framerateBuffer.begin(), _framerateBuffer.end());
+        vector<F32> data(_framerateBuffer.begin(), _framerateBuffer.end());
         ImGui::PlotHistogram("ms/frame", data.data(), to_I32(data.size()), 0, NULL, 0.0f, 1.0f, ImVec2(0, 80));
 
         ImGui::Text("%.3f ms/frame (%.1f FPS)", ms_per_frame_avg, 1000.0f / ms_per_frame_avg);

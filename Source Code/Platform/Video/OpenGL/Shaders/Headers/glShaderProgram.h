@@ -141,11 +141,11 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void reuploadUniforms();
 
     I32 cachedValueUpdate(const GFX::PushConstant& constant);
-    void Uniform(I32 binding, GFX::PushConstantType type, const vectorImpl<char>& values, bool flag) const;
+    void Uniform(I32 binding, GFX::PushConstantType type, const vector<char>& values, bool flag) const;
 
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
-    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const;
+    void SetSubroutines(ShaderType type, const vector<U32>& indices) const;
     /// This works exactly like SetSubroutines, but for a single index.
     void SetSubroutine(ShaderType type, U32 index) const;
     /// Bind this shader program
@@ -155,7 +155,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool isBound() const;
 
     template<typename T_out, size_t T_out_count, typename T_in>
-    const T_out* castData(const vectorImpl<char>& values) const;
+    const T_out* castData(const vector<char>& values) const;
 
    private:
 
@@ -190,7 +190,7 @@ namespace Attorney {
         static bool unbind() {
             return glShaderProgram::unbind();
         }
-        static void SetSubroutines(glShaderProgram& program, ShaderType type, const vectorImpl<U32>& indices) {
+        static void SetSubroutines(glShaderProgram& program, ShaderType type, const vector<U32>& indices) {
             program.SetSubroutines(type, indices);
         }
         static void SetSubroutine(glShaderProgram& program, ShaderType type, U32 index) {

@@ -139,11 +139,11 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     void fromSphere(const vec3<F32>& center,
                     F32 radius,
                     const UColour& colour = DefaultColours::WHITE);
-    void fromLines(const vectorImpl<Line>& lines);
-    void fromLines(const vectorImpl<Line>& lines,
+    void fromLines(const vector<Line>& lines);
+    void fromLines(const vector<Line>& lines,
                    const Rect<I32>& viewport);
    protected:
-    void fromLines(const vectorImpl<Line>& lines,
+    void fromLines(const vector<Line>& lines,
                    const Rect<I32>& viewport,  //<only for ortho mode
                    const bool inViewport);
    protected:

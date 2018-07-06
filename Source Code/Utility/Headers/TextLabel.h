@@ -125,7 +125,7 @@ struct TextElement {
         Util::Split(text, '\n', _text);
     }
 
-    inline const vectorImplFast<stringImpl>& text() const {
+    inline const vectorFast<stringImpl>& text() const {
         return _text;
     }
 
@@ -133,11 +133,11 @@ struct TextElement {
     RelativePosition2D _position;
 
   private:
-    vectorImplFast<stringImpl> _text;
+    vectorFast<stringImpl> _text;
 };
 
 struct TextElementBatch {
-    typedef vectorImplFast<TextElement> BatchType;
+    typedef vectorFast<TextElement> BatchType;
 
     TextElementBatch()
     {

@@ -263,7 +263,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
 
     if (loadState == -1) {
         sNode->computeTriangleList();
-        const vectorImpl<vec3<U32> >& triangles = sNode->getTriangles();
+        const vector<vec3<U32> >& triangles = sNode->getTriangles();
 
         if (sNode->getTriangles().empty()) {
             return;

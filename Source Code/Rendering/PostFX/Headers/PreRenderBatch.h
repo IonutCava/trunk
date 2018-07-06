@@ -61,7 +61,7 @@ class PreRenderBatch {
     }
 
   private:
-    typedef vectorImpl<PreRenderOperator*> OperatorBatch;
+    typedef vector<PreRenderOperator*> OperatorBatch;
     OperatorBatch _operators[to_base(FilterSpace::COUNT)];
 
     GFXDevice& _context;

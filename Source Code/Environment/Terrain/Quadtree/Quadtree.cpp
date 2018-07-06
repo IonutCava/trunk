@@ -84,7 +84,7 @@ void Quadtree::Build(GFXDevice& context,
     // Generate index buffer
     const U32 terrainWidth = HMsize.x;
     const U32 terrainHeight = HMsize.y;
-    vectorImpl<vec3<U32>>& triangles = terrain->getTriangles();
+    vector<vec3<U32>>& triangles = terrain->getTriangles();
     triangles.reserve(terrainHeight * terrainWidth * 2);
 
     I32 vertexIndex = -1;

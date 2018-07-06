@@ -112,7 +112,7 @@ class Task : public GUIDWrapper, protected NonCopyable {
    protected:
     void run();
     void runTaskWithDebugInfo();
-    vectorAlg::vecSize childTaskCount() const;
+    vec_size childTaskCount() const;
     void removeChildTask(const Task& child);
     PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
 
@@ -135,7 +135,7 @@ class Task : public GUIDWrapper, protected NonCopyable {
     mutable std::mutex _childTaskMutex;
     std::condition_variable _childTaskCV;
 
-    vectorImpl<Task*> _childTasks;
+    vector<Task*> _childTasks;
     std::atomic<std::thread::id> _taskThread;
 };
 

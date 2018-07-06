@@ -110,7 +110,7 @@ DEFINE_SINGLETON(DivideRecast)
     *path is
     * defined or an invalid pathSlot index is given.
     **/
-    vectorImpl<vec3<F32> > getPath(I32 pathSlot);
+    vector<vec3<F32> > getPath(I32 pathSlot);
     /**
     * The ID number identifying the target for the path at specified slot. Targets
     *have

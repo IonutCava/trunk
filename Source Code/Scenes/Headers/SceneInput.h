@@ -80,8 +80,8 @@ class SceneInput : public Input::InputAggregatorInterface {
     typedef hashMap<Input::JoystickElement, PressReleaseActions, JoystickHasher> JoystickMapEntry;
     typedef hashMap<Input::Joystick, JoystickMapEntry> JoystickMap;
 
-    typedef vectorImpl<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
-    typedef vectorImpl<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;
+    typedef vector<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
+    typedef vector<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;
 
     explicit SceneInput(Scene &parentScene, PlatformContext& context);
 
@@ -159,7 +159,7 @@ class SceneInput : public Input::InputAggregatorInterface {
     // If one current player only uses one device, leave pair.second to -1
     hashMap<U8 /*player index*/, std::pair<I32, I32>> _playerControlDevices;
 
-    vectorImpl<I32> _usedInputDevices;
+    vector<I32> _usedInputDevices;
 
     PlatformContext& _context;
     Scene &_parentScene;

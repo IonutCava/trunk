@@ -51,9 +51,9 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
     if (!updated) {
         WorldPacket r(OPCodesEx::SMSG_GEOMETRY_APPEND);
 
-        vectorImpl<FileData> PatchData = Patch::instance().updateClient();
+        vector<FileData> PatchData = Patch::instance().updateClient();
         r << PatchData.size();
-        for (vectorImpl<FileData>::iterator _iter = std::begin(PatchData);
+        for (vector<FileData>::iterator _iter = std::begin(PatchData);
              _iter != std::end(PatchData); _iter++) {
             r << (*_iter).ItemName;
             r << (*_iter).ModelName;

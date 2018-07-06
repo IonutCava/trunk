@@ -45,7 +45,7 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
     I64 targetGUID = listener->getGUID();
 
     UpgradableReadLock ur_lock(_listenerLock);
-    vectorImpl<FrameListener*>::const_iterator it;
+    vector<FrameListener*>::const_iterator it;
     it = std::find_if(std::cbegin(_listeners), std::cend(_listeners),
                       [targetGUID](FrameListener const* fl) -> bool
                       {

@@ -274,7 +274,7 @@ class DivideTileCache {
       *the world bounds
       * of the tilecache.
       **/
-    // bool TileCacheBuild(vectorImpl<Ogre::Entity*> srcMeshes);
+    // bool TileCacheBuild(vector<Ogre::Entity*> srcMeshes);
 
     /**
       * Build all navmesh tiles from specified input geom.
@@ -284,7 +284,7 @@ class DivideTileCache {
       * of the tilecache. Therefore you must specify the inputGeom for the
       *entire world.
       *
-      * @see OgreDetourTileCache::TileCacheBuild(vectorImpl<Ogre::Entity*>)
+      * @see OgreDetourTileCache::TileCacheBuild(vector<Ogre::Entity*>)
       **/
     bool TileCacheBuild(SceneGraphNode* inputGeom);
 
@@ -343,7 +343,7 @@ class DivideTileCache {
       * Build or rebuild tile from list of entities.
       * @see{buildTiles(InputGeom*, const Ogre::AxisAlignedBox*)}
       **/
-    // void buildTiles(vectorImpl<Ogre::Entity*> srcEntities, const BoundingBox
+    // void buildTiles(vector<Ogre::Entity*> srcEntities, const BoundingBox
     // *areaToUpdate = nullptr);
 
     // TODO maybe also add a unloadAllTilesExcept(boundingBox) method
@@ -462,7 +462,7 @@ class DivideTileCache {
       *specified bounding
       * box area.
       **/
-    vectorImpl<dtCompressedTileRef> getTilesContainingBox(vec3<F32> boxMin,
+    vector<dtCompressedTileRef> getTilesContainingBox(vec3<F32> boxMin,
                                                           vec3<F32> boxMax);
 
     /**
@@ -470,7 +470,7 @@ class DivideTileCache {
       *area of a circle with
       * specified radius around the specified position.
       **/
-    vectorImpl<dtCompressedTileRef> getTilesAroundPoint(vec3<F32> point,
+    vector<dtCompressedTileRef> getTilesAroundPoint(vec3<F32> point,
                                                         F32 radius);
 
     /**

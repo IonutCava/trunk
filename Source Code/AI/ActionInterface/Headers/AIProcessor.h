@@ -126,7 +126,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         if (_activeGoals.empty()) {
             return false;
         }
-        vectorImpl<GOAPGoal*>::iterator it;
+        vector<GOAPGoal*>::iterator it;
         it = vectorAlg::find_if(
             std::begin(_activeGoals), std::end(_activeGoals),
             [goal](GOAPGoal const* actGoal) {
@@ -237,7 +237,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     GOAPWorldState _worldState;
 
     GOAPGoalList _goals;
-    vectorImpl<GOAPGoal*> _activeGoals;
+    vector<GOAPGoal*> _activeGoals;
     std::atomic_bool _init;
 
     stringImpl _planLog;

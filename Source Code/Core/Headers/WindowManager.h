@@ -112,7 +112,7 @@ protected:
     I64 _mainWindowGUID;
     I64 _focusedWindowGUID;
     PlatformContext* _context;
-    vectorImpl<DisplayWindow*> _windows;
+    vector<DisplayWindow*> _windows;
 };
 }; //namespace Divide
 #endif //_CORE_WINDOW_MANAGER_H_

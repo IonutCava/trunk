@@ -42,8 +42,8 @@ struct FileData;
 struct PatchData {
     stringImpl sceneName;
     U32 size;
-    vectorImpl<stringImpl> name, modelName;
-    vectorImpl<F32> version;
+    vector<stringImpl> name, modelName;
+    vector<F32> version;
 };
 
 DEFINE_SINGLETON(Patch)
@@ -51,11 +51,11 @@ DEFINE_SINGLETON(Patch)
 public:
 bool compareData(const PatchData& data);
 void addGeometry(const FileData& data);
-const vectorImpl<FileData>& updateClient();
+const vector<FileData>& updateClient();
 void reset() { ModelData.clear(); };
 
 private:
-vectorImpl<FileData> ModelData;
+vector<FileData> ModelData;
 
 END_SINGLETON
 

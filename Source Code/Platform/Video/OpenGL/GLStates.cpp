@@ -73,8 +73,8 @@ GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
 BlendingProperties GL_API::s_blendPropertiesGlobal;
 GLboolean GL_API::s_blendEnabledGlobal;
-vectorImpl<BlendingProperties> GL_API::s_blendProperties;
-vectorImpl<GLboolean> GL_API::s_blendEnabled;
+vector<BlendingProperties> GL_API::s_blendProperties;
+vector<GLboolean> GL_API::s_blendEnabled;
 
 namespace {
     GLint getBufferTargetIndex(GLenum target) {
@@ -129,7 +129,7 @@ void GL_API::clearStates() {
     setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     setActiveTransformFeedback(0);
 
-    for (vectorAlg::vecSize i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
+    for (vec_size i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
         setBlending((GLuint)i, false, BlendingProperties(), true);
     }
     GL_API::setBlendColour(UColour(0u), true);

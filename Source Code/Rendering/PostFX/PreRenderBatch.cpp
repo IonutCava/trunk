@@ -57,7 +57,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     outputDescriptor.setSampler(screenSampler);
     {
         //Colour0 holds the LDR screen texture
-        vectorImpl<RTAttachmentDescriptor> att = {
+        vector<RTAttachmentDescriptor> att = {
             { outputDescriptor, RTAttachmentType::Colour },
         };
 
@@ -83,7 +83,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         // make the texture square sized and power of two
         U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));
 
-        vectorImpl<RTAttachmentDescriptor> att = {
+        vector<RTAttachmentDescriptor> att = {
             { lumaDescriptor, RTAttachmentType::Colour },
         };
 
@@ -98,7 +98,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     lumaSampler.setFilters(TextureFilter::LINEAR);
     lumaDescriptor.setSampler(lumaSampler);
     {
-        vectorImpl<RTAttachmentDescriptor> att = {
+        vector<RTAttachmentDescriptor> att = {
             {
                 lumaDescriptor,
                 RTAttachmentType::Colour,

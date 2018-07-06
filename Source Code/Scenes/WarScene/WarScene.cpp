@@ -308,7 +308,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     vec3<F32> tempDestination;
     UColour redLine(255,0,0,128);
     UColour blueLine(0,0,255,128);
-    vectorImpl<Line> paths;
+    vector<Line> paths;
     paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
     for (U8 i = 0; i < 2; ++i) {
         for (SceneGraphNode* node : _armyNPCs[i]) {

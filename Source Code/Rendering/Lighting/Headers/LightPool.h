@@ -171,9 +171,9 @@ class LightPool : public SceneComponent {
 
     std::array<ShaderBuffer*, to_base(ShaderBufferType::COUNT)>  _lightShaderBuffer;
 
-    typedef vectorImpl<LightProperties> LightPropertiesVec;
-    typedef vectorImpl<Light::ShadowProperties> LightShadowProperties;
-    typedef vectorImpl<Light*> LightVec;
+    typedef vector<LightProperties> LightPropertiesVec;
+    typedef vector<Light::ShadowProperties> LightShadowProperties;
+    typedef vector<Light*> LightVec;
 
     LightVec _sortedLights;
     LightVec _sortedShadowCastingLights;

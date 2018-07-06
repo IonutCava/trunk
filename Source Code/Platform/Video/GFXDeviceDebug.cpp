@@ -113,7 +113,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
 
-        vectorImplFast <std::pair<stringImpl, Rect<I32>>> labelStack;
+        vectorFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 
         Rect<I32> crtViewport = getCurrentViewport();
         GFX::SetViewportCommand setViewport;
@@ -186,10 +186,10 @@ GFXDevice::DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& 
 
 void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
     if (_debugFrustum != nullptr) {
-        vectorImpl<vec3<F32>> corners;
+        vector<vec3<F32>> corners;
         _debugFrustum->getCornersViewSpace(corners);
 
-        vectorImpl<Line> lines;
+        vector<Line> lines;
         for (U8 i = 0; i < 4; ++i) {
             // Draw Near Plane
             lines.emplace_back(corners[i], corners[(i + 1) % 4], DefaultColours::RED_U8);

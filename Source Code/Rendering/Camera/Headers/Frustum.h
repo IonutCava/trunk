@@ -95,10 +95,10 @@ class Frustum {
 
     // Get the frustum corners in WorldSpace. cornerWS must be a vector with at
     // least 8 allocated slots
-    void getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS);
+    void getCornersWorldSpace(vector<vec3<F32> >& cornersWS);
     // Get the frustum corners in ViewSpace. cornerVS must be a vector with at
     // least 8 allocated slots
-    void getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS);
+    void getCornersViewSpace(vector<vec3<F32> >& cornersVS);
 
     void computePlanes(const mat4<F32>& viewProjMatrix);
 

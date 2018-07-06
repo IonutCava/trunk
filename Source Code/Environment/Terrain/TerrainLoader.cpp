@@ -303,7 +303,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     const vec3<F32>& bMin = terrainBB.getMin();
     const vec3<F32>& bMax = terrainBB.getMax();
 
-    vectorImpl<VertexBuffer::Vertex> testVerts;
+    vector<VertexBuffer::Vertex> testVerts;
 
     ByteBuffer terrainCache;
     if (terrainCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache")) {
@@ -313,14 +313,14 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     if (terrain->_physicsVerts.empty()) {
         F32 altitudeRange = maxAltitude - minAltitude;
 
-        vectorImpl<U16> heightValues;
+        vector<U16> heightValues;
         if (terrainDescriptor->is16Bit()) {
             assert(terrainDimensions.x != 0 && terrainDimensions.y != 0);
             // only raw files for 16 bit support
             assert(hasExtension(terrainRawFile, "raw"));
             // Read File Data
 
-            vectorImpl<Byte> data;
+            vector<Byte> data;
             readFile(terrainMapLocation, terrainRawFile, data, FileType::BINARY);
             if (data.empty()) {
                 return false;

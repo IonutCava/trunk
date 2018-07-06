@@ -63,7 +63,7 @@ public:
         DebugGroup() noexcept;
         stringImpl _name;
         I64 _parentGroup;
-        vectorImpl<I64> _childGroupsGUID;
+        vector<I64> _childGroupsGUID;
     };
 
 public:

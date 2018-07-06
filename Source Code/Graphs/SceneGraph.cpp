@@ -89,7 +89,7 @@ bool SceneGraph::frameEnded(const FrameEvent& evt) {
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     I64 guid = oldNode.getGUID();
 
-    vectorImpl<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
+    vector<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
 
     nodesByType.erase(std::remove_if(std::begin(nodesByType), std::end(nodesByType), 
                                      [guid](SceneGraphNode* node)-> bool
@@ -196,7 +196,7 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     _root->onNetworkSend(frameCount);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SGNRayResult>& selectionHits) const {
+void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
 
     /*if (_loadComplete) {
@@ -234,7 +234,7 @@ void SceneGraph::destroySceneGraphNode(SceneGraphNode*& node, bool inPlace) {
     }
 }
 
-const vectorImpl<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
+const vector<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
     return _nodesByType[to_base(type)];
 }
 

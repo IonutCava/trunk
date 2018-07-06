@@ -33,36 +33,17 @@
 #ifndef _VECTOR_H_
 #define _VECTOR_H_
 
-/// boost vectors have a completely different interface,
-/// so we can't actually use them
-#if defined(VECTOR_IMP) && VECTOR_IMP == BOOST_IMP
-#undef VECTOR_IMP
-#define VECTOR_IMP STL_IMP
-#endif
-
-/// EASTL vectors can't erase entries using const_iterators and also have forwarding issues
-/// so we can't actually use them
-#if defined(VECTOR_IMP) && VECTOR_IMP == EASTL_IMP
-#undef VECTOR_IMP
-#define VECTOR_IMP STL_IMP
-#endif
-
-#if defined(VECTOR_IMP) && VECTOR_IMP == BOOST_IMP
-#include "BoostVector.h"
-#elif defined(VECTOR_IMP) && VECTOR_IMP == EASTL_IMP
-#include "EASTLVector.h"
-#else  // defined(VECTOR_IMP) && VECTOR_IMP == STL_IMP
+//#include "EASTLVector.h"
 #include "STLVector.h"
-#endif  // defined(VECTOR_IMP)
 
 template< typename T, typename Pred, typename A>
-typename vectorImpl<T, A>::iterator insert_sorted(vectorImpl<T, A>& vec, T const& item, Pred pred)
+typename vector<T, A>::iterator insert_sorted(vector<T, A>& vec, T const& item, Pred pred)
 {
     return vec.insert(std::upper_bound(std::begin(vec), std::end(vec), item, pred), item);
 }
 
 template<typename T, typename A>
-void insert_unique(vectorImpl<T, A>& target, const T& item)
+void insert_unique(vector<T, A>& target, const T& item)
 {
     if (std::find(std::cbegin(target), std::cend(target), item) != std::cend(target))
     {
@@ -71,7 +52,7 @@ void insert_unique(vectorImpl<T, A>& target, const T& item)
 }
 
 template<typename T, typename A>
-void insert_unique(vectorImpl<T, A>& target, const vectorImpl<T, A>& source)
+void insert_unique(vector<T, A>& target, const vector<T, A>& source)
 {
     std::for_each(std::cbegin(source), std::cend(source),
         [&target](T const& item) {
@@ -81,41 +62,41 @@ void insert_unique(vectorImpl<T, A>& target, const vectorImpl<T, A>& source)
 
 
 template<typename T, typename A>
-void pop_front(vectorImpl<T, A>& vec)
+void pop_front(vector<T, A>& vec)
 {
     assert(!vec.empty());
     vec.erase(std::begin(vec));
 }
 
 template<typename T, typename A>
-void unchecked_copy(vectorImpl<T, A>& dst, const vectorImpl<T, A>& src)
+void unchecked_copy(vector<T, A>& dst, const vector<T, A>& src)
 {
     dst.resize(src.size());
     memcpy(dst.data(), src.data(), src.size() * sizeof(T));
 }
 
 template<typename T, typename U, typename A>
-vectorImpl<T, A> convert(const vectorImpl<U, A>& data) {
-    return vectorImpl<T, A>(std::cbegin(data), std::cend(data));
+vector<T, A> convert(const vector<U, A>& data) {
+    return vector<T, A>(std::cbegin(data), std::cend(data));
 }
 
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
 template<typename T, typename A>
-inline typename vectorImpl<T, A> erase_indices(const typename vectorImpl<T, A>& data, vectorImpl<vectorAlg::vecSize>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+inline typename vector<T, A> erase_indices(const typename vector<T, A>& data, vector<vec_size>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     if (indicesToDelete.empty()) {
         return data;
     }
 
-    vectorImpl<T, A> ret;
+    vector<T, A> ret;
     ret.reserve(data.size() - indicesToDelete.size());
 
     std::sort(std::begin(indicesToDelete), std::end(indicesToDelete));
 
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
-    vectorImpl<T, A>::const_iterator itBlockBegin = std::cbegin(data);
-    for (vectorImpl<vectorAlg::vecSize, A>::const_iterator it = std::cbegin(indicesToDelete); it != std::cend(indicesToDelete); ++it)  {
-        vectorImpl<T, A>::const_iterator itBlockEnd = std::cbegin(data) + *it;
+    vector<T, A>::const_iterator itBlockBegin = std::cbegin(data);
+    for (vector<vec_size, A>::const_iterator it = std::cbegin(indicesToDelete); it != std::cend(indicesToDelete); ++it)  {
+        vector<T, A>::const_iterator itBlockEnd = std::cbegin(data) + *it;
         if (itBlockBegin != itBlockEnd) {
             std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
         }
@@ -131,21 +112,21 @@ inline typename vectorImpl<T, A> erase_indices(const typename vectorImpl<T, A>& 
 }
 
 template<typename T>
-inline vectorImpl<T> erase_indices(const vectorImpl<T>& data, vectorImpl<vectorAlg::vecSize>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+inline vector<T> erase_indices(const vector<T>& data, vector<vec_size>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     if (indicesToDelete.empty()) {
         return data;
     }
 
-    vectorImpl<T> ret;
+    vector<T> ret;
     ret.reserve(data.size() - indicesToDelete.size());
 
     std::sort(std::begin(indicesToDelete), std::end(indicesToDelete));
 
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
-    vectorImpl<T>::const_iterator itBlockBegin = std::cbegin(data);
-    for (vectorImpl<size_t>::const_iterator it = std::cbegin(indicesToDelete); it != std::cend(indicesToDelete); ++it) {
-        vectorImpl<T>::const_iterator itBlockEnd = std::cbegin(data) + *it;
+    vector<T>::const_iterator itBlockBegin = std::cbegin(data);
+    for (vector<size_t>::const_iterator it = std::cbegin(indicesToDelete); it != std::cend(indicesToDelete); ++it) {
+        vector<T>::const_iterator itBlockEnd = std::cbegin(data) + *it;
         if (itBlockBegin != itBlockEnd) {
             std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
         }

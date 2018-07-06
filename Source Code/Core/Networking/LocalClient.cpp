@@ -59,7 +59,7 @@ void LocalClient::HandleGeometryAppendOpCode(WorldPacket& p) {
     Console::printfn(Locale::get(_ID("ASIO_PAK_REC_GEOM_APPEND")));
     U8 size;
     p >> size;
-    vectorImpl<FileData> patch;
+    vector<FileData> patch;
     for (U8 i = 0; i < size; i++) {
         FileData d;
         I8 type = -1;

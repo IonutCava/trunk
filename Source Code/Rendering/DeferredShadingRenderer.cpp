@@ -64,7 +64,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthDescriptor.setSampler(depthSampler);
 
-    vectorImpl<RTAttachmentDescriptor> att = {
+    vector<RTAttachmentDescriptor> att = {
         { depthDescriptor, RTAttachmentType::Depth },
     };
 

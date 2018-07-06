@@ -86,7 +86,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     static stringImpl preprocessIncludes(const stringImpl& name,
                                          const stringImpl& source,
                                          GLint level,
-                                         vectorImpl<stringImpl>& foundAtoms);
+                                         vector<stringImpl>& foundAtoms);
 
    private:
     friend class glShaderProgram;
@@ -96,7 +96,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
         _skipIncludes = state;
     }
 
-    inline const vectorImpl<stringImpl>& usedAtoms() const{
+    inline const vector<stringImpl>& usedAtoms() const{
         return _usedAtoms;
     }
 
@@ -107,7 +107,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     /// The API dependent object handle. Not thread-safe!
     U32 _shader;
     std::atomic_bool _compiled;
-    vectorImpl<stringImpl> _usedAtoms;
+    vector<stringImpl> _usedAtoms;
 
     //extra entry for "common" location
     static stringImpl shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];

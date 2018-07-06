@@ -102,7 +102,7 @@ namespace Divide {
             U32 _boneCount;
             U32 _partitionOffset;
             vec3<F32> _minPos, _maxPos;
-            vectorImplBest<vec3<U32>> _triangles;
+            vectorBest<vec3<U32>> _triangles;
             MaterialData _material;
         };
 
@@ -125,11 +125,11 @@ namespace Divide {
             // Geometry
             VertexBuffer* _vertexBuffer;
             // Submeshes
-            vectorImpl<SubMeshData> _subMeshData;
+            vector<SubMeshData> _subMeshData;
             // Animations
             Bone* _skeleton;
-            vectorImpl<Bone*> _bones;
-            vectorImpl<std::shared_ptr<AnimEvaluator>> _animations;
+            vector<Bone*> _bones;
+            vector<std::shared_ptr<AnimEvaluator>> _animations;
             bool _hasAnimations;
 
             // Name and path

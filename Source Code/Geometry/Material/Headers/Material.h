@@ -335,7 +335,7 @@ class Material : public CachedResource {
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
 
-    vectorImpl<ExternalTexture> _externalTextures;
+    vector<ExternalTexture> _externalTextures;
 
     /// use the below map to define texture operation
     TextureOperation _operation;

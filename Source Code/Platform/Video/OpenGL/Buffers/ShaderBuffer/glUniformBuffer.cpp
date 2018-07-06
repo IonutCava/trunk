@@ -221,37 +221,37 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
     glGetActiveUniformBlockiv(
         prog, block_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &active_uniforms);
 
-    vectorImpl<GLuint> uniform_indices(active_uniforms, 0);
+    vector<GLuint> uniform_indices(active_uniforms, 0);
     glGetActiveUniformBlockiv(prog, block_index,
                               GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
                               reinterpret_cast<GLint*>(uniform_indices.data()));
 
-    vectorImpl<GLint> name_lengths(uniform_indices.size(), 0);
+    vector<GLint> name_lengths(uniform_indices.size(), 0);
     glGetActiveUniformsiv(prog, (GLsizei)uniform_indices.size(),
                           &uniform_indices[0], GL_UNIFORM_NAME_LENGTH,
                           &name_lengths[0]);
 
-    vectorImpl<GLint> offsets(uniform_indices.size(), 0);
+    vector<GLint> offsets(uniform_indices.size(), 0);
     glGetActiveUniformsiv(prog, (GLsizei)uniform_indices.size(),
                           &uniform_indices[0], GL_UNIFORM_OFFSET, &offsets[0]);
 
-    vectorImpl<GLint> types(uniform_indices.size(), 0);
+    vector<GLint> types(uniform_indices.size(), 0);
     glGetActiveUniformsiv(prog, (GLsizei)uniform_indices.size(),
                           &uniform_indices[0], GL_UNIFORM_TYPE, &types[0]);
 
-    vectorImpl<GLint> sizes(uniform_indices.size(), 0);
+    vector<GLint> sizes(uniform_indices.size(), 0);
     glGetActiveUniformsiv(prog, (GLsizei)uniform_indices.size(),
                           &uniform_indices[0], GL_UNIFORM_SIZE, &sizes[0]);
 
-    vectorImpl<GLint> strides(uniform_indices.size(), 0);
+    vector<GLint> strides(uniform_indices.size(), 0);
     glGetActiveUniformsiv(prog, (GLsizei)uniform_indices.size(),
                           &uniform_indices[0], GL_UNIFORM_ARRAY_STRIDE,
                           &strides[0]);
 
     // Build a string detailing each uniform in the block:
-    vectorImpl<stringImpl> uniform_details;
+    vector<stringImpl> uniform_details;
     uniform_details.reserve(uniform_indices.size());
-    for (vectorAlg::vecSize i = 0; i < uniform_indices.size(); ++i) {
+    for (vec_size i = 0; i < uniform_indices.size(); ++i) {
         GLuint const uniform_index = uniform_indices[i];
 
         stringImpl name(name_lengths[i], 0);
@@ -279,7 +279,7 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
 
     // Output details:
     Console::printfn("%s ( %d )", block_name.c_str(), block_size);
-    for (vectorImpl<stringImpl>::iterator detail = std::begin(uniform_details);
+    for (vector<stringImpl>::iterator detail = std::begin(uniform_details);
          detail != std::end(uniform_details); ++detail) {
         Console::printfn("%s", (*detail).c_str());
     }

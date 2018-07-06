@@ -29,7 +29,7 @@ class SceneNodeRenderState {
    protected:
     bool _drawState;
     bool _noDefaultMaterial;
-    vectorImpl<U32> _exclusionMask;
+    vector<U32> _exclusionMask;
 };
 
 };  // namespace Divide

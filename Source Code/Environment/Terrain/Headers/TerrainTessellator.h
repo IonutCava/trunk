@@ -121,8 +121,8 @@ struct TessellatedNodeData {
 class TerrainTessellator {
     friend class Attorney::TerrainTessellatorLoader;
 public:
-    typedef vectorImpl<TessellatedTerrainNode> TreeVector;
-    typedef vectorImpl<TessellatedNodeData> RenderDataVector;
+    typedef vector<TessellatedTerrainNode> TreeVector;
+    typedef vector<TessellatedNodeData> RenderDataVector;
 
 public:
     // Reserves memory for the terrain quadtree and initializes the data structure.

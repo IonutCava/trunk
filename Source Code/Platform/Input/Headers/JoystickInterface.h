@@ -44,8 +44,8 @@ class JoystickInterface {
     // Input manager.
     OIS::InputManager* _pInputInterface;
     // vectors to hold joysticks and associated force feedback devices
-    vectorImpl<OIS::JoyStick*> _vecJoys;
-    vectorImpl<OIS::ForceFeedback*> _vecFFDev;
+    vector<OIS::JoyStick*> _vecJoys;
+    vector<OIS::ForceFeedback*> _vecFFDev;
     // Selected joystick
     I32 _nCurrJoyInd;
     // Force feedback detected ?
@@ -69,7 +69,7 @@ class JoystickInterface {
         _joystickData[to_U32(joystick)] = data;
     }
 
-    inline vectorAlg::vecSize getNumberOfJoysticks() const {
+    inline vec_size getNumberOfJoysticks() const {
         return _vecJoys.size();
     }
 
@@ -135,7 +135,7 @@ class JoystickInterface {
 
     void captureEvents() {
         // This fires off buffered events for each joystick we have
-        for (vectorAlg::vecSize nJoyInd = 0; nJoyInd < _vecJoys.size();
+        for (vec_size nJoyInd = 0; nJoyInd < _vecJoys.size();
              ++nJoyInd) {
             if (_vecJoys[nJoyInd]) {
                 _vecJoys[nJoyInd]->capture();

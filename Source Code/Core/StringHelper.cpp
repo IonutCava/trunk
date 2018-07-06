@@ -18,7 +18,7 @@ bool findCommandLineArgument(int argc, char** argv, const char* target_arg, cons
     return false;
 }
 
-void GetPermutations(const stringImpl& inputString, vectorImpl<stringImpl>& permutationContainer) {
+void GetPermutations(const stringImpl& inputString, vector<stringImpl>& permutationContainer) {
     permutationContainer.clear();
     stringImpl tempCpy(inputString);
     std::sort(std::begin(tempCpy), std::end(tempCpy));
@@ -50,7 +50,7 @@ stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
 }
 
 stringImpl StringFormat(const char *const format, ...) {
-    vectorImplFast<char> temp;
+    vectorFast<char> temp;
     std::size_t length = 63;
     std::va_list args;
     while (temp.size() <= length) {
@@ -65,8 +65,8 @@ stringImpl StringFormat(const char *const format, ...) {
     return stringImpl(temp.data(), length);
 }
 
-vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
-    vectorImpl<stringImpl> elems;
+vector<stringImpl> Split(const stringImpl& input, char delimiter) {
+    vector<stringImpl> elems;
     return Split(input, delimiter, elems);
 }
 

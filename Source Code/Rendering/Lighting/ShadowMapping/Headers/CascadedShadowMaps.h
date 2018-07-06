@@ -76,11 +76,11 @@ class CascadedShadowMaps : public ShadowMap {
     /// Shortcut for the owning directional light
     DirectionalLight* _dirLight;
     RenderTargetHandle _blurBuffer;
-    vectorImpl<vec3<F32> > _frustumCornersVS;
-    vectorImpl<vec3<F32> > _frustumCornersWS;
-    vectorImpl<vec3<F32> > _frustumCornersLS;
-    vectorImpl<vec3<F32> > _splitFrustumCornersVS;
-    vectorImpl<F32       > _splitDepths;
+    vector<vec3<F32> > _frustumCornersVS;
+    vector<vec3<F32> > _frustumCornersWS;
+    vector<vec3<F32> > _frustumCornersLS;
+    vector<vec3<F32> > _splitFrustumCornersVS;
+    vector<F32       > _splitDepths;
     std::array<mat4<F32>, Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowMatrices;
 };
 

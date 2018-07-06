@@ -90,9 +90,9 @@ class TaskPool {
     std::unique_ptr<ThreadPool> _mainTaskPool;
     boost::lockfree::queue<U32> _threadedCallbackBuffer;
 
-    vectorImpl<Task> _tasksPool;
-    vectorImpl<TaskState> _taskStates;
-    vectorImpl<DELEGATE_CBK<void>> _taskCallbacks;
+    vector<Task> _tasksPool;
+    vector<TaskState> _taskStates;
+    vector<DELEGATE_CBK<void>> _taskCallbacks;
 
     mutable SharedLock _taskStateLock;
 

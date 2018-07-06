@@ -40,7 +40,7 @@ class PushConstants {
     public:
     PushConstants();
     PushConstants(const GFX::PushConstant& constant);
-    PushConstants(const vectorImpl<GFX::PushConstant>& data);
+    PushConstants(const vector<GFX::PushConstant>& data);
     ~PushConstants();
 
     PushConstants(const PushConstants& other);
@@ -53,13 +53,13 @@ class PushConstants {
                     GFX::PushConstantType type,
                     const T& value,
                     bool flag = false) {
-        set(binding, type, vectorImpl<T>{value}, flag);
+        set(binding, type, vector<T>{value}, flag);
     }
 
     template<typename T>
     inline void set(const stringImplFast& binding,
                     GFX::PushConstantType type,
-                    const vectorImpl<T>& values,
+                    const vector<T>& values,
                     bool flag = false) {
 
         U64 bindingID = _ID_RT(binding.c_str());
@@ -94,14 +94,14 @@ class PushConstants {
 
     inline bool empty() const { return _data.empty(); }
 
-    inline vectorImpl<GFX::PushConstant>& data() { return _data; }
+    inline vector<GFX::PushConstant>& data() { return _data; }
 
-    inline const vectorImpl<GFX::PushConstant>& data() const { return _data; }
+    inline const vector<GFX::PushConstant>& data() const { return _data; }
 
     bool merge(const PushConstants& other);
 
   protected:
-    vectorImpl<GFX::PushConstant> _data;
+    vector<GFX::PushConstant> _data;
 };
 
 }; //namespace Divide

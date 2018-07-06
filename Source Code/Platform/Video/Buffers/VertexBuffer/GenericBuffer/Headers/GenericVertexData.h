@@ -98,7 +98,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
    protected:
     typedef hashMap<U32, AttributeDescriptor> attributeMap;
     bool _doubleBufferedQuery;
-    vectorImpl<std::pair<U32 /*buffer*/, U32/*bind point*/>> _feedbackBuffers;
+    vector<std::pair<U32 /*buffer*/, U32/*bind point*/>> _feedbackBuffers;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
 };

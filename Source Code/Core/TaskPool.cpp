@@ -129,7 +129,7 @@ void TaskPool::taskCompleted(U32 poolIndex, Task::TaskPriority priority) {
 }
 
 TaskHandle TaskPool::getTaskHandle(I64 taskGUID) {
-    vectorImpl<Task>::iterator
+    vector<Task>::iterator
         it = std::find_if(std::begin(_tasksPool),
                           std::end(_tasksPool),
                           [taskGUID](const Task& entry) {

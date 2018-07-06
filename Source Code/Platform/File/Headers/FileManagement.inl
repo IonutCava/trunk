@@ -66,7 +66,7 @@ bool readFile(const stringImpl& filePath, const stringImpl& fileName, T& content
 
 //Optimized variant for vectors
 template<>
-inline bool readFile(const stringImpl& filePath, const stringImpl& fileName, vectorImpl<Byte>& contentOut, FileType fileType) {
+inline bool readFile(const stringImpl& filePath, const stringImpl& fileName, vector<Byte>& contentOut, FileType fileType) {
     size_t fileSize = 0;
     if (!filePath.empty() && !fileName.empty() && pathExists(filePath.c_str())) {
         std::ifstream streamIn((filePath + fileName).c_str(),

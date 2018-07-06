@@ -24,7 +24,7 @@ SkinnedSubMesh::~SkinnedSubMesh()
 void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
     if (_parentAnimatorPtr == nullptr) {
         _parentAnimatorPtr = _parentMesh->getAnimator();
-        vectorAlg::vecSize animationCount = _parentAnimatorPtr->animations().size();
+        vec_size animationCount = _parentAnimatorPtr->animations().size();
         _boundingBoxesState.resize(animationCount, { BoundingBoxState::COUNT });
         _boundingBoxes.resize(animationCount);
     }
@@ -47,7 +47,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
         return;
     }
 
-    const vectorImpl<vectorImplBest<mat4<F32>>>& currentAnimation =
+    const vector<vectorBest<mat4<F32>>>& currentAnimation =
         animComp->getAnimationByIndex(animationIndex).transforms();
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
@@ -57,7 +57,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     WriteLock w_lock(_bbLock);
     BoundingBox& currentBB = _boundingBoxes.at(animationIndex);
     currentBB.reset();
-    for (const vectorImplBest<mat4<F32> >& transforms : currentAnimation) {
+    for (const vectorBest<mat4<F32> >& transforms : currentAnimation) {
         if (parentTask.stopRequested()) {
             return;
         }

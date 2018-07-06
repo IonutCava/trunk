@@ -10,7 +10,7 @@
 namespace Divide {
 
 SharedLock ResourceLoadLock::_hashLock;
-vectorImpl<size_t> ResourceLoadLock::_loadingHashes;
+vector<size_t> ResourceLoadLock::_loadingHashes;
 
 void DeleteResource::operator()(CachedResource* res)
 {

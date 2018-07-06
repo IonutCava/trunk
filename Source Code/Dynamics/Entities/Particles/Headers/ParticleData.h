@@ -50,29 +50,29 @@ class ParticleData {
         COUNT
     };
     /// helper array used for sorting
-    vectorImplBest<std::pair<U32, F32>> _indices;
-    vectorImplBest<vec4<F32>> _renderingPositions;
-    vectorImplBest<UColour>   _renderingColours;
+    vectorBest<std::pair<U32, F32>> _indices;
+    vectorBest<vec4<F32>> _renderingPositions;
+    vectorBest<UColour>   _renderingColours;
     /// x,y,z = position; w = size
-    vectorImplBest<vec4<F32>> _position;
+    vectorBest<vec4<F32>> _position;
     /// x,y,z = _velocity; w = angle;
-    vectorImplBest<vec4<F32>> _velocity;
+    vectorBest<vec4<F32>> _velocity;
     /// x,y,z = _acceleration; w = weight;
-    vectorImplBest<vec4<F32>> _acceleration;
+    vectorBest<vec4<F32>> _acceleration;
     /// x = time; y = interpolation; z = 1 / time;  w = distance to camera sq;
-    vectorImplBest<vec4<F32>> _misc;
+    vectorBest<vec4<F32>> _misc;
     /// r,g,b,a = colour and transparency
-    vectorImplBest<FColour> _colour;
+    vectorBest<FColour> _colour;
     /// r,g,b,a = colour and transparency
-    vectorImplBest<FColour> _startColour;
+    vectorBest<FColour> _startColour;
     /// r,g,b,a = colour and transparency
-    vectorImplBest<FColour> _endColour;
+    vectorBest<FColour> _endColour;
     /// Location of the texture file. Leave blank for colour only
     stringImpl _textureFileName;
 
 
-    void setParticleGeometry(const vectorImpl<vec3<F32>>& particleGeometryVertices,
-                             const vectorImpl<U32>& particleGeometryIndices,
+    void setParticleGeometry(const vector<vec3<F32>>& particleGeometryVertices,
+                             const vector<U32>& particleGeometryIndices,
                              PrimitiveType particleGeometryType);
 
     void setBillboarded(const bool state);
@@ -81,11 +81,11 @@ class ParticleData {
         return _particleGeometryType;
     }
 
-    inline const vectorImpl<vec3<F32>>& particleGeometryVertices() const {
+    inline const vector<vec3<F32>>& particleGeometryVertices() const {
         return _particleGeometryVertices;
     }
 
-    inline const vectorImpl<U32>& particleGeometryIndices() const {
+    inline const vector<U32>& particleGeometryIndices() const {
         return _particleGeometryIndices;
     }
 
@@ -113,8 +113,8 @@ class ParticleData {
     U32 _optionsMask;
 
     bool _isBillboarded;
-    vectorImpl<vec3<F32>> _particleGeometryVertices;
-    vectorImpl<U32> _particleGeometryIndices;
+    vector<vec3<F32>> _particleGeometryVertices;
+    vector<U32> _particleGeometryIndices;
     PrimitiveType _particleGeometryType;
 
     GFXDevice& _context;

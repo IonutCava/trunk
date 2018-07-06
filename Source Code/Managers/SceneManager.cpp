@@ -283,7 +283,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
     return true;
 }
 
-vectorImpl<stringImpl> SceneManager::sceneNameList(bool sorted) const {
+vector<stringImpl> SceneManager::sceneNameList(bool sorted) const {
     return _scenePool->sceneNameList(sorted);
 }
 
@@ -447,7 +447,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState.windDirZ(),
                             activeSceneState.windSpeed());
 
-    const vectorImpl<SceneGraphNode*>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
+    const vector<SceneGraphNode*>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
     U8 index = 0;
     for (SceneGraphNode* body : waterBodies) {
         const SceneGraphNode* water(body);

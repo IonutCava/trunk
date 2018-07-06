@@ -98,7 +98,7 @@ public:
     void bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams);
 
 private:
-    typedef vectorImpl<BufferBindingParams> VAOBufferData;
+    typedef vector<BufferBindingParams> VAOBufferData;
     hashMap<GLuint /*vao ID*/, VAOBufferData> _bindings;
     U32 _maxBindings;
 };

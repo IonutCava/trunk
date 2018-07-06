@@ -98,7 +98,7 @@ class Scene : public Resource, public PlatformContextComponent {
     friend class Attorney::SceneInput;
 
    protected:
-    typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
+    typedef std::stack<FileData, vector<FileData> > FileDataStack;
     static bool onStartup();
     static bool onShutdown();
 
@@ -137,14 +137,14 @@ class Scene : public Resource, public PlatformContextComponent {
     inline void addModel(FileData& model) { _modelDataArray.push(model); }
     inline void addTerrain(const std::shared_ptr<TerrainDescriptor>& ter) { _terrainInfoArray.push_back(ter); }
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
-    void addPatch(vectorImpl<FileData>& data);
+    void addPatch(vector<FileData>& data);
 
     // DIRECTIONAL lights have shadow mapping enabled automatically
     SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode);
     SceneGraphNode* addSky(const stringImpl& nodeName = "");
 
     /// Object picking
-    inline const vectorImpl<I64>& getCurrentSelection(PlayerIndex index = 0) {
+    inline const vector<I64>& getCurrentSelection(PlayerIndex index = 0) {
         return _currentSelection[index];
     }
 
@@ -158,7 +158,7 @@ class Scene : public Resource, public PlatformContextComponent {
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
 
-    inline vectorImpl<Mesh_ptr>& getVegetationDataArray() { return _vegetationDataArray; }
+    inline vector<Mesh_ptr>& getVegetationDataArray() { return _vegetationDataArray; }
 
     inline AI::AIManager& aiManager() { return *_aiManager; }
     inline const AI::AIManager& aiManager() const { return *_aiManager; }
@@ -275,19 +275,19 @@ class Scene : public Resource, public PlatformContextComponent {
 
        SceneGraphNode* _sun;
 
-       vectorImpl<Player_ptr> _scenePlayers;
+       vector<Player_ptr> _scenePlayers;
        U64 _sceneTimerUS;
-       vectorImpl<D64> _taskTimers;
-       vectorImpl<D64> _guiTimersMS;
+       vector<D64> _taskTimers;
+       vector<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
        FileDataStack _modelDataArray;
-       vectorImpl<Mesh_ptr> _vegetationDataArray;
+       vector<Mesh_ptr> _vegetationDataArray;
 
-       vectorImpl<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
+       vector<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
-       hashMap<PlayerIndex, vectorImpl<I64>> _currentSelection;
+       hashMap<PlayerIndex, vector<I64>> _currentSelection;
        hashMap<PlayerIndex, I64> _currentHoverTarget;
 
        SceneGraphNode* _currentSky;
@@ -301,11 +301,11 @@ class Scene : public Resource, public PlatformContextComponent {
 
    private:
        SharedLock _tasksMutex;
-       vectorImpl<TaskHandle> _tasks;
+       vector<TaskHandle> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
-       vectorImpl<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
-       vectorImpl<SGNRayResult> _sceneSelectionCandidates;
+       vector<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
+       vector<SGNRayResult> _sceneSelectionCandidates;
        std::unordered_set<PlayerIndex> _hoverUpdateQueue;
 
    protected:
@@ -315,8 +315,8 @@ class Scene : public Resource, public PlatformContextComponent {
        SceneEnvironmentProbePool* _envProbePool;
 
        IMPrimitive* _linesPrimitive;
-       vectorImpl<IMPrimitive*> _octreePrimitives;
-       vectorImpl<BoundingBox> _octreeBoundingBoxes;
+       vector<IMPrimitive*> _octreePrimitives;
+       vector<BoundingBox> _octreeBoundingBoxes;
 
        mutable std::mutex _perFrameArenaMutex;
        mutable MyArena<Config::REQUIRED_RAM_SIZE / 2> _perFrameArena;

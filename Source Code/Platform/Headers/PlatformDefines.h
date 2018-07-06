@@ -677,8 +677,8 @@ constexpr void assert_type(const U& ) {
 
 
 template<typename U, typename V, size_t N>
-vectorImpl<U> copy_array_to_vector(const std::array<V, N>& input) {
-    return vectorImpl<U>(std::begin(input), std::end(input));
+vector<U> copy_array_to_vector(const std::array<V, N>& input) {
+    return vector<U>(std::begin(input), std::end(input));
 }
 
 };  // namespace Divide
@@ -818,7 +818,7 @@ inline bool DELETE_ARRAY_CHECK(T*& ptr) {
     friend void MemoryManager::DELETE_ARRAY_CHECK(T*& ptr);
 /// Deletes every element from the vector and clears it at the end
 template <typename T>
-inline void DELETE_VECTOR(vectorImpl<T*>& vec) {
+inline void DELETE_VECTOR(vector<T*>& vec) {
     if (!vec.empty()) {
         for (T* iter : vec) {
             delete iter;
@@ -828,7 +828,7 @@ inline void DELETE_VECTOR(vectorImpl<T*>& vec) {
 }
 #define SET_DELETE_VECTOR_FRIEND \
     template <typename T>        \
-    friend void MemoryManager::DELETE_VECTOR(vectorImpl<T*>& vec);
+    friend void MemoryManager::DELETE_VECTOR(vector<T*>& vec);
 
 /// Deletes every element from the map and clears it at the end
 template <typename K, typename V, typename HashFun = hashAlg::hash<K> >

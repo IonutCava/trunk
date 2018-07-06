@@ -160,7 +160,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
     SceneNodeType _type;
     Material_ptr _materialTemplate;
 
-    vectorImpl<SceneGraphNode*> _sgnParents;
+    vector<SceneGraphNode*> _sgnParents;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneNode);

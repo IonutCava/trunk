@@ -40,7 +40,7 @@ namespace Divide {
 
 class GFXRTPool {
 protected:
-    typedef vectorImpl<RenderTarget*> TargetsPerUsage;
+    typedef vector<RenderTarget*> TargetsPerUsage;
     typedef std::array<TargetsPerUsage, to_base(RenderTargetUsage::COUNT)> RenderTargets;
 
 protected:
@@ -77,7 +77,7 @@ public:
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    inline vectorImpl<RenderTarget*>& renderTargets(RenderTargetUsage target) {
+    inline vector<RenderTarget*>& renderTargets(RenderTargetUsage target) {
         return _renderTargets[to_U32(target)];
     }
     

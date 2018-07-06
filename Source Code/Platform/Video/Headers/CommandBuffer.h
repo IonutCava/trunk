@@ -60,10 +60,10 @@ class CommandBuffer {
 
     // Return true if merge is successful
     bool tryMergeCommands(GFX::Command* prevCommand, GFX::Command* crtCommand) const;
-    inline vectorImplFast<std::shared_ptr<Command>>& operator()();
-    inline const vectorImplFast<std::shared_ptr<Command>>& operator()() const;
+    inline vectorFast<std::shared_ptr<Command>>& operator()();
+    inline const vectorFast<std::shared_ptr<Command>>& operator()() const;
 
-    inline vectorAlg::vecSize size() const { return _data.size(); }
+    inline vec_size size() const { return _data.size(); }
     inline void clear();
     inline bool empty() const;
 
@@ -76,7 +76,7 @@ class CommandBuffer {
   protected:
     size_t _index = 0;
 
-    typedef vectorImplFast<std::shared_ptr<Command>> CommandData;
+    typedef vectorFast<std::shared_ptr<Command>> CommandData;
     CommandData _data;
 };
 

@@ -170,7 +170,7 @@ class WarSceneOrder : public Order {
 struct GOAPPackage {
     GOAPWorldState _worldState;
     GOAPGoalList _goalList;
-    vectorImpl<WarSceneAction> _actionSet;
+    vector<WarSceneAction> _actionSet;
 };
 
 namespace Attorney {
@@ -261,7 +261,7 @@ class WarSceneAIProcessor : public AIProcessor {
     AudioSensor* _audioSensor;
     LocalWorkingMemory _localWorkingMemory;
     /// Keep this in memory at this level
-    vectorImpl<WarSceneAction> _actionList;
+    vector<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
     std::array<bool, to_base(ActionType::COUNT)> _actionState;
     static DELEGATE_CBK<void, U8, const stringImpl&> _scoreCallback;

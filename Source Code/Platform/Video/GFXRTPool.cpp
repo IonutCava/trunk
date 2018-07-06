@@ -62,7 +62,7 @@ void GFXRTPool::set(RenderTargetID target, RenderTarget* newTarget) {
 }
 
 RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, RenderTarget* newTarget) {
-    vectorImpl<RenderTarget*>& rts = _renderTargets[to_U32(targetUsage)];
+    vector<RenderTarget*>& rts = _renderTargets[to_U32(targetUsage)];
 
     for (U32 i = 0; i < to_U32(rts.size()); ++i) {
         if (rts[i] == nullptr) {

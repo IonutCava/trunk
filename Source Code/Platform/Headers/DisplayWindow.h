@@ -264,7 +264,7 @@ private:
     vec2<U16> _windowDrawableArea;
     FColour   _clearColour;
     FColour   _clearColourOriginal;
-    typedef vectorImpl<std::shared_ptr<GUID_DELEGATE_CBK<void, WindowEventArgs>>> EventListeners;
+    typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<void, WindowEventArgs>>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 
     std::unique_ptr<Input::InputInterface> _inputHandler;

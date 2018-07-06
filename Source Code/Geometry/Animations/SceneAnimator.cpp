@@ -70,12 +70,12 @@ bool SceneAnimator::init(PlatformContext& context) {
 
     D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
     mat4<F32> rotationmat;
-    vectorImplBest<mat4<F32> > vec;
-    vectorAlg::vecSize animationCount = _animations.size();
+    vectorBest<mat4<F32> > vec;
+    vec_size animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
     // pre-calculate the animations
-    for (vectorAlg::vecSize i(0); i < animationCount; ++i) {
+    for (vec_size i(0); i < animationCount; ++i) {
         const std::shared_ptr<AnimEvaluator>& crtAnimation = _animations[i];
         D64 duration = crtAnimation->duration();
         D64 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
@@ -84,7 +84,7 @@ bool SceneAnimator::init(PlatformContext& context) {
             dt += timestep;
             calculate((I32)i, dt);
             crtAnimation->transforms().push_back(vec);
-            vectorImplBest<mat4<F32> >& trans = crtAnimation->transforms().back();
+            vectorBest<mat4<F32> >& trans = crtAnimation->transforms().back();
             if (Config::USE_OPENGL_RENDERING) {
                 for (I32 a = 0; a < _skeletonDepthCache; ++a) {
                     Bone* bone = _bones[a];
@@ -117,7 +117,7 @@ bool SceneAnimator::init(PlatformContext& context) {
 }
 
 /// This will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
-bool SceneAnimator::init(PlatformContext& context, Bone* skeleton, const vectorImpl<Bone*>& bones) {
+bool SceneAnimator::init(PlatformContext& context, Bone* skeleton, const vector<Bone*>& bones) {
     release(false);
     _skeleton = skeleton;
     _bones = bones;
@@ -166,20 +166,20 @@ I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
 }
 
 /// Renders the current skeleton pose at time index dt
-const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
+const vector<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
                                                      const D64 dt) {
     I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt) - 1, 0);
     I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 
     if (vecIndex == -1) {
         vecIndex = to_I32(_skeletonLinesContainer.size());
-        _skeletonLinesContainer.push_back(vectorImpl<Line>());
+        _skeletonLinesContainer.push_back(vector<Line>());
     }
 
     // create all the needed points
-    vectorImpl<Line>& lines = _skeletonLinesContainer.at(vecIndex);
+    vector<Line>& lines = _skeletonLinesContainer.at(vecIndex);
     if (lines.empty()) {
-        lines.reserve(vectorAlg::vecSize(boneCount()));
+        lines.reserve(vec_size(boneCount()));
         // Construct skeleton
         calculate(animationIndex, dt);
         // Start with identity transform
@@ -192,7 +192,7 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
 /// Create animation skeleton
 I32 SceneAnimator::createSkeleton(Bone* piNode,
                                   const aiMatrix4x4& parent,
-                                  vectorImpl<Line>& lines,
+                                  vector<Line>& lines,
                                   bool rowMajor) {
 
     const aiMatrix4x4& me = piNode->_globalTransform;

@@ -48,7 +48,7 @@ class GPUState : private NonCopyable {
         // format name;
         stringImpl _formatName;
         // Max supported
-        vectorImpl<U8> _refreshRate;
+        vector<U8> _refreshRate;
 
         bool operator==(const GPUVideoMode& other) const {
             return _resolution == other._resolution &&
@@ -65,18 +65,18 @@ class GPUState : private NonCopyable {
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
 
-    inline vectorAlg::vecSize getDisplayCount() const {
+    inline vec_size getDisplayCount() const {
         return _supportedDisplayModes.size();
     }
 
-    inline const vectorImpl<GPUVideoMode>& getDisplayModes(vectorAlg::vecSize displayIndex) const {
+    inline const vector<GPUVideoMode>& getDisplayModes(vec_size displayIndex) const {
         assert(displayIndex < _supportedDisplayModes.size());
         return _supportedDisplayModes[displayIndex];
     }
 
    protected:
     // Display system
-    vectorImpl<vectorImpl<GPUVideoMode>> _supportedDisplayModes;
+    vector<vector<GPUVideoMode>> _supportedDisplayModes;
 };
 
 };  // namespace Divide

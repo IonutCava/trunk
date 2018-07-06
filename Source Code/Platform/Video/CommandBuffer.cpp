@@ -182,7 +182,7 @@ void CommandBuffer::clean() {
         switch (cmd->_type) {
             case CommandType::DRAW_COMMANDS :
             {
-                vectorImpl<GenericDrawCommand>& cmds = static_cast<DrawCommand*>(cmd.get())->_drawCommands;
+                vector<GenericDrawCommand>& cmds = static_cast<DrawCommand*>(cmd.get())->_drawCommands;
 
                 cmds.erase(std::remove_if(std::begin(cmds),
                                           std::end(cmds),
@@ -256,10 +256,10 @@ void CommandBuffer::clean() {
     }
 
     // Remove redundant pipeline changes
-    vectorAlg::vecSize size = _data.size();
+    vec_size size = _data.size();
 
-    vectorImpl<vectorAlg::vecSize> redundantEntries;
-    for (vectorAlg::vecSize i = 1; i < size; ++i) {
+    vector<vec_size> redundantEntries;
+    for (vec_size i = 1; i < size; ++i) {
         if (_data[i - 1]->_type == _data[i]->_type && _data[i]->_type == CommandType::BIND_PIPELINE) {
             redundantEntries.push_back(i - 1);
         }
@@ -389,10 +389,10 @@ bool CommandBuffer::tryMergeCommands(GFX::Command* prevCommand, GFX::Command* cr
             };
 
             
-            vectorImpl<GenericDrawCommand>& commands = prevDrawCommand->_drawCommands;
-            vectorAlg::vecSize previousCommandIndex = 0;
-            vectorAlg::vecSize currentCommandIndex = 1;
-            const vectorAlg::vecSize commandCount = commands.size();
+            vector<GenericDrawCommand>& commands = prevDrawCommand->_drawCommands;
+            vec_size previousCommandIndex = 0;
+            vec_size currentCommandIndex = 1;
+            const vec_size commandCount = commands.size();
             for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
                 GenericDrawCommand& previousCommand = commands[previousCommandIndex];
                 GenericDrawCommand& currentCommand = commands[currentCommandIndex];

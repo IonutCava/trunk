@@ -509,7 +509,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
 
 /// Remove the custom texture assigned to the specified offset
 bool Material::removeCustomTexture(U8 bindslot) {
-    vectorImpl<ExternalTexture>::iterator it =
+    vector<ExternalTexture>::iterator it =
         std::find_if(std::begin(_externalTextures),
                     std::end(_externalTextures),
                     [&bindslot](const ExternalTexture& tex)

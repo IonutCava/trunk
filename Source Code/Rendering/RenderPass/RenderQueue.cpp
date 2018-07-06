@@ -82,7 +82,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
     _renderBins[rbType._to_integral()] = temp;
     
     _activeBins.resize(0);
-    std::back_insert_iterator<vectorImpl<RenderBin*>> back_it(_activeBins);
+    std::back_insert_iterator<vector<RenderBin*>> back_it(_activeBins);
     auto const usedPredicate = [](RenderBin* ptr) { return ptr != nullptr; };
     std::copy_if(std::begin(_renderBins), std::end(_renderBins), back_it, usedPredicate);
 
@@ -187,7 +187,7 @@ void RenderQueue::refresh() {
 
 const RenderQueue::SortedQueues& RenderQueue::getSortedQueues() {
     for (RenderBin* renderBin : _activeBins) {
-        vectorImpl<SceneGraphNode*>& nodes = _sortedQueues[renderBin->getType()._to_integral()];
+        vector<SceneGraphNode*>& nodes = _sortedQueues[renderBin->getType()._to_integral()];
         renderBin->getSortedNodes(nodes);
     }
 

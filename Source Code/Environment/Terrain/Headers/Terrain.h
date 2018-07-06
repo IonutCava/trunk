@@ -159,8 +159,8 @@ class Terrain : public Object3D {
 
    public:
     //indices per chunk
-    hashMap<U32, vectorImpl<U32>> _physicsIndices;
-    vectorImpl<VertexBuffer::Vertex> _physicsVerts;
+    hashMap<U32, vector<U32>> _physicsIndices;
+    vector<VertexBuffer::Vertex> _physicsVerts;
 
    protected:
     ShaderBuffer* _shaderData;
@@ -186,7 +186,7 @@ class Terrain : public Object3D {
     ShaderProgram_ptr _planeDepthShader;
     vec2<F32> _terrainScaleFactor;
     SceneGraphNode* _vegetationGrassNode;
-    vectorImpl<TerrainChunk*> _terrainChunks;
+    vector<TerrainChunk*> _terrainChunks;
     TerrainTextureLayer* _terrainTextures;
 };
 

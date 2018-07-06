@@ -119,7 +119,7 @@ void EffectManager::updateActiveEffects() {
         return;
     }
 
-    vectorImpl<VariableEffect*>::iterator iterEffs;
+    vector<VariableEffect*>::iterator iterEffs;
     ;
     for (iterEffs = std::begin(_vecEffects); iterEffs != std::end(_vecEffects);
          ++iterEffs) {
@@ -139,7 +139,7 @@ void EffectManager::checkPlayableEffects() {
 
     // Get the list of indices of effects that the selected device can play
     _vecPlayableEffectInd.clear();
-    for (vectorAlg::vecSize nEffInd = 0; nEffInd < _vecEffects.size();
+    for (vec_size nEffInd = 0; nEffInd < _vecEffects.size();
          ++nEffInd) {
         const OIS::Effect::EForce& eForce =
             _vecEffects[nEffInd]->getFFEffect()->force;
@@ -157,7 +157,7 @@ void EffectManager::checkPlayableEffects() {
     } else {
         Console::printfn(Locale::get(_ID("INPUT_DEVICE_EFFECT_SUPPORT")));
 
-        vectorAlg::vecSize nEffIndInd = 0;
+        vec_size nEffIndInd = 0;
         for (; nEffIndInd < _vecPlayableEffectInd.size(); ++nEffIndInd) {
             printEffect(_vecPlayableEffectInd[nEffIndInd]);
         }
@@ -211,13 +211,13 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
     }
 }
 
-void EffectManager::printEffect(vectorAlg::vecSize nEffInd) {
+void EffectManager::printEffect(vec_size nEffInd) {
     Console::printfn(Locale::get(_ID("INPUT_PRINT_EFFECT")), nEffInd,
         _vecEffects[nEffInd]->getDescription());
 }
 
 void EffectManager::printEffects() {
-    for (vectorAlg::vecSize nEffInd = 0; nEffInd < _vecEffects.size();
+    for (vec_size nEffInd = 0; nEffInd < _vecEffects.size();
         nEffInd++) {
         printEffect(nEffInd);
     }

@@ -393,13 +393,13 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
             }
             assert(geometry != nullptr);
 
-            const vectorImpl<VertexBuffer::Vertex >& vertices = geometry->getVertices();
+            const vector<VertexBuffer::Vertex >& vertices = geometry->getVertices();
             if (vertices.empty()) {
                 return false;
             }
 
             static_cast<Object3D*>(sn.get())->computeTriangleList();
-            const vectorImpl<vec3<U32> >& triangles =
+            const vector<vec3<U32> >& triangles =
                 static_cast<Object3D*>(sn.get())->getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
                (nodeType == SceneNodeType::TYPE_OBJECT3D &&

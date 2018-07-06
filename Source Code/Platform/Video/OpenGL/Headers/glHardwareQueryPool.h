@@ -49,7 +49,7 @@ public:
     void deallocate(glHardwareQueryRing& query);
 
 private:
-    vectorImpl<glHardwareQueryRing*> _queryPool;
+    vector<glHardwareQueryRing*> _queryPool;
     U32 _index;
     GFXDevice& _context;
 };

@@ -289,7 +289,7 @@ void RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
         if (a.size() != b.size()) {
             return false;
         }
-        for (vectorAlg::vecSize i = 0; i < a.size(); ++i) {
+        for (vec_size i = 0; i < a.size(); ++i) {
             if (a[i] != b[i]) {
                 return false;
             }
@@ -427,7 +427,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                 // Get the animation component of any submesh. They should be synced anyway.
                 AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
-                const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
+                const vector<Line>& skeletonLines = childAnimComp->skeletonLines();
                 _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines);

@@ -100,7 +100,7 @@ class SceneGraph : private NonCopyable,
 
     void idle();
 
-    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SGNRayResult>& selectionHits) const;
+    void intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& selectionHits) const;
 
     SceneGraphNode* createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 
@@ -118,7 +118,7 @@ class SceneGraph : private NonCopyable,
 
     void postLoad();
 
-    const vectorImpl<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
+    const vector<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
 
     ECSManager& GetECSManager() { return *_ecsManager; }
     const ECSManager& GetECSManager() const { return *_ecsManager; }
@@ -151,10 +151,10 @@ class SceneGraph : private NonCopyable,
     SceneGraphNode* _root;
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;
-    vectorImpl<SceneGraphNode*> _allNodes;
-    vectorImpl<SceneGraphNode*> _orderedNodeList;
+    vector<SceneGraphNode*> _allNodes;
+    vector<SceneGraphNode*> _orderedNodeList;
 
-    std::array<vectorImpl<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
+    std::array<vector<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
 
     mutable std::mutex _nodeCreateMutex;
 };

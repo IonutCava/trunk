@@ -21,7 +21,7 @@ BoundingBox::BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 m
     set(minX, minY, minZ, maxX, maxY, maxZ);
 }
 
-BoundingBox::BoundingBox(const vectorImpl<vec3<F32> >& points) noexcept
+BoundingBox::BoundingBox(const vector<vec3<F32> >& points) noexcept
     : BoundingBox()
 {
     createFromPoints(points);

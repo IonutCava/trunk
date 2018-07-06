@@ -46,7 +46,7 @@ void Patch3D::build() {
 
     U16 i_width = width - 1;
     U16 i_height = height - 1;
-    vectorImpl<U32> indices(i_width*i_height * 4, 0);
+    vector<U32> indices(i_width*i_height * 4, 0);
     for (U16 y = 0; y < i_height; ++y) {
         for (U16 x = 0; x < i_width; ++x) {
             U32 offset = (x + y * i_width) * 4;

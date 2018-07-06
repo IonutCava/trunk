@@ -94,7 +94,7 @@ namespace NS_GLIM
         bool isCleared (void) const {return (m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY);}
 
 #ifdef AE_RENDERAPI_D3D11
-        const vectorImpl<D3D11_INPUT_ELEMENT_DESC>& GetSignature (void) const;
+        const vector<D3D11_INPUT_ELEMENT_DESC>& GetSignature (void) const;
 #endif
 
     private:

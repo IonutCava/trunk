@@ -83,8 +83,8 @@ namespace Divide {
                            GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);
 
 
-        inline vectorImpl<EditorComponentField>& fields() { return _fields; }
-        inline const vectorImpl<EditorComponentField>& fields() const { return _fields; }
+        inline vector<EditorComponentField>& fields() { return _fields; }
+        inline const vector<EditorComponentField>& fields() const { return _fields; }
 
         inline void onChangedCbk(const DELEGATE_CBK<void, EditorComponentField&>& cbk) {
             _onChangedCbk = cbk;
@@ -99,17 +99,17 @@ namespace Divide {
       protected:
         const stringImpl _name;
         DELEGATE_CBK<void, EditorComponentField&> _onChangedCbk;
-        vectorImpl<EditorComponentField> _fields;
+        vector<EditorComponentField> _fields;
     };
 
     namespace Attorney {
         class EditorComponentEditor {
           private:
-            static vectorImpl<EditorComponentField>& fields(EditorComponent& comp) {
+            static vector<EditorComponentField>& fields(EditorComponent& comp) {
                 return comp._fields;
             }
 
-            static const vectorImpl<EditorComponentField>& fields(const EditorComponent& comp) {
+            static const vector<EditorComponentField>& fields(const EditorComponent& comp) {
                 return comp._fields;
             }
 

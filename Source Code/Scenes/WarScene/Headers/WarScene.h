@@ -78,9 +78,9 @@ class WarScene : public Scene {
    private:
     SceneGraphNode* _sun;
     GUIMessageBox* _infoBox;
-    vectorImpl<SceneGraphNode*> _lightNodes;
-    vectorImpl<std::pair<SceneGraphNode*, bool>> _lightNodes2;
-    vectorImpl<SceneGraphNode*> _lightNodes3;
+    vector<SceneGraphNode*> _lightNodes;
+    vector<std::pair<SceneGraphNode*, bool>> _lightNodes2;
+    vector<SceneGraphNode*> _lightNodes3;
 
    private:  // Game
     U32  _timeLimitMinutes;
@@ -91,7 +91,7 @@ class WarScene : public Scene {
     bool _resetUnits;
     U64 _lastNavMeshBuildTime;
     /// NPC's are the actual game entities
-    vectorImpl<SceneGraphNode*> _armyNPCs[2];
+    vector<SceneGraphNode*> _armyNPCs[2];
     IMPrimitive* _targetLines;
     SceneGraphNode* _flag[2];
     SceneGraphNode* _particleEmitter;

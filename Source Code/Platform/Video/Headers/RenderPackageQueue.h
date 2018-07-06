@@ -60,7 +60,7 @@ class RenderPackageQueue {
 
     bool _locked;
     U32 _currentCount;
-    vectorImpl<std::shared_ptr<RenderPackage>> _packages;
+    vector<std::shared_ptr<RenderPackage>> _packages;
 };
 
 }; //namespace Divide

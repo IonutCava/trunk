@@ -39,31 +39,31 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace vectorAlg = boost;
 
 template <typename Type, typename Allocator = boost::new_allocator<Type>>
-using vectorImpl = boost::container::vector<Type, Allocator>;
+using vector = boost::container::vector<Type, Allocator>;
 
 template <typename Type>
-using vectorImplFast = vectorImpl<Type, dvd_allocator<Type>>;
+using vectorFast = vector<Type, dvd_allocator<Type>>;
 
 namespace boost {
-    typedef size_t vecSize;
+    typedef size_t size;
 
     template<typename T>
-    inline void shrinkToFit(vectorImpl<T>& inputVector) {
+    inline void shrinkToFit(vector<T>& inputVector) {
         inputVector.shrink_to_fit();
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImpl<T>& inputVector,  Args&&... args) {
+    inline void emplace_back(vector<T>& inputVector,  Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }
 
     template<typename T>
-    inline void shrinkToFit(vectorImplFast<T>& inputVector) {
+    inline void shrinkToFit(vectorFast<T>& inputVector) {
         inputVector.shrink_to_fit();
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImplFast<T>& inputVector, Args&&... args) {
+    inline void emplace_back(vectorFast<T>& inputVector, Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }
 

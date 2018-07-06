@@ -112,11 +112,11 @@ class Object3D : public SceneNode {
     }
 
     // Procedural geometry deformation support?
-    inline vectorImpl<vec3<U32> >& getTriangles() {
+    inline vector<vec3<U32> >& getTriangles() {
         return _geometryTriangles;
     }
 
-    inline const vectorImpl<vec3<U32> >& getTriangles() const {
+    inline const vector<vec3<U32> >& getTriangles() const {
         return _geometryTriangles;
     }
 
@@ -128,7 +128,7 @@ class Object3D : public SceneNode {
         _geometryTriangles.push_back(triangle);
     }
 
-    inline void addTriangles(const vectorImpl<vec3<U32>>& triangles) {
+    inline void addTriangles(const vector<vec3<U32>>& triangles) {
         reserveTriangleCount(to_U32(triangles.size() + _geometryTriangles.size()));
         _geometryTriangles.insert(std::end(_geometryTriangles),
                                   std::cbegin(triangles),
@@ -138,7 +138,7 @@ class Object3D : public SceneNode {
     // Create a list of triangles from the vertices + indices lists based on primitive type
     bool computeTriangleList(bool force = false);
 
-    static vectorImpl<SceneGraphNode*> filterByType(const vectorImpl<SceneGraphNode*>& nodes, ObjectType filter);
+    static vector<SceneGraphNode*> filterByType(const vector<SceneGraphNode*>& nodes, ObjectType filter);
 
    protected:
     void rebuild();
@@ -161,7 +161,7 @@ class Object3D : public SceneNode {
     RigidBodyShape _rigidBodyShape;
     /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
-    vectorImpl<vec3<U32> > _geometryTriangles;
+    vector<vec3<U32> > _geometryTriangles;
 
   private:
      bool _geometryDirty;

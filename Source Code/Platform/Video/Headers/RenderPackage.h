@@ -119,15 +119,15 @@ private:
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
 
-    vectorImpl<GFX::DrawCommand> _drawCommands;
-    vectorImpl<GFX::BindPipelineCommand> _pipelines;
-    vectorImpl<GFX::SetClipPlanesCommand> _clipPlanes;
-    vectorImpl<GFX::SendPushConstantsCommand> _pushConstants;
-    vectorImpl<GFX::BindDescriptorSetsCommand> _descriptorSets;
+    vector<GFX::DrawCommand> _drawCommands;
+    vector<GFX::BindPipelineCommand> _pipelines;
+    vector<GFX::SetClipPlanesCommand> _clipPlanes;
+    vector<GFX::SendPushConstantsCommand> _pushConstants;
+    vector<GFX::BindDescriptorSetsCommand> _descriptorSets;
 
 protected:
     U32 _dirtyFlags = 0;
-    vectorImpl<CommandEntry> _commandOrdering;
+    vector<CommandEntry> _commandOrdering;
     // Cached command buffer
     bool _commandBufferDirty = true;
     GFX::CommandBuffer* _commands;

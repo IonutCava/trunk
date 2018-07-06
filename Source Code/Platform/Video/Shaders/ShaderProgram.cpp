@@ -73,7 +73,7 @@ bool ShaderProgram::update(const U64 deltaTimeUS) {
 /// Add a define to the shader. The defined must not have been added previously
 void ShaderProgram::addShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    vectorImpl<stringImpl>::iterator it =
+    vector<stringImpl>::iterator it =
         std::find(std::begin(_definesList), std::end(_definesList), define);
     // If we can't find it, we add it
     if (it == std::end(_definesList)) {
@@ -90,7 +90,7 @@ void ShaderProgram::addShaderDefine(const stringImpl& define) {
 /// Remove a define from the shader. The defined must have been added previously
 void ShaderProgram::removeShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    vectorImpl<stringImpl>::iterator it =
+    vector<stringImpl>::iterator it =
         std::find(std::begin(_definesList), std::end(_definesList), define);
     // If we find it, we remove it
     if (it != std::end(_definesList)) {
@@ -228,7 +228,7 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
         s_fileWatcherListener.addIgnoredEndCharacter('~');
         s_fileWatcherListener.addIgnoredExtension("tmp");
 
-        vectorImpl<stringImpl> atomLocations = getAllAtomLocations();
+        vector<stringImpl> atomLocations = getAllAtomLocations();
         for (const stringImpl& loc : atomLocations) {
             createDirectories(loc.c_str());
             watcher().addWatch(loc, &s_fileWatcherListener);
@@ -373,8 +373,8 @@ void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     }
 }
 
-vectorImpl<stringImpl> ShaderProgram::getAllAtomLocations() {
-    static vectorImpl<stringImpl> atomLocations;
+vector<stringImpl> ShaderProgram::getAllAtomLocations() {
+    static vector<stringImpl> atomLocations;
         if (atomLocations.empty()) {
         // General
         atomLocations.emplace_back(Paths::g_assetsLocation +

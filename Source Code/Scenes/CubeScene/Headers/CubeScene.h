@@ -50,7 +50,7 @@ class CubeScene : public Scene {
 
     bool onKeyUp(const Input::KeyEvent& key);
     protected:
-    vectorImpl<SceneGraphNode*> _lightNodes;
+    vector<SceneGraphNode*> _lightNodes;
 };
 
 };  // namespace Divide

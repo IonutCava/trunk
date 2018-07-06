@@ -98,7 +98,7 @@ private:
 private:
     GFXDevice& _context;
     // Some vector implementations are not move-aware so use STL in this case
-    vectorImpl<RenderPass*> _renderPasses;
+    vector<RenderPass*> _renderPasses;
     RenderQueue* _renderQueue;
     ShaderProgram_ptr _OITCompositionShader;
 };

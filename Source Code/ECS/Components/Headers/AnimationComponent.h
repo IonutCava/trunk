@@ -68,11 +68,11 @@ class AnimationComponent : public SGNComponent<AnimationComponent>{
     inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
     I32 frameCount(U32 animationID) const;
 
-    inline const vectorImplBest<mat4<F32> >& transformsByIndex(U32 index) const {
+    inline const vectorBest<mat4<F32> >& transformsByIndex(U32 index) const {
         return transformsByIndex(_currentAnimIndex, index);
     }
 
-    const vectorImplBest<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
+    const vectorBest<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
 
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
@@ -93,7 +93,7 @@ class AnimationComponent : public SGNComponent<AnimationComponent>{
     void resetTimers();
     void incParentTimeStamp(const U64 timestamp);
 
-    const vectorImpl<Line>& skeletonLines() const;
+    const vector<Line>& skeletonLines() const;
 
 
     std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;

@@ -16,7 +16,7 @@
 namespace Divide {
 
 std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
-vectorImpl<RenderTargetHandle> ShadowMap::s_shadowMaps;
+vector<RenderTargetHandle> ShadowMap::s_shadowMaps;
 
 ShadowMap::ShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, ShadowType type)
     : _context(context),
@@ -70,7 +70,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                vectorImpl<RTAttachmentDescriptor> att = {
+                vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 
@@ -109,7 +109,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                                               Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthDescriptor.setSampler(depthSampler);
 
-                vectorImpl<RTAttachmentDescriptor> att = {
+                vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Colour },
                     { depthDescriptor, RTAttachmentType::Depth },
                 };
@@ -138,7 +138,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setSampler(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-                vectorImpl<RTAttachmentDescriptor> att = {
+                vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 

@@ -170,7 +170,7 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
     U32 nodeCount = 0;
     U32 cmdCount = 0;
 
-    for (const vectorImpl<SceneGraphNode*>& queue : sortedNodes) {
+    for (const vector<SceneGraphNode*>& queue : sortedNodes) {
         std::for_each(std::begin(queue), std::end(queue),
             [&](SceneGraphNode* node) -> void
             {

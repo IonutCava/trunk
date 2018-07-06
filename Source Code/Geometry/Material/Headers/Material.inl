@@ -102,7 +102,7 @@ inline void Material::setShaderDefines(RenderStage renderStage, const stringImpl
 }
 
 inline void Material::setShaderDefines(const RenderStagePass& renderStagePass, const stringImpl& shaderDefines) {
-    vectorImpl<stringImpl>& defines = shaderInfo(renderStagePass)._shaderDefines;
+    vector<stringImpl>& defines = shaderInfo(renderStagePass)._shaderDefines;
     if (std::find(std::cbegin(defines), std::cend(defines), shaderDefines) == std::cend(defines)) {
         defines.push_back(shaderDefines);
     }

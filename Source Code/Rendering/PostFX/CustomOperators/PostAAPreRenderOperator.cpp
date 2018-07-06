@@ -19,7 +19,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
       _postAASamples(0),
       _idleCount(0)
 {
-    vectorImpl<RTAttachmentDescriptor> att = {
+    vector<RTAttachmentDescriptor> att = {
         { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
     };
 

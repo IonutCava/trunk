@@ -59,7 +59,7 @@ class RenderPassCuller {
         const SceneGraphNode* _node = nullptr;
     };
 
-    typedef vectorImpl<VisibleNode> VisibleNodeList;
+    typedef vector<VisibleNode> VisibleNodeList;
 
     //Should return true if the node is not inside the frustum
     typedef std::function<bool(const SceneGraphNode&)> CullingFunction;
@@ -102,7 +102,7 @@ class RenderPassCuller {
    protected:
     std::array<CullingFunction, to_base(RenderStage::COUNT)> _cullingFunction;
     std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;
-    std::array<vectorImpl<VisibleNodeList>, to_base(RenderStage::COUNT)> _perThreadNodeList;
+    std::array<vector<VisibleNodeList>, to_base(RenderStage::COUNT)> _perThreadNodeList;
 };
 
 };  // namespace Divide

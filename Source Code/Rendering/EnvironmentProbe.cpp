@@ -18,7 +18,7 @@ namespace {
     U16 g_maxEnvironmentProbes = 32;
 };
 
-vectorImpl<bool> EnvironmentProbe::s_availableSlices;
+vector<bool> EnvironmentProbe::s_availableSlices;
 RenderTargetHandle EnvironmentProbe::s_reflection;
 
 EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
@@ -77,7 +77,7 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
 
     depthDescriptor.setSampler(reflectionSampler);
 
-    vectorImpl<RTAttachmentDescriptor> att = {
+    vector<RTAttachmentDescriptor> att = {
         { environmentDescriptor, RTAttachmentType::Colour, 0, DefaultColours::WHITE },
         { depthDescriptor, RTAttachmentType::Depth },
     };

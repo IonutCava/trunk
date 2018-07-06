@@ -25,7 +25,7 @@ namespace Divide {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
 
-        vectorImpl<TransformComponent*> transforms;
+        vector<TransformComponent*> transforms;
         auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
         auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
         for (;transform != transformEnd; ++transform)
@@ -49,7 +49,7 @@ namespace Divide {
     void TransformSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        vectorImpl<TransformComponent*> transforms;
+        vector<TransformComponent*> transforms;
         auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
         auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
         for (; transform != transformEnd; ++transform)
@@ -74,7 +74,7 @@ namespace Divide {
 
     void TransformSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
-        vectorImpl<TransformComponent*> transforms;
+        vector<TransformComponent*> transforms;
         auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
         auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
         for (; transform != transformEnd; ++transform)

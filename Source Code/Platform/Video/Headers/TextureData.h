@@ -120,8 +120,8 @@ class TextureDataContainer {
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
-      vectorImplFast<std::pair<TextureData, U8>>& textures();
-      const vectorImplFast<std::pair<TextureData, U8>>& textures() const;
+      vectorFast<std::pair<TextureData, U8>>& textures();
+      const vectorFast<std::pair<TextureData, U8>>& textures() const;
       void clear(bool clearMemory = false);
 
       inline bool operator==(const TextureDataContainer &other) const {
@@ -133,7 +133,7 @@ class TextureDataContainer {
       }
 
     private:
-      vectorImplFast<std::pair<TextureData, U8 /*binding*/>> _textures;
+      vectorFast<std::pair<TextureData, U8 /*binding*/>> _textures;
 };
 
 }; //namespace Divide

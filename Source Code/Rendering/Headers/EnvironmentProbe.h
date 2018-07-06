@@ -92,11 +92,11 @@ protected:
 
 private:
     GFXDevice& _context;
-    static vectorImpl<bool> s_availableSlices;
+    static vector<bool> s_availableSlices;
     static RenderTargetHandle s_reflection;
 };
 
-typedef vectorImpl<EnvironmentProbe_ptr> EnvironmentProbeList;
+typedef vector<EnvironmentProbe_ptr> EnvironmentProbeList;
 
 }; //namespace Divide
 

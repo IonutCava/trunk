@@ -378,7 +378,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     return presentToScreen(evt, deltaTimeUS);
 }
 
-void computeViewports(const Rect<I32>& mainViewport, vectorImpl<Rect<I32>>& targetViewports, U8 count) {
+void computeViewports(const Rect<I32>& mainViewport, vector<Rect<I32>>& targetViewports, U8 count) {
     
     assert(count > 0);
     I32 xOffset = mainViewport.x;
@@ -410,8 +410,8 @@ void computeViewports(const Rect<I32>& mainViewport, vectorImpl<Rect<I32>>& targ
     // to the previous row and add a new entry to the end of the
     // current row
 
-    typedef vectorImpl<Rect<I32>> ViewportRow;
-    typedef vectorImpl<ViewportRow> ViewportRows;
+    typedef vector<Rect<I32>> ViewportRow;
+    typedef vector<ViewportRow> ViewportRows;
     ViewportRows rows;
 
     // Allocates storage for a N x N matrix of viewports that will hold numViewports
@@ -475,7 +475,7 @@ void computeViewports(const Rect<I32>& mainViewport, vectorImpl<Rect<I32>>& targ
     }
 }
 
-Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorImpl<Time::ProfileTimer*>& timers, U8 index, const char* name) {
+Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vector<Time::ProfileTimer*>& timers, U8 index, const char* name) {
     while (timers.size() < index + 1) {
         timers.push_back(&Time::ADD_TIMER(Util::StringFormat("%s %d", name, timers.size()).c_str()));
         parentTimer.addChildTimer(*timers.back());

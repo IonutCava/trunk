@@ -78,7 +78,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
 }
 
 void RenderPassManager::removeRenderPass(const stringImpl& name) {
-    for (vectorImpl<RenderPass*>::iterator it = std::begin(_renderPasses);
+    for (vector<RenderPass*>::iterator it = std::begin(_renderPasses);
          it != std::end(_renderPasses); ++it) {
         if ((*it)->name().compare(name) == 0) {
             _renderPasses.erase(it);
@@ -113,7 +113,7 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
 }
 
 void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    static const vectorImpl<RenderBinType> depthExclusionList
+    static const vector<RenderBinType> depthExclusionList
     {
         RenderBinType::RBT_DECAL,
         RenderBinType::RBT_TRANSLUCENT
@@ -173,7 +173,7 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
 }
 
 void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    static const vectorImpl<RenderBinType> shadowExclusionList
+    static const vector<RenderBinType> shadowExclusionList
     {
         RenderBinType::RBT_DECAL,
         RenderBinType::RBT_SKY,

@@ -168,7 +168,7 @@ void SceneNode::onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const
 void Attorney::SceneNodeSceneGraph::registerSGNParent(SceneNode& node, SceneGraphNode* sgn) {
     // prevent double add
     I64 targetGUID = sgn ? -1 : sgn->getGUID();
-    vectorImpl<SceneGraphNode*>::const_iterator it;
+    vector<SceneGraphNode*>::const_iterator it;
     it = std::find_if(std::cbegin(node._sgnParents), std::cend(node._sgnParents), [targetGUID](SceneGraphNode* sgn) {
         return sgn && sgn->getGUID() == targetGUID;
     });
@@ -180,7 +180,7 @@ void Attorney::SceneNodeSceneGraph::registerSGNParent(SceneNode& node, SceneGrap
 void Attorney::SceneNodeSceneGraph::unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn) {
     // prevent double remove
     I64 targetGUID = sgn ? sgn->getGUID() : -1;
-    vectorImpl<SceneGraphNode*>::const_iterator it;
+    vector<SceneGraphNode*>::const_iterator it;
     it = std::find_if(std::cbegin(node._sgnParents), std::cend(node._sgnParents), [targetGUID](SceneGraphNode* sgn) {
         return sgn && sgn->getGUID() == targetGUID;
     });

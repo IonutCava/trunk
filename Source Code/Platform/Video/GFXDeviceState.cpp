@@ -61,16 +61,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     stringImpl refreshRates;
-    vectorAlg::vecSize displayCount = gpuState().getDisplayCount();
-    for (vectorAlg::vecSize idx = 0; idx < displayCount; ++idx) {
-        const vectorImpl<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
+    vec_size displayCount = gpuState().getDisplayCount();
+    for (vec_size idx = 0; idx < displayCount; ++idx) {
+        const vector<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
         Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
 
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
             // Optionally, output to console/file each display mode
             refreshRates = Util::StringFormat("%d", mode._refreshRate.front());
-            vectorAlg::vecSize refreshRateCount = mode._refreshRate.size();
-            for (vectorAlg::vecSize i = 1; i < refreshRateCount; ++i) {
+            vec_size refreshRateCount = mode._refreshRate.size();
+            for (vec_size i = 1; i < refreshRateCount; ++i) {
                 refreshRates += Util::StringFormat(", %d", mode._refreshRate[i]);
             }
             Console::printfn(Locale::get(_ID("CURRENT_DISPLAY_MODE")),
@@ -171,7 +171,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     velocityDescriptor.setSampler(screenSampler);
     
     {
-        vectorImpl<RTAttachmentDescriptor> attachments = {
+        vector<RTAttachmentDescriptor> attachments = {
             { screenDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
             { normalDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS) },
             { velocityDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY) },
@@ -202,7 +202,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         editorDescriptor.toggleAutomaticMipMapGeneration(true);
         editorDescriptor.setSampler(editorSampler);
 
-        vectorImpl<RTAttachmentDescriptor> attachments = {
+        vector<RTAttachmentDescriptor> attachments = {
             { editorDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
         };
 
@@ -230,7 +230,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                               GFXDataFormat::UNSIGNED_BYTE);
         revealageDescriptor.setSampler(accumulationSampler);
 
-        vectorImpl<RTAttachmentDescriptor> attachments = {
+        vector<RTAttachmentDescriptor> attachments = {
             { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
         };
@@ -272,7 +272,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     RenderTargetHandle tempHandle;
     U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
     {
-        vectorImpl<RTAttachmentDescriptor> attachments = {
+        vector<RTAttachmentDescriptor> attachments = {
             { environmentDescriptorPlanar, RTAttachmentType::Colour },
             { depthDescriptorPlanar, RTAttachmentType::Depth },
         };
@@ -296,7 +296,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     }
     {
-        vectorImpl<RTAttachmentDescriptor> attachments = {
+        vector<RTAttachmentDescriptor> attachments = {
             { environmentDescriptorCube, RTAttachmentType::Colour },
             { depthDescriptorCube, RTAttachmentType::Depth },
         };

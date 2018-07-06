@@ -59,9 +59,9 @@ class WaypointGraph {
     U32 _id;
     bool _loop;
 
-    vectorImpl<vec3<F32> > _positions;
-    vectorImpl<Quaternion<F32> > _rotations;
-    vectorImpl<U32> _times;
+    vector<vec3<F32> > _positions;
+    vector<Quaternion<F32> > _rotations;
+    vector<U32> _times;
 };
 
 };  // namespace Navigation

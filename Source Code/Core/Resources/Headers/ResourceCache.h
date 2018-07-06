@@ -66,7 +66,7 @@ private:
 private:
     size_t _loadingHash;
     static SharedLock _hashLock;
-    static vectorImpl<size_t> _loadingHashes;
+    static vector<size_t> _loadingHashes;
 };
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources

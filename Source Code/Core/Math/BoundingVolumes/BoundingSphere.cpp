@@ -17,7 +17,7 @@ BoundingSphere::BoundingSphere(const vec3<F32>& center, F32 radius) noexcept
 {
 }
 
-BoundingSphere::BoundingSphere(const vectorImpl<vec3<F32> >& points) noexcept
+BoundingSphere::BoundingSphere(const vector<vec3<F32> >& points) noexcept
     : BoundingSphere()
 {
     createFromPoints(points);

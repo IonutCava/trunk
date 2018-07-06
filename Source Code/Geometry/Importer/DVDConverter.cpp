@@ -276,7 +276,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
     if (source->mNumBones > 0) {
         assert(source->mNumBones < std::numeric_limits<U8>::max());  ///<Fit in U8
 
-        vectorImpl<vectorImpl<vertexWeight> > weightsPerVertex(source->mNumVertices);
+        vector<vector<vertexWeight> > weightsPerVertex(source->mNumVertices);
         for (U8 a = 0; a < source->mNumBones; ++a) {
             const aiBone* bone = source->mBones[a];
             for (U32 b = 0; b < bone->mNumWeights; ++b) {

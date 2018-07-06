@@ -134,11 +134,11 @@ class Vegetation : public SceneNode {
     U32 _instanceCountGrass;
     U32 _instanceCountTrees;
     std::array<U32, to_base(CullType::COUNT)> _instanceRoutineIdx;
-    vectorImpl<F32> _grassScales;
-    vectorImpl<mat3<F32> > _rotationMatrices;
-    vectorImpl<vec3<F32> > _grassBlades;
-    vectorImpl<vec2<F32> > _texCoord;
-    vectorImplBest<vec4<F32> > _grassPositions;
+    vector<F32> _grassScales;
+    vector<mat3<F32> > _rotationMatrices;
+    vector<vec3<F32> > _grassBlades;
+    vector<vec2<F32> > _texCoord;
+    vectorBest<vec4<F32> > _grassPositions;
     GenericVertexData* _grassGPUBuffer[2];
     GenericVertexData* _treeGPUBuffer[2];
     ShaderBuffer* _grassMatrices;

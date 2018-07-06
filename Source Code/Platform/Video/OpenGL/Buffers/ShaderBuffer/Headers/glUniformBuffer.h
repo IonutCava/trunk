@@ -84,7 +84,7 @@ class glUniformBuffer final : public ShaderBuffer {
    protected:
     glBufferImpl* _buffer;
     size_t _allignedBufferSize;
-    vectorImpl<AtomicCounter*> _atomicCounters;
+    vector<AtomicCounter*> _atomicCounters;
 };
 
 };  // namespace Divide

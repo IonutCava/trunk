@@ -61,7 +61,7 @@ class ParticleSource {
    protected:
     F32 _emitRate;
     GFXDevice& _context;
-    vectorImpl<std::shared_ptr<ParticleGenerator> > _particleGenerators;
+    vector<std::shared_ptr<ParticleGenerator> > _particleGenerators;
 };
 };
 #endif

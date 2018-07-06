@@ -73,7 +73,7 @@ class Light : public SceneNode {
            }
        };
 
-    typedef vectorImpl<Light*> LightList;
+    typedef vector<Light*> LightList;
 
     /// Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)

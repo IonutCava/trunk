@@ -84,7 +84,7 @@ public:
 
     void idle();
 
-    vectorImpl<stringImpl> sceneNameList(bool sorted = true) const;
+    vector<stringImpl> sceneNameList(bool sorted = true) const;
 
     Scene& getActiveScene();
     const Scene& getActiveScene() const;
@@ -239,7 +239,7 @@ private:
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
 
-    vectorImpl<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
+    vector<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
 
     struct SwitchSceneTarget {
         SwitchSceneTarget()

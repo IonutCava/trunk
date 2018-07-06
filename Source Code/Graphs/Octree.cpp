@@ -15,7 +15,7 @@ bool Octree::s_treeBuilt = false;
 
 SharedLock Octree::s_pendingInsertLock;
 std::queue<SceneGraphNode*> Octree::s_pendingInsertion;
-vectorImpl<SceneGraphNode*> Octree::s_intersectionsObjectCache;
+vector<SceneGraphNode*> Octree::s_intersectionsObjectCache;
 
 Octree::Octree(U32 nodeMask)
     : _nodeMask(nodeMask),
@@ -36,7 +36,7 @@ Octree::Octree(U32 nodeMask, const BoundingBox& rootAABB)
 
 Octree::Octree(U32 nodeMask,
                const BoundingBox& rootAABB,
-               const vectorImpl<SceneGraphNode*>& nodes)
+               const vector<SceneGraphNode*>& nodes)
     :  Octree(nodeMask, rootAABB)
 {
     _objects.reserve(nodes.size());
@@ -164,7 +164,7 @@ bool Octree::addNode(SceneGraphNode* node) {
     return false;
 }
 
-bool Octree::addNodes(const vectorImpl<SceneGraphNode*>& nodes) {
+bool Octree::addNodes(const vector<SceneGraphNode*>& nodes) {
     bool changed = false;
     for (SceneGraphNode* node : nodes) {
         if (addNode(node)) {
@@ -273,13 +273,13 @@ void Octree::buildTree() {
     octant[7].set(vec3<F32>(regionMin.x, center.y, center.z), vec3<F32>(center.x, regionMax.y, regionMax.z));
 
     //This will contain all of our objects which fit within each respective octant.
-    vectorImpl<SceneGraphNode*> octList[8];
+    vector<SceneGraphNode*> octList[8];
     for (U8 i = 0; i < 8; ++i) {
         octList[i].reserve(8);
     }
 
     //this list contains all of the objects which got moved down the tree and can be delisted from this node.
-    vectorImpl<I64> delist;
+    vector<I64> delist;
     delist.reserve(8);
 
     for (SceneGraphNode* obj : _objects) {
@@ -327,7 +327,7 @@ void Octree::buildTree() {
 
 std::shared_ptr<Octree>
 Octree::createNode(const BoundingBox& region,
-                   const vectorImpl<SceneGraphNode*>& objects) {
+                   const vector<SceneGraphNode*>& objects) {
     if (objects.empty()) {
         return nullptr;
     }
@@ -338,7 +338,7 @@ Octree::createNode(const BoundingBox& region,
 
 std::shared_ptr<Octree>
 Octree::createNode(const BoundingBox& region, SceneGraphNode* object) {
-    vectorImpl<SceneGraphNode*> objList;
+    vector<SceneGraphNode*> objList;
     objList.push_back(object);
     return createNode(region, objList);
 }
@@ -432,7 +432,7 @@ void Octree::updateTree() {
     s_treeReady = true;
 }
 
-void Octree::getAllRegions(vectorImpl<BoundingBox>& regionsOut) const {
+void Octree::getAllRegions(vector<BoundingBox>& regionsOut) const {
     for (U8 i = 0; i < 8; ++i) {
         if (_activeNodes[i]) {
             assert(_childNodes[i]);
@@ -465,14 +465,14 @@ size_t Octree::getTotalObjectCount() const {
 }
 
 /// Gives you a list of all intersection records which intersect or are contained within the given frustum area
-vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 typeFilterMask) const
+vector<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 typeFilterMask) const
 {
     //terminator for any recursion
     if (_objects.empty() == 0 && activeNodes() == 0) {   
-        return vectorImpl<IntersectionRecord>();
+        return vector<IntersectionRecord>();
     }
 
-    vectorImpl<IntersectionRecord> ret;
+    vector<IntersectionRecord> ret;
 
     //test each object in the list for intersection
     for(SceneGraphNode* objPtr : _objects) {
@@ -495,7 +495,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U
             frustum.ContainsBoundingBox(_childNodes[i]->_region,
                                         _childNodes[i]->_frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT)
         {
-            vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(frustum, typeFilterMask);
+            vector<IntersectionRecord> hitList = _childNodes[i]->getIntersection(frustum, typeFilterMask);
             ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
         }
     }
@@ -503,14 +503,14 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U
 }
 
 /// Gives you a list of intersection records for all objects which intersect with the given ray
-vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const
+vector<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const
 {
     //terminator for any recursion
     if (_objects.empty() == 0 && activeNodes() == 0) {
-        return vectorImpl<IntersectionRecord>();
+        return vector<IntersectionRecord>();
     }
 
-    vectorImpl<IntersectionRecord> ret;
+    vector<IntersectionRecord> ret;
 
     //the ray is intersecting this region, so we have to check for intersection with all of our contained objects and child regions.
 
@@ -533,7 +533,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
     // test each child octant for intersection
     for (I32 i = 0; i < 8; ++i) {
         if (_childNodes[i] != nullptr && std::get<0>(_childNodes[i]->_region.intersect(intersectRay, start, end))) {
-            vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(intersectRay, start, end, typeFilterMask);
+            vector<IntersectionRecord> hitList = _childNodes[i]->getIntersection(intersectRay, start, end, typeFilterMask);
             ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
         }
     }
@@ -541,7 +541,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
     return ret;
 }
 
-void Octree::updateIntersectionCache(vectorImpl<SceneGraphNode*>& parentObjects, U32 typeFilterMask)
+void Octree::updateIntersectionCache(vector<SceneGraphNode*>& parentObjects, U32 typeFilterMask)
 {
     _intersectionsCache.resize(0);
     //assume all parent objects have already been processed for collisions against each other.
@@ -572,7 +572,7 @@ void Octree::updateIntersectionCache(vectorImpl<SceneGraphNode*>& parentObjects,
 
     //now, check all our local objects against all other local objects in the node
     if (_objects.size() > 1) {
-        vectorImpl<SceneGraphNode*> tmp(_objects);
+        vector<SceneGraphNode*> tmp(_objects);
         while (!tmp.empty()) {
             for(SceneGraphNode* lObj2Ptr : tmp) {
                 assert(lObj2Ptr);
@@ -605,14 +605,14 @@ void Octree::updateIntersectionCache(vectorImpl<SceneGraphNode*>& parentObjects,
         if (_activeNodes[i]) {
             assert(_childNodes[i]);
             _childNodes[i]->updateIntersectionCache(parentObjects, typeFilterMask);
-            const vectorImpl<IntersectionRecord>& hitList = _childNodes[i]->_intersectionsCache;
+            const vector<IntersectionRecord>& hitList = _childNodes[i]->_intersectionsCache;
             _intersectionsCache.insert(std::cend(_intersectionsCache), std::cbegin(hitList), std::cend(hitList));
         }
     }
 }
 
 /// This gives you a list of every intersection record created with the intersection ray
-vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end)
+vector<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end)
 {
     return allIntersections(intersectionRay, start, end, _nodeMask);
 }
@@ -624,7 +624,7 @@ IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 s
         updateTree();
     }
 
-    vectorImpl<IntersectionRecord> intersections = getIntersection(intersectionRay, start, end, typeFilterMask);
+    vector<IntersectionRecord> intersections = getIntersection(intersectionRay, start, end, typeFilterMask);
 
     IntersectionRecord nearest;
 
@@ -643,7 +643,7 @@ IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 s
 }
 
 /// This gives you a list of all intersections, filtered by a specific type of object
-vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
+vector<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
 {
     if (!s_treeReady) {
         updateTree();
@@ -653,7 +653,7 @@ vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionR
 }
 
 /// This gives you a list of all objects which [intersect or are contained within] the given frustum and meet the given object type
-vectorImpl<IntersectionRecord> Octree::allIntersections(const Frustum& region, U32 typeFilterMask)
+vector<IntersectionRecord> Octree::allIntersections(const Frustum& region, U32 typeFilterMask)
 {
     if (!s_treeReady) {
         updateTree();

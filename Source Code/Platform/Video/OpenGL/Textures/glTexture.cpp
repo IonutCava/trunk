@@ -229,7 +229,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
-                         const vectorImpl<ImageTools::ImageLayer>& imageLayers) {
+                         const vector<ImageTools::ImageLayer>& imageLayers) {
     if (info._layerIndex == 0) {
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
@@ -267,7 +267,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
-                                   const vectorImpl<ImageTools::ImageLayer>& imageLayers) {
+                                   const vector<ImageTools::ImageLayer>& imageLayers) {
 
     GLenum glFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
     GLint numMips = static_cast<GLint>(imageLayers.size());

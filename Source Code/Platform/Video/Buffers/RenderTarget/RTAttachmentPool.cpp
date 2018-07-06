@@ -171,7 +171,7 @@ const RTAttachment_ptr& RTAttachmentPool::get(RTAttachmentType type, U8 index) c
     return getInternal(_attachment, type, index);
 }
 
-const vectorImpl<RTAttachment_ptr>& RTAttachmentPool::get(RTAttachmentType type) const {
+const vector<RTAttachment_ptr>& RTAttachmentPool::get(RTAttachmentType type) const {
     return _attachmentCache[to_base(type)];
 }
 

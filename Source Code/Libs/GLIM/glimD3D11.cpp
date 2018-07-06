@@ -12,7 +12,7 @@ namespace NS_GLIM
 
     #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-    const vectorImpl<D3D11_INPUT_ELEMENT_DESC>& GLIM_BATCH::GetSignature (void) const
+    const vector<D3D11_INPUT_ELEMENT_DESC>& GLIM_BATCH::GetSignature (void) const
     {
         return (m_Data.m_Signature);
     }

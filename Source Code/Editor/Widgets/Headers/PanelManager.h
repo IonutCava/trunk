@@ -123,8 +123,8 @@ namespace Divide {
         std::unique_ptr<ImGui::PanelManager> _manager;
 
         Camera* _selectedCamera;
-        vectorImpl<ImGui::TabWindow> _tabWindows;
-        vectorImpl<DockedWindow*> _dockedWindows;
+        vector<ImGui::TabWindow> _tabWindows;
+        vector<DockedWindow*> _dockedWindows;
         std::array<std::unique_ptr<TabbedWindow>, to_base(PanelPositions::COUNT)> _tabbedWindows;
         // No center toolbar
         std::array<std::unique_ptr<PanelManagerPane>, to_base(PanelPositions::COUNT) - 1> _toolbars;

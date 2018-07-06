@@ -222,8 +222,8 @@ class Editor : public PlatformContextComponent,
     Time::ProfileTimer& _editorRenderTimer;
 
     std::array<ImGuiContext*, to_base(Context::COUNT)>     _imguiContext;
-    std::array<vectorImpl<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
-    vectorImpl<SceneGraphNode*> _selectedNodes;
+    std::array<vector<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
+    vector<SceneGraphNode*> _selectedNodes;
 
     size_t _consoleCallbackIndex;
 }; //Editor

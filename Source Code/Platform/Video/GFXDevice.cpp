@@ -346,8 +346,8 @@ void GFXDevice::stepResolution(bool increment) {
 
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    vectorImpl<GPUState::GPUVideoMode>::const_iterator it;
-    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
+    vector<GPUState::GPUVideoMode>::const_iterator it;
+    const vector<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
 
     bool found = false;
     vec2<U16> foundRes;

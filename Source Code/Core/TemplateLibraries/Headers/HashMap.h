@@ -34,27 +34,15 @@
 #define _HASH_MAP_H_
 
 #include "TemplateAllocator.h"
-#include <algorithm>
+#include <EASTL/unordered_map.h>
+#include <EASTL/intrusive_hash_map.h>
 
 template<class T>
 struct EnumHash;
 
 template <typename Key>
 using HashType = EnumHash<Key>;
-
-#if defined(HASH_MAP_IMP) && HASH_MAP_IMP == BOOST_IMP
-#include <boost/Unordered_Map.hpp>
-// macros are evil but we need to extend namespaces so aliases don't work as well
-#define hashAlg boost
-#elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == EASTL_IMP
-#include <EASTL/unordered_map.h>
-#include <EASTL/intrusive_hash_map.h>
-#define hashAlg eastl
-#else  // defined(HASH_MAP_IMP) && HASH_MAP_IMP == STL_IMP
-#include <unordered_map>
-#define hashAlg std
-#endif
-
+namespace hashAlg = eastl;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMap = hashAlg::unordered_map<K, V, HashFun>;
@@ -87,7 +75,7 @@ struct EnumHash {
     }
 };
 
-namespace hashAlg {
+namespace eastl {
 
 template <> struct hash<std::string>
 {

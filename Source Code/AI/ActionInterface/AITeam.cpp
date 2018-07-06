@@ -54,8 +54,8 @@ void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
     _aiTeamCrowd.erase(it);
 }
 
-vectorImpl<AIEntity*> AITeam::getEntityList() const {
-    vectorImpl<AIEntity*> entities;
+vector<AIEntity*> AITeam::getEntityList() const {
+    vector<AIEntity*> entities;
     ReadLock r2_lock(_updateMutex);
     entities.reserve(_team.size());
     for (const AITeam::TeamMap::value_type& entity : _team) {
@@ -74,7 +74,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
     }
     r1_lock.unlock();
 
-    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+    vector<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {
         if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
             return false;
@@ -98,7 +98,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
-   vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+   vector<AIEntity*> entities = AITeam::getEntityList();
 
    TaskHandle inputTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
     for (AIEntity* entity : entities) {
@@ -117,7 +117,7 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
-    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+    vector<AIEntity*> entities = AITeam::getEntityList();
 
     TaskHandle dataTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
     for (AIEntity* entity : entities) {
@@ -136,7 +136,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 void AITeam::resetCrowd() {
-    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+    vector<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {
         entity->resetCrowd();
     }
@@ -180,7 +180,7 @@ bool AITeam::addEnemyTeam(U32 enemyTeamID) {
 }
 
 bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
-    vectorImpl<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
+    vector<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
     if (it != std::end(_enemyTeams)) {
         WriteLock w_lock(_updateMutex);
         _enemyTeams.erase(it);

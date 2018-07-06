@@ -361,7 +361,7 @@ SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNode
 void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
-                               vectorImpl<SGNRayResult>& selectionHits,
+                               vector<SGNRayResult>& selectionHits,
                                bool recursive) const {
 
     if (isSelectable()) {
@@ -420,7 +420,7 @@ void SceneGraphNode::setActive(const bool state) {
     }
 }
 
-void SceneGraphNode::getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList) {
+void SceneGraphNode::getOrderedNodeList(vector<SceneGraphNode*>& nodeList) {
     // Compute from leaf to root to ensure proper calculations
     {
         ReadLock r_lock(_childLock);
@@ -444,7 +444,7 @@ void SceneGraphNode::processDeleteQueue() {
     UpgradableReadLock ur_lock(_childrenDeletionLock);
     if (!_childrenPendingDeletion.empty()) {
         WriteLock w_lock(_childLock);
-        for (vectorAlg::vecSize childIdx : _childrenPendingDeletion) {
+        for (vec_size childIdx : _childrenPendingDeletion) {
             parentGraph().destroySceneGraphNode(_children[childIdx]);
         }
         _children = erase_indices(_children, _childrenPendingDeletion);

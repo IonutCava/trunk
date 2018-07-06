@@ -186,7 +186,7 @@ void Vegetation::uploadGrassData() {
     }
 
     if (_rotationMatrices.empty()) {
-        vectorImpl<F32> angles;
+        vector<F32> angles;
         angles.resize(18, 0.0f);
         for (U8 i = 0; i < 18; ++i) {
             F32 temp = Random(360.0f);

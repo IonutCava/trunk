@@ -103,7 +103,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _data.size();
     }
 
-    inline const vectorImpl<Vertex>& getVertices() const {
+    inline const vector<Vertex>& getVertices() const {
         return _data;
     }
 
@@ -179,7 +179,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     template<typename T>
-    const vectorImplBest<T>& getIndices() const {
+    const vectorBest<T>& getIndices() const {
         static_assert(false, "VertexBuffer::getIndices error: Need valid index data type!");
     }
 
@@ -193,7 +193,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     template <typename T>
-    inline void addIndices(const vectorImplBest<T>& indices, bool containsRestartIndex) {
+    inline void addIndices(const vectorBest<T>& indices, bool containsRestartIndex) {
         if (usesLargeIndices()) {
             std::transform(std::cbegin(indices),
                            std::cend(indices),
@@ -225,13 +225,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         }
     }
 
-    inline void modifyPositionValues(U32 indexOffset, const vectorImpl<vec3<F32>>& newValues) {
+    inline void modifyPositionValues(U32 indexOffset, const vector<vec3<F32>>& newValues) {
        assert(indexOffset + newValues.size() - 1 < _data.size());
        DIVIDE_ASSERT(_staticBuffer == false ||
            (_staticBuffer == true && !_data.empty()),
            "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
-       vectorImpl<Vertex>::iterator it = _data.begin() + indexOffset;
+       vector<Vertex>::iterator it = _data.begin() + indexOffset;
        for (const vec3<F32>& value : newValues) {
             (it++)->_position.set(value);
        }
@@ -414,24 +414,24 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     /// The format of the buffer data
     GFXDataFormat _format;
     // first: offset, second: count
-    vectorImpl<std::pair<U32, U32> > _partitions;
+    vector<std::pair<U32, U32> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should
     /// provide the indices
-    vectorImplBest<U32> _hardwareIndicesL;
-    vectorImplBest<U16> _hardwareIndicesS;
-    vectorImpl<Vertex> _data;
+    vectorBest<U32> _hardwareIndicesL;
+    vectorBest<U16> _hardwareIndicesS;
+    vector<Vertex> _data;
     /// Cache system to update only required data
     std::array<bool, to_base(VertexAttribute::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;
 };
 
 template<>
-inline const vectorImplBest<U32>& VertexBuffer::getIndices<U32>() const {
+inline const vectorBest<U32>& VertexBuffer::getIndices<U32>() const {
     return _hardwareIndicesL;
 }
 
 template<>
-inline const vectorImplBest<U16>& VertexBuffer::getIndices<U16>() const {
+inline const vectorBest<U16>& VertexBuffer::getIndices<U16>() const {
     return _hardwareIndicesS;
 }
 };  // namespace Divide

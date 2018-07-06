@@ -44,8 +44,8 @@ typedef I32 GOAPFact;
 typedef bool GOAPValue;
 typedef goap::Action GOAPAction;
 typedef goap::WorldState GOAPWorldState;
-typedef vectorImpl<const GOAPAction*> GOAPActionSet;
-typedef vectorImpl<const GOAPAction*> GOAPPlan;
+typedef vector<const GOAPAction*> GOAPActionSet;
+typedef vector<const GOAPAction*> GOAPPlan;
 
 inline const char* GOAPValueName(GOAPValue val) {
     return val ? "true" : "false";
@@ -86,7 +86,7 @@ class GOAPGoal : public goap::WorldState {
     GOAPPlan _currentPlan;
 };
 
-typedef vectorImpl<GOAPGoal> GOAPGoalList;
+typedef vector<GOAPGoal> GOAPGoalList;
 
 }; // namespace AI
 };  // namespace Divide

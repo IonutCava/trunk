@@ -127,7 +127,7 @@ bool glShader::validate() {
         if (length <= 1) {
             return true;
         }
-        vectorImpl<char> shaderLog(length);
+        vector<char> shaderLog(length);
         glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
         shaderLog.push_back('\n');
         if (status == 0) {
@@ -145,7 +145,7 @@ bool glShader::validate() {
 stringImpl glShader::preprocessIncludes(const stringImpl& name,
                                         const stringImpl& source,
                                         GLint level,
-                                        vectorImpl<stringImpl>& foundAtoms) {
+                                        vector<stringImpl>& foundAtoms) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
     }

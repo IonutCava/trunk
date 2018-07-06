@@ -19,7 +19,7 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
     // number of animation channels,
     dataOut << static_cast<uint32_t>(evaluator._channels.size());  
     // for each channel
-    for (vectorAlg::vecSize j(0); j < evaluator._channels.size(); j++) {  
+    for (vec_size j(0); j < evaluator._channels.size(); j++) {  
         // the channel name
         dataOut << evaluator._channels[j]._name;
         dataOut << evaluator._channels[j]._nameKey;
@@ -27,7 +27,7 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
         uint32_t nsize = static_cast<uint32_t>(evaluator._channels[j]._positionKeys.size());
         dataOut << nsize;
         // for each position key;
-        for (vectorAlg::vecSize i(0); i < nsize; i++) {  
+        for (vec_size i(0); i < nsize; i++) {  
             // position key
             dataOut << evaluator._channels[j]._positionKeys[i].mTime;
             // position key
@@ -40,7 +40,7 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
         // the number of rotation keys
         dataOut << nsize;
         // for each channel
-        for (vectorAlg::vecSize i(0); i < nsize; i++) {
+        for (vec_size i(0); i < nsize; i++) {
             // rotation key
             dataOut << evaluator._channels[j]._rotationKeys[i].mTime;
             // rotation key
@@ -54,7 +54,7 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
         // the number of scaling keys
         dataOut << nsize;
         // for each channel
-        for (vectorAlg::vecSize i(0); i < nsize; i++) {  
+        for (vec_size i(0); i < nsize; i++) {  
             // scale key
             dataOut << evaluator._channels[j]._scalingKeys[i].mTime;
             // scale key
@@ -79,7 +79,7 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
     evaluator._channels.resize(nsize);
     evaluator._lastPositions.resize(nsize, vec3<U32>());
     // for each channel
-    for (vectorAlg::vecSize j(0); j < evaluator._channels.size(); j++) {  
+    for (vec_size j(0); j < evaluator._channels.size(); j++) {  
         AnimationChannel& channel = evaluator._channels[j];
         //the channel name
         dataIn >> channel._name;
@@ -88,7 +88,7 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
         dataIn >> nsize;
         channel._positionKeys.resize(nsize);
         // for each position key
-        for (vectorAlg::vecSize i(0); i < nsize; i++) {  
+        for (vec_size i(0); i < nsize; i++) {  
             aiVectorKey& pos = channel._positionKeys[i];
             // position key
             dataIn >> pos.mTime;
@@ -102,7 +102,7 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
         dataIn >> nsize;
         channel._rotationKeys.resize(nsize);
         // for each rotation key
-        for (vectorAlg::vecSize i(0); i < nsize; i++) {  
+        for (vec_size i(0); i < nsize; i++) {  
             aiQuatKey& rot = channel._rotationKeys[i];
             // rotation key
             dataIn >> rot.mTime;
@@ -117,7 +117,7 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
         dataIn >> nsize;
         channel._scalingKeys.resize(nsize);
         // for each skaling key
-        for (vectorAlg::vecSize i(0); i < nsize; i++) { 
+        for (vec_size i(0); i < nsize; i++) { 
             aiVectorKey& scale = channel._scalingKeys[i]; 
             // scale key
             dataIn >> scale.mTime;
@@ -201,7 +201,7 @@ void SceneAnimator::saveSkeleton(ByteBuffer& dataOut, Bone* parent) const {
     uint32_t nsize = static_cast<uint32_t>(parent->_children.size());
     dataOut << nsize;
     // continue for all children
-    for (vectorImpl<Bone*>::iterator it = std::begin(parent->_children); it != std::end(parent->_children); ++it) {
+    for (vector<Bone*>::iterator it = std::begin(parent->_children); it != std::end(parent->_children); ++it) {
         saveSkeleton(dataOut, *it);
     }
 }

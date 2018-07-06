@@ -79,7 +79,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
 
     bool loadFromFile = false;
 
-    vectorImpl<stringImpl> fileNames;
+    vector<stringImpl> fileNames;
 
     // We loop over every texture in the above list and store it in this
     // temporary string

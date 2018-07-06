@@ -136,7 +136,7 @@ bool glFramebuffer::create() {
 
     // If this is a multisampled FBO, make sure we have a resolve buffer
     if (_hasMultisampledColourAttachments && !_resolveBuffer) {
-        vectorImpl<RTAttachmentDescriptor> attachments;
+        vector<RTAttachmentDescriptor> attachments;
         for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
             for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachmentType>(i)); ++j) {
                 const RTAttachment_ptr& att = _attachmentPool->get(static_cast<RTAttachmentType>(i), j);
@@ -218,8 +218,8 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, this->_framebufferHandle);
 
     if (blitColour && hasColour()) {
-        const vectorImpl<RTAttachment_ptr>& outputAttachments = _attachmentPool->get(RTAttachmentType::Colour);
-        const vectorImpl<RTAttachment_ptr>& inputAttachments = input->_attachmentPool->get(RTAttachmentType::Colour);
+        const vector<RTAttachment_ptr>& outputAttachments = _attachmentPool->get(RTAttachmentType::Colour);
+        const vector<RTAttachment_ptr>& inputAttachments = input->_attachmentPool->get(RTAttachmentType::Colour);
         
         U8 colourCount = to_U8(std::min(outputAttachments.size(),inputAttachments.size()));
 
@@ -322,7 +322,7 @@ const RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index
     return RenderTarget::getAttachment(type, index);
 }
 
-void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments) {
+void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments) {
     const RTDrawMask& mask = drawPolicy.drawMask();
 
     for (U8 i = 0; i < activeAttachments.size(); ++i) {
@@ -340,12 +340,12 @@ void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const vect
     }
 }
 
-void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments) {
+void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments) {
     const RTDrawMask& mask = drawPolicy.drawMask();
 
     if (_previousPolicy.drawMask() != mask) {
         // handle colour buffers first
-        vectorImpl<GLenum> activeColourBuffers(activeAttachments.size());
+        vector<GLenum> activeColourBuffers(activeAttachments.size());
 
         if (!activeColourBuffers.empty()) {
             for (U8 j = 0; j < activeColourBuffers.size(); ++j) {
@@ -371,7 +371,7 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const vec
 void glFramebuffer::toggleAttachments(const RTDrawDescriptor& drawPolicy) {
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
         /// Get the attachments in use for each type
-        const vectorImpl<RTAttachment_ptr>& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
+        const vector<RTAttachment_ptr>& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
 
         /// Reset attachments if they changed (e.g. after layered rendering);
         for (const RTAttachment_ptr& attachment : attachments) {
@@ -388,7 +388,7 @@ void glFramebuffer::toggleAttachments(const RTDrawDescriptor& drawPolicy) {
 void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
     toggleAttachments(drawPolicy);
 
-    const vectorImpl<RTAttachment_ptr>& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
+    const vector<RTAttachment_ptr>& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
 
     /// Setup draw buffers
     prepareBuffers(drawPolicy, colourAttachments);
@@ -449,7 +449,7 @@ void glFramebuffer::end() {
     }
 }
 
-void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments) const {
+void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments) const {
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS) && hasColour()) {
         for (const RTAttachment_ptr& att : activeAttachments) {
             U32 binding = att->binding();
@@ -517,7 +517,7 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
     // This is needed because certain drivers need all attachments to use the same mip level
     // This is also VERY SLOW so it might be worth optimising it per-driver version / IHV
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
-        const vectorImpl<RTAttachment_ptr>& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
+        const vector<RTAttachment_ptr>& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
 
         for (const RTAttachment_ptr& attachment : attachments) {
             const Texture_ptr& texture = attachment->texture();

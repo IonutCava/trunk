@@ -124,11 +124,11 @@ class Application {
     stringImpl _memLogBuffer;
     /// A list of callback functions that get called when the application instance
     /// is destroyed
-    vectorImpl<DELEGATE_CBK<void> > _shutdownCallback;
+    vector<DELEGATE_CBK<void> > _shutdownCallback;
 
     /// A list of callbacks to execute on the main thread
     mutable SharedLock _taskLock;
-    vectorImpl<DELEGATE_CBK<void> > _mainThreadCallbacks;
+    vector<DELEGATE_CBK<void> > _mainThreadCallbacks;
 };
 
 };  // namespace Divide

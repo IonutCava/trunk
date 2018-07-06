@@ -340,7 +340,7 @@ bool glShaderProgram::loadFromBinary() {
     // Load the program from the binary file, if available and allowed, to avoid linking.
     if (s_useShaderBinaryCache) {
         // Load the program's binary format from file
-        vectorImpl<Byte> data;
+        vector<Byte> data;
         if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, _resourceName + ".fmt", data, FileType::BINARY) && !data.empty()) {
             _binaryFormat = *reinterpret_cast<GLenum*>(data.data());
             if (_binaryFormat != GL_NONE) {
@@ -601,7 +601,7 @@ bool glShaderProgram::bind() {
 /// This is used to set all of the subroutine indices for the specified shader
 /// stage for this program
 void glShaderProgram::SetSubroutines(ShaderType type,
-                                     const vectorImpl<U32>& indices) const {
+                                     const vector<U32>& indices) const {
     // The shader must be bound before calling this!
     DIVIDE_ASSERT(isBound() && isValid(),
                   "glShaderProgram error: tried to set subroutines on an "
@@ -682,7 +682,7 @@ I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
     return binding;
 }
 
-void glShaderProgram::Uniform(I32 binding, GFX::PushConstantType type, const vectorImpl<char>& values, bool flag) const {
+void glShaderProgram::Uniform(I32 binding, GFX::PushConstantType type, const vector<char>& values, bool flag) const {
     GLsizei byteCount = (GLsizei)values.size();
     switch (type) {
         case GFX::PushConstantType::BOOL:

@@ -139,17 +139,17 @@ namespace Divide {
             SceneManager& sceneManager = context().kernel().sceneManager();
             Scene& activeScene = sceneManager.getActiveScene();
 
-            const vectorImpl<I64>& selections = activeScene.getCurrentSelection();
+            const vector<I64>& selections = activeScene.getCurrentSelection();
             for (I64 nodeGUID : selections) {
                 SceneGraphNode* node = activeScene.sceneGraph().findNode(nodeGUID);
                 if (node != nullptr) {
                     ImGui::Text(node->name().c_str());
 
-                    vectorImpl<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*node);
+                    vector<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*node);
                     for (EditorComponent* comp : editorComp) {
                         if (ImGui::CollapsingHeader(comp->name().c_str()))
                         {
-                            vectorImpl<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
+                            vector<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
                                 ImGui::Spacing();

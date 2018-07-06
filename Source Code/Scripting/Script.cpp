@@ -97,7 +97,7 @@ void Script::bootstrap() {
     const SysInfo& systemInfo = const_sysInfo();
     const stringImpl& path = systemInfo._pathAndFilename._path;
 
-    vectorImpl<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation,
+    vector<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation,
                                          path + Paths::Scripts::g_scriptsAtomsLocation };
 
     _script = 
@@ -155,7 +155,7 @@ void Script::handleOutput(const std::string &msg) {
 }
 
 void Script::onScriptModify(const char* script, FileUpdateEvent& evt) {
-    vectorImpl<Script*> scriptsToReload;
+    vector<Script*> scriptsToReload;
 
     for (ScriptMap::value_type it : s_scripts) {
         for (const stringImpl& atom : it.second->_usedAtoms) {

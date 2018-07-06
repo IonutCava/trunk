@@ -72,8 +72,8 @@ class glBufferLockManager : public glLockManager {
 
    private:
     mutable SharedLock _lock;
-    vectorImpl<BufferLock> _bufferLocks;
-    vectorImpl<BufferLock> _swapLocks;
+    vector<BufferLock> _bufferLocks;
+    vector<BufferLock> _swapLocks;
 };
 
 };  // namespace Divide

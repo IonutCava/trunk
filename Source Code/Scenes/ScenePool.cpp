@@ -21,7 +21,7 @@ ScenePool::ScenePool(SceneManager& parentMgr)
 
 ScenePool::~ScenePool()
 {
-    vectorImpl<Scene*> tempScenes;
+    vector<Scene*> tempScenes;
     {   
         ReadLock r_lock(_sceneLock);
         tempScenes.insert(std::cend(tempScenes),
@@ -136,8 +136,8 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-vectorImpl<stringImpl> ScenePool::sceneNameList(bool sorted) const {
-    vectorImpl<stringImpl> scenes;
+vector<stringImpl> ScenePool::sceneNameList(bool sorted) const {
+    vector<stringImpl> scenes;
     for (SceneFactory::value_type it : g_sceneFactory) {
         scenes.push_back(it.first);
     }

@@ -38,8 +38,8 @@ void Camera::onUpdate(const Camera& cam) {
     }
 }
 
-vectorImpl<U64> Camera::cameraList() {
-    vectorImpl<U64> ret;
+vector<U64> Camera::cameraList() {
+    vector<U64> ret;
     ReadLock r_lock(s_cameraPoolLock);
     for (CameraPool::value_type& it : s_cameraPool) {
         ret.push_back(it.first);

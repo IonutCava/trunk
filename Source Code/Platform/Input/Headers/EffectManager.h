@@ -49,7 +49,7 @@ class EffectManager {
     JoystickInterface* _pJoystickInterface;
 
     // vector to hold variable effects
-    vectorImpl<VariableEffect*> _vecEffects;
+    vector<VariableEffect*> _vecEffects;
 
     // Selected effect
     I32 _nCurrEffectInd;
@@ -59,7 +59,7 @@ class EffectManager {
 
     // Indices (in _vecEffects) of the variable effects that are playable by the
     // selected joystick.
-    vectorImpl<vectorAlg::vecSize> _vecPlayableEffectInd;
+    vector<vec_size> _vecPlayableEffectInd;
 
    public:
     enum class EWhichEffect : I8 {
@@ -75,7 +75,7 @@ class EffectManager {
     void checkPlayableEffects();
     void selectEffect(EWhichEffect eWhich);
 
-    void printEffect(vectorAlg::vecSize nEffInd);
+    void printEffect(vec_size nEffInd);
 
     void printEffects();
 };

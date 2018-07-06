@@ -59,7 +59,7 @@ class PingPongScene : public Scene {
 
    private:
     I8 _score;
-    vectorImpl<stringImpl> _quotes;
+    vector<stringImpl> _quotes;
     vec3<F32> _sunvector;
     std::shared_ptr<Sphere3D> _ball;
     SceneGraphNode* _ballSGN;

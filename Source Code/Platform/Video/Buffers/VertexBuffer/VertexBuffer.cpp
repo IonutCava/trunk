@@ -52,9 +52,9 @@ void VertexBuffer::computeNormals() {
     size_t vertCount = getVertexCount();
     size_t indexCount = getIndexCount();
 
-    typedef vectorImpl<vec3<F32>> normalVector;
+    typedef vector<vec3<F32>> normalVector;
 
-    vectorImpl<normalVector> normalBuffer(vertCount);
+    vector<normalVector> normalBuffer(vertCount);
     for (U32 i = 0; i < indexCount; i += 3) {
 
         U32 idx0 = getIndex(i + 0);

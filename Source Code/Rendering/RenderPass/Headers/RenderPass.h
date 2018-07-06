@@ -70,7 +70,7 @@ class RenderPass : private NonCopyable {
 
     private:
         GFXDevice& _context;
-        vectorImpl<std::shared_ptr<BufferData>> _buffers;
+        vector<std::shared_ptr<BufferData>> _buffers;
 
     };
 

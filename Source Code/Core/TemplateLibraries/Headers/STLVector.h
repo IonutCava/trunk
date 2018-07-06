@@ -39,42 +39,35 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace vectorAlg = std;
 
 template <typename Type, typename Allocator = vectorAlg::allocator<Type>>
-using vectorImpl = vectorAlg::vector<Type, Allocator>;
+using vector = std::vector<Type, Allocator>;
 
 template <typename Type>
-using vectorImplFast = vectorImpl<Type, dvd_allocator<Type>>;
+using vectorFast = std::vector<Type, dvd_allocator<Type>>;
 
 #if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 template <typename Type>
-using vectorImplBest = vectorImplFast<Type>;
+using vectorBest = vectorFast<Type>;
 #else
 template <typename Type>
-using vectorImplBest = vectorImpl<Type>;
+using vectorBest = vector<Type>;
 #endif
 
+typedef std::size_t vec_size;
+
 namespace std {
-    typedef size_t vecSize;
 
-    // template<typename T1, typename T2>
-    // using pair = std::pair<T1, T2>;
-
-    template <typename T>
-    inline void shrinkToFit(vectorImpl<T>& inputVector) {
+    template <typename Type, typename Allocator = vectorAlg::allocator<Type>>
+    inline void shrinkToFit(vector<Type, Allocator>& inputVector) {
         inputVector.shrink_to_fit();
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImpl<T>& inputVector, Args&&... args) {
+    inline void emplace_back(vector<T>& inputVector, Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }
 
-    template <typename T>
-    inline void shrinkToFit(vectorImplFast<T>& inputVector) {
-        inputVector.shrink_to_fit();
-    }
-
     template <typename T, class... Args>
-    inline void emplace_back(vectorImplFast<T>& inputVector, Args&&... args) {
+    inline void emplace_back(vectorFast<T>& inputVector, Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }
 

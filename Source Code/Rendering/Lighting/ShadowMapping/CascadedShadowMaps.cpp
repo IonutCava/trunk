@@ -69,7 +69,7 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     
     const RenderTarget& depthMap = getDepthMap();
 
-    vectorImpl<RTAttachmentDescriptor> att = {
+    vector<RTAttachmentDescriptor> att = {
         { blurMapDescriptor, RTAttachmentType::Colour },
     };
 
@@ -96,7 +96,7 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
     _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
 
-    vectorImpl<vec2<F32>> blurSizes(_numSplits);
+    vector<vec2<F32>> blurSizes(_numSplits);
     blurSizes[0].set(1.0f / (depthMap.getWidth() * 1.0f), 1.0f / (depthMap.getHeight() * 1.0f));
     for (int i = 1; i < _numSplits; ++i) {
         blurSizes[i].set(blurSizes[i - 1] / 2.0f);

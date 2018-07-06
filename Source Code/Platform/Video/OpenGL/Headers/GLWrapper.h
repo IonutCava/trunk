@@ -357,8 +357,8 @@ private:
     static BlendingProperties s_blendPropertiesGlobal;
 	static GLboolean s_blendEnabledGlobal;
 
-    static vectorImpl<BlendingProperties> s_blendProperties;
-    static vectorImpl<GLboolean> s_blendEnabled;
+    static vector<BlendingProperties> s_blendProperties;
+    static vector<GLboolean> s_blendEnabled;
 
     static UColour   s_blendColour;
     static Rect<I32> s_activeViewport;

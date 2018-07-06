@@ -216,7 +216,7 @@ void GL_API::appendToShaderHeader(ShaderType type,
     if (entry.find("#include") == std::string::npos) {
         inOutOffset[index] += Util::LineCount(entry);
     } else {
-        vectorImpl<stringImpl> tempAtoms;
+        vector<stringImpl> tempAtoms;
         inOutOffset[index] += Util::LineCount(glShader::preprocessIncludes("header", entry, 0, tempAtoms));
     }
 }
@@ -733,7 +733,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
     I32 width = _context.renderingResolution().w;
     I32 height = _context.renderingResolution().h;
         
-    vectorAlg::vecSize drawCount = 0;
+    vec_size drawCount = 0;
 
     fonsClearState(_fonsContext);
     size_t previousStyle = 0;
@@ -766,9 +766,9 @@ void GL_API::drawText(const TextElementBatch& batch) {
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         
-        const vectorImplFast<stringImpl>& text = entry.text();
-        vectorAlg::vecSize lineCount = text.size();
-        for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
+        const vectorFast<stringImpl>& text = entry.text();
+        vec_size lineCount = text.size();
+        for (vec_size i = 0; i < lineCount; ++i) {
             fonsDrawText(_fonsContext,
                             textX,
                             textY - (lh * i),
@@ -951,7 +951,7 @@ void GL_API::popDebugMessage() {
 void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
 
-    const vectorImplFast<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
+    const vectorFast<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
     for (const std::shared_ptr<GFX::Command>& cmd : commands) {
         switch (cmd->_type) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
@@ -1056,7 +1056,7 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::DRAW_COMMANDS : {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
 
-                const vectorImpl<GenericDrawCommand>& drawCommands = static_cast<GFX::DrawCommand*>(cmd.get())->_drawCommands;
+                const vector<GenericDrawCommand>& drawCommands = static_cast<GFX::DrawCommand*>(cmd.get())->_drawCommands;
                 for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                     if (draw(currentDrawCommand)) {
                         if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
@@ -1098,11 +1098,11 @@ void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
     if (false) {
-        constexpr vectorAlg::vecSize k_textureThreshold = 3;
+        constexpr vec_size k_textureThreshold = 3;
         if (textureData.textures().size() > k_textureThreshold) {
             GLushort offset = 0;
-            vectorImpl<GLuint> handles;
-            vectorImpl<GLuint> samplers;
+            vector<GLuint> handles;
+            vector<GLuint> samplers;
             ///etc
 
             GL_API::bindTextures(offset, (GLuint)handles.size(), handles.data(), samplers.data());

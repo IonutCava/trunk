@@ -19,7 +19,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
 
     {
-        vectorImpl<RTAttachmentDescriptor> att = {
+        vector<RTAttachmentDescriptor> att = {
             { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
         };
 
@@ -34,7 +34,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     U16 ssaoNoiseSize = 4;
     U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;
-    vectorImpl<vec3<F32>> noiseData(noiseDataSize);
+    vector<vec3<F32>> noiseData(noiseDataSize);
 
     for (vec3<F32>& noise : noiseData) {
         noise.set(Random(-1.0f, 1.0f),
@@ -44,7 +44,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
 
     U16 kernelSize = 32;
-    vectorImpl<vec3<F32>> kernel(kernelSize);
+    vector<vec3<F32>> kernel(kernelSize);
     for (U16 i = 0; i < kernelSize; ++i) {
         vec3<F32>& k = kernel[i];
         k.set(Random(-1.0f, 1.0f),
@@ -87,7 +87,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     outputDescriptor.setSampler(screenSampler);
 
     {
-        vectorImpl<RTAttachmentDescriptor> att = {
+        vector<RTAttachmentDescriptor> att = {
             { outputDescriptor, RTAttachmentType::Colour },
         };
 

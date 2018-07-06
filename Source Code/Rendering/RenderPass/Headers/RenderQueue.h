@@ -45,7 +45,7 @@ FWD_DECLARE_MANAGED_CLASS(Material);
 class RenderQueue {
    public:
     typedef std::array<RenderBin*, RenderBinType::COUNT> RenderBinArray;
-    typedef std::array<vectorImpl<SceneGraphNode*>, to_base(RenderBinType::COUNT)> SortedQueues;
+    typedef std::array<vector<SceneGraphNode*>, to_base(RenderBinType::COUNT)> SortedQueues;
 
   public:
     RenderQueue(GFXDevice& context);
@@ -84,7 +84,7 @@ class RenderQueue {
     GFXDevice& _context;
     RenderBinArray _renderBins;
     SortedQueues   _sortedQueues;
-    vectorImpl<RenderBin*> _activeBins;
+    vector<RenderBin*> _activeBins;
 };
 
 };  // namespace Divide

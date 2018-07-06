@@ -66,7 +66,7 @@ void NetworkScene::checkPatches(I64 btnGUID) {
     p << stringImpl("NetworkScene");
     p << _modelDataArray.size();
 
-    /*for(vectorImpl<FileData>::iterator _iter = std::begin(_modelDataArray);
+    /*for(vector<FileData>::iterator _iter = std::begin(_modelDataArray);
     _iter != std::end(_modelDataArray); ++_iter)    {
         p << (*_iter).ItemName;
         p << (*_iter).ModelName;

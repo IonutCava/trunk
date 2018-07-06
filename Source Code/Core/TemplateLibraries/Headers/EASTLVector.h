@@ -32,42 +32,41 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #pragma once
 #ifndef _EASTL_VECTOR_H_
 #define _EASTL_VECTOR_H_
-#ifndef EA_COMPILER_HAS_MOVE_SEMANTICS
-#define EA_COMPILER_HAS_MOVE_SEMANTICS
-#endif
+
 #include <EASTL/vector.h>
+#include <EASTL/allocator.h>
+#include <EASTL/fixed_allocator.h>
 #include "TemplateAllocator.h"
 
 namespace vectorAlg = eastl;
 
-template <typename Type, typename Allocator = vectorAlg::allocator<Type>>
-using vectorImpl = vectorAlg::vector<Type, Allocator>;
-
 template <typename Type>
-using vectorImplFast = vectorImpl<Type, dvd_allocator<Type>>;
+using vector = eastl::vector<Type>;
+
+//ToDo: actually create a better general purpose allocator
+template <typename Type>
+using vectorFast = vector<Type>;
+
+#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
+template <typename Type>
+using vectorBest = vectorFast<Type>;
+#else
+template <typename Type>
+using vectorBest = vector<Type>;
+#endif
+
+typedef eastl_size_t vec_size;
 
 namespace eastl {
-    typedef eastl_size_t vecSize;
 
     template <typename T>
-    inline void shrinkToFit(vectorImpl<T>& inputVector) {
-        inputVector.set_capacity(inputVector.size() * sizeof(T));
+    inline void shrinkToFit(vector<T>& inputVector) {
+        inputVector.shrink_to_fit();
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImpl<T>& inputVector,
-        Args&&... args) {
-        new (inputVector.push_back_uninitialized()) T(std::forward<Args>(args)...);
-    }
-
-    template <typename T>
-    inline void shrinkToFit(vectorImplFast<T>& inputVector) {
-        inputVector.set_capacity(inputVector.size() * sizeof(T));
-    }
-
-    template <typename T, class... Args>
-    inline void emplace_back(vectorImplFast<T>& inputVector, Args&&... args) {
-        new (inputVector.push_back_uninitialized()) T(std::forward<Args>(args)...);
+    inline void emplace_back(vector<T>& inputVector, Args&&... args) {
+        inputVector.emplace_back(std::forward<Args>(args)...);
     }
 
 };

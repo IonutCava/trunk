@@ -291,23 +291,4 @@ constexpr bool ENABLE_GPU_VALIDATION = false;
 /// This does not disable all custom allocators as some, like special object pools are very specialised 
 //#define USE_CUSTOM_MEMORY_ALLOCATORS
 
-#define BOOST_IMP 0
-#define STL_IMP 1
-#define EASTL_IMP 2
-
-/// Specify the string implementation to use
-#ifndef STRING_IMP
-#define STRING_IMP EASTL_IMP
-#endif  // STRING_IMP
-
-/// Specify the vector implementation to use
-#ifndef VECTOR_IMP
-#define VECTOR_IMP EASTL_IMP
-#endif  // VECTOR_IMP
-
-/// Specify the hash maps / unordered maps implementation to use
-#ifndef HASH_MAP_IMP
-#define HASH_MAP_IMP EASTL_IMP
-#endif  // HASH_MAP_IMP
-
 #endif  //_DIVIDE_CONFIG_H_

@@ -58,7 +58,7 @@ struct ComputeParams {
     vec3<U32> _groupSize;
 };
 
-typedef std::array<vectorImpl<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
+typedef std::array<vector<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
 
 class PipelineDescriptor : public Hashable {
   public:

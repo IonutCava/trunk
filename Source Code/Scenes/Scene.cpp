@@ -182,7 +182,7 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
                     CreateResource<AudioDescriptor>(_resCache, music));
 }
 
-void Scene::addPatch(vectorImpl<FileData>& data) {
+void Scene::addPatch(vector<FileData>& data) {
 }
 
 void Scene::loadXMLAssets(bool singleStep) {
@@ -1150,7 +1150,7 @@ void Scene::clearTasks() {
 
 void Scene::removeTask(I64 jobIdentifier) {
     WriteLock w_lock(_tasksMutex);
-    vectorImpl<TaskHandle>::iterator it;
+    vector<TaskHandle>::iterator it;
     for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
         if ((*it)._task->jobIdentifier() == jobIdentifier) {
             (*it)._task->stopTask();
@@ -1230,7 +1230,7 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
 }
 
 bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
-    const vectorImpl<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
+    const vector<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
 
     if (!waterBodies.empty()) {
         const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
@@ -1355,7 +1355,7 @@ void Scene::findSelection(PlayerIndex idx, bool clearOld) {
         return;
     }
 
-    vectorImpl<I64>& selections = _currentSelection[idx];
+    vector<I64>& selections = _currentSelection[idx];
     if (!selections.empty()) {
         if (std::find(std::cbegin(selections), std::cend(selections), hoverGUID) != std::cend(selections)) {
             //Already selected

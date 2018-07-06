@@ -206,7 +206,7 @@ void Editor::close() {
 
     if (_mainWindow != nullptr) {
         for (U8 i = 0; i < to_base(WindowEvent::COUNT); ++i) {
-            vectorImpl<I64>& guids = _windowListeners[i];
+            vector<I64>& guids = _windowListeners[i];
             for (I64 guid : guids) {
                 _mainWindow->removeEventlistener(static_cast<WindowEvent>(i), guid);
             }

@@ -14,7 +14,7 @@ namespace Divide {
 DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_DEPTH_OF_FIELD)
 {
-    vectorImpl<RTAttachmentDescriptor> att = {
+    vector<RTAttachmentDescriptor> att = {
         { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
     };
 

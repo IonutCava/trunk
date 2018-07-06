@@ -111,12 +111,12 @@ protected:
     OIS::InputManager* _pInputInterface;
     EventHandler* _pEventHdlr;
 
-    vectorImpl<KBMousePair> _kbMouseDevices;
+    vector<KBMousePair> _kbMouseDevices;
     hashMap<I32, I32> _keyboardIDToEntry;
     hashMap<I32, I32> _mouseIdToEntry;
 
     /// multiple joystick support
-    vectorImpl<OIS::JoyStick*> _joysticks;
+    vector<OIS::JoyStick*> _joysticks;
     hashMap<I32, Joystick> _joystickIdToEntry;
 
     JoystickInterface* _pJoystickInterface;
@@ -125,7 +125,7 @@ protected:
     bool _bMustStop;
     bool _bIsInitialized;
 
-    vectorImpl<KeyEvent> _keys;
+    vector<KeyEvent> _keys;
 
 };
 namespace Attorney {

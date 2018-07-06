@@ -58,8 +58,8 @@ class ImageLayer {
     }
     /// the image data as it was read from the file / memory.
     size_t _size;
-    vectorImpl<U8> _data;
-    vectorImpl<F32> _dataf;
+    vector<U8> _data;
+    vector<F32> _dataf;
     /// with and height
     vec3<U16> _dimensions;
 };
@@ -83,7 +83,7 @@ class ImageData : private NonCopyable {
         return data;
     }
 
-    inline const vectorImpl<ImageLayer>& imageLayers() const {
+    inline const vector<ImageLayer>& imageLayers() const {
         return _data;
     }
     /// image width, height and depth
@@ -126,7 +126,7 @@ class ImageData : private NonCopyable {
 
    private:
     //Each entry is a separate mip map.
-    vectorImpl<ImageLayer> _data;
+    vector<ImageLayer> _data;
     /// is the image stored as a regular image or in a compressed format? (eg. DXT1 / DXT3 / DXT5)
     bool _compressed;
     /// should we flip the image's origin on load?

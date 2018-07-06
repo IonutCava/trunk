@@ -73,7 +73,7 @@ class ProfileTimer {
     void removeChildTimer(ProfileTimer& child);
 
    protected:
-     vectorImpl<U32> _children;
+     vector<U32> _children;
      U32 _parent;
      ApplicationTimer& _appTimer;
 };

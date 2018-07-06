@@ -374,10 +374,10 @@ void FlushFloatEvents();
 
 void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp);
 
-const vectorImplFast<GlobalFloatEvent>& GetFloatEvents();
+const vectorFast<GlobalFloatEvent>& GetFloatEvents();
 
 void PlotFloatEvents(const stringImpl& eventName,
-                     vectorImplFast<GlobalFloatEvent> eventsCopy,
+                     vectorFast<GlobalFloatEvent> eventsCopy,
                      GraphPlot2D& targetGraph);
 
 /// a la Boost

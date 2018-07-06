@@ -179,7 +179,7 @@ void Client::start_write() {
     ar & p;
 
     size_t header = buf.size();
-    vectorImpl<boost::asio::const_buffer> buffers;
+    vector<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
     buffers.push_back(buf.data());
     boost::asio::async_write(_socket, buffers,

@@ -76,7 +76,7 @@ protected:
     U32 _id;
     bool _needRefresh;
     GFXDevice& _context;
-    vectorImpl<std::shared_ptr<glHardwareQuery>> _queries;
+    vector<std::shared_ptr<glHardwareQuery>> _queries;
 };
 
 };

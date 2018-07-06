@@ -49,7 +49,7 @@ namespace Divide {
 
         void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search, const stringImpl& replace);
 
-        void GetPermutations(const stringImpl& inputString, vectorImpl<stringImpl>& permutationContainer);
+        void GetPermutations(const stringImpl& inputString, vector<stringImpl>& permutationContainer);
 
         bool IsNumber(const stringImpl& s);
 
@@ -63,11 +63,11 @@ namespace Divide {
         bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b);
 
         /// http://stackoverflow.com/questions/236129/split-a-string-in-c
-        vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter);
+        vector<stringImpl> Split(const stringImpl& input, char delimiter);
 
         template<typename T>
-        typename std::enable_if<std::is_same<T, vectorImpl<stringImpl>>::value ||
-                                std::is_same<T, vectorImplFast<stringImpl>>::value, T&>::type
+        typename std::enable_if<std::is_same<T, vector<stringImpl>>::value ||
+                                std::is_same<T, vectorFast<stringImpl>>::value, T&>::type
         Split(const stringImpl& input, char delimiter, T& elems);
 
         /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring

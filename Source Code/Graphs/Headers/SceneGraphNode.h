@@ -198,7 +198,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<SGNRayResult>& selectionHits,
+                   vector<SGNRayResult>& selectionHits,
                    bool recursive = true) const;
 
     /// Selection helper functions
@@ -362,7 +362,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         SetBit(_updateFlags, to_base(flag));
     }
 
-    void getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList);
+    void getOrderedNodeList(vector<SceneGraphNode*>& nodeList);
 
     void processDeleteQueue();
 
@@ -427,7 +427,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     stringImpl _name;
     SceneNode_ptr _node;
     SceneGraphNode* _parent;
-    vectorImpl<SceneGraphNode*> _children;
+    vector<SceneGraphNode*> _children;
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
     std::atomic<bool> _visibilityLocked;
@@ -445,20 +445,20 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SGNRelationshipCache _relationshipCache;
 
     mutable SharedLock _childrenDeletionLock;
-    vectorImpl<vectorAlg::vecSize> _childrenPendingDeletion;
+    vector<vec_size> _childrenPendingDeletion;
 
     // ToDo: Remove this HORRIBLE hack -Ionut
-    vectorImpl<EditorComponent*> _editorComponents;
+    vector<EditorComponent*> _editorComponents;
 };
 
 namespace Attorney {
     class SceneGraphNodeEditor {
         private:
-        static vectorImpl<EditorComponent*>& editorComponents(SceneGraphNode& node) {
+        static vector<EditorComponent*>& editorComponents(SceneGraphNode& node) {
             return node._editorComponents;
         }
 
-        static const vectorImpl<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
+        static const vector<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
             return node._editorComponents;
         }
 

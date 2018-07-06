@@ -136,7 +136,7 @@ void Task::stopTask() {
     _stopRequested = true;
 }
 
-vectorAlg::vecSize Task::childTaskCount() const {
+vec_size Task::childTaskCount() const {
     UniqueLock u_lock(_childTaskMutex);
     return _childTasks.size();
 }

@@ -173,7 +173,7 @@ void Frustum::updatePoints() {
 }
 
 // Get the frustum corners in WorldSpace.
-void Frustum::getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS) {
+void Frustum::getCornersWorldSpace(vector<vec3<F32> >& cornersWS) {
     updatePoints();
 
     cornersWS.resize(0);
@@ -181,7 +181,7 @@ void Frustum::getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS) {
 }
 
 // Get the frustum corners in ViewSpace.
-void Frustum::getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS) {
+void Frustum::getCornersViewSpace(vector<vec3<F32> >& cornersVS) {
     getCornersWorldSpace(cornersVS);
 
     const mat4<F32>& viewMatrix = _parentCamera.getViewMatrix();

@@ -269,7 +269,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
    private:
 
     bool _viewportDirty;
-    vectorImpl<Rect<I32>> _targetViewports;
+    vector<Rect<I32>> _targetViewports;
 
     TaskHandle _splashTask;
     std::atomic_bool _splashScreenUpdating;
@@ -294,9 +294,9 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     Time::ProfileTimer& _flushToScreenTimer;
     Time::ProfileTimer& _preRenderTimer;
     Time::ProfileTimer& _postRenderTimer;
-    vectorImpl<Time::ProfileTimer*> _renderTimer;
-    vectorImpl<Time::ProfileTimer*> _postFxRenderTimer;
-    vectorImpl<Time::ProfileTimer*> _blitToDisplayTimer;
+    vector<Time::ProfileTimer*> _renderTimer;
+    vector<Time::ProfileTimer*> _postFxRenderTimer;
+    vector<Time::ProfileTimer*> _blitToDisplayTimer;
 
     // Command line arguments
     I32 _argc;

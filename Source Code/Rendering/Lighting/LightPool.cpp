@@ -176,8 +176,8 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, GFX::Comm
     Time::ScopedTimer timer(_shadowPassTimer);
     // generate shadowmaps for each light
     I32 idx = 0;
-    vectorAlg::vecSize count = _sortedShadowCastingLights.size();
-    for (vectorAlg::vecSize i = 0; i < count; ++i) {
+    vec_size count = _sortedShadowCastingLights.size();
+    for (vec_size i = 0; i < count; ++i) {
         Light* light = _sortedShadowCastingLights[i];
         if(light != nullptr) {
             _currentShadowCastingLight = light;
@@ -306,8 +306,8 @@ void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,
 void LightPool::uploadLightBuffers() {
     if (!_buffersUpdated) {
         // Passing 0 elements is fine (early out in the buffer code)
-        vectorAlg::vecSize lightPropertyCount = _sortedLightProperties.size();
-        vectorAlg::vecSize lightShadowCount = _sortedShadowProperties.size();
+        vec_size lightPropertyCount = _sortedLightProperties.size();
+        vec_size lightShadowCount = _sortedShadowProperties.size();
 
         lightPropertyCount = std::min(lightPropertyCount, static_cast<size_t>(Config::Lighting::MAX_POSSIBLE_LIGHTS));
         lightShadowCount = std::min(lightShadowCount, static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));

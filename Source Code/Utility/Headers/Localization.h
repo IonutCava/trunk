@@ -46,7 +46,7 @@ constexpr char* g_languageFileExtension = ".ini";
 
 class LanguageData {
 public:
-    typedef vectorImpl<DELEGATE_CBK<void, const char* /*new language*/>> LangCallbacks;
+    typedef vector<DELEGATE_CBK<void, const char* /*new language*/>> LangCallbacks;
 public:
     LanguageData();
     ~LanguageData();

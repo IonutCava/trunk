@@ -27,13 +27,13 @@ TextureDataContainer::~TextureDataContainer()
 }
 
 bool TextureDataContainer::set(const TextureDataContainer& other) {
-    auto compareTextures = [](const vectorImplFast<std::pair<TextureData, U8>>& a,
-                              const vectorImplFast<std::pair<TextureData, U8>>& b) -> bool {
+    auto compareTextures = [](const vectorFast<std::pair<TextureData, U8>>& a,
+                              const vectorFast<std::pair<TextureData, U8>>& b) -> bool {
         if (a.size() != b.size()) {
             return false;
         }
 
-        for (vectorAlg::vecSize i = 0; i < a.size(); ++i) {
+        for (vec_size i = 0; i < a.size(); ++i) {
             if (a[i] != b[i]) {
                 return false;
             }
@@ -42,7 +42,7 @@ bool TextureDataContainer::set(const TextureDataContainer& other) {
         return true;
     };
 
-    const vectorImplFast<std::pair<TextureData, U8>>& otherTextures = other.textures();
+    const vectorFast<std::pair<TextureData, U8>>& otherTextures = other.textures();
     if (!compareTextures(otherTextures, _textures)) {
         _textures.resize(0);
         _textures.reserve(otherTextures.size());
@@ -77,7 +77,7 @@ bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
 }
 
 bool TextureDataContainer::removeTexture(U8 binding) {
-    vectorImplFast<std::pair<TextureData, U8>>::iterator it;
+    vectorFast<std::pair<TextureData, U8>>::iterator it;
     it = std::find_if(std::begin(_textures), std::end(_textures),
                       [&binding](const std::pair<TextureData, U8>& entry) {
         return (entry.second == binding);
@@ -94,7 +94,7 @@ bool TextureDataContainer::removeTexture(U8 binding) {
 bool TextureDataContainer::removeTexture(const TextureData& data) {
     size_t inputHash = data.getHash();
 
-    vectorImplFast<std::pair<TextureData, U8>>::iterator it;
+    vectorFast<std::pair<TextureData, U8>>::iterator it;
     it = std::find_if(std::begin(_textures), std::end(_textures),
                       [&inputHash](const std::pair<TextureData, U8>& entry) {
                           return (entry.first.getHash() == inputHash);
@@ -108,11 +108,11 @@ bool TextureDataContainer::removeTexture(const TextureData& data) {
     return false;
 }
 
-vectorImplFast<std::pair<TextureData, U8>>& TextureDataContainer::textures() {
+vectorFast<std::pair<TextureData, U8>>& TextureDataContainer::textures() {
     return _textures;
 }
 
-const vectorImplFast<std::pair<TextureData, U8>>& TextureDataContainer::textures() const {
+const vectorFast<std::pair<TextureData, U8>>& TextureDataContainer::textures() const {
     return _textures;
 }
 
