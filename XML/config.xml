@@ -14,7 +14,7 @@
 <!-- RUNTIME: Values use by the application after loading is complete -->
 <runtime>
 	<!-- 1 = primary display, 0 = secondary display, etc. Value is clamped between [1, LAST_DISPLAY] -->
-	<targetDisplay>2</targetDisplay>
+	<targetDisplay>1</targetDisplay>
 	<!-- set to true to start the application in windowed mode -->
 	<windowedMode>true</windowedMode>
 	<windowResizable>false</windowResizable>

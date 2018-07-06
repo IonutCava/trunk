@@ -57,20 +57,12 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
     return true;
 }
 
-void GFXDevice::uploadGlobalBufferData() {
-    if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] && _lastNodeCount > 0) {
-        _nodeBuffer->UpdateData(0, _lastNodeCount, _matricesData.data());
-        _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
-    }
-    if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] && _lastCmdCount > 0) {
-        uploadDrawCommands(_drawCommandsCache, _lastCmdCount);
-        _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
-    }
-    if (_buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)]) {
+void GFXDevice::uploadGPUBlock() {
+    if (_gpuBlock._updated) {
         // We flush the entire buffer on update to inform the GPU that we don't
         // need the previous data. Might avoid some driver sync
-        _gfxDataBuffer->SetData(&_gpuBlock);
-        _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = false;
+        _gfxDataBuffer->SetData(&_gpuBlock._data);
+        _gpuBlock._updated = false;
     }
 }
 
@@ -117,7 +109,7 @@ void GFXDevice::flushRenderQueue() {
     if (_renderQueue.empty()) {
         return;
     }
-    uploadGlobalBufferData();
+    uploadGPUBlock();
     for (RenderPackage& package : _renderQueue) {
         vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
         vectorAlg::vecSize commandCount = drawCommands.size();
@@ -195,15 +187,18 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
         // Calculate the normal matrix (world * view)
         // If the world matrix is uniform scaled, inverseTranspose is a
         // double transpose (no-op) so we can skip it
-        dataOut._matrix[1].set(
-            mat3<F32>(dataOut._matrix[0] * _gpuBlock._ViewMatrix));
+
+        dataOut._matrix[1].set(mat3<F32>(dataOut._matrix[0]));
+
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate
             // scaling contribution but preserve rotation
-            dataOut._matrix[1].set(mat3<F32>(dataOut._matrix[0]));
             dataOut._matrix[1].inverseTranspose();
-            dataOut._matrix[1] *= _gpuBlock._ViewMatrix;
         }
+
+        dataOut._matrix[1].mat[15] = 0.0f;
+
+        dataOut._matrix[1].set(dataOut._matrix[1] * _gpuBlock._data._ViewMatrix);
     }
     // Since the normal matrix is 3x3, we can use the extra row and column
     // to store additional data
@@ -299,10 +294,13 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
             }
         });
 
+    if (_lastNodeCount != lastNodeCount) {
+        _lastNodeCount = lastNodeCount;
+        _nodeBuffer->UpdateData(0, _lastNodeCount, _matricesData.data());
+    }
+
     _lastCmdCount = lastCmdCount;
-    _lastNodeCount = lastNodeCount;
-    _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
-    _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = refreshNodeData;
+    uploadDrawCommands(_drawCommandsCache, _lastCmdCount);
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
@@ -348,15 +346,10 @@ void GFXDevice::drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& vie
 void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
                            ShaderProgram* const shaderProgram) {
     // We need a valid amount of points. Check lower limit
-    if (numPoints == 0) {
-        Console::errorfn(Locale::get("ERROR_GFX_POINTS_UNDERFLOW"));
-        return;
-    }
+    DIVIDE_ASSERT(numPoints != 0, Locale::get("ERROR_GFX_POINTS_UNDERFLOW"));
     // Also check upper limit
-    if (numPoints > Config::MAX_POINTS_PER_BATCH) {
-        Console::errorfn(Locale::get("ERROR_GFX_POINTS_OVERFLOW"));
-        return;
-    }
+    DIVIDE_ASSERT(numPoints <= Config::MAX_POINTS_PER_BATCH, Locale::get("ERROR_GFX_POINTS_OVERFLOW"));
+
     // We require a state hash value to set proper states
     _defaultDrawCmd.stateHash(stateHash);
     // We also require a shader program (although it may already be bound.

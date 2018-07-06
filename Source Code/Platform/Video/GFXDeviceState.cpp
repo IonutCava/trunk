@@ -72,7 +72,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
     // Shader Storage Buffer that's persistently
     // and coherently mapped
-    _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true));
+    _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true, true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
     // Resize our window to the target resolution
@@ -178,10 +178,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZConstructProgram->Uniform("LastMip", ShaderProgram::TextureUsage::UNIT0);
     // Store our target z distances
-    _gpuBlock._ZPlanesCombined.z =
-        ParamHandler::getInstance().getParam<F32>("rendering.zNear");
-    _gpuBlock._ZPlanesCombined.w =
-        ParamHandler::getInstance().getParam<F32>("rendering.zFar");
+    _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
+        ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
+        ParamHandler::getInstance().getParam<F32>("rendering.zFar")));
     // Create a separate loading thread that shares resources with the main
     // rendering context
     _state.startLoaderThread(
@@ -255,10 +254,9 @@ void GFXDevice::closeRenderingAPI() {
 /// the screen, so we try to do some processing
 void GFXDevice::idle() {
     // Update the zPlanes if needed
-    _gpuBlock._ZPlanesCombined.z =
-        ParamHandler::getInstance().getParam<F32>("rendering.zNear");
-    _gpuBlock._ZPlanesCombined.w =
-        ParamHandler::getInstance().getParam<F32>("rendering.zFar");
+    _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
+        ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
+        ParamHandler::getInstance().getParam<F32>("rendering.zFar")));
     // Pass the idle call to the post processing system
     PostFX::getInstance().idle();
     // And to the shader manager

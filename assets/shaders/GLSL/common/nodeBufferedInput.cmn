@@ -9,7 +9,7 @@ struct NodeData {
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
 {
-    NodeData dvd_Matrices[];
+    NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
 #define dvd_WorldMatrix   dvd_Matrices[dvd_drawID]._matrix[0]

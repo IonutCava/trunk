@@ -43,7 +43,7 @@ void GFXDevice::previewDepthBuffer() {
 /// Render all of our immediate mode primitives. This isn't very optimised and
 /// most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
-    uploadGlobalBufferData();
+    uploadGPUBlock();
     // We need a shader that emulates the fixed pipeline in order to continue
     if (!_imShader->bind()) {
         return;
@@ -108,7 +108,7 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     primitive->stateHash(primitiveDescriptor.getHash());
     drawLines(*primitive,
               _axisLines,
-              offset * _gpuBlock._ViewMatrix.getInverse(),
+              offset * _gpuBlock._data._ViewMatrix.getInverse(),
               vec4<I32>(windowWidth - 120, 8, 128, 128),
               true);
 }

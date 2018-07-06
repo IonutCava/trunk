@@ -59,9 +59,6 @@ GFXDevice::GFXDevice()
     _viewportUpdate = false;
     _rasterizationEnabled = true;
     _enablePostProcessing = false;
-    _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = true;
-    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
-    _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
     _GPUVendor = GPUVendor::COUNT;
@@ -326,20 +323,20 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color) {
 void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
     // The matrix names are self-explanatory
     if (mode == MATRIX_MODE::VIEW_PROJECTION) {
-        mat.set(_gpuBlock._ViewProjectionMatrix);
+        mat.set(_gpuBlock._data._ViewProjectionMatrix);
     } else if (mode == MATRIX_MODE::VIEW) {
-        mat.set(_gpuBlock._ViewMatrix);
+        mat.set(_gpuBlock._data._ViewMatrix);
     } else if (mode == MATRIX_MODE::PROJECTION) {
-        mat.set(_gpuBlock._ProjectionMatrix);
+        mat.set(_gpuBlock._data._ProjectionMatrix);
     } else if (mode == MATRIX_MODE::TEXTURE) {
         mat.identity();
         Console::errorfn(Locale::get("ERROR_TEXTURE_MATRIX_ACCESS"));
     } else if (mode == MATRIX_MODE::VIEW_INV) {
-        _gpuBlock._ViewMatrix.getInverse(mat);
+        _gpuBlock._data._ViewMatrix.getInverse(mat);
     } else if (mode == MATRIX_MODE::PROJECTION_INV) {
-        _gpuBlock._ProjectionMatrix.getInverse(mat);
+        _gpuBlock._data._ProjectionMatrix.getInverse(mat);
     } else if (mode == MATRIX_MODE::VIEW_PROJECTION_INV) {
-        _gpuBlock._ViewProjectionMatrix.getInverse(mat);
+        _gpuBlock._data._ViewProjectionMatrix.getInverse(mat);
     } else {
         DIVIDE_ASSERT(
             false,
@@ -349,10 +346,11 @@ void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
 
 /// Update the internal GPU data buffer with the clip plane values
 void GFXDevice::updateClipPlanes() {
+    GPUBlock::GPUData& data = _gpuBlock._data;
     for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
-        _gpuBlock._clipPlanes[i] = _clippingPlanes[i].getEquation();
+        data._clipPlanes[i] = _clippingPlanes[i].getEquation();
     }
-    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
+    _gpuBlock._updated = true;
 }
 
 /// Update the internal GPU data buffer with the updated viewport dimensions
@@ -360,56 +358,68 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
     // Change the viewport on the Rendering API level
     changeViewport(viewport);
     // Update the buffer with the new value
-    _gpuBlock._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
-    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
+    _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
+    _gpuBlock._updated = true;
 }
 
 /// Update the virtual camera's matrices and upload them to the GPU
 F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
     bool updated = false;
-    if (eyePos != _gpuBlock._cameraPosition) {
-        _gpuBlock._cameraPosition.set(eyePos);
+
+    GPUBlock::GPUData& data = _gpuBlock._data;
+
+    if (eyePos != _gpuBlock._data._cameraPosition) {
+        data._cameraPosition.set(eyePos);
         updated = true;
     }
-    if (viewMatrix != _gpuBlock._ViewMatrix) {
-        _gpuBlock._ViewMatrix.set(viewMatrix);
+
+    if (viewMatrix != _gpuBlock._data._ViewMatrix) {
+        data._ViewMatrix.set(viewMatrix);
         updated = true;
     }
+
     if (updated) {
-        _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
-                                            _gpuBlock._ProjectionMatrix);
-        _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
+        data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
+        _gpuBlock._updated = true;
     }
-    return _gpuBlock._ViewMatrix.mat;
+
+    return data._ViewMatrix.mat;
 }
 
 /// Enable an orthographic projection and upload the corresponding matrices to
 /// the GPU
 F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
-    _gpuBlock._ProjectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x,
-                                      planes.y);
-    _gpuBlock._ZPlanesCombined.x = planes.x;
-    _gpuBlock._ZPlanesCombined.y = planes.y;
-    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
-                                        _gpuBlock._ProjectionMatrix);
-    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
+    GPUBlock::GPUData& data = _gpuBlock._data;
 
-    return _gpuBlock._ProjectionMatrix.mat;
+    data._ProjectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w,
+                                 planes.x, planes.y);
+
+    data._ZPlanesCombined.xy(planes);
+
+    data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
+
+    _gpuBlock._updated = true;
+
+    return data._ProjectionMatrix.mat;
 }
 
 /// Enable a perspective projection and upload the corresponding matrices to the
 /// GPU
 F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,
                               const vec2<F32>& planes) {
-    _gpuBlock._ProjectionMatrix.perspective(Angle::DegreesToRadians(FoV),
-                                            aspectRatio, planes.x, planes.y);
-    _gpuBlock._ZPlanesCombined.x = planes.x;
-    _gpuBlock._ZPlanesCombined.y = planes.y;
-    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
-                                        _gpuBlock._ProjectionMatrix);
-    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
+    GPUBlock::GPUData& data = _gpuBlock._data;
 
-    return _gpuBlock._ProjectionMatrix.mat;
+    data._ProjectionMatrix.perspective(Angle::DegreesToRadians(FoV),
+                                       aspectRatio,
+                                       planes.x, planes.y);
+
+    data._ZPlanesCombined.xy(planes);
+
+    data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
+
+    _gpuBlock._updated = true;
+
+    return data._ProjectionMatrix.mat;
 }
 
 /// Calculate a frustum for the requested eye (left-right frustum) for anaglyph
@@ -447,20 +457,23 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
     CameraFrustum& tempCam = rightFrustum ? _rightCam : _leftCam;
     // Update the GPU data buffer with the proper projection data based on the
     // eye camera's frustum
-    _gpuBlock._ProjectionMatrix.frustum(to_float(tempCam.leftfrustum),
-                                        to_float(tempCam.rightfrustum),
-                                        to_float(tempCam.bottomfrustum),
-                                        to_float(tempCam.topfrustum),
-                                        zPlanes.x,
-                                        zPlanes.y);
-    // Translate the matrix to cancel parallax
-    _gpuBlock._ProjectionMatrix.translate(tempCam.modeltranslation, 0.0, 0.0);
+    GPUBlock::GPUData& data = _gpuBlock._data;
 
-    _gpuBlock._ZPlanesCombined.x = zPlanes.x;
-    _gpuBlock._ZPlanesCombined.y = zPlanes.y;
-    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix *
-                                        _gpuBlock._ProjectionMatrix);
-    _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
+    data._ProjectionMatrix.frustum(to_float(tempCam.leftfrustum),
+                                   to_float(tempCam.rightfrustum),
+                                   to_float(tempCam.bottomfrustum),
+                                   to_float(tempCam.topfrustum),
+                                   zPlanes.x,
+                                   zPlanes.y);
+
+    // Translate the matrix to cancel parallax
+    data._ProjectionMatrix.translate(tempCam.modeltranslation, 0.0, 0.0);
+
+    data._ZPlanesCombined.xy(zPlanes);
+
+    data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
+
+    _gpuBlock._updated = true;
 }
 
 /// Enable or disable 2D rendering mode 

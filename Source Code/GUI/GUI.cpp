@@ -57,8 +57,6 @@ void GUI::draw() const {
         GUIElement& element = *guiStackIterator.second;
         // Skip hidden elements
         if (element.isVisible()) {
-            // Set the elements render states
-            Attorney::GFXDeviceGUI::setStateBlock(gfx, element.getStateBlockHash());
             element.draw();
              // Update internal timer
             element.lastDrawTimer(Time::ElapsedMicroseconds());

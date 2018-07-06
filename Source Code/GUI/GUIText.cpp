@@ -17,7 +17,10 @@ GUIText::GUIText(const stringImpl& id,
 
 
 void GUIText::draw() const {
-    Attorney::GFXDeviceGUI::drawText(GFX_DEVICE, *this, _relativePosition);
+    Attorney::GFXDeviceGUI::drawText(GFX_DEVICE, 
+                                     *this,
+                                     getStateBlockHash(),
+                                     _relativePosition);
 }
 
 void GUIText::mouseMoved(const GUIEvent &event) {}

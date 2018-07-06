@@ -98,12 +98,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         }
     };
 
-    enum class GPUBuffer : U32 {
-        NODE_BUFFER = 0,
-        GPU_BUFFER = 1,
-        CMD_BUFFER = 2,
-        COUNT
-    };
   public:  // GPU specific data
    struct ShaderBufferBinding {
        ShaderBufferLocation _slot;
@@ -158,13 +152,21 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    };
 
    struct GPUBlock {
-       mat4<F32> _ProjectionMatrix;
-       mat4<F32> _ViewMatrix;
-       mat4<F32> _ViewProjectionMatrix;
-       vec4<F32> _cameraPosition;
-       vec4<F32> _ViewPort;
-       vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
-       vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
+       GPUBlock() : _updated(true)
+       {
+       }
+
+       struct GPUData {
+           mat4<F32> _ProjectionMatrix;
+           mat4<F32> _ViewMatrix;
+           mat4<F32> _ViewProjectionMatrix;
+           vec4<F32> _cameraPosition;
+           vec4<F32> _ViewPort;
+           vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
+           vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
+        } _data;
+
+        bool _updated;
    };
 
   public:  // GPU interface
@@ -413,17 +415,30 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     }
 
   protected:
+    void threadedLoadCallback() override;
+
     void setBaseViewport(const vec4<I32>& viewport);
 
     inline void changeViewport(const vec4<I32>& newViewport) const override {
         _api->changeViewport(newViewport);
     }
 
-    void threadedLoadCallback() override;
-
     inline void drawPoints(U32 numPoints) override { 
-        uploadGlobalBufferData();
+        uploadGPUBlock();
         _api->drawPoints(numPoints); 
+    }
+
+    inline void drawText(const TextLabel& text,
+                         size_t stateHash,
+                         const vec2<F32>& relativeOffset) {
+        uploadGPUBlock();
+        setStateBlock(stateHash);
+        drawText(text, relativeOffset);
+    }
+
+    inline void drawText(const TextLabel& textLabel,
+                         const vec2<F32>& relativeOffset) override {
+        _api->drawText(textLabel, relativeOffset);
     }
 
     void drawDebugAxis(const SceneRenderState& sceneRenderState);
@@ -463,9 +478,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// returns false if there was an invalid state detected that could prevent
     /// rendering
     bool setBufferData(const GenericDrawCommand& cmd);
-    /// Upload all relevant buffer data to GPU memory (if needed): node data,
-    /// draw commands, gpu matrices, etc
-    void uploadGlobalBufferData();
+    /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
+    void uploadGPUBlock();
     /// Update the graphics pipeline using the current rendering API with the state
     /// block passed
     inline void activateStateBlock(
@@ -476,12 +490,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     
     /// If the stateBlock doesn't exist in the state block map, add it for future reference
     bool registerRenderStateBlock(const RenderStateBlock& stateBlock);
-
-    inline void drawText(const TextLabel& textLabel,
-                         const vec2<F32>& relativeOffset) override {
-        uploadGlobalBufferData();
-        _api->drawText(textLabel, relativeOffset);
-    }
 
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash);
@@ -552,13 +560,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     U32 _lastCmdCount;
     U32 _lastNodeCount;
+    DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
-    std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> _drawCommandsCache;
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
-    //0 = gfxDataBuffer, 1 = nodeBuffer, 3 = command buffer
-    std::array<bool, to_const_uint(GPUBuffer::COUNT)> _buffersDirty;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
@@ -568,12 +574,11 @@ END_SINGLETON
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(GFXDevice& gfxDevice, const TextLabel& text, const vec2<F32>& relativeOffset) {
-            return gfxDevice.drawText(text, relativeOffset);
-        }
-
-        static size_t setStateBlock(GFXDevice& gfxDevice, size_t stateBlockHash) {
-            return gfxDevice.setStateBlock(stateBlockHash);
+        static void drawText(GFXDevice& gfxDevice, 
+                             const TextLabel& text,
+                             size_t stateHash,
+                             const vec2<F32>& relativeOffset) {
+            return gfxDevice.drawText(text, stateHash, relativeOffset);
         }
 
         friend class Divide::GUI;

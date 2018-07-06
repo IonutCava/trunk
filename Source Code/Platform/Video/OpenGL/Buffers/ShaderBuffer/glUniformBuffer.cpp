@@ -120,8 +120,8 @@ void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, range);
-        U8* dst = (U8*)_mappedBuffer + offset;
-        memcpy(dst, data, range);
+            bufferPtr dst = (U8*)(_mappedBuffer) + offset;
+            memcpy(dst, data, range);
         _lockManager->LockRange(offset, range);
     } else {
         /*

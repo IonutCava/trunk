@@ -97,10 +97,13 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
             vec2<U16>(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                       Config::Lighting::LIGHT_GRID_TILE_DIM_Y),
             // render target resolution
-            vec2<U16>(gpuBlock._ViewPort.z, gpuBlock._ViewPort.w),
-            _omniLightList, gpuBlock._ViewMatrix, gpuBlock._ProjectionMatrix,
+            vec2<U16>(gpuBlock._data._ViewPort.zw()),
+            _omniLightList,
+            gpuBlock._data._ViewMatrix,
+            gpuBlock._data._ProjectionMatrix,
             // current near plane
-            gpuBlock._ZPlanesCombined.x, vectorImpl<vec2<F32>>());
+            gpuBlock._data._ZPlanesCombined.x,
+            vectorImpl<vec2<F32>>());
 
         downSampleDepthBuffer(_depthRangesCache);
         // We take a copy of this, and prune the grid using depth ranges found
@@ -112,7 +115,7 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
         // performed
         // (depthRanges is empty in this case).
         _opaqueGrid->prune(_depthRangesCache);
-        _transparentGrid->pruneFarOnly(gpuBlock._ZPlanesCombined.x,
+        _transparentGrid->pruneFarOnly(gpuBlock._data._ZPlanesCombined.x,
                                        _depthRangesCache);
         return true;
     }
