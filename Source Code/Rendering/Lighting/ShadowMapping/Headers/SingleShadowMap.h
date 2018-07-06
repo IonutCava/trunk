@@ -44,16 +44,11 @@ class SingleShadowMap : public ShadowMap {
     SingleShadowMap(Light* light, Camera* shadowCamera);
     ~SingleShadowMap();
 
-    void render(SceneRenderState& renderState,
-                const DELEGATE_CBK<>& sceneRenderFunction);
+    void render(SceneRenderState& renderState);
     /// Update depth maps
     void resolution(U16 resolution, U8 resolutionFactor);
     void init(ShadowMapInfo* const smi);
     void previewShadowMaps();
-
-   protected:
-    void renderInternal(const SceneRenderState& renderState,
-                        const DELEGATE_CBK<>& sceneRenderFunction);
 
    private:
     ShaderProgram* _previewDepthMapShader;

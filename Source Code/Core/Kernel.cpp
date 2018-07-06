@@ -317,7 +317,7 @@ void Kernel::renderScene() {
         }
 
         _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->begin(depthPassPolicy);
-            _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);
+            _sceneMgr.render(RenderStage::Z_PRE_PASS, *this, true, true);
         _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->end();
         _GFX.postProcessRenderTarget(GFXDevice::RenderTarget::DEPTH);
 
@@ -325,7 +325,7 @@ void Kernel::renderScene() {
                                                               : GFXDevice::RenderTarget::SCREEN;
 
         _GFX.getRenderTarget(eyeTarget)->begin(colorPassPolicy);
-            _sceneMgr.render(RenderStage::DISPLAY, *this);
+            _sceneMgr.render(RenderStage::DISPLAY, *this, false, false);
         _GFX.getRenderTarget(eyeTarget)->end();
         _GFX.postProcessRenderTarget(eyeTarget);
     }

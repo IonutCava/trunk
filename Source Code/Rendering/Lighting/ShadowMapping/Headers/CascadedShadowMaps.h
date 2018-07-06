@@ -44,6 +44,7 @@ class ShaderBuffer;
 class ShaderProgram;
 class SceneGraphNode;
 class DirectionalLight;
+typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 /// Directional lights can't deliver good quality shadows using a single shadow
 /// map.
 /// This technique offers an implementation of the CSM method
@@ -51,8 +52,7 @@ class CascadedShadowMaps : public ShadowMap {
    public:
     CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 numSplits);
     ~CascadedShadowMaps();
-    void render(SceneRenderState& renderState,
-                const DELEGATE_CBK<>& sceneRenderFunction);
+    void render(SceneRenderState& renderState);
     void postRender();
     /// Update depth maps
     void resolution(U16 resolution, U8 resolutionFactor);
@@ -85,7 +85,6 @@ class CascadedShadowMaps : public ShadowMap {
     vectorImpl<vec3<F32> > _frustumCornersLS;
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
     vectorImpl<F32       > _splitDepths;
-
     std::array<mat4<F32>, Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowMatrices;
     std::unique_ptr<ShaderBuffer> _shadowMatricesBuffer;
 };

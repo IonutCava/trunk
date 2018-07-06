@@ -68,8 +68,6 @@ class RenderQueue {
         return getBin(_renderBinID[renderBin]);
     }
 
-    inline bool isSorted() { return _isSorted; }
-
   private:
     RenderBin* getBinForNode(SceneNode* const nodeType,
                              Material* const matInstance);
@@ -80,7 +78,6 @@ class RenderQueue {
     RenderBinMap _renderBins;
     RenderBinIDType _renderBinID;
     vectorImpl<RenderBin*> _sortedRenderBins;
-    bool _isSorted;
 
 };
 

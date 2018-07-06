@@ -13,7 +13,7 @@
 
 namespace Divide {
 
-RenderQueue::RenderQueue() : _isSorted(false)
+RenderQueue::RenderQueue()
 {
     //_renderBins.reserve(RenderBin::COUNT);
 }
@@ -141,7 +141,6 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
             [](RenderBin* const a, const RenderBin* const b)
                 -> bool { return a->getSortOrder() < b->getSortOrder(); }),
         temp);
-    _isSorted = false;
 
     return temp;
 }
@@ -197,7 +196,6 @@ void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
     if (rb) {
         rb->addNodeToBin(sgn, eyePos);
     }
-    _isSorted = false;
 }
 
 void RenderQueue::sort(RenderStage renderStage) {
@@ -206,15 +204,12 @@ void RenderQueue::sort(RenderStage renderStage) {
         renderBin.second->sort(index, renderStage);
         index += renderBin.second->getBinSize();
     }
-
-    _isSorted = true;
 }
 
 void RenderQueue::refresh() {
     for (RenderBinMap::value_type& renderBin : _renderBins) {
         renderBin.second->refresh();
     }
-    _isSorted = false;
 }
 
 };

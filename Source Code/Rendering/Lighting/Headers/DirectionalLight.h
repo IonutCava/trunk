@@ -51,9 +51,6 @@ class DirectionalLight : public Light {
     inline F32 csmSplitLogFactor() const { return _csmSplitLogFactor; }
     inline void csmSplitLogFactor(F32 factor) { _csmSplitLogFactor = factor; }
 
-    inline bool csmStabilize() const { return _csmStabilize; }
-    inline void csmStabilize(bool state) { _csmStabilize = state; }
-
    protected:
     /// CSM split count
     U8 _csmSplitCount;
@@ -61,9 +58,6 @@ class DirectionalLight : public Light {
     F32 _csmSplitLogFactor;
     /// CSM extra back up distance for light position
     F32 _csmNearClipOffset;
-    /// Try to stabilize shadow maps by using a bounding sphere for the frustum.
-    /// If false, a bounding box is used instead
-    bool _csmStabilize;
 };
 
 };  // namespace Divide

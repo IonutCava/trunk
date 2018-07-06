@@ -54,34 +54,18 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor) {
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void SingleShadowMap::render(SceneRenderState& renderState,
-                             const DELEGATE_CBK<>& sceneRenderFunction) {
-    /// Only if we have a valid callback;
-    if (!sceneRenderFunction) {
-        Console::errorfn(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"),
-                         _light->getGUID());
-        return;
-    }
-
+void SingleShadowMap::render(SceneRenderState& renderState) {
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
-    renderInternal(renderState, sceneRenderFunction);
-    renderState.getCameraMgr().popActiveCamera(false);
-}
-
-void SingleShadowMap::renderInternal(
-    const SceneRenderState& renderState,
-    const DELEGATE_CBK<>& sceneRenderFunction) {
-    _shadowCamera->lookAt(_light->getPosition(),
-                          _light->getPosition() * _light->getDirection());
-    _shadowCamera->setProjection(1.0f, 90.0f,
-                                 vec2<F32>(1.0, _light->getRange()));
+    _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getDirection());
+    _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
     _shadowCamera->renderLookAt();
 
     _depthMap->begin(Framebuffer::defaultPolicy());
     // draw the scene
-    GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
+    SceneManager::getInstance().render(RenderStage::SHADOW, Application::getInstance().getKernel(), true, true);
     // unbind the associated depth map
     _depthMap->end();
+    renderState.getCameraMgr().popActiveCamera(false);
 }
 
 void SingleShadowMap::previewShadowMaps() {

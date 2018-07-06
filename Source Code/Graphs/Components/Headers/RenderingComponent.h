@@ -87,6 +87,8 @@ class RenderingComponent : public SGNComponent {
 
     inline U32 drawOrder() const { return _drawOrder; }
 
+    inline U32 commandIndex() const { return _commandIndex; }
+
     ShaderProgram* const getDrawShader(
         RenderStage renderStage = RenderStage::DISPLAY);
 
@@ -142,12 +144,15 @@ class RenderingComponent : public SGNComponent {
 
     inline void drawOrder(U32 index) { _drawOrder = index; }
 
+    inline void commandIndex(U32 index) { _commandIndex = index; }
+
    protected:
     Material* _materialInstance;
     /// LOD level is updated at every visibility check
     /// (SceneNode::isInView(...));
-    U8 _lodLevel;  ///<Relative to camera distance
+    U8  _lodLevel;  ///<Relative to camera distance
     U32 _drawOrder;
+    U32 _commandIndex;
     /// System level check for shadowing
     bool _shadowMappingEnabled;
     bool _castsShadows;
@@ -191,6 +196,10 @@ class RenderingCompGFXDevice {
                                                     const SceneRenderState& sceneRenderState,
                                                     RenderStage renderStage) {
         return renderable.getDrawPackage(sceneRenderState, renderStage);
+    }
+
+    static void commandIndex(RenderingComponent& renderable, U32 index) {
+        renderable.commandIndex(index);
     }
 
     friend class Divide::GFXDevice;

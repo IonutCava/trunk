@@ -3,9 +3,9 @@
 
 #include "SceneList.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ProfileTimer.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 namespace Divide {
 
@@ -26,7 +26,7 @@ SceneManager::SceneManager()
 SceneManager::~SceneManager()
 {
     AI::AIManager::destroyInstance();
-
+    Time::REMOVE_TIMER(_sceneGraphCullTimer);
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
     Console::printfn(Locale::get("STOP_SCENE_MANAGER"));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
@@ -49,6 +49,7 @@ bool SceneManager::init(GUI* const gui) {
     _GUI = gui;
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
     _renderPassManager = &RenderPassManager::getInstance();
+    _sceneGraphCullTimer = Time::ADD_TIMER("SceneGraph cull timer");
     _init = true;
     return true;
 }
@@ -100,7 +101,6 @@ bool SceneManager::frameStarted(const FrameEvent& evt) {
 }
 
 bool SceneManager::frameEnded(const FrameEvent& evt) {
-    _renderPassCuller->refresh();
     return Attorney::SceneManager::frameEnded(*_activeScene);
 }
 
@@ -108,25 +108,10 @@ void SceneManager::preRender() {
     _activeScene->preRender();
 }
 
-void SceneManager::sortVisibleNodes(RenderPassCuller::VisibleNodeCache& nodes) const {
-    if (!nodes._sorted) {
-        RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
-        std::sort(std::begin(visibleNodes), std::end(visibleNodes),
-                  [](SceneGraphNode_wptr nodeA, SceneGraphNode_wptr nodeB) {
-                      RenderingComponent* renderableA = nodeA.lock()->getComponent<RenderingComponent>();
-                      RenderingComponent* renderableB = nodeA.lock()->getComponent<RenderingComponent>();
-                      return renderableA->drawOrder() < renderableB->drawOrder();
-                  });
-
-        nodes._sorted = true;
-    }
-}
-
-void SceneManager::updateVisibleNodes(bool flushCache) {
+const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderStage stage) {
     auto cullingFunction = [](const SceneGraphNode& node) -> bool {
         if (node.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType type =
-                node.getNode<Object3D>()->getObjectType();
+            Object3D::ObjectType type = node.getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::FLYWEIGHT);
         }
         return false;
@@ -135,76 +120,81 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
     auto meshCullingFunction = [](SceneGraphNode_wptr node) -> bool {
         SceneGraphNode_ptr sgnNode = node.lock();
         if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType type =
-                sgnNode->getNode<Object3D>()->getObjectType();
+            Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::MESH);
         }
+
         return false;
     };
 
-    if (flushCache) {
-        _renderPassCuller->refresh();
-    }
+    _renderPassCuller->frustumCull(GET_ACTIVE_SCENEGRAPH(), _activeScene->state(), stage, cullingFunction);
+    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
 
-    RenderStage stage = GFX_DEVICE.getRenderStage();
+    visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
+                                   std::end(visibleNodes),
+                                   meshCullingFunction),
+                       std::end(visibleNodes));
+
+    return visibleNodes;
+}
+
+void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData) {
     RenderQueue& queue = _renderPassManager->getQueue();
 
-    _renderPassCuller->frustumCull(GET_ACTIVE_SCENEGRAPH(), _activeScene->state(), cullingFunction);
-    RenderPassCuller::VisibleNodeCache& nodes = _renderPassCuller->getNodeCache(stage);
-    RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
+    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
 
-    bool refreshNodeData = !nodes._locked;
     if (refreshNodeData) {
-        _visibleShadowCasters.resize(0);
         queue.refresh();
         vec3<F32> eyePos(_activeScene->renderState().getCameraConst().getEye());
         for (SceneGraphNode_wptr node : visibleNodes) {
             SceneGraphNode_ptr sgn = node.lock();
             queue.addNodeToQueue(*sgn, eyePos);
         }
-        
-        visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
-                                         std::end(visibleNodes),
-                                         meshCullingFunction),
-                                         std::end(visibleNodes));
-
-        for (SceneGraphNode_wptr node : visibleNodes) {
-            SceneGraphNode_ptr sgn = node.lock();
-            if (sgn->getComponent<RenderingComponent>()->castsShadows()) {
-                _visibleShadowCasters.push_back(node);
-            }
-        }
-        // Generate and upload all lighting data
-        if (stage == RenderStage::Z_PRE_PASS) {
-            LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
-        }
     }
+
     queue.sort(stage);
-    sortVisibleNodes(nodes);
+    std::sort(std::begin(visibleNodes), std::end(visibleNodes),
+        [](SceneGraphNode_wptr nodeA, SceneGraphNode_wptr nodeB) {
+            RenderingComponent* renderableA = nodeA.lock()->getComponent<RenderingComponent>();
+            RenderingComponent* renderableB = nodeB.lock()->getComponent<RenderingComponent>();
+            return renderableA->drawOrder() < renderableB->drawOrder();
+    });
 
-    GFX_DEVICE.buildDrawCommands(visibleNodes,
-                                 _activeScene->renderState(),
-                                 refreshNodeData);
-}
-
-void SceneManager::renderVisibleNodes(bool flushCache) {
-    updateVisibleNodes(flushCache);
-    renderScene();
+    GFX_DEVICE.buildDrawCommands(visibleNodes, _activeScene->renderState(), refreshNodeData);
 }
 
 void SceneManager::renderScene() {
     _renderPassManager->render(_activeScene->renderState());
 }
 
-void SceneManager::render(RenderStage stage, const Kernel& kernel) {
+void SceneManager::renderVisibleNodes(RenderStage stage, bool frustumCull, bool refreshNodeData) {
+    if (frustumCull) {
+        Time::ScopedTimer timer(*_sceneGraphCullTimer);
+        cullSceneGraph(stage);
+    }
+    updateVisibleNodes(stage, refreshNodeData);
+
+    switch(stage) {
+        case RenderStage::DISPLAY:
+            GFX_DEVICE.occlusionCull();
+            break;
+        case RenderStage::Z_PRE_PASS:
+            LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
+            break;
+    };
+
+    renderScene();
+}
+
+void SceneManager::render(RenderStage stage, const Kernel& kernel, bool frustumCull, bool refreshNodeData) {
     assert(_activeScene != nullptr);
 
     _activeScene->renderState().getCamera().renderLookAt();
 
     Attorney::KernelScene::submitRenderCall(
         kernel, stage, _activeScene->renderState(),
-        [&]() {
-            renderVisibleNodes(stage != RenderStage::DISPLAY);
+        [&, stage, frustumCull, refreshNodeData]() {
+            renderVisibleNodes(stage, frustumCull, refreshNodeData);
         });
 
     Attorney::SceneManager::debugDraw(*_activeScene, stage);
@@ -218,8 +208,7 @@ void SceneManager::onCameraUpdate(Camera& camera) {
     Attorney::SceneManager::onCameraUpdate(*_activeScene, camera);
 }
 
-///--------------------------Input
-/// Management-------------------------------------///
+///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
     if (!_processInput) {

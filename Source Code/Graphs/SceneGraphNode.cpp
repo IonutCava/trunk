@@ -411,16 +411,16 @@ void SceneGraphNode::frameEnded() {
     }
 }
 
-bool SceneGraphNode::canDraw(const SceneRenderState& sceneRenderState,
-                             RenderStage currentStage) {
+bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState, RenderStage currentStage) {
 
-    if ((currentStage == RenderStage::SHADOW &&
-         !getComponent<RenderingComponent>()->castsShadows())) {
-        return false;
+    bool shadowPass = currentStage == RenderStage::SHADOW;
+    if (shadowPass && !getComponent<RenderingComponent>()->castsShadows()) {
+        return true;
     }
 
-    return Attorney::SceneNodeSceneGraph::isInView(
-        *getNode(), sceneRenderState, *this,
-        currentStage != RenderStage::SHADOW);
+    return !Attorney::SceneNodeSceneGraph::isInView(*getNode(),
+                                                    sceneRenderState,
+                                                    *this,
+                                                    !shadowPass);
 }
 };

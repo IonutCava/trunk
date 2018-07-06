@@ -7,26 +7,18 @@
 namespace Divide {
 
 RenderPassCuller::RenderPassCuller() {
-    for (VisibleNodeCache& cache : _visibleNodes) {
-        cache._sorted = false;
-        cache._visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
+    for (VisibleNodeList& cache : _visibleNodes) {
+        cache.reserve(Config::MAX_VISIBLE_NODES);
     }
 }
 
 RenderPassCuller::~RenderPassCuller() {
-    for (VisibleNodeCache& cache : _visibleNodes) {
-        cache._visibleNodes.clear();
+    for (VisibleNodeList& cache : _visibleNodes) {
+        cache.clear();
     }
 }
 
-void RenderPassCuller::refresh() {
-    for (VisibleNodeCache& cache : _visibleNodes) {
-        cache._visibleNodes.resize(0);
-        cache._sorted = false;
-    }
-}
-
-RenderPassCuller::VisibleNodeCache&
+RenderPassCuller::VisibleNodeList&
 RenderPassCuller::getNodeCache(RenderStage stage) {
     switch (stage) {
         case RenderStage::REFLECTION:
@@ -42,12 +34,12 @@ RenderPassCuller::getNodeCache(RenderStage stage) {
 
 void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                                    SceneState& sceneState,
+                                   RenderStage stage,
                                    const CullingFunction& cullingFunction)
 {
-    RenderStage stage = GFX_DEVICE.getRenderStage();
-    VisibleNodeCache& nodeCache = getNodeCache(stage);
-    nodeCache._locked = !nodeCache._visibleNodes.empty();
-    if (!nodeCache._locked && sceneState.renderState().drawGeometry()) {
+    VisibleNodeList& nodeCache = getNodeCache(stage);
+    nodeCache.resize(0);
+    if (sceneState.renderState().drawGeometry()) {
         _cullingFunction = cullingFunction;
         SceneRenderState& renderState = sceneState.renderState();
         // No point in updating visual information if the scene disabled object
@@ -60,7 +52,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
             SceneGraphNode& child = root.getChild(i, childCount);
             VisibleNodeList& container = _perThreadNodeList[i];
             container.resize(0);
-            _cullingTasks.push_back(std::async(std::launch::async | std::launch::deferred, [&]() {
+            _cullingTasks.push_back(std::async(/*std::launch::async | */std::launch::deferred, [&]() {
                 frustumCullRecursive(child, stage, renderState, container);
             }));
         }
@@ -71,11 +63,9 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 
         for (VisibleNodeList& nodeList : _perThreadNodeList) {
             for (SceneGraphNode_wptr ptr : nodeList) {
-                nodeCache._visibleNodes.push_back(ptr);
+                nodeCache.push_back(ptr);
             }
         }
-        
-        nodeCache._sorted = false;
     }
 }
 
@@ -84,16 +74,12 @@ bool RenderPassCuller::frustumCullNode(SceneGraphNode& node,
                                        SceneRenderState& sceneRenderState) {
     // Skip all of this for inactive nodes.
     if (node.isActive()) {
-        // Perform visibility test on current node
-        if (node.canDraw(sceneRenderState, currentStage)) {
-            // If the current node is visible, add it to the render
-            // queue (if it passes our custom culling function)
-            if (!_cullingFunction(node)) {
-                return false;
-            }
+        // If the current node is visible, add it to the render
+        // queue (if it passes our custom culling function)
+        if (!node.cullNode(sceneRenderState, currentStage)) {
+            return _cullingFunction(node);
         }
     }
-    
 
     return true;
 }

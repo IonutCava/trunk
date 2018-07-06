@@ -50,18 +50,12 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor) {
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void CubeShadowMap::render(SceneRenderState& renderState,
-                           const DELEGATE_CBK<>& sceneRenderFunction) {
-    // Only if we have a valid callback;
-    if (!sceneRenderFunction) {
-        Console::errorfn(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"),
-                         _light->getGUID());
-        return;
-    }
-
+void CubeShadowMap::render(SceneRenderState& renderState) {
     GFX_DEVICE.generateCubeMap(*_depthMap,
                                 _light->getPosition(),
-                                sceneRenderFunction,
+                                []() {
+                                    SceneManager::getInstance().render(RenderStage::SHADOW, Application::getInstance().getKernel(), true, true);
+                                },
                                 vec2<F32>(0.1f, _light->getRange()),
                                 RenderStage::SHADOW);
 }

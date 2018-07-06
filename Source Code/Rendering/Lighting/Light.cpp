@@ -54,9 +54,6 @@ Light::~Light()
 
 bool Light::load(const stringImpl& name) {
     setName(name);
-    setShadowMappingCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-                                           &SceneManager::getInstance(),
-                                           true));
     return LightManager::getInstance().addLight(*this);
 }
 
@@ -241,14 +238,13 @@ bool Light::removeShadowMapInfo() {
 }
 
 void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
-    ShadowMap* sm =
-        _shadowMapInfo->getOrCreateShadowMap(sceneRenderState, _shadowCamera);
+    ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(sceneRenderState, _shadowCamera);
 
     DIVIDE_ASSERT(sm != nullptr,
                   "Light::generateShadowMaps error: Shadow casting light "
                   "with no shadow map found!");
 
-    sm->render(sceneRenderState, _callback);
+    sm->render(sceneRenderState);
     sm->postRender();
 }
 

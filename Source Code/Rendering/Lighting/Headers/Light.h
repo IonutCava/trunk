@@ -191,10 +191,6 @@ class Light : public SceneNode {
     /// Set the function used to generate shadows for this light
     inline ShadowMapInfo* getShadowMapInfo() const { return _shadowMapInfo; }
 
-    inline void setShadowMappingCallback(const DELEGATE_CBK<>& callback) {
-        _callback = callback;
-    }
-
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
 
@@ -214,6 +210,10 @@ class Light : public SceneNode {
 
     inline void setShadowVPMatrix(U8 index, const mat4<F32>& newValue) {
         _shadowProperties._lightVP[index].set(newValue);
+    }
+
+    inline void setShadowFloatValue(U8 index, F32 newValue) {
+        _shadowProperties._floatValues[index].set(newValue);
     }
 
     inline void setShadowFloatValue(U8 index, const vec4<F32>& newValue) {
@@ -268,7 +268,6 @@ class Light : public SceneNode {
     ImpostorSphere* _impostor;
     SceneGraphNode_wptr _impostorSGN;
     Camera* _shadowCamera;
-    DELEGATE_CBK<> _callback;
     bool _enabled;
 };
 

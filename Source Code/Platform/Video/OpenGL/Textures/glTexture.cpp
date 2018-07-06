@@ -104,7 +104,9 @@ bool glTexture::generateHWResource(const stringImpl& name) {
     GFX_DEVICE.loadInContext(
         _threadedLoading ? CurrentContext::GFX_LOADING_CTX
                          : CurrentContext::GFX_RENDERING_CTX,
-        DELEGATE_BIND(&glTexture::threadedLoad, this, name));
+        [&]() {
+            threadedLoad(name);
+        });
 
     return true;
 }

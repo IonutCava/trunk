@@ -47,26 +47,21 @@ typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 class RenderPassCuller {
    public:
     typedef vectorImpl<SceneGraphNode_wptr> VisibleNodeList;
-    typedef std::function<bool(const SceneGraphNode&)> CullingFunction;
 
-    struct VisibleNodeCache {
-        VisibleNodeList _visibleNodes;
-        bool _sorted;
-        bool _locked;
-        VisibleNodeCache() : _sorted(false), _locked(false) {}
-    };
+    //Should return true if the node is not inside the frustum
+    typedef std::function<bool(const SceneGraphNode&)> CullingFunction;
 
    public:
     RenderPassCuller();
     ~RenderPassCuller();
 
-    void refresh();
-    VisibleNodeCache& getNodeCache(RenderStage stage);
+    VisibleNodeList& getNodeCache(RenderStage stage);
     void frustumCull(SceneGraph& sceneGraph,
                      SceneState& sceneState,
+                     RenderStage stage,
                      const CullingFunction& cullingFunction);
    protected:
-    // return false if node is inside the frustum (node was not culled)
+    // return true if the node is not inside the frustum
     bool frustumCullNode(SceneGraphNode& node,
                          RenderStage currentStage,
                          SceneRenderState& sceneRenderState);
@@ -80,7 +75,7 @@ class RenderPassCuller {
     CullingFunction _cullingFunction;
     vectorImpl<std::future<void>> _cullingTasks;
     vectorImpl<VisibleNodeList> _perThreadNodeList;
-    std::array<VisibleNodeCache, to_const_uint(RenderStage::COUNT)> _visibleNodes;
+    std::array<VisibleNodeList, to_const_uint(RenderStage::COUNT)> _visibleNodes;
 };
 
 };  // namespace Divide

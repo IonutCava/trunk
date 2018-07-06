@@ -76,30 +76,19 @@ RenderBin::RenderBin(const RenderBinType& rbType,
                      const RenderingOrder::List& renderOrder, D32 drawKey)
     : _rbType(rbType), _renderOrder(renderOrder), _drawKey(drawKey) {
     _renderBinStack.reserve(125);
-    renderBinTypeToNameMap[to_uint(RenderBinType::COUNT)] =
-        "Invalid Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::COUNT)] = "Invalid Bin";
     renderBinTypeToNameMap[to_uint(RenderBinType::RBT_MESH)] = "Mesh Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_IMPOSTOR)] =
-        "Impostor Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DELEGATE)] =
-        "Delegate Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TRANSLUCENT)] =
-        "Translucent Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_IMPOSTOR)] = "Impostor Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DELEGATE)] = "Delegate Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TRANSLUCENT)] ="Translucent Bin";
     renderBinTypeToNameMap[to_uint(RenderBinType::RBT_SKY)] = "Sky Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_WATER)] =
-        "Water Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TERRAIN)] =
-        "Terrain Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_PARTICLES)] =
-        "Particle Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_GRASS)] =
-        "Grass Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_TREES)] =
-        "Trees Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DECALS)] =
-        "Decals Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_SHADOWS)] =
-        "Shadow Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_WATER)] = "Water Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TERRAIN)] = "Terrain Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_PARTICLES)] = "Particle Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_GRASS)] = "Grass Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_TREES)] = "Trees Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DECALS)] = "Decals Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_SHADOWS)] = "Shadow Bin";
 }
 
 void RenderBin::sort(U32 binIndex, RenderStage renderStage) {

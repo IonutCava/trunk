@@ -466,10 +466,13 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 }
 
 void Material::getTextureData(TextureDataContainer& textureData) {
-    textureData.reserve(to_uint(ShaderProgram::TextureUsage::COUNT) + _customTextures.size());
+    U32 textureCount = to_uint(ShaderProgram::TextureUsage::COUNT);
 
     if (!GFX_DEVICE.isDepthStage()) {
+        textureData.reserve(textureCount + _customTextures.size());
+        getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
+        getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
 
@@ -481,6 +484,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
             }
         }
     } else {
+        textureData.reserve(2);
         for (Material::TranslucencySource source : _translucencySource) {
             if (source == TranslucencySource::OPACITY_MAP) {
                 getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
@@ -537,7 +541,9 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
             size_t hash = _defaultRenderStates[index];
             RenderStateBlock descriptor(GFX_DEVICE.getRenderStateBlock(hash));
             descriptor.setCullMode(CullMode::NONE);
-            descriptor.setBlend(!_translucencySource.empty());
+            if (!_translucencySource.empty()) {
+                descriptor.setBlend(true);
+            }
             setRenderStateBlock(descriptor.getHash(), static_cast<RenderStage>(index));
         }
     }

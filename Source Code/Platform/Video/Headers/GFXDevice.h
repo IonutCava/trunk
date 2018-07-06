@@ -547,7 +547,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
-    void processVisibleNode(SceneGraphNode_wptr node, NodeData& dataOut);
+    void processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex);
 
     inline ShaderBuffer& getCommandBuffer(RenderStage stage) const {
         return *_indirectCommandBuffers[to_uint(stage)].get();

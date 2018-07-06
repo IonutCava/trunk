@@ -69,10 +69,6 @@ void GFXDevice::uploadGPUBlock() {
         _gfxDataBuffer->setData(&_gpuBlock._data);
         _gpuBlock._updated = false;
     }
-
-    // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
-    _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-    _nodeBuffer->bind(ShaderBufferLocation::NODE_INFO, renderStageToBufferOffset(getRenderStage()));
 }
 
 /// A draw command is composed of a target buffer and a command. The command
@@ -125,6 +121,9 @@ void GFXDevice::flushRenderQueue() {
         return;
     }
     uploadGPUBlock();
+    // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
+    _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
+    _nodeBuffer->bind(ShaderBufferLocation::NODE_INFO, renderStageToBufferOffset(getRenderStage()));
 
     U32 queueSize = _renderQueue.size();
     for (U32 idx = 0; idx < queueSize; ++idx) {
@@ -158,7 +157,10 @@ void GFXDevice::flushRenderQueue() {
                 it._buffer->bindRange(it._slot, it._range.x, it._range.y);
             }
 
-            makeTexturesResident(package._textureData);
+            if (!package._textureData.empty()) {
+                makeTexturesResident(package._textureData);
+            }
+
             submitIndirectRenderCommands(package._drawCommands);
         }
     }
@@ -187,7 +189,8 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 }
 
 /// Prepare the list of visible nodes for rendering
-void GFXDevice::processVisibleNode(SceneGraphNode_wptr node, NodeData& dataOut) {
+void GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex) {
+    NodeData& dataOut = _matricesData[dataIndex];
 
     SceneGraphNode_ptr nodePtr = node.lock();
     assert(nodePtr);
@@ -243,24 +246,23 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         [&](GFXDevice::VisibleNodeList::value_type& node) -> void {
         SceneGraphNode_ptr nodeRef = node.lock();
 
+        RenderingComponent* renderable = nodeRef->getComponent<RenderingComponent>();
         RenderPackage& pkg =
-            Attorney::RenderingCompGFXDevice::getDrawPackage(
-                *nodeRef->getComponent<RenderingComponent>(),
-                sceneRenderState,
-                currentStage);
+            Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable, sceneRenderState, currentStage);
 
         if (pkg._isRenderable) {
             if (refreshNodeData) {
-                processVisibleNode(node, _matricesData[nodeCount]);
+                processVisibleNode(node, nodeCount);
+                Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount);
             }
 
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
                 IndirectDrawCommand& iCmd = cmd.cmd();
-                iCmd.baseInstance = nodeCount;
+                iCmd.baseInstance = renderable->commandIndex();
                 cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
                 // Extract the specific rendering commands from the draw commands
                 // Rendering commands are stored in GPU memory. Draw commands are not.
-                _drawCommandsCache[nodeCount].set(iCmd);
+                _drawCommandsCache[iCmd.baseInstance].set(iCmd);
                 cmdCount++;
             }
             nodeCount++;
@@ -271,13 +273,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());
     registerCommandBuffer(cmdBuffer);
     _lastCommandCount = cmdCount;
-
-    if (refreshNodeData) {
-        _nodeBuffer->updateData(0, nodeCount, _matricesData.data(), renderStageToBufferOffset(currentStage));
-        _lastNodeCount = nodeCount;
-    } else {
-        occlusionCull();
-    }
+    _nodeBuffer->updateData(0, nodeCount, _matricesData.data(), renderStageToBufferOffset(currentStage));
+    _lastNodeCount = nodeCount;
 }
 
 void GFXDevice::occlusionCull() {
@@ -463,8 +460,12 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         // needed viewport rendering (e.g. axis lines)
         if (inViewport) {
             primitive.setRenderStates(
-                DELEGATE_BIND((void(GFXDevice::*)(const vec4<I32>&))&GFXDevice::setViewport, this, viewport),
-                DELEGATE_BIND(&GFXDevice::restoreViewport, this));
+                [&, viewport]() {
+                    setViewport(viewport);
+                },
+                [&]() {
+                    restoreViewport();
+                });
         }
         // Create the object containing all of the lines
         primitive.beginBatch(true, to_uint(lines.size()) * 2 * 14);

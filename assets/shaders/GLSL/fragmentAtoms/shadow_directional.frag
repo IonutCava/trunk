@@ -28,7 +28,7 @@ bool inRange(const in float value){
 float applyShadowDirectional(const in uint lightIndex, const in Shadow currentShadowSource) {
 
 #   if !defined(_DEBUG)
-      int _shadowTempInt = -1;
+      int _shadowTempInt = -2;
 #   endif
     float zDist = gl_FragCoord.z;
     

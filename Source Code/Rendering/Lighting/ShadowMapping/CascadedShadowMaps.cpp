@@ -128,14 +128,7 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void CascadedShadowMaps::render(SceneRenderState& renderState,
-                                const DELEGATE_CBK<>& sceneRenderFunction) {
-    // Only if we have a valid callback;
-    if (!sceneRenderFunction) {
-        Console::errorfn(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
-        return;
-    }
-
+void CascadedShadowMaps::render(SceneRenderState& renderState) {
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
     _lightPosition.set(_light->getPosition());
@@ -146,18 +139,20 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
     camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
     camera.getFrustum().getCornersViewSpace(_frustumCornersVS);
 
-    const vectorImpl<SceneGraphNode_wptr>& visibleNodes = SceneManager::getInstance().getVisibleShadowCasters();
+    calculateSplitDepths(camera);
+    applyFrustumSplits();
+
+    /*const RenderPassCuller::VisibleNodeList& nodes = 
+        SceneManager::getInstance().cullSceneGraph(RenderStage::SHADOW);
+
     _previousFrustumBB.reset();
-    for (SceneGraphNode_wptr node_wptr : visibleNodes) {
+    for (SceneGraphNode_wptr node_wptr : nodes) {
         SceneGraphNode_ptr node_ptr = node_wptr.lock();
         if (node_ptr) {
             _previousFrustumBB.add(node_ptr->getBoundingBoxConst());
         }
     }
-    _previousFrustumBB.transform(_shadowCamera->getViewMatrix());
-
-    calculateSplitDepths(camera);
-    applyFrustumSplits();
+    _previousFrustumBB.transform(_shadowCamera->getViewMatrix());*/
 
     _shadowMatricesBuffer->setData(_shadowMatrices.data());
     _shadowMatricesBuffer->bind(ShaderBufferLocation::LIGHT_SHADOW);
@@ -165,7 +160,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
 
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
     _depthMap->begin(Framebuffer::defaultPolicy());
-        GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
+        SceneManager::getInstance().render(RenderStage::SHADOW, Application::getInstance().getKernel(), true, true);
     _depthMap->end();
     renderState.getCameraMgr().popActiveCamera();
 }
@@ -186,9 +181,9 @@ void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
 
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         if (i < _numSplits) {
-            _light->setShadowFloatValue(i, vec4<F32>(0.5f * (-_splitDepths[i + 1] * projMatrixCache.mat[10] + projMatrixCache.mat[14]) / _splitDepths[i + 1] + 0.5f));
+            _light->setShadowFloatValue(i, 0.5f * (-_splitDepths[i + 1] * projMatrixCache.mat[10] + projMatrixCache.mat[14]) / _splitDepths[i + 1] + 0.5f);
         } else {
-            _light->setShadowFloatValue(i, vec4<F32>(1.0f));
+            _light->setShadowFloatValue(i, 1.0f);
         }
     }
 }
@@ -233,30 +228,15 @@ void CascadedShadowMaps::applyFrustumSplits() {
         for (U8 i = 0; i < 8; ++i) {
             _frustumCornersLS[i].set(viewMatrix.transform(_frustumCornersWS[i]));
         }
-        // Create an orthographic camera for use as a shadow caster
-        vec2<F32> clipPlanes;
-        vec4<F32> clipRect;
 
-        if (_dirLight->csmStabilize()) {
-            BoundingSphere frustumSphere(_frustumCornersLS);
-            clipPlanes.set(0.0f, frustumSphere.getDiameter());
-            clipPlanes += _nearClipOffset;
-            clipRect.set(UNIT_RECT * frustumSphere.getRadius());
-        } else {
-            BoundingBox frustumBox(_frustumCornersLS);
-            // Calculate an orthographic projection by sizing a bounding box to the
-            // frustum coordinates in light space
-            vec3<F32> maxes = frustumBox.getMax();
-            vec3<F32> mins = frustumBox.getMin();
-            // Create an orthographic camera for use as a shadow caster
-            clipPlanes.set(-maxes.z - _nearClipOffset, -mins.z);
-            clipRect.set(mins.x, maxes.x, mins.y, maxes.y);
-        }
+        BoundingSphere frustumSphere(_frustumCornersLS);
+        F32 nearValue = frustumSphere.getDistanceFromPoint(currentEye);
+        vec2<F32> clipPlanes(nearValue - _nearClipOffset, 
+                             nearValue + frustumSphere.getDiameter());
+        vec4<F32> clipRect(UNIT_RECT * frustumSphere.getRadius());
 
         _shadowCamera->setProjection(clipRect, clipPlanes, true);
-
-        mat4<F32>& currentPassMat = _shadowMatrices[pass];
-        currentPassMat.set(viewMatrix * _shadowCamera->getProjectionMatrix());
+        _shadowMatrices[pass].set(viewMatrix * _shadowCamera->getProjectionMatrix());
 
         // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
         F32 halfShadowMapSize = (_resolution)*0.5f;

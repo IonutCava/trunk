@@ -73,17 +73,17 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
 
     //return vec4(dvd_LightSource[0]._position.xyz, 1.0);
 #if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)
-        switch (dvd_showShadowDebugInfo ? _shadowTempInt : -2){
-        case -2: return vec4(color, alpha);
-        case -1: return vec4(1.0);
-        case  0: return vec4(color.r + 0.15, color.g, color.b, alpha);
-        case  1: return vec4(color.r, color.g + 0.25, color.b, alpha);
-        case  2: return vec4(color.r, color.g, color.b + 0.40, alpha);
-        case  3: return vec4(color.r + 0.15, color.g + 0.25, color.b + 0.40, alpha);
+    if (dvd_showShadowDebugInfo) {
+        switch (_shadowTempInt){
+            case -1: color    = vec3(1.0); break;
+            case  0: color.r += 0.15; break;
+            case  1: color.g += 0.25; break;
+            case  2: color.b += 0.40; break;
+            case  3: color   += vec3(0.15, 0.25, 0.40); break;
         };
-#else
-        return vec4(color, alpha);
+    }
 #endif
+    return vec4(color, alpha);
 }
 
 vec4 getPixelColor(const in vec2 texCoord, const in vec3 normal){

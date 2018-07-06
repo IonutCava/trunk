@@ -33,12 +33,12 @@
 #define _SCENE_MANAGER_H
 
 #include "Scenes/Headers/Scene.h"
+#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 #include <boost/functional/factory.hpp>
 
 namespace Divide {
 
 enum class RenderStage : U32;
-class RenderPassCuller;
 namespace Attorney {
     class SceneManagerKernel;
 };
@@ -60,12 +60,14 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
     /*Base Scene Operations*/
     void preRender();
-    void render(RenderStage stage, const Kernel& kernel);
+    void render(RenderStage stage, const Kernel& kernel, bool frustumCull, bool refreshNodeData);
     void postRender();
-    // renders the visible nodes
-    void renderVisibleNodes(bool flushCache);
-    // updates and culls the scene graph to generate visible nodes
-    void updateVisibleNodes(bool flushCache);
+    // generate a list of nodes to render
+    void updateVisibleNodes(RenderStage stage, bool refreshNodeData);
+    void renderVisibleNodes(RenderStage stage, bool frustumCull, bool refreshNodeData);
+    // cull the scenegraph against the current view frustum
+    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage);
+
     inline void onLostFocus() { _activeScene->onLostFocus(); }
     inline void idle() { _activeScene->idle(); }
     bool unloadCurrentScene();
@@ -103,10 +105,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
         return true;
     }
 
-    const vectorImpl<SceneGraphNode_wptr>& getVisibleShadowCasters() const {
-        return _visibleShadowCasters;
-    }
-
   public:  /// Input
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
@@ -137,7 +135,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     void renderScene();
     void initPostLoadState();
     void onCameraUpdate(Camera& camera);
-    void sortVisibleNodes(RenderPassCuller::VisibleNodeCache& nodes) const;
 
   protected:
     bool frameStarted(const FrameEvent& evt);
@@ -151,9 +148,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     typedef hashMapImpl<stringImpl, Scene*> SceneMap;
     bool _init;
     bool _processInput;
-
-    /// The bounding sphere of all of the visible shadow casters in the current frustum
-    vectorImpl<SceneGraphNode_wptr> _visibleShadowCasters;
     /// Pointer to the currently active scene
     std::unique_ptr<Scene> _activeScene;
     /// Pointer to the GUI interface
@@ -168,6 +162,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Scene_Name -Scene_Factory table
     hashMapImpl<stringImpl, std::function<Scene*()> > _sceneFactory;
     Material* _defaultMaterial;
+
+    Time::ProfileTimer* _sceneGraphCullTimer;
 
 END_SINGLETON
 

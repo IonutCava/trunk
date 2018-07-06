@@ -50,7 +50,7 @@ float getCubeShadowValue(in uint index, in vec4 coords){
 
 uniform bool dvd_showShadowDebugInfo = false;
 // set this to whatever (current cascade, current depth comparison result, anything)
-int _shadowTempInt = -1;
+int _shadowTempInt = -2;
 #endif
 
 #include "shadow_directional.frag"

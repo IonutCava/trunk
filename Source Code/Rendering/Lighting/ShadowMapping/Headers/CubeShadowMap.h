@@ -40,8 +40,7 @@ class CubeShadowMap : public ShadowMap {
    public:
     CubeShadowMap(Light* light, Camera* shadowCamera);
     ~CubeShadowMap();
-    void render(SceneRenderState& renderState,
-                const DELEGATE_CBK<>& sceneRenderFunction);
+    void render(SceneRenderState& renderState);
 
     /// Update depth maps
     void resolution(U16 resolution, U8 resolutionFactor);

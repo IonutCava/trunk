@@ -261,8 +261,8 @@ class SceneGraphNode : public GUIDWrapper,
 
    protected:
     friend class RenderPassCuller;
-    bool canDraw(const SceneRenderState& sceneRenderState,
-                 RenderStage currentStage);
+    // Returns true if the node should be culled
+    bool cullNode(const SceneRenderState& sceneRenderState, RenderStage currentStage);
 
    protected:
     friend class RenderingComponent;

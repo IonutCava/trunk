@@ -52,8 +52,7 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
         GET_ACTIVE_SCENE().state().generalVisibility() + sphere.getRadius();
     if (distanceCheck && cameraDistance > visibilityDistance) {
         if (boundingBox.nearestDistanceFromPointSquared(eye) >
-            std::min(visibilityDistance,
-                     sceneRenderState.getCameraConst().getZPlanes().y)) {
+            std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y)) {
             return false;
         }
     }

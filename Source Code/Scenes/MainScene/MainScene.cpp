@@ -153,16 +153,20 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
 
     waterGraphNode->useDefaultTransform(false);
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-    waterGraphNode->getComponent<NavigationComponent>()->navigationContext(
-        NavigationComponent::NavigationContext::NODE_IGNORE);
+    waterGraphNode->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     // Render the scene for water reflection FB generation
-    _water->setReflectionCallback(DELEGATE_BIND(
-        &SceneManager::renderVisibleNodes, &SceneManager::getInstance(), true));
-    _water->setRefractionCallback(DELEGATE_BIND(
-        &SceneManager::renderVisibleNodes, &SceneManager::getInstance(), true));
+    _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
+                                                &SceneManager::getInstance(),
+                                                RenderStage::REFLECTION, true, true));
+    _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
+                                                &SceneManager::getInstance(),
+                                                RenderStage::DISPLAY, true, true));
 
     SceneInput::PressReleaseActions cbks;
-    cbks.second = DELEGATE_BIND(&SFXDevice::playSound, &SFX_DEVICE, _beep);
+    cbks.second = [this]() {
+        SFX_DEVICE.playSound(_beep);
+    };
+
     _input->addKeyMapping(Input::KeyCode::KC_X, cbks);
 
     cbks.second = [this]() {

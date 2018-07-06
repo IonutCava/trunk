@@ -82,8 +82,7 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
 void ShadowMapInfo::resolution(U16 resolution) {
     _resolution = resolution;
     if (_shadowMap) {
-        _shadowMap->resolution(_resolution,
-                               _light->shadowMapResolutionFactor());
+        _shadowMap->resolution(_resolution, _light->shadowMapResolutionFactor());
     }
 }
 
