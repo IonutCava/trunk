@@ -78,6 +78,7 @@ void glShaderProgram::validateInternal() {
 bool glShaderProgram::update(const U64 deltaTime) {
     if (_lockManager) {
         _lockManager->Wait(true);
+        _lockManager.reset(nullptr);
     }
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued && _shaderProgramID != 0) {
@@ -485,12 +486,9 @@ bool glShaderProgram::isBound() const {
 /// later use
 I32 glShaderProgram::getUniformLocation(const char* name) {
     // If the shader can't be used for rendering, just return an invalid address
-    if (!isValid() || _shaderProgramID == 0) {
+    if (_shaderProgramID == 0 || !isValid()) {
         return -1;
     }
-    DIVIDE_ASSERT(getState() == ResourceState::RES_LOADED,
-                  "glShaderProgram error: tried to query a shader program "
-                  "before threaded load completed!");
 
     // Check the cache for the location
     ULL nameHash = _ID_RT(name);

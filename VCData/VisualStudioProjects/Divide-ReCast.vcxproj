@@ -138,7 +138,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -158,6 +158,8 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <ExceptionHandling>Sync</ExceptionHandling>
       <CompileAs>CompileAsCpp</CompileAs>
+      <SDLCheck>false</SDLCheck>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -190,6 +192,7 @@
       <StringPooling>false</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -226,6 +229,7 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

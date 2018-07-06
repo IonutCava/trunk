@@ -285,6 +285,15 @@ vec3<F32> ToFloatColor(const vec3<U8>& byteColor);
 vec4<F32> ToFloatColor(const vec4<U32>& uintColor);
 vec3<F32> ToFloatColor(const vec3<U32>& uintColor);
 
+void ToByteColor(const vec4<F32>& floatColor, vec4<U8>& colorOut);
+void ToByteColor(const vec3<F32>& floatColor, vec3<U8>& colorOut);
+void ToUIntColor(const vec4<F32>& floatColor, vec4<U32>& colorOut);
+void ToUIntColor(const vec3<F32>& floatColor, vec3<U32>& colorOut);
+void ToFloatColor(const vec4<U8>& byteColor, vec4<F32>& colorOut);
+void ToFloatColor(const vec3<U8>& byteColor, vec3<F32>& colorOut);
+void ToFloatColor(const vec4<U32>& uintColor, vec4<F32>& colorOut);
+void ToFloatColor(const vec3<U32>& uintColor, vec3<F32>& colorOut);
+
 
 inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) {
     return PACK_FLOAT(FLOAT_TO_CHAR_SNORM(x),

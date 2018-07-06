@@ -26,7 +26,8 @@ void ResourceCache::Destroy() {
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
 
     for (ResourceMap::value_type& it : _resDB) {
-        WAIT_FOR_CONDITION(it.second->getState() == ResourceState::RES_LOADED);
+        WAIT_FOR_CONDITION(it.second->getState() == ResourceState::RES_LOADED ||
+                           it.second->getState() == ResourceState::RES_LOADING);
         while (it.second->GetRef() > 1) {
             it.second->SubRef();
         }

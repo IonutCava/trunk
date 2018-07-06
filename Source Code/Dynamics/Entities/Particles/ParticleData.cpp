@@ -98,7 +98,7 @@ void ParticleData::sort(bool invalidateCache) {
     for (U32 i = 0; i < count; ++i) {
         U32 idx = _indices[i].first;
         _renderingPositions[i].set(_position[idx]);
-        _renderingColors[i].set(Util::ToByteColor(_color[idx]));
+        Util::ToByteColor(_color[idx], _renderingColors[i]);
     }
 
 }

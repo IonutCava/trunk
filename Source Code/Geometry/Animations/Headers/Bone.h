@@ -41,10 +41,11 @@
 namespace Divide {
 
 class Bone {
+   protected:
+       stringImpl _name;
+       ULL        _nameKey;
    public:
     I32 _boneID;
-    stringImpl _name;
-
     aiMatrix4x4 _offsetMatrix;
     aiMatrix4x4 _localTransform;
     aiMatrix4x4 _globalTransform;
@@ -56,6 +57,7 @@ class Bone {
     // index in the current animation's channel array.
     Bone(const stringImpl& name)
         : _name(name),
+        _nameKey(_ID_RT(name)),
         _parent(0),
         _boneID(-1)
     {
@@ -80,12 +82,16 @@ class Bone {
     }
 
     inline Bone* find(const stringImpl& name) {
-        if (_name.compare(name) == 0) {
+        return find(_ID_RT(name));
+    }
+
+    inline Bone* find(ULL nameKey) {
+        if (_nameKey == nameKey) {
             return this;
         }
 
         for (Bone* child : _children) {
-            Bone* childNode = child->find(name);
+            Bone* childNode = child->find(nameKey);
             if (childNode != nullptr) {
                 return childNode;
             }
@@ -99,6 +105,15 @@ class Bone {
         for (Bone* child : _children) {
             child->createBoneList(boneList);
         }
+    }
+
+    inline const stringImpl& name() const {
+        return _name;
+    }
+
+    inline void name(const stringImpl& name) {
+        _name = name;
+        _nameKey = _ID_RT(name);
     }
 };
 

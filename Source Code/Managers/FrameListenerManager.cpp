@@ -146,7 +146,7 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime,
         return 0.0;
     }
 
-    EventTimeMap::iterator it = std::begin(times);
+    EventTimeMap::const_iterator it = std::cbegin(times);
     EventTimeMap::iterator end = std::end(times) - 2;
 
     while (it != end) {
@@ -157,7 +157,7 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime,
         }
     }
 
-    times.erase(std::begin(times), it);
+    times.erase(std::cbegin(times), it);
     return (times.back() - times.front()) /
            Time::SecondsToMilliseconds(times.size() - 1);
 }

@@ -453,6 +453,9 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
         glCreateBuffers(1, &m_uiElementBufferID_Lines);
         glCreateBuffers(1, &m_uiElementBufferID_Triangles);
         glCreateBuffers(1, &m_uiElementBufferID_Wireframe);
+    } else {
+        // Buffer orphaning
+        glInvalidateBufferData(m_uiVertexBufferID);
     }
 
     // space reservation pre-pass;
@@ -465,7 +468,7 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
     }
 
     m_bufferData.resize(0);
-    m_bufferData.reserve(static_cast<vectorAlg::vecSize>(bufferSize));
+    m_bufferData.reserve(bufferSize);
     m_bufferData.insert(std::end(m_bufferData), std::begin(m_PositionData),
                         std::end(m_PositionData));
     m_PositionData.clear();

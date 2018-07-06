@@ -131,7 +131,7 @@ void SceneAnimator::save(ByteBuffer& dataOut) const {
 
     dataOut << to_uint(_bones.size());
     for (Bone* bone : _bones) {
-        dataOut << bone->_name;
+        dataOut << bone->name();
     }
 
     // the number of animations
@@ -175,7 +175,7 @@ void SceneAnimator::load(ByteBuffer& dataIn) {
 
 void SceneAnimator::saveSkeleton(ByteBuffer& dataOut, Bone* parent) const {
     // the name of the bone
-    dataOut << parent->_name;
+    dataOut << parent->name();
     // the bone offsets
     for (U8 i = 0; i < 4; ++i) {
         for (U8 j = 0; j < 4; ++j) {
@@ -198,12 +198,14 @@ void SceneAnimator::saveSkeleton(ByteBuffer& dataOut, Bone* parent) const {
 }
 
 Bone* SceneAnimator::loadSkeleton(ByteBuffer& dataIn, Bone* parent) {
+    stringImpl tempString;
     // create a node
     Bone* internalNode = MemoryManager_NEW Bone();
     // set the parent, in the case this is the root node, it will be null
     internalNode->_parent = parent;  
     // the name of the bone
-    dataIn >> internalNode->_name;
+    dataIn >> tempString;
+    internalNode->name(tempString);
     // the bone offsets
     for (U8 i = 0; i < 4; ++i) {
         for (U8 j = 0; j < 4; ++j) {

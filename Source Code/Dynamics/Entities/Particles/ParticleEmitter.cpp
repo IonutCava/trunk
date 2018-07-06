@@ -315,7 +315,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     // const Quaternion<F32>& orientation = transform->getOrientation();
 
     // invalidateCache means that the existing particle data is no longer partially sorted
-    _particles->sort(count < 1000);
+    _particles->sort(true);
 
     _boundingBox.first.reset();
     U32 aliveCount = _particles->aliveCount();
