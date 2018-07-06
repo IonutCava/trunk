@@ -76,7 +76,6 @@ public:
     virtual void threadedLoad(const std::string& name)                  {_threadedLoadComplete = true;}
 
 protected:
-    friend class DVDConverter;
     friend class ResourceCache;
     friend class ResourceLoader;
     template<class X>

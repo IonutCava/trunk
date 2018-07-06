@@ -3,7 +3,6 @@
 
 #include "Core/Headers/Singleton.h"
 #include <boost/thread/mutex.hpp>
-#include <boost/function.hpp>
 
 #ifndef I32
 #define I32 int

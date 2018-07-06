@@ -53,7 +53,7 @@ public:
     ///The SceneGraph is not the default rendering class for reflections as some elements (i.e. Sky) are not part of it
     ///As the sky and other elements should be included in the reflection, we should set a custom callback
     ///Another example would be the player model. It is not rendered when in First Person, but it should show up in reflections
-    inline void setRenderCallback(boost::function0<void> callback) {_renderCallback = callback;}
+    inline void setRenderCallback(const DELEGATE_CBK& callback) {_renderCallback = callback;}
 
     void togglePreviewReflection() {_previewReflection = !_previewReflection;}
     ///Draw a small quad with our reflection buffer as a texture
@@ -80,7 +80,7 @@ protected:
     bool _excludeSelfReflection;
     bool _previewReflection;
 
-    boost::function0<void> _renderCallback;
+    DELEGATE_CBK _renderCallback;
     FrameBufferObject* _reflectedTexture;
     Quad3D*    _renderQuad;
     Plane<F32> _reflectionPlane;

@@ -37,10 +37,10 @@ class DeferredShadingRenderer : public Renderer {
 public:
 	DeferredShadingRenderer();
 	~DeferredShadingRenderer();
-	void render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState);
+	void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView();
 private:
-	void firstPass(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState);
+	void firstPass(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
 	void secondPass(const SceneRenderState& sceneRenderState);
 
 private:

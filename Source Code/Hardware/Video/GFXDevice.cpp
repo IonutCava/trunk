@@ -54,7 +54,15 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
 }
 
+GFXDevice::~GFXDevice()
+{
+}
+
 I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
+    
+    PostFX::createInstance();
+    ShaderManager::createInstance();
+
     I8 hardwareState = _api.initHardware(resolution,argc,argv);
 
     if(hardwareState == NO_ERR){
@@ -121,6 +129,7 @@ void GFXDevice::setApi(const RenderAPI& api){
 }
 
 void GFXDevice::closeRenderingApi(){
+    ShaderManager::getInstance().destroyInstance();
     _api.closeRenderingApi();
     for_each(RenderStateMap::value_type& it, _stateBlockMap){
         SAFE_DELETE(it.second);
@@ -135,8 +144,17 @@ void GFXDevice::closeRenderingApi(){
 }
 
 void GFXDevice::closeRenderer(){
+    PRINT_FN(Locale::get("STOP_POST_FX"));
+    PostFX::getInstance().destroyInstance();
+    ShaderManager::getInstance().Destroy();
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
     SAFE_DELETE(_renderer);
+}
+
+void GFXDevice::idle() {
+    PostFX::getInstance().idle();
+    ShaderManager::getInstance().idle();
+    _api.idle();
 }
 
 void GFXDevice::renderInstance(RenderInstance* const instance){
@@ -227,7 +245,7 @@ void GFXDevice::renderGUIElement(U64 renderInterval, GUIElement* const element,S
     };
 }
 
-void GFXDevice::render(boost::function0<void> renderFunction, const SceneRenderState& sceneRenderState){
+void GFXDevice::render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState){
     //Call the specific render function that prepares the scene for presentation
     _renderer->render(renderFunction, sceneRenderState);
 }
@@ -244,13 +262,8 @@ void GFXDevice::setRenderer(Renderer* const renderer) {
 
 void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
                                  const vec3<F32>& pos,
-                                 boost::function0<void> callback,
+                                 const DELEGATE_CBK& callback,
                                  const RenderStage& renderStage){
-    //Don't need to override cubemap rendering callback
-    if(callback.empty()){
-        //Default case is that everything is reflected
-        callback = DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance()));
-    }
     //Only use cube map FBO's
     if(cubeMap.getType() != FBO_CUBE_COLOR && cubeMap.getType() != FBO_CUBE_DEPTH){
         if(cubeMap.getType() != FBO_CUBE_COLOR) {
@@ -288,6 +301,9 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
     setRenderStage(renderStage);
     //Bind our FBO
     cubeMap.Begin(FrameBufferObject::defaultPolicy());
+
+    assert(!callback.empty());
+
     //For each of the environment's faces (TOP,DOWN,NORTH,SOUTH,EAST,WEST)
     for(U8 i = 0; i < 6; i++){
         // true to the current cubemap face
@@ -365,7 +381,6 @@ bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){
 }
 
 void GFXDevice::changeResolution(U16 w, U16 h) {
-
     if(_screenBuffer[0] != NULL) {
         if(w == _screenBuffer[0]->getWidth() && h == _screenBuffer[0]->getHeight()) return;
 

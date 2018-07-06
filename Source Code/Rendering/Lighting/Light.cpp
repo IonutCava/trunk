@@ -310,7 +310,7 @@ void Light::generateShadowMaps(const SceneRenderState& sceneRenderState){
     sm->postRender();
 }
 
-void Light::setShadowMappingCallback(boost::function0<void> callback) {
+void Light::setShadowMappingCallback(const DELEGATE_CBK& callback) {
     _callback = callback;
 }
 

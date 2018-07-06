@@ -39,17 +39,17 @@ public:
     inline Scene* getActiveScene()                   { return _activeScene; }
     inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_activeScene, scene); }
 
-    bool   init();
+    bool   init(GUI* const gui);
 
     /*Base Scene Operations*/
     void preRender();
-    void render(const RenderStage& stage);
+    void render(const RenderStage& stage, const Kernel& kernel);
     void postRender();
     // updates and culls the scene graph and renders the visible nodes
     void renderVisibleNodes();
 
     inline void idle()                                 { _activeScene->idle(); }
-    inline bool unloadCurrentScene()                   { return _activeScene->unload(); }
+    bool unloadCurrentScene();
     bool load(const std::string& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
     ///Check if the scene was loaded properly
     inline bool checkLoadFlag()                 const  {return _activeScene->checkLoadFlag();}
@@ -57,7 +57,7 @@ public:
     inline bool initializeAI(bool continueOnErrors)    { return _activeScene->initializeAI(continueOnErrors); }
     ///Destroy all AI entities, teams, NPC's createa in "initializeAI"
     ///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
-    inline bool deinitializeAI(bool continueOnErrors)  { return _activeScene->deinitializeAI(continueOnErrors); }
+           bool deinitializeAI(bool continueOnErrors);
     /// Update animations, network data, sounds, triggers etc.
     inline void updateCameras()                           { _activeScene->updateCameras();}
     inline void updateSceneState(const U64 deltaTime)     { _activeScene->updateSceneState(deltaTime); }
@@ -76,6 +76,28 @@ public:
         return true;
     }
 
+public: ///Input
+    ///Key pressed
+    bool onKeyDown(const OIS::KeyEvent& key);
+    ///Key released
+    bool onKeyUp(const OIS::KeyEvent& key);
+    ///Joystic axis change
+    bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone);
+    ///Joystick direction change
+    bool onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
+    ///Joystick button pressed
+    bool onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
+    ///Joystick button released
+    bool onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
+    bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index);
+    ///Mouse moved
+    bool onMouseMove(const OIS::MouseEvent& arg);
+    ///Mouse button pressed
+    bool onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    ///Mouse button released
+    bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+
 protected:
     ///This is inherited from FrameListener and is used to setup cameras before rendering the frame
     bool framePreRenderStarted(const FrameEvent& evt);
@@ -86,13 +108,16 @@ private:
 
 private:
     typedef Unordered_map<std::string, Scene*> SceneMap;
-    boost::function0<void> _renderFunction;
     bool _init;
     U32  _frameCount;
     ///Pointer to the currently active scene
     Scene* _activeScene;
+    ///Pointer to the GUI interface
+    GUI*   _GUI;
     ///Pointer to the scene graph culler that's used to determine what nodes are visible in the current frame
     RenderPassCuller* _renderPassCuller;
+    ///Pointer to the render pass manager
+    RenderPassManager* _renderPassManager;
     ///Scene pool
     SceneMap _sceneMap;
     ///Scene_Name -Scene_Factory table

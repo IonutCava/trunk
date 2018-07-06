@@ -117,7 +117,7 @@ private:
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
     /*immediate mode emmlation end*/
 
-    void renderInViewport(const vec4<GLuint>& rect, boost::function0<GLvoid> callback);
+    void renderInViewport(const vec4<GLuint>& rect, const DELEGATE_CBK& callback);
 
     void setLight(Light* const light);
 
@@ -126,7 +126,7 @@ private:
     RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
     void updateStateInternal(RenderStateBlock* block, bool force = false);
 
-    bool loadInContext(const CurrentContext& context, boost::function0<GLvoid> callback);
+    bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     inline GLuint64 getFrameDurationGPU() const {
 #if defined(_DEBUG) || defined(_PROFILE)
@@ -171,7 +171,7 @@ public:
 private:
 
     void loadInContextInternal();
-    boost::lockfree::spsc_queue<boost::function0<GLvoid>, boost::lockfree::capacity<10> > _loadQueue;
+    boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<10> > _loadQueue;
     boost::thread *_loaderThread;
     boost::atomic_bool _closeLoadingThread;
 

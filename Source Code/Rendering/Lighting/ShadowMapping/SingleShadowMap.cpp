@@ -55,7 +55,7 @@ void SingleShadowMap::resolution(U16 resolution, const SceneRenderState& renderS
     if(resolutionFactorTemp != _resolutionFactor || _maxResolution != maxResolutionTemp){
         _resolutionFactor = resolutionFactorTemp;
         _maxResolution = maxResolutionTemp;
-        ///Initialize the FBO's with a variable resolution
+        //Initialize the FBO's with a variable resolution
         PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _light->getId());
         U16 shadowMapDimension = _maxResolution/_resolutionFactor;
         _depthMap->Create(shadowMapDimension,shadowMapDimension);
@@ -64,7 +64,7 @@ void SingleShadowMap::resolution(U16 resolution, const SceneRenderState& renderS
     _renderQuad->setDimensions(vec4<F32>(0,0,_depthMap->getWidth(),_depthMap->getHeight()));
 }
 
-void SingleShadowMap::render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction){
+void SingleShadowMap::render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     ///Only if we have a valid callback;
     if(sceneRenderFunction.empty()) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());

@@ -32,7 +32,7 @@ class PSShadowMaps : public ShadowMap {
 public:
     PSShadowMaps(Light* light);
     ~PSShadowMaps();
-    void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
+    void render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction);
     void postRender();
     ///Update depth maps
     void resolution(U16 resolution, const SceneRenderState& renderState);

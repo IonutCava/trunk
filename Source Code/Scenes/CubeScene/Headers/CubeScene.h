@@ -32,13 +32,13 @@ public:
 	}
 	void render();
 	void preRender();
-	bool load(const std::string& name, CameraManager* const cameraMgr);
+	bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
 	bool loadResources(bool continueOnErrors);
 	void processInput(const U64 deltaTime);
 	void processTasks(const U64 deltaTime);
 
-	void onKeyDown(const OIS::KeyEvent& key);
-	void onKeyUp(const OIS::KeyEvent& key);
+	bool onKeyDown(const OIS::KeyEvent& key);
+	bool onKeyUp(const OIS::KeyEvent& key);
 };
 
 #endif

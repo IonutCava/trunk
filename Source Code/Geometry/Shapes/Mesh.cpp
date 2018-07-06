@@ -8,7 +8,7 @@
 Mesh::Mesh(ObjectFlag flag) : Object3D(MESH,TRIANGLES,flag),
                               _visibleToNetwork(true)
 {
-
+    setState(RES_LOADING);
 }
 
 Mesh::~Mesh()

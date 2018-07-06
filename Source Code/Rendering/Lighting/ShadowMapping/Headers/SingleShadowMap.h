@@ -31,7 +31,7 @@ class SingleShadowMap : public ShadowMap {
 public:
     SingleShadowMap(Light* light);
     ~SingleShadowMap();
-    void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
+    void render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction);
     ///Update depth maps
     void resolution(U16 resolution, const SceneRenderState& renderState);
     void previewShadowMaps();

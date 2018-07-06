@@ -38,7 +38,12 @@ class LightManager;
 class SceneManager;
 class CameraManager;
 class ShaderManager;
+class InputInterface;
+class SceneRenderState;
 class FrameListenerManager;
+
+enum RenderStage;
+
 ///Input
 namespace OIS {
     class KeyEvent;
@@ -47,7 +52,7 @@ namespace OIS {
     enum MouseButtonID;
 }
 struct FrameEvent;
-class InputInterface;
+
 ///The kernel is the main interface to our engine components:
 ///-video
 ///-audio
@@ -65,14 +70,14 @@ public:
     ///This sets the _mainLoopCallback and starts the main loop
     void beginLogicLoop();
     ///Our main loop entry function. The actual callback can be changed at runtime (i.e. pausing rendering in some menus, or pre-rendering a frame offscreen)
-    inline static void mainLoopStatic() {_mainLoopCallback();}
+    inline  static void mainLoopStatic() {_mainLoopCallback();}
     ///Our main application rendering loop. Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
-           static void mainLoopApp();
+            static void mainLoopApp();
     ///Called after a swap-buffer call and before a clear-buffer call.
     ///In a GPU-bound application, the CPU will wait on the GPU to finish processing the frame so this should keep it busy (old-GLUT heritage)
-           static void idle();
+            static void idle();
     ///Update all engine components that depend on the current resolution
-    static void updateResolutionCallback(I32 w, I32 h);
+            static void updateResolutionCallback(I32 w, I32 h);
 
 public:
     GFXDevice& getGFXDevice() const {return _GFX;}
@@ -114,6 +119,10 @@ private:
    bool presentToScreen(FrameEvent& evt, const D32 interpolationFactor);
 
 private:
+    friend class SceneManager;
+    void submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK& sceneRenderCallback) const;
+
+private:
     Application&    _APP;
     ///Access to the GPU
     GFXDevice&		_GFX;
@@ -124,7 +133,7 @@ private:
     ///The graphical user interface
     GUI&			_GUI;
     ///The SceneManager/ Scene Pool
-    SceneManager&	SceneMgr;
+    SceneManager&	_sceneMgr;
     ///Keep track of all active cameras used by the engine
     CameraManager* _cameraMgr;
 
@@ -132,8 +141,8 @@ private:
     static bool   _applicationReady;
     static bool   _renderingPaused;
 
-   static boost::function0<void> _mainLoopCallback;
-   boost::threadpool::pool*      _mainTaskPool;
+   static DELEGATE_CBK      _mainLoopCallback;
+   boost::threadpool::pool* _mainTaskPool;
    // both are in ms
    static U64 _currentTime;
    static U64 _currentTimeDelta;

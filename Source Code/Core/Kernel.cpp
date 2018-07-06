@@ -30,8 +30,12 @@ bool Kernel::_keepAlive = true;
 bool Kernel::_applicationReady = false;
 bool Kernel::_renderingPaused = false;
 
-boost::function0<void> Kernel::_mainLoopCallback;
+DELEGATE_CBK Kernel::_mainLoopCallback;
 ProfileTimer* s_appLoopTimer = NULL;
+
+#if USE_FIXED_TIMESTEP
+static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
+#endif
 
 Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
                     _argc(argc),
@@ -41,14 +45,12 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
                     _SFX(SFXDevice::getOrCreateInstance()), //Audio
                     _PFX(PXDevice::getOrCreateInstance()),  //Physics
                     _GUI(GUI::getOrCreateInstance()),       //Graphical User Interface
-                    _cameraMgr(New CameraManager()),              //Camera manager
-                    SceneMgr(SceneManager::getOrCreateInstance()) //Scene Manager
+                    _cameraMgr(New CameraManager()),               //Camera manager
+                    _sceneMgr(SceneManager::getOrCreateInstance()) //Scene Manager
                     
 {
     ResourceCache::createInstance();
-    PostFX::createInstance();
     FrameListenerManager::createInstance();
-    ShaderManager::createInstance();
     InputInterface::createInstance();
 
     //General light management and rendering (individual lights are handled by each scene)
@@ -58,7 +60,7 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     assert(_cameraMgr != NULL);
     //If camera has been changed, set a callback to inform the current scene
     _cameraMgr->addCameraChangeListener(DELEGATE_BIND(&SceneManager::updateCameras, //update camera
-                                                      DELEGATE_REF(SceneMgr)));
+                                                      DELEGATE_REF(_sceneMgr)));
     // force all lights to update on camera change (to keep them still actually)
     _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::update, 
                                                        DELEGATE_REF(LightManager::getInstance()),
@@ -80,10 +82,8 @@ Kernel::~Kernel(){
 void Kernel::idle(){
     GFX_DEVICE.idle();
     PHYSICS_DEVICE.idle();
-    PostFX::getInstance().idle();
     SceneManager::getInstance().idle();
     LightManager::getInstance().idle();
-    ShaderManager::getInstance().idle();
     FrameListenerManager::getInstance().idle();
 
     std::string pendingLanguage = ParamHandler::getInstance().getParam<std::string>("language");
@@ -144,10 +144,6 @@ void Kernel::mainLoopApp(){
 #endif
 }
 
-#if USE_FIXED_TIMESTEP
-static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
-#endif
-
 bool Kernel::mainLoopScene(FrameEvent& evt){
     if(_renderingPaused) {
         idle();
@@ -167,10 +163,10 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
         _cameraMgr->update(deltaTime);
 
         // Update scene based on input
-        SceneMgr.processInput(deltaTime);
+        _sceneMgr.processInput(deltaTime);
  
         // process all scene events
-        SceneMgr.processTasks(deltaTime);
+        _sceneMgr.processTasks(deltaTime);
 
         // Get input events
         if(Application::getInstance().hasFocus()) {
@@ -188,7 +184,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
          
     // Call this to avoid interpolating 60 bone matrices per entity every render call
     // Update the scene state based on current time (e.g. animation matrices)
-    SceneMgr.updateSceneState(_currentTimeDelta);
+    _sceneMgr.updateSceneState(_currentTimeDelta);
 
     //Update physics - uses own timestep implementation
     _PFX.update(_currentTimeDelta);
@@ -216,7 +212,7 @@ void Kernel::displayScene(){
 
     // Z-prePass
     _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
-        SceneManager::getInstance().render(Z_PRE_PASS);
+        SceneManager::getInstance().render(Z_PRE_PASS, *this);
    
     _GFX.isDepthPrePass(false);
 
@@ -225,7 +221,7 @@ void Kernel::displayScene(){
     }else{
         _GFX.getScreenBuffer(0)->Begin(FrameBufferObject::defaultPolicy());        
     }
-        SceneManager::getInstance().render(stage);
+        SceneManager::getInstance().render(stage, *this);
 
     if(postProcessing){
         _GFX.getScreenBuffer(0)->End();
@@ -249,11 +245,11 @@ void Kernel::displaySceneAnaglyph(){
     currentCamera->renderLookAt();
         // Z-prePass
         _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
-            SceneManager::getInstance().render(Z_PRE_PASS); 
+            SceneManager::getInstance().render(Z_PRE_PASS, *this); 
 
         // first screen buffer
         _GFX.getScreenBuffer(0)->Begin(FrameBufferObject::defaultPolicy());
-            SceneManager::getInstance().render(stage);
+            SceneManager::getInstance().render(stage, *this);
 
 
     // Render to left eye
@@ -261,10 +257,10 @@ void Kernel::displaySceneAnaglyph(){
     currentCamera->renderLookAt();
         // Z-prePass
         _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
-            SceneManager::getInstance().render(Z_PRE_PASS);
+            SceneManager::getInstance().render(Z_PRE_PASS, *this);
         // second screen buffer
         _GFX.getScreenBuffer(1)->Begin(FrameBufferObject::defaultPolicy());
-            SceneManager::getInstance().render(stage);
+            SceneManager::getInstance().render(stage, *this);
         _GFX.getScreenBuffer(1)->End();
 
     currentCamera->restoreCamera();
@@ -281,7 +277,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
     _GFX.setInterpolation(interpolationFactor);
 
     //Prepare scene for rendering
-    SceneMgr.preRender();
+    _sceneMgr.preRender();
 
     //perform time-sensitive shader tasks
     ShaderManager::getInstance().update(_currentTimeDelta);
@@ -291,7 +287,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
 
     _GFX.anaglyphEnabled() ? displaySceneAnaglyph() : displayScene();
 
-    SceneMgr.postRender();
+    _sceneMgr.postRender();
 
     //render debug primitives and cleanup after us
     _GFX.flush();
@@ -329,14 +325,24 @@ void Kernel::firstLoop(){
     _currentTime = _nextGameTick = GETUSTIME();
 }
 
+void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK& sceneRenderCallback) const {
+    _GFX.setRenderStage(stage);
+    _GFX.render(sceneRenderCallback, sceneRenderState);
+
+    if(bitCompare(stage,FINAL_STAGE) || bitCompare(stage,DEFERRED_STAGE)){
+        // Draw bounding boxes, skeletons, axis gizmo, etc.
+        _GFX.debugDraw();
+        // Show navmeshes
+        AIManager::getInstance().debugDraw(false);
+    }
+}
+
 I8 Kernel::initialize(const std::string& entryPoint) {
     I8 windowId = -1;
     I8 returnCode = 0;
     ParamHandler& par = ParamHandler::getInstance();
 
-    Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText,
-                                                            GUI::getInstance().getConsole(),
-                                                            _1,_2));
+    Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), _1, _2));
     //Using OpenGL for rendering as default
     _GFX.setApi(OpenGL);
 
@@ -388,14 +394,14 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     _GUI.init();
     _GUI.cacheResolution(resolution);
 
-    SceneMgr.init();
+    _sceneMgr.init(&_GUI);
 
-    if(!SceneMgr.load(startupScene, resolution, _cameraMgr)){       //< Load the scene
+    if(!_sceneMgr.load(startupScene, resolution, _cameraMgr)){       //< Load the scene
         ERROR_FN(Locale::get("ERROR_SCENE_LOAD"),startupScene.c_str());
         return MISSING_SCENE_DATA;
     }
 
-    if(!SceneMgr.checkLoadFlag()){
+    if(!_sceneMgr.checkLoadFlag()){
         ERROR_FN(Locale::get("ERROR_SCENE_LOAD_NOT_CALLED"),startupScene.c_str());
         return MISSING_SCENE_LOAD_CALL;
     }
@@ -403,7 +409,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     PRINT_FN(Locale::get("INITIAL_DATA_LOADED"));
     PRINT_FN(Locale::get("CREATE_AI_ENTITIES_START"));
     //Initialize and start the AI
-    SceneMgr.initializeAI(true);
+    _sceneMgr.initializeAI(true);
     PRINT_FN(Locale::get("CREATE_AI_ENTITIES_END"));
 
     return windowId;
@@ -428,22 +434,16 @@ void Kernel::shutdown(){
     PRINT_FN(Locale::get("STOP_GUI"));
     Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
     _GUI.destroyInstance(); ///Deactivate GUI
-    PRINT_FN(Locale::get("STOP_POST_FX"));
-    PostFX::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
-    AIManager::getInstance().pauseUpdate(true);
-    SceneMgr.unloadCurrentScene();
-    SceneMgr.deinitializeAI(true);
-    AIManager::getInstance().destroyInstance();
-    SceneMgr.destroyInstance();
-    ShaderManager::getInstance().Destroy();
+    _sceneMgr.unloadCurrentScene();
+    _sceneMgr.deinitializeAI(true);
+    _sceneMgr.destroyInstance();
     _GFX.closeRenderer();
     PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
     ResourceCache::getInstance().destroyInstance();
     LightManager::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
     FrameListenerManager::getInstance().destroyInstance();
-    ShaderManager::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
     _PFX.exitPhysics();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
@@ -457,15 +457,12 @@ void Kernel::shutdown(){
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){
     if(!_applicationReady) return;
-    ShaderManager::getInstance().refresh();
     Application& app = Application::getInstance();
     //minimized
     _renderingPaused = (w == 0 || h == 0);
     app.setResolutionWidth(w);
     app.setResolutionHeight(h);
     app.isFullScreen(!ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
-    //Update post-processing render targets and buffers
-    PostFX::getInstance().reshapeFBO(w, h);
     vec2<U16> newResolution(w,h);
     //Update the graphical user interface
     GUI::getInstance().onResize(newResolution);
@@ -473,71 +470,52 @@ void Kernel::updateResolutionCallback(I32 w, I32 h){
     SceneManager::getInstance().cacheResolution(newResolution);
     // Update internal resolution tracking (used for joysticks and mouse)
     InputInterface::getInstance().updateResolution(w,h);
+    //Update post-processing render targets and buffers
+    PostFX::getInstance().reshapeFBO(w, h);
+    ShaderManager::getInstance().refresh();
 }
 
 ///--------------------------Input Management-------------------------------------///
-
 bool Kernel::onKeyDown(const OIS::KeyEvent& key) {
-    if(GUI::getInstance().keyCheck(key,true)){
-        GET_ACTIVE_SCENE()->onKeyDown(key);
-    }
-    return true;
+    return _sceneMgr.onKeyDown(key);
 }
 
 bool Kernel::onKeyUp(const OIS::KeyEvent& key) {
-    if(GUI::getInstance().keyCheck(key,false)){
-        GET_ACTIVE_SCENE()->onKeyUp(key);
-    }
-    return true;
+    return _sceneMgr.onKeyUp(key);
 }
 
 bool Kernel::onMouseMove(const OIS::MouseEvent& arg) {
-    if(GUI::getInstance().checkItem(arg)){
-        GET_ACTIVE_SCENE()->onMouseMove(arg);
-    }
-    return true;
+    return _sceneMgr.onMouseMove(arg);
 }
 
 bool Kernel::onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
-    if(GUI::getInstance().clickCheck(button,true)){
-        GET_ACTIVE_SCENE()->onMouseClickDown(arg,button);
-    }
-    return true;
+    return _sceneMgr.onMouseClickDown(arg,button);
 }
 
 bool Kernel::onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
-    if(GUI::getInstance().clickCheck(button,false)){
-        GET_ACTIVE_SCENE()->onMouseClickUp(arg,button);
-    }
-    return true;
+    return _sceneMgr.onMouseClickUp(arg,button);
 }
 
 bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone) {
-    GET_ACTIVE_SCENE()->onJoystickMoveAxis(arg,axis,deadZone);
-    return true;
+    return _sceneMgr.onJoystickMoveAxis(arg,axis,deadZone);
 }
 
 bool Kernel::onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov){
-    GET_ACTIVE_SCENE()->onJoystickMovePOV(arg,pov);
-    return true;
+    return _sceneMgr.onJoystickMovePOV(arg,pov);
 }
 
 bool Kernel::onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button){
-    GET_ACTIVE_SCENE()->onJoystickButtonDown(arg,button);
-    return true;
+    return _sceneMgr.onJoystickButtonDown(arg,button);
 }
 
 bool Kernel::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
-    GET_ACTIVE_SCENE()->onJoystickButtonUp(arg,button);
-    return true;
+    return _sceneMgr.onJoystickButtonUp(arg,button);
 }
 
 bool Kernel::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
-    GET_ACTIVE_SCENE()->sliderMoved(arg,index);
-    return true;
+    return _sceneMgr.sliderMoved(arg,index);
 }
 
 bool Kernel::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
-    GET_ACTIVE_SCENE()->vector3Moved(arg,index);
-    return true;
+    return _sceneMgr.vector3Moved(arg,index);
 }

@@ -53,7 +53,7 @@ public:
     ///Remove a nav mesh
     void destroyNavMesh(Navigation::NavigationMesh* const navMesh);
  
-    inline void setSceneCallback(boost::function0<void> callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
+    inline void setSceneCallback(const DELEGATE_CBK& callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
     inline void pauseUpdate(bool state) {_pauseUpdate = state;}
 
     ///Toggle NavMesh debugDraw
@@ -78,7 +78,7 @@ private:
     AITeamMap   _aiTeams;
     mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;
-    boost::function0<void> _sceneCallback;
+    DELEGATE_CBK       _sceneCallback;
     vectorImpl<Navigation::NavigationMesh* > _navMeshes;
 END_SINGLETON
 

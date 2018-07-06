@@ -32,59 +32,60 @@ class NPC;
 
 class WarScene : public Scene {
 public:
-	WarScene() : Scene(),
-		_groundPlaceholder(NULL),
-		_faction1(NULL),
-		_faction2(NULL),
+    WarScene() : Scene(),
+        _groundPlaceholder(NULL),
+        _faction1(NULL),
+        _faction2(NULL),
         _bobNode(NULL),
         _bobNodeBody(NULL),
         _lampLightNode(NULL),
         _lampTransform(NULL),
         _lampTransformNode(NULL),
         _sceneReady(false)
-	{
-		_scorTeam1 = 0;
-		_scorTeam2 = 0;
-	}
+    {
+        _scorTeam1 = 0;
+        _scorTeam2 = 0;
+    }
 
-	void preRender();
+    void preRender();
 
-	bool load(const std::string& name, CameraManager* const cameraMgr);
-	bool loadResources(bool continueOnErrors);
-	bool initializeAI(bool continueOnErrors);
-	bool deinitializeAI(bool continueOnErrors);
-	void processInput(const U64 deltaTime);
-	void processTasks(const U64 deltaTime);
+    bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool loadResources(bool continueOnErrors);
+    bool initializeAI(bool continueOnErrors);
+    bool deinitializeAI(bool continueOnErrors);
+    void processInput(const U64 deltaTime);
+    void processTasks(const U64 deltaTime);
     void updateSceneState(const U64 deltaTime);
-	void onKeyDown(const OIS::KeyEvent& key);
-	void onKeyUp(const OIS::KeyEvent& key);
-	void onMouseMove(const OIS::MouseEvent& key);
-	void onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button);
-	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+
+    bool onKeyDown(const OIS::KeyEvent& key);
+    bool onKeyUp(const OIS::KeyEvent& key);
+    bool onMouseMove(const OIS::MouseEvent& key);
+    bool onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button);
+    bool onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
-	void processSimulation(boost::any a, CallbackParam b);
-	void startSimulation();
-	void resetSimulation();
+    void processSimulation(boost::any a, CallbackParam b);
+    void startSimulation();
+    void resetSimulation();
 
 private:
-	I8 _score;
-	vec4<F32> _sunvector;
-	SceneGraphNode* _groundPlaceholder;
+    I8 _score;
+    vec4<F32> _sunvector;
+    SceneGraphNode* _groundPlaceholder;
 
 private: //Game
     bool _sceneReady;
-	I8 _scorTeam1;
-	I8 _scorTeam2;
-	///AIEntities are the "processors" behing the NPC's
-	vectorImpl<AIEntity *> _army1;
-	vectorImpl<AIEntity *> _army2;
-	///NPC's are the actual game entities
-	vectorImpl<NPC *> _army1NPCs;
-	vectorImpl<NPC *> _army2NPCs;
-	///Team's are factions for AIEntites so they can manage friend/foe situations
-	AICoordination *_faction1, *_faction2;
-	SceneGraphNode *_bobNode;
+    I8 _scorTeam1;
+    I8 _scorTeam2;
+    ///AIEntities are the "processors" behing the NPC's
+    vectorImpl<AIEntity *> _army1;
+    vectorImpl<AIEntity *> _army2;
+    ///NPC's are the actual game entities
+    vectorImpl<NPC *> _army1NPCs;
+    vectorImpl<NPC *> _army2NPCs;
+    ///Team's are factions for AIEntites so they can manage friend/foe situations
+    AICoordination *_faction1, *_faction2;
+    SceneGraphNode *_bobNode;
     SceneGraphNode *_bobNodeBody;
     SceneGraphNode *_lampLightNode;
     SceneGraphNode *_lampTransformNode;

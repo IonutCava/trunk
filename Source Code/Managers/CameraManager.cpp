@@ -34,7 +34,7 @@ void CameraManager::setActiveCamera(const std::string& name) {
     if(_cameraPool.find(name) != _cameraPool.end()) 	_camera = _cameraPool[name];
     else  		                                        _camera = _cameraPool.begin()->second;
 
-    for_each(boost::function0<void > listener, _changeCameralisteners){
+    for_each(const DELEGATE_CBK& listener, _changeCameralisteners){
         listener();
     }
 }
@@ -47,7 +47,7 @@ void CameraManager::addNewCamera(const std::string& cameraName, Camera* const ca
     camera->setIOD(ParamHandler::getInstance().getParam<F32>("postProcessing.anaglyphOffset"));
     camera->setName(cameraName);
 
-	for_each(boost::function0<void > listener, _updateCameralisteners){
+	for_each(const DELEGATE_CBK& listener, _updateCameralisteners){
 		camera->addUpdateListener(listener);
 	}
     _cameraPool.insert(make_pair(cameraName,camera));

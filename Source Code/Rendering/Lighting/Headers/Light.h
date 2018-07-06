@@ -149,7 +149,7 @@ public:
     /*----------- Shadow Mapping-------------------*/
     ///Set the function used to generate shadows for this light (usually _scenegraph->render)
     inline ShadowMapInfo* getShadowMapInfo() const {return _shadowMapInfo;}
-    void setShadowMappingCallback(boost::function0<void> callback);
+    void setShadowMappingCallback(const DELEGATE_CBK& callback);
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
     inline const mat4<F32 >& getLightProjectionMatrix() const {return _lightProjectionMatrix;}
@@ -189,7 +189,7 @@ private:
     bool _updateLightBB;
     Impostor* _impostor; ///< Used for debug rendering -Ionut
     SceneGraphNode *_lightSGN, *_impostorSGN;
-    boost::function0<void> _callback;
+    DELEGATE_CBK _callback;
     F32   _score;
     bool  _dirty;
     bool  _enabled;
@@ -198,7 +198,7 @@ protected:
     mat4<F32> _lightProjectionMatrix;
     mat4<F32> _bias;
     vec3<F32> _lightPos;
-	vec3<F32> _lightPosInitial;
+    vec3<F32> _lightPosInitial;
     vec2<F32> _zPlanes;
     vec3<F32> _eyePos;
     ShadowMapInfo* _shadowMapInfo;

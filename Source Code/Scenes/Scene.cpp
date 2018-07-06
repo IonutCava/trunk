@@ -256,7 +256,8 @@ bool Scene::preLoad() {
     return true;
 }
 
-bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
+bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const guiInterface){
+    _GUI = guiInterface;
     _cameraMgr = cameraMgr;
     _name = name;
     addDefaultCamera();

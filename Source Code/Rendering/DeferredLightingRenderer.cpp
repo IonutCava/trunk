@@ -9,6 +9,6 @@ DeferredLightingRenderer::~DeferredLightingRenderer()
 {
 }
 
-void DeferredLightingRenderer::render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState) {
+void DeferredLightingRenderer::render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) {
 	renderCallback();
 }

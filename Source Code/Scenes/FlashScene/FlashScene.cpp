@@ -19,15 +19,15 @@ void FlashScene::processInput(const U64 deltaTime){
 void FlashScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_taskTimers[0] >= FpsDisplay)	{
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _taskTimers[0] = 0.0;
     }
     Scene::processTasks(deltaTime);
 }
 
-bool FlashScene::load(const std::string& name, CameraManager* const cameraMgr){
+bool FlashScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     addDefaultLight();
     addDefaultSky();
     return loadState;
@@ -39,11 +39,11 @@ bool FlashScene::loadResources(bool continueOnErrors){
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y),
                             0.0f );
-        GUI::getInstance().addText("fpsDisplay",           //Unique ID
-                               vec2<I32>(60,60),           //Position
-                               Font::DIVIDE_DEFAULT,       //Font
-                               vec3<F32>(0.0f,0.2f, 1.0f), //Color
-                               "FPS: %s",0);    //Text and arguments
+        _GUI->addText("fpsDisplay",           //Unique ID
+                      vec2<I32>(60,60),           //Position
+                      Font::DIVIDE_DEFAULT,       //Font
+                      vec3<F32>(0.0f,0.2f, 1.0f), //Color
+                      "FPS: %s",0);    //Text and arguments
         _taskTimers.push_back(0.0);
     i = 0;
     return true;

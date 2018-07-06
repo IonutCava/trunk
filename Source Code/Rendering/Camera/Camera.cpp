@@ -249,7 +249,7 @@ void Camera::updateViewMatrix(){
 }
 
 void Camera::updateListeners(){
-    for_each(boost::function0<void > listener, _listeners){
+    for_each(const DELEGATE_CBK& listener, _listeners){
         listener();
     }
 }

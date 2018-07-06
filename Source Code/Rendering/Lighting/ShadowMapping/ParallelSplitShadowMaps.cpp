@@ -96,7 +96,7 @@ void PSShadowMaps::resolution(U16 resolution, const SceneRenderState& sceneRende
     ShadowMap::resolution(resolution,sceneRenderState);
 }
 
-void PSShadowMaps::render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction){
+void PSShadowMaps::render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     //Only if we have a valid callback;
     if(sceneRenderFunction.empty()) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());

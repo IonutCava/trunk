@@ -108,8 +108,8 @@ public:
     void deleteSelection();
 
     ///call this function if you want to use a more complex rendering callback other than "SceneGraph::render()"
-    void renderCallback(boost::function0<void> renderCallback) {_renderCallback = renderCallback;}
-    boost::function0<void> renderCallback() {return _renderCallback;}
+    void renderCallback(const DELEGATE_CBK& renderCallback) {_renderCallback = renderCallback;}
+    const DELEGATE_CBK& renderCallback() {return _renderCallback;}
 
     ///Update all cameras
     void updateCameras();
@@ -119,10 +119,11 @@ public:
 protected:
     ///Global info
     GFXDevice&     _GFX;
+    GUI*           _GUI;
     ParamHandler&  _paramHandler;
     SceneGraph*    _sceneGraph;
     CameraManager* _cameraMgr;
-
+    
     PhysicsSceneInterface*         _physicsInterface;
     ///Datablocks for models,vegetation,terrains,tasks etc
     vectorImpl<D32>                _taskTimers;
@@ -136,7 +137,7 @@ protected:
 
     ///This is the rendering function used to override the default one for the renderer.
     ///If this is empty, the renderer will use the scene's scenegraph render function
-    boost::function0<void> _renderCallback;
+    DELEGATE_CBK _renderCallback;
 
     ///Scene::load must be called by every scene. Add a load flag to make sure!
     bool _loadComplete;
@@ -164,7 +165,7 @@ protected:
     //if singleStep is true, only the first model from the modelArray will be loaded. 
     //Usefull for loading one modle per frame
     virtual void loadXMLAssets(bool singleStep = false);
-    virtual bool load(const std::string& name, CameraManager* const cameraMgr);
+    virtual bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const guiInterface);
             bool loadModel(const FileData& data);
             bool loadGeometry(const FileData& data);
     virtual bool unload();
@@ -186,8 +187,8 @@ protected:
     Sky*    addDefaultSky();
     Camera* addDefaultCamera();//Default camera
     ///simple function to load the scene elements.
-    inline bool SCENE_LOAD(const std::string& name, CameraManager* const cameraMgr, const bool contOnErrorRes, const bool contOnErrorTasks){
-        if(!Scene::load(name,cameraMgr)) {
+    inline bool SCENE_LOAD(const std::string& name, CameraManager* const cameraMgr, GUI* const gui, const bool contOnErrorRes, const bool contOnErrorTasks){
+        if(!Scene::load(name,cameraMgr,gui)) {
             ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load function");
             return false;
         }
@@ -207,17 +208,17 @@ protected:
     }
 
 public: //Input
-    virtual void onKeyDown(const OIS::KeyEvent& key);
-    virtual void onKeyUp(const OIS::KeyEvent& key);
-    virtual void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
-    virtual void onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){}
-    virtual void onJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){}
-    virtual void onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){}
-    virtual void sliderMoved( const OIS::JoyStickEvent &arg, I8 index){}
-    virtual void vector3Moved( const OIS::JoyStickEvent &arg, I8 index){}
-    virtual void onMouseMove(const OIS::MouseEvent& key);
-    virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
-    virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    virtual bool onKeyDown(const OIS::KeyEvent& key);
+    virtual bool onKeyUp(const OIS::KeyEvent& key);
+    virtual bool onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
+    virtual bool onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){ return true; }
+    virtual bool onJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){ return true;}
+    virtual bool onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button) { return true; }
+    virtual bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index) { return true; }
+    virtual bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index){ return true; }
+    virtual bool onMouseMove(const OIS::MouseEvent& key);
+    virtual bool onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    virtual bool onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 protected: //Input
     vec2<F32> _previousMousePos;

@@ -124,7 +124,7 @@ void GL_API::flush(){
     clearStates(false,false,false,false);
 }
 
-void GL_API::renderInViewport(const vec4<GLuint>& rect, boost::function0<void> callback){
+void GL_API::renderInViewport(const vec4<GLuint>& rect, const DELEGATE_CBK& callback){
     setViewport(rect);
     callback();
     restoreViewport();

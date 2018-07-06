@@ -16,7 +16,7 @@ RenderPass::~RenderPass()
 {
 }
 
-void RenderPass::render(const SceneRenderState& renderState) {
+void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeSceneGraph) {
     const RenderStage& currentStage = GFX_DEVICE.getRenderStage();
           RenderQueue& renderQueue = RenderQueue::getInstance();
     //Sort the render queue by the specified key
@@ -37,7 +37,7 @@ void RenderPass::render(const SceneRenderState& renderState) {
         for(U16 i = 0; i < renderBinCount; i++){
             renderQueue.getBinSorted(i)->postRender();
         }
-        SceneGraphNode* root = GET_ACTIVE_SCENEGRAPH()->getRoot();
+        SceneGraphNode* root = activeSceneGraph->getRoot();
         root->getNode<SceneNode>()->preFrameDrawEnd(root);
     }
 

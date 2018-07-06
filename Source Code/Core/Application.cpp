@@ -24,7 +24,7 @@ Application::~Application(){
     ApplicationTimer::destroyInstance();
 }
 
-I8 Application::initialize(const std::string& entryPoint,I32 argc, char **argv){
+I8 Application::initialize(const std::string& entryPoint, I32 argc, char **argv){
     assert(!entryPoint.empty());
     //Read language table
     ParamHandler::getInstance().setDebugOutput(false);
@@ -50,6 +50,7 @@ void Application::run(){
 
 void Application::deinitialize(){
     _kernel->shutdown();
+
     if(_totalMemoryOcuppied != 0)
         ERROR_FN(Locale::get("ERROR_MEMORY_NEW_DELETE_MISMATCH"), _totalMemoryOcuppied);
 }
@@ -58,8 +59,5 @@ void Application::logMemoryOperation(bool allocation, const char* logMsg, size_t
     if(_memLogBuffer.is_open())
         _memLogBuffer << logMsg;
 
-    if(!allocation)
-        _totalMemoryOcuppied -= size;
-    else
-        _totalMemoryOcuppied += size;
+    _totalMemoryOcuppied += size * (allocation ? 1 : -1);
 }

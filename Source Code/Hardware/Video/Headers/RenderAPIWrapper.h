@@ -24,9 +24,9 @@
 #define _RENDER_API_H_
 
 #include "RenderAPIEnums.h"
-#include <boost/function.hpp>
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
+
 #if defined( OS_WINDOWS )
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
@@ -168,7 +168,7 @@ protected:
     virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
     /*Object viewing*/
-    virtual void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback) = 0;
+    virtual void renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback) = 0;
     virtual void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false) = 0;
     virtual void updateClipPlanes() = 0;
     /*Object viewing*/
@@ -193,7 +193,7 @@ protected:
     /*Light Management*/
     virtual void Screenshot(char *filename, const vec4<F32>& rect) = 0;
     virtual ~RenderAPIWrapper(){};
-    virtual bool loadInContext(const CurrentContext& context, boost::function0<void> callback) = 0;
+    virtual bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) = 0;
 
     virtual U64 getFrameDurationGPU() const = 0;
 

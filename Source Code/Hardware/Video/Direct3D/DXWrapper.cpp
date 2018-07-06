@@ -112,7 +112,7 @@ void DX_API::debugDraw()
 {
 }
 
-void DX_API::renderInViewport(const vec4<U32>& rect, boost::function0<void> callback)
+void DX_API::renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback)
 {
 }
 
@@ -143,7 +143,7 @@ void DX_API::updateStateInternal(RenderStateBlock* block, bool force)
 {
 }
 
-bool DX_API::loadInContext(const CurrentContext& context, boost::function0<void> callback)
+bool DX_API::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback)
 {
     switch(context){
         case GFX_RENDERING_CONTEXT:

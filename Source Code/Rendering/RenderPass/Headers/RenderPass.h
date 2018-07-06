@@ -26,6 +26,7 @@
 #include <string>
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
+class SceneGraph;
 class SceneRenderState;
 
 class RenderPass {
@@ -33,7 +34,7 @@ public:
 	RenderPass(const std::string& name);
 	~RenderPass();
 
-	virtual void render(const SceneRenderState& renderState);
+	virtual void render(const SceneRenderState& renderState, SceneGraph* activeSceneGraph);
 	inline U16 getLasTotalBinSize()     const {return _lastTotalBinSize;}
 	inline const std::string& getName() const {return _name;}
 

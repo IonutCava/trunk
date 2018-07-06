@@ -23,7 +23,7 @@
 #ifndef _RENDERER_H_
 #define _RENDERER_H_
 
-#include <boost/function.hpp>
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 class SceneRenderState;
 
 enum RendererType{
@@ -37,7 +37,7 @@ class Renderer {
 public:
 	Renderer(RendererType type) : _type(type) {}
 	virtual ~Renderer() {}
-	virtual void render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState) = 0;
+	virtual void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) = 0;
 	virtual void toggleDebugView() = 0;
 	inline RendererType getType() {return _type;}
 

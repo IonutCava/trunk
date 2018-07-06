@@ -65,6 +65,7 @@ public:
     inline GPUVendor        getGPUVendor()  {return _api.getGPUVendor();}
 
     I8 initHardware(const vec2<U16>& resolution, I32 argc, char **argv);
+    void idle();
 
     inline void      registerKernel(Kernel* const kernel)           {_kernel = kernel;}
     inline void      initDevice(U32 targetFrameRate)                {_api.initDevice(targetFrameRate);}
@@ -76,7 +77,6 @@ public:
 
     inline void beginFrame() {_api.beginFrame();}
     inline void endFrame()   {_api.endFrame();  }
-    inline void idle()       {_api.idle();}
     inline void flush()      {_api.flush();}
 
     inline Shader*             newShader(const std::string& name,
@@ -113,7 +113,7 @@ public:
     inline void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false)  {_api.setAnaglyphFrustum(camIOD,rightFrustum);}
             ///sets a new horizontal FoV
             void setHorizontalFoV(I32 newFoV);
-    inline void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback)  {_api.renderInViewport(rect,callback);}
+    inline void renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback)  {_api.renderInViewport(rect,callback);}
     //returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
     //allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
     inline IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) { return _api.createPrimitive(allowPrimitiveRecycle); }
@@ -137,7 +137,7 @@ public:
     void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
     void renderGUIElement(U64 renderInterval, GUIElement* const guiElement,ShaderProgram* const guiShader);
     ///The render callback must update all visual information and populate the "RenderBin"'s!
-    void render(boost::function0<void> renderFunction, const SceneRenderState& sceneRenderState);
+    void render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState);
     ///Update light properties internally in the Rendering API
     inline void setLight(Light* const light)           {_api.setLight(light);}
     ///Sets the current render stage.
@@ -222,10 +222,10 @@ public:
     ///use the callback param to override the draw function
     void  generateCubeMap(FrameBufferObject& cubeMap,
                           const vec3<F32>& pos,
-                          boost::function0<void> callback = 0,
+                          const DELEGATE_CBK& callback,
                           const RenderStage& renderStage = ENVIRONMENT_MAPPING_STAGE);
 
-    inline bool loadInContext(const CurrentContext& context, boost::function0<void> callback) {return _api.loadInContext(context, callback);}
+    inline bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {return _api.loadInContext(context, callback);}
 
     /// Matrix management 
     inline void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)       {_api.getMatrix(mode, mat);}
@@ -257,6 +257,7 @@ protected:
 private:
 
     GFXDevice();
+    ~GFXDevice();
 
     ///Returns an API dependend stateblock based on the description
     inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) { return _api.newRenderStateBlock(descriptor); }

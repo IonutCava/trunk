@@ -88,7 +88,7 @@ private:
     void debugDraw();
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return NULL; }
 
-    void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback);
+    void renderInViewport(const vec4<U32>& rect, const DELEGATE_CBK& callback);
     void updateClipPlanes();
     friend class GFXDevice;
     typedef void (*callback)();
@@ -100,7 +100,7 @@ private:
     RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
     void updateStateInternal(RenderStateBlock* block, bool force = false);
 
-    bool loadInContext(const CurrentContext& context, boost::function0<void> callback);
+    bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     U64 getFrameDurationGPU() const { return 0; }
 END_SINGLETON

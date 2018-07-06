@@ -43,7 +43,7 @@ public:
     ShadowMap(Light* light, ShadowType type);
     virtual ~ShadowMap();
     ///Render the scene and save the frame to the shadow map
-    virtual void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction) = 0;
+    virtual void render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction) = 0;
     ///Setup needed before rendering the light
     void preRender();
     ///Setup needed after rendering the light
@@ -69,7 +69,7 @@ protected:
     ///A global resolution factor for all methods (higher = better quality)
     F32 _resolutionFactor;
     U16 _maxResolution;
-    boost::function0<void> _callback;
+    DELEGATE_CBK _callback;
     ///Internal pointer to the parrent light
     Light* _light;
     ParamHandler& _par;

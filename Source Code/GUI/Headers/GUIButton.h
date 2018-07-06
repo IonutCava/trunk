@@ -25,7 +25,6 @@
 
 #include "GUIElement.h"
 #include "GUIText.h"
-#include <boost/function.hpp>
 
 namespace CEGUI{
     class Window;
@@ -34,7 +33,7 @@ namespace CEGUI{
 };
 
 class GUIButton : public GUIElement {
-typedef boost::function0<void> ButtonCallback;
+typedef DELEGATE_CBK ButtonCallback;
 friend class GUI;
 public:
     GUIButton(const std::string& id,

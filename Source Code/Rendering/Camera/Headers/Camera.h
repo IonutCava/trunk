@@ -126,7 +126,7 @@ public:
     ///Nothing really to unload
     virtual bool unload() {return true;}
     ///Add an event listener called after every RenderLookAt or RenderLookAtCube call
-    virtual void addUpdateListener(boost::function0<void> f) {_listeners.push_back(f);}
+    virtual void addUpdateListener(const DELEGATE_CBK& f) {_listeners.push_back(f);}
     ///Informs all listeners of a new event
     virtual void updateListeners();
 
@@ -150,7 +150,7 @@ protected:
     F32 _camIOD;
     CameraType	_type;
 
-    vectorImpl<boost::function0<void> > _listeners;
+    vectorImpl<DELEGATE_CBK > _listeners;
 
     //Save/Load Camera
     vec3<F32>       _savedVectors[3];

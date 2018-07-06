@@ -52,19 +52,15 @@ void WarScene::processTasks(const U64 deltaTime){
 
     if (_taskTimers[0] >= FpsDisplay){
         const Camera& cam = renderState().getCamera();
+        const vec3<F32>& eyePos = cam.getEye();
+        const vec3<F32>& euler  = cam.getEuler();
         //const vec3<F32>& lampPos = _lampLightNode->getTransform()->getPosition();
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        GUI::getInstance().modifyText("camPosition","Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                              cam.getEye().x,
-                              cam.getEye().y,
-                              cam.getEye().z,
-                              cam.getEuler().pitch,
-                              cam.getEuler().yaw);
-        /*GUI::getInstance().modifyText("lampPosition","Lamp Position  [ X: %5.2f | Y: %5.2f | Z: %5.2f ]",
-                                      lampPos.x,
-                                      lampPos.y,
-                                      lampPos.z);*/
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("camPosition","Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                         eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
+        /*_GUI->modifyText("lampPosition","Lamp Position  [ X: %5.2f | Y: %5.2f | Z: %5.2f ]",
+                            lampPos.x, lampPos.y, lampPos.z);*/
         
         _taskTimers[0] = 0.0;
     }
@@ -149,7 +145,9 @@ void WarScene::updateSceneState(const U64 deltaTime){
             navMesh->build(NULL, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
         else{
             AIManager::getInstance().addNavMesh(navMesh);
+#ifdef _DEBUG
             AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+#endif
         }
 
         navMeshStarted = true;
@@ -206,10 +204,10 @@ void WarScene::updateSceneState(const U64 deltaTime){
 
 }
 
-bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
+bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
     navMeshStarted = false;
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
     addDefaultLight();
     //Add a skybox
@@ -418,37 +416,37 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 }
 
 bool WarScene::loadResources(bool continueOnErrors){
-    GUI::getInstance().addButton("Simulate", "Simulate", vec2<I32>(renderState().cachedResolution().width-220 ,
-                                                                   renderState().cachedResolution().height/1.1f),
-                                                         vec2<U32>(100,25),vec3<F32>(0.65f),
-                                                         DELEGATE_BIND(&WarScene::startSimulation,this));
+    _GUI->addButton("Simulate", "Simulate", vec2<I32>(renderState().cachedResolution().width-220 ,
+                                                      renderState().cachedResolution().height/1.1f),
+                                                      vec2<U32>(100,25),vec3<F32>(0.65f),
+                                                      DELEGATE_BIND(&WarScene::startSimulation,this));
 
-    GUI::getInstance().addText("fpsDisplay",           //Unique ID
-                               vec2<I32>(60,60),          //Position
-                                Font::DIVIDE_DEFAULT,    //Font
-                               vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-                               "FPS: %s",0);    //Text and arguments
-    GUI::getInstance().addText("RenderBinCount",
-                                vec2<I32>(60,70),
-                                 Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.6f,0.2f,0.2f),
-                                "Number of items in Render Bin: %d",0);
+    _GUI->addText("fpsDisplay",           //Unique ID
+                  vec2<I32>(60,60),          //Position
+                  Font::DIVIDE_DEFAULT,    //Font
+                  vec3<F32>(0.0f,0.2f, 1.0f),  //Color
+                  "FPS: %s",0);    //Text and arguments
+    _GUI->addText("RenderBinCount",
+                  vec2<I32>(60,70),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.6f,0.2f,0.2f),
+                  "Number of items in Render Bin: %d",0);
 
-    GUI::getInstance().addText("camPosition",  vec2<I32>(60,100),
-                                Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.2f,0.8f,0.2f),
-                                "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                                renderState().getCamera().getEye().x,
-                                renderState().getCamera().getEye().y,
-                                renderState().getCamera().getEye().z,
-                                renderState().getCamera().getEuler().pitch,
-                                renderState().getCamera().getEuler().yaw);
+    _GUI->addText("camPosition",  vec2<I32>(60,100),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.2f,0.8f,0.2f),
+                  "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                  renderState().getCamera().getEye().x,
+                  renderState().getCamera().getEye().y,
+                  renderState().getCamera().getEye().z,
+                  renderState().getCamera().getEuler().pitch,
+                  renderState().getCamera().getEuler().yaw);
 
-    GUI::getInstance().addText("lampPosition",  vec2<I32>(60,120),
-                                Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.2f,0.8f,0.2f),
-                                "Lamp Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",
-                                0.0f, 0.0f, 0.0f);
+    _GUI->addText("lampPosition",  vec2<I32>(60,120),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.2f,0.8f,0.2f),
+                  "Lamp Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",
+                  0.0f, 0.0f, 0.0f);
     //Add a first person camera
     Camera* cam = New FirstPersonCamera();
     cam->setMoveSpeedFactor(0.2f);
@@ -467,8 +465,8 @@ bool WarScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-void WarScene::onKeyDown(const OIS::KeyEvent& key){
-    Scene::onKeyDown(key);
+bool WarScene::onKeyDown(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyDown(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W: state()._moveFB =  1; break;
@@ -478,14 +476,15 @@ void WarScene::onKeyDown(const OIS::KeyEvent& key){
         case OIS::KC_Q: state()._roll   = -1; break;
         case OIS::KC_E: state()._roll   =  1; break;
     }
+    return keyState;
 }
 
-void WarScene::onKeyUp(const OIS::KeyEvent& key){
+bool WarScene::onKeyUp(const OIS::KeyEvent& key){
     static bool fpsCameraActive = false;
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
 
-    Scene::onKeyUp(key);
+    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W:
@@ -512,8 +511,10 @@ void WarScene::onKeyUp(const OIS::KeyEvent& key){
 //			renderState().getCamera().setTargetNode(_currentSelection);
         }break;
     }
+    return keyState;
 }
-void WarScene::onMouseMove(const OIS::MouseEvent& key){
+
+bool WarScene::onMouseMove(const OIS::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )   	 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -524,17 +525,18 @@ void WarScene::onMouseMove(const OIS::MouseEvent& key){
         else 	                                             state()._angleUD =  0;
     }
 
-    Scene::onMouseMove(key);
+    return Scene::onMouseMove(key);
 }
 
-void WarScene::onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button){
-    Scene::onMouseClickDown(key,button);
+bool WarScene::onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button){
+    return Scene::onMouseClickDown(key,button);
 }
 
-void WarScene::onMouseClickUp(const OIS::MouseEvent& key, OIS::MouseButtonID button){
-    Scene::onMouseClickUp(key,button);
+bool WarScene::onMouseClickUp(const OIS::MouseEvent& key, OIS::MouseButtonID button){
+    bool keyState = Scene::onMouseClickUp(key,button);
     if(!_mousePressed[OIS::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
+    return keyState;
 }

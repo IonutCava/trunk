@@ -24,6 +24,7 @@
 #define _PLATFORM_DEFINES_H_
 
 #include <limits>
+#include <boost/function.hpp>
 
 ///Data Types
 #ifndef U8
@@ -95,6 +96,8 @@ inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (fabs
 
 #define DELEGATE_BIND boost::bind
 #define DELEGATE_REF  boost::ref
+#define DELEGATE_CBK  boost::function0<void>
+
 typedef struct packed_int {
 	U8 b0; U8 b1; U8 b2; U8 b3;
 } packed_int;

@@ -29,7 +29,7 @@
 class DeferredLightingRenderer : public Renderer {
 	DeferredLightingRenderer();
 	~DeferredLightingRenderer();
-	void render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState);
+	void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView() {_debugView = !_debugView;}
 private:
 	bool _debugView;

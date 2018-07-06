@@ -142,7 +142,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     SAFE_DELETE(_lightTexture);
 }
 
-void DeferredShadingRenderer::render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState) {
+void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) {
     GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
     SET_DEFAULT_STATE_BLOCK();
     LightManager::LightMap& lights = LightManager::getInstance().getLights();
@@ -171,7 +171,7 @@ void DeferredShadingRenderer::render(boost::function0<void> renderCallback, cons
     secondPass(sceneRenderState);
 }
 
-void DeferredShadingRenderer::firstPass(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState){
+void DeferredShadingRenderer::firstPass(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState){
     //Pass 1
     //Draw the geometry, saving parameters into the buffer
     _deferredBuffer->Begin(FrameBufferObject::defaultPolicy());

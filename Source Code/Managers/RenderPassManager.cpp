@@ -22,9 +22,9 @@ RenderPassManager::~RenderPassManager()
 	RenderQueue::destroyInstance();
 }
 
-void RenderPassManager::render(const SceneRenderState& sceneRenderState) {
+void RenderPassManager::render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph) {
 	for_each(RenderPassItem& rpi, _renderPasses){
-		rpi._rp->render(sceneRenderState);
+		rpi._rp->render(sceneRenderState, activeSceneGraph);
 	}
 }
 

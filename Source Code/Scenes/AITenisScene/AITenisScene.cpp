@@ -30,8 +30,8 @@ void AITenisScene::preRender(){
 void AITenisScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = 0.7;
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _taskTimers[0] = 0.0;
     }
 
@@ -44,7 +44,7 @@ void AITenisScene::processTasks(const U64 deltaTime){
 
     if(_scoreTeam1 == 10 || _scoreTeam2 == 10){
         s_gameStarted = false;
-        GUI::getInstance().modifyText("Message", "Team %d won!", _scoreTeam1 == 10 ? 1 : 2);
+        _GUI->modifyText("Message", "Team %d won!", _scoreTeam1 == 10 ? 1 : 2);
     }
 }
 
@@ -224,9 +224,9 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
             _scoreTeam1++;
         }
 
-        GUI::getInstance().modifyText("Team1Score","Team 1 Score: %d",_scoreTeam1);
-        GUI::getInstance().modifyText("Team2Score","Team 2 Score: %d",_scoreTeam2);
-        GUI::getInstance().modifyText("Message",(char*)message.c_str());
+        _GUI->modifyText("Team1Score","Team 1 Score: %d",_scoreTeam1);
+        _GUI->modifyText("Team2Score","Team 2 Score: %d",_scoreTeam2);
+        _GUI->modifyText("Message",(char*)message.c_str());
         _gamePlaying = false;
     }
 }
@@ -238,10 +238,10 @@ void AITenisScene::processInput(const U64 deltaTime){
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr){
+bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
     s_gameStarted = false;
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
 
     //Add a light
     addDefaultLight();
@@ -367,42 +367,42 @@ bool AITenisScene::loadResources(bool continueOnErrors){
     _ball->getMaterial()->setShininess(0.2f);
     _ball->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
     _ballSGN->setSelectable(true);
-    GUIElement* btn = GUI::getInstance().addButton("Serve", "Serve",
-                                                   vec2<I32>(renderState().cachedResolution().width-220,60),
-                                                   vec2<U32>(100,25),
-                                                   vec3<F32>(0.65f,0.65f,0.65f),
-                                                   DELEGATE_BIND(&AITenisScene::startGame,this));
+    GUIElement* btn = _GUI->addButton("Serve", "Serve",
+                                      vec2<I32>(renderState().cachedResolution().width-220,60),
+                                      vec2<U32>(100,25),
+                                      vec3<F32>(0.65f,0.65f,0.65f),
+                                      DELEGATE_BIND(&AITenisScene::startGame,this));
     btn->setTooltip("Start a new game!");
 
-    GUI::getInstance().addText("Team1Score",vec2<I32>(renderState().cachedResolution().width - 250,
-                                                      renderState().cachedResolution().height/1.3f),
-                                                      Font::DIVIDE_DEFAULT,vec3<F32>(0,0.8f,0.8f), "Team 1 Score: %d",0);
+    _GUI->addText("Team1Score",vec2<I32>(renderState().cachedResolution().width - 250,
+                  renderState().cachedResolution().height/1.3f),
+                  Font::DIVIDE_DEFAULT,vec3<F32>(0,0.8f,0.8f), "Team 1 Score: %d",0);
 
-    GUI::getInstance().addText("Team2Score",vec2<I32>(renderState().cachedResolution().width - 250,
-                                                      renderState().cachedResolution().height/1.5f),
-                                                      Font::DIVIDE_DEFAULT,vec3<F32>(0.2f,0.8f,0), "Team 2 Score: %d",0);
+    _GUI->addText("Team2Score",vec2<I32>(renderState().cachedResolution().width - 250,
+                  renderState().cachedResolution().height/1.5f),
+                  Font::DIVIDE_DEFAULT,vec3<F32>(0.2f,0.8f,0), "Team 2 Score: %d",0);
 
-    GUI::getInstance().addText("Message",vec2<I32>(renderState().cachedResolution().width - 250,
-                                                   renderState().cachedResolution().height/1.7f),
-                                                   Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
+    _GUI->addText("Message",vec2<I32>(renderState().cachedResolution().width - 250,
+                  renderState().cachedResolution().height/1.7f),
+                  Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
 
-    GUI::getInstance().addText("fpsDisplay",              //Unique ID
-                               vec2<I32>(60,60),          //Position
-                               Font::DIVIDE_DEFAULT,      //Font
-                               vec3<F32>(0.0f,0.2f, 1.0f),//Color
-                               "FPS: %s",0);              //Text and arguments
+    _GUI->addText("fpsDisplay",              //Unique ID
+                  vec2<I32>(60,60),          //Position
+                  Font::DIVIDE_DEFAULT,      //Font
+                  vec3<F32>(0.0f,0.2f, 1.0f),//Color
+                  "FPS: %s",0);              //Text and arguments
 
-    GUI::getInstance().addText("RenderBinCount",
-                                vec2<I32>(60,70),
-                                Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.6f,0.2f,0.2f),
-                                "Number of items in Render Bin: %d",0);
+    _GUI->addText("RenderBinCount",
+                  vec2<I32>(60,70),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.6f,0.2f,0.2f),
+                  "Number of items in Render Bin: %d",0);
     _taskTimers.push_back(0.0); //Fps
     return true;
 }
 
-void AITenisScene::onKeyDown(const OIS::KeyEvent& key){
-    Scene::onKeyDown(key);
+bool AITenisScene::onKeyDown(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyDown(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W: state()._moveFB =  1; break;
@@ -410,10 +410,11 @@ void AITenisScene::onKeyDown(const OIS::KeyEvent& key){
         case OIS::KC_S:	state()._moveFB = -1; break;
         case OIS::KC_D:	state()._moveLR =  1; break;
     }
+    return keyState;
 }
 
-void AITenisScene::onKeyUp(const OIS::KeyEvent& key){
-    Scene::onKeyUp(key);
+bool AITenisScene::onKeyUp(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         case OIS::KC_W:
         case OIS::KC_S:	state()._moveFB = 0; break;
@@ -422,10 +423,11 @@ void AITenisScene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_F1: _sceneGraph->print();	break;
         default: break;
     }
+    return keyState;
 }
 
-void AITenisScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
-    Scene::onJoystickMovePOV(key,pov);
+bool AITenisScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
+    bool keyState = Scene::onJoystickMovePOV(key,pov);
     if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
         state()._moveFB = 1;
     else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
@@ -441,9 +443,10 @@ void AITenisScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
         state()._moveLR = 0;
         state()._moveFB = 0;
     }
+    return keyState;
 }
 
-void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
+bool AITenisScene::onMouseMove(const OIS::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -454,13 +457,14 @@ void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
         else 			                                     state()._angleUD =  0;
     }
 
-    Scene::onMouseMove(key);
+    return Scene::onMouseMove(key);
 }
 
-void AITenisScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-    Scene::onMouseClickUp(key,button);
+bool AITenisScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+    bool keyState = Scene::onMouseClickUp(key,button);
     if(!_mousePressed[OIS::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
+    return keyState;
 }

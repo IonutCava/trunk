@@ -22,8 +22,8 @@ void PhysXScene::preRender(){
 void PhysXScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _taskTimers[0] = 0.0;
     }
     Scene::processTasks(deltaTime);
@@ -36,10 +36,10 @@ void PhysXScene::processInput(const U64 deltaTime){
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
+bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
     s_sceneState = STATE_LOADING;
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
     vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
     _sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
@@ -51,16 +51,16 @@ bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors){
-    GUI::getInstance().addText("fpsDisplay",           //Unique ID
-                               vec2<I32>(60,20),          //Position
-                                Font::DIVIDE_DEFAULT,    //Font
-                               vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-                               "FPS: %s",0);    //Text and arguments
-    GUI::getInstance().addText("RenderBinCount",
-                                vec2<I32>(60,30),
-                                 Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.6f,0.2f,0.2f),
-                                "Number of items in Render Bin: %d",0);
+    _GUI->addText("fpsDisplay",               //Unique ID
+                  vec2<I32>(60,20),           //Position
+                  Font::DIVIDE_DEFAULT,       //Font
+                  vec3<F32>(0.0f,0.2f, 1.0f), //Color
+                  "FPS: %s",0);               //Text and arguments
+    _GUI->addText("RenderBinCount",
+                  vec2<I32>(60,30),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.6f,0.2f,0.2f),
+                  "Number of items in Render Bin: %d",0);
 
     _taskTimers.push_back(0.0); //Fps
     renderState().getCamera().setFixedYawAxis(false);
@@ -110,8 +110,8 @@ void PhysXScene::createTower(U32 size){
     s_sceneState = STATE_IDLE;
 }
 
-void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
-    Scene::onKeyDown(key);
+bool PhysXScene::onKeyDown(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyDown(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W: state()._moveFB =  1; break;
@@ -119,10 +119,11 @@ void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
         case OIS::KC_S:	state()._moveFB = -1; break;
         case OIS::KC_D:	state()._moveLR =  1; break;
     }
+    return keyState;
 }
 
-void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
-    Scene::onKeyUp(key);
+bool PhysXScene::onKeyUp(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W:
@@ -155,9 +156,10 @@ void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
             addTask(e);
         } break;
     }
+    return keyState;
 }
 
-void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
+bool PhysXScene::onMouseMove(const OIS::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -168,13 +170,14 @@ void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
         else 			                                     state()._angleUD =  0;
     }
 
-    Scene::onMouseMove(key);
+    return Scene::onMouseMove(key);
 }
 
-void PhysXScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-    Scene::onMouseClickUp(key,button);
+bool PhysXScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+    bool keyState = Scene::onMouseClickUp(key,button);
     if(!_mousePressed[OIS::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
+    return keyState;
 }

@@ -24,6 +24,8 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "core.h"
+class SceneGraph;
+
 class RenderPass;
 
 struct RenderPassItem{
@@ -40,7 +42,7 @@ DEFINE_SINGLETON (RenderPassManager)
 
 public:
 	///Call every renderqueue's render function in order
-	void render(const SceneRenderState& sceneRenderState);
+	void render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph);
 	///Add a new pass with the specified key
 	void addRenderPass(RenderPass* const renderPass, U8 orderKey);
 	///Remove a renderpass from the manager, optionally not deleting it

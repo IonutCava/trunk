@@ -27,7 +27,6 @@
 #include "Core/Math/Headers/MathClasses.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIKeyRepeat.h"
-#include <boost/function.hpp>
 
 namespace Font {
     const static std::string	DIVIDE_DEFAULT ("DroidSerif-Regular.ttf"/*"Test.ttf"*/);
@@ -62,7 +61,7 @@ class GUIButton;
 /// Grafical User Interface
 DEFINE_SINGLETON( GUI )
     typedef Unordered_map<std::string, GUIElement*> guiMap;
-    typedef boost::function0<void> ButtonCallback;
+    typedef DELEGATE_CBK ButtonCallback;
 
 public:
     /// Main display call

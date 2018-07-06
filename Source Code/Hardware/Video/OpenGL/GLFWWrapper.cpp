@@ -616,7 +616,7 @@ void GL_API::idle(){
     glfwPollEvents();
 }
 
-bool GL_API::loadInContext(const CurrentContext& context, boost::function0<GLvoid> callback) {
+bool GL_API::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {
     if(callback.empty())
         return false;
 
@@ -644,7 +644,7 @@ void GL_API::loadInContextInternal(){
             boost::this_thread::sleep(boost::posix_time::milliseconds(20));//<Avoid burning the CPU - Ionut
             continue;
         }
-        boost::function0<GLvoid> callback;
+        DELEGATE_CBK callback;
         while(_loadQueue.pop(callback)){
             callback();
             glFlush();

@@ -119,7 +119,6 @@ Mesh* DVDConverter::load(const std::string& file){
             
             if(!tempMesh){
                 tempMesh = (skinnedSubMesh ? New SkinnedMesh() : New Mesh());
-                tempMesh->setState(RES_LOADING);
                 tempMesh->setName(_modelName);
                 tempMesh->setResourceLocation(_fileLocation);
             }

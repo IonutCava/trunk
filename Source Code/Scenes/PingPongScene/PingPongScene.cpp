@@ -24,7 +24,7 @@ void PingPongScene::preRender(){
 void PingPongScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _taskTimers[0] = 0.0;
     }
     Scene::processTasks(deltaTime);
@@ -42,7 +42,7 @@ void PingPongScene::resetGame(){
 }
 
 void PingPongScene::serveBall(){
-    GUI::getInstance().modifyText("insults","");
+    _GUI->modifyText("insults","");
     resetGame();
 
     if(getTasks().empty()){//A maximum of 1 Tasks allowed
@@ -151,15 +151,15 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 
             if(b == TYPE_INTEGER){
                 I32 quote = boost::any_cast<I32>(a);
-                if(_score % 3 == 0 ) GUI::getInstance().modifyText("insults",(char*)_quotes[quote].c_str());
+                if(_score % 3 == 0 ) _GUI->modifyText("insults",(char*)_quotes[quote].c_str());
             }
         }else{
             message = "You won!";
             _score++;
         }
 
-        GUI::getInstance().modifyText("Score","Score: %d",_score);
-        GUI::getInstance().modifyText("Message",(char*)message.c_str());
+        _GUI->modifyText("Score","Score: %d",_score);
+        _GUI->modifyText("Message",(char*)message.c_str());
         resetGame();
     }
 }
@@ -189,9 +189,9 @@ void PingPongScene::processInput(const U64 deltaTime){
     }
 }
 
-bool PingPongScene::load(const std::string& name, CameraManager* const cameraMgr){
+bool PingPongScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
     addDefaultLight();
     addDefaultSky();
@@ -225,23 +225,23 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     _sceneGraph->getRoot()->addNode(light);
     addLight(light);
     //Buttons and text labels
-    GUI::getInstance().addButton("Serve", "Serve", vec2<I32>(renderState().cachedResolution().width-120 ,
-                                                             renderState().cachedResolution().height/1.1f),
-                                                             vec2<U32>(100,25),vec3<F32>(0.65f),
-                                                             DELEGATE_BIND(&PingPongScene::serveBall,this));
+    _GUI->addButton("Serve", "Serve", vec2<I32>(renderState().cachedResolution().width-120 ,
+                    renderState().cachedResolution().height/1.1f),
+                    vec2<U32>(100,25),vec3<F32>(0.65f),
+                    DELEGATE_BIND(&PingPongScene::serveBall,this));
 
-    GUI::getInstance().addText("Score",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.3f),
-                                Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "Score: %d",0);
+    _GUI->addText("Score",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.3f),
+                  Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "Score: %d",0);
 
-    GUI::getInstance().addText("Message",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.5f),
-                                Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "");
-    GUI::getInstance().addText("insults",vec2<I32>(renderState().cachedResolution().width/4, renderState().cachedResolution().height/3),
-                                Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
-    GUI::getInstance().addText("fpsDisplay",           //Unique ID
-                               vec2<I32>(60,60),          //Position
-                                Font::DIVIDE_DEFAULT,    //Font
-                               vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-                               "FPS: %s",0);    //Text and arguments
+    _GUI->addText("Message",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.5f),
+                  Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "");
+    _GUI->addText("insults",vec2<I32>(renderState().cachedResolution().width/4, renderState().cachedResolution().height/3),
+                  Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
+    _GUI->addText("fpsDisplay",               //Unique ID
+                  vec2<I32>(60,60),           //Position
+                  Font::DIVIDE_DEFAULT,       //Font
+                  vec3<F32>(0.0f,0.2f, 1.0f), //Color
+                  "FPS: %s",0);               //Text and arguments
     //Add some taunts
     _quotes.push_back("Ha ha ... even Odin's laughin'!");
     _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
@@ -254,8 +254,8 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-void PingPongScene::onKeyDown(const OIS::KeyEvent& key){
-    Scene::onKeyDown(key);
+bool PingPongScene::onKeyDown(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyDown(key);
     switch(key.key){
         default: break;
         case OIS::KC_W: state()._moveFB =  1; break;
@@ -263,10 +263,11 @@ void PingPongScene::onKeyDown(const OIS::KeyEvent& key){
         case OIS::KC_S:	state()._moveFB = -1; break;
         case OIS::KC_D:	state()._moveLR =  1; break;
     }
+    return keyState;
 }
 
-void PingPongScene::onKeyUp(const OIS::KeyEvent& key){
-    Scene::onKeyUp(key);
+bool PingPongScene::onKeyUp(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W:
@@ -274,10 +275,11 @@ void PingPongScene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_A:
         case OIS::KC_D:	state()._moveLR = 0; break;
     }
+    return keyState;
 }
 
-void PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
-    Scene::onJoystickMovePOV(key,pov);
+bool PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
+    bool keyState = Scene::onJoystickMovePOV(key,pov);
     if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
         state()._moveFB = 1;
     else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
@@ -293,12 +295,14 @@ void PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
         state()._moveLR = 0;
         state()._moveFB = 0;
     }
+    return keyState;
 }
 
-void PingPongScene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-    Scene::onJoystickMoveAxis(key,axis,deadZone);
+bool PingPongScene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
+    return Scene::onJoystickMoveAxis(key,axis,deadZone);
 }
 
-void PingPongScene::onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
+bool PingPongScene::onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
     if(button == 0 && key.device->getID() != InputInterface::JOY_1)  serveBall();
+    return Scene::onJoystickButtonUp(key, button);
 }

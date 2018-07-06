@@ -9,6 +9,6 @@ ForwardRenderer::~ForwardRenderer()
 {
 }
 
-void ForwardRenderer::render(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState) {
+void ForwardRenderer::render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) {
 	renderCallback();
 }

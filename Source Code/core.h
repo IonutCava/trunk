@@ -53,7 +53,6 @@ void free_simd(void * pxData);
 #include <typeinfo.h>
 #include <time.h>
 
-#include <boost/function.hpp>                          //For callbacks and delegates
 #include "Hardware/Platform/Headers/PlatformDefines.h" //For data types
 #include "Hardware/Platform/Headers/SharedMutex.h"     //For multi-threading
 #include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)

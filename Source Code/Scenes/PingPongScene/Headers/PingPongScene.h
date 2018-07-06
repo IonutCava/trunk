@@ -43,20 +43,22 @@ public:
 	~PingPongScene() {}
 	void preRender();
 
-	bool load(const std::string& name, CameraManager* const cameraMgr);
+	bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
 	bool loadResources(bool continueOnErrors);
 	void processInput(const U64 deltaTime);
 	void processTasks(const U64 deltaTime);
 
-	void onKeyDown(const OIS::KeyEvent& key);
-	void onKeyUp(const OIS::KeyEvent& key);
-	void onJoystickMovePOV(const OIS::JoyStickEvent& event,I8 pov);
-	void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
-	void onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
+	bool onKeyDown(const OIS::KeyEvent& key);
+	bool onKeyUp(const OIS::KeyEvent& key);
+	bool onJoystickMovePOV(const OIS::JoyStickEvent& event,I8 pov);
+	bool onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
+	bool onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
+
 private:
 	void test(boost::any a, CallbackParam b);
 	void serveBall();
 	void resetGame();
+
 private:
 	I8 _score;
 	vectorImpl<std::string> _quotes;

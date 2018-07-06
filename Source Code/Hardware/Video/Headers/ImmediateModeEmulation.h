@@ -24,7 +24,6 @@
 #define _IM_EMULATION_H_
 
 #include <boost/noncopyable.hpp>
-#include <boost/function.hpp>
 #include "Core/Math/Headers/MathClasses.h"
 
 class Texture;
@@ -34,7 +33,7 @@ enum PrimitiveType;
 ///IMPrimitive replaces immediate mode calls to VBO based rendering
 class IMPrimitive  : private boost::noncopyable{
 public:
-    inline void setRenderStates(boost::function0<void> setupStatesCallback, boost::function0<void> releaseStatesCallback){
+    inline void setRenderStates(const DELEGATE_CBK& setupStatesCallback, const DELEGATE_CBK& releaseStatesCallback){
         _setupStates = setupStatesCallback;
         _resetStates = releaseStatesCallback;
     }
@@ -83,8 +82,8 @@ protected:
     //render in wireframe mode
     bool                 _forceWireframe;
     ///2 functions used to setup or reset states
-    boost::function0<void> _setupStates;
-    boost::function0<void> _resetStates;
+    DELEGATE_CBK _setupStates;
+    DELEGATE_CBK _resetStates;
 };
 
 #endif

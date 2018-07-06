@@ -41,23 +41,25 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
 #endif
 }
 
-void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = true;
+    return true;
 }
 
-void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = false;
     if(button == OIS::MB_Left){
         findSelection(key.state.X.abs, key.state.Y.abs);
     }
+    return true;
 }
   
-void Scene::onMouseMove(const OIS::MouseEvent& key){ 
-    _previousMousePos.x = key.state.X.abs;
-    _previousMousePos.y = key.state.Y.abs;
+bool Scene::onMouseMove(const OIS::MouseEvent& key){ 
+    _previousMousePos.set(key.state.X.abs, key.state.Y.abs);
+    return true;
 }
 
-void Scene::onKeyDown(const OIS::KeyEvent& key){
+bool Scene::onKeyDown(const OIS::KeyEvent& key){
     switch(key.key){
         default: break;
         case OIS::KC_LEFT  : state()._angleLR = -1; break;
@@ -82,9 +84,11 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
             }
         }break;
     }
+
+    return true;
 }
 
-void Scene::onKeyUp(const OIS::KeyEvent& key){
+bool Scene::onKeyUp(const OIS::KeyEvent& key){
     switch( key.key ){
         case OIS::KC_LEFT :
         case OIS::KC_RIGHT:	state()._angleLR = 0; break;
@@ -136,10 +140,12 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
         default:
             break;
     }
+
+    return true;
 }
 
-void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-    if(key.device->getID() != InputInterface::JOY_1) return;
+bool Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
+    if(key.device->getID() != InputInterface::JOY_1) return false;
 
     I32 axisABS = key.state.mAxes[axis].abs;
 
@@ -160,4 +166,5 @@ void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZon
         else if(axisABS > deadZone)  state()._moveLR = 1;
         else                         state()._moveLR = 0;
     }
+    return true;
 }

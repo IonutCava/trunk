@@ -80,6 +80,8 @@ void MainScene::processInput(const U64 deltaTime){
     }
 
     if(update){
+        const vec3<F32>& eyePos = cam.getEye();
+        const vec3<F32>& euler  = cam.getEuler();
         if(!_freeflyCamera){
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
@@ -91,20 +93,12 @@ void MainScene::processInput(const U64 deltaTime){
                     break;
                 }
             }
-            GUI::getInstance().modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f] [TerHght: %5.2f ]",
-                              cam.getEye().x,
-                              cam.getEye().y,
-                              cam.getEye().z,
-                              cam.getEuler().pitch,
-                              cam.getEuler().yaw,
+            _GUI->modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f] [TerHght: %5.2f ]",
+                              eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw,
                               terrainHeight);
         }else{
-            GUI::getInstance().modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                              cam.getEye().x,
-                              cam.getEye().y,
-                              cam.getEye().z,
-                              cam.getEuler().pitch,
-                              cam.getEuler().yaw);
+            _GUI->modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                              eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
         }
         update = false;
     }
@@ -125,25 +119,25 @@ void MainScene::processTasks(const U64 deltaTime){
     }
 
     if (_taskTimers[1] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        GUI::getInstance().modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
-        GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _taskTimers[1] = 0.0;
     }
 
     if (_taskTimers[2] >= TimeDisplay){
-        GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", GETTIME());
+        _GUI->modifyText("timeDisplay", "Elapsed time: %5.0f", GETTIME());
         _taskTimers[2] = 0.0;
     }
 
     Scene::processTasks(deltaTime);
 }
 
-bool MainScene::load(const std::string& name, CameraManager* const cameraMgr){
+bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
     bool computeWaterHeight = false;
 
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
 
     if(state().getWaterLevel() == RAND_MAX) computeWaterHeight = true;
     addDefaultLight();
@@ -220,29 +214,28 @@ void MainScene::test(boost::any a, CallbackParam b){
 }
 
 bool MainScene::loadResources(bool continueOnErrors){
-    GUI& gui = GUI::getInstance();
 
-    gui.addText("fpsDisplay",                               //Unique ID
-                               vec2<I32>(60,60),            //Position
-                                Font::DIVIDE_DEFAULT,       //Font
-                               vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-                               "HELLO! FPS: %s",0);    //Text and arguments
+    _GUI->addText("fpsDisplay",               //Unique ID
+                  vec2<I32>(60,60),           //Position
+                  Font::DIVIDE_DEFAULT,       //Font
+                  vec3<F32>(0.0f,0.2f, 1.0f), //Color
+                  "FPS: %s",0);               //Text and arguments
 
-    gui.addText("timeDisplay",
-                                vec2<I32>(60,80),
-                                Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.6f,0.2f,0.2f),
-                                "Elapsed time: %5.0f",GETTIME());
-    gui.addText("underwater",
-                                vec2<I32>(60,115),
-                                Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.2f,0.8f,0.2f),
-                                "Underwater [ %s ] | WaterLevel [%f] ]","false", 0);
-    gui.addText("RenderBinCount",
-                                vec2<I32>(60,135),
-                                Font::BATANG,
-                                vec3<F32>(0.6f,0.2f,0.2f),
-                                "Number of items in Render Bin: %d",0);
+    _GUI->addText("timeDisplay",
+                  vec2<I32>(60,80),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.6f,0.2f,0.2f),
+                  "Elapsed time: %5.0f",GETTIME());
+    _GUI->addText("underwater",
+                  vec2<I32>(60,115),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.2f,0.8f,0.2f),
+                  "Underwater [ %s ] | WaterLevel [%f] ]","false", 0);
+    _GUI->addText("RenderBinCount",
+                  vec2<I32>(60,135),
+                  Font::BATANG,
+                  vec3<F32>(0.6f,0.2f,0.2f),
+                  "Number of items in Render Bin: %d",0);
     _taskTimers.push_back(0.0); //Sun
     _taskTimers.push_back(0.0); //Fps
     _taskTimers.push_back(0.0); //Time
@@ -266,21 +259,19 @@ bool MainScene::loadResources(bool continueOnErrors){
     state()._backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
     _beep = CreateResource<AudioDescriptor>(beepSound);
 
-    gui.addText("camPosition",  vec2<I32>(60,100),
-                                Font::DIVIDE_DEFAULT,
-                                vec3<F32>(0.2f,0.8f,0.2f),
-                                "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                                renderState().getCamera().getEye().x,
-                                renderState().getCamera().getEye().y,
-                                renderState().getCamera().getEye().z,
-                                renderState().getCamera().getEuler().pitch,
-                                renderState().getCamera().getEuler().yaw);
+    const vec3<F32>& eyePos = renderState().getCamera().getEye();
+    const vec3<F32>& euler = renderState().getCamera().getEuler();
+    _GUI->addText("camPosition",  vec2<I32>(60,100),
+                  Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.2f,0.8f,0.2f),
+                  "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                  eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
 
     return true;
 }
 
-void MainScene::onKeyDown(const OIS::KeyEvent& key){
-    Scene::onKeyDown(key);
+bool MainScene::onKeyDown(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyDown(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W: state()._moveFB =  1; break;
@@ -288,11 +279,12 @@ void MainScene::onKeyDown(const OIS::KeyEvent& key){
         case OIS::KC_S:	state()._moveFB = -1; break;
         case OIS::KC_D:	state()._moveLR =  1; break;
     }
+    return keyState;
 }
 
 bool _playMusic = false;
-void MainScene::onKeyUp(const OIS::KeyEvent& key){
-    Scene::onKeyUp(key);
+bool MainScene::onKeyUp(const OIS::KeyEvent& key){
+    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
         case OIS::KC_W:
@@ -325,9 +317,10 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
             }
             break;
     }
+    return keyState;
 }
 
-void MainScene::onMouseMove(const OIS::MouseEvent& key){
+bool MainScene::onMouseMove(const OIS::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -338,13 +331,14 @@ void MainScene::onMouseMove(const OIS::MouseEvent& key){
         else 			                                     state()._angleUD =  0;
     }
 
-    Scene::onMouseMove(key);
+    return Scene::onMouseMove(key);
 }
 
-void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-    Scene::onMouseClickUp(key,button);
+bool MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+    bool keyState = Scene::onMouseClickUp(key,button);
     if(!_mousePressed[OIS::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
+    return keyState;
 }

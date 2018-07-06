@@ -40,16 +40,16 @@ public:
 	void setActiveCamera(const std::string& name);
 	void addNewCamera(const std::string& cameraName, Camera* const camera);
 
-	void addCameraChangeListener(boost::function0<void> f) {_changeCameralisteners.push_back(f);}
-	void addCameraUpdateListener(boost::function0<void> f) {_updateCameralisteners.push_back(f);}
+	void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
+	void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f);}
 
 	void update(const U64 deltaTime);
 
 private:
 	Camera* _camera;
 	CameraPool _cameraPool;
-	vectorImpl<boost::function0<void> > _changeCameralisteners;
-	vectorImpl<boost::function0<void> > _updateCameralisteners;
+	vectorImpl<DELEGATE_CBK > _changeCameralisteners;
+	vectorImpl<DELEGATE_CBK > _updateCameralisteners;
 };
 
 #endif

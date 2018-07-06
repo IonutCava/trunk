@@ -26,7 +26,6 @@
 #include "SharedMutex.h"
 #include <boost/any.hpp>
 #include <boost/atomic.hpp>
-#include <boost/function.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "Utility/Headers/GUIDWrapper.h"
 
@@ -63,7 +62,7 @@ public:
           U32 tickInterval,
           bool startOnCreate,
           I32 numberOfTicks,
-          boost::function0<void> f) : GUIDWrapper(),
+          const DELEGATE_CBK& f) : GUIDWrapper(),
       _tp(tp),
       _tickInterval(tickInterval),
       _numberOfTicks(numberOfTicks),
@@ -78,7 +77,7 @@ public:
           U32 tickInterval,
           bool startOnCreate,
           bool runOnce,
-          boost::function0<void> f) : GUIDWrapper(),
+          const DELEGATE_CBK& f) : GUIDWrapper(),
       _tp(tp),
       _tickInterval(tickInterval),
       _numberOfTicks(1),
@@ -107,7 +106,7 @@ private:
     mutable boost::atomic<bool> _end;
     mutable boost::atomic<bool> _paused;
     mutable boost::atomic<bool> _done;
-    boost::function0<void> _callback;
+    DELEGATE_CBK _callback;
     boost::threadpool::pool* _tp;
 
 protected:
