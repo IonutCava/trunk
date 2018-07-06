@@ -6,6 +6,7 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"
 
 namespace Divide {

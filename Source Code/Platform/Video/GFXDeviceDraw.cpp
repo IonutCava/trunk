@@ -332,8 +332,8 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         previousIDC.sourceBuffer()->getGUID() ==
         currentIDC.sourceBuffer()->getGUID() &&
         // And the same shader program
-        previousIDC.shaderProgram()->getID() ==
-        currentIDC.shaderProgram()->getID())
+        previousIDC.pipeline().shaderProgram()->getID() ==
+        currentIDC.pipeline().shaderProgram()->getID())
     {
         U32 prevCount = previousIDC.drawCount();
         if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
@@ -369,6 +369,15 @@ bool GFXDevice::draw(const GenericDrawCommand& cmd) {
 
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = getDefaultStateBlock(true);
+    pipelineDescriptor._shaderProgram = _displayShader;
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+    triangleCmd.drawCount(1);
+    triangleCmd.pipeline(newPipeline(pipelineDescriptor));
+
     RenderTarget& screen = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     screen.bind(to_U8(ShaderProgram::TextureUsage::UNIT0),
                 RTAttachment::Type::Colour,
@@ -378,11 +387,6 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     GFX::ScopedViewport targetArea(*this, targetViewport);
 
     // Blit render target to screen
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-    triangleCmd.stateHash(getDefaultStateBlock(true));
-    triangleCmd.shaderProgram(_displayShader);
     draw(triangleCmd);
 
 

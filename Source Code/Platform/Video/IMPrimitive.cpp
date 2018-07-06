@@ -12,8 +12,6 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
       _forceWireframe(false),
       _paused(true),
       _texture(nullptr),
-      _drawShader(nullptr),
-      _stateHash(0),
       _primitivesGenerated(0)
 {
 }
@@ -24,11 +22,9 @@ IMPrimitive::~IMPrimitive()
 }
 
 void IMPrimitive::clear() {
-    stateHash(0);
     clearRenderStates();
     _worldMatrix.identity();
     _texture = nullptr;
-    _drawShader = nullptr;
 }
 
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const vec4<U8>& colour) {
@@ -199,8 +195,8 @@ void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
     }
 }
 
-void IMPrimitive::drawShader(const ShaderProgram_ptr& shaderProgram) {
-    _drawShader = shaderProgram;
+void IMPrimitive::pipeline(const Pipeline& pipeline) {
+    _pipeline = pipeline;
 }
 
 };

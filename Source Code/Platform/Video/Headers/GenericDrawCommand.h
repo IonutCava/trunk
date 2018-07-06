@@ -33,12 +33,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _GENERIC_DRAW_COMMAND_H_
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Video/Headers/Pipeline.h"
 
 namespace Divide {
 
+class Pipeline;
 class VertexDataInterface;
 enum class PrimitiveType : U32;
-FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct IndirectDrawCommand {
     IndirectDrawCommand();
@@ -68,11 +69,10 @@ public:
 
 private:
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    IndirectDrawCommand _cmd;           // 68 bytes
-    ShaderProgram* _shaderProgram;      // 48 bytes
-    VertexDataInterface* _sourceBuffer; // 40 bytes
-    U64 _stateHash;                     // 32 bytes
-    PrimitiveType _type;                // 24 bytes
+    Pipeline _pipeline;                 // 80 bytes
+    IndirectDrawCommand _cmd;           // 48 bytes
+    VertexDataInterface* _sourceBuffer; // 28 bytes
+    PrimitiveType _type;                // 20 bytes
     U32 _commandOffset;                 // 16 bytes
     U32 _renderOptions;                 // 12 bytes
     U32 _patchVertexCount;              // 8  bytes
@@ -104,23 +104,21 @@ public:
     inline void drawCount(U16 count)                                  { _drawCount = count; }
     inline void drawToBuffer(U8 index)                                { _drawToBuffer = index; }
     inline void commandOffset(U32 offset)                             { _commandOffset = offset; }
-    inline void stateHash(size_t hashValue)                           { _stateHash = static_cast<U64>(hashValue); }
+    inline void pipeline(const Pipeline& pipeline)                    { _pipeline = pipeline; }
     inline void patchVertexCount(U32 vertexCount)                     { _patchVertexCount = vertexCount; }
     inline void primitiveType(PrimitiveType type)                     { _type = type; }
-    inline void shaderProgram(const ShaderProgram_ptr& program)       { _shaderProgram = program.get(); }
     inline void sourceBuffer(VertexDataInterface* sourceBuffer)       { _sourceBuffer = sourceBuffer; }
 
     inline U8 LoD()                            const { return _lodIndex; }
     inline U16 drawCount()                     const { return _drawCount; }
-    inline size_t stateHash()                  const { return static_cast<size_t>(_stateHash); }
     inline U8  drawToBuffer()                  const { return _drawToBuffer; }
     inline U32 commandOffset()                 const { return _commandOffset; }
+    inline Pipeline& pipeline()                      { return _pipeline; }
+    inline const Pipeline& pipeline()          const { return _pipeline; }
     inline U32 patchVertexCount()              const { return _patchVertexCount; }
     inline IndirectDrawCommand& cmd()                { return _cmd; }
     inline PrimitiveType primitiveType()       const { return _type; }
-    inline ShaderProgram* shaderProgram()      const { return _shaderProgram; }
     inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
-
     inline const IndirectDrawCommand& cmd()    const { return _cmd; }
 };
 

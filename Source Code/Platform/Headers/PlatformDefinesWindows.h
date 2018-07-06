@@ -32,7 +32,7 @@
 #ifndef _PLATFORM_DEFINES_WINDOWS_H_
 #define _PLATFORM_DEFINES_WINDOWS_H_
 
-#include "Platform/File/Headers/FileManagement.h"
+#include "Platform/File/Headers/FileWithPath.h"
 
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct

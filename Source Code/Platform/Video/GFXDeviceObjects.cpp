@@ -188,6 +188,12 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
     return temp;
 }
 
+Pipeline GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
+    Pipeline ret(descriptor);
+    // Hack for now. Cache and lookup later (e.g. for Vulkan/D3D12)
+    return ret;
+}
+
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
                                            const stringImpl& name,
                                            const stringImpl& resourceName,
@@ -213,7 +219,7 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
     return temp;
 }
 
-ShaderBuffer* GFXDevice::newSB(const ShaderBufferParams& params) const {
+ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) const {
     std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
 
     ShaderBuffer* temp = nullptr;
@@ -224,10 +230,10 @@ ShaderBuffer* GFXDevice::newSB(const ShaderBufferParams& params) const {
             /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
             /// or a 'Shader Storage Block Object' otherwise
             // The shader buffer can also be persistently mapped, if requested
-            temp = new (_gpuObjectArena) glUniformBuffer(refThis(this), params);
+            temp = new (_gpuObjectArena) glUniformBuffer(refThis(this), descriptor);
         } break;
         case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dConstantBuffer(refThis(this), params);
+            temp = new (_gpuObjectArena) d3dConstantBuffer(refThis(this), descriptor);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

@@ -3,6 +3,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/StringHelper.h"
 #include "Environment/Water/Headers/Water.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"

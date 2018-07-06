@@ -67,22 +67,22 @@ void LightPool::init() {
         return;
     }
 
-    ShaderBufferParams params;
-    params._primitiveCount = Config::Lighting::MAX_POSSIBLE_LIGHTS;
-    params._primitiveSizeInBytes = sizeof(LightProperties);
-    params._ringBufferLength = 1;
-    params._unbound = true;
-    params._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._primitiveCount = Config::Lighting::MAX_POSSIBLE_LIGHTS;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(LightProperties);
+    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._unbound = true;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.
-    _lightShaderBuffer[to_base(ShaderBufferType::NORMAL)] = _context.newSB(params);
+    _lightShaderBuffer[to_base(ShaderBufferType::NORMAL)] = _context.newSB(bufferDescriptor);
 
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
-    params._primitiveCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-    params._primitiveSizeInBytes = sizeof(Light::ShadowProperties);
-    _lightShaderBuffer[to_base(ShaderBufferType::SHADOW)] = _context.newSB(params);
+    bufferDescriptor._primitiveCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(Light::ShadowProperties);
+    _lightShaderBuffer[to_base(ShaderBufferType::SHADOW)] = _context.newSB(bufferDescriptor);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
@@ -163,8 +163,8 @@ void LightPool::idle() {
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
-bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState) {
-    if (context.shadowDetailLevel() == RenderDetailLevel::OFF) {
+bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
+    if (_context.shadowDetailLevel() == RenderDetailLevel::OFF) {
         return true;
     }
 
@@ -178,8 +178,8 @@ bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRe
         Light* light = _sortedShadowCastingLights[i];
         if(light != nullptr) {
             _currentShadowCastingLight = light;
-            light->validateOrCreateShadowMaps(context, sceneRenderState);
-            light->generateShadowMaps(context, idx++ * 6);
+            light->validateOrCreateShadowMaps(_context, sceneRenderState);
+            light->generateShadowMaps(idx++ * 6);
         }
     }
 
@@ -338,11 +338,14 @@ void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
     const U32 spotLightCount = _activeLightCount[to_base(LightType::SPOT)];
     const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
     if (totalLightCount > 0) {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+        pipelineDescriptor._shaderProgram = _lightImpostorShader;
+
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(to_U16(totalLightCount));
-        pointsCmd.stateHash(_context.getDefaultStateBlock(true));
-        pointsCmd.shaderProgram(_lightImpostorShader);
+        pointsCmd.pipeline(_context.newPipeline(pipelineDescriptor));
 
         RenderSubPassCmd newSubPass;
         newSubPass._textures.addTexture(TextureData(_lightIconsTexture->getTextureType(),

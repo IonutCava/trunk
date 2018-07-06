@@ -52,6 +52,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Compute\Headers\OpenCLInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileManagement.h" />
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileUpdateMonitor.h" />
+    <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWithPath.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\ByteConverter.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\ConditionalWait.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\DisplayWindow.h" />
@@ -99,6 +100,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GraphicsResource.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\IMPrimitive.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\Pipeline.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderDrawCommands.h" />
@@ -160,6 +162,7 @@
     <ClCompile Include="..\..\Source Code\Platform\DisplayWindow.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\File\FileManagementFunctions.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\File\FileManagementPaths.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\File\FileUpdateMonitor.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EffectManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EventHandler.cpp" />
@@ -232,6 +235,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\glShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Textures\glSamplerOject.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Textures\glTexture.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Pipeline.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderPackage.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\ScopedStates.cpp" />
@@ -242,6 +246,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -414,6 +421,7 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -460,6 +468,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -503,6 +512,7 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

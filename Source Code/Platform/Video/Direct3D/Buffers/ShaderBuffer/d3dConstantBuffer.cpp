@@ -8,8 +8,8 @@ namespace Divide {
 IMPLEMENT_CUSTOM_ALLOCATOR(d3dConstantBuffer, 0, 0)
 
 d3dConstantBuffer::d3dConstantBuffer(GFXDevice& context,
-                                     const ShaderBufferParams& params)
-    : ShaderBuffer(context, params)
+                                     const ShaderBufferDescriptor& descriptor)
+    : ShaderBuffer(context, descriptor)
 {
 }
 

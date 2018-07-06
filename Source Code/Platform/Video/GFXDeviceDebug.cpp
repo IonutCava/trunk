@@ -94,16 +94,19 @@ void GFXDevice::renderDebugViews() {
         I32 viewportHeight = to_I32(viewportWidth / aspectRatio);
         vec4<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
+        PipelineDescriptor pipelineDesc;
+        pipelineDesc._stateHash = _defaultStateNoDepthHash;
+
         GenericDrawCommand triangleCmd;
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
-        triangleCmd.stateHash(_defaultStateNoDepthHash);
 
         I32 viewIndex = 0;
         for (U8 i = 0; i < rowCount; ++i) {
             for (U8 j = 0; j < columnCount; ++j) {
                 DebugView& view = *_debugViews[viewIndex];
-                triangleCmd.shaderProgram(view._shader);
+                pipelineDesc._shaderProgram = view._shader;
+                triangleCmd.pipeline(newPipeline(pipelineDesc));
                 view._texture->bind(view._textureBindSlot);
 
                 DebugView::ShaderData& shaderData = view._shaderData;

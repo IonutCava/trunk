@@ -132,10 +132,12 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
 
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(_context.getDefaultStateBlock(true));
 
     if (_adaptiveExposureControl) {
         // Compute Luminance
@@ -144,7 +146,8 @@ void PreRenderBatch::execute(const FilterStack& stack) {
         _previousLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
 
         _currentLuminance._rt->begin(RenderTarget::defaultPolicy());
-            triangleCmd.shaderProgram(_luminanceCalc);
+            pipelineDescriptor._shaderProgram = _luminanceCalc;
+            triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
             _context.draw(triangleCmd);
         _currentLuminance._rt->end();
 
@@ -167,7 +170,8 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     }
 
     _postFXOutput._rt->begin(RenderTarget::defaultPolicy());
-        triangleCmd.shaderProgram(_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
+        pipelineDescriptor._shaderProgram = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
+        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
     _postFXOutput._rt->end();
 

@@ -29,14 +29,14 @@ TiledForwardShadingRenderer::TiledForwardShadingRenderer(PlatformContext& contex
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
-    ShaderBufferParams params;
-    params._primitiveCount = maxNumLightsPerTile * numTiles;
-    params._primitiveSizeInBytes = sizeof(U32);
-    params._ringBufferLength = 1;
-    params._unbound = true;
-    params._updateFrequency = BufferUpdateFrequency::ONCE;
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._primitiveCount = maxNumLightsPerTile * numTiles;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(U32);
+    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._unbound = true;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
 
-    _perTileLightIndexBuffer = _context.gfx().newSB(params);
+    _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }
 

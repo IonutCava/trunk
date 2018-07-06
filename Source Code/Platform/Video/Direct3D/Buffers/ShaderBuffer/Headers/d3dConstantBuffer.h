@@ -40,7 +40,7 @@ class d3dConstantBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
    public:
     d3dConstantBuffer(GFXDevice& context,
-                      const ShaderBufferParams& params);
+                      const ShaderBufferDescriptor& descriptor);
 
     ~d3dConstantBuffer();
 

@@ -29,38 +29,26 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _PLATFORM_FILE_FILE_UPDATE_MONITOR_H_
-#define _PLATFORM_FILE_FILE_UPDATE_MONITOR_H_
+#ifndef _FILE_WITH_PATH_H_
+#define _FILE_WITH_PATH_H_
 
-#include "Platform/Headers/PlatformDefines.h"
+#include <string>
 
 namespace Divide {
 
-enum class FileUpdateEvent : U8 {
-    ADD = 0,
-    DELETE,
-    MODIFY,
+typedef char Byte; //< For file I/O
+
+enum FileType : unsigned char {
+    BINARY = 0,
+    TEXT = 1,
     COUNT
 };
 
-typedef DELEGATE_CBK<void, const char* /*file*/, FileUpdateEvent> FileUpdateCbk;
-
-class UpdateListener : public FW::FileWatchListener
-{
-public:
-    UpdateListener(const FileUpdateCbk& cbk);
-
-    void addIgnoredExtension(const char* extension);
-    void addIgnoredEndCharacter(char character);
-    void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action);
-
-private:
-    FileUpdateCbk _cbk;
-    vectorImpl<char> _ignoredEndingCharacters;
-    vectorImpl<stringImpl> _ignoredExtensions;
-
+struct FileWithPath {
+    std::string _fileName;
+    std::string _path;
 };
 
 }; //namespace Divide
 
-#endif //_PLATFORM_FILE_FILE_UPDATE_MONITOR_H_
+#endif //_FILE_WITH_PATH_H_

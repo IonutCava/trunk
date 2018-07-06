@@ -349,6 +349,12 @@
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\ThreadPool.h">
       <Filter>Threading\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\Pipeline.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWithPath.h">
+      <Filter>File\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -620,6 +626,12 @@
     <ClCompile Include="..\..\Source Code\stdafx-platform.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\JoystickInterface.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Pipeline.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\File\FileUpdateMonitor.cpp">
+      <Filter>File</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

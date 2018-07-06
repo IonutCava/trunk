@@ -71,7 +71,7 @@ class glIMPrimitive : public IMPrimitive {
     void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w);
     /// Submit the created batch to the GPU for rendering
     void draw(const GenericDrawCommand& command) override;
-    void drawShader(const ShaderProgram_ptr& shaderProgram) override;
+    void pipeline(const Pipeline& pipeline) override;
 
     GenericDrawCommand toDrawCommand() const override;
    protected:

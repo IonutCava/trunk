@@ -7,6 +7,8 @@
 
 #include "Utility/Headers/Localization.h"
 
+#include "Platform/File/Headers/FileManagement.h"
+
 namespace Divide {
 
 ByteBufferException::ByteBufferException(bool add, size_t pos, size_t esize, size_t size)

@@ -123,10 +123,12 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
 }
 
 void SSAOPreRenderOperator::execute() {
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+
      GenericDrawCommand triangleCmd;
      triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
      triangleCmd.drawCount(1);
-     triangleCmd.stateHash(_context.getDefaultStateBlock(true));
 
     _ssaoGenerateShader->Uniform("projectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache);
     _ssaoGenerateShader->Uniform("invProjectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
@@ -139,14 +141,16 @@ void SSAOPreRenderOperator::execute() {
     screen->bind(to_U8(ShaderProgram::TextureUsage::NORMALMAP), RTAttachment::Type::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS));  // normals
     
     _ssaoOutput._rt->begin(RenderTarget::defaultPolicy());
-        triangleCmd.shaderProgram(_ssaoGenerateShader);
+        pipelineDescriptor._shaderProgram = _ssaoGenerateShader;
+        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
     _ssaoOutput._rt->end();
 
 
     _ssaoOutput._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // AO texture
     _ssaoOutputBlurred._rt->begin(RenderTarget::defaultPolicy());
-        triangleCmd.shaderProgram(_ssaoBlurShader);
+        pipelineDescriptor._shaderProgram = _ssaoBlurShader;
+        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
     _ssaoOutputBlurred._rt->end();
     
@@ -155,7 +159,8 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutputBlurred._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);  // AO texture
 
     screen->begin(_screenOnlyDraw);
-        triangleCmd.shaderProgram(_ssaoApplyShader);
+        pipelineDescriptor._shaderProgram = _ssaoApplyShader;
+        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
     screen->end();
     

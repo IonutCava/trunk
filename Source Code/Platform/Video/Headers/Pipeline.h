@@ -29,38 +29,58 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _PLATFORM_FILE_FILE_UPDATE_MONITOR_H_
-#define _PLATFORM_FILE_FILE_UPDATE_MONITOR_H_
+#ifndef _PIPELINE_H_
+#define _PIPELINE_H_
 
-#include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
-enum class FileUpdateEvent : U8 {
-    ADD = 0,
-    DELETE,
-    MODIFY,
-    COUNT
-};
-
-typedef DELEGATE_CBK<void, const char* /*file*/, FileUpdateEvent> FileUpdateCbk;
-
-class UpdateListener : public FW::FileWatchListener
-{
+class PipelineDescriptor {
 public:
-    UpdateListener(const FileUpdateCbk& cbk);
+    U8 _multiSampleCount = 0;
+    size_t _stateHash = 0;
+    ShaderProgram_ptr _shaderProgram = nullptr;
 
-    void addIgnoredExtension(const char* extension);
-    void addIgnoredEndCharacter(char character);
-    void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action);
+    size_t computeHash() const;
 
-private:
-    FileUpdateCbk _cbk;
-    vectorImpl<char> _ignoredEndingCharacters;
-    vectorImpl<stringImpl> _ignoredExtensions;
+private: //internal
+    size_t _hash;
+}; //class PipelineDescriptor
 
-};
+class Pipeline {
+public:
+    Pipeline();
+    Pipeline(const PipelineDescriptor& descriptor);
+    ~Pipeline();
+
+    void fromDescriptor(const PipelineDescriptor& descriptor);
+    PipelineDescriptor toDescriptor() const;
+
+    inline ShaderProgram* shaderProgram() const {
+        return _shaderProgram.get();
+    }
+
+    inline size_t stateHash() const {
+        return _stateHash;
+    }
+
+    inline U8 multiSampleCount() const{
+        return _multiSampleCount;
+    }
+
+    bool operator==(const Pipeline &other) const;
+    bool operator!=(const Pipeline &other) const;
+
+private: //data
+    size_t _descriptorHash;
+    size_t _stateHash;
+    U8 _multiSampleCount;
+    ShaderProgram_ptr _shaderProgram;
+
+}; //class Pipeline
 
 }; //namespace Divide
 
-#endif //_PLATFORM_FILE_FILE_UPDATE_MONITOR_H_
+#endif //_PIPELINE_H_
+

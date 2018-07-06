@@ -87,14 +87,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     EnvironmentProbe::onStartup(*this);
     PostFX::createInstance();
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
-    ShaderBufferParams params;
-    params._primitiveCount = 1;
-    params._primitiveSizeInBytes = sizeof(GFXShaderData::GPUData);
-    params._ringBufferLength = 1;
-    params._unbound = false;
-    params._updateFrequency = BufferUpdateFrequency::OFTEN;
-    params._initialData = &_gpuBlock._data;
-    _gfxDataBuffer = newSB(params);
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._primitiveCount = 1;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(GFXShaderData::GPUData);
+    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._unbound = false;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._initialData = &_gpuBlock._data;
+    _gfxDataBuffer = newSB(bufferDescriptor);
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
@@ -272,14 +272,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         postFX.pushFilter(FilterType::FILTER_LUT_CORECTION);
     }
 
+
+    PipelineDescriptor pipelineDesc;
+
     _axisGizmo = newIMP();
     _axisGizmo->name("GFXDeviceAxisGizmo");
     RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
-    _axisGizmo->stateHash(primitiveDescriptor.getHash());
+    pipelineDesc._stateHash = primitiveDescriptor.getHash();
+    Pipeline primitivePipeline = newPipeline(pipelineDesc);
+    _axisGizmo->pipeline(primitivePipeline);
 
     _debugFrustumPrimitive = newIMP();
     _debugFrustumPrimitive->name("DebugFrustum");
-    _debugFrustumPrimitive->stateHash(primitiveDescriptor.getHash());
+    _debugFrustumPrimitive->pipeline(primitivePipeline);
 
     ResourceDescriptor previewNormalsShader("fbPreview");
     previewNormalsShader.setThreadedLoading(false);

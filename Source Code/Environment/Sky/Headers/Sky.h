@@ -47,7 +47,7 @@ enum class RenderStage : U32;
 
 class Sky : public SceneNode {
    public:
-    explicit Sky(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter);
+    explicit Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter);
     ~Sky();
 
     bool onRender(const RenderStagePass& renderStagePass) override;
@@ -75,6 +75,7 @@ class Sky : public SceneNode {
 
   private:
     U32       _diameter;
+    GFXDevice& _context;
     Texture_ptr  _skybox;
     Sphere3D_ptr _sky;
     ShaderProgram_ptr _skyShader;

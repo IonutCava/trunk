@@ -34,6 +34,7 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Resources/Headers/Resource.h"
+#include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
 

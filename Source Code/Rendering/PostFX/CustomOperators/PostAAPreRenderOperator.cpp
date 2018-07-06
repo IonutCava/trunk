@@ -64,11 +64,14 @@ void PostAAPreRenderOperator::execute() {
 
     // Apply FXAA/SMAA to the specified render target
     ldrTarget.begin(RenderTarget::defaultPolicy());
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+        pipelineDescriptor._shaderProgram = (_useSMAA ? _smaa : _fxaa);
+
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(1);
-        pointsCmd.stateHash(_context.getDefaultStateBlock(true));
-        pointsCmd.shaderProgram(_useSMAA ? _smaa : _fxaa);
+        pointsCmd.pipeline(_context.newPipeline(pipelineDescriptor));
 
         _context.draw(pointsCmd);
     ldrTarget.end();

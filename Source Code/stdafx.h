@@ -150,12 +150,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <ConcurrentQueue/concurrentqueue.h>
 
+#include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/PlatformDataTypes.h"
-#include "Core/TemplateLibraries/Headers/HashMap.h"
+#include "Platform/Headers/ConditionalWait.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
 #include "Core/Headers/GUIDWrapper.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
-#include "Platform/Headers/ConditionalWait.h"
+
+#include "Core/TemplateLibraries/Headers/HashMap.h"
+#include "Core/TemplateLibraries/Headers/Vector.h"
+#include "Core/TemplateLibraries/Headers/String.h"
 
 #endif //_DIVIDE_PCH_

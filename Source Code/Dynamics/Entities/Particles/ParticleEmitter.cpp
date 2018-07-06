@@ -260,10 +260,13 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
     }
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
-    cmd.cmd().primCount = to_U32(_particles->_renderingPositions.size());
-    cmd.stateHash(_context.isDepthStage() ? _particleStateBlockHashDepth
-                                          : _particleStateBlockHash);
+    PipelineDescriptor pipeDesc = cmd.pipeline().toDescriptor();
+    pipeDesc._stateHash = (_context.isDepthStage() ? _particleStateBlockHashDepth
+                                                   : _particleStateBlockHash);;
+    
 
+    cmd.cmd().primCount = to_U32(_particles->_renderingPositions.size());
+    cmd.pipeline(_context.newPipeline(pipeDesc));
     cmd.sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }

@@ -84,7 +84,7 @@ class SceneGraphNode;
 class SceneRenderState;
 class ShaderComputeQueue;
 
-struct ShaderBufferParams;
+struct ShaderBufferDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
 
@@ -372,7 +372,9 @@ public:
                                         const stringImpl& resourceName,
                                         const stringImpl& resourceLocation,
                                         bool asyncLoad) const;
-    ShaderBuffer*      newSB(const ShaderBufferParams& params) const;
+    ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
+
+    Pipeline           newPipeline(const PipelineDescriptor& descriptor) const;
 
 public:  // Direct API calls
     inline U64 getFrameDurationGPU() {
@@ -413,7 +415,7 @@ protected:
     void onChangeResolution(U16 w, U16 h);
 
     void renderDebugViews();
-
+    
 protected:
     friend class Camera;
     void renderFromCamera(Camera& camera);

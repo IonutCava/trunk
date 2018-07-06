@@ -4,6 +4,8 @@
 #include "Headers/glResources.h"
 #include "Headers/GLWrapper.h"
 
+#include "Platform/Video/Headers/GFXDevice.h"
+
 #include <GLIM/glim.h>
 
 namespace Divide {
@@ -54,21 +56,27 @@ void glIMPrimitive::end() {
 
 void glIMPrimitive::endBatch() {
     _imInterface->EndBatch();
-    if (IMPrimitive::drawShader() == nullptr) {
-        drawShader(ShaderProgram::defaultShader());
-    }
 }
 
-void glIMPrimitive::drawShader(const ShaderProgram_ptr& shaderProgram) {
+void glIMPrimitive::pipeline(const Pipeline& pipeline) {
+
+    ShaderProgram* shaderProgram = pipeline.shaderProgram();
     if (shaderProgram == nullptr) {
         // Inform the primitive that we're using the imShader
         // A primitive can be rendered with any shader program available, so
         // make sure we actually use the right one for this stage
-        drawShader(ShaderProgram::defaultShader());
+        PipelineDescriptor newPipelineDescriptor;
+        newPipelineDescriptor._shaderProgram = ShaderProgram::defaultShader();
+        newPipelineDescriptor._multiSampleCount = pipeline.multiSampleCount();
+        newPipelineDescriptor._stateHash = pipeline.stateHash();
+
+        IMPrimitive::pipeline(_context.newPipeline(newPipelineDescriptor));
+        shaderProgram = newPipelineDescriptor._shaderProgram.get();
     } else {
-        IMPrimitive::drawShader(shaderProgram);
-        _imInterface->SetShaderProgramHandle(_drawShader->getID());
+        IMPrimitive::pipeline(pipeline);
     }
+
+    _imInterface->SetShaderProgramHandle(shaderProgram->getID());
 }
 
 void glIMPrimitive::draw(const GenericDrawCommand& command) {
@@ -86,9 +94,9 @@ void glIMPrimitive::draw(const GenericDrawCommand& command) {
     }
 
     // Inform the shader if we have (or don't have) a texture
-    command.shaderProgram()->Uniform("useTexture", texture);
+    command.pipeline().shaderProgram()->Uniform("useTexture", texture);
     // Upload the primitive's world matrix to the shader
-    command.shaderProgram()->Uniform("dvd_WorldMatrix", worldMatrix());
+    command.pipeline().shaderProgram()->Uniform("dvd_WorldMatrix", worldMatrix());
 
     GLuint query = 0;
     bool queryPrimitives = command.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);
@@ -113,12 +121,11 @@ void glIMPrimitive::draw(const GenericDrawCommand& command) {
 GenericDrawCommand glIMPrimitive::toDrawCommand() const {
     GenericDrawCommand cmd;
     if (!paused()) {
-        DIVIDE_ASSERT(_drawShader != nullptr,
+        DIVIDE_ASSERT(_pipeline.shaderProgram() != nullptr,
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
         cmd.sourceBuffer(const_cast<glIMPrimitive*>(this));
-        cmd.shaderProgram(_drawShader);
-        cmd.stateHash(stateHash());
+        cmd.pipeline(_pipeline);
     } else {
         cmd.drawCount(0);
     }

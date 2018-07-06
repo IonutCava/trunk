@@ -65,26 +65,31 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
 
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
+    Pipeline pipeline = _context.newPipeline(pipelineDescriptor);
+    
+
     _boundingBoxPrimitive[0] = _context.newIMP();
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
-    _boundingBoxPrimitive[0]->stateHash(primitiveStateBlock.getHash());
+    _boundingBoxPrimitive[0]->pipeline(pipeline);
     _boundingBoxPrimitive[0]->paused(true);
 
     _boundingBoxPrimitive[1] = _context.newIMP();
     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.getName());
-    _boundingBoxPrimitive[1]->stateHash(primitiveStateBlock.getHash());
+    _boundingBoxPrimitive[1]->pipeline(pipeline);
     _boundingBoxPrimitive[1]->paused(true);
 
     _boundingSpherePrimitive = _context.newIMP();
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
-    _boundingSpherePrimitive->stateHash(primitiveStateBlock.getHash());
+    _boundingSpherePrimitive->pipeline(pipeline);
     _boundingSpherePrimitive->paused(true);
 
     if (nodeSkinned) {
         primitiveStateBlock.setZRead(false);
         _skeletonPrimitive = _context.newIMP();
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
-        _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
+        _skeletonPrimitive->pipeline(pipeline);
         _skeletonPrimitive->paused(true);
     }
     
@@ -111,8 +116,10 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         // Prepare it for line rendering
         size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
         RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
+
+        pipelineDescriptor._stateHash = stateBlock.getHash();
         _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
-        _axisGizmo->stateHash(stateBlock.getHash());
+        _axisGizmo->pipeline(_context.newPipeline(pipelineDescriptor));
         _axisGizmo->paused(true);
         // Create the object containing all of the lines
         _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);
@@ -600,10 +607,12 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, con
     pkg.isRenderable(false);
     if (_preDrawPass)
     {
+        PipelineDescriptor pipelineDescriptor;
         for (GenericDrawCommand& cmd : pkg._drawCommands) {
             cmd.renderMask(renderMask(cmd.renderMask()));
-            cmd.stateHash(getDrawStateHash(renderStagePass));
-            cmd.shaderProgram(getDrawShader(renderStagePass));
+            pipelineDescriptor._stateHash = getDrawStateHash(renderStagePass);
+            pipelineDescriptor._shaderProgram = getDrawShader(renderStagePass);
+            cmd.pipeline(_context.newPipeline(pipelineDescriptor));
         }
 
         _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg._drawCommands);

@@ -5,6 +5,7 @@
 #include "Core/Headers/ErrorCodes.h"
 #include <SimpleINI/include/SimpleIni.h>
 
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"
 
 namespace Divide {

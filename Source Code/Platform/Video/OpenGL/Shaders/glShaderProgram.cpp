@@ -7,6 +7,7 @@
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/OpenGL/Headers/glLockManager.h"
 
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 

@@ -55,14 +55,14 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     //}
     // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
 
-    ShaderBufferParams params;
-    params._primitiveCount = Terrain::MAX_RENDER_NODES;
-    params._primitiveSizeInBytes = sizeof(TessellatedNodeData);
-    params._ringBufferLength = 1;
-    params._unbound = true;
-    params._updateFrequency = BufferUpdateFrequency::OFTEN;
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._primitiveCount = Terrain::MAX_RENDER_NODES;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(TessellatedNodeData);
+    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._unbound = true;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
 
-    _shaderData = _context.newSB(params);
+    _shaderData = _context.newSB(bufferDescriptor);
     sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
                                                         vec2<U32>(0, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
@@ -151,6 +151,13 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     drawCommandsInOut.push_back(cmd);
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
+
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._shaderProgram = 
+            (renderStagePass.pass() == RenderPassType::DEPTH_PASS
+                                     ? _planeDepthShader
+                                     : _planeShader);
+
         //infinite plane
         GenericDrawCommand planeCmd;
         planeCmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
@@ -158,9 +165,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
         planeCmd.cmd().indexCount = _plane->getGeometryVB()->getIndexCount();
         planeCmd.LoD(0);
         planeCmd.sourceBuffer(_plane->getGeometryVB());
-        planeCmd.shaderProgram(renderStagePass.pass() == RenderPassType::DEPTH_PASS
-                                                      ? _planeDepthShader
-                                                      : _planeShader);
+        planeCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         drawCommandsInOut.push_back(planeCmd);
 
         //BoundingBoxes
@@ -210,12 +215,15 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
         // draw infinite plane
-       assert(drawCommandsInOut[1].drawCount() == 1);
+        assert(drawCommandsInOut[1].drawCount() == 1);
 
-       drawCommandsInOut[1].shaderProgram(
-            renderStagePass.pass() == RenderPassType::DEPTH_PASS
-                                   ? _planeDepthShader
-                                   : _planeShader);
+        PipelineDescriptor descriptor = drawCommandsInOut[1].pipeline().toDescriptor();
+        descriptor._shaderProgram = (renderStagePass.pass() == RenderPassType::DEPTH_PASS
+                                                             ? _planeDepthShader
+                                                             : _planeShader);
+
+        drawCommandsInOut[1].pipeline(_context.newPipeline(descriptor));
+
         size_t i = 2;
 
         if (_drawBBoxes) {

@@ -98,15 +98,15 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     vectorAlg::shrinkToFit(animationData);
 
 
-    ShaderBufferParams params;
-    params._primitiveCount = frameCount();
-    params._primitiveSizeInBytes = bufferSize;
-    params._ringBufferLength = 1;
-    params._unbound = useUnboundBuffer;
-    params._initialData = animationData.data();
-    params._updateFrequency = BufferUpdateFrequency::ONCE;
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._primitiveCount = frameCount();
+    bufferDescriptor._primitiveSizeInBytes = bufferSize;
+    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._unbound = useUnboundBuffer;
+    bufferDescriptor._initialData = animationData.data();
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
 
-    _boneTransformBuffer = context.newSB(params);
+    _boneTransformBuffer = context.newSB(bufferDescriptor);
 
     return !animationData.empty();
 }

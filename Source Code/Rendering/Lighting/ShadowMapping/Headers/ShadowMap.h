@@ -61,7 +61,7 @@ class NOINITVTABLE ShadowMap {
     virtual ~ShadowMap();
 
     /// Render the scene and save the frame to the shadow map
-    virtual void render(GFXDevice& context, U32 passIdx) = 0;
+    virtual void render(U32 passIdx) = 0;
     /// Get the current shadow mapping tehnique
     inline ShadowType getShadowMapType() const { return _shadowMapType; }
 

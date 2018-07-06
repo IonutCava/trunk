@@ -117,8 +117,8 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     setMaterialTpl(vegMaterial);
 
     CreateTask(DELEGATE_BIND(&Vegetation::generateGrass, this, std::placeholders::_1),
-            DELEGATE_BIND(&Vegetation::uploadGrassData, this))
-            .startTask(Task::TaskPriority::LOW);
+               DELEGATE_BIND(&Vegetation::uploadGrassData, this))
+               .startTask(Task::TaskPriority::LOW);
     setState(ResourceState::RES_LOADED);
 }
 
@@ -356,10 +356,13 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
 
+        PipelineDescriptor pipeDesc;
+        pipeDesc._shaderProgram = _cullShader;
+
         _cullDrawCommand.cmd().primCount = _instanceCountGrass;
         _cullDrawCommand.enableOption(GenericDrawCommand::RenderOptions::RENDER_NO_RASTERIZE);
         _cullDrawCommand.drawToBuffer(to_U8(queryID));
-        _cullDrawCommand.shaderProgram(_cullShader);
+        _cullDrawCommand.pipeline(_context.newPipeline(pipeDesc));
         _cullDrawCommand.sourceBuffer(buffer);
         buffer->incQueryQueue();
 
@@ -380,7 +383,6 @@ void Vegetation::initialiseDrawCommands(SceneGraphNode& sgn,
     cmd.cmd().firstIndex = 0;
     cmd.cmd().indexCount = 12 * 3;
     cmd.LoD(1);
-    cmd.stateHash(_grassStateBlockHash);
     drawCommandsInOut.push_back(cmd);
 
     SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
@@ -400,9 +402,14 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
     buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
+
+    PipelineDescriptor pipeDesc = cmd.pipeline().toDescriptor();
+    pipeDesc._stateHash = _grassStateBlockHash;
+    pipeDesc._shaderProgram->Uniform("grassScale", /*_grassScale*/1.0f);
+
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
     cmd.sourceBuffer(buffer);
-    cmd.shaderProgram()->Uniform("grassScale", /*_grassScale*/1.0f);
+    cmd.pipeline(_context.newPipeline(pipeDesc));
 
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsOut);
 }

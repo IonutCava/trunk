@@ -15,6 +15,8 @@
 
 #include "Utility/Headers/MemoryTracker.h"
 
+#include "Platform/File/Headers/FileManagement.h"
+
 namespace Divide {
 
 namespace {

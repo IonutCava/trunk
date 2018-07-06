@@ -96,7 +96,7 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CascadedShadowMaps::render(GFXDevice& context, U32 passIdx) {
+void CascadedShadowMaps::render(U32 passIdx) {
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
     _lightPosition.set(_light->getPosition());
@@ -135,10 +135,10 @@ void CascadedShadowMaps::render(GFXDevice& context, U32 passIdx) {
     for (U8 i = 0; i < _numSplits; ++i) {
         target.drawToLayer(RTAttachment::Type::Colour, 0, to_U16(i + getArrayOffset()));
         params.camera = _shadowCameras[i];
-        context.parent().renderPassManager().doCustomPass(params);
+        _context.parent().renderPassManager().doCustomPass(params);
     }
     target.end();
-    postRender(context);
+    postRender();
 }
 
 void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
@@ -219,8 +219,8 @@ void CascadedShadowMaps::applyFrustumSplits() {
     }
 }
 
-void CascadedShadowMaps::postRender(GFXDevice& context) {
-    if (context.shadowDetailLevel() == RenderDetailLevel::LOW) {
+void CascadedShadowMaps::postRender() {
+    if (_context.shadowDetailLevel() == RenderDetailLevel::LOW) {
         return;
     }
 
@@ -228,11 +228,14 @@ void CascadedShadowMaps::postRender(GFXDevice& context) {
 
     _blurDepthMapShader->bind();
 
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+    pipelineDescriptor._shaderProgram = _blurDepthMapShader;
+
     GenericDrawCommand pointsCmd;
     pointsCmd.primitiveType(PrimitiveType::API_POINTS);
     pointsCmd.drawCount(1);
-    pointsCmd.stateHash(context.getDefaultStateBlock(true));
-    pointsCmd.shaderProgram(_blurDepthMapShader);
+    pointsCmd.pipeline(_context.newPipeline(pipelineDescriptor));
 
     // Blur horizontally
     _blurDepthMapShader->Uniform("layerOffsetRead", (I32)getArrayOffset());
@@ -241,7 +244,7 @@ void CascadedShadowMaps::postRender(GFXDevice& context) {
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer._rt->begin(RenderTarget::defaultPolicy());
     depthMap.bind(0, RTAttachment::Type::Colour, 0, false);
-        context.draw(pointsCmd);
+        _context.draw(pointsCmd);
     depthMap.end();
 
     // Blur vertically
@@ -251,7 +254,7 @@ void CascadedShadowMaps::postRender(GFXDevice& context) {
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     depthMap.begin(RenderTarget::defaultPolicy());
     _blurBuffer._rt->bind(0, RTAttachment::Type::Colour, 0);
-        context.draw(pointsCmd);
+        _context.draw(pointsCmd);
     depthMap.end();
 }
 

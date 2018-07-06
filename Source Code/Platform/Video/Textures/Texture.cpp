@@ -7,6 +7,7 @@
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
 

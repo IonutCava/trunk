@@ -44,11 +44,9 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
   : _lodIndex(0),
     _drawCount(1),
     _drawToBuffer(0),
-    _stateHash(0),
     _type(type),
     _commandOffset(0),
     _patchVertexCount(4),
-    _shaderProgram(nullptr),
     _sourceBuffer(nullptr),
     _renderOptions(to_base(RenderOptions::RENDER_GEOMETRY))
 {
@@ -57,7 +55,8 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _cmd.primCount = primCount;
 
     static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
-    static_assert(sizeof(GenericDrawCommand) == 72, "Size of GenericDrawCommand is incorrect!");
+    static_assert(sizeof(Pipeline) == 40, "Size of Pipeline is incorrect!");
+    static_assert(sizeof(GenericDrawCommand) == 96, "Size of GenericDrawCommand is incorrect!");
 }
 
 void GenericDrawCommand::set(const GenericDrawCommand& base) {
@@ -66,9 +65,8 @@ void GenericDrawCommand::set(const GenericDrawCommand& base) {
     _drawCount = base._drawCount;
     _drawToBuffer = base._drawToBuffer;
     _renderOptions = base._renderOptions;
-    _stateHash = base._stateHash;
     _type = base._type;
-    _shaderProgram = base._shaderProgram;
+    _pipeline = base._pipeline;
     _sourceBuffer = base._sourceBuffer;
     _commandOffset = base._commandOffset;
 }
@@ -81,8 +79,8 @@ bool GenericDrawCommand::compatible(const GenericDrawCommand& other) const {
     return _lodIndex == other._lodIndex &&
            _drawToBuffer == other._drawToBuffer &&
            _renderOptions == other._renderOptions &&
-           _stateHash == other._stateHash && _type == other._type &&
-           (_shaderProgram != nullptr) == (other._shaderProgram != nullptr) &&
+           _type == other._type &&
+           _pipeline == other._pipeline &&
            (_sourceBuffer != nullptr) == (other._sourceBuffer != nullptr);
 }
 

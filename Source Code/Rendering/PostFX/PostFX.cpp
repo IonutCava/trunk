@@ -103,9 +103,13 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
      borderTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
+     PipelineDescriptor pipelineDescriptor;
+     pipelineDescriptor._stateHash = context.getDefaultStateBlock(true);
+     pipelineDescriptor._shaderProgram = _postProcessingShader;
+
      _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
      _drawCommand.drawCount(1);
-     _drawCommand.shaderProgram(_postProcessingShader);
+     _drawCommand.pipeline(context.newPipeline(pipelineDescriptor));
 
      _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -128,12 +132,12 @@ void PostFX::updateResolution(U16 width, U16 height) {
     _preRenderBatch->reshape(width, height);
 }
 
-void PostFX::apply(GFXDevice& context) {
+void PostFX::apply() {
     _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];
     _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
     _shaderFunctionSelection[2] = _shaderFunctionList[getFilterState(FilterType::FILTER_UNDERWATER) ? 2 : 3];
 
-    GFX::Scoped2DRendering scoped2D(context);
+    GFX::Scoped2DRendering scoped2D(*_gfx);
     _preRenderBatch->execute(_filterStackCount);
     _postProcessingShader->bind();
     _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
@@ -146,7 +150,6 @@ void PostFX::apply(GFXDevice& context) {
     RenderTarget& screenRT = _gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     screenRT.begin(_postFXTarget);
-        _drawCommand.stateHash(_gfx->getDefaultStateBlock(true));
         _gfx->draw(_drawCommand);
     screenRT.end();
 }

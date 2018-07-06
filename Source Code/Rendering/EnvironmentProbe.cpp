@@ -33,10 +33,15 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
         
     _currentArrayIndex = allocateSlice();
 
+
     RenderStateBlock primitiveStateBlock;
+
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
+
     _boundingBoxPrimitive = _context.newIMP();
     _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
-    _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
+    _boundingBoxPrimitive->pipeline(_context.newPipeline(pipelineDescriptor));
 
     _impostor = CreateResource<ImpostorSphere>(parentScene.resourceCache(),
                                                ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID())));
@@ -142,9 +147,13 @@ void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
 
     VertexBuffer* vb = _impostor->getGeometryVB();
+
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.getDefaultStateBlock(false);
+    pipelineDescriptor._shaderProgram = _impostorShader;
+
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
-    cmd.stateHash(_context.getDefaultStateBlock(false));
-    cmd.shaderProgram(_impostorShader);
+    cmd.pipeline(_context.newPipeline(pipelineDescriptor));
     cmd.sourceBuffer(vb);
 
     RenderSubPassCmd newSubPass;

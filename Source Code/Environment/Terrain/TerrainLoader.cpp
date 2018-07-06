@@ -6,6 +6,7 @@
 #include "Headers/TerrainTessellator.h"
 
 #include "Core/Headers/PlatformContext.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 

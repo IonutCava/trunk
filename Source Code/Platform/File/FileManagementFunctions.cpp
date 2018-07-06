@@ -3,7 +3,6 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/StringHelper.h"
 
-
 namespace Divide {
 
 bool writeFile(const stringImpl& filePath, const bufferPtr content, size_t length, FileType fileType) {
@@ -24,7 +23,8 @@ FileWithPath splitPathToNameAndLocation(const stringImpl& input) {
     if (pathNameSplitPoint == 0) {
         pathNameSplitPoint = input.find_last_of("\\") + 1;
     }
-    return FileWithPath{
+    return FileWithPath
+    {
         input.substr(pathNameSplitPoint, stringImpl::npos),
         input.substr(0, pathNameSplitPoint)
     };

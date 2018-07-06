@@ -3,6 +3,7 @@
 #include "Headers/GLWrapper.h"
 #include "Headers/glIMPrimitive.h"
 
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
@@ -800,13 +801,13 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
 
 bool GL_API::setState(const GenericDrawCommand& cmd) {
     // Set the proper render states
-    setStateBlock(cmd.stateHash());
+    setStateBlock(cmd.pipeline().stateHash());
     // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
+    DIVIDE_ASSERT(cmd.pipeline().shaderProgram() != nullptr,
                   "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // Try to bind the shader program. If it failed to load, or isn't loaded
     // yet, cancel the draw request for this frame
-    return cmd.shaderProgram()->bind();
+    return cmd.pipeline().shaderProgram()->bind();
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd) {

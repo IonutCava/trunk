@@ -7,8 +7,10 @@
 //unsigned int fp_control_state = _controlfp(_EM_INEXACT, _MCW_EM);
 #endif
 
-#include "Headers/PlatformDefines.h"
+#include "Headers/PlatformDefinesWindows.h"
 #include "Core/Headers/StringHelper.h"
+
+#include "Platform/File/Headers/FileManagement.h"
 
 #if defined(USE_VLD)
 #include <vld.h>

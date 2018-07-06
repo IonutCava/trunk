@@ -6,6 +6,7 @@
 #include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -42,12 +43,14 @@ void GUISplash::render(GFXDevice& context) {
     GFX::ScopedViewport splashViewport(context, vec4<I32>(0, 0, _dimensions.width, _dimensions.height));
     _splashImage->bind(to_U8(ShaderProgram::TextureUsage::UNIT0));
 
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = context.getDefaultStateBlock(true);
+    pipelineDescriptor._shaderProgram = _splashShader;
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(context.getDefaultStateBlock(true));
-    triangleCmd.shaderProgram(_splashShader);
+    triangleCmd.pipeline(context.newPipeline(pipelineDescriptor));
 
     context.draw(triangleCmd);
 }

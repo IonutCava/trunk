@@ -197,7 +197,7 @@ void Light::validateOrCreateShadowMaps(GFXDevice& context, SceneRenderState& sce
     _shadowMapInfo->createShadowMap(context, sceneRenderState, _shadowCameras);
 }
 
-void Light::generateShadowMaps(GFXDevice& context, U32 passIdx) {
+void Light::generateShadowMaps(U32 passIdx) {
     ShadowMap* sm = _shadowMapInfo->getShadowMap();
 
     DIVIDE_ASSERT(sm != nullptr,
@@ -205,7 +205,7 @@ void Light::generateShadowMaps(GFXDevice& context, U32 passIdx) {
                   "with no shadow map found!");
 
     _shadowProperties._arrayOffset.set(sm->getArrayOffset());
-    sm->render(context, passIdx);
+    sm->render(passIdx);
 
 }
 

@@ -91,7 +91,6 @@ class NavMeshDebugDraw : public duDebugDraw {
     GFXDevice& _context;
     PrimitiveType _primType;
     IMPrimitive* _primitive;
-    size_t _navMeshStateBlockHash;
     U32 _vertCount;
     U32 _colour;
     bool _overrideColour;

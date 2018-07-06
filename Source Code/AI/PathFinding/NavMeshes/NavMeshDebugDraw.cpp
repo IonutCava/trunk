@@ -26,11 +26,6 @@ NavMeshDebugDraw::NavMeshDebugDraw(GFXDevice& context)
       _primType(PrimitiveType::COUNT),
       _vertCount(0)
 {
-    // Generate a render state
-    RenderStateBlock navigationDebugStateBlock;
-    navigationDebugStateBlock.setCullMode(CullMode::NONE);
-    navigationDebugStateBlock.setBlend(true);
-    _navMeshStateBlockHash = navigationDebugStateBlock.getHash();
 }
 
 NavMeshDebugDraw::~NavMeshDebugDraw()
@@ -49,7 +44,16 @@ void NavMeshDebugDraw::beginBatch() {
     if (!_primitive) {
         _dirty = true;
         _primitive = _context.newIMP();
-        _primitive->stateHash(_navMeshStateBlockHash);
+
+        // Generate a render state
+        RenderStateBlock navigationDebugStateBlock;
+        navigationDebugStateBlock.setCullMode(CullMode::NONE);
+        navigationDebugStateBlock.setBlend(true);
+
+        PipelineDescriptor pipeDesc;
+        pipeDesc._stateHash = navigationDebugStateBlock.getHash();
+
+        _primitive->pipeline(_context.newPipeline(pipeDesc));
     }
 
     assert(_primitive != nullptr);

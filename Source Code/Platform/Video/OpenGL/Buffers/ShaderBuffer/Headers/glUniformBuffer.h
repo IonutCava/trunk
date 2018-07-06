@@ -48,7 +48,7 @@ class glUniformBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
    public:
      glUniformBuffer(GFXDevice& context,
-                     const ShaderBufferParams& params);
+                     const ShaderBufferDescriptor& descriptor);
     ~glUniformBuffer();
 
     void getData(ptrdiff_t offsetElementCount,

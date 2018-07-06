@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_FILE_FILE_MANAGEMENT_H_
 #define _PLATFORM_FILE_FILE_MANAGEMENT_H_
 
+#include "FileWithPath.h"
 #include "Core/TemplateLibraries/Headers/String.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Platform/Headers/PlatformDataTypes.h"
@@ -101,18 +102,6 @@ namespace Paths {
     void updatePaths(const PlatformContext& context);
 };
 
-typedef char Byte; //< For file I/O
-
-enum FileType {
-    BINARY = 0,
-    TEXT = 1,
-    COUNT
-};
-
-struct FileWithPath {
-    stringImpl _fileName;
-    stringImpl _path;
-};
 
 bool fileExists(const char* filePath);
 bool createFile(const char* filePath, bool overwriteExisting);

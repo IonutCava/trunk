@@ -41,14 +41,14 @@ void CubeShadowMap::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CubeShadowMap::render(GFXDevice& context, U32 passIdx) {
-    context.generateCubeMap(getDepthMapID(),
-                            _arrayOffset,
-                            _light->getPosition(),
-                            vec2<F32>(0.1f, _light->getRange()),
-                            RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS),
-                            passIdx,
-                            _shadowCameras[0]);
+void CubeShadowMap::render(U32 passIdx) {
+    _context.generateCubeMap(getDepthMapID(),
+                             _arrayOffset,
+                             _light->getPosition(),
+                             vec2<F32>(0.1f, _light->getRange()),
+                             RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS),
+                             passIdx,
+                             _shadowCameras[0]);
 }
 
 };

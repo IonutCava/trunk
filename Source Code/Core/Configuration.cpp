@@ -5,6 +5,7 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
 

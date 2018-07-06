@@ -35,15 +35,14 @@
 #include "Utility/Headers/Colours.h"
 #include "Core/Math/Headers/Line.h"
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Platform/Video/Headers/Pipeline.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 
 namespace Divide {
 
 class Texture;
-class ShaderProgram;
 enum class PrimitiveType : U32;
-FWD_DECLARE_MANAGED_CLASS(ShaderProgram)
 
 FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
 
@@ -73,11 +72,12 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
         }
     }
 
-    inline const ShaderProgram_ptr& drawShader() const {
-        return _drawShader;
+    inline const Pipeline& pipeline() const {
+        return _pipeline;
     }
 
-    virtual void drawShader(const ShaderProgram_ptr& shaderProgram);
+    virtual void pipeline(const Pipeline& pipeline);
+
     virtual void draw(const GenericDrawCommand& command) = 0;
 
     inline I32 getLastDrawPrimitiveCount() const override {
@@ -116,10 +116,6 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     inline bool hasRenderStates() const {
         return (!_setupStates && !_resetStates);
     }
-
-    /// State management
-    inline size_t stateHash() const { return _stateHash; }
-    inline void stateHash(size_t hashValue) { _stateHash = hashValue; }
 
     inline const mat4<F32>& worldMatrix() const { return _worldMatrix; }
     inline void worldMatrix(const mat4<F32>& worldMatrix) {
@@ -160,7 +156,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
    public:
 
-    ShaderProgram_ptr _drawShader;
+    Pipeline _pipeline;
     Texture* _texture;
 
    protected:
@@ -175,8 +171,6 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     /// 2 functions used to setup or reset states
     DELEGATE_CBK<void> _setupStates;
     DELEGATE_CBK<void> _resetStates;
-    /// The state hash associated with this render instance
-    size_t _stateHash;
     /// The transform matrix for this element
     mat4<F32> _worldMatrix;
 };

@@ -40,7 +40,7 @@ class CubeShadowMap : public ShadowMap {
    public:
     explicit CubeShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras);
     ~CubeShadowMap();
-    void render(GFXDevice& context, U32 passIdx);
+    void render(U32 passIdx);
 
     void init(ShadowMapInfo* const smi);
 

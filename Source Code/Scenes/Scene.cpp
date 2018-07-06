@@ -29,6 +29,7 @@
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
@@ -88,7 +89,10 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
         RenderStateBlock primitiveDescriptor;
         _linesPrimitive = _context.gfx().newIMP();
         _linesPrimitive->name("LinesRayPick");
-        _linesPrimitive->stateHash(primitiveDescriptor.getHash());
+        PipelineDescriptor pipeDesc;
+        pipeDesc._stateHash = primitiveDescriptor.getHash();
+
+        _linesPrimitive->pipeline(_context.gfx().newPipeline(pipeDesc));
         _linesPrimitive->paused(true);
     } else {
         _linesPrimitive = nullptr;
@@ -740,7 +744,7 @@ bool Scene::load(const stringImpl& name) {
 }
 
 bool Scene::unload() {
-    // prevent double unload calls
+    // prevent double unload calls%
     if (!checkLoadFlag()) {
         return false;
     }

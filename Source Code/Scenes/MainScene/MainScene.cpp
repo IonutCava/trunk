@@ -12,6 +12,7 @@
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"

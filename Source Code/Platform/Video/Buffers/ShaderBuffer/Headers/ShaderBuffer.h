@@ -37,8 +37,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-struct ShaderBufferParams {
-    ShaderBufferParams()
+struct ShaderBufferDescriptor {
+    ShaderBufferDescriptor()
         : _ringBufferLength(1),
           _primitiveCount(0),
           _primitiveSizeInBytes(0),
@@ -62,7 +62,7 @@ class NOINITVTABLE ShaderBuffer : public GraphicsResource,
                                   public GUIDWrapper {
     USE_CUSTOM_ALLOCATOR
    public:
-    explicit ShaderBuffer(GFXDevice& context, const ShaderBufferParams& params);
+    explicit ShaderBuffer(GFXDevice& context, const ShaderBufferDescriptor& params);
 
     virtual ~ShaderBuffer();
 

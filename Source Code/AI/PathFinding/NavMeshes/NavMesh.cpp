@@ -9,6 +9,8 @@
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
+#include "Platform/File/Headers/FileManagement.h"
+
 #include <ReCast/DebugUtils/Include/RecastDump.h>
 #include <ReCast/DebugUtils/Include/DetourDebugDraw.h>
 #include <ReCast/DebugUtils/Include/RecastDebugDraw.h>

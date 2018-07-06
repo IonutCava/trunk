@@ -66,8 +66,8 @@ AtomicCounter::~AtomicCounter()
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glUniformBuffer, 0, 0)
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
-                                 const ShaderBufferParams& params)
-    : ShaderBuffer(context, params)
+                                 const ShaderBufferDescriptor& descriptor)
+    : ShaderBuffer(context, descriptor)
 {
     _maxSize = _unbound ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
 
@@ -78,7 +78,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     BufferImplParams implParams;
     implParams._dataSizeInBytes = _allignedBufferSize * queueLength();
     implParams._frequency = _frequency;
-    implParams._initialData = params._initialData;
+    implParams._initialData = descriptor._initialData;
     implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
 
     _buffer = MemoryManager_NEW glBufferImpl(implParams);

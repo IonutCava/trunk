@@ -483,7 +483,7 @@ bool SceneManager::generateShadowMaps() {
     Scene& activeScene = getActiveScene();
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
     assert(lightPool != nullptr);
-    return lightPool->generateShadowMaps(_platformContext->gfx(), activeScene.renderState());
+    return lightPool->generateShadowMaps(activeScene.renderState());
 }
 
 Camera* SceneManager::getActiveCamera() const {

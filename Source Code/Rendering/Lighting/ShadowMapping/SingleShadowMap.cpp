@@ -38,11 +38,11 @@ void SingleShadowMap::init(ShadowMapInfo* const smi) {
 }
 
 
-void SingleShadowMap::render(GFXDevice& context, U32 passIdx) {
+void SingleShadowMap::render(U32 passIdx) {
     _shadowCameras[0]->lookAt(_light->getPosition(), _light->getSpotDirection());
     _shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
 
-    RenderPassManager& passMgr = context.parent().renderPassManager();
+    RenderPassManager& passMgr = _context.parent().renderPassManager();
     RenderPassManager::PassParams params;
     params.doPrePass = false;
     params.occlusionCull = false;

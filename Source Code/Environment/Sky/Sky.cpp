@@ -6,13 +6,15 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 namespace Divide {
 
-Sky::Sky(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter)
+Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_SKY),
+      _context(context),
       _sky(nullptr),
       _skyShader(nullptr),
       _skyShaderPrePass(nullptr),
@@ -129,17 +131,20 @@ void Sky::updateDrawCommands(SceneGraphNode& sgn,
                              const SceneRenderState& sceneRenderState,
                              GenericDrawCommands& drawCommandsInOut) {
 
+    PipelineDescriptor pipeDesc;
+
     GenericDrawCommand& cmd = drawCommandsInOut.front();
     if (renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
-        cmd.stateHash(_skyboxRenderStateHashPrePass);
-        cmd.shaderProgram(_skyShaderPrePass);
+        pipeDesc._stateHash = _skyboxRenderStateHashPrePass;
+        pipeDesc._shaderProgram = _skyShaderPrePass;
     }  else {
-        cmd.stateHash(renderStagePass.stage() == RenderStage::REFLECTION
-                                              ? _skyboxRenderStateReflectedHash
-                                              : _skyboxRenderStateHash);
-        cmd.shaderProgram(_skyShader);
+        pipeDesc._stateHash = (renderStagePass.stage() == RenderStage::REFLECTION
+                                                        ? _skyboxRenderStateReflectedHash
+                                                        : _skyboxRenderStateHash);
+        pipeDesc._shaderProgram = _skyShader;
     }
 
+    cmd.pipeline(_context.newPipeline(pipeDesc));
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }
 

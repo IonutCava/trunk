@@ -180,9 +180,13 @@ void DeferredShadingRenderer::secondPass(
     _deferredBuffer._rt->bind(3, RTAttachment::Type::Colour, 3);
     _lightTexture->bind(4);
 
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
+    pipelineDescriptor._shaderProgram = _previewDeferredShader;
+
     GenericDrawCommand cmd;
-    cmd.stateHash(_context.gfx().getDefaultStateBlock(true));
-    cmd.shaderProgram(_previewDeferredShader);
+    cmd.pipeline(_context.gfx().newPipeline(pipelineDescriptor));
+    
     if (_debugView) {
         _previewDeferredShader->Uniform("texDiffuse0", 4);
         if (_renderQuads[1]->onRender(_context.gfx().getRenderStage())) {
@@ -203,7 +207,9 @@ void DeferredShadingRenderer::secondPass(
 
     _deferredShader->Uniform("lightCount", (I32)_cachedLightCount);
 
-    cmd.shaderProgram(_deferredShader);
+    pipelineDescriptor._shaderProgram = _deferredShader;
+    cmd.pipeline(_context.gfx().newPipeline(pipelineDescriptor));
+
     if (_renderQuads[_debugView ? 4 : 0]->onRender(_context.gfx().getRenderStage())) {
         cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
         _context.gfx().draw(cmd);

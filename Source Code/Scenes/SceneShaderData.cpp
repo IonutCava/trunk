@@ -9,15 +9,15 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     : _context(context),
       _sceneShaderData(nullptr)
 {
-    ShaderBufferParams params;
-    params._primitiveCount = 1;
-    params._primitiveSizeInBytes = sizeof(SceneShaderBufferData);
-    params._ringBufferLength = 1;
-    params._unbound = false;
-    params._initialData = &_bufferData;
-    params._updateFrequency = BufferUpdateFrequency::OFTEN;
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._primitiveCount = 1;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(SceneShaderBufferData);
+    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._unbound = false;
+    bufferDescriptor._initialData = &_bufferData;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
 
-    _sceneShaderData = _context.newSB(params);
+    _sceneShaderData = _context.newSB(bufferDescriptor);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
     shadowingSettings(0.0000002f, 0.0002f, 200.0f, 350.0f);
 }

@@ -399,8 +399,7 @@ class vec2 {
 template <typename T, typename U>
 inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor);
 
-/// lerp between the 2 specified vectors by the specified amount for each
-/// component
+/// lerp between the 2 specified vectors by the specified amount for each component
 template <typename T>
 inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor);
 template <typename T>
