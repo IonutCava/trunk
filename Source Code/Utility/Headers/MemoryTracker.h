@@ -88,7 +88,7 @@ class MemoryTracker {
         }
         WriteLock w_lock(_mutex);
         MemoryTracker::Lock lock(*this);
-        hashAlg::insert(_map, hashAlg::makePair(p, Entry(file, line, size)));
+        hashAlg::insert(_map, std::make_pair(p, Entry(file, line, size)));
     }
 
     inline void Remove(void* p) {

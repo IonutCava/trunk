@@ -186,26 +186,23 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 #define SERVER_LOG_FILE "server.log"
 #endif  // SERVER_LOG_FILE
 
+#define BOOST_IMP 0
+#define STL_IMP 1
+#define EASTL_IMP 2
+
 /// Use eastl or stl string classes
-/// 0 = EASTL
-/// 1 = STL
 #ifndef STRING_IMP
-#define STRING_IMP 1
+#define STRING_IMP STL_IMP
 #endif  // STRING_IMP
 
 /// Use boost, eastl or stl vector
-/// 0 = EASTL
-/// 1 = STL
 #ifndef VECTOR_IMP
-#define VECTOR_IMP 1
+#define VECTOR_IMP STL_IMP
 #endif  // VECTOR_IMP
 
 /// Use boost, eastl or stl hash maps / unordered maps
-/// 0 = BOOST
-/// 1 = EASTL
-/// 2 = STL
 #ifndef HASH_MAP_IMP
-#define HASH_MAP_IMP 2
+#define HASH_MAP_IMP STL_IMP
 #endif  // HASH_MAP_IMP
 
 /// Enable move semantings in EASTL libraries

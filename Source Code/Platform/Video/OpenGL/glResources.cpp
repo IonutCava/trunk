@@ -7,7 +7,7 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
-#include <glim.h>
+#include <GLIM/glim.h>
 
 namespace Divide {
 namespace GLUtil {

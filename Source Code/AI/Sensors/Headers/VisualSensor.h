@@ -33,7 +33,6 @@
 #define _AI_VISUAL_SENSOR_H_
 
 #include "Sensor.h"
-#include "Utility/Headers/HashMap.h"
 
 namespace Divide {
 class SceneGraphNode;

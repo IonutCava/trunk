@@ -32,9 +32,9 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
-#include "Utility/Headers/Vector.h"
-#include "Utility/Headers/String.h"
-#include "Utility/Headers/HashMap.h"
+#include "Core/TemplateLibraries/Headers/Vector.h"
+#include "Core/TemplateLibraries/Headers/String.h"
+#include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
 
@@ -538,7 +538,7 @@ inline void DELETE_HASHMAP(hashMapImpl<K, V, HashFun>& map) {
         for (typename hashMapImpl<K, V, HashFun>::value_type iter : map) {
             delete iter.second;
         }
-        hashAlg::fastClear(map);
+        map.clear();
     }
 }
 #define SET_DELETE_HASHMAP_FRIEND                                           \

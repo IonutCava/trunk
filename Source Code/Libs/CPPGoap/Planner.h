@@ -13,7 +13,7 @@
 #include "WorldState.h"
 
 #include <ostream>
-#include "Utility/Headers/Vector.h"
+#include <vector>
 
 namespace goap {
     class Planner {
@@ -21,8 +21,8 @@ namespace goap {
         // A master lookup table of ID-to-Node; useful during the action replay
         std::unordered_map<int, Node> known_nodes_;
 
-        vectorImpl<Node> open_;   // The A* open list
-        vectorImpl<Node> closed_; // The A* closed list
+        std::vector<Node> open_;   // The A* open list
+        std::vector<Node> closed_; // The A* closed list
 
         /**
          Is the given worldstate a member of the closed list? (And by that we mean,
@@ -38,7 +38,7 @@ namespace goap {
          @param ws the worldstate in question
          @return a pointer to the note if found, end(open_) if not
          */
-        vectorImpl<goap::Node>::iterator memberOfOpen(const WorldState& ws);
+        std::vector<goap::Node>::iterator memberOfOpen(const WorldState& ws);
 
         /**
          Pops the first Node from the 'open' list, moves it to the 'closed' list, and
@@ -69,12 +69,12 @@ namespace goap {
         /**
          Useful when you're debugging a GOAP plan: simply dumps the open list to stdout.
         */
-        void printOpenList(stringImpl& output) const;
+        void printOpenList(std::string& output) const;
 
         /**
          Useful when you're debugging a GOAP plan: simply dumps the closed list to stdout.
         */
-        void printClosedList(stringImpl& output) const;
+        void printClosedList(std::string& output) const;
 
         /**
          Actually attempt to formulate a plan to get from start to goal, given a pool of
@@ -85,6 +85,6 @@ namespace goap {
          @return a vector of Actions in REVERSE ORDER - use a reverse_iterator on this to get stepwise-order
          @exception std::runtime_error if no plan could be made with the available actions and states
          */
-        vectorImpl<const Action*> plan(const WorldState& start, const WorldState& goal, const vectorImpl<const Action*>& actions);
+        std::vector<const Action*> plan(const WorldState& start, const WorldState& goal, const std::vector<const Action*>& actions);
     };
 }

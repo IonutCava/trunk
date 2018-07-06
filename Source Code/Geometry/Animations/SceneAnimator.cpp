@@ -127,7 +127,7 @@ void SceneAnimator::extractAnimations(const aiScene* pScene) {
     // correct id
     U16 i = 0;
     for (AnimEvaluator& animation : _animations) {
-        _animationNameToID.insert(hashAlg::makePair(animation.name(), i++));
+        _animationNameToID.insert(std::make_pair(animation.name(), i++));
     }
 }
 
@@ -231,7 +231,7 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
         vectorAlg::vecSize lineEntry =
             static_cast<vectorAlg::vecSize>(_skeletonLinesContainer.size());
         it = hashAlg::insert(lineMap,
-                             hashAlg::makePairCpy(frameIndex, lineEntry)).first;
+                             std::make_pair(frameIndex, lineEntry)).first;
 
         _skeletonLinesContainer.push_back(vectorImpl<Line>());
     }

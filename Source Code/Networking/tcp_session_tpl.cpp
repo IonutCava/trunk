@@ -1,9 +1,8 @@
-#include "tcp_session_tpl.h"
-#include <fstream>
-
-#include "OPCodesTpl.h"
+#include "Headers/tcp_session_tpl.h"
+#include "Headers/OPCodesTpl.h"
 
 #include <boost/archive/text_iarchive.hpp>
+#include <fstream>
 ///////////////////////////////////////////////////////////////////////////////////////
 //                                     TCP //
 ///////////////////////////////////////////////////////////////////////////////////////

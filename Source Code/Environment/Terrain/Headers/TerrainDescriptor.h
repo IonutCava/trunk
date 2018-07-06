@@ -55,11 +55,11 @@ class TerrainDescriptor : public Resource {
     bool unload() { return true; }
 
     void addVariable(const stringImpl& name, const stringImpl& value) {
-        hashAlg::insert(_variables, hashAlg::makePair(name, value));
+        hashAlg::insert(_variables, std::make_pair(name, value));
     }
 
     void addVariable(const stringImpl& name, F32 value) {
-        hashAlg::insert(_variablesf, hashAlg::makePair(name, value));
+        hashAlg::insert(_variablesf, std::make_pair(name, value));
     }
 
     void setTextureLayerCount(U8 count) { _textureLayers = count; }

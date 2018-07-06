@@ -334,7 +334,7 @@ GUIButton* GUI::addButton(const stringImpl& ID,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, btn);
     } else {
-        hashAlg::insert(_guiStack, hashAlg::makePair(ID, btn));
+        hashAlg::insert(_guiStack, std::make_pair(ID, btn));
     }
 
     return btn;
@@ -349,7 +349,7 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, box);
     } else {
-        hashAlg::insert(_guiStack, hashAlg::makePair(id, box));
+        hashAlg::insert(_guiStack, std::make_pair(id, box));
     }
 
     return box;
@@ -381,7 +381,7 @@ GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, t);
     } else {
-        hashAlg::insert(_guiStack, hashAlg::makePair(id, t));
+        hashAlg::insert(_guiStack, std::make_pair(id, t));
     }
 
     fmt_text.empty();
@@ -396,7 +396,7 @@ GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, flash);
     } else {
-        hashAlg::insert(_guiStack, hashAlg::makePair(id, flash));
+        hashAlg::insert(_guiStack, std::make_pair(id, flash));
     }
     return flash;
 }

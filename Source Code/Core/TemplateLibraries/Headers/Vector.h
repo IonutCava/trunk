@@ -27,37 +27,24 @@
    IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
- */
+   */
 
-#ifndef _XML_PARSER_H_
-#define _XML_PARSER_H_
+#ifndef _VECTOR_H_
+#define _VECTOR_H_
+#include "config.h"
+/// boost vectors have a completely different interface,
+/// so we can't actually use them
+#if defined(VECTOR_IMP) && VECTOR_IMP == BOOST_IMP
+#undef VECTOR_IMP
+#define VECTOR_IMP STL_IMP
+#endif
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <string>
-
-namespace Divide {
-
-class Scene;
-class Texture;
-class Material;
-class SceneManager;
-
-namespace XML {
-/// Parent Function
-std::string loadScripts(const std::string& file);
-
-/// Child Functions
-void loadConfig(const std::string& file);
-void loadScene(const std::string& sceneName, SceneManager& sceneMgr);
-void loadGeometry(const std::string& file, Scene* const scene);
-void loadTerrain(const std::string& file, Scene* const scene);
-Material* loadMaterial(const std::string& file);
-void dumpMaterial(Material& mat);
-
-Material* loadMaterialXML(const std::string& location,
-                          bool rendererDependent = true);
-};  // namespace XML
-};  // namespace Divide
+#if defined(VECTOR_IMP) && VECTOR_IMP == BOOST_IMP
+#include "BoostVector.h"
+#elif defined(VECTOR_IMP) && VECTOR_IMP == EASTL_IMP
+#include "EASTLVector.h"
+#else  // defined(VECTOR_IMP) && VECTOR_IMP == STL_IMP
+#include "STLVector.h"
+#endif  // defined(VECTOR_IMP)
 
 #endif

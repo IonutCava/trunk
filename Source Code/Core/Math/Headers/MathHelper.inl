@@ -282,7 +282,7 @@ inline stringImpl& Ltrim(stringImpl& s) {
 
 inline stringImpl& Rtrim(stringImpl& s) {
     s.erase(
-        std::find_if(std::rend(s), std::rbegin(s),
+        std::find_if(std::rbegin(s), std::rend(s),
                      std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
         std::end(s));
     return s;

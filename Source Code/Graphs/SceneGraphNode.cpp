@@ -141,7 +141,7 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
     hashAlg::pair<NodeChildren::iterator, bool> result;
     // Try and add it to the map
     WriteLock w_lock(_childrenLock);
-    result = hashAlg::insert(_children, hashAlg::makePair(node->getName(), node));
+    result = hashAlg::insert(_children, std::make_pair(node->getName(), node));
     // If we had a collision (same name?)
     if (!result.second) {
         /// delete the old SceneGraphNode and add this one instead

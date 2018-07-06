@@ -32,9 +32,10 @@
 #ifndef _LOCALE_H_
 #define _LOCALE_H_
 
-#define DEFAULT_LANG "enGB"
+static const char* DEFAULT_LANG = "enGB";
 
-#include "HashMap.h"
+#include "Core/TemplateLibraries/Headers/HashMap.h"
+#include "Core/TemplateLibraries/Headers/String.h"
 
 namespace Divide {
 namespace Locale {

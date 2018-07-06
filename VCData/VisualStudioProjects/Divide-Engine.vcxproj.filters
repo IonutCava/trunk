@@ -176,6 +176,12 @@
     <Filter Include="Physics\PhysX\Headers">
       <UniqueIdentifier>{719e71b7-3874-4e2f-a0f7-0cefea42350d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\TemplateLibraries">
+      <UniqueIdentifier>{9759e5b8-1ccd-41fe-8b74-442041decd05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\TemplateLibraries\Headers">
+      <UniqueIdentifier>{cd131efd-52a5-4103-b68c-68ba4aa2e949}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -756,9 +762,6 @@
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Vector.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h">
       <Filter>GUI\Headers</Filter>
     </ClInclude>
@@ -843,12 +846,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\Headers\FrameListener.h">
       <Filter>Rendering\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\HashMap.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\String.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
@@ -897,6 +894,39 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\WindowManager.h">
       <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\HashMap.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\String.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\Vector.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\BoostHashMap.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLHashMap.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLHashMap.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLString.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLString.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\BoostVector.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLVector.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLVector.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

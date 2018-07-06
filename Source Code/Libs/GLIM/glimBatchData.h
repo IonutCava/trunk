@@ -8,10 +8,9 @@
 #define GLIM_GLIMBATCHDATA_H
 
 #include "Declarations.h"
-#include <map>
-#include "Utility/Headers/String.h"
-#include "Utility/Headers/Vector.h"
-#include "Utility/Headers/HashMap.h"
+#include "Core/TemplateLibraries/Headers/Vector.h"
+#include "Core/TemplateLibraries/Headers/HashMap.h"
+#include "Core/TemplateLibraries/Headers/String.h"
 
 namespace NS_GLIM
 {
@@ -132,7 +131,7 @@ namespace NS_GLIM
         bool m_bUploadedToGPU;
         // Whether VBOs where ever created.
         bool m_bCreatedVBOs;
-        std::vector<Glim4ByteData> m_bufferData;
+        vectorImpl<Glim4ByteData> m_bufferData;
 #ifdef AE_RENDERAPI_OPENGL
         unsigned int m_VertexArrayObjectID;
         // GL attrib location of the vertex data in the shader program

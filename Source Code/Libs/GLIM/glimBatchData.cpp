@@ -372,7 +372,7 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
         } else {
             iAttributeArray =
                 glGetAttribLocation(uiCurrentProgram, it->first.c_str());
-            attribs.insert(std::makePair(uiCurrentProgram, iAttributeArray));
+            attribs.insert(std::make_pair(uiCurrentProgram, iAttributeArray));
         }
 
         if (iAttributeArray < 0) {

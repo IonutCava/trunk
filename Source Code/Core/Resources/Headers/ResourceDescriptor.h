@@ -32,10 +32,7 @@
 #ifndef RESOURCE_DESCRIPTOR_H_
 #define RESOURCE_DESCRIPTOR_H_
 
-#include "Utility/Headers/String.h"
 #include "Platform/Platform/Headers/PlatformDefines.h"
-
-#include <boost/shared_ptr.hpp>
 
 namespace Divide {
 

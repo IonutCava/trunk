@@ -2,9 +2,9 @@
 #define OPCODE_ENUM OPcodes
 #endif
 
-#include "Client.h"
-#include "ASIO.h"
-#include "OPCodesTpl.h"
+#include "Headers/Client.h"
+#include "Headers/ASIO.h"
+#include "Headers/OPCodesTpl.h"
 
 #include <boost/archive/text_iarchive.hpp>
 

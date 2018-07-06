@@ -4,8 +4,6 @@
 #include "Core/Math/Headers/MathHelper.h"
 #include "Utility/Headers/Localization.h"
 
-#include <algorithm>
-
 namespace Divide {
 
 /// Register a new Frame Listener to be processed every frame

@@ -1,7 +1,6 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
-#include "Utility/Headers/String.h"
 #include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {

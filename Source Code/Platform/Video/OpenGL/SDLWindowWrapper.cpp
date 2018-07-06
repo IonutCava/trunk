@@ -12,7 +12,7 @@
 #include <CEGUI/CEGUI.h>
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 
-#include <glim.h>
+#include <GLIM/glim.h>
 #include <chrono>
 #include <thread>
 

@@ -277,7 +277,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     inline size_t partitionBuffer(U32 currentIndexCount) {
-        _partitions.push_back(vectorAlg::makePair(
+        _partitions.push_back(std::make_pair(
             getIndexCount() - currentIndexCount, currentIndexCount));
         _currentPartitionIndex = to_uint(_partitions.size());
         _minPosition.push_back(std::numeric_limits<F32>::max());

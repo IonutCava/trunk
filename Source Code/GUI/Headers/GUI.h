@@ -32,7 +32,6 @@
 #ifndef GUI_H_
 #define GUI_H_
 
-#include "Utility/Headers/HashMap.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"

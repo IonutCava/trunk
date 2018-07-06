@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include "Utility/Headers/HashMap.h"
+#include <unordered_map>
 
 namespace goap {
     struct WorldState;
 
     class Action {
     public: 
-        typedef hashMapImpl<int, bool> operations;
-        typedef hashMapImpl<int, bool>::const_iterator operationsIterator;
+        typedef std::unordered_map<int, bool> operations;
+        typedef std::unordered_map<int, bool>::const_iterator operationsIterator;
 
     private:
         std::string name_; // The human-readable action name

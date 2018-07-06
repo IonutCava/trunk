@@ -363,7 +363,7 @@ class TextureDescriptor : public PropertyDescriptor {
                 return GFXImageFormat::DEPTH_COMPONENT;
 
             default:
-            	return internalFormat;
+                break;
         };
 
         return internalFormat;

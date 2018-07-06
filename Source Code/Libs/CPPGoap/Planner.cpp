@@ -34,11 +34,11 @@ bool goap::Planner::memberOfClosed(const WorldState& ws) const {
     return true;
 }
 
-vectorImpl<goap::Node>::iterator goap::Planner::memberOfOpen(const WorldState& ws) {
+std::vector<goap::Node>::iterator goap::Planner::memberOfOpen(const WorldState& ws) {
     return std::find_if(std::begin(open_), std::end(open_), [&](const Node& n) { return n.ws_ == ws; });
 }
 
-void goap::Planner::printOpenList(stringImpl& output) const {
+void goap::Planner::printOpenList(std::string& output) const {
     std::stringstream ss;
     for (const auto& n : open_) {
         ss << n << "\n";
@@ -46,7 +46,7 @@ void goap::Planner::printOpenList(stringImpl& output) const {
     output = ss.str();
 }
 
-void goap::Planner::printClosedList(stringImpl& output) const {
+void goap::Planner::printClosedList(std::string& output) const {
     std::stringstream ss;
     for (const auto& n : closed_) {
         ss << n << "\n";
@@ -54,10 +54,10 @@ void goap::Planner::printClosedList(stringImpl& output) const {
     output = ss.str();
 }
 
-vectorImpl<const goap::Action*> goap::Planner::plan(const WorldState& start, const WorldState& goal, const vectorImpl<const Action*>& actions) {
+std::vector<const goap::Action*> goap::Planner::plan(const WorldState& start, const WorldState& goal, const std::vector<const Action*>& actions) {
     if (start.meetsGoal(goal)) {
         //throw std::runtime_error("Planner cannot plan when the start state and the goal state are the same!");
-        return vectorImpl<const goap::Action*>();
+        return std::vector<const goap::Action*>();
     }
 
     // Feasible we'd re-use a planner, so clear out the prior results
@@ -89,7 +89,7 @@ vectorImpl<const goap::Action*> goap::Planner::plan(const WorldState& start, con
 
         // Is our current state the goal state? If so, we've found a path, yay.
         if (current.ws_.meetsGoal(goal)) {
-            vectorImpl<const Action*> the_plan;
+            std::vector<const Action*> the_plan;
             do {
                 the_plan.push_back(current.action_);
                 current = known_nodes_.at(current.parent_id_);
@@ -134,5 +134,5 @@ vectorImpl<const goap::Action*> goap::Planner::plan(const WorldState& start, con
 
     // If there's nothing left to evaluate, then we have no possible path left
     //throw std::runtime_error("A* planner could not find a path from start to goal");
-    return vectorImpl<const goap::Action*>();
+    return std::vector<const goap::Action*>();
 }

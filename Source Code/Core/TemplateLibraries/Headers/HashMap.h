@@ -29,47 +29,19 @@
 
  */
 
-#ifndef STRING_H_
-#define STRING_H_
+#ifndef _HASH_MAP_H_
+#define _HASH_MAP_H_
 
-#include "config.h"
+#include <algorithm>
+template <typename Key>
+using HashType = std::hash<Key>;
 
-/// Although the string implementation replaces most of the string instances in
-/// the code,
-/// some are left as std::string for compatibility reasons (mainly with
-/// algorithms and external libraries) -Ionut
-
-#if defined(STRING_IMP) && STRING_IMP == 0
-#include <EASTL/string.h>
-#include <sstream>
-
-namespace stringAlg = eastl;
-
-typedef eastl::string stringImpl;
-
-namespace eastl {
-typedef eastl_size_t stringSize;
-inline const char* toBase(const std::string& input) { return input.c_str(); }
-
-inline const char* fromBase(const eastl::string& input) {
-    return input.c_str();
-}
-
-};
-
-#else  // defined(STRING_IMP) && STRING_IMP == 1
-#include <string>
-namespace stringAlg = std;
-
-typedef std::string stringImpl;
-
-namespace std {
-typedef size_t stringSize;
-inline const std::string& toBase(const std::string& input) { return input; }
-
-inline const char* fromBase(const std::string& input) { return input.c_str(); }
-
-};
-#endif  // defined(VECTOR_IMP)
+#if defined(HASH_MAP_IMP) && HASH_MAP_IMP == BOOST_IMP
+#include "BOOSTHashMap.h"
+#elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == EASTL_IMP
+#include "EASTLHashMap.h"
+#else  // defined(HASH_MAP_IMP) && HASH_MAP_IMP == STL_IMP
+#include "STLHashMap.h"
+#endif
 
 #endif

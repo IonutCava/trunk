@@ -64,7 +64,7 @@ class AIEntity : public GUIDWrapper {
    public:
     enum class PresetAgentRadius : U32 {
         AGENT_RADIUS_SMALL = 0,
-        AGENT_RADIUS_MEDIUM = 1,  //< normal human
+        AGENT_RADIUS_MEDIUM = 1,
         AGENT_RADIUS_LARGE = 2,
         AGENT_RADIUS_EXTRA_LARGE = 3,
         COUNT

@@ -2,9 +2,9 @@
 #define OPCODE_ENUM OPcodes
 #endif
 
-#include "OPCodesTpl.h"
-#include "ASIO.h"
-#include "Client.h"
+#include "Headers/OPCodesTpl.h"
+#include "Headers/ASIO.h"
+#include "Headers/Client.h"
 #include "Core/Math/Headers/MathHelper.h"
 
 namespace Divide {

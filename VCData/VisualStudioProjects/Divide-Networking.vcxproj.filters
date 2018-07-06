@@ -1,50 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Headers">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Libs\src\DivideNetworking\ASIO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\DivideNetworking\ByteBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\DivideNetworking\tcp_session_tpl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\DivideNetworking\Client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Networking\ASIO.cpp" />
+    <ClCompile Include="..\..\Source Code\Networking\ByteBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Networking\Client.cpp" />
+    <ClCompile Include="..\..\Source Code\Networking\tcp_session_tpl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\ASIO.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\ASIO.h">
+      <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\ByteBuffer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\ByteBuffer.h">
+      <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\ByteConverter.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\ByteConverter.h">
+      <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Client.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\Client.h">
+      <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\WorldPacket.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\OPCodesTpl.h">
+      <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\OPCodesTpl.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\Singleton.h">
+      <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\tcp_session_tpl.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\tcp_session_tpl.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Networking\Headers\WorldPacket.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

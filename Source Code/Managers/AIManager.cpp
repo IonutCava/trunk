@@ -165,7 +165,7 @@ void AIManager::registerTeam(AITeam* const team) {
     DIVIDE_ASSERT(_aiTeams.find(teamID) == std::end(_aiTeams),
                   "AIManager error: attempt to double register an AI team!");
 
-    hashAlg::insert(_aiTeams, hashAlg::makePair(teamID, team));
+    hashAlg::insert(_aiTeams, std::make_pair(teamID, team));
 }
 
 void AIManager::unregisterTeam(AITeam* const team) {

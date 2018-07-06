@@ -44,7 +44,6 @@
 
 #include <sstream>
 #include <cctype>
-#include <algorithm>
 
 namespace Divide {
 

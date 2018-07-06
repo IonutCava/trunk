@@ -29,35 +29,19 @@
 
  */
 
-#ifndef _XML_PARSER_H_
-#define _XML_PARSER_H_
+#ifndef _STRING_H_
+#define _STRING_H_
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <string>
+#include "config.h"
 
-namespace Divide {
+/// Although the string implementation replaces most of the string instances in
+/// the code, some are left as std::string for compatibility reasons (mainly with
+/// algorithms and external libraries) -Ionut
 
-class Scene;
-class Texture;
-class Material;
-class SceneManager;
+#if defined(STRING_IMP) && STRING_IMP == EASTL_IMP
+#include "EASTLString.h"
+#else  // defined(STRING_IMP) && STRING_IMP == STL_IMP
+#include "STLString.h"
+#endif // defined(STRING_IMP)
 
-namespace XML {
-/// Parent Function
-std::string loadScripts(const std::string& file);
-
-/// Child Functions
-void loadConfig(const std::string& file);
-void loadScene(const std::string& sceneName, SceneManager& sceneMgr);
-void loadGeometry(const std::string& file, Scene* const scene);
-void loadTerrain(const std::string& file, Scene* const scene);
-Material* loadMaterial(const std::string& file);
-void dumpMaterial(Material& mat);
-
-Material* loadMaterialXML(const std::string& location,
-                          bool rendererDependent = true);
-};  // namespace XML
-};  // namespace Divide
-
-#endif
+#endif //_STRING_H_

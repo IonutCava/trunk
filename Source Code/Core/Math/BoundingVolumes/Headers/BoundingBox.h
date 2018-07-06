@@ -34,7 +34,6 @@
 
 #include "Core/Math/Headers/Ray.h"
 #include "Utility/Headers/GUIDWrapper.h"
-#include <algorithm>
 
 namespace Divide {
 

@@ -52,7 +52,7 @@ bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
 
     if (g_recordInput) {
         vectorAlg::emplace_back(
-            _keyLog, vectorAlg::makePair(arg._key, InputState::PRESSED));
+            _keyLog, std::make_pair(arg._key, InputState::PRESSED));
     }
 
     return true;
@@ -67,7 +67,7 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
 
     if (g_recordInput) {
         vectorAlg::emplace_back(
-            _keyLog, vectorAlg::makePair(arg._key, InputState::RELEASED));
+            _keyLog, std::make_pair(arg._key, InputState::RELEASED));
     }
 
     return true;

@@ -48,7 +48,7 @@ void ResourceCache::add(const stringImpl& name, Resource* const res) {
     }
     res->setName(name);
     WriteLock w_lock(_creationMutex);
-    hashAlg::insert(_resDB, hashAlg::makePair(name, res));
+    hashAlg::insert(_resDB, std::make_pair(name, res));
 }
 
 Resource* ResourceCache::loadResource(const stringImpl& name) {

@@ -38,7 +38,6 @@
 
 #include "Bone.h"
 #include <assimp/anim.h>
-#include "Utility/Headers/HashMap.h"
 
 struct aiAnimation;
 

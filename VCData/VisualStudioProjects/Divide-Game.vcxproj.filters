@@ -328,15 +328,6 @@
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp">
       <Filter>AI\ActionInterface</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Node.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp">
       <Filter>AI\PathFinding</Filter>
     </ClCompile>
@@ -433,14 +424,23 @@
     <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Planner.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\AISceneImpl.cpp">
       <Filter>AI\ActionInterface</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAI.cpp">
       <Filter>Scenes\WarScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Action.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Node.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Planner.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\WorldState.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -568,15 +568,6 @@
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h">
       <Filter>AI\ActionInterface\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Node.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h">
       <Filter>AI\Headers</Filter>
     </ClInclude>
@@ -670,7 +661,16 @@
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h">
       <Filter>Scenes\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Planner.h">
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Action.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Node.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Planner.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\WorldState.h">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
   </ItemGroup>

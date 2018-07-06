@@ -2,7 +2,7 @@
 #define _PATCH_H_
 
 #include "Core/Headers/Singleton.h"
-#include "Utility/Headers/Vector.h"
+#include "Core/TemplateLibraries/Headers/Vector.h"
 #include "DataTypes.h"
 
 namespace Divide {
