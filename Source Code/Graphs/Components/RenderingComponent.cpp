@@ -213,8 +213,9 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
 void RenderingComponent::renderGeometry(const bool state) {
     _renderGeometry = state;
 
-    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderGeometry(state);
         }
@@ -224,8 +225,9 @@ void RenderingComponent::renderGeometry(const bool state) {
 void RenderingComponent::renderWireframe(const bool state) {
     _renderWireframe = state;
     
-    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderWireframe(state);
         }
@@ -237,8 +239,9 @@ void RenderingComponent::renderBoundingBox(const bool state) {
     if (!state) {
         _boundingBoxPrimitive->paused(true);
     }
-    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderBoundingBox(state);
         }
@@ -250,8 +253,9 @@ void RenderingComponent::renderSkeleton(const bool state) {
     if (!state && _skeletonPrimitive) {
         _skeletonPrimitive->paused(true);
     }
-    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderSkeleton(state);
         }
@@ -261,8 +265,9 @@ void RenderingComponent::renderSkeleton(const bool state) {
 void RenderingComponent::castsShadows(const bool state) {
     _castsShadows = state;
     
-    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->castsShadows(_castsShadows);
         }
@@ -272,8 +277,9 @@ void RenderingComponent::castsShadows(const bool state) {
 void RenderingComponent::receivesShadows(const bool state) {
     _receiveShadows = state;
     
-    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->receivesShadows(_receiveShadows);
         }

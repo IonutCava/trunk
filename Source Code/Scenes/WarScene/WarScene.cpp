@@ -251,11 +251,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     cylinder[3] = _sceneGraph->findNode("cylinderSW").lock();
     cylinder[4] = _sceneGraph->findNode("cylinderSE").lock();
 
+    U32 temp = 0;
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable =
-            cylinder[i]->getChildren().front()->getComponent<RenderingComponent>();
+            cylinder[i]->getChild(0, temp).getComponent<RenderingComponent>();
         renderable->getMaterialInstance()->setDoubleSided(true);
-        cylinder[i]->getChildren().front()->getNode()->getMaterialTpl()->setDoubleSided(true);
+        cylinder[i]->getChild(0, temp).getNode()->getMaterialTpl()->setDoubleSided(true);
     }
 
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();
@@ -320,9 +321,9 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     SceneGraphNode_ptr flag;
     flag = _sceneGraph->findNode("flag").lock();
-    RenderingComponent* const renderable = flag->getChildren().front()->getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = flag->getChild(0, temp).getComponent<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
-    Material* mat = flag->getChildren().front()->getNode()->getMaterialTpl();
+    Material* mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
     mat->setAmbient(vec4<F32>(0.01f));
     flag->setActive(false);
@@ -334,10 +335,8 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flag0->setSelectable(false);
     flag0->usageContext(flag->usageContext());
     PhysicsComponent* flagPComp = flag0->getComponent<PhysicsComponent>();
-    NavigationComponent* flagNComp =
-        flag0->getComponent<NavigationComponent>();
-    RenderingComponent* flagRComp =
-        flag0->getChildren().front()->getComponent<RenderingComponent>();
+    NavigationComponent* flagNComp = flag0->getComponent<NavigationComponent>();
+    RenderingComponent* flagRComp = flag0->getChild(0, temp).getComponent<RenderingComponent>();
 
     flagPComp->physicsGroup(
         flag->getComponent<PhysicsComponent>()->physicsGroup());
@@ -355,7 +354,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagPComp = flag1->getComponent<PhysicsComponent>();
     flagNComp = flag1->getComponent<NavigationComponent>();
-    flagRComp = flag1->getChildren().front()->getComponent<RenderingComponent>();
+    flagRComp = flag1->getChild(0, temp).getComponent<RenderingComponent>();
 
     flagPComp->physicsGroup(
         flag->getComponent<PhysicsComponent>()->physicsGroup());

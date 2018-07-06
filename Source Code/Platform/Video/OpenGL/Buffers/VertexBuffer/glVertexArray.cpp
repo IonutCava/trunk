@@ -300,9 +300,11 @@ void glVertexArray::draw(const GenericDrawCommand& command,
 
     DIVIDE_ASSERT(command.primitiveType() != PrimitiveType::COUNT,
                   "glVertexArray error: Draw command's type is not valid!");
+    // Get the OpenGL specific command from the generic one
+    const IndirectDrawCommand& cmd = command.cmd();
     // Instance count can be generated programmatically,
     // so we need to make sure it's valid
-    if (command.cmd().primCount == 0) {
+    if (cmd.primCount == 0) {
         return;
     }
     // Make sure the buffer is current
@@ -312,7 +314,7 @@ void glVertexArray::draw(const GenericDrawCommand& command,
   
     static const size_t cmdSize = sizeof(IndirectDrawCommand);
 
-    bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
+    bufferPtr offset = (bufferPtr)(cmd.baseInstance * cmdSize);
     U16 drawCount = command.drawCount();
     GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
 
@@ -325,8 +327,8 @@ void glVertexArray::draw(const GenericDrawCommand& command,
         }
     } else {
         if (drawCount > 1) {
-            vectorImpl<GLsizei> count(drawCount, command.cmd().indexCount);
-            vectorImpl<U32> indices(drawCount, command.cmd().firstIndex);
+            vectorImpl<GLsizei> count(drawCount, cmd.indexCount);
+            vectorImpl<U32> indices(drawCount, cmd.firstIndex);
             if (command.renderGeometry()) {
                 glMultiDrawElements(mode, count.data(), _formatInternal, (bufferPtr*)indices.data(), drawCount);
             }
@@ -335,10 +337,10 @@ void glVertexArray::draw(const GenericDrawCommand& command,
             }
         } else {
             if (command.renderGeometry()) {
-                glDrawElements(mode, command.cmd().indexCount, _formatInternal, bufferOffset(command.cmd().firstIndex));
+                glDrawElements(mode, cmd.indexCount, _formatInternal, bufferOffset(cmd.firstIndex));
             }
             if (command.renderWireframe()) {
-                glDrawElements(GL_LINE_LOOP, command.cmd().indexCount, _formatInternal, bufferOffset(command.cmd().firstIndex));
+                glDrawElements(GL_LINE_LOOP, cmd.indexCount, _formatInternal, bufferOffset(cmd.firstIndex));
             }
         }
     }

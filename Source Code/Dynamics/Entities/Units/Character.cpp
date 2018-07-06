@@ -111,8 +111,9 @@ void Character::playAnimation(I32 index) {
         if (anim) {
             anim->playAnimation(index);
         } else {
-            for (SceneGraphNode_ptr child : node->getChildren()) {
-                anim = child->getComponent<AnimationComponent>();
+            U32 childCount = node->getChildCount();
+            for (U32 i = 0; i < childCount; ++i) {
+                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
                 if (anim) {
                     anim->playAnimation(index);
                 }
@@ -128,8 +129,9 @@ void Character::playNextAnimation() {
         if (anim) {
             anim->playNextAnimation();
         } else {
-            for (SceneGraphNode_ptr child :  node->getChildren()) {
-                anim = child->getComponent<AnimationComponent>();
+            U32 childCount = node->getChildCount();
+            for (U32 i = 0; i < childCount; ++i) {
+                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
                 if (anim) {
                     anim->playNextAnimation();
                 }
@@ -145,8 +147,9 @@ void Character::playPreviousAnimation() {
         if (anim) {
             anim->playPreviousAnimation();
         } else {
-            for (SceneGraphNode_ptr child : node->getChildren()) {
-                anim = child->getComponent<AnimationComponent>();
+            U32 childCount = node->getChildCount();
+            for (U32 i = 0; i < childCount; ++i) {
+                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
                 if (anim) {
                     anim->playPreviousAnimation();
                 }
@@ -162,8 +165,9 @@ void Character::pauseAnimation(bool state) {
         if (anim) {
             anim->playAnimations(state);
         } else {
-            for (SceneGraphNode_ptr child : node->getChildren()) {
-                anim = child->getComponent<AnimationComponent>();
+            U32 childCount = node->getChildCount();
+            for (U32 i = 0; i < childCount; ++i) {
+                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
                 if (anim) {
                     anim->playAnimations(state);
                 }

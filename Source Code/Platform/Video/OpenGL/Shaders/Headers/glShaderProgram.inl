@@ -275,93 +275,93 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat4<F32>& va
 
 
 void glShaderProgram::Uniform(const stringImpl& ext, U32 value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext, I32 value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext, F32 value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vec2<F32>& value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vec2<I32>& value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vec2<U16>& value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vec3<F32>& value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vec4<F32>& value) {
-    Uniform(cachedLocation(ext), value);
+    Uniform(getUniformLocation(ext), value);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const mat3<F32>& value,
                               bool rowMajor) {
-    Uniform(cachedLocation(ext), value, rowMajor);
+    Uniform(getUniformLocation(ext), value, rowMajor);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const mat4<F32>& value,
                               bool rowMajor) {
-    Uniform(cachedLocation(ext), value, rowMajor);
+    Uniform(getUniformLocation(ext), value, rowMajor);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<I32>& values) {
-    Uniform(cachedLocation(ext), values);
+    Uniform(getUniformLocation(ext), values);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<F32>& values) {
-    Uniform(cachedLocation(ext), values);
+    Uniform(getUniformLocation(ext), values);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<vec2<F32> >& values) {
-    Uniform(cachedLocation(ext), values);
+    Uniform(getUniformLocation(ext), values);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<vec3<F32> >& values) {
-    Uniform(cachedLocation(ext), values);
+    Uniform(getUniformLocation(ext), values);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<vec4<F32> >& values) {
-    Uniform(cachedLocation(ext), values);
+    Uniform(getUniformLocation(ext), values);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<mat3<F32> >& values,
                               bool rowMajor) {
-    Uniform(cachedLocation(ext), values, rowMajor);
+    Uniform(getUniformLocation(ext), values, rowMajor);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<mat4<F32> >& values,
                               bool rowMajor) {
-    Uniform(cachedLocation(ext), values, rowMajor);
+    Uniform(getUniformLocation(ext), values, rowMajor);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext, U8 slot) {
-    Uniform(cachedLocation(ext), slot);
+    Uniform(getUniformLocation(ext), slot);
 }
 
 }; //namespace Divide

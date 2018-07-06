@@ -15,34 +15,33 @@ Transform::Transform(const Quaternion<F32>& orientation,
     _transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
-    _worldMatrix.identity();
 }
 
-Transform::~Transform() {}
+Transform::~Transform()
+{
+}
 
-const mat4<F32>& Transform::getMatrix() {
+bool Transform::getMatrix(mat4<F32>& matOut) {
+    bool wasRebuilt = false;
     if (_dirty) {
+        WriteLock w_lock(_lock);
         if (_rebuildMatrix) {
-            {
-                WriteLock w_lock(_lock);
-                // Ordering - a la Ogre:
-                _worldMatrix.identity();
-                //    1. Scale
-                _worldMatrix.setScale(_transformValues._scale);
-                //    2. Rotate
-                _worldMatrix *= GetMatrix(_transformValues._orientation);
-            }
+            // Ordering - a la Ogre:
+            _worldMatrix.identity();
+            //    1. Scale
+            _worldMatrix.setScale(_transformValues._scale);
+            //    2. Rotate
+            _worldMatrix *= GetMatrix(_transformValues._orientation);
             _rebuildMatrix = false;
         }
-        {
-            WriteLock w_lock(_lock);
-            //    3. Translate
-            _worldMatrix.setTranslation(_transformValues._translation);
-        }
+        //    3. Translate
+        _worldMatrix.setTranslation(_transformValues._translation);
         _dirty = false;
+        wasRebuilt = true;
     }
 
-    return _worldMatrix;
+    matOut.set(_worldMatrix);
+    return wasRebuilt;
 }
 
 void Transform::identity() {

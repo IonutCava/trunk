@@ -502,7 +502,7 @@ bool glShaderProgram::isBound() const {
 /// queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for
 /// later use
-GLint glShaderProgram::cachedLocation(const stringImpl& name) {
+I32 glShaderProgram::getUniformLocation(const stringImpl& name) {
     // If the shader can't be used for rendering, just return an invalid address
     if (!isValid() || _shaderProgramID == 0) {
         return -1;

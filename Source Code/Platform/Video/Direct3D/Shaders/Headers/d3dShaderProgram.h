@@ -117,7 +117,7 @@ class d3dShaderProgram final : public ShaderProgram {
     void Uniform(I32 location,
                  const vectorImpl<mat4<F32> >& values,
                  bool rowMajor = false) override {}
-
+    I32 getUniformLocation(const stringImpl& name) override { return -1; }
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override {}
 
     void SetMemoryBarrier() override {}

@@ -281,7 +281,8 @@ class Transform : public GUIDWrapper, private NonCopyable {
         return this->_transformValues._orientation;
     }
     /// Get the local transformation matrix
-    const mat4<F32>& getMatrix();
+    /// Returns true if the matrix was just rebuilt
+    bool getMatrix(mat4<F32>& matOut);
     /// Sets the transform to match a certain transformation matrix.
     /// Scale, orientation and translation are extracted from the specified
     /// matrix

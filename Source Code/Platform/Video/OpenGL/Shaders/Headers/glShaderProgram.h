@@ -150,7 +150,7 @@ class glShaderProgram final : public ShaderProgram {
     /// present, and it's not recommended (yet)
     void threadedLoad(const stringImpl& name) override;
     /// Cache uniform/attribute locations for shader programs
-    GLint cachedLocation(const stringImpl& name);
+    I32 getUniformLocation(const stringImpl& name) override;
 
     //template<typename T> struct fake_dependency: public std::false_type {};
     template <typename T>

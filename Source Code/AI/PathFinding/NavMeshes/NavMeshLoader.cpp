@@ -321,16 +321,13 @@ void addTriangle(NavModelData* modelData,
 }
 
 const vec3<F32> borderOffset(BORDER_PADDING);
-bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode_wptr sgn) {
-    SceneGraphNode_ptr nodeSGN(sgn.lock());
-    assert(nodeSGN != nullptr);
-
-    if (nodeSGN->getComponent<NavigationComponent>()->navigationContext() !=
+bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
+    if (sgn.getComponent<NavigationComponent>()->navigationContext() !=
             NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if
                                                                     // specified
         box.getHeight() > 0.05f)  // Skip small objects
     {
-        SceneNode* sn = nodeSGN->getNode();
+        SceneNode* sn = sgn.getNode();
 
         SceneNodeType nodeType = sn->getType();
         U32 ignoredNodeType = to_uint(SceneNodeType::TYPE_ROOT) |
@@ -368,17 +365,14 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode_wptr sg
 
         switch (nodeType) {
             case SceneNodeType::TYPE_WATER: {
-                if (!nodeSGN->getComponent<NavigationComponent>()
-                         ->navMeshDetailOverride())
+                if (!sgn.getComponent<NavigationComponent>()->navMeshDetailOverride())
                     level = MeshDetailLevel::BOUNDINGBOX;
                 areaType = SamplePolyAreas::SAMPLE_POLYAREA_WATER;
             } break;
             case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
-                if (!nodeSGN->getComponent<NavigationComponent>()
-                         ->navMeshDetailOverride() &&
-                    nodeSGN->usageContext() ==
-                        SceneGraphNode::UsageContext::NODE_STATIC) {
+                if (!sgn.getComponent<NavigationComponent>()->navMeshDetailOverride() &&
+                     sgn.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }
                 if (dynamic_cast<Object3D*>(sn)->getObjectType() ==
@@ -393,8 +387,9 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode_wptr sg
         };
 
         // I should remove this hack - Ionut
+        SceneGraphNode_ptr nodeSGN = sgn.shared_from_this();
         if (nodeType == SceneNodeType::TYPE_WATER) {
-            nodeSGN = nodeSGN->findChild("waterPlane").lock();
+            nodeSGN = sgn.findChild("waterPlane").lock();
         }
 
         Console::d_printfn(Locale::get("NAV_MESH_CURRENT_NODE"),
@@ -470,8 +465,10 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode_wptr sg
 // follow -Ionut
 next:
     ;
-    for (SceneGraphNode_ptr child : nodeSGN->getChildren()) {
-        if (!parse(child->getBoundingBoxConst(), outData, child)) {
+    U32 childCount = sgn.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        SceneGraphNode& child = sgn.getChild(i, childCount);
+        if (!parse(child.getBoundingBoxConst(), outData, child)) {
             return false;
         }
     }

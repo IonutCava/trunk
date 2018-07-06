@@ -57,8 +57,9 @@ void PhysicsComponent::useDefaultTransform(const bool state) {
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
     
-    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
-        child->getComponent<PhysicsComponent>()->cookCollisionMesh(sceneName);
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        _parentSGN.getChild(i, childCount).getComponent<PhysicsComponent>()->cookCollisionMesh(sceneName);
     }
 
     if (_parentSGN.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
@@ -329,28 +330,55 @@ bool PhysicsComponent::popTransforms() {
     return false;
 }
 
-const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor,
+const mat4<F32>& PhysicsComponent::getWorldMatrix(bool& matrixRebuilt, 
+                                                  D32 interpolationFactor,
+                                                  mat4<F32>& normalMatrixOut,
                                                   const bool local) {
-    _worldMatrix.identity();
+    getWorldMatrix(matrixRebuilt, interpolationFactor, local);
+    if (matrixRebuilt) {
+        _normalMatrix.set(_worldMatrix);
+        _normalMatrix.setCol(3, 0.0f, 0.0f, 0.0f, 0.0f);
 
+        if (!isUniformScaled()) {
+            // Non-uniform scaling requires an inverseTranspose to negate
+            // scaling contribution but preserve rotation
+            _normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+            _normalMatrix.inverseTranspose();
+            _normalMatrix.mat[15] = 0.0f;
+        } else {
+            // If the world matrix is uniform scaled, inverseTranspose is a
+            // double transpose (no-op) so we can skip it
+            _normalMatrix.setRow(3, 0.0f);
+        }
+    }
+    normalMatrixOut.set(_normalMatrix);
+    return _worldMatrix;
+}
+
+const mat4<F32>& PhysicsComponent::getWorldMatrix(bool& matrixRebuilt, 
+                                                  D32 interpolationFactor,
+                                                  const bool local) {
     if (_transform) {
         if (interpolationFactor < 0.975) {
+            _worldMatrix.identity();
             _worldMatrix.setScale(getScale(interpolationFactor, true));
             _worldMatrix *= GetMatrix(getOrientation(interpolationFactor, true));
             _worldMatrix.setTranslation(getPosition(interpolationFactor, true));
+            matrixRebuilt = true;
         } else {
-            _worldMatrix.set(_transform->getMatrix());
+            matrixRebuilt = _transform->getMatrix(_worldMatrix);
         }
     }
 
     if (!local) {
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            _worldMatrix *=
-                grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(
-                interpolationFactor, local);
+            PhysicsComponent* pComp = grandParent->getComponent<PhysicsComponent>();
+            _worldMatrix *= pComp->getWorldMatrix(interpolationFactor, local);
+            matrixRebuilt = true;
         }
     }
+
     return _worldMatrix;
 }
 

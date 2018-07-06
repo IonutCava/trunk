@@ -82,7 +82,7 @@ class Mesh : public Object3D {
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
 
-    bool isSubMesh(const SceneGraphNode_ptr& node);
+    bool isSubMesh(const SceneGraphNode& node);
 
    protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;

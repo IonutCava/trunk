@@ -293,8 +293,7 @@ bool NavigationMesh::generateMesh() {
     data.setName(nodeName);
 
     if (!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())) {
-        if (!NavigationMeshLoader::parse(sgn->getBoundingBoxConst(), data,
-                                         _sgn)) {
+        if (!NavigationMeshLoader::parse(sgn->getBoundingBoxConst(), data, *sgn)) {
             Console::errorfn(Locale::get("ERROR_NAV_PARSE_FAILED"),
                              nodeName.c_str());
         }

@@ -124,10 +124,35 @@ class PhysicsComponent : public SGNComponent {
 
     void reset();
 
-    const mat4<F32>& getWorldMatrix(D32 interpolationFactor,
+    const mat4<F32>& getWorldMatrix(bool& matrixRebuilt,
+                                    D32 interpolationFactor,
                                     const bool local = false);
+    const mat4<F32>& getWorldMatrix(bool& matrixRebuilt, 
+                                    D32 interpolationFactor,
+                                    mat4<F32>& normalMatrixOut,
+                                    const bool local = false);
+
+    inline const mat4<F32>& getWorldMatrix(D32 interpolationFactor,
+                                          const bool local = false) {
+        bool rebuilt = false;
+        return getWorldMatrix(rebuilt, interpolationFactor, local);
+    }
+
+    inline const mat4<F32>& getWorldMatrix(D32 interpolationFactor,
+                                           mat4<F32>& normalMatrixOut,
+                                           const bool local = false) {
+
+        bool rebuilt = false;
+        return getWorldMatrix(rebuilt, interpolationFactor, normalMatrixOut, local);
+    }
+
     inline const mat4<F32>& getWorldMatrix(const bool local = false) {
-        return getWorldMatrix(1.0, local);
+        bool rebuilt = false;
+        return getWorldMatrix(rebuilt, local);
+    }
+
+    inline const mat4<F32>& getWorldMatrix(bool& matrixRebuilt, const bool local = false) {
+        return getWorldMatrix(matrixRebuilt, 1.0, local);
     }
 
     /// Component <-> Transform interface
@@ -211,6 +236,7 @@ class PhysicsComponent : public SGNComponent {
     TransformMask _transformUpdatedMask;
     /// Transform cache values
     mat4<F32> _worldMatrix;
+    mat4<F32> _normalMatrix;
 };
 
 namespace Attorney {

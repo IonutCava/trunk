@@ -173,8 +173,7 @@ void RenderBin::render(const SceneRenderState& renderState,
     // We need to apply different materials for each stage. As nodes are sorted,
     // this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
-        gfx.addToRenderQueue(
-            Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
+        gfx.addToRenderQueue(Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
 
     gfx.flushRenderQueue();

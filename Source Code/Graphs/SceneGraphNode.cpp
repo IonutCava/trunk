@@ -18,8 +18,9 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
     BoundingBox& bb = sgn.getBoundingBox();
 
     bb.reset();
-    for (SceneGraphNode_ptr child : sgn.getChildren()) {
-        bb.Add(child->getBoundingBoxConst());
+    U32 childCount = sgn.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        bb.Add(sgn.getChild(i, childCount).getBoundingBoxConst());
     }
     return SceneNode::computeBoundingBox(sgn);
 }
@@ -36,13 +37,13 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _boundingBoxDirty(true),
       _shouldDelete(false),
       _updateTimer(Time::ElapsedMilliseconds()),
-      _childQueue(0),
       _bbAddExclusionList(0),
       _usageContext(UsageContext::NODE_DYNAMIC),
       _selectionFlag(SelectionFlag::SELECTION_NONE)
 {
     assert(_node != nullptr);
-
+    _children.resize(INITIAL_CHILD_COUNT);
+    _childCount = 0;
     setName(name);
 
     _instanceID = (_node->GetRef() - 1);
@@ -79,14 +80,11 @@ SceneGraphNode::~SceneGraphNode()
     Console::printfn(Locale::get("REMOVE_SCENEGRAPH_NODE"),
                      getName().c_str(), _node->getName().c_str());
 
-    // delete child nodes recursively
-    WriteLock w_lock(_childrenLock);
-    for (const SceneGraphNode_ptr& child : _children) {
-        DIVIDE_ASSERT(child.unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
+#if defined(_DEBUG)
+    for (U32 i = 0; i < getChildCount(); ++i) {
+        DIVIDE_ASSERT(_children[i].unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
     }
-    _children.clear();
-    
-    w_lock.unlock();
+#endif
 
     if (_node->getState() == ResourceState::RES_SPECIAL) {
         MemoryManager::DELETE(_node);
@@ -131,13 +129,16 @@ void SceneGraphNode::setParent(SceneGraphNode_ptr parent) {
 SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
     // Time to add it to the children vector
     SceneGraphNode_ptr child = findChild(node->getName()).lock();
-
     if (child) {
         removeNode(child, true);
     }
     Attorney::SceneGraphSGN::onNodeAdd(GET_ACTIVE_SCENEGRAPH(), node);
-    WriteLock w_lock(_childrenLock);
-    _children.push_back(node);
+    if (_childCount == _children.size()) {
+        _children.push_back(node);
+    } else {
+        _children[_childCount] = node;
+    }
+    _childCount = _childCount + 1;
 
     return node;
 }
@@ -175,38 +176,33 @@ SceneGraphNode_ptr SceneGraphNode::createNode(SceneNode& node, const stringImpl&
 
 // Remove a child node from this Node
 void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
-    UpgradableReadLock url(_childrenLock);
-    // find the node in the children map
-    NodeChildren::const_iterator childIt = std::find_if(std::cbegin(_children),
-                                                        std::cend(_children),
-                                                        [&nodeName](const SceneGraphNode_ptr& child) {
-                                                            return child->getName().compare(nodeName) == 0;
-                                                        });
-    // If we found the node we are looking for
-    if (childIt != std::cend(_children)) {
-        UpgradeToWriteLock uwl(url);
-        // Remove it from the map
-        _children.erase(childIt);
-    } else {
-        if (recursive) {
-            size_t childCount = _children.size();
-            for (size_t i = 0; i < childCount; ++i) {
-                removeNode(nodeName);
-            }
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        if (getChild(i, childCount).getName().compare(nodeName) == 0) {
+            _children[i].reset();
+            _childCount = _childCount - 1;
+            std::swap(_children[_childCount], _children[i]);
+            return;
         }
     }
+    
+    if (recursive) {
+        for (U32 i = 0; i < childCount; ++i) {
+            removeNode(nodeName);
+        }
+    }
+
     // Beware. Removing a node, does no delete it!
     // Call delete on the SceneGraphNode's pointer to do that
 }
 
 SceneGraphNode_wptr SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName) {
-    // The current node isn't the one we want,
-    // so recursively check all children
-    ReadLock r_lock(_childrenLock);
-    for (SceneGraphNode_ptr child : _children) {
-        if (sceneNodeName ? child->getNode()->getName().compare(name) == 0
-                          : child->getName().compare(name) == 0) {
-            return child;
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        SceneGraphNode& child = getChild(i, childCount);
+        if (sceneNodeName ? child.getNode()->getName().compare(name) == 0
+                          : child.getName().compare(name) == 0) {
+            return child.shared_from_this();
         }
     }
 
@@ -235,9 +231,9 @@ SceneGraphNode_wptr SceneGraphNode::findNode(const stringImpl& name,  bool scene
         }
 
         // The node we want isn't one of the children, so recursively check each of them
-        ReadLock r_lock(_childrenLock);
-        for (SceneGraphNode_ptr crtChild : _children) {
-            SceneGraphNode_wptr returnValue = crtChild->findNode(name, sceneNodeName);
+        U32 childCount = getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            SceneGraphNode_wptr returnValue = getChild(i, childCount).findNode(name, sceneNodeName);
             // if it is not nullptr it is the node we are looking for so just pass it through
             if (!returnValue.expired()) {
                 return returnValue;
@@ -258,17 +254,17 @@ void SceneGraphNode::intersect(const Ray& ray,
         selectionHits.push_back(shared_from_this());
     }
 
-    ReadLock r_lock(_childrenLock);
-    for (SceneGraphNode_ptr child : _children) {
-        child->intersect(ray, start, end, selectionHits);
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).intersect(ray, start, end, selectionHits);
     }
 }
 
 void SceneGraphNode::setSelectionFlag(SelectionFlag flag) {
     _selectionFlag = flag;
-    ReadLock r_lock(_childrenLock);
-    for (SceneGraphNode_ptr child : _children) {
-        child->setSelectionFlag(flag);
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).setSelectionFlag(flag);
     }
 }
 
@@ -281,9 +277,9 @@ void SceneGraphNode::setActive(const bool state) {
         }
     }
 
-    ReadLock r_lock(_childrenLock);
-    for (SceneGraphNode_ptr child : _children) {
-        child->setActive(state);
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).setActive(state);
     }
 }
 
@@ -319,26 +315,21 @@ void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox
 }
 
 void SceneGraphNode::onCameraUpdate(Camera& camera) {
-    ReadLock r_lock(_childrenLock);
-    for (SceneGraphNode_ptr child : _children) {
-        child->onCameraUpdate(camera);
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).onCameraUpdate(camera);
     }
-    r_lock.unlock();
 
-    Attorney::SceneNodeSceneGraph::onCameraUpdate(*_node,
-                                                  *this,
-                                                  camera);
+    Attorney::SceneNodeSceneGraph::onCameraUpdate(*_node, *this,         camera);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     // Compute from leaf to root to ensure proper calculations
-    ReadLock r_lock(_childrenLock);
-    for (SceneGraphNode_ptr child : _children) {
-        assert(child);
-        child->sceneUpdate(deltaTime, sceneState);
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).sceneUpdate(deltaTime, sceneState);
     }
-    r_lock.unlock();
 
     // update local time
     _elapsedTime += deltaTime;
@@ -354,11 +345,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     const PhysicsComponent::TransformMask& transformUpdateMask = pComp->transformUpdateMask();
     if (transformUpdateMask.hasSetFlags()) {
         _boundingBoxDirty = true;
-        r_lock.lock();
-        for (SceneGraphNode_ptr child : _children) {
-            child->getComponent<PhysicsComponent>()->transformUpdateMask().setFlags(transformUpdateMask);
+        for (U32 i = 0; i < childCount; ++i) {
+            getChild(i, childCount).getComponent<PhysicsComponent>()->transformUpdateMask().setFlags(transformUpdateMask);
         }
-        r_lock.unlock();
         pComp->transformUpdateMask().clearAllFlags();
     }
 

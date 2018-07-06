@@ -82,7 +82,7 @@ bool Scene::idle() {  // Called when application is idle
         loadXMLAssets(true);
     }
 
-    if (_sceneGraph->getRoot()->getChildren().empty()) {
+    if (!_sceneGraph->getRoot()->hasChildren()) {
         return false;
     }
 

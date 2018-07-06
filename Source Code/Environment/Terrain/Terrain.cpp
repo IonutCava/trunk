@@ -123,11 +123,12 @@ bool Terrain::computeBoundingBox(SceneGraphNode& sgn) {
 bool Terrain::isInView(const SceneRenderState& sceneRenderState,
                        SceneGraphNode& sgn,
                        const bool distanceCheck) {
+    U32 temp = 0;
     _terrainInView = SceneNode::isInView(sceneRenderState, sgn, distanceCheck);
     _planeInView = _terrainInView
                        ? false
                        : _plane->isInView(sceneRenderState,
-                                          *sgn.getChildren()[0],
+                                          sgn.getChild(0, temp),
                                           distanceCheck);
 
     return _terrainInView || _planeInView;

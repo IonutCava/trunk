@@ -109,7 +109,6 @@ struct GenericDrawCommand {
     U8 _lodIndex;
     U16 _drawCount;
     U32 _queryID;
-    U32 _drawID;
     U32 _renderOptions;
     bool _locked;
     bool _drawToBuffer;
@@ -125,11 +124,6 @@ struct GenericDrawCommand {
     inline void drawCount(U16 count) { 
         assert(!_locked);
         _drawCount = count; 
-    }
-
-    inline void drawID(U32 ID) {
-        assert(!_locked);
-        _drawID = ID;
     }
 
     inline void LoD(U8 lod) {
@@ -187,7 +181,6 @@ struct GenericDrawCommand {
 
     inline U8 LoD() const { return _lodIndex; }
     inline U32 queryID() const { return _queryID; }
-    inline U32 drawID() const { return _drawID; }
     inline U16 drawCount() const { return _drawCount; }
     inline size_t stateHash() const { return _stateHash; }
     inline bool drawToBuffer() const { return _drawToBuffer; }
@@ -224,7 +217,6 @@ struct GenericDrawCommand {
                        U32 primCount = 1)
         : _queryID(0),
           _lodIndex(0),
-          _drawID(0),
           _drawCount(1),
           _locked(false),
           _drawToBuffer(false),
@@ -243,8 +235,6 @@ struct GenericDrawCommand {
     {
         assert(!_locked);
         _cmd.set(base._cmd);
-
-        _drawID = base._drawID;
         _queryID = base._queryID;
         _lodIndex = base._lodIndex;
         _drawCount = base._drawCount;
@@ -261,10 +251,8 @@ struct GenericDrawCommand {
                _drawToBuffer == other._drawToBuffer &&
                _renderOptions == other._renderOptions &&
                _stateHash == other._stateHash && _type == other._type &&
-               (_shaderProgram != nullptr) ==
-                   (other._shaderProgram != nullptr) &&
-               (_sourceBuffer != nullptr) == 
-                   (other._sourceBuffer != nullptr);
+               (_shaderProgram != nullptr) == (other._shaderProgram != nullptr) &&
+               (_sourceBuffer != nullptr) == (other._sourceBuffer != nullptr);
     }
 };
 

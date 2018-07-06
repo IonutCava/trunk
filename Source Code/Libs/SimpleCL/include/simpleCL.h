@@ -31,6 +31,10 @@ extern "C" {
 #include <stdlib.h>
 #include <stdarg.h>
 
+#ifndef CL_USE_DEPRECATED_OPENCL_2_0_APIS
+#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
+#endif
+
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else

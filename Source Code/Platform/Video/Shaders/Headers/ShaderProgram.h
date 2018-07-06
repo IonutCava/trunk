@@ -120,6 +120,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
         Uniform(ext, value ? 1 : 0);
     }
 
+    virtual I32 getUniformLocation(const stringImpl& name) = 0;
     /// Subroutine
     virtual void SetSubroutines(ShaderType type,
                                 const vectorImpl<U32>& indices) const = 0;
@@ -283,6 +284,23 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
                to_const_uint(ShaderType::COUNT)> _functionIndex;
     std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>
         _availableFunctionIndex;
+
+
+    struct {
+        I32 _timeLocation;
+        I32 _fogStateLocation;
+        I32 _fogColorLocation;
+        I32 _fogDensityLocation;
+        I32 _ambientLightLocation;
+        I32 _lightCountLocation;
+        I32 _windDirectionLocation;
+        I32 _windSpeedLocation;
+        I32 _invScreenDimLocation;
+        I32 _lightBleedBiasLocation;
+        I32 _minShadowVarianceLocation;
+        I32 _shadowMaxDistLocation;
+        I32 _shadowFadeDistLocation;
+    } _constantData;
 };
 
 };  // namespace Divide

@@ -25,6 +25,7 @@ ShaderProgram::ShaderProgram()
     _refreshStage.fill(false);
     // Cache some frequently updated uniform locations
     _sceneDataDirty = true;
+    _constantData = {-2};
 }
 
 ShaderProgram::~ShaderProgram()
@@ -60,32 +61,33 @@ bool ShaderProgram::update(const U64 deltaTime) {
 #endif
 
     // Time, fog, ambient light
-    this->Uniform("dvd_time", _elapsedTimeMS);
-    this->Uniform("dvd_enableFog", enableFog);
-    this->Uniform("dvd_lightAmbient", lightMgr.getAmbientLight());
-    this->Uniform("dvd_lightCount", lightMgr.getActiveLightCount());
+    this->Uniform(_constantData._timeLocation, _elapsedTimeMS);
+    this->Uniform(_constantData._fogStateLocation, enableFog);
+    this->Uniform(_constantData._ambientLightLocation, lightMgr.getAmbientLight());
+    this->Uniform(_constantData._lightCountLocation, lightMgr.getActiveLightCount());
                                     
     // Scene specific data is updated only if it changed
     if (_sceneDataDirty) {
         // Check and update fog properties
         if (enableFog) {
             this->Uniform(
-                "fogColor",
+                _constantData._fogColorLocation,
                 vec3<F32>(
                     par.getParam<F32>("rendering.sceneState.fogColor.r"),
                     par.getParam<F32>("rendering.sceneState.fogColor.g"),
                     par.getParam<F32>("rendering.sceneState.fogColor.b")));
-            this->Uniform("fogDensity",
+            this->Uniform(_constantData._fogDensityLocation,
                           par.getParam<F32>("rendering.sceneState.fogDensity"));
         }
         // Upload wind data
         const SceneState& activeSceneState = GET_ACTIVE_SCENE().state();
-        this->Uniform("windDirection",
+        this->Uniform(_constantData._windDirectionLocation,
                       vec2<F32>(activeSceneState.windDirX(),
                                 activeSceneState.windDirZ()));
-        this->Uniform("windSpeed", activeSceneState.windSpeed());
+        this->Uniform(_constantData._windSpeedLocation, activeSceneState.windSpeed());
         _sceneDataDirty = false;
     }
+
     // The following values are updated only if a call to the ShaderManager's
     // refresh() function is made
     if (_dirty) {
@@ -93,13 +95,13 @@ bool ShaderProgram::update(const U64 deltaTime) {
         const vec2<U16>& screenRes =
             GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
                 ->getResolution();
-        this->Uniform("dvd_invScreenDimension", vec2<F32>(1.0f / screenRes.width,
-                                                          1.0f / screenRes.height));
+        this->Uniform(_constantData._invScreenDimLocation, vec2<F32>(1.0f / screenRes.width,
+                                                                     1.0f / screenRes.height));
         // Shadow mapping specific values
-        this->Uniform("dvd_lightBleedBias", 0.0000002f);
-        this->Uniform("dvd_minShadowVariance", 0.0002f);
-        this->Uniform("dvd_shadowMaxDist", 250.0f);
-        this->Uniform("dvd_shadowFadeDist", 150.0f);
+        this->Uniform(_constantData._lightBleedBiasLocation, 0.0000002f);
+        this->Uniform(_constantData._minShadowVarianceLocation, 0.0002f);
+        this->Uniform(_constantData._shadowMaxDistLocation, 250.0f);
+        this->Uniform(_constantData._shadowFadeDistLocation, 150.0f);
         _dirty = false;
     }
 
@@ -114,6 +116,21 @@ bool ShaderProgram::generateHWResource(const stringImpl& name) {
     if (!HardwareResource::generateHWResource(name)) {
         return false;
     }
+
+    _constantData._timeLocation = getUniformLocation("dvd_time");
+    _constantData._fogStateLocation = getUniformLocation("dvd_enableFog");
+    _constantData._fogColorLocation = getUniformLocation("fogColor");
+    _constantData._fogDensityLocation = getUniformLocation("fogDensity");
+    _constantData._ambientLightLocation = getUniformLocation("dvd_lightAmbient");
+    _constantData._lightCountLocation = getUniformLocation("dvd_lightCount");
+    _constantData._windDirectionLocation = getUniformLocation("windDirection");
+    _constantData._windSpeedLocation = getUniformLocation("windSpeed");
+    _constantData._invScreenDimLocation = getUniformLocation("dvd_invScreenDimension");
+    _constantData._lightBleedBiasLocation = getUniformLocation("dvd_lightBleedBias");
+    _constantData._minShadowVarianceLocation = getUniformLocation("dvd_minShadowVariance");
+    _constantData._shadowMaxDistLocation = getUniformLocation("dvd_shadowMaxDist");
+    _constantData._shadowFadeDistLocation = getUniformLocation("dvd_shadowFadeDist");
+
     // Finish threaded loading
     HardwareResource::threadedLoad(name);
     // Validate loading state

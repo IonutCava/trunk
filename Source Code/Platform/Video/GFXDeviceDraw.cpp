@@ -188,12 +188,9 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
 
     const SceneGraphNode& nodeRef = *node._visibleNode;
 
-    RenderingComponent* const renderable =
-        nodeRef.getComponent<RenderingComponent>();
-    AnimationComponent* const animComp =
-        nodeRef.getComponent<AnimationComponent>();
-    PhysicsComponent* const transform =
-        nodeRef.getComponent<PhysicsComponent>();
+    RenderingComponent* const renderable = nodeRef.getComponent<RenderingComponent>();
+    AnimationComponent* const animComp = nodeRef.getComponent<AnimationComponent>();
+    PhysicsComponent* const transform = nodeRef.getComponent<PhysicsComponent>();
 
     mat4<F32>& modelMatrix = dataOut._matrix[0];
     mat4<F32>& normalMatrix = dataOut._matrix[1];
@@ -204,26 +201,8 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        modelMatrix.set(transform->getWorldMatrix(_interpolationFactor));
+        modelMatrix.set(transform->getWorldMatrix(_interpolationFactor, normalMatrix));
         // Calculate the normal matrix (world * view)
-        // If the world matrix is uniform scaled, inverseTranspose is a
-        // double transpose (no-op) so we can skip it
-
-        //Avoid allocating a new matrix on the stack.
-        // Alternative: normalMatrix.set(mat3<F32>(modelMatrix));
-        normalMatrix.set(modelMatrix);
-        normalMatrix.setCol(3, 0.0f, 0.0f, 0.0f, 0.0f);
-
-        if (!transform->isUniformScaled()) {
-            // Non-uniform scaling requires an inverseTranspose to negate
-            // scaling contribution but preserve rotation
-            normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
-            normalMatrix.inverseTranspose();
-            normalMatrix.mat[15] = 0.0f;
-        } else {
-            normalMatrix.setRow(3, 0.0f);
-        }
-
         normalMatrix.set(normalMatrix * _gpuBlock._data._ViewMatrix);
     }
 
@@ -276,7 +255,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
                 IndirectDrawCommand& iCmd = cmd.cmd();
                 iCmd.baseInstance = nodeCount;
-                cmd.drawID(nodeCount);
                 cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
                 // Extract the specific rendering commands from the draw commands
                 // Rendering commands are stored in GPU memory. Draw commands are not.
@@ -340,7 +318,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         currentIDC.shaderProgram()->getID())
     {
         U32 prevCount = previousIDC.drawCount();
-        if (previousIDC.drawID() + prevCount != currentIDC.drawID()) {
+        if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
             return false;
         }
         // If the rendering commands are batchable, increase the draw count for

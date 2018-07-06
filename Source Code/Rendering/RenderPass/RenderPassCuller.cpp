@@ -91,8 +91,9 @@ void RenderPassCuller::cullSceneGraphCPU(VisibleNodeCache& nodes,
     }
 
     // Process children if we did not early-out of the culling loop
-    for (SceneGraphNode_ptr child : currentNode.getChildren()) {
-        cullSceneGraphCPU(nodes, *child, sceneRenderState, cullingFunction);
+    U32 childCount = currentNode.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        cullSceneGraphCPU(nodes, currentNode.getChild(i, childCount), sceneRenderState, cullingFunction);
     }
 }
 

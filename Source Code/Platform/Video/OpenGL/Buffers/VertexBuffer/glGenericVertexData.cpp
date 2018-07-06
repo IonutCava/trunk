@@ -221,7 +221,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
         GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
         GLuint drawCount = command.drawCount();
         if (useCmdBuffer) {
-            bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
+            bufferPtr offset = (bufferPtr)(cmd.baseInstance * cmdSize);
             if (_indexBuffer > 0) {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
                 if (command.renderGeometry()) {

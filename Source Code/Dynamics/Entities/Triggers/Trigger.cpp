@@ -28,11 +28,11 @@ bool Trigger::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         sgn.addNode(*_triggerImpostor);
     }
     /// update dummy position if it is so
-    sgn.getChildren()[0]->getComponent<PhysicsComponent>()->setPosition(
-        _triggerPosition);
+    U32 temp = 0;
+    sgn.getChild(0, temp).getComponent<PhysicsComponent>()->setPosition(_triggerPosition);
     _triggerImpostor->setRadius(_radius);
     _triggerImpostor->renderState().setDrawState(true);
-    sgn.getChildren()[0]->setActive(true);
+    sgn.getChild(0, temp).setActive(true);
 
     return true;
 }

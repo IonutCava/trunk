@@ -77,20 +77,15 @@ typedef void* bufferPtr;
 #endif
 
 #ifdef _DEBUG
-#define STUBBED(x)                                                   \
-                                                                     \
-do {                                                                 \
-        static bool seen_this = false;                               \
-        if (!seen_this) {                                            \
-            seen_this = true;                                        \
-            Console::errorfn("STUBBED: %s (%s : %d)\n", x, __FILE__, \
-                             __LINE__);                              \
-        }                                                            \
-                                                                     \
-}                                                                    \
-    while (0)                                                        \
-        ;
-
+#define STUBBED(x)                                  \
+do {                                                \
+    static bool seen_this = false;                  \
+    if (!seen_this) {                               \
+        seen_this = true;                           \
+        Console::errorfn("STUBBED: %s (%s : %d)\n", \
+                         x, __FILE__, __LINE__);    \
+    }                                               \
+} while (0);
 #else
 #define STUBBED(x)
 #endif

@@ -146,7 +146,7 @@ NavModelData mergeModels(NavModelData& a, NavModelData& b,
                          bool delOriginals = false);
 /// Parsing method that calls itself recursively untill all geometry has been
 /// parsed
-bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode_wptr sgn);
+bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn);
 
 void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
 

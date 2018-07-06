@@ -26,18 +26,20 @@ bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
     BoundingBox& bb = sgn.getBoundingBox();
 
     bb.reset();
-    for (SceneGraphNode_ptr child : sgn.getChildren()) {
+    U32 childCount = sgn.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        SceneGraphNode& child = sgn.getChild(i, childCount);
         if (isSubMesh(child)) {
-            bb.Add(child->getInitialBoundingBox());
+            bb.Add(child.getInitialBoundingBox());
         } else {
-            bb.Add(child->getBoundingBoxConst());
+            bb.Add(child.getBoundingBoxConst());
         }
     }
     return SceneNode::computeBoundingBox(sgn);
 }
 
-bool Mesh::isSubMesh(const SceneGraphNode_ptr& node) {
-    I64 targetGUID = node->getNode()->getGUID();
+bool Mesh::isSubMesh(const SceneGraphNode& node) {
+    I64 targetGUID = node.getNode()->getGUID();
     return std::find_if(std::begin(_subMeshList),
                         std::end(_subMeshList),
                         [&targetGUID](SubMesh* const submesh) {
@@ -69,8 +71,9 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
     if (hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
         bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
-        for (SceneGraphNode_ptr child : sgn.getChildren()) {
-            AnimationComponent* comp = child->getComponent<AnimationComponent>();
+        U32 childCount = sgn.getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            AnimationComponent* comp = sgn.getChild(i, childCount).getComponent<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
             if (comp) {
                 comp->playAnimations(playAnimations && comp->playAnimations());

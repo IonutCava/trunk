@@ -87,9 +87,8 @@ typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 class SceneGraphNode : public GUIDWrapper,
                        private NonCopyable,
                        public std::enable_shared_from_this<SceneGraphNode> {
+    static const size_t INITIAL_CHILD_COUNT = 128;
    public:
-    typedef vectorImpl<SceneGraphNode_ptr> NodeChildren;
-
     /// Usage context affects lighting, navigation, physics, etc
     enum class UsageContext : U32 {
         NODE_DYNAMIC = 0,
@@ -164,11 +163,6 @@ class SceneGraphNode : public GUIDWrapper,
         return _parent;
     }
 
-    inline NodeChildren& getChildren() { 
-        ReadLock r_lock(_childrenLock);
-        return _children;
-    }
-
     void setParent(SceneGraphNode_ptr parent);
 
     /*Parent <-> Children*/
@@ -200,9 +194,6 @@ class SceneGraphNode : public GUIDWrapper,
     inline bool isActive() const { return _active; }
 
     inline U32 getInstanceID() const { return _instanceID; }
-    inline U32 getChildQueue() const { return _childQueue; }
-    inline void incChildQueue() { _childQueue++; }
-    inline void decChildQueue() { _childQueue--; }
 
     inline const UsageContext& usageContext() const { return _usageContext; }
     void usageContext(const UsageContext& newContext);
@@ -226,6 +217,21 @@ class SceneGraphNode : public GUIDWrapper,
     }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
+
+    inline bool hasChildren() {
+        return getChildCount() > 0;
+    }
+
+    inline SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) {
+        assert(idx < _childCount);
+        updatedChildCount = getChildCount();
+        assert(_children.at(idx));
+        return *_children.at(idx);
+    }
+
+    inline U32 getChildCount() {
+        return _childCount;
+    }
 
     bool operator==(const SceneGraphNode_ptr other) const {
         return this->getGUID() == other->getGUID();
@@ -269,7 +275,6 @@ class SceneGraphNode : public GUIDWrapper,
 
    private:
     SceneNode* _node;
-    NodeChildren _children;
     std::weak_ptr<SceneGraphNode> _parent;
     std::atomic<bool> _active;
     std::atomic<bool> _inView;
@@ -288,19 +293,20 @@ class SceneGraphNode : public GUIDWrapper,
     BoundingSphere _boundingSphere;  ///<For faster visibility culling
 
     U32 _instanceID;
-    U32 _childQueue;
     D32 _updateTimer;
     U64 _elapsedTime;  //< the total amount of time that passed since this node
                        //was created
     stringImpl _name;
+
+    vectorImpl<SceneGraphNode_ptr> _children;
+    std::atomic_uint _childCount;
+    mutable SharedLock _childLock;
 
     UsageContext _usageContext;
     std::array<std::unique_ptr<SGNComponent>,
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
     StateTracker<bool> _trackedBools;
-
-    mutable SharedLock _childrenLock;
 };
 
 template <>
