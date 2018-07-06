@@ -993,10 +993,10 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
                 const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(cmd);
-                const DescriptorSet& set = crtCmd._set;
+                const DescriptorSet_ptr& set = crtCmd._set;
 
-                makeTexturesResident(set._textureData);
-                for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
+                makeTexturesResident(set->_textureData);
+                for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
                     shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
                                                     shaderBufCmd._range.x,
                                                     shaderBufCmd._range.y);

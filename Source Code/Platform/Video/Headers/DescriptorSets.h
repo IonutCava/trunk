@@ -40,10 +40,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     class ShaderBuffer;
     struct ShaderBufferBinding {
-        ShaderBufferLocation _binding;
         ShaderBuffer* _buffer;
-        vec2<U32>     _range;
-        std::pair<bool, vec2<U32>> _atomicCounter;
+        vec2<U16>     _range;
+        std::pair<bool, vec2<U8>> _atomicCounter;
+        ShaderBufferLocation _binding;
 
         ShaderBufferBinding();
         ShaderBufferBinding(ShaderBufferLocation slot,
@@ -57,10 +57,10 @@ namespace Divide {
         void set(const ShaderBufferBinding& other);
         void set(ShaderBufferLocation binding,
                  ShaderBuffer* buffer,
-                 const vec2<U32>& range);
+                 const vec2<U16>& range);
         void set(ShaderBufferLocation binding,
                  ShaderBuffer* buffer,
-                 const vec2<U32>& range,
+                 const vec2<U16>& range,
                  const std::pair<bool, vec2<U32>>& atomicCounter);
 
         bool operator==(const ShaderBufferBinding& other) const;
@@ -68,7 +68,6 @@ namespace Divide {
     };
 
     typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
-
 
     struct DescriptorSet {
         //This needs a lot more work!
@@ -79,7 +78,31 @@ namespace Divide {
 
         bool operator==(const DescriptorSet &other) const;
         bool operator!=(const DescriptorSet &other) const;
+
+        ~DescriptorSet();
+    private:
+        template<typename T, size_t BlockSize>
+        friend class MemoryPool;
+        friend struct DeleteDescriptorSet;
+        DescriptorSet();
     };
+
+    typedef MemoryPool<DescriptorSet, 1024> DescriptorSetPool;
+
+    struct DeleteDescriptorSet {
+        DeleteDescriptorSet(DescriptorSetPool& context)
+            : _context(context)
+        {
+        }
+
+        inline void operator()(DescriptorSet* res) {
+            _context.deleteElement(res);
+        }
+
+        DescriptorSetPool& _context;
+    };
+
+    FWD_DECLARE_MANAGED_STRUCT(DescriptorSet);
 }; //namespace Divide
 
 #endif //_DESCRIPTOR_SETS_H_

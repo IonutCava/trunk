@@ -83,7 +83,7 @@ class Trigger : public SceneNode {
     bool _enabled;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Trigger);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Trigger);
 
 };  // namespace Divide
 

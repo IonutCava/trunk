@@ -56,7 +56,7 @@ do {                                                \
 #define TO_STRING_NAME(X) #X
 #endif //TO_STRING
 
-#define TYPEDEF_SMART_POINTERS_FOR_CLASS(T)      \
+#define TYPEDEF_SMART_POINTERS_FOR_TYPE(T)       \
     typedef std::weak_ptr<T> T ## _wptr;         \
     typedef std::shared_ptr<T> T ## _ptr;        \
     typedef std::weak_ptr<const T> T ## _cwptr;  \
@@ -64,7 +64,11 @@ do {                                                \
 
 #define FWD_DECLARE_MANAGED_CLASS(T)      \
     class T;                              \
-    TYPEDEF_SMART_POINTERS_FOR_CLASS(T);
+    TYPEDEF_SMART_POINTERS_FOR_TYPE(T);
+
+#define FWD_DECLARE_MANAGED_STRUCT(T)     \
+    struct T;                             \
+    TYPEDEF_SMART_POINTERS_FOR_TYPE(T);
 
 namespace Divide {
 

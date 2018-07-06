@@ -349,7 +349,7 @@ class Material : public CachedResource {
     std::pair<Texture_ptr, U32> _defaultRefraction;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Material);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
 
 };  // namespace Divide
 

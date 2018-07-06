@@ -237,13 +237,13 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     ShaderBufferBinding shaderBuffer;
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
     shaderBuffer._buffer = bufferData._cmdBuffer;
-    shaderBuffer._range.set(0, bufferData._cmdBuffer->getPrimitiveCount());
+    shaderBuffer._range.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
     shaderBuffer._atomicCounter.first = true;
     
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._shaderBuffers.push_back(shaderBuffer);
-    bindDescriptorSetsCmd._set._textureData.addTexture(depthBuffer->getData(),
-                                                       to_U8(ShaderProgram::TextureUsage::DEPTH));
+    bindDescriptorSetsCmd._set = newDescriptorSet();
+    bindDescriptorSetsCmd._set->_shaderBuffers.push_back(shaderBuffer);
+    bindDescriptorSetsCmd._set->_textureData.addTexture(depthBuffer->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
     
     U32 cmdCount = bufferData._lastCommandCount;
@@ -334,7 +334,8 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    bindDescriptorSetsCmd._set = newDescriptorSet();
+    bindDescriptorSetsCmd._set->_textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::SetViewportCommand viewportCommand;

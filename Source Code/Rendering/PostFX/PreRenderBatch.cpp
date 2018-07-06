@@ -207,8 +207,9 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
         GFX::EnqueueCommand(buffer, pipelineCmd);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
-        descriptorSetCmd._set._textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
+        descriptorSetCmd._set = _context.newDescriptorSet();
+        descriptorSetCmd._set->_textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set->_textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
         GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
         GFX::DrawCommand drawCmd;
@@ -239,11 +240,12 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set = _context.newDescriptorSet();
+    descriptorSetCmd._set->_textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
     if (_adaptiveExposureControl) {
         TextureData data1 = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        descriptorSetCmd._set._textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
+        descriptorSetCmd._set->_textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     }
     GFX::EnqueueCommand(buffer, descriptorSetCmd);
 

@@ -56,7 +56,7 @@ protected:
     vec2<U16> _dimensions;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Patch3D);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Patch3D);
 
 };  // namespace Divide
 

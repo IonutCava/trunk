@@ -79,21 +79,21 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                           ptrdiff_t rangeElementCount,
                           bufferPtr result) const = 0;
 
-    virtual bool bindRange(U32 bindIndex,
+    virtual bool bindRange(U8 bindIndex,
                            U32 offsetElementCount,
                            U32 rangeElementCount) = 0;
 
     /// Bind return false if the buffer was already bound
-    virtual bool bind(U32 bindIndex) = 0;
+    virtual bool bind(U8 bindIndex) = 0;
 
     inline bool bind(ShaderBufferLocation bindIndex) {
-        return bind(to_U32(bindIndex));
+        return bind(to_U8(bindIndex));
     }
 
     inline bool bindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
                           U32 rangeElementCount) {
-        return bindRange(to_U32(bindIndex),
+        return bindRange(to_U8(bindIndex),
                          offsetElementCount,
                          rangeElementCount);
 
@@ -102,10 +102,10 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
 
-    virtual void addAtomicCounter(U32 sizeFactor = 1) = 0;
-    virtual U32  getAtomicCounter(U32 counterIndex = 0) = 0;
-    virtual void bindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0) = 0;
-    virtual void resetAtomicCounter(U32 counterIndex = 0) = 0;
+    virtual void addAtomicCounter(U16 sizeFactor = 1) = 0;
+    virtual U32  getAtomicCounter(U8 counterIndex = 0) = 0;
+    virtual void bindAtomicCounter(U8 counterIndex = 0, U8 bindIndex = 0) = 0;
+    virtual void resetAtomicCounter(U8 counterIndex = 0) = 0;
 
     static size_t alignmentRequirement(bool unbound);
 

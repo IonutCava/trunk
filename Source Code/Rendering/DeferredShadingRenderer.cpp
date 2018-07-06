@@ -223,11 +223,12 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     TextureData lightData = _lightTexture->getData();
     
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(texData0, 0);
-    descriptorSetCmd._set._textureData.addTexture(texData1, 1);
-    descriptorSetCmd._set._textureData.addTexture(texData2, 2);
-    descriptorSetCmd._set._textureData.addTexture(texData3, 3);
-    descriptorSetCmd._set._textureData.addTexture(lightData, 4);
+    descriptorSetCmd._set = _context.gfx().newDescriptorSet();
+    descriptorSetCmd._set->_textureData.addTexture(texData0, 0);
+    descriptorSetCmd._set->_textureData.addTexture(texData1, 1);
+    descriptorSetCmd._set->_textureData.addTexture(texData2, 2);
+    descriptorSetCmd._set->_textureData.addTexture(texData3, 3);
+    descriptorSetCmd._set->_textureData.addTexture(lightData, 4);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     PipelineDescriptor pipelineDescriptor;

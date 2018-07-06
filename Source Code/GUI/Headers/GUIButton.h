@@ -45,7 +45,7 @@ class EventArgs;
 namespace Divide {
 
 class AudioDescriptor;
-TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);
 
 class GUIButton : public GUIElement {
     typedef DELEGATE_CBK<void, I64> ButtonCallback;

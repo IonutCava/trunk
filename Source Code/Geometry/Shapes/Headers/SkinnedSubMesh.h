@@ -77,7 +77,7 @@ class SkinnedSubMesh : public SubMesh {
     BoundingBoxPerAnimation _boundingBoxes;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SkinnedSubMesh);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(SkinnedSubMesh);
 
 };  // namespace Divide
 

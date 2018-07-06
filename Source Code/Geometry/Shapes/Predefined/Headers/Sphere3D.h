@@ -60,7 +60,7 @@ class Sphere3D : public Object3D {
     U32 _vertexCount;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Sphere3D);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Sphere3D);
 
 };  // namespace Divide
 

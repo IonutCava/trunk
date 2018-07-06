@@ -425,7 +425,7 @@ class Camera : public Resource {
       static SharedLock s_cameraPoolLock;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Camera);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Camera);
 
 namespace Attorney {
     class CameraGFXDevice {

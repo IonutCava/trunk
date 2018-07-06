@@ -164,9 +164,10 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(TextureData(reflectTex->getTextureType(),
-                                                              reflectTex->getHandle()),
-                                                  to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE));
+    descriptorSetCmd._set = _context.newDescriptorSet();
+    descriptorSetCmd._set->_textureData.addTexture(TextureData(reflectTex->getTextureType(),
+                                                               reflectTex->getHandle()),
+                                                   to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::SendPushConstantsCommand pushConstants;

@@ -154,18 +154,21 @@ void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand&
     _pushConstants.push_back(pushConstants);
 }
 
-const DescriptorSet& RenderPackage::descriptorSet(I32 index) const {
+const DescriptorSet_ptr& RenderPackage::descriptorSet(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    assert(_descriptorSets[index]._set != nullptr);
     return _descriptorSets[index]._set;
 }
 
-DescriptorSet& RenderPackage::descriptorSet(I32 index) {
+DescriptorSet_ptr& RenderPackage::descriptorSet(I32 index) {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    assert(_descriptorSets[index]._set != nullptr);
     return _descriptorSets[index]._set;
 }
 
-void RenderPackage::descriptorSet(I32 index, const DescriptorSet& descriptorSets) {
+void RenderPackage::descriptorSet(I32 index, const DescriptorSet_ptr& descriptorSets) {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    assert(descriptorSets != nullptr);
     _descriptorSets[index]._set = descriptorSets;
     SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
 }
@@ -175,7 +178,7 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
     entry._type = GFX::CommandType::BIND_DESCRIPTOR_SETS;
     entry._index = _descriptorSets.size();
     _commandOrdering.push_back(entry);
-
+    assert(descriptorSets._set != nullptr);
     _descriptorSets.push_back(descriptorSets);
 }
 

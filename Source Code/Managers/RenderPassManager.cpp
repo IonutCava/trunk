@@ -205,16 +205,16 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
         if (params.stage == RenderStage::DISPLAY) {
             GFX::BindDescriptorSetsCommand bindDescriptorSets;
-            
+            bindDescriptorSets._set = _context.newDescriptorSet();
             // Bind the depth buffers
             TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-            bindDescriptorSets._set._textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
+            bindDescriptorSets._set->_textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             const RTAttachment& velocityAttachment = target.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
             if (velocityAttachment.used()) {
                 const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
                 TextureData prevDepthData = (prevDepthTexture ? prevDepthTexture->getData() : depthBufferTextureData);
-                bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+                bindDescriptorSets._set->_textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
             }
 
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
@@ -329,8 +329,9 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
         TextureData revealage = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.addTexture(accum, 0u);
-        descriptorSetCmd._set._textureData.addTexture(revealage, 1u);
+        descriptorSetCmd._set = _context.newDescriptorSet();
+        descriptorSetCmd._set->_textureData.addTexture(accum, 0u);
+        descriptorSetCmd._set->_textureData.addTexture(revealage, 1u);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
         GFX::EnqueueCommand(bufferInOut, drawCmd);
         GFX::EnqueueCommand(bufferInOut, endRenderPassCompCmd);

@@ -98,8 +98,8 @@ public:
     const PushConstants& pushConstants(I32 index) const;
     void pushConstants(I32 index, const PushConstants& constants);
 
-    const DescriptorSet& descriptorSet(I32 index) const;
-    void descriptorSet(I32 index, const DescriptorSet& descriptorSets);
+    const DescriptorSet_ptr& descriptorSet(I32 index) const;
+    void descriptorSet(I32 index, const DescriptorSet_ptr& descriptorSets);
 
     void addDrawCommand(const GFX::DrawCommand& cmd);
     void addPipelineCommand(const GFX::BindPipelineCommand& clipPlanes);
@@ -112,7 +112,7 @@ protected:
     // Return true if the command buffer was reconstructed
     bool buildCommandBuffer();
     GFX::DrawCommand& drawCommand(I32 cmdIdx);
-    DescriptorSet& descriptorSet(I32 index);
+    DescriptorSet_ptr& descriptorSet(I32 index);
 
 private:
     GFXDevice& _context;
@@ -141,7 +141,7 @@ namespace Attorney {
             return pkg._commands;
         }
 
-        static DescriptorSet& descriptorSet(RenderPackage& pkg, I32 index) {
+        static DescriptorSet_ptr& descriptorSet(RenderPackage& pkg, I32 index) {
             return pkg.descriptorSet(index);
         }
 

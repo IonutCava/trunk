@@ -159,7 +159,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     static const char* s_missingTextureFileName;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Texture);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Texture);
 
 };  // namespace Divide
 #endif // _TEXTURE_H_

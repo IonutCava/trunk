@@ -123,7 +123,7 @@ class ParticleEmitter : public SceneNode {
     BoundingBox _tempBB;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(ParticleEmitter);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(ParticleEmitter);
 
 };  // namespace Divide
 

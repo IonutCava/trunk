@@ -371,7 +371,8 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
         Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set = _context.newDescriptorSet();
+        descriptorSetCmd._set->_textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(cmdBuffer, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;

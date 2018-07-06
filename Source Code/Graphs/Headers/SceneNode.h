@@ -161,7 +161,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
     vector<SceneGraphNode*> _sgnParents;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneNode);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneNode);
 
 namespace Attorney {
 class SceneNodeSceneGraph {

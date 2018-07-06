@@ -233,8 +233,9 @@ Pipeline& GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
     return it->second;
 }
 
-DescriptorSet& GFXDevice::newDescriptorSet() {
-    return *_descriptorSetPool.newElement();
+DescriptorSet_ptr GFXDevice::newDescriptorSet() const {
+    std::shared_ptr<DescriptorSet> ptr(_descriptorSetPool.newElement(), DeleteDescriptorSet(_descriptorSetPool));
+    return ptr;
 }
 
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,

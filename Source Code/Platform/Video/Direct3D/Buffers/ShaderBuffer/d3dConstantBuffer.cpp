@@ -20,34 +20,49 @@ d3dConstantBuffer::~d3dConstantBuffer()
 void d3dConstantBuffer::readData(ptrdiff_t offsetElementCount,
                                  ptrdiff_t rangeElementCount,
                                  bufferPtr result) const {
+    ACKNOWLEDGE_UNUSED(offsetElementCount);
+    ACKNOWLEDGE_UNUSED(rangeElementCount);
+    ACKNOWLEDGE_UNUSED(result);
 }
 
 void d3dConstantBuffer::writeData(ptrdiff_t offsetElementCount,
                                   ptrdiff_t rangeElementCount,
                                   const bufferPtr data) {
+    ACKNOWLEDGE_UNUSED(offsetElementCount);
+    ACKNOWLEDGE_UNUSED(rangeElementCount);
+    ACKNOWLEDGE_UNUSED(data);
 }
 
-bool d3dConstantBuffer::bindRange(U32 bindIndex,
+bool d3dConstantBuffer::bindRange(U8 bindIndex,
                                   U32 offsetElementCount,
                                   U32 rangeElementCount) {
+    ACKNOWLEDGE_UNUSED(bindIndex);
+    ACKNOWLEDGE_UNUSED(offsetElementCount);
+    ACKNOWLEDGE_UNUSED(rangeElementCount);
     return false;
 }
 
-bool d3dConstantBuffer::bind(U32 bindIndex) {
+bool d3dConstantBuffer::bind(U8 bindIndex) {
+    ACKNOWLEDGE_UNUSED(bindIndex);
     return false;
 }
 
-void d3dConstantBuffer::addAtomicCounter(U32 sizeFactor) {
+void d3dConstantBuffer::addAtomicCounter(U16 sizeFactor) {
+    ACKNOWLEDGE_UNUSED(sizeFactor);
 }
 
-U32 d3dConstantBuffer::getAtomicCounter(U32 counterIndex) {
+U32 d3dConstantBuffer::getAtomicCounter(U8 counterIndex) {
+    ACKNOWLEDGE_UNUSED(counterIndex);
     return 0;
 }
 
-void d3dConstantBuffer::bindAtomicCounter(U32 counterIndex, U32 bindIndex) {
+void d3dConstantBuffer::bindAtomicCounter(U8 counterIndex, U8 bindIndex) {
+    ACKNOWLEDGE_UNUSED(counterIndex);
+    ACKNOWLEDGE_UNUSED(bindIndex);
 }
 
-void d3dConstantBuffer::resetAtomicCounter(U32 counterIndex) {
+void d3dConstantBuffer::resetAtomicCounter(U8 counterIndex) {
+    ACKNOWLEDGE_UNUSED(counterIndex);
 }
 
 };//namespace Divide

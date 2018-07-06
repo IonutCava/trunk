@@ -95,7 +95,7 @@ class SubMesh : public Object3D {
     Mesh* _parentMesh;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SubMesh);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(SubMesh);
 
 namespace Attorney {
 class SubMeshMesh {

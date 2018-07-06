@@ -247,7 +247,7 @@ class Light : public SceneNode {
     bool _enabled;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Light);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Light);
 
 };  // namespace Divide
 

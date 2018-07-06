@@ -197,6 +197,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     pkg->addPushConstantsCommand(pushConstantsCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
+    bindDescriptorSetsCommand._set = _context.newDescriptorSet();
     pkg->addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, *pkg);
@@ -264,8 +265,8 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
 
 void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
-    DescriptorSet& set = Attorney::RenderPackageRenderingComponent::descriptorSet(*pkg, 0);
-    TextureDataContainer& textures = set._textureData;
+    DescriptorSet_ptr& set = Attorney::RenderPackageRenderingComponent::descriptorSet(*pkg, 0);
+    TextureDataContainer& textures = set->_textureData;
 
     textures.clear();
     for (auto texture : _textureDependencies.textures()) {
@@ -277,8 +278,8 @@ void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
         mat->getTextureData(textures);
     }
 
-    if (set._shaderBuffers != _shaderBuffersCache) {
-        set._shaderBuffers = _shaderBuffersCache;
+    if (set->_shaderBuffers != _shaderBuffersCache) {
+        set->_shaderBuffers = _shaderBuffersCache;
     }
 }
 

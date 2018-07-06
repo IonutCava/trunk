@@ -91,7 +91,7 @@ class RTAttachment {
         RTAttachmentDescriptor _descriptor;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(RTAttachment);
+FWD_DECLARE_MANAGED_CLASS(RTAttachment);
 
 }; //namespace Divide
 

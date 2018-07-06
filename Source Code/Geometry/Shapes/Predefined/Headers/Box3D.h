@@ -52,7 +52,7 @@ class Box3D : public Object3D {
     vec3<F32> _halfExtent;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Box3D);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Box3D);
 
 };  // namespace Divide
 

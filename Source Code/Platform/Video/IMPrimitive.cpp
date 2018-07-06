@@ -15,6 +15,7 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
       _texture(nullptr)
 {
     _cmdBuffer = GFX::allocateCommandBuffer();
+    _descriptorSet = context.newDescriptorSet();
 }
 
 IMPrimitive::~IMPrimitive() 
@@ -27,7 +28,7 @@ void IMPrimitive::clear() {
     clearRenderStates();
     _worldMatrix.identity();
     _texture = nullptr;
-    _descriptorSet._textureData.clear();
+    _descriptorSet->_textureData.clear();
 }
 
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour& colour) {
@@ -204,8 +205,7 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) {
 
 void IMPrimitive::texture(const Texture& texture) {
     _texture = &texture;
-    _descriptorSet._textureData.clear();
-    _descriptorSet._textureData.addTexture(_texture->getData(),
-                                           to_U8(ShaderProgram::TextureUsage::UNIT0));
+    _descriptorSet->_textureData.clear();
+    _descriptorSet->_textureData.addTexture(_texture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
 }
 };

@@ -167,7 +167,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     const Texture* _texture;
     // render in wireframe mode
     bool _forceWireframe;
-    DescriptorSet _descriptorSet;
+    DescriptorSet_ptr _descriptorSet;
 
    private:
     /// If _pause is true, rendering for the current primitive is skipped and

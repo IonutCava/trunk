@@ -94,7 +94,7 @@ class glTexture final : public Texture,
     glLockManager* _lockManager;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(glTexture);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(glTexture);
 
 };  // namespace Divide
 

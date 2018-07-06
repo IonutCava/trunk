@@ -641,8 +641,8 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(depth->getData(),
-                                                  to_U8(ShaderProgram::TextureUsage::DEPTH));
+    descriptorSetCmd._set = _context.gfx().newDescriptorSet();
+    descriptorSetCmd._set->_textureData.addTexture(depth->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
     GFX::SetViewportCommand viewportCommand;

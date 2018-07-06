@@ -40,7 +40,7 @@
 namespace Divide {
 
 class AudioDescriptor;
-TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);
 
 class ResourceCache;
 class PlatformContext;

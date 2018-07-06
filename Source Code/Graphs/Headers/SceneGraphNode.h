@@ -92,7 +92,7 @@ class SceneRoot : public SceneNode {
     }
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneRoot);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneRoot);
 // Add as many SceneTransform nodes are needed as parent nodes for any scenenode
 // to create complex transforms in the scene
 class SceneTransform : public SceneNode {
@@ -114,7 +114,7 @@ class SceneTransform : public SceneNode {
     vec3<F32> _extents;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneTransform);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneTransform);
 
 namespace Attorney {
     class SceneGraphNodeEditor;

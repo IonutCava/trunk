@@ -3,6 +3,15 @@
 #include "Headers/DescriptorSets.h"
 
 namespace Divide {
+    DescriptorSet::DescriptorSet() {
+
+    }
+
+    DescriptorSet::~DescriptorSet() {
+
+    }
+
+
     ShaderBufferBinding::ShaderBufferBinding()
         : ShaderBufferBinding(ShaderBufferLocation::COUNT, nullptr, vec2<U32>(0, 0))
     {
@@ -32,14 +41,14 @@ namespace Divide {
 
     void ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
-                                  const vec2<U32>& range)
+                                  const vec2<U16>& range)
     {
         set(binding, buffer, range, std::make_pair(false, vec2<U32>(0u)));
     }
 
     void ShaderBufferBinding::set(ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
-                                  const vec2<U32>& range,
+                                  const vec2<U16>& range,
                                   const std::pair<bool, vec2<U32>>& atomicCounter) {
         ACKNOWLEDGE_UNUSED(atomicCounter);
         _binding = binding;

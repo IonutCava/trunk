@@ -173,7 +173,7 @@ void CommandBuffer::clean() {
 
     bool skip = false;
     const Pipeline* prevPipeline = nullptr;
-    DescriptorSet prevDescriptorSet;
+    DescriptorSet_ptr prevDescriptorSet;
 
     vectorEASTL<CommandEntry>::iterator it;
     for (it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
@@ -214,8 +214,8 @@ void CommandBuffer::clean() {
                 }
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                const DescriptorSet& set = getCommandInternal<BindDescriptorSetsCommand>(cmd)->_set;
-                if (prevDescriptorSet == set) {
+                const DescriptorSet_ptr& set = getCommandInternal<BindDescriptorSetsCommand>(cmd)->_set;
+                if (prevDescriptorSet != nullptr && *prevDescriptorSet == *set) {
                     it = _commandOrder.erase(it);
                     skip = true;
                 }
@@ -415,7 +415,7 @@ bool CommandBuffer::tryMergeCommands(GFX::Command* prevCommand, GFX::Command* cr
         case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
             BindDescriptorSetsCommand* crtBindCommand = static_cast<BindDescriptorSetsCommand*>(crtCommand);
             BindDescriptorSetsCommand* prevBindCommand = static_cast<BindDescriptorSetsCommand*>(prevCommand);
-            return prevBindCommand->_set.merge(crtBindCommand->_set);
+            return prevBindCommand->_set->merge(*crtBindCommand->_set);
 
         } break;
 

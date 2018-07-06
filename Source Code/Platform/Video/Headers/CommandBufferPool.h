@@ -36,9 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CommandBuffer.h"
 #include "config.h"
 
-#include <MemoryPool/StackAlloc.h>
-#include <MemoryPool/C-11/MemoryPool.h>
-
 namespace Divide {
 namespace GFX {
 

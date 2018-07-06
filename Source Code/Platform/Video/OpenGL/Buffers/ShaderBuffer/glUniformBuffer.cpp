@@ -138,7 +138,7 @@ void glUniformBuffer::writeData(ptrdiff_t offsetElementCount,
 }
 
 
-bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
+bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     GLuint range = static_cast<GLuint>(rangeElementCount * _primitiveSize);
     GLuint offset = static_cast<GLuint>(offsetElementCount * _primitiveSize);
     offset += static_cast<GLuint>(queueReadIndex() * _allignedBufferSize);
@@ -150,16 +150,16 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
     return _buffer->bindRange(bindIndex, offset, range);
 }
 
-bool glUniformBuffer::bind(U32 bindIndex) {
+bool glUniformBuffer::bind(U8 bindIndex) {
     return bindRange(bindIndex, 0, _primitiveCount);
 }
 
-void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
+void glUniformBuffer::addAtomicCounter(U16 sizeFactor) {
     stringImpl name = Util::StringFormat("DVD_ATOMIC_BUFFER_%d_%d", getGUID(), _atomicCounters.size());
-    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(_context, std::max(sizeFactor, 1u), name.c_str()));
+    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(_context, std::max(sizeFactor, to_U16(1u)), name.c_str()));
 }
 
-U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {
+U32 glUniformBuffer::getAtomicCounter(U8 counterIndex) {
     if (counterIndex >= to_U32(_atomicCounters.size())) {
         return 0;
     }
@@ -170,7 +170,7 @@ U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {
     return result;
 }
 
-void glUniformBuffer::bindAtomicCounter(U32 counterIndex, U32 bindIndex) {
+void glUniformBuffer::bindAtomicCounter(U8 counterIndex, U8 bindIndex) {
     if (counterIndex >= to_U32(_atomicCounters.size())) {
         return;
     }
@@ -183,7 +183,7 @@ void glUniformBuffer::bindAtomicCounter(U32 counterIndex, U32 bindIndex) {
     counter->incQueue();
 }
 
-void glUniformBuffer::resetAtomicCounter(U32 counterIndex) {
+void glUniformBuffer::resetAtomicCounter(U8 counterIndex) {
     if (counterIndex > to_U32(_atomicCounters.size())) {
         return;
     }
@@ -192,8 +192,7 @@ void glUniformBuffer::resetAtomicCounter(U32 counterIndex) {
     counter->_buffer->writeData(1, 0, counter->queueWriteIndex(), (bufferPtr)(&defaultValue));
 }
 
-void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
-                                U32 bindIndex) {
+void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram, U8 bindIndex) {
     GLuint prog = shaderProgram->getID();
     GLuint block_index = bindIndex;
 

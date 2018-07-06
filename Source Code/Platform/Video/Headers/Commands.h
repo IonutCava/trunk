@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
+#include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>
 
 struct ImDrawData;
@@ -80,6 +81,8 @@ enum class CommandType : U8 {
     COUNT
 };
 
+class CommandBuffer;
+
 struct Command {
     explicit Command(CommandType type)
         : _type(type)
@@ -88,6 +91,7 @@ struct Command {
     virtual ~Command() = default;
 
     virtual const std::type_info& type() = 0;
+    virtual void onAdd(CommandBuffer& buffer) { ACKNOWLEDGE_UNUSED(buffer); }
 
     CommandType _type = CommandType::COUNT;
 };
@@ -98,6 +102,10 @@ struct BindPipelineCommand final : Command {
     }
 
     TYPE_HANDLER(BindPipelineCommand);
+    void onAdd(CommandBuffer& buffer) override {
+        ACKNOWLEDGE_UNUSED(buffer);
+        assert(_pipeline != nullptr);
+    }
 
     const Pipeline* _pipeline = nullptr;
 };
@@ -269,7 +277,12 @@ struct BindDescriptorSetsCommand final : Command {
 
     TYPE_HANDLER(BindDescriptorSetsCommand);
 
-    DescriptorSet _set;
+    void onAdd(CommandBuffer& buffer) override { 
+        ACKNOWLEDGE_UNUSED(buffer);
+        assert(_set != nullptr);
+    }
+
+    DescriptorSet_ptr _set = nullptr;
 };
 REGISTER_COMMAND(BindDescriptorSetsCommand, 1024);
 

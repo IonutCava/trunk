@@ -100,8 +100,9 @@ class CommandBuffer : protected NonCopyable {
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
-EnqueueCommand(CommandBuffer& buffer, const T& cmd) {
+EnqueueCommand(CommandBuffer& buffer, T& cmd) {
     buffer.add(cmd);
+    cmd.onAdd(buffer);
 }
 
 }; //namespace GFX

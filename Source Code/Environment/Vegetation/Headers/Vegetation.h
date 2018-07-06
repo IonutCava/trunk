@@ -146,7 +146,7 @@ class Vegetation : public SceneNode {
     GenericDrawCommand _cullDrawCommand;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Vegetation);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);
 
 };  // namespace Divide
 

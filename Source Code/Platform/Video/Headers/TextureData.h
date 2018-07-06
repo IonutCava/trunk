@@ -37,8 +37,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/Hashable.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 
+#include <MemoryPool/StackAlloc.h>
+#include <MemoryPool/C-11/MemoryPool.h>
+
 namespace Divide {
-class TextureData : public Hashable {
+class TextureData final : public Hashable {
 public:
     TextureData() : TextureData(TextureType::TEXTURE_2D, 0u)
     {

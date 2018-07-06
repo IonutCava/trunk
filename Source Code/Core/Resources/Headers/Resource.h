@@ -67,11 +67,8 @@ enum class ResourceType : U8 {
     COUNT
 };
 
-class Resource;
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
-
-class CachedResource;
-TYPEDEF_SMART_POINTERS_FOR_CLASS(CachedResource);
+FWD_DECLARE_MANAGED_CLASS(Resource);
+FWD_DECLARE_MANAGED_CLASS(CachedResource);
 
 class Resource : public GUIDWrapper
 {
@@ -195,7 +192,7 @@ struct TerrainInfo {
     bool active = false;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
+FWD_DECLARE_MANAGED_CLASS(Resource);
 
 };  // namespace Divide
 

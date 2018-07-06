@@ -104,8 +104,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
 
         if (_texture) {
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
-            descriptorSetCmd._set._textureData.addTexture(_texture->getData(),
-                                                          to_U8(ShaderProgram::TextureUsage::UNIT0));
+            descriptorSetCmd._set = _descriptorSet;
             GFX::EnqueueCommand(*_cmdBuffer, descriptorSetCmd);
         }
 

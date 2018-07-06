@@ -264,7 +264,8 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
 
     TextureData texData = depthMap.getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set = _context.newDescriptorSet(); 
+    descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -291,8 +292,8 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
     
     texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    descriptorSetCmd._set._textureData.clear();
-    descriptorSetCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set = _context.newDescriptorSet();
+    descriptorSetCmd._set->_textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     beginRenderPassCmd._target = getDepthMapID();

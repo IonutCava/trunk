@@ -96,7 +96,7 @@ class Mesh : public Object3D {
     vector<SubMesh_ptr> _subMeshList;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Mesh);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Mesh);
 
 };  // namespace Divide
 

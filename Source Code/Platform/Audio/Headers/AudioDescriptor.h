@@ -98,7 +98,7 @@ class AudioDescriptor : public CachedResource {
     I8 _bitDepth, _channelID, _volume;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);
 
 };  // namespace Divide
 

@@ -79,7 +79,7 @@ class Sky : public SceneNode {
     size_t _skyboxRenderStateReflectedHash;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Sky);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(Sky);
 
 };  // namespace Divide
 

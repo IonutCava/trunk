@@ -85,7 +85,7 @@ class WaterPlane : public SceneNode {
     Camera* _reflectionCam;
 };
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(WaterPlane);
+TYPEDEF_SMART_POINTERS_FOR_TYPE(WaterPlane);
 
 };  // namespace Divide
 

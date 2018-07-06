@@ -91,6 +91,7 @@ struct SizeChangeParams;
 struct ShaderBufferDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
+FWD_DECLARE_MANAGED_STRUCT(DescriptorSet);
 
 namespace Time {
     class ProfileTimer;
@@ -111,6 +112,7 @@ namespace TypeUtil {
     RenderStage stringToRenderStage(const char* stage);
     RenderPassType stringToRenderPassType(const char* pass);
 };
+
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
@@ -349,7 +351,7 @@ public:
     ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
 
     Pipeline&          newPipeline(const PipelineDescriptor& descriptor) const;
-    DescriptorSet&     newDescriptorSet();
+    DescriptorSet_ptr  newDescriptorSet() const;
 
     // Shortcuts
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
@@ -518,8 +520,8 @@ protected:
 
     Time::ProfileTimer& _commandBuildTimer;
 
-    MemoryPool<DescriptorSet, 1024> _descriptorSetPool;
-
+    mutable DescriptorSetPool _descriptorSetPool;
+    
     mutable hashMap<size_t, Pipeline> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
