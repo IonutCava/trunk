@@ -7,8 +7,8 @@
 //ref: https://github.com/bioglaze/aether3d
 namespace Divide {
 namespace {
-    I32 numActivePointLights = 0;
-    I32 numActiveSpotLights = 0;
+    U32 numActivePointLights = 0;
+    U32 numActiveSpotLights = 0;
 
     U32 getMaxNumLightsPerTile() {
         const U32 adjustmentMultipier = 32;
@@ -18,7 +18,8 @@ namespace {
         CLAMP<U16>(height, height, 1080);
 
         // adjust max lights per tile down as height increases
-        return (Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
+        //return (Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
+        return 32;
     }
 
     U32 getNumTilesX() { 
@@ -29,30 +30,6 @@ namespace {
     U32 getNumTilesY() { 
         U16 height = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().height;
         return to_uint((height + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) / to_float(Config::Lighting::FORWARD_PLUS_TILE_RES));
-    }
-
-    I32 getNextPointLightBufferIndex()
-    {
-        if (numActivePointLights + numActiveSpotLights < Config::Lighting::MAX_POSSIBLE_LIGHTS)
-        {
-            ++numActivePointLights;
-            return numActivePointLights - 1;
-        }
-
-        // Error handling is done in the caller.
-        return -1;
-    }
-
-    I32 getNextSpotLightBufferIndex()
-    {
-        if (numActiveSpotLights + numActiveSpotLights + 1 < Config::Lighting::MAX_POSSIBLE_LIGHTS)
-        {
-            ++numActiveSpotLights;
-            return numActiveSpotLights - 1;
-        }
-
-        // Error handling is done in the caller.
-        return -1;
     }
 };
 
@@ -66,9 +43,8 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
-    _perTileLightIndexBuffer.reset(GFX_DEVICE.newSB("dvd_perTileLightIndexBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
-    _perTileLightIndexBuffer->create(4 * maxNumLightsPerTile * numTiles, sizeof(U32));
-
+    _perTileLightIndexBuffer.reset(GFX_DEVICE.newSB("dvd_perTileLightIndexBuffer", 1, true, true, BufferUpdateFrequency::ONCE));
+    _perTileLightIndexBuffer->create(maxNumLightsPerTile * numTiles, sizeof(U32));
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }
 
@@ -79,10 +55,8 @@ ForwardPlusRenderer::~ForwardPlusRenderer()
 
 void ForwardPlusRenderer::preRender() {
     LightManager& lightMgr = LightManager::getInstance();
-    const vectorImpl<Light*>& pointLights = lightMgr.getLights(LightType::POINT);
-    const vectorImpl<Light*>& spotLights = lightMgr.getLights(LightType::SPOT);
-    numActivePointLights = to_int(pointLights.size());
-    numActiveSpotLights = to_int(spotLights.size());
+    numActivePointLights = lightMgr.getActiveLightCount(LightType::POINT);
+    numActiveSpotLights = lightMgr.getActiveLightCount(LightType::SPOT);
 
     lightMgr.uploadLightData(LightType::POINT, ShaderBufferLocation::LIGHT_CULL_POINT);
     lightMgr.uploadLightData(LightType::SPOT, ShaderBufferLocation::LIGHT_CULL_SPOT);
@@ -93,16 +67,11 @@ void ForwardPlusRenderer::preRender() {
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();
-    _lightCullComputeShader->Uniform("invProjection", GFX_DEVICE.getMatrix(MATRIX::PROJECTION_INV));
-    _lightCullComputeShader->Uniform("numLights", (((U32)numActiveSpotLights & 0xFFFFu) << 16) | ((U32)numActivePointLights & 0xFFFFu));
+    _lightCullComputeShader->Uniform("numLights", ((numActiveSpotLights & 0xFFFFu) << 16) |
+                                                   (numActivePointLights & 0xFFFFu));
     _lightCullComputeShader->Uniform("maxNumLightsPerTile", (I32)_flag);
     _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1);
-    _lightCullComputeShader->SetMemoryBarrier();
-
-    //const U32 numTiles = getNumTilesX() * getNumTilesY();
-    //const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
-    //vectorImpl<U32> data(4 * maxNumLightsPerTile * numTiles);
-    //_perTileLightIndexBuffer->getData(0, 4 * maxNumLightsPerTile * numTiles, &data[0]);
+    _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::BUFFER);
 }
 
 void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,

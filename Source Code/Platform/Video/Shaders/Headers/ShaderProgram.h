@@ -62,6 +62,17 @@ class NOINITVTABLE ShaderProgram : public Resource {
         ROUGHNESS = GLOSS
     };
 
+    enum class MemoryBarrierType : U32 {
+        BUFFER = 0,
+        TEXTURE = 1,
+        RENDER_TARGET = 2,
+        TRANSFORM_FEEDBACK = 3,
+        COUNTER = 4,
+        QUERY = 5,
+        ALL = 6,
+        COUNT
+    };
+
     virtual ~ShaderProgram();
 
     virtual bool bind() = 0;
@@ -158,7 +169,7 @@ class NOINITVTABLE ShaderProgram : public Resource {
 
     virtual void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) = 0;
 
-    virtual void SetMemoryBarrier() = 0; 
+    virtual void SetMemoryBarrier(MemoryBarrierType type) = 0;
 
     inline void Uniform(I32 location, TextureUsage slot) {
         Uniform(location, to_ubyte(slot));

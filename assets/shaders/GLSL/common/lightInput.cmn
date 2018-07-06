@@ -52,8 +52,6 @@ layout(binding = BUFFER_LIGHT_CULL_SPOT, std430) coherent ACCESS buffer spotLigh
 
 #endif
 
-
-
 #if defined(FRAG_SHADER)
 struct Shadow {
     uvec4 _arrayOffset;
@@ -86,9 +84,7 @@ uint GetNumTilesY()
 uint GetTileIndex(in vec2 ScreenPos)
 {
     float fTileRes = float(FORWARD_PLUS_TILE_RES);
-    uint nNumCellsX = (windowWidth + FORWARD_PLUS_TILE_RES - 1) / FORWARD_PLUS_TILE_RES;
-    uint nTileIdx = uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * nNumCellsX);
-    return nTileIdx;
+    return uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * GetNumTilesX());
 }
 
 #endif //_LIGHT_INPUT_CMN_

@@ -303,7 +303,7 @@ void GFXDevice::occlusionCull(U32 pass) {
     getCommandBuffer(currentStage, pass).bind(ShaderBufferLocation::GPU_COMMANDS);
     getCommandBuffer(currentStage, pass).bindAtomicCounter();
     _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
-    _HIZCullProgram->SetMemoryBarrier();
+    _HIZCullProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::COUNTER);
 }
 
 U32 GFXDevice::getLastCullCount(U32 pass) const {

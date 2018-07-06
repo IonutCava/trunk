@@ -130,7 +130,7 @@ class glShaderProgram final : public ShaderProgram {
 
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
 
-    void SetMemoryBarrier() override;
+    void SetMemoryBarrier(MemoryBarrierType type) override;
 
    protected:
     /// Creation of a new shader program. Pass in a shader token and use glsw to

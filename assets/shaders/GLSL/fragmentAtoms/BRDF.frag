@@ -20,6 +20,24 @@ void getBRDFFactors(in int lightIndex,
 #endif
 }
 
+uint GetNumLightsInThisTile(uint nTileIndex)
+{
+    uint nNumLightsInThisTile = 0;
+    uint lightsPerTile = uint(dvd_otherData.w);
+    uint offset = lightsPerTile * nTileIndex;
+    // count point lights
+    for (uint i = 0; i < lightsPerTile; ++i) {
+        uint light = perTileLightIndices[offset + i];
+        if (light > 0 && light < LIGHT_INDEX_BUFFER_SENTINEL) {
+            nNumLightsInThisTile++;
+        } else if (light == LIGHT_INDEX_BUFFER_SENTINEL) {
+            break;
+        }
+    }
+
+    return nNumLightsInThisTile;
+}
+
 vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     if (dvd_lodLevel > 2 && (texCoord.x + texCoord.y == 0)) {
         discard;
@@ -67,30 +85,42 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
         getBRDFFactors(int(lightIdx + offset), normalWV, lightColor);
     }
 
-/*  
-    uint maxLightsPerTile = uint(dvd_otherData.w);
-    uint nTileIndex = GetTileIndex(gl_FragCoord.xy);
-    uint nIndex = maxLightsPerTile * nTileIndex;
-    uint nNextLightIndex = perTileLightIndices[int(nIndex)];
+    /*uint nTileIndex = GetTileIndex(gl_FragCoord.xy);
+    uint nIndex = uint(dvd_otherData.w) * nTileIndex;
+    uint nNextLightIndex = perTileLightIndices[nIndex];
+    uint count = 0;
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
     {
         uint nLightIndex = nNextLightIndex;
-        nIndex++;
-        nNextLightIndex = perTileLightIndices[int(nIndex)];
+        nNextLightIndex = perTileLightIndices[++nIndex];
         // offset index to account for directional lights
-        getBRDFFactors(int(nNextLightIndex + offset), normalWV, lightColor);
+        //getBRDFFactors(int(nLightIndex + offset), normalWV, lightColor);
+        if (nLightIndex > 0) {
+            count++;
+            if (count > 10) {
+                break;
+            }
+        }
     }
-    
+    return vec4(0.2, 0.2, 0.2, 1.0) + (float(GetTileIndex(gl_FragCoord.xy)) / 5100.0);
+    uint tileCount = GetNumLightsInThisTile(GetTileIndex(gl_FragCoord.xy));
+    if (tileCount == 0) {
+        return vec4(0.0, 0.0, 0.0, 1.0);
+    } else if (tileCount == 1) {
+        return vec4(0.5, 0.5, 0.5, 1.0);
+    } else {
+        return vec4(1.0);
+    }
     // Moves past the first sentinel to get to the spot lights.
     nIndex++;
-    nNextLightIndex = perTileLightIndexBuffer[int(nIndex))];
+    nNextLightIndex = perTileLightIndices[nIndex];
 
     // Loops over spot lights.
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
     {
     uint nLightIndex = nNextLightIndex;
     nIndex++;
-    nNextLightIndex = perTileLightIndexBuffer[int(nIndex))];
+    nNextLightIndex = perTileLightIndices[nIndex];
     // offset index to account for directional and point lights
     uint lightIndex = nNextLightIndex + dvd_lightCountPerType[0] + dvd_lightCountPerType[1];
     }
