@@ -86,7 +86,7 @@ namespace Navigation {
         DivideDtCrowd(NavigationMesh *navMesh);
         ~DivideDtCrowd();
         /// Add an agent to the crowd:  Returns ID of created agent (-1 if maximum agents is already created)
-        I32 addAgent(const vec3<F32>& position);
+        I32 addAgent(const vec3<F32>& position, F32 maxSpeed, F32 acceleration);
         /// Retrieve agent with specified ID from the crowd.
         inline const dtCrowdAgent* getAgent(I32 id) const { return _crowd->getAgent(id); }
 
@@ -154,8 +154,8 @@ namespace Navigation {
         inline I32 getNbAgents()    const { return _activeAgents; }
         /// Get the navigation mesh associated with this crowd
         inline const NavigationMesh& getNavMesh() {return *_recast;}
-		/// Check if the navMesh is valid
-		bool isValidNavMesh() const;
+        /// Check if the navMesh is valid
+        bool isValidNavMesh() const;
         /// Change the navigation mesh for this crowd
         inline void setNavMesh(NavigationMesh* navMesh) {_recast = navMesh;}
         /// The maximum number of agents that are allowed in this crowd.

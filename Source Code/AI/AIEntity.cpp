@@ -43,12 +43,14 @@ AIEntity::~AIEntity()
 }
 
 void AIEntity::load(const vec3<F32>& position) {
+    setPosition(position);
+
     if(!isAgentLoaded() && _detourCrowd) {
-        _agentID = _detourCrowd->addAgent(position);
+        _agentID = _detourCrowd->addAgent(position, (_detourCrowd->getAgentHeight()/2)*3.5f, 10.0f);
         _agent = _detourCrowd->getAgent(_agentID);
         _destination = position;
     }
-    setPosition(position);
+    
 }
 
 void AIEntity::unload() {
@@ -204,16 +206,8 @@ void AIEntity::setPosition(const vec3<F32> position) {
 
     vec3<F32> result;
 
-#ifdef _DEBUG
-	U64 elapsedTime = GETUSTIME();
-#endif
-	while(!_detourCrowd->isValidNavMesh()) {
-#ifdef _DEBUG
-		// timeout of 5 (random) seconds - Ionut!
-		assert(getUsToSec(elapsedTime - GETUSTIME(true)) > 5.0);
-#endif
-		// wait while the navmesh is ready. If we got here, we already have a valid angent and a crowd, so the navmesh may be updating
-	}
+    if(!_detourCrowd->isValidNavMesh())
+        return;
 
     // Find position on navmesh
     if (!Navigation::DivideRecast::getInstance().findNearestPointOnNavmesh(_detourCrowd->getNavMesh(), position, result))
@@ -221,7 +215,7 @@ void AIEntity::setPosition(const vec3<F32> position) {
 
     // Remove agent from crowd and re-add at position
     _detourCrowd->removeAgent(_agentID);
-    _agentID = _detourCrowd->addAgent(result);
+    _agentID = _detourCrowd->addAgent(result, (_detourCrowd->getAgentHeight()/2)*3.5f, 10.0f);
     _agent = _detourCrowd->getAgent(_agentID);
 
     if(_unitRef)
@@ -245,16 +239,7 @@ void AIEntity::updateDestination(const vec3<F32>& destination, bool updatePrevio
         return;
 
     vec3<F32> result;
-#ifdef _DEBUG
-	U64 elapsedTime = GETUSTIME();
-#endif
-	while(!_detourCrowd->isValidNavMesh()) {
-#ifdef _DEBUG
-		// timeout of 5 (random) seconds - Ionut!
-		assert(getUsToSec(elapsedTime - GETUSTIME(true)) > 5.0);
-#endif
-		// wait while the navmesh is ready. If we got here, we already have a valid angent and a crowd, so the navmesh may be updating
-	}
+
     // Find position on navmesh
     if(!Navigation::DivideRecast::getInstance().findNearestPointOnNavmesh(_detourCrowd->getNavMesh() , destination, result))
         return;

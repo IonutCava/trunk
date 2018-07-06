@@ -36,22 +36,22 @@ void main(void){
     computeData();
     _normalWV = normalize(dvd_Normal);
 
-	computeFoliageMovementGrass(_normalWV, dvd_Vertex);
+    computeFoliageMovementGrass(_normalWV, dvd_Vertex);
 
-	_grassColor.a = clamp(grassVisibilityRange / length(dvd_cameraPosition - dvd_Vertex.xyz), 0.0, 1.0);
-	
-	computeLightVectorsPhong();
-	float intensity = dot(_lightDirection[0].xyz, _normalWV);
+    _grassColor.a = clamp(grassVisibilityRange / length(dvd_cameraPosition - dvd_Vertex.xyz), 0.0, 1.0);
+    
+    computeLightVectorsPhong();
+    float intensity = dot(_lightDirection[0].xyz, _normalWV);
 
-	_grassColor.rgb = vec3(intensity);
+    _grassColor.rgb = vec3(intensity);
           
-	if(dvd_enableShadowMapping) {
-		// position multiplied by the light matrix. 
-		//The vertex's position from the light's perspective
-		_shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
-	}
+    if(dvd_enableShadowMapping) {
+        // position multiplied by the light matrix. 
+        //The vertex's position from the light's perspective
+        _shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
+    }
 
-	gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
+    gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
 }
 
 -- Fragment
@@ -61,7 +61,6 @@ in vec3 _normalWV;
 in vec4 _grassColor;
 in vec4 _vertexW;
 in vec3 _lightDirection[MAX_LIGHT_COUNT];
-in float dvd_ClipDistance[MAX_CLIP_PLANES];
 
 out vec4 _colorOut;
 
@@ -69,6 +68,7 @@ uniform sampler2D texDiffuse;
 
 #include "lightInput.cmn"
 #include "shadowMapping.frag"
+#include "lightingDefaults.frag"
 
 void main (void){
     

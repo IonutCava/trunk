@@ -2,10 +2,6 @@ in vec3 _lightDirection[MAX_LIGHT_COUNT];
 smooth in float _attenuation[MAX_LIGHT_COUNT];
 in vec3 _viewDirection;
 
-#define LIGHT_DIRECTIONAL		0
-#define LIGHT_OMNIDIRECTIONAL	1
-#define LIGHT_SPOT				2
-
 struct MaterialProperties {
     vec4 ambient;
     vec4 diffuse;
@@ -27,98 +23,126 @@ uniform sampler2D texOpacityMap;
 uniform sampler2D texSpecularMap;
 #endif
 
+const int LIGHT_DIRECTIONAL = 0;
+const int LIGHT_OMNIDIRECTIONAL = 1;
+const int LIGHT_SPOT = 2;
+
 #include "phong_point_light.frag"
 #include "phong_spot_light.frag"
 #include "phong_directional_light.frag"
 #include "shadowMapping.frag"
 
-void applyLight(const in int light, 
-                const in int lightType, 
-                const in bool lightCastsShadows,
-                const in vec2 texCoord, 
-                const in vec3 normal, 
-                const in vec3 viewDirection,
-                inout MaterialProperties materialProp)
-{
+float iSpecular;
+float NdotL;
 
-#if defined(USE_SPECULAR_MAP)
-    vec4 specularValue = texture(texSpecularMap, texCoord)
-#else
-    vec4 specularValue = material[2];
-#endif
-    
-    vec3 L = normalize(_lightDirection[light]);
-    vec3 R = normalize(-reflect(L,normal));
-    //Specular intensity based on material shininess
-    float iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    float NdotL = max(dot(normal, L), 0.0);
+void applyLight(const in int index, const in int type, const in bool castsShadows, const in vec4 specular, inout MaterialProperties materialProp) {
 
-    if(lightType == LIGHT_DIRECTIONAL){
-        phong_directionalLight(light, iSpecular, NdotL, specularValue, materialProp);
+    if(type == LIGHT_DIRECTIONAL ) {
+        phong_directionalLight(index, iSpecular, NdotL, specular, materialProp);
 
-        if(light >= MAX_SHADOW_CASTING_LIGHTS) return;
-        if(lightCastsShadows) applyShadowDirectional(light, materialProp.shadowFactor); 
+        if(!dvd_enableShadowMapping || index >= MAX_SHADOW_CASTING_LIGHTS || !castsShadows) return;
+        applyShadowDirectional(index, materialProp.shadowFactor); 
 
-    }else if(lightType == LIGHT_OMNIDIRECTIONAL){
-        phong_pointLight(light, iSpecular, NdotL, specularValue, materialProp);
+    } else {
+        if(type == LIGHT_OMNIDIRECTIONAL) {
+            phong_pointLight(index, iSpecular, NdotL, specular, materialProp);
 
-        if(light >= MAX_SHADOW_CASTING_LIGHTS) return;
-        if(lightCastsShadows) applyShadowPoint(light, materialProp.shadowFactor); 
+            if(!dvd_enableShadowMapping || index >= MAX_SHADOW_CASTING_LIGHTS || !castsShadows) return;
+            applyShadowPoint(index, materialProp.shadowFactor); 
 
-    }else{//if(lightType == LIGHT_SPOT)
-        phong_spotLight(light, iSpecular, NdotL, specularValue, materialProp);
+        } else { //LIGHT_SPOT
+            phong_spotLight(index, iSpecular, NdotL, specular, materialProp);
 
-        if(light >= MAX_SHADOW_CASTING_LIGHTS) return;
-        if(lightCastsShadows) applyShadowSpot(light, materialProp.shadowFactor); 
+            if(!dvd_enableShadowMapping || index >= MAX_SHADOW_CASTING_LIGHTS || !castsShadows) return;
+            applyShadowSpot(index, materialProp.shadowFactor);
+        }
     }
 }
 
 void phong_loop(in vec2 texCoord, in vec3 normal, inout MaterialProperties materialProp){
+
+    vec3 L; vec3 R;
+
     vec3 viewDirection = normalize(_viewDirection);
-    if(dvd_lightCount == 0) 
-        return;
-    applyLight(0, dvd_lightType[0], dvd_lightCastsShadows[0], texCoord, normal, viewDirection, materialProp);
+#if defined(USE_SPECULAR_MAP)
+    vec4 specularValue = texture(texSpecularMap, texCoord);
+#else
+    vec4 specularValue = material[2];
+#endif
+     
+    if(dvd_lightCount == 0)  return;
+    L = normalize(_lightDirection[0]);
+    R = normalize(-reflect(L,normal));    //Specular intensity based on material shininess
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(0, dvd_lightType[0], dvd_lightCastsShadows[0], specularValue, materialProp);
+
 #if MAX_LIGHT_COUNT >= 2
-    if(dvd_lightCount == 1)
-        return;
-    applyLight(1, dvd_lightType[1], dvd_lightCastsShadows[1], texCoord, normal, viewDirection, materialProp);
+    if(dvd_lightCount == 1)  return;
+    L = normalize(_lightDirection[1]);
+    R = normalize(-reflect(L,normal)); 
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(1, dvd_lightType[1], dvd_lightCastsShadows[1], specularValue, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 3
-    if(dvd_lightCount == 2) 
-        return;
-    applyLight(2, dvd_lightType[2], dvd_lightCastsShadows[2], texCoord, normal, viewDirection, materialProp);
+    if(dvd_lightCount == 2)  return;
+    L = normalize(_lightDirection[2]);
+    R = normalize(-reflect(L,normal)); 
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(2, dvd_lightType[2], dvd_lightCastsShadows[2], specularValue, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 4
-    if(dvd_lightCount == 3) 
-        return;
-    applyLight(3, dvd_lightType[3], dvd_lightCastsShadows[3], texCoord, normal, viewDirection, materialProp);
+    if(dvd_lightCount == 3) return;
+    L = normalize(_lightDirection[3]);
+    R = normalize(-reflect(L,normal)); 
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(3, dvd_lightType[3], dvd_lightCastsShadows[3], specularValue, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 5
-    if(dvd_lightCount == 4) 
-        return;
-    applyLight(4, dvd_lightType[4], dvd_lightCastsShadows[4], texCoord, normal, viewDirection, materialProp);
+    if(dvd_lightCount == 4) return;
+    L = normalize(_lightDirection[4]);
+    R = normalize(-reflect(L,normal)); 
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(4, dvd_lightType[4], dvd_lightCastsShadows[4], specularValue, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 6
-    if(dvd_lightCount == 5) 
-        return;
-    applyLight(5, dvd_lightType[5], dvd_lightCastsShadows[5], texCoord, normal, viewDirection, materialProp);
+    if(dvd_lightCount == 5) return;
+    L = normalize(_lightDirection[5]);
+    R = normalize(-reflect(L,normal)); 
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(5, dvd_lightType[5], dvd_lightCastsShadows[5], specularValue, materialProp);
 #endif
 #if MAX_LIGHT_COUNT >= 7
-    if(dvd_lightCount == 6) 
-        return;
-    applyLight(6, dvd_lightType[6], dvd_lightCastsShadows[6], texCoord, normal, viewDirection, materialProp);
+    if(dvd_lightCount == 6) return;
+    L = normalize(_lightDirection[6]);
+    R = normalize(-reflect(L,normal)); 
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(6, dvd_lightType[6], dvd_lightCastsShadows[6], specularValue, materialProp);
 #endif
 #if MAX_LIGHT_COUNT == 8
-    if(dvd_lightCount == 7) 
-        return;
-    applyLight(7, dvd_lightType[7], dvd_lightCastsShadows[7], texCoord, normal, viewDirection, materialProp);
+    if(dvd_lightCount == 7) return;
+    L = normalize(_lightDirection[7]);
+    R = normalize(-reflect(L,normal)); 
+    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+    NdotL = max(dot(normal, L), 0.0);
+    applyLight(7, dvd_lightType[7], dvd_lightCastsShadows[7], specularValue, materialProp);
 #endif
 #if MAX_LIGHT_COUNT > 8
     ///Apply the rest of the lights
     for(int i = 8; i =< MAX_LIGHT_COUNT; i++){
-        if(dvd_lightCount == i)
-            return;
-        applyLight(i, dvd_lightType[i], dvd_lightCastsShadows[i], texCoord, normal, viewDirection, materialProp);
+        if(dvd_lightCount == i) return;
+        L = normalize(_lightDirection[i]);
+        R = normalize(-reflect(L,normal)); 
+        iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
+        NdotL = max(dot(normal, L), 0.0);
+        applyLight(i, dvd_lightType[i], dvd_lightCastsShadows[i], specularValue, materialProp);
     }
 #endif
+    
 }

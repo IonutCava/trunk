@@ -607,9 +607,6 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
@@ -660,6 +657,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\common\lightInput.cmn">
       <Filter>shaders\GLSL\common</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\lightingDefaults.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
   </ItemGroup>
 </Project>

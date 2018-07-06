@@ -6,6 +6,7 @@
 	<item>cylinderNW</item>
 	<item>cylinderSE</item>
 	<item>cylinderSW</item>
+	<item>cylinderC</item>
 </geometry>
 
 <primitives>
@@ -15,7 +16,7 @@
 <Soldier1>
 	<model>models/dwarf.x</model>
 	<scale x="0.05" y="0.05" z="0.05" />
-	<position x="0" y="0" z="0" />
+	<position x="0" y="0" z="-7" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 </Soldier1>
@@ -61,7 +62,7 @@
 
 <cylinderNW>
 	<model>models/cylinder.obj</model>
-	<scale x="2" y="2" z="2" />
+	<scale x="3" y="3" z="3" />
 	<position x="10" y="0" z="-10" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
@@ -83,8 +84,19 @@
 
 <cylinderSW>
 	<model>models/cylinder.obj</model>
-	<scale x="2" y="2" z="2" />
+	<scale x="2.5" y="2.5" z="2.5" />
 	<position x="10" y="0" z="10" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
+</cylinderSW>
+
+<cylinderC>
+	<model>models/cylinder.obj</model>
+	<scale x="4" y="4" z="4" />
+	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>

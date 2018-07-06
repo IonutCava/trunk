@@ -5,7 +5,7 @@ layout(std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
-	mat4 dvd_ViewProjectionMatrix;
+    mat4 dvd_ViewProjectionMatrix;
 };
 
 in vec3  inVertexData;
@@ -48,20 +48,11 @@ void main(void){
 
 out vec4 _colorOut;
 
-uniform float _waterHeight;
-#if defined(SKIP_HARDWARE_CLIPPING)
-in float dvd_ClipDistance[MAX_CLIP_PLANES];
-#else
-in float gl_ClipDistance[MAX_CLIP_PLANES];
-#endif
+#include "lightingDefaults.frag"
 
 void main (void)
 {
-#if defined(SKIP_HARDWARE_CLIPPING)
-    if(dvd_ClipDistance[0] < 0) discard;
-#else
-    if(gl_ClipDistance[0] < 0) discard;
-#endif
+    computeData();
     _colorOut = vec4(1.0,1.0,1.0,1.0);
 }
 
@@ -75,13 +66,6 @@ in vec3 _normalMV;
 in vec4 _vertexW;
 
 #include "lightInput.cmn"
-
-#if defined(SKIP_HARDWARE_CLIPPING)
-in float dvd_ClipDistance[MAX_CLIP_PLANES];
-uniform int  dvd_clip_plane_active[MAX_CLIP_PLANES];
-#else
-in float gl_ClipDistance[MAX_CLIP_PLANES];
-#endif
 
 out vec4 _colorOut;
 
@@ -112,7 +96,7 @@ vec4 NormalMapping(in vec2 uv,in vec3 pixelToLightTBN);
 vec4 NormalMappingUnderwater(in vec2 uv,in vec3 pixelToLightTBN);
 vec4 CausticsColor();
 
-#include "fog.frag"
+#include "lightingDefaults.frag"
 #include "shadowMapping.frag"
 
 
@@ -193,11 +177,7 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
     
 vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
 {	
-#if defined(SKIP_HARDWARE_CLIPPING)
-    if(dvd_clip_plane_active[0] == 1) discard;
-#else
-    if(gl_ClipDistance[0] == 1) discard;
-#endif
+    computeData();
     
 
     vec3 lightVecTBN = normalize(pixelToLightTBN);

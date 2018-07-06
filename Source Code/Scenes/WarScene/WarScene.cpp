@@ -129,9 +129,9 @@ void WarScene::processInput(const U64 deltaTime){
 static boost::atomic_bool navMeshStarted;
 
 void navMeshCreationCompleteCallback(Navigation::NavigationMesh* navMesh){
-	navMesh->save();
-	AIManager::getInstance().addNavMesh(navMesh);
-	AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+    navMesh->save();
+    AIManager::getInstance().addNavMesh(navMesh);
+    AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 }
 
 void WarScene::updateSceneState(const U64 deltaTime){
@@ -147,12 +147,12 @@ void WarScene::updateSceneState(const U64 deltaTime){
 
         if(!navMesh->load(NULL)) //<Start from root for now
             navMesh->build(NULL, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
-		else{
-			AIManager::getInstance().addNavMesh(navMesh);
-			AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
-		}
+        else{
+            AIManager::getInstance().addNavMesh(navMesh);
+            AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+        }
 
-		navMeshStarted = true;
+        navMeshStarted = true;
     }
 
     Scene::updateSceneState(deltaTime);
@@ -168,46 +168,46 @@ void WarScene::updateSceneState(const U64 deltaTime){
 
     Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
 #ifdef _DEBUG
-	U32 characterCount = _army1.size() + _army2.size();
-	_pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
-	_pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
-	_colors[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec4<U8>(255,0,255,128));
+    U32 characterCount = _army1.size() + _army2.size();
+    _pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
+    _pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
+    _colors[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec4<U8>(255,0,255,128));
 
-	renderState().drawDebugLines(true);
+    renderState().drawDebugLines(true);
 #endif
-	U32 count = 0;
+    U32 count = 0;
     for_each(AIEntity* character, _army1){
 #ifdef _DEBUG
-		_pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
+        _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
 #endif
         // If destination reached: Set new random destination
         if (character->destinationReached()) {
             character->updateDestination(navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army2[0]->getUnitRef()->getPosition());
 #ifdef _DEBUG
-			_pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
+            _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
 #endif
         }
-		count++;
+        count++;
     }
     
     for_each(AIEntity* character, _army2){
         // If destination reached: Set new random destination
 #ifdef _DEBUG
-		_pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
+        _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
 #endif		
         if (character->destinationReached()) {
             character->updateDestination( navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army1[0]->getUnitRef()->getPosition());
 #ifdef _DEBUG
-			_pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
+            _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
 #endif
         }
-		count++;
+        count++;
     }
 
 }
 
 bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
-	navMeshStarted = false;
+    navMeshStarted = false;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
     //Add a light
@@ -283,6 +283,15 @@ bool WarScene::initializeAI(bool continueOnErrors){
     soldierMesh = _sceneGraph->findNode("Soldier3");
     if(soldierMesh){
         soldierMesh->setSelectable(true);
+        aiSoldier = New AIEntity(soldierMesh->getTransform()->getPosition(), "Soldier3");
+        aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
+        aiSoldier->setComInterface();
+        aiSoldier->addActionProcessor(New WarSceneAIActionList());
+        aiSoldier->setTeam(_faction2);
+        NPC* soldier = New NPC(soldierMesh, aiSoldier);
+        soldier->setMovementSpeed(1.43f); /// 1.23 m/s
+        _army2NPCs.push_back(soldier);
+        _army2.push_back(aiSoldier);
     }
     //----------------------- AI controlled units ---------------------//
     for(U8 i = 0; i < _army1.size(); i++){

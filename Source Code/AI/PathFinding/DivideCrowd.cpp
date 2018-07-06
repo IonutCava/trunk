@@ -103,14 +103,14 @@ namespace Navigation {
         //m_crowdTotalTime.addSample(getPerfDeltaTimeUsec(startTime, endTime) / 1000.0f);
     }
     
-    I32 DivideDtCrowd::addAgent(const vec3<F32>& position) {
+    I32 DivideDtCrowd::addAgent(const vec3<F32>& position, F32 maxSpeed, F32 acceleration) {
         // Define parameters for agent in crowd
         dtCrowdAgentParams ap;
         memset(&ap, 0, sizeof(ap));
         ap.radius = getAgentRadius();
         ap.height = getAgentHeight();
-        ap.maxAcceleration = 8.0f;
-        ap.maxSpeed = (ap.height/2)*1.5f;//3.5
+        ap.maxAcceleration = acceleration;
+        ap.maxSpeed = maxSpeed;
         ap.collisionQueryRange = ap.radius * 12.0f;
         ap.pathOptimizationRange = ap.radius * 30.0f;
         // Set update flags according to config
@@ -254,7 +254,7 @@ namespace Navigation {
         return getDistanceToGoal(agent, maxDistanceFromTarget) < maxDistanceFromTarget;
     }
 
-	bool DivideDtCrowd::isValidNavMesh() const {
-		return _recast->getNavQuery().getAttachedNavMesh() != NULL;
-	}
+    bool DivideDtCrowd::isValidNavMesh() const {
+        return _recast->getNavQuery().getAttachedNavMesh() != NULL;
+    }
 };

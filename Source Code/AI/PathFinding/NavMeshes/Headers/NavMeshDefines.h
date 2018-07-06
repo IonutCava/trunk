@@ -38,7 +38,7 @@
 #define MAX_PATHVERT      512 // most verts in a path
 
 // Extra padding added to the border size of tiles (together with agent radius)
-const F32 BORDER_PADDING = 3;
+const F32 BORDER_PADDING = -3;
 
 namespace Navigation {
         /// These are just sample areas to use consistent values across the samples.

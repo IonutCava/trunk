@@ -26,12 +26,12 @@ void main(void){
 #define SKIP_TEXTURES
 
 #include "phong_lighting.frag"
-#include "fog.frag"
+#include "lightingDefaults.frag"
 
 out vec4 _colorOut;
 
 void main (void){
-	gl_FragDepth = gl_FragCoord.z;
+    gl_FragDepth = gl_FragCoord.z;
 
     vec4 color = Phong(_texCoord, _normalWV);
 
@@ -43,11 +43,11 @@ void main (void){
 -- Fragment.Texture
 
 #include "phong_lighting.frag"
-#include "fog.frag"
+#include "lightingDefaults.frag"
 out vec4 _colorOut;
 
 void main (void){
-	gl_FragDepth = gl_FragCoord.z;
+    gl_FragDepth = gl_FragCoord.z;
 
     vec4 color = Phong(_texCoord, _normalWV);
 
@@ -60,22 +60,23 @@ void main (void){
 
 #include "phong_lighting.frag"
 #include "bumpMapping.frag"
-#include "fog.frag"
+#include "lightingDefaults.frag"
 
 out vec4 _colorOut;
 
 void main (void){
-	gl_FragDepth = gl_FragCoord.z;
-
+   
 #if defined(USE_PARALLAX_MAPPING)
+    gl_FragDepth = gl_FragCoord.z;
     vec4 color = ParallaxMapping(_texCoord, _lightDirection[bumpMapLightId]);
 #elif defined(USE_RELIEF_MAPPING)
+    gl_FragDepth = gl_FragCoord.z;
     vec4 color = ReliefMapping(bumpMapLightId,_texCoord);
 #else
     vec4 color = NormalMapping(_texCoord);
 #endif
 
     applyFog(color);
-
+    
     _colorOut = color;
 }

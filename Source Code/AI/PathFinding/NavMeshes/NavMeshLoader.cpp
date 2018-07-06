@@ -275,8 +275,10 @@ namespace Navigation {
             modelData->_triangleCount++;
         }
 
+        const vec3<F32> borderOffset(BORDER_PADDING);
         bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
             assert(sgn != NULL);
+            
             //Ignore if specified
             if(sgn->getNavigationContext() == SceneGraphNode::NODE_IGNORE)  goto next;
             //Skip small objects
@@ -327,7 +329,7 @@ namespace Navigation {
             D_PRINT_FN(Locale::get("NAV_MESH_CURRENT_NODE"),sn->getName().c_str(), (U32)level);
 
             U32 currentTriangleIndexOffset = outData.getVertCount();
-
+            
             if(level == DETAIL_ABSOLUTE){
                 if(nodeType == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVBO();
                 else if(nodeType == TYPE_TERRAIN) geometry = dynamic_cast<Terrain* >(sn)->getGeometryVBO();
@@ -336,18 +338,18 @@ namespace Navigation {
 
                 const vectorImpl<vec3<F32> >& vertices  = geometry->getPosition();
                 if(vertices.empty()) return false;
-
+                
                 const vectorImpl<vec3<U32> >& triangles = geometry->getTriangles();
                 if(nodeType != TYPE_TERRAIN){
                     mat4<F32> nodeTransform = sgn->getTransform()->getGlobalMatrix();
                     for (U32 i = 0; i < vertices.size(); ++i ){
                         //Apply the node's transform and add the vertex to the NavMesh
-                        addVertex(&outData, nodeTransform * vertices[i]);
+                        addVertex(&outData, nodeTransform * (vertices[i]));
                     }
                 }else{
                     for (U32 i = 0; i < vertices.size(); ++i ){
                         //Apply the node's transform and add the vertex to the NavMesh
-                        addVertex(&outData, vertices[i]);
+                        addVertex(&outData, (vertices[i]));
                     }
                 }
 
@@ -358,7 +360,7 @@ namespace Navigation {
                 const vec3<F32>* vertices = box.getPoints();
 
                 for(U32 i = 0; i < 8; i++){
-                    addVertex(&outData, vertices[i]);
+                    addVertex(&outData, (vertices[i]));
                 }
 
                 for(U32 f = 0; f < 6; f++){

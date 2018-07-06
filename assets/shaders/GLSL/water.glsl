@@ -46,12 +46,11 @@ in vec3 _pixToLight;
 in vec3 _pixToEye;
 in vec2 _texCoord;
 in vec4 _vertexW;
-in float dvd_ClipDistance[MAX_CLIP_PLANES];
 
 out vec4 _colorOut;
 
 #include "lightInput.cmn"
-#include "fog.frag"
+#include "lightingDefaults.frag"
 #include "shadowMapping.frag"
 
 float Fresnel(in vec3 incident, in vec3 normal, in float bias, in float power);

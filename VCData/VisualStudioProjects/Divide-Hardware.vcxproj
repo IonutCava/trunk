@@ -302,7 +302,7 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
       <FileType>Document</FileType>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag">
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\lightingDefaults.frag">
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag">

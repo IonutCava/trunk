@@ -49,7 +49,7 @@ U8 ShaderProgram::update(const U64 deltaTime){
         //Apply global shader values valid throughout application runtime:
         char depthMapSampler[32];
         for(I32 i = 0; i < Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
-            sprintf_s(depthMapSampler, "texDepthMapFromLight%d", i);
+            sprintf_s(depthMapSampler, "texDepthMapFromLight[%d]", i);
              //Shadow Maps always bound from the last texture slot upwards
             this->UniformTexture(depthMapSampler,shadowMapSlot++);
         }

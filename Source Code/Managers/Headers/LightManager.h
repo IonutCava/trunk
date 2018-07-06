@@ -35,7 +35,7 @@ DEFINE_SINGLETON_EXT1(LightManager,FrameListener)
 public:
     typedef Unordered_map<U32, Light*> LightMap;
 
-	void init();
+    void init();
 
     ///Add a new light to the manager
     bool addLight(Light* const light);
@@ -49,10 +49,10 @@ public:
     ///Note: the returned value is clamped between 0 and MAX_LIGHTS_PER_SCENE_NODE
     ///Use typeFilter to find only lights of a certain type
     U8 findLightsForSceneNode(SceneGraphNode* const node, LightType typeFilter = LIGHT_TYPE_PLACEHOLDER );
-	U32  generateNewID();
+    U32  generateNewID();
     bool clear();
     void idle();
-	void update(const bool force = false);
+    void update(const bool force = false);
     inline LightMap& getLights()      {return _lights;}
     inline Light*    getLight(U32 id) {return _lights[id];}
     inline Light*    getLightForCurrentNode(U8 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}

@@ -4,12 +4,17 @@
 
 #include "lightInput.cmn"
 
+#if defined(USE_RELIEF_MAPPING)
 out vec4 _vertexWV;
+#else
+vec4 _vertexWV;
+#endif
+
 out vec3 _normalWV;
 out vec3 _viewDirection;
 out vec3 _lightDirection[MAX_LIGHT_COUNT]; //<Light direction
-smooth out float _attenuation[MAX_LIGHT_COUNT];
 out vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
+smooth out float _attenuation[MAX_LIGHT_COUNT];
 
 uniform bool dvd_enableShadowMapping = false;
 uniform int  dvd_lightCount;

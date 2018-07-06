@@ -115,18 +115,18 @@ namespace Navigation {
         }
 
         _sgn = (sgn != NULL) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
-		_loadCompleteClbk = creationCompleteCallback;
+        _loadCompleteClbk = creationCompleteCallback;
 
         if(_buildThreaded && threaded){
             return buildThreaded();
-		}
+        }
 
-		return buildProcess();
+        return buildProcess();
     }
 
     bool NavigationMesh::buildThreaded(){
         boost::mutex::scoped_lock sl(_buildLock);
-		if(!sl.owns_lock()) 
+        if(!sl.owns_lock()) 
             return false;
 
         if(_buildThread) 
@@ -141,7 +141,7 @@ namespace Navigation {
 
         return true;
     }
-	
+    
     bool NavigationMesh::buildProcess(){
         _building = true;
         // Create mesh
@@ -163,6 +163,8 @@ namespace Navigation {
         dtFreeNavMesh(old);
         _debugDrawInterface->setDirty(true);
         _tempNavMesh = NULL;
+        bool navQueryComplete = createNavigationQuery();
+        assert(navQueryComplete);
         _navigationMeshLock.unlock();
 
         // Free structs used during build
@@ -170,8 +172,8 @@ namespace Navigation {
 
         _building = false;
 
-		if(!_loadCompleteClbk.empty())
-			_loadCompleteClbk(this);
+        if(!_loadCompleteClbk.empty())
+            _loadCompleteClbk(this);
 
         return success;
     }
@@ -218,7 +220,7 @@ namespace Navigation {
         cfg.walkableClimb          = _configParams.base_getWalkableClimb();
         cfg.walkableRadius         = _configParams.base_getWalkableRadius();
         cfg.walkableSlopeAngle     = _configParams.getAgentMaxSlope();
-        cfg.borderSize             = _configParams.base_getWalkableRadius()/* + (I32)BORDER_PADDING*/;
+        cfg.borderSize             = _configParams.base_getWalkableRadius() + (I32)BORDER_PADDING;
         cfg.detailSampleDist       = _configParams.getDetailSampleDist();
         cfg.detailSampleMaxError   = _configParams.getDetailSampleMaxError();
         cfg.maxEdgeLen             = _configParams.getEdgeMaxLen();
@@ -279,7 +281,6 @@ namespace Navigation {
         }
 
         data.isValid(true);
-        createNavigationQuery();
 
         return NavigationMeshLoader::saveMeshFile(data, geometrySaveFile.c_str());//input geometry;
     }

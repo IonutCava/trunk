@@ -27,9 +27,7 @@ float chebyshevUpperBound(in vec3 posInDM, in int layer){
 }
 
 void applyShadowDirectional(in int shadowIndex, inout float shadow) {
-    if(!dvd_enableShadowMapping) 
-        return;
-            
+
     vec4 shadow_coord = _shadowCoord[shadowIndex];
     float tOrtho[3] = float[3]( worldHalfExtent / 11.0, worldHalfExtent / 5.0, worldHalfExtent );
 

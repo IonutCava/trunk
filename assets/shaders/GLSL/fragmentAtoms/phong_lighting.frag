@@ -32,9 +32,9 @@ vec4 Phong(in vec2 texCoord, in vec3 normal){
 #endif
 
     MaterialProperties materialProp;
-	materialProp.diffuse  = vec4(0);
-	materialProp.ambient  = vec4(0);
-	materialProp.specular = vec4(0);
+    materialProp.diffuse  = vec4(0.0);
+    materialProp.ambient  = vec4(0.0);
+    materialProp.specular = vec4(0.0);
     materialProp.shadowFactor = 1.0;
     phong_loop(texCoord, normalize(normal), materialProp);
     //Add global ambient value
