@@ -155,9 +155,9 @@ bool Scene::idle() {  // Called when application is idle
 
 void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile) {
 
-    std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(srcFile);
-    const stringImpl& musicFile = fileResult.first;
-    const stringImpl& musicFilePath = fileResult.second;
+    FileWithPath fileResult = splitPathToNameAndLocation(srcFile);
+    const stringImpl& musicFile = fileResult._fileName;
+    const stringImpl& musicFilePath = fileResult._path;
 
     ResourceDescriptor music(name);
     music.setResourceName(musicFile);

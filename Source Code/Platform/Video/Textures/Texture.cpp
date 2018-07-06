@@ -12,7 +12,6 @@ namespace {
     static const U16 g_partitionSize = 128;
 };
 
-const char* Texture::s_defaultTextureFilePath = nullptr;
 const char* Texture::s_missingTextureFileName = nullptr;
 
 Texture::Texture(GFXDevice& context,
@@ -72,7 +71,7 @@ void Texture::threadedLoad() {
         Util::Trim(currentTextureFile);
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
-            currentTextureFullPath = (currentTextureLocation.empty() ? s_defaultTextureFilePath
+            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation
                                                                      : currentTextureLocation) +
                                      "/" +
                                      currentTextureFile;
@@ -132,11 +131,15 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
 
     // Validate data
     if (!img.data()) {
+        if (info._layerIndex > 0) {
+            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
+            return false;
+        }
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
         // Missing texture fallback.
         img.flip(false);
         // missing_texture.jpg must be something that really stands out
-        ImageTools::ImageDataInterface::CreateImageData(Util::StringFormat("%s/%s", s_defaultTextureFilePath, s_missingTextureFileName).c_str(), img);
+        ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, img);
 
     }
     

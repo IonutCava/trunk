@@ -36,7 +36,6 @@
 #define BOOST_EXCEPTION_DISABLE
 #endif
 
-#include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
@@ -163,6 +162,9 @@ struct SysInfo;
 extern void getWindowHandle(void* window, SysInfo& info);
 extern void setThreadName(std::thread* thread, const char* threadName);
 extern void setThreadName(const char* threadName);
+extern bool createDirectory(const char* path);
+
+bool createDirectories(const char* path);
 
 bool PlatformInit();
 bool PlatformClose();

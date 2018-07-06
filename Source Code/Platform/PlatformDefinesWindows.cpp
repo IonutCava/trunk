@@ -10,6 +10,7 @@
 #if defined(USE_VLD)
 #include <vld.h>
 #endif
+#include <direct.h>
 
 // We are actually importing GL specific libraries in code mainly for
 // maintenance reasons
@@ -217,7 +218,11 @@ namespace Divide {
         DWORD threadId = ::GetThreadId(static_cast<HANDLE>(thread->native_handle()));
         setThreadName(threadId, threadName);
     }
-    
+
+    bool createDirectory(const char* path) {
+        return _mkdir(path) == 0;
+    }
+
 }; //namespace Divide
 
 #endif //defined(_WIN32)

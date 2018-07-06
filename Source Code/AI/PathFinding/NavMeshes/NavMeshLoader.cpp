@@ -6,8 +6,6 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Water/Headers/Water.h"
 
-#include <fstream>
-
 namespace Divide {
 namespace AI {
 namespace Navigation {
@@ -85,27 +83,23 @@ I32 parseFace(char* row, I32* data, I32 n, I32 vcnt) {
 }
 
 bool loadMeshFile(NavModelData& outData, const char* filename) {
-    FILE* fp = fopen(filename, "rb");
-    if (!fp)
-        return false;
+    STUBBED("ToDo: Rework load/save to properly use a ByteBuffer instead of this const char* hackery. -Ionut");
+    char* buf = nullptr;
+    char* srcEnd = nullptr;
 
-    outData.setName(filename);
-    fseek(fp, 0, SEEK_END);
+    {
+        ByteBuffer tempBuffer;
+        if (!tempBuffer.loadFromFile(filename)) {
+            return false;
+        }
 
-    I32 bufSize = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    char* buf = MemoryManager_NEW char[bufSize];
-    if (!buf) {
-        fclose(fp);
-        return false;
+        MemoryManager_NEW char[tempBuffer.size()];
+        std::memcpy(buf, reinterpret_cast<const char*>(tempBuffer.contents()), tempBuffer.size());
+        srcEnd = buf + tempBuffer.size();
     }
 
-    fread(buf, bufSize, 1, fp);
-    fclose(fp);
-
     char* src = buf;
-    char* srcEnd = buf + bufSize;
+
     char row[512];
     I32 face[32];
     F32 x, y, z;
@@ -179,28 +173,21 @@ bool saveMeshFile(const NavModelData& inData, const char* filename) {
     if (!inData.getVertCount() || !inData.getTriCount())
         return false;
 
-    // Create the file if it doesn't exists
-    std::ofstream myfile;
-    myfile.open(filename, std::fstream::out);
-    if (!myfile.is_open()) {
-        return false;
-    }
-
+    ByteBuffer tempBuffer;
     F32* vstart = inData._vertices;
     I32* tstart = inData._triangles;
     for (U32 i = 0; i < inData.getVertCount(); i++) {
         F32* vp = vstart + i * 3;
-        myfile << "v " << (*(vp)) << " " << *(vp + 1) << " " << (*(vp + 2))
-               << "\n";
+        tempBuffer << "v " << (*(vp)) << " " << *(vp + 1) << " " << (*(vp + 2))
+                   << "\n";
     }
     for (U32 i = 0; i < inData.getTriCount(); i++) {
         I32* tp = tstart + i * 3;
-        myfile << "f " << (*(tp) + 1) << " " << (*(tp + 1) + 1) << " "
-               << (*(tp + 2) + 1) << "\n";
+        tempBuffer << "f " << (*(tp) + 1) << " " << (*(tp + 1) + 1) << " "
+                  << (*(tp + 2) + 1) << "\n";
     }
 
-    myfile.close();
-    return true;
+    return tempBuffer.dumpToFile(filename);
 }
 
 NavModelData mergeModels(NavModelData& a,

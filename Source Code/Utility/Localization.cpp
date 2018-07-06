@@ -11,7 +11,9 @@ static CSimpleIni g_languageFile;
 static bool g_initialized = false;
 
 bool init(const stringImpl& newLanguage) {
-    changeLanguage(newLanguage);
+    clear();
+
+    g_localeFile = newLanguage;
     // Use SimpleIni library for cross-platform INI parsing
     g_languageFile.SetUnicode();
     g_languageFile.SetMultiLine(true);
@@ -52,9 +54,7 @@ void clear() {
 /// language changes
 void changeLanguage(const stringImpl& newLanguage) {
     /// Set the new language code
-    g_localeFile = newLanguage;
-    /// And clear the table for the old language
-    clear();
+    init(newLanguage);
 }
 
 const char* get(U64 key, const char* defaultValue) {

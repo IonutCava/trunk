@@ -53,6 +53,10 @@ namespace Divide {
         pthread_setname_np(handle, threadName);
     }
 
+    void createDirectory(const char* path) {
+        return mkdir(path, 0777) == 0;
+    }
+
     #include <sys/prctl.h>
     void setThreadName(const char* threadName) {
         prctl(PR_SET_NAME, threadName, 0, 0, 0);

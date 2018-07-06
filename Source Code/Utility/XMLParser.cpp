@@ -311,7 +311,7 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
-    if (!FileExists(sceneDataFile.c_str())) {
+    if (!fileExists(sceneDataFile.c_str())) {
         loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene, config);
         return;
     }
@@ -380,7 +380,7 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
 }
 
 void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configuration& config) {
-    if (!FileExists(file.c_str())) {
+    if (!fileExists(file.c_str())) {
         return;
     }
     Console::printfn(Locale::get(_ID("XML_LOAD_MUSIC")), file.c_str());

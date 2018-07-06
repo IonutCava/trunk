@@ -4,7 +4,6 @@
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
-#include <fstream>
 
 namespace Divide {
 

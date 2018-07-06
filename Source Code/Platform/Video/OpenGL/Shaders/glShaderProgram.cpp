@@ -120,7 +120,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
             GLint binaryLength = 0;
             glGetProgramiv(_shaderProgramID, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
             // allocate a big enough buffer to hold it
-            void* binary = (void*)malloc(binaryLength);
+            char* binary = MemoryManager_NEW char[binaryLength];
             DIVIDE_ASSERT(binary != NULL,
                           "glShaderProgram error: could not allocate memory "
                           "for the program binary!");
@@ -129,21 +129,13 @@ bool glShaderProgram::update(const U64 deltaTime) {
             if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
                 stringImpl outFileName(Paths::Shaders::g_CacheLocationBin + getName() + ".bin");
-                FILE* outFile = fopen(outFileName.c_str(), "wb");
-                if (outFile != NULL) {
-                    fwrite(binary, binaryLength, 1, outFile);
-                    fclose(outFile);
-                }
+                writeFile(outFileName, binary, (size_t)binaryLength, FileType::BINARY);
                 // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
                 outFileName += ".fmt";
-                outFile = fopen(outFileName.c_str(), "wb");
-                if (outFile != NULL) {
-                    fwrite((void*)&_binaryFormat, sizeof(GLenum), 1, outFile);
-                    fclose(outFile);
-                }
-            }
+                writeFile(outFileName, to_stringImpl(to_uint(_binaryFormat)).c_str(), FileType::BINARY);
+             }
             // delete our local code buffer
-            free(binary);
+            MemoryManager::DELETE(binary);
         }
         // clear validation queue flag
         _validationQueued = false;
@@ -324,36 +316,20 @@ bool glShaderProgram::loadFromBinary() {
             assert(_shaderProgramIDTemp == 0);
             stringImpl fileName(Paths::Shaders::g_CacheLocationBin + _resourceName + ".bin");
             // Load the program's binary format from file
-            FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
-            if (inFile) {
-                fread(&_binaryFormat, sizeof(GLenum), 1, inFile);
-                fclose(inFile);
-                // If we loaded the binary format successfully, load the binary
-                inFile = fopen(fileName.c_str(), "rb");
+            vectorImpl<Byte> data;
+            bool fmtExists = readFile(fileName + ".fmt", data, FileType::BINARY);
+            if (fmtExists) {
+                _binaryFormat = *((GLenum const *)&data[0]);
             }
-            else {
-                // If the binary format load failed, we don't need to load the
-                // binary code as it's useless without a proper format
-                inFile = nullptr;
-            }
-            if (inFile && _binaryFormat != GL_ZERO/* && _binaryFormat != GL_NONE*/) {
-                // Jump to the end of the file
-                fseek(inFile, 0, SEEK_END);
-                // And get the file's content size
-                GLint binaryLength = (GLint)ftell(inFile);
-                // Allocate a sufficiently large local buffer to hold the contents
-                void* binary = (void*)malloc(binaryLength);
-                // Jump back to the start of the file
-                fseek(inFile, 0, SEEK_SET);
-                // Read the contents from the file and save them locally
-                fread(binary, binaryLength, 1, inFile);
-                // Allocate a new handle
+
+            if (fmtExists && _binaryFormat != GL_ZERO/* && _binaryFormat != GL_NONE*/) {
+                data.clear();
+                readFile(fileName, data, FileType::BINARY);
+                   // Allocate a new handle
                 _shaderProgramIDTemp = glCreateProgram();
                 // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
                 // Load binary code on the GPU
-                glProgramBinary(_shaderProgramIDTemp, _binaryFormat, binary, binaryLength);
-                // Delete the local binary code buffer
-                free(binary);
+                glProgramBinary(_shaderProgramIDTemp, _binaryFormat, data.data(), (GLint)data.size());
                 // Check if the program linked successfully on load
                 GLint success = 0;
                 glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &success);
@@ -363,8 +339,6 @@ bool glShaderProgram::loadFromBinary() {
                     _loadedFromBinary = _linked = true;
                 }
             }
-            // Close the file
-            fclose(inFile);
         }
     }
 

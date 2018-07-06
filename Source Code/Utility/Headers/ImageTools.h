@@ -74,8 +74,13 @@ class ImageData : private NonCopyable {
     inline bool flip() const { return _flip; }
     /// set and get the image's actual data 
     inline const bufferPtr data(U32 mipLevel = 0) const { 
-        // triple data-ception
-        return (bufferPtr)_data[mipLevel]._data.data();
+        bufferPtr data = nullptr;
+        if (mipLevel < mipCount()) {
+            // triple data-ception
+            data = (bufferPtr)_data[mipLevel]._data.data();
+        }
+
+        return data;
     }
 
     inline const vectorImpl<ImageLayer>& imageLayers() const {
@@ -83,6 +88,8 @@ class ImageData : private NonCopyable {
     }
     /// image width, height and depth
     inline const vec3<U16>& dimensions(U32 mipLevel = 0) const { 
+        assert(mipLevel < mipCount());
+
         return _data[mipLevel]._dimensions;
     }
     /// set and get the image's compression state

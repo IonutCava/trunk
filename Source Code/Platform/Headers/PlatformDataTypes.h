@@ -47,6 +47,7 @@ typedef int32_t I32;
 typedef int64_t I64;
 typedef float F32;
 typedef double D64;
+
 typedef void* bufferPtr;
 
 enum class CallbackParam : U32 {

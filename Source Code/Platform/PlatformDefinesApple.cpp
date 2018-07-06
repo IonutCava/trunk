@@ -29,7 +29,8 @@ namespace Divide {
         size_t len = sizeof(size);
         if (sysctl(mib, namelen, &size, &len, NULL, 0) < 0) {
             perror("sysctl");
-        } else  {
+        }
+        else {
             info._availableRam = static_cast<size_t>(size);
         }
 
@@ -47,6 +48,10 @@ namespace Divide {
     void setThreadName(std::thread* thread, const char* threadName) {
         auto handle = thread->native_handle();
         pthread_setname_np(handle, threadName);
+    }
+
+    bool createDirectory(const char* path) {
+        return mkdir(path, 0777) == 0;
     }
 
     #include <sys/prctl.h>

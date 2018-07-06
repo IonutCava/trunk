@@ -145,16 +145,16 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
         // still ...)
-        if (!HasExtension(filename, "wav") &&
-            !HasExtension(filename, "mp3") &&
-            !HasExtension(filename, "ogg")) {
+        if (!hasExtension(filename, "wav") &&
+            !hasExtension(filename, "mp3") &&
+            !hasExtension(filename, "ogg")) {
             Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FORMAT")));
             return;
         }
 
-        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(filename);
-        const stringImpl& name = fileResult.first;
-        const stringImpl& path = fileResult.second;
+        FileWithPath fileResult = splitPathToNameAndLocation(filename);
+        const stringImpl& name = fileResult._fileName;
+        const stringImpl& path = fileResult._path;
 
         // The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");

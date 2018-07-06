@@ -154,8 +154,9 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, cons
     assert(!location.empty());
 
     // Open the atom file and add the code to the atom cache for future reference
-    std::pair<AtomMap::iterator, bool> result =
-        hashAlg::emplace(_atoms, atomNameHash, ReadTextFile(location + "/" + atomName));
+    stringImpl output;
+    readFile(location + "/" + atomName, output, FileType::TEXT);
+    std::pair<AtomMap::iterator, bool> result = hashAlg::emplace(_atoms, atomNameHash, output);
 
     assert(result.second);
 
@@ -175,9 +176,9 @@ void ShaderProgram::shaderFileRead(const stringImpl& filePath,
         } else {
             variant.append(".release");
         }
-        ReadTextFile(variant, sourceCodeOut);
+        readFile(variant, sourceCodeOut, FileType::TEXT);
     } else {
-        ReadTextFile(filePath, sourceCodeOut);
+        readFile(filePath, sourceCodeOut, FileType::TEXT);
     }
 }
 
@@ -192,7 +193,7 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
         variant.append(".release");
     }
 
-    WriteTextFile(variant, sourceCode);
+    writeFile(variant, sourceCode, FileType::TEXT);
 }
 
 void ShaderProgram::onStartup(ResourceCache& parentCache) {

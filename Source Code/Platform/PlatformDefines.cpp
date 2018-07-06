@@ -58,26 +58,22 @@ bool preAssert(const bool expression, const char* failMessage) {
     return !Config::Assert::CONTINUE_ON_ASSERT;
 }
 
-bool createFileIfNotExist(const char* file) {
-    bool fileCreated = false;
-#if 1
-    if (fopen(file, "rb+") == NULL)
-    {
-        fclose(fopen(file, "wb"));
-        fileCreated = true;
-    }
-#else
-    std::fstream fileHandler;
-    fileHandler.open(file, std::fstream::in | std::fstream::out | std::fstream::app);
+bool createDirectories(const char* path) {
+    //Always end in a '/'
+    assert(path != nullptr && strlen(path) > 0 && path[strlen(path) -1] == '/');
 
-    if (!fileHandler) {
-        fileHandler.open(file, std::fstream::in | std::fstream::out | std::fstream::trunc);
-        fileHandler.close();
-        fileCreated = true;
+    vectorImpl<stringImpl> directories = Util::Split(path, '/');
+    if (directories.empty()) {
+        directories = Util::Split(path, '\\');
     }
-#endif
 
-    return fileCreated;
+    for (const stringImpl& dir : directories) {
+        if (!createDirectory(dir.c_str())) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 };  // namespace Divide

@@ -179,8 +179,6 @@ class NOINITVTABLE Texture : public GraphicsResource, public Resource {
     TextureData  _textureData;
     TextureDescriptor _descriptor;
 
-  public:
-    static const char* s_defaultTextureFilePath;
   protected:
     static const char* s_missingTextureFileName;
 };

@@ -410,13 +410,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             break;
         }
         // get full path
-        stringImpl path(Texture::s_defaultTextureFilePath);
-        path.append("/");
-        path.append(tName.data);
+        stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
-        const stringImpl& img_name = fileResult.first;
-        const stringImpl& img_path = fileResult.second;
+        FileWithPath fileResult = splitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult._fileName;
+        const stringImpl& img_path = fileResult._path;
 
         // if we have a name and an extension
         if (!img_name.substr(img_name.find_first_of(".")).empty()) {
@@ -457,13 +455,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        stringImpl path(Texture::s_defaultTextureFilePath);
-        path.append("/");
-        path.append(tName.data);
+        stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
-        const stringImpl& img_name = fileResult.first;
-        const stringImpl& img_path = fileResult.second;
+        FileWithPath fileResult = splitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult._fileName;
+        const stringImpl& img_path = fileResult._path;
 
         Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)];
 
@@ -489,13 +485,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        stringImpl path(Texture::s_defaultTextureFilePath);
-        path.append("/");
-        path.append(tName.data);
+        stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
-        const stringImpl& img_name = fileResult.first;
-        const stringImpl& img_path = fileResult.second;
+        FileWithPath fileResult = splitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult._fileName;
+        const stringImpl& img_path = fileResult._path;
 
         Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)];
         if (img_name.rfind('.') != stringImpl::npos) {
@@ -525,13 +519,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping,
                                     &uvInd, &blend, &op, mode);
         if (result == AI_SUCCESS) {
-            stringImpl path(Texture::s_defaultTextureFilePath);
-            path.append("/");
-            path.append(tName.data);
+            stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
-            std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
-            const stringImpl& img_name = fileResult.first;
-            const stringImpl& img_path = fileResult.second;
+            FileWithPath fileResult = splitPathToNameAndLocation(path);
+            const stringImpl& img_name = fileResult._fileName;
+            const stringImpl& img_path = fileResult._path;
 
             Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)];
 
@@ -558,13 +550,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        stringImpl path(Texture::s_defaultTextureFilePath);
-        path.append("/");
-        path.append(tName.data);
+        stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
 
-        std::pair<stringImpl, stringImpl> fileResult = SplitPathToNameAndLocation(path);
-        const stringImpl& img_name = fileResult.first;
-        const stringImpl& img_path = fileResult.second;
+        FileWithPath fileResult = splitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult._fileName;
+        const stringImpl& img_path = fileResult._path;
 
         Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::SPECULAR)];
         if (img_name.rfind('.') != stringImpl::npos) {

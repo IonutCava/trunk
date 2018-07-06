@@ -3,7 +3,6 @@
 #include "../Headers/DivideRecast.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -23,8 +22,6 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
       _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::instance();
-    const XMLEntryData& entryData = context.entryData();
-
     stringImpl path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
     path.append(par.getParam<stringImpl>(_ID("currentScene")));
 

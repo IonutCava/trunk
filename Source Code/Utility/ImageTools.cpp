@@ -16,6 +16,8 @@
 namespace Divide {
 namespace ImageTools {
 
+std::mutex ImageDataInterface::_loadingMutex;
+
 ImageData::ImageData() : _compressed(false),
                          _flip(false),
                          _alpha(false),
@@ -325,16 +327,15 @@ void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel
     a = _alpha ? _data[mipLevel]._data[idx + 3] : 255;
 }
 
-std::mutex ImageDataInterface::_loadingMutex;
-void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& imgOut) {
-    assert(FileExists(filename.c_str()));
 
-    std::lock_guard<std::mutex> lock(_loadingMutex);
-    imgOut.create(filename);
+void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& imgOut) {
+    if (fileExists(filename.c_str())) {
+        std::lock_guard<std::mutex> lock(_loadingMutex);
+        imgOut.create(filename);
+    }
 }
 
-I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
-             U8* imageData) {
+I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData) {
     U8 cGarbage = 0, type, mode, aux;
     I16 iGarbage = 0;
     U16 width = dimensions.width;

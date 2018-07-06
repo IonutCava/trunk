@@ -214,14 +214,8 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     if (it != std::cend(_gMeshCache)) {
         loadState = 0;
     } else {
-        FILE* fp = fopen(nodeName.c_str(), "rb");
-        if (fp) {
-            fseek(fp, 0, SEEK_END);
-            physx::PxU32 filesize = ftell(fp);
-            fclose(fp);
-            if (filesize != 0) {
-                loadState = 1;
-            }
+        if (fileExists(nodeName) {
+            loadState = 1;
         }
     }
 

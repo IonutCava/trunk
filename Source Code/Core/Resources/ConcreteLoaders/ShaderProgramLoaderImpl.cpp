@@ -9,7 +9,6 @@
 
 namespace {
     const bool USE_THREADED_SHADER_LOAD = true;
-    stringImpl s_defaultShaderProgramPath;
 };
 
 namespace Divide {
@@ -20,12 +19,8 @@ Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         _descriptor.setResourceName(_descriptor.getName());
     }
 
-    if (s_defaultShaderProgramPath.empty()) {
-        s_defaultShaderProgramPath = Paths::g_assetsLocation + Paths::g_shadersLocation;
-    }
-
     if (_descriptor.getResourceLocation().empty()) {
-        _descriptor.setResourceLocation(s_defaultShaderProgramPath);
+        _descriptor.setResourceLocation(Paths::g_assetsLocation + Paths::g_shadersLocation);
     }
 
     ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_descriptor.getName(),

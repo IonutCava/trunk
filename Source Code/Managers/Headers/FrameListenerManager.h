@@ -36,7 +36,6 @@
 /// include the manager
 
 #include "Core/Headers/Singleton.h"
-#include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Rendering/Headers/FrameListener.h"
 #include "Platform/Headers/PlatformDefines.h"
 

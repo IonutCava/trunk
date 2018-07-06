@@ -13,9 +13,6 @@
 
 namespace Divide {
 
-namespace {
-    stringImpl s_defaultTexturePath;
-};
 
 template<>
 Resource_ptr ImplResourceLoader<Texture>::operator()() {
@@ -25,13 +22,8 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
     assert((!_descriptor.getResourceLocation().empty() && !_descriptor.getResourceName().empty()) ||
             _descriptor.getResourceLocation().empty());
 
-    if (s_defaultTexturePath.empty()) {
-        s_defaultTexturePath = Paths::g_assetsLocation + Paths::g_texturesLocation;
-    }
-
-    if (Texture::s_defaultTextureFilePath == nullptr) {
+    if (Texture::s_missingTextureFileName == nullptr) {
         Texture::s_missingTextureFileName = "missing_texture.jpg";
-        Texture::s_defaultTextureFilePath = s_defaultTexturePath.c_str();
     }
 
     bool threadedLoad = _descriptor.getThreaded();
@@ -59,11 +51,11 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
             stringstreamImpl textureLocationList(resourceLocation);
             while (std::getline(textureLocationList, resourceLocation, ',')) {}
         }  else {
-            resourceLocation = s_defaultTexturePath;
+            resourceLocation = Paths::g_assetsLocation + Paths::g_texturesLocation;
         }
 
         for (size_t i = crtNumCommas; i < numCommas; ++i) {
-            resourceLocation.append("," + s_defaultTexturePath);
+            resourceLocation.append("," + resourceLocation);
         }
 
         _descriptor.setResourceLocation(resourceLocation);

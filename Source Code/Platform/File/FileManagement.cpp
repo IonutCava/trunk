@@ -18,6 +18,7 @@ namespace Paths {
     stringImplAligned g_xmlDataLocation;
     stringImplAligned g_navMeshesLocation;
     stringImplAligned g_scenesLocation;
+    stringImplAligned g_saveLocation;
     stringImplAligned g_GUILocation;
     stringImplAligned g_FontsPath;
 
@@ -59,7 +60,7 @@ namespace Paths {
         g_texturesLocation = config.defaultTextureLocation + "/";
         g_xmlDataLocation = entryData.scriptLocation + "/";
         g_scenesLocation = entryData.scenesLocation + "/";
-
+        g_saveLocation = "SaveData/";
         g_imagesLocation = "misc_images/";
         g_materialsLocation = "materials/";
         g_navMeshesLocation = "navMeshes/";
@@ -68,8 +69,8 @@ namespace Paths {
         g_soundsLocation = "sounds/";
 
         Shaders::g_CacheLocation = "shaderCache/";
-        Shaders::g_CacheLocationText = Util::StringFormat("%s/Text/", Shaders::g_CacheLocation);
-        Shaders::g_CacheLocationBin = Util::StringFormat("%s/Binary/", Shaders::g_CacheLocation);
+        Shaders::g_CacheLocationText = Shaders::g_CacheLocation + "Text/";
+        Shaders::g_CacheLocationBin = Shaders::g_CacheLocation + "Binary/";
         // these must match the last 4 characters of the atom file
         Shaders::GLSL::g_fragAtomExt = "frag";
         Shaders::GLSL::g_vertAtomExt = "vert";
@@ -78,7 +79,8 @@ namespace Paths {
         Shaders::GLSL::g_teseAtomExt = "tese";
         Shaders::GLSL::g_compAtomExt = ".cpt";
         Shaders::GLSL::g_comnAtomExt = ".cmn";
-        Shaders::GLSL::g_parentShaderLoc = "GLSL";
+
+        Shaders::GLSL::g_parentShaderLoc = "GLSL/";
         Shaders::GLSL::g_fragAtomLoc = "fragmentAtoms/";
         Shaders::GLSL::g_vertAtomLoc = "vertexAtoms/";
         Shaders::GLSL::g_geomAtomLoc = "geometryAtoms/";
@@ -91,52 +93,106 @@ namespace Paths {
     }
 };
 
-void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut) {
-    std::ifstream inFile(filePath.c_str(), std::ios::in);
+bool readFile(const stringImpl& filePath, stringImpl& contentOut, FileType fileType) {
+    if (!filePath.empty()) {
+        std::ifstream inFile(filePath.c_str(), fileType == FileType::BINARY
+                                                         ? std::ios::in | std::ios::binary
+                                                         : std::ios::in);
 
-    if (!inFile.eof() && !inFile.fail())
-    {
-        assert(inFile.good());
-        inFile.seekg(0, std::ios::end);
-        contentOut.reserve(inFile.tellg());
-        inFile.seekg(0, std::ios::beg);
+        if (!inFile.eof() && !inFile.fail()) {
+            inFile.seekg(0, std::ios::end);
+            size_t fsize = inFile.tellg();
+            inFile.seekg(0, std::ios::beg);
+            contentOut.reserve(fsize);
 
-        contentOut.assign((std::istreambuf_iterator<char>(inFile)),
-                           std::istreambuf_iterator<char>());
-    }
+            std::copy_n(std::istreambuf_iterator<char>(inFile), fsize, std::back_inserter(contentOut));
+            return true;
+        }
 
-    inFile.close();
+        inFile.close();
+    };
+
+    return false;
 }
 
-stringImpl ReadTextFile(const stringImpl& filePath) {
+bool readFile(const stringImpl& filePath, vectorImpl<Byte>& contentOut, FileType fileType) {
     stringImpl content;
-    ReadTextFile(filePath, content);
-    return content;
-}
-
-void WriteTextFile(const stringImpl& filePath, const stringImpl& content) {
-    if (filePath.empty()) {
-        return;
+    contentOut.resize(0);
+    if (readFile(filePath, content, fileType)) {
+        contentOut.insert(std::cbegin(contentOut), std::cbegin(content), std::cend(content));
+        return true;
     }
-    std::ofstream outputFile(filePath.c_str(), std::ios::out);
-    outputFile << content;
-    outputFile.close();
-    assert(outputFile.good());
+
+    return false;
 }
 
-std::pair<stringImpl/*fileName*/, stringImpl/*filePath*/>
-SplitPathToNameAndLocation(const stringImpl& input) {
+bool readFile(const stringImpl& filePath, vectorImpl<U8>& contentOut, FileType fileType) {
+    stringImpl content;
+    contentOut.resize(0);
+    if (readFile(filePath, content, fileType)) {
+        contentOut.insert(std::cbegin(contentOut), std::cbegin(content), std::cend(content));
+        return true;
+    }
+    return false;
+}
+
+bool writeFile(const stringImpl& filePath, const char* content, size_t length, FileType fileType) {
+    if (!filePath.empty() && content != nullptr && length > 0) {
+        std::ofstream outputFile(filePath.c_str(), fileType == FileType::BINARY 
+                                                             ? std::ios::out | std::ios::binary
+                                                             : std::ios::out);
+        outputFile.write(content, length);
+        outputFile.close();
+        return outputFile.good();
+    }
+
+    return false;
+}
+
+bool writeFile(const stringImpl& filePath, const char* content, FileType fileType) {
+    return writeFile(filePath, content, strlen(content), fileType);
+}
+
+bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, FileType fileType) {
+    return writeFile(filePath, content, content.size(), fileType);
+}
+
+bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, size_t length, FileType fileType) {
+    return writeFile(filePath, reinterpret_cast<const char*>(content.data()), length, fileType);
+}
+
+bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, FileType fileType) {
+    return writeFile(filePath, content, content.size(), fileType);
+}
+
+bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, size_t length, FileType fileType) {
+    return writeFile(filePath, content.data(), length, fileType);
+}
+
+FileWithPath splitPathToNameAndLocation(const stringImpl& input) {
     size_t pathNameSplitPoint = input.find_last_of('/') + 1;
-
-    return std::make_pair(input.substr(pathNameSplitPoint, stringImpl::npos),
-                          input.substr(0, pathNameSplitPoint));
+    return FileWithPath{
+        input.substr(pathNameSplitPoint, stringImpl::npos),
+        input.substr(0, pathNameSplitPoint)
+    };
 }
 
-bool FileExists(const char* filePath) {
+bool fileExists(const char* filePath) {
     return std::ifstream(filePath).good();
 }
 
-bool HasExtension(const stringImpl& filePath, const stringImpl& extension) {
+bool createFile(const char* filePath, bool overwriteExisting) {
+    if (overwriteExisting && fileExists(filePath)) {
+        return std::ifstream(filePath, std::fstream::in | std::fstream::trunc).good();
+    }
+
+    createDirectories(splitPathToNameAndLocation(filePath)._path.c_str());
+
+    return std::ifstream(filePath, std::fstream::in).good();
+
+}
+
+bool hasExtension(const stringImpl& filePath, const stringImpl& extension) {
     stringImpl ext("." + extension);
     return Util::CompareIgnoreCase(Util::GetTrailingCharacters(filePath, ext.length()), ext);
 }

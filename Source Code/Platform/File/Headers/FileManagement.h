@@ -33,7 +33,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _PLATFORM_FILE_FILE_MANAGEMENT_H_
 
 #include <regex>
+#include "Platform/Headers/PlatformDataTypes.h"
 #include "Core/TemplateLibraries/Headers/String.h"
+#include "Core/TemplateLibraries/Headers/Vector.h"
 
 namespace Divide {
 
@@ -48,6 +50,7 @@ namespace Paths {
     extern stringImplAligned g_xmlDataLocation;
     extern stringImplAligned g_navMeshesLocation;
     extern stringImplAligned g_scenesLocation;
+    extern stringImplAligned g_saveLocation;
     extern stringImplAligned g_GUILocation;
     extern stringImplAligned g_FontsPath;
 
@@ -88,17 +91,37 @@ namespace Paths {
     void updatePaths(const PlatformContext& context);
 };
 
-bool FileExists(const char* filePath);
+typedef char Byte; //< For file I/O
 
-void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut);
-stringImpl ReadTextFile(const stringImpl& filePath);
+enum FileType {
+    BINARY = 0,
+    TEXT = 1,
+    COUNT
+};
 
-void WriteTextFile(const stringImpl& filePath, const stringImpl& content);
+struct FileWithPath {
+    stringImpl _fileName;
+    stringImpl _path;
+};
+
+bool fileExists(const char* filePath);
+bool createFile(const char* filePath, bool overwriteExisting);
+
+bool readFile(const stringImpl& filePath, stringImpl& contentOut, FileType fileType);
+bool readFile(const stringImpl& filePath, vectorImpl<U8>& contentOut, FileType fileType);
+bool readFile(const stringImpl& filePath, vectorImpl<Byte>& contentOut, FileType fileType);
+
+bool writeFile(const stringImpl& filePath, const char* content, FileType fileType);
+bool writeFile(const stringImpl& filePath, const char* content, size_t length, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, size_t length, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, size_t length, FileType fileType);
 
 /// will add '.' automatically at the start of 'extension'
-bool HasExtension(const stringImpl& filePath, const stringImpl& extension);
+bool hasExtension(const stringImpl& filePath, const stringImpl& extension);
 
-std::pair<stringImpl/*fileName*/, stringImpl/*filePath*/> SplitPathToNameAndLocation(const stringImpl& input);
+FileWithPath splitPathToNameAndLocation(const stringImpl& input);
 
 }; //namespace Divide
 

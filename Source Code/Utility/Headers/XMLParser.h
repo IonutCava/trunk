@@ -52,7 +52,7 @@ namespace XML {
                      read_xml(X, pt);
 
 #define PREPARE_FILE_FOR_WRITING(X) boost::property_tree::ptree pt; \
-                                    createFileIfNotExist(X);
+                                    createFile(X, true);
 
 #define SAVE_FILE(X) write_xml(X, \
                                pt, \

@@ -69,8 +69,8 @@ TEST(TestExtension) {
     const stringImpl input("something.ext");
     const stringImpl ext1("ext");
     const stringImpl ext2("bak");
-    CHECK_TRUE(HasExtension(input, ext1));
-    CHECK_FALSE(HasExtension(input, ext2));
+    CHECK_TRUE(hasExtension(input, ext1));
+    CHECK_FALSE(hasExtension(input, ext2));
 }
 
 TEST(TestStringSplit) {
@@ -87,12 +87,12 @@ TEST(TestStringSplit) {
 
 TEST(TestFilePathSplit) {
     const stringImpl input("/path/path2/path4/file.test");
-    const stringImpl result1("/path/path2/path4/");
-    const stringImpl result2("file.test");
+    const stringImpl result1("file.test");
+    const stringImpl result2("/path/path2/path4/");
 
-    std::pair<stringImpl, stringImpl> result = SplitPathToNameAndLocation(input);
-    CHECK_EQUAL(result.first, result2);
-    CHECK_EQUAL(result.second, result1);
+    FileWithPath fileResult = splitPathToNameAndLocation(input);
+    CHECK_EQUAL(result._path, result1);
+    CHECK_EQUAL(result._fileName, result22);
 }
 
 TEST(TestStringTrim) {

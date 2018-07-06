@@ -4,7 +4,6 @@
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
@@ -180,7 +179,6 @@ Scene* SceneManager::load(stringImpl sceneName) {
     bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
     if (sceneNotLoaded) {
-        const XMLEntryData& entryData = _platformContext->entryData();
         XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, sceneName, loadingScene, _platformContext->config());
         state = Attorney::SceneManager::load(*loadingScene, sceneName);
         if (state) {
@@ -755,7 +753,7 @@ bool LoadSave::loadScene(Scene& activeScene) {
 
     const stringImpl& sceneName = activeScene.getName();
 
-    stringImpl path = Util::StringFormat("SaveData/%s_", sceneName.c_str());
+    stringImpl path = Paths::g_saveLocation +  sceneName;
     stringImpl savePath = path + "current_save.sav";
     stringImpl bakSavePath = path + "save.bak";
 
@@ -787,7 +785,7 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     }
 
     const stringImpl& sceneName = activeScene.getName();
-    stringImpl path = Util::StringFormat("SaveData/%s_", sceneName.c_str());
+    stringImpl path = Paths::g_saveLocation + sceneName;
     stringImpl savePath = path + "current_save.sav";
     stringImpl bakSavePath = path + "save.bak";
 

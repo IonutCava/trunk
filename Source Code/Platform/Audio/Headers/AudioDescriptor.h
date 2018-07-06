@@ -65,9 +65,9 @@ class AudioDescriptor : public Resource {
     }
 
     inline void setAudioFile(const stringImpl& filePath) {
-        std::pair<stringImpl, stringImpl> ret = SplitPathToNameAndLocation(filePath);
-        setResourceName(ret.first);
-        setResourceLocation(ret.second);
+        FileWithPath ret = splitPathToNameAndLocation(filePath);
+        setResourceName(ret._fileName);
+        setResourceLocation(ret._path);
         _dirty = true;
     }
 
