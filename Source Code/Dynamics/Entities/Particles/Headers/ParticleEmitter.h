@@ -25,13 +25,13 @@
 /// Basic definitions used by the particle emitter
 /// By default , every PE node is inert until you pass it a descriptor
 struct ParticleEmitterDescriptor {
-	U32 _emissionInterval;         ///< time in miliseconds between particle emission
-	U32 _emissionIntervalVariance; ///< time in miliseconds used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance, _emissionIntervalVariance))
+	U32 _emissionInterval;         ///< time in milliseconds between particle emission
+	U32 _emissionIntervalVariance; ///< time in milliseconds used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance, _emissionIntervalVariance))
 
 	F32 _velocity;				   ///< particle velocity on emission
 	F32 _velocityVariance;		   ///< velocity variance (_velocity + rand(-_velocityVariance, _velocityVariance))
 
-	U32 _lifetime;                 ///< lifetime , in miliseconds of each particle
+	U32 _lifetime;                 ///< lifetime , in milliseconds of each particle
     U32 _lifetimeVariance;          ///< liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
 
 	ParticleEmitterDescriptor();

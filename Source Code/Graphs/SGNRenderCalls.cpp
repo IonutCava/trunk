@@ -3,7 +3,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
-
+///Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::checkBoundingBoxes(){
 	//Update order is very important!
 	//Ex: Mesh BB is composed of SubMesh BB's. 
@@ -15,7 +15,7 @@ void SceneGraphNode::checkBoundingBoxes(){
 	if(!getParent()) return; 
 	if(!_node->isLoaded()) return;
 	//Compute the BoundingBox if it isn't already
-	if(!getBoundingBox().isComputed()){
+	if(!_boundingBox.isComputed()){
 		_node->computeBoundingBox(this);
 	}
 	///Recreate bounding boxes for current frame	
@@ -111,7 +111,7 @@ void SceneGraphNode::updateVisualInformation(){
 	}
 }
 
-void SceneGraphNode::sceneUpdate(D32 sceneTime) {
+void SceneGraphNode::sceneUpdate(U32 sceneTime) {
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->sceneUpdate(sceneTime);
 	}

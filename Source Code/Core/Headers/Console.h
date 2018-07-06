@@ -16,9 +16,12 @@ public:
 	void d_errorfn(char* format, ...);
 	void d_errorf(char* format, ...);
 	inline void toggleTimeStamps(bool state){_timestamps = state;}
+	inline void bindConsoleOutput(boost::function2<void, std::string, bool > guiConsoleCallback) {_guiConsoleCallback = guiConsoleCallback;}
+
 private:
 	void output(const std::string& text,bool error = false);
 	boost::mutex io_mutex;
+	boost::function2<void, std::string, bool > _guiConsoleCallback;
 	bool _timestamps;
 
 END_SINGLETON

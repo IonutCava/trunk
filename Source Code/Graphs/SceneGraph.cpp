@@ -35,7 +35,7 @@ void SceneGraph::print(){
 void SceneGraph::startUpdateThread(){
 }
 
-void SceneGraph::sceneUpdate(D32 sceneTime){
+void SceneGraph::sceneUpdate(U32 sceneTime){
 	_root->sceneUpdate(sceneTime);
 }
 

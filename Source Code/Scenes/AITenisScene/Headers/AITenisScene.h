@@ -60,15 +60,16 @@ public:
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
 	void processInput();
-	void processEvents(F32 time);
+	void processEvents(U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
 	void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+	void onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov);
 
 private:
-	void procesareJoc(boost::any a, CallbackParam b);
+	void playGame(boost::any a, CallbackParam b);
 	void startGame();
 	void resetGame();
 

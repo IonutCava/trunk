@@ -29,7 +29,7 @@ void NetworkScene::processInput(){
 	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
 }
 
-void NetworkScene::processEvents(F32 time){
+void NetworkScene::processEvents(U32 time){
 
 	F32 FpsDisplay = 0.3f;
 	F32 TimeDisplay = 0.01f;

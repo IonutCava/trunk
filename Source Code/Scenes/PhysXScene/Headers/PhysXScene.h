@@ -35,7 +35,7 @@ public:
 	bool loadResources(bool continueOnErrors);
 	bool unload();
 	void processInput();
-	void processEvents(F32 time);
+	void processEvents(U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);

@@ -55,7 +55,7 @@ public:
 	/// <param name="startOnCreate">The event begins processing as soon as it is created (no need to call 'startEvent()')</param>
 	/// <param name="numberOfTicks">The number of times to call the callback function before the event is deleted</param>
 	/// <param name="*f">The callback function</param>
-	Event(F32 tickInterval, 
+	Event(U32 tickInterval, 
 		  bool startOnCreate,
 		  U32 numberOfTicks,
 		  boost::function0<void> f):
@@ -63,11 +63,12 @@ public:
 	  _tickInterval(tickInterval),
 	  _numberOfTicks(numberOfTicks),
 	  _callback(f),
-	  _end(false){
+	  _end(false),
+	  _paused(false){
 		  if(startOnCreate) startEvent();
 	  }
 
-	Event(F32 tickInterval,
+	Event(U32 tickInterval,
 	      bool startOnCreate,
 		  bool runOnce,
 	      boost::function0<void> f):
@@ -75,25 +76,29 @@ public:
 	  _tickInterval(tickInterval),
       _numberOfTicks(1),
 	  _callback(f),
-	  _end(false){
+	  _end(false),
+	  _paused(false){
 		  ///If runOnce is true, then we only run the event once (# of ticks is 1)
 		  ///If runOnce is false, then we run the event until stopEvent() is called
 		  runOnce ? _numberOfTicks = 1 : _numberOfTicks = -1;
 		  if(startOnCreate) startEvent();
 	  }
-	~Event(){stopEvent();}
-	void updateTickInterval(F32 tickInterval){_tickInterval = tickInterval;}
-	void updateTickCounter(U32 numberOfTicks){_numberOfTicks = numberOfTicks;}
+	~Event();
+	void updateTickInterval(U32 tickInterval){WriteLock w_lock(_lock);_tickInterval = tickInterval;}
+	void updateTickCounter(U32 numberOfTicks){WriteLock w_lock(_lock);_numberOfTicks = numberOfTicks;}
 	void startEvent();
 	void stopEvent();
-	void interruptEvent(){ _end = true; _thisThread->interrupt();}
+	void interruptEvent();
+	void pauseEvent(bool state);
 
 private:
 	std::string _name;
-	F32 _tickInterval;
+	U32 _tickInterval;
 	U32 _numberOfTicks;
 	std::tr1::shared_ptr<boost::thread> _thisThread;
+	mutable SharedLock _lock;
 	volatile bool _end;
+	volatile bool _paused;
 	boost::function0<void> _callback;
 
 private:

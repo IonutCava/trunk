@@ -20,7 +20,7 @@ void PingPongScene::preRender(){
 }
 //<<end copy-paste
 
-void PingPongScene::processEvents(F32 time){
+void PingPongScene::processEvents(U32 time){
 
 	F32 FpsDisplay = 0.3f;
 	if (time - _eventTimers[0] >= FpsDisplay){
@@ -289,9 +289,9 @@ void PingPongScene::onKeyUp(const OIS::KeyEvent& key){
 
 }
 
-void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
+void PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
 
-	Scene::OnJoystickMovePOV(key,pov);
+	Scene::onJoystickMovePOV(key,pov);
 	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
 		state()->_moveFB = 0.25f;
 	else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
@@ -309,12 +309,12 @@ void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
 	}
 }
 
-void PingPongScene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
+void PingPongScene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 
-	Scene::OnJoystickMoveAxis(key,axis);
+	Scene::onJoystickMoveAxis(key,axis);
 }
 
-void PingPongScene::OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
+void PingPongScene::onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
 
-	if(button == 0)  serveBall();
+	if(button == 0 && key.device->getID() != InputInterface::JOY_1)  serveBall();
 }

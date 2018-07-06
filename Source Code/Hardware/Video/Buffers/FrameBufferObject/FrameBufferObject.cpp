@@ -5,7 +5,6 @@ FrameBufferObject::FrameBufferObject(FBOType type) : _frameBufferHandle(0),
 						  						     _height(0), 
 													 _textureType(0),
 													 _fboType(type),
-													 _bound(false),
 													 _useDepthBuffer(false),
 													 _disableColorWrites(false),
 											 		 _fixedPipeline(false)
@@ -16,6 +15,7 @@ FrameBufferObject::~FrameBufferObject()
 {
 	_attachement.clear();
 	_attachementDirty.clear();
+	_prevTextureBind.clear();
 }
 
 bool FrameBufferObject::AddAttachment(const TextureDescriptor& descriptor, 
@@ -59,19 +59,37 @@ bool FrameBufferObject::AddAttachment(const TextureDescriptor& descriptor,
 }
 
 void FrameBufferObject::Bind(U8 unit, U8 texture) {
-	if(_bound && _prevTexture == texture && _prevUnit == unit) 
-		D_ERROR_FN(Locale::get("ERROR_FBO_DOUBLE_BIND"));
-
-	_bound = true;
-	_prevTexture = texture;
-	_prevUnit = unit;
+	bool addNew = true;
+	for_each(TextureBind& bind, _prevTextureBind){
+		if(bind._prevTextureID == texture && bind._prevTextureUnit == unit){
+			if(bind._bound){
+				D_ERROR_FN(Locale::get("ERROR_FBO_DOUBLE_BIND"));
+			}else{
+				bind._bound = true;
+			}
+			addNew = false;
+		}
+	}
+	if(addNew){
+		TextureBind tempBind;
+		tempBind._bound = true;
+		tempBind._prevTextureID = texture;
+		tempBind._prevTextureUnit = unit;
+		_prevTextureBind.push_back(tempBind);
+	}
 }	
 
 void FrameBufferObject::Unbind(U8 unit) {
-	if(!_bound)	D_ERROR_FN(Locale::get("ERROR_FBO_INVALID_UNBIND"));
-
-	_bound = false;
+	for_each(TextureBind& bind, _prevTextureBind){
+		if(bind._prevTextureUnit == unit){
+			if(!bind._bound){
+				D_ERROR_FN(Locale::get("ERROR_FBO_INVALID_UNBIND"));
+			}else{
+				bind._bound = false;
+				bind._prevTextureID = -1;
+				bind._prevTextureUnit = -1;
+			}
+		}
+	}
 	_fixedPipeline = false;
-	_prevTexture = -1;
-	_prevUnit = -1;
 }

@@ -30,7 +30,7 @@ public:
 	~SkinnedMesh()
 	{
 	}
-	void sceneUpdate(D32 sceneTime);
+	void sceneUpdate(U32 sceneTime);
     bool playAnimations();
 	void preFrameDrawEnd() {}
 	void setSpecialShaderConstants(ShaderProgram* const shader){}

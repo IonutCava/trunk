@@ -47,7 +47,7 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
 
 }
 
-void Vegetation::sceneUpdate(D32 sceneTime){
+void Vegetation::sceneUpdate(U32 sceneTime){
 	if(!_render || !_success) return;
 	///Query shadow state every "_stateRefreshInterval" milliseconds
 	if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){

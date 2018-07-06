@@ -4,9 +4,9 @@
 
 Unit::Unit(UnitType type, SceneGraphNode* const node) : _type(type), 
 													    _node(node),
-													    _moveSpeed(1),
+													    _moveSpeed(1 metre),
 													    _moveTolerance(0.1f),
-													    _prevTime(GETMSTIME()){}
+													    _prevTime(0){}
 Unit::~Unit(){}
 
 /// Pathfinding, collision detection, animation playback should all be controlled from here
@@ -19,15 +19,17 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 	_currentPosition = _node->getTransform()->getPosition();
 	_currentTargetPosition = targetPosition;
 	
+	if(_prevTime <= 0) _prevTime = GETMSTIME();
 	/// Get current time in ms
-	F32 currentTime = GETMSTIME();
+	U32 currentTime = GETMSTIME();
 	/// figure out how many milliseconds have elapsed since last move time
-    F32 timeDif = currentTime - _prevTime;
+    U32 timeDif = currentTime - _prevTime;
 	/// 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
 	/// distance = timeDif * 0.001 * moveSpeed
-	F32 moveSpeed = _moveSpeed * 0.001 * timeDif;
+	F32 moveDistance = _moveSpeed * (getMsToSec(timeDif));
 	/// apply framerate varyance
-	moveSpeed *= FRAME_SPEED_FACTOR;
+	F32 speedFactor = FRAME_SPEED_FACTOR;
+	moveDistance *= speedFactor;
 	/// update previous time
 	_prevTime = currentTime;
 
@@ -39,30 +41,26 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 	/// Compute the destination point for current frame step
 	vec3<F32> interpPosition;
 
-	if(fabs(yDelta) > _moveTolerance && ( _moveSpeed > TEST_EPSILON) ){
+	if(!IS_TOLERANCE(yDelta,_moveTolerance) && !IS_ZERO(_moveSpeed)){
 		if( !IS_ZERO( yDelta ) ){
-			interpPosition.y = ( _currentPosition.y > _currentTargetPosition.y ? -moveSpeed : moveSpeed );
+			interpPosition.y = ( _currentPosition.y > _currentTargetPosition.y ? -moveDistance : moveDistance );
 		}
 	}
 
-	if((fabs(xDelta) > _moveTolerance || 
-		fabs(zDelta) > _moveTolerance ) 
-		&& ( _moveSpeed > TEST_EPSILON) ) {
+	if(!IS_TOLERANCE(xDelta,_moveTolerance) || !IS_TOLERANCE(zDelta,_moveTolerance) && !IS_ZERO(moveDistance)) {
 		/// Update target
-
-
 		if( IS_ZERO( xDelta ) ){
-            interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveSpeed : moveSpeed );
+            interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
 		}else if( IS_ZERO( zDelta ) ){
-            interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveSpeed : moveSpeed );
+            interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
 		}else if( fabs( xDelta ) > fabs( zDelta ) ) {
-            F32 value = fabs( zDelta / xDelta ) * moveSpeed;
+            F32 value = fabs( zDelta / xDelta ) * moveDistance;
             interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -value : value );
-            interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveSpeed : moveSpeed );
+            interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
          }else {
-            F32 value = fabs( xDelta / zDelta ) * moveSpeed;
+            F32 value = fabs( xDelta / zDelta ) * moveDistance;
             interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -value : value );
-            interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveSpeed : moveSpeed );
+            interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
          }
 		/// commit transformations
 		_node->getTransform()->translate(interpPosition);

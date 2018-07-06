@@ -2,9 +2,9 @@
 #include "Headers/SkinnedSubMesh.h"
 #include "Core/Headers/ParamHandler.h"
 
-void SkinnedMesh::sceneUpdate(D32 sceneTime){
-	///sceneTime is in miliseconds. Convert to seconds
-	D32 timeIndex = sceneTime/1000.0;
+void SkinnedMesh::sceneUpdate(U32 sceneTime){
+	///sceneTime is in milliseconds. Convert to seconds
+	D32 timeIndex = getMsToSec(sceneTime);
 	for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
 		dynamic_cast<SkinnedSubMesh*>(subMesh.second)->updateAnimations(timeIndex);
 	}

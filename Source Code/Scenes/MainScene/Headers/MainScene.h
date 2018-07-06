@@ -44,7 +44,7 @@ private:
 	void renderEnvironment(bool waterReflection);
 	bool updateLights();
 	void processInput();
-	void processEvents(F32 time);
+	void processEvents(U32 time);
 	void test(boost::any a, CallbackParam b);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);

@@ -8,10 +8,25 @@
 #include "Headers/GUIButton.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Input/Headers/InputInterface.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-void GUI::onResize(const vec2<U16>& newResolution){
+GUI::GUI() : _prevElapsedTime(0),
+			 _init(false),
+			 _console(New GUIConsole())
+{
+}
 
+GUI::~GUI()
+{
+	close();
+}
+
+void GUI::onResize(const vec2<U16>& newResolution){
+	//CEGUI handles it's own init checks
+	CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Size(newResolution.width,newResolution.height));
+
+	if(!_init) return;
 	vec2<I32> difDimensions(_cachedResolution.width - newResolution.width,
 							_cachedResolution.height - newResolution.height);
 
@@ -21,8 +36,8 @@ void GUI::onResize(const vec2<U16>& newResolution){
 	_cachedResolution = newResolution;
 }
 
-void GUI::draw(){
-
+void GUI::draw(U32 timeElapsed){
+	if(!_init) return;
 	GFXDevice& gfx = GFX_DEVICE;
 	gfx.toggle2D(true);
     //------------------------------------------------------------------------
@@ -35,21 +50,40 @@ void GUI::draw(){
 		}
 	//------------------------------------------------------------------------
 	gfx.toggle2D(false);
-	//CEGUI::System::getSingleton().renderGUI();
+	
+	if(timeElapsed == 0){
+		timeElapsed = GETMSTIME();
+	}
+	if(_prevElapsedTime == 0){
+		_prevElapsedTime = timeElapsed - 1;//<1 MS difference
+	}
+	U32 timeDiffInMs = timeElapsed - _prevElapsedTime;
+	F32 timeElapsedSec = getMsToSec(timeDiffInMs);
+	_input.update(timeElapsedSec);
+	CEGUI::System::getSingleton().injectTimePulse(timeElapsedSec);
+	CEGUI::System::getSingleton().renderGUI();
+	_prevElapsedTime = timeElapsed;
 }
 
 bool GUI::init(){
-	CEGUI::DefaultResourceProvider & defaultResProvider =* static_cast<CEGUI::DefaultResourceProvider*>( CEGUI::System::getSingleton().getResourceProvider() ) ;
+	if(_init) {
+		D_ERROR_FN(Locale::get("ERROR_GUI_DOUBLE_INIT"));
+		return false;
+	}
+#ifdef _DEBUG
+	CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Insane);
+#endif
+	CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>( CEGUI::System::getSingleton().getResourceProvider() ) ;
 	std::string CEGUIInstallSharePath = ParamHandler::getInstance().getParam<std::string>("assetsLocation");
 	CEGUIInstallSharePath += "/GUI/" ;
-	defaultResProvider.setResourceGroupDirectory( "schemes",    CEGUIInstallSharePath + "schemes/" ) ;
- 	defaultResProvider.setResourceGroupDirectory( "imagesets",  CEGUIInstallSharePath + "imagesets/" ) ;
- 	defaultResProvider.setResourceGroupDirectory( "fonts",      CEGUIInstallSharePath + "fonts/" ) ;
- 	defaultResProvider.setResourceGroupDirectory( "layouts",    CEGUIInstallSharePath + "layouts/" ) ;
- 	defaultResProvider.setResourceGroupDirectory( "looknfeels", CEGUIInstallSharePath + "looknfeel/" ) ;
- 	defaultResProvider.setResourceGroupDirectory( "lua_scripts",CEGUIInstallSharePath + "lua_scripts/" ) ;
- 	defaultResProvider.setResourceGroupDirectory( "schemas",    CEGUIInstallSharePath + "xml_schemas/" ) ;
- 	defaultResProvider.setResourceGroupDirectory( "animations", CEGUIInstallSharePath + "animations/" ) ;
+	rp->setResourceGroupDirectory( "schemes",    CEGUIInstallSharePath + "schemes/" ) ;
+ 	rp->setResourceGroupDirectory( "imagesets",  CEGUIInstallSharePath + "imagesets/" ) ;
+ 	rp->setResourceGroupDirectory( "fonts",      CEGUIInstallSharePath + "fonts/" ) ;
+ 	rp->setResourceGroupDirectory( "layouts",    CEGUIInstallSharePath + "layouts/" ) ;
+ 	rp->setResourceGroupDirectory( "looknfeels", CEGUIInstallSharePath + "looknfeel/" ) ;
+ 	rp->setResourceGroupDirectory( "lua_scripts",CEGUIInstallSharePath + "lua_scripts/" ) ;
+ 	rp->setResourceGroupDirectory( "schemas",    CEGUIInstallSharePath + "xml_schemas/" ) ;
+ 	rp->setResourceGroupDirectory( "animations", CEGUIInstallSharePath + "animations/" ) ;
  
 	// Sets the default resource groups to be used:
 	CEGUI::Imageset::setDefaultResourceGroup( "imagesets" ) ;
@@ -65,20 +99,15 @@ bool GUI::init(){
 	if ( parser->isPropertyPresent( "SchemaDefaultResourceGroup" ) ){
 		parser->setProperty( "SchemaDefaultResourceGroup", "schemas" ) ;
 	}
-	CEGUI::SchemeManager::getSingleton().create( "TaharezLook.scheme" ) ;
-	CEGUI::System::getSingleton().setDefaultMouseCursor( "TaharezLook", "MouseArrow" ) ;
-	CEGUI::Window* myRoot = CEGUI::WindowManager::getSingleton().loadWindowLayout( "hwTestWindow.layout" );
-	CEGUI::System::getSingleton().setGUISheet( myRoot );
+	std::string defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
+	CEGUI::SchemeManager::getSingleton().create(  defaultGUIScheme + ".scheme") ;
+
+	CEGUI::Window* rootSheet = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow","root_window");
+	CEGUI::System::getSingleton().setGUISheet( rootSheet );
+	assert(_console);
+	_console->CreateCEGUIWindow();
+	_init = true;
 	return true;
-}
-
-GUI::GUI(){
-
-}
-
-GUI::~GUI(){
-
-	close();
 }
 
 void GUI::close(){
@@ -86,38 +115,90 @@ void GUI::close(){
 		SAFE_DELETE(it.second);
 	}
 	_guiStack.clear();
+	SAFE_DELETE(_console);
+	CEGUI::System::destroy();
 }
 
-
-void GUI::checkItem(U16 x, U16 y ){
-
+bool GUI::checkItem(const OIS::MouseEvent& arg ){
+	if(!_init) return true;
 	GUIEvent event;
-	event.mousePoint.x = x;
-	event.mousePoint.y = y;
+	event.mousePoint.x = arg.state.X.abs;
+	event.mousePoint.y = arg.state.Y.abs;
 
 	for_each(guiMap::value_type& guiStackIterator,_guiStack) {
 		guiStackIterator.second->onMouseMove(event);
 	}
+	CEGUI::System::getSingleton().injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
+	CEGUI::System::getSingleton().injectMouseWheelChange(arg.state.Z.abs);
+	return true;
 }
 
-void GUI::clickCheck() {
+bool GUI::keyCheck(OIS::KeyEvent key, bool pressed) {
+	if(!_init) return true;
 
-	GUIEvent event;
-	event.mouseClickCount = 0;
-
-	for_each(guiMap::value_type& guiStackIterator,_guiStack) {
-		guiStackIterator.second->onMouseDown(event);
+	if(key.key == OIS::KC_GRAVE && !pressed){
+		_console->setVisible(!_console->isVisible());
 	}
-}
-
-void GUI::clickReleaseCheck() {
-	GUIEvent event;
-	event.mouseClickCount = 1;
-
-	for_each(guiMap::value_type& guiStackIterator,_guiStack) {
-		guiStackIterator.second->onMouseUp(event);
-	}
+	_input.injectOISKey(pressed,key);
 	
+	return !_console->isVisible();
+}
+
+bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
+	if(!_init) return true;
+
+	if(pressed){
+		switch (button){
+			case OIS::MB_Left:{
+				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::LeftButton);
+				GUIEvent event;
+				event.mouseClickCount = 0;
+				for_each(guiMap::value_type& guiStackIterator,_guiStack) {
+					guiStackIterator.second->onMouseDown(event);
+				}
+				}break;
+			case OIS::MB_Middle:
+				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::MiddleButton);
+				break;
+			case OIS::MB_Right:
+				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::RightButton);
+				break;
+			case OIS::MB_Button3:
+				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::X1Button);
+				break;
+			case OIS::MB_Button4:
+				CEGUI::System::getSingleton().injectMouseButtonDown(CEGUI::X2Button);
+				break;
+			default:	
+				break;
+ 		}
+	}else{
+		switch (button){
+			case OIS::MB_Left:{
+				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::LeftButton);
+				GUIEvent event;
+				event.mouseClickCount = 1;
+				for_each(guiMap::value_type& guiStackIterator,_guiStack) {
+					guiStackIterator.second->onMouseUp(event);
+				}
+				}break;
+			case OIS::MB_Middle:
+				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::MiddleButton);
+				break;
+			case OIS::MB_Right:
+				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::RightButton);
+				break;
+			case OIS::MB_Button3:
+				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::X1Button);
+				break;
+			case OIS::MB_Button4:
+				CEGUI::System::getSingleton().injectMouseButtonUp(CEGUI::X2Button);
+				break;
+			default:	
+				break;
+		}
+	}
+	return !_console->isVisible();
 }
 
 void GUI::addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback){
@@ -176,7 +257,6 @@ void GUI::modifyText(const std::string& id, char* format, ...){
 */
 
 bool GUI::bindRenderer(CEGUI::Renderer& renderer){
-	///Build an OpenGL GUI renderer
 	CEGUI::System::create(renderer);
 	return true;
 }

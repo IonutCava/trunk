@@ -265,7 +265,12 @@ bool glFrameBufferObject::Create(GLushort width,
 }
 
 void glFrameBufferObject::Destroy() {
-	if(_bound) Unbind();
+	for_each(TextureBind& bind, _prevTextureBind){
+		if(bind._bound){
+			Unbind();
+			break;
+		}
+	}
 	for(U8 i = 0; i < 4; i++){
 		if(_textureId[i] > 0){
 			GLCheck(glDeleteTextures(1, &_textureId[i]));

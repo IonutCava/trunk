@@ -47,15 +47,27 @@ public:
 	void setShaderProgram(ShaderProgram* const shaderProgram);
 
 private:
+	/// If we have a shader, we create a VAO, if not, we use simple VBO + IBO. If that fails, use VA
 	bool Refresh();
 	/// Internally create the VBO
 	bool CreateInternal();
+	/// Enable Vertex Array Data
 	void Enable_VA();	
-	void Enable_VBO();	
-	void Enable_Shader_VBO();
+	/// Disable Vertex Array Data
 	void Disable_VA();	
+	/// Enable VBO Data (only vertex and normal pointers)
+	void Enable_VBO();
+	/// Disable VBO Data (only vertex and normal pointers)
 	void Disable_VBO();
+	/// Enable texCoord pointers manually
+	void Enable_VBO_TexPointers();
+	/// Dsiable texCoord pointers manually to set client texture states to defaults
+	void Disable_VBO_TexPointers();
+	/// Enable full VAO based VBO (all pointers are tracked by VAO's)
+	void Enable_Shader_VBO();
+	/// Disable full VAO based VBO
 	void Disable_Shader_VBO();
+	/// Integrity checks
 	void checkStatus();
 private:
 	GLuint _VAOid;

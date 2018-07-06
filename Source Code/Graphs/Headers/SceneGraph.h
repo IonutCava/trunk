@@ -51,7 +51,7 @@ class SceneGraph  {
 	/// Update transforms and bounding boxes
 	void update();
 	/// Update all nodes. Called from "updateSceneState" from class Scene
-	void sceneUpdate(D32 sceneTime);
+	void sceneUpdate(U32 sceneTime);
 
 	void print();
 

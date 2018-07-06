@@ -63,8 +63,8 @@ public:
 	inline void setDebugOutput(bool logState) {WriteLock w_lock(_mutex); _logState = logState;}
 
 	inline int getSize(){ReadLock r_lock(_mutex); return _params.size();}
-
-
+	
+	inline bool isParam(const std::string& param) {return _params.find(param) != _params.end();}
 private:
 	bool _logState;
 	ParamMap _params;

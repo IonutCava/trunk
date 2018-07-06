@@ -67,13 +67,15 @@ public: ///Input
 	///Key released
 	bool onKeyUp(const OIS::KeyEvent& key);
 	///Joystic axis change
-	bool OnJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis);
+	bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis);
 	///Joystick direction change
-	bool OnJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
+	bool onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
 	///Joystick button pressed
-	bool OnJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
+	bool onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
 	///Joystick button released
-	bool OnJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
+	bool onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
+	bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index);
+	bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index);
 	///Mouse moved
 	bool onMouseMove(const OIS::MouseEvent& arg);
 	///Mouse button pressed
@@ -108,21 +110,17 @@ private:
 	///General light management and rendering (individual lights are handled by each scene)
 	///Unloading the lights is a scene level responsibility
 	LightManager&   _lightPool;
-	///_aiEvent is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
-	///It is destroyed after each scene's "deinitializeAI" is called
-	std::tr1::shared_ptr<Event>  _aiEvent;
 	static bool   _keepAlive;
 	static bool   _applicationReady;
 	/// get elapsed time since kernel initialization
-	inline static D32 getCurrentTime()   {return _currentTime;}
-	inline static D32 getCurrentTimeMS() {return _currentTimeMS;}
+	inline static U32 getCurrentTime()   {return _currentTime;}
+	inline static U32 getCurrentTimeMS() {return _currentTimeMS;}
 
 private:
    static boost::function0<void> _mainLoopCallback;
-   static D32     _currentTime;
-   static D32     _currentTimeMS;
+   static U32     _currentTime;
+   static U32     _currentTimeMS;
    CameraManager* _cameraMgr;
-   bool           _loadAI;
    U32 _nextGameTick;
    U8 _loops;
    //Command line arguments

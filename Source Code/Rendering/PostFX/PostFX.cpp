@@ -206,10 +206,9 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 	renderBatch->reshape(width,height);
 }
 
-void PostFX::displaySceneWithAnaglyph(void){
+void PostFX::displaySceneWithAnaglyph(bool deferred){
 
 	_currentCamera->SaveCamera();
-	bool deferred = GFX_DEVICE.getDeferredRendering();
 	F32 _eyePos[2] = {_eyeOffset/2, -_eyeOffset};
 
 	for(I32 i=0; i<2; i++){
@@ -243,10 +242,9 @@ void PostFX::displaySceneWithAnaglyph(void){
 
 }
 
-void PostFX::displaySceneWithoutAnaglyph(void){
+void PostFX::displaySceneWithoutAnaglyph(bool deferred){
 
 	_currentCamera->RenderLookAt();
-	bool deferred = GFX_DEVICE.getDeferredRendering();
 	ParamHandler& par = ParamHandler::getInstance();
 
 	if(_enableDOF){
@@ -327,16 +325,12 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		}
 }
 
-///Post-Processing in deffered renderer is disabled for now (needs a lot of work)
+///Post-Processing in deferred renderer is disabled for now (needs a lot of work)
 void PostFX::render(Camera* const camera){
 	_currentCamera = camera;
 	bool deferred = GFX_DEVICE.getDeferredRendering();
-	if(_enablePostProcessing && !deferred){
-		if(_enableAnaglyph){
-			displaySceneWithAnaglyph();
-		}else{
-			displaySceneWithoutAnaglyph();
-		}
+	if(_enablePostProcessing && !deferred){ /*deferred check here is temporary until PostFx are compatible with deferred rendering -Ionut*/
+		_enableAnaglyph ? displaySceneWithAnaglyph(deferred) : 	displaySceneWithoutAnaglyph(deferred);
 	}else{
 		_currentCamera->RenderLookAt();
 		SceneManager::getInstance().render(deferred ? DEFERRED_STAGE : FINAL_STAGE);
@@ -368,8 +362,8 @@ void PostFX::idle(){
 				_timer += GETMSTIME();
 				if(_timer > _tickInterval ){
 					_timer = 0;
-					_randomNoiseCoefficient = (F32)random(1000)/1000.0f;
-					_randomFlashCoefficient = (F32)random(1000)/1000.0f;
+					_randomNoiseCoefficient = (F32)random(1000) * 0.001f;
+					_randomFlashCoefficient = (F32)random(1000) * 0.001f;
 				}
 				
 				_postProcessingShader->Uniform("randomCoeffNoise", _randomNoiseCoefficient);

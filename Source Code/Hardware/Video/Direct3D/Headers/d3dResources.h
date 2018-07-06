@@ -18,11 +18,6 @@
 #ifndef _D3D_RESOURCES_H_
 #define _D3D_RESOURCES_H_
 
-///Static link to CEGUI
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
-#endif 
-
 #if TARGET_D3D_VERSION == D3D10
 #define D3D10_IGNORE_SDK_LAYERS
 //#include <D3D10.h>

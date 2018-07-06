@@ -3,7 +3,8 @@
 #include "Core/Headers/ParamHandler.h"
 
 Application::Application() : _kernel(NULL),
-							 _mainWindowId(-1)
+							 _mainWindowId(-1),
+							 _requestShutdown(false)
 {
 }
 

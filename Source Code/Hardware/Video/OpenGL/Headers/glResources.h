@@ -41,13 +41,6 @@
 
 #if !defined(__gl_h_) && !defined(__GL_H__) && !defined(__X_GL_H) 
 
-//#define GLEW_STATIC
-
-///Static link to CEGUI
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
-#endif 
-
 #include <glew.h>
 #include <GL/glfw.h>
 #include <RendererModules/OpenGL/CEGUIOpenGLRenderer.h>

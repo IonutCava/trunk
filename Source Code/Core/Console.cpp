@@ -176,5 +176,7 @@ void Console::output(const std::string& output,bool error){
 		}
 		
 	}
-	//GUI::getInstance().printConsole(output);
+	if(!_guiConsoleCallback.empty()){
+		_guiConsoleCallback(output,error);
+	}
 }

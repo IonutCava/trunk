@@ -578,6 +578,12 @@
     <Filter Include="shaders\GLSL\geometryAtoms">
       <UniqueIdentifier>{8034d24d-b5ab-4a01-b443-d74118655719}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GUI\CEGUIAddons">
+      <UniqueIdentifier>{4be1cd0d-9f4a-4a71-809a-789dee5399f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI\CEGUIAddons\Headers">
+      <UniqueIdentifier>{33beb6d6-b315-45b5-95eb-1a5e31998630}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -1171,6 +1177,21 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp">
       <Filter>Hardware\Video\OpenGL\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp">
+      <Filter>GUI\CEGUIAddons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIKeyRepeat.cpp">
+      <Filter>GUI\CEGUIAddons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Input\AutoKeyRepeat.cpp">
+      <Filter>Hardware\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1853,6 +1874,21 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsole.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h">
+      <Filter>GUI\CEGUIAddons\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\AutoKeyRepeat.h">
+      <Filter>Hardware\Input\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIKeyRepeat.h">
+      <Filter>GUI\CEGUIAddons\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
@@ -1971,6 +2007,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputDataBones.vert">
       <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
   </ItemGroup>
 </Project>

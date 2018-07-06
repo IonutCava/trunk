@@ -18,7 +18,7 @@
 #ifndef _MESH_H_
 #define _MESH_H_
 
-/*
+/**
 DIVIDE-Engine: 21.10.2010 (Ionut Cava)
 
 Mesh class. This class wraps all of the renderable geometry drawn by the engine. 
@@ -51,7 +51,7 @@ public:
 	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(D32 sceneTime);
+	virtual void sceneUpdate(U32 sceneTime);
 	virtual void postLoad(SceneGraphNode* const sgn);
 	virtual	void onDraw();
 	inline  void render(SceneGraphNode* const sgn){};
@@ -72,7 +72,7 @@ protected:
 	bool _visibleToNetwork;
 
 	vectorImpl<std::string > _subMeshes;
-	subMeshRefMap             _subMeshRefMap;
+	subMeshRefMap            _subMeshRefMap;
 };
 
 #endif

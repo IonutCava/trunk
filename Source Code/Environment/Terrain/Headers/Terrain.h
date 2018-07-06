@@ -56,7 +56,7 @@ public:
 	void postDraw();
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
-	void sceneUpdate(D32 sceneTime);
+	void sceneUpdate(U32 sceneTime);
 	void drawBoundingBox(SceneGraphNode* const sgn);
 
 	inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }

@@ -22,8 +22,8 @@
 #include "Rendering/Headers/DeferredLightingRenderer.h"
 
 
-D32 Kernel::_currentTime = 0.0;
-D32 Kernel::_currentTimeMS = 0.0;
+U32 Kernel::_currentTime = 0;
+U32 Kernel::_currentTimeMS = 0;
 bool Kernel::_keepAlive = true;
 bool Kernel::_applicationReady = false;
 boost::function0<void> Kernel::_mainLoopCallback;
@@ -31,7 +31,6 @@ boost::function0<void> Kernel::_mainLoopCallback;
 Kernel::Kernel(I32 argc, char **argv) :
 					_argc(argc),
 					_argv(argv),
-                    _loadAI(false),
 					_GFX(GFX_DEVICE),               ///Video
 				    _SFX(SFXDevice::getInstance()), ///Audio
 					_PFX(PHYSICS_DEVICE),           ///Physics
@@ -52,8 +51,6 @@ Kernel::Kernel(I32 argc, char **argv) :
 	 _camera->addUpdateListener(boost::bind(&LightManager::update, boost::ref(_lightPool), true));
 	 ///As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
 	 _cameraMgr->addNewCamera("defaultCamera",_camera);
-	 ///Create an AI thread, but start it only if needed
-	 _aiEvent.reset(New Event(10,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
 }
 
 Kernel::~Kernel(){
@@ -79,7 +76,7 @@ void Kernel::MainLoopApp(){
 	/// Update time at every render loop
 	Kernel::_currentTime     = GETTIME();
 	Kernel::_currentTimeMS   = GETMSTIME();
-	if(!_keepAlive) {
+	if(!_keepAlive || Application::getInstance().ShutdownRequested()) {
 		///exiting the graphical rendering loop will return us to the current control point
 		///if we return here, the next valid control point is in main() thus shutding down the application neatly
 		GFX_DEVICE.exitRenderLoop(true);
@@ -102,6 +99,7 @@ void Kernel::MainLoopApp(){
 	///Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
 	FrameListenerManager::getInstance().createEvent(FRAME_EVENT_PROCESS,evt);
 	_keepAlive = FrameListenerManager::getInstance().frameRenderingQueued(evt);
+	
 	///Swap GPU buffers
 	GFX_DEVICE.swapBuffers();
 	///Launch the FRAME_ENDED event (buffers have been swapped)
@@ -112,18 +110,19 @@ void Kernel::MainLoopApp(){
 void Kernel::FirstLoop(){
 	///Skip one frame so all resources can be built while the splash screen is displayed
 	MainLoopApp();
+	Kernel::_applicationReady = true; ///<All is set
 	///Hide splash screen
 	ParamHandler& par = ParamHandler::getInstance();
 	vec2<U16> resolution(par.getParam<I32>("runtime.resolutionWidth"),par.getParam<I32>("runtime.resolutionHeight"));
 	GFX_DEVICE.setWindowSize(resolution.width,resolution.height);
 	GFX_DEVICE.setWindowPos(10,50);
-	Kernel::_applicationReady = true; ///<All is set
-	//GFX_DEVICE.swapBuffers();
+	//Initialize GUI with our current resolution
+	GUI::getInstance().init();
 	///Bind main render loop
 	_mainLoopCallback = boost::ref(Kernel::MainLoopApp);
 }
 
-const int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
+const I32 SKIP_TICKS = 1000 / TICKS_PER_SECOND;
 bool Kernel::MainLoopScene(){
 	///Update camera position
 	_camera->RenderLookAt();
@@ -154,17 +153,16 @@ bool Kernel::MainLoopScene(){
 		_nextGameTick += SKIP_TICKS;
         _loops++;
 //	}
+
 	presentToScreen();
 	/// Get input events
 	_inputInterface.tick();
 	/// Preview depthmaps if needed
 	_lightPool.previewShadowMaps();
-
 	///unbind all shaders
 	ShaderManager::getInstance().unbind();
-
 	/// Draw the GUI
-	GUI::getInstance().draw();
+	GUI::getInstance().draw(_currentTimeMS);
 	return true;
 }
 
@@ -175,11 +173,11 @@ void Kernel::presentToScreen(){
 	PostFX::getInstance().render(_camera);
 }
 
-
 I8 Kernel::Initialize(const std::string& entryPoint) {
 	I8 windowId = -1;
 	I8 returnCode = 0;
 	ParamHandler& par = ParamHandler::getInstance();
+	Console::getInstance().bindConsoleOutput(boost::bind(&GUIConsole::printText, GUI::getInstance().getConsole(),_1,_2));
 	///Using OpenGL for rendering as default
 	_GFX.setApi(OpenGL);
 	///Target FPS is usually 60. So all movement is capped around that value
@@ -194,7 +192,7 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	vec2<U16> resolution(par.getParam<I32>("runtime.resolutionWidth"),par.getParam<I32>("runtime.resolutionHeight"));
 	windowId = _GFX.initHardware(resolution/2,_argc,_argv);
 	if(windowId < 0){
-		///If we could not initialize the graphics device, exit with code -2;
+		///If we could not initialize the graphics device, exit
 		return windowId;
 	}
 	///Load the splash screen 
@@ -207,7 +205,6 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	_GFX.setRenderer(New ForwardRenderer());
 	_GFX.registerKernel(this);
 	_lightPool.init();
-	GUI::getInstance().init();
 	PRINT_FN(Locale::get("START_SOUND_INTERFACE"));
 	returnCode = _SFX.initHardware();
 	if(returnCode < 0){
@@ -234,8 +231,8 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	}
 	PRINT_FN(Locale::get("INITIAL_DATA_LOADED"));
 	PRINT_FN(Locale::get("CREATE_AI_ENTITIES_START"));
-	///Start the AIManager thread
-	_loadAI = _sceneMgr.initializeAI(true);
+	//Initialize and start the AI
+	_sceneMgr.initializeAI(true);
 	PRINT_FN(Locale::get("CREATE_AI_ENTITIES_END"));
 	_GUI.cacheResolution(resolution);
 	_nextGameTick = GETMSTIME();
@@ -244,10 +241,6 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 
 void Kernel::beginLogicLoop(){
 	PRINT_FN(Locale::get("START_RENDER_LOOP"));
-	///Fire up the AI if needed
-	if(_loadAI){
-		_aiEvent->startEvent();
-	}
 	///lock the scene
 	GET_ACTIVE_SCENE()->state()->toggleRunningState(true);
 	ParamHandler& par = ParamHandler::getInstance();
@@ -265,18 +258,14 @@ void Kernel::Shutdown(){
 	GET_ACTIVE_SCENE()->state()->toggleRunningState(false);
 	PRINT_FN(Locale::get("STOP_GUI"));
 	_GUI.DestroyInstance(); ///Deactivate GUI
+	Console::getInstance().bindConsoleOutput(boost::function2<void, std::string, bool>());
 	PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
 	_PFX.exitPhysics();
 	PRINT_FN(Locale::get("STOP_POST_FX"));
 	PostFX::getInstance().DestroyInstance();
 	PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
 	_sceneMgr.deinitializeAI(true);
-	///Shut down AIManager thread
-	if(_aiEvent.get()){
-		_aiEvent->stopEvent();
-		_aiEvent.reset();
-	}
-	while(_aiEvent.get());
+
 	AIManager::getInstance().Destroy();
 	AIManager::getInstance().DestroyInstance();
 	_sceneMgr.DestroyInstance();
@@ -295,6 +284,7 @@ void Kernel::Shutdown(){
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){
 	if(!_applicationReady) return;
+
 	Application::getInstance().setResolutionWidth(w);
 	Application::getInstance().setResolutionHeight(h);
 	///Update post-processing render targets and buffers
@@ -307,51 +297,68 @@ void Kernel::updateResolutionCallback(I32 w, I32 h){
 }
 
 ///--------------------------Input Management-------------------------------------///
-///The console is a global GUI element, scene agnostic, so it's handled in the Kernel
-
 
 bool Kernel::onKeyDown(const OIS::KeyEvent& key) {
-	GET_ACTIVE_SCENE()->onKeyDown(key);
+	if(GUI::getInstance().keyCheck(key,true)){
+		GET_ACTIVE_SCENE()->onKeyDown(key);
+	}
 	return true;
 }
 
 bool Kernel::onKeyUp(const OIS::KeyEvent& key) {
-	GET_ACTIVE_SCENE()->onKeyUp(key);
+	if(GUI::getInstance().keyCheck(key,false)){
+		GET_ACTIVE_SCENE()->onKeyUp(key);
+	}
 	return true;
 }
 
 bool Kernel::onMouseMove(const OIS::MouseEvent& arg) {
-	GUI::getInstance().checkItem(arg.state.X.abs,arg.state.Y.abs);
-	GET_ACTIVE_SCENE()->onMouseMove(arg);
+	if(GUI::getInstance().checkItem(arg)){
+		GET_ACTIVE_SCENE()->onMouseMove(arg);
+	}
 	return true;
 }
 
 bool Kernel::onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
-	GET_ACTIVE_SCENE()->onMouseClickDown(arg,button);
+	if(GUI::getInstance().clickCheck(button,true)){
+		GET_ACTIVE_SCENE()->onMouseClickDown(arg,button);
+	}
 	return true;
 }
 
 bool Kernel::onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
-	GET_ACTIVE_SCENE()->onMouseClickUp(arg,button);
+	if(GUI::getInstance().clickCheck(button,false)){
+		GET_ACTIVE_SCENE()->onMouseClickUp(arg,button);
+	}
 	return true;
 }
 
-bool Kernel::OnJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis) {
-	GET_ACTIVE_SCENE()->OnJoystickMoveAxis(arg,axis);
+bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis) {
+	GET_ACTIVE_SCENE()->onJoystickMoveAxis(arg,axis);
 	return true;
 }
 
-bool Kernel::OnJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov){
-	GET_ACTIVE_SCENE()->OnJoystickMovePOV(arg,pov);
+bool Kernel::onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov){
+	GET_ACTIVE_SCENE()->onJoystickMovePOV(arg,pov);
 	return true;
 }
 
-bool Kernel::OnJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button){
-	GET_ACTIVE_SCENE()->OnJoystickButtonDown(arg,button);
+bool Kernel::onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button){
+	GET_ACTIVE_SCENE()->onJoystickButtonDown(arg,button);
 	return true;
 }
 
-bool Kernel::OnJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
-	GET_ACTIVE_SCENE()->OnJoystickButtonUp(arg,button);
+bool Kernel::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
+	GET_ACTIVE_SCENE()->onJoystickButtonUp(arg,button);
+	return true;
+}
+
+bool Kernel::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+	GET_ACTIVE_SCENE()->sliderMoved(arg,index);
+	return true;
+}
+
+bool Kernel::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
+	GET_ACTIVE_SCENE()->vector3Moved(arg,index);
 	return true;
 }

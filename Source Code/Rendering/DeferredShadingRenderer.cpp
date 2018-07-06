@@ -19,7 +19,8 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 	_deferredShader = CreateResource<ShaderProgram>(deferred);
 	_deferredBuffer = GFX_DEVICE.newFBO(FBO_2D_DEFERRED);
 
-
+	ResourceDescriptor deferredPreview("deferredPreview");
+	_previewDeferredShader = CreateResource<ShaderProgram>(deferredPreview);
 	TextureDescriptor gBuffer[3]; /// 3 Gbuffer elements
 	///Albedo
 	gBuffer[0] = TextureDescriptor(TEXTURE_2D,
@@ -36,17 +37,19 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 	gBuffer[1].setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
 	gBuffer[1]._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
 	///Normals
-	gBuffer[1] = TextureDescriptor(TEXTURE_2D,
+	gBuffer[2] = TextureDescriptor(TEXTURE_2D,
 								   RGBA,
 								   RGBA16F, //R16G16B16A16, 64bit format for normals
 								   FLOAT_32);
-	gBuffer[1].setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
-	gBuffer[1]._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	gBuffer[2].setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+	gBuffer[2]._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
 
 	_deferredBuffer->AddAttachment(gBuffer[0],TextureDescriptor::Color0);
 	_deferredBuffer->AddAttachment(gBuffer[1],TextureDescriptor::Color1);
 	_deferredBuffer->AddAttachment(gBuffer[2],TextureDescriptor::Color2);
 
+	ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
+	mrtPreviewSmall.setFlag(true); //no default material
 	ResourceDescriptor mrt("MRT RenderQuad");
 	mrt.setFlag(true); //no default material
 	ResourceDescriptor mrt2("MRT RenderQuad2");
@@ -59,9 +62,12 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 	_renderQuads.push_back(CreateResource<Quad3D>(mrt2));
 	_renderQuads.push_back(CreateResource<Quad3D>(mrt3));
 	_renderQuads.push_back(CreateResource<Quad3D>(mrt4));
+	_renderQuads.push_back(CreateResource<Quad3D>(mrtPreviewSmall));
 	for_each(Quad3D* renderQuad, _renderQuads){ assert(renderQuad); }
 
 	ParamHandler& par = ParamHandler::getInstance();
+	#pragma message("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
+	par.setParam("rendering.enableShadows",false);
 	F32 width  = par.getParam<I32>("runtime.resolutionWidth");
 	F32 height = par.getParam<I32>("runtime.resolutionHeight");
 	_deferredBuffer->Create(width,height);
@@ -76,6 +82,8 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 	_renderQuads[3]->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
 	_renderQuads[3]->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(width/2,height/2,0));
 	_renderQuads[3]->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, height/2, 0));
+	//Using a separate, smaller render quad for debug view because it's faster than resizing a quad back and forth -Ionut
+	_renderQuads[4]->setDimensions(vec4<F32>(0,0,width/2,height/2));
 	GUI& gui = GUI::getInstance();
 	gui.addText("FinalImage",           //Unique ID
 		        vec2<F32>(60,60),          //Position
@@ -106,11 +114,13 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 	RemoveResource(_renderQuads[1]);
 	RemoveResource(_renderQuads[2]);
 	RemoveResource(_renderQuads[3]);
+	RemoveResource(_renderQuads[4]);
 	_renderQuads.clear();
 	SAFE_DELETE(_deferredBuffer);
 	if(_deferredShader != NULL){
 		RemoveResource(_deferredShader);
 	}
+	RemoveResource(_previewDeferredShader);
 	SAFE_DELETE(_lightTexture);
 }
 
@@ -156,42 +166,36 @@ void DeferredShadingRenderer::secondPass(SceneRenderState* const sceneRenderStat
 	//Draw a 2D fullscreen quad that has the lighting shader applied to it and all generated textures bound to that shader
 	GFX_DEVICE.toggle2D(true);
 
-	_deferredShader->bind();
-		_deferredBuffer->Bind(0,0);
-		_deferredBuffer->Bind(1,1);
-		_deferredBuffer->Bind(2,2);
-		_lightTexture->Bind(3);
-
+	_deferredBuffer->Bind(0,0);
+	_deferredBuffer->Bind(1,1);
+	_deferredBuffer->Bind(2,2);
+	_lightTexture->Bind(3);
+		if(_debugView){
+			_previewDeferredShader->bind();
+			_previewDeferredShader->UniformTexture("tex",3);
+			GFX_DEVICE.renderModel(_renderQuads[1]);
+			_previewDeferredShader->UniformTexture("tex",1);
+			GFX_DEVICE.renderModel(_renderQuads[2]);
+			_previewDeferredShader->UniformTexture("tex",2);
+			GFX_DEVICE.renderModel(_renderQuads[3]);
+		}
+		_deferredShader->bind();
 			_deferredShader->UniformTexture("tImage0",0);
 			_deferredShader->UniformTexture("tImage1",1);
 			_deferredShader->UniformTexture("tImage2",2);
 			_deferredShader->UniformTexture("lightTexture",3);
 			_deferredShader->Uniform("lightCount",(I32)LightManager::getInstance().getLights().size());
-			_deferredShader->Uniform("cameraPosition",sceneRenderState->getCamera()->getEye());
 
-			GFX_DEVICE.renderModel(_renderQuads[0]);
+			GFX_DEVICE.renderModel(_renderQuads[ _debugView ? 4 : 0]);
+		_deferredShader->unbind();
+		
 
-		_lightTexture->Unbind(3);
-		_deferredBuffer->Unbind(2);
-		_deferredBuffer->Unbind(1);
-		_deferredBuffer->Unbind(0);
-	_deferredShader->unbind();
+	_lightTexture->Unbind(3);
+	_deferredBuffer->Unbind(2);
+	_deferredBuffer->Unbind(1);
+	_deferredBuffer->Unbind(0);
 
-	if(_debugView){
-
-		_lightTexture->Bind(0);
-			GFX_DEVICE.renderModel(_renderQuads[1]);
-		_lightTexture->Unbind(0);
-
-		_deferredBuffer->Bind(0,1);
-			GFX_DEVICE.renderModel(_renderQuads[2]);
-		_deferredBuffer->Unbind(0);
-
-		_deferredBuffer->Bind(0,2);
-			GFX_DEVICE.renderModel(_renderQuads[3]);
-		_deferredBuffer->Unbind(0);
-
-	}
+	
 	GFX_DEVICE.toggle2D(false);
 	GUI& gui = GUI::getInstance();
 	GUIElement* guiElement = gui.getGuiElement("FinalImage");
@@ -215,12 +219,4 @@ void DeferredShadingRenderer::secondPass(SceneRenderState* const sceneRenderStat
 
 void DeferredShadingRenderer::toggleDebugView(){
 	_debugView = !_debugView;
-	ParamHandler& par = ParamHandler::getInstance();
-	F32 width  = par.getParam<I32>("runtime.resolutionWidth");
-	F32 height = par.getParam<I32>("runtime.resolutionHeight");
-	if(!_debugView){
-		_renderQuads[0]->setDimensions(vec4<F32>(0,0,width,height));
-	}else{
-		_renderQuads[0]->setDimensions(vec4<F32>(0,0,width/2,height/2));
-	}
 }

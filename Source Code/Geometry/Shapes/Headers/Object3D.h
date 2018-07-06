@@ -63,7 +63,7 @@ public:
 	inline  void                      setUsageContext(UsageContext newContext) {_usageContext = newContext;}
 
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void  sceneUpdate(D32 sceneTime) {}           ///<To avoid a lot of typing
+	virtual void  sceneUpdate(U32 sceneTime) {}           ///<To avoid a lot of typing
 	virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
 	virtual	void  render(SceneGraphNode* const sgn);
 	virtual void  onDraw();

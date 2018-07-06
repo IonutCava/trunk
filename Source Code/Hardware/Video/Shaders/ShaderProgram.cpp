@@ -58,7 +58,7 @@ void ShaderProgram::bind(){
 	this->Uniform("zPlanes",frust.getZPlanes());
 	this->Uniform("screenDimension", app.getResolution());
 	this->Uniform("enableFog",par.getParam<bool>("rendering.enableFog"));
-	this->Uniform("time", GETMSTIME());
+	this->Uniform("time", static_cast<F32>(GETMSTIME()));
 
 }
 

@@ -66,12 +66,12 @@ public:
 private:
 	/// Unit type
 	UnitType _type;
-	/// Movement speed
+	/// Movement speed (per second)
 	F32 _moveSpeed;
 	/// acceptable distance from target
 	F32 _moveTolerance;
 	/// previous time, in milliseconds when last move was applied
-	F32 _prevTime;
+	U32 _prevTime;
 	/// Unit position in world
 	vec3<F32>  _currentPosition;
 	/// Current destination point cached

@@ -46,11 +46,11 @@ public:
 	inline bool deinitializeAI(bool continueOnErrors) { return _activeScene->deinitializeAI(continueOnErrors); }
 	/// Update animations, network data, sounds, triggers etc.
 	inline void updateCamera(Camera* const camera)  { _activeScene->renderState()->updateCamera(camera); }
-	inline void updateSceneState(D32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
+	inline void updateSceneState(U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
 	inline void preRender()                         { _activeScene->preRender(); }
 	///Gather input events and process them in the current scene
 	inline void processInput()                      { _activeScene->processInput(); }
-	inline void processEvents(F32 time)             { _activeScene->processEvents(time); }
+	inline void processEvents(U32 time)             { _activeScene->processEvents(time); }
 	
 	inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
 

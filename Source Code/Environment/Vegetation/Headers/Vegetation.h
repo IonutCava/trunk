@@ -57,7 +57,7 @@ public:
 	void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
 	inline void toggleRendering(bool state){_render = state;}
 	void draw(bool drawInReflection);
-	void sceneUpdate(D32 sceneTime);
+	void sceneUpdate(U32 sceneTime);
 
 private:
 	bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode

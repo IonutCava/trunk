@@ -286,7 +286,9 @@ DEFINE_SINGLETON( InputInterface )
     EventHandler*      _pEventHdlr;
     OIS::Keyboard*     _pKeyboard;
 	OIS::Mouse*        _pMouse;
-	OIS::JoyStick*	   _pJoystick;
+	///multiple joystick support
+	vectorImpl<OIS::JoyStick* >	   _pJoysticks;
+
     JoystickInterface* _pJoystickInterface;
 	EffectManager*     _pEffectMgr;
 
@@ -303,12 +305,10 @@ DEFINE_SINGLETON( InputInterface )
     static const U8 _nEffectUpdateFreq = 1; // Hz
 
   
-
     InputInterface()  {
 	  _pInputInterface = NULL;
 	  _pEventHdlr = NULL;
 	  _pKeyboard = NULL;
-	  _pJoystick = NULL;
 	  _pJoystickInterface = NULL;
 	  _pMouse = NULL;
 	  _pEffectMgr = NULL;
@@ -320,6 +320,14 @@ DEFINE_SINGLETON( InputInterface )
 	}
 
 public:
+	///Points to the position of said joystick in the vector
+	enum Joysticks{
+		JOY_1 = 0,
+		JOY_2,
+		JOY_3,
+		JOY_4
+	};
+
 	U8 initialize(Kernel* const kernel, const std::string& windowTitle, size_t windowId = 0)
     {
 		if(_bIsInitialized)
@@ -357,28 +365,34 @@ public:
 		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_KB"),ex.eText);
 	  }
 
-	  try{
-			_pJoystick = (OIS::JoyStick*) _pInputInterface->createInputObject(OIS::OISJoyStick, true);
-			if(_pJoystick){
-				_pJoystick->setEventCallback( _pEventHdlr );
-				// Create the joystick manager.
-				_pJoystickInterface = new JoystickInterface(_pInputInterface, _pEventHdlr);
-				if( !_pJoystickInterface->wasFFDetected() )	{
-					PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
-					SAFE_DELETE(_pJoystickInterface);
-				}else{
-					// Create force feedback effect manager.
-					_pEffectMgr = new EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
-					// Initialize the event handler.
-					_pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
-				}
-			}
-	  }
-	  catch(OIS::Exception &ex)
-	  {
-		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),ex.eText);
-	  }
+	 
+		  U32 numJoysticks = _pInputInterface->getNumberOfDevices(OIS::OISJoyStick);
+		  CLAMP<U32>(numJoysticks,0,MAX_ALLOWED_JOYSTICKS);///Limit max joysticks to MAX_ALLOWED_JOYSTICKS
 
+		  if (numJoysticks > 0) {
+			  _pJoysticks.resize(numJoysticks);
+			  try{
+				for(vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); it++){
+					(*it) = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject(OIS::OISJoyStick, true));
+					(*it)->setEventCallback( _pEventHdlr );
+				}
+			  }catch(OIS::Exception &ex){
+				PRINT_FN(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),ex.eText);
+			  }
+
+			// Create the joystick manager.
+			_pJoystickInterface = new JoystickInterface(_pInputInterface, _pEventHdlr);
+			if( !_pJoystickInterface->wasFFDetected() )	{
+				PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
+				SAFE_DELETE(_pJoystickInterface);
+			}else{
+				// Create force feedback effect manager.
+				_pEffectMgr = new EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
+				// Initialize the event handler.
+				_pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
+			}
+		}
+	  
 	  try{
 	  
 		_pMouse = (OIS::Mouse*)_pInputInterface->createInputObject(OIS::OISMouse,true);
@@ -426,11 +440,13 @@ public:
 		  // This fires off buffered events for keyboards
 		  if(_pKeyboard != NULL)
 			_pKeyboard->capture();
-		  if(_pJoystick != NULL)
-			_pJoystick->capture();
 		  if(_pMouse != NULL)
 			_pMouse->capture();
-
+		  if(_pJoysticks.size() > 0){
+			  for(vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); it++){
+				(*it)->capture();
+			  }
+		  }
 		  // This fires off buffered events for each joystick we have
 		  if(_pJoystickInterface != NULL)
 		  {
@@ -461,11 +477,17 @@ public:
 	  if (_pInputInterface) {
 		_pInputInterface->destroyInputObject( _pKeyboard );
 		_pInputInterface->destroyInputObject( _pMouse );
-		_pInputInterface->destroyInputObject( _pJoystick );
 
 		_pKeyboard = NULL;
 		_pMouse = NULL;
-		_pJoystick = NULL;
+
+		 if( _pJoysticks.size() > 0 ) {
+            for(vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); it++){
+                _pInputInterface->destroyInputObject( *it );
+            }
+ 
+            _pJoysticks.clear();
+        }
 
 		SAFE_DELETE(_pJoystickInterface);
 

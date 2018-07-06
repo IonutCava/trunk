@@ -33,7 +33,9 @@ public:
 	inline const vec2<U16>& getResolution() const {return _resolution;}
 	inline void setResolutionWidth(U16 w){_resolution.x = w;}
 	inline void setResolutionHeight(U16 h){_resolution.y = h;}
-
+	inline void RequestShutdown()   {_requestShutdown = true;}
+	inline void CancelShutdown()    {_requestShutdown = false;}
+	inline bool ShutdownRequested() {return _requestShutdown;}
 	///Application window ID
 	inline I8 const&  getMainWindowId() {return _mainWindowId;}
 	inline Kernel* const getKernel()    {return _kernel;}
@@ -46,6 +48,7 @@ private:
 	~Application();
 
 private:
+	bool _requestShutdown;
 	I8 _mainWindowId;
 	vec2<U16> _resolution;
 	Kernel* _kernel;

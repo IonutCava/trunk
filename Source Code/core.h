@@ -74,7 +74,7 @@ void free_simd(void * pxData);
 
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
-#define GETTIME()   Framerate::getInstance().getElapsedTime()/1000
+#define GETTIME()   getMsToSec(Framerate::getInstance().getElapsedTime())
 #define GETMSTIME() Framerate::getInstance().getElapsedTime()
 
 template <class T>

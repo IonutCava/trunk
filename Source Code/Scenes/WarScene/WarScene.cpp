@@ -22,7 +22,7 @@ void WarScene::preRender(){
 	getSkySGN(0)->getNode<Sky>()->setRenderingOptions(renderState()->getCamera()->getEye(),_sunvector);
 }
 
-void WarScene::processEvents(F32 time){
+void WarScene::processEvents(U32 time){
 	F32 FpsDisplay = 0.3f;
 	if (time - _eventTimers[0] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
@@ -127,7 +127,12 @@ bool WarScene::initializeAI(bool continueOnErrors){
 		_army2NPCs.push_back(soldier);
 		AIManager::getInstance().addEntity(_army2[i]);
 	}
-	return !(_army1.empty() || _army2.empty());
+
+	bool state = !(_army1.empty() || _army2.empty());
+
+	if(state || continueOnErrors) Scene::initializeAI(continueOnErrors);
+
+	return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors){
@@ -149,7 +154,7 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 	_army2.clear();
 	SAFE_DELETE(_faction1);
 	SAFE_DELETE(_faction2);
-	return true;
+	return Scene::deinitializeAI(continueOnErrors);
 }
 
 bool WarScene::loadResources(bool continueOnErrors){

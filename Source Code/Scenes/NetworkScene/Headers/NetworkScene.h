@@ -30,7 +30,7 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 
-	void processEvents(F32 time);
+	void processEvents(U32 time);
 	void processInput();
 
 private: 

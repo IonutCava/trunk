@@ -28,7 +28,7 @@ void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg, const boost::any& msg
 }
 
 void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content) {
-	WriteLock w_lock(_updateMutex);
+	ReadLock r_lock(_updateMutex);
 	_actionProcessor->processMessage(sender, msg, msg_content);
 }
 

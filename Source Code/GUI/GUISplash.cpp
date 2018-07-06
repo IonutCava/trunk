@@ -26,8 +26,8 @@ GUISplash::~GUISplash()
 	RemoveResource(_splashImage);
 }
 
-void GUISplash::render()
-{
+void GUISplash::render(){
+
 	GFX_DEVICE.toggle2D(true);
 	_splashImage->Bind(0,true);
 		GFX_DEVICE.renderModel(_renderQuad);

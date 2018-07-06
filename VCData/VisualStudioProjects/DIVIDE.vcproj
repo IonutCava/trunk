@@ -41,13 +41,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\glm&quot;;&quot;$(EngineLibraries)\glfw\include&quot;;&quot;$(EngineLibraries)\glim\include&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
-				PreprocessorDefinitions="_DEBUG;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="_DEBUG;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;CEGUI_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				StructMemberAlignment="0"
 				EnableEnhancedInstructionSet="2"
-				OpenMP="false"
+				OpenMP="true"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				ShowIncludes="false"
@@ -65,10 +65,10 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="true"
 				AdditionalOptions="/Y3"
-				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking_d.lib SDL.lib SDL_mixer.lib OIS_static_d.lib expat_d.lib SILLY.lib pcre_d.lib libpng_d.lib libtiff_d.lib zlib_d.lib jpeg_d.lib freetype_d.lib ftgl_static_d.lib glim_d.lib GLFW_d.lib glew32s_d.lib CEGUIBase_Static_d.lib CEGUIExpatParser_Static_d.lib CEGUISILLYImageCodec_Static_d.lib CEGUIOpenGLRenderer_Static_d.lib CEGUIFalagardWRBase_Static_d.lib Winmm.lib"
+				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking_d.lib SDL.lib SDL_mixer.lib OIS_static_d.lib expat_d.lib SILLY.lib pcre_d.lib libpng_d.lib libtiff_d.lib zlib_d.lib jpeg_d.lib freetype_d.lib ftgl_static_d.lib glim_d.lib GLFW_d.lib glew32s_d.lib CEGUIBase_Static_d.lib CEGUIExpatParser_Static_d.lib CEGUISILLYImageCodec_Static_d.lib CEGUIOpenGLRenderer_Static_d.lib CEGUIFalagardWRBase_Static_d.lib Winmm.lib vcompd.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
-				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\openmp\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; libcmtd.lib;"
 				GenerateDebugInformation="true"
@@ -127,13 +127,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\glm&quot;;&quot;$(EngineLibraries)\glfw\include&quot;;&quot;$(EngineLibraries)\glim\include&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;CEGUI_STATIC"
 				StringPooling="true"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="2"
-				OpenMP="false"
+				OpenMP="true"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -148,9 +148,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib ftgl_static.lib glim.lib GLFW.lib glew32s.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib Winmm.lib"
+				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib ftgl_static.lib glim.lib GLFW.lib glew32s.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib Winmm.lib vcomp.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
-				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\openmp\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; LIBCMTD.lib;"
 				GenerateDebugInformation="true"
@@ -739,6 +739,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\GUI\GUIConsole.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\GUI\GUIElement.cpp"
 				>
 			</File>
@@ -766,6 +770,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\GUI\Headers\GUIConsole.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\GUI\Headers\GUIElement.h"
 					>
 				</File>
@@ -781,6 +789,30 @@
 					RelativePath="..\..\Source Code\GUI\Headers\GUIText.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="CEGUIAddons"
+				>
+				<File
+					RelativePath="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\GUI\CEGUIAddons\CEGUIKeyRepeat.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIKeyRepeat.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -895,6 +927,10 @@
 			Name="Utility"
 			>
 			<File
+				RelativePath="..\..\Source Code\Utility\CommandParser.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Utility\CRC.cpp"
 				>
 			</File>
@@ -917,6 +953,10 @@
 			<Filter
 				Name="Headers"
 				>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\CommandParser.h"
+					>
+				</File>
 				<File
 					RelativePath="..\..\Source Code\Utility\Headers\CRC.h"
 					>
@@ -1414,12 +1454,20 @@
 				Name="Input"
 				>
 				<File
+					RelativePath="..\..\Source Code\Hardware\Input\AutoKeyRepeat.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\Hardware\Input\EventHandler.cpp"
 					>
 				</File>
 				<Filter
 					Name="Headers"
 					>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Input\Headers\AutoKeyRepeat.h"
+						>
+					</File>
 					<File
 						RelativePath="..\..\Source Code\Hardware\Input\Headers\EventHandler.h"
 						>

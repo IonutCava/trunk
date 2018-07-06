@@ -112,6 +112,12 @@
 #define centimetre   *0.01f
 #define millimeter   *0.001f
 
+#define getMsToSec(a) a*0.001f
+#define getSecToMs(a) a*1000.0f
+
+#define MsToSec(a)   (a)*=0.001f
+#define SecToMs(a)   (a)*=1000.0f
+
 #ifdef USE_MATH_SIMD		
 	#include "MathSIMD.h"
 #else

@@ -22,6 +22,7 @@
 
 #define TEST_EPSILON std::numeric_limits<float>::epsilon()
 #define IS_ZERO(X)  (fabs(X) < TEST_EPSILON)
+#define IS_TOLERANCE(X,TOLERANCE) (fabs(X) < TOLERANCE)
 #define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
 #define FLOAT_COMPARE_TOLERANCE(X,Y,TOLERANCE) (fabs(X - Y) < TOLERANCE)
 

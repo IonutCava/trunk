@@ -150,4 +150,9 @@
 #define _USE_PHYSX_API_
 #endif 
 
+///Maximum number of joysticks to use. Remeber to update the "Joystics" enum from InputInterface.h
+#ifndef MAX_ALLOWED_JOYSTICKS
+#define MAX_ALLOWED_JOYSTICKS 4
+#endif
+
 #endif //_CONFIG_HEADER

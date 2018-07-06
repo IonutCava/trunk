@@ -58,6 +58,6 @@ void Mesh::updateTransform(SceneGraphNode* const sgn){
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void Mesh::sceneUpdate(D32 sceneTime){
+void Mesh::sceneUpdate(U32 sceneTime){
 }
 

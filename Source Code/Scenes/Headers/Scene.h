@@ -56,13 +56,13 @@ public:
 
 	/**Begin scene logic loop*/
 	virtual void processInput() = 0;          ///<Get all input commands from the user
-	virtual void processEvents(F32 time) = 0; ///<Update the scene based on the inputs
+	virtual void processEvents(U32 time) = 0; ///<Update the scene based on the inputs
 	virtual void preRender() = 0;             ///<Prepare the scene for rendering after the update
 	bool idle();                              ///<Scene is rendering, so add intensive tasks here to save CPU cycles
 	/**End scene logic loop*/
 
 	/// Update animations, network data, sounds, triggers etc.
-	virtual void updateSceneState(D32 sceneTime);
+	virtual void updateSceneState(U32 sceneTime);
 	inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return NULL;} CLAMP<I32>(index,0,_skiesSGN.size() - 1); return _skiesSGN[index];}
 	inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
 	inline vectorImpl<FileData>&           getModelDataArray()      {return _modelDataArray;}
@@ -111,6 +111,9 @@ protected:
 	///Scene::load must be called by every scene. Add a load flag to make sure!
 	bool _loadComplete;
 
+	///_aiEvent is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
+	///It is destroyed after each scene's "deinitializeAI" is called
+	std::tr1::shared_ptr<Event>  _aiEvent;
 private: 
 	vectorImpl<Event_ptr> _events;
 	///saves all the rendering information for the scene (camera position, light info, draw states)
@@ -133,9 +136,9 @@ protected:
 			bool loadGeometry(const FileData& data);
 	virtual bool unload();
 	///Description in SceneManager
-	virtual bool initializeAI(bool continueOnErrors)   {return true;}
+	virtual bool initializeAI(bool continueOnErrors);
 	///Description in SceneManager
-	virtual bool deinitializeAI(bool continueOnErrors) {return true;}
+	virtual bool deinitializeAI(bool continueOnErrors);
 	///Check if Scene::load() was called
 	bool checkLoadFlag() {return _loadComplete;}
 	///End all tasks
@@ -152,10 +155,12 @@ protected:
 public: //Input
 	virtual void onKeyDown(const OIS::KeyEvent& key);
 	virtual void onKeyUp(const OIS::KeyEvent& key);
-	virtual void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
-	virtual void OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){}
-	virtual void OnJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){}
-	virtual void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){}
+	virtual void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
+	virtual void onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){}
+	virtual void onJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){}
+	virtual void onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){}
+	virtual void sliderMoved( const OIS::JoyStickEvent &arg, I8 index){}
+	virtual void vector3Moved( const OIS::JoyStickEvent &arg, I8 index){}
 	virtual void onMouseMove(const OIS::MouseEvent& key){}
 	virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);

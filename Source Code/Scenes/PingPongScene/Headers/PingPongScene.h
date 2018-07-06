@@ -42,13 +42,13 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
-	void processEvents(F32 time);
+	void processEvents(U32 time);
 
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
-	void OnJoystickMovePOV(const OIS::JoyStickEvent& event,I8 pov);
-	void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
-	void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
+	void onJoystickMovePOV(const OIS::JoyStickEvent& event,I8 pov);
+	void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
+	void onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
 private:
 	void test(boost::any a, CallbackParam b);
 	void serveBall();

@@ -89,7 +89,7 @@ public:
 	virtual void    drawBoundingBox(SceneGraphNode* const sgn);
 	virtual void    postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(D32 sceneTime) {};
+	virtual void sceneUpdate(U32 sceneTime) {};
 
 	inline 	void	setSelected(bool state)  {_selected = state;}
 	inline 	bool    isSelected()	const	 {return _selected;}

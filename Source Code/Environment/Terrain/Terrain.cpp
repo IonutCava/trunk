@@ -45,7 +45,7 @@ Terrain::~Terrain()
 {
 }
 
-void Terrain::sceneUpdate(D32 sceneTime){
+void Terrain::sceneUpdate(U32 sceneTime){
 	///Query shadow state every "_stateRefreshInterval" milliseconds
 
 	if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){

@@ -16,16 +16,25 @@
 	<groundPos>-100</groundPos>
 	<!-- PhysX simulation speed multiplayer. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
 	<simSpeed>1</simSpeed>
-	<resolutionWidth>1024</resolutionWidth>
-	<resolutionHeight>768</resolutionHeight>
+	<resolutionWidth>800</resolutionWidth>
+	<resolutionHeight>600</resolutionHeight>
 	<windowedMode>true</windowedMode>
 	<allowWindowResize>false</allowWindowResize>
 	<enableVSync>false</enableVSync>
 	<zNear>0.175</zNear>
 	<zFar>2200.0</zFar>
 	<verticalFOV>60</verticalFOV>
-	<GLminorVer>1</GLminorVer>
+	<GLminorVer>2</GLminorVer>
+	<useGLCompatProfile>true</useGLCompatProfile>
 </runtime>	
+
+<GUI>
+	<CEGUI>
+		<ExtraStates>false</ExtraStates>
+	</CEGUI>
+	<defaultGUIScheme>TaharezLook</defaultGUIScheme>
+	<consoleLayoutFile>console.layout</consoleLayoutFile>
+</GUI>
 
 <rendering>
 	<!-- use custom refresh rate: true / false -->
@@ -36,7 +45,7 @@
 	<detailLevel>2</detailLevel>
 	<!-- AA method: 1 = MSAA, 2 = FXAA, 3 = SMAA, 4 = MSAA+FXAA -->
 	<FSAAmethod>2</FSAAmethod>
-	<FSAAsamples>2</FSAAsamples>
+	<FSAAsamples>4</FSAAsamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- detail level: low = 0, don't care = 1, high = 2 -->
 	<mipMapDetailLevel>2</mipMapDetailLevel>
@@ -44,7 +53,7 @@
 	<enableShadows>true</enableShadows>
 	<shadowDetailLevel>2</shadowDetailLevel>
 	<enableFog>true</enableFog>
-	<!--- only initial values. Override in scene -->
+	<!--- Fog: only initial values. Override in scene -->
 	<fogStartDistance>500</fogStartDistance>
 	<fogEndDistance>4500</fogEndDistance>
 	<fogDensity>0.01</fogDensity>

@@ -96,7 +96,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 	}
 	if(!_definesList.empty()){
 		///get all of the preprocessor defines
-		std::vector<std::string> defines;
+		vectorImpl<std::string> defines;
 		boost::split(defines, _definesList, boost::is_any_of(","), boost::token_compress_on);
 		for(U8 i = 0; i < defines.size(); i++){
 			std::string define("#define ");

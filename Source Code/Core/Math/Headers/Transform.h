@@ -24,6 +24,7 @@ class Transform {
 
 public:
 	Transform()	: _dirty(true){
+		WriteLock w_lock(_lock);
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();
@@ -35,6 +36,7 @@ public:
 
 	Transform(const Quaternion<F32>& orientation, const vec3<F32>& translation, const vec3<F32>& scale) : 
 			  _orientation(orientation), _translation(translation), _scale(scale), _dirty(true){
+		WriteLock w_lock(_lock);
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();
@@ -183,14 +185,13 @@ public:
 	}
 
 	bool compare(Transform* t){
-		bool result = false;
 		ReadLock r_lock(_lock);
 		if(_scale.compare(t->_scale) &&  
 		   _orientation.compare(t->_orientation) &&
 		   _translation.compare(t->_translation))
-		   result = true;
+		   return true;
 
-		return result;
+		return false;
 	}
 
 	inline bool isDirty() {ReadLock r_lock(_lock); return _dirty;}

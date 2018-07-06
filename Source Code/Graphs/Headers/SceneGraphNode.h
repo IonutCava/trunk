@@ -52,7 +52,7 @@ public:
 	/// Culling and visibility checks
 	void updateVisualInformation();
 	/// Called from SceneGraph "sceneUpdate"
-	void sceneUpdate(D32 sceneTime);
+	void sceneUpdate(U32 sceneTime);
 	/*Node Management*/
 	template<class T>
 	///Always use the level of redirection needed to reduce virtual function overhead
@@ -78,13 +78,13 @@ inline       void             setGrandParent(SceneGraphNode* grandParent) {_gran
 /*Parent <-> Children*/
 
 /*Bounding Box Management*/
-inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){_initialBoundingBox = initialBoundingBox;}
-inline const BoundingBox&     getInitialBoundingBox()		  {return _initialBoundingBox;}
-inline       BoundingBox&	  getBoundingBox()                {return _boundingBox;}
-vectorImpl<BoundingBox >&    getBBoxes(vectorImpl<BoundingBox >& boxes );
-inline       void             updateBB(bool state) {_updateBB = state;}
-inline       bool             updateBB()           {return _updateBB;}
-inline       BoundingSphere&  getBoundingSphere()  {return _boundingSphere;}         
+inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){WriteLock w_lock(_queryLock); _initialBoundingBox = initialBoundingBox;}
+inline const BoundingBox&     getInitialBoundingBox()		  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
+inline       BoundingBox&	  getBoundingBox()                {ReadLock r_lock(_queryLock); return _boundingBox;}
+vectorImpl<BoundingBox >&     getBBoxes(vectorImpl<BoundingBox >& boxes );
+inline       void             updateBB(bool state) {WriteLock w_lock(_queryLock); _updateBB = state;}
+inline       bool             updateBB()           {ReadLock r_lock(_queryLock); return _updateBB;}
+inline       BoundingSphere&  getBoundingSphere()  {ReadLock r_lock(_queryLock); return _boundingSphere;}         
 	         bool             computeBoundingSphere();
 /*Bounding Box Management*/
 
@@ -130,6 +130,7 @@ private:
 	SceneGraph* _sceneGraph;
 	U32 _childQueue,_updateTimer;
 	std::string _name;
+	mutable SharedLock _queryLock;
 	boost::mutex _transformLock;
 	boost::mutex _renderQueueLock;
 };

@@ -10,7 +10,7 @@ void CubeScene::render(){
 		
 }
 
-void CubeScene::processEvents(F32 time){
+void CubeScene::processEvents(U32 time){
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
 	F32 updateLights = 0.005f;
 

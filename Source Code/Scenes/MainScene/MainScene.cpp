@@ -49,24 +49,36 @@ void MainScene::renderEnvironment(bool waterReflection){
 }
 
 void MainScene::processInput(){
-
-	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR/5);
-	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR/5);
+	bool update = false;
+	if(state()->_angleLR){
+		renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR/5);
+		update = true;
+	}
+	if(state()->_angleUD){
+		renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR/5);
+		update = true;
+	}
 
 	if(state()->_moveFB || state()->_moveLR){
 		if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR));
 		if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR));
-		GUI::getInstance().modifyText("camPosition","Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",
-									  renderState()->getCamera()->getEye().x, 
-									  renderState()->getCamera()->getEye().y,
-									  renderState()->getCamera()->getEye().z);
+		update = true;
+	}
+	if(update){
+		GUI::getInstance().modifyText("camPosition","Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
+							  renderState()->getCamera()->getEye().x, 
+							  renderState()->getCamera()->getEye().y,
+							  renderState()->getCamera()->getEye().z,
+							  DEGREES(renderState()->getCamera()->getAngleX()),
+							  DEGREES(renderState()->getCamera()->getAngleY()));
+		update = false;
 	}
 
 }
 
 
-void MainScene::processEvents(F32 time){
-	time /= 1000; ///<convert to seconds
+void MainScene::processEvents(U32 time){
+	MsToSec(time); ///<convert to seconds
 	F32 SunDisplay = 1.50f;
 	F32 FpsDisplay = 0.5f;
 	F32 TimeDisplay = 1.0f;
@@ -90,7 +102,7 @@ void MainScene::processEvents(F32 time){
     
 	
 	if (time - _eventTimers[2] >= TimeDisplay){
-		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
+		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %d", time);
 		_eventTimers[2] += TimeDisplay;
 	}
 }
@@ -232,10 +244,12 @@ bool MainScene::loadResources(bool continueOnErrors){
 	gui.addText("camPosition",  vec2<F32>(60,100),
 								Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.2f,0.8f,0.2f),
-								"Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",
+								"Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
 								renderState()->getCamera()->getEye().x,
 								renderState()->getCamera()->getEye().y,
-								renderState()->getCamera()->getEye().z);
+								renderState()->getCamera()->getEye().z,
+								DEGREES(renderState()->getCamera()->getAngleX()),
+							    DEGREES(renderState()->getCamera()->getAngleY()));
 
 	return true;
 }

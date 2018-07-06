@@ -27,7 +27,7 @@ class JoystickInterface;
 class EffectManager;
 class Kernel;
 
-class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,public OIS::MouseListener {
+class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener, public OIS::MouseListener {
   protected:
 
     InputInterface*    _pApplication;
@@ -44,10 +44,12 @@ class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,publi
 	bool keyPressed( const OIS::KeyEvent &arg );
 	bool keyReleased( const OIS::KeyEvent &arg );
 	///Joystick or Gamepad
-	bool buttonPressed( const OIS::JoyStickEvent &arg, I8 button );
-	bool buttonReleased( const OIS::JoyStickEvent &arg, I8 button );
-	bool axisMoved( const OIS::JoyStickEvent &arg, I8 axis );
-	bool povMoved( const OIS::JoyStickEvent &arg, I8 pov );
+	bool buttonPressed( const OIS::JoyStickEvent &arg, I8 button);
+	bool buttonReleased( const OIS::JoyStickEvent &arg, I8 button);
+	bool axisMoved( const OIS::JoyStickEvent &arg, I8 axis);
+	bool povMoved( const OIS::JoyStickEvent &arg, I8 pov);
+    bool sliderMoved( const OIS::JoyStickEvent &, I8 index);
+    bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index);
 	///Mouse
 	bool mouseMoved( const OIS::MouseEvent &arg );
 	bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );

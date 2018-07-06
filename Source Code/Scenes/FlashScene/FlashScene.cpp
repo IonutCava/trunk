@@ -21,7 +21,7 @@ void FlashScene::processInput(){
 
 }
 
-void FlashScene::processEvents(F32 time){
+void FlashScene::processEvents(U32 time){
 	F32 FpsDisplay = 0.3f;
 	if (time - _eventTimers[0] >= FpsDisplay)	{
 		

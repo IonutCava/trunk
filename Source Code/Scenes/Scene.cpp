@@ -6,8 +6,9 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Environment/Sky/Headers/Sky.h"
+#include "Managers/Headers/AIManager.h"
 
+#include "Environment/Sky/Headers/Sky.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
@@ -233,11 +234,14 @@ bool Scene::load(const std::string& name){
 	if(ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride")){
 		renderState()->getCamera()->setEye(_paramHandler.getParam<vec3<F32> >("options.cameraStartPosition"));
 		vec2<F32>& camOrientation = _paramHandler.getParam<vec2<F32> >("options.cameraStartOrientation");
-		renderState()->getCamera()->RotateX(RADIANS(camOrientation.x));
-		renderState()->getCamera()->RotateY(RADIANS(camOrientation.y));
+		renderState()->getCamera()->setAngleX(RADIANS(camOrientation.x));
+		renderState()->getCamera()->setAngleY(RADIANS(camOrientation.y));
 	}else{
 		renderState()->getCamera()->setEye(vec3<F32>(0,50,0));
 	}
+	
+	///Create an AI thread, but start it only if needed
+	_aiEvent.reset(New Event(10,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
 	_loadComplete = true;
 	return _loadComplete;
 }
@@ -246,6 +250,20 @@ bool Scene::unload(){
 	clearEvents();
 	clearObjects();
 	clearLights();
+	return true;
+}
+
+bool Scene::initializeAI(bool continueOnErrors)   {
+	_aiEvent->startEvent();
+	return true;
+}
+
+bool Scene::deinitializeAI(bool continueOnErrors) {	///Shut down AIManager thread
+	if(_aiEvent.get()){
+		_aiEvent->stopEvent();
+		_aiEvent.reset();
+	}
+	while(_aiEvent.get()){};
 	return true;
 }
 
@@ -273,48 +291,9 @@ void Scene::clearEvents(){
 }
 
 void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-	switch(button){
-		case OIS::MB_Left:{
-			GUI::getInstance().clickCheck();
-		}break;
-
-		case OIS::MB_Right:{
-		}break;
-
-		case OIS::MB_Middle:{
-		}break;
-
-		case OIS::MB_Button3:
-		case OIS::MB_Button4:
-		case OIS::MB_Button5:
-		case OIS::MB_Button6:
-		case OIS::MB_Button7:
-		default:
-			break;
-	}
 }
 
 void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-
-	switch(button){
-		case OIS::MB_Left:{
-			GUI::getInstance().clickReleaseCheck();
-		}break;
-
-		case OIS::MB_Right:	{
-		}break;
-
-		case OIS::MB_Middle:{
-		}break;
-
-		case OIS::MB_Button3:
-		case OIS::MB_Button4:
-		case OIS::MB_Button5:
-		case OIS::MB_Button6:
-		case OIS::MB_Button7:
-		default:
-			break;
-	}
 }
 
 static F32 speedFactor = 0.25f;
@@ -362,7 +341,6 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 }
 
 void Scene::onKeyUp(const OIS::KeyEvent& key){
-
 	switch( key.key ){
 		case OIS::KC_LEFT:
 		case OIS::KC_RIGHT:
@@ -380,8 +358,8 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 	}
 }
 
-void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
-
+void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
+	if(key.device->getID() != InputInterface::JOY_1) return;
 	if(axis == 1){
 		if(key.state.mAxes[axis].abs > 0)
 			state()->_angleLR = speedFactor/5;
@@ -398,10 +376,24 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 			state()->_angleUD = -(speedFactor/5);
 		else
 			state()->_angleUD = 0;
+	}else if(axis == 2){
+		if(key.state.mAxes[axis].abs < 0)
+			state()->_moveFB = 0.25f;
+		else if(key.state.mAxes[axis].abs > 0)
+			state()->_moveFB = -0.25f;
+		else
+			state()->_moveFB = 0;
+	}else if(axis == 3){
+		if(key.state.mAxes[axis].abs < 0)
+			state()->_moveLR = 0.25f;
+		else if(key.state.mAxes[axis].abs > 0)
+			state()->_moveLR = -0.25f;
+		else
+			state()->_moveLR = 0;
 	}
 }
 
-void Scene::updateSceneState(D32 sceneTime){
+void Scene::updateSceneState(U32 sceneTime){
 	_sceneGraph->sceneUpdate(sceneTime);
 }
 

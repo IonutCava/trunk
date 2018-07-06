@@ -41,6 +41,7 @@ bool SceneGraphNode::computeBoundingSphere(){
 }
 
 vectorImpl<BoundingBox >&  SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ){
+	ReadLock r_lock(_queryLock); 
 	//Unload every sub node recursively
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->getBBoxes(boxes);
@@ -230,6 +231,7 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 }
 
 SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
+	ReadLock r_lock(_queryLock); 
 	//Null return value as default
 	SceneGraphNode* returnValue = NULL;
 	if(getBoundingBox().Intersect(ray,start,end)){
@@ -250,11 +252,13 @@ SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
 
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
+	WriteLock w_lock(_queryLock); 
 	SAFE_UPDATE(_transform,t); 
 }
 
 //Get the node's transform
 Transform* const SceneGraphNode::getTransform(){
+	ReadLock r_lock(_queryLock); 
 	//A node does not necessarily have a transform
 	//If this is the case, we can either create a default one
 	//Or return NULL. When creating a node we can specify if we do not want a default transform

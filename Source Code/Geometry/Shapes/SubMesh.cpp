@@ -30,7 +30,7 @@ void SubMesh::onDraw(){
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void SubMesh::sceneUpdate(D32 sceneTime){
+void SubMesh::sceneUpdate(U32 sceneTime){
 }
 void SubMesh::updateTransform(SceneGraphNode* const sgn){
 }

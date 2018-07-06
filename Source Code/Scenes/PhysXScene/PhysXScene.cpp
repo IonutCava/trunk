@@ -14,7 +14,7 @@ void PhysXScene::preRender(){
 }
 //<<end copy-paste
 
-void PhysXScene::processEvents(F32 time){
+void PhysXScene::processEvents(U32 time){
 	F32 FpsDisplay = 0.3f;
 	if (time - _eventTimers[0] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());

@@ -20,14 +20,12 @@ namespace XML {
 		read_xml(file,pt);
 		std::string activeScene("MainScene");
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
-		par.setParam("assetsLocation",pt.get("assets","Assets"));
-		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
+		par.setParam("assetsLocation",pt.get("assets","assets"));
+		par.setParam("scenesLocation",pt.get("scenesLocation","Scenes"));
 		par.setParam("serverAddress",pt.get("server","127.0.0.1"));
 		loadConfig(par.getParam<std::string>("scriptLocation") + "/" + pt.get("config","config.xml"));
-
-		read_xml(par.getParam<std::string>("scriptLocation") + "/" +
-			     par.getParam<std::string>("scenesLocation") + "/Scenes.xml",pt);
-		activeScene = pt.get("MainScene",activeScene);
+		read_xml(par.getParam<std::string>("scriptLocation") + "/" + pt.get("startupScene","scenes.xml"),pt);
+		activeScene = pt.get("StartupScene",activeScene);
 		return activeScene;
 	}
 
@@ -64,6 +62,9 @@ namespace XML {
 		if(aaMethod == FS_FXAA && !postProcessing) aaMethod = FS_MSAA;
 		par.setParam("postProcessing.enablePostFX",postProcessing);
 		par.setParam("postProcessing.enableFXAA",((aaMethod == FS_FXAA || aaMethod == FS_MSwFXAA) && aaSamples > 0));
+		par.setParam("GUI.CEGUI.ExtraStates",pt.get("GUI.CEGUI.ExtraStates",false));
+		par.setParam("GUI.defaultScheme",pt.get("GUI.defaultGUIScheme","TaharezLook"));
+		par.setParam("GUI.consoleLayout",pt.get("GUI.consoleLayoutFile","console.layout"));
 		par.setParam("rendering.FSAAsamples",aaSamples);
 		par.setParam("rendering.FSAAmethod",aaMethod);
 		par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
@@ -88,6 +89,7 @@ namespace XML {
 		par.setParam("runtime.zFar",(F32)pt.get("runtime.zFar",1200.0f));
 		par.setParam("runtime.verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
 		par.setParam("runtime.GLminorVer",(U8)pt.get("runtime.GLminorVer",2));
+		par.setParam("runtime.useGLCompatProfile",pt.get("runtime.useGLCompatProfile",true));
 		par.setParam("runtime.aspectRatio",1.0f * resWidth / resHeight);
 		par.setParam("runtime.resolutionWidth",resWidth);
 		par.setParam("runtime.resolutionHeight",resHeight);
@@ -147,11 +149,11 @@ namespace XML {
 		scene->state()->getWaterLevel() = pt.get("water.waterLevel",0.0f);
 		scene->state()->getWaterDepth() = pt.get("water.waterDepth",-75);
 		if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")){
-			par.setParam("options.cameraStartPosition",vec3<F32>(pt.get("options.cameraStartPosition.<xmlattr>.x",0),
-															     pt.get("options.cameraStartPosition.<xmlattr>.y",0),
-																 pt.get("options.cameraStartPosition.<xmlattr>.z",0)));
-			par.setParam("options.cameraStartOrientation",vec2<F32>(pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",0),
-  																    pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",0)));
+			par.setParam("options.cameraStartPosition",vec3<F32>(pt.get("options.cameraStartPosition.<xmlattr>.x",0.0f),
+															     pt.get("options.cameraStartPosition.<xmlattr>.y",0.0f),
+																 pt.get("options.cameraStartPosition.<xmlattr>.z",0.0f)));
+			par.setParam("options.cameraStartOrientation",vec2<F32>(pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",0.0f),
+  																    pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",0.0f)));
 			par.setParam("options.cameraStartPositionOverride",true);
 		}else{
 			par.setParam("options.cameraStartPositionOverride",false);

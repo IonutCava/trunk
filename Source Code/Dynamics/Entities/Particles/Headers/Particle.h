@@ -30,7 +30,7 @@ public:
    F32  _size[ NUM_PARTICLE_STATES ];
    F32  _time[ NUM_PARTICLE_STATES ];
    
-   /// lifetime , in miliseconds of each particle
+   /// lifetime , in milliseconds of each particle
    U32 _lifetime;     
    /// liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
    I32 _lifetimeVariance;        

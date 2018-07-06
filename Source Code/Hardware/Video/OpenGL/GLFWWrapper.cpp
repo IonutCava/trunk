@@ -21,8 +21,8 @@ namespace GL_CALLBACK{
 }
 
 //Let's try and create a  valid OpenGL context.
-//Due to university requirements, backwards compatibility with OpenGL 2.0 had to be added
 GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **argv){
+
 	ParamHandler& par = ParamHandler::getInstance();
     if( !glfwInit() ){
 		return GLFW_INIT_ERROR;
@@ -40,13 +40,16 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	if(par.getParam<bool>("rendering.overrideRefreshRate",false)){
 		glfwOpenWindowHint(GLFW_REFRESH_RATE,par.getParam<U8>("rendering.targetRefreshRate",75));
 	}
+	GLint glMinorVer = static_cast<GLint>(par.getParam<GLubyte>("runtime.GLminorVer",1));
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,!par.getParam<bool>("runtime.allowWindowResize",true));
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR,3);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR,(GLint)par.getParam<GLubyte>("runtime.GLminorVer",1));
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR,glMinorVer);
 #ifdef _DEBUG
 	glfwOpenWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 #endif
-
+	if(glMinorVer > 1 && par.getParam<bool>("runtime.useGLCompatProfile",true)){
+		glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	}
 	//Store the main window ID for future reference
 	// Open an OpenGL window; resolution is specified in the external XML files
 	bool window = par.getParam<bool>("runtime.windowedMode",true);
@@ -97,7 +100,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	glfwGetDesktopMode( &return_struct );
 	I32 height = return_struct.Height;
 	I32 width = return_struct.Width;
-	glfwSetWindowPos((height - resolution.height)*0.5f,(width - resolution.width)*0.5f);	
+	glfwSetWindowPos((width - resolution.width)*0.5f,(height - resolution.height)*0.5f);	
 	//Our Resize/Draw/Idle callback setup
 	glfwSetWindowSizeCallback(GL_CALLBACK::windowResizeListener);
 	glfwSetWindowCloseCallback(GL_CALLBACK::windowCloseListener);
@@ -219,8 +222,6 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	RenderStateBlockDescriptor defaultGLStateDescriptor;
 	GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
 	SET_DEFAULT_STATE_BLOCK();
-	CEGUI::OpenGLRenderer& renderer = CEGUI::OpenGLRenderer::create();
-	GUI::getInstance().bindRenderer(renderer);
 
 	//Create an immediate mode shader
 	ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
@@ -236,7 +237,10 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 #else //Linux
 	_loaderContext = glXCreateContext(_display, _visual, glXGetCurrentContext(), TRUE); 
 #endif
-
+	
+	CEGUI::OpenGLRenderer& renderer = CEGUI::OpenGLRenderer::create();
+	renderer.enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
+	GUI::getInstance().bindRenderer(renderer);
 	return 0;
 }
 

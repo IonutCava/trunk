@@ -43,6 +43,7 @@ private:
 	vectorImpl<Quad3D* >  _renderQuads;
 	FrameBufferObject*    _deferredBuffer;
 	ShaderProgram*	      _deferredShader;
+	ShaderProgram*        _previewDeferredShader;
 	PixelBufferObject*    _lightTexture;
 };
 

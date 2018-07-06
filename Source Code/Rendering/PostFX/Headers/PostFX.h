@@ -66,8 +66,8 @@ public:
 	Camera*   _currentCamera;
 
 private:
-	void displaySceneWithoutAnaglyph(void);
-	void displaySceneWithAnaglyph(void);
+	void displaySceneWithoutAnaglyph(bool deferred);
+	void displaySceneWithAnaglyph(bool deferred);
 	void createOperators();
 	~PostFX();
 	PostFX();

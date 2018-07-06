@@ -1,10 +1,33 @@
 #include "Headers/AIManager.h"
 
 U8 AIManager::tick(){
+	///Lock the entities during tick() adding or deleting entities is suspended until this returns
+	ReadLock r_lock(_updateMutex);
+	if(_aiEntities.empty()){
+		return 1; //nothing to do
+	}
 	processInput();  //sensors
 	processData();   //think
 	updateEntities();//react
 	return 0;
+}
+
+void AIManager::processInput(){  //sensors
+	for_each(AIEntityMap::value_type& entity, _aiEntities){
+		entity.second->processInput();
+	}
+}
+
+void AIManager::processData(){   //think
+	for_each(AIEntityMap::value_type& entity, _aiEntities){
+		entity.second->processData();
+	}
+}
+
+void AIManager::updateEntities(){//react
+	for_each(AIEntityMap::value_type& entity, _aiEntities){
+		entity.second->update();
+	}
 }
 
 bool AIManager::addEntity(AIEntity* entity){
@@ -16,27 +39,6 @@ bool AIManager::addEntity(AIEntity* entity){
 	}
 
 	return true;
-}
-
-void AIManager::processInput(){  //sensors
-	ReadLock r_lock(_updateMutex);
-	for_each(AIEntityMap::value_type& entity, _aiEntities){
-		entity.second->processInput();
-	}
-}
-
-void AIManager::processData(){   //think
-	ReadLock r_lock(_updateMutex);
-	for_each(AIEntityMap::value_type& entity, _aiEntities){
-		entity.second->processData();
-	}
-}
-
-void AIManager::updateEntities(){//react
-	ReadLock r_lock(_updateMutex);
-	for_each(AIEntityMap::value_type& entity, _aiEntities){
-		entity.second->update();
-	}
 }
 
 void AIManager::destroyEntity(U32 guid){
