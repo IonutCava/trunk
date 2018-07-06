@@ -33,7 +33,7 @@ class ShaderProgram;
 class VertexBufferObject;
 class Quadtree {
 public:
-	void Build(BoundingBox& terrainBBox, vec2<U32> HMSize, U32 minHMSize,VertexBufferObject* const groundVBO);
+	void Build(BoundingBox& terrainBBox, vec2<U32>& HMSize, U32 minHMSize, VertexBufferObject* const groundVBO);
 	BoundingBox& computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
 	void Destroy();
 
@@ -48,6 +48,9 @@ public:
 
 	Quadtree()	{_root = NULL; _parentShaderProgram = NULL; _parentVBO = NULL;}
 	~Quadtree()	{Destroy();}
+
+protected:
+	void GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const groundVBO);
 
 private:
 	QuadtreeNode*	     _root;

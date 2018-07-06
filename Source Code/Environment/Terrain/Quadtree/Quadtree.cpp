@@ -42,15 +42,48 @@ QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {
 }
 
 void Quadtree::Build(BoundingBox& terrainBBox,
-					 vec2<U32> HMsize,
+					 vec2<U32>& HMsize,
 					 U32 minHMSize,
-                     VertexBufferObject* const groundVBO)
-{
+                     VertexBufferObject* const groundVBO){
+
 	_root = New QuadtreeNode();
 	_root->setBoundingBox(terrainBBox);
 	_root->setParentShaderProgram(_parentShaderProgram);
 
 	_root->Build(0, vec2<U32>(0,0), HMsize, minHMSize,groundVBO);
+
+	GenerateIndexBuffer(HMsize, groundVBO);
+}
+
+void Quadtree::GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const groundVBO){
+	const U32 terrainWidth  = HMsize.x;
+    const U32 terrainHeight = HMsize.y;
+	const U32 numTriangles = ( terrainWidth - 1 ) * ( terrainHeight - 1 ) * 2;
+	groundVBO->reserveIndexCount(numTriangles * 3);
+	groundVBO->computeTriangles(false);
+
+	vec3<U32> firstTri, secondTri;
+
+    for (U32 j = 0; j < (terrainHeight - 1); ++j ) {
+        for (U32 i = 0; i < (terrainWidth - 1); ++i )  {
+
+            I32 vertexIndex = ( j * terrainWidth ) + i;
+            // Top triangle (T0)
+			firstTri.set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
+			groundVBO->addIndex(firstTri.x); // V0
+			groundVBO->addIndex(firstTri.y); // V3
+			groundVBO->addIndex(firstTri.z); // V1
+			groundVBO->getTriangles().push_back(firstTri);
+
+            // Bottom triangle (T1)
+			secondTri.set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
+            groundVBO->addIndex(secondTri.x); // V0
+            groundVBO->addIndex(secondTri.y); // V2
+            groundVBO->addIndex(secondTri.z); // V3
+			groundVBO->getTriangles().push_back(secondTri);
+
+        }
+    }
 }
 
 BoundingBox& Quadtree::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){

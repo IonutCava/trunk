@@ -16,10 +16,9 @@ void QuadtreeNode::Build(U8 depth,const vec2<U32>& pos, const vec2<U32>& HMsize,
 	if(nodesize.y%2==0) nodesize.y++;
 	vec2<U32> newsize = nodesize/2;
 
-	if((U32)std::max(newsize.x, newsize.y) < minHMSize)	{
+	if(std::max(newsize.x, newsize.y) < minHMSize)	{
 		_terrainChunk = New TerrainChunk();
-		_terrainChunk->Load(depth, pos, HMsize,groundVBO);
-
+		_terrainChunk->Load(depth, pos, HMsize);
 		_children = NULL;
 		return;
 	}

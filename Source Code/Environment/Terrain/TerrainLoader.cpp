@@ -101,22 +101,22 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	_boundingBox.Multiply(vec3<F32>(terrain->getScale().x,1,terrain->getScale().x));
 	_boundingBox.MultiplyMax(vec3<F32>(1,_terrainHeightScaleFactor,1));
 
+	const vec3<F32> bMin = _boundingBox.getMin();
+	const vec3<F32> bMax = _boundingBox.getMax();
+
 	vec3<F32> vertexData;
 	for(U32 j=0; j < _terrainHeight; j++) {
 		for(U32 i=0; i < _terrainWidth; i++) {
 			U32 idxHM = COORD(i,j,_terrainWidth);
-			vertexData.x = _boundingBox.getMin().x + ((F32)i) *
-				                (_boundingBox.getMax().x - _boundingBox.getMin().x)/(_terrainWidth-1);
-			vertexData.z = _boundingBox.getMin().z + ((F32)j) *
-				                (_boundingBox.getMax().z - _boundingBox.getMin().z)/(_terrainHeight-1);
-			U32 idxIMG = COORD(	i<heightmapWidth? i : i-1,
-								j<heightmapHeight? j : j-1,
-								heightmapWidth);
+
+			vertexData.x = bMin.x + ((F32)i) * (bMax.x - bMin.x)/(_terrainWidth-1);
+			vertexData.z = bMin.z + ((F32)j) * (bMax.z - bMin.z)/(_terrainHeight-1);
+
+			U32 idxIMG = COORD(	i<heightmapWidth? i : i-1, j<heightmapHeight? j : j-1,	heightmapWidth);
 
 			F32 h = (F32)(data[idxIMG*d + 0] + data[idxIMG*d + 1] + data[idxIMG*d + 2])/3.0f;
 
-			vertexData.y = (_boundingBox.getMin().y + ((F32)h) *
-				                 (_boundingBox.getMax().y - _boundingBox.getMin().y)/(255)) * _terrainHeightScaleFactor;
+			vertexData.y = (bMin.y + ((F32)h) * (bMax.y - bMin.y)/(255)) * _terrainHeightScaleFactor;
 			_groundVBO->modifyPositionValue(idxHM,vertexData);
 		}
 	}

@@ -8,13 +8,8 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 
-typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
-void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize,VertexBufferObject* const groundVBO){
+void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize){
 	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++) ComputeIndicesArray(i, depth, pos, HMsize);
-    for(U32 i=0; i < _indice[2].size(); i++) {
-		if(_indice[2][i] == TERRAIN_STRIP_RESTART_INDEX) continue;
-		groundVBO->addIndex(_indice[2][i]);
-	}
 
 	_grassData._grassVisibility = GET_ACTIVE_SCENE()->state()->getGrassVisibility();
 }
@@ -22,31 +17,31 @@ void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize,VertexBufferOb
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){
 	assert(lod < TERRAIN_CHUNKS_LOD);
 
-	vec2<U32> vHeightmapDataPos = position;
 	U32 offset = (U32)pow(2.0f, (F32)(lod));
 	U32 div = (U32)pow(2.0f, (F32)(depth+lod));
-	vec2<U32> vHeightmapDataSize = heightMapSize/(div) + vec2<U32>(1,1);
+	vec2<U32> heightmapDataSize = heightMapSize/(div);
 
-	U32 nHMWidth   = vHeightmapDataSize.x;
-	U32 nHMHeight  = vHeightmapDataSize.y;
-	U32 nHMOffsetX = vHeightmapDataPos.x;
-	U32 nHMOffsetY = vHeightmapDataPos.y;
+	U32 nHMWidth   = heightmapDataSize.x + 1;
+	U32 nHMHeight  = heightmapDataSize.y + 1;
+	U32 nHMOffsetX = position.x;
+	U32 nHMOffsetY = position.y;
 
-	U32 nHMTotalWidth  = heightMapSize.x;
 	//U32 nHMTotalHeight = heightMapSize.y;
-
-	_indOffsetW[lod] = nHMWidth*2;
-	_indOffsetH[lod] = nHMWidth-1;
+	U32 nHMTotalWidth  = heightMapSize.x;
 	U32 nIndice = (nHMWidth)*(nHMHeight-1)*2;
 	nIndice += (nHMHeight-1);//<Restart indices
 	_indice[lod].reserve( nIndice  );
+	_indOffsetW[lod] = nHMWidth*2;
+	_indOffsetH[lod] = nHMWidth-1;
 
 	for(U16 j=0; j<nHMHeight-1; j++){
+		U32 jOffset = j*(offset) + nHMOffsetY;
+
 		for(U16 i=0; i<nHMWidth; i++){
-			U32 id0 = (j*(offset) + nHMOffsetY+0)*(nHMTotalWidth)+(i*(offset) + nHMOffsetX+0);
-			U32 id1 = (j*(offset) + nHMOffsetY+(offset))*(nHMTotalWidth)+(i*(offset) + nHMOffsetX+0);
-			_indice[lod].push_back( id0 );
-			_indice[lod].push_back( id1 );
+			U32 iOffset = i*(offset) + nHMOffsetX;
+
+			_indice[lod].push_back(iOffset + jOffset * nHMTotalWidth);
+			_indice[lod].push_back(iOffset + (jOffset + (offset)) * nHMTotalWidth);
 		}
 		_indice[lod].push_back(TERRAIN_STRIP_RESTART_INDEX);
 	}
@@ -65,13 +60,9 @@ void TerrainChunk::Destroy(){
 
 I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferObject* const vbo){
 	assert(lod < TERRAIN_CHUNKS_LOD);
-
 	if(lod>0) lod--;
 
-    if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE)){
-        program->Uniform("LODFactor", 1.0f / (lod+1));
-        assert(program->isBound());
-    }
+    program->Uniform("LODFactor", 1.0f / (lod+1));
 
 	vbo->setFirstElement(&(_indice[lod][0]));
 	vbo->setRangeCount(_indice[lod].size());
@@ -103,6 +94,7 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const 
 	}
 }
 
+typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree, SceneGraphNode* parentNode){
 	ResourceDescriptor model(tree.ItemName);
 	model.setResourceLocation(tree.ModelName);

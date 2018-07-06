@@ -57,7 +57,7 @@ public:
 	void Destroy();
 	I32 DrawGround(I8 lod,ShaderProgram* const program, VertexBufferObject* const vbo);
 	void DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const parentTransform);
-	void Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize,VertexBufferObject* const groundVBO);
+	void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize);
 
 	inline vectorImpl<U32>&			getIndiceArray(I8 lod)		   {return _indice[lod];}
 
