@@ -9,15 +9,32 @@ namespace Divide {
 
 RenderPassCuller::RenderPassCuller() {
     _visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
+    _visibleNodesSorted = false;
 }
 
 RenderPassCuller::~RenderPassCuller() {
     _visibleNodes.clear();
 }
 
+void RenderPassCuller::sortVisibleNodes() {
+    if (_visibleNodesSorted) {
+        return;
+    }
+
+    std::sort(std::begin(_visibleNodes), std::end(_visibleNodes),
+            [](const SceneGraphNode* a, const SceneGraphNode* b) {
+                RenderingComponent* renderableA =
+                    a->getComponent<RenderingComponent>();
+                RenderingComponent* renderableB =
+                    b->getComponent<RenderingComponent>();
+                return renderableA->drawOrder() < renderableB->drawOrder();
+            });
+
+    _visibleNodesSorted = true;
+}
+
 /// This method performs the visibility check on the given node and all of it's
-/// children
-/// and adds them to the RenderQueue
+/// children and adds them to the RenderQueue
 void RenderPassCuller::cullSceneGraph(
     SceneGraphNode& currentNode,
     SceneState& sceneState,
@@ -27,9 +44,10 @@ void RenderPassCuller::cullSceneGraph(
     if (!_visibleNodes.empty()) {
         if (renderingLocked &&
             !RenderPassManager::getInstance().isResetQueued()) {
+            sortVisibleNodes();
             GFX_DEVICE.buildDrawCommands(_visibleNodes,
                                          sceneState.getRenderState(),
-                                         true);
+                                         false);
             return;
         }
         refreshNodeList();
@@ -48,9 +66,9 @@ void RenderPassCuller::cullSceneGraph(
 
     cullSceneGraphGPU(sceneState, cullingFunction);
 
-    SceneRenderState& renderState = sceneState.getRenderState();
-    GFX_DEVICE.processVisibleNodes(_visibleNodes, renderState);
-    GFX_DEVICE.buildDrawCommands(_visibleNodes, renderState, false);
+    sortVisibleNodes();
+    GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState(),
+                                 true);
 
     if (!renderingLocked) {
         refreshNodeList();
@@ -175,8 +193,9 @@ void RenderPassCuller::cullSceneGraphGPU(
 }
 
 void RenderPassCuller::refreshNodeList() {
-    _visibleNodes.clear();
+    _visibleNodes.resize(0);
     _visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
+    _visibleNodesSorted = false;
     RenderPassManager::getInstance().isResetQueued(false);
 }
 

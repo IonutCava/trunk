@@ -44,6 +44,8 @@ namespace NS_GLIM
         // the offset into the GL buffer, needed for binding it
         unsigned int m_uiBufferOffset;
         unsigned int m_uiBufferStride;
+        // previous attribute location (second) used with the saved shader program(first)
+        std::pair<unsigned int, int> m_programAttribLocation;
     };
 
     // used for tracking erroneous use of the interface

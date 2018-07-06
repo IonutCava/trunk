@@ -108,7 +108,7 @@ RenderBin::RenderBin(const RenderBinType& rbType,
         "Shadow Bin";
 }
 
-void RenderBin::sort(RenderStage currentRenderStage) {
+void RenderBin::sort(U32 binIndex, RenderStage currentRenderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:
@@ -138,11 +138,18 @@ void RenderBin::sort(RenderStage currentRenderStage) {
                              renderBinTypeToNameMap[to_uint(_rbType)]);
         } break;
     };
+
+    U32 index = 0;
+    for (RenderBinItem& item : _renderBinStack) {
+        RenderingCompRenderBinAttorney::drawOrder(
+            *item._node->getComponent<RenderingComponent>(),
+            binIndex + index++);
+    }
 }
 
 void RenderBin::refresh() {
     // WriteLock w_lock(_renderBinGetMutex);
-    _renderBinStack.clear();
+    _renderBinStack.resize(0);
     _renderBinStack.reserve(128);
 }
 
@@ -180,8 +187,10 @@ void RenderBin::render(const SceneRenderState& renderState,
 void RenderBin::postRender(const SceneRenderState& renderState,
                            RenderStage renderStage) {
     for (const RenderBinItem& item : _renderBinStack) {
-        item._node->getComponent<RenderingComponent>()->postDraw(renderState,
-                                                                 renderStage);
+        RenderingCompRenderBinAttorney::postDraw(
+            *item._node->getComponent<RenderingComponent>(),
+            renderState,
+            renderStage);
     }
 }
 

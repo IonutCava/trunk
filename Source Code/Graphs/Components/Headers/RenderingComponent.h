@@ -42,13 +42,14 @@ class Material;
 class ShaderProgram;
 class SceneGraphNode;
 class RenderingComponent : public SGNComponent {
+    friend class RenderingCompGFXDeviceAttorney;
+    friend class RenderingCompSceneGraphAttorney;
+    friend class RenderingCompRenderBinAttorney;
    public:
     RenderingComponent(Material* const materialInstance,
                        SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
-    bool prepareDraw(const SceneRenderState& sceneRenderState,
-                     RenderStage renderStage);
     bool onDraw(RenderStage currentStage);
     void update(const U64 deltaTime);
 
@@ -66,15 +67,16 @@ class RenderingComponent : public SGNComponent {
     bool castsShadows() const;
     bool receivesShadows() const;
 
-    /// Called after the parent node was rendered
-    void postDraw(const SceneRenderState& sceneRenderState,
-                  RenderStage renderStage);
-
     U8 lodLevel() const;
     void lodLevel(U8 LoD);
 
+    inline U32 drawOrder() const {
+        return _drawOrder;
+    }
+
     ShaderProgram* const getDrawShader(
         RenderStage renderStage = RenderStage::DISPLAY_STAGE);
+
     size_t getDrawStateHash(RenderStage renderStage);
 
     inline void getMaterialColorMatrix(mat4<F32>& matOut) const {
@@ -87,11 +89,6 @@ class RenderingComponent : public SGNComponent {
 
     inline Material* const getMaterialInstance() { return _materialInstance; }
 
-    vectorImpl<GenericDrawCommand>& getDrawCommands(
-        SceneRenderState& sceneRenderState,
-        RenderStage renderStage,
-        bool preDrawCheck);
-
     void makeTextureResident(const Texture& texture, U8 slot);
 
     void registerShaderBuffer(ShaderBufferLocation slot,
@@ -102,24 +99,37 @@ class RenderingComponent : public SGNComponent {
     inline const GFXDevice::RenderPackage& getRenderData() const {
         return _renderData;
     }
+
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
-   protected:
-    friend class SceneGraphNode;
-    void inViewCallback();
 
+   protected:
+    void inViewCallback();
+    bool canDraw(const SceneRenderState& sceneRenderState,
+                RenderStage renderStage);
+    /// Called after the parent node was rendered
+    void postDraw(const SceneRenderState& sceneRenderState,
+                  RenderStage renderStage);
+    vectorImpl<GenericDrawCommand>& getDrawCommands(
+        SceneRenderState& sceneRenderState,
+        RenderStage renderStage);
+
+    inline void drawOrder(U32 index) {
+        _drawOrder = index;
+    }
    protected:
     Material* _materialInstance;
     /// LOD level is updated at every visibility check
     /// (SceneNode::isInView(...));
     U8 _lodLevel;  ///<Relative to camera distance
+    U32 _drawOrder;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderWireframe;
     bool _renderBoundingBox;
     bool _renderSkeleton;
-    bool _drawReady;
+    bool _renderingLocked;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
 
@@ -129,6 +139,53 @@ class RenderingComponent : public SGNComponent {
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;
 #endif
+};
+
+class RenderingCompGFXDeviceAttorney {
+   private:
+    static void lockRendering(RenderingComponent& renderable) {
+        renderable._renderingLocked = true;
+    }
+    static void unlockRendering(RenderingComponent& renderable) {
+        renderable._renderingLocked = false;
+    }
+
+    static bool canDraw(RenderingComponent& renderable,
+                        const SceneRenderState& sceneRenderState,
+                        RenderStage renderStage) {
+        return renderable.canDraw(sceneRenderState, renderStage);
+    }
+
+    static vectorImpl<GenericDrawCommand>& getDrawCommands(
+        RenderingComponent& renderable, SceneRenderState& sceneRenderState,
+        RenderStage renderStage) {
+        return renderable.getDrawCommands(sceneRenderState, renderStage);
+    }
+    friend class GFXDevice;
+};
+
+class RenderingCompSceneGraphAttorney {
+private:
+    static void inViewCallback(RenderingComponent& renderable) {
+        renderable.inViewCallback();
+    }
+
+    friend class SceneGraphNode;
+};
+
+class RenderingCompRenderBinAttorney {
+   private:
+    static void postDraw(RenderingComponent& renderable,
+                         const SceneRenderState& sceneRenderState,
+                         RenderStage renderStage) {
+        renderable.postDraw(sceneRenderState, renderStage);
+    }
+
+    static void drawOrder(RenderingComponent& renderable, U32 index) {
+        renderable.drawOrder(index);
+    }
+
+    friend class RenderBin;
 };
 
 };  // namespace Divide

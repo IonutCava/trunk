@@ -255,27 +255,29 @@ bool Material::computeShader(RenderStage renderStage,
                              const DELEGATE_CBK<>& shaderCompileCallback) {
     ShaderInfo& info = _shaderInfo[to_uint(renderStage)];
     if (info._shaderCompStage ==
-        ShaderInfo::ShaderCompilationStage::SHADER_STAGE_COMPUTED) {
+            ShaderInfo::ShaderCompilationStage::SHADER_STAGE_COMPUTED ||
+        info._shaderCompStage ==
+            ShaderInfo::ShaderCompilationStage::SHADER_STAGE_QUEUED) {
         return true;
     }
 
-    if ((_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)] &&
-         _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]
-                 ->getState() != ResourceState::RES_LOADED) ||
-        (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY)] &&
-         _textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY)]
-                 ->getState() != ResourceState::RES_LOADED)) {
+    U32 slot0 = to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    U32 slot1 = to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+    U32 slotOpacity = to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY);
+
+    if ((_textures[slot0] &&
+         _textures[slot0]->getState() != ResourceState::RES_LOADED) ||
+        (_textures[slotOpacity] &&
+         _textures[slotOpacity]->getState() != ResourceState::RES_LOADED)) {
         return false;
     }
 
     DIVIDE_ASSERT(
         _shadingMode != ShadingMode::COUNT,
         "Material computeShader error: Invalid shading mode specified!");
+    
 
-
-    U32 slot0 = to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0);
-    U32 slot1 = to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1);
-    U32 slotOpacity = to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY);
+    info._shaderDefines.clear();
 
     if (_textures[slot0]) {
         _shaderData._textureCount = 1;
@@ -309,7 +311,7 @@ bool Material::computeShader(RenderStage renderStage,
                                                      : shader += ".Shadow";
     }
     // What kind of effects do we need?
-    if (_textures[to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0)]) {
+    if (_textures[slot0]) {
         // Bump mapping?
         if (_textures[to_uint(
                 ShaderProgram::TextureUsage::TEXTURE_NORMALMAP)] &&

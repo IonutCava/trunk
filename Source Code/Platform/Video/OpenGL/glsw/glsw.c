@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+
 #include "Headers/bstrlib.h"
 #include "Headers/glsw.h"
 
@@ -128,19 +130,20 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
 {
     glswContext* gc = __glsw__Context;
 
-    bstring effectKey;
+    bstring effectKey = 0;
     glswList* closestMatch = 0;
-    struct bstrList* tokens;
-    bstring effectName;
-    glswList* pLoadedEffect;
-    glswList* pShaderEntry;
+    struct bstrList* tokens = 0;
+    bstring effectName = 0;
+    glswList* pLoadedEffect = 0;
+    glswList* pShaderEntry = 0;
     bstring shaderKey = 0;
 
-    if (!gc)
-    {
+    if (!gc) {
         return 0;
-    }else{
-        if(recompile)    glswClear(gc);
+    } else {
+        if (recompile) {
+            glswClear(gc);
+        }
     }
 
     // Extract the effect name from the effect key
@@ -158,10 +161,8 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
 
     // Check if we already loaded this effect file
     pLoadedEffect = gc->LoadedEffects;
-    while (pLoadedEffect)
-    {
-        if (1 == biseq(pLoadedEffect->Key, effectName))
-        {
+    while (pLoadedEffect) {
+        if (biseq(pLoadedEffect->Key, effectName) == 1)  {
             break;
         }
         pLoadedEffect = pLoadedEffect->Next;
@@ -170,13 +171,12 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
     // If we haven't loaded this file yet, load it in
     if (!pLoadedEffect)
     {
-        bstring effectContents;
-        struct bstrList* lines;
-        int lineNo;
-
+        bstring effectContents = 0;
+        struct bstrList* lines = 0;
+        int lineNo = 0;
         {
-            FILE* fp;
-            bstring effectFile;
+            FILE* fp = 0;
+            bstring effectFile = 0;
 
             // Decorate the effect name to form the fullpath
             effectFile = bstrcpy(effectName);
@@ -207,6 +207,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
             effectContents = bread_gl((bNread) fread, fp);
             fclose(fp);
             bdestroy(effectFile);
+            effectFile = 0;
         }
 
         lines = bsplit(effectContents, '\n');
@@ -221,7 +222,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
             if (blength(line) >= 2 && line->data[0] == '-' && line->data[1] == '-')
             {
                 // Find the first character in [A-Za-z0-9_].
-                int colNo;
+                int colNo = 0;
                 for (colNo = 2; colNo < blength(line); colNo++)
                 {
                     char c = line->data[colNo];
@@ -241,7 +242,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
                 else
                 {
                     // Keep reading until a non-alphanumeric character is found.
-                    int endCol;
+                    int endCol = 0;
                     for (endCol = colNo; endCol < blength(line); endCol++)
                     {
                         char c = line->data[endCol];
@@ -270,17 +271,19 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
                     if (gc->TokenMap)
                     {
                         tokens = bsplit(shaderKey, '.');
+                        assert(tokens);
+
                         glswList* pTokenMapping = gc->TokenMap;
 
                         while (pTokenMapping)
                         {
                             bstring directive = 0;
-                            int tokenIndex;
+                            int tokenIndex = 0;
 
                             // An empty key in the token mapping means "always prepend this directive".
                             // The effect name itself is also checked against the token mapping.
-                            if (0 == blength(pTokenMapping->Key) ||
-                                1 == biseq(pTokenMapping->Key, effectName))
+                            if (blength(pTokenMapping->Key) == 0 ||
+                                biseq(pTokenMapping->Key, effectName) == 1)
                             {
                                 directive = pTokenMapping->Value;
                                 binsert(gc->ShaderMap->Value, 0, directive, '?');
@@ -290,7 +293,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
                             for (tokenIndex = 0; tokenIndex < tokens->qty && !directive; tokenIndex++)
                             {
                                 bstring token = tokens->entry[tokenIndex];
-                                if (1 == biseq(pTokenMapping->Key, token))
+                                if (biseq(pTokenMapping->Key, token) == 1)
                                 {
                                     directive = pTokenMapping->Value;
                                     binsert(gc->ShaderMap->Value, 0, directive, '?');
@@ -301,9 +304,9 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
                         }
 
                         bstrListDestroy(tokens);
+                        tokens = 0;
                     }
                 }
-
                 continue;
             }
             if (shaderKey)
@@ -315,7 +318,9 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
 
         // Cleanup
         bstrListDestroy(lines);
+        lines = 0;
         bdestroy(shaderKey);
+        shaderKey = 0;
     }
 
     // Find the longest matching shader key
@@ -333,7 +338,9 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
     }
 
     bstrListDestroy(tokens);
+    tokens = 0;
     bdestroy(effectKey);
+    effectKey = 0;
 
     if (!closestMatch)
     {

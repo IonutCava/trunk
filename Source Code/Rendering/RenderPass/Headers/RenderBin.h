@@ -103,7 +103,7 @@ class RenderBin {
 
     virtual ~RenderBin() {}
 
-    virtual void sort(RenderStage currentRenderStage);
+    virtual void sort(U32 binIndex, RenderStage currentRenderStage);
     virtual void preRender(RenderStage currentRenderStage);
     virtual void render(const SceneRenderState& renderState,
                         RenderStage currentRenderStage);

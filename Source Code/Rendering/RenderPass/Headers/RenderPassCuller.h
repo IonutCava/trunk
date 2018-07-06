@@ -73,9 +73,12 @@ class RenderPassCuller {
         const std::function<bool(SceneGraphNode*)>& cullingFunction);
     /// Internal cleanup
     void refreshNodeList();
+    /// Sort visible nodes based on their render bin order
+    void sortVisibleNodes();
 
    protected:
     vectorImpl<SceneGraphNode*> _visibleNodes;
+    bool _visibleNodesSorted;
 };
 
 };  // namespace Divide

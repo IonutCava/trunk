@@ -14,12 +14,12 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
                                        SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::SGN_COMP_ANIMATION, parentSGN),
       _lodLevel(0),
+      _drawOrder(0),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
       _renderBoundingBox(false),
       _renderSkeleton(false),
-      _drawReady(false),
       _materialInstance(materialInstance) {
     _renderData._textureData.reserve(ParamHandler::getInstance().getParam<I32>(
         "rendering.maxTextureSlots", 16));
@@ -89,6 +89,25 @@ void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
     }
 }
 
+bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
+                                 RenderStage renderStage) {
+    Material* mat = getMaterialInstance();
+    if (mat) {
+        if (!mat->computeShader(renderStage, false,
+                                DELEGATE_BIND(&SceneGraphNode::scheduleReset,
+                                              &_parentSGN, renderStage))) {
+            return false;
+        }
+        if (mat->getShaderInfo(renderStage)._shaderCompStage !=
+            Material::ShaderInfo::ShaderCompilationStage::
+                SHADER_STAGE_COMPUTED) {
+            return false;
+        }
+    }
+
+    return _parentSGN.getNode()->getDrawState(renderStage);
+}
+
 bool RenderingComponent::onDraw(RenderStage currentStage) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
@@ -96,24 +115,10 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
     _renderData._textureData.resize(0);
     Material* mat = getMaterialInstance();
     if (mat) {
-        if (!mat->computeShader(currentStage, false,
-                                DELEGATE_BIND(&SceneGraphNode::scheduleReset,
-                                              &_parentSGN, currentStage))) {
-            return false;
-        }
-        if (mat->getShaderInfo(currentStage)._shaderCompStage !=
-            Material::ShaderInfo::ShaderCompilationStage::
-                SHADER_STAGE_COMPUTED) {
-            return false;
-        }
-
         mat->getTextureData(_renderData._textureData);
     }
 
-    if (!_parentSGN.getNode()->onDraw(_parentSGN, currentStage)) {
-        return false;
-    }
-    return _parentSGN.getNode()->getDrawState(currentStage);
+    return _parentSGN.getNode()->onDraw(_parentSGN, currentStage);
 }
 
 void RenderingComponent::renderWireframe(const bool state) {
@@ -291,30 +296,16 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
 }
 
 vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
-    SceneRenderState& sceneRenderState,
-    RenderStage renderStage,
-    bool preDrawCheck) {
+    SceneRenderState& sceneRenderState, RenderStage renderStage) {
     _renderData._drawCommands.clear();
-    if (preDrawCheck){
-        _drawReady = _parentSGN.prepareDraw(sceneRenderState, renderStage);
-    }
-    if (_drawReady) {
+    if (!_renderingLocked &&
+        _parentSGN.prepareDraw(sceneRenderState, renderStage))
+    {
         _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
                                               sceneRenderState,
                                               _renderData._drawCommands);
     }
-
     return _renderData._drawCommands;
-}
-
-bool RenderingComponent::prepareDraw(const SceneRenderState& sceneRenderState,
-                                     RenderStage renderStage) {
-    // Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
-    // Check if we should draw the node. (only after onDraw as it may contain
-    // exclusion mask changes before draw)
-    // If the SGN isn't ready for rendering, skip it this frame
-    _drawReady = _parentSGN.prepareDraw(sceneRenderState, renderStage);
-    return _drawReady;
 }
 
 void RenderingComponent::inViewCallback() {

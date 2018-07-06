@@ -111,27 +111,39 @@ void GFXDevice::submitRenderCommand(
 }
 
 void GFXDevice::flushRenderQueue() {
-    if (!_renderQueue.empty()) {
-        for (RenderPackage& package : _renderQueue) {
-            vectorAlg::vecSize commandCount = package._drawCommands.size();
-            if (commandCount > 0) {
-                GenericDrawCommand& previousCmd = package._drawCommands[0];
-                for (vectorAlg::vecSize i = 1; i < commandCount; i++){
-                    GenericDrawCommand& currentCmd = package._drawCommands[i];
-                    //if (!batchCommands(previousCmd, currentCmd)) {
-                      //  previousCmd = currentCmd;
-                    //}
-                }
-                for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                    it.second->Bind(it.first);
-                }
-
-                makeTexturesResident(package._textureData);
-                submitRenderCommand(package._drawCommands);
-            }
-        }
-        _renderQueue.resize(0);
+    if (_renderQueue.empty()) {
+        return;
     }
+
+    for (RenderPackage& package : _renderQueue) {
+        vectorAlg::vecSize commandCount = package._drawCommands.size();
+        if (commandCount > 0) {
+            if (_batchCommands) {
+                GenericDrawCommand& previousCmd = package._drawCommands[0];
+                for (vectorAlg::vecSize i = 1; i < commandCount; i++) {
+                    GenericDrawCommand& currentCmd =
+                        package._drawCommands[i];
+                    if (!batchCommands(previousCmd, currentCmd)) {
+                        previousCmd = currentCmd;
+                    }
+                }
+            }
+            package._drawCommands.erase(
+                std::remove_if(std::begin(package._drawCommands),
+                               std::end(package._drawCommands),
+                               [](const GenericDrawCommand& cmd)
+                                   -> bool { return cmd.drawCount() == 0; }),
+                std::end(package._drawCommands));
+            for (ShaderBufferList::value_type& it :
+                    package._shaderBuffers) {
+                it.second->Bind(it.first);
+            }
+
+            makeTexturesResident(package._textureData);
+            submitRenderCommand(package._drawCommands);
+        }
+    }
+    _renderQueue.resize(0);
 }
 
 void GFXDevice::addToRenderQueue(const RenderPackage& package) {
@@ -171,9 +183,12 @@ void GFXDevice::processVisibleNodes(
     for (SceneGraphNode* const crtNode : visibleNodes) {
         RenderingComponent* const renderable =
             crtNode->getComponent<RenderingComponent>();
-        if (!renderable->prepareDraw(sceneRenderState, getRenderStage())) {
+        if (!RenderingCompGFXDeviceAttorney::canDraw(
+                *renderable, sceneRenderState, getRenderStage())) {
+            RenderingCompGFXDeviceAttorney::lockRendering(*renderable);
             continue;
         }
+        RenderingCompGFXDeviceAttorney::unlockRendering(*renderable);
         NodeData temp;
         // Extract transform data
         const PhysicsComponent* const transform =
@@ -228,11 +243,17 @@ void GFXDevice::processVisibleNodes(
 void GFXDevice::buildDrawCommands(
     const vectorImpl<SceneGraphNode*>& visibleNodes,
     SceneRenderState& sceneRenderState,
-    bool preDrawCheck) {
+    bool refreshNodeData) {
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
     if (visibleNodes.empty()) {
         return;
+    }
+
+    _batchCommands = !refreshNodeData;
+
+    if (refreshNodeData) {
+        processVisibleNodes(visibleNodes, sceneRenderState);
     }
     vectorAlg::vecSize nodeCount = visibleNodes.size();
     _renderQueue.reserve(nodeCount);
@@ -246,9 +267,17 @@ void GFXDevice::buildDrawCommands(
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     for (SceneGraphNode* node : visibleNodes) {
+        RenderingComponent* renderable =
+            node->getComponent<RenderingComponent>();
+
+        if (!RenderingCompGFXDeviceAttorney::canDraw(
+                *renderable, sceneRenderState, currentStage)) {
+            continue;
+        }
+
         vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            node->getComponent<RenderingComponent>()->getDrawCommands(
-            sceneRenderState, currentStage, preDrawCheck);
+            RenderingCompGFXDeviceAttorney::getDrawCommands(
+                *renderable, sceneRenderState, currentStage);
 
         if (nodeDrawCommands.empty()){
             continue;
@@ -256,7 +285,6 @@ void GFXDevice::buildDrawCommands(
 
         for (GenericDrawCommand& cmd : nodeDrawCommands) {
             cmd.drawID(drawID);
-            cmd.commandID(drawID);
             _nonBatchedCommands.push_back(cmd);
         }
         drawID += 1;
@@ -296,10 +324,11 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
     {
         // If the rendering commands are batchable, increase the draw count for
         // the previous one
-        previousIDC.drawCount(previousIDC.drawCount() + 1);
+        previousIDC.drawCount(previousIDC.drawCount() + currentIDC.drawCount());
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);
+        //assert(previousIDC.drawID() + previousIDC.drawCount() < _drawCommandsCache.size());
         return true;
     }
 

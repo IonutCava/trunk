@@ -202,9 +202,10 @@ void RenderQueue::sort(RenderStage currentRenderStage) {
         return;
     }*/
 
+    U32 index = 0;
     for (RenderBinMap::value_type& renderBin : _renderBins) {
-        assert(renderBin.second);
-        renderBin.second->sort(currentRenderStage);
+        renderBin.second->sort(index, currentRenderStage);
+        index += renderBin.second->getBinSize();
     }
 
     _isSorted = true;
@@ -215,7 +216,6 @@ void RenderQueue::refresh(bool force) {
         return;
     }
     for (RenderBinMap::value_type& renderBin : _renderBins) {
-        assert(renderBin.second);
         renderBin.second->refresh();
     }
     _isSorted = false;

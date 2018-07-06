@@ -29,6 +29,8 @@ namespace NS_GLIM
         m_CurrentValue[1].Int = 0;
         m_CurrentValue[2].Int = 0;
         m_CurrentValue[3].Int = 0;
+        m_programAttribLocation.first = 0;
+        m_programAttribLocation.second = -1;
     }
 
     void GlimArrayData::PushElement (void)
@@ -394,10 +396,20 @@ namespace NS_GLIM
 
         for (it = m_Attributes.begin (); it != itend; ++it)
         {
-            const int iAttributeArray =  glGetAttribLocation (uiCurrentProgram,  it->first.c_str());
+            int iAttributeArray = 0;
+            if (it->second.m_programAttribLocation.first != uiCurrentProgram ||
+                it->second.m_programAttribLocation.second == -1)
+            {
+                iAttributeArray = glGetAttribLocation(uiCurrentProgram, it->first.c_str());
+                it->second.m_programAttribLocation.first = uiCurrentProgram;
+                it->second.m_programAttribLocation.second = iAttributeArray;
+            } else {
+                iAttributeArray = it->second.m_programAttribLocation.second;
+            }
 
-            if (iAttributeArray < 0)
+            if (iAttributeArray < 0) {
                 continue;
+            }
 
             assert(m_VertAttribLocation != (GLuint)iAttributeArray);
             assert(BUFFER_OFFSET (it->second.m_uiBufferOffset) != BUFFER_OFFSET(0));
