@@ -226,8 +226,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         accumulationDescriptor.setSampler(accumulationSampler);
 
         TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D,
-                                              GFXImageFormat::RED8,
-                                              GFXDataFormat::UNSIGNED_BYTE);
+                                              GFXImageFormat::RED16F,
+                                              GFXDataFormat::FLOAT_16);
         revealageDescriptor.setSampler(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
