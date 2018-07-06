@@ -216,7 +216,7 @@ void glShaderProgram::attachShader(glShader* const shader) {
 
 /// This should be called in the loading thread, but some issues are still
 /// present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad() {
+void glShaderProgram::threadedLoad(bool skipRegister) {
     // Loading from binary gives us a linked program ready for usage.
     if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object
@@ -245,7 +245,9 @@ void glShaderProgram::threadedLoad() {
         _lockManager->Lock();
     }
 
-    ShaderProgram::load();
+    if (!skipRegister) {
+        ShaderProgram::load();
+    }
 }
 
 /// Linking a shader program also sets up all pre-link properties for the shader
@@ -493,7 +495,7 @@ bool glShaderProgram::load() {
             ? CurrentContext::GFX_LOADING_CTX
             : CurrentContext::GFX_RENDERING_CTX,
         [&](bool stopRequested){
-            threadedLoad();
+            threadedLoad(false);
         });
 }
 
@@ -529,11 +531,14 @@ bool glShaderProgram::recompileInternal() {
             if (!sourceCode.second.empty()) {
                 // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
                 _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode.second, type, sourceCode.first);
+                if (!_shaderStage[i]->compile()) {
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID());
+                }
             }
         }
     }
 
-    threadedLoad();
+    threadedLoad(true);
 
     return true;
 }

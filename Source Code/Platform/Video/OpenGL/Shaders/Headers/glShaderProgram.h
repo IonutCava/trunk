@@ -150,7 +150,7 @@ class glShaderProgram final : public ShaderProgram {
     void link();
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
-    void threadedLoad();
+    void threadedLoad(bool skipRegister);
     /// Cache uniform/attribute locations for shader programs
     I32 getUniformLocation(const char* name) override;
 

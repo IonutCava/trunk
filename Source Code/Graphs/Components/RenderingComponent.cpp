@@ -164,6 +164,15 @@ void RenderingComponent::rebuildMaterial() {
     if (mat) {
        mat->rebuild();
     }
+
+    U32 childCount = _parentSGN.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        RenderingComponent* const renderable =
+            _parentSGN.getChild(i, childCount).get<RenderingComponent>();
+        if (renderable) {
+            renderable->rebuildMaterial();
+        }
+    }
 }
 
 void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture) {

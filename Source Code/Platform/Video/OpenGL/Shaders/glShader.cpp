@@ -117,6 +117,7 @@ bool glShader::load(const stringImpl& source) {
         ShaderProgram::shaderFileWrite(glShader::CACHE_LOCATION_TEXT + getName(), src);
     }
 
+    _compiled = false;
     return true;
 }
 
@@ -126,11 +127,9 @@ bool glShader::compile() {
     }
 
     glCompileShader(_shader);
-    validate();
-
     _compiled = true;
 
-    return _compiled;
+    return validate();
 }
 
 bool glShader::validate() {

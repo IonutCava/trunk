@@ -211,6 +211,9 @@ void ShaderProgram::destroyStaticData() {
     _shaderPrograms.clear();
     _nullShader.reset();
     _imShader.reset();
+    while(!_recompileQueue.empty()) {
+        _recompileQueue.pop();
+    }
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTime) {
