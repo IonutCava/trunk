@@ -44,7 +44,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 n
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
     _blurDepthMapShader->UniformTexture("texScreen", 0);
 
-    PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "EVCSM");
+    PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "EVCSM");
     SamplerDescriptor depthMapSampler;
     depthMapSampler.setFilters(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR);
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
@@ -93,7 +93,7 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor){
     if(_resolution != tempResolution){
         _resolution = tempResolution;
         //Initialize the FB's with a variable resolution
-        PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getId());
+        PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getGUID());
         _depthMap->Create(_resolution, _resolution);
         vec2<U16> screenResolution = _gfxDevice.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution();
         _horizBlur = _blurDepthMapShader->GetSubroutineIndex(GEOMETRY_SHADER, "computeCoordsH");
@@ -111,7 +111,7 @@ void CascadedShadowMaps::updateResolution(I32 newWidth, I32 newHeight){
 void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     //Only if we have a valid callback;
     if (sceneRenderFunction.empty()) {
-        ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
+        ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
         return;
     }
 

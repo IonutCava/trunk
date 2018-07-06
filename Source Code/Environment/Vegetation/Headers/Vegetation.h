@@ -110,16 +110,19 @@ private:
     RenderStateBlock*     _grassStateBlock;
 
     bool                   _culledFinal;
+    U32                    _readBuffer;
+    U32                    _writeBuffer;
     U32                    _instanceCountGrass;
     U32                    _instanceCountTrees;
     U32                    _instanceRoutineIdx[CullType_PLACEHOLDER];
     vectorImpl<F32 >       _grassScales;
     vectorImpl<vec4<F32> > _grassPositions;
     //vectorImpl<mat4<F32> > _grassMatricesTemp;
-    GenericVertexData*     _grassGPUBuffer;
-    GenericVertexData*     _treeGPUBuffer;
+    GenericVertexData*     _grassGPUBuffer[2];
+    GenericVertexData*     _treeGPUBuffer[2];
     Task_ptr               _generateVegetation;
     ShaderBuffer*          _grassMatrices;
+    static bool            _staticDataUpdated;
 };
 
 #endif

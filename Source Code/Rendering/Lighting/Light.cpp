@@ -19,7 +19,6 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
                                                    _updateLightBB(false),
                                                    _lightSGN(nullptr),
                                                    _impostor(nullptr),
-                                                   _id(0),
                                                    _resolutionFactor(1),
                                                    _impostorSGN(nullptr),
                                                    _castsShadows(true),
@@ -29,7 +28,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
 {
     //All lights default to fully dynamic for now.
     setLightMode(LIGHT_MODE_MOVABLE);
-    for (U8 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i){
+    for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i){
         _shadowProperties._lightVP[i].identity();
     }
     _shadowProperties._floatValues.set(-1.0f);
@@ -39,14 +38,14 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     _shadowCamera->setTurnSpeedFactor(0.0f);
     _shadowCamera->setFixedYawAxis(true);
     
-    _properties._diffuse.set(DefaultColors::WHITE());
-    _properties._specular.set(DefaultColors::WHITE());
-    _properties._direction.w = 0.0f;
+    _visualProperties._diffuse.set(DefaultColors::WHITE());
+    _visualProperties._specular.set(DefaultColors::WHITE());
     
-    _properties._attenuation = vec4<F32>(1.0f, 0.07f, 0.017f, 45.0f); //constAtt, linearAtt, quadAtt, spotCuroff
-    _properties._specular.w = 1.0f;
+    _physicalProperties._spotCutoff = 35;
+    _physicalProperties._direction.w = 0.0f;
+    _physicalProperties._attenuation = vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f); //constAtt, linearAtt, quadAtt
     
-    _dirty = true;
+    memset(_dirty, true, PropertyType_PLACEHOLDER * sizeof(bool));
     _enabled = true;
     _renderState.addToDrawExclusionMask(DEPTH_STAGE);
 }
@@ -74,7 +73,7 @@ bool Light::unload(){
         SAFE_DELETE(_impostor);
     }
 
-    LightManager::getInstance().removeLight(getId());
+    LightManager::getInstance().removeLight(getGUID());
         
     removeShadowMapInfo();
 
@@ -89,185 +88,87 @@ void Light::postLoad(SceneGraphNode* const sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Light::updateState(const bool force){
+void Light::onCameraChange(){
     assert(_lightSGN != nullptr);
+    if (!getEnabled()) return;
 
-    if(force) _dirty = true;
+     _dirty[PROPERTY_TYPE_PHYSICAL] = true;
 
     if(_type != LIGHT_TYPE_DIRECTIONAL) {
 
         if(_mode == LIGHT_MODE_MOVABLE) {  
-            vec3<F32> newPosition = _lightSGN->getTransform()->getPosition();
-            if (_properties._position != newPosition){
-                _properties._position.set(newPosition);
-                _dirty = true;
+            const vec3<F32>& newPosition = _lightSGN->getTransform()->getPosition();
+            if (_physicalProperties._position != newPosition){
+                _physicalProperties._position.set(newPosition);
             }
+        } else {
+            _lightSGN->getTransform()->setPosition(_physicalProperties._position);
         }
 
-        if(!_dirty && !_updateLightBB) return;
-
-        if(_mode != LIGHT_MODE_MOVABLE)
-            _lightSGN->getTransform()->setPosition(_properties._position);
-
-        if(_drawImpostor){
-            Sphere3D* lightDummy = nullptr;
-            if(!_impostor){
-                _impostor = New Impostor(_name,_properties._specular.w);
-                lightDummy = _impostor->getDummy();
-                lightDummy->getSceneNodeRenderState().setDrawState(false);
-                _impostorSGN = _lightSGN->addNode(lightDummy);
-                _impostorSGN->setActive(false);
-            }
-
-            lightDummy = _impostor->getDummy();
-
-            lightDummy->getMaterial()->setDiffuse(getDiffuseColor());
-            lightDummy->getMaterial()->setAmbient(getDiffuseColor());
-
-            //Updating impostor range is expensive, so check if we need to
-            F32 range = _properties._specular.w;
-
-            if(!FLOAT_COMPARE(range, lightDummy->getRadius()))
-                _impostor->getDummy()->setRadius(range);
-        }
-
-        if(_updateLightBB){
+        if(_updateLightBB)
             _lightSGN->updateBoundingBoxTransform(_lightSGN->getTransform()->getGlobalMatrix());
-            _updateLightBB = false;
-        }
     }
 
-    //Do not set API lights for deferred rendering
-    if(getEnabled() && GFX_DEVICE.getRenderer()->getType() == RENDERER_FORWARD && _dirty)
-        LightManager::getInstance().setLight(this, false);
-
-    _dirty = false;
+    _updateLightBB = false;
 }
 
-void Light::setLightProperties(const LightPropertiesV& key, const vec3<F32>& value){
-    //Simple light's can't be changed. Period!
-    if(_mode == LIGHT_MODE_SIMPLE){
-        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Simple",LightEnum(key));
-        return;
-    }
-
-    //Movable lights have no restrictions
-    switch(key){
-        default: ERROR_FN(Locale::get("WARNING_INVALID_PROPERTY_SET"),_id);	return;
-        case LIGHT_PROPERTY_DIFFUSE  : 	_properties._diffuse = value;		break;
-        case LIGHT_PROPERTY_SPECULAR :	_properties._specular = value;		break;
-    };
-
-    _dirty = true;
-}
 
 void Light::setPosition(const vec3<F32>& newPosition){
     //Togglable lights can't be moved.
     if(_mode == LIGHT_MODE_TOGGLABLE){
-        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Togglable","LIGHT_POSITION");
+        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(), "Light_Togglable","LIGHT_POSITION");
         return;
     }
-    _properties._position = vec4<F32>(newPosition, _properties._position.w);
+
+    _physicalProperties._position = vec4<F32>(newPosition, _physicalProperties._position.w);
 
     if(_mode == LIGHT_MODE_MOVABLE)
         _lightSGN->getTransform()->setPosition(newPosition);
 
-    if(_type != LIGHT_TYPE_DIRECTIONAL)
-        _updateLightBB = true;
+    _updateLightBB = true;
 
-    _dirty = true;
+    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
+}
+
+void  Light::setDiffuseColor(const vec3<F32>& newDiffuseColor){
+    _visualProperties._diffuse.set(newDiffuseColor, _visualProperties._diffuse.a);
+    _dirty[PROPERTY_TYPE_VISUAL] = true;
+}
+
+void Light::setSpecularColor(const vec3<F32>& newSpecularColor) {
+    _visualProperties._specular.set(newSpecularColor);
+    _dirty[PROPERTY_TYPE_VISUAL] = true;
+}
+
+void Light::setRange(F32 range) {
+    _physicalProperties._attenuation.w = range;
+    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
 }
 
 void Light::setDirection(const vec3<F32>& newDirection){
     //Togglable lights can't be moved.
     if(_mode == LIGHT_MODE_TOGGLABLE){
-        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Togglable","LIGHT_DIRECTION");
+        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(), "Light_Togglable","LIGHT_DIRECTION");
         return;
     }
     if (_type == LIGHT_TYPE_SPOT){
-        _properties._direction = vec4<F32>(newDirection, 1.0f);
-        _properties._direction.normalize();
+        _physicalProperties._direction = vec4<F32>(newDirection, 1.0f);
+        _physicalProperties._direction.normalize();
     }else{
-        _properties._position = vec4<F32>(newDirection, 1.0f);
-        _properties._position.normalize();
-        _properties._position.w = _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f;
+        _physicalProperties._position = vec4<F32>(newDirection, 1.0f);
+        _physicalProperties._position.normalize();
+        _physicalProperties._position.w = _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f;
     }
 
-    _dirty = true;
-
-    if(_type != LIGHT_TYPE_DIRECTIONAL)
-        _updateLightBB = true;
-}
-
-void Light::setLightProperties(const LightPropertiesF& key, F32 value){
-    //Simple light's can't be changed. Period!
-    if(_mode == LIGHT_MODE_SIMPLE){
-        ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Simple",LightEnum(key));
-        return;
-    }
-
-    //Togglable lights can't be moved.
-    if(_mode == LIGHT_MODE_TOGGLABLE){
-        if(key == LIGHT_PROPERTY_BRIGHTNESS || key == LIGHT_PROPERTY_SPOT_EXPONENT || key == LIGHT_PROPERTY_SPOT_CUTOFF){
-            ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Togglable",LightEnum(key));
-            return;
-        }
-    }
-
-    switch(key){
-        default: ERROR_FN(Locale::get("WARNING_INVALID_PROPERTY_SET"),_id); return;
-        case LIGHT_PROPERTY_SPOT_EXPONENT : _properties._direction.w = value; break;
-        case LIGHT_PROPERTY_SPOT_CUTOFF   : _properties._attenuation.w = value; break;
-        case LIGHT_PROPERTY_CONST_ATT     : _properties._attenuation.x = value; break;
-        case LIGHT_PROPERTY_LIN_ATT       : _properties._attenuation.y = value; break;
-        case LIGHT_PROPERTY_QUAD_ATT      : _properties._attenuation.z = value; break;
-        case LIGHT_PROPERTY_BRIGHTNESS    : {
-            _properties._specular.w = value; 
-            if(_impostor)
-                _impostor->setRadius(value);
-        }break;
-        case LIGHT_PROPERTY_AMBIENT       :	_properties._diffuse.w = value;	break;
-    };
-
-    _dirty = true;
-}
-
-vec3<F32> Light::getVProperty(const LightPropertiesV& key) const {
-    switch(key){
-        default: ERROR_FN(Locale::get("WARNING_INVALID_PROPERTY_GET"),_id); break;
-        case LIGHT_PROPERTY_DIFFUSE  : return _properties._diffuse.rgb();
-        case LIGHT_PROPERTY_SPECULAR : return _properties._specular.rgb();
-    };
-    return _properties._diffuse.rgb();
-}
-
-///Get light floating point properties
-F32 Light::getFProperty(const LightPropertiesF& key) const {
-    //spot values are only for spot lights
-    if(key == LIGHT_PROPERTY_SPOT_EXPONENT || key == LIGHT_PROPERTY_SPOT_CUTOFF && _type != LIGHT_TYPE_SPOT){
-        ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_FLOAT_PROPERTY_REQUEST"),  _id);
-        return -1.0f;
-    }
-
-    switch(key){
-        default: ERROR_FN(Locale::get("WARNING_INVALID_PROPERTY_GET"),_id); break;
-        case LIGHT_PROPERTY_CONST_ATT     : return _properties._attenuation.x;
-        case LIGHT_PROPERTY_LIN_ATT       : return _properties._attenuation.y;
-        case LIGHT_PROPERTY_QUAD_ATT      : return _properties._attenuation.z;
-        case LIGHT_PROPERTY_SPOT_CUTOFF   : return _properties._attenuation.w;
-        case LIGHT_PROPERTY_SPOT_EXPONENT : return _properties._direction.w;
-        case LIGHT_PROPERTY_BRIGHTNESS    : return _properties._specular.w;
-        case LIGHT_PROPERTY_AMBIENT       : return _properties._diffuse.w;
-    };
-
-    return -1.0f;
+    _updateLightBB = true;
+    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
 }
 
 void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
     if(_type == LIGHT_TYPE_DIRECTIONAL) return;
 
     // Check if range changed
-    if (FLOAT_COMPARE(getFProperty(LIGHT_PROPERTY_BRIGHTNESS) * 0.5f, sgn->getBoundingBoxConst().getMax().x))
+    if (FLOAT_COMPARE(getRange(), sgn->getBoundingBoxConst().getMax().x))
         return;
     
     sgn->getBoundingBox().setComputed(false);
@@ -279,13 +180,12 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneSta
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
     if(_type == LIGHT_TYPE_DIRECTIONAL){
-        vec4<F32> directionalLightPosition = _properties._position * Config::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
+        vec4<F32> directionalLightPosition = _physicalProperties._position * Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
 
         sgn->getBoundingBox().set(directionalLightPosition.xyz() - vec3<F32>(10), 
                                   directionalLightPosition.xyz() + vec3<F32>(10));
     }else{
-        F32 range = getFProperty(LIGHT_PROPERTY_BRIGHTNESS) * 0.5f; //diameter to radius
-        sgn->getBoundingBox().set(vec3<F32>(-range), vec3<F32>(range));
+        sgn->getBoundingBox().set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
     }
 
     _updateLightBB = true;
@@ -299,6 +199,24 @@ bool Light::isInView(const SceneRenderState& sceneRenderState, const BoundingBox
 
 void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     // The isInView call should stop impostor rendering if needed
+    Sphere3D* lightDummy = nullptr;
+    if (!_impostor){
+        _impostor = New Impostor(_name, _physicalProperties._attenuation.w);
+        lightDummy = _impostor->getDummy();
+        lightDummy->getSceneNodeRenderState().setDrawState(false);
+        _impostorSGN = _lightSGN->addNode(lightDummy);
+        _impostorSGN->setActive(false);
+    }
+
+    lightDummy = _impostor->getDummy();
+
+    lightDummy->getMaterial()->setDiffuse(getDiffuseColor());
+    lightDummy->getMaterial()->setAmbient(getDiffuseColor());
+
+    //Updating impostor range is expensive, so check if we need to
+    if (!FLOAT_COMPARE(getRange(), lightDummy->getRadius()))
+        _impostor->getDummy()->setRadius(getRange());
+
     if(!_impostor)  return;
 
     _impostor->render(sgn, sceneRenderState);
@@ -330,33 +248,9 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState){
     sm->render(sceneRenderState, _callback);
     sm->postRender();
 
-    LightManager::getInstance().setLight(this, true);
+    _dirty[PROPERTY_TYPE_SHADOW] = true;
 }
 
 void Light::setLightMode(const LightMode& mode) {
     _mode = mode;
-    //if the light became dominant, inform the lightmanager
-    if(mode == LIGHT_MODE_DOMINANT)
-        LightManager::getInstance().setDominantLight(this);
-}
-
-const char* Light::LightEnum(const LightPropertiesV& key) const {
-    switch(key){
-        case LIGHT_PROPERTY_DIFFUSE:   return "LIGHT_DIFFUSE_COLOR";
-        case LIGHT_PROPERTY_SPECULAR:  return "LIGHT_SPECULAT_COLOR";
-    };
-    return "";
-}
-
-const char* Light::LightEnum(const LightPropertiesF& key) const {
-    switch(key){
-        case LIGHT_PROPERTY_SPOT_EXPONENT: return "LIGHT_SPOT_EXPONENT";
-        case LIGHT_PROPERTY_SPOT_CUTOFF:   return "LIGHT_SPOT_CUTOFF";
-        case LIGHT_PROPERTY_CONST_ATT:     return "LIGHT_CONST_ATTENUATION";
-        case LIGHT_PROPERTY_LIN_ATT:       return "LIGHT_LINEAR_ATTENUATION";
-        case LIGHT_PROPERTY_QUAD_ATT:      return "LIGHT_QUADRATIC_ATTENUATION";
-        case LIGHT_PROPERTY_BRIGHTNESS:    return "LIGHT_BRIGHTNESS";
-        case LIGHT_PROPERTY_AMBIENT:       return "LIGHT_AMBIENT_COLOR";
-    };
-    return "";
 }

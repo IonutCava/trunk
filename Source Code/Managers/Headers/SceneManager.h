@@ -98,6 +98,10 @@ public: ///Input
     bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
 protected:
+    friend class Kernel;
+    void initPostLoadState();
+
+protected:
     ///This is inherited from FrameListener and is used to setup cameras before rendering the frame
     bool framePreRenderStarted(const FrameEvent& evt);
     bool frameEnded(const FrameEvent& evt);
@@ -109,6 +113,8 @@ private:
 private:
     typedef Unordered_map<std::string, Scene*> SceneMap;
     bool _init;
+    bool _processInput;
+    bool _loadPreRenderComplete;
     ///Pointer to the currently active scene
     Scene* _activeScene;
     ///Pointer to the GUI interface

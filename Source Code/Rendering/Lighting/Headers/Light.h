@@ -31,44 +31,32 @@ enum LightType{
     LIGHT_TYPE_DIRECTIONAL = 0,
     LIGHT_TYPE_POINT = 1, ///< or omni light, if you prefer
     LIGHT_TYPE_SPOT = 2,
-    LIGHT_TYPE_PLACEHOLDER
+    LightType_PLACEHOLDER
 };
 
 enum LightMode{
     LIGHT_MODE_SIMPLE = 0,    ///< normal light. Can't be moved or changed at runtime
     LIGHT_MODE_TOGGLABLE = 1, ///< can be switched on or off and can change brightness,color, range at runtime
     LIGHT_MODE_MOVABLE = 2,   ///< can change position at runtime / most expensive
-    LIGHT_MODE_DOMINANT = 3   ///< only shadow caster in scene
+    //LIGHT_MODE_DOMINANT = 3   ///< only shadow caster in scene
 };
 
-///Defines all light properties that are stores as a 3 or 4 component vector
-enum LightPropertiesV{
-    LIGHT_PROPERTY_DIFFUSE,
-    LIGHT_PROPERTY_SPECULAR,
-};
-///Defines all light properties that are stored as a floating point value
-enum LightPropertiesF{
-    LIGHT_PROPERTY_SPOT_EXPONENT,
-    LIGHT_PROPERTY_SPOT_CUTOFF,
-    LIGHT_PROPERTY_CONST_ATT,
-    LIGHT_PROPERTY_LIN_ATT,
-    LIGHT_PROPERTY_QUAD_ATT,
-    LIGHT_PROPERTY_BRIGHTNESS,
-    LIGHT_PROPERTY_AMBIENT
+struct LightVisualProperties {
+    vec4<F32> _diffuse;     //< rgb = diffuse,  w = ambientFactor;
+    vec3<F32> _specular;    //< rgb = specular color
 };
 
-struct LightProperties {
-    vec4<F32> _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
+struct LightPhysicalProperties {
+    vec4<F32> _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
     vec4<F32> _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
     vec4<F32> _direction;   //< xyz = Used by spot lights, w = spotExponent
-    vec4<F32> _diffuse;     //< rgb = diffuse,  w = ambientFactor;
-    vec4<F32> _specular;    //< rgb = specular color, w = brightness
+    F32       _spotCutoff;
 };
 
 struct LightShadowProperties {
     mat4<F32> _lightVP[4];  //< light viewProjection matrices
     vec4<F32> _floatValues; //< random float values (e.g. split distances)
-    vec3<F32> _lightPosition[4]; //<light's position in world space
+    vec4<F32> _lightPosition[4]; //<light's position in world space
 };
 
 class Camera;
@@ -79,6 +67,15 @@ class SceneRenderState;
 ///A light object placed in the scene at a certain position
 class Light : public SceneNode {
 public:
+    enum PropertyType{
+        PROPERTY_TYPE_VISUAL = 0,
+        PROPERTY_TYPE_PHYSICAL = 1,
+        PROPERTY_TYPE_SHADOW = 2,
+        PropertyType_PLACEHOLDER = 3
+    };
+
+    typedef Unordered_map<I64, Light*> LightMap;
+
     ///Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
@@ -88,47 +85,39 @@ public:
     ///Light score determines the importance of this light for the current node queries
     inline F32  getScore()                const {return _score;}
     inline void setScore(const F32 score)       {_score = score;}
-    ///Set all light vector-properties
-    virtual void setLightProperties(const LightPropertiesV& propName, const vec3<F32>& value);
-    ///Set all light float-properties
-    virtual void setLightProperties(const LightPropertiesF& propName, F32 value);
-    ///Get light vector properties
-    virtual vec3<F32> getVProperty(const LightPropertiesV& key) const;
-    ///Get light floating point properties
-    virtual F32  getFProperty(const LightPropertiesF& key) const;
-    ///Get light ID
-    inline U32   getId() const {return _id;}
+
     ///Get light slot
     inline U8    getSlot() const {return _slot;}
     ///Is the light a shadow caster?
     inline bool  castsShadows() const {return _castsShadows;}
     ///Get the entire property block
-    inline const LightProperties& getProperties() const {return _properties;}
+    inline const LightPhysicalProperties& getPhysicalProperties() const { return _physicalProperties; }
+    inline const LightVisualProperties& getVisualProperties() const { return _visualProperties; }
     inline const LightShadowProperties& getShadowProperties() const {return _shadowProperties;}
+    inline F32        getRange() const {return _physicalProperties._attenuation.w;}
+           void       setRange(F32 range);
     ///Get light diffuse color
-    inline vec3<F32>  getDiffuseColor() const {return _properties._diffuse.rgb();}
+    inline vec3<F32>  getDiffuseColor() const { return _visualProperties._diffuse.rgb(); }
+           void       setDiffuseColor(const vec3<F32>& newDiffuseColor);
+    ///Get light specular color
+    inline vec3<F32>  getSpecularColor() const { return _visualProperties._specular; }
+           void       setSpecularColor(const vec3<F32>& newSpecularColor);
     ///Get light position for omni and spot or direction for a directional light
-    inline vec3<F32>  getPosition()     const {return _properties._position.xyz();}
+    inline vec3<F32>  getPosition()     const { return _physicalProperties._position.xyz(); }
            void       setPosition(const vec3<F32>& newPosition);
     ///Get direction for spot lights
-    inline vec3<F32>  getDirection() const {return _properties._direction.xyz();}
+    inline vec3<F32>  getDirection() const { return _physicalProperties._direction.xyz(); }
            void       setDirection(const vec3<F32>& newDirection);
     ///Light state (on/off)
     inline bool  getEnabled() const {return _enabled;}
 
-    ///Set a new light ID.
-    ///The light ID is not the slot! It is used simply to identify the lights uniquely
-    inline void  setId(const U32 id) {_id = id; _dirty = true;}
-    ///Set the light slot.
-    ///Slot is used by the rendering API internally
-    inline void  setSlot(const U8 slot) {_slot = slot; _dirty = true;}
     ///Does this list cast shadows?
     inline void  setCastShadows(const bool state) {_castsShadows = state;}
     ///Draw a sphere at the lights position
     ///The impostor has the range of the light's effect range and the diffuse color as the light's diffuse property
     inline void  setDrawImpostor(const bool state) {_drawImpostor = state;}
     ///Turn the light on/off
-    inline void  setEnabled(const bool state) {_enabled = state; _dirty = true;}
+    inline void  setEnabled(const bool state) {_enabled = state;}
     ///Get the light type.
     ///See LightType enum
     inline const LightType& getLightType() const {return _type;}
@@ -136,7 +125,7 @@ public:
     ///Get a pointer to the light's impostor
     inline Impostor* const getImpostor() const {return _impostor;}
     //Checks if this light needs and update
-    void updateState(const bool force = false);
+    void onCameraChange();
 
     ///Dummy function from SceneNode;
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; }
@@ -156,10 +145,10 @@ public:
     virtual void generateShadowMaps(SceneRenderState& sceneRenderState);
     inline const mat4<F32>& getShadowVPMatrix(U8 index)   const { return _shadowProperties._lightVP[index]; }
     inline const vec4<F32>& getShadowFloatValues()        const { return _shadowProperties._floatValues; }
-    inline const vec3<F32>& getShadowLightPos(U8 index)   const { return _shadowProperties._lightPosition[index]; }
+    inline const vec4<F32>& getShadowLightPos(U8 index)   const { return _shadowProperties._lightPosition[index]; }
     inline       void       setShadowVPMatrix(U8 index, const mat4<F32>& newValue)   { _shadowProperties._lightVP[index].set(newValue);  }
     inline       void       setShadowFloatValue(U8 index, F32 newValue)              { _shadowProperties._floatValues[index] = newValue; }
-    inline       void       setShadowLightPos(U8 index, const vec3<F32>& newValue)   { _shadowProperties._lightPosition[index].set(newValue); }
+    inline       void       setShadowLightPos(U8 index, const vec3<F32>& newValue)   { _shadowProperties._lightPosition[index].set(newValue, 1.0f); }
     inline void shadowMapResolutionFactor(U8 factor)       {_resolutionFactor = factor;}
     inline U8   shadowMapResolutionFactor()          const {return _resolutionFactor;}
 
@@ -181,22 +170,20 @@ protected:
     ///Called when the rendering resolution changes
     void updateResolution(I32 newWidth, I32 newHeight);
     ///Get a ref to the shadow camera used by this light
-     Camera* const shadowCamera() const {return _shadowCamera;}
-
-private:
-    ///Enum to char* translation for vector properties
-    const char* LightEnum(const LightPropertiesV& key) const;
-    ///Enum to char* translation for floating point properties
-    const char* LightEnum(const LightPropertiesF& key) const;
+    Camera* const shadowCamera() const {return _shadowCamera;}
+    ///Set the light slot.
+    ///Slot is used by the rendering API internally
+    inline void  setSlot(const U8 slot) { _slot = slot;}
 
 protected:
 
-    LightProperties  _properties;
+    LightPhysicalProperties  _physicalProperties;
+    LightVisualProperties    _visualProperties;
     LightShadowProperties _shadowProperties;
 
-    U32  _id;
     LightType _type;
     LightMode _mode;
+    bool      _dirty[PropertyType_PLACEHOLDER];
 
 private:
     U8   _resolutionFactor;
@@ -210,7 +197,6 @@ private:
     Camera*         _shadowCamera;
     DELEGATE_CBK _callback;
     F32   _score;
-    bool  _dirty;
     bool  _enabled;
 
 protected:

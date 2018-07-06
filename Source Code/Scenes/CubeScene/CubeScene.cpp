@@ -11,7 +11,7 @@ void CubeScene::render(){
 }
 
 void CubeScene::processTasks(const U64 deltaTime){
-    LightManager::LightMap& lights = LightManager::getInstance().getLights();
+    Light::LightMap& lights = LightManager::getInstance().getLights();
     D32 updateLights = getSecToMs(0.05);
 
     if(_taskTimers[0] >= updateLights){
@@ -25,7 +25,7 @@ void CubeScene::processTasks(const U64 deltaTime){
                 F32 b = col/(lights.size()/3.0f);
 
                 lights[row*10+col]->setPosition(vec3<F32>(x,y,z));
-                lights[row*10+col]->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(r,g,b,1));
+                lights[row*10+col]->setDiffuseColor(vec3<F32>(r,g,b));
             }
 
         _taskTimers[0] = 0.0;
@@ -76,7 +76,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
             tempLight.setEnumValue(LIGHT_TYPE_POINT);
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
-            light->setLightProperties(LIGHT_PROPERTY_BRIGHTNESS, 30.0f);
+            light->setRange(30.0f);
             light->setCastShadows(false); //ToDo: Shadows are ... for another time -Ionut
             _sceneGraph->getRoot()->addNode(light);
             addLight(light);

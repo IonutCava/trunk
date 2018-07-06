@@ -46,13 +46,7 @@ public:
     void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false);
     void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool stream);
 
-    inline void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) {
-        UpdateAttribute(index, buffer, divisor, (GLsizei)size, normalized ? GL_TRUE : GL_FALSE, stride, (GLvoid*)offset, glDataFormat[type], false);
-    }
-
-    inline void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) {
-        UpdateAttribute(index, buffer, divisor, (GLsizei)size, normalized ? GL_TRUE : GL_FALSE, stride, (GLvoid*)offset, glDataFormat[type], true);
-    }
+    void BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount);
 
     inline void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) {
         DrawInternal(type, min, max, 1, queryID, drawToBuffer);
@@ -64,16 +58,17 @@ public:
 
     inline void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {
         if (!isFeedbackBuffer(buffer)){
-             _feedbackBuffers.push_back(_bufferObjects[buffer]);
+            _feedbackBuffers.push_back(_bufferObjects[buffer]);
+            _fdbkBindPoints.push_back(bindPoint);
         }
 
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _transformFeedback);
+        GL_API::setActiveTransformFeedback(_transformFeedback);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]);
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
     }
 
 protected:
-    void UpdateAttribute(U32 index, U32 buffer, U32 divisor, GLsizei size, GLboolean normalized, U32 stride, GLvoid* offset, GLenum type, bool feedbackAttrib);
+    void SetAttributes(bool feedbackPass);
+    void SetAttributeInternal(AttributeDescriptor& descriptor);
     void DrawInternal(const PrimitiveType& type, U32 min, U32 max, U32 instanceCount, U8 queryID = 0, bool drawToBuffer = false);
 
     inline bool isFeedbackBuffer(U32 index){
@@ -84,8 +79,17 @@ protected:
         return false;
     }
 
+    inline U32 getBindPoint(U32 bufferHandle){
+        for(U8 i = 0; i < _feedbackBuffers.size(); ++i){
+            if(_feedbackBuffers[i] == bufferHandle)
+                return _fdbkBindPoints[i];
+        }
+        return _fdbkBindPoints[0];
+    }
+
     /// Just before we render the frame
     bool frameStarted(const FrameEvent& evt);
+
 private:
     GLuint   _transformFeedback;
     GLuint   _numQueries;
@@ -102,6 +106,7 @@ private:
     GLuint   _currentWriteQuery;
     GLuint   _currentReadQuery;
     size_t*  _startDestOffset;
+    vectorImpl<U32 > _fdbkBindPoints;
     glBufferLockManager* _lockManager;
 };
 #endif

@@ -127,13 +127,7 @@ namespace NS_GLIM
 
         bWireframe |= GLIM_Interface::s_bForceWireframe;
 
-        if (GLEW_NV_vertex_buffer_unified_memory)
-        {
-        //	(glDisableClientState (GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV));
-        //	(glDisableClientState (GL_ELEMENT_ARRAY_UNIFIED_NV));
-        }
-
-
+        GL_API::setActiveVAO(m_Data.m_VertexArrayObjectID);
         (GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_Data.m_uiVertexBufferID));
 
         if (!bWireframe)

@@ -38,7 +38,6 @@ void main()
 -- Fragment
 
 #include "phong_lighting.frag"
-#include "lightingDefaults.frag"
 
 flat in int _arrayLayer;
 out vec4 _colorOut;

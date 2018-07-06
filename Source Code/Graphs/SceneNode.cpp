@@ -155,10 +155,6 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     _drawShader->SetLOD(getCurrentLOD());
     _drawShader->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
     _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
-    _drawShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
-    _drawShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
-    _drawShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
-    _drawShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
 
     _drawShader->Uniform("windDirection", vec2<F32>(activeScene->state().getWindDirX(), activeScene->state().getWindDirZ()));
     _drawShader->Uniform("windSpeed", activeScene->state().getWindSpeed());

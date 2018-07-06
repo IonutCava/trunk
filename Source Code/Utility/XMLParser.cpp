@@ -96,8 +96,6 @@ namespace XML {
                 return "TEX_OP_MULTIPLY";
             else if(textureOp == Material::TextureOperation_Decal)
                 return "TEX_OP_DECAL";
-            else if(textureOp == Material::TextureOperation_Blend)
-                return "TEX_OP_BLEND";
             else if(textureOp == Material::TextureOperation_Add)
                 return "TEX_OP_ADD";
             else if(textureOp == Material::TextureOperation_SmoothAdd)
@@ -108,8 +106,6 @@ namespace XML {
                 return "TEX_OP_DIVIDE";
             else if(textureOp == Material::TextureOperation_Subtract)
                 return "TEX_OP_SUBTRACT";
-            else if(textureOp == Material::TextureOperation_Combine)
-                return "TEX_OP_COMBINE";
 
             return "TEX_OP_REPLACE";
         }
@@ -119,8 +115,6 @@ namespace XML {
                 return Material::TextureOperation_Multiply;
             else if(strcmp(operation, "TEX_OP_DECAL") == 0 )
                 return Material::TextureOperation_Decal;
-            else if(strcmp(operation, "TEX_OP_BLEND") == 0 )
-                return Material::TextureOperation_Blend;
             else if(strcmp(operation, "TEX_OP_ADD") == 0 )
                 return Material::TextureOperation_Add;
             else if(strcmp(operation, "TEX_OP_SMOOTH_ADD") == 0 )
@@ -131,8 +125,6 @@ namespace XML {
                 return Material::TextureOperation_Divide;
             else if(strcmp(operation, "TEX_OP_SUBTRACT") == 0 )
                 return Material::TextureOperation_Subtract;
-            else if(strcmp(operation, "TEX_OP_COMBINE") == 0 )
-                return Material::TextureOperation_Combine;
 
             return Material::TextureOperation_Replace;
         }

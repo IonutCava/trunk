@@ -10,15 +10,17 @@
 #include <gtc/type_ptr.hpp>
 #include <gtc/matrix_transform.hpp>
 
-GLuint GL_API::_activeVAOId = 0;
-GLuint GL_API::_activeFBId = 0;
-GLuint GL_API::_activeBufferId[] = {0, 0, 0, 0, 0, 0};
-GLuint GL_API::_activeTextureUnit = 0;
+GLuint GL_API::_activeVAOId = GL_INVALID_INDEX;
+GLuint GL_API::_activeFBId  = GL_INVALID_INDEX;
+GLuint GL_API::_activeBufferId[] = {GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX};
+GLuint GL_API::_activeTextureUnit = GL_INVALID_INDEX;
+GLuint GL_API::_activeTransformFeedback = GL_INVALID_INDEX;
 
 bool GL_API::_lastRestartIndexSmall = true;
 bool GL_API::_primitiveRestartEnabled = false;
 
 GL_API::textureBoundMapDef GL_API::textureBoundMap;
+GL_API::samplerBoundMapDef GL_API::samplerBoundMap;
 Unordered_map<GLuint, vec4<GLfloat> > GL_API::_prevClearColor;
 
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
@@ -28,7 +30,7 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 
     if(!skipTextures || forceAll){
         FOR_EACH(textureBoundMapDef::value_type& it, textureBoundMap)
-            GL_API::unbindTexture(it.first);
+            GL_API::bindTexture(it.first, 0, it.second.second, 0);
 
         setActiveTextureUnit(0, forceAll);
     }
@@ -42,10 +44,10 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
         setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0, forceAll);
         setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0, forceAll);
         setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0, forceAll);
+        setActiveTransformFeedback(0, forceAll);
     }
 
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
-    
 }
 
 void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
@@ -156,6 +158,30 @@ bool GL_API::setActiveTextureUnit(GLuint unit,const bool force){
     return true;
 }
 
+bool GL_API::bindSampler(GLuint unit, GLuint samplerID){
+    if(samplerBoundMap[unit] != samplerID){
+        glBindSampler(unit, samplerID);
+        samplerBoundMap[unit] = samplerID;
+        return true;
+    }
+    return false;
+}
+  
+bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID){
+    GL_API::setActiveTextureUnit(unit);
+    GL_API::bindSampler(unit, samplerID);
+
+    std::pair<GLuint, GLenum>& currentMapping = textureBoundMap[unit];
+    if (currentMapping.first != handle || currentMapping.second != type){
+        glBindTexture(type, handle);
+
+        currentMapping.first = handle;
+        currentMapping.second = type;
+        return true;
+    }
+    return false;
+}
+
 bool GL_API::setActiveFB(GLuint id, const bool read, const bool write, const bool force){
     if (_activeFBId == id && !force)
         return false; //<prevent double bind
@@ -175,6 +201,15 @@ bool GL_API::setActiveVAO(GLuint id, const bool force){
     _activeVAOId = id;
     glBindVertexArray(id);
 
+    return true;
+}
+
+bool GL_API::setActiveTransformFeedback(GLuint id, const bool force){
+    if(_activeTransformFeedback == id && !force)
+        return false;
+
+    _activeTransformFeedback = id;
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, id);
     return true;
 }
 
@@ -304,27 +339,4 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
                     newDescriptor._colorWrite.b.b2 == GL_TRUE, // B
                     newDescriptor._colorWrite.b.b3 == GL_TRUE);// A
     }
-}
-
-bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID){
-    GL_API::setActiveTextureUnit(unit);
-    if (checkBinding(unit, handle)){
-        glBindTexture(type, handle);
-        textureBoundMap[unit] = std::make_pair(handle, type);
-        glBindSampler(unit, samplerID);
-
-        return true;
-    }
-    return false;
-}
-
-bool GL_API::unbindTexture(GLuint unit){
-    GLenum textureType = textureBoundMap[unit].second;
-    if (textureType != GL_NONE){
-        glBindTexture(textureType, 0);
-        glBindSampler(unit, 0);
-        textureBoundMap[unit] = std::make_pair(0, GL_NONE);
-        return true;
-    }
-    return false;
 }

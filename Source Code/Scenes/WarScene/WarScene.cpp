@@ -261,8 +261,8 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         light->setDrawImpostor(true);
         // Make it small and yellow
         light->setCastShadows(false);
-        light->setLightProperties(LIGHT_PROPERTY_BRIGHTNESS, 2.0f);
-        light->setLightProperties(LIGHT_PROPERTY_DIFFUSE, vec3<F32>(1.0f, 0.5f, 0.0f));
+        light->setRange(2.0f);
+        light->setDiffuseColor(vec3<F32>(1.0f, 0.5f, 0.0f));
         _lampTransform = new SceneTransform();
         // Add it to Bob's body
         _lampTransformNode = _bobNodeBody->addNode(_lampTransform, "lampTransform");

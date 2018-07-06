@@ -15,7 +15,7 @@ void d3dConstantBuffer::Create(bool dynamic, bool stream){
 void d3dConstantBuffer::ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize) const {
 }
 
-void d3dConstantBuffer::ChangeSubData(ptrdiff_t offset, ptrdiff_t size, const void *data) const {
+void d3dConstantBuffer::ChangeSubData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer) const {
 }
 
 bool d3dConstantBuffer::bindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const {
@@ -24,4 +24,8 @@ bool d3dConstantBuffer::bindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t siz
 
 bool d3dConstantBuffer::bind(U32 bindIndex) const {
     return true;
+}
+
+void d3dConstantBuffer::printInfo(const ShaderProgram* shaderProgram, U32 bindIndex)
+{
 }

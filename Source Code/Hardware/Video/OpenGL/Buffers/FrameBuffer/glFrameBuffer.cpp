@@ -67,8 +67,7 @@ void glFrameBuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
 
     GLuint textureType = _textureType[slot];
 
-    glBindTexture(textureType, _textureId[slot]);
-    
+    GL_API::bindTexture(0, _textureId[slot], textureType);
 
     //generate a new texture attachment
     //anisotropic filtering is only added to color attachments
@@ -138,8 +137,7 @@ void glFrameBuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     if (_mipMapEnabled[slot]) glGenerateMipmap(textureType);
         
     //unbind the texture
-    glBindTexture(textureType, 0);
-
+    GL_API::unbindTexture(0, textureType);
     GLint offset = 0;
     if (slot > TextureDescriptor::Color0){
         offset = _attOffset[slot - 1];
@@ -344,8 +342,8 @@ void glFrameBuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
 
     FrameBuffer::Bind(unit, slot);
 
-    if (GL_API::bindTexture(unit, _textureId[slot], _textureType[slot], 0))
-        UpdateMipMaps(slot);
+    GL_API::bindTexture(unit, _textureId[slot], _textureType[slot]);
+    UpdateMipMaps(slot);
 }
 
 void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
@@ -439,6 +437,16 @@ void glFrameBuffer::UpdateMipMaps(TextureDescriptor::AttachmentType slot) {
 
     glGenerateMipmap(_textureType[slot]);
     _mipMapsDirty[slot] = false;
+}
+
+void glFrameBuffer::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData){
+    if (_resolveBuffer){
+        resolve();
+        _resolveBuffer->ReadData(rect, imageFormat, dataType, outData);
+    }else{
+        GL_API::setActiveFB(_frameBufferHandle, true, false, false);
+        glReadPixels(rect.x, rect.y, rect.z, rect.w, glImageFormatTable[imageFormat], glDataFormat[dataType], outData);
+    }
 }
 
 bool glFrameBuffer::checkStatus() const {

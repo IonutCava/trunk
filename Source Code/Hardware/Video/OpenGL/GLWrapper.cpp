@@ -3,7 +3,6 @@
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Scenes/Headers/SceneState.h"
-#include "Utility/Headers/ImageTools.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -267,18 +266,4 @@ void GL_API::drawPoints(GLuint numPoints) {
     GL_API::setActiveVAO(_pointDummyVAO);
     glDrawArrays(GL_POINTS, 0, numPoints);
     GL_API::registerDrawCall();
-}
-
-//Save the area designated by the rectangle "rect" to a TGA file
-void GL_API::Screenshot(char *filename, const vec4<GLfloat>& rect){
-    // compute width and heidth of the image
-    GLushort w = rect.z - rect.x; //maxX - minX
-    GLushort h = rect.w - rect.y; //maxY - minY
-
-    // allocate memory for the pixels
-    GLubyte *imageData = New GLubyte[w * h * 4];
-    // read the pixels from the frame buffer
-    glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid*)imageData);
-    //save to file
-    ImageTools::SaveSeries(filename,vec2<GLushort>(w,h),32,imageData);
 }

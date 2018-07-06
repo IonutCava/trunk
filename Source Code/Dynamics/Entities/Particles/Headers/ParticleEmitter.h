@@ -94,7 +94,6 @@ protected:
 
 private:
     I32 findUnusedParticle();
-    void sortParticles();
     void uploadToGPU();
 
 private:

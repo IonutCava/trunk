@@ -15,7 +15,10 @@ glUniformBuffer::~glUniformBuffer()
     }
 }
 
-void glUniformBuffer::printUniformBlockInfo(GLint prog, GLint block_index) {
+void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram, U32 bindIndex) {
+    GLuint prog = shaderProgram->getId();
+    GLuint block_index = bindIndex;
+
     if (prog <= 0 || block_index < 0 || _unbound)
         return;
 
@@ -66,9 +69,7 @@ void glUniformBuffer::printUniformBlockInfo(GLint prog, GLint block_index) {
         details << std::setfill('0') << std::setw(4) << offsets[i] << ": " << std::setfill(' ') << std::setw(5) << types[i] << " " << name;
 
         if (sizes[i] > 1)
-        {
             details << "[" << sizes[i] << "]";
-        }
 
         details << "\n";
         uniform_details.push_back(details.str());
@@ -104,9 +105,12 @@ void glUniformBuffer::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveS
     glBufferData(_target, primitiveSize * primitiveCount, nullptr, _usage);
 }
 
-void glUniformBuffer::ChangeSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data) const {
+void glUniformBuffer::ChangeSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer) const {
     assert(_UBOid != 0);
     setActive();
+    if(invalidateBuffer)
+        glBufferData(_target, size, NULL, _usage);
+    
     glBufferSubData(_target, offset, size, data);
 }
 

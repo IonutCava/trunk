@@ -33,6 +33,48 @@
 
 class GenericVertexData : private boost::noncopyable, public FrameListener {
 public:
+
+    struct AttributeDescriptor {
+        AttributeDescriptor() : _index(0), _divisor(0), _parentBuffer(0), 
+                                _componentsPerElement(0), _normalized(false),
+                                _stride(0), _type(UNSIGNED_INT), 
+                                _wasSet(false), _elementCountOffset(0), _dirty(false)
+        {
+        }
+
+        void set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement, bool normalized, size_t stride, U32 elementCountOffset, GFXDataFormat dataType){
+            setBufferIndex(bufferIndex);
+            setInstanceDivisor(instanceDivisor);
+            setComponentsPerElement(componentsPerElement);
+            setNormalized(normalized);
+            setStride(stride);
+            setOffset(elementCountOffset);
+            _type = dataType;
+        }
+
+        inline void setOffset(U32 elementCountOffset)                 { _elementCountOffset = elementCountOffset; _dirty = true; }
+        inline void setBufferIndex(U32 bufferIndex)                   { _parentBuffer = bufferIndex; _dirty = true; }
+        inline void setInstanceDivisor(U32 instanceDivisor)           { _divisor = instanceDivisor; _dirty = true; }
+        inline void setComponentsPerElement(U32 componentsPerElement) { _componentsPerElement = componentsPerElement; _dirty = true; }
+        inline void setNormalized(bool normalized)                    { _normalized = normalized; _dirty = true; }
+        inline void setStride(size_t stride)                          { _stride = stride; _dirty = true; }
+
+    protected:
+        friend class GenericVertexData;
+        friend class glGenericVertexData;
+        friend class d3dGenericVertexData;
+        U32 _index;
+        U32 _divisor;
+        U32 _parentBuffer;
+        U32 _componentsPerElement;
+        U32 _elementCountOffset;
+        bool _wasSet;
+        bool _dirty;
+        bool _normalized;
+        size_t _stride;
+        GFXDataFormat _type;
+    };
+
     GenericVertexData(bool persistentMapped) : FrameListener(), _persistentMapped(persistentMapped)
     {
         REGISTER_FRAME_LISTENER(this, 4);
@@ -41,6 +83,8 @@ public:
 
     virtual ~GenericVertexData()
     {
+        _attributeMapDraw.clear();
+        _attributeMapFdbk.clear();
     }
 
     virtual void Create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
@@ -52,19 +96,25 @@ public:
     virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
     virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool steam) = 0;
 
-    virtual void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
-    virtual void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
-    
+    virtual void BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount) = 0;
+
     virtual U32  GetFeedbackPrimitiveCount(U8 queryID) = 0;
     /// Just before we render the frame
     virtual bool frameStarted(const FrameEvent& evt) { return true; }
 
     inline void toggleDoubleBufferedQueries(const bool state) { _doubleBufferedQuery = state; }
 
+    inline AttributeDescriptor& getDrawAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapDraw[attribIndex]; desc._index = attribIndex; return desc; }
+    inline AttributeDescriptor& getFdbkAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapFdbk[attribIndex]; desc._index = attribIndex; return desc; }
+
 protected:
+    typedef Unordered_map<U32, AttributeDescriptor > attributeMap;
     bool _persistentMapped;
     bool _doubleBufferedQuery;
     vectorImpl<U32 > _feedbackBuffers;
     vectorImpl<U32 > _bufferObjects;
+    attributeMap _attributeMapDraw;
+    attributeMap _attributeMapFdbk;
 };
+
 #endif

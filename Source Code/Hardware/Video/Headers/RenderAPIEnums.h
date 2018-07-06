@@ -44,7 +44,9 @@ namespace Divide {
     enum {
         SHADER_BUFFER_LIGHT_NORMAL = 0,
         SHADER_BUFFER_LIGHT_SHADOW = 1,
-        SHADER_BUFFER_CAM_MATRICES = 2,
+        SHADER_BUFFER_LIGHT_COLOR  = 2,
+        SHADER_BUFFER_LIGHT_PER_NODE = 3,
+        SHADER_BUFFER_CAM_MATRICES = 4,
     };
 };
 

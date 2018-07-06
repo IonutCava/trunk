@@ -124,7 +124,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) {
     GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
     SET_DEFAULT_STATE_BLOCK();
-    LightManager::LightMap& lights = LightManager::getInstance().getLights();
+    Light::LightMap& lights = LightManager::getInstance().getLights();
     if(lights.size() != _cachedLightCount){
         _cachedLightCount = (U16)lights.size();
         _lightTexture->Create(2,_cachedLightCount);

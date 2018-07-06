@@ -46,10 +46,10 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
     if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) return 0;
     gl->width = width;
     gl->height = width;
-    glBindTexture(GL_TEXTURE_2D, gl->tex);
+    GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GL_API::unbindTexture(0, GL_TEXTURE_2D);
     return 1;
 }
 
@@ -60,13 +60,13 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
     int h = rect[3] - rect[1];
 
     if (gl->tex == 0) return;
-    glBindTexture(GL_TEXTURE_2D, gl->tex);
+    GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, gl->width);
     glPixelStorei(GL_UNPACK_SKIP_PIXELS, rect[0]);
     glPixelStorei(GL_UNPACK_SKIP_ROWS, rect[1]);
     glTexSubImage2D(GL_TEXTURE_2D, 0, rect[0], rect[1], w, h, GL_RED, GL_UNSIGNED_BYTE, data);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GL_API::unbindTexture(0, GL_TEXTURE_2D);
 }
 
 static void glfons__renderDraw(void* userPtr, const float* verts, const float* tcoords, const unsigned char* colors, int nverts)
@@ -74,7 +74,7 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex == 0) return;
 
-    GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D, 0);
+    GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
     GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
     GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
@@ -91,8 +91,6 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char *)nullptr + (2 * vertDataSize));
 
     glDrawArrays(GL_TRIANGLES, 0, nverts);
-
-    GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 static void glfons__renderDelete(void* userPtr)

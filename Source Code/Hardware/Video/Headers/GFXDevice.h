@@ -187,7 +187,7 @@ public:
     /// 2D rendering enabled
     inline bool is2DRendering()                  const { return _2DRendering; }
     ///Save a screenshot in TGA format
-    inline void Screenshot(char *filename, const vec4<F32>& rect){_api.Screenshot(filename,rect);}
+    void Screenshot(char *filename);
     /// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
     inline bool excludeFromStateChange(const SceneNodeType& currentType) {
         return (_stateExclusionMask & currentType) == currentType ? true : false;
@@ -259,6 +259,7 @@ public:
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     void ConstructHIZ();
+    void DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges);
 
 protected:
     typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
@@ -319,6 +320,7 @@ protected:
     Renderer* _renderer;
     /* Rendering buffers*/
     FrameBuffer* _renderTarget[RenderTarget_PLACEHOLDER];
+    FrameBuffer* _depthRanges;
     /*State management */
     typedef Unordered_map<I64, RenderStateBlock* > RenderStateMap;
     RenderStateMap _stateBlockMap;
@@ -356,6 +358,7 @@ protected:
     ///shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
     static ShaderProgram* _HIZConstructProgram;
+    static ShaderProgram* _depthRangesConstrucProgram;
     bool    _previewDepthBuffer;
     ///getMatrix cache
     mat4<F32> _mat4Cache;

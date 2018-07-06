@@ -66,6 +66,9 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     _terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), _chunkSize, _groundVB, this, sgn);
 
     _drawShader = getMaterial()->getShaderProgram();
+    _drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
+    _drawShader->Uniform("bbox_min", _boundingBox.getMin());
+    _drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
     _drawShader->UniformTexture("texWaterCaustics", 0);
     _drawShader->UniformTexture("texUnderwaterAlbedo", 1);
     _drawShader->UniformTexture("texUnderwaterDetail", 2);
@@ -139,14 +142,7 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
 
     _drawShader = getMaterial()->getShaderProgram();
     _drawShader->ApplyMaterial(getMaterial());
-    _drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
-    _drawShader->Uniform("bbox_min", _boundingBox.getMin());
-    _drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
     _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
-    _drawShader->Uniform("dvd_lightIndex", lightMgr.getLightIndicesForCurrentNode());
-    _drawShader->Uniform("dvd_lightType", lightMgr.getLightTypesForCurrentNode());
-    _drawShader->Uniform("dvd_lightCount", lightMgr.getLightCountForCurrentNode());
-    _drawShader->Uniform("dvd_lightCastsShadows", lightMgr.getShadowCastingLightsForCurrentNode());
 
     _groundVB->setShaderProgram(_drawShader);
     _plane->setCustomShader(_drawShader);
@@ -172,7 +168,8 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     // draw ground
     _terrainQuadtree->CreateDrawCommands(sceneRenderState);
 
-    _groundVB->SetActive();
+    if(!_groundVB->SetActive())
+        return;
 
     if (!_drawCommands[0].empty()){
         _groundVB->currentShader()->SetLOD(0);

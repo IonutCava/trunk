@@ -54,16 +54,6 @@ namespace Config
     const unsigned int MAX_INSTANCE_COUNT = 512;
     /// How many clip planes should the shaders us
     const unsigned int MAX_CLIP_PLANES = 6;
-    /// How many lights should affect a single node
-    const unsigned int MAX_LIGHTS_PER_SCENE_NODE = 4;
-    /// How many lights total to use in the application (8 should be enough)
-    const unsigned int MAX_LIGHTS_PER_SCENE = 8;
-    /// How many lights (in order as passed to the shader for the node) should cast shadows
-    const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
-    /// Used for CSM or PSSM to determine the maximum number of frustum splits
-    const unsigned int MAX_SPLITS_PER_LIGHT = 4;
-    /// How many "units" away should a directional light source be from the camera's position
-    const unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
     /// Generic index value used to separate primitives within the same vertex buffer
     const unsigned int PRIMITIVE_RESTART_INDEX_L = (unsigned int)(1 << 31);
     const unsigned int PRIMITIVE_RESTART_INDEX_S = (unsigned int)(1 << 15);
@@ -85,6 +75,34 @@ namespace Config
     const bool USE_SHADER_BINARY = true;
     /// Use HW AA'ed lines
     const bool USE_HARDWARE_AA_LINES = true;
+    /// Multi-draw causes some problems with profiling software (e.g. GPUPerfStudio2)
+    const bool BATCH_DRAW_COMMANDS = true;
+    namespace Lighting {
+        /// How many lights should affect a single node
+        const unsigned int MAX_LIGHTS_PER_SCENE_NODE = 4;
+        /// How many lights total to use in the application (8 should be enough)
+        const unsigned int MAX_LIGHTS_PER_SCENE = 8;
+        /// How many lights (in order as passed to the shader for the node) should cast shadows
+        const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
+        /// Used for CSM or PSSM to determine the maximum number of frustum splits
+        const unsigned int MAX_SPLITS_PER_LIGHT = 4;
+        /// How many "units" away should a directional light source be from the camera's position
+        const unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
+        // Note: since each uniform buffer may at most be 64kb, care must be taken that the grid resolution doesnt exceed this
+        //       e.g. 1920x1200 wont do with 16x16.
+        const unsigned int LIGHT_GRID_TILE_DIM_X = 64;
+        const unsigned int LIGHT_GRID_TILE_DIM_Y = 64;
+        // used for clustered forward
+        const unsigned int LIGHT_GRID_MAX_DIM_Z = 256;
+
+        // Max screen size of 1920x1080
+        const unsigned int LIGHT_GRID_MAX_DIM_X = ((1920 + LIGHT_GRID_TILE_DIM_X - 1) / LIGHT_GRID_TILE_DIM_X);
+        const unsigned int LIGHT_GRID_MAX_DIM_Y = ((1080 + LIGHT_GRID_TILE_DIM_Y - 1) / LIGHT_GRID_TILE_DIM_Y);
+
+        // the maximum number if lights supported, this is limited by constant buffer size, commonly
+        // this is 64kb, but AMD only seem to allow 2048 lights...
+        const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
+    };
 }
 
 /// if this is 0, a variable timestep will be used for the game loop

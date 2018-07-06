@@ -61,9 +61,8 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     _cameraMgr = New CameraManager(this);               //Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::update, 
-                                                       DELEGATE_REF(LightManager::getInstance()),
-                                                       true));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange,
+                                                       DELEGATE_REF(LightManager::getInstance())));
     //We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
     //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
@@ -305,7 +304,6 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
 
     //perform time-sensitive shader tasks
     ShaderManager::getInstance().update(_currentTimeDelta);
-    LightManager::getInstance().update();
 
     frameMgr.createEvent(_currentTime, FRAME_PRERENDER_END, evt);
     if (!frameMgr.frameEvent(evt)) return false;
@@ -349,6 +347,8 @@ void Kernel::firstLoop(){
 #if defined(_DEBUG) || defined(_PROFILE)
     ApplicationTimer::getInstance().benchmark(true);
 #endif
+    SceneManager::getInstance().initPostLoadState();
+
     _currentTime = _nextGameTick = GETUSTIME();
 }
 

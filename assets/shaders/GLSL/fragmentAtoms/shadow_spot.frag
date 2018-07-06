@@ -21,7 +21,7 @@ float filterFinalShadow(in sampler2DShadow depthMap, in vec3 vPosInDM){
     return fShadow;
 }
 
-float applyShadowSpot(const in int lightIndex, const in Shadow currentShadowSource) {
+float applyShadowSpot(const in uint lightIndex, const in Shadow currentShadowSource) {
     vec4 shadow_coord = currentShadowSource._lightVP0 * _vertexW;
     shadow_coord =  1.0 + shadow_coord * 0.5;
     shadow_coord.xy = shadow_coord.xy / shadow_coord.w;

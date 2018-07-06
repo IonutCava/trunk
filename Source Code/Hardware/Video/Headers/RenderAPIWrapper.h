@@ -150,7 +150,6 @@ protected:
     virtual IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) = 0;
     /*Immediate Mode Emmlation*/
 
-    virtual void Screenshot(char *filename, const vec4<F32>& rect) = 0;
     virtual ~RenderAPIWrapper(){};
 
     virtual U64 getFrameDurationGPU() const = 0;

@@ -1,7 +1,5 @@
-//-- Geometry
-//#include "inOut.geom"
-
 -- Vertex
+
 #include "vbInputData.vert"
 #include "lightingDefaults.vert"
 
@@ -26,7 +24,6 @@ void main(void){
 #define SKIP_TEXTURES
 
 #include "phong_lighting.frag"
-#include "lightingDefaults.frag"
 
 out vec4 _colorOut;
 
@@ -41,7 +38,6 @@ void main (void){
 -- Fragment.Texture
 
 #include "phong_lighting.frag"
-#include "lightingDefaults.frag"
 out vec4 _colorOut;
 
 void main (void){
@@ -56,7 +52,6 @@ void main (void){
 
 #include "phong_lighting.frag"
 #include "bumpMapping.frag"
-#include "lightingDefaults.frag"
 
 out vec4 _colorOut;
 

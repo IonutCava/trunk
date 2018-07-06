@@ -10,7 +10,7 @@
 
 SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_Single)
 {
-    PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "Single Shadow Map");
+    PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
     ResourceDescriptor shadowPreviewShader("fbPreview");
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
@@ -44,7 +44,7 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor){
     if (resolutionTemp != _resolution){
         _resolution = resolutionTemp;
         //Initialize the FB's with a variable resolution
-        PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getId());
+        PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getGUID());
         _depthMap->Create(_resolution, _resolution);
     }
     ShadowMap::resolution(resolution, resolutionFactor);
@@ -53,7 +53,7 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor){
 void SingleShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     ///Only if we have a valid callback;
     if(sceneRenderFunction.empty()) {
-        ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
+        ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
         return;
     }
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
@@ -63,7 +63,7 @@ void SingleShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& 
 
 void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction) {
     _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getDirection());
-    _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS) * 0.5f));
+    _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
     _shadowCamera->renderLookAt();
 
     _depthMap->Begin(FrameBuffer::defaultPolicy());

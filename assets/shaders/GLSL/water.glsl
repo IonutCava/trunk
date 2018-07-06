@@ -9,10 +9,10 @@ out vec4 _vertexWVP;
 
 void main(void)
 {
-	computeData();
+    computeData();
 
-  	_pixToLight = -(dvd_LightSource[dvd_lightIndex[0]]._position.xyz);
-	_pixToEye = -vec3(dvd_ViewMatrix * _vertexW);
+    _pixToLight = -(dvd_LightSourcePhysical[dvd_perNodeLightData[0].x]._position.xyz);
+    _pixToEye = -vec3(dvd_ViewMatrix * _vertexW);
 
     _vertexWVP = dvd_ViewProjectionMatrix * _vertexW;
     _normalWV = normalize(dvd_NormalMatrix * dvd_Normal);
@@ -23,9 +23,7 @@ void main(void)
 
 -- Fragment
 
-in vec4 _vertexW;
 in vec4 _vertexWVP;
-in vec2 _texCoord;
 
 in vec3 _pixToLight;
 in vec3 _pixToEye;
@@ -47,7 +45,7 @@ uniform mat4  material;
 uniform float dvd_time;
 uniform mat3  dvd_NormalMatrix;
 uniform ivec2 screenDimension;
-
+uniform ivec2 invScreenDimension;
 #include "lightInput.cmn"
 #include "lightingDefaults.frag"
 #include "shadowMapping.frag"
@@ -88,7 +86,7 @@ void main (void)
     // add Diffuse
     _colorOut.rgb = mix(texture(texWaterRefraction, uvFinalRefract), texture(texWaterReflection, uvFinalReflect), Fresnel(V, normalize(_normalWV))).rgb;
     // add Specular
-    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[dvd_lightIndex[0]]._specular.rgb * material[2].rgb * iSpecular, vec3(0.0), vec3(1.0));
+    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSourceVisual[dvd_perNodeLightData[0].x]._specular.rgb * material[2].rgb * iSpecular, vec3(0.0), vec3(1.0));
     // shadow mapping
     if (!underwater){
         float shadow = applyShadowDirectional(0, dvd_ShadowSource[0]);

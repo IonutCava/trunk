@@ -1,3 +1,6 @@
+in vec2 _texCoord;
+in vec4 _vertexW;
+
 uniform bool  dvd_enableFog = true;
 uniform float fogDensity;
 uniform vec3  fogColor;

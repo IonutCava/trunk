@@ -133,6 +133,9 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     if( !glfwInit() )	return GLFW_INIT_ERROR;
 
 #if defined(_DEBUG) || defined(_PROFILE)
+#if defined(_DEBUG)
+    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);
+#endif
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 #endif
     
@@ -332,12 +335,6 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         _activeClipPlanes[index] = false;
     }
 
-    if (textureBoundMap.empty()){
-        for (U8 i = 0; i < 31; i++){
-            //Set all 16 texture slots to 0
-            textureBoundMap[i] = std::make_pair(i, GL_NONE);
-        }
-    }
     //That's it. Everything should be ready for draw calls
     PRINT_FN(Locale::get("START_OGL_API_OK"));
 
@@ -430,17 +427,19 @@ bool GL_API::initShaders(){
 
     glswAddDirectiveToken("", std::string("#define MAX_INSTANCES " + Util::toString(Config::MAX_INSTANCE_COUNT)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES)).c_str());
-    glswAddDirectiveToken("", std::string("#define MAX_LIGHTS_PER_NODE " + Util::toString(Config::MAX_LIGHTS_PER_SCENE_NODE)).c_str());
-    glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
-    glswAddDirectiveToken("", std::string("#define MAX_SPLITS_PER_LIGHT " + Util::toString(Config::MAX_SPLITS_PER_LIGHT)).c_str());
-    glswAddDirectiveToken("", std::string("const int MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::MAX_LIGHTS_PER_SCENE) + ";").c_str());
+    glswAddDirectiveToken("", std::string("#define MAX_LIGHTS_PER_NODE " + Util::toString(Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE)).c_str());
+    glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
+    glswAddDirectiveToken("", std::string("#define MAX_SPLITS_PER_LIGHT " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT)).c_str());
+    glswAddDirectiveToken("", std::string("const uint MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(Divide::SHADER_BUFFER_LIGHT_NORMAL)).c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_CAM_MATRICES " + Util::toString(Divide::SHADER_BUFFER_CAM_MATRICES)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_PER_NODE " + Util::toString(Divide::SHADER_BUFFER_LIGHT_PER_NODE)).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.1;");
     glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
     glswAddDirectiveToken("", "//__CUSTOM_UNIFORMS__");
     glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_COLOR " + Util::toString(Divide::SHADER_BUFFER_LIGHT_COLOR)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(Material::TEXTURE_UNIT0 + 0)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(Material::TEXTURE_UNIT0 + 1)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT2 " + Util::toString(Material::TEXTURE_UNIT0 + 2)).c_str());
@@ -448,7 +447,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(Material::TEXTURE_OPACITY)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(Material::TEXTURE_SPECULAR)).c_str());
 
-    glswAddDirectiveToken("Fragment", "const int DEPTH_EXP_WARP = 32;");
+    glswAddDirectiveToken("Fragment", "const uint DEPTH_EXP_WARP = 32;");
     
     // GLSL <-> VBO intercommunication 
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION) + ") in vec3  inVertexData;").c_str());

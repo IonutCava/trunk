@@ -13,8 +13,8 @@ void NetworkScene::preRender(){
                                                       0.25f + cosf(_sunAngle.y) * 0.75f);
 
     light->setDirection(_sunvector);
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vSunColor);
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vSunColor);
+    light->setDiffuseColor(vSunColor);
+    light->setSpecularColor(vSunColor);
 
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }

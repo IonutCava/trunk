@@ -48,6 +48,7 @@ bool Sky::load() {
                                        location+"skybox_3.jpg "+ location+"skybox_4.jpg");
     skyboxTextures.setEnumValue(TEXTURE_CUBE_MAP);
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
+    skyboxTextures.setThreadedLoading(false);
     _skybox =  CreateResource<Texture>(skyboxTextures);
 
     ResourceDescriptor skybox("SkyBox");

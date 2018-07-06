@@ -50,8 +50,8 @@ void glPixelBuffer::Destroy() {
 
 GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
     assert(nFace<6);
-    glBindTexture(_textureType, _textureId);
 
+    GL_API::bindTexture(0, _textureId, _textureType);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch(_pbtype){
         case PB_TEXTURE_1D:
@@ -85,11 +85,11 @@ void glPixelBuffer::End(GLubyte nFace) const {
     assert(nFace<6);
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release the mapped buffer
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    glBindTexture(_textureType, 0);
+    GL_API::unbindTexture(0, _textureType);
 }
 
 void glPixelBuffer::Bind(GLubyte unit) const {
-    GL_API::bindTexture(unit, _textureId, _textureType, 0);
+    GL_API::bindTexture(unit, _textureId, _textureType);
 }
 
 bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXImageFormat internalFormatEnum, GFXImageFormat formatEnum,GFXDataFormat dataTypeEnum) {
@@ -112,7 +112,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
 
     glGenTextures(1, &_textureId);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glBindTexture(_textureType, _textureId);
+    GL_API::bindTexture(0, _textureId, _textureType);
     glTexParameteri(_textureType, GL_GENERATE_MIPMAP, GL_FALSE);
     glTexParameteri(_textureType,GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(_textureType,GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -157,14 +157,13 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, size * sizeOf(_dataType), 0, GL_STREAM_DRAW);
 
-    glBindTexture(_textureType, 0);
+    GL_API::unbindTexture(0, _textureType);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     return true;
 }
 
 void glPixelBuffer::updatePixels(const GLfloat * const pixels) {
-    glBindTexture(_textureType, _textureId);
-
+    GL_API::bindTexture(0, _textureId, _textureType);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch(_pbtype){
         case PB_TEXTURE_1D:

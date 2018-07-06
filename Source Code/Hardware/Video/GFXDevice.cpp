@@ -8,6 +8,7 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Utility/Headers/ImageTools.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
@@ -31,6 +32,7 @@ extern "C" {
 
 ShaderProgram* GFXDevice::_activeShaderProgram = nullptr;
 ShaderProgram* GFXDevice::_HIZConstructProgram = nullptr;
+ShaderProgram* GFXDevice::_depthRangesConstrucProgram = nullptr;
 
 GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
                          _postFX(PostFX::getOrCreateInstance()),
@@ -79,6 +81,8 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
 
    for (FrameBuffer*& renderTarget : _renderTarget)
        renderTarget = nullptr;
+
+   _depthRanges = nullptr;
 
    RenderPass* diffusePass = New RenderPass("diffusePass");
    RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
@@ -131,6 +135,21 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         //Screen FB should use MSAA if available, else fallback to normal color FB (no AA or FXAA)
         _renderTarget[RENDER_TARGET_SCREEN] = newFB(true);
         _renderTarget[RENDER_TARGET_DEPTH]  = newFB(false);
+        _depthRanges = newFB(false);
+
+        SamplerDescriptor depthRangesSampler;
+        TextureDescriptor depthRangesDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32);
+        depthRangesSampler.setFilters(TEXTURE_FILTER_NEAREST);
+        depthRangesSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+        depthRangesSampler.toggleMipMaps(false);
+        depthRangesDescriptor.setSampler(depthRangesSampler);
+        _depthRanges->AddAttachment(depthRangesDescriptor, TextureDescriptor::Color0);
+        _depthRanges->toggleDepthBuffer(false);
+        _depthRanges->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
+
+        vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
+        vec2<U16> resTemp(resolution + tileSize);
+        _depthRanges->Create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
 
         SamplerDescriptor screenSampler;
         TextureDescriptor screenDescriptor(TEXTURE_2D_MS, RGBA16F, FLOAT_16);
@@ -174,6 +193,7 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
             _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width, resolution.height);
         }
 
+
         _postFX.init(resolution);
         add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
         _kernel->getCameraMgr().addCameraUpdateListener(DELEGATE_BIND(&ShaderManager::updateCamera, DELEGATE_REF(_shaderManager)));
@@ -181,6 +201,11 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
         _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
         _HIZConstructProgram->UniformTexture("LastMip", 0);
+
+        ResourceDescriptor rangesDesc("DepthRangesConstruct");
+        rangesDesc.setPropertyList("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," + "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
+        _depthRangesConstrucProgram = CreateResource<ShaderProgram>(rangesDesc);
+        _depthRangesConstrucProgram->UniformTexture("depthTex", 0);
     }
 
     return hardwareState;
@@ -203,10 +228,13 @@ void GFXDevice::closeRenderingApi(){
     for (FrameBuffer*& renderTarget : _renderTarget)
         SAFE_DELETE(renderTarget);
 
+    SAFE_DELETE(_depthRanges);
     SAFE_DELETE(_matricesBuffer);
 }
 
 void GFXDevice::closeRenderer(){
+    RemoveResource(_HIZConstructProgram);
+    RemoveResource(_depthRangesConstrucProgram);
     PRINT_FN(Locale::get("STOP_POST_FX"));
     _postFX.destroyInstance();
     _shaderManager.Destroy();
@@ -631,4 +659,28 @@ void GFXDevice::ConstructHIZ() {
     setViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
     
     SET_DEFAULT_STATE_BLOCK(true);
+}
+
+
+void GFXDevice::DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges){
+
+    _depthRanges->Begin(FrameBuffer::defaultPolicy());
+    _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
+    SET_STATE_BLOCK(*_defaultStateNoDepth, true);
+    _depthRangesConstrucProgram->bind();
+    drawPoints(1);
+    depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());
+    _depthRanges->ReadData(RG, FLOAT_32, &depthRanges[0]);
+    _depthRanges->End();
+}
+
+void GFXDevice::Screenshot(char* filename){
+    const vec2<U16>& resolution = _renderTarget[RENDER_TARGET_SCREEN]->getResolution();
+    // allocate memory for the pixels
+    U8 *imageData = New U8[resolution.width * resolution.height * 4];
+    // read the pixels from the frame 
+    _renderTarget[RENDER_TARGET_SCREEN]->ReadData(RGBA, UNSIGNED_BYTE, imageData);
+    //save to file
+    ImageTools::SaveSeries(filename, vec2<U16>(resolution.width, resolution.height), 32, imageData);
+    SAFE_DELETE_ARRAY(imageData);
 }

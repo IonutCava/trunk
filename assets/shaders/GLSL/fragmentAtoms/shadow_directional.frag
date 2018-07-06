@@ -23,7 +23,11 @@ float chebyshevUpperBound(vec2 moments, float compare, float minVariance) {
     return min(max(p, pMax), 1.0);
 }
 
-float applyShadowDirectional(const in int lightIndex, const in Shadow currentShadowSource) {
+bool inRange(const in float value){
+    return value >= 0.0 && value <= 1.0;
+}
+
+float applyShadowDirectional(const in uint lightIndex, const in Shadow currentShadowSource) {
     // find the appropriate depth map to look up in based on the depth of this fragment
     if (gl_FragCoord.z < currentShadowSource._floatValues.x)      {
         _shadowTempInt = 0;
@@ -55,7 +59,7 @@ float applyShadowDirectional(const in int lightIndex, const in Shadow currentSha
         default: return 1.0;
     };
     
-    if (shadow_coord.z > 0.0){
+    if (inRange(shadow_coord.z) && inRange(shadow_coord.x) && inRange(shadow_coord.y)){
         shadow_coord.w = shadow_coord.z;
         shadow_coord.z = _shadowTempInt;
 
@@ -68,8 +72,3 @@ float applyShadowDirectional(const in int lightIndex, const in Shadow currentSha
 
     return 1.0;
 }
-
-
-
-
-

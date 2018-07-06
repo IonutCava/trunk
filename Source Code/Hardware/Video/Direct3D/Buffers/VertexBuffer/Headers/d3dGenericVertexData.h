@@ -47,19 +47,15 @@ public:
     void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false)
     {
     }
+    void BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount)
+    {
+    }
     void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool steam)
-    {
-    }
-    void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type)
-    {
-    }
-    void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type)
     {
     }
     void SetFeedbackBuffer(U32 buffer, U32 bindPoint)
     {
     }
-
     U32  GetFeedbackPrimitiveCount(U8 queryID)
     {
         return 0;

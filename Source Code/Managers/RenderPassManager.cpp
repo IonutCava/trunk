@@ -2,11 +2,6 @@
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
-struct RenderPassCallOrder{
-    bool operator()(const RenderPassItem& a, const RenderPassItem& b) const {
-        return a._sortKey < b._sortKey;
-    }
-};
 
 RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPassesResetQueued(false)
 {
@@ -42,7 +37,7 @@ void RenderPassManager::render(const SceneRenderState& sceneRenderState, SceneGr
 void RenderPassManager::addRenderPass(RenderPass* const renderPass, U8 orderKey) {
     assert(renderPass != nullptr);
     _renderPasses.push_back(RenderPassItem(orderKey,renderPass));
-    std::sort(_renderPasses.begin(), _renderPasses.end(), RenderPassCallOrder());
+    std::sort(_renderPasses.begin(), _renderPasses.end(), [](const RenderPassItem& a, const RenderPassItem& b) -> bool { return a._sortKey < b._sortKey; });
 }
 
 void RenderPassManager::removeRenderPass(RenderPass* const renderPass,bool deleteRP) {

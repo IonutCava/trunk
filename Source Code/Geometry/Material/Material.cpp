@@ -5,6 +5,9 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
+bool Material::_shaderQueueLocked = false;
+bool Material::_serializeShaderLoad = false;
+
 Material::Material() : Resource("temp_material"),
                        _dirty(false),
                        _doubleSided(false),
@@ -166,11 +169,10 @@ void Material::clean() {
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
 bool Material::computeShader(bool force, const RenderStage& renderStage){
-    bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD;
-    bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
-    //bool forwardPassShader = !deferredPassShader && !depthPassShader;
-
     if (force || ((_shaderInfo[renderStage]._shader.empty() || (renderStage == FINAL_STAGE && !_computedShaderTextures)) || !_shaderInfo[renderStage]._computedShader)) {
+        bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD;
+        bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
+
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
   
@@ -182,18 +184,22 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
             if (_textures[TEXTURE_NORMALMAP] && _bumpMethod != BUMP_NONE){
                 addShaderDefines(renderStage, "COMPUTE_TBN");
                 shader += ".Bump"; //Normal Mapping
-                if (_bumpMethod == 2){ //Parallax Mapping
+                if (_bumpMethod == BUMP_PARALLAX){
                     shader += ".Parallax";
                     addShaderDefines(renderStage, "USE_PARALLAX_MAPPING");
-                }else if (_bumpMethod == 3){ //Relief Mapping
+                }else if (_bumpMethod == BUMP_RELIEF){
                     shader += ".Relief";
                     addShaderDefines(renderStage, "USE_RELIEF_MAPPING");
                 }
-            }
-            else{
+            }else{
                 // Or simple texture mapping?
                 shader += ".Texture";
             }
+        }
+
+        if (_textures[TEXTURE_SPECULAR]){
+            shader += ".Specular";
+            addShaderDefines(renderStage, "USE_SPECULAR_MAP");
         }
 
         if (isTranslucent()){
@@ -217,11 +223,6 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
             }
         }
 
-        if (_textures[TEXTURE_SPECULAR]){
-            shader += ".Specular";
-            addShaderDefines(renderStage, "USE_SPECULAR_MAP");
-        }
-
         //Add the GPU skinning module to the vertex shader?
         if (_hardwareSkinning){
             addShaderDefines(renderStage, "USE_GPU_SKINNING");
@@ -243,8 +244,10 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
 }
 
 void Material::computeShaderInternal(){
-    if (_shaderComputeQueue.empty())
+    if (_shaderComputeQueue.empty()/* || Material::isShaderQueueLocked()*/)
         return;
+
+    //Material::lockShaderQueue();
 
     std::pair<RenderStage, ResourceDescriptor> currentItem = _shaderComputeQueue.front();
 
@@ -258,22 +261,6 @@ void Material::computeShaderInternal(){
 ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
     ShaderProgram* shaderPtr = _shaderInfo[renderStage]._shaderRef;
     return shaderPtr == nullptr ? ShaderManager::getInstance().getDefaultShader() : shaderPtr;
-}
-
-void Material::setBumpMethod(U32 newBumpMethod,bool force){
-    if(newBumpMethod == 0){
-        _bumpMethod = BUMP_NONE;
-    }else if(newBumpMethod == 1){
-        _bumpMethod = BUMP_NORMAL;
-    }else if(newBumpMethod == 2){
-        _bumpMethod = BUMP_PARALLAX;
-    }else{
-        _bumpMethod = BUMP_RELIEF;
-    }
-    if(force){
-        _shaderInfo[FINAL_STAGE]._shader.clear();
-        computeShader(true);
-    }
 }
 
 void Material::setBumpMethod(const BumpMethod& newBumpMethod,const bool force){
@@ -294,17 +281,19 @@ bool Material::unload(){
     return true;
 }
 
-void Material::setDoubleSided(bool state) {
-    if(_doubleSided == state)
+void Material::setDoubleSided(bool state, const bool useAlphaTest) {
+    if(_doubleSided == state && _useAlphaTest == useAlphaTest)
         return;
     
     _doubleSided = state;
+    _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if(_doubleSided){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
         FOR_EACH(stateValue& it, _defaultRenderStates){
             RenderStateBlockDescriptor descriptor(it.second->getDescriptor());
             if (it.first != SHADOW_STAGE) descriptor.setCullMode(CULL_MODE_NONE);
+            if (!_useAlphaTest) descriptor.setBlend(true);
             setRenderStateBlock(descriptor, it.first);
         }
     }
@@ -315,40 +304,35 @@ void Material::setDoubleSided(bool state) {
 bool Material::isTranslucent(U8 index) {
     if (!_translucencyCheck){
         _translucencySource.clear();
+        bool useAlphaTest = false;
         // In order of importance (less to more)!
         // diffuse channel alpha
         if(_materialMatrix[index].getCol(1).a < 0.95f) {
             _translucencySource.push_back(TRANSLUCENT_DIFFUSE);
-            _useAlphaTest = (getOpacityValue() < 0.15f);
+            useAlphaTest = (getOpacityValue() < 0.15f);
         }
 
         // base texture is translucent
         if (_textures[TEXTURE_UNIT0] && _textures[TEXTURE_UNIT0]->hasTransparency()){
             _translucencySource.push_back(TRANSLUCENT_DIFFUSE_MAP);
-            _useAlphaTest = true;
+            useAlphaTest = true;
         }
 
         // opacity map
         if(_textures[TEXTURE_OPACITY]){
             _translucencySource.push_back(TRANSLUCENT_OPACITY_MAP);
-            _useAlphaTest = false;
+            useAlphaTest = false;
         }
 
         // if we have a global opacity value
         if(getOpacityValue() < 0.95f){
             _translucencySource.push_back(TRANSLUCENT_OPACITY);
-            _useAlphaTest = (getOpacityValue() < 0.15f);
+            useAlphaTest = (getOpacityValue() < 0.15f);
         }
 
         // Disable culling for translucent items
         if (!_translucencySource.empty()){
-            typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
-            FOR_EACH(stateValue& it, _defaultRenderStates){
-                RenderStateBlockDescriptor descriptor(it.second->getDescriptor());
-                if (it.first != SHADOW_STAGE) descriptor.setCullMode(CULL_MODE_NONE);
-                if (!_useAlphaTest) descriptor.setBlend(true);
-                setRenderStateBlock(descriptor, it.first);
-            }
+            setDoubleSided(true, useAlphaTest);
         }
         _translucencyCheck = true;
         _computedShaderTextures = false;
@@ -359,12 +343,7 @@ bool Material::isTranslucent(U8 index) {
 
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     Unordered_map<RenderStage, ShaderInfo >::const_iterator it = _shaderInfo.find(FINAL_STAGE);
-    if (it != _shaderInfo.end()){
-        ShaderProgram* shader = it->second._shaderRef;
-        shaderKey = shader ? shader->getId() : -1;
-    }else{
-        shaderKey = GFXDevice::SORT_NO_VALUE;
-    }
 
+    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() : GFXDevice::SORT_NO_VALUE;
     textureKey = _textures[TEXTURE_UNIT0] ? _textures[TEXTURE_UNIT0]->getHandle() : GFXDevice::SORT_NO_VALUE;
 }

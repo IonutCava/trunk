@@ -101,7 +101,7 @@ public:
     void setColorWrites( bool red, bool green, bool blue, bool alpha );
     
     inline U32 getHash() const { return _cachedHash; }
-    inline U32 getGUID() const { return getGUID(); }
+    inline I64 getGUID() const { return getGUID(); }
 
     bool operator == (RenderStateBlockDescriptor& RSBD) const {
         return getHash() == RSBD.getHash();

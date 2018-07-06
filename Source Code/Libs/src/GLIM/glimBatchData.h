@@ -139,6 +139,7 @@ namespace NS_GLIM
         // Queries the GL for the bind-point of a vertex-attribute. Returns -1 if the attribute is not used by the shader.
         int getVertexAttribBindPoint (unsigned int uiCurrentProgram, const char* szAttribName) const;
 
+        unsigned int m_VertexArrayObjectID;
         // GL attrib location of the vertex data in the shader program
         unsigned int m_VertAttribLocation;
         // GL ID of the vertex array.

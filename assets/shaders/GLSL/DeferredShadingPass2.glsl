@@ -44,7 +44,7 @@ void main( void )
    normal = normalize(normal);
    // Diffusive
 
-   for(int i=0; i<lightCount; i++){
+   for(uint i=0; i<lightCount; i++){
       light = texture( lightTexture,vec2(0.01,i*0.99/lightCount) ).xyz;
       lightDir = light - position.xyz ;
       float lightDistance = length(lightDir);

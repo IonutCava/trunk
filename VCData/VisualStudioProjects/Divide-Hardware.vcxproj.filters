@@ -707,4 +707,9 @@
       <Filter>shaders\GLSL</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\assets\shaders\GLSL\DepthRangesConstruct.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

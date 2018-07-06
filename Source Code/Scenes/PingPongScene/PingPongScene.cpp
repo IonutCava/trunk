@@ -266,7 +266,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     Light* light = CreateResource<Light>(tempLight);
     addLight(light, _sceneGraph->getRoot());
-    light->setLightProperties(LIGHT_PROPERTY_BRIGHTNESS, 30.0f);
+    light->setRange(30.0f);
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6, 2));
     */

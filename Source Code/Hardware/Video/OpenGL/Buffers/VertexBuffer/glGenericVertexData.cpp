@@ -115,6 +115,12 @@ bool glGenericVertexData::frameStarted(const FrameEvent& evt) {
     return GenericVertexData::frameStarted(evt);
 }
 
+void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount){
+    assert(isFeedbackBuffer(buffer));
+    GL_API::setActiveTransformFeedback(_transformFeedback);
+    glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, getBindPoint(_bufferObjects[buffer]), _bufferObjects[buffer], elementCountOffset * _elementSize[buffer], elementCount * _elementSize[buffer]);
+}
+
 void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 max, U32 instanceCount, U8 queryID, bool drawToBuffer) {
     if (instanceCount == 0) return;
 
@@ -122,8 +128,10 @@ void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 m
 
     GL_API::setActiveVAO(_vertexArray[feedbackActive ? GVD_USAGE_FDBCK : GVD_USAGE_DRAW]);
 
+    SetAttributes(feedbackActive);
+
     if (feedbackActive){
-       glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _transformFeedback);
+       GL_API::setActiveTransformFeedback(_transformFeedback);
        glBeginTransformFeedback(glPrimitiveTypeTable[type]);
        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][queryID]);
     } 
@@ -135,7 +143,6 @@ void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 m
     if (feedbackActive) {
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
         _resultAvailable[_currentWriteQuery][queryID] = true;
     }
 }
@@ -199,16 +206,29 @@ void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data,
     }
 }
 
-void glGenericVertexData::UpdateAttribute(U32 index, U32 buffer, U32 divisor, GLsizei size, GLboolean normalized, U32 stride, GLvoid* offset, GLenum type, bool feedbackAttrib) {
-    GVDUsage usage = feedbackAttrib ? GVD_USAGE_FDBCK : GVD_USAGE_DRAW;
-    GL_API::setActiveVAO(_vertexArray[usage]);
-    if (!_persistentMapped){
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
-    }
-    glEnableVertexAttribArray(index);
-    glVertexAttribPointer(index, size, type, normalized, stride, offset);
-    if (divisor > 0) glVertexAttribDivisor(index, divisor);
+void glGenericVertexData::SetAttributeInternal(AttributeDescriptor& descriptor){
+    assert(_elementSize[descriptor._parentBuffer] != 0);
+    if(!descriptor._dirty) return;
 
+    if(!descriptor._wasSet){
+        glEnableVertexAttribArray(descriptor._index);
+        descriptor._wasSet = true;
+    }
+    if (!_persistentMapped){
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[descriptor._parentBuffer]);
+    }
+    glVertexAttribPointer(descriptor._index, descriptor._componentsPerElement, glDataFormat[descriptor._type], descriptor._normalized ? GL_TRUE : GL_FALSE,
+                          (GLsizei)descriptor._stride, (GLvoid*)(descriptor._elementCountOffset * _elementSize[descriptor._parentBuffer]));
+    if (descriptor._divisor > 0) glVertexAttribDivisor(descriptor._index, descriptor._divisor);
+
+    descriptor._dirty = false;
+}
+
+void glGenericVertexData::SetAttributes(bool feedbackPass) {
+    attributeMap& map = feedbackPass ? _attributeMapFdbk : _attributeMapDraw;
+    FOR_EACH(attributeMap::value_type& it, map){
+        SetAttributeInternal(it.second);
+    }
 }
 
 U32 glGenericVertexData::GetFeedbackPrimitiveCount(U8 queryID) {

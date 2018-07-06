@@ -123,7 +123,7 @@ namespace NS_GLIM
         if (m_bCreatedVBOs)
         {
             m_bCreatedVBOs = false;
-
+            glDeleteVertexArrays(1, &m_VertexArrayObjectID);
             glDeleteBuffers (1, &m_uiVertexBufferID);
             glDeleteBuffers (1, &m_uiElementBufferID_Points);
             glDeleteBuffers (1, &m_uiElementBufferID_Lines);
@@ -373,11 +373,12 @@ namespace NS_GLIM
 
     void glimBatchData::UnbindOGL (void)
     {
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
+        GL_API::setActiveVAO(0);
+        /*GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
         GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         for (int i = 0; i < 16; ++i)
-            glDisableVertexAttribArray (i);
+            glDisableVertexAttribArray (i);*/
     }
 
     void glimBatchData::BindOGL (unsigned int uiCurrentProgram)
@@ -385,12 +386,7 @@ namespace NS_GLIM
         if (!m_bUploadedToGPU)
             return;
 
-        if (GLEW_NV_vertex_buffer_unified_memory)
-        {
-            //glDisableClientState (GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
-            //glDisableClientState (GL_ELEMENT_ARRAY_UNIFIED_NV);
-        }
-
+        GL_API::setActiveVAO(m_VertexArrayObjectID);
         GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
         std::map<std::string, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
@@ -452,19 +448,13 @@ namespace NS_GLIM
 
         m_bUploadedToGPU = true;
         
-
-        if (GLEW_NV_vertex_buffer_unified_memory)
-        {
-            //glDisableClientState (GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
-            //glDisableClientState (GL_ELEMENT_ARRAY_UNIFIED_NV);
-        }
-
         const unsigned int uiVertexDataSize = (unsigned int) getVertexDataSize ();
         const unsigned int uiVertices = (unsigned int) (m_PositionData.size ()) / 3;
 
         if (!m_bCreatedVBOs)
         {
             m_bCreatedVBOs = true;
+            glGenVertexArrays(1, &m_VertexArrayObjectID);
             glGenBuffers (1, &m_uiVertexBufferID);
             glGenBuffers (1, &m_uiElementBufferID_Points);
             glGenBuffers (1, &m_uiElementBufferID_Lines);

@@ -12,7 +12,10 @@ SceneManager::SceneManager() : FrameListener(),
                                _renderPassCuller(nullptr),
                                _renderPassManager(nullptr),
                                _defaultMaterial(nullptr),
+                               _loadPreRenderComplete(false),
+                               _processInput(false),
                                _init(false)
+
 {
     DVDConverter::createInstance();
     AIManager::createInstance();
@@ -78,6 +81,11 @@ bool SceneManager::unloadCurrentScene()  {
     return _activeScene->unload();
 }
 
+void SceneManager::initPostLoadState(){
+    Material::serializeShaderLoad(true);
+    _loadPreRenderComplete = _processInput = true;
+}
+
 bool SceneManager::deinitializeAI(bool continueOnErrors)  { 
     bool state = _activeScene->deinitializeAI(continueOnErrors);
     AIManager::getInstance().destroyInstance(); 
@@ -90,6 +98,8 @@ bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
 
 bool SceneManager::frameEnded(const FrameEvent& evt){
     _renderPassCuller->refresh();
+    if(_loadPreRenderComplete)
+        Material::unlockShaderQueue();
     return true;
 }
 
@@ -129,6 +139,8 @@ void SceneManager::postRender(){
 ///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const OIS::KeyEvent& key) {
+    if(!_processInput) return false;
+
     if(_GUI->keyCheck(key,true)){
         return _activeScene->onKeyDown(key);
     }
@@ -136,6 +148,8 @@ bool SceneManager::onKeyDown(const OIS::KeyEvent& key) {
 }
 
 bool SceneManager::onKeyUp(const OIS::KeyEvent& key) {
+    if(!_processInput) return false;
+    
     if(_GUI->keyCheck(key,false)){
         return _activeScene->onKeyUp(key);
     }
@@ -143,46 +157,64 @@ bool SceneManager::onKeyUp(const OIS::KeyEvent& key) {
 }
 
 bool SceneManager::onMouseMove(const OIS::MouseEvent& arg) {
+    if(!_processInput) return false;
+
     if(_GUI->checkItem(arg)){
         return _activeScene->onMouseMove(arg);
     }
     return true;
 }
 
-bool SceneManager::onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
+bool SceneManager::onMouseClickDown(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+    if(!_processInput) return false;
+
     if(_GUI->clickCheck(button,true)){
         return _activeScene->onMouseClickDown(arg,button);
     }
     return true;
 }
 
-bool SceneManager::onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
+bool SceneManager::onMouseClickUp(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+    if(!_processInput) return false;
+
     if(_GUI->clickCheck(button,false)){
         return _activeScene->onMouseClickUp(arg,button);
     }
     return true;
 }
 
-bool SceneManager::onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone) {
+bool SceneManager::onJoystickMoveAxis(const OIS::JoyStickEvent& arg, I8 axis, I32 deadZone) {
+    if(!_processInput) return false;
+
     return _activeScene->onJoystickMoveAxis(arg,axis,deadZone);
 }
 
-bool SceneManager::onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov){
+bool SceneManager::onJoystickMovePOV(const OIS::JoyStickEvent& arg, I8 pov){
+    if(!_processInput) return false;
+
     return _activeScene->onJoystickMovePOV(arg,pov);
 }
 
-bool SceneManager::onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button){
+bool SceneManager::onJoystickButtonDown(const OIS::JoyStickEvent& arg, I8 button){
+    if(!_processInput) return false;
+
     return _activeScene->onJoystickButtonDown(arg,button);
 }
 
 bool SceneManager::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
+    if(!_processInput) return false;
+
     return _activeScene->onJoystickButtonUp(arg,button);
 }
 
 bool SceneManager::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+    if(!_processInput) return false;
+
     return _activeScene->sliderMoved(arg,index);
 }
 
 bool SceneManager::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
+    if(!_processInput) return false;
+
     return _activeScene->vector3Moved(arg,index);
 }

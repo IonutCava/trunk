@@ -26,6 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Utility/Headers/GUIDWrapper.h"
 #include <boost/noncopyable.hpp>
 
+class ShaderProgram;
 class ShaderBuffer : private boost::noncopyable, public GUIDWrapper {
 public:
     ShaderBuffer(bool unbound) : GUIDWrapper(), _unbound(unbound)
@@ -39,9 +40,10 @@ public:
     ///Create a new buffer to hold our shader data
     virtual void Create(bool dynamic = true, bool stream = false) = 0;
     virtual void ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize) const = 0;
-    virtual void ChangeSubData(ptrdiff_t offset, ptrdiff_t size, const void *data) const = 0;
+    virtual void ChangeSubData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const = 0;
     virtual bool bindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const = 0;
     virtual bool bind(U32 bindIndex) const = 0;
+    virtual void printInfo(const ShaderProgram* shaderProgram, U32 bindIndex) = 0;
 
 protected:
     bool _unbound;

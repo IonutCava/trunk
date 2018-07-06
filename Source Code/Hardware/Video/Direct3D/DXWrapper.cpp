@@ -120,10 +120,6 @@ bool DX_API::deInitShaders()
     return true;
 }
 
-void DX_API::Screenshot(char *filename, const vec4<F32>& rect)
-{
-}
-
 void DX_API::loadInContextInternal()
 {
 }

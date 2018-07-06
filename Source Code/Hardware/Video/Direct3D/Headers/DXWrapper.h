@@ -95,8 +95,6 @@ protected:
     typedef void (*callback)();
     void dxCommand(callback f){(*f)();};
 
-    void Screenshot(char *filename, const vec4<F32>& rect);
-
     void loadInContextInternal();
 
     U64 getFrameDurationGPU() const { return 0; }

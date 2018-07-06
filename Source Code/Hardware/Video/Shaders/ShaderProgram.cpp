@@ -38,6 +38,7 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _extendedMatrixEntry[WV_INV_MATRIX] = -1;
     _extendedMatrixEntry[WVP_MATRIX]    = -1;
     _extendedMatrixEntry[NORMAL_MATRIX] = -1;
+    _invProjMatrixEntry  = -1;
     _timeLoc             = -1;
     _cameraLocationLoc   = -1;
     _clipPlanesLoc       = -1;
@@ -47,9 +48,11 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _zPlanesLoc          = -1;
     _sceneZPlanesLoc     = -1;
     _screenDimensionLoc  = -1;
+    _invScreenDimension  = -1;
     _fogColorLoc       = -1;
     _fogDensityLoc     = -1;
     _prevLOD           = 250;
+    _prevTextureCount  = 250;
     _lodVertLight.resize(2);
     _lodFragLight.resize(2);
     I32 i = 0, j = 0;
@@ -92,11 +95,12 @@ U8 ShaderProgram::update(const U64 deltaTime){
     this->Uniform(_enableFogLoc, enableFog);
     this->Uniform(_lightAmbientLoc, lightMgr.getAmbientLight());
     if(_dirty){
-        this->Uniform(_screenDimensionLoc, Application::getInstance().getResolution());
-
+        const vec2<U16>& screenRes = GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution();
+        this->Uniform(_screenDimensionLoc, screenRes);
+        this->Uniform(_invScreenDimension, vec2<F32>(1.0f / screenRes.width, 1.0f / screenRes.height));
         //Apply global shader values valid throughout application runtime:
         char depthMapSampler1[32], depthMapSampler2[32], depthMapSampler3[32];
-        for(I32 i = 0; i < Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
+        for (I32 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
             sprintf_s(depthMapSampler1, "texDepthMapFromLight[%d]",      i);
             sprintf_s(depthMapSampler2, "texDepthMapFromLightArray[%d]", i);
             sprintf_s(depthMapSampler3, "texDepthMapFromLightCube[%d]",  i);
@@ -144,6 +148,7 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _extendedMatrixEntry[WV_INV_MATRIX] = this->cachedLoc("dvd_WorldViewMatrixInverse");
     _extendedMatrixEntry[WVP_MATRIX]    = this->cachedLoc("dvd_WorldViewProjectionMatrix");
     _extendedMatrixEntry[NORMAL_MATRIX] = this->cachedLoc("dvd_NormalMatrix");
+    _invProjMatrixEntry  = this->cachedLoc("dvd_ProjectionMatrixInverse");
     _timeLoc             = this->cachedLoc("dvd_time");
     _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition");
     _clipPlanesLoc       = this->cachedLoc("dvd_clip_plane");
@@ -208,6 +213,10 @@ void ShaderProgram::uploadNodeMatrices(){
             this->Uniform(currentLocation, GFX.getMatrix4(WVP_MATRIX));
         }
 
+        currentLocation = _invProjMatrixEntry;
+        if (currentLocation != -1){
+            this->Uniform(currentLocation, GFX.getMatrix(PROJECTION_INV_MATRIX));
+        }
         _extendedMatricesDirty = false;
     }
     /*Get and upload clip plane data*/
@@ -242,7 +251,11 @@ void ShaderProgram::ApplyMaterial(Material* const material){
     }
 
     Uniform("material",     material->getMaterialMatrix());
-    Uniform("textureCount", material->getTextureCount());
+    U8 currentTextureCount = material->getTextureCount();
+    if(_prevTextureCount != currentTextureCount){
+        Uniform("textureCount", material->getTextureCount());
+        _prevTextureCount = currentTextureCount;
+    }
 }
 
 void ShaderProgram::SetLOD(U8 currentLOD){

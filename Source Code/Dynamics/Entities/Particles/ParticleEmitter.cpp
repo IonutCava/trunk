@@ -58,7 +58,7 @@ bool ParticleEmitter::initData(){
     };
 
     _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), particleQuad, false, false);
-    _particleGPUBuffer->SetAttribute(Divide::VERTEX_POSITION_LOCATION, 0, 0, 3, false, 0, 0, FLOAT_32);
+    _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_POSITION_LOCATION).set(0, 0, 3, false, 0, 0, FLOAT_32);
 
     //Generate a render state
     RenderStateBlockDescriptor particleStateDesc;
@@ -179,8 +179,9 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
     _descriptor = descriptor;
     _particleGPUBuffer->SetBuffer(1, descriptor._particleCount, 4 * sizeof(F32), nullptr, true, true, /*true*/false);
     _particleGPUBuffer->SetBuffer(2, descriptor._particleCount, 4 * sizeof(U8),  nullptr, true, true, /*true*/false);
-    _particleGPUBuffer->SetAttribute(16, 1, 1, 4, false, 0, 0, FLOAT_32);
-    _particleGPUBuffer->SetAttribute(Divide::VERTEX_COLOR_LOCATION, 2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
+
+    _particleGPUBuffer->getDrawAttribDescriptor(16).set(1, 1, 4, false, 0, 0, FLOAT_32);
+    _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
 
     _particles.resize(descriptor._particleCount);
     _particlePositionData.resize(descriptor._particleCount * 4);
@@ -223,14 +224,10 @@ bool ParticleEmitter::onDraw(SceneGraphNode* const sgn, const RenderStage& curre
     if(!_enabled || _particlesCurrentCount == 0 || !_created)
         return false;
     
-    sortParticles();
+    std::sort(_particles.begin(), _particles.end());
     uploadToGPU();
 
     return true;
-}
-
-void ParticleEmitter::sortParticles(){
-    std::sort(_particles.begin(), _particles.end());
 }
 
 /// Pre-process particles

@@ -148,7 +148,7 @@ namespace ImageTools {
 		ilBindImage(0);
 	}
 
-	I8 SaveToTGA(char *filename, const vec2<U16>& dimensions, U8 pixelDepth, U8 *imageData) {
+	I8 SaveToTGA(const char *filename, const vec2<U16>& dimensions, U8 pixelDepth, U8 *imageData) {
 		U8 cGarbage = 0, type,mode,aux;
 		I16 iGarbage = 0;
 		U16 width = dimensions.width;
@@ -191,27 +191,22 @@ namespace ImageTools {
 		// save the image data
 		fwrite(imageData, sizeof(U8), width * height * mode, file);
 		fclose(file);
-		/// release the memory
-		SAFE_DELETE(imageData);
 		return 0;
 	}
 
 	/// saves a series of files with names "filenameX.tga"
 	I8 SaveSeries(char *filename, const vec2<U16>& dimensions, U8 pixelDepth, U8 *imageData) {
-		static I8 savedImages=0;
-		char *newFilename;
+		static I32 savedImages = 0;
+        std::string newFilename(filename);
 		// compute the new filename by adding the
 		// series number and the extension
-		newFilename = new char[strlen(filename)+8];
-
-		sprintf_s(newFilename,strlen(filename)+8,"%s%d.tga",filename,savedImages);
+		newFilename += Util::toString(savedImages) + ".tga";
 
 		// save the image
-		I8 status = SaveToTGA(newFilename,dimensions,pixelDepth,imageData);
+		I8 status = SaveToTGA(newFilename.c_str(),dimensions,pixelDepth,imageData);
 
 		//increase the counter
 		if (status == 0) savedImages++;
-		SAFE_DELETE_ARRAY(newFilename);
 
 		return status;
 	}

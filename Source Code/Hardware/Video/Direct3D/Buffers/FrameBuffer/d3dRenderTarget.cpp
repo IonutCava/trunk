@@ -46,6 +46,10 @@ bool d3dRenderTarget::checkStatus() const
 	return true;
 }
 
+void d3dRenderTarget::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData)
+{
+}
+
 void d3dRenderTarget::BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot, bool blitColor, bool blitDepth)
 {
 }

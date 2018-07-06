@@ -39,11 +39,11 @@ public:
     void Create(bool dynamic = true, bool stream = false);
     ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with nullptr values
     virtual void ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const;
-    virtual void ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data) const;
+    virtual void ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer = false) const;
     virtual bool bindRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const;
     virtual bool bind(GLuint bindIndex) const;
 
-    void printUniformBlockInfo(GLint prog, GLint block_index);
+    void printInfo(const ShaderProgram* shaderProgram, U32 bindIndex);
 
 protected:
     void setActive() const;

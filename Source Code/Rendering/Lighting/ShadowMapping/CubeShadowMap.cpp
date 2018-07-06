@@ -9,7 +9,7 @@
 
 CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_CubeMap)
 {
-	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "Single Shadow Map");
+    PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
 	TextureDescriptor depthMapDescriptor(TEXTURE_CUBE_MAP, DEPTH_COMPONENT, UNSIGNED_INT); ///Default filters, LINEAR is OK for this
 
 	SamplerDescriptor depthMapSampler;
@@ -38,7 +38,7 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor){
     if (resolutionTemp != _resolution){
         _resolution = resolutionTemp;
 		///Initialize the FB's with a variable resolution
-		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getId());
+        PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getGUID());
         _depthMap->Create(_resolution, _resolution);
 	}
     ShadowMap::resolution(resolution, resolutionFactor);
@@ -47,7 +47,7 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor){
 void CubeShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     // Only if we have a valid callback;
 	if(sceneRenderFunction.empty()) {
-		ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
+        ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
 		return;
 	}
 

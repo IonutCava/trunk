@@ -109,10 +109,11 @@ template <class T>
 inline T squared(T n){
     return n*n;
 }
+
 /// Clamps value n between min and max
 template <class T>
 inline void CLAMP(T& n, T min, T max){
-    n = ((n)<(min))?(min):(((n)>(max))?(max):(n));
+    n = std::min(std::max(n, min), max);
 }
 
 // bit manipulation

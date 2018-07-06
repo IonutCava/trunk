@@ -191,9 +191,12 @@ private:
     I32 _zPlanesLoc;
     I32 _sceneZPlanesLoc;
     I32 _screenDimensionLoc;
+    I32 _invScreenDimension;
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
+    I32 _invProjMatrixEntry;
     U8  _prevLOD;
+    U8  _prevTextureCount;
 };
 
 #endif

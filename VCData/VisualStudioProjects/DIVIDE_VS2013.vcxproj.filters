@@ -884,6 +884,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Frustum.cpp">
       <Filter>Rendering\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightGrid.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1423,6 +1426,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Frustum.h">
       <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\ClipRegion.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightGrid.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

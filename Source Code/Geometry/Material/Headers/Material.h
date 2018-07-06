@@ -96,11 +96,9 @@ public:
         TextureOperation_Divide = 0x3,
         TextureOperation_SmoothAdd = 0x4,
         TextureOperation_SignedAdd = 0x5,
-        TextureOperation_Combine = 0x6,
-        TextureOperation_Decal = 0x7,
-        TextureOperation_Blend = 0x8,
-        TextureOperation_Replace = 0x9,
-        TextureOperation_PLACEHOLDER = 0x10
+        TextureOperation_Decal = 0x6,
+        TextureOperation_Replace = 0x7,
+        TextureOperation_PLACEHOLDER = 0x8
     };
 
     enum TranslucencySource {
@@ -151,11 +149,10 @@ public:
     inline void useAlphaTest(const bool state)          { _useAlphaTest = state; }
     inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
-    void setDoubleSided(const bool state);
+    void setDoubleSided(const bool state, const bool useAlphaTest = false);
     void setTexture(U32 textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace, U8 index = 0);
     ///Set the desired bump mapping method. If force == true, the shader is updated immediately
     void setBumpMethod(const BumpMethod& newBumpMethod, const bool force = false);
-    void setBumpMethod(U32 newBumpMethod, const bool force = false);
     ///Shader modifiers add tokens to the end of the shader name.
     ///Add as many tokens as needed but separate them with a ".". i.e: "Tree.NoWind.Glow"
     inline void addShaderModifier(const std::string& shaderModifier) { _shaderModifier = shaderModifier; }
@@ -210,10 +207,18 @@ public:
     // Checks if the shader needed for the current stage is already constructed. Returns false if the shader was already ready.
     bool computeShader(bool force = false,const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
 
-private:
-    void computeShaderInternal();
+    static void unlockShaderQueue()   {_shaderQueueLocked = false; }
+    static void serializeShaderLoad(const bool state) { _serializeShaderLoad = state; }
 
 private:
+    void computeShaderInternal();
+    static bool isShaderQueueLocked() {return _shaderQueueLocked; }
+    static void lockShaderQueue()     {if(_serializeShaderLoad) _shaderQueueLocked = true; }
+
+private:
+    static bool _shaderQueueLocked;
+    static bool _serializeShaderLoad;
+
     std::queue<std::pair<RenderStage, ResourceDescriptor> > _shaderComputeQueue;
     vectorImpl<mat4<F32> > _materialMatrix; /* all properties bundled togheter */
     ShadingMode _shadingMode;

@@ -266,7 +266,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         }
 
         lineCountOffset[VERTEX_SHADER] += 8;
-        lineCountOffset[FRAGMENT_SHADER] += 9;
+        lineCountOffset[FRAGMENT_SHADER] += 10;
 
         //Split the shader name to get the effect file name and the effect properties
         std::string shaderName = name.substr(0, name.find_first_of(".,"));
@@ -536,18 +536,21 @@ void glShaderProgram::Uniform(GLint location, const vectorImpl<mat4<GLfloat> >& 
 
 void glShaderProgram::UniformTexture(GLint location, GLushort slot) {
     if (location == -1) return;
-
-    assert(checkSlotUsage(location, slot));
+    if (!checkSlotUsage(location, slot)) return;
 
     if(!_bound) glProgramUniform1i(_shaderProgramId, location, slot);
     else        glUniform1i(location, slot);
 }
 
 bool glShaderProgram::checkSlotUsage(GLint location, GLushort slot) {
+#ifdef _DEBUG
     const TextureSlotMap::const_iterator& it = _textureSlots.find(slot);
     if (it == _textureSlots.end() || it->second == location){
         _textureSlots[slot] = location;
         return true;
     }
     return false;
+#else
+    return true;
+#endif
 }

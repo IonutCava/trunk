@@ -22,8 +22,8 @@ void MainScene::updateLights(){
                                             0.25f + _sun_cosy * 0.75f);
 
     light->setDirection(_sunvector);
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,_sunColor);
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,_sunColor);
+    light->setDiffuseColor(_sunColor);
+    light->setSpecularColor(_sunColor);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
     for(Terrain* ter : _visibleTerrains){
         ter->getMaterial()->setAmbient(_sunColor);

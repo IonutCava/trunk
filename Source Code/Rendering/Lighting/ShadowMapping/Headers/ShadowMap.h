@@ -92,7 +92,7 @@ public:
            void resolution(U16 resolution);
 
     inline U8   numLayers()              const {return _numLayers;}
-    inline void numLayers(U8 layerCount)       { _numLayers = std::min(std::abs((I32)layerCount), (I32)Config::MAX_SPLITS_PER_LIGHT); }
+    inline void numLayers(U8 layerCount)       { _numLayers = std::min(std::abs((I32)layerCount), (I32)Config::Lighting::MAX_SPLITS_PER_LIGHT); }
 
 private:
     U8         _numLayers;

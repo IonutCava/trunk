@@ -47,6 +47,8 @@ void GUI::onResize(const vec2<U16>& newResolution){
 }
 
 void GUI::draw2D(){
+    if(!_init) return;
+
     GFXDevice& gfx = GFX_DEVICE;
 
     _guiShader->bind();
@@ -78,10 +80,7 @@ void GUI::draw2D(){
 void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
     if(!_init) return;
     if(_console) _console->update(deltaTime);
-    //hack: to remove
-    GFX_DEVICE.toggle2D(true);
-    draw2D();
-    GFX_DEVICE.toggle2D(false);
+
     D32 deltaTimeSec = getUsToSec(deltaTime);
 
     _input.update(deltaTime);
@@ -143,8 +142,8 @@ bool GUI::init(const vec2<U16>& resolution){
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
-
-    //GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
+    _guiShader->UniformTexture("tex", 0);
+    GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
 
     _init = true;
     return true;

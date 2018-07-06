@@ -150,11 +150,9 @@ void RenderBin::render(const SceneRenderState& renderState, const RenderStage& c
                 //Find the most influential lights for this node.
                 //Use MAX_LIGHTS_PER_SCENE_NODE to allow more lights to affect this node
                 lightCount = lightMgr.findLightsForSceneNode(sgn);
-                //Update lights for this node
-                lightMgr.update();
             }
             //Only 2 sets of shadow maps for every node
-            CLAMP<U8>(lightCount, 0, Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
+            CLAMP<U8>(lightCount, 0, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
             //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
             for (U8 lightIndex = 0; lightIndex < lightCount && isLightValidStage; lightIndex++)
                 lightMgr.bindDepthMaps(lightIndex);

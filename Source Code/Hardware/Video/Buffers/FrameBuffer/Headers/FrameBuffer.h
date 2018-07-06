@@ -61,7 +61,12 @@ public:
     virtual void End() = 0;
 
     virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) {}
-    
+
+    virtual void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData) = 0;
+    inline  void ReadData(GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData){
+        ReadData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType, outData);
+    }
+
     virtual void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false) = 0;
     //If true, array texture and/or cubemaps are bound to a single attachment and shader based layered rendering should be used
     virtual void toggleLayeredRendering(const bool state) {_layeredRendering = state;}

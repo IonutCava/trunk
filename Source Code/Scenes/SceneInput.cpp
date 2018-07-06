@@ -38,6 +38,8 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
 
     // deselect old node
     if(_currentSelection) _currentSelection->setSelected(false);
+    _currentSelection = nullptr;
+
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // Cast the picking ray and find items between the nearPlane (with a small offset) and limit the range to half of the far plane
@@ -45,11 +47,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
     if(!_sceneSelectionCandidates.empty()){
         std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), selectionQueueDistanceFrontToBack(renderState().getCameraConst().getEye()));
         _currentSelection = _sceneSelectionCandidates[0];
-    }else{
-        _currentSelection = nullptr;
-    }
-     // set it's state to selected
-    if(_currentSelection) {
+        // set it's state to selected
         _currentSelection->setSelected(true);
 #ifdef _DEBUG
         _pointsA[DEBUG_LINE_RAY_PICK].push_back(startRay);
@@ -200,7 +198,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             GFX_DEVICE.togglePreviewDepthBuffer();
             break;
         case OIS::KC_F12:
-            GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()._cachedResolution.x,renderState()._cachedResolution.y));
+            GFX_DEVICE.Screenshot("screenshot_");
             break;
         default:
             break;

@@ -2,27 +2,43 @@ const int LIGHT_DIRECTIONAL = 0;
 const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
 
-struct Light {
-    vec4  _attenuation; ///< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
-    vec4  _position;    ///< xyz = position/direction (omni,spot / directional). w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
-    vec4  _direction;   ///< xyz = Used by spot lights, w = spotExponent
-    vec4  _diffuse;     ///< rgb = diffuse,  w = ambientFactor;
-    vec4  _specular;    ///< rgb = specular color, w = brightness
+
+struct LightPhysical {
+    vec4  _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
+    vec4  _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4  _direction;   //< xyz = Used by spot lights, w = spotExponent
+    float _spotCutoff;
 };
 
 layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
-	Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
+    LightPhysical dvd_LightSourcePhysical[MAX_LIGHTS_PER_SCENE];
+};
+
+layout(binding = SHADER_BUFFER_LIGHT_PER_NODE, std140) uniform dvd_PerNodeLights
+{
+    uvec4 dvd_perNodeLightData[MAX_LIGHTS_PER_NODE]; //x = lightIndex, y = lightType, z = castsShadows, w = totalCount
 };
 
 #if defined(FRAG_SHADER)
+
+struct LightVisual {
+    vec4 _diffuse;     //< rgb = diffuse,  w = ambientFactor;
+    vec3 _specular;    //< rgb = specular color
+};
+
+layout(binding = SHADER_BUFFER_LIGHT_COLOR, std140) uniform dvd_LightBlockColor
+{
+    LightVisual dvd_LightSourceVisual[MAX_LIGHTS_PER_SCENE];
+};
+
 struct Shadow {
     mat4  _lightVP0;
     mat4  _lightVP1;
     mat4  _lightVP2;
     mat4  _lightVP3;
     vec4  _floatValues;
-    vec3  _lightPosition[4];
+    vec4  _lightPosition[4];
 };
 
 layout(binding = SHADER_BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
@@ -32,12 +48,7 @@ layout(binding = SHADER_BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 
 uniform vec4 dvd_lightAmbient;
 uniform bool dvd_enableShadowMapping = false;
-uniform bool dvd_lightCastsShadows[MAX_LIGHTS_PER_SCENE];
 #endif
-
-uniform int  dvd_lightIndex[MAX_LIGHTS_PER_SCENE]; //<What lights to use from the light UBO for the current geometry
-uniform int  dvd_lightType[MAX_LIGHTS_PER_SCENE];
-uniform int  dvd_lightCount;
 
 #if defined(VERT_SHADER)
 #define VARYING out
@@ -49,8 +60,8 @@ uniform int  dvd_lightCount;
 VARYING LightInfo {
     vec3  _lightDirection[MAX_LIGHTS_PER_NODE];
     smooth float _attenuation[MAX_LIGHTS_PER_NODE];
+    flat uint _lightCount;
 } _lightInfo;
-
 
 VARYING vec3 _normalWV;
 VARYING vec3 _viewDirection;

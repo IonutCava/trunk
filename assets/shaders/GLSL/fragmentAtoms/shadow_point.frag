@@ -1,7 +1,7 @@
 
-float applyShadowPoint(const in int lightIndex, const in Shadow currentShadowSource) {
+float applyShadowPoint(const in uint lightIndex, const in Shadow currentShadowSource) {
 	// SHADOW MAPS
-    vec3 position_ls = currentShadowSource._lightPosition[0];
+    vec3 position_ls = currentShadowSource._lightPosition[0].xyz;
 	vec3 abs_position = abs(position_ls);
 	float fs_z = -max(abs_position.x, max(abs_position.y, abs_position.z));
     vec4 clip = (currentShadowSource._lightVP0 * _vertexW) * vec4(0.0, 0.0, fs_z, 1.0);

@@ -1,12 +1,10 @@
-in vec2 _texCoord;
-in vec4 _vertexW;
-
 uniform vec2  dvd_zPlanes;
 uniform mat4  material;
 uniform int   isSelected = 0;
 uniform int   lodLevel = 0;
 
 #include "lightInput.cmn"
+#include "lightingDefaults.frag"
 
 #if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
     #define HAS_TRANSPARENCY
@@ -31,9 +29,6 @@ layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 
 vec4 Phong(const in vec2 texCoord, const in vec3 normal, const in vec4 textureColor){
 
-    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel + 1.0f)));
-
-    MaterialProperties materialProp;
     materialProp.diffuse = vec4(0.0);
     materialProp.ambient = vec4(0.0);
     materialProp.specular = vec4(0.0);
@@ -44,48 +39,49 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, const in vec4 textureCo
     materialProp.specularValue = material[2];
 #endif
 
-    phong_loop(currentLightCount, normalize(normal), materialProp);
-    //Add global ambient value and selection ambient value
-    materialProp.ambient += dvd_lightAmbient * material[0];
-    materialProp.ambient = mix(materialProp.ambient, vec4(1.0), isSelected);
-    //Add material color terms to the final color
-    vec4 linearColor = vec4(((materialProp.ambient.rgb + materialProp.diffuse.rgb) * textureColor.rgb) + materialProp.specular.rgb, 1.0);
+    phong_loop(normalize(normal));
 
+    float alpha = 1.0;
+
+#if defined(HAS_TRANSPARENCY)
 #if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_DIFFUSE_MAP)
-    linearColor.a *= materialProp.diffuse.a * textureColor.a;
+    alpha *= materialProp.diffuse.a * textureColor.a;
 #endif
 #if defined(USE_OPACITY)
-    linearColor.a *= opacity
+    alpha *= opacity
 #endif
 #if defined(USE_OPACITY_MAP)
     vec4 opacityMap = texture(texOpacityMap, texCoord);
-    linearColor.a *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
+    alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
-#if defined(HAS_TRANSPARENCY)
-    if (useAlphaTest && linearColor.a < ALPHA_DISCARD_THRESHOLD) discard;
+    if (useAlphaTest && alpha < ALPHA_DISCARD_THRESHOLD) discard;
 #endif
+
+    //Add global ambient value and selection ambient value
+    materialProp.ambient += isSelected ? vec4(1.0) : dvd_lightAmbient * material[0];
+    //Add material color terms to the final color
+    vec4 linearColor = vec4(((materialProp.ambient.rgb + materialProp.diffuse.rgb) * textureColor.rgb) + materialProp.specular.rgb, alpha);
 
     // Gama correction
     // vec3 gamma = vec3(1.0/2.2);
     // linearColor.rgb = pow(linearColor.rgb, gamma);
 
     //Apply shadowing
-    linearColor.rgb *= (0.2 + 0.8 * shadow_loop(currentLightCount));
+    linearColor.rgb *= shadow_loop();
 #if defined(_DEBUG)
-    if (dvd_showShadowSplits){
-        if (_shadowTempInt == -1)
-            linearColor = vec4(1.0);
-        if (_shadowTempInt == 0)
-            linearColor.r += 0.15;
-        if (_shadowTempInt == 1)
-            linearColor.g += 0.25;
-        if (_shadowTempInt == 2)
-            linearColor.b += 0.40;
-        if (_shadowTempInt == 3)
-            linearColor.rgb += vec3(0.15, 0.25, 0.40);
-    }
-#endif
+    _shadowTempInt = dvd_showShadowSplits ? _shadowTempInt : -2;
+
+    switch (_shadowTempInt){
+        case -2: return linearColor;
+        case -1: return vec4(1.0);
+        case  0: return linearColor + vec4(0.15, 0.0,  0.0,  0.0);
+        case  1: return linearColor + vec4(0.00, 0.25, 0.0,  0.0);
+        case  2: return linearColor + vec4(0.00, 0.0,  0.40, 0.0);
+        case  3: return linearColor + vec4(0.15, 0.25, 0.40, 0.0);
+    };
+#else
     return linearColor;
+#endif
 }
 
 vec4 Phong(const in vec2 texCoord, const in vec3 normal){
@@ -95,4 +91,3 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal){
     return Phong(texCoord, normal, getTextureColor(texCoord));
 #endif
 }
-

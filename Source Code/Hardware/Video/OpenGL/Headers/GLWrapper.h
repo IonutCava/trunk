@@ -122,8 +122,6 @@ protected:
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
     /*immediate mode emmlation end*/
 
-    void Screenshot(char *filename, const vec4<GLfloat>& rect);
-
     void loadInContextInternal();
 
     inline GLuint64 getFrameDurationGPU() const { 
@@ -156,17 +154,18 @@ public:
     static bool setActiveVAO(GLuint id, const bool force = false);
     static bool setActiveBuffer(GLenum target, GLuint id, const bool force = false);
     static bool setActiveFB(GLuint id, const bool read = true, const bool write = true, const bool force = false);
+    static bool setActiveTransformFeedback(GLuint id, const bool force = false);
     static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
            void updateProjectionMatrix();
            void updateViewMatrix();
            void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
 
-    static bool bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID);
-
+    static bool bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID = 0);
+    static bool bindSampler(GLuint unit, GLuint handle);
+    inline static bool unbindTexture(GLuint unit, GLenum type){
+        return bindTexture(unit, 0, type);
+    }
 protected:
-           static bool unbindTexture(GLuint unit);
-    inline static bool checkBinding(U16 unit, U32 handle) { return textureBoundMap[unit].first != handle; }
-
     boost::atomic_bool _closeLoadingThread;
 
     I32 getFont(const std::string& fontName);
@@ -214,8 +213,9 @@ private: //OpenGL specific:
     static GLuint _activeFBId;
     static GLuint _activeBufferId[6]; //< VB, IB, SB, TB, UB, PUB
     static GLuint _activeTextureUnit;
+    static GLuint _activeTransformFeedback;
     static Unordered_map<GLuint, vec4<GLfloat> > _prevClearColor;
-
+    
     static bool _lastRestartIndexSmall;
     static bool _primitiveRestartEnabled;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
@@ -236,9 +236,13 @@ private: //OpenGL specific:
     static GLuint64 FRAME_DURATION_GPU;
 
     struct FONScontext* _fonsContext;
-
-    typedef Unordered_map<GLushort/*slot*/, std::pair<GLuint/*textureHandle*/, GLenum/*textureType*/> > textureBoundMapDef;
+    /*slot*/ /*<textureHandle , textureType>*/
+    typedef Unordered_map<GLushort, std::pair<GLuint, GLenum> > textureBoundMapDef;
     static textureBoundMapDef textureBoundMap;
+
+    typedef Unordered_map<GLushort, GLuint> samplerBoundMapDef;
+    static samplerBoundMapDef samplerBoundMap;
+
 END_SINGLETON
 
 #endif

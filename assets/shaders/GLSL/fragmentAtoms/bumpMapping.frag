@@ -85,4 +85,3 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
     return NormalMapping(uv + uv_offset);
 }
 #endif
-

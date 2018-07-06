@@ -355,6 +355,8 @@ public:
     inline void set(const vec3<T>& v, T w) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = w; }
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec2<T>& v)    { this->x = v.x; this->y = v.y; this->z = 0.0; this->w = 1.0;}
+    /// set the 4 components of the vector using smallers source vectors
+    inline void set(const vec2<T>& v1, const vec2<T>& v2)    { this->x = v1.x; this->y = v1.y; this->z = v2.x; this->w = v2.y; }
     /// set all the components back to 0
     inline void reset()                  { this->x = this->y = this->z = this->w = 0;}
     /// compare 2 vectors within the specified tolerance
@@ -369,6 +371,9 @@ public:
     inline void swap(vec4 &iv);
     /// transform the vector to unit length
     inline T    normalize();
+    /// min/max functions
+    inline vec4 min(const vec4 &v1, const vec4 &v2) { return vec4(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z), std::min(v1.w, v2.w)); }
+    inline vec4 max(const vec4 &v1, const vec4 &v2) { return vec4(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z), std::max(v1.w, v2.w)); }
     /// return the vector's length
     inline T    length()    const {return square_root_tpl(lengthSquared()); }
     /// return the squared distance of the vector
