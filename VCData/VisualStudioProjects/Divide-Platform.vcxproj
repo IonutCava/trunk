@@ -319,7 +319,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -329,6 +329,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -361,10 +362,11 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <SDLCheck>false</SDLCheck>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -386,7 +388,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -403,6 +405,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <SDLCheck>false</SDLCheck>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

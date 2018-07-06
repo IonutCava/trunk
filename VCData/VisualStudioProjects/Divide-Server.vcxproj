@@ -114,7 +114,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -127,6 +127,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Divide-Networking_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -153,12 +154,14 @@
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OpenMPSupport>true</OpenMPSupport>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Divide-Networking.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -186,12 +189,14 @@
       <EnablePREfast>false</EnablePREfast>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OpenMPSupport>true</OpenMPSupport>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <SDLCheck>false</SDLCheck>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Divide-Networking_p.lib;%(AdditionalDependencies)</AdditionalDependencies>

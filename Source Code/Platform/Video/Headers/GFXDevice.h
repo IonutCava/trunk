@@ -370,7 +370,7 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline void setGPUVendor(const GPUVendor& gpuvendor) { _GPUVendor = gpuvendor; }
 
-    inline const GPUVendor& getGPUVendor() const { return _GPUVendor; }
+    inline GPUVendor getGPUVendor() const { return _GPUVendor; }
 
     inline void drawDebugAxis(const bool state) { _drawDebugAxis = state; }
 

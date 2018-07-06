@@ -160,8 +160,7 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
     
     // Open the atom file and add the code to the atom cache for future reference
     std::pair<AtomMap::iterator, bool> result =
-        hashAlg::emplace(_atoms, atomNameHash,
-                                 shaderFileRead(location + "/" + atomName, false));
+        hashAlg::emplace(_atoms, atomNameHash, Util::ReadTextFile(location + "/" + atomName));
 
     assert(result.second);
 

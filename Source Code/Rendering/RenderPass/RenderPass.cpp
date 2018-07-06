@@ -15,8 +15,6 @@
 namespace Divide {
 
 namespace {
-    bool USE_Z_PRE_PASS = false;
-
     Framebuffer::FramebufferTarget _noDepthClear;
     Framebuffer::FramebufferTarget _depthOnly;
 
@@ -45,8 +43,11 @@ namespace {
 RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags)
     : _sortKey(sortKey),
       _name(name),
-      _stageFlags(passStageFlags)
+      _stageFlags(passStageFlags),
+      _useZPrePass(GFX_DEVICE.getGPUVendor() != GPUVendor::AMD)
 {
+    STUBBED("Crimson drivers seem to be having issues with z-prepass at the moment!");
+
     _lastTotalBinSize = 0;
 
     _noDepthClear._clearDepthBufferOnBind = false;
@@ -57,9 +58,6 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
     _depthOnly._clearDepthBufferOnBind = true;
     _depthOnly._drawMask.fill(false);
     _depthOnly._drawMask[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
-
-    STUBBED("Crimson drivers seem to be having issues with this at the moment!");
-    USE_Z_PRE_PASS = GFX_DEVICE.getGPUVendor() != GPUVendor::AMD;
 }
 
 RenderPass::~RenderPass() 
@@ -139,10 +137,10 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
             GFX.occlusionCull(0);
-            if (USE_Z_PRE_PASS) {
+            if (_useZPrePass) {
                 GFX.toggleDepthWrites(false);
             }
-            GFX.getRenderTarget(target)._buffer->begin(USE_Z_PRE_PASS ? _noDepthClear : Framebuffer::defaultPolicy());
+            GFX.getRenderTarget(target)._buffer->begin(_useZPrePass ? _noDepthClear : Framebuffer::defaultPolicy());
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -184,7 +182,7 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
                 SceneManager::getInstance().getRenderer().preRender();
                 renderTarget.cacheSettings();
             } else {
-                if (USE_Z_PRE_PASS) {
+                if (_useZPrePass) {
                     GFX.toggleDepthWrites(true);
                 }
             }

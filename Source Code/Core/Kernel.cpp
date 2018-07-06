@@ -69,11 +69,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
     ParamHandler::getInstance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 
-    // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-    RenderPassManager::getInstance().addRenderPass("environmentPass", 0, {RenderStage::REFLECTION});
-    RenderPassManager::getInstance().addRenderPass("shadowPass",      1, {RenderStage::SHADOW});
-    RenderPassManager::getInstance().addRenderPass("displayStage",    2, {RenderStage::Z_PRE_PASS, RenderStage::DISPLAY});
-
     s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
 }
 
@@ -436,6 +431,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
+
+    // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
+    RenderPassManager::getInstance().addRenderPass("environmentPass", 0, { RenderStage::REFLECTION });
+    RenderPassManager::getInstance().addRenderPass("shadowPass", 1, { RenderStage::SHADOW });
+    RenderPassManager::getInstance().addRenderPass("displayStage", 2, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
+
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
     _mainCamera = _cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY);
     _mainCamera->setProjection(aspectRatio,
