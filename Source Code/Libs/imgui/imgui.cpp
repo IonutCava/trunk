@@ -4331,7 +4331,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         }
         if ((flags & ImGuiWindowFlags_ChildWindow) && !(flags & ImGuiWindowFlags_Popup))
         {
-            IM_ASSERT(window_size_set_by_api); // Submitted by BeginChild()
+            //IM_ASSERT(window_size_set_by_api); // Submitted by BeginChild()
             window->Pos = window->PosFloat = parent_window->DC.CursorPos;
             window->Size = window->SizeFull;
         }
@@ -4649,6 +4649,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 bool ImGui::Begin(const char* name, bool* p_open, const ImVec2& size_on_first_use, float bg_alpha_override, ImGuiWindowFlags flags)
 {
+    ImGuiContext& g = *GImGui;
     // Old API feature: we could pass the initial window size as a parameter, however this was very misleading because in most cases it would only affect the window when it didn't have storage in the .ini file.
     if (size_on_first_use.x != 0.0f || size_on_first_use.y != 0.0f)
         SetNextWindowSize(size_on_first_use, ImGuiCond_FirstUseEver);
@@ -4657,7 +4658,7 @@ bool ImGui::Begin(const char* name, bool* p_open, const ImVec2& size_on_first_us
     // (1) there are multiple variants of WindowBg (popup, tooltip, etc.) and (2) you can't call PushStyleColor before Begin and PopStyleColor just after Begin() because of how CheckStackSizes() behave.
     // The user-side solution is to do backup = GetStyleColorVec4(ImGuiCol_xxxBG), PushStyleColor(ImGuiCol_xxxBg), Begin, PushStyleColor(ImGuiCol_xxxBg, backup), [...], PopStyleColor(), End(); PopStyleColor() - which is super awkward.
     // The alpha override was rarely used but for now we'll leave the Begin() variant around for a bit. We may either lift the constraint on CheckStackSizes() either add a SetNextWindowBgAlpha() helper that does it magically.
-    ImGuiContext& g = *GImGui;
+   
     const ImGuiCol bg_color_idx = GetWindowBgColorIdxFromFlags(flags);
     const ImVec4 bg_color_backup = g.Style.Colors[bg_color_idx];
     if (bg_alpha_override >= 0.0f)

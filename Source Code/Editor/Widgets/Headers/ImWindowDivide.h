@@ -45,7 +45,7 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
 {
     friend class ImwWindowManagerOGL;
     public:
-    ImwWindowDivide(PlatformContext& context, bool bMain, bool bIsDragWindow, bool bCreateState);
+    ImwWindowDivide(PlatformContext& context, ImWindow::EPlatformWindowType eType, bool bCreateState);
     virtual ~ImwWindowDivide();
 
     virtual bool Init(ImWindow::ImwPlatformWindow* parent) override;
@@ -53,21 +53,19 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
     virtual ImVec2 GetPosition() const override;
     virtual ImVec2 GetSize() const override;
     virtual bool IsWindowMaximized() const override;
+    virtual bool IsWindowMinimized() const override;
 
-    virtual void Show() override;
-    virtual void Hide() override;
+    virtual void Show(bool bShow) override;
     virtual void SetSize(int iWidth, int iHeight) override;
     virtual void SetPosition(int iX, int iY) override;
     virtual void SetWindowMaximized(bool bMaximized) override;
+    virtual void SetWindowMinimized() override;
     virtual void SetTitle(const char* pTtile) override;
 
     protected:
     virtual void PreUpdate() override;
     virtual void Render() override;
-    virtual void Destroy() override;
-    virtual void StartDrag() override;
-    virtual void StopDrag() override;
-    virtual bool IsDraging() override;
+
 
     bool OnClose();
     void OnFocus(bool bHasFocus);

@@ -16,11 +16,11 @@ ImwWindowManagerDivide::~ImwWindowManagerDivide()
     Destroy();
 }
 
-ImWindow::ImwPlatformWindow* ImwWindowManagerDivide::CreatePlatformWindow(bool bMain, ImWindow::ImwPlatformWindow* pParent, bool bDragWindow)
+ImWindow::ImwPlatformWindow* ImwWindowManagerDivide::CreatePlatformWindow(ImWindow::EPlatformWindowType eType, ImWindow::ImwPlatformWindow* pParent)
 {
     IM_ASSERT(m_pCurrentPlatformWindow == nullptr);
 
-    ImwWindowDivide* pWindow = MemoryManager_NEW ImwWindowDivide(_context, bMain, bDragWindow, CanCreateMultipleWindow());
+    ImwWindowDivide* pWindow = MemoryManager_NEW ImwWindowDivide(_context, eType, CanCreateMultipleWindow());
     if (pWindow->Init(pParent)) {
         return (ImWindow::ImwPlatformWindow*)pWindow;
     } else {

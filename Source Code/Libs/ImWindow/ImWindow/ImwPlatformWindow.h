@@ -9,68 +9,71 @@
 
 namespace ImWindow
 {
-    //SFF_BEGIN
-    class IMGUI_API ImwPlatformWindow
-    {
-        friend class ImwWindowManager;
-        public:
-        ImwPlatformWindow(bool bMainWindow, bool bIsDragWindow, bool bCreateState);
-        virtual								~ImwPlatformWindow();
+//SFF_BEGIN
+	enum EPlatformWindowType
+	{
+		E_PLATFORM_WINDOW_TYPE_MAIN,
+		E_PLATFORM_WINDOW_TYPE_SECONDARY,
+		E_PLATFORM_WINDOW_TYPE_DRAG_PREVIEW,
+		E_PLATFORM_WINDOW_TYPE_DIALOG_BOX
+	};
 
-        virtual bool						Init(ImwPlatformWindow* pParent);
+	class IMGUI_API ImwPlatformWindow
+	{
+		friend class ImwWindowManager;
+	public:
+											ImwPlatformWindow(EPlatformWindowType eType, bool bCreateState);
+		virtual								~ImwPlatformWindow();
 
+		virtual bool						Init(ImwPlatformWindow* pParent);
+
+		EPlatformWindowType					GetType() const;
 		virtual ImVec2						GetPosition() const;
 		virtual ImVec2						GetSize() const;
 		virtual bool						IsWindowMaximized() const;
+		virtual bool						IsWindowMinimized() const;
 
-        virtual void						Show();
-        virtual void						Hide();
-        virtual void						SetSize(int iWidth, int iHeight);
-        virtual void						SetPosition(int iX, int iY);
+		virtual void						Show(bool bShow);
+		virtual void						SetSize(int iWidth, int iHeight);
+		virtual void						SetPosition(int iX, int iY);
 		virtual void						SetWindowMaximized(bool bMaximized);
-        virtual void						SetTitle(const char* pTtile);
+		virtual void						SetWindowMinimized();
+		virtual void						SetTitle(const char* pTtile);
 		bool								IsShowContent() const;
 		void								SetShowContent(bool bShow);
 
-        bool								IsMain();
+		void								Dock(ImwWindow* pWindow);
+		bool								UnDock(ImwWindow* pWindow);
 
-        void								Dock(ImwWindow* pWindow);
-        bool								UnDock(ImwWindow* pWindow);
-
-        ImwContainer*						GetContainer();
-        ImwContainer*						HasWindow(ImwWindow* pWindow);
-        bool								FocusWindow(ImwWindow* pWindow);
+		ImwContainer*						GetContainer();
+		ImwContainer*						HasWindow(ImwWindow* pWindow);
+		bool								FocusWindow(ImwWindow* pWindow);
 
 		bool								HasState() const;
-        void								SetState();
-        void								RestoreState();
+		void								SetState();
+		void								RestoreState();
 		static bool							IsStateSet();
 	protected:
-        void								OnLoseFocus();
-        virtual void						PreUpdate();
+		void								OnLoseFocus();
+		virtual void						PreUpdate();
 		virtual void						Render();
-        virtual void						Destroy();
-        virtual void						StartDrag();
-        virtual void						StopDrag();
-        virtual bool						IsDraging();
 
-        void								PaintContainer();
-        void								OnClose();
+		void								PaintContainer();
+		void								OnClose();
 
 		bool								Save(JsonValue& oJson);
 		bool								Load(const JsonValue& oJson, bool bJustCheck);
 
-        bool								m_bMain;
-        bool								m_bIsDragWindow;
-        ImwContainer*						m_pContainer;
-        ImGuiContext*						m_pContext;
-        ImGuiContext*						m_pPreviousContext;
+		EPlatformWindowType					m_eType;
+		ImwContainer*						m_pContainer;
+		void*								m_pState;
+		void*								m_pPreviousState;
 		bool								m_bNeedRender;
 		bool								m_bShowContent;
-    };
+	};
 
-    typedef ImwList<ImwPlatformWindow*> ImwPlatformWindowList;
-    //SFF_END
+	typedef ImwList<ImwPlatformWindow*> ImwPlatformWindowList;
+//SFF_END
 }
 
 #endif // __IM_PLATFORM_WINDOW_H__

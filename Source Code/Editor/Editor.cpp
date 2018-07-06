@@ -76,6 +76,7 @@ bool Editor::framePostRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     Time::ScopedTimer timer(_editorRenderTimer);
     // Render ImWindow stuff
+    ImGui::GetIO().DeltaTime = Time::MillisecondsToSeconds<float>(evt._timeSinceLastFrame);
     return _windowManager->Run(true);
 }
 

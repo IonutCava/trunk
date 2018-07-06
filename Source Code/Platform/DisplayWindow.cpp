@@ -326,14 +326,20 @@ void DisplayWindow::hidden(const bool state) {
     }
 }
 
+void DisplayWindow::restore() {
+    SDL_RestoreWindow(_sdlWindow);
+    _maximized = _minimized = false;
+}
+
 void DisplayWindow::minimized(const bool state) {
     if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MINIMIZED)) != state)
     {
         if (state) {
             SDL_MinimizeWindow(_sdlWindow);
         } else {
-            SDL_RestoreWindow(_sdlWindow);
+            restore();
         }
+
         _minimized = state;
     }
 }
@@ -344,7 +350,7 @@ void DisplayWindow::maximized(const bool state) {
         if (state) {
             SDL_MaximizeWindow(_sdlWindow);
         } else {
-            SDL_RestoreWindow(_sdlWindow);
+            restore();
         }
         _maximized = state;
     }

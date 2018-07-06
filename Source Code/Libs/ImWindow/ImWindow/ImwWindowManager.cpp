@@ -2,11 +2,19 @@
 
 #include "ImwWindowManager.h"
 
-#include <algorithm>
-
 namespace ImWindow
 {
 //SFF_BEGIN
+
+	ImwWindowManager::PlatformWindowAction::PlatformWindowAction(ImwPlatformWindow* pPlatformWindow, EPlatformWindowAction eAction, ImVec2 oValue)
+	{
+		m_pPlatformWindow = pPlatformWindow;
+		m_eAction = eAction;
+		m_oValue = oValue;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	ImwWindowManager::DrawWindowAreaAction::DrawWindowAreaAction( ImwPlatformWindow* pWindow, const ImVec2& oRectPos, const ImVec2& oRectSize, const ImColor& oColor )
 		: m_oColor( oColor )
 	{
@@ -38,6 +46,8 @@ namespace ImWindow
 		, m_fTabShadowDropSize( 15.f )
 		, m_fTabShadowSlopRatio( 0.6f )
 		, m_fTabShadowAlpha( 0.75f )
+		, m_oStatusBarWindowPadding( 4.f, 4.f )
+		, m_oStatusBarFramePadding( 4.f, 2.f )
 	{
 	}
 
@@ -75,14 +85,14 @@ namespace ImWindow
 		//io.Fonts->AddFontFromFileTTF( "res/DroidSans.ttf", 16 ) || io.Fonts->AddFontDefault();
 		//io.Fonts->AddFontFromFileTTF( "res/DroidSans-Bold.ttf", 16 ) || io.Fonts->AddFontDefault();
 
-		m_pMainPlatformWindow = CreatePlatformWindow(true, NULL, false);
+		m_pMainPlatformWindow = CreatePlatformWindow(E_PLATFORM_WINDOW_TYPE_MAIN, NULL);
 		if (NULL != m_pMainPlatformWindow)
 		{
-			m_pMainPlatformWindow->Show();
+			m_pMainPlatformWindow->Show(true);
 
 			if (CanCreateMultipleWindow())
 			{
-				m_pDragPlatformWindow = CreatePlatformWindow(false, m_pMainPlatformWindow, true);
+				m_pDragPlatformWindow = CreatePlatformWindow(E_PLATFORM_WINDOW_TYPE_DRAG_PREVIEW, m_pMainPlatformWindow);
 			}
 		
 			return true;
@@ -113,45 +123,58 @@ namespace ImWindow
 
 	void ImwWindowManager::Destroy()
 	{
-		while (m_lMenus.begin() != m_lMenus.end())
+		if (m_pCurrentPlatformWindow != NULL)
 		{
-			ImwMenu* pMenu = m_lMenus.back();
-			if (pMenu->IsAutoDeleted())
-				delete pMenu;
-			else
-				m_lMenus.pop_back();
+			if(m_pMainPlatformWindow != NULL)
+				m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pMainPlatformWindow, E_PLATFORM_WINDOW_ACTION_DESTROY));
 		}
+		else
+		{
+			while (m_lMenus.begin() != m_lMenus.end())
+			{
+				ImwMenu* pMenu = m_lMenus.back();
+				if (pMenu->IsAutoDeleted())
+					delete pMenu;
+				else
+					m_lMenus.pop_back();
+			}
 		
-		while (m_lStatusBars.begin() != m_lStatusBars.end())
-		{
-			ImwStatusBar* pStatusBar = m_lStatusBars.back();
-			if (pStatusBar->IsAutoDeleted())
-				delete pStatusBar;
-			else
-				m_lStatusBars.pop_back();
-		}
+			while (m_lStatusBars.begin() != m_lStatusBars.end())
+			{
+				ImwStatusBar* pStatusBar = m_lStatusBars.back();
+				if (pStatusBar->IsAutoDeleted())
+					delete pStatusBar;
+				else
+					m_lStatusBars.pop_back();
+			}
 
-		while (m_lToolBars.begin() != m_lToolBars.end())
-		{
-			ImwToolBar* pToolBar = m_lToolBars.back();
-			if (pToolBar->IsAutoDeleted())
-				delete pToolBar;
-			else
-				m_lToolBars.pop_back();
-		}
+			while (m_lToolBars.begin() != m_lToolBars.end())
+			{
+				ImwToolBar* pToolBar = m_lToolBars.back();
+				if (pToolBar->IsAutoDeleted())
+					delete pToolBar;
+				else
+					m_lToolBars.pop_back();
+			}
 
-		ImwSafeDelete(m_pMainPlatformWindow);
-		ImwSafeDelete(m_pDragPlatformWindow);
-		for ( ImwList<ImwPlatformWindow*>::iterator it = m_lPlatformWindows.begin(); it != m_lPlatformWindows.end(); ++it )
-		{
-			ImwSafeDelete(*it);
+			ImwSafeDelete(m_pDragPlatformWindow);
+			while (m_lPlatformWindows.begin() != m_lPlatformWindows.end())
+			{
+				delete *m_lPlatformWindows.begin();
+				m_lPlatformWindows.erase(m_lPlatformWindows.begin());
+			}
+			ImwSafeDelete(m_pMainPlatformWindow);
 		}
-		m_lPlatformWindows.clear();
 	}
 
-	ImwPlatformWindow* ImwWindowManager::GetMainPlatformWindow()
+	ImwPlatformWindow* ImwWindowManager::GetMainPlatformWindow() const
 	{
 		return m_pMainPlatformWindow;
+	}
+
+	const ImwPlatformWindowList& ImwWindowManager::GetSecondariesPlatformWindows() const
+	{
+		return m_lPlatformWindows;
 	}
 
 	ImwWindowManager::Config& ImwWindowManager::GetConfig()
@@ -272,6 +295,24 @@ namespace ImWindow
 		return NULL;
 	}
 
+	void ImwWindowManager::MaximizeCurrentPlatformWindow()
+	{
+		if (m_pCurrentPlatformWindow != NULL)
+			m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pCurrentPlatformWindow, E_PLATFORM_WINDOW_ACTION_MAXIMIZE));
+	}
+
+	void ImwWindowManager::MinimizeCurrentPlatformWindow()
+	{
+		if (m_pCurrentPlatformWindow != NULL)
+			m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pCurrentPlatformWindow, E_PLATFORM_WINDOW_ACTION_MINIMIZE));
+	}
+
+	void ImwWindowManager::RestoreCurrentPlatformWindow()
+	{
+		if (m_pCurrentPlatformWindow != NULL)
+			m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pCurrentPlatformWindow, E_PLATFORM_WINDOW_ACTION_RESTORE));
+	}
+
 	bool ImwWindowManager::SaveLayoutToString(ImwString& sLayout, bool bCompact)
 	{
 		JsonValue oJson;
@@ -348,9 +389,9 @@ namespace ImWindow
 			for (int iCurrent = 0; iCurrent < iPlatformWindowCount; ++iCurrent)
 			{
 				JsonValue& oJsonPlatformWindow = oJsonPlatformWindows[iCurrent];
-				ImwPlatformWindow* pNewPlatformWindow = CreatePlatformWindow(false, m_pMainPlatformWindow, false);
+				ImwPlatformWindow* pNewPlatformWindow = CreatePlatformWindow(E_PLATFORM_WINDOW_TYPE_SECONDARY, m_pMainPlatformWindow);
 				m_lPlatformWindows.push_back(pNewPlatformWindow);
-				pNewPlatformWindow->Show();
+				pNewPlatformWindow->Show(true);
 				if (!pNewPlatformWindow->Load(oJsonPlatformWindow, false))
 					return false; //Something wrong
 			}
@@ -408,11 +449,11 @@ namespace ImWindow
 		return true;
 	}
 
-	ImwPlatformWindow* ImwWindowManager::CreatePlatformWindow(bool bMain, ImwPlatformWindow* /*pParent*/, bool bDragWindow)
+	ImwPlatformWindow* ImwWindowManager::CreatePlatformWindow(EPlatformWindowType eType, ImwPlatformWindow* /*pParent*/)
 	{
-		if (bMain)
+		if (eType == E_PLATFORM_WINDOW_TYPE_MAIN)
 		{
-			return (ImWindow::ImwPlatformWindow*)new ImwPlatformWindow(bMain, bDragWindow, CanCreateMultipleWindow());
+			return (ImWindow::ImwPlatformWindow*)new ImwPlatformWindow(eType, CanCreateMultipleWindow());
 		}
 		return NULL;
 	}
@@ -521,23 +562,13 @@ namespace ImWindow
 		while (m_lPlatformWindowActions.begin() != m_lPlatformWindowActions.end())
 		{
 			PlatformWindowAction* pAction = *m_lPlatformWindowActions.begin();
-		
-			IM_ASSERT((pAction->m_iFlags & E_PLATFORM_WINDOW_ACTION_SHOW & E_PLATFORM_WINDOW_ACTION_HIDE) == 0); // Can't show and hide		
-
-			if (pAction->m_iFlags & E_PLATFORM_WINDOW_ACTION_DESTROY)
+	
+			if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_DESTROY)
 			{
-				//pAction->m_pPlatformWindow->Show();
-				//todo destroy
 				bool bFound = false;
 				if (m_pMainPlatformWindow == pAction->m_pPlatformWindow)
 				{
-					while (m_lPlatformWindows.begin() != m_lPlatformWindows.end())
-					{
-						delete *m_lPlatformWindows.begin();
-						m_lPlatformWindows.erase(m_lPlatformWindows.begin());
-					}
-					delete m_pMainPlatformWindow;
-					m_pMainPlatformWindow = NULL;
+					Destroy();
 					bFound = true;
 				}
 				else
@@ -559,21 +590,33 @@ namespace ImWindow
 					IM_ASSERT(false); // ImwPlatformWindow not found, maybe already closed
 				}
 			}
-			if (pAction->m_iFlags & E_PLATFORM_WINDOW_ACTION_SHOW)
+			else if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_SHOW)
 			{
-				pAction->m_pPlatformWindow->Show();
+				pAction->m_pPlatformWindow->Show(true);
 			}
-			if (pAction->m_iFlags & E_PLATFORM_WINDOW_ACTION_HIDE)
+			else if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_HIDE)
 			{
-				pAction->m_pPlatformWindow->Hide();
+				pAction->m_pPlatformWindow->Show(false);
 			}
-			if (pAction->m_iFlags & E_PLATFORM_WINDOW_ACTION_SET_POSITION)
+			else if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_SET_POSITION)
 			{
-				pAction->m_pPlatformWindow->SetPosition((int)pAction->m_oPosition.x, (int)pAction->m_oPosition.y);
+				pAction->m_pPlatformWindow->SetPosition((int)pAction->m_oValue.x, (int)pAction->m_oValue.y);
 			}
-			if (pAction->m_iFlags & E_PLATFORM_WINDOW_ACTION_SET_SIZE)
+			else if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_SET_SIZE)
 			{
-				pAction->m_pPlatformWindow->SetSize((int)pAction->m_oSize.x, (int)pAction->m_oSize.y);
+				pAction->m_pPlatformWindow->SetSize((int)pAction->m_oValue.x, (int)pAction->m_oValue.y);
+			}
+			else if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_MAXIMIZE)
+			{
+				pAction->m_pPlatformWindow->SetWindowMaximized(true);
+			}
+			else if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_MINIMIZE)
+			{
+				pAction->m_pPlatformWindow->SetWindowMinimized();
+			}
+			else if (pAction->m_eAction == E_PLATFORM_WINDOW_ACTION_RESTORE)
+			{
+				pAction->m_pPlatformWindow->SetWindowMaximized(false);
 			}
 
 			delete *m_lPlatformWindowActions.begin();
@@ -667,7 +710,7 @@ namespace ImWindow
 			return;
 
 		pWindow->m_bNeedRender = false;
-		if (pWindow->m_bIsDragWindow && (NULL == m_pDraggedWindow || m_bDragOnTab || m_pDragBestContainer != NULL))
+		if (pWindow->m_eType == E_PLATFORM_WINDOW_TYPE_DRAG_PREVIEW && (NULL == m_pDraggedWindow || m_bDragOnTab || m_pDragBestContainer != NULL))
 			return;
 
 		pWindow->m_bNeedRender = true;
@@ -681,7 +724,7 @@ namespace ImWindow
 
 		float fTop = 0.f;
 		float fBottom = 0.f;
-		if (pWindow->IsMain())
+		if (pWindow->GetType() == E_PLATFORM_WINDOW_TYPE_MAIN)
 		{
 			ImGuiIO& oIO = ImGui::GetIO();
 			if (pWindow->IsShowContent() || oIO.MousePos.y <= 50.f  || oIO.MetricsActiveWindows > 2) // Autohide menu bar
@@ -695,16 +738,15 @@ namespace ImWindow
 				ImGui::EndMainMenuBar();
 				if (m_lStatusBars.size() > 0)
 				{
-					fBottom = 25.f;
+					fBottom = m_oConfig.m_oStatusBarFramePadding.y * 2.f + m_oConfig.m_oStatusBarWindowPadding.y * 2.f + ImGui::GetTextLineHeight();
 				}
 			}
-			
 		}
 
 		if (pWindow->IsShowContent())
 		{
-			ImGui::SetNextWindowPos(ImVec2(0, fTop), ImGuiCond_Always);
-			ImGui::SetNextWindowSize(ImVec2(pWindow->GetSize().x, pWindow->GetSize().y - fTop - fBottom), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(ImVec2(0, fTop), ImGuiSetCond_Always);
+			ImGui::SetNextWindowSize(ImVec2(pWindow->GetSize().x, pWindow->GetSize().y - fTop - fBottom), ImGuiSetCond_Always);
 			int iFlags = ImGuiWindowFlags_NoTitleBar
 				| ImGuiWindowFlags_NoResize
 				| ImGuiWindowFlags_NoMove
@@ -721,8 +763,7 @@ namespace ImWindow
 
 			PushStyle();
 
-            //ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
-			ImGui::Begin( "Main", NULL, iFlags);
+			ImGui::Begin( "Main", NULL, ImVec2( 0.f, 0.f ), 1.f, iFlags);
 
 			if (NULL != m_pDraggedWindow)
 			{
@@ -732,7 +773,7 @@ namespace ImWindow
 				ImGui::SetActiveID(oId, ImGui::GetCurrentWindow());
 			}
 
-			if (pWindow->IsMain())
+			if (pWindow->GetType() == E_PLATFORM_WINDOW_TYPE_MAIN)
 			{
 				if (!m_lToolBars.empty())
 				{
@@ -751,16 +792,16 @@ namespace ImWindow
 
 			PopStyle();
 
-			if (pWindow->IsMain() && m_lStatusBars.size() > 0)
+			if (pWindow->GetType() == E_PLATFORM_WINDOW_TYPE_MAIN && m_lStatusBars.size() > 0)
 			{
-				ImGui::SetNextWindowPos(ImVec2(0, pWindow->GetSize().y - fBottom), ImGuiCond_Always);
-				ImGui::SetNextWindowSize(ImVec2(pWindow->GetSize().x, fBottom), ImGuiCond_Always);
+				ImGui::SetNextWindowPos(ImVec2(0, pWindow->GetSize().y - fBottom), ImGuiSetCond_Always);
+				ImGui::SetNextWindowSize(ImVec2(pWindow->GetSize().x, fBottom), ImGuiSetCond_Always);
 
-				PushStyle(true, false);
-                //ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
-				ImGui::Begin("##StatusBar", NULL, iFlags);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, m_oConfig.m_oStatusBarWindowPadding);
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, m_oConfig.m_oStatusBarFramePadding);
+				ImGui::Begin("##StatusBar", NULL, ImVec2(0,0), 1.f, iFlags);
 
-				PopStyle();
 				ImGui::Columns((int)m_lStatusBars.size());
 				for (ImwStatusBarList::iterator it = m_lStatusBars.begin(); it != m_lStatusBars.end(); ++it )
 				{
@@ -768,20 +809,16 @@ namespace ImWindow
 					ImGui::NextColumn();
 				}
 				ImGui::Columns(1);
-				PushStyle(true, false);
 
 				ImGui::End();
-				PopStyle();
+				ImGui::PopStyleVar(3);
 			}
 		}
 
-		bool bWantCaptureKeyboard = ImGui::GetIO().WantCaptureKeyboard;
-		bool bWantCaptureMouse = ImGui::GetIO().WantCaptureMouse;
+		m_bHasWantCaptureKeyboard |= ImGui::GetIO().WantCaptureKeyboard;
+		m_bHasWantCaptureMouse |= ImGui::GetIO().WantCaptureMouse;
 
 		pWindow->RestoreState();
-
-		m_bHasWantCaptureKeyboard |= bWantCaptureKeyboard;
-		m_bHasWantCaptureMouse |= bWantCaptureMouse;
 	}
 
 	void ImwWindowManager::PostPaint(ImwPlatformWindow* pWindow)
@@ -792,8 +829,8 @@ namespace ImWindow
 
 		m_pCurrentPlatformWindow = pWindow;
 		pWindow->SetState();
-        //ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
-		ImGui::Begin("##Overlay", NULL, ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
+
+		ImGui::Begin("##Overlay", NULL, ImVec2(0, 0), 0.f, ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
 		ImDrawList* pDrawList = ImGui::GetWindowDrawList();
 		for (ImwList<DrawWindowAreaAction>::iterator it = m_lDrawWindowAreas.begin(); it != m_lDrawWindowAreas.end(); )
 		{
@@ -864,15 +901,16 @@ namespace ImWindow
 
 			if (NULL != m_pDragPlatformWindow)
 			{
-				PlatformWindowAction* pAction = new PlatformWindowAction();
-				pAction->m_pPlatformWindow = m_pDragPlatformWindow;
-				pAction->m_iFlags = E_PLATFORM_WINDOW_ACTION_SHOW | E_PLATFORM_WINDOW_ACTION_SET_POSITION | E_PLATFORM_WINDOW_ACTION_SET_SIZE;
 				ImVec2 oCursorPos = GetCursorPos();
-				pAction->m_oPosition = ImVec2(oCursorPos.x + m_oDragPreviewOffset.x, oCursorPos.y + m_oDragPreviewOffset.y);
-				pAction->m_oSize = ImVec2(pWindow->GetLastSize().x, pWindow->GetLastSize().y);
-				m_lPlatformWindowActions.push_back(pAction);
+				ImVec2 oPosition = ImVec2(oCursorPos.x + m_oDragPreviewOffset.x, oCursorPos.y + m_oDragPreviewOffset.y);
+				ImVec2 oSize = ImVec2(pWindow->GetLastSize().x, pWindow->GetLastSize().y);
+
+				m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pDragPlatformWindow, E_PLATFORM_WINDOW_ACTION_SHOW));
+				m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pDragPlatformWindow, E_PLATFORM_WINDOW_ACTION_SET_POSITION, oPosition));
+				m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pDragPlatformWindow, E_PLATFORM_WINDOW_ACTION_SET_SIZE, oSize));
+
 				Dock(pWindow, E_DOCK_ORIENTATION_CENTER, 0.5f, m_pDragPlatformWindow);
-				m_pDragPlatformWindow->m_pContext->IO.MouseDown[0] = true;
+				((ImGuiContext*)m_pDragPlatformWindow->m_pState)->IO.MouseDown[0] = true;
 			}
 			else
 			{
@@ -885,12 +923,9 @@ namespace ImWindow
 	{
 		if ( NULL != m_pDragPlatformWindow )
 		{
-			PlatformWindowAction* pAction = new PlatformWindowAction();
-			pAction->m_pPlatformWindow = m_pDragPlatformWindow;
-			pAction->m_iFlags = E_PLATFORM_WINDOW_ACTION_HIDE;
-			m_pDragPlatformWindow->Hide();
+			m_pDragPlatformWindow->Show(false);
 			m_pDragPlatformWindow->m_bNeedRender = false;
-			m_lPlatformWindowActions.push_back(pAction);
+			m_lPlatformWindowActions.push_back(new PlatformWindowAction(m_pDragPlatformWindow, E_PLATFORM_WINDOW_ACTION_HIDE));
 		}
 		m_pDraggedWindow = NULL;
 	}
@@ -924,11 +959,11 @@ namespace ImWindow
 			{
 				if (m_bDragOnTab || m_pDragBestContainer != NULL)
 				{
-					m_pDragPlatformWindow->Hide();
+					m_pDragPlatformWindow->Show(false);
 				}
 				else
 				{
-					m_pDragPlatformWindow->Show();
+					m_pDragPlatformWindow->Show(true);
 
 					m_pDragPlatformWindow->SetPosition((int)(oCursorPos.x + m_oDragPreviewOffset.x), (int)(oCursorPos.y + m_oDragPreviewOffset.y));
 				}
@@ -990,7 +1025,9 @@ namespace ImWindow
 		{
 			ImVec2 oRectPos(oCursorPos.x - oPos.x, oCursorPos.y - oPos.y);
 
+			pPlatformWindow->SetState();
 			ImwContainer* pBestContainer = pPlatformWindow->GetContainer()->GetBestDocking(oRectPos, oOutOrientation, oOutAreaPos, oOutAreaSize, bOutOnTabArea, iOutPosition, bLargeCheck);
+			pPlatformWindow->RestoreState();
 			if (NULL != pBestContainer)
 			{
 				fOutRatio = 0.5f; //Default value
@@ -1172,7 +1209,7 @@ void ImwWindowManager::AddStatusBar(ImwStatusBar* pStatusBar)
 
 	void ImwWindowManager::InternalFloat(ImwWindow* pWindow, ImVec2 oPosition, ImVec2 oSize)
 	{
-		ImwPlatformWindow* pPlatformWindow = CreatePlatformWindow(false, m_pMainPlatformWindow, false);
+		ImwPlatformWindow* pPlatformWindow = CreatePlatformWindow(E_PLATFORM_WINDOW_TYPE_SECONDARY, m_pMainPlatformWindow);
 		if (NULL != pPlatformWindow)
 		{
 			m_lPlatformWindows.push_back(pPlatformWindow);
@@ -1193,7 +1230,7 @@ void ImwWindowManager::AddStatusBar(ImwStatusBar* pStatusBar)
 			pPlatformWindow->Dock(pWindow);
 			pPlatformWindow->SetSize((int)oSize.x, (int)oSize.y);
 			pPlatformWindow->SetPosition((int)oPosition.x, (int)oPosition.y);
-			pPlatformWindow->Show();
+			pPlatformWindow->Show(true);
 		}
 	}
 
@@ -1209,7 +1246,7 @@ void ImwWindowManager::AddStatusBar(ImwStatusBar* pStatusBar)
 			if ( (*it)->UnDock(pWindow) )
 			{
 				//Destroy empty platform window if not main window
-				if ( !(*it)->IsMain() && (*it)->GetContainer()->IsEmpty() )
+				if ( (*it)->GetType() != E_PLATFORM_WINDOW_TYPE_MAIN && (*it)->GetContainer()->IsEmpty() )
 				{
 					m_lToDestroyPlatformWindows.push_back(*it);
 				}
@@ -1227,10 +1264,7 @@ void ImwWindowManager::AddStatusBar(ImwStatusBar* pStatusBar)
 	{
 		if (NULL != pWindow && !pWindow->m_pContainer->HasUnclosableWindow())
 		{
-			PlatformWindowAction* pAction = new PlatformWindowAction();
-			pAction->m_iFlags = E_PLATFORM_WINDOW_ACTION_DESTROY;
-			pAction->m_pPlatformWindow = pWindow;
-			m_lPlatformWindowActions.push_back(pAction);
+			m_lPlatformWindowActions.push_back(new PlatformWindowAction(pWindow, E_PLATFORM_WINDOW_ACTION_DESTROY));
 		}
 	}
 

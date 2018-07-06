@@ -19,8 +19,8 @@ namespace Divide {
 
 U32 ImwWindowDivide::m_windowCount = 0;
 
-ImwWindowDivide::ImwWindowDivide(PlatformContext& context, bool bMain, bool bIsDragWindow, bool bCreateState)
-    : ImwPlatformWindow(bMain, bIsDragWindow, bCreateState)
+ImwWindowDivide::ImwWindowDivide(PlatformContext& context, ImWindow::EPlatformWindowType eType, bool bCreateState)
+    : ImwPlatformWindow(eType, bCreateState)
     , m_context(context)
     , m_pWindow(nullptr)
     , m_isMainWindow(false)
@@ -81,7 +81,7 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 
         ResourceDescriptor textureDescriptor(Util::StringFormat("ImWindow_%d", m_windowCount));
         textureDescriptor.setThreadedLoading(false);
-        textureDescriptor.setFlag(false);
+        textureDescriptor.setFlag(true);
         textureDescriptor.setPropertyDescriptor(descriptor);
         
         ResourceCache& parentCache = m_context.gfx().parent().resourceCache();
@@ -94,6 +94,9 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 
         // Store our identifier
         io.Fonts->TexID = (void *)(intptr_t)m_texture->getHandle();
+        io.Fonts->ClearInputData();
+        io.Fonts->ClearTexData();
+
         m_pWindow = &m_context.app().windowManager().getWindow(0u);
         m_isMainWindow = true;
     }
@@ -152,12 +155,12 @@ bool ImwWindowDivide::IsWindowMaximized() const
     return m_pWindow->maximized();
 }
 
-
-void ImwWindowDivide::Show() {
-    m_pWindow->hidden(false);
+bool ImwWindowDivide::IsWindowMinimized() const {
+    return m_pWindow->minimized();
 }
-void ImwWindowDivide::Hide() {
-    m_pWindow->hidden(true);
+
+void ImwWindowDivide::Show(bool bShow) {
+    m_pWindow->hidden(!bShow);
 }
 
 void ImwWindowDivide::SetSize(int iWidth, int iHeight)
@@ -175,6 +178,11 @@ void ImwWindowDivide::SetWindowMaximized(bool bMaximized)
     m_pWindow->maximized(bMaximized);
 }
 
+void ImwWindowDivide::SetWindowMinimized()
+{
+    m_pWindow->minimized(true);
+}
+
 void ImwWindowDivide::SetTitle(const char* pTitle)
 {
     m_pWindow->title(pTitle);
@@ -183,7 +191,7 @@ void ImwWindowDivide::SetTitle(const char* pTitle)
 void ImwWindowDivide::PreUpdate()
 {
 
-    ImGuiIO& oIO = ((ImGuiContext*)m_pContext)->IO;
+    ImGuiIO& oIO = ((ImGuiContext*)m_pState)->IO;
 
     //m_pWindow->update(oIO.DeltaTime);
 
@@ -202,7 +210,7 @@ void ImwWindowDivide::PreUpdate()
         m_pWindow->setCursorStyle(CursorStyle::NONE);
     } else if (oIO.MousePos.x != -1.f && oIO.MousePos.y != -1.f)
     {
-        switch (((ImGuiContext*)m_pContext)->MouseCursor)
+        switch (((ImGuiContext*)m_pState)->MouseCursor)
         {
             case ImGuiMouseCursor_Arrow:
                 m_pWindow->setCursorStyle(CursorStyle::ARROW);
@@ -244,22 +252,6 @@ void ImwWindowDivide::Render()
     RestoreState();
 }
 
-void ImwWindowDivide::Destroy() {
-    ImWindow::ImwPlatformWindow::Destroy();
-}
-
-void ImwWindowDivide::StartDrag() {
-    ImWindow::ImwPlatformWindow::StartDrag();
-}
-
-void ImwWindowDivide::StopDrag() {
-    ImWindow::ImwPlatformWindow::StopDrag();
-}
-
-bool ImwWindowDivide::IsDraging() {
-    return ImWindow::ImwPlatformWindow::IsDraging();
-}
-
 bool ImwWindowDivide::OnClose() {
     ImwPlatformWindow::OnClose();
     return true;
@@ -280,27 +272,27 @@ void ImwWindowDivide::OnSize(int iWidth, int iHeight)
 
 void ImwWindowDivide::OnMouseButton(int iButton, bool bDown)
 {
-    ((ImGuiContext*)m_pContext)->IO.MouseDown[iButton] = bDown;
+    ((ImGuiContext*)m_pState)->IO.MouseDown[iButton] = bDown;
 }
 
 void ImwWindowDivide::OnMouseMove(int iX, int iY)
 {
-    ((ImGuiContext*)m_pContext)->IO.MousePos = ImVec2((float)iX, (float)iY);
+    ((ImGuiContext*)m_pState)->IO.MousePos = ImVec2((float)iX, (float)iY);
 }
 
 void ImwWindowDivide::OnMouseWheel(int iStep)
 {
-    ((ImGuiContext*)m_pContext)->IO.MouseWheel += iStep;
+    ((ImGuiContext*)m_pState)->IO.MouseWheel += iStep;
 }
 
 void ImwWindowDivide::OnKey(Input::KeyCode eKey, bool bDown)
 {
-    ((ImGuiContext*)m_pContext)->IO.KeysDown[eKey] = bDown;
+    ((ImGuiContext*)m_pState)->IO.KeysDown[eKey] = bDown;
 }
 
 void ImwWindowDivide::OnChar(int iChar)
 {
-    ((ImGuiContext*)m_pContext)->IO.AddInputCharacter((ImwChar)iChar);
+    ((ImGuiContext*)m_pState)->IO.AddInputCharacter((ImwChar)iChar);
 }
 
 void ImwWindowDivide::RenderDrawList(ImDrawData* pDrawData)

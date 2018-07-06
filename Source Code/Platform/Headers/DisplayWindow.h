@@ -176,6 +176,7 @@ public:
     void notifyListeners(WindowEvent event, const WindowEventArgs& args);
 
 private:
+    void restore();
     /// Internally change window size
     void setDimensionsInternal(U16 w, U16 h);
     /// Window positioning is handled by SDL
