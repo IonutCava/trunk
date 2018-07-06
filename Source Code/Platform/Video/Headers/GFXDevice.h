@@ -195,11 +195,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
 
     void debugDraw(const SceneRenderState& sceneRenderState);
-    void drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
-                   const vec4<U8>& color);
-    void drawLines(const vectorImpl<Line>& lines, const mat4<F32>& globalOffset,
-                   const vec4<I32>& viewport,  //<only for ortho mode
-                   const bool inViewport = false, const bool disableDepth = false);
+    IMPrimitive& drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
+                           const vec4<U8>& color, F32 lineWidth);
+    IMPrimitive& drawLines(const vectorImpl<Line>& lines, F32 lineWidth,
+                           const mat4<F32>& globalOffset,
+                           const vec4<I32>& viewport,  //<only for ortho mode
+                           const bool inViewport = false,
+                           const bool disableDepth = false);
 
     void drawPoints(U32 numPoints, size_t stateHash,
                     ShaderProgram* const shaderProgram);
@@ -283,11 +285,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     inline RenderStage getRenderStage() const { return _renderStage; }
     /// Renders the result of plotting the specified 2D graph
-    void plot2DGraph(const Util::GraphPlot2D& plot2D,
-                     const vec4<U8>& color);
+    void plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& color);
     /// Renders the result of plotting the specified 3D graph
-    void plot3DGraph(const Util::GraphPlot3D& plot3D,
-                     const vec4<U8>& color);
+    void plot3DGraph(const Util::GraphPlot3D& plot3D, const vec4<U8>& color);
     /// Some Scene Node Types are excluded from certain operations (lights
     /// triggers, etc)
     inline bool excludeFromStateChange(const SceneNodeType& currentType) {

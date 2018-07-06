@@ -31,9 +31,10 @@ void Quadtree::createDrawCommands(
 void Quadtree::drawBBox() const {
     assert(_root);
     _root->drawBBox();
-    GFX_DEVICE.drawBox3D(_root->getBoundingBox().getMin(),
-                         _root->getBoundingBox().getMax(),
-                         vec4<U8>(0, 64, 255, 255));
+    IMPrimitive& prim = GFX_DEVICE.drawBox3D(_root->getBoundingBox().getMin(),
+                                             _root->getBoundingBox().getMax(),
+                                             vec4<U8>(0, 64, 255, 255), 8.0f);
+    prim.name("QuadtreeBoundingBox");
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {

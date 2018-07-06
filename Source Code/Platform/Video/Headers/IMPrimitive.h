@@ -94,20 +94,11 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
                             const vec4<F32>& value) {
         attribute4f(attribName, value.x, value.y, value.z, value.w);
     }
+
     virtual void end() = 0;
     virtual void endBatch() = 0;
 
-    virtual void clear() {
-        zombieCounter(0);
-        stateHash(0);
-        clearRenderStates();
-        inUse(false);
-        _worldMatrix.identity();
-        _lineWidth = 1.0f;
-        _canZombify = true;
-        _texture = nullptr;
-        _drawShader = nullptr;
-    }
+    void clear();
 
     inline void paused(bool state) { _paused = state; }
     inline bool paused() const { return _paused; }
@@ -131,11 +122,22 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
     }
     inline void resetWorldMatrix() { _worldMatrix.identity(); }
 
+    inline void name(const stringImpl& name) {
+#       ifdef _DEBUG
+        _name = name;
+#       else
+        ACKNOWLEDGE_UNUSED(name);
+#       endif
+    }
    protected:
     IMPrimitive();
-
+#ifdef _DEBUG
+    stringImpl _name;
+#endif
    public:
     virtual ~IMPrimitive();
+
+   public:
 
     ShaderProgram* _drawShader;
     Texture* _texture;

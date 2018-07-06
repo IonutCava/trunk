@@ -37,6 +37,7 @@
 
 namespace Divide {
 class GL_API;
+class glLockManager;
 namespace Attorney {
     class GLAPIShaderProgram;
 };
@@ -196,6 +197,8 @@ class glShaderProgram : public ShaderProgram {
     GLuint _shaderProgramIDTemp;
     static std::array<U32, to_const_uint(ShaderType::COUNT)> _lineOffset;
     std::array<Shader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
+
+    const std::unique_ptr<glLockManager> _lockManager;
 };
 
 namespace Attorney {

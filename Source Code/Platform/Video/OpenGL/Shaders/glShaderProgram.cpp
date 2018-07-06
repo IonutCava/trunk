@@ -1,6 +1,7 @@
 #include "Headers/glShaderProgram.h"
 
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
+#include "Platform/Video/OpenGL/Headers/glLockManager.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -15,7 +16,9 @@ glShaderProgram::glShaderProgram(const bool optimise)
     : ShaderProgram(optimise),
       _loadedFromBinary(false),
       _validated(false),
-      _shaderProgramIDTemp(0) {
+      _shaderProgramIDTemp(0),
+    _lockManager(MemoryManager_NEW glLockManager(false))
+{
     _validationQueued = false;
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramID = GLUtil::_invalidObjectID;
@@ -68,6 +71,7 @@ void glShaderProgram::validateInternal() {
 
 /// Called once per frame. Used to update internal state
 bool glShaderProgram::update(const U64 deltaTime) {
+    _lockManager->Wait();
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued) {
         // Call the internal validation function
@@ -230,6 +234,7 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
     _shaderProgramID = _shaderProgramIDTemp;
     // Pass the rest of the loading steps to the parent class
     ShaderProgram::generateHWResource(name);
+    _lockManager->Lock();
 }
 
 /// Linking a shader program also sets up all pre-link properties for the shader
@@ -527,6 +532,7 @@ bool glShaderProgram::bind() {
     if (!isValid()) {
         return false;
     }
+    _lockManager->Wait();
     // Set this program as the currently active one
     GL_API::setActiveProgram(this);
     // Pass the rest of the binding responsibilities to the parent class

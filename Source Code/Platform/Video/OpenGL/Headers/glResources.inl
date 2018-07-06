@@ -311,44 +311,35 @@ inline void dsaNamedFramebufferTextureLayer(GLuint framebuffer,
                                       layer);
 }
 
-inline void dsaNamedFramebufferDrawBuffer(
-    GLuint framebuffer, GLenum buf, const DELEGATE_CBK<bool>& bufferSetupCbk) {
+inline void dsaNamedFramebufferDrawBuffer(GLuint framebuffer, GLenum buf) {
 #ifdef GL_VERSION_4_5
     if (!GL_USE_DSA_EXTENSION) {
         glNamedFramebufferDrawBuffer(framebuffer, buf);
         return;
     }
 #endif
-
-    bufferSetupCbk();
-    glDrawBuffer(buf);
+    glext::glFramebufferDrawBufferEXT(framebuffer, buf);
 }
 
-inline void dsaNamedFramebufferDrawBuffers(
-    GLuint framebuffer, GLsizei n, const GLenum* bufs,
-    const DELEGATE_CBK<bool>& bufferSetupCbk) {
+inline void dsaNamedFramebufferDrawBuffers(GLuint framebuffer, GLsizei n,
+                                           const GLenum* bufs) {
 #ifdef GL_VERSION_4_5
     if (!GL_USE_DSA_EXTENSION) {
         glNamedFramebufferDrawBuffers(framebuffer, n, bufs);
         return;
     }
 #endif
-
-    bufferSetupCbk();
-    glDrawBuffers(n, bufs);
+    glext::glFramebufferDrawBuffersEXT(framebuffer, n, bufs);
 }
 
-inline void dsaNamedFramebufferReadBuffer(
-    GLuint framebuffer, GLenum src, const DELEGATE_CBK<bool>& bufferSetupCbk) {
+inline void dsaNamedFramebufferReadBuffer(GLuint framebuffer, GLenum src) {
 #ifdef GL_VERSION_4_5
     if (!GL_USE_DSA_EXTENSION) {
         glNamedFramebufferReadBuffer(framebuffer, src);
         return;
     }
 #endif
-
-    bufferSetupCbk();
-    glReadBuffer(src);
+    glext::glFramebufferReadBufferEXT(framebuffer, src);
 }
 
 inline GLenum dsaCheckNamedFramebufferStatus(GLuint framebuffer,

@@ -85,14 +85,18 @@ void Scene::postRender() {
 #ifdef _DEBUG
     if (renderState().drawDebugLines()) {
         if (!_lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].empty()) {
-            GFX_DEVICE.drawLines(_lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)],
-                                 mat4<F32>(), vec4<I32>(), false, false);
+            IMPrimitive& prim = GFX_DEVICE.drawLines(
+                _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)], 3.0f,
+                mat4<F32>(), vec4<I32>(), false, false);
+            prim.name("LinesRayPick");
         }
     }
     if (!_lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)].empty() &&
         renderState().drawDebugTargetLines()) {
-        GFX_DEVICE.drawLines(_lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)], mat4<F32>(),
-                             vec4<I32>(), false, false);
+        IMPrimitive& prim = GFX_DEVICE.drawLines(
+            _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)], 3.0f,
+            mat4<F32>(), vec4<I32>(), false, false);
+        prim.name("LinesObjectToTarget");
     }
 #endif
 }

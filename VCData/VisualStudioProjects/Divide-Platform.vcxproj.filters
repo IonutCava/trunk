@@ -217,6 +217,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glMemoryManager.h">
       <Filter>Video\OpenGL\Buffers\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glLockManager.h">
+      <Filter>Video\OpenGL\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -386,6 +389,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\ShaderBuffer\ShaderBuffer.cpp">
       <Filter>Video\Buffers\ShaderBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glLockManager.cpp">
+      <Filter>Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

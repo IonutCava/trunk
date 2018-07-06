@@ -32,7 +32,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GL_BUFFER_LOCK_MANAGER_H
 #define _GL_BUFFER_LOCK_MANAGER_H
 
-#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/OpenGL/Headers/glLockManager.h"
+
 // https://github.com/nvMcJohn/apitest
 // --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
@@ -41,25 +42,25 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferRange {
-    size_t mStartOffset;
-    size_t mLength;
+    size_t _startOffset;
+    size_t _length;
 
     bool Overlaps(const BufferRange& _rhs) const {
-        return mStartOffset < (_rhs.mStartOffset + _rhs.mLength) &&
-               _rhs.mStartOffset < (mStartOffset + mLength);
+        return _startOffset < (_rhs._startOffset + _rhs._length) &&
+               _rhs._startOffset < (_startOffset + _length);
     }
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 struct BufferLock {
-    BufferRange mRange;
-    GLsync mSyncObj;
+    BufferRange _range;
+    GLsync _syncObj;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-class glBufferLockManager {
+class glBufferLockManager : public glLockManager {
    public:
-    glBufferLockManager(bool _cpuUpdates);
+    glBufferLockManager(bool cpuUpdates);
     ~glBufferLockManager();
 
     void WaitForLockedRange(size_t _lockBeginBytes, size_t _lockLength);
@@ -71,15 +72,12 @@ class glBufferLockManager {
     }
 
    private:
-    void wait(GLsync* _syncObj);
     void cleanup(BufferLock* _bufferLock);
 
     vectorImpl<BufferLock> _bufferLocks;
 
     size_t _lastLockOffset;
     size_t _lastLockRange;
-    // Whether it's the CPU (true) that updates, or the GPU (false)
-    bool _CPUUpdates;
 };
 
 };  // namespace Divide

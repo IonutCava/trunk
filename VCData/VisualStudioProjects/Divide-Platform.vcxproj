@@ -85,6 +85,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glIMPrimitive.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glLockManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glResources.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\GLWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\Headers\glShader.h" />
@@ -142,6 +143,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLError.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLFWWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glIMPrimitive.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glLockManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glResources.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLStates.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glsw\bstrlib.c" />

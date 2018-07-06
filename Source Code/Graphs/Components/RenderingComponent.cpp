@@ -39,6 +39,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     // Prepare it for line rendering
     _axisGizmo->_hasLines = true;
     _axisGizmo->_lineWidth = 5.0f;
+    _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
     _axisGizmo->stateHash(GFX_DEVICE.getDefaultStateBlock(true));
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
@@ -216,8 +217,10 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
         sceneRenderState.objectState() ==
             SceneRenderState::ObjectRenderState::DRAW_BOUNDING_BOX) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
-        GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(),
-                             vec4<U8>(0, 0, 255, 255));
+        IMPrimitive&  prim = GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(),
+                             vec4<U8>(0, 0, 255, 255), 4.0f);
+        prim.name("BoundingBox_" + _parentSGN.getName());
+
         node->postDrawBoundingBox(_parentSGN);
     }
 

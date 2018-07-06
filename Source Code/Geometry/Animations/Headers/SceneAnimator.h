@@ -140,7 +140,8 @@ class SceneAnimator {
                                           const stringImpl& bname) {
         I32 bindex = boneIndex(bname);
         if (bindex == -1) {
-            return _cacheIdentity;
+            _boneTransformCache.identity();
+            return _boneTransformCache;
         }
         return _animations[animationIndex].transforms(dt).at(bindex);
     }
@@ -154,10 +155,9 @@ class SceneAnimator {
     inline const mat4<F32>& boneOffsetTransform(const stringImpl& bname) {
         I32 bindex = boneIndex(bname);
         if (bindex != -1) {
-            AnimUtils::TransformMatrix(_bonesByName[bname]->_offsetMatrix,
-                                       _cacheIdentity);
+            AnimUtils::TransformMatrix(_bones[bindex]->_offsetMatrix, _boneTransformCache);
         }
-        return _cacheIdentity;
+        return _boneTransformCache;
     }
 
     Bone* boneByName(const stringImpl& name) const;
@@ -203,7 +203,7 @@ class SceneAnimator {
     /// temp array of transforms
     vectorImpl<aiMatrix4x4> _transforms;
 
-    mat4<F32> _cacheIdentity;
+    mat4<F32> _boneTransformCache;
     LineCollection _skeletonLines;
     vectorImpl<vectorImpl<Line>> _skeletonLinesContainer;
 };

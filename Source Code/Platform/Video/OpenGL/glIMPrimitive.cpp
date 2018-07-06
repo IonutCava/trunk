@@ -46,11 +46,6 @@ void glIMPrimitive::end() { _imInterface->End(); }
 
 void glIMPrimitive::endBatch() { _imInterface->EndBatch(); }
 
-void glIMPrimitive::clear() {
-    IMPrimitive::clear();
-    _imInterface->Clear();
-}
-
 void glIMPrimitive::render(bool forceWireframe, U32 instanceCount) {
     DIVIDE_ASSERT(_drawShader != nullptr,
                   "glIMPrimitive error: Draw call received without a valid "

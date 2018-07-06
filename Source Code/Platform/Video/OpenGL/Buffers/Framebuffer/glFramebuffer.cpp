@@ -263,25 +263,18 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     if (_useDepthBuffer && !_hasDepth) {
         AddDepthBuffer();
     }
-
-    DELEGATE_CBK<bool> writeBufferFunc =
-        DELEGATE_BIND(&GL_API::setActiveFB, _framebufferHandle,
-                      FramebufferUsage::FB_WRITE_ONLY);
     // If color writes are disabled, draw only depth info
     if (_disableColorWrites) {
-        DELEGATE_CBK<bool> readBufferFunc =
-            DELEGATE_BIND(&GL_API::setActiveFB, _framebufferHandle,
-                          FramebufferUsage::FB_READ_ONLY);
-
-        GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffer(
-            _framebufferHandle, GL_NONE, writeBufferFunc);
-        GLUtil::DSAWrapper::dsaNamedFramebufferReadBuffer(_framebufferHandle, GL_NONE, readBufferFunc);
+        GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffer(_framebufferHandle,
+                                                          GL_NONE);
+        GLUtil::DSAWrapper::dsaNamedFramebufferReadBuffer(_framebufferHandle,
+                                                          GL_NONE);
         _hasColor = false;
     } else {
         if (!_colorBuffers.empty()) {
             GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffers(
                 _framebufferHandle, static_cast<GLsizei>(_colorBuffers.size()),
-                _colorBuffers.data(), writeBufferFunc);
+                _colorBuffers.data());
         }
     }
 

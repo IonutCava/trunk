@@ -35,7 +35,7 @@
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
-
+class glLockManager;
 class glTexture : public Texture {
    public:
     glTexture(TextureType type, bool flipped = false);
@@ -66,6 +66,7 @@ class glTexture : public Texture {
     std::atomic_bool _allocatedStorage;
     GLushort _mipMaxLevel;
     GLushort _mipMinLevel;
+    const std::unique_ptr<glLockManager> _lockManager;
 };
 
 };  // namespace Divide

@@ -14,7 +14,25 @@ IMPrimitive::IMPrimitive()
       _lineWidth(1.0f),
       _texture(nullptr),
       _drawShader(nullptr),
-      _stateHash(0) {}
+      _stateHash(0)
+{
+}
 
-IMPrimitive::~IMPrimitive() { clear(); }
+IMPrimitive::~IMPrimitive() 
+{
+    clear(); 
+}
+
+void IMPrimitive::clear() {
+    zombieCounter(0);
+    stateHash(0);
+    clearRenderStates();
+    inUse(false);
+    _worldMatrix.identity();
+    _lineWidth = 1.0f;
+    _canZombify = true;
+    _texture = nullptr;
+    _drawShader = nullptr;
+}
+
 };

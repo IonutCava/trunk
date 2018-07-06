@@ -213,12 +213,6 @@ void SceneAnimator::calculateBoneToWorldTransform(Bone* child) {
 /// Renders the current skeleton pose at time index dt
 const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
                                                         const D32 dt) {
-    // typedef hashMapImpl<I32/*frameIndex*/, vectorAlg::vecSize/*vectorIntex*/>
-    // LineMap;
-    // typedef hashMapImpl<I32/*animationID*/, LineMap> LineCollection;
-    // LineCollection _skeletonLines;
-    // vectorImpl<vectorImpl<Line >> _skeletonLinesContainer;
-
     I32 frameIndex = _animations[animationIndex].frameIndexAt(dt);
     LineMap& lineMap = _skeletonLines[animationIndex];
     LineMap::iterator it = lineMap.find(frameIndex);
@@ -248,15 +242,20 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
 /// Create animation skeleton
 I32 SceneAnimator::createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
                                   vectorImpl<Line>& lines) {
-    aiMatrix4x4 me = piNode->_globalTransform;
+
+    const aiMatrix4x4& me = piNode->_globalTransform;
+
+    vec3<F32> startPoint, endPoint;
     if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
-        me.Transpose();
+        startPoint.set(parent.d1, parent.d2, parent.d3);
+        endPoint.set(me.d1, me.d2, me.d3);
+    } else {
+        startPoint.set(parent.a4, parent.b4, parent.c4);
+        endPoint.set(me.a4, me.b4, me.c4);
     }
 
     if (piNode->_parent) {
-        lines.push_back(Line(vec3<F32>(parent.a4, parent.b4, parent.c4),
-                             vec3<F32>(me.a4, me.b4, me.c4),
-                             vec4<U8>(255, 0, 0, 255)));
+        lines.push_back(Line(startPoint, endPoint, vec4<U8>(255, 0, 0, 255)));
     }
 
     // render all child nodes

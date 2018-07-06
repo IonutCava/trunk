@@ -126,10 +126,12 @@ void AnimationComponent::renderSkeleton() {
     const vectorImpl<Line>& skeletonLines =
         _animator->skeletonLines(_currentAnimIndex, _currentTimeStamp);
     // Submit skeleton to gpu
-    GFX_DEVICE.drawLines(
-        skeletonLines,
+    IMPrimitive& prim = GFX_DEVICE.drawLines(
+        skeletonLines, 2.0f,
         _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix(),
         vec4<I32>(), false, true);
+
+    prim.name("Skeleton_" + _parentSGN.getName());
 }
 
 bool AnimationComponent::onDraw(RenderStage currentStage) {

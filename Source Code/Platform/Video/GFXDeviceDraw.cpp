@@ -389,14 +389,13 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement) {
 
 /// Draw the outlines of a box defined by min and max as extents using the
 /// specified world matrix
-void GFXDevice::drawBox3D(const vec3<F32>& min,
-                          const vec3<F32>& max,
-                          const vec4<U8>& color) {
+IMPrimitive& GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
+                                  const vec4<U8>& color, F32 lineWidth) {
     // Grab an available primitive
     IMPrimitive* priv = getOrCreatePrimitive();
     // Prepare it for rendering lines
     priv->_hasLines = true;
-    priv->_lineWidth = 4.0f;
+    priv->_lineWidth = lineWidth;
     priv->stateHash(_defaultStateBlockHash);
     // Create the object
     priv->beginBatch();
@@ -429,48 +428,52 @@ void GFXDevice::drawBox3D(const vec3<F32>& min,
     priv->end();
     // Finish our object
     priv->endBatch();
+
+    return *priv;
 }
 
 /// Render a list of lines within the specified constraints
-void GFXDevice::drawLines(const vectorImpl<Line>& lines,
-                          const mat4<F32>& globalOffset,
-                          const vec4<I32>& viewport,
-                          const bool inViewport,
-                          const bool disableDepth) {
-    // Check if we have a valid list. The list can be programmatically
-    // generated, so this check is required
-    if (lines.empty()) {
-        return;
-    }
+IMPrimitive& GFXDevice::drawLines(const vectorImpl<Line>& lines, F32 lineWidth,
+                                  const mat4<F32>& globalOffset,
+                                  const vec4<I32>& viewport,
+                                  const bool inViewport,
+                                  const bool disableDepth) {
     // Grab an available primitive
     IMPrimitive* priv = getOrCreatePrimitive();
-    // Prepare it for line rendering
-    priv->_hasLines = true;
-    priv->_lineWidth = 5.0f;
-    priv->stateHash(getDefaultStateBlock(disableDepth));
-    // Set the world matrix
-    priv->worldMatrix(globalOffset);
-    // If we need to render it into a specific viewport, set the pre and post
-    // draw functions to set up the
-    // needed viewport rendering (e.g. axis lines)
-    if (inViewport) {
-        priv->setRenderStates(
-            DELEGATE_BIND(&GFXDevice::setViewport, this, viewport),
-            DELEGATE_BIND(&GFXDevice::restoreViewport, this));
+    // Check if we have a valid list. The list can be programmatically
+    // generated, so this check is required
+    if (!lines.empty()) {
+        // Prepare it for line rendering
+        priv->_hasLines = true;
+        priv->_lineWidth = lineWidth;
+        priv->stateHash(getDefaultStateBlock(disableDepth));
+        // Set the world matrix
+        priv->worldMatrix(globalOffset);
+        // If we need to render it into a specific viewport, set the pre and post
+        // draw functions to set up the
+        // needed viewport rendering (e.g. axis lines)
+        if (inViewport) {
+            priv->setRenderStates(
+                DELEGATE_BIND(&GFXDevice::setViewport, this, viewport),
+                DELEGATE_BIND(&GFXDevice::restoreViewport, this));
+        }
+        // Create the object containing all of the lines
+        priv->beginBatch();
+        priv->attribute4ub("inColorData", lines[0]._color);
+        // Set the mode to line rendering
+        priv->begin(PrimitiveType::LINES);
+        // Add every line in the list to the batch
+        for (const Line& line : lines) {
+            priv->attribute4ub("inColorData", line._color);
+            priv->vertex(line._startPoint);
+            priv->vertex(line._endPoint);
+        }
+        priv->end();
+        // Finish our object
+        priv->endBatch();
     }
-    // Create the object containing all of the lines
-    priv->beginBatch();
-    priv->attribute4ub("inColorData", lines[0]._color);
-    // Set the mode to line rendering
-    priv->begin(PrimitiveType::LINES);
-    // Add every line in the list to the batch
-    for (const Line& line : lines) {
-        priv->attribute4ub("inColorData", line._color);
-        priv->vertex(line._startPoint);
-        priv->vertex(line._endPoint);
-    }
-    priv->end();
-    // Finish our object
-    priv->endBatch();
+
+    return *priv;
 }
+
 };

@@ -122,13 +122,13 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
-    drawLines(
-        _axisLines, offset * _gpuBlock._ViewMatrix.getInverse(),
+    IMPrimitive& prim = drawLines(
+        _axisLines, 3.0f, offset * _gpuBlock._ViewMatrix.getInverse(),
         vec4<I32>(
-            _renderTarget[to_uint(RenderTarget::SCREEN)]
-                    ->getWidth() -
-                128,
-            0, 128, 128),
+            _renderTarget[to_uint(RenderTarget::SCREEN)]->getWidth() - 128, 0,
+            128, 128),
         true, true);
+
+    prim.name("GFXDeviceAxisGizmo");
 }
 };
