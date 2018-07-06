@@ -303,8 +303,12 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     flushCommandBuffer(sBuffer());
 }
 
-void GFXDevice::drawFullscreenTexture(TextureData data, GFX::CommandBuffer& bufferInOut) const {
+void GFXDevice::drawTextureInRenderViewport(TextureData data, GFX::CommandBuffer& bufferInOut) const {
     drawTextureInViewport(data, _baseViewport, bufferInOut);
+}
+void GFXDevice::drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const {
+    const vec2<U16>& dim = context().app().windowManager().getActiveWindow().getDimensions();
+    drawTextureInViewport(data, Rect<I32>(0, 0, dim.width, dim.height), bufferInOut);
 }
 
 void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const {

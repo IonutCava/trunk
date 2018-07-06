@@ -354,7 +354,12 @@ public:
 
     // Shortcuts
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
-    void drawFullscreenTexture(TextureData data, GFX::CommandBuffer& bufferInOut) const;
+
+    // Render the texture over the full window dimensions regardless of the actual active rendering viewport 
+    void drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const;
+    // Render the texture using the full rendering viewport
+    void drawTextureInRenderViewport(TextureData data, GFX::CommandBuffer& bufferInOut) const;
+    // Render the texture using a custom viewport
     void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
 
 public:  // Direct API calls

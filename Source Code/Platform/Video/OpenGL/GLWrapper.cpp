@@ -874,18 +874,20 @@ void GL_API::drawText(const TextElementBatch& batch) {
 
 void GL_API::drawIMGUI(ImDrawData* data) {
     if (data != nullptr && data->Valid) {
+        GenericVertexData::IndexBuffer idxBuffer;
         GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
+            U32 vertCount = to_U32(cmd_list->VtxBuffer.size());
+            assert(vertCount < MAX_IMGUI_VERTS);
+
             cmd.cmd().firstIndex = 0;
 
-            GenericVertexData::IndexBuffer idxBuffer;
             idxBuffer.smallIndices = sizeof(ImDrawIdx) == 2;
             idxBuffer.count = to_U32(cmd_list->IdxBuffer.Size);
             idxBuffer.data = (bufferPtr)cmd_list->IdxBuffer.Data;
 
-            assert(cmd_list->VtxBuffer.size() < MAX_IMGUI_VERTS);
-            _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0u, cmd_list->VtxBuffer.Data);
+            _IMGUIBuffer->updateBuffer(0u, vertCount, 0u, cmd_list->VtxBuffer.Data);
             _IMGUIBuffer->updateIndexBuffer(idxBuffer);
 
             for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {

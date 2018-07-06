@@ -877,7 +877,7 @@ namespace Divide {
         static ImVec2 initialSize((float)w, (float)h);
         _manager->setToolbarsScaling((float)w / initialSize.x,
                                      (float)h / initialSize.y);  // Scales the PanelManager bounds based on the initialSize
-        setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);   // This line is only necessary if we have a global menu bar
+        //setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);   // This line is only necessary if we have a global menu bar
     }
 
     void PanelManager::drawToggleWindows(ImGui::PanelManagerWindowData& wd) {

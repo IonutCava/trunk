@@ -57,9 +57,9 @@ bool CEGUIInput::onKeyUp(const Input::KeyEvent& key) {
 
 // Return true if input was consumed
 bool CEGUIInput::mouseMoved(const Input::MouseEvent& arg) {
-    bool wheel = _parent.getCEGUIContext().injectMouseWheelChange(to_F32(arg.Z(true, true).rel));
-    bool move = _parent.getCEGUIContext().injectMousePosition(to_F32(arg.X(false, false).abs),
-                                                              to_F32(arg.Y(false, false).abs));
+    bool wheel = _parent.getCEGUIContext().injectMouseWheelChange(to_F32(arg.Z().rel));
+    bool move = _parent.getCEGUIContext().injectMousePosition(to_F32(arg.X().abs),
+                                                              to_F32(arg.Y().abs));
     return wheel || move;
 }
 

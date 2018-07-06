@@ -130,7 +130,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
             _ceguiRenderer->endRendering();
 
-            context.drawFullscreenTexture(getCEGUIRenderTextureData(), bufferInOut);
+            context.drawTextureInRenderWindow(getCEGUIRenderTextureData(), bufferInOut);
         }
     }
 }
@@ -199,7 +199,8 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _rootSheet->setMousePassThroughEnabled(true);
     _rootSheet->setUsingAutoRenderingSurface(false);
     _rootSheet->setPixelAligned(false);
-
+    _rootSheet->setMouseCursor("GWEN/Tree.Plus");
+    
     CEGUI::Sizef size(static_cast<float>(renderResolution.width), static_cast<float>(renderResolution.height));
     // We create a CEGUI texture target and create a GUIContext that will use it.
     _ceguiRenderTextureTarget = CEGUI::System::getSingleton().getRenderer()->createTextureTarget();
@@ -212,8 +213,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
     assert(_console);
     
-    _ceguiContext->getMouseCursor().setDefaultImage("GWEN/Tree.Plus");
-
     _console->createCEGUIWindow();
 
     _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
@@ -263,17 +262,22 @@ void GUI::destroy() {
 
 void GUI::onSizeChange(const SizeChangeParams& params) {
     if (parent().platformContext().config().gui.cegui.enabled) {
+        // Changing the window size 
         if ((params.isWindowResize || params.isFullScreen)) {
-            CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(params.width, params.height));
+            CEGUI::Sizef windowSize(params.width, params.height);
+            CEGUI::System::getSingleton().notifyDisplaySizeChanged(windowSize);
+            if (_ceguiRenderTextureTarget) {
+                _ceguiRenderTextureTarget->declareRenderSize(windowSize);
+            }
         }
 
-        if (_ceguiRenderTextureTarget) {
+        if (_rootSheet) {
             const Rect<I32>& renderViewport = parent().platformContext().activeWindow().renderingViewport();
-            CEGUI::Sizef size(static_cast<float>(renderViewport.z), static_cast<float>(renderViewport.w));
-            //_ceguiRenderTextureTarget->setArea(CEGUI::Rectf(renderViewport.x, renderViewport.y, renderViewport.z, renderViewport.w));
-            _ceguiRenderTextureTarget->declareRenderSize(size);
+            _rootSheet->setSize(CEGUI::USize(CEGUI::UDim(0.0f, to_F32(renderViewport.z)),
+                                             CEGUI::UDim(0.0f, to_F32(renderViewport.w))));
+            _rootSheet->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, to_F32(renderViewport.x)),
+                                                    CEGUI::UDim(0.0f, to_F32(renderViewport.y))));
         }
-
     }
 
     ReadLock r_lock(_guiStackLock);
