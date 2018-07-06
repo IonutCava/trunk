@@ -762,6 +762,9 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
         pushDebugMessage("OpenGL render text start!", 2);
     }
 
+    const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    U16 height = screenRT.getHeight();
+        
     fonsClearState(_fonsContext);
     for (const GUITextBatchEntry& entry : batch)
     {
@@ -787,7 +790,7 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
             fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
 
             const vectorImpl<stringImpl>& text = textLabel.text();
-            const vec2<F32>& position = entry._position;
+            vec2<F32> position(entry._position.x, height - entry._position.y);
 
             vectorAlg::vecSize lineCount = text.size();
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
