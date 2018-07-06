@@ -725,10 +725,12 @@ void WarSceneAISceneImpl::processData(const U64 deltaTime) {
 
     if (_globalWorkingMemory._teamAliveCount[0].value() == 0) {
         dynamic_cast<WarScene*>(GET_ACTIVE_SCENE())->registerPoint(0);
+        return;
     }
 
     if (_globalWorkingMemory._teamAliveCount[1].value() == 0) {
         dynamic_cast<WarScene*>(GET_ACTIVE_SCENE())->registerPoint(1);
+        return;
     }
 
     updatePositions();

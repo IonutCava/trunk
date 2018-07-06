@@ -23,6 +23,7 @@ void WarScene::registerPoint(U8 teamID) {
         flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
         AI::WarSceneAISceneImpl::reset();
     }
+    AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {
