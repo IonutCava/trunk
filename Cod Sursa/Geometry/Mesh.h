@@ -27,21 +27,29 @@ public:
 		: Object3D(position,scale,orientation) {}
 
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
-	inline vector<SubMesh* >& getSubMeshes() {return _subMeshes;}
+	
 
-	SubMesh*  getSubMesh(const string& name);
-	void                computeBoundingBox();
-	BoundingBox&        getBoundingBox() {return _bb;}
-	Shader*             getShader()      {return _shader; }
+	
+	inline vector<SubMesh* >&  getSubMeshes()   {return _subMeshes;}
+		   BoundingBox&        getBoundingBox();
+	inline Shader*             getShader()      {return _shader; }
+	inline SubMesh*            getSubMesh(const string& name);
+
 	void                setShader(Shader* s) {_shader = s;}
+	void                setPosition(vec3 position);
+
 
 	void Draw();
 	void DrawBBox();
 	bool IsInView();
-	void setPosition(vec3 position);
+	
+protected:
+
+	void computeBoundingBox();
 
 protected:
-	bool _visibleToNetwork,		 _render;
+	
+	bool _visibleToNetwork, _render, _loaded;
 	vector<SubMesh* >			 _subMeshes;
 	vector<SubMesh* >::iterator  _subMeshIterator;
 	Shader*						 _shader;

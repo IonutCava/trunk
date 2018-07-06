@@ -5,6 +5,7 @@
 glVertexBufferObject::glVertexBufferObject()
 {
 	_VBOid = 0;
+	_created = false;
 
 }
 
@@ -61,6 +62,7 @@ bool glVertexBufferObject::Create(U32 usage)
 	glGenBuffers(1, &_VBOid);
 	if(_VBOid == 0) {
 		std::cout << "[ERROR] Init VBO failed !" << std::endl;
+		_created = false;
 	}
 	else {
 		glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
@@ -79,8 +81,8 @@ bool glVertexBufferObject::Create(U32 usage)
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
-
-	return true;
+	_created = true;
+	return _created;
 }
 
 
@@ -122,6 +124,7 @@ void glVertexBufferObject::Enable_VA()
 
 void glVertexBufferObject::Enable_VBO()
 {
+	if(!_created) Create(GL_STATIC_DRAW);
 	U32 slot = 0;
 	glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 

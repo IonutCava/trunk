@@ -7,32 +7,63 @@
 
 DVDFile::DVDFile()
 {
+	_ppsteps = aiProcess_CalcTangentSpace         | // calculate tangents and bitangents if possible
+			   aiProcess_JoinIdenticalVertices    | // join identical vertices/ optimize indexing
+			   aiProcess_ValidateDataStructure    | // perform a full validation of the loader's output
+			   aiProcess_ImproveCacheLocality     | // improve the cache locality of the output vertices
+			   aiProcess_RemoveRedundantMaterials | // remove redundant materials
+			   aiProcess_FindDegenerates          | // remove degenerated polygons from the import
+			   aiProcess_FindInvalidData          | // detect invalid model data, such as invalid normal vectors
+			   aiProcess_GenUVCoords              | // convert spherical, cylindrical, box and planar mapping to proper UVs
+			   aiProcess_TransformUVCoords        | // preprocess UV transformations (scaling, translation ...)
+			   aiProcess_FindInstances            | // search for instanced meshes and remove them by references to one master
+			   aiProcess_LimitBoneWeights         | // limit bone weights to 4 per vertex
+			   aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
+			   0;
 }
 
 DVDFile::~DVDFile()
 {
+	unload();
 }
 
 bool DVDFile::unload()
 {
+	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end(); _subMeshIterator++)
+	{
+		SubMesh* s = (*_subMeshIterator);
+		if(s->unload())	delete s;
+		else return false;
+	}
+	getSubMeshes().clear();
+	if(getShader())
+	{
+		getShader()->unload();
+		delete getShader();
+	}
+	else return false;
+
 	return true;
 }
-
 bool DVDFile::load(const string& file)
 {
+	bool removeLinesAndPoints = true;
+	getName() = file;
 	Assimp::Importer importer;
-	name = file;
-	scene = importer.ReadFile( file, aiProcess_CalcTangentSpace  | 
+	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
+	
+	scene = importer.ReadFile( file, _ppsteps                    |
 								aiProcess_Triangulate            |
-								aiProcess_JoinIdenticalVertices  |
-								aiProcess_SortByPType );
+								aiProcess_SplitLargeMeshes		 |
+								aiProcess_SortByPType            |
+								aiProcess_GenSmoothNormals);
+
 	if( !scene)
 	{
 		cout << "DVDFile::load(" << file << "): " << importer.GetErrorString();
 		return false;
 	}
-
-	U32 index;
+	U32 index=0;
 	for(U32 n = 0; n < scene->mNumMeshes; n++)
 	{
 		string temp;
@@ -84,5 +115,6 @@ bool DVDFile::load(const string& file)
 		string pathName = file.substr( 0, file.rfind("/")+1 );
 		getSubMeshes()[index]->getMaterial().texture = ResourceManager::getInstance().LoadResource<Texture2DFlipped>(pathName + path);
 	}
-	return true;
+	_render = true;
+	return _render;
 }

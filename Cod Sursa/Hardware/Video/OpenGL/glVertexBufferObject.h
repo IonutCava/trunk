@@ -30,6 +30,10 @@ private:
 	void Disable_VA();	
 	void Disable_VBO();
 
+private:
+	bool _created; //VBO's can be auto-created as GL_STATIC_DRAW if Enable() is called before Create();
+				   //This helps with multi-threaded asset loading without creating separate GL contexts for each thread
+
 };
 
 #endif

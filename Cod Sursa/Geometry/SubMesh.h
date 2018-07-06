@@ -29,7 +29,7 @@ public:
 									  _geometry(GFXDevice::getInstance().newVBO()){}
 
 	bool load(const std::string& name) { computeBoundingBox(); return true;}
-	bool unload() {return true;}
+	bool unload() {getGeometryVBO()->Destroy(); getIndices().clear(); return true;}
 
 	inline VertexBufferObject* getGeometryVBO() {return _geometry;    } 
 	inline vector<U32>&        getIndices()     {return _indices;     }
@@ -44,7 +44,6 @@ private:
 	BoundingBox			_boundingBox;
 	Material		    _material;
 	vector<U32>         _indices;
-
 };
 
 #endif

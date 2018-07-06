@@ -4,6 +4,7 @@
 #include "resource.h"
 #include <aiScene.h> 
 #include "Geometry/Mesh.h"
+#include  "MultiThreading/threadHandler.h"
 
 class DVDFile : public Mesh
 {
@@ -15,8 +16,11 @@ public:
 	bool unload();
 
 private:
-	string name;
+	bool load_threaded();
+
+private:
 	const aiScene* scene;
+	U32   _ppsteps;
 };
 
 #endif

@@ -6,6 +6,7 @@
 
 void Mesh::Draw()
 {
+	if(!_render || _subMeshes.empty()) return;
 	SubMesh *s;
 	
 	glPushAttrib(GL_POLYGON_BIT);
@@ -28,6 +29,7 @@ void Mesh::Draw()
 
 void Mesh::DrawBBox()
 {
+	if(!_render) return;
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( _bb.min.x, _bb.min.y, _bb.min.z );
 		glVertex3f( _bb.max.x, _bb.min.y, _bb.min.z );
@@ -56,6 +58,7 @@ void Mesh::DrawBBox()
 
 bool Mesh::IsInView()
 {
+	if(!_render) return false;
 	if(!getBoundingBox().isComputed()) computeBoundingBox();
 	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
 	if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
@@ -78,21 +81,28 @@ bool Mesh::IsInView()
 
 void Mesh::setPosition(vec3 position)
 {
+	if(!_render) return;
 	getPosition() = position;
 	getBoundingBox().Translate(position - getBoundingBox().getCenter());
 }
 
+BoundingBox& Mesh::getBoundingBox()
+{
+	if(!_bb.isComputed()) computeBoundingBox();
+	return _bb;
+}
+
 void Mesh::computeBoundingBox()
 {
-	getBoundingBox().min = vec3(100000.0f, 100000.0f, 100000.0f);
-	getBoundingBox().max = vec3(-100000.0f, -100000.0f, -100000.0f);
+	_bb.min = vec3(100000.0f, 100000.0f, 100000.0f);
+	_bb.max = vec3(-100000.0f, -100000.0f, -100000.0f);
+
 	for(_subMeshIterator = _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
-	for(int i=0; i<(int)(*_subMeshIterator)->getGeometryVBO()->getPosition().size(); i++)
-	{
-		getBoundingBox().Add((*_subMeshIterator)->getGeometryVBO()->getPosition()[i]);
-	}
-	getBoundingBox().isComputed() = true;
+		for(int i=0; i<(int)(*_subMeshIterator)->getGeometryVBO()->getPosition().size(); i++)
+			_bb.Add((*_subMeshIterator)->getGeometryVBO()->getPosition()[i]);
+	_bb.isComputed() = true;
 }
+
 SubMesh*  Mesh::getSubMesh(const string& name)
 {
 	for(_subMeshIterator =  _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)

@@ -62,7 +62,7 @@ public:
 		  runOnce? _numberOfTicks = 1 : _numberOfTicks = -1;
 		  if(startOnCreate) startEvent();
 	  }
-	
+	~Event(){_end=true;}
 	void updateTickInterval(F32 tickInterval){_tickInterval = tickInterval;}
 	void updateTickCounter(U32 numberOfTicks){_numberOfTicks = numberOfTicks;}
 	void startEvent();
