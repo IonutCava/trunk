@@ -15,30 +15,30 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GL_FRAME_BUFFER_OBJECT_H
-#define _GL_FRAME_BUFFER_OBJECT_H
+#ifndef _GL_TEXTURE_BUFFER_OBJECT_H
+#define _GL_TEXTURE_BUFFER_OBJECT_H
 
-#include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
+#include "glFrameBufferObject.h"
 
-class glFrameBufferObject : public FrameBufferObject {
+class glTextureBufferObject : public glFrameBufferObject {
 
 public:
 
-	glFrameBufferObject() : FrameBufferObject() {};
-	virtual ~glFrameBufferObject() {}
+	glTextureBufferObject(bool cubeMap = false);
+	~glTextureBufferObject() {Destroy();}
 
-	virtual bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8,
-		                                       IMAGE_FORMATS formatEnum = RGBA) = 0;
-	virtual void Destroy() = 0;
+	bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8,
+		                               IMAGE_FORMATS formatEnum = RGBA);
+	void Destroy();
 
-	virtual void Begin(U8 nFace=0) const = 0;	
-	virtual void End(U8 nFace=0) const = 0;		
+	void Begin(U8 nFace=0) const;	
+	void End(U8 nFace=0) const;		
 
-	virtual void Bind(U8 unit=0, U8 texture = 0) = 0;		
-	virtual void Unbind(U8 unit=0) = 0;	
+	void Bind(U8 unit=0, U8 texture = 0);		
+	void Unbind(U8 unit=0);	
 
-protected:
-	bool checkStatus();
+private:
+	U32 _textureId;
 
 };
 

@@ -83,7 +83,7 @@ protected:
 	
 	virtual void changeResolution(U16 w, U16 h) = 0;
 
-	virtual FrameBufferObject*  newFBO() = 0;
+	virtual FrameBufferObject*  newFBO(FBO_TYPE type = FBO_2D_COLOR) = 0;
 	virtual VertexBufferObject* newVBO() = 0;
 	virtual PixelBufferObject*  newPBO() = 0;
 	virtual Texture2D*          newTexture2D(bool flipped = false) = 0;

@@ -45,8 +45,8 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
 
 bool Reflector::build(){
 	PRINT_FN(Locale::get("REFLECTOR_INIT_FBO"),_resolution.x,_resolution.y );
-	_reflectedTexture = GFX_DEVICE.newFBO();
-	if(!_reflectedTexture->Create(FBO_2D_COLOR, _resolution.x, _resolution.y)){
+	_reflectedTexture = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+	if(!_reflectedTexture->Create(_resolution.x, _resolution.y)){
 		return false;
 	}
 	_createdFBO = true;

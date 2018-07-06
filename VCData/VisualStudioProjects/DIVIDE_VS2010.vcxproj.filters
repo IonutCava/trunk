@@ -1070,6 +1070,24 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glTexture.cpp">
       <Filter>Hardware\Video\OpenGL\Textures</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDeferredBufferObject.cpp">
+      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDepthBufferObject.cpp">
+      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dTextureBufferObject.cpp">
+      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1639,6 +1657,24 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glTexture.h">
       <Filter>Hardware\Video\OpenGL\Textures\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDeferredBufferObject.h">
+      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDepthBufferObject.h">
+      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dTextureBufferObject.h">
+      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDeferredBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

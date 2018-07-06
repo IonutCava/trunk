@@ -90,7 +90,8 @@ void SubMesh::onDraw(){
 
 		if(_animator != NULL  && getParentMesh()->_playAnimations){
 
-			if(GFX_DEVICE.getRenderStage() == FINAL_STAGE ){
+			if(GFX_DEVICE.getRenderStage() == FINAL_STAGE ||
+				GFX_DEVICE.getRenderStage() == DEFERRED_STAGE){
 
 				if(!_transforms.empty()){
 					if(_origVerts.empty()){
@@ -138,7 +139,8 @@ void SubMesh::sceneUpdate(D32 sceneTime){
 void SubMesh::updateAnimations(D32 timeIndex){
 	// update possible animation
 	_renderSkeleton = false;
-	if(GFX_DEVICE.getRenderStage() == FINAL_STAGE){
+	if(GFX_DEVICE.getRenderStage() == FINAL_STAGE || 
+		GFX_DEVICE.getRenderStage() == DEFERRED_STAGE){
 		if (_animator != NULL && getParentMesh()->_playAnimations) {
 			 _deltaTime = timeIndex;
 			  //set the bone animation to the specified timestamp

@@ -20,9 +20,9 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader,
 	ResourceDescriptor colorNoiseTexture("noiseTexture");
 	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//noise.png");
 	_colorNoise = CreateResource<Texture>(colorNoiseTexture);
-	_normalsFBO = GFX_DEVICE.newFBO();
-	_normalsFBO->Create(FBO_2D_COLOR, width,height);
-	_outputFBO->Create(FBO_2D_COLOR, width, height);
+	_normalsFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+	_normalsFBO->Create(width,height);
+	_outputFBO->Create(width, height);
 	_stage2Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
 
 }
@@ -35,9 +35,9 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator(){
 
 void SSAOPreRenderOperator::reshape(I32 width, I32 height){
 	if(_normalsFBO){
-		_normalsFBO->Create(FBO_2D_COLOR, width,height);
+		_normalsFBO->Create(width,height);
 	}
-	_outputFBO->Create(FBO_2D_COLOR, width, height);
+	_outputFBO->Create(width, height);
 }
 
 void SSAOPreRenderOperator::operation(){

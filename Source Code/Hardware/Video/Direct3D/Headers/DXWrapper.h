@@ -21,7 +21,9 @@
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 #include "core.h"
-#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dFrameBufferObject.h"
+#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dTextureBufferObject.h"
+#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dDeferredBufferObject.h"
+#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dDepthBufferObject.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBufferObject/Headers/d3dVertexBufferObject.h"
 #include "Hardware/Video/Direct3D/Buffers/PixelBufferObject/Headers/d3dPixelBufferObject.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
@@ -45,7 +47,20 @@ private:
 	void getModelViewMatrix(mat4<F32>& mvMat);
 	void getProjectionMatrix(mat4<F32>& projMat);
 
-	inline FrameBufferObject*  newFBO()                                             {return New d3dFrameBufferObject();}
+	inline FrameBufferObject*  newFBO(FBO_TYPE type)  {
+		switch(type){
+			case FBO_2D_DEFERRED:
+				return New d3dDeferredBufferObject(); 
+			case FBO_2D_DEPTH:
+				return New d3dDepthBufferObject(); 
+			case FBO_CUBE_COLOR:
+				return New d3dTextureBufferObject(true);
+			default:
+			case FBO_2D_COLOR:
+				return New d3dTextureBufferObject(); 
+		}
+	}
+
 	inline VertexBufferObject* newVBO()                                             {return New d3dVertexBufferObject();}
 	inline PixelBufferObject*  newPBO()                                             {return New d3dPixelBufferObject();}
 	inline Texture2D*          newTexture2D(bool flipped = false)                   {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}

@@ -60,7 +60,7 @@ public:
 	inline mat4<F32>& getLightProjectionMatrix()                            {return _currentLightProjectionMatrix;}
 	inline void       setLightProjectionMatrix(const mat4<F32>& lightMatrix){_currentLightProjectionMatrix = lightMatrix;}
 
-	inline FrameBufferObject*  newFBO(){return _api.newFBO(); }
+	inline FrameBufferObject*  newFBO(FBO_TYPE type = FBO_2D_COLOR){return _api.newFBO(type); }
 	inline VertexBufferObject* newVBO(){return _api.newVBO(); }
 	inline PixelBufferObject*  newPBO(){return _api.newPBO(); }
 

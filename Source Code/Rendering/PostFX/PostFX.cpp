@@ -82,8 +82,8 @@ void PostFX::init(const vec2<U16>& resolution){
 	_enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
 	_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
 	_blurShader = NULL;
-	_screenFBO = _gfx.newFBO();
-	_depthFBO  = _gfx.newFBO();
+	_screenFBO = _gfx.newFBO(FBO_2D_COLOR);
+	_depthFBO  = _gfx.newFBO(FBO_2D_DEPTH);
 
 	ResourceDescriptor mrt("PostFX RenderQuad");
 	mrt.setFlag(true); //No default Material;
@@ -94,13 +94,13 @@ void PostFX::init(const vec2<U16>& resolution){
 	if(_enablePostProcessing){
 		_postProcessingShader = CreateResource<ShaderProgram>(ResourceDescriptor("postProcessing"));
 		if(_enableAnaglyph){
-			_anaglyphFBO[0] = _gfx.newFBO();
-			_anaglyphFBO[1] = _gfx.newFBO();
+			_anaglyphFBO[0] = _gfx.newFBO(FBO_2D_COLOR);
+			_anaglyphFBO[1] = _gfx.newFBO(FBO_2D_COLOR);
 			_anaglyphShader = CreateResource<ShaderProgram>(ResourceDescriptor("anaglyph"));
 			_eyeOffset = par.getParam<F32>("postProcessing.anaglyphOffset");
 		}
 		if(_enableBloom){
-			_bloomFBO = _gfx.newFBO();
+			_bloomFBO = _gfx.newFBO(FBO_2D_COLOR);
 			if(!_blurShader){
 				_blurShader = CreateResource<ShaderProgram>(ResourceDescriptor("blur"));
 			}
@@ -108,13 +108,13 @@ void PostFX::init(const vec2<U16>& resolution){
 			bloomOp->addInputFBO(_screenFBO);
 		}
 		if(_enableSSAO){
-			_SSAO_FBO = _gfx.newFBO();
+			_SSAO_FBO = _gfx.newFBO(FBO_2D_COLOR);
 			_SSAOShaderPass1 = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass1"));
 			PreRenderOperator* ssaOp = PreRenderStageBuilder::getInstance().addSSAOOperator(_SSAOShaderPass1, _renderQuad,_enableSSAO, _SSAO_FBO,resolution);
 		}
 
 		if(_enableDOF){
-			_depthOfFieldFBO = _gfx.newFBO();
+			_depthOfFieldFBO = _gfx.newFBO(FBO_2D_COLOR);
 			if(!_blurShader){
 				///DOF uses the same blur shader as Bloom
 				_blurShader = CreateResource<ShaderProgram>(ResourceDescriptor("blur"));
@@ -153,14 +153,14 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 		height = width/1.3333;
 	}
 
-	_screenFBO->Create(FBO_2D_COLOR, width, height);
-	_depthFBO->Create(FBO_2D_DEPTH, width, height);
+	_screenFBO->Create(width, height);
+	_depthFBO->Create(width, height);
 	_renderQuad->setDimensions(vec4<F32>(0,0,width,height));
 
 	if(!_enablePostProcessing) return;
 	if(_enableAnaglyph){
-		_anaglyphFBO[0]->Create(FBO_2D_COLOR, width, height);
-		_anaglyphFBO[1]->Create(FBO_2D_COLOR, width, height);
+		_anaglyphFBO[0]->Create(width, height);
+		_anaglyphFBO[1]->Create(width, height);
 	}
 	PreRenderStage* renderBatch = PreRenderStageBuilder::getInstance().getPreRenderBatch();
 	renderBatch->reshape(width,height);
@@ -169,6 +169,7 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 void PostFX::displaySceneWithAnaglyph(void){
 
 	_currentCamera->SaveCamera();
+	bool deferred = GFX_DEVICE.getDeferredRendering();
 	F32 _eyePos[2] = {_eyeOffset/2, -_eyeOffset};
 
 	for(I32 i=0; i<2; i++){
@@ -177,7 +178,7 @@ void PostFX::displaySceneWithAnaglyph(void){
 
 		_anaglyphFBO[i]->Begin();
 
-			SceneManager::getInstance().render(FINAL_STAGE);
+			SceneManager::getInstance().render(deferred ? DEFERRED_STAGE : FINAL_STAGE);
 		
 		_anaglyphFBO[i]->End();
 	}
@@ -205,18 +206,19 @@ void PostFX::displaySceneWithAnaglyph(void){
 void PostFX::displaySceneWithoutAnaglyph(void){
 
 	_currentCamera->RenderLookAt();
+	bool deferred = GFX_DEVICE.getDeferredRendering();
 	ParamHandler& par = ParamHandler::getInstance();
 
 	if(!_enableDOF){
 		_screenFBO->Begin();
-			SceneManager::getInstance().render(FINAL_STAGE);
+			SceneManager::getInstance().render(deferred ? DEFERRED_STAGE : FINAL_STAGE);
 		_screenFBO->End();
 	}else{
 		_depthFBO->Begin();
 			SceneManager::getInstance().render(DEPTH_STAGE);
 		_depthFBO->End();
 		_screenFBO->Begin();
-			SceneManager::getInstance().render(FINAL_STAGE);
+			SceneManager::getInstance().render(deferred ? DEFERRED_STAGE : FINAL_STAGE);
 		_screenFBO->End();
 	}
 

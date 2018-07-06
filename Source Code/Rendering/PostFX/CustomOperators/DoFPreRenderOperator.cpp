@@ -13,9 +13,9 @@ DoFPreRenderOperator::DoFPreRenderOperator(ShaderProgram* const DoFShader,
 {
 	F32 width = _resolution.width;
 	F32 height = _resolution.height;
-	_tempDepthOfFieldFBO = GFX_DEVICE.newFBO();
-	_tempDepthOfFieldFBO->Create(FBO_2D_COLOR,width,height);
-	_outputFBO->Create(FBO_2D_COLOR, width, height);
+	_tempDepthOfFieldFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+	_tempDepthOfFieldFBO->Create(width,height);
+	_outputFBO->Create(width, height);
 }
 
 DoFPreRenderOperator::~DoFPreRenderOperator() {
@@ -24,9 +24,9 @@ DoFPreRenderOperator::~DoFPreRenderOperator() {
 
 void DoFPreRenderOperator::reshape(I32 width, I32 height){
 	if(_tempDepthOfFieldFBO){
-		_tempDepthOfFieldFBO->Create(FBO_2D_COLOR, width,height);
+		_tempDepthOfFieldFBO->Create(width,height);
 	}
-	_outputFBO->Create(FBO_2D_COLOR, width, height);
+	_outputFBO->Create(width, height);
 }
 
 

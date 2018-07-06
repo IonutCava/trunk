@@ -27,4 +27,5 @@
  #define GLCheck(Func) (Func)
 #endif
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
 #endif

@@ -8,6 +8,7 @@ GLenum glStencilOpTable[STENCIL_OPERATION_PLACEHOLDER];
 GLenum glCullModeTable[CULL_MODE_PLACEHOLDER];
 GLenum glFillModeTable[FILL_MODE_PLACEHOLDER];
 GLenum glTextureTypeTable[TEXTURE_TYPE_PLACEHOLDER];
+GLenum glFormatTable[IMAGE_FORMAT_PLACEHOLDER];
 
 namespace GL_ENUM_TABLE {
 	void fill(){
@@ -61,5 +62,22 @@ namespace GL_ENUM_TABLE {
 	   glTextureTypeTable[TEXTURE_2D] = GL_TEXTURE_2D;
 	   glTextureTypeTable[TEXTURE_3D] = GL_TEXTURE_3D;
 	   glTextureTypeTable[TEXTURE_CUBE_MAP] = GL_TEXTURE_CUBE_MAP;
+
+	   
+	   glFormatTable[LUMINANCE] = GL_LUMINANCE;
+	   glFormatTable[LUMINANCE_ALPHA] = GL_LUMINANCE_ALPHA;
+	   glFormatTable[RGB] = GL_RGB;
+	   glFormatTable[RGB8] = GL_RGB8;
+	   glFormatTable[RGB8I] = GL_RGB8I;
+	   glFormatTable[RGB16] = GL_RGB16;
+	   glFormatTable[RGB16F] = GL_RGB16F;
+	   glFormatTable[BGRA] = GL_BGRA;
+	   glFormatTable[RGBA] = GL_RGBA;
+	   glFormatTable[RGBA8] = GL_RGBA8;
+	   glFormatTable[RGBA8I] = GL_RGBA8I;
+	   glFormatTable[RGBA16F] = GL_RGBA16F;
+	   glFormatTable[RGBA32F] = GL_RGBA32F;
+	   glFormatTable[DEPTH_COMPONENT] = GL_DEPTH_COMPONENT;
+	   glFormatTable[DEPTH_COMPONENT24] = GL_DEPTH_COMPONENT24;
 	}
 }

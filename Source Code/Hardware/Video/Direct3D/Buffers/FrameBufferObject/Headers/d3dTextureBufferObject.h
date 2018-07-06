@@ -1,4 +1,3 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -15,32 +14,28 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GL_FRAME_BUFFER_OBJECT_H
-#define _GL_FRAME_BUFFER_OBJECT_H
+#ifndef _D3D_TEXTURE_BUFFER_OBJECT_H_
+#define _D3D_TEXTURE_BUFFER_OBJECT_H_
 
-#include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
+#include "d3dFrameBufferObject.h"
 
-class glFrameBufferObject : public FrameBufferObject {
-
+class d3dTextureBufferObject : public d3dFrameBufferObject
+{
 public:
 
-	glFrameBufferObject() : FrameBufferObject() {};
-	virtual ~glFrameBufferObject() {}
+	d3dTextureBufferObject(bool cubeMap = false);
+	~d3dTextureBufferObject() {Destroy();}
 
-	virtual bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8,
-		                                       IMAGE_FORMATS formatEnum = RGBA) = 0;
-	virtual void Destroy() = 0;
+	bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8, 
+									   IMAGE_FORMATS formatEnum = RGBA) {return true;}
+				
+	void Destroy() {}
 
-	virtual void Begin(U8 nFace=0) const = 0;	
-	virtual void End(U8 nFace=0) const = 0;		
+	void Begin(U8 nFace=0) const {}
+	void End(U8 nFace=0) const {}
 
-	virtual void Bind(U8 unit=0, U8 texture = 0) = 0;		
-	virtual void Unbind(U8 unit=0) = 0;	
-
-protected:
-	bool checkStatus();
-
+	void Bind(U8 unit=0, U8 texture = 0) {}	
+	void Unbind(U8 unit=0) {}
 };
 
 #endif
-

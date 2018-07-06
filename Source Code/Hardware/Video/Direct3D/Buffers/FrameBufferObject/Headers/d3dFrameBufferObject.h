@@ -23,21 +23,22 @@ class d3dFrameBufferObject : public FrameBufferObject
 {
 public:
 
-	d3dFrameBufferObject(){}
-	~d3dFrameBufferObject() {Destroy();}
+	d3dFrameBufferObject() : FrameBufferObject() {}
+	virtual ~d3dFrameBufferObject() {}
 
-	bool Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_FORMAT_INTERNAL internalFormatEnum = RGBA8, TEXTURE_FORMAT formatEnum = RGBA) {return true;}
+	virtual bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8,
+											   IMAGE_FORMATS formatEnum = RGBA) = 0;
 				
-	void Destroy() {}
+	virtual void Destroy() = 0;
 
-	void Begin(U8 nFace=0) const {}
-	void End(U8 nFace=0) const {}
+	virtual void Begin(U8 nFace=0) const = 0;
+	virtual void End(U8 nFace=0) const  = 0;
 
-	void Bind(U8 unit=0, U8 texture = 0) {}	
-	void Unbind(U8 unit=0) {}
+	virtual void Bind(U8 unit=0, U8 texture = 0)  = 0;
+	virtual void Unbind(U8 unit=0) = 0;
 
-private:
-	bool checkStatus() {return true;}
+protected:
+	bool checkStatus();
 
 };
 

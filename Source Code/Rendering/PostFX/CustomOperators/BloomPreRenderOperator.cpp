@@ -15,9 +15,9 @@ BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader,
 {
 	F32 width = _resolution.width;
 	F32 height = _resolution.height;
-	_tempBloomFBO = GFX_DEVICE.newFBO();
-	_tempBloomFBO->Create(FBO_2D_COLOR,width/4,height/4);
-	_outputFBO->Create(FBO_2D_COLOR, width, height);
+	_tempBloomFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+	_tempBloomFBO->Create(width/4,height/4);
+	_outputFBO->Create(width, height);
 	_bright = CreateResource<ShaderProgram>(ResourceDescriptor("bright"));
 
 }
@@ -31,9 +31,9 @@ void BloomPreRenderOperator::reshape(I32 width, I32 height){
 	I32 w = width/4;
 	I32 h = height/4;
 	if(_tempBloomFBO){
-		_tempBloomFBO->Create(FBO_2D_COLOR, w,h);
+		_tempBloomFBO->Create(w,h);
 	}
-	_outputFBO->Create(FBO_2D_COLOR, w, h);
+	_outputFBO->Create(w, h);
 }
 
 void BloomPreRenderOperator::operation(){

@@ -41,6 +41,7 @@ void Impostor::render(SceneGraphNode* const node){
 	}
 	_dummy->getMaterial()->getShaderProgram()->bind();
 	_dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
+		_dummy->onDraw();
 		gfx.renderModel(_dummy);
 	gfx.releaseObjectState(node->getTransform());
 }

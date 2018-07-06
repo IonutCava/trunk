@@ -26,7 +26,11 @@ public:
 	Text3D(const std::string& text) :  Object3D(TEXT_3D),
 									  _text(text),
 									  _font(((void *)0x0000)/*GLUT_STROKE_ROMAN*/)
-									  {}
+	{
+		///Dummy
+		_geometry->getHWIndices().push_back(0);
+		_refreshVBO = false;
+	}
 	
 
 	inline bool setInitialData(const std::string& name) {_text = name; return true;}

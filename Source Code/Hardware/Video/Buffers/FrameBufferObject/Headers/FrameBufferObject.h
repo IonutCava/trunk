@@ -20,12 +20,13 @@
 
 #include "core.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include <boost/noncopyable.hpp>
 
-class FrameBufferObject {
+class FrameBufferObject : private boost::noncopyable{
 
 public:
 
-	virtual bool Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_FORMAT_INTERNAL internalFormatEnum = RGBA8, TEXTURE_FORMAT formatEnum = RGBA) = 0;
+	virtual bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8, IMAGE_FORMATS formatEnum = RGBA) = 0;
 	virtual void Destroy() = 0;
 
 	virtual void Begin(U8 nFace=0) const = 0;	
@@ -41,77 +42,23 @@ public:
 	virtual ~FrameBufferObject(){};
 	FrameBufferObject() : _frameBufferHandle(0),
 						  _depthBufferHandle(0),
-					      _diffuseBufferHandle(0),
-						  _positionBufferHandle(0),
-						  _normalBufferHandle(0),
 					      _width(0),
 						  _height(0), 
 						  _textureType(0),
-						  _fboType(FBO_PLACEHOLDER),
-						  _attachment(0),
-					      _useFBO(true),
 						  _bound(false),
-						  _useDepthBuffer(false)
-	{
-	    _textureId.reserve(1);
-	}
-
-	FrameBufferObject(const FrameBufferObject& c){
-		_useFBO = c._useFBO;
-		_useDepthBuffer = c._useDepthBuffer;
-		_bound = c._bound;
-		_width = c._width,
-		_height = c._height;
-		_frameBufferHandle = c._frameBufferHandle;
-		_depthBufferHandle = c._depthBufferHandle;
-		_diffuseBufferHandle = c._diffuseBufferHandle;
-		_positionBufferHandle = c._positionBufferHandle;
-		_normalBufferHandle = c._normalBufferHandle;
-		_textureType = c._textureType;
-		_fboType = c._fboType;
-	    _attachment = c._attachment;
-		for_each(U32 v, c._textureId){
-			_textureId.push_back(v);
-		}
-	}
-	FrameBufferObject& operator=(const FrameBufferObject& c){
-		_useFBO = c._useFBO;
-		_useDepthBuffer = c._useDepthBuffer;
-		_bound = c._bound;
-		_width = c._width,
-		_height = c._height;
-		_frameBufferHandle = c._frameBufferHandle;
-		_depthBufferHandle = c._depthBufferHandle;
-		_diffuseBufferHandle = c._diffuseBufferHandle;
-		_positionBufferHandle = c._positionBufferHandle;
-		_normalBufferHandle = c._normalBufferHandle;
-		_textureType = c._textureType;
-		_fboType = c._fboType;
-	    _attachment = c._attachment;
-		for_each(U32 v, c._textureId){
-			_textureId.push_back(v);
-		}
-		return *this;
-	}
+						  _useDepthBuffer(false){}
 
 protected:
 	virtual bool checkStatus() = 0;
 
 protected:
-	bool		_useFBO;
 	bool		_useDepthBuffer;
 	bool        _bound;
-	std::vector<U32>   _textureId;
 	U16		    _width, _height;
 	U32		    _frameBufferHandle;
 	U32		    _depthBufferHandle;
-	U32         _diffuseBufferHandle;
-	U32         _positionBufferHandle;
-	U32         _normalBufferHandle;
 	U32		    _textureType;
 	U8          _fboType;
-	U32		    _attachment;
-	
 };
 
 

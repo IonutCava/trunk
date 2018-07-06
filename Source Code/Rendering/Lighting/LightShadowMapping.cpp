@@ -23,16 +23,16 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 		///Create the FBO's
 		PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FBO"), _id);
 		for(U8 i = 0; i < 3; i++){
-			_depthMaps.push_back(GFX_DEVICE.newFBO());
+			_depthMaps.push_back(GFX_DEVICE.newFBO(FBO_2D_DEPTH));
 		}
 		firstPass = true;
 	}
 	if(_resolutionFactor != resolutionFactor || firstPass){
 		///Initialize the FBO's with a variable resolution
 		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _id);
-		_depthMaps[0]->Create(FBO_2D_DEPTH,2048/resolutionFactor,2048/resolutionFactor);
-		_depthMaps[1]->Create(FBO_2D_DEPTH,1024/resolutionFactor,1024/resolutionFactor);
-		_depthMaps[2]->Create(FBO_2D_DEPTH,512/resolutionFactor,512/resolutionFactor);
+		_depthMaps[0]->Create(2048/resolutionFactor,2048/resolutionFactor);
+		_depthMaps[1]->Create(1024/resolutionFactor,1024/resolutionFactor);
+		_depthMaps[2]->Create(512/resolutionFactor,512/resolutionFactor);
 		_resolutionFactor = resolutionFactor;
 	}
 

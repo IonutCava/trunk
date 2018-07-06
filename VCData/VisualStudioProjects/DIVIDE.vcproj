@@ -1321,14 +1321,38 @@
 							Name="FrameBufferObject"
 							>
 							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp"
+								>
+							</File>
+							<File
 								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureBufferObject.cpp"
 								>
 							</File>
 							<Filter
 								Name="Headers"
 								>
 								<File
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDeferredBufferObject.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthBufferObject.h"
+									>
+								</File>
+								<File
 									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureBufferObject.h"
 									>
 								</File>
 							</Filter>
@@ -1449,14 +1473,38 @@
 							Name="FrameBufferObject"
 							>
 							<File
+								RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDeferredBufferObject.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDepthBufferObject.cpp"
+								>
+							</File>
+							<File
 								RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dFrameBufferObject.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dTextureBufferObject.cpp"
 								>
 							</File>
 							<Filter
 								Name="Headers"
 								>
 								<File
+									RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDeferredBufferObject.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDepthBufferObject.h"
+									>
+								</File>
+								<File
 									RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dFrameBufferObject.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dTextureBufferObject.h"
 									>
 								</File>
 							</Filter>

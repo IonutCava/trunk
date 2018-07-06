@@ -98,7 +98,7 @@ I8 j = 1;
 F32 i = 0;
 bool _switch = false;
 void CubeScene::preRender() {
-	GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
+
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
 
 	if(i >= 360) _switch = true;
@@ -138,6 +138,7 @@ void CubeScene::preRender() {
 	//Pass 1
 	//Draw the geometry, saving parameters into the buffer
 	_deferredBuffer->Begin();
+		_GFX.setRenderStage(DEFERRED_STAGE);
 		_sceneGraph->render();
 	_deferredBuffer->End();
 } 
@@ -167,7 +168,7 @@ bool CubeScene::load(const std::string& name){
 
 bool CubeScene::loadResources(bool continueOnErrors){
 
-	_deferredBuffer = _GFX.newFBO();
+	_deferredBuffer = _GFX.newFBO(FBO_2D_DEFERRED);
 	_lightTexture = _GFX.newPBO();
 	//30 lights? >:)
 	
@@ -187,7 +188,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 	ResourceDescriptor deferred("DeferredShadingPass2");
 	_deferredShader = CreateResource<ShaderProgram>(deferred);
 
-	_deferredBuffer->Create(FBO_2D_DEFERRED,_cachedResolution.width,_cachedResolution.height);
+	_deferredBuffer->Create(_cachedResolution.width,_cachedResolution.height);
 	_lightTexture->Create(2,LightManager::getInstance().getLights().size());
 
 	F32 width = _cachedResolution.width;
@@ -277,15 +278,9 @@ void CubeScene::onKeyDown(const OIS::KeyEvent& key)
 			F32 height = _cachedResolution.height;
 			_showTextures = !_showTextures;
 			if(!_showTextures){
-				_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));
-				_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0,0,0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, 0, 0));
+				_renderQuad->setDimensions(vec4<F32>(0,0,width,height));
 			}else{
-				_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height/2, 0));
-				_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width/2, height/2, 0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0,0,0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width/2, 0, 0));
+				_renderQuad->setDimensions(vec4<F32>(0,0,width/2,height/2));
 			}
 			}break;
 		default:

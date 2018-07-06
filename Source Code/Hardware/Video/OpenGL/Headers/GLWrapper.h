@@ -20,7 +20,9 @@
 
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "core.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glFrameBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glTextureBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDeferredBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDepthBufferObject.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexBufferObject.h"
 #include "Hardware/Video/OpenGL/Buffers/PixelBufferObject/Headers/glPixelBufferObject.h"
 #include "Hardware/Video/OpenGL/Shaders/Headers/glShaderProgram.h"
@@ -51,13 +53,25 @@ private:
     void getModelViewMatrix(mat4<F32>& mvMat);
 	void getProjectionMatrix(mat4<F32>& projMat);
 
-	inline FrameBufferObject*  newFBO()                                              {return New glFrameBufferObject(); }
-	inline VertexBufferObject* newVBO()                                              {return New glVertexBufferObject(); }
-	inline PixelBufferObject*  newPBO()                                              {return New glPixelBufferObject(); }
-	inline Texture2D*          newTexture2D(bool flipped = false)                    {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
-	inline TextureCubemap*     newTextureCubemap(bool flipped = false)               {return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
-	inline ShaderProgram*      newShaderProgram()                                    {return New glShaderProgram(); }
-	inline Shader*             newShader(const std::string& name, SHADER_TYPE type)  {return New glShader(name,type); }
+	inline FrameBufferObject* newFBO(FBO_TYPE type)  {
+		switch(type){
+			case FBO_2D_DEFERRED:
+				return New glDeferredBufferObject(); 
+			case FBO_2D_DEPTH:
+				return New glDepthBufferObject(); 
+			case FBO_CUBE_COLOR:
+				return New glTextureBufferObject(true);
+			default:
+			case FBO_2D_COLOR:
+				return New glTextureBufferObject(); 
+		}
+	}
+	inline VertexBufferObject* newVBO()                                             {return New glVertexBufferObject(); }
+	inline PixelBufferObject*  newPBO()                                             {return New glPixelBufferObject(); }
+	inline Texture2D*          newTexture2D(bool flipped = false)                   {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
+	inline TextureCubemap*     newTextureCubemap(bool flipped = false)              {return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
+	inline ShaderProgram*      newShaderProgram()                                   {return New glShaderProgram(); }
+	inline Shader*             newShader(const std::string& name, SHADER_TYPE type) {return New glShader(name,type); }
 
 	void clearBuffers(U8 buffer_mask);
 	void swapBuffers();
