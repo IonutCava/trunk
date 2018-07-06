@@ -23,35 +23,27 @@ Transform::~Transform()
 
 const mat4<F32>& Transform::getMatrix() {
     if (_dirty) {
-        WriteLock w_lock(_lock);
         if (_rebuildMatrix) {
-            // Ordering - a la Ogre:
-            _worldMatrix.identity();
-            //    1. Scale
-            _worldMatrix.setScale(_transformValues._scale);
-            //    2. Rotate
-            _worldMatrix *= Divide::getMatrix(_transformValues._orientation);
+            {
+                WriteLock w_lock(_lock);
+                // Ordering - a la Ogre:
+                _worldMatrix.identity();
+                //    1. Scale
+                _worldMatrix.setScale(_transformValues._scale);
+                //    2. Rotate
+                _worldMatrix *= Divide::getMatrix(_transformValues._orientation);
+            }
             _rebuildMatrix = false;
         }
-        //    3. Translate
-        _worldMatrix.setTranslation(_transformValues._translation);
+        {
+            WriteLock w_lock(_lock);
+            //    3. Translate
+            _worldMatrix.setTranslation(_transformValues._translation);
+        }
         _dirty = false;
     }
 
     return _worldMatrix;
-}
-
-const mat4<F32>& Transform::interpolate(const TransformValues& prevTransforms, const D32 factor) {
-   if (factor < 0.90) {
-        _worldMatrixInterp.identity();
-        _worldMatrixInterp.setScale(lerp(prevTransforms._scale, getScale(), (F32)factor));
-        _worldMatrixInterp *= Divide::getMatrix(slerp(prevTransforms._orientation, getOrientation(), (F32)factor));
-        _worldMatrixInterp.setTranslation(lerp(prevTransforms._translation, getPosition(), (F32)factor));
-
-        return _worldMatrixInterp;
-    }
-
-    return getMatrix();
 }
 
 void Transform::identity() {

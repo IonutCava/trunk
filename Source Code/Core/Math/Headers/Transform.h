@@ -280,8 +280,6 @@ public:
         setDirty();
         w_lock.unlock();
     }
-    /// Interpolate the current transform values with the specified ones and return the resulting transformation matrix
-    const mat4<F32>& interpolate(const TransformValues& prevTransforms, const D32 factor);
     /// Extract the 3 transform values (position, scale, rotation) from the current instance
     inline const TransformValues& getValues() const { return _transformValues; }
     /// Compares 2 transforms
@@ -309,7 +307,7 @@ private:
     ///The actual scale, rotation and translation values
     TransformValues _transformValues;
     ///This is the actual model matrix, but it will not convert to world space as it depends on it's parent in graph
-    mat4<F32> _worldMatrix, _worldMatrixInterp;
+    mat4<F32> _worldMatrix;
     ///_dirty is set to true whenever a translation, rotation or scale is applied
     std::atomic_bool _dirty;
     ///_rebuildMatrix is set to true only when a rotation or scale is applied to avoid rebuilding matrices on translation only

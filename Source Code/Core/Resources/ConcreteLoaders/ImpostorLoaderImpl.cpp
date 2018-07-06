@@ -12,7 +12,9 @@ namespace Divide {
         if ( _descriptor.getFlag() ) {
             ptr->renderState().useDefaultMaterial( false );
         } else {
-            ptr->setMaterialTpl(CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName())));
+            Material* matTemp = CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
+            matTemp->setShadingMode(Material::SHADING_BLINN_PHONG);
+            ptr->setMaterialTpl(matTemp);
         }
 
         if ( !load( ptr, _descriptor.getName() ) ) {

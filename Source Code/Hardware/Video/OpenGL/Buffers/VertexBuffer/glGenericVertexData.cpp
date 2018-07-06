@@ -196,10 +196,9 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     SetAttributes(feedbackActive);
 
     // Write query result to the primCount field of the indirect draw command to avoid a round trip to the CPU
-    //glBindBuffer(GL_QUERY_BUFFER_AMD, _indirectDrawBuffer);
     //glGetQueryObjectuiv(queryId, GL_QUERY_RESULT_AVAILABLE, BUFFER_OFFSET(offsetof(DrawArraysIndirectCommand, primCount)));
-    //GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-    //glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(IndirectDrawCommand), &cmd, GL_DYNAMIC_COPY);
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
+    glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(IndirectDrawCommand), &cmd, GL_DYNAMIC_COPY);
 
     // Activate transform feedback if needed
     if (feedbackActive) {
@@ -212,7 +211,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
         GLenum type = command.renderWireframe() ? GL_LINE_LOOP : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
-        glDrawArraysIndirect(type, &cmd);
+        glDrawArraysIndirect(type, 0);
     }
     // Deactivate transform feedback if needed
     if (feedbackActive) {

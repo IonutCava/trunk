@@ -109,15 +109,12 @@ GFXDevice::GFXDevice() : _api(nullptr),
    // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
    RenderPassManager::getOrCreateInstance().addRenderPass(New RenderPass("diffusePass"), 1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
-
-#   ifdef _DEBUG
-        // Red X-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS, vec4<U8>(255, 0, 0, 255)));
-        // Green Y-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS, vec4<U8>(0, 255, 0, 255))); 
-        // Blue Z-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS, vec4<U8>(0, 0, 255, 255)));
-#   endif
+   // Red X-axis
+   _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255)));
+   // Green Y-axis
+   _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255))); 
+   // Blue Z-axis
+   _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
 }
 
 GFXDevice::~GFXDevice()

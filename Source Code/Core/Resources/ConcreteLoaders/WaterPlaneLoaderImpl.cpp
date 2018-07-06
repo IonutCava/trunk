@@ -48,6 +48,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const stringImp
     res->setMaterialTpl(waterMat);
 
     waterMat->dumpToFile(false);
+    waterMat->setShadingMode(Material::SHADING_BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TEXTURE_UNIT0, waterNM);
     waterMat->setShaderProgram(waterShaderProgram->getName(), FINAL_STAGE, true);
     waterMat->setShaderProgram("depthPass.PrePass", Z_PRE_PASS_STAGE, true);

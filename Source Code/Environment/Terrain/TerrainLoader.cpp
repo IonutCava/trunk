@@ -139,6 +139,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     terrainMaterial->setAmbient(vec4<F32>(DefaultColors::WHITE().rgb() / 3, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
+    terrainMaterial->setShadingMode(Material::SHADING_BLINN_PHONG);
     terrainMaterial->addShaderDefines("COMPUTE_TBN");
     terrainMaterial->addShaderDefines("SKIP_TEXTURES");
     terrainMaterial->addShaderDefines(stringAlg::toBase("MAX_TEXTURE_LAYERS " + Util::toString(terrain->_terrainTextures.size())));

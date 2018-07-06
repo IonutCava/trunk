@@ -45,7 +45,6 @@ SceneGraphNode::SceneGraphNode( SceneGraph* const sg, SceneNode* const node, con
     _instanceID = (node->GetRef() - 1);
     Material* const materialTemplate = _node->getMaterialTpl();
     _materialInstance = materialTemplate != nullptr ? materialTemplate->clone("_instance_" + name) : nullptr;
-
     _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
     _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
     _components[SGNComponent::SGN_COMP_PHYSICS]    = New PhysicsComponent(this);

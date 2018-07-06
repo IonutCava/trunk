@@ -22,21 +22,23 @@ layout(binding = SHADER_BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_M
 #endif
 
 #if defined(FRAG_SHADER)
-// x - isSelected; y - isShadowMapped; z - textureCount; w - reserved
+// x - isSelected; y - isShadowMapped; z, w - reserved
 #define buffer_integerValues dvd_Matrices._matrix4[0] 
-// x - useAlphaTest; y - textureOperation; z,w - reserved
+// x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor
 #define buffer_matProperties dvd_Matrices._matrix4[1] 
 
-#define dvd_isSelected    (buffer_integerValues.x > 0.0)
-#define dvd_shadowMapping (buffer_integerValues.y > 0.0)
-#define dvd_useAlphaTest  (buffer_matProperties.x > 0.0)
-#define dvd_TextureCount  uint(buffer_matProperties.z)
-#define dvd_texOperation  uint(buffer_matProperties.y)
-#define dvd_MatAmbient    dvd_Matrices._matrix3[0].rgb
-#define dvd_MatDiffuse    dvd_Matrices._matrix3[1]
-#define dvd_MatSpecular   dvd_Matrices._matrix3[2].rgb
-#define dvd_MatEmissive   dvd_Matrices._matrix3[3].rgb
-#define dvd_MatShininess  dvd_Matrices._matrix3[3].w
+#define dvd_isSelected     (buffer_integerValues.x > 0.0)
+#define dvd_shadowMapping  (buffer_integerValues.y > 0.0)
+#define dvd_useAlphaTest   (buffer_matProperties.x > 0.0)
+#define dvd_parallaxFactor buffer_matProperties.w
+#define dvd_reliefFactor   buffer_matProperties.w
+#define dvd_textureCount   uint(buffer_matProperties.z)
+#define dvd_texOperation   uint(buffer_matProperties.y)
+#define dvd_MatAmbient     dvd_Matrices._matrix3[0].rgb
+#define dvd_MatDiffuse     dvd_Matrices._matrix3[1]
+#define dvd_MatSpecular    dvd_Matrices._matrix3[2].rgb
+#define dvd_MatEmissive    dvd_Matrices._matrix3[3].rgb
+#define dvd_MatShininess   dvd_Matrices._matrix3[3].w
 
 #endif
 

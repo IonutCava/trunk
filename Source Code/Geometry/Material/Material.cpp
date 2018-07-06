@@ -12,6 +12,7 @@ bool Material::_shaderQueueLocked = false;
 bool Material::_serializeShaderLoad = false;
 
 Material::Material() : Resource("temp_material"),
+                       _parallaxFactor(1.0f),
                        _dirty(false),
                        _doubleSided(false),
                        _shaderThreadedLoad(true),
@@ -19,7 +20,7 @@ Material::Material() : Resource("temp_material"),
                        _useAlphaTest(false),
                        _dumpToFile(true),
                        _translucencyCheck(false),
-                       _shadingMode(SHADING_PHONG), //< phong shading by default
+                       _shadingMode(ShadingMode_PLACEHOLDER),
                        _bumpMethod(BUMP_NONE)
 {
     _textures.resize(ShaderProgram::TextureUsage_PLACEHOLDER, nullptr);
@@ -101,6 +102,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_operation = base._operation;
     cloneMat->_bumpMethod = base._bumpMethod;
     cloneMat->_shaderData = base._shaderData;
+    cloneMat->_parallaxFactor = base._parallaxFactor;
 
     return cloneMat;
 }
@@ -108,6 +110,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
 void Material::update(const U64 deltaTime){
     // build one shader per frame
     computeShaderInternal();
+    clean();
 }
 
 size_t Material::getRenderStateBlock(RenderStage currentStage) {
@@ -242,6 +245,8 @@ bool Material::computeShader(const RenderStage& renderStage, const bool computeO
         return false;
     }
 
+    DIVIDE_ASSERT(_shadingMode != ShadingMode_PLACEHOLDER, "Material computeShader error: Invalid shading mode specified!");
+
     bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD_PLUS;
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
 
@@ -307,6 +312,33 @@ bool Material::computeShader(const RenderStage& renderStage, const bool computeO
         shader += ",Skinned"; //<Use "," instead of "." will add a Vertex only property
     }
 
+    switch (_shadingMode) {
+        default:
+        case SHADING_FLAT: {
+            addShaderDefines(renderStage, "USE_SHADING_FLAT");
+            shader += ".Flat";
+        }break;
+        case SHADING_PHONG: {
+            addShaderDefines(renderStage, "USE_SHADING_PHONG");
+            shader += ".Phong";
+        }break;
+        case SHADING_BLINN_PHONG: {
+            addShaderDefines(renderStage, "USE_SHADING_BLINN_PHONG");
+            shader += ".BlinnPhong";
+        }break;
+        case SHADING_TOON: {
+            addShaderDefines(renderStage, "USE_SHADING_TOON");
+            shader += ".Toon";
+        }break;
+        case SHADING_OREN_NAYAR: {
+            addShaderDefines(renderStage, "USE_SHADING_OREN_NAYAR");
+            shader += ".OrenNayar";
+        }break;
+        case SHADING_COOK_TORRANCE: {
+            addShaderDefines(renderStage, "USE_SHADING_COOK_TORRANCE");
+            shader += ".CookTorrance";
+        }break;
+    }
     //Add any modifiers you wish
     if (!_shaderModifier.empty()){
         shader += ".";

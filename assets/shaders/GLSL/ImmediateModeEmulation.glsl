@@ -23,7 +23,7 @@ void main(){
 
 -- Fragment
 
-#include "lightingDefaults.frag"
+#include "utility.frag"
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -38,7 +38,7 @@ void main(){
         _colorOut = texture(texDiffuse0, _texCoord);
         _colorOut.rgb += _color.rgb;
     }
-	_colorOut = applyGamma(_colorOut);
+	_colorOut = ToSRGB(_colorOut);
 }
 
 -- Fragment.GUI

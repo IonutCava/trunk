@@ -711,7 +711,7 @@ namespace XML {
         mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v",50.f));
 
         mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
-
+        mat->setShadingMode(Material::SHADING_BLINN_PHONG);
         if (boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")) {
             mat->setTexture(ShaderProgram::TEXTURE_UNIT0, loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none")));
         }

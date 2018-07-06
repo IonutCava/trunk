@@ -35,15 +35,15 @@ DVDConverter::DVDConverter() : _ppsteps(0)
     aiTextureMapModeTable[aiTextureMapMode_Clamp] = TEXTURE_CLAMP_TO_EDGE;
     aiTextureMapModeTable[aiTextureMapMode_Decal] = TEXTURE_DECAL;
     aiTextureMapModeTable[aiTextureMapMode_Mirror] = TEXTURE_REPEAT;
-    aiShadingModeInternalTable[aiShadingMode_Fresnel] = Material::SHADING_FRESNEL;
-    aiShadingModeInternalTable[aiShadingMode_NoShading] = Material::SHADING_NONE;
+    aiShadingModeInternalTable[aiShadingMode_Fresnel] = Material::SHADING_COOK_TORRANCE;
+    aiShadingModeInternalTable[aiShadingMode_NoShading] = Material::SHADING_FLAT;
     aiShadingModeInternalTable[aiShadingMode_CookTorrance] = Material::SHADING_COOK_TORRANCE;
-    aiShadingModeInternalTable[aiShadingMode_Minnaert] = Material::SHADING_MINNAERT;
+    aiShadingModeInternalTable[aiShadingMode_Minnaert] = Material::SHADING_OREN_NAYAR;
     aiShadingModeInternalTable[aiShadingMode_OrenNayar] = Material::SHADING_OREN_NAYAR;
     aiShadingModeInternalTable[aiShadingMode_Toon] = Material::SHADING_TOON;
-    aiShadingModeInternalTable[aiShadingMode_Blinn] = Material::SHADING_BLINN;
+    aiShadingModeInternalTable[aiShadingMode_Blinn] = Material::SHADING_BLINN_PHONG;
     aiShadingModeInternalTable[aiShadingMode_Phong] = Material::SHADING_PHONG;
-    aiShadingModeInternalTable[aiShadingMode_Gouraud] = Material::SHADING_GOURAUD;
+    aiShadingModeInternalTable[aiShadingMode_Gouraud] = Material::SHADING_BLINN_PHONG;
     aiShadingModeInternalTable[aiShadingMode_Flat] = Material::SHADING_FLAT;
     aiTextureOperationTable[aiTextureOp_Multiply] = Material::TextureOperation_Multiply;
     aiTextureOperationTable[aiTextureOp_Add] = Material::TextureOperation_Add;
@@ -366,7 +366,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
     tempMaterial->setDiffuse(tempColorVec4);
 
     // default ambient color
-    tempColorVec4.set(0.2f, 0.2f, 0.2f, 1.0f);
+    tempColorVec4.set(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Load ambient color
     aiColor4D ambient;

@@ -407,6 +407,11 @@ inline mat4<T> getMatrix(const Quaternion<T>& q) {
     return temp;
 }
 
+template<typename T>
+inline vec3<T> getEuler(const Quaternion<T>& q, const bool toDegrees = false) {
+    vec3<T> euler; q.getEuler(&euler, toDegrees);
+    return euler;
+}
 }; //namespace Divide
 
 #endif

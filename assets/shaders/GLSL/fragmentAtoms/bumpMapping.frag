@@ -1,19 +1,12 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
-//Normal or BumpMap
-layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
-
-uniform float parallax_factor = 1.0f;
-uniform float relief_factor = 1.0f;
 uniform int bumpMapLightId = 0;
 
-const int num_steps_lin = 10;
-const int num_steps_bin = 15;
-float linear_step = 1.0 / (float(num_steps_lin));
-
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
-
+	const int num_steps_lin = 10;
+	const int num_steps_bin = 15;
+	float linear_step = 1.0 / (float(num_steps_lin));
     //Current depth position
     float depth = 0.0; 
     //Best match found (starts with last position 1.0)
@@ -44,21 +37,27 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     return best_depth;
 }
 
-vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToLightTBN){
-    vec3 lightVecTBN = normalize(pixelToLightTBN);
+vec4 ParallaxMapping(in uint bumpMapLightId, in vec2 uv){
+    vec3 lightVecTBN = vec3(0.0);
+    switch (dvd_LightSource[bumpMapLightId]._options.x){
+        case LIGHT_DIRECTIONAL      : lightVecTBN = -normalize(dvd_LightSource[bumpMapLightId]._position.xyz); break;
+        case LIGHT_OMNIDIRECTIONAL  : 
+        case LIGHT_SPOT             : lightVecTBN = normalize(_viewDirection + dvd_LightSource[bumpMapLightId]._position.xyz); break;
+    };
+
     vec3 viewVecTBN = normalize(_viewDirection);
     
     //Offset, scale and bias
-    vec2 vTexCoord = uv + ((texture(texNormalMap, uv).a - 0.5) * parallax_factor * (vec2(viewVecTBN.x, -viewVecTBN.y) / viewVecTBN.z));
+    vec2 vTexCoord = uv + ((texture(texNormalMap, uv).a - 0.5) * dvd_parallaxFactor * (vec2(viewVecTBN.x, -viewVecTBN.y) / viewVecTBN.z));
 
     //Normal mapping in TBN space
-    return Phong(vTexCoord, normalize(2.0 * texture(texNormalMap, vTexCoord).xyz - 1.0));
+    return getPixelColor(vTexCoord, normalize(2.0 * texture(texNormalMap, vTexCoord).xyz - 1.0));
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
     vec3 viewVecTBN = normalize(_viewDirection);
     //Size and search starting position in texture space
-    vec2 AB = relief_factor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;
+    vec2 AB = dvd_reliefFactor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;
 
     float h = ReliefMapping_RayIntersection(uv, AB);
     
@@ -70,12 +69,12 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
     p += v*h*viewVecTBN.z;	
     
     vec2 planes;
-    planes.x = -dvd_zPlanes.y / (dvd_zPlanes.y - dvd_zPlanes.x);
-    planes.y = -dvd_zPlanes.y * dvd_zPlanes.x / (dvd_zPlanes.y - dvd_zPlanes.x);
+    planes.x = -dvd_ZPlanesCombined.y / (dvd_ZPlanesCombined.y - dvd_ZPlanesCombined.x);
+    planes.y = -dvd_ZPlanesCombined.y * dvd_ZPlanesCombined.x / (dvd_ZPlanesCombined.y - dvd_ZPlanesCombined.x);
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-    return Phong(uv + uv_offset, normalize(2.0 * texture(texNormalMap, uv + uv_offset).xyz - 1.0));
+    return getPixelColor(uv + uv_offset, normalize(2.0 * texture(texNormalMap, uv + uv_offset).xyz - 1.0));
 }
 
 #endif //_BUMP_MAPPING_FRAG_

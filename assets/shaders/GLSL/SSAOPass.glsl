@@ -45,7 +45,7 @@ const float div_factor = 3.0 ;
 const float maxz2 =  maxz * div_factor;
  
 float LinearizeDepth(in float z) {
-    return (2.0 * dvd_zPlanes.x ) / (dvd_zPlanes.y + dvd_zPlanes.x - z * (dvd_zPlanes.y - dvd_zPlanes.x));
+    return (2.0 * dvd_ZPlanesCombined.x ) / (dvd_ZPlanesCombined.y + dvd_ZPlanesCombined.x - z * (dvd_ZPlanesCombined.y - dvd_ZPlanesCombined.x));
 }
  
 float CompareDepth(in float crtDepth, in vec2 uv1) {
@@ -56,7 +56,7 @@ float CompareDepth(in float crtDepth, in vec2 uv1) {
 void main(void) {
     vec2 UV = _texCoord + vec2(0.0011); 
     float original_pix = LinearizeDepth(texture(texDepth, UV).x);
-    float crtRealDepth = original_pix * dvd_zPlanes.y + dvd_zPlanes.x;
+    float crtRealDepth = original_pix * dvd_ZPlanesCombined.y + dvd_ZPlanesCombined.x;
     
     float increment = 0.013 - clamp(original_pix * 0.4, 0.001, 0.009);  
  
@@ -116,5 +116,5 @@ void main(void) {
     dif5 += dif6 ;
     dif  += (max(dif1, 0.0) + max(dif3, 0.0) + max(dif5, 0.0)) * 0.5;
 
-    _colorOut = (vec3(1.0 - dif * (dvd_zPlanes.y + dvd_zPlanes.x) * 255), 1.0);
+    _colorOut = (vec3(1.0 - dif * (dvd_ZPlanesCombined.y + dvd_ZPlanesCombined.x) * 255), 1.0);
 }

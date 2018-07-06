@@ -72,6 +72,7 @@ Material* const SceneNode::getMaterialTpl() {
     if (_materialTemplate == nullptr && !_renderState._noDefaultMaterial) {
         //UpgradeToWriteLock uw_lock(ur_lock);
         _materialTemplate = CreateResource<Material>(ResourceDescriptor("defaultMaterial_" + getName()));
+        _materialTemplate->setShadingMode(Material::SHADING_BLINN_PHONG);
         REGISTER_TRACKED_DEPENDENCY(_materialTemplate);
     }
     return _materialTemplate;

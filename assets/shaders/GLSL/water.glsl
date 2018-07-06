@@ -41,7 +41,7 @@ uniform float dvd_time;
 uniform ivec2 dvd_invScreenDimension;
 
 #include "lightInput.cmn"
-#include "lightingDefaults.frag"
+#include "utility.frag"
 #include "shadowMapping.frag"
 
 float Fresnel(in vec3 viewDir, in vec3 normal) {

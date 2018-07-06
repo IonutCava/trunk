@@ -277,9 +277,9 @@ void LightManager::updateAndUploadLightData( const mat4<F32>& viewMatrix ) {
         if ( light->_dirty[Light::PROPERTY_TYPE_PHYSICAL] ) {
             LightProperties temp = light->getProperties();
             if ( light->getLightType() == LIGHT_TYPE_DIRECTIONAL ) {
-                temp._position.set( vec3<F32>( viewMatrix * temp._position ), temp._position.w );
+                temp._position.set( vec3<F32>( viewMatrix * vec4<F32>(temp._position.xyz(), 0.0f) ), temp._position.w );
             } else if ( light->getLightType() == LIGHT_TYPE_SPOT ) {
-                temp._direction.set( vec3<F32>( viewMatrix * temp._direction ), temp._direction.w );
+                temp._direction.set(vec3<F32>(viewMatrix * vec4<F32>(temp._direction.xyz(), 0.0f) ), temp._direction.w);
             }
             _lightProperties.push_back( temp );
         } else {

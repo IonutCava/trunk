@@ -14,7 +14,7 @@ Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();
-    const PhysicsComponent* const transform = node->getComponent<PhysicsComponent>();
+    PhysicsComponent* const transform = node->getComponent<PhysicsComponent>();
     if(node && transform){
         _newPosition.set(transform->getPosition());
         _oldPosition.set(_newPosition);

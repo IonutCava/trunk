@@ -133,8 +133,8 @@ void outputScreen(){
 
 subroutine(OutputRoutineType)
 void outputDepth(){
-	float near = dvd_sceneZPlanes.x;
-	float far = dvd_sceneZPlanes.y;
+	float near = dvd_ZPlanesCombined.z;
+	float far  = dvd_ZPlanesCombined.w;
     _colorOut = vec4(vec3((2 * near) / (far + near - texture(texScreen, _texCoord).r * (far - near))), 1.0);
 }
 

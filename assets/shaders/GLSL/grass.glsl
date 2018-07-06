@@ -37,7 +37,7 @@ void main()
 
 -- Fragment
 
-#include "phong_lighting.frag"
+#include "BRDF.frag"
 
 flat in int _arrayLayer;
 out vec4 _colorOut;
@@ -48,7 +48,7 @@ void main (void){
     vec4 color = texture(texDiffuseGrass, vec3(_texCoord, _arrayLayer));
     if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
-    //color = Phong(_texCoord, _normalWV, color);
+    //color = getPixelColor(_texCoord, _normalWV, color);
     _colorOut = applyFog(color);
 }
 

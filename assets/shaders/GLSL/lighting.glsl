@@ -22,7 +22,7 @@ void main(void){
 
 -- Fragment
 
-#include "phong_lighting.frag"
+#include "BRDF.frag"
 
 #if defined(COMPUTE_TBN)
     #include "bumpMapping.frag"
@@ -36,13 +36,13 @@ out vec4 _colorOut;
 
 //subroutine(MappingRoutineType)
 vec4 mappingFlat(){
-	return Phong(_texCoord, _normalWV);
+	return getPixelColor(_texCoord, _normalWV);
 }
 
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
-	return Phong(_texCoord, normalize(2.0 * texture(texNormalMap, _texCoord).rgb - 1.0));
+	return getPixelColor(_texCoord, normalize(2.0 * texture(texNormalMap, _texCoord).rgb - 1.0));
 }
 
 //subroutine(MappingRoutineType)
@@ -52,28 +52,21 @@ vec4 mappingRelief(){
 
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
-    vec3 lightDir = vec3(0.0);
-    switch (dvd_LightSource[bumpMapLightId]._options.x){
-        case LIGHT_DIRECTIONAL      : lightDir = -normalize(dvd_LightSource[bumpMapLightId]._position.xyz); break;
-        case LIGHT_OMNIDIRECTIONAL  : 
-        case LIGHT_SPOT             : lightDir = normalize(_viewDirection + dvd_LightSource[bumpMapLightId]._position.xyz); break;
-    };
-
-	return ParallaxMapping(_texCoord, lightDir);
+	return ParallaxMapping(bumpMapLightId, _texCoord);
 }
 #endif
 
 void main (void){
-	//_colorOut = applyGamma(applyFog(MappingRoutine()));
+	//_colorOut = ToSRGB(applyFog(MappingRoutine()));
 #if defined(COMPUTE_TBN)
 #	if defined(USE_PARALLAX_MAPPING)
-    _colorOut = applyGamma(applyFog(ParallaxMapping()));
+    _colorOut = ToSRGB(applyFog(ParallaxMapping()));
 #	elif defined(USE_RELIEF_MAPPING)
-    _colorOut = applyGamma(applyFog(ReliefMapping()));
+    _colorOut = ToSRGB(applyFog(ReliefMapping()));
 #	else
-    _colorOut = applyGamma(applyFog(mappingNormal()));
+    _colorOut = ToSRGB(applyFog(mappingNormal()));
 #	endif
 #else
-	_colorOut = applyGamma(applyFog(mappingFlat()));
+	_colorOut = ToSRGB(applyFog(mappingFlat()));
 #endif
 }   

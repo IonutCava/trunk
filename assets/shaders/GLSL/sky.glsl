@@ -18,7 +18,7 @@ uniform vec3 sun_vector;
 uniform vec3 sun_color;
 uniform samplerCube texSky;
 
-#include "lightingDefaults.frag"
+#include "utility.frag"
 
 vec3 sunColor(){
 	vec3 vert = normalize(_vertex);
@@ -38,5 +38,5 @@ vec3 sunColor(){
 void main (void){
 
     vec3 sky_color = texture(texSky, _vertex.xyz).rgb;
-    _skyColor = applyGamma(vec4(enable_sun ? sky_color * sunColor() : sky_color, 1.0));
+    _skyColor = vec4(ToSRGB(enable_sun ? sky_color * sunColor() : sky_color), 1.0);
 }

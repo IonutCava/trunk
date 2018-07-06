@@ -54,11 +54,11 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    float n = dvd_zPlanes.x;
-    float f = dvd_zPlanes.y * 0.5;
+    float n = dvd_ZPlanesCombined.x;
+    float f = dvd_ZPlanesCombined.y * 0.5;
     if (useScenePlanes){
-        n = dvd_sceneZPlanes.x;
-        f = dvd_sceneZPlanes.y * 0.5;
+        n = dvd_ZPlanesCombined.z;
+        f = dvd_ZPlanesCombined.w * 0.5;
     }
 
     float depth = texture(texDiffuse0, _texCoord).r;
@@ -91,11 +91,11 @@ uniform bool useScenePlanes = false;
 
 void main()
 {
-    float n = dvd_zPlanes.x;
-    float f = dvd_zPlanes.y * 0.5;
+    float n = dvd_ZPlanesCombined.x;
+    float f = dvd_ZPlanesCombined.y * 0.5;
     if (useScenePlanes){
-        n = dvd_sceneZPlanes.x;
-        f = dvd_sceneZPlanes.y * 0.5;
+        n = dvd_ZPlanesCombined.z;
+        f = dvd_ZPlanesCombined.w * 0.5;
     }
 
     float depth = texture(texDiffuse0, vec3(_texCoord, layer)).r;

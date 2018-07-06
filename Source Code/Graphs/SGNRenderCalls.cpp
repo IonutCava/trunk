@@ -143,7 +143,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     Material* mat = getMaterialInstance();
     if ( mat ) {
         mat->update( deltaTime );
-        mat->clean();
     }
 
     if ( _shouldDelete ) {
@@ -264,7 +263,7 @@ void SceneGraphNode::isInViewCallback(){
     if (mat){
         mat->getMaterialMatrix(_materialColorMatrix);
         _materialPropertyMatrix.setCol(1, vec4<F32>((mat->isTranslucent() ? (mat->useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) : false) ? 1.0f : 0.0f,
-                                                    (F32)mat->getTextureOperation(), (F32)mat->getTextureCount(), 0.0f));
+                                                    (F32)mat->getTextureOperation(), (F32)mat->getTextureCount(), mat->getParallaxFactor()));
     }
 
 }
@@ -272,7 +271,7 @@ void SceneGraphNode::isInViewCallback(){
 #ifdef _DEBUG
 /// Draw the axis arrow gizmo
 void SceneGraphNode::drawDebugAxis() {
-    const PhysicsComponent* const transform = getComponent<PhysicsComponent>();
+    PhysicsComponent* const transform = getComponent<PhysicsComponent>();
     if (transform) {
         mat4<F32> tempOffset(getMatrix(transform->getOrientation()));
         tempOffset.setTranslation(transform->getPosition());

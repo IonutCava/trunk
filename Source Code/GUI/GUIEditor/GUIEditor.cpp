@@ -83,11 +83,10 @@ bool GUIEditor::Handle_ChangeSelection(SceneGraphNode* const newNode) {
 
 void GUIEditor::TrackSelection() {
     if (_currentSelection && !_pauseSelectionTracking) {
-        const PhysicsComponent* const selectionTransform = _currentSelection->getComponent<PhysicsComponent>();
+        PhysicsComponent* const selectionTransform = _currentSelection->getComponent<PhysicsComponent>();
         const vec3<F32>& localPosition = selectionTransform->getPosition();
         const vec3<F32>& localScale = selectionTransform->getScale();
-        vec3<F32> localOrientation;
-        selectionTransform->getOrientation().getEuler(&localOrientation, true);
+        vec3<F32> localOrientation = Divide::getEuler(selectionTransform->getOrientation(), true);
 
         _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_X] = localPosition.x;
         _currentValues[TRANSFORM_POSITION][CONTROL_FIELD_Y] = localPosition.y;

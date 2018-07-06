@@ -57,4 +57,23 @@ int _shadowTempInt = -1;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
+
+float shadow_loop(){
+    // Early-out if shadows are disabled
+    if (!dvd_shadowMapping) return 1.0;
+
+    float shadow = 1.0;
+    for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++){
+        if (_lightCount == i) break;
+
+        if (dvd_LightSource[i]._options.y == 1)
+            switch (dvd_LightSource[i]._options.x){
+            case LIGHT_DIRECTIONAL: shadow *= applyShadowDirectional(i, dvd_ShadowSource[i]); break;
+                //case LIGHT_OMNIDIRECTIONAL : shadow *= applyShadowPoint(i, dvd_ShadowSource[i]);       break;
+                //case LIGHT_SPOT            : shadow *= applyShadowSpot(i, dvd_ShadowSource[i]);        break;
+        }
+    }
+
+    return clamp(shadow, 0.2, 1.0);
+}
 #endif //_SHADOW_MAPPING_FRAG_

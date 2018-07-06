@@ -32,7 +32,7 @@ void main(void){
 
 -- Fragment
 
-#include "phong_lighting.frag"
+#include "BRDF.frag"
 #include "terrainSplatting.frag"
 
 in vec2 _uv0;
@@ -50,7 +50,7 @@ out vec4 _colorOut;
 vec4 computeLightInfoLOD1Frag() {
     vec4 color = vec4(0.0);
     getColorNormal(color);
-    return Phong(_texCoord, _normalWV, color);
+    return getPixelColor(_texCoord, _normalWV, color);
 }
 
 //subroutine(TerrainMappingType)
@@ -58,7 +58,7 @@ vec4 computeLightInfoLOD0Frag() {
     vec4 color = vec4(0.0);
     vec3 tbn = vec3(0.0);
     getColorAndTBNNormal(color, tbn);
-    return Phong(_texCoord, tbn, color);
+    return getPixelColor(_texCoord, tbn, color);
 }
 
 
@@ -71,7 +71,7 @@ vec4 UnderwaterColor() {
     vec3 tbn = vec3(0.0);
     getColorAndTBNUnderwater(color, tbn);
 
-    return Phong(_texCoord, tbn, color);
+    return getPixelColor(_texCoord, tbn, color);
 }
 
 vec4 UnderwaterMappingRoutine(){

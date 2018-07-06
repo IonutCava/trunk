@@ -74,15 +74,11 @@ public:
     /// This enum matches the ASSIMP one on a 1-to-1 basis
     enum ShadingMode {
         SHADING_FLAT = 0x1,
-        SHADING_GOURAUD = 0x2,
-        SHADING_PHONG = 0x3,
-        SHADING_BLINN = 0x4,
-        SHADING_TOON = 0x5,
-        SHADING_OREN_NAYAR = 0x6,
-        SHADING_MINNAERT = 0x7,
-        SHADING_COOK_TORRANCE = 0x8,
-        SHADING_NONE = 0x9,
-        SHADING_FRESNEL = 0xa,
+        SHADING_PHONG = 0x2,
+        SHADING_BLINN_PHONG = 0x3,
+        SHADING_TOON = 0x4,
+        SHADING_OREN_NAYAR = 0x5,
+        SHADING_COOK_TORRANCE = 0x6,
         ShadingMode_PLACEHOLDER = 0xb
     };
 
@@ -245,21 +241,24 @@ public:
         setShaderProgram(shader, REFLECTION_STAGE, computeOnAdd, shaderCompileCallback);
     }
     size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
+    
+    inline void setParallaxFactor(F32 factor) { _parallaxFactor = std::min(0.01f, factor); }
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
 
-   inline void getMaterialMatrix(mat4<F32>& retMatrix) const {
+    inline void getMaterialMatrix(mat4<F32>& retMatrix) const {
         retMatrix.setCol(0,_shaderData._ambient);
         retMatrix.setCol(1,_shaderData._diffuse);
         retMatrix.setCol(2,_shaderData._specular);
         retMatrix.setCol(3,vec4<F32>(_shaderData._emissive, _shaderData._shininess));
     }
 
-    inline U8    getTextureCount() const {return _shaderData._textureCount;}
+    inline F32 getParallaxFactor() const { return _parallaxFactor;}
+    inline U8  getTextureCount()   const { return _shaderData._textureCount;}
 
-                 size_t            getRenderStateBlock(RenderStage currentStage);
+                    size_t            getRenderStateBlock(RenderStage currentStage);
     inline       Texture*	 const getTexture(ShaderProgram::TextureUsage textureUsage) {return _textures[textureUsage];}
-             ShaderInfo&           getShaderInfo(RenderStage renderStage = FINAL_STAGE);
+                ShaderInfo&           getShaderInfo(RenderStage renderStage = FINAL_STAGE);
     
     inline const TextureOperation& getTextureOperation() const { return _operation; }
     inline const ShaderData&       getShaderData()       const { return _shaderData; }
@@ -297,6 +296,7 @@ private:
     ShadingMode _shadingMode;
     stringImpl _shaderModifier; //<use for special shader tokens, such as "Tree"
     vectorImpl<TranslucencySource > _translucencySource;
+    F32 _parallaxFactor; //< parallax/relief factor (higher value > more pronounced effect)
     bool _dirty;
     bool _dumpToFile;
     bool _translucencyCheck;

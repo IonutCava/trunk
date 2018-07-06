@@ -60,10 +60,12 @@ public:
 
     void cookCollisionMesh(const stringImpl& sceneName);
 
-    inline const TransformValues& prevTransformValues() const { return _prevTransformValues; }
+    void reset();
 
-    mat4<F32> getWorldMatrix( D32 interpolationFactor, const bool local = false);
-    mat4<F32> getWorldMatrix( const bool local = false );
+    const mat4<F32>& getWorldMatrix( D32 interpolationFactor, const bool local = false);
+    inline  const mat4<F32>& getWorldMatrix(const bool local = false) {
+        return getWorldMatrix(1.0, local);
+    }
 
     /// Component <-> Transform interface
     void setPosition(const vec3<F32>& position);
@@ -103,43 +105,33 @@ public:
         return _transform != nullptr ? _transform->isUniformScaled() : true;
     }
     /// Return the scale factor
-    vec3<F32> getScale( const bool local = false ) const;
+    const vec3<F32>& getScale( const bool local = false );
     /// Return the position
-    vec3<F32> getPosition( const bool local = false ) const;
+    const vec3<F32>& getPosition( const bool local = false );
     /// Return the orientation quaternion
-    Quaternion<F32> getOrientation( const bool local = false ) const;
+    const Quaternion<F32>& getOrientation( const bool local = false );
     
 protected:
     friend class SceneGraphNode;
-    inline void useDefaultTransform(const bool state) { 
-        _noDefaultTransform = !state;
-    }
+    void useDefaultTransform(const bool state);
+
     inline bool transformUpdated() const {
         return _transformUpdated;
     }
     inline void transformUpdated(const bool state) {
         _transformUpdated = state;
     }
-    inline bool transformQueried() const {
-        return _transformQueried;
-    }
-    inline void transformQueried( const bool state ) {
-        _transformQueried = state;
-    }
+
 private:
     void setTransformDirty();
-    Transform* getTransform();
 
 protected:
-    PhysicsAsset* _physicsAsset;
-    PhysicsGroup _physicsCollisionGroup;
-    Transform*   _transform;
+    PhysicsAsset*   _physicsAsset;
+    PhysicsGroup    _physicsCollisionGroup;
+    Transform*      _transform;
     TransformValues _prevTransformValues;
 
-    bool _noDefaultTransform;
     bool _transformUpdated;
-    bool _transformQueried;
-
     /// Transform cache values
     mat4<F32> _worldMatrix;
     vec3<F32> _scaleCache;

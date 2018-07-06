@@ -219,6 +219,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
                 boxMaterial->setAmbient(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
                 boxMaterial->setEmissive(vec4<F32>(0.1f,0.1f,0.1f,1.0f));
                 boxMaterial->setShininess(2);
+                boxMaterial->setShadingMode(Material::SHADING_BLINN_PHONG);
                 sceneNode->setMaterialTpl(boxMaterial);
             }
         }
@@ -240,6 +241,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
             planeMaterial->setAmbient(vec4<F32>(0.4f,0.1f,0.1f,1.0f));
             planeMaterial->setEmissive(vec4<F32>(0.3f,0.3f,0.3f,1.0f));
             planeMaterial->setShininess(0);
+            planeMaterial->setShadingMode(Material::SHADING_BLINN_PHONG);
             shadowState = false;
             sceneNode->setMaterialTpl(planeMaterial);
         }break;

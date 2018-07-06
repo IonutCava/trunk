@@ -39,6 +39,7 @@ VARYING vec3 _normalWV;
 VARYING vec3 _tangentWV;
 VARYING vec3 _bitangentWV;
 #endif
+
 VARYING vec3 _viewDirection;
 flat VARYING uint _lightCount;
 

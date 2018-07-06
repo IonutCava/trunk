@@ -218,7 +218,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
 
     I32 newParticles = _descriptor._emissionInterval + random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
     newParticles = (I32)(newParticles * delta) / (sgn->lodLevel() + 1);
-    const PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
+    PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
     const vec3<F32>& origin = transform->getPosition();
     const Quaternion<F32>& orientation = transform->getOrientation();
