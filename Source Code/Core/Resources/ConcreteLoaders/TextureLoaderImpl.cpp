@@ -37,7 +37,6 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
             type = TextureType::TEXTURE_2D_ARRAY;
         }
     }
-
     stringImpl resourceLocation = _descriptor.getResourceLocation();
 
     size_t numCommas = std::count(std::cbegin(_descriptor.getResourceName()),
@@ -66,6 +65,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                                               _descriptor.getResourceName(),
                                               _descriptor.getResourceLocation(),
                                               type,
+                                              !_descriptor.getFlag(),
                                               threadedLoad),
                     DeleteResource(_cache));
 

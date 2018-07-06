@@ -9,8 +9,9 @@ d3dTexture::d3dTexture(GFXDevice& context,
                        const stringImpl& resourceName,
                        const stringImpl& resourceLocation,
                        TextureType type,
+                       bool isFlipped,
                        bool asyncLoad)
-    : Texture(context, descriptorHash, name, resourceName, resourceLocation, type, asyncLoad)
+    : Texture(context, descriptorHash, name, resourceName, resourceLocation, type, isFlipped, asyncLoad)
 {
     _type = d3dTextureTypeTable[to_U32(type)];
 }

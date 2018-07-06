@@ -92,8 +92,8 @@ void TerrainChunk::ComputeIndicesArray(U8 depth,
 
     vec2<U32> heightmapDataSize = heightMapSize / (div);
 
-    U32 nHMWidth = heightmapDataSize.x + 1;
-    U32 nHMHeight = heightmapDataSize.y + 1;
+    U32 nHMWidth = heightmapDataSize.x;
+    U32 nHMHeight = heightmapDataSize.y;
     U32 nHMOffsetX = position.x;
     U32 nHMOffsetY = position.y;
 

@@ -45,6 +45,7 @@ class glTexture final : public Texture {
                        const stringImpl& resourceName,
                        const stringImpl& resourceLocation,
                        TextureType type,
+                       bool isFlipped,
                        bool asyncLoad);
     ~glTexture();
 

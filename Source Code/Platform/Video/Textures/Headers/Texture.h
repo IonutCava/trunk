@@ -69,6 +69,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
                      const stringImpl& resourceName,
                      const stringImpl& resourceLocation,
                      TextureType type,
+                     bool isFlipped,
                      bool asyncLoad);
     virtual ~Texture();
 
@@ -172,6 +173,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     U16 _height;
     U16 _mipMaxLevel;
     U16 _mipMinLevel;
+    bool _flipped;
     bool _lockMipMaps;
     bool _mipMapsDirty;
     bool _samplerDirty;

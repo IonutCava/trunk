@@ -356,6 +356,7 @@ public:
                                   const stringImpl& resourceName,
                                   const stringImpl& resourceLocation,
                                   TextureType type,
+                                  bool isFlipped,
                                   bool asyncLoad) const;
     ShaderProgram*     newShaderProgram(size_t descriptorHash,
                                         const stringImpl& name,

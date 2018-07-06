@@ -77,8 +77,8 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     vec4 view0 = mvMatrix * vec4(p0.xyz + offset, p0.w);
     vec4 view1 = mvMatrix * vec4(p1.xyz + offset, p1.w);
 
-    float MinDepth = 10.0;
-    float MaxDepth = 100000.0;
+    float MinDepth = 5.0;
+    float MaxDepth = 150.0;
 
     float d0 = clamp((abs(p0.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
     float d1 = clamp((abs(p1.z) - MinDepth) / (MaxDepth - MinDepth), 0.0, 1.0);
@@ -172,6 +172,8 @@ float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 
 void main(void)
 {
+    PassData(gl_InvocationID);
+
     mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
 
     // Outer tessellation level
@@ -180,6 +182,11 @@ void main(void)
     gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
     gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
 
+    /*gl_TessLevelOuter[0] = dlodSphere(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
+    gl_TessLevelOuter[1] = dlodSphere(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
+    gl_TessLevelOuter[2] = dlodSphere(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
+    gl_TessLevelOuter[3] = dlodSphere(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);*/
+    
     float tscale_negx = dvd_TerrainData[VAR.dvd_drawID]._tScale.x;
     float tscale_negz = dvd_TerrainData[VAR.dvd_drawID]._tScale.y;
     float tscale_posx = dvd_TerrainData[VAR.dvd_drawID]._tScale.z;
@@ -207,8 +214,6 @@ void main(void)
 
     // Pass the patch verts along
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
-
-    PassData(gl_InvocationID);
 
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[gl_InvocationID] = gl_TessLevelOuter[0];
@@ -410,7 +415,7 @@ void main(void)
         gl_Position = getWVPPositon(i);
 
 #if !defined(SHADOW_PASS)
-        _waterDistance = gl_in[i].gl_ClipDistance[0];
+        _waterDistance = dvd_clip_plane[0].w;
         _waterDepth = waterDepth(i);
 
         _scrollingUV = getScrollingUV(i);
@@ -439,7 +444,7 @@ void main(void)
     gl_Position = getWVPPositon(0);
 
 #if !defined(SHADOW_PASS)
-    _waterDistance = gl_in[0].gl_ClipDistance[0];
+    _waterDistance = dvd_clip_plane[0].w;
     _scrollingUV = getScrollingUV(0);
     _waterDepth = waterDepth(0);
 #   if defined(_DEBUG)

@@ -20,6 +20,7 @@ Texture::Texture(GFXDevice& context,
                  const stringImpl& resourceName,
                  const stringImpl& resourceLocation,
                  TextureType type,
+                 bool isFlipped,
                  bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
       GraphicsResource(context, getGUID()),
@@ -28,6 +29,7 @@ Texture::Texture(GFXDevice& context,
       _samplerDirty(true),
       _mipMapsDirty(true),
       _hasTransparency(false),
+      _flipped(isFlipped),
       _asyncLoad(asyncLoad)
 {
     _width = _height = 0;
@@ -129,7 +131,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     // Create a new imageData object
     ImageTools::ImageData img;
     // Flip image if needed
-    img.flip(true);
+    img.flip(_flipped);
     // Save file contents in  the "img" object
     ImageTools::ImageDataInterface::CreateImageData(name, img);
 

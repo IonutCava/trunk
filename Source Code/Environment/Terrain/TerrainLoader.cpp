@@ -65,6 +65,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         textureBlendMap.setResourceName(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
         textureBlendMap.setPropertyDescriptor(blendMapSampler);
         textureBlendMap.setEnumValue(to_base(TextureType::TEXTURE_2D));
+        textureBlendMap.setFlag(true);
         textureLayer->setBlendMap(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
 
         arrayLocation.clear();
@@ -170,6 +171,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         textureNormalMaps.setResourceLocation(terrainMapLocation);
         textureNormalMaps.setResourceName(arrayLocation);
         textureNormalMaps.setPropertyDescriptor(normalSampler);
+        textureNormalMaps.setFlag(true);
         textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
 
         Attorney::TerrainLoader::addTextureLayer(*terrain, textureLayer);
@@ -180,22 +182,11 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
 
     const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
-
-    U16 heightmapWidth = terrainDimensions.width;
-    U16 heightmapHeight = terrainDimensions.height;
-
-    if (heightmapWidth % 2 == 0) {
-        heightmapWidth++;
-    }
-    if (heightmapHeight % 2 == 0) {
-        heightmapHeight++;
-    }
-
     const vec2<F32>& altitudeRange = terrainDescriptor->getAltitudeRange();
 
-    Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), heightmapWidth, heightmapHeight);
+    Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
-    Attorney::TerrainLoader::dimensions(*terrain).set(heightmapWidth, heightmapHeight);
+    Attorney::TerrainLoader::dimensions(*terrain).set(terrainDimensions.width, terrainDimensions.height);
     Attorney::TerrainLoader::scaleFactor(*terrain).set(terrainDescriptor->getScale());
     Attorney::TerrainLoader::offsetPosition(*terrain).set(terrainDescriptor->getPosition());
     Attorney::TerrainLoader::altitudeRange(*terrain).set(altitudeRange);
@@ -212,8 +203,8 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
     terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " + to_stringImpl(textureCount));
-    terrainMaterial->setShaderDefines("TERRAIN_WIDTH " + to_stringImpl(heightmapWidth));
-    terrainMaterial->setShaderDefines("TERRAIN_LENGTH " + to_stringImpl(heightmapHeight));
+    terrainMaterial->setShaderDefines("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width));
+    terrainMaterial->setShaderDefines("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
     terrainMaterial->setShaderDefines("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
     terrainMaterial->setShaderDefines("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
     terrainMaterial->setShaderDefines("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
@@ -242,10 +233,11 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     underwaterDetailTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
-    ResourceDescriptor heightMapTexture("Terrain Underwater Detail_" + name);
+    ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.setResourceLocation(terrainDescriptor->getVariable("heightmapLocation"));
     heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightmap"));
-    heightMapTexture.setPropertyDescriptor(albedoSampler);
+    heightMapTexture.setPropertyDescriptor(heightMapSampler);
+    heightMapTexture.setFlag(true);
     heightMapTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
@@ -259,10 +251,10 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainRenderState.setCullMode(CullMode::CCW);
     // Generate a render state for drawing reflections
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(CullMode::CW);
+    terrainRenderStateReflection.setCullMode(CullMode::CCW);
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(CullMode::CW);
+    terrainRenderStateDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
@@ -300,8 +292,6 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     const vec3<F32>& bMax = terrainBB.getMax();
 
     stringImpl cacheLocation(terrainMapLocation + terrainRawFile + ".cache");
-    STUBBED("ToDo: Move image data into the ByteBuffer as well to avoid reading height data from images each time we load the terrain! -Ionut");
-
     ByteBuffer terrainCache;
     if (!terrainCache.loadFromFile(cacheLocation)) {
         F32 altitudeRange = maxAltitude - minAltitude;
@@ -327,67 +317,59 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
         } else {
             ImageTools::ImageData img;
+            //img.flip(true);
             ImageTools::ImageDataInterface::CreateImageData(terrainMapLocation + terrainRawFile, img);
             assert(terrainDimensions == img.dimensions());
+
             // data will be destroyed when img gets out of scope
             const U8* data = (const U8*)img.data();
             assert(data);
             heightValues.insert(std::end(heightValues), &data[0], &data[img.imageLayers().front()._data.size()]);
         }
 
-        terrain->_physicsVerts.resize(terrainDimensions.x * terrainDimensions.y);
-
-        const vec2<U16>& imageDimensions = terrainDescriptor->getDimensions();
 
         I32 terrainWidth = to_I32(terrainDimensions.x);
         I32 terrainHeight = to_I32(terrainDimensions.y);
+
+        terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
+
         // scale and translate all height by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
-        if (terrainDescriptor->is16Bit()) {
-            const F32 fMax = to_F32(std::numeric_limits<U16>::max() + 1);
-            
-            #pragma omp parallel for
-            for (I32 j = 0; j < terrainHeight; j++) {
-                for (I32 i = 0; i < terrainWidth; i++) {
-                    U32 idxHM = TER_COORD(i, j, terrainWidth);
 
-                    U32 idxIMG = TER_COORD<U32>(i < to_I32(imageDimensions.x) ? i : i - 1,
-                                                j < to_I32(imageDimensions.y) ? j : j - 1,
-                                                imageDimensions.x);
+        auto highDetailHeight = [minAltitude, altitudeRange](F32 height) -> F32 {
+            constexpr F32 fMax = std::numeric_limits<U16>::max() + 1.0f;
+            return minAltitude + altitudeRange * (height / fMax);
+        };
 
-                    vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),   // X
-                                         minAltitude + altitudeRange * (heightValues[idxIMG] / fMax),     // Y
-                                         bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1)); // Z
-                    #pragma omp critical
-                    {
-                        terrain->_physicsVerts[idxHM]._position.set(vertexData);
-                    }
-                }
-            }
-        } else {
-            const F32 byteMax = to_F32(std::numeric_limits<U8>::max() + 1);
+        auto lowDetailHeight = [minAltitude, altitudeRange](F32 height) -> F32 {
+            constexpr F32 byteMax = std::numeric_limits<U8>::max() + 1.0f;
+            return minAltitude + altitudeRange * (height / byteMax);
+        };
+        
+        F32 bXRange = bMax.x - bMin.x;
+        F32 bZRange = bMax.z - bMin.z;
 
-            #pragma omp parallel for
-            for (I32 j = 0; j < terrainHeight; j++) {
-                for (I32 i = 0; i < terrainWidth; i++) {
-                    U32 idxHM = TER_COORD(i, j, terrainWidth);
+        #pragma omp parallel for
+        for (I32 j = 0; j < terrainHeight; j++) {
+            for (I32 i = 0; i < terrainWidth; i++) {
+                U32 idxIMG = TER_COORD<U32>(i < to_I32(terrainDimensions.x) ? i : i - 1,
+                                            j < to_I32(terrainDimensions.y) ? j : j - 1,
+                                            terrainDimensions.x);
 
-                    U32 idxIMG = TER_COORD<U32>(i < to_I32(imageDimensions.x) ? i : i - 1,
-                                                j < to_I32(imageDimensions.y) ? j : j - 1,
-                                                imageDimensions.x);
+                F32 heightValue = ((heightValues[idxIMG * 3 + 0] +
+                                    heightValues[idxIMG * 3 + 1] +
+                                    heightValues[idxIMG * 3 + 2]) / 3.0f);
 
-                    F32 heightValue = ((heightValues[idxIMG * 3 + 0] +
-                                        heightValues[idxIMG * 3 + 1] +
-                                        heightValues[idxIMG * 3 + 2]) / 3.0f);
-
-                    vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),   //X
-                                         minAltitude + altitudeRange * (heightValue / byteMax),           //Y
-                                         bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1)); //Z
+                vec3<F32> vertexData(bMin.x + (to_F32(i)) * bXRange / (terrainWidth - 1),          //X
+                                     terrainDescriptor->is16Bit() ? highDetailHeight(heightValue)
+                                                                  : lowDetailHeight(heightValue),  //Y
+                                     bMin.z + (to_F32(j)) * (bZRange) / (terrainHeight - 1));      //Z
 
                     
-                    #pragma omp critical
-                    {
-                        terrain->_physicsVerts[idxHM]._position.set(vertexData);
-                    }
+                U32 targetCoord = TER_COORD(i, j, terrainWidth);
+
+                #pragma omp critical
+                {
+                    terrain->_physicsVerts[targetCoord]._position.set(vertexData);
                 }
             }
         }
@@ -397,7 +379,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         I32 offset = 2;
         U32 idx = 0, idx0 = 0, idx1 = 0;
     
-       #pragma omp parallel for
+        #pragma omp parallel for
         for (I32 j = offset; j < terrainHeight - offset; j++) {
             for (I32 i = offset; i < terrainWidth - offset; i++) {
                 vec3<F32> vU, vV, vUV;

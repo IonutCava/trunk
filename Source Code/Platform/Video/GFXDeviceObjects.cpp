@@ -165,6 +165,7 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
                                const stringImpl& resourceName,
                                const stringImpl& resourceLocation,
                                TextureType type,
+                               bool isFlipped,
                                bool asyncLoad) const {
     // Texture is a resource! Do not use object arena!
     Texture* temp = nullptr;
@@ -172,10 +173,10 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new texture. The callee is responsible for it's deletion!
-            temp = MemoryManager_NEW glTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, type, asyncLoad);
+            temp = MemoryManager_NEW glTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, type, isFlipped, asyncLoad);
         } break;
         case RenderAPI::Direct3D: {
-            temp = MemoryManager_NEW d3dTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, type, asyncLoad);
+            temp = MemoryManager_NEW d3dTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, type, isFlipped, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

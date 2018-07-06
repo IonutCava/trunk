@@ -44,6 +44,7 @@ class d3dTexture final : public Texture {
                         const stringImpl& resourceName,
                         const stringImpl& resourceLocation,
                         TextureType type,
+                        bool isFlipped,
                         bool asyncLoad);
     ~d3dTexture() {}
 
