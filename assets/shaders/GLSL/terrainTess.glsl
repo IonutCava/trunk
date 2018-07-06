@@ -559,7 +559,7 @@ vec4 CausticsColour() {
     setAlbedo((texture(texWaterCaustics, _scrollingUV.st) +
                texture(texWaterCaustics, _scrollingUV.pq)) * 0.5);
 
-    return getPixelColour(VAR._texCoord);
+    return getAlbedo();//getPixelColour(VAR._texCoord);
 }
 
 vec4 UnderwaterColour() {
@@ -570,7 +570,7 @@ vec4 UnderwaterColour() {
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
     setProcessedNormal(getTBNMatrix() * tbn);
 
-    return getPixelColour(VAR._texCoord);
+    return getAlbedo();//getPixelColour(VAR._texCoord);
 }
 
 vec4 UnderwaterMappingRoutine() {
@@ -580,7 +580,7 @@ vec4 UnderwaterMappingRoutine() {
 vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo());
 
-    return getPixelColour(VAR._texCoord);
+    return getAlbedo();//getPixelColour(VAR._texCoord);
 }
 
 void main(void)
@@ -590,7 +590,6 @@ void main(void)
     setProcessedNormal(getTerrainNormal());
 
     _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
-
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);

@@ -623,8 +623,9 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
 void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     static bool firstRun = true;
     static RTDrawDescriptor depthOnlyTarget;
-    static size_t stateHash = 0;
-
+    static PipelineDescriptor pipelineDesc;
+    static GenericDrawCommand triangleCmd;
+   
     if (firstRun) {
         // We use a special shader that downsamples the buffer
         // We will use a state block that disables colour writes as we will render only a depth image,
@@ -636,10 +637,15 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         depthOnlyTarget.drawMask().disableAll();
         depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
 
-        RenderStateBlock defaultStateNoDepth;
-        defaultStateNoDepth.setZRead(false);
-        defaultStateNoDepth.setZFunc(ComparisonFunction::ALWAYS);
-        stateHash = defaultStateNoDepth.getHash();
+        RenderStateBlock HiZState;
+        HiZState.setZFunc(ComparisonFunction::ALWAYS);
+
+        pipelineDesc._stateHash = HiZState.getHash();
+        pipelineDesc._shaderProgram = _HIZConstructProgram;
+
+        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
+        triangleCmd.drawCount(1);
+        triangleCmd.pipeline(newPipeline(pipelineDesc));
 
         firstRun = false;
     }
@@ -654,6 +660,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     U16 theight = height;
     bool wasEven = false;
 
+    //GFX::Scoped2DRendering scoped2D(*this);
     // Store the current width and height of each mip
     vec4<I32> previousViewport(_viewport.top());
 
@@ -662,15 +669,6 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     if (depth->getDescriptor().automaticMipMapGeneration()) {
         return;
     }
-
-    PipelineDescriptor pipelineDesc;
-    pipelineDesc._stateHash = stateHash;
-    pipelineDesc._shaderProgram = _HIZConstructProgram;
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-    triangleCmd.pipeline(newPipeline(pipelineDesc));
 
     depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
     screenTarget.begin(depthOnlyTarget);

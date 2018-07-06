@@ -81,7 +81,7 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
         finished = std::find_if(std::cbegin(_taskStates),
                                 std::cend(_taskStates),
                                 [](bool entry) {
-                                    return entry == true;
+                                    return entry;
                                 }) == std::cend(_taskStates);
         if (yeld) {
             std::this_thread::yield();

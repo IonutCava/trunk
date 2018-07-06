@@ -101,8 +101,10 @@ void DisplayWindow::update() {
         switch (event.type)
         {
             case SDL_QUIT: {
-                SDL_HideWindow(_mainWindow);
-                _context.app().RequestShutdown();
+                _parent.handleWindowEvent(WindowEvent::CLOSE_REQUESTED,
+                    getGUID(),
+                    event.quit.type,
+                    event.quit.timestamp);
             } break;
             case SDL_WINDOWEVENT: {
                 switch (event.window.event) {

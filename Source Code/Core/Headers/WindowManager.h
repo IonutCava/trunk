@@ -48,7 +48,8 @@ enum class WindowEvent : U32 {
     RESIZED_EXTERNAL = 8,
     RESOLUTION_CHANGED = 9,
     MOVED = 10,
-    APP_LOOP = 11
+    APP_LOOP = 11,
+    CLOSE_REQUESTED = 12
 };
 
 enum class RenderAPI : U32;
@@ -74,6 +75,8 @@ public:
                          bool startFullScreen,
                          I32 targetDisplayIndex,
                          const char* windowTitle);
+    bool destroyWindow(DisplayWindow*& window);
+
     inline I32 targetDisplay() const;
     inline void targetDisplay(I32 displayIndex);
 

@@ -109,6 +109,21 @@ ErrorCode WindowManager::initWindow(U32 index,
                                  windowTitle);
 }
 
+bool WindowManager::destroyWindow(DisplayWindow*& window) {
+    SDL_HideWindow(window->getRawWindow());
+    if (window->destroyWindow() == ErrorCode::NO_ERR) {
+        I64 targetGUID = window->getGUID();
+        _windows.erase(
+            std::remove_if(std::begin(_windows), std::end(_windows),
+                           [&targetGUID](DisplayWindow* window)
+                               -> bool { return window->getGUID() == targetGUID;}),
+            std::end(_windows));
+        window = nullptr;
+        return true;
+    }
+    return false;
+}
+
 void WindowManager::setActiveWindow(U32 index) {
     index = std::min(index, to_U32(_windows.size() -1));
     _activeWindowGUID = _windows[index]->getGUID();
@@ -245,7 +260,28 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
                 win->update();
             }
         } break;
+        case WindowEvent::CLOSE_REQUESTED: {
+            Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), winGUID);
+
+            if (_activeWindowGUID == winGUID) {
+                _context->app().RequestShutdown();
+            } else {
+                for (DisplayWindow* win : _windows) {
+                    if (win->getGUID() == winGUID) {
+                        if (!destroyWindow(win)) {
+                            Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), winGUID);
+                            if (win != nullptr) {
+                                SDL_HideWindow(win->getRawWindow());
+                            }
+                        }
+                        //Iterator is now invalidated!
+                        break;
+                    }
+                }
+
+               
+            }
+        }
     };
 }
-
 }; //namespace Divide
