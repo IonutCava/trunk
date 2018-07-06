@@ -88,7 +88,7 @@ Quaternion<T>::Quaternion(const vec4<T>& values)
 
 template <typename T>
 template <typename U>
-Quaternion<T>::Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type* = nullptr)
+Quaternion<T>::Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type*)
     : _elements(reg)
 {
 }

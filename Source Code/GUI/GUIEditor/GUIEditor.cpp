@@ -11,10 +11,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
-#endif //CEGUI_STATIC
 
 namespace Divide {
 

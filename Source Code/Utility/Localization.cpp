@@ -13,7 +13,7 @@ namespace Locale {
 
 namespace detail {
     /// Default language can be set at compile time
-    stringImpl g_localeFile = DEFAULT_LANG;
+    stringImpl g_localeFile;
 
     std::unique_ptr<LanguageData> g_data = nullptr;
 
@@ -28,7 +28,7 @@ namespace detail {
 
         // If we modify our currently active language, reinit the Locale system
         if (strcmp((g_localeFile + g_languageFileExtension).c_str(), languageFile) == 0) {
-            changeLanguage(g_localeFile);
+            changeLanguage(g_localeFile.c_str());
         }
     });
 
@@ -42,11 +42,11 @@ LanguageData::~LanguageData()
 {
 }
 
-void LanguageData::changeLanguage(const stringImpl& newLanguage) {
+void LanguageData::changeLanguage(const char* newLanguage) {
     _languageTable.clear();
 
     for (const DELEGATE_CBK<void, const char* /*new language*/>& languageChangeCbk : _languageChangeCallbacks) {
-        languageChangeCbk(newLanguage.c_str());
+        languageChangeCbk(newLanguage);
     }
 }
 
@@ -71,7 +71,7 @@ void LanguageData::addLanguageChangeCallback(const DELEGATE_CBK<void, const char
     _languageChangeCallbacks.push_back(cbk);
 }
 
-ErrorCode init(const stringImpl& newLanguage) {
+ErrorCode init(const char* newLanguage) {
     if (!Config::Build::IS_SHIPPING_BUILD) {
         if (!detail::g_LanguageFileWatcher) {
             detail::g_LanguageFileWatcher.reset(new FW::FileWatcher());
@@ -91,7 +91,8 @@ ErrorCode init(const stringImpl& newLanguage) {
     // Use SimpleIni library for cross-platform INI parsing
     CSimpleIni languageFile(true, false, true);
 
-    detail::g_localeFile = newLanguage;
+    detail::g_localeFile = stringImpl(newLanguage);
+    assert(!detail::g_localeFile.empty());
 
     stringImpl file = Paths::g_localisationPath + detail::g_localeFile + g_languageFileExtension;
 
@@ -122,9 +123,9 @@ void idle() {
     }
 }
 
-/// Altough the language can be set at compile time, in-game options may support
+/// Although the language can be set at compile time, in-game options may support
 /// language changes
-void changeLanguage(const stringImpl& newLanguage) {
+void changeLanguage(const char* newLanguage) {
     /// Set the new language code
     init(newLanguage);
 }

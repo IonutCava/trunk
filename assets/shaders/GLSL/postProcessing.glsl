@@ -91,4 +91,5 @@ void main(void){
 
     float depth = textureLod(texDepthMap, getScreenPositionNormalised(), 0).r;
     _colourOut = applyFog(depth, colour);
+    //_colourOut = screenNormal();
 }

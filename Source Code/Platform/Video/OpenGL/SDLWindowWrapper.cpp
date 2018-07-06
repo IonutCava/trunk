@@ -18,10 +18,6 @@
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
-#endif //CEGUI_STATIC
-
 #include <CEGUI/CEGUI.h>
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 

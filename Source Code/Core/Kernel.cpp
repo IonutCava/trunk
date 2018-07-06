@@ -618,7 +618,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Paths::updatePaths(*_platformContext);
 
-    Locale::changeLanguage(config.language);
+    Locale::changeLanguage(config.language.c_str());
 
     _platformContext->gfx().shadowDetailLevel(config.rendering.shadowDetailLevel);
     _platformContext->gfx().renderDetailLevel(config.rendering.renderDetailLevel);

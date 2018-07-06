@@ -33,10 +33,6 @@
 
 #include <SDL_video.h>
 
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
-#endif //CEGUI_STATIC
-
 #include <CEGUI/CEGUI.h>
 
 namespace Divide {

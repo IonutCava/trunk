@@ -50,7 +50,7 @@ public:
     LanguageData();
     ~LanguageData();
 
-    void changeLanguage(const stringImpl& newLanguage);
+    void changeLanguage(const char* newLanguage);
 
     const char* get(U64 key, const char* defaultValue);
     void add(U64 key, const char* value);
@@ -60,20 +60,20 @@ public:
 private:
     /// Each string key in the map matches a key in the language ini file
     /// each string value in the map matches the value in the ini file for the given key
-    /// Basicly, the hashMapImpl is a direct copy of the [language] section of the give ini file
+    /// Basically, the hashMapImpl is a direct copy of the [language] section of the give ini file
     hashMapImpl<U64, stringImpl> _languageTable;
     LangCallbacks _languageChangeCallbacks;
 };
 
 /// Reset everything and load the specified language file.
-ErrorCode init(const stringImpl& newLanguage = DEFAULT_LANG);
+ErrorCode init(const char* newLanguage = DEFAULT_LANG);
 /// clear the language table
 void clear();
-/// perform maintnance tasks
+/// perform maintenance tasks
 void idle();
-/// Altough the language can be set at compile time, in-game options may support
+/// Although the language can be set at compile time, in-game options may support
 /// language changes
-void changeLanguage(const stringImpl& newLanguage);
+void changeLanguage(const char* newLanguage);
 /// Add a function to be called on each language change
 void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
 /// Query the current language code to detect changes

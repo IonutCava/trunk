@@ -287,15 +287,6 @@ public:  // Accessors and Mutators
 
     inline GPUState& gpuState() { return _state; }
 
-    static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
-    static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
-
-    static void setGPUVendor(GPUVendor gpuvendor) { _GPUVendor = gpuvendor; }
-    static GPUVendor getGPUVendor() { return _GPUVendor; }
-
-    static void setGPURenderer(GPURenderer gpurenderer) { _GPURenderer = gpurenderer; }
-    static GPURenderer getGPURenderer() { return _GPURenderer; }
-
     inline void debugDrawFrustum(Frustum* frustum) { _debugFrustum = frustum; }
 
     inline const RenderStagePass& getRenderStage() const { return _renderStagePass; }
@@ -357,6 +348,13 @@ public:  // Accessors and Mutators
     ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
     GFX::CommandBuffer& allocateCommandBuffer(bool useSecondaryBuffers = false);
     void deallocateCommandBuffer(GFX::CommandBuffer& buffer, bool useSecondaryBuffers = false);
+
+    static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
+    static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
+    static void setGPUVendor(GPUVendor gpuvendor) { s_GPUVendor = gpuvendor; }
+    static GPUVendor getGPUVendor() { return s_GPUVendor; }
+    static void setGPURenderer(GPURenderer gpurenderer) { s_GPURenderer = gpurenderer; }
+    static GPURenderer getGPURenderer() { return s_GPURenderer; }
 
 public:
     IMPrimitive*       newIMP() const;
@@ -538,8 +536,8 @@ protected:
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;
 
     static D64 s_interpolationFactor;
-    static GPUVendor _GPUVendor;
-    static GPURenderer _GPURenderer;
+    static GPUVendor s_GPUVendor;
+    static GPURenderer s_GPURenderer;
 };
 
 namespace Attorney {

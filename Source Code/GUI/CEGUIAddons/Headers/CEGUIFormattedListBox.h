@@ -33,10 +33,7 @@
 #define CEGUI_FORMATTED_LIST_BOX_H_
 
 // Code adapted from http://www.cegui.org.uk/phpBB2/viewtopic.php?f=10&t=4322
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
-#endif //CEGUI_STATIC
 
 namespace CEGUI {
 ///! A ListboxItem based class that can do horizontal text formatiing.

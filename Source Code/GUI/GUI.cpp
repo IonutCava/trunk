@@ -21,10 +21,7 @@
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
-#endif //CEGUI_STATIC
 
 #include <stdarg.h>
 

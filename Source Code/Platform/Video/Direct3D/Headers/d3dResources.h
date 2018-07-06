@@ -33,9 +33,6 @@
 #define _D3D_RESOURCES_H_
 
 //#include <D3D11.h>
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
-#endif //CEGUI_STATIC
 //#include <CEGUI/RendererModules/Direct3D11/Renderer.h>
 
 #endif

@@ -93,8 +93,8 @@ ScopedCommandBuffer::~ScopedCommandBuffer()
 
 D64 GFXDevice::s_interpolationFactor = 1.0;
 
-GPUVendor GFXDevice::_GPUVendor = GPUVendor::COUNT;
-GPURenderer GFXDevice::_GPURenderer = GPURenderer::COUNT;
+GPUVendor GFXDevice::s_GPUVendor = GPUVendor::COUNT;
+GPURenderer GFXDevice::s_GPURenderer = GPURenderer::COUNT;
 
 GFXDevice::GFXDevice(Kernel& parent)
    : KernelComponent(parent), 
@@ -162,12 +162,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     AttribFlags flags;
     flags.fill(true);
     VertexBuffer::setAttribMasks(flags);
-
-    std::generate(
-        std::begin(_renderQueues),
-        std::end(_renderQueues),
-        [this]() { return std::make_unique<RenderPackageQueue>(*this, Config::MAX_VISIBLE_NODES); }
-    );
 
     // Don't (currently) need these for shadow passes
     flags[to_base(VertexAttribute::ATTRIB_COLOR)] = false;

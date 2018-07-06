@@ -11,10 +11,7 @@
 
 #include "Platform/Headers/PlatformRuntime.h"
 
-#ifndef CEGUI_STATIC
-#define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
-#endif //CEGUI_STATIC
 
 #ifndef CEGUI_DEFAULT_CTX
 #define CEGUI_DEFAULT_CTX \

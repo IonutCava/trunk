@@ -64,47 +64,47 @@ namespace Paths {
     std::regex g_usePattern;
 
     void initPaths(const SysInfo& info) {
-        g_exePath = info._pathAndFilename._path + "/";
-        g_assetsLocation = "assets/";
-        g_shadersLocation = "shaders/";
-        g_texturesLocation = "textures/";
-        g_heightmapLocation = "terrain/";
-        g_xmlDataLocation = "XML/";
-        g_scenesLocation = "Scenes/";
+        g_exePath = stringImpl(info._pathAndFilename._path + "/");
+        g_assetsLocation = stringImpl("assets/");
+        g_shadersLocation = stringImpl("shaders/");
+        g_texturesLocation = stringImpl("textures/");
+        g_heightmapLocation = stringImpl("terrain/");
+        g_xmlDataLocation = stringImpl("XML/");
+        g_scenesLocation = stringImpl("Scenes/");
 
-        g_saveLocation = "SaveData/";
-        g_imagesLocation = "misc_images/";
-        g_materialsLocation = "materials/";
-        g_navMeshesLocation = "navMeshes/";
-        g_GUILocation = "GUI/";
-        g_fontsPath = "fonts/";
-        g_soundsLocation = "sounds/";
-        g_localisationPath = "localisation/";
-        Scripts::g_scriptsLocation = g_assetsLocation + "scripts/";
-        Scripts::g_scriptsAtomsLocation = Scripts::g_scriptsLocation + "atoms/";
+        g_saveLocation = stringImpl("SaveData/");
+        g_imagesLocation = stringImpl("misc_images/");
+        g_materialsLocation = stringImpl("materials/");
+        g_navMeshesLocation = stringImpl("navMeshes/");
+        g_GUILocation = stringImpl("GUI/");
+        g_fontsPath = stringImpl("fonts/");
+        g_soundsLocation = stringImpl("sounds/");
+        g_localisationPath = stringImpl("localisation/");
+        Scripts::g_scriptsLocation = stringImpl(g_assetsLocation + "scripts/");
+        Scripts::g_scriptsAtomsLocation = stringImpl(Scripts::g_scriptsLocation + "atoms/");
 
-        Shaders::g_cacheLocation = "shaderCache/";
-        Shaders::g_cacheLocationText = Shaders::g_cacheLocation + "Text/";
-        Shaders::g_cacheLocationBin = Shaders::g_cacheLocation + "Binary/";
+        Shaders::g_cacheLocation = stringImpl("shaderCache/");
+        Shaders::g_cacheLocationText = stringImpl(Shaders::g_cacheLocation + "Text/");
+        Shaders::g_cacheLocationBin = stringImpl(Shaders::g_cacheLocation + "Binary/");
         // these must match the last 4 characters of the atom file
-        Shaders::GLSL::g_fragAtomExt = "frag";
-        Shaders::GLSL::g_vertAtomExt = "vert";
-        Shaders::GLSL::g_geomAtomExt = "geom";
-        Shaders::GLSL::g_tescAtomExt = "tesc";
-        Shaders::GLSL::g_teseAtomExt = "tese";
-        Shaders::GLSL::g_compAtomExt = ".cpt";
-        Shaders::GLSL::g_comnAtomExt = ".cmn";
+        Shaders::GLSL::g_fragAtomExt = stringImpl("frag");
+        Shaders::GLSL::g_vertAtomExt = stringImpl("vert");
+        Shaders::GLSL::g_geomAtomExt = stringImpl("geom");
+        Shaders::GLSL::g_tescAtomExt = stringImpl("tesc");
+        Shaders::GLSL::g_teseAtomExt = stringImpl("tese");
+        Shaders::GLSL::g_compAtomExt = stringImpl(".cpt");
+        Shaders::GLSL::g_comnAtomExt = stringImpl(".cmn");
 
-        Shaders::GLSL::g_parentShaderLoc = "GLSL/";
-        Shaders::GLSL::g_fragAtomLoc = "fragmentAtoms/";
-        Shaders::GLSL::g_vertAtomLoc = "vertexAtoms/";
-        Shaders::GLSL::g_geomAtomLoc = "geometryAtoms/";
-        Shaders::GLSL::g_tescAtomLoc = "tessellationCAtoms/";
-        Shaders::GLSL::g_teseAtomLoc = "tessellationEAtoms/";
-        Shaders::GLSL::g_compAtomLoc = "computeAtoms/";
-        Shaders::GLSL::g_comnAtomLoc = "common/";
+        Shaders::GLSL::g_parentShaderLoc = stringImpl("GLSL/");
+        Shaders::GLSL::g_fragAtomLoc = stringImpl("fragmentAtoms/");
+        Shaders::GLSL::g_vertAtomLoc = stringImpl("vertexAtoms/");
+        Shaders::GLSL::g_geomAtomLoc = stringImpl("geometryAtoms/");
+        Shaders::GLSL::g_tescAtomLoc = stringImpl("tessellationCAtoms/");
+        Shaders::GLSL::g_teseAtomLoc = stringImpl("tessellationEAtoms/");
+        Shaders::GLSL::g_compAtomLoc = stringImpl("computeAtoms/");
+        Shaders::GLSL::g_comnAtomLoc = stringImpl("common/");
 
-        Shaders::HLSL::g_parentShaderLoc = "HLSL/";
+        Shaders::HLSL::g_parentShaderLoc = stringImpl("HLSL/");
 
         g_includePattern = std::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
         g_usePattern = std::regex(R"(^\s*use\s*\(\s*\"(.*)\"\s*\))");
@@ -114,13 +114,13 @@ namespace Paths {
         const Configuration& config = context.config();
         const XMLEntryData& entryData = context.entryData();
         
-        g_assetsLocation = entryData.assetsLocation + "/";
-        g_shadersLocation = config.defaultShadersLocation + "/";
-        g_texturesLocation = config.defaultTextureLocation + "/";
-        g_xmlDataLocation = entryData.scriptLocation + "/";
-        g_scenesLocation = entryData.scenesLocation + "/";
-        Scripts::g_scriptsLocation = g_assetsLocation + "scripts/";
-        Scripts::g_scriptsAtomsLocation = Scripts::g_scriptsLocation + "atoms/";
+        g_assetsLocation = stringImpl(entryData.assetsLocation + "/");
+        g_shadersLocation = stringImpl(config.defaultShadersLocation + "/");
+        g_texturesLocation = stringImpl(config.defaultTextureLocation + "/");
+        g_xmlDataLocation = stringImpl(entryData.scriptLocation + "/");
+        g_scenesLocation = stringImpl(entryData.scenesLocation + "/");
+        Scripts::g_scriptsLocation = stringImpl(g_assetsLocation + "scripts/");
+        Scripts::g_scriptsAtomsLocation = stringImpl(Scripts::g_scriptsLocation + "atoms/");
     }
 
 }; //namespace Paths
