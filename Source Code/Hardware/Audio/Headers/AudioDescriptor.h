@@ -24,7 +24,8 @@
 class AudioDescriptor : public Resource{
 
 public:
-	AudioDescriptor() :  Resource(),
+	AudioDescriptor(const std::string& audioFile) :
+						 Resource(), _audioFile(audioFile),
 						 _is3D(false), _volume(100),
 						 _frequency(44.2f), _bitDepth(16),
 						 _channelId(-1), _isLooping(false)
@@ -34,7 +35,7 @@ public:
 	~AudioDescriptor() {}
 
 	bool  unload() {return true;}
-
+	inline const std::string& getAudioFile() {return _audioFile;}
 	inline bool& isLooping()  {return _isLooping;}
 	inline bool& is3D()       {return _is3D;}
 
@@ -53,5 +54,6 @@ private:
 	bool _isLooping, _is3D;
 	F32 _frequency;
 	I8  _bitDepth, _channelId,_volume;
+	std::string _audioFile;
 };
 #endif

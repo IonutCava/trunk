@@ -743,6 +743,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\GUI\GUIConsoleCommandParser.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\GUI\GUIElement.cpp"
 				>
 			</File>
@@ -771,6 +775,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\GUI\Headers\GUIConsole.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\GUI\Headers\GUIConsoleCommandParser.h"
 					>
 				</File>
 				<File

@@ -5,7 +5,7 @@
 template<>
 AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()(){
 
-	AudioDescriptor* ptr = New AudioDescriptor();
+	AudioDescriptor* ptr = New AudioDescriptor(_descriptor.getResourceLocation());
 
 	assert(ptr != NULL);
 	if(!load(ptr,_descriptor.getName())) return NULL;

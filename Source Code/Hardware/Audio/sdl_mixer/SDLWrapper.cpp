@@ -17,7 +17,7 @@ I8 SDL_API::initHardware() {
 void SDL_API::playMusic(AudioDescriptor* musicFile){
 
 	if(!musicFile) return;
-	_music = Mix_LoadMUS(musicFile->getName().c_str());
+	_music = Mix_LoadMUS(musicFile->getAudioFile().c_str());
 	Mix_VolumeMusic(musicFile->getVolume());
 	 if (NULL != _music) {
 		 if (-1 == Mix_PlayMusic(_music, musicFile->isLooping() ? -1 : 0))
@@ -32,7 +32,7 @@ void SDL_API::playSound(AudioDescriptor* sound){
 	if(sound == NULL) return;
 
 	if(_chunk != NULL) Mix_FreeChunk(_chunk);
-	_chunk  = Mix_LoadWAV(sound->getName().c_str());
+	_chunk  = Mix_LoadWAV(sound->getAudioFile().c_str());
 	assert(_chunk);
 	Mix_Volume(sound->getChannel(),sound->getVolume());
 

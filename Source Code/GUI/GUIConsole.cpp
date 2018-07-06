@@ -1,11 +1,14 @@
 #include "CEGUI.h"
 
 #include "Headers/GUIConsole.h"
+#include "Headers/GUIConsoleCommandParser.h"
+#include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
+
 #include "Core/Headers/ParamHandler.h"
-#include "CEGUIAddons\Headers\CEGUIFormattedListBox.h"
-#include "Utility/Headers/CommandParser.h"
+
 ///Maximum number of lines to display in the console window
 #define CEGUI_MAX_CONSOLE_ENTRIES 64
+#define CEGUI_MAX_INPUT_HISTORY 5
 
 int GUIConsole::_instanceNumber; 
  
@@ -13,11 +16,12 @@ GUIConsole::GUIConsole() : _consoleWindow(NULL),
 						   _editBox(NULL),
 						   _outputWindow(NULL),
 						   _namePrefix(""),
-						   _init(false)
+						   _init(false),
+						   _inputHistoryIndex(0)
 {
 	_instanceNumber = 0;
 	// we need a default command parser, so just create it here
-   _cmdParser = New CommandParser();
+   _cmdParser = New GUIConsoleCommandParser();
 }
 
 GUIConsole::~GUIConsole()
@@ -69,7 +73,23 @@ void GUIConsole::RegisterHandlers(){
 
 bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs &e){
 	assert(_editBox != NULL);
+	const CEGUI::KeyEventArgs* keyEvent = static_cast<const CEGUI::KeyEventArgs*>(&e);
 	//Just get the current text string from the editbox at each keypress. Performance isn't a issue for console commands
+	if(!_inputHistory.empty()){
+		if(keyEvent->scancode == CEGUI::Key::ArrowUp ){
+			_inputHistoryIndex--;
+			if(_inputHistoryIndex < 0) 
+				_inputHistoryIndex = _inputHistory.size()-1;
+			_editBox->setText(_inputHistory[_inputHistoryIndex]);
+		}
+		if(keyEvent->scancode == CEGUI::Key::ArrowDown){
+			_inputHistoryIndex++;
+			if(_inputHistoryIndex >= (I32)_inputHistory.size())
+				_inputHistoryIndex = 0;
+			_editBox->setText(_inputHistory[_inputHistoryIndex]);
+		}
+	}
+	
 	_inputBuffer = _editBox->getText().c_str();
 	return true;
 }
@@ -84,6 +104,12 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
     // Now that we've finished with the text, we need to ensure that we clear out the EditBox.  
 	// This is what we would expect to happen after we press enter
     _editBox->setText("");
+	_inputHistory.push_back(_inputBuffer);
+	//Keep command history low
+	if(_inputHistory.size() > CEGUI_MAX_INPUT_HISTORY){
+		_inputHistory.pop_front();
+	}
+	_inputHistoryIndex = _inputHistory.size()-1;
 	//reset the inputbuffer so we can handle console closing properly
 	_inputBuffer.clear();
     return true;

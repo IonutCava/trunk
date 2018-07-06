@@ -19,12 +19,14 @@
 #define PARAM_H_
 
 #include "core.h"
-#include <boost/any.hpp>
+#include <typeinfo>
+//#include <boost/any.hpp>
 #include "cdigginsAny.h"
 
 DEFINE_SINGLETON (ParamHandler)
 //typedef Unordered_map<std::string, boost::any> ParamMap;
 typedef Unordered_map<std::string, cdiggins::any> ParamMap;
+typedef Unordered_map<std::string, const char* >  ParamTypeMap;
 typedef cdiggins::anyimpl::bad_any_cast BadAnyCast;
 public:
 
@@ -50,24 +52,44 @@ public:
 
 	void setParam(const std::string& name, const cdiggins::any& value){
 		WriteLock w_lock(_mutex);
+
+		std::pair<ParamTypeMap::iterator, bool> resultType = _paramType.insert(std::make_pair(name,typeid(value).name()));
+		if(!resultType.second) (resultType.first)->second = typeid(value).name();
+
 		std::pair<ParamMap::iterator, bool> result = _params.insert(std::make_pair(name,value));
 		if(!result.second) (result.first)->second = value;
+		
 	}
 
 	inline void delParam(const std::string& name){
-		WriteLock w_lock(_mutex);
-		_params.erase(name); 
-		if(_logState) PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+		if(isParam(name)){
+			WriteLock w_lock(_mutex);
+			_params.erase(name); 
+			_paramType.erase(name);
+			if(_logState) PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+		}else{
+			ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"),name.c_str());
+		}
 	} 
 
 	inline void setDebugOutput(bool logState) {WriteLock w_lock(_mutex); _logState = logState;}
 
 	inline int getSize(){ReadLock r_lock(_mutex); return _params.size();}
 	
-	inline bool isParam(const std::string& param) {return _params.find(param) != _params.end();}
+	inline bool isParam(const std::string& param) {ReadLock r_lock(_mutex); return _params.find(param) != _params.end();}
+
+	inline const char* getType(const std::string& param) {
+		if(isParam(param)){
+			ReadLock r_lock(_mutex);
+			return _paramType[param];
+		}else 
+			return NULL;
+	}
+
 private:
 	bool _logState;
 	ParamMap _params;
+	ParamTypeMap _paramType;
 	mutable SharedLock _mutex;
  
 END_SINGLETON

@@ -180,6 +180,7 @@
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIButton.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIConsoleCommandParser.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
@@ -378,6 +379,7 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIButton.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsole.h" />
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsoleCommandParser.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIElement.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h" />
