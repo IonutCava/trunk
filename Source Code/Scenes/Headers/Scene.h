@@ -59,6 +59,7 @@
 #include "Physics/Headers/PXDevice.h"
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 // GUI
+#include "GUI/Headers/GUI.h"
 #include "GUI/Headers/SceneGUIElements.h"
 
 namespace Divide {
@@ -179,7 +180,7 @@ class Scene : public Resource {
     virtual bool frameStarted();
     virtual bool frameEnded();
     /// Description in SceneManager
-    virtual bool loadResources(bool continueOnErrors) { return true; }
+    virtual bool loadResources(bool continueOnErrors);
     virtual bool loadTasks(bool continueOnErrors) { return true; }
     virtual bool loadPhysics(bool continueOnErrors);
     /// if singleStep is true, only the first model from the modelArray will be
@@ -321,6 +322,11 @@ class SceneManager {
     static bool initStaticData() {
         return Scene::initStaticData();
     }
+
+    static SceneGUIElements* gui(Scene& scene) {
+        return scene._GUI;
+    }
+
     friend class Divide::SceneManager;
 };
 

@@ -429,7 +429,7 @@ inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff)
 #endif
 
 static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
-static const D64 EPSILON_D32 = std::numeric_limits<D64>::epsilon();
+static const D64 EPSILON_D64 = std::numeric_limits<D64>::epsilon();
 
 template <typename T>
 inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) {
@@ -461,7 +461,7 @@ inline bool IS_ZERO(F32 X) {
 }
 template <>
 inline bool IS_ZERO(D64 X) {
-    return (std::fabs(X) < EPSILON_D32);
+    return (std::fabs(X) < EPSILON_D64);
 }
 
 template <typename T>
@@ -514,7 +514,7 @@ inline bool COMPARE(F32 X, F32 Y) {
 
 template<>
 inline bool COMPARE(D64 X, D64 Y) {
-    return COMPARE_TOLERANCE(X, Y, EPSILON_D32);
+    return COMPARE_TOLERANCE(X, Y, EPSILON_D64);
 }
 
 template <typename T>

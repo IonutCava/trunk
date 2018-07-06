@@ -43,7 +43,7 @@ namespace Divide {
 /*    Visit: http://www.fmod.org/index.php/sales  for more details -Ionut */
 /*****************************************************************************************/
 
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
+DEFINE_SINGLETON_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
   public:
     ErrorCode initAudioAPI() { return ErrorCode::FMOD_AUDIO_INIT_ERROR; }
 

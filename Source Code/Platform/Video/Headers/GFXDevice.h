@@ -480,7 +480,9 @@ DEFINE_SINGLETON(GFXDevice)
     }
 
     inline void syncThreadToGPU(std::thread::id threadID, bool beginSync) {
-        _api->syncToThread(threadID);
+        if (beginSync) {
+            _api->syncToThread(threadID);
+        }
     }
 
   protected:
@@ -631,6 +633,7 @@ DEFINE_SINGLETON(GFXDevice)
     I32 _imShaderTextureFlag;
     I32 _imShaderWorldMatrix;
     /// The interface that coverts IM calls to VB data
+    SharedLock _imInterfaceLock;
     vectorImpl<IMPrimitive*> _imInterfaces;
     vectorImpl<IMPrimitive*> _activeImInterfaces;
     /// Current viewport stack

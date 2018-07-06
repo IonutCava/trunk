@@ -27,7 +27,8 @@
 namespace Divide {
 
 GUI::GUI()
-    : _init(false),
+    : GUIInterface(vec2<U16>(1, 1)),
+      _init(false),
       _rootSheet(nullptr),
       _defaultMsgBox(nullptr),
       _enableCEGUIRendering(false),
@@ -47,11 +48,10 @@ GUI::~GUI()
     GUIEditor::destroyInstance();
     MemoryManager::DELETE(_console);
     assert(_guiStack.empty());
-    for (GUIMap::value_type& it : _guiGlobalStack) {
+    for (GUIMap::value_type& it : _guiElements) {
         MemoryManager::DELETE(it.second.first);
     }
- 
-    _guiGlobalStack.clear();
+    _guiElements.clear();
 
     _defaultMsgBox = nullptr;
 
@@ -98,7 +98,7 @@ void GUI::draw() const {
     _guiShader->bind();
 
     // global elements
-    for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
+    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
         GUIElement& element = *guiStackIterator.second.first;
         // Skip hidden elements
         if (element.isVisible()) {
@@ -189,7 +189,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
-    _resolutionCache.set(renderResolution);
+    onChangeResolution(renderResolution.width, renderResolution.height);
 
     _enableCEGUIRendering = !(ParamHandler::instance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
 #ifdef _DEBUG
@@ -270,13 +270,9 @@ bool GUI::init(const vec2<U16>& renderResolution) {
 }
 
 void GUI::onChangeResolution(U16 w, U16 h) {
-    _resolutionCache.set(w, h);
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
 
-    // global elements
-    for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
-        guiStackIterator.second.first->onChangeResolution(w, h);
-    }
+    GUIInterface::onChangeResolution(w, h);
 
     if (!_guiStack.empty()) {
         // scene specific
@@ -331,10 +327,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     event.mousePoint.x = to_float(arg.state.X.abs);
     event.mousePoint.y = to_float(arg.state.Y.abs);
 
-    // global elements
-    for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
-        guiStackIterator.second.first->mouseMoved(event);
-    }
+    GUIInterface::mouseMoved(event);
 
     // scene specific
     GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
@@ -357,10 +350,7 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
             GUIEvent event;
             event.mouseClickCount = 0;
 
-            // global elements
-            for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
-                guiStackIterator.second.first->onMouseDown(event);
-            }
+            GUIInterface::onMouseDown(event);
 
             // scene specific
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
@@ -386,10 +376,7 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
             GUIEvent event;
             event.mouseClickCount = 1;
 
-            // global elements
-            for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
-                guiStackIterator.second.first->onMouseUp(event);
-            }
+            GUIInterface::onMouseUp(event);
 
             // scene specific
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
@@ -429,142 +416,31 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
     return !_ceguiInput.joystickVector3DMoved(arg, index);
 }
 
-void GUI::addElement(ULL id,GUIElement* element) {
-    GUIMap::iterator it = _guiGlobalStack.find(id);
-    if (it != std::end(_guiGlobalStack)) {
-        MemoryManager::SAFE_UPDATE(it->second.first, element);
-        it->second.second = element ? element->isVisible() : false;
-    } else {
-        hashAlg::insert(_guiGlobalStack, std::make_pair(id, std::make_pair(element, element ? element->isVisible() : false)));
-    }
-}
-
-GUIButton* GUI::addButton(ULL ID,
-                         const stringImpl& text,
-                         const vec2<I32>& position,
-                         const vec2<U32>& dimensions,
-                         ButtonCallback callback,
-                         const stringImpl& rootSheetID) {
-    vec2<F32> relOffset((position.x * 100.0f) / _resolutionCache.width,
-        (position.y * 100.0f) / _resolutionCache.height);
-
-    vec2<F32> relDim((dimensions.x * 100.0f) / _resolutionCache.width,
-        (dimensions.y * 100.0f) / _resolutionCache.height);
-
-    CEGUI::Window* parent = nullptr;
-    if (!rootSheetID.empty()) {
-        parent = CEGUI_DEFAULT_CTX.getRootWindow()->getChild(rootSheetID.c_str());
-    }
-    if (!parent) {
-        parent = _rootSheet;
-    }
-
-    GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset, relDim, parent, callback);
-
-    addElement(ID, btn);
-
-    return btn;
-}
-
-GUIMessageBox* GUI::addMsgBox(ULL ID,
-                              const stringImpl& title,
-                              const stringImpl& message,
-                              const vec2<I32>& offsetFromCentre) {
-    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(ID, title, message, offsetFromCentre, _rootSheet);
-    addElement(ID, box);
-
-    return box;
-}
-
-
-GUIText* GUI::addText(ULL ID,
-                      const vec2<I32>& position,
-                      const stringImpl& font,
-                      const vec4<U8>& color,
-                      const stringImpl& text,
-                      U32 fontSize) {
-
-    GUIText* t = MemoryManager_NEW GUIText(ID,
-                                           text,
-                                           vec2<F32>(position.width,
-                                                     position.height),
-                                           font,
-                                           color,
-                                           _rootSheet,
-                                           fontSize);
-
-    addElement(ID,t);
-
-    return t;
-}
-
-
-GUIFlash* GUI::addFlash(ULL ID,
-                        stringImpl movie,
-                        const vec2<U32>& position,
-                        const vec2<U32>& extent) {
-
-    GUIFlash* flash = MemoryManager_NEW GUIFlash(ID, _rootSheet);
-    addElement(ID, flash);
-
-    return flash;
-}
-
-
-GUIText* GUI::modifyText(ULL ID, const stringImpl& text) {
-    GUIMap::iterator it = _guiGlobalStack.find(ID);
-
-    if (it == std::cend(_guiGlobalStack)) {
-        return nullptr;
-    }
-
-    GUIElement* element = it->second.first;
-    assert(element->getType() == GUIType::GUI_TEXT);
-
-    GUIText* textElement = dynamic_cast<GUIText*>(element);
-    assert(textElement != nullptr);
-
-    textElement->text(text);
-
-    return textElement;
-}
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, ULL elementName) const {
-    GUIElement* ret = nullptr;
     if (sceneID != 0) {
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
-            ret = it->second->get(elementName);
+            return it->second->getGUIElement(elementName);
         }
     } else {
-        GUIMap::const_iterator it = _guiGlobalStack.find(elementName);
-        if (it != std::cend(_guiGlobalStack)) {
-            ret = it->second.first;
-        }
+        return GUIInterface::getGUIElement(elementName);
     }
 
-    return ret;
+    return nullptr;
 }
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID) const {
-    GUIElement* ret = nullptr;
     if (sceneID != 0) {
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
-            ret = it->second->get(elementID);
+            return it->second->getGUIElement(elementID);
         }
     } else {
-        GUIElement* element = nullptr;
-        for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
-            element = guiStackIterator.second.first;
-            if (element->getGUID() == elementID) {
-                ret = element;
-                break;
-            }
-        }
+        return GUIInterface::getGUIElement(elementID);
     }
 
-    return ret;
+    return nullptr;
 }
 
 };

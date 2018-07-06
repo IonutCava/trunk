@@ -2,6 +2,7 @@
 
 #include "GUI/Headers/GUIButton.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 
 namespace Divide {
 DefaultScene::DefaultScene() 
@@ -109,13 +110,15 @@ void DefaultScene::processTasks(const U64 deltaTime) {
 }
 
 void DefaultScene::loadScene(I64 btnGUID) {
+    PostFX::instance().setFadeOutIn(vec4<U8>(0), 750, 1500, 2000);
+
     _sceneToLoad = _buttonToSceneMap[btnGUID];
     Console::d_printf("Loading scene [ %s ]", _sceneToLoad.c_str());
 
-    GUIButton* selection = _GUI->getGUIElement<GUIButton>(getGUID(), btnGUID);
+    GUIButton* selection = _GUI->getGUIElement<GUIButton>(btnGUID);
     selection->setText("Loading ...");
     for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
-        GUIButton* btn = _GUI->getGUIElement<GUIButton>(getGUID(), it.first);
+        GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         if (btn->getGUID() != btnGUID) {
             btn->setActive(false);
             btn->setVisible(false);
@@ -127,7 +130,7 @@ void DefaultScene::onSetActive() {
     vectorImpl<stringImpl> scenes = SceneManager::instance().sceneNameList();
 
     for (const stringImpl& scene : scenes) {
-        GUIButton* btn = _GUI->getGUIElement<GUIButton>(getGUID(), _ID_RT("StartScene" + scene));
+        GUIButton* btn = _GUI->getGUIElement<GUIButton>(_ID_RT("StartScene" + scene));
         
         btn->setText(scene);
         btn->setActive(true);

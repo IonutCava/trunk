@@ -38,7 +38,7 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
+DEFINE_SINGLETON_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
   public:
     ErrorCode initAudioAPI();
     void closeAudioAPI();

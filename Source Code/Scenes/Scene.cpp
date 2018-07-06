@@ -69,6 +69,7 @@ Scene::Scene(const stringImpl& name)
     _linesPrimitive->stateHash(primitiveDescriptor.getHash());
     _linesPrimitive->paused(true);
 #endif
+
 }
 
 Scene::~Scene()
@@ -624,6 +625,10 @@ bool Scene::unload() {
     PHYSICS_DEVICE.setPhysicsScene(nullptr);
     clearObjects();
     _loadComplete = false;
+    return true;
+}
+
+bool Scene::loadResources(bool continueOnErrors) {
     return true;
 }
 

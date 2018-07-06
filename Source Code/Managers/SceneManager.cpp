@@ -1,8 +1,10 @@
 #include "Headers/SceneManager.h"
 
 #include "SceneList.h"
+#include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Time/Headers/ProfileTimer.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Rendering/Headers/ForwardPlusRenderer.h"
@@ -178,7 +180,8 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
     if (state && !isAlreadyLoaded) {
         if (!loadDefaultScene) {
-            _GUI->addButton(_ID_RT("Back"),
+            Attorney::SceneManager::gui(*loadingScene)
+                ->addButton(_ID_RT("Back"),
                             "Back",
                             vec2<I32>(15, 15),
                             vec2<U32>(50, 25),
@@ -263,7 +266,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious) {
                 _loadedScene = nullptr;
             }
 
-        })._task->startTask(Task::TaskPriority::REALTIME, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+        })._task->startTask(Task::TaskPriority::HIGH, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
 
     _sceneSwitchTarget.first = "";
     return true;

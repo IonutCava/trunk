@@ -11,7 +11,6 @@ GUIText::GUIText(ULL ID,
                  U32 fontSize)
     : GUIElement(ID, parent, GUIType::GUI_TEXT),
       TextLabel(text, font, color, fontSize),
-      _heightCache(0.0f),
       _position(relativePosition)
 {
 }

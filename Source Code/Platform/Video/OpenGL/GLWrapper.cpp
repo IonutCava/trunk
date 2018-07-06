@@ -744,9 +744,11 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // Get the descriptor's hash value
     size_t hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map
+    UpgradableReadLock ur_lock(_samplerMapLock);
     samplerObjectMap::const_iterator it = _samplerMap.find(hashValue);
     // If we fail to find it, we need to create a new sampler object
     if (it == std::end(_samplerMap)) {
+        UpgradeToWriteLock w_lock(ur_lock);
         // Create and store the newly created sample object. GL_API is
         // responsible for deleting these!
         hashAlg::emplace(_samplerMap, hashValue, MemoryManager_NEW glSamplerObject(descriptor));
@@ -762,6 +764,7 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
     if (samplerHash > 0) {
         // If we fail to find the sampler object for the given hash, we print an
         // error and return the default OpenGL handle
+        ReadLock r_lock(_samplerMapLock);
         samplerObjectMap::const_iterator it = _samplerMap.find(samplerHash);
         if (it != std::cend(_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value

@@ -45,7 +45,7 @@ namespace Divide {
 
 class GUIButton : public GUIElement {
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
-    friend class GUI;
+    friend class GUIInterface;
     friend class SceneGUIElements;
 
    public:

@@ -60,9 +60,10 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback {
 
 class PhysicsAsset;
 class SceneGraphNode;
-DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
-                      physx::debugger::comm::PvdConnectionHandler,
-                      final)
+DEFINE_SINGLETON_W_SPECIFIER(PhysX,
+                             PhysicsAPIWrapper,
+                             physx::debugger::comm::PvdConnectionHandler,
+                             final)
 
   private:
     PhysX();

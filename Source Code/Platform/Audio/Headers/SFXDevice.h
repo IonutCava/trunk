@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
+DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
   public:
     enum class AudioAPI : U32 {
         FMOD,

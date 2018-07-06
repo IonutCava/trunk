@@ -46,7 +46,7 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
+DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
   protected:
     DX_API() : RenderAPIWrapper() {}
     virtual ~DX_API() {}

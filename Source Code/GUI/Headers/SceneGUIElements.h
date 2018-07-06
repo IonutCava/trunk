@@ -31,85 +31,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCENE_GUI_ELEMENTS_H_
 #define _SCENE_GUI_ELEMENTS_H_
 
-#include "GUI.h"
-#include "GUIElement.h"
+#include "GUIInterface.h"
 #include "Scenes/Headers/SceneComponent.h"
 
 namespace Divide {
 
-class SceneGUIElements : public SceneComponent {
+class SceneGUIElements : public GUIInterface,
+                         public SceneComponent
+{
+
 public:
     SceneGUIElements(Scene& parentScene);
     ~SceneGUIElements();
 
     void draw();
-    void onChangeResolution(U16 w, U16 h);
-
-    GUIElement* get(ULL elementName) const;
-    GUIElement* get(I64 elementGUID) const;
 
     void onEnable();
     void onDisable();
-
-    // ToDo: Move these out to a different class (with the element map)
-    // and have both this class and the GUI class inherit from it
-    GUIText* addText(ULL ID,
-                     const vec2<I32>& position,
-                     const stringImpl& font,
-                     const vec4<U8>& color,
-                     const stringImpl& text,
-                     U32 fontSize = 16);
-
-    GUIText* modifyText(ULL ID,
-                        const stringImpl& text);
-
-    GUIMessageBox* addMsgBox(ULL ID,
-                             const stringImpl& title,
-                             const stringImpl& message,
-                             const vec2<I32>& offsetFromCentre = vec2<I32>(0));
-    GUIButton* addButton(ULL ID,
-                         const stringImpl& text,
-                         const vec2<I32>& position,
-                         const vec2<U32>& dimensions,
-                         GUI::ButtonCallback callback,
-                         const stringImpl& rootSheetID = "");
-
-    GUIFlash* addFlash(ULL ID,
-                       stringImpl movie,
-                       const vec2<U32>& position,
-                       const vec2<U32>& extent);
-
-    void mouseMoved(const GUIEvent& event);
-    void onMouseUp(const GUIEvent& event);
-    void onMouseDown(const GUIEvent& event);
-
-    const vec2<U16>& getDisplayResolution() const;
-
-
-    /// Get a pointer to an element by name/id
-    template<typename T = GUIElement>
-    inline T* getGUIElement(I64 sceneID, ULL elementName) {
-        static_assert(std::is_base_of<GUIElement, T>::value,
-                      "getGuiElement error: Target is not a valid GUI item");
-
-        return static_cast<T*>(getGUIElementImpl(sceneID, elementName));
-    }
-
-    template<typename T = GUIElement>
-    inline T* getGUIElement(I64 sceneID, I64 elementID) {
-        static_assert(std::is_base_of<GUIElement, T>::value,
-                      "getGuiElement error: Target is not a valid GUI item");
-
-        return static_cast<T*>(getGUIElementImpl(sceneID, elementID));
-    }
-
-protected:
-    void addElement(ULL id, GUIElement* element);
-    GUIElement* getGUIElementImpl(I64 sceneID, ULL elementName) const;
-    GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID) const;
-
-private:
-    GUI::GUIMap _sceneElements;
 };
 }; //namespace Divide;
 

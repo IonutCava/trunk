@@ -42,7 +42,7 @@
 namespace Divide {
 
 class PhysicsAsset;
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
+DEFINE_SINGLETON_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
   public:
     enum class PhysicsAPI : U32 {

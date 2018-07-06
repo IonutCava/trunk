@@ -263,7 +263,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
             _sceneMgr.processTasks(deltaTime);
             // Update the scene state based on current time (e.g. animation matrices)
             _sceneMgr.updateSceneState(deltaTime);
-
+            // Update visual effect timers as well
+            PostFX::instance().update(deltaTime);
             if (_timingData._updateLoops == 0) {
                 _sceneUpdateLoopTimer.stop();
             }

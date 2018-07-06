@@ -26,6 +26,11 @@ uniform float _noiseFactor;
 uniform float randomCoeffNoise;
 uniform float randomCoeffFlash;
 
+// fade settings
+uniform float _fadeStrength = 0.0;
+uniform bool _fadeActive = false;
+uniform vec4 _fadeColour;
+
 subroutine vec4 VignetteRoutineType(in vec4 colorIn);
 subroutine vec4 NoiseRoutineType(in vec4 colorIn);
 subroutine vec4 ScreenRoutineType();
@@ -77,5 +82,9 @@ vec4 ColorPassThrough(in vec4 colorIn){
 }
 
 void main(void){
-    _colorOut = VignetteRoutine(NoiseRoutine(ScreenRoutine()));
+    vec4 colour = VignetteRoutine(NoiseRoutine(ScreenRoutine()));
+    if (_fadeActive) {
+        colour = mix(colour, _fadeColour, _fadeStrength);
+    }
+    _colorOut = colour;
 }

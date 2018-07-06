@@ -103,8 +103,7 @@ namespace Attorney {
     class SceneManagerRenderPass;
 };
 
-DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
-                      Input::InputAggregatorInterface)
+DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
 

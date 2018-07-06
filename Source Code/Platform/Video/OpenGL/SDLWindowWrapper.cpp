@@ -313,6 +313,7 @@ void GL_API::closeRenderingAPI() {
     CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
     _GUIGLrenderer = nullptr;
     // Destroy sampler objects
+    WriteLock w_lock(_samplerMapLock);
     MemoryManager::DELETE_HASHMAP(_samplerMap);
 
     // Destroy the text rendering system
@@ -333,9 +334,7 @@ void GL_API::closeRenderingAPI() {
 }
 
 void GL_API::syncToThread(std::thread::id threadID) {
-    glbinding::ContextHandle glCtx = glbinding::getCurrentContext();
-    if (glCtx == 0) {
-
+    if (glbinding::getCurrentContext() == 0) {
         std::hash<std::thread::id> hasher;
         size_t threadHash = hasher(threadID);
         hashMapImpl<size_t, SDL_GLContext>::iterator it;
@@ -358,8 +357,6 @@ void GL_API::syncToThread(std::thread::id threadID) {
         // from the main thread's callbacks
         glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, ctx);
 #endif
-    } else {
-        glbinding::Binding::useCurrentContext();
     }
 }
 

@@ -37,6 +37,7 @@ GL_API::textureBoundMapDef GL_API::_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::_imageBoundMap;
 GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::_samplerMap;
+SharedLock GL_API::_samplerMapLock;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {

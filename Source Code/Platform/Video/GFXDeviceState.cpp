@@ -267,9 +267,11 @@ void GFXDevice::closeRenderingAPI() {
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
     // Delete our default render state blocks
     _stateBlockMap.clear();
-    // Destroy all of the immediate mode emulation primitives created during
-    // runtime
-    MemoryManager::DELETE_VECTOR(_imInterfaces);
+    // Destroy all of the immediate mode emulation primitives created during runtime
+    {
+        WriteLock w_lock(_imInterfaceLock);
+        MemoryManager::DELETE_VECTOR(_imInterfaces);
+    }
     _gfxDataBuffer->destroy();
     MemoryManager::DELETE(_gfxDataBuffer);
 
@@ -366,35 +368,38 @@ void GFXDevice::endFrame(bool swapBuffers) {
         }
     }
 
-    // Remove dead primitives in 4 steps
-    // 1) Partition the vector in 2 parts: valid objects first, zombie
-    // objects second
-    vectorImpl<IMPrimitive*>::iterator zombie = std::partition(
-        std::begin(_imInterfaces), std::end(_imInterfaces),
-        [](IMPrimitive* const priv) {
-        return priv->zombieCounter() < IM_MAX_FRAMES_ZOMBIE_COUNT;
-    });
-    // 2) For every zombie object, free the memory it's using
-    for (vectorImpl<IMPrimitive*>::iterator i = zombie;
-            i != std::end(_imInterfaces); ++i) {
-        MemoryManager::DELETE(*i);
-    }
-    // 3) Remove all the zombie objects once the memory is freed
-    _imInterfaces.erase(zombie, std::end(_imInterfaces));
-    // 4) Increment the zombie counter (if allowed) for the remaining primitives
-    std::for_each(
-        std::begin(_imInterfaces), std::end(_imInterfaces),
-        [](IMPrimitive* primitive) -> void {
-        if (primitive->_canZombify && primitive->inUse()) {
-            // The zombie counter should always be reset on draw!
-            primitive->zombieCounter(primitive->zombieCounter() + 1);
-            // If the primitive wasn't used in a while, it may not be in use
-            // so we should recycle it.
-            if (primitive->zombieCounter() > IN_MAX_FRAMES_RECYCLE_COUNT) {
-                primitive->inUse(false);
-            }
+    {
+        WriteLock w_lock(_imInterfaceLock);
+        // Remove dead primitives in 4 steps
+        // 1) Partition the vector in 2 parts: valid objects first, zombie
+        // objects second
+        vectorImpl<IMPrimitive*>::iterator zombie = std::partition(
+            std::begin(_imInterfaces), std::end(_imInterfaces),
+            [](IMPrimitive* const priv) {
+            return priv->zombieCounter() < IM_MAX_FRAMES_ZOMBIE_COUNT;
+        });
+        // 2) For every zombie object, free the memory it's using
+        for (vectorImpl<IMPrimitive*>::iterator i = zombie;
+                i != std::end(_imInterfaces); ++i) {
+            MemoryManager::DELETE(*i);
         }
-    });
+        // 3) Remove all the zombie objects once the memory is freed
+        _imInterfaces.erase(zombie, std::end(_imInterfaces));
+        // 4) Increment the zombie counter (if allowed) for the remaining primitives
+        std::for_each(
+            std::begin(_imInterfaces), std::end(_imInterfaces),
+            [](IMPrimitive* primitive) -> void {
+            if (primitive->_canZombify && primitive->inUse()) {
+                // The zombie counter should always be reset on draw!
+                primitive->zombieCounter(primitive->zombieCounter() + 1);
+                // If the primitive wasn't used in a while, it may not be in use
+                // so we should recycle it.
+                if (primitive->zombieCounter() > IN_MAX_FRAMES_RECYCLE_COUNT) {
+                    primitive->inUse(false);
+                }
+            }
+        });
+    }
 
     FRAME_COUNT++;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;

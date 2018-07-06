@@ -37,7 +37,7 @@
 namespace Divide {
 
 class GUIText : public GUIElement, public TextLabel {
-    friend class GUI;
+    friend class GUIInterface;
 
    public:
     GUIText(ULL ID, 
@@ -56,6 +56,9 @@ class GUIText : public GUIElement, public TextLabel {
     const bool isVisible() const override;
 
 protected:
+    inline void initialHeightCache(F32 height) { _heightCache = height; }
+
+private:
     F32 _heightCache;
     vec2<F32> _position;
 };

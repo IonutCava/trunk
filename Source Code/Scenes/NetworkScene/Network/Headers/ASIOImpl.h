@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1(ASIOImpl, ASIO)
+DEFINE_SINGLETON(ASIOImpl, ASIO)
   private:
     /// Singleton class: Constructor/Destructor private
     ASIOImpl() : ASIO() {}

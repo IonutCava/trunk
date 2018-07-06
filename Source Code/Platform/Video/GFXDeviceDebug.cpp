@@ -78,13 +78,15 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
     bool previousTextureFlag = false;
     // Loop over all available primitives and find active ones
     _activeImInterfaces.resize(0);
-    for (IMPrimitive* prim : _imInterfaces) {
-        // A primitive may be paused if drawing it isn't desired at the current point in time
-        if (!prim->paused()) {
-            _activeImInterfaces.push_back(prim);
+    {
+        ReadLock r_lock(_imInterfaceLock);
+        for (IMPrimitive* prim : _imInterfaces) {
+            // A primitive may be paused if drawing it isn't desired at the current point in time
+            if (!prim->paused()) {
+                _activeImInterfaces.push_back(prim);
+            }
         }
     }
-
     for (IMPrimitive* prim : _activeImInterfaces) {
         // Inform the primitive that we're using the imShader
         // A primitive can be rendered with any shader program available, so

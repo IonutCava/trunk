@@ -20,11 +20,16 @@ PostFX::PostFX()
       _noise(nullptr),
       _randomNoiseCoefficient(0.0f),
       _randomFlashCoefficient(0.0f),
-      _timer(0.0),
+      _noiseTimer(0.0),
       _tickInterval(1),
       _postProcessingShader(nullptr),
       _underwaterTexture(nullptr),
-      _gfx(nullptr)
+      _gfx(nullptr),
+      _currentFadeTimeMS(0.0),
+      _targetFadeTimeMS(0.0),
+      _fadeWaitDurationMS(0.0),
+      _fadeOut(false),
+      _fadeActive(false)
 {
     ParamHandler::instance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
 
@@ -60,6 +65,8 @@ void PostFX::init() {
     _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
     _postProcessingShader->Uniform("_noiseTile", 0.05f);
     _postProcessingShader->Uniform("_noiseFactor", 0.02f);
+    _postProcessingShader->Uniform("_fadeActive", false);
+    
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
             ShaderType::FRAGMENT, "Vignette"));  // 0
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
@@ -102,7 +109,7 @@ void PostFX::init() {
     PreRenderOperator& DOFOp = _preRenderBatch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
     DOFOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer);
     
-    _timer = 0;
+    _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
     _randomNoiseCoefficient = 0;
     _randomFlashCoefficient = 0;
@@ -149,18 +156,15 @@ void PostFX::idle() {
     _enableVignette = par.getParam<bool>(_ID("postProcessing.enableVignette"));
 
     if (_enableNoise) {
-        _timer += Time::ElapsedMilliseconds();
-
-        if (_timer > _tickInterval) {
-            _timer = 0.0;
+        _noiseTimer += Time::ElapsedMilliseconds();
+        if (_noiseTimer > _tickInterval) {
+            _noiseTimer = 0.0;
             _randomNoiseCoefficient = Random(1000) * 0.001f;
             _randomFlashCoefficient = Random(1000) * 0.001f;
         }
 
-        _postProcessingShader->Uniform("randomCoeffNoise",
-                                       _randomNoiseCoefficient);
-        _postProcessingShader->Uniform("randomCoeffFlash",
-                                       _randomFlashCoefficient);
+        _postProcessingShader->Uniform("randomCoeffNoise", _randomNoiseCoefficient);
+        _postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
     }
 
     _preRenderBatch.idle();
@@ -181,6 +185,70 @@ void PostFX::idle() {
     toggleFilter(FilterType::FILTER_MOTION_BLUR, enableMotionBlur);
     toggleFilter(FilterType::FILTER_BLOOM, enableBloom);
     toggleFilter(FilterType::FILTER_LUT_CORECTION, enableLUT);
+}
+
+void PostFX::update(const U64 deltaTime) {
+    if (_fadeActive) {
+        _currentFadeTimeMS += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
+        F32 fadeStrength = to_float(std::min(_currentFadeTimeMS / _targetFadeTimeMS , 1.0));
+        if (!_fadeOut) {
+            fadeStrength = 1.0f - fadeStrength;
+        }
+
+        if (fadeStrength > 0.99) {
+            if (_fadeWaitDurationMS < EPSILON_D64) {
+                if (_fadeOutComplete) {
+                    _fadeOutComplete();
+                    _fadeOutComplete = DELEGATE_CBK<>();
+                }
+            } else {
+                _fadeWaitDurationMS -= Time::MicrosecondsToMilliseconds<D64>(deltaTime);
+            }
+        }
+
+        _postProcessingShader->Uniform("_fadeStrength", fadeStrength);
+        
+        _fadeActive = fadeStrength > EPSILON_D64;
+        if (!_fadeActive) {
+            _postProcessingShader->Uniform("_fadeActive", false);
+            if (_fadeInComplete) {
+                _fadeInComplete();
+                _fadeInComplete = DELEGATE_CBK<>();
+            }
+        }
+    }
+}
+
+void PostFX::setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<> onComplete) {
+    _postProcessingShader->Uniform("_fadeColour", Util::ToFloatColor(targetColour));
+    _targetFadeTimeMS = durationMS;
+    _currentFadeTimeMS = 0.0;
+    _fadeWaitDurationMS = waitDurationMS;
+    _fadeOut = true;
+    _fadeActive = true;
+    _postProcessingShader->Uniform("_fadeActive", true);
+    _fadeOutComplete = onComplete;
+}
+
+// clear any fading effect currently active over the specified time interval
+// set durationMS to instantly clear the fade effect
+void PostFX::setFadeIn(D64 durationMS, DELEGATE_CBK<> onComplete) {
+    _targetFadeTimeMS = durationMS;
+    _currentFadeTimeMS = 0.0;
+    _fadeOut = false;
+    _fadeActive = true;
+    _postProcessingShader->Uniform("_fadeActive", true);
+    _fadeInComplete = onComplete;
+}
+
+void PostFX::setFadeOutIn(const vec4<U8>& targetColour, D64 durationFadeOutMS, D64 durationMS) {
+    if (durationMS > 0.0) {
+        setFadeOutIn(targetColour, durationMS * 0.5, durationMS * 0.5, durationFadeOutMS);
+    }
+}
+
+void PostFX::setFadeOutIn(const vec4<U8>& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS) {
+    setFadeOut(targetColour, durationFadeOutMS, waitDurationMS, [this, durationFadeInMS]() {setFadeIn(durationFadeInMS); });
 }
 
 };

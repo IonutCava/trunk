@@ -536,6 +536,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightPool.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIInterface.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -945,6 +948,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightPool.h">
       <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIInterface.h">
+      <Filter>GUI\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

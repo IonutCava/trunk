@@ -32,6 +32,7 @@
 #ifndef GUI_H_
 #define GUI_H_
 
+#include "GUIInterface.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
@@ -60,72 +61,29 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 #define CEGUI_DEFAULT_CTX CEGUI::System::getSingleton().getDefaultGUIContext()
 
-class GUIText;
-class GUIFlash;
-class GUIButton;
-class GUIMessageBox;
 class Scene;
 
 /// Graphical User Interface
 
 class SceneGUIElements;
-DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
+DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
   public:
-    typedef hashMapImpl<ULL, std::pair<GUIElement*, bool/*last state*/>> GUIMap;
     typedef hashMapImpl<I64, SceneGUIElements*> GUIMapPerScene;
-    typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
 
   public:
     /// Create the GUI
     bool init(const vec2<U16>& renderResolution);
-    void onChangeResolution(U16 w, U16 h);
+    void onChangeResolution(U16 w, U16 h) override;
     void onChangeScene(Scene* newScene);
     void onUnloadScene(Scene* scene);
     
     /// Main update call
     void update(const U64 deltaTime);
-    /// Add a text label
-    GUIText* addText(ULL ID,
-                     const vec2<I32>& position,
-                     const stringImpl& font,
-                     const vec4<U8>& color,
-                     const stringImpl& text,
-                     U32 fontSize = 16);
-    /// Modify a text label
-    GUIText* modifyText(ULL ID, const stringImpl& text);
 
-
-    GUIMessageBox* addMsgBox(ULL ID, 
-                             const stringImpl& title,
-                             const stringImpl& message,
-                             const vec2<I32>& offsetFromCentre = vec2<I32>(0));
-
-    /// Add a button with a specific callback.
-    /// The root of the window positioning system is bottom left, so 100,60 will
-    /// place the button 100 pixels to the right and 60 up
-    /// from the bottom
-    GUIButton* addButton(ULL ID,
-                         const stringImpl& text,
-                         const vec2<I32>& position,
-                         const vec2<U32>& dimensions,
-                         ButtonCallback callback,
-                         const stringImpl& rootSheetID = "");
-
-    /// Add a flash element -DEPRECATED-
-    GUIFlash* addFlash(ULL ID, 
-                       stringImpl movie,
-                       const vec2<U32>& position,
-                       const vec2<U32>& extent);
-
-    /// Get a pointer to our console window
-    inline GUIConsole* const getConsole() { return _console; }
-    inline const GUIEditor& getEditor() { return GUIEditor::instance(); }
-
-    /// Get a pointer to an element by name/id
     template<typename T = GUIElement>
-    inline T* getGUIElement(I64 sceneID, ULL elementName) { 
+    inline T* getGUIElement(I64 sceneID, ULL elementName) {
         static_assert(std::is_base_of<GUIElement, T>::value,
-                      "getGuiElement error: Target is not a valid GUI item");
+            "getGuiElement error: Target is not a valid GUI item");
 
         return static_cast<T*>(getGUIElementImpl(sceneID, elementName));
     }
@@ -133,10 +91,16 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     template<typename T = GUIElement>
     inline T* getGUIElement(I64 sceneID, I64 elementID) {
         static_assert(std::is_base_of<GUIElement, T>::value,
-                      "getGuiElement error: Target is not a valid GUI item");
+            "getGuiElement error: Target is not a valid GUI item");
 
         return static_cast<T*>(getGUIElementImpl(sceneID, elementID));
     }
+
+    /// Get a pointer to our console window
+    inline GUIConsole* const getConsole() const { return _console; }
+    inline const GUIEditor& getEditor() const { return GUIEditor::instance(); }
+    inline CEGUI::Window* rootSheet() const { return _rootSheet; }
+    inline const stringImpl& guiScheme() const { return _defaultGUIScheme; }
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
     void selectionChangeCallback(Scene* const activeScene);
@@ -175,17 +139,15 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
-    // GUI may render at a different resoltuion
-    inline const vec2<U16>& getDisplayResolution() const {
-        return _resolutionCache;
-    }
-
     Scene* activeScene() {
         return _activeScene;
     }
     const Scene* activeScene() const {
         return _activeScene;
     }
+  protected:
+    GUIElement* getGUIElementImpl(I64 sceneID, ULL elementName) const;
+    GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID) const;
 
   protected:
       friend class SceneGUIElements;
@@ -196,9 +158,6 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     GUI();            //< Constructor
     ~GUI();           //< Destructor
     void draw() const;
-    void addElement(ULL id, GUIElement* element);
-    GUIElement* getGUIElementImpl(I64 sceneID, ULL elementName) const;
-    GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID) const;
 
   private:
     bool _init;              //< Set to true when the GUI has finished loading
@@ -214,7 +173,6 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
 
     /// Each scene has its own gui elements! (0 = global)
     Scene* _activeScene;
-    vec2<U16> _resolutionCache;
     bool _enableCEGUIRendering;
 
     U32 _debugVarCacheCount;
@@ -223,7 +181,6 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
 
     /// All the GUI elements created per scene
     GUIMapPerScene _guiStack;
-    GUIMap _guiGlobalStack;
 END_SINGLETON
 
 };  // namespace Divide

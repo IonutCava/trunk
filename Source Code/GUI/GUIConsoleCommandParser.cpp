@@ -1,5 +1,6 @@
 #include "Headers/GUIConsoleCommandParser.h"
 
+#include "Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"

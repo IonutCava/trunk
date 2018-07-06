@@ -94,7 +94,7 @@ struct ImageBindSettings {
 };
 
 /// OpenGL implementation of the RenderAPIWrapper
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
+DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     friend class glShader;
     friend class glTexture;
     friend class glIMPrimitive;
@@ -365,6 +365,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static samplerBoundMapDef _samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
     typedef hashMapImpl<size_t, glSamplerObject*> samplerObjectMap;
+    static SharedLock _samplerMapLock;
     static samplerObjectMap _samplerMap;
 
     typedef std::tuple<GLuint, GLuint, GLintptr, GLsizei> BufferBindingParams;

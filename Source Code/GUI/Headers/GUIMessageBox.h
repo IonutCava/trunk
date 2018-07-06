@@ -44,7 +44,7 @@ class EventArgs;
 namespace Divide {
 
 class GUIMessageBox : public GUIElement {
-    friend class GUI;
+    friend class GUIInterface;
     friend class SceneGUIElements;
 
    public:

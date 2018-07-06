@@ -674,6 +674,7 @@ void GFXDevice::constructHIZ() {
 
 /// Find an unused primitive object or create a new one and return it
 IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
+    UpgradableReadLock ur_lock(_imInterfaceLock);
     IMPrimitive* tempPriv = nullptr;
     // Find an available and unused primitive (a zombie primitive)
     vectorImpl<IMPrimitive*>::iterator it;
@@ -690,8 +691,8 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
     } else {
         // If we do not have a valid zombie, we create a new primitive
         tempPriv = newIMP();
-        // And add it to our container. The GFXDevice class is responsible for
-        // deleting these!
+        // And add it to our container. The GFXDevice class is responsible for deleting these!
+        UpgradeToWriteLock w_lock(ur_lock);
         _imInterfaces.push_back(tempPriv);
     }
     // Toggle zombification of the primitive on or off depending on our request

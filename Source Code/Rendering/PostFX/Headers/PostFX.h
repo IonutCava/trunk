@@ -63,6 +63,8 @@ DEFINE_SINGLETON(PostFX)
 
     void init();
     void idle();
+    void update(const U64 deltaTime);
+
     void updateResolution(U16 newWidth, U16 newHeight);
 
     inline void toggleFilter(FilterType filter, const bool state) {
@@ -73,6 +75,21 @@ DEFINE_SINGLETON(PostFX)
         return BitCompare(_filterMask, to_uint(filter));
     }
 
+
+    // fade the screen to the specified colour lerping over the specified time interval
+    // set durationMS to instantly set fade colour
+    // optionally, set a callback when fade out completes
+    // waitDurationMS = how much time to wait vefore calling the completeion callback after fade out completes
+    void setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<> onComplete = DELEGATE_CBK<>());
+    // clear any fading effect currently active over the specified time interval
+    // set durationMS to instantly clear the fade effect
+    // optionally, set a callback when fade in completes
+    void setFadeIn(D64 durationMS, DELEGATE_CBK<> onComplete = DELEGATE_CBK<>());
+    // fade out to specified colour and back again within the given time slice
+    // if duration is 0.0, nothing happens
+    // waitDurationMS is the ammount of time to wait before fading back in
+    void setFadeOutIn(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS);
+    void setFadeOutIn(const vec4<U8>& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
   private:
     bool _enableNoise;
     bool _enableVignette;
@@ -87,7 +104,7 @@ DEFINE_SINGLETON(PostFX)
     Texture_ptr _noise;
 
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
-    D64 _timer, _tickInterval;
+    D64 _noiseTimer, _tickInterval;
 
     ShaderProgram_ptr _postProcessingShader;
     Texture_ptr _underwaterTexture;
@@ -97,6 +114,16 @@ DEFINE_SINGLETON(PostFX)
     vectorImpl<I32> _shaderFunctionList;
 
     Framebuffer::FramebufferTarget _postFXTarget;
+
+    //fade settings
+    D64 _currentFadeTimeMS;
+    D64 _targetFadeTimeMS;
+    D64 _fadeWaitDurationMS;
+    bool _fadeOut;
+    bool _fadeActive;
+    DELEGATE_CBK<> _fadeOutComplete;
+    DELEGATE_CBK<> _fadeInComplete;
+
 END_SINGLETON
 
 };  // namespace Divide
