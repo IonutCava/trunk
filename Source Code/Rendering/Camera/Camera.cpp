@@ -202,7 +202,8 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     _viewMatrixDirty = true;
 }
 
-const mat4<F32>& Camera::lookAt(const vec3<F32>& eye, const vec3<F32>& target,
+const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
+                                const vec3<F32>& target,
                                 const vec3<F32>& up) {
     _eye = eye;
 

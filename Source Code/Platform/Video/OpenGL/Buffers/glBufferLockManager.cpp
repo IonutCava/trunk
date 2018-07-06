@@ -52,13 +52,13 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes,
                                     size_t _lockLength) {
 
     BufferRange testRange = { _lockBeginBytes, _lockLength };
-    for (BufferLock& lock : _bufferLocks) {
+    /*for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range) && 
             lock._status == GL_SIGNALED) {
             WaitForLockedRange(_lockBeginBytes, _lockLength);
             break;
         }
-    }
+    }*/
 
     _bufferLocks.push_back({testRange,
                             glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,

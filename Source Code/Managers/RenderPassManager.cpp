@@ -15,18 +15,17 @@ RenderPassItem::~RenderPassItem()
 
 RenderPassManager::RenderPassManager()
 {
-    RenderQueue::createInstance();
+    _renderQueue = std::make_unique<RenderQueue>();
 }
 
-RenderPassManager::~RenderPassManager() {
+RenderPassManager::~RenderPassManager()
+{
     _renderPasses.clear();
-    RenderQueue::destroyInstance();
 }
 
-void RenderPassManager::render(const SceneRenderState& sceneRenderState,
-                               const SceneGraph& activeSceneGraph) {
+void RenderPassManager::render(const SceneRenderState& sceneRenderState) {
     for (RenderPassItem& rpi : _renderPasses) {
-        rpi.renderPass().render(sceneRenderState, activeSceneGraph);
+        rpi.renderPass().render(sceneRenderState);
     }
 }
 
@@ -52,7 +51,7 @@ void RenderPassManager::removeRenderPass(const stringImpl& name) {
 
 U16 RenderPassManager::getLastTotalBinSize(U8 renderPassID) const {
     if (renderPassID < _renderPasses.size()) {
-        return _renderPasses[renderPassID].renderPass().getLasTotalBinSize();
+        return _renderPasses[renderPassID].renderPass().getLastTotalBinSize();
     }
 
     return 0;

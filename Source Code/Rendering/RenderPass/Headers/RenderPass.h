@@ -44,9 +44,9 @@ class RenderPass {
     RenderPass(const stringImpl& name);
     ~RenderPass();
 
-    virtual void render(const SceneRenderState& renderState,
-                        const SceneGraph& activeSceneGraph);
-    inline U16 getLasTotalBinSize() const { return _lastTotalBinSize; }
+    virtual void render(const SceneRenderState& renderState);
+
+    inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
     inline const stringImpl& getName() const { return _name; }
 
    private:

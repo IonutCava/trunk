@@ -53,19 +53,22 @@ class RenderPassItem {
     RenderPass _renderPass;
 };
 
+class RenderQueue;
 class SceneRenderState;
-
 DEFINE_SINGLETON(RenderPassManager)
 
   public:
     /// Call every renderqueue's render function in order
-    void render(const SceneRenderState& sceneRenderState,
-                const SceneGraph& activeSceneGraph);
+    void render(const SceneRenderState& sceneRenderState);
     /// Add a new pass with the specified key
     void addRenderPass(const stringImpl& renderPassName, U8 orderKey);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const stringImpl& name);
-    U16 getLastTotalBinSize(U8 renderPassID) const;
+    U16  getLastTotalBinSize(U8 renderPassID) const;
+
+    inline RenderQueue& getQueue() {
+        return *_renderQueue.get();
+    }
 
   private:
     RenderPassManager();
@@ -74,6 +77,7 @@ DEFINE_SINGLETON(RenderPassManager)
   private:
     // Some vector implementations are not move-awarem so use STL in this case
     vectorImpl<RenderPassItem> _renderPasses;
+    std::unique_ptr<RenderQueue> _renderQueue;
 
 END_SINGLETON
 

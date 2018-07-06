@@ -152,7 +152,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         _renderPassCuller->refresh();
     }
 
-    RenderQueue& queue = RenderQueue::getInstance();
+    RenderQueue& queue = _renderPassManager->getQueue();
     RenderPassCuller::VisibleNodeCache& nodes =
         _renderPassCuller->frustumCull(
             *GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state(),
@@ -189,9 +189,7 @@ void SceneManager::renderVisibleNodes(bool flushCache) {
 }
 
 void SceneManager::renderScene() {
-    _renderPassManager->render(
-        _activeScene->renderState(),
-        _activeScene->getSceneGraph());
+    _renderPassManager->render(_activeScene->renderState());
 }
 
 void SceneManager::render(RenderStage stage, const Kernel& kernel) {

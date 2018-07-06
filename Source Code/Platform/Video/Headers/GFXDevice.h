@@ -91,16 +91,15 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
             F32       _data[4 * 4 * 4];
         };
 
-        NodeData() {
+        NodeData()
+        {
             _matrix[0].identity();
             _matrix[1].identity();
             _matrix[2].zero();
             _matrix[3].zero();
         }
 
-        inline void set(const NodeData& other) {
-            memcpy(_data, other._data, 4 * 4 * 4 * sizeof(F32));
-        }
+        void set(const NodeData& other);
     };
 
   public:  // GPU specific data
@@ -115,18 +114,18 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
        ShaderBufferBinding(ShaderBufferLocation slot,
                            ShaderBuffer* buffer,
-                           const vec2<U32>& range)
-           : _slot(slot), _buffer(buffer), _range(range)
+                           const vec2<U32>& range) 
+         : _slot(slot),
+           _buffer(buffer),
+           _range(range)
        {
        }
 
+       void set(const ShaderBufferBinding& other);
+
        void set(ShaderBufferLocation slot,
                 ShaderBuffer* buffer,
-                const vec2<U32>& range) {
-           _slot = slot;
-           _buffer = buffer;
-           _range.set(range);
-       }
+                const vec2<U32>& range);
    };
 
    typedef vectorImpl<RenderPassCuller::RenderableNode> VisibleNodeList;
@@ -137,12 +136,37 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
        {
        }
 
-       vectorImpl<GenericDrawCommand> _drawCommands;
-       TextureDataContainer _textureData;
-       ShaderBufferList _shaderBuffers;
-       bool _isRenderable;
-
        bool isCompatible(const RenderPackage& other) const;
+
+       void clear();
+       void set(const RenderPackage& other);
+
+       bool _isRenderable;
+       ShaderBufferList _shaderBuffers;
+       TextureDataContainer _textureData;
+       vectorImpl<GenericDrawCommand> _drawCommands;
+   };
+
+   struct RenderQueue {
+    public:
+       RenderQueue() : _currentCount(0)
+       {
+       }
+       void clear();
+       U32 size() const;
+       bool empty() const;
+       const RenderPackage& getPackage(U32 idx) const;
+
+    protected:
+        friend class GFXDevice;
+        RenderPackage& getPackage(U32 idx);
+        RenderPackage& back();
+        bool push_back(const RenderPackage& package);
+        void resize(U16 size);
+
+    protected:
+       U32 _currentCount;
+       vectorImpl<RenderPackage> _packages;
    };
 
    enum class RenderAPI : U32 {
@@ -579,7 +603,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
-    typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<Renderer> _renderer;

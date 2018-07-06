@@ -39,15 +39,16 @@ namespace Divide {
 class Material;
 class SceneNode;
 
-/// This class manages all of the RenderBins and renders them in the correct
-/// order
-DEFINE_SINGLETON(RenderQueue)
+/// This class manages all of the RenderBins and renders them in the correct order
+class RenderQueue {
     typedef hashMapImpl<RenderBin::RenderBinType, RenderBin*>
         RenderBinMap;
     typedef hashMapImpl<U16, RenderBin::RenderBinType> RenderBinIDType;
 
   public:
-    ///
+    RenderQueue();
+    ~RenderQueue();
+
     void sort(RenderStage renderStage);
     void refresh();
     void addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos);
@@ -55,21 +56,24 @@ DEFINE_SINGLETON(RenderQueue)
     SceneGraphNode& getItem(U16 renderBin, U16 index);
     RenderBin* getBin(RenderBin::RenderBinType rbType);
 
-    inline U16 getRenderQueueBinSize() { return (U16)_sortedRenderBins.size(); }
+    inline U16 getRenderQueueBinSize() { 
+        return (U16)_sortedRenderBins.size(); 
+    }
+
     inline RenderBin* getBinSorted(U16 renderBin) {
         return _sortedRenderBins[renderBin];
     }
+
     inline RenderBin* getBin(U16 renderBin) {
         return getBin(_renderBinID[renderBin]);
     }
+
     inline bool isSorted() { return _isSorted; }
 
   private:
-    RenderQueue();
-    ~RenderQueue();
-
     RenderBin* getBinForNode(SceneNode* const nodeType,
                              Material* const matInstance);
+
     RenderBin* getOrCreateBin(const RenderBin::RenderBinType& rbType);
 
   private:
@@ -78,7 +82,7 @@ DEFINE_SINGLETON(RenderQueue)
     vectorImpl<RenderBin*> _sortedRenderBins;
     bool _isSorted;
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 

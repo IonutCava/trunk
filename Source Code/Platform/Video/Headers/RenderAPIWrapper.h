@@ -277,6 +277,12 @@ class TextureData {
     {
     }
 
+    inline void set(const TextureData& other) {
+        _textureHandle = other._textureHandle;
+        _textureType = other._textureType;
+        _samplerHash = other._samplerHash;
+    }
+
     inline void setHandleHigh(U32 handle) {
         _textureHandle = (U64)handle << 32 | getHandleLow();
     }

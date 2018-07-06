@@ -445,6 +445,57 @@ void Vegetation::generateGrass() {
 
     Console::printfn(Locale::get("CREATE_GRASS_BEGIN"), grassElements);
 
+    STUBBED("We really need blue noise or casey muratori's special circle/hex for a nice distribution. Use Poisson disk sampling and optimise from there? -Ionut");
+    /*
+    ref: https://github.com/corporateshark/poisson-disk-generator/blob/master/Poisson.cpp
+    ref: http://yutingye.info/OtherProjects_files/report.pdf
+    ref: http://mollyrocket.com/casey/stream_0016.html
+    THIS:
+
+    generate the first random point p0
+    insert p0 into active list
+    place the index of p0 (zero) to the background grid cell
+    while active list is not empty do
+        choose a random point p from active list
+        for attemp = 1:maxAttemp
+            get new sample p? around p between r and 2r
+            for each non-empty neighbor cell around p?
+                if p? is closer than r
+                    break
+                end if
+            end for
+            if p? is far from all neighbors
+                insert p? to active list
+                place the index of p? to background grid cell
+                break
+            end if
+        end for
+        if maxAttemp exceed
+            remove p from active list
+        end if
+    end while
+    return
+
+    OR THIS:
+    real32 PointRadius = 0.025f;
+    v2 Ac = { -2, -2 }; // Center of circle A
+    real32 ArBase = 1.0f; // Starting radius of circle A
+    v2 Bc = { -2, 2 }; // Center of circle B
+    real32 BrBase = 1.0f; // Starting radius of circle B
+    real32 dR = 2.5f*PointRadius; // Distance between concentric rings
+    for (int32x RadiusStepA = 0; RadiusStepA < 128; ++RadiusStepA) {
+        real32 Ar = ArBase + dR*(real32)RadiusStepA;
+        for (int32x RadiusStepB = 0; RadiusStepB < 128; ++RadiusStepB) {
+            real32 Br = BrBase + dR*(real32)RadiusStepB;
+            real32 UseAr = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f*dR);
+            real32 UseBr = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f*dR);
+
+            // Intersect circle Ac,UseAr and Bc,UseBr
+            // Add the resulting points if they are within the pattern bounds
+            // (the bounds were [-1,1] on both axes for all prior screenshots)
+        }
+    }
+    */
     _grassPositions.reserve(grassElements);
     F32 densityFactor = 1.0f / _grassDensity;
 #pragma omp parallel for

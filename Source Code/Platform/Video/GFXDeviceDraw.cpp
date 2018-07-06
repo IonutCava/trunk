@@ -5,6 +5,7 @@
 #include "GUI/Headers/GUIFlash.h"
 
 #include "Rendering/Headers/Renderer.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 #include "Managers/Headers/SceneManager.h"
 
@@ -117,7 +118,10 @@ void GFXDevice::flushRenderQueue() {
         return;
     }
     uploadGPUBlock();
-    for (RenderPackage& package : _renderQueue) {
+
+    U32 queueSize = _renderQueue.size();
+    for (U32 idx = 0; idx < queueSize; ++idx) {
+        RenderPackage& package = _renderQueue.getPackage(idx);
         vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
         vectorAlg::vecSize commandCount = drawCommands.size();
         if (commandCount > 0) {
@@ -131,6 +135,7 @@ void GFXDevice::flushRenderQueue() {
                     previousCommandIndex = currentCommandIndex;
                 }
             }
+            // Is this really faster than just letting the various draw commands handle the checks? Needs testing. -Ionut
             drawCommands.erase(
                 std::remove_if(std::begin(drawCommands), std::end(drawCommands),
                                [](const GenericDrawCommand& cmd) -> bool {
@@ -150,7 +155,8 @@ void GFXDevice::flushRenderQueue() {
             submitIndirectRenderCommands(package._drawCommands);
         }
     }
-    _renderQueue.resize(0);
+
+    _renderQueue.clear();
 }
 
 void GFXDevice::addToRenderQueue(const RenderPackage& package) {
@@ -167,6 +173,8 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
                                           std::end(package._drawCommands));
             return;
         }
+    } else {
+        _renderQueue.resize(RenderPassManager::getInstance().getQueue().getRenderQueueStackSize());
     }
     _renderQueue.push_back(package);
 }

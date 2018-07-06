@@ -34,23 +34,130 @@
 
 namespace Divide {
 
-inline bool GFXDevice::isDepthStage() const {
+inline void 
+GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
+    memcpy(_data, other._data, 4 * 4 * 4 * sizeof(F32));
+}
+
+inline void 
+GFXDevice::ShaderBufferBinding::set(const GFXDevice::ShaderBufferBinding& other) {
+    set(other._slot, other._buffer, other._range);
+}
+
+inline void
+GFXDevice::ShaderBufferBinding::set(ShaderBufferLocation slot,
+                                    ShaderBuffer* buffer,
+                                    const vec2<U32>& range) {
+    _slot = slot;
+    _buffer = buffer;
+    _range.set(range);
+}
+
+inline void 
+GFXDevice::RenderPackage::clear() {
+    _shaderBuffers.resize(0);
+    _textureData.resize(0);
+    _drawCommands.resize(0);
+}
+
+inline void 
+GFXDevice::RenderPackage::set(const GFXDevice::RenderPackage& other) {
+    _isRenderable = other._isRenderable;
+#if 0
+    size_t shaderBufferSize = other._shaderBuffers.size();
+    size_t textureDataSize = other._textureData.size();
+    size_t drawCommandSize = other._drawCommands.size();
+
+    _shaderBuffers.resize(shaderBufferSize);
+    _textureData.resize(textureDataSize);
+    _drawCommands.resize(drawCommandSize);
+    for (size_t i = 0; i < shaderBufferSize; ++i) {
+        _shaderBuffers.at(i).set(other._shaderBuffers.at(i));
+    }
+
+    for (size_t i = 0; i < textureDataSize; ++i) {
+        _textureData.at(i).set(other._textureData.at(i));
+    }
+
+    for (size_t i = 0; i < drawCommandSize; ++i) {
+        _drawCommands.at(i).set(other._drawCommands.at(i));
+    }
+#else
+    _shaderBuffers = other._shaderBuffers;
+    _textureData = other._textureData;
+    _drawCommands = other._drawCommands;
+#endif
+}
+
+inline void 
+GFXDevice::RenderQueue::clear() {
+    for (U32 idx = 0; idx < _currentCount; ++idx) {
+        //_packages[idx].clear();
+    }
+    _currentCount = 0;
+}
+
+inline U32 
+GFXDevice::RenderQueue::size() const {
+    return _currentCount;
+}
+
+inline bool 
+GFXDevice::RenderQueue::empty() const {
+    return _currentCount == 0;
+}
+
+inline const GFXDevice::RenderPackage& 
+GFXDevice::RenderQueue::getPackage(U32 idx) const {
+    assert(idx < Config::MAX_VISIBLE_NODES);
+    return _packages[idx];
+}
+
+inline GFXDevice::RenderPackage&
+GFXDevice::RenderQueue::getPackage(U32 idx) {
+    return _packages.at(idx);
+}
+
+inline GFXDevice::RenderPackage&
+GFXDevice::RenderQueue::back() {
+    return _packages.at(std::max(to_int(_currentCount) - 1, 0));
+}
+
+inline bool
+GFXDevice::RenderQueue::push_back(const RenderPackage& package) {
+    if (_currentCount <= Config::MAX_VISIBLE_NODES) {
+        _packages.at(_currentCount++).set(package);
+        return true;
+    }
+    return false;
+}
+
+inline void
+GFXDevice::RenderQueue::resize(U16 size) {
+    _packages.resize(size);
+}
+
+inline bool 
+GFXDevice::isDepthStage() const {
     return getRenderStage() == RenderStage::SHADOW ||
            getRenderStage() == RenderStage::Z_PRE_PASS;
 }
 
 /// Query rasterization state
-inline bool GFXDevice::rasterizationState() { 
+inline bool 
+GFXDevice::rasterizationState() { 
     return _rasterizationEnabled; 
 }
 
 /// Toggle post processing on or off
-inline void GFXDevice::postProcessingEnabled(const bool state) {
+inline void 
+GFXDevice::postProcessingEnabled(const bool state) {
     _enablePostProcessing = state;
 }
 
 /// Toggle hardware rasterization on or off.
-inline void GFXDevice::toggleRasterization(bool state) {
+inline void 
+GFXDevice::toggleRasterization(bool state) {
     if (_rasterizationEnabled == state) {
         return;
     }
@@ -60,8 +167,8 @@ inline void GFXDevice::toggleRasterization(bool state) {
 }
 /// Register a function to be called in the 2D rendering fase of the GFX Flush
 /// routine. Use callOrder for sorting purposes
-inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback,
-                                           U32 callOrder) {
+inline void 
+GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder) {
     _2dRenderQueue.push_back(std::make_pair(callOrder, callback));
 
     std::sort(std::begin(_2dRenderQueue), std::end(_2dRenderQueue),
@@ -73,13 +180,15 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback,
 /// Sets the current render stage.
 ///@param stage Is used to inform the rendering pipeline what we are rendering.
 /// Shadows? reflections? etc
-inline RenderStage GFXDevice::setRenderStage(RenderStage stage) {
+inline RenderStage 
+GFXDevice::setRenderStage(RenderStage stage) {
     _prevRenderStage = _renderStage;
     _renderStage = stage;
     return stage;
 }
 /// disable or enable a clip plane by index
-inline void GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
+inline void 
+GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
     assert(index != ClipPlaneIndex::COUNT);
     U32 idx = to_uint(index);
     if (state != _clippingPlanes[idx].active()) {
@@ -88,13 +197,15 @@ inline void GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
     }
 }
 /// modify a single clip plane by index
-inline void GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) {
+inline void 
+GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) {
     assert(index != ClipPlaneIndex::COUNT);
     _clippingPlanes[to_uint(index)] = p;
     updateClipPlanes();
 }
 /// set a new list of clipping planes. The old one is discarded
-inline void GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
+inline void 
+GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
     if (clipPlanes != _clippingPlanes) {
         _clippingPlanes = clipPlanes;
         updateClipPlanes();
@@ -102,26 +213,31 @@ inline void GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
     }
 }
 /// clear all clipping planes
-inline void GFXDevice::resetClipPlanes() {
+inline void 
+GFXDevice::resetClipPlanes() {
     _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
     updateClipPlanes();
     _api->updateClipPlanes();
 }
 /// Alternative to the normal version of getMatrix
-inline const mat4<F32>& GFXDevice::getMatrix(const MATRIX_MODE& mode) {
+inline const mat4<F32>& 
+GFXDevice::getMatrix(const MATRIX_MODE& mode) {
     getMatrix(mode, _mat4Cache);
     return _mat4Cache;
 }
 
-inline void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
+inline void 
+GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
     processCommand(cmd, false);
 }
 
-inline void GFXDevice::submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+inline void 
+GFXDevice::submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
     processCommands(cmds, false);
 }
 
-inline void GFXDevice::submitIndirectRenderCommand(const GenericDrawCommand& cmd) {
+inline void 
+GFXDevice::submitIndirectRenderCommand(const GenericDrawCommand& cmd) {
     processCommand(cmd, true);
 }
 

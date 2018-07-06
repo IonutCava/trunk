@@ -47,10 +47,10 @@ void AnimationComponent::update(const U64 deltaTime) {
                                                                Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) &&  _currentAnimIndex >= 0) {
-            std::shared_ptr<AnimEvaluator> animation = getCurrentAnimation();
+            /*std::shared_ptr<AnimEvaluator> animation = getCurrentAnimation();
             if (animation->getBoneBuffer().expired()) {
                 animation->initBuffers();
-            }
+            }*/
             _previousAnimationIndex = _currentAnimIndex;
         }
     }

@@ -203,28 +203,13 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
 }
 
 void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
-    const mat4<F32>& viewMatrixCache =
-        GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW);
-    _particleShader->Uniform(
-        "CameraRight_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][0],
-                  viewMatrixCache.m[1][0],
-                  viewMatrixCache.m[2][0]));
-    _particleShader->Uniform(
-        "CameraUp_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][1],
-                  viewMatrixCache.m[1][1],
-                  viewMatrixCache.m[2][1]));
-    _particleDepthShader->Uniform(
-        "CameraRight_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][0],
-                  viewMatrixCache.m[1][0],
-                  viewMatrixCache.m[2][0]));
-    _particleDepthShader->Uniform(
-        "CameraUp_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][1],
-                  viewMatrixCache.m[1][1],
-                  viewMatrixCache.m[2][1]));
+    vec3<F32> up(camera.getUpDir());
+    vec3<F32> right(camera.getRightDir());
+
+    _particleShader->Uniform("CameraRight_worldspace", right);
+    _particleShader->Uniform("CameraUp_worldspace", up);
+    _particleDepthShader->Uniform("CameraRight_worldspace", right);
+    _particleDepthShader->Uniform("CameraUp_worldspace", up);
 }
 
 bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,

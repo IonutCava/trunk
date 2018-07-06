@@ -9,20 +9,20 @@
 
 namespace Divide {
 
-RenderPass::RenderPass(const stringImpl& name) : _name(name) {
+RenderPass::RenderPass(const stringImpl& name) : _name(name)
+{
     _lastTotalBinSize = 0;
 }
 
-RenderPass::~RenderPass() {}
+RenderPass::~RenderPass() 
+{
+}
 
-void RenderPass::render(const SceneRenderState& renderState,
-                        const SceneGraph& activeSceneGraph) {
+void RenderPass::render(const SceneRenderState& renderState) {
     RenderStage currentStage = GFX_DEVICE.getRenderStage();
-    
-    bool isDisplayStage =  currentStage == RenderStage::DISPLAY;
+    RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
 
-    RenderQueue& renderQueue = RenderQueue::getInstance();
-    if (isDisplayStage) {
+    if (currentStage == RenderStage::DISPLAY) {
         _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
     }
     U16 renderBinCount = renderQueue.getRenderQueueBinSize();
@@ -41,7 +41,7 @@ void RenderPass::render(const SceneRenderState& renderState,
         }
     }
     
-    if (isDisplayStage) {
+    if (currentStage == RenderStage::DISPLAY) {
         for (U16 i = 0; i < renderBinCount; ++i) {
             renderQueue.getBinSorted(i)->postRender(renderState, currentStage);
         }
