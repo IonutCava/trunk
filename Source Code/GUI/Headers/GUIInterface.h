@@ -72,31 +72,73 @@ public:
     }
 
     virtual GUIText* addText(U64 guiID,
+                             const stringImpl& name,
                              const RelativePosition2D& position,
                              const stringImpl& font,
                              const vec4<U8>& colour,
                              const stringImpl& text,
                              U8 fontSize = 16u);
 
+    inline GUIText* addText(const stringImpl& name,
+                            const RelativePosition2D& position,
+                            const stringImpl& font,
+                            const vec4<U8>& colour,
+                            const stringImpl& text,
+                            U8 fontSize = 16u) {
+
+        return addText(_ID_RT(name.c_str()), name, position, font, colour, text, fontSize);
+    }
+
     virtual GUIText* modifyText(U64 guiID,
                                 const stringImpl& text);
 
+    inline GUIText* modifyText(const stringImpl& name,
+                               const stringImpl& text) {
+        return modifyText(_ID_RT(name.c_str()), text);
+    }
+
     virtual GUIMessageBox* addMsgBox(U64 guiID,
+                                     const stringImpl& name,
                                      const stringImpl& title,
                                      const stringImpl& message,
                                      const vec2<I32>& offsetFromCentre = vec2<I32>(0));
 
+    inline GUIMessageBox* addMsgBox(U64 guiID,
+                                    const stringImpl& title,
+                                    const stringImpl& message,
+                                    const vec2<I32>& offsetFromCentre = vec2<I32>(0)) {
+        return addMsgBox(guiID, title, title, message, offsetFromCentre);
+    }
+
     virtual GUIButton* addButton(U64 guiID,
+                                 const stringImpl& name,
                                  const stringImpl& text,
                                  const RelativePosition2D& offset,
                                  const RelativeScale2D& size,
                                  ButtonCallback callback,
                                  const stringImpl& rootSheetID = "");
 
+    inline GUIButton* addButton(U64 guiID,
+                                const stringImpl& text,
+                                const RelativePosition2D& offset,
+                                const RelativeScale2D& size,
+                                ButtonCallback callback,
+                                const stringImpl& rootSheetID = "") {
+        return addButton(guiID, text, text, offset, size, callback, rootSheetID);
+   }
+
     virtual GUIFlash* addFlash(U64 guiID,
+                               const stringImpl& name,
                                stringImpl movie,
                                const RelativePosition2D& position,
                                const RelativeScale2D& size);
+
+    inline GUIFlash* addFlash(U64 guiID,
+                              stringImpl movie,
+                              const RelativePosition2D& position,
+                              const RelativeScale2D& size) {
+        return addFlash(guiID, movie, movie, position, size);
+    }
 
     // Return true if input was consumed
     virtual bool mouseMoved(const GUIEvent& event);

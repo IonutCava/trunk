@@ -119,24 +119,24 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
 void NetworkScene::postLoadMainThread() {
     const vec2<U16>& resolution = _context.app().windowManager().getActiveWindow().getDimensions();
 
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+    _GUI->addText("fpsDisplay",  // Unique ID
         RelativePosition2D(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 60.0f)),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(0, 164, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
-    _GUI->addText(_ID("timeDisplay"),
+    _GUI->addText("timeDisplay",
         RelativePosition2D(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 70.0f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(164, 64, 64, 255),
         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
 
-    _GUI->addText(_ID("serverMessage"),
+    _GUI->addText("serverMessage",
                   pixelPosition(resolution.width / 4,
             resolution.height / 1),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(128, 128, 64, 255),
         Util::StringFormat("Server says: %s", "<< nothing yet >>"));
-    _GUI->addText(_ID("statusText"),
+    _GUI->addText("statusText",
                   pixelPosition(resolution.width / 3,
             resolution.height / 2),
         Font::DIVIDE_DEFAULT,

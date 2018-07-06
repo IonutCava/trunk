@@ -735,29 +735,29 @@ void WarScene::postLoadMainThread() {
         pixelScale(100, 25),
         [this](I64 btnID) { rebuildShaders(); });
 
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+    _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 63),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(0, 50, 255, 255), // Colour
         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
-    _GUI->addText(_ID("RenderBinCount"),
+    _GUI->addText("RenderBinCount",
                   pixelPosition(60, 83),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(164, 50, 50, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
-    _GUI->addText(_ID("camPosition"), pixelPosition(60, 103),
+    _GUI->addText("camPosition", pixelPosition(60, 103),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(50, 192, 50, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 
-    _GUI->addText(_ID("scoreDisplay"),
+    _GUI->addText("scoreDisplay",
                   pixelPosition(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(50, 192, 50, 255),// Colour
         Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
 
-    _GUI->addText(_ID("entityState"),
+    _GUI->addText("entityState",
                   pixelPosition(60, 163),
                   Font::DIVIDE_DEFAULT,
                   vec4<U8>(0, 0, 0, 255),

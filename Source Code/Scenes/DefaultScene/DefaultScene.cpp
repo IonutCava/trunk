@@ -99,7 +99,8 @@ void DefaultScene::postLoadMainThread() {
     RelativeScale2D quitScale(RelativeValue(0.0f, to_F32(quitButtonWidth)),
                               RelativeValue(0.0f, to_F32(quitButtonHeight)));
 
-    _GUI->addButton(_ID_RT("Quit"), "Quit",
+    _GUI->addButton(_ID_RT("Quit"),
+                    "Quit",
                     quitPosition,
                     quitScale,
                     [this](I64 btnGUID) {
@@ -111,7 +112,8 @@ void DefaultScene::postLoadMainThread() {
 
     RelativeScale2D playerChangeScale = pixelScale(quitButtonWidth, playerButtonHeight);
 
-    _GUI->addButton(_ID_RT("AddPlayer"), "Add Player",
+    _GUI->addButton(_ID_RT("AddPlayer"),
+                    "Add Player",
                     playerChangePosition,
                     playerChangeScale,
                     [this](I64 btnGUID) {
@@ -120,7 +122,8 @@ void DefaultScene::postLoadMainThread() {
 
     playerChangePosition.d_y.d_offset -= playerButtonHeight * 1.5f;
 
-    _GUI->addButton(_ID_RT("RemovePlayer"), "Remove Player",
+    _GUI->addButton(_ID_RT("RemovePlayer"),
+                    "Remove Player",
                     playerChangePosition,
                     playerChangeScale,
                     [this](I64 btnGUID) {
@@ -129,8 +132,8 @@ void DefaultScene::postLoadMainThread() {
                         }
                 });
 
-    RelativePosition2D textPosition = pixelPosition(windowCenterX, windowCenterY + (numRows + 1)* btnHeight);
-    _GUI->addText(_ID("globalMessage"),
+    RelativePosition2D textPosition = pixelPosition(windowCenterX - 100, windowCenterY - ((numRows / 2) + 1)* btnHeight);
+    _GUI->addText("globalMessage",
                   textPosition,
                   Font::DIVIDE_DEFAULT,
                   vec4<U8>(128, 64, 64, 255),
@@ -143,7 +146,7 @@ void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (!_sceneToLoad.empty()) {
         _GUI->modifyText(_ID("globalMessage"),
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
-        _parent.switchScene(_sceneToLoad, false);
+        //_parent.switchScene(_sceneToLoad, false);
         _sceneToLoad.clear();
     }
 

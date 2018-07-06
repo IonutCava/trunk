@@ -66,6 +66,7 @@ class GUIButton : public GUIElement {
 
    protected:
     GUIButton(U64 guiID,
+              const stringImpl& name,
               const stringImpl& text,
               const stringImpl& guiScheme, 
               const RelativePosition2D& offset,

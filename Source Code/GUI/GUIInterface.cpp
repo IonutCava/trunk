@@ -149,6 +149,7 @@ bool GUIInterface::onMouseDown(const GUIEvent& event) {
 
 
 GUIButton* GUIInterface::addButton(U64 guiID,
+                                   const stringImpl& name,
                                    const stringImpl& text,
                                    const RelativePosition2D& position,
                                    const RelativeScale2D& size,
@@ -172,6 +173,7 @@ GUIButton* GUIInterface::addButton(U64 guiID,
     AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
 
     GUIButton* btn = MemoryManager_NEW GUIButton(guiID,
+                                                 name,
                                                  text,
                                                  _context->guiScheme(),
                                                  position,
@@ -186,12 +188,14 @@ GUIButton* GUIInterface::addButton(U64 guiID,
 }
 
 GUIMessageBox* GUIInterface::addMsgBox(U64 guiID,
+                                       const stringImpl& name,
                                        const stringImpl& title,
                                        const stringImpl& message,
                                        const vec2<I32>& offsetFromCentre) {
     assert(getGUIElement(guiID) == nullptr);
 
     GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(guiID,
+                                                         name,
                                                          title,
                                                          message,
                                                          offsetFromCentre,
@@ -202,6 +206,7 @@ GUIMessageBox* GUIInterface::addMsgBox(U64 guiID,
 }
 
 GUIText* GUIInterface::addText(U64 guiID,
+                               const stringImpl& name,
                                const RelativePosition2D& position,
                                const stringImpl& font,
                                const vec4<U8>& colour,
@@ -210,6 +215,7 @@ GUIText* GUIInterface::addText(U64 guiID,
     assert(getGUIElement(guiID) == nullptr);
 
     GUIText* t = MemoryManager_NEW GUIText(guiID,
+                                           name,
                                            text,
                                            position,
                                            font,
@@ -222,6 +228,7 @@ GUIText* GUIInterface::addText(U64 guiID,
 }
 
 GUIFlash* GUIInterface::addFlash(U64 guiID,
+                                 const stringImpl& name,
                                  stringImpl movie,
                                  const RelativePosition2D& position,
                                  const RelativeScale2D& size) {
@@ -230,7 +237,7 @@ GUIFlash* GUIInterface::addFlash(U64 guiID,
 
     assert(getGUIElement(guiID) == nullptr);
     
-    GUIFlash* flash = MemoryManager_NEW GUIFlash(guiID, _context->rootSheet());
+    GUIFlash* flash = MemoryManager_NEW GUIFlash(guiID, name, _context->rootSheet());
     addElement(guiID, flash);
 
     return flash;

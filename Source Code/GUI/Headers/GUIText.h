@@ -42,6 +42,7 @@ class GUIText : public GUIElement, public TextElement {
 
    public:
     GUIText(U64 guiID,
+            const stringImpl& name,
             const stringImpl& text,
             const RelativePosition2D& relativePosition,
             const stringImpl& font,

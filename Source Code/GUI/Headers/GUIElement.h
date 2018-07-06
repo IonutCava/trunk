@@ -98,7 +98,7 @@ class GUIElement : public GUIDWrapper {
     friend class GUI;
 
    public:
-    GUIElement(U64 guiID, CEGUI::Window* const parent, const GUIType& type);
+    GUIElement(U64 guiID, const stringImpl& name, CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
     
     inline const stringImpl& getName() const { return _name; }

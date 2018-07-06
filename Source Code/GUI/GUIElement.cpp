@@ -6,14 +6,14 @@
 
 namespace Divide {
 
-GUIElement::GUIElement(U64 guiID, CEGUI::Window* const parent, const GUIType& type)
+GUIElement::GUIElement(U64 guiID, const stringImpl& name, CEGUI::Window* const parent, const GUIType& type)
     : GUIDWrapper(),
       _guiType(type),
       _parent(parent),
       _active(false),
-      _guiID(guiID)
+      _guiID(guiID),
+      _name(name)
 {
-    _name = "defaultGuiControl";
     _visible = true;
 }
 

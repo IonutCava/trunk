@@ -47,11 +47,12 @@ bool FlashScene::loadResources(bool continueOnErrors) {
 }
 
 void FlashScene::postLoadMainThread() {
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-        RelativePosition2D(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 60.0f)),  // Position
-        Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 64, 255, 255),  // Colour
-        Util::StringFormat("FPS: %d", 0));  // Text and arguments
+    _GUI->addText("fpsDisplay",                          // Unique ID
+        RelativePosition2D(RelativeValue(0.0f, 60.0f),
+                           RelativeValue(0.0f, 60.0f)),  // Position
+        Font::DIVIDE_DEFAULT,                            // Font
+        vec4<U8>(0, 64, 255, 255),                       // Colour
+        Util::StringFormat("FPS: %d", 0));               // Text and arguments
 
     Scene::postLoadMainThread();
 }

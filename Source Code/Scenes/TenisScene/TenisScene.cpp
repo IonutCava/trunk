@@ -398,33 +398,33 @@ void TenisScene::postLoadMainThread() {
     btn->setTooltip("Start a new game!");
 
     _GUI->addText(
-        _ID("Team1Score"), pixelPosition(to_I32(resolution.width - 250),
+        "Team1Score", pixelPosition(to_I32(resolution.width - 250),
             to_I32(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(0, 192, 192, 255),
         Util::StringFormat("Team 1 Score: %d", 0));
 
     _GUI->addText(
-        _ID("Team2Score"), pixelPosition(to_I32(resolution.width - 250),
+        "Team2Score", pixelPosition(to_I32(resolution.width - 250),
             to_I32(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(50, 192, 0, 255),
         Util::StringFormat("Team 2 Score: %d", 0));
 
-    _GUI->addText(_ID("Message"),
+    _GUI->addText("Message",
                   pixelPosition(to_I32(resolution.width - 250),
             to_I32(resolution.height / 1.7f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(0, 255, 0, 255),
         "");
 
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+    _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(0, 50, 255, 255),// Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
-    _GUI->addText(_ID("RenderBinCount"), pixelPosition(60, 70), Font::DIVIDE_DEFAULT,
+    _GUI->addText("RenderBinCount", pixelPosition(60, 70), Font::DIVIDE_DEFAULT,
         vec4<U8>(164, 50, 50, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 

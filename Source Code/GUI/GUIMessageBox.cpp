@@ -6,11 +6,12 @@
 namespace Divide {
 
 GUIMessageBox::GUIMessageBox(U64 guiID,
+                             const stringImpl& name,
                              const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre,
                              CEGUI::Window* parent)
-    : GUIElement(guiID, parent, GUIType::GUI_MESSAGE_BOX)
+    : GUIElement(guiID, name, parent, GUIType::GUI_MESSAGE_BOX)
 {
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience
     // to reduce typing

@@ -11,6 +11,7 @@ namespace Divide {
 GUIButton::AudioCallback GUIButton::_soundCallback;
 
 GUIButton::GUIButton(U64 guiID,
+                     const stringImpl& name,
                      const stringImpl& text,
                      const stringImpl& guiScheme,
                      const RelativePosition2D& offset,
@@ -18,7 +19,7 @@ GUIButton::GUIButton(U64 guiID,
                      CEGUI::Window* parent,
                      ButtonCallback callback,
                      AudioDescriptor_ptr onClickSound)
-    : GUIElement(guiID, parent, GUIType::GUI_BUTTON),
+    : GUIElement(guiID, name, parent, GUIType::GUI_BUTTON),
       _callbackFunction(callback),
       _btnWindow(nullptr),
       _onClickSound(onClickSound)

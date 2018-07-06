@@ -377,26 +377,26 @@ void PingPongScene::postLoadMainThread() {
         pixelScale(100, 25),
         DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
 
-    _GUI->addText(_ID("Score"),
+    _GUI->addText("Score",
                   pixelPosition(to_I32(resolution.width - 120),
             to_I32(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(255, 0, 0, 255),
         Util::StringFormat("Score: %d", 0));
 
-    _GUI->addText(_ID("Message"),
+    _GUI->addText("Message",
                   pixelPosition(to_I32(resolution.width - 120),
             to_I32(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(255, 0, 0, 255),
         "");
-    _GUI->addText(_ID("insults"),
+    _GUI->addText("insults",
                   pixelPosition(resolution.width / 4,
             resolution.height / 3),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(0, 255, 0, 255),
         "");
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+    _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(0, 50, 255, 255),// Colour

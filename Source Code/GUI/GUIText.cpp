@@ -5,15 +5,17 @@
 
 namespace Divide {
 GUIText::GUIText(U64 guiID,
+                 const stringImpl& name,
                  const stringImpl& text,
                  const RelativePosition2D& relativePosition,
                  const stringImpl& font,
                  const vec4<U8>& colour,
                  CEGUI::Window* parent,
                  U8 fontSize)
-    : GUIElement(guiID, parent, GUIType::GUI_TEXT),
+    : GUIElement(guiID, name, parent, GUIType::GUI_TEXT),
       TextElement(TextLabelStyle(font.c_str(), colour, fontSize), relativePosition)
 {
+    this->text(text);
 }
 
 const RelativePosition2D& GUIText::getPosition() const {
