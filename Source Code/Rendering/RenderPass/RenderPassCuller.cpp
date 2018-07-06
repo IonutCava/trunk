@@ -18,13 +18,25 @@ RenderPassCuller::~RenderPassCuller()
 
 /// This method performs the visibility check on the given node and all of it's children and adds them to the RenderQueue
 void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState){
+    bool renderingLocked = RenderPassManager::getInstance().isLocked();
+    if(!_visibleNodes.empty()){
+        if(renderingLocked){
+            return;
+        }else{
+            _visibleNodes.resize(0);
+            _visibleNodes.reserve(250);
+        }
+    }
     cullSceneGraphCPU(currentNode, sceneState);
     for_each(SceneGraphNode* node, _visibleNodes){
         RenderQueue::getInstance().addNodeToQueue(node);
     }
     cullSceneGraphGPU(sceneState);
-    _visibleNodes.resize(0);
-    _visibleNodes.reserve(250);
+
+    if(!renderingLocked){
+        _visibleNodes.resize(0);
+        _visibleNodes.reserve(250);
+    }
 }
 
 void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, SceneState& sceneState) {

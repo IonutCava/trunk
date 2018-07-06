@@ -29,11 +29,11 @@ class SceneGraph;
 class RenderPass;
 
 struct RenderPassItem{
-	RenderPass* _rp;
-	U8 _sortKey;
-	RenderPassItem(U8 sortKey, RenderPass *rp ) : _rp(rp), _sortKey(sortKey)
-	{
-	}
+    RenderPass* _rp;
+    U8 _sortKey;
+    RenderPassItem(U8 sortKey, RenderPass *rp ) : _rp(rp), _sortKey(sortKey)
+    {
+    }
 };
 
 class SceneRenderState;
@@ -41,20 +41,31 @@ class SceneRenderState;
 DEFINE_SINGLETON (RenderPassManager)
 
 public:
-	///Call every renderqueue's render function in order
-	void render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph);
-	///Add a new pass with the specified key
-	void addRenderPass(RenderPass* const renderPass, U8 orderKey);
-	///Remove a renderpass from the manager, optionally not deleting it
-	void removeRenderPass(RenderPass* const renderPass,bool deleteRP = true);
-	///Find a renderpass by name and remove it from the manager, optionally not deleting it
-	void removeRenderPass(const std::string& name,bool deleteRP = true);
-	U16 getLastTotalBinSize(U8 renderPassId) const;
+    ///Call every renderqueue's render function in order
+    void render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph);
+    ///Add a new pass with the specified key
+    void addRenderPass(RenderPass* const renderPass, U8 orderKey);
+    ///Remove a renderpass from the manager, optionally not deleting it
+    void removeRenderPass(RenderPass* const renderPass,bool deleteRP = true);
+    ///Find a renderpass by name and remove it from the manager, optionally not deleting it
+    void removeRenderPass(const std::string& name,bool deleteRP = true);
+    U16 getLastTotalBinSize(U8 renderPassId) const;
+
+    ///Lock or unlock the render bin (if nothing changes: camera, nodes' positions, etc)
+    ///Prevent culling and reparsing of the scenegraph when rendering the scene multiple times from the same PoV
+    void lock();
+    ///Use lock/unlock, for example, when rendering the scene with a Z prepass. Only the prepass needs to parse the scene
+    void unlock();
+    ///simple lock check
+    inline bool isLocked() const {return _renderPassesLocked;}
 
 private:
-	RenderPassManager();
-	~RenderPassManager();
-	vectorImpl<RenderPassItem > _renderPasses;
+    RenderPassManager();
+    ~RenderPassManager();
+
+private:
+    vectorImpl<RenderPassItem > _renderPasses;
+    bool _renderPassesLocked;
 
 END_SINGLETON
 

@@ -201,15 +201,16 @@ void Kernel::displayScene(){
 
     _cameraMgr->getActiveCamera()->renderLookAt();
 
-    /*
+    
     FrameBufferObject::FrameBufferObjectTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
-    */
+    
     assert(_GFX.getScreenBuffer(0) != NULL);
 
     _GFX.isDepthPrePass(true);
 
+    RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
         SceneManager::getInstance().render(Z_PRE_PASS, *this);
@@ -222,7 +223,7 @@ void Kernel::displayScene(){
         _GFX.getScreenBuffer(0)->Begin(FrameBufferObject::defaultPolicy());        
     }
         SceneManager::getInstance().render(stage, *this);
-
+        RenderPassManager::getInstance().unlock();
     if(postProcessing){
         _GFX.getScreenBuffer(0)->End();
         PostFX::getInstance().displaySceneWithoutAnaglyph();
@@ -243,6 +244,7 @@ void Kernel::displaySceneAnaglyph(){
     // Render to right eye
     currentCamera->setAnaglyph(true);
     currentCamera->renderLookAt();
+        RenderPassManager::getInstance().lock();
         // Z-prePass
         _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
             SceneManager::getInstance().render(Z_PRE_PASS, *this); 
@@ -251,10 +253,11 @@ void Kernel::displaySceneAnaglyph(){
         _GFX.getScreenBuffer(0)->Begin(FrameBufferObject::defaultPolicy());
             SceneManager::getInstance().render(stage, *this);
 
-
+        RenderPassManager::getInstance().unlock();
     // Render to left eye
     currentCamera->setAnaglyph(false);
     currentCamera->renderLookAt();
+        RenderPassManager::getInstance().lock();
         // Z-prePass
         _GFX.getDepthBuffer()->Begin(FrameBufferObject::defaultPolicy());
             SceneManager::getInstance().render(Z_PRE_PASS, *this);
@@ -263,6 +266,7 @@ void Kernel::displaySceneAnaglyph(){
             SceneManager::getInstance().render(stage, *this);
         _GFX.getScreenBuffer(1)->End();
 
+        RenderPassManager::getInstance().unlock();
     currentCamera->restoreCamera();
     PostFX::getInstance().displaySceneWithAnaglyph();
 }

@@ -16,6 +16,11 @@ struct RenderBinCallOrder{
     }
 };
 
+RenderQueue::RenderQueue() : _renderQueueLocked(false), _isSorted(false)
+{
+    _renderBins.reserve(RenderBin::RBT_PLACEHOLDER);
+}
+
 RenderQueue::~RenderQueue()
 {
     for_each(RenderBinMap::value_type& renderBins, _renderBins){
@@ -107,6 +112,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
         _renderBinId.insert(std::make_pair(_renderBins.size() - 1,  rbType));
         _sortedRenderBins.push_back(temp);
         std::sort(_sortedRenderBins.begin(), _sortedRenderBins.end(), RenderBinCallOrder());
+        _isSorted = false;
     }
     return temp;
 }
@@ -138,18 +144,35 @@ void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
     assert(sgn != NULL);
     RenderBin* rb = getBinForNode(sgn->getSceneNode());
     if(rb) rb->addNodeToBin(sgn);
+    _isSorted = false;
 }
 
 void RenderQueue::sort(){
+    if(_renderQueueLocked && _isSorted)
+        return;
+
     for_each(RenderBinMap::value_type& renderBin, _renderBins){
-      assert(renderBin.second);
-      renderBin.second->sort();
-   }
+        assert(renderBin.second);
+        renderBin.second->sort();
+    }
+    _isSorted = true;
 }
 
 void RenderQueue::refresh(){
+    if(_renderQueueLocked)
+        return;
+
     for_each(RenderBinMap::value_type& renderBin, _renderBins){
-      assert(renderBin.second);
-      renderBin.second->refresh();
-   }
+        assert(renderBin.second);
+        renderBin.second->refresh();
+    }
+    _isSorted = false;
+}
+
+void RenderQueue::lock(){
+    _renderQueueLocked = true;
+}
+
+void RenderQueue::unlock(){
+    _renderQueueLocked = false;
 }

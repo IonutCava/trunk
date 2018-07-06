@@ -21,6 +21,7 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
           RenderQueue& renderQueue = RenderQueue::getInstance();
     //Sort the render queue by the specified key
     renderQueue.sort();
+
     U16 renderBinCount   = renderQueue.getRenderQueueBinSize();
        _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
     //Draw the entire queue;

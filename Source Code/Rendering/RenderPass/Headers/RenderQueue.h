@@ -31,31 +31,41 @@ class SceneNode;
 
 ///This class manages all of the RenderBins and renders them in the correct order
 DEFINE_SINGLETON( RenderQueue )
-	typedef Unordered_map<RenderBin::RenderBinType, RenderBin* > RenderBinMap;
-	typedef Unordered_map<U16, RenderBin::RenderBinType > RenderBinIDType;
+    typedef Unordered_map<RenderBin::RenderBinType, RenderBin* > RenderBinMap;
+    typedef Unordered_map<U16, RenderBin::RenderBinType > RenderBinIDType;
 
 public:
-	///
-	void sort();
-	void refresh();
-	void addNodeToQueue(SceneGraphNode* const sgn);
-	U16 getRenderQueueStackSize();
-	SceneGraphNode* getItem(U16 renderBin, U16 index);
-	RenderBin*      getBin(RenderBin::RenderBinType rbType);
+    ///
+    void sort();
+    void refresh();
+    void addNodeToQueue(SceneGraphNode* const sgn);
+    U16 getRenderQueueStackSize();
+    SceneGraphNode* getItem(U16 renderBin, U16 index);
+    RenderBin*      getBin(RenderBin::RenderBinType rbType);
 
-	inline U16        getRenderQueueBinSize()     { return _sortedRenderBins.size(); }
-	inline RenderBin* getBinSorted(U16 renderBin) { return _sortedRenderBins[renderBin]; }
-	inline RenderBin* getBin(U16 renderBin)       { return getBin(_renderBinId[renderBin]); }
+    inline U16        getRenderQueueBinSize()     { return _sortedRenderBins.size(); }
+    inline RenderBin* getBinSorted(U16 renderBin) { return _sortedRenderBins[renderBin]; }
+    inline RenderBin* getBin(U16 renderBin)       { return getBin(_renderBinId[renderBin]); }
+    inline bool       isSorted()                  { return _isSorted;}
+protected:
+    friend class RenderPassManager;
+    ///See lock/unlock functions in RenderPassManager for more details
+    void lock();
+    void unlock();
 
 private:
-	~RenderQueue();
-	RenderBin* getBinForNode(SceneNode* const nodeType);
-	RenderBin* getOrCreateBin(const RenderBin::RenderBinType& rbType);
+    RenderQueue();
+    ~RenderQueue();
+
+    RenderBin* getBinForNode(SceneNode* const nodeType);
+    RenderBin* getOrCreateBin(const RenderBin::RenderBinType& rbType);
 
 private:
-	RenderBinMap _renderBins;
-	RenderBinIDType _renderBinId;
-	vectorImpl<RenderBin* > _sortedRenderBins;
+    RenderBinMap _renderBins;
+    RenderBinIDType _renderBinId;
+    vectorImpl<RenderBin* > _sortedRenderBins;
+    bool _renderQueueLocked;
+    bool _isSorted;
 
 END_SINGLETON
 
