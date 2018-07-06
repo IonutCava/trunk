@@ -28,14 +28,14 @@ public:
 	const string& getName() const {return m_nName;}
 
 	static void EnableGenerateMipmaps(bool b) {s_bGenerateMipmaps=b;}
-	bool LoadFile(U32 target, const std::string& name);
+	bool LoadFile(U32 target, const string& name);
 	
 protected:
 	Texture() : m_nHandle(0){}
 
 protected:
 	U32	m_nHandle,_width,_height,_bitDepth;				
-	std::string m_nName;
+	string m_nName;
 	ImageTools::ImageData img;
 	static bool s_bGenerateMipmaps;	
 };

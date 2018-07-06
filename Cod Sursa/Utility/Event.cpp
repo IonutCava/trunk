@@ -21,7 +21,7 @@ void Event::eventThread()
 	}
 	
 	
-	cout << "EventManager: Deleting thread: " <<  boost::this_thread::get_id() << endl;
+	Con::getInstance().printfn("EventManager: Deleting thread: %d", boost::this_thread::get_id());
 	delete this;
 }
 

@@ -11,6 +11,9 @@ class DVDFile : public Mesh
 
 public:
 	DVDFile();
+	//DVDFile(const DVDFile& old);  //No need for this yet. The original aiScene will always be the same for copies
+								    //and all other memebers are default copy-able(??) anyway
+
 	~DVDFile();
     bool load(const string& file);
 	bool unload();

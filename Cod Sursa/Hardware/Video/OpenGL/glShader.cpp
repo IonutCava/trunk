@@ -24,18 +24,18 @@ void glShader::validateProgram(U32 program) {
 
 	glValidateProgram(program);
 	glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer);
-	cout << "GLSL Manager: Validating program: " << buffer << endl;
+	Con::getInstance().printfn("GLSL Manager: Validating program:  %s ", buffer);
 	int status;
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
 	if (status == GL_FALSE)
-		cout << "GLSL Manager: Error validating shader " << program << endl;
+		Con::getInstance().errorfn("GLSL Manager: Error validating shader [ %d ]", program);
 }
 
 
 
-char* glShader::shaderFileRead(const std::string &fn) {
+char* glShader::shaderFileRead(const string &fn) {
 
-	std::string file = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/shaders/" + fn;
+	string file = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/shaders/" + fn;
 	FILE *fp = NULL;
 	fopen_s(&fp,file.c_str(),"r");
 
@@ -81,19 +81,19 @@ glShader::glShader(const char *vsFile, const char *fsFile)  : _loaded(false)  {
     init(vsFile, fsFile);
 }
 
-bool glShader::loadFragOnly(const std::string& name)
+bool glShader::loadFragOnly(const string& name)
 {
 	init("none",name.c_str());
 	return true;
 }
 
-bool glShader::loadVertOnly(const std::string& name)
+bool glShader::loadVertOnly(const string& name)
 {
 	init(name.c_str(),"none");
 	return true;
 }
 
-bool glShader::load(const std::string& name)
+bool glShader::load(const string& name)
 {
 	if(!_loaded)
 	{
@@ -113,17 +113,17 @@ bool glShader::load(const std::string& name)
 	return _loaded;
 }
 
-void glShader::init(const std::string &vsFile, const std::string &fsFile) {
+void glShader::init(const string &vsFile, const string &fsFile) {
 	bool useVert = false, useFrag = false;
 	if(vsFile.compare("none") != 0) useVert = true;
 	if(fsFile.compare("none") != 0) useFrag = true;
 
     if(useVert && useFrag) 
-		cout << "GLSL Manager: Loading shaders " << vsFile << " and " << fsFile << endl;
+		Con::getInstance().printfn("GLSL Manager: Loading shaders %s and %s.",vsFile.c_str(),fsFile.c_str());
 	if(useVert && !useFrag)
-		cout << "GLSL Manager: Loading shaders " << vsFile  << endl;
+		Con::getInstance().printfn( "GLSL Manager: Loading shaders %s.",vsFile.c_str());
 	if(!useVert && useFrag)
-		cout << "GLSL Manager: Loading shaders " << fsFile  << endl;
+		Con::getInstance().printfn("GLSL Manager: Loading shaders %s.",fsFile.c_str());
 
 	_shaderId = glCreateProgram();
 	if(useVert)
@@ -132,7 +132,7 @@ void glShader::init(const std::string &vsFile, const std::string &fsFile) {
 		const char* vsText = shaderFileRead(vsFile);
 		if(vsText == NULL)
 		{
-			cout << "GLSL Manager: Vertex shader [" << vsFile << "] not found!" << endl;
+			Con::getInstance().errorfn("GLSL Manager: Vertex shader [ %s ] not found!",vsFile.c_str());
 			return;
 		}
 		glShaderSource(_shaderVP, 1, &vsText, 0);
@@ -148,7 +148,7 @@ void glShader::init(const std::string &vsFile, const std::string &fsFile) {
 		const char* fsText = shaderFileRead(fsFile);
 		if(fsText == NULL)
 		{
-			cout << "GLSL Manager: Fragment shader [" << fsFile << "] not found!" << endl;
+			Con::getInstance().errorfn("GLSL Manager: Fragment shader [ %s ] not found!",fsFile.c_str());
 			return;
 		}
 		glShaderSource(_shaderFP, 1, &fsText, 0);
@@ -185,38 +185,38 @@ void glShader::unbind() {
 	glUseProgram(0);
 }
 
-void glShader::UniformTexture(const std::string& ext, int slot)
+void glShader::UniformTexture(const string& ext, int slot)
 {
 	glActiveTexture(GL_TEXTURE0+slot);
 	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), slot);
 }
 
-void glShader::Uniform(const std::string& ext, int value)
+void glShader::Uniform(const string& ext, int value)
 {
 	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), value);
 }
 
-void glShader::Uniform(const std::string& ext, bool state)
+void glShader::Uniform(const string& ext, bool state)
 {
 	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), state ? 1 : 0);
 }
 
-void glShader::Uniform(const std::string& ext, F32 value)
+void glShader::Uniform(const string& ext, F32 value)
 {
 	glUniform1f(glGetUniformLocation(_shaderId, ext.c_str()), value);
 }
 
-void glShader::Uniform(const std::string& ext, const vec2& value)
+void glShader::Uniform(const string& ext, const vec2& value)
 {
 	glUniform2fv(glGetUniformLocation(_shaderId, ext.c_str()), 1, value);
 }
 
-void glShader::Uniform(const std::string& ext, const vec3& value)
+void glShader::Uniform(const string& ext, const vec3& value)
 {
 	glUniform3fv(glGetUniformLocation(_shaderId, ext.c_str()), 1, value);
 }
 
-void glShader::Uniform(const std::string& ext, const vec4& value)
+void glShader::Uniform(const string& ext, const vec4& value)
 {
 	glUniform4fv(glGetUniformLocation(_shaderId, ext.c_str()), 1, value);
 }

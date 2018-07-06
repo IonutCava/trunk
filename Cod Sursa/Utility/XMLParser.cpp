@@ -13,9 +13,9 @@ namespace XML
 	using boost::property_tree::ptree;
 	ptree pt;
 
-	void loadScripts(const std::string& file)
+	void loadScripts(const string& file)
 	{
-		cout << "XML: Loading Scripts!" << endl;
+		Con::getInstance().printf("XML: Loading Scripts!\n");
 		read_xml(file,pt);
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
@@ -30,10 +30,10 @@ namespace XML
 		loadScene(pt.get("MainScene","MainScene")); 
 	}
 
-	void loadConfig(const std::string& file)
+	void loadConfig(const string& file)
 	{
 		pt.clear();
-		cout << "XML: Loading Configuration settings file: [ " << file << " ] " << endl;
+		Con::getInstance().printf("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
 		read_xml(file,pt);
 		par.setParam("showPhysXErrors", pt.get("debug.showPhysXErrors",true));
 		par.setParam("logFile",pt.get("debug.logFile","none"));
@@ -46,10 +46,10 @@ namespace XML
 		Engine::getInstance().setWindowWidth(pt.get("runtime.windowWidth",1024));
 	}
 
-	void loadScene(const std::string& sceneName)
+	void loadScene(const string& sceneName)
 	{
 		pt.clear();
-		cout << "XML: Loading scene [ " << sceneName << " ] " << endl;
+		Con::getInstance().printf("XML: Loading scene [ %s ]\n", sceneName.c_str());
 		read_xml(par.getParam<string>("scriptLocation") + "/" +
                  par.getParam<string>("scenesLocation") + "/" +
 				 sceneName + ".xml", pt);
@@ -58,7 +58,7 @@ namespace XML
 
 		if(!scene)
 		{
-			cout << "XML: Trying to load unsupported scene! Defaulting to default scene" << endl;
+			Con::getInstance().errorf("XML: Trying to load unsupported scene! Defaulting to default scene\n");
 			scene = new MainScene();
 		}
 
@@ -66,8 +66,8 @@ namespace XML
 
 		TerrainManager* terMgr = SceneManager::getInstance().getTerrainManager();
 		terMgr->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
-		terMgr->getTreeVisibility()  = pt.get("vegetation.treeVisibility",100.0f);
-		terMgr->getGeneralVisibility()  = pt.get("options.visibility",100.0f);
+		terMgr->getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
+		terMgr->getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
 
 		terMgr->getWindDirX()  = pt.get("wind.windDirX",1.0f);
 		terMgr->getWindDirZ()  = pt.get("wind.windDirZ",1.0f);
@@ -84,10 +84,10 @@ namespace XML
 
 
 
-	void loadTerrain(const std::string &file)
+	void loadTerrain(const string &file)
 	{
 		pt.clear();
-		cout << "XML: Loading terrain: [ " << file << " ] " << endl;
+		Con::getInstance().printf("XML: Loading terrain: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		typedef pair<string,string> item;
@@ -127,18 +127,18 @@ namespace XML
 			SceneManager::getInstance().addTerrain(ter);
 			
 		}
-		cout << "XML: Number of terrains to load: " << SceneManager::getInstance().getNumberOfTerrains() << endl;
+		Con::getInstance().printf("XML: Number of terrains to load: %d\n",SceneManager::getInstance().getNumberOfTerrains());
 	}
 
-	void loadGeometry(const std::string &file)
+	void loadGeometry(const string &file)
 	{
 		pt.clear();
-		cout << "XML: Loading Geometry: [ " << file << " ] " << endl;
+		Con::getInstance().printf("XML: Loading Geometry: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/";
 		if(boost::optional<ptree &> geometry = pt.get_child_optional("geometry"))
-		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); it++ )
+		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it )
 		{
 			string name = it->second.data();
 			string format = it->first.data();
@@ -155,12 +155,12 @@ namespace XML
 			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x"); 
 			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
-			model.type = MESH;
+			model.type = GEOMETRY;
 			model.version = pt.get<F32>(name + ".version");
 			SceneManager::getInstance().addModel(model);
 		}
 		if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation"))
-		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); it++ )
+		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
 		{
 			string name = it->second.data();
 			string format = it->first.data();

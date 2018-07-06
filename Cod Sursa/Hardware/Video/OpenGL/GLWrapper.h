@@ -52,6 +52,7 @@ private:
 	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
 	void drawButton(Button*);
+	void drawFlash(GuiFlash* flash);
 
 	void drawBox3D(vec3 min, vec3 max);
     void drawBox3D(Box3D* const box);
@@ -69,7 +70,6 @@ private:
 	void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties);
 	void createLight(U32 slot);
 
-	~GL_API(){};
 
 private: //OpenGL specific:
 	void beginRenderStateProcessing();

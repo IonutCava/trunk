@@ -7,8 +7,9 @@
 </geometry>
 
 <primitives>
-	<!--<item>perete</item>-->
+	<!--<item>Bila</item>-->
 </primitives>
+
 
 <masa>
 	<model>models/masa.obj</model>
@@ -30,7 +31,7 @@
 	<model>models/sponza.obj</model>
 	<scale x="1" y="1" z="1" />
 	<position x="0" y="0" z="0" />
-	<orientation x="0" y="-90" z="0" />
+	<orientation x="-90" y="0" z="0" />
 	<version>1.0</version>
 </test>
 
@@ -46,7 +47,7 @@
 	<!--<model>Box3D</model>-->
 	<!--<scale x="1" y="1" z="0.1" />-->
 	<scale x="0.03" y="0.03" z="0.03" />
-	<position x="0" y="0" z="-5" />
+	<position x="0" y="0" z="-4.7" />
 	<orientation x="0" y="0" z="0" />
 	<color r="0.8" g="0.7" b="0.4"/>
 	<!--<size>6</size>-->

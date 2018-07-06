@@ -17,10 +17,9 @@ class GraphicResource : public Resource
 
 enum GEOMETRY_TYPE
 {
-	MESH,
-	VEGETATION,
-	PRIMITIVE,
-	PLACEHOLDER
+	VEGETATION,  //For special rendering subroutines
+	PRIMITIVE,   //Simple objects: Boxes, Spheres etc
+	GEOMETRY     //All other forms of geometry
 };
 
 class FileData

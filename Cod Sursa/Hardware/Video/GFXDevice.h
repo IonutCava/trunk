@@ -53,6 +53,7 @@ public:
 	void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
 	void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
 	void drawButton(Button* button){_api.drawButton(button);}
+	void drawFlash(GuiFlash* flash){_api.drawFlash(flash);}
 
 	void drawBox3D(Box3D* const box){_api.drawBox3D(box);}
 	void drawBox3D(vec3 min, vec3 max){_api.drawBox3D(min,max);}
@@ -64,6 +65,7 @@ public:
 	void renderElements(Type t, U32 count, const void* first_element){_api.renderElements(t,count,first_element);}
 	void renderElements(unordered_map<string,Object3D*>&  primitiveArray);
 	void renderElements(unordered_map<string,DVDFile*>&  geometryArray);
+	void renderElements(vector<DVDFile*>& geometryArray);
 	
 	void setMaterial(Material& mat){_api.setMaterial(mat);}
 	void setColor(const vec4& v){_api.setColor(v);}

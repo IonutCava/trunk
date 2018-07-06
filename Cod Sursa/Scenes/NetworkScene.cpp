@@ -81,11 +81,6 @@ void NetworkScene::processEvents(F32 time)
 
 }
 
-bool NetworkScene::unload()
-{
-	return true;
-}
-
 void NetworkScene::checkPatches()
 {
 	if(ModelDataArray.empty()) return;

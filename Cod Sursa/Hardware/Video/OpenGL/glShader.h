@@ -12,7 +12,7 @@ public:
 	glShader(const char *vsFile, const char *fsFile);
 	~glShader();
 	
-    void init(const string &vsFile, const string &fsFile);
+    void init(const string& vsFile, const string &fsFile);
 	bool load(const string& name);
 	void bind();
 	void unbind();
@@ -22,7 +22,7 @@ public:
 
 	void Uniform(const string& ext, int value);
 	void Uniform(const string& ext, F32 value);
-	void Uniform(const std::string& ext, bool state);
+	void Uniform(const string& ext, bool state);
 	void Uniform(const string& ext, const vec2& value);
 	void Uniform(const string& ext, const vec3& value);
 	void Uniform(const string& ext, const vec4& value);

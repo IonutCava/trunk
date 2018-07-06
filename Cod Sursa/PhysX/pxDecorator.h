@@ -6,7 +6,7 @@ class PendingActor
     virtual ~PendingActor(){}
 	virtual NxActorDesc createActor() = 0;
 	virtual void setBody(NxBodyDesc *b) = 0;
-	virtual void setName(std::string n) = 0;
+	virtual void setName(const string& n) = 0;
 	virtual void setConvexShape(NxConvexShapeDesc meshDescription) = 0;
 	virtual void setTriangleShape(NxTriangleMeshShapeDesc meshDescription) = 0;
 	virtual void setUseConvex(bool status) = 0;
@@ -33,35 +33,35 @@ public:
     }
 	void setBody(NxBodyDesc *b)
 	{
-	    cout << "Setting Body" << endl;
+	    Con::getInstance().printfn("Setting Body");
 		body = b;
 	}
-	void setName(std::string n)
+	void setName(const string& n)
 	{
-		cout << "Setting Name" << endl;
+		Con::getInstance().printfn("Setting Name");
 		name = n;
 	}
 	void setConvexShape(NxConvexShapeDesc meshDescription)
 	{
-		cout << "We are using a Convex Shape " << endl;
+		Con::getInstance().printfn("We are using a Convex Shape ");
 		staticMeshDesc = meshDescription;
 	}
 	void setTriangleShape(NxTriangleMeshShapeDesc meshDescription)
 	{
-        cout << "We are using a Triangle Shape" << endl;
+        Con::getInstance().printfn("We are using a Triangle Shape");
 		staticTMeshDesc = meshDescription;
 	}
 	void setUseConvex(bool status){UseConvex = status;}
 	void setPos(NxVec3 pos)
 	{
-		cout << "Setting position to "<< pos.x << "," << pos.y << "," << pos.z << endl;
+		Con::getInstance().printfn("Setting position to %f , %f, %f", pos.x , pos.y , pos.z);
 		position = pos;
 	}
 private:
 	NxActorDesc actorDesc;
 	NxBodyDesc *body;
 	NxVec3 position;
-	std::string name;
+	string name;
 	bool UseConvex;
 	NxConvexShapeDesc staticMeshDesc;
 	NxTriangleMeshShapeDesc staticTMeshDesc;
@@ -81,7 +81,7 @@ class DecorateActor : public PendingActor
 	NxActorDesc createActor(){return m_wrappee->createActor();}
 	void setPos(NxVec3 pos){m_wrappee->setPos(pos);}
 	void setBody(NxBodyDesc *b){m_wrappee->setBody(b);}
-	void setName(std::string n){m_wrappee->setName(n);}
+	void setName(const string& n){m_wrappee->setName(n);}
 	void setUseConvex(bool status){m_wrappee->setUseConvex(status);}
 	void setTriangleShape(NxTriangleMeshShapeDesc meshDescription){m_wrappee->setTriangleShape(meshDescription);}
 	void setConvexShape(NxConvexShapeDesc meshDescription){m_wrappee->setConvexShape(meshDescription);}
@@ -102,7 +102,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(std::string n)
+	void setName(const string& n)
 	{
 		DecorateActor::setName(n);
 	}
@@ -138,7 +138,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(std::string n)
+	void setName(const string& n)
 	{
 		DecorateActor::setName(n);
 	}
@@ -174,7 +174,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(std::string n)
+	void setName(const string& n)
 	{
 		DecorateActor::setName(n);
 	}
@@ -210,7 +210,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(std::string n)
+	void setName(const string& n)
 	{
 		DecorateActor::setName(n);
 	}

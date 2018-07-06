@@ -21,9 +21,10 @@ class Mesh : public Object3D
 {
 
 public:
-	Mesh() : Object3D() {_computedLightShaders = false;}
+	Mesh() : Object3D() {_computedLightShaders = false; _geometryType = MESH;}
 	Mesh(vec3& position, vec3& scale, vec3& orientation,vec3& color)
-		: Object3D(position,scale,orientation,color) {_computedLightShaders = false;}
+		: Object3D(position,scale,orientation,color) {_computedLightShaders = false;_geometryType = MESH;}
+	Mesh(const Mesh& old);
 
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
 	
@@ -31,22 +32,21 @@ public:
 
 	
 	inline vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
-	inline vector<Shader* >&   getShaders()      {return _shaders; }
+	inline vector<Shader* >&   getShaders()     {return _shaders; }
 	inline SubMesh*            getSubMesh(const string& name);
 
 	void                addShader(Shader* s) {_shaders.push_back(s);}
-	void                setVisibility(bool state) {_render = state;}
-	bool isVisible();
+	bool				isVisible();
+	void				onDraw();
 
 protected:
 	bool isInView();
 	void computeBoundingBox();
 	void computeLightShaders();
-	void DrawBBox();
 
 protected:
 	
-	bool _visibleToNetwork, _render, _loaded, _drawBB,_computedLightShaders;
+	bool _visibleToNetwork, _loaded, _computedLightShaders;
 	vector<SubMesh* >			 _subMeshes;
 	vector<SubMesh* >::iterator  _subMeshIterator;
 	vector<Shader*>				 _shaders;

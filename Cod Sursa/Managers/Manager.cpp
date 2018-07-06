@@ -24,7 +24,7 @@ Resource* Manager::find(const string& name)
 		return NULL;
 }
 
-Resource* Manager::add(Resource* data, const std::string& name)
+Resource* Manager::add(Resource* data, const string& name)
 {
 	if(!data) return NULL;
 

@@ -49,14 +49,14 @@
 	{
 		U8 code;
 		p >> code;
-		cout << "CLOSING" << endl;
+		Con::getInstance().printfn("CLOSING");
 		if(code == 0) ASIO::getInstance().close();
 		// else handleError(code);
 	}
 
 	void ASIO::HandleGeometryAppendOpCode(WorldPacket& p)
 	{
-		cout << "ASIO: received  [SMSG_GEOMETRY_APPEND]" << endl;
+		Con::getInstance().printfn("ASIO: received  [SMSG_GEOMETRY_APPEND]");
 		U32 size;
 		p >> size;
 		vector<FileData> patch;
@@ -76,7 +76,7 @@
 			p >> d.scale.y;
 			p >> d.scale.z;
 			p >> type; 
-			if(type == 0) d.type = MESH;
+			if(type == 0) d.type = GEOMETRY;
 			else if(type == 1) d.type = VEGETATION;
 			else d.type = PRIMITIVE;
 			p >> d.version;

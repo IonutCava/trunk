@@ -4,7 +4,7 @@
 // ===================================================================
 TextureManager::TextureManager (void)
 {
-	cout << "Texture Manager Initialized!" << endl;
+	Con::getInstance().printfn("Texture Manager Initialized!");
 
 }
 

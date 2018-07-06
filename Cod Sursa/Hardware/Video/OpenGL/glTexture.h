@@ -13,7 +13,7 @@ public:
 	glTexture(U32 type, bool flipped = false) : Texture(), _type(type), _flipped(flipped) {}
 	~glTexture() {Destroy();}
 
-	bool load(const std::string& name);
+	bool load(const string& name);
 	bool unload() {Destroy(); return true;}
 
 	void Bind(U32 slot) const;

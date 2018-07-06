@@ -5,6 +5,7 @@
 #include "Rendering/common.h"
 #include "Utility/Headers/Guardian.h"
 #include "GUI/GUI.h"
+#include "GUI/GuiFlash.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Utility/Headers/MathHelper.h"
 #include "Managers/SceneManager.h"
@@ -48,12 +49,12 @@ void GL_API::initHardware()
 	else if	(glewIsSupported("GL_VERSION_2_0")) ver = "2.0";
 	else
 	{
-		cout << "ERROR: " << "Your current hardware does not support the OpenGL 2.0 extension set!" << endl
-			 << "Try switching to DX (version 9.0c required) or upgrade hardware." << endl
-			 << "Application will now exit!" << endl;
+		Con::getInstance().errorfn("Your current hardware does not support the OpenGL 2.0 extension set!");
+		Con::getInstance().printfn("Try switching to DX (version 9.0c required) or upgrade hardware.");
+		Con::getInstance().printfn("Application will now exit!");
 		exit(2);
 	}
-	cout << "Hardware acceleration up to OpenGL " << ver << " supported!" << endl;
+	Con::getInstance().printfn("Hardware acceleration up to OpenGL %s supported!", ver.c_str());
 	ver.empty();
 	
 	glClearColor(0.1f,0.1f,0.8f,0.2f);
@@ -70,7 +71,7 @@ void GL_API::initHardware()
 	glutReshapeFunc(resizeWindowCallback);
 	glutDisplayFunc(Engine::getInstance().DrawSceneStatic);
 	glutIdleFunc(Engine::getInstance().Idle);
-	cout << "OpenGL rendering system initialized!" << endl;
+	Con::getInstance().printfn("OpenGL rendering system initialized!");
 /*
 	int (*SwapInterval)(int);
 
@@ -249,6 +250,12 @@ void GL_API::drawCharacterToScreen(void* font,char text)
 #endif
 }
 
+void GL_API::drawFlash(GuiFlash* flash)
+{
+	flash->playMovie();
+	flash->onRender();
+}
+
 void GL_API::drawButton(Button* b)
 {
 	F32 fontx;
@@ -421,7 +428,6 @@ void GL_API::drawSphere3D(Sphere3D* const sphere)
 {
 	//beginRenderStateProcessing();
 	pushMatrix();
-
 	glMultMatrixf(sphere->getTransform()->getMatrix());
 
 	setColor(sphere->getColor());
@@ -477,11 +483,11 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 void GL_API::drawText3D(Text3D* const text)
 {
 	//beginRenderStateProcessing();
-
+	
 	pushMatrix();
 	glMultMatrixf(text->getTransform()->getMatrix());
 
-	setColor(text->getColor());
+
 	if(text->getTexture()) text->getTexture()->Bind(0);
 	if(text->getShader()) 
 	{
@@ -489,10 +495,11 @@ void GL_API::drawText3D(Text3D* const text)
 		text->getShader()->UniformTexture("texDiffuse",0);
 	}
 	glPushAttrib(GL_ENABLE_BIT);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(text->getWidth());
+	setColor(text->getColor());
 	glutStrokeString(text->getFont(), (const unsigned char*)text->getText().c_str());
 	glPopAttrib();
 	if(text->getShader())  text->getShader()->unbind();
@@ -534,9 +541,9 @@ void GL_API::toggle2D(bool _2D)
 
 void GL_API::renderModel(DVDFile* const model)
 {
+	model->onDraw(); //Update BB, shaders etc.
 	if(!model->isVisible()) return;
 	//beginRenderStateProcessing();
-
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	

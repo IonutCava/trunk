@@ -9,11 +9,6 @@
 #include "Managers/TerrainManager.h"
 #include "Hardware/Video/Light.h"
 
-#include "Geometry/Predefined/Box3D.h"
-#include "Geometry/Predefined/Text3D.h"
-#include "Geometry/Predefined/Sphere3D.h"
-#include "Geometry/Predefined/Quad3D.h"
-
 class Scene : public Resource
 {
 
@@ -27,11 +22,16 @@ public:
 		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
 	  };
-	void updateTransformations();
+	  ~Scene();
+	void addGeometry(Object3D* const object);
+	void addModel(DVDFile* const model);
+
+	virtual bool unload();
+
 	virtual void render() = 0;
 	virtual void preRender() = 0;
 	virtual bool load(const string& name) = 0;
-	virtual bool unload() = 0;
+	
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
@@ -54,6 +54,11 @@ public:
    void addPatch(vector<FileData>& data);
    void clean();
 
+   bool drawBBox() {return _drawBB;}
+   void drawBBox(bool visibility) {_drawBB = visibility;}
+   bool drawObjects() {return _drawObjects;}
+   void drawObjects(bool visibility) {_drawObjects=visibility;}
+
 protected:
 
 	GFXDevice& _GFX;
@@ -64,8 +69,8 @@ protected:
 	unordered_map<string, DVDFile*>::iterator ModelIterator;
 
 	//Static geometry
-	unordered_map<string,Object3D*> GeometryArray;
-	unordered_map<string,Object3D*>::iterator GeometryIterator;
+	unordered_map<string, Object3D*> GeometryArray;
+	unordered_map<string, Object3D*>::iterator GeometryIterator;
 
 	//Datablocks for models,vegetation and terrains
 	vector<FileData> ModelDataArray, PendingDataArray;
@@ -79,8 +84,6 @@ protected:
 
 	bool _drawBB,_drawObjects;
 	boost::mutex _mutex;
-	bool& drawObjects() {return _drawObjects;}
-	bool& drawBBox() {return _drawBB;}
 
 	vec4 _white, _black;
 
@@ -93,8 +96,8 @@ protected:
 	virtual void setInitialData();
 	void clearEvents(){/*foreach(_events as event) event.end()*/_events.empty();}
 	void clearObjects(){/*foreach(_ModelArray as model) model.unload();*/ GeometryArray.empty(); ModelArray.empty();}
-	bool loadModel(FileData& data);
-	bool loadGeometry(FileData& data);
+	bool loadModel(const FileData& data);
+	bool loadGeometry(const FileData& data);
 	bool addDefaultLight();
 
 };

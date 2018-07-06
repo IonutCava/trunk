@@ -30,7 +30,7 @@ SINGLETON_BEGIN (ParamHandler)
 public:
 
 	template <class T>	
-	T getParam(string name)
+	T getParam(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -41,7 +41,7 @@ public:
 	}
 
 	template<>
-	F32 getParam<F32>(string name)
+	F32 getParam<F32>(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -60,7 +60,7 @@ public:
 	}
 
 	template<>
-	D32 getParam<D32>(string name)
+	D32 getParam<D32>(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -79,7 +79,7 @@ public:
 	}
 
 	template<>
-	U32 getParam<U32>(string name)
+	U32 getParam<U32>(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -99,7 +99,7 @@ public:
 	}
 
 	template<>
-	int getParam<int>(string name)
+	int getParam<int>(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -118,7 +118,7 @@ public:
 	}
 
 	template<>
-	bool getParam<bool>(string name)
+	bool getParam<bool>(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -137,7 +137,7 @@ public:
 	}
 
 	template<>
-	const char* getParam<const char*>(string name)
+	const char* getParam<const char*>(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -156,7 +156,7 @@ public:
 	}
 
 	template<>
-	string getParam<string>(string name)
+	string getParam<string>(const string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -174,7 +174,7 @@ public:
 		else return "ParamHandler: Error! not found";
 	}
 
-	void setParam(string name, const boost::any& value)
+	void setParam(const string& name, const boost::any& value)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		_result = _params.insert(pair<string,boost::any>(name,value));
@@ -183,10 +183,10 @@ public:
 
 	}
 
-	void delParam(string name)
+	void delParam(const string& name)
 	{
 		_params.erase(name); 
-		if(_logState) cout << "ParamHandler: Removed saved parameter \"" << name << "\"" << endl;
+		if(_logState) Con::getInstance().printfn("ParamHandler: Removed saved parameter [ %s ]", name.c_str());
 	} 
 
 	inline void setDebugOutput(bool logState) {_logState = logState;}
@@ -198,16 +198,16 @@ private:
 	{
 		string param = "ParamHandler: Updated param \""+name+"\" : ";
 		if(inserted)  param = "ParamHandler: Saved param \""+name+"\" : ";
-		cout << param;
-		if(value.type() == typeid(F32))				cout << any_cast<F32>(value);
-		else if(value.type() == typeid(D32))			cout << any_cast<D32>(value);
-		else if(value.type() == typeid(bool))			cout << any_cast<bool>(value);
-		else if(value.type() == typeid(int))			cout << any_cast<int>(value);
-		else if(value.type() == typeid(U32))	cout << any_cast<U32>(value);
-		else if(value.type() == typeid(string))  		cout << any_cast<string>(value);
-		else if(value.type() == typeid(const char*))	cout << any_cast<const char*>(value);
-		else cout << "unconvertible" << value.type().name();
-		cout << endl;
+		Con::getInstance().printf("%s",param.c_str());
+		if(value.type() == typeid(F32))				    Con::getInstance().printf("%f",any_cast<F32>(value));
+		else if(value.type() == typeid(D32))			Con::getInstance().printf("%f",any_cast<D32>(value));
+		else if(value.type() == typeid(bool))			Con::getInstance().printf("%s",any_cast<bool>(value)? "true" : "false");
+		else if(value.type() == typeid(int))			Con::getInstance().printf("%d",any_cast<I32>(value));
+		else if(value.type() == typeid(U32))			Con::getInstance().printf("%d",any_cast<U32>(value));
+		else if(value.type() == typeid(string))  		Con::getInstance().printf("%s",any_cast<string>(value).c_str());
+		else if(value.type() == typeid(const char*))	Con::getInstance().printf("%s",any_cast<const char*>(value));
+		else Con::getInstance().printf("unconvertible %s",value.type().name());
+		Con::getInstance().printf("\n");
 	}
 private:
 	bool _logState;

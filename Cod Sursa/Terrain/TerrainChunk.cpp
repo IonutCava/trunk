@@ -10,27 +10,24 @@ void TerrainChunk::Load(U32 depth, ivec2 pos, ivec2 HMsize)
 		ComputeIndicesArray(i, depth, pos, HMsize);
 }
 
-void TerrainChunk::addObject(DVDFile* obj)
-{
-	m_tObject.push_back(obj);
-}
 
-void TerrainChunk::addTree(vec3 pos,F32 rotation,F32 scale)
+void TerrainChunk::addTree(const vec3& pos,F32 rotation,F32 scale, Shader* tree_shader, const FileData& tree)
 {
-	vector<FileData> DA = SceneManager::getInstance().getVegetationDataArray();
-	int i = random((int)DA.size() - 1);
-	
-	DVDFile* t = ResourceManager::getInstance().LoadResource<DVDFile>(DA[i].ModelName);
+	DVDFile* t = ResourceManager::getInstance().LoadResource<DVDFile>(tree.ModelName);
 	if(t)
+	{	
+		t->addShader(tree_shader);
+		t->getTransform()->scale(scale * tree.scale);
+		t->getTransform()->rotateY(rotation);
+		t->getTransform()->setPosition(pos);
+		m_tTrees.push_back(new DVDFile(*t));
+
+	}
+	else
 	{
-		t->getName() = DA[i].ModelName;
-		t->addShader(ResourceManager::getInstance().LoadResource<Shader>("terrain_tree"));
-		t->getTransform()->scale(scale*DA[i].scale);
-		t->getTransform()->rotateEuler(vec3(0,rotation,0));
-		t->getTransform()->translate(pos);
+		Con::getInstance().errorf("Can't add tree: %s\n",tree.ModelName);
 	}
 
-	m_tTrees.push_back(*t);
 
 }
 
@@ -78,61 +75,35 @@ void TerrainChunk::Destroy()
 	for(U32 i=0; i<TERRAIN_CHUNKS_LOD; i++)
 		m_tIndice[i].clear();
 
-	for(int i=0; i<(int)m_tObject.size(); i++)
-	{
-		delete m_tObject[i];
-		m_tObject[i] = NULL;
-	}
-}
-
-
-int TerrainChunk::DrawObjects(U32 lod,bool drawDepthMap)
-{
-	assert(lod < TERRAIN_CHUNKS_LOD);
-    RenderState s(true,true,true,true);
-	GFXDevice::getInstance().setRenderState(s);
-
-	for(int i=0; i<(int)m_tObject.size(); i++)
-		GFXDevice::getInstance().renderModel(m_tObject[i]);
-
-	return (int)m_tObject.size();
 }
 
 void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawDepthMap)
 {
-	F32 treeVisibility = SceneManager::getInstance().getTerrainManager()->getTreeVisibility();
-	if(d > treeVisibility && !drawDepthMap) return;
+	//F32 treeVisibility = SceneManager::getInstance().getTerrainManager()->getTreeVisibility();
+	//assert(lod < TERRAIN_CHUNKS_LOD);
+	//if(d > treeVisibility && !drawDepthMap) return;
 
 	F32 _windX = SceneManager::getInstance().getTerrainManager()->getWindDirX();
 	F32 _windZ = SceneManager::getInstance().getTerrainManager()->getWindDirX();
 	F32 _windS = SceneManager::getInstance().getTerrainManager()->getWindSpeed();
-	
-	assert(lod < TERRAIN_CHUNKS_LOD);
 
-	F32 ratio = (1.0f - (d / treeVisibility)) * 2.0f;
-	if(ratio > 1.0f) ratio = 1.0f;
-	int indices_count = (int)( ratio * m_tTrees.size() );
-	//	indices_count -= indices_count%4; 
-		
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 	F32 time = GETTIME();
-
-	if(indices_count > 0)
-
-	for(int i=0; i < indices_count; i++)
+	Shader* treeShader;
+	for(U32 i=0; i <  m_tTrees.size(); i++)
 	{
-		m_tTrees[i].getShaders()[0]->bind();
-			m_tTrees[i].getShaders()[0]->Uniform("time", time);
-			m_tTrees[i].getShaders()[0]->Uniform("scale", m_tTrees[i].getTransform()->getScale().y);
-			m_tTrees[i].getShaders()[0]->Uniform("windDirectionX", _windX);
-			m_tTrees[i].getShaders()[0]->Uniform("windDirectionZ", _windZ);
-			m_tTrees[i].getShaders()[0]->Uniform("windSpeed", _windS);
-		m_tTrees[i].getShaders()[0]->unbind();
-		
-		GFXDevice::getInstance().renderModel(&m_tTrees[i]);
-		
+		treeShader = m_tTrees[i]->getShaders()[0];
+		treeShader->bind();
+			treeShader->Uniform("time", time);
+			treeShader->Uniform("scale", m_tTrees[i]->getTransform()->getScale().y);
+			treeShader->Uniform("windDirectionX", _windX);
+			treeShader->Uniform("windDirectionZ", _windZ);
+			treeShader->Uniform("windSpeed", _windS);
+		treeShader->unbind();
 	}
+	GFXDevice::getInstance().renderElements(m_tTrees);
+	
 }
 
 int TerrainChunk::DrawGround(U32 lod)

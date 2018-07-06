@@ -15,7 +15,6 @@ public:
 	bool load(const string& name);
 	bool loadResources(bool continueOnErrors);
 	bool loadEvents(bool continueOnErrors){return true;}
-	bool unload();
 
 
 private:

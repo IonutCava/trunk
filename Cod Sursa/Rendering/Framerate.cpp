@@ -1,5 +1,6 @@
 #include "Framerate.h"
 #include <iostream>
+#include "Utility/Headers/Console.h"
 
 void Framerate::Init(F32 tfps)
 {
@@ -39,8 +40,7 @@ void Framerate::benchmark()
 	if(_count > 1000)
 	{
 		_averageFps /= _count;
-		 cout << "Average FPS: " << _averageFps << "; Max FPS: " <<  _maxFps 
-							<< "; Min FPS: " << _minFps << endl;
+		 Con::getInstance().printfn("Average FPS: %0.2f; Max FPS: %0.2f; Min FPS: %0.2f" , _averageFps,_maxFps,_minFps); 
 		_count = 0;
 	}
 	++_count;

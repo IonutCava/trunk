@@ -4,7 +4,7 @@
 #include "glTexture.h"
 #include "Hardware/Video/GFXDevice.h"
 
-bool glTexture::load(const std::string& name)
+bool glTexture::load(const string& name)
 {
 	Gen();
 	if(m_nHandle == 0)	return false;
@@ -39,8 +39,8 @@ bool glTexture::load(const std::string& name)
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		int i=0;
-		std::stringstream ss( name );
-		std::string it;
+		stringstream ss( name );
+		string it;
 		while(std::getline(ss, it, ' '))
 		{
 			if(!LoadFile(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, it))

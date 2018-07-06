@@ -23,15 +23,14 @@ class SubMesh : public Object3D
 {
 
 public:
-	SubMesh(const std::string& name) : Object3D(name),
-									  _geometry(GFXDevice::getInstance().newVBO()){}
+	SubMesh(const string& name) : Object3D(name),
+								 _geometry(GFXDevice::getInstance().newVBO()){_geometryType = SUBMESH;}
 
-	bool load(const std::string& name) { computeBoundingBox(); return true;}
+	bool load(const string& name) { computeBoundingBox(); return true;}
 	bool unload();
 
 	inline VertexBufferObject* getGeometryVBO() {return _geometry;    } 
 	inline vector<U32>&        getIndices()     {return _indices;     }
-	inline BoundingBox&	       getBoundingBox() {return _boundingBox; }
 	inline Material&           getMaterial()	{return _material;    }   
 	inline string&             getName()		{return _name;        }
 
@@ -39,7 +38,6 @@ private:
 	void computeBoundingBox();
 	bool _visibleToNetwork, _render;
 	VertexBufferObject* _geometry;
-	BoundingBox			_boundingBox;
 	Material		    _material;
 	vector<U32>         _indices;
 	U32                 _vboPositionOffset;

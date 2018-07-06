@@ -11,8 +11,6 @@ void CubeScene::render()
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 
-	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
-
 	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
 }
@@ -34,12 +32,15 @@ void CubeScene::preRender()
 		if((iter->second)->getName().compare("Cutia1") == 0)
 			(iter->second)->getTransform()->rotateEuler(vec3(0.3f*i, 0.6f*i,0));
 		if((iter->second)->getName().compare("HelloText") == 0)
-			(iter->second)->getTransform()->rotateEuler(vec3(0.6f*i,0.2f,0.4f*i));
+			(iter->second)->getTransform()->rotate(vec3(0.6f,0.2f,0.4f),i);
 		if((iter->second)->getName().compare("Bila") == 0)
-			(iter->second)->getTransform()->translateY(j*i);
+			(iter->second)->getTransform()->translateY(j*0.25f);
 	}
 
 	ModelArray["dwarf"]->getTransform()->rotate(vec3(0,1,0),i);
+
+	if(PhysX::getInstance().getScene() != NULL)	
+		PhysX::getInstance().UpdateActors();
 } 
 
 void CubeScene::processInput()
@@ -64,13 +65,6 @@ bool CubeScene::load(const string& name)
 	state = loadResources(true);	
 	state = loadEvents(true);
 	return state;
-}
-
-bool CubeScene::unload()
-{
-	clearObjects();
-	clearEvents();
-	return true;
 }
 
 bool CubeScene::loadResources(bool continueOnErrors)

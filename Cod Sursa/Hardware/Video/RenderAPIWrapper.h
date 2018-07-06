@@ -60,6 +60,7 @@ class DVDFile;
 class Text;
 class Shader;
 class Button;
+class GuiFlash;
 class SubMesh;
 class FrameBufferObject;
 class VertexBufferObject;
@@ -126,6 +127,7 @@ protected:
 	virtual void drawTextToScreen(Text*) = 0;
 	virtual void drawCharacterToScreen(void* ,char) = 0;
 	virtual void drawButton(Button*) = 0;
+	virtual void drawFlash(GuiFlash* flash) = 0;
 	/*GUI Rendering*/
 
 	/*Primitives Renderndering*/

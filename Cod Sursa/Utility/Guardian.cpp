@@ -7,23 +7,23 @@
 #include "Headers/XMLParser.h"
 #include "Rendering/common.h"
 
-void Guardian::LoadApplication(string entryPoint)
+void Guardian::LoadApplication(const string& entryPoint)
 {
 	Engine& engine = Engine::getInstance();
 	ParamHandler& par = ParamHandler::getInstance();
 
-	cout << "Starting the application!" << endl;
+	Con::getInstance().printfn("Starting the application!");
 	XML::loadScripts(entryPoint); //ToDo: This should be moved in each scene constructor! - Ionut Cava
 	
 	LoadSettings(); //ToDo: This should be moved up so that it is the first instruction Guardian executes! - Ionut Cava
-	cout << "Initializing the rendering engine" << endl;
+	Con::getInstance().printfn("Initializing the rendering engine");
 	engine.Initialize();
-	cout << "Initializing the PhysX engine!" << endl;
+	Con::getInstance().printfn("Initializing the PhysX engine!");
     PhysX::getInstance().setParameters(-9.81f,par.getParam<bool>("showPhysXErrors"),1.0f);
 	StartPhysX();
 	SceneManager::getInstance().load(string(""));
-	cout << "Initial data loaded ... " << endl;
-	cout << "Entering main rendering loop ..." << endl;
+	Con::getInstance().printfn("Initial data loaded ... ");
+	Con::getInstance().printfn("Entering main rendering loop ...");
 	GFXDevice::getInstance().initDevice();
 	
 }
@@ -61,19 +61,19 @@ void Guardian::StartPhysX()
 		pxWorld.setGroundPlane();
 	}
 	else
-		cout << "Please install the PhysX driver in order to run physics simulations!\n";
+		Con::getInstance().errorfn("Please install the PhysX driver in order to run physics simulations!");
 	
 }
 
 void Guardian::TerminateApplication()
 {
-	cout << "Closing the PhysX engine ...\n";
+	Con::getInstance().printfn("Closing the PhysX engine ...");
 	PhysX::getInstance().ExitNx();
-	cout << "Deleting imported objects ...\n";
+	Con::getInstance().printfn("Deleting imported objects ...");
 	//CleanUpOBJ();
-	cout << "Closing interface engine ...\n";
+	Con::getInstance().printfn("Closing interface engine ...");
 	Engine::getInstance().Quit();
-	cout << "Engine shutdown complete...\n";
+	Con::getInstance().printfn("Engine shutdown complete...");
 	//myfile.close();
 	exit(0);
 }

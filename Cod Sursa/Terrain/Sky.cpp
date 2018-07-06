@@ -54,7 +54,7 @@ void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool d
 
 void Sky::drawSkyAndSun() const
 {
-	_sky->getTransform()->translate(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
+	_sky->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
 
 	_sky->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
 
@@ -78,7 +78,7 @@ void Sky::drawSkyAndSun() const
 
 void Sky::drawSky() const
 {
-	_sky->getTransform()->translate(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
+	_sky->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
 	_sky->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
 
 	RenderState s(false,true,false,true);
@@ -100,8 +100,8 @@ void Sky::drawSky() const
 
 void Sky::drawSun() const
 {
-	_sun->getColor() = SceneManager::getInstance().getActiveScene().getLights()[0]->getDiffuseColor();
-	_sun->getTransform()->translate(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
+	_sun->getColor() = SceneManager::getInstance().getActiveScene()->getLights()[0]->getDiffuseColor();
+	_sun->getTransform()->setPosition(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
 
 	RenderState s(false,true,false,false);
 	GFXDevice::getInstance().setRenderState(s);

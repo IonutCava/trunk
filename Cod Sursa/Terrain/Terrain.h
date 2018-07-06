@@ -27,7 +27,6 @@ public:
 	void destroy();
 	int  drawGround(bool drawInReflexion) const;
 	void draw() const;
-	int  drawObjects() const;
 	void terrainSetParameters(const vec3& pos,const vec2& scale);
 
 	vec3  getPosition(F32 x_clampf, F32 z_clampf) const;

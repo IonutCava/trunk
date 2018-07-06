@@ -1,8 +1,18 @@
 #include "SceneManager.h"
 #include "Rendering/Camera.h"
 #include "Rendering/common.h"
+#include "SceneList.h"
 
-Scene* SceneManager::findScene(const std::string& name)
+SceneManager::SceneManager()
+{
+	_scenes.insert(make_pair("MainScene", New MainScene()));
+	_scenes.insert(make_pair("CubeScene", New CubeScene()));
+	_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
+	_scenes.insert(make_pair("PingPongScene", New PingPongScene()));
+	_currentSelection = NULL;
+}
+
+Scene* SceneManager::findScene(const string& name)
 {
 	_sceneIter =  _scenes.find(name);
 
@@ -14,18 +24,18 @@ void SceneManager::toggleBoundingBoxes()
 {
 	if(_scene->drawBBox() && _scene->drawObjects())
 	{
-		_scene->drawBBox() = false;
-		_scene->drawObjects() = true;
+		_scene->drawBBox(false);
+		_scene->drawObjects(true);
 	}
 	else if (!_scene->drawBBox() && _scene->drawObjects())
 	{
-		_scene->drawBBox() = true;
-		_scene->drawObjects() = false;
+		_scene->drawBBox(true);
+		_scene->drawObjects(false);
 	}
 	else
 	{
-		_scene->drawBBox() = true;
-		_scene->drawObjects() = true;
+		_scene->drawBBox(true);
+		_scene->drawObjects(true);
 	}
 }
 

@@ -2,7 +2,6 @@
 #define BOUNDINGBOX_H_
 #include "MathClasses.h"
 #include "Utility/Headers/Ray.h"
-#include "Utility/Headers/Transform.h"
 //ToDo: -Add BoundingSphere -Ionut
 class BoundingBox
 {
@@ -13,7 +12,6 @@ public:
 		_max.reset();
 		_computed = false;
 		_visibility = false;
-		points = new vec3[8];
 	}
 
 	BoundingBox(const vec3& __min, const vec3& __max)
@@ -22,9 +20,7 @@ public:
 		_max=__max;
 		_computed = false;
 		_visibility = false;
-		points = new vec3[8];
 	}
-	~BoundingBox(){	delete points; }
 
 	inline bool ContainsPoint(const vec3& point) const	{
 		return (point.x>=_min.x && point.y>=_min.y && point.z>=_min.z && point.x<=_max.x && point.y<=_max.y && point.z<=_max.z);
@@ -99,6 +95,11 @@ public:
 		_max += v;
 	}
 
+	inline void Multiply(F32 factor){
+		_min *= factor;
+		_max *= factor;
+	}
+
 	inline void Multiply(const vec3& v){
 		_min.x *= v.x;
 		_min.y *= v.y;
@@ -121,6 +122,7 @@ public:
 
 	bool ComputePoints()  const
 	{
+		/*
 		if(!points)	return false;
 
 		points[0] = vec3(_min.x, _min.y, _min.z);
@@ -131,11 +133,11 @@ public:
 		points[5] = vec3(_max.x, _min.y, _max.z);
 		points[6] = vec3(_max.x, _max.y, _max.z);
 		points[7] = vec3(_min.x, _max.y, _max.z);
-
+		*/
 		return true;
 	}
 
-	void Transform(BoundingBox originalBB, const mat4& mat)
+	void Transform(const BoundingBox& originalBB, const mat4& mat)
 	{
 		if(_oldMatrix == mat) return;
 		else _oldMatrix = mat;
@@ -149,13 +151,10 @@ public:
 		{
 			for (U32 j = 0; j < 3; ++j)
 			{
-				//calculate a new AABB for only 90% of the resulting OBB
-				//Makes for a tighter fit
-				a = mat.element(i,j) * old_min[j] * 0.90f;
-				b = mat.element(i,j) * old_max[j] * 0.90f;
+				a = mat.element(i,j) * old_min[j];
+				b = mat.element(i,j) * old_max[j];
 
-				if (a < b)
-				{
+				if (a < b) {
 					_min[i] += a;
 					_max[i] += b;
 				} else {
@@ -177,20 +176,21 @@ public:
 	inline vec3  getExtent()     const  {return (_max-_min);}
 	inline vec3  getHalfExtent() const  {return getExtent()/2.0f;}
 
-		   vec3* getPoints()     const  {return points;}
+		 //vec3* getPoints()     const  {return points;}
 		   F32   getWidth()  const {return _max.x - _min.x;}
 		   F32   getHeight() const {return _max.y - _min.y;}
 		   F32   getDepth()  const {return _max.z - _min.z;}
 	
 
 	void setVisibility(bool visibility) {_visibility = visibility;}
-	void setMin(vec3& min)			    {_min = min;}
-	void setMax(vec3& max)			    {_max = max;}
+	void setMin(const vec3& min)			    {_min = min;}
+	void setMax(const vec3& max)			    {_max = max;}
+	void set(const vec3& min, const vec3& max)  {_min = min; _max = max;}
 
 
 private:
 	bool _computed, _visibility;
-	vec3* points;
+	//vec3* points;
 	vec3 _min, _max;
 	mat4 _oldMatrix;
 };

@@ -10,6 +10,7 @@
  
 #define GETTIME()   GFXDevice::getInstance().getTime()
 #define GETMSTIME() GFXDevice::getInstance().getMSTime()
+#define CLAMP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -39,15 +40,14 @@
 #include <time.h>
 #include <unordered_map>
 #include "Utility/Headers/DataTypes.h"
+#include "Utility/Headers/Console.h"
 
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
 #define NEW_DECL , char* zFile, int nLine
 
 void* operator new(size_t t ,char* zFile, int nLine);
-void* operator new(size_t t);
 void operator delete(void * pxData ,char* zFile, int nLine);
-void operator delete(void *pxData);
 
 #define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)

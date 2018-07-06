@@ -38,7 +38,7 @@ bool glVertexBufferObject::Create(U32 usage)
 		nSizePosition = _dataPosition.size()*sizeof(vec3);
 	}
 	else {
-		std::cout << "[ERROR] No position data !" << std::endl;
+		Con::getInstance().errorf("No position data !\n");
 		return false;
 	}
 
@@ -64,7 +64,7 @@ bool glVertexBufferObject::Create(U32 usage)
 
 	glGenBuffers(1, &_VBOid);
 	if(_VBOid == 0) {
-		std::cout << "[ERROR] Init VBO failed !" << std::endl;
+		Con::getInstance().errorfn( "Init VBO failed!");
 		_created = false;
 	}
 	else {

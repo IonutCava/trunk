@@ -12,7 +12,6 @@ public:
 
 	bool load(const string& name);
 	bool loadResources(bool continueOnErrors);
-	bool unload();
 
 	void processEvents(F32 time);
 	void processInput();

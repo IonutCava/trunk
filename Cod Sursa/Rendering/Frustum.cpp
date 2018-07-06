@@ -1,6 +1,7 @@
 #include "Frustum.h"
 #include "resource.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Utility/Headers/BoundingBox.h"
 
 bool Frustum::ContainsPoint(const vec3& point) const
 {

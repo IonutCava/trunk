@@ -17,11 +17,6 @@ void Quadtree::DrawGrass(bool drawInReflexion,bool drawDepthMap)
 	m_pRoot->DrawGrass(drawInReflexion,drawDepthMap);
 }
 
-int Quadtree::DrawObjects(bool drawInReflexion,bool drawDepthMap)
-{
-	assert(m_pRoot);
-	return m_pRoot->DrawObjects(drawInReflexion,drawDepthMap);
-}
 void Quadtree::DrawTrees(bool drawInReflexion,bool drawDepthMap)
 {
 	assert(m_pRoot);

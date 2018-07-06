@@ -1,5 +1,6 @@
 #include "QuadtreeNode.h"
 #include "Rendering/Frustum.h"
+#include "Utility/Headers/BoundingBox.h"
 
 void QuadtreeNode::Build(U32 depth,		
 						 ivec2 pos,					
@@ -70,11 +71,10 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 			if(vertex.y < terrain_BBox.getMin().y)
 				terrain_BBox.setMin(vec3(terrain_BBox.getMin().x,vertex.y,terrain_BBox.getMin().z));
 		}
+		for(U32 i = 0; i < m_pTerrainChunk->getTreeArray().size(); i++)
+			terrain_BBox.Add(m_pTerrainChunk->getTreeArray()[i]->getBoundingBox());
 
-		/*for(U32 i=0; i<m_pTerrainChunk->getTreeArray().size(); i++) {
-			DVDFile& obj = m_pTerrainChunk->getTreeArray()[ i ];
-			terrain_BBox.Add( obj.getBoundingBox() );
-		}*/
+
 	}
 
 
@@ -88,6 +88,7 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 				terrain_BBox.setMax(vec3(terrain_BBox.getMax().x,m_pChildren[i].terrain_BBox.getMax().y,terrain_BBox.getMax().z));
 		}
 	}
+	terrain_BBox.isComputed() = true;
 }
 
 
@@ -136,28 +137,6 @@ void QuadtreeNode::DrawTrees(bool drawInReflexion,bool drawDepthMap)
 		return;		
 	}
 }
-
-int QuadtreeNode::DrawObjects(bool drawInReflexion,bool drawDepthMap)
-{
-	if(!m_pChildren) {
-		assert(m_pTerrainChunk);
-		if( m_nLOD>=0 )
-			return m_pTerrainChunk->DrawObjects(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD,drawDepthMap );
-		else
-			return 0;
-	}
-	else {
-		int ret = 0;
-		if( m_nLOD>=0 )
-			for(int i=0; i<4; i++)
-				ret += m_pChildren[i].DrawObjects(drawInReflexion,drawDepthMap);
-		return ret;		
-	}
-}
-
-
-
-
 
 void QuadtreeNode::DrawBBox(bool bTest)
 {

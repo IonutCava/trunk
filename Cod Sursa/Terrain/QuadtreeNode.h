@@ -3,7 +3,6 @@
 
 #include "resource.h"
 
-#include "Utility/Headers/BoundingBox.h"
 #include "Terrain/TerrainChunk.h"
 
 #define CHILD_NW	0
@@ -18,6 +17,7 @@
 
 class Frustum;
 class TerrainChunk;
+class BoundingBox;
 
 class QuadtreeNode {
 public:
@@ -28,7 +28,6 @@ public:
 
 	int  DrawGround(int options);
 	void DrawGrass(bool drawInReflexion,bool drawDepthMap);
-	int  DrawObjects(bool drawInReflexion,bool drawDepthMap);
 	void DrawTrees(bool drawInReflexion,bool drawDepthMap);
 	void DrawBBox(bool bTest);
 

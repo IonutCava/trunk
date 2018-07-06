@@ -25,7 +25,7 @@ public:
 	  _res(ResourceManager::getInstance()),
 	  _par(ParamHandler::getInstance()){}
 
-	void initialize(string grassShader);
+	void initialize(const string& grassShader);
 	void toggleRendering(bool state){_render = state;}
 	void draw(bool drawInReflexion,bool drawDepthMap);
 

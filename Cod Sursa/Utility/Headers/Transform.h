@@ -8,40 +8,104 @@ class Transform
 {
 public:
 	Transform(const Quaternion& orientation, const vec3& translation, const vec3& scale) : 
-	  _orientation(orientation), _translation(translation), _scale(scale)
-	 {
-		 _dirty = false;
-		 _worldMatrix.identity();
-		 _rotationMatrix.identity();
-		 _scaleMatrix.identity();
-		 _translationMatrix.identity();
-	  }
-	  ~Transform(){};
+			  _orientation(orientation), _translation(translation), _scale(scale)
+	{
+		_dirty = false;
+		_worldMatrix.identity();
+		_rotationMatrix.identity();
+		_scaleMatrix.identity();
+		_translationMatrix.identity();
+	}
 
-	void translate(const vec3& position) {_translationMatrix.translate(position); _translation = position;    _dirty = true;}
-	void translateX(float positionX)	 {_translation.x = positionX; _translationMatrix.translate(_translation); _dirty = true;}
-	void translateY(float positionY)	 {_translation.y = positionY; _translationMatrix.translate(_translation); _dirty = true;}
-	void translateZ(float positionZ)	 {_translation.z = positionZ; _translationMatrix.translate(_translation); _dirty = true;}
+	void setPosition(const vec3& position) 
+	{
+		_translation = position;
+		_translationMatrix.identity();
+		_translationMatrix.translate(_translation);
+		_dirty = true;
+	}
 
-	void scale(const vec3& scale) {_scaleMatrix.scale(scale); _scale = scale; _dirty = true;}
+	void setPositionX(F32 position)
+	{
+		_translation.x = position;
+		_translationMatrix.identity();
+		_translationMatrix.translate(_translation);
+		_dirty = true;
+	}
+
+	void setPositionY(F32 position)
+	{
+		_translation.y = position;
+		_translationMatrix.identity();
+		_translationMatrix.translate(_translation);
+		_dirty = true;
+	}
+	
+	void setPositionZ(F32 position)
+	{
+		_translation.z = position;
+		_translationMatrix.identity();
+		_translationMatrix.translate(_translation);
+		_dirty = true;
+	}
+
+	void translate(const vec3& position)    
+	{
+		_translation   += position;
+		_translationMatrix.translate(_translation);
+		_dirty = true;
+	}
+
+	void translateX(const float positionX)
+	{
+		_translation.x += positionX;
+		_translationMatrix.translate(_translation); 
+		_dirty = true;
+	}
+
+	void translateY(const float positionY)
+	{
+		_translation.y += positionY;
+		_translationMatrix.translate(_translation); 
+		_dirty = true;
+	}
+
+	void translateZ(const float positionZ)
+	{
+		_translation.z += positionZ;
+		_translationMatrix.translate(_translation);
+		_dirty = true;
+	}
+
+	void scale(const vec3& scale)
+	{
+		_scaleMatrix.scale(scale);
+		_scale = scale; 
+		_dirty = true;
+	}
 
 	void rotate(const vec3& axis, float degrees)
 	{
 		_orientation.FromAxis(axis,degrees);
 		_rotationMatrix = _orientation.getMatrix();
-		_axis = axis; _angle = degrees;_dirty = true;
+		_axis = axis;
+		_angle = degrees;
+		_dirty = true;
 	}
+
 	void rotateEuler(const vec3& euler)
 	{
 		_orientation.FromEuler(euler);
 		_orientation.getAxisAngle(&_axis,&_angle,true);
-		_rotationMatrix = _orientation.getMatrix(); _dirty = true;
+		_rotationMatrix = _orientation.getMatrix();
+		_dirty = true;
 	}
 
 	void rotateQuaternion(const Quaternion& quat)
 	{
 		_orientation = quat; 
 		_rotationMatrix = _orientation.getMatrix();
+		_dirty = true;
 	}
 
 	void rotateX(float angle){_rotationMatrix.rotate_x(angle); _axis.set(1,0,0); angle = angle; _dirty = true;}

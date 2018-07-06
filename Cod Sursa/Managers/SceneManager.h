@@ -4,17 +4,15 @@
 
 #include "Manager.h"
 #include "Scenes/Scene.h"
-#include "SceneList.h"
 #include "Utility/Headers/Singleton.h"
 
 SINGLETON_BEGIN_EXT1(SceneManager,Manager)
 
 public:
-	Scene& getActiveScene() {return *_scene;}
+	Scene* getActiveScene() {return _scene;}
 	void setActiveScene(Scene* scene) {_scene = scene;}
 
 	/*Base Scene Operations*/
-	void updateTransformations(){_scene->updateTransformations();}
 	void render() {_scene->render();}
 	void preRender() {_scene->preRender();}
 	bool load(const string& name) {_scene->setInitialData(); return _scene->load(name);}
@@ -32,7 +30,7 @@ public:
     int getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
 	TerrainManager* getTerrainManager() {return _scene->getTerrainManager();}
    
-	Scene* findScene(const std::string& name);
+	Scene* findScene(const string& name);
 
 	void addModel(FileData& model){_scene->addModel(model);}
 	void addTerrain(const TerrainInfo& ter) {_scene->addTerrain(ter);}
@@ -43,16 +41,10 @@ public:
 	void deleteSelection();
 
 	void clean(){_scene->clean();}
+
 private:
 
-	SceneManager()
-	{
-		_scenes.insert(make_pair("MainScene", New MainScene()));
-		_scenes.insert(make_pair("CubeScene", New CubeScene()));
-		_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
-		_scenes.insert(make_pair("PingPongScene", New PingPongScene()));
-		_currentSelection = NULL;
-	}
+	SceneManager();
 	Scene* _scene;
 	map<string, Scene*> _scenes;
 	map<string, Scene*>::iterator _sceneIter;

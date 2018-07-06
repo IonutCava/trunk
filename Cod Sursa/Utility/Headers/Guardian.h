@@ -7,7 +7,7 @@ SINGLETON_BEGIN( Guardian )
 
 public:
 	void LoadSettings();
-	void LoadApplication(string entryPoint);
+	void LoadApplication(const string& entryPoint);
 	void ReloadSettings();
 	void RestartPhysX();
 	static void TerminateApplication();

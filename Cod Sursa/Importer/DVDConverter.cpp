@@ -23,6 +23,7 @@ DVDFile::DVDFile()
 	_shouldDelete = false;
 }
 
+
 DVDFile::~DVDFile()
 {
 }
@@ -80,7 +81,7 @@ bool DVDFile::load(const string& file)
 
 	if( !scene)
 	{
-		cout << "DVDFile::load(" << file << "): " << importer.GetErrorString();
+		Con::getInstance().errorfn("DVDFile::load( %s ): %s", file.c_str(), importer.GetErrorString());
 		return false;
 	}
 
@@ -104,8 +105,12 @@ bool DVDFile::load(const string& file)
 		index = getSubMeshes().size();
 		addSubMesh(new SubMesh(temp));
 		temp.clear();
+		getSubMeshes()[index]->getGeometryVBO()->getPosition().reserve(scene->mMeshes[n]->mNumVertices);
+		getSubMeshes()[index]->getGeometryVBO()->getNormal().reserve(scene->mMeshes[n]->mNumVertices);
+		
 		for(U32 j = 0; j < scene->mMeshes[n]->mNumVertices; j++)
 		{
+			
 			getSubMeshes()[index]->getGeometryVBO()->getPosition().push_back(vec3(scene->mMeshes[n]->mVertices[j].x,
 																				  scene->mMeshes[n]->mVertices[j].y,
 																				  scene->mMeshes[n]->mVertices[j].z));
@@ -115,6 +120,9 @@ bool DVDFile::load(const string& file)
 		}
 
 		if(scene->mMeshes[n]->mTextureCoords[0] != NULL)
+		{
+			getSubMeshes()[index]->getGeometryVBO()->getTexcoord().reserve(scene->mMeshes[n]->mNumVertices);
+			getSubMeshes()[index]->getGeometryVBO()->getTangent().reserve(scene->mMeshes[n]->mNumVertices);
 			for(U32 j = 0; j < scene->mMeshes[n]->mNumVertices; j++)
 			{
 				getSubMeshes()[index]->getGeometryVBO()->getTexcoord().push_back(vec2(scene->mMeshes[n]->mTextureCoords[0][j].x,
@@ -123,11 +131,11 @@ bool DVDFile::load(const string& file)
 																					   scene->mMeshes[n]->mTangents[j].y,
 																					   scene->mMeshes[n]->mTangents[j].z));
 			}
-
+		}
 		for(U32 k = 0; k < scene->mMeshes[n]->mNumFaces; k++)
 				for(U32 m = 0; m < scene->mMeshes[n]->mFaces[k].mNumIndices; m++)
 					getSubMeshes()[index]->getIndices().push_back(scene->mMeshes[n]->mFaces[k].mIndices[m]);
-		  
+		 
 		getSubMeshes()[index]->getGeometryVBO()->Create();
 	 
 	

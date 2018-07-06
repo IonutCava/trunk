@@ -1,13 +1,14 @@
 #ifndef FRUSTUM_H_
 #define FRUSTUM_H_
 
+#include "Utility/Headers/DataTypes.h"
 #include "Utility/Headers/Singleton.h"
-#include "Utility/Headers/BoundingBox.h"
 
 #define FRUSTUM_OUT			0
 #define FRUSTUM_IN			1
 #define FRUSTUM_INTERSECT	2
 
+class BoundingBox;
 SINGLETON_BEGIN( Frustum )
 
 public:

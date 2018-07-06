@@ -192,39 +192,38 @@ bool glFrameBufferObject::checkStatus()
     switch(status)
     {
     case GL_FRAMEBUFFER_COMPLETE:
-//      std::cout << "Framebuffer complete." << std::endl;
         return true;
 
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-        std::cout << "[ERROR] Framebuffer incomplete: Attachment is NOT complete." << std::endl;
+        Con::getInstance().errorfn("Framebuffer incomplete: Attachment is NOT complete.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-        std::cout << "[ERROR] Framebuffer incomplete: No image is attached to FBO." << std::endl;
+        Con::getInstance().errorfn("Framebuffer incomplete: No image is attached to FBO.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-        std::cout << "[ERROR] Framebuffer incomplete: Attached images have different dimensions." << std::endl;
+        Con::getInstance().errorfn("Framebuffer incomplete: Attached images have different dimensions.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-        std::cout << "[ERROR] Framebuffer incomplete: Color attached images have different internal formats." << std::endl;
+        Con::getInstance().errorfn("Framebuffer incomplete: Color attached images have different internal formats.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-        std::cout << "[ERROR] Framebuffer incomplete: Draw buffer." << std::endl;
+        Con::getInstance().errorfn("Framebuffer incomplete: Draw buffer.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-        std::cout << "[ERROR] Framebuffer incomplete: Read buffer." << std::endl;
+        Con::getInstance().errorfn("Framebuffer incomplete: Read buffer.");
         return false;
 
     case GL_FRAMEBUFFER_UNSUPPORTED:
-        std::cout << "[ERROR] Unsupported by FBO implementation." << std::endl;
+        Con::getInstance().errorfn("Unsupported by FBO implementation.");
         return false;
 
     default:
-        std::cout << "[ERROR] Unknow error." << std::endl;
+        Con::getInstance().errorfn("Unknow error.");
         return false;
     }
 }

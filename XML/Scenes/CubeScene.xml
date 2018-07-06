@@ -11,3 +11,7 @@
 	<windDirZ>-1</windDirZ>
 	<windSpeed>1</windSpeed>
 </wind>
+
+<options>
+	<visibility>1000</visibility>
+</options>

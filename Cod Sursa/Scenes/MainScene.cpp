@@ -34,7 +34,7 @@ void MainScene::preRender()
 	Camera& cam = Camera::getInstance();
 	
 	ParamHandler &par = ParamHandler::getInstance();
-
+/*
 	//SHADOW MAPPING
 	GLdouble tabOrtho[2] = {20.0, 100.0};
 	F32 zNear = 0.01f;//par.getParam<F32>("zNear");
@@ -63,7 +63,7 @@ void MainScene::preRender()
 		Frustum::getInstance().Extract(sun_pos);
 		
 		_depthMap[i]->Begin();
-			_GFX.clearBuffers(0x00004000/*GL_COLOR_BUFFER_BIT*/ | 0x00000100/*GL_DEPTH_BUFFER_BIT*/);
+			_GFX.clearBuffers(0x00004000| 0x00000100);
 			renderActors();
 			vec4 vGroundAmbient = _white.lerp(_white*0.2f, _black, _sun_cosy);
 			_terMgr->drawTerrains(true,true,true,vGroundAmbient);
@@ -86,7 +86,7 @@ void MainScene::preRender()
 	_terMgr->setDepthMap(1,_depthMap[1]);
 
 	//SHADOW MAPPING
-
+*/
 	_skyFBO->Begin();
 
 	_GFX.clearBuffers(0x00004000/*GL_COLOR_BUFFER_BIT*/ | 0x00000100/*GL_DEPTH_BUFFER_BIT*/);
@@ -132,8 +132,6 @@ void MainScene::render()
 
 void MainScene::renderActors()
 {
-	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
-
 	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
 
@@ -148,15 +146,9 @@ void MainScene::processInput()
 	
 	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
 	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
-	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * Framerate::getInstance().
-		getSpeedfactor());
+	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
 	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
 
-	for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
-	{
-		(ModelIterator->second)->getBoundingBox().setVisibility(_drawBB);
-		(ModelIterator->second)->setVisibility(_drawObjects);
-	}
 }
 
 
@@ -188,6 +180,7 @@ void MainScene::processEvents(F32 time)
 		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
 		_eventTimers[2] += TimeDisplay;
 	}
+	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 }
 
 bool MainScene::load(const string& name)
@@ -198,11 +191,6 @@ bool MainScene::load(const string& name)
 	state = loadResources(true);	
 	state = loadEvents(true);
 	return state;
-}
-
-bool MainScene::unload()
-{
-	return true;
 }
 
 bool _switchAB = false;
@@ -239,7 +227,7 @@ void MainScene::test(boost::any a, CallbackParam b)
 		}
 	}
 
-	ModelArray["box"]->getTransform()->translate(pos);
+	ModelArray["box"]->getTransform()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors)

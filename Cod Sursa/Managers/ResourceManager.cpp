@@ -32,44 +32,36 @@ void* operator new(size_t t ,char* zFile, int nLine)
 	return malloc(t);
 }
 
-void* operator new(size_t t)
-{
-	return malloc(t);
-}
 
 void operator delete(void * pxData ,char* zFile, int nLine)
 {
 	free(pxData);
 }
 
-void operator delete(void *pxData)
-{
-	free(pxData);
-}
 
 template<class T>
-T* ResourceManager::LoadResource(const std::string& name,bool flag)
+T* ResourceManager::LoadResource(const string& name,bool flag)
 {
 	Resource* ptr = LoadResource(name);
 	if(!ptr)
 	{
 		ptr = new T();
-		((T*)ptr)->load(name);
+		dynamic_cast<T*>(ptr)->load(name);
 
 		if(!ptr) return NULL;
 
 		_resDB[name] = ptr;
 	}
 
-	return (T*)ptr;
+	return dynamic_cast<T*>(ptr);
 }
 
 template<>
 Texture* ResourceManager::LoadResource<Texture>(const string& name,bool flag)
 {
 	Resource* ptr = LoadResource(name);
-	std::stringstream ss( name );
-	std::string it;
+	stringstream ss( name );
+	string it;
 	int i = 0;
 	while(std::getline(ss, it, ' ')) i++;
 
@@ -81,17 +73,17 @@ Texture* ResourceManager::LoadResource<Texture>(const string& name,bool flag)
 			ptr = GFXDevice::getInstance().newTexture2D(flag);
 		else
 		{
-			std::cout << "TextureManager ERROR: wrong number of files for cubemap texture: " << name << std::endl;
+			Con::getInstance().errorfn("TextureManager ERROR: wrong number of files for cubemap texture: [ %s ]", name.c_str());
 			return NULL;
 		}
 
-		((Texture*)ptr)->load(name);
+		dynamic_cast<Texture*>(ptr)->load(name);
 
 		if(!ptr) return NULL;
 
 		_resDB[name] = ptr;
 	}
-	return (Texture*)ptr;
+	return dynamic_cast<Texture*>(ptr);
 }
 
 template<>
@@ -102,14 +94,14 @@ Shader* ResourceManager::LoadResource<Shader>(const string& name,bool flag)
 	{
 
 		ptr = GFXDevice::getInstance().newShader();
-		((Shader*)ptr)->load(name);
+		dynamic_cast<Shader*>(ptr)->load(name);
 	
 		if(!ptr) return NULL;
 
 		_resDB[name] = ptr;
 	}
 
-	return (Shader*)ptr;
+	return dynamic_cast<Shader*>(ptr);
 }
 
 template<>
@@ -121,11 +113,11 @@ DVDFile* ResourceManager::LoadResource<DVDFile>(const string& name,bool flag)
 	if(!ptr)
 	{
 		ptr = new DVDFile();
-		if(!((DVDFile*)ptr)->load(name) || !ptr) return NULL;
+		if(!dynamic_cast<DVDFile*>(ptr)->load(name) || !ptr) return NULL;
 
 		_resDB[name] = ptr;
 	}
-	return (DVDFile*)ptr;
+	return dynamic_cast<DVDFile*>(ptr);
 }
 
 template<>
@@ -150,18 +142,19 @@ Object3D* ResourceManager::LoadResource<Object3D>(const string& name,bool flag)
 		if(!ptr) return NULL;
 		_resDB[name] = ptr;
 	}
-	return (Object3D*)ptr;
+	return dynamic_cast<Object3D*>(ptr);
 }
+
 Resource* ResourceManager::LoadResource(const string& name)
 {
 	if(_resDB.find(name) != _resDB.end())	
 	{
-		cout << "ResourceManager: returning resource [ " << name << " ]" << endl;
+		Con::getInstance().printf("ResourceManager: returning resource [ %s ]\n",name.c_str());
 		return _resDB[name];
 	}
 	else
 	{
-		cout << "ResourceManager: loading resource [ " << name << " ]" << endl;
+		Con::getInstance().printf("ResourceManager: loading resource [ %s ]\n",name.c_str());
 		return NULL;
 	}
 }

@@ -5,7 +5,7 @@
 #include <iostream>
 void DX_API::initHardware()
 {
-	std::cout << "Initializing Direct3D rendering API! " << endl;
+	Con::getInstance().printfn("Initializing Direct3D rendering API! ");
 }
 
 void DX_API::closeRenderingApi()
@@ -79,6 +79,10 @@ void DX_API::drawCharacterToScreen(void* ,char)
 }
 
 void DX_API::drawButton(Button* button)
+{
+}
+
+void DX_API::drawFlash(GuiFlash* flash)
 {
 }
 

@@ -12,9 +12,9 @@ public:
 															   _bl(bottomLeft),
 															   _br(bottomRight),
 															   _texture(NULL),
-															   _shader(NULL){};
-	~Quad3D(){};
-	bool load(const std::string &name) {return true;}
+															   _shader(NULL)
+															   {_geometryType = QUAD_3D;}
+	bool load(const string &name) {return true;}
 	bool unload() {return true;}
 
 	inline Texture2D* getTexture() {return _texture;}

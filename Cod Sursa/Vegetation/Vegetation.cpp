@@ -10,7 +10,7 @@
 #include "Managers/SceneManager.h"
 #include "Hardware/Video/GFXDevice.h"
 
-void Vegetation::initialize(string grassShader)
+void Vegetation::initialize(const string& grassShader)
 {
 	_grassShader  = _res.LoadResource<Shader>(grassShader);
 	_grassDensity = _grassDensity/_billboardCount;
@@ -53,7 +53,7 @@ void Vegetation::draw(bool drawInReflexion,bool drawDepthMap)
 
 bool Vegetation::generateGrass(int index)
 {
-	cout << "Generating Grass...[" << _grassDensity << "]" << endl;
+	Con::getInstance().printfn("Generating Grass...[ %d ]", _grassDensity);
 	assert(_map.data);
 	vec2 pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
 	vec2 pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
@@ -64,7 +64,6 @@ bool Vegetation::generateGrass(int index)
 		vec3(-pos120.x, -pos120.y, 0.0f),	vec3(-pos120.x, -pos120.y, 1.0f),	vec3(pos120.x, pos120.y, 1.0f),	vec3(pos120.x, pos120.y, 0.0f),
 		vec3(-pos240.x, -pos240.y, 0.0f),	vec3(-pos240.x, -pos240.y, 1.0f),	vec3(pos240.x, pos240.y, 1.0f),	vec3(pos240.x, pos240.y, 0.0f)
 	};
-
 	vec2 tTexcoords[] = {
 		vec2(0.0f, 0.49f), vec2(0.0f, 0.01f), vec2(1.0f, 0.01f), vec2(1.0f, 0.49f),
 		vec2(0.0f, 0.49f), vec2(0.0f, 0.01f), vec2(1.0f, 0.01f), vec2(1.0f, 0.49f),
@@ -72,7 +71,6 @@ bool Vegetation::generateGrass(int index)
 	};
 
 	_grassVBO.push_back(GFXDevice::getInstance().newVBO());
-
 	U32 size = (U32) ceil(_grassDensity) * 3 * 4;
 	_grassVBO[index]->getPosition().reserve( size );
 	_grassVBO[index]->getNormal().reserve( size );
@@ -127,27 +125,27 @@ bool Vegetation::generateGrass(int index)
 
 		}
 	}
-
 	bool ret = _grassVBO[index]->Create();
-
 	_grassShader->bind();
 		_grassShader->Uniform("depth_map_size", 1024);
 		_grassShader->Uniform("lod_metric", 1000.0f);
 	_grassShader->unbind();
 
-	std::cout << "Generating Grass OK" << std::endl;
+	Con::getInstance().printfn("Generating Grass OK");
 	return ret;
 }
 
 bool Vegetation::generateTrees()
 {
-	if(SceneManager::getInstance().getActiveScene().getVegetationDataArray().size() < 1)
+	vector<FileData>& DA = SceneManager::getInstance().getActiveScene()->getVegetationDataArray();
+	if(DA.size() < 1)
 	{
-		cout << "Vegetation: Insufficient base geometry for tree generation. Skipping!" << endl;
+		Con::getInstance().errorf("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
 		return true;
 	}
-	std::cout << "Generating Vegetation... [" << _treeDensity << "]" << std::endl;
-	
+	Con::getInstance().printf("Generating Vegetation... [ %f ]\n", _treeDensity);
+	Shader *s = ResourceManager::getInstance().LoadResource<Shader>("terrain_tree");
+
 	for(int k=0; k<(int)_treeDensity; k++) {
 		F32 x = random(1.0f);
 		F32 y = random(1.0f);
@@ -160,17 +158,19 @@ bool Vegetation::generateTrees()
 		}
 
 		vec3 P = _terrain.getPosition(x, y);
+		P.y -= 0.2f;
 
 		QuadtreeNode* node = _terrain.getQuadtree().FindLeaf(vec2(P.x, P.z));
 		assert(node);
 		TerrainChunk* chunk = node->getChunk();
 		assert(chunk);
-		P.y -= 0.2f;
-		chunk->addTree(P, random(360.0f),random(_treeScale/2 , _treeScale));
-
+		
+		int index = rand() % DA.size();
+		chunk->addTree(P, random(360.0f),_treeScale,s,DA[index]);
+		
 
 	}
-	std::cout << "Generating Vegetation OK" << std::endl;
+	Con::getInstance().printf("Generating Vegetation OK\n");;
 	return true;
 }
 

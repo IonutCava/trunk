@@ -72,8 +72,8 @@ bool PhysX::InitNx()
 	if(gPhysicsSDK == NULL) 
 	{
 		//E posibil sa nu gasim driverul necesar instalat, asa ca anuntam utilizatorul
-		cout << "Error: It would seem that you do not have PhysX driver installed!\n" << endl;
-		cout << "Please visit http://www.nividia.com/object/physx_new.html for more details!\n" << endl;
+		Con::getInstance().errorfn("It would seem that you do not have PhysX driver installed!");
+		Con::getInstance().printfn("Please visit http://www.nividia.com/object/physx_new.html for more details!");
 		return false;
 	}
 
@@ -102,7 +102,7 @@ bool PhysX::InitNx()
 	if(gScene == NULL) 
 	{
 		//... dar trebuie sa verificam si daca crearea acesteia a avut succes
-		cout << "Error: Unable to create a PhysX scene!" << endl;
+		Con::getInstance().errorfn("Unable to create a PhysX scene!");
 		return false;
 	}
 
@@ -132,7 +132,7 @@ void PhysX::ExitNx()
 		{
 			int nbActors = gScene->getNbActors();
 			NxActor** actors = gScene->getActors();
-			cout << "PhysX: Preparing to delete " << nbActors << " actors." << endl;
+			Con::getInstance().printfn("PhysX: Preparing to delete %d actors", nbActors);
 			while (nbActors--)
 			{
 				NxActor* actor = *actors++;
@@ -424,7 +424,7 @@ void PhysX::UpdateActors()
 					this->DrawLowPlane(shape);
 				break;
 				default:
-					cout << "PhysX error: Invalid shape received for rendering!\n";
+					Con::getInstance().errorfn( "PhysX error: Invalid shape received for rendering!");
 			}
 		}
     }
@@ -451,7 +451,7 @@ void PhysX::DrawObjects(NxShape *obj)
 NxVec3 PhysX::ApplyForceToActor(NxActor* actor, const NxVec3& forceDir, const NxReal forceStrength)
 {
 	if(actor == NULL) return NxVec3(0,0,0);
-	cout << "Applying force to actor: " << actor->userData << endl;
+	Con::getInstance().printfn("Applying force to actor: [ %s ]", actor->getName());
     NxVec3 forceVec = forceStrength*1000*forceDir;
 	actor->addForce(forceVec);
     return forceVec;

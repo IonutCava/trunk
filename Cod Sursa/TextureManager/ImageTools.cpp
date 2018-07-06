@@ -9,7 +9,7 @@
 
 namespace ImageTools {
 
-unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
+unsigned char* OpenImagePPM(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
 {
 
 	char head[70];
@@ -57,7 +57,7 @@ unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d,
 	return img;
 }
 
-unsigned char* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
+unsigned char* OpenImageDevIL(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
 {
 	static bool first = true;
 
@@ -105,16 +105,16 @@ unsigned char* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& 
 }
 
 
-unsigned char* OpenImage(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
+unsigned char* OpenImage(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
 {
-	if(filename.find(".ppm") != std::string::npos)
+	if(filename.find(".ppm") != string::npos)
 		return OpenImagePPM(filename, w, h, d,t,flip);
 	else 
 		return OpenImageDevIL(filename,w,h,d,t,flip);
 	return NULL;
 }
 
-void OpenImage(const std::string& filename, ImageData& img)
+void OpenImage(const string& filename, ImageData& img)
 {
 	img.name = filename;
 	img.data = OpenImage(filename, img.w, img.h, img.d, img.type,img._flip);

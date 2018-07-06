@@ -15,7 +15,6 @@ public:
 
 	int  DrawGround(bool drawInReflexion,bool drawDepthMap);
 	void DrawGrass(bool drawInReflexion,bool drawDepthMap);
-	int  DrawObjects(bool drawInReflexion,bool drawDepthMap);
 	void DrawTrees(bool drawInReflexion,bool drawDepthMap);
 	void DrawBBox();
 

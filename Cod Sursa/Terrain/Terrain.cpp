@@ -63,8 +63,8 @@ void Terrain::terrainSetParameters(const vec3& pos,const vec2& scale)
 	//    |          |           |         \/      /_______________________________\
 	//    |_________\/___________|
 
-	terrain_BBox.getMin() = vec3(-pos.x-300, pos.y, -pos.z-300);
-	terrain_BBox.getMax() = vec3( pos.x+300, pos.y+40, pos.z+300);
+	terrain_BBox.setMin(vec3(-pos.x-300, pos.y, -pos.z-300));
+	terrain_BBox.setMax(vec3( pos.x+300, pos.y+40, pos.z+300));
 
 	terrain_BBox.Multiply(vec3(terrainScaleFactor,1,terrainScaleFactor));
 	terrain_BBox.MultiplyMax(vec3(1,terrainHeightScaleFactor,1));
@@ -73,7 +73,7 @@ void Terrain::terrainSetParameters(const vec3& pos,const vec2& scale)
 bool Terrain::load(const string& heightmap)
 {
 	U32 chunkSize = 16;
-	std::cout << "Loading Terrain..." << std::endl;
+	Con::getInstance().printfn("Loading Terrain...");
 
 	m_pGroundVBO = GFXDevice::getInstance().newVBO();
 
@@ -175,10 +175,10 @@ bool Terrain::load(const string& heightmap)
 bool Terrain::postLoad()
 {
 	_postLoaded = m_pGroundVBO->Create();
-	cout << "Generating lightmap!" << endl;
+	Con::getInstance().printfn("Generating lightmap!");
 	m_fboDepthMapFromLight[0]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
 	m_fboDepthMapFromLight[1]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
-	cout << "Loading Terrain OK" << endl;
+	Con::getInstance().printfn("Loading Terrain OK");
 	if(!_postLoaded) _loaded = false;
 	return _postLoaded;
 }
@@ -247,13 +247,6 @@ vec3 Terrain::getTangent(F32 x_clampf, F32 z_clampf) const
 }
 
 
-
-int Terrain::drawObjects() const
-{
-	int ret = terrain_Quadtree->DrawObjects(_drawInReflexion,_drawDepthMap);
-
-	return ret;
-}
 
 void Terrain::draw() const
 {

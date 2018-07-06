@@ -59,7 +59,6 @@ void Engine::DrawScene()
 	_GFX.enable_MODELVIEW();
 	_GFX.loadIdentityMatrix();
 	_camera.RenderLookAt();
-	_scene.updateTransformations();
 	_px.GetPhysicsResults();
 	if(_px.getScene() != NULL)
 	{
@@ -68,7 +67,7 @@ void Engine::DrawScene()
 	}
 	_px.StartPhysics();
 
-	vector<Light*> & lights = _scene.getActiveScene().getLights();
+	vector<Light*> & lights = _scene.getActiveScene()->getLights();
 	for(U8 i = 0; i < lights.size(); i++)
 		lights[i]->update();
 
@@ -100,16 +99,16 @@ void Engine::Initialize()
 	_GFX.setApi(OpenGL32);
 	_GFX.initHardware();
 	ZPR::Init();
-	_camera.setEye(vec3(0,0,0));
+	_camera.setEye(vec3(0,50,0));
 	F32 fogColor[4] = {0.5, 0.5, 0.5, 1.0}; 
 	//_GFX.enableFog(0.3f,fogColor);
 }
 
 void Engine::Quit()
 {
-	cout << "Destroying Terrain ...\n";
+	Con::getInstance().printfn("Destroying Terrain ...");
 	SceneManager::getInstance().getTerrainManager()->destroy();
-	cout << "Closing the rendering engine ...\n";
+	Con::getInstance().printfn("Closing the rendering engine ...");
 	_GFX.closeRenderingApi();
 }
 
