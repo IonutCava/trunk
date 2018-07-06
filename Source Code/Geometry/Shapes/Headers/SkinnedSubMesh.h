@@ -33,7 +33,7 @@
 #define _SKINNED_SUBMESH_H_
 
 #include "SubMesh.h"
-
+#include "Platform/Threading/Headers/Task.h"
 namespace Divide {
 
 class AnimationComponent;
@@ -62,10 +62,6 @@ class SkinnedSubMesh : public SubMesh {
 
    private:
     SceneAnimator* _parentAnimatorPtr;
-    vectorImpl<vec3<F32> > _origVerts;
-    vectorImpl<vec3<F32> > _origNorms;
-    /// This becomes true only while computing bbs for any animation
-    std::atomic_bool _buildingBoundingBoxes;
     /// Build status of bounding boxes for each animation (true if BBs are available)
     boundingBoxPerAnimationStatus _boundingBoxesAvailable;
     /// Build status of bounding boxes for each animation (true if BBs are being computed)

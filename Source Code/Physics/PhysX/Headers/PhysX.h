@@ -93,8 +93,9 @@ class PhysXActor : public PhysicsAsset {
         : PhysicsAsset(),
           _actor(nullptr),
           _isDynamic(false),
-          _isInScene(false),
-          _userData(0.0f) {}
+          _userData(0.0f)
+    {
+    }
 
     ~PhysXActor() {}
 
@@ -105,7 +106,6 @@ class PhysXActor : public PhysicsAsset {
     physx::PxGeometryType::Enum _type;
     stringImpl _actorName;
     bool _isDynamic;
-    bool _isInScene;
     F32 _userData;
 };
 

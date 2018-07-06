@@ -38,7 +38,7 @@
 #include <fstream>
 
 #ifndef PRINT_AI_TO_FILE
-//#define PRINT_AI_TO_FILE
+#define PRINT_AI_TO_FILE
 #endif
 
 namespace Divide {

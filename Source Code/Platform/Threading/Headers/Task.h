@@ -53,9 +53,14 @@ enum class CallbackParam : U32 {
  *@brief Using std::atomic for thread-shared data to avoid locking
  */
 class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
-    typedef boost::signals2::signal<void(U64)> SendCompleted;
-
    public:
+       enum class TaskPriority : U32 {
+           DONT_CARE = 0,
+           LOW = 1,
+           MEDIUM = 2,
+           HIGH = 3,
+           MAX = 4
+       };
     /**
      * @brief Creates a new Task that runs in a separate thread
      * @param tickInterval The delay (in microseconds) between each callback
@@ -63,7 +68,7 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
      * before the Task is deleted. 0 = run forever
      * @param f The callback function
      */
-    Task(boost::threadpool::pool* tp, U64 tickInterval, I32 numberOfTicks,
+    Task(ThreadPool& tp, U64 tickInterval, I32 numberOfTicks,
          const DELEGATE_CBK<>& f);
     ~Task();
 
@@ -71,27 +76,26 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     void updateTickCounter(I32 numberOfTicks) {
         _numberOfTicks = numberOfTicks;
     }
-    void startTask();
+    void startTask(TaskPriority priority = TaskPriority::DONT_CARE);
     void stopTask();
     void pauseTask(bool state);
 
     inline bool isFinished() const { return _done; }
 
-    typedef SendCompleted::slot_type SendCompletedSlot;
-    boost::signals2::connection connect(const SendCompletedSlot& slot) {
-        return _completionSignal.connect(slot);
+    inline void onCompletionCbk(const DELEGATE_CBK_PARAM<const I64>& cbk) {
+        _onCompletionCbk = cbk;
     }
 
    private:
     mutable SharedLock _lock;
     mutable std::atomic<U64> _tickInterval;
-    mutable std::atomic<I32> _numberOfTicks;
-    mutable std::atomic<bool> _end;
-    mutable std::atomic<bool> _paused;
-    mutable std::atomic<bool> _done;
+    mutable std::atomic_int _numberOfTicks;
+    mutable std::atomic_bool _end;
+    mutable std::atomic_bool _paused;
+    mutable std::atomic_bool _done;
     DELEGATE_CBK<> _callback;
-    boost::threadpool::pool* _tp;
-    SendCompleted _completionSignal;
+    DELEGATE_CBK_PARAM<const I64> _onCompletionCbk;
+    ThreadPool& _tp;
 
    protected:
     void run();

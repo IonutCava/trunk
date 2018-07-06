@@ -87,7 +87,6 @@ DEFINE_SINGLETON(ResourceCache)
 
     typedef hashMapImpl<stringImpl, Resource*> ResourceMap;
     ResourceMap _resDB;
-    // boost::threadpool::pool* _loadingPool;
 
 END_SINGLETON
 

@@ -147,9 +147,7 @@ Material::TextureOperation getTextureOperation(const char *operation) {
 void saveTextureXML(const std::string &textureNode, Texture *texture,
                     ptree &tree, const std::string &operation = "") {
     const SamplerDescriptor &sampler = texture->getCurrentSampler();
-    while (texture->getState() != ResourceState::RES_LOADED) {
-        // texture not fully loaded yet
-    }
+    WAIT_FOR_CONDITION(texture->getState() == ResourceState::RES_LOADED);
 
     tree.put(textureNode + ".file",
              stringAlg::fromBase(texture->getResourceLocation()));

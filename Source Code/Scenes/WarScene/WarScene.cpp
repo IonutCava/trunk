@@ -48,6 +48,8 @@ WarScene::WarScene()
         _flag[i] = nullptr;
         _faction[i] = nullptr;
     }
+
+    _resetUnits = false;
 }
 
 WarScene::~WarScene()
@@ -130,16 +132,18 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     if (!_sceneReady) {
         return;
     }
-    static U64 totalTime = 0;
 
-    totalTime += deltaTime;
-
+    if (_resetUnits) {
+        resetUnits();
+        _resetUnits = false;
+    }
 #ifdef _DEBUG
     if (!AI::AIManager::getInstance().getNavMesh(
             _army[0][0]->getAgentRadiusCategory())) {
         return;
     }
 
+    _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)].clear();
     _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)].resize(_army[0].size() +
                                                _army[1].size());
     // renderState().drawDebugLines(true);

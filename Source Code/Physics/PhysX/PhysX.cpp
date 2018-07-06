@@ -247,10 +247,7 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
     PhysXSceneInterface* targetScene =
         dynamic_cast<PhysXSceneInterface*>(_targetScene);
-    PhysicsComponent* nodePhysics =
-        sNode->getObjectType() == Object3D::ObjectType::SUBMESH
-            ? node.getParent()->getComponent<PhysicsComponent>()
-            : node.getComponent<PhysicsComponent>();
+    PhysicsComponent* nodePhysics = node.getComponent<PhysicsComponent>();
 
     PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName());
     assert(tempActor != nullptr);
@@ -298,7 +295,7 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         return;
     }
 
-    const vec3<F32>& scale = tempActor->getComponent()->getScale();
+    const vec3<F32>& scale = tempActor->getParent()->getScale();
     physx::PxTriangleMeshGeometry triangleGeometry(
         triangleMesh,
         physx::PxMeshScale(physx::PxVec3(scale.x, scale.y, scale.z), 

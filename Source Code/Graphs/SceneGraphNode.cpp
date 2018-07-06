@@ -263,16 +263,19 @@ void SceneGraphNode::setSelected(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     _wasActive = _active;
     _active = state;
+    for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
+        if (_components[i]) {
+            _components[i]->setActive(state);
+        }
+    }
+
     for (NodeChildren::value_type& it : _children) {
         it.second->setActive(state);
     }
 }
 
 void SceneGraphNode::restoreActive() { 
-    _active = _wasActive;
-     for (NodeChildren::value_type& it : _children) {
-        it.second->restoreActive();
-    }
+    setActive(_wasActive);
 }
 
 bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {

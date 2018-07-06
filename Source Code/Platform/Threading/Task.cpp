@@ -1,5 +1,6 @@
 #include "Headers/Task.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ApplicationTimer.h"
@@ -9,29 +10,31 @@
 #include <thread>
 
 namespace Divide {
-Task::Task(boost::threadpool::pool* tp, U64 tickInterval, I32 numberOfTicks,
+Task::Task(ThreadPool& tp, U64 tickInterval, I32 numberOfTicks,
            const DELEGATE_CBK<>& f)
     : GUIDWrapper(),
       _tp(tp),
       _tickInterval(tickInterval),
-      _numberOfTicks(numberOfTicks),
-      _callback(f),
-      _end(false),
-      _paused(false),
-      _done(false) {}
+      _callback(f)
+{
+    _numberOfTicks = numberOfTicks;
+    _end = false;
+    _paused = false;
+    _done = false;
+}
 
-Task::~Task() {
+Task::~Task()
+{
     if (_end != true) {
         Console::errorfn(Locale::get("TASK_DELETE_ACTIVE"));
         stopTask();
     }
-    while (!_done) {
-    }
+
+    WAIT_FOR_CONDITION(_done);
 }
 
-void Task::startTask() {
-    DIVIDE_ASSERT(_tp != nullptr, "Task error: ThreadPool pointer is invalid!");
-    if (!_tp->schedule(DELEGATE_BIND(&Task::run, this))) {
+void Task::startTask(TaskPriority priority) {
+    if (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
         Console::errorfn(Locale::get("TASK_SCHEDULE_FAIL"));
     }
 }
@@ -80,7 +83,10 @@ void Task::run() {
     Console::d_printfn(Locale::get("TASK_DELETE_THREAD"),
                        std::this_thread::get_id());
 
-    _completionSignal(getGUID());
+    if (_onCompletionCbk) {
+        _onCompletionCbk(getGUID());
+    }
+
     _done = true;
 }
 };

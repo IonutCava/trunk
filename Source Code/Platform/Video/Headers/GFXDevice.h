@@ -202,7 +202,16 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void debugDraw(const SceneRenderState& sceneRenderState);
     IMPrimitive& drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
                            const vec4<U8>& color, F32 lineWidth);
+    IMPrimitive& drawBox3D(IMPrimitive& primitive,
+                           const vec3<F32>& min, const vec3<F32>& max,
+                           const vec4<U8>& color, F32 lineWidth);
     IMPrimitive& drawLines(const vectorImpl<Line>& lines, F32 lineWidth,
+                           const mat4<F32>& globalOffset,
+                           const vec4<I32>& viewport,  //<only for ortho mode
+                           const bool inViewport = false,
+                           const bool disableDepth = false);
+    IMPrimitive& drawLines(IMPrimitive& primitive,
+                           const vectorImpl<Line>& lines, F32 lineWidth,
                            const mat4<F32>& globalOffset,
                            const vec4<I32>& viewport,  //<only for ortho mode
                            const bool inViewport = false,
@@ -475,7 +484,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     ErrorCode createAPIInstance();
 
     void processVisibleNode(const RenderPassCuller::RenderableNode& node,
-                            U32 drawID,
                             NodeData& dataOut);
 
   private:

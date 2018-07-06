@@ -14,12 +14,19 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
       _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
       _transformUpdated(true),
       _physicsAsset(nullptr),
-      _transform(nullptr) {
+      _transform(nullptr)
+{
     _transform = MemoryManager_NEW Transform();
     reset();
 }
 
-PhysicsComponent::~PhysicsComponent() { MemoryManager::DELETE(_transform); }
+PhysicsComponent::~PhysicsComponent()
+{
+    if (_physicsAsset != nullptr) {
+        _physicsAsset->setParent(nullptr);
+    }
+    MemoryManager::DELETE(_transform);
+}
 
 void PhysicsComponent::reset() {
     _worldMatrix.identity();
@@ -41,16 +48,6 @@ void PhysicsComponent::useDefaultTransform(const bool state) {
     } else if (!state && _transform) {
         MemoryManager::DELETE(_transform);
         reset();
-    }
-}
-
-void PhysicsComponent::physicsAsset(PhysicsAsset* const asset) {
-    DIVIDE_ASSERT(_physicsAsset == nullptr,
-                  "PhysicsComponent error: Double set physics asset detected! "
-                  "remove the previous one first!");
-    _physicsAsset = asset;
-    if (_physicsAsset) {
-        _physicsAsset->setParent(this);
     }
 }
 
@@ -325,6 +322,7 @@ void PhysicsComponent::popTransforms() {
     assert(!_transformStack.empty());
     if (_transform) {
         _transform->setValues(_transformStack.top());
+        _prevTransformValues = _transform->getValues();
         _transformStack.pop();
         setTransformDirty();
     }

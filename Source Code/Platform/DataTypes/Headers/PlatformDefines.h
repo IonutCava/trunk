@@ -236,6 +236,8 @@ inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff,
 
 #define ACKNOWLEDGE_UNUSED(p) ((void)p)
 
+#define WAIT_FOR_CONDITION(p) {while (!(p)) {}}
+
 static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 

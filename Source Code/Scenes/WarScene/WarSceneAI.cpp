@@ -13,6 +13,10 @@ namespace {
     static std::atomic_bool g_navMeshStarted;
 };
 
+void WarScene::registerPoint(U8 teamID) {
+    _resetUnits = true;
+}
+
 bool WarScene::initializeAI(bool continueOnErrors) {
     //------------------------Artificial Intelligence------------------------//
     // Create 2 AI teams
@@ -23,6 +27,50 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
     _faction[1]->addEnemyTeam(_faction[0]->getTeamID());
 
+    bool state = addUnits();
+    if (state || continueOnErrors) {
+        Scene::initializeAI(continueOnErrors);
+    }
+
+    SceneGraphNode* lightNode = _sceneGraph.findNode("Soldier1");
+    SceneGraphNode* animalNode = _sceneGraph.findNode("Soldier2");
+    SceneGraphNode* heavyNode = _sceneGraph.findNode("Soldier3");
+    lightNode->setActive(false);
+    animalNode->setActive(false);
+    heavyNode->setActive(false);
+
+    return state;
+}
+
+bool WarScene::removeUnits(bool removeNodesOnCall) {
+    WAIT_FOR_CONDITION(!AI::AIManager::getInstance().updating());
+
+    for (U8 i = 0; i < 2; ++i) {
+        if (removeNodesOnCall) {
+            for (NPC* npc : _armyNPCs[i]) {
+                SceneGraphNode* node = npc->getBoundNode();
+                _sceneGraph.getRoot().deleteNode(node);
+            }
+        } else {
+            for (NPC* npc : _armyNPCs[i]) {
+                _sceneGraph.addToDeletionQueue(npc->getBoundNode());
+            }
+        }
+    }
+
+    for (U8 i = 0; i < 2; ++i) {
+        for (AI::AIEntity* const entity : _army[i]) {
+            AI::AIManager::getInstance().unregisterEntity(entity);
+        }
+
+        MemoryManager::DELETE_VECTOR(_army[i]);
+        MemoryManager::DELETE_VECTOR(_armyNPCs[i]);
+    }
+
+    return true;
+}
+
+bool WarScene::addUnits() {
     SceneGraphNode* lightNode = _sceneGraph.findNode("Soldier1");
     SceneGraphNode* animalNode = _sceneGraph.findNode("Soldier2");
     SceneGraphNode* heavyNode = _sceneGraph.findNode("Soldier3");
@@ -220,7 +268,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);
             soldier->setAttribute(to_uint(AI::UnitAttributes::ALIVE_FLAG), 1);
-            
+            soldier->setMovementSpeed(speed);
+
             _army[k].push_back(aiSoldier);
             _armyNPCs[k].push_back(soldier);
             
@@ -233,36 +282,30 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             AI::AIManager::getInstance().registerEntity(i, _army[i][j]);
         }
     }
-    bool state = !(_army[0].empty() || _army[1].empty());
 
-    if (state || continueOnErrors) {
-        Scene::initializeAI(continueOnErrors);
+    return !(_army[0].empty() || _army[1].empty());
+}
+
+bool WarScene::resetUnits() {
+    AI::AIManager::getInstance().pauseUpdate(true);
+    bool state = false;
+    if (removeUnits(true)) {
+       state = addUnits();
     }
-
-    _sceneGraph.getRoot().deleteNode(lightNode);
-    _sceneGraph.getRoot().deleteNode(animalNode);
-    _sceneGraph.getRoot().deleteNode(heavyNode);
-
+    AI::AIManager::getInstance().pauseUpdate(false);
     return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors) {
     AI::AIManager::getInstance().pauseUpdate(true);
-
-    while (AI::AIManager::getInstance().updating()) {
-    }
-
-    for (U8 i = 0; i < 2; ++i) {
-        for (AI::AIEntity* const entity : _army[i]) {
-            AI::AIManager::getInstance().unregisterEntity(entity);
+    if (removeUnits(true)) {
+        for (U8 i = 0; i < 2; ++i) {
+            MemoryManager::DELETE(_faction[i]);
         }
-
-        MemoryManager::DELETE_VECTOR(_army[i]);
-        MemoryManager::DELETE_VECTOR(_armyNPCs[i]);
-        MemoryManager::DELETE(_faction[i]);
+        return Scene::deinitializeAI(continueOnErrors);
     }
 
-    return Scene::deinitializeAI(continueOnErrors);
+    return false;
 }
 
 void WarScene::startSimulation() {
@@ -350,6 +393,7 @@ void WarScene::startSimulation() {
         _infoBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_WARNING);
         _infoBox->show();
     }
+
     AI::AIManager::getInstance().pauseUpdate(false);
 }
 

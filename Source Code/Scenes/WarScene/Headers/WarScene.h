@@ -58,17 +58,22 @@ class WarScene : public Scene {
     void processGUI(const U64 deltaTime);
     void updateSceneStateInternal(const U64 deltaTime);
 
+    void registerPoint(U8 teamID);
+
    private:
     void startSimulation();
     void toggleCamera();
+    bool removeUnits(bool removeNodesOnCall);
+    bool addUnits();
+    bool resetUnits();
 
    private:
-    I8 _score;
     DirectionalLight* _sun;
     GUIMessageBox* _infoBox;
 
    private:  // Game
     bool _sceneReady;
+    bool _resetUnits;
     U64 _lastNavMeshBuildTime;
     /// AIEntities are the "processors" behing the NPC's
     vectorImpl<AI::AIEntity*> _army[2];

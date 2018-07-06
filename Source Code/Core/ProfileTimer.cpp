@@ -5,8 +5,14 @@
 namespace Divide {
 namespace Time {
 
-ProfileTimer::~ProfileTimer() {
-    ApplicationTimer::getInstance().removeTimer(this);
+ScopedTimer::ScopedTimer(ProfileTimer& timer) : _timer(timer)
+{
+    _timer.start();
+}
+
+ScopedTimer::~ScopedTimer()
+{
+    _timer.stop();
 }
 
 ProfileTimer::ProfileTimer() {
@@ -17,6 +23,11 @@ ProfileTimer::ProfileTimer() {
     _timerAverage = 0.0;
     _timerCounter = 0;
 #endif
+}
+
+ProfileTimer::~ProfileTimer()
+{
+    ApplicationTimer::getInstance().removeTimer(this);
 }
 
 void ProfileTimer::reset() {

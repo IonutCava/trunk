@@ -38,7 +38,6 @@
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include <deque>
-#include <boost/lockfree/queue.hpp>
 #include <boost/circular_buffer.hpp>
 
 /// Maximum number of lines to display in the console Window

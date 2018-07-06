@@ -3,9 +3,9 @@
 
 #include "WorldPacket.h"
 
-#include <boost/bind.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <deque>
 #include <set>
 

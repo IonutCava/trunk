@@ -34,9 +34,8 @@ bool Kernel::_freezeLoopTime = false;
 bool Kernel::_freezeGUITime = false;
 Time::ProfileTimer* s_appLoopTimer = nullptr;
 
-SharedLock Kernel::_threadedCallbackLock;
-vectorImpl<U64> Kernel::_threadedCallbackBuffer;
-hashMapImpl<U64, DELEGATE_CBK<> > Kernel::_threadedCallbackFunctions;
+boost::lockfree::queue<I64> Kernel::_threadedCallbackBuffer(32);
+Kernel::CallbackFunctions Kernel::_threadedCallbackFunctions;
 
 Util::GraphPlot2D Kernel::_appTimeGraph("APP_TIME_GRAPH");
 
@@ -70,37 +69,34 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     // That's up to the programmer to decide for each app.
     // We add the A.I. thread in the same pool as it's a task. 
     // ReCast should also use this thread.
-    _mainTaskPool =
-        MemoryManager_NEW boost::threadpool::pool(HARDWARE_THREAD_COUNT() + 1);
+    _mainTaskPool.size_controller().resize(HARDWARE_THREAD_COUNT() + 1);
 
-    ParamHandler::getInstance().setParam<stringImpl>("language",
-                                                     Locale::currentLanguage());
+    ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
 
     s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
 }
 
 Kernel::~Kernel()
 {
-    MemoryManager::DELETE(_mainTaskPool);
+    _mainTaskPool.clear();
 }
 
-void Kernel::threadPoolCompleted(U64 onExitTaskID) {
-    WriteLock w_lock(_threadedCallbackLock);
-    _threadedCallbackBuffer.push_back(onExitTaskID);
+void Kernel::threadPoolCompleted(I64 onExitTaskID) {
+    WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(onExitTaskID));
 }
 
-Task* Kernel::AddTask(U64 tickInterval, I32 numberOfTicks,
+Task_ptr Kernel::AddTask(U64 tickInterval, I32 numberOfTicks,
                       const DELEGATE_CBK<>& threadedFunction,
                       const DELEGATE_CBK<>& onCompletionFunction) {
-    Task* taskPtr = MemoryManager_NEW Task(getThreadPool(), tickInterval,
-                                           numberOfTicks, threadedFunction);
-    taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this,
-                                   std::placeholders::_1));
+    Task_ptr taskPtr(MemoryManager_NEW Task(_mainTaskPool, tickInterval,
+                                            numberOfTicks, threadedFunction));
+    taskPtr->onCompletionCbk(DELEGATE_BIND(&Kernel::threadPoolCompleted, this,
+                                           std::placeholders::_1));
     if (onCompletionFunction) {
-        emplace(_threadedCallbackFunctions,
-                static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
+        hashAlg::emplace(_threadedCallbackFunctions,
+                taskPtr->getGUID(), onCompletionFunction);
     }
-
+    _tasks.push_back(taskPtr);
     return taskPtr;
 }
 
@@ -127,15 +123,13 @@ void Kernel::idle() {
         Locale::changeLanguage(pendingLanguage);
     }
 
-    UpgradableReadLock ur_lock(_threadedCallbackLock);
-    if (!_threadedCallbackBuffer.empty()) {
-        UpgradeToWriteLock uw_lock(ur_lock);
-        const DELEGATE_CBK<>& cbk =
-            _threadedCallbackFunctions[_threadedCallbackBuffer.back()];
-        if (cbk) {
-            cbk();
+    I64 taskGUID = -1;
+    if (_threadedCallbackBuffer.pop(taskGUID)) {
+        CallbackFunctions::const_iterator it = _threadedCallbackFunctions.find(taskGUID);
+        assert(it != std::end(_threadedCallbackFunctions));
+        if (it->second) {
+            it->second();
         }
-        _threadedCallbackBuffer.pop_back();
     }
 }
 
@@ -150,7 +144,7 @@ void Kernel::mainLoopApp() {
     // Update internal timer
     Time::ApplicationTimer::getInstance().update(GFX_DEVICE.getFrameCount());
 
-    Time::START_TIMER(s_appLoopTimer);
+    Time::START_TIMER(*s_appLoopTimer);
 
     // Update time at every render loop
     _previousTime = _currentTime;
@@ -190,7 +184,7 @@ void Kernel::mainLoopApp() {
         Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
         _keepAlive = false;
     }
-    Time::STOP_TIMER(s_appLoopTimer);
+    Time::STOP_TIMER(*s_appLoopTimer);
 
 #if defined(_DEBUG) || defined(_PROFILE)
     if (GFX_DEVICE.getFrameCount() % Config::TARGET_FRAME_RATE == 0) {
@@ -217,6 +211,11 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
         idle();
         return true;
     }
+
+    _tasks.erase(std::remove_if(std::begin(_tasks), std::end(_tasks),
+                                [](const Task_ptr& task)
+                                    -> bool { return task->isFinished(); }),
+                 std::end(_tasks));
 
     // Process physics
     _PFX.process(_freezeLoopTime ? 0ULL : _currentTimeDelta);
@@ -553,7 +552,7 @@ void Kernel::shutdown() {
     Console::printfn(Locale::get("STOP_HARDWARE"));
     _SFX.closeAudioAPI();
     _GFX.closeRenderingAPI();
-    _mainTaskPool->wait();
+    _mainTaskPool.wait();
     Input::InputInterface::destroyInstance();
     SFXDevice::destroyInstance();
     GFXDevice::destroyInstance();
@@ -562,9 +561,9 @@ void Kernel::shutdown() {
     ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
         
-    _mainTaskPool->clear();
-    while (_mainTaskPool->active() > 0) {
-    }
+    _mainTaskPool.clear();
+    WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
+    
     Time::REMOVE_TIMER(s_appLoopTimer);
 }
 

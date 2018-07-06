@@ -130,10 +130,10 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     setMaterialTpl(vegMaterial);
 
     Kernel& kernel = Application::getInstance().getKernel();
-    _generateVegetation.reset(
+    _generateVegetation =
         kernel.AddTask(0, 1, DELEGATE_BIND(&Vegetation::generateGrass, this),
-                       DELEGATE_BIND(&Vegetation::uploadGrassData, this)));
-    _generateVegetation->startTask();
+                       DELEGATE_BIND(&Vegetation::uploadGrassData, this));
+    _generateVegetation->startTask(Task::TaskPriority::LOW);
     setState(ResourceState::RES_LOADED);
 }
 

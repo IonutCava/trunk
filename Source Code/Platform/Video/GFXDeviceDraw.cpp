@@ -206,7 +206,6 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 
 /// Prepare the list of visible nodes for rendering
 void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
-                                   U32 drawID,
                                    NodeData& dataOut) {
 
     RenderingComponent* const renderable =
@@ -253,56 +252,58 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                                   SceneRenderState& sceneRenderState,
                                   bool refreshNodeData) {
+    Time::ScopedTimer timer(*_commandBuildTimer);
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
     if (visibleNodes.empty()) {
         return;
     }
 
-    Time::START_TIMER(_commandBuildTimer);
-
     if (refreshNodeData) {
         // Pass the list of nodes to the renderer for a pre-render pass
         getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
-        // Generate and upload all lighting data
-        LightManager::getInstance().updateAndUploadLightData(
-                _gpuBlock._ViewMatrix);
     }
 
     vectorAlg::vecSize nodeCount = visibleNodes.size();
     _renderQueue.reserve(nodeCount);
 
-    _lastCmdCount = 0;
-    _lastNodeCount = 1;
-    _drawCommandsCache[_lastCmdCount++].set(_defaultDrawCmd.cmd());
+    U32 lastCmdCount = 1;
+    U32 lastNodeCount = 1;
+    _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
 
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
-    for (VisibleNodeList::value_type& node : visibleNodes) {
-        vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            Attorney::RenderingCompGFXDevice::getDrawCommands(
-                *node._visibleNode->getComponent<RenderingComponent>(),
-                sceneRenderState, currentStage);
+    std::for_each(
+        std::begin(visibleNodes), std::end(visibleNodes),
+        [&](VisibleNodeList::value_type& node) -> void {
 
-        if (!nodeDrawCommands.empty()) {
-            for (GenericDrawCommand& cmd : nodeDrawCommands) {
-                cmd.drawID(to_uint(_lastNodeCount));
-                cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
-                // Extract the specific rendering commands from the draw commands
-                // Rendering commands are stored in GPU memory. Draw commands are not.
-                _drawCommandsCache[_lastCmdCount++].set(cmd.cmd());
+            vectorImpl<GenericDrawCommand>& nodeDrawCommands =
+                Attorney::RenderingCompGFXDevice::getDrawCommands(
+                    *node._visibleNode->getComponent<RenderingComponent>(),
+                    sceneRenderState, currentStage);
+
+            if (!nodeDrawCommands.empty()) {
+                for (GenericDrawCommand& cmd : nodeDrawCommands) {
+                    cmd.drawID(lastNodeCount);
+                    cmd.renderWireframe(cmd.renderWireframe() ||
+                                        sceneRenderState.drawWireframe());
+                    // Extract the specific rendering commands from the draw
+                    // commands
+                    // Rendering commands are stored in GPU memory. Draw
+                    // commands are not.
+                    _drawCommandsCache[lastCmdCount++].set(cmd.cmd());
+                }
+                if (refreshNodeData) {
+                    processVisibleNode(node, _matricesData[lastNodeCount]);
+                }
+
+                lastNodeCount += 1;
             }
+        });
 
-            if (refreshNodeData) {
-               processVisibleNode(node, to_uint(_lastNodeCount), _matricesData[_lastNodeCount]);
-            }
-            _lastNodeCount += 1;
-        }
-    }
-
+    _lastCmdCount = lastCmdCount;
+    _lastNodeCount = lastNodeCount;
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
-
-    Time::STOP_TIMER(_commandBuildTimer);
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
@@ -365,93 +366,113 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
     }
 }
 
-/// Draw the outlines of a box defined by min and max as extents using the
-/// specified world matrix
-IMPrimitive& GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
-                                  const vec4<U8>& color, F32 lineWidth) {
+IMPrimitive& GFXDevice::drawBox3D(const vec3<F32>& min,
+                                  const vec3<F32>& max,
+                                  const vec4<U8>& color,
+                                  F32 lineWidth) {
     // Grab an available primitive
     IMPrimitive* priv = getOrCreatePrimitive();
-    // Prepare it for rendering lines
-    priv->_hasLines = true;
-    priv->_lineWidth = lineWidth;
-    priv->stateHash(_defaultStateBlockHash);
-    // Create the object
-    priv->beginBatch(true, 16);
-    // Set it's color
-    priv->attribute4ub("inColorData", color);
-    // Draw the bottom loop
-    priv->begin(PrimitiveType::LINE_LOOP);
-    priv->vertex(min.x, min.y, min.z);
-    priv->vertex(max.x, min.y, min.z);
-    priv->vertex(max.x, min.y, max.z);
-    priv->vertex(min.x, min.y, max.z);
-    priv->end();
-    // Draw the top loop
-    priv->begin(PrimitiveType::LINE_LOOP);
-    priv->vertex(min.x, max.y, min.z);
-    priv->vertex(max.x, max.y, min.z);
-    priv->vertex(max.x, max.y, max.z);
-    priv->vertex(min.x, max.y, max.z);
-    priv->end();
-    // Connect the top to the bottom
-    priv->begin(PrimitiveType::LINES);
-    priv->vertex(min.x, min.y, min.z);
-    priv->vertex(min.x, max.y, min.z);
-    priv->vertex(max.x, min.y, min.z);
-    priv->vertex(max.x, max.y, min.z);
-    priv->vertex(max.x, min.y, max.z);
-    priv->vertex(max.x, max.y, max.z);
-    priv->vertex(min.x, min.y, max.z);
-    priv->vertex(min.x, max.y, max.z);
-    priv->end();
-    // Finish our object
-    priv->endBatch();
-
-    return *priv;
+    return drawBox3D(*priv, min, max, color, lineWidth);
 }
 
-/// Render a list of lines within the specified constraints
-IMPrimitive& GFXDevice::drawLines(const vectorImpl<Line>& lines, F32 lineWidth,
+/// Draw the outlines of a box defined by min and max as extents using the
+/// specified world matrix
+IMPrimitive& GFXDevice::drawBox3D(IMPrimitive& primitive,
+                                  const vec3<F32>& min, const vec3<F32>& max,
+                                  const vec4<U8>& color, F32 lineWidth) {
+    // Prepare it for rendering lines
+    primitive._hasLines = true;
+    primitive._lineWidth = lineWidth;
+    primitive.stateHash(_defaultStateBlockHash);
+    // Create the object
+    primitive.beginBatch(true, 16);
+    // Set it's color
+    primitive.attribute4ub("inColorData", color);
+    // Draw the bottom loop
+    primitive.begin(PrimitiveType::LINE_LOOP);
+    primitive.vertex(min.x, min.y, min.z);
+    primitive.vertex(max.x, min.y, min.z);
+    primitive.vertex(max.x, min.y, max.z);
+    primitive.vertex(min.x, min.y, max.z);
+    primitive.end();
+    // Draw the top loop
+    primitive.begin(PrimitiveType::LINE_LOOP);
+    primitive.vertex(min.x, max.y, min.z);
+    primitive.vertex(max.x, max.y, min.z);
+    primitive.vertex(max.x, max.y, max.z);
+    primitive.vertex(min.x, max.y, max.z);
+    primitive.end();
+    // Connect the top to the bottom
+    primitive.begin(PrimitiveType::LINES);
+    primitive.vertex(min.x, min.y, min.z);
+    primitive.vertex(min.x, max.y, min.z);
+    primitive.vertex(max.x, min.y, min.z);
+    primitive.vertex(max.x, max.y, min.z);
+    primitive.vertex(max.x, min.y, max.z);
+    primitive.vertex(max.x, max.y, max.z);
+    primitive.vertex(min.x, min.y, max.z);
+    primitive.vertex(min.x, max.y, max.z);
+    primitive.end();
+    // Finish our object
+    primitive.endBatch();
+
+    return primitive;
+}
+
+IMPrimitive& GFXDevice::drawLines(const vectorImpl<Line>& lines,
+                                  F32 lineWidth,
                                   const mat4<F32>& globalOffset,
                                   const vec4<I32>& viewport,
                                   const bool inViewport,
                                   const bool disableDepth) {
     // Grab an available primitive
     IMPrimitive* priv = getOrCreatePrimitive();
+    return drawLines(*priv, lines, lineWidth, globalOffset, viewport, inViewport,
+                     disableDepth);
+}
+
+/// Render a list of lines within the specified constraints
+IMPrimitive& GFXDevice::drawLines(IMPrimitive& primitive,
+                                  const vectorImpl<Line>& lines, F32 lineWidth,
+                                  const mat4<F32>& globalOffset,
+                                  const vec4<I32>& viewport,
+                                  const bool inViewport,
+                                  const bool disableDepth) {
+
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (!lines.empty()) {
         // Prepare it for line rendering
-        priv->_hasLines = true;
-        priv->_lineWidth = lineWidth;
-        priv->stateHash(getDefaultStateBlock(disableDepth));
+        primitive._hasLines = true;
+        primitive._lineWidth = lineWidth;
+        primitive.stateHash(getDefaultStateBlock(disableDepth));
         // Set the world matrix
-        priv->worldMatrix(globalOffset);
+        primitive.worldMatrix(globalOffset);
         // If we need to render it into a specific viewport, set the pre and post
         // draw functions to set up the
         // needed viewport rendering (e.g. axis lines)
         if (inViewport) {
-            priv->setRenderStates(
+            primitive.setRenderStates(
                 DELEGATE_BIND(&GFXDevice::setViewport, this, viewport),
                 DELEGATE_BIND(&GFXDevice::restoreViewport, this));
         }
         // Create the object containing all of the lines
-        priv->beginBatch(true, to_uint(lines.size()) * 2);
-        priv->attribute4ub("inColorData", lines[0]._color);
+        primitive.beginBatch(true, to_uint(lines.size()) * 2);
+        primitive.attribute4ub("inColorData", lines[0]._color);
         // Set the mode to line rendering
-        priv->begin(PrimitiveType::LINES);
+        primitive.begin(PrimitiveType::LINES);
         // Add every line in the list to the batch
         for (const Line& line : lines) {
-            priv->attribute4ub("inColorData", line._color);
-            priv->vertex(line._startPoint);
-            priv->vertex(line._endPoint);
+            primitive.attribute4ub("inColorData", line._color);
+            primitive.vertex(line._startPoint);
+            primitive.vertex(line._endPoint);
         }
-        priv->end();
+        primitive.end();
         // Finish our object
-        priv->endBatch();
+        primitive.endBatch();
     }
 
-    return *priv;
+    return primitive;
 }
 
 };

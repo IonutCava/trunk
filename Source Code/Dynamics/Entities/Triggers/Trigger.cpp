@@ -81,7 +81,7 @@ bool Trigger::trigger() {
     if (!_triggeredTask) {
         return false;
     }
-    _triggeredTask.get()->startTask();
+    _triggeredTask.get()->startTask(Task::TaskPriority::HIGH);
     return true;
 }
 };

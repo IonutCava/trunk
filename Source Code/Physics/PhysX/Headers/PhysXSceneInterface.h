@@ -64,9 +64,8 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
    protected:
     void updateActor(PhysXActor& actor);
     void updateShape(physx::PxShape* const shape, PhysXActor& actor);
-    /// Adds the actor to the PhysX scene and the SceneGraph.
-    // outNode becomes pointer to the new SceneGraph node created;
-    void addToScene(PhysXActor& actor, SceneGraphNode* outNode);
+    /// Adds the actor to the PhysX scene
+    void addToScene(PhysXActor& actor);
 
    private:
     typedef vectorImpl<PhysXActor*> RigidMap;

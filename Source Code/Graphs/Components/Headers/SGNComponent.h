@@ -65,6 +65,8 @@ class SGNComponent : private NonCopyable {
     inline ComponentType getType() const { return _type; }
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
 
+    virtual void setActive(const bool state) {}
+    
    protected:
     /// The current instance using this component
     U32 _instanceID;

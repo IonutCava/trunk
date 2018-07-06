@@ -162,7 +162,8 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
             GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state(),
             cullingFunction);
 
-    if (!nodes._locked) {
+    bool refreshNodeData = !nodes._locked;
+    if (refreshNodeData) {
         queue.refresh();
         vec3<F32> eyePos(_activeScene->renderState().getCameraConst().getEye());
         for (RenderPassCuller::RenderableNode& node : nodes._visibleNodes) {
@@ -172,11 +173,15 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         sortVisibleNodes(nodes);
 
         nodes = _renderPassCuller->occlusionCull(nodes);
+
+        // Generate and upload all lighting data
+        LightManager::getInstance().updateAndUploadLightData(
+            GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
     }
 
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
-                                 !nodes._locked);
+                                refreshNodeData);
 }
 
 void SceneManager::renderVisibleNodes(bool flushCache) {

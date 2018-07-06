@@ -37,6 +37,8 @@
 #include "Platform/Threading/Headers/Task.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
+#include <boost/lockfree/queue.hpp>
+
 namespace Divide {
 
 class Scene;
@@ -59,7 +61,7 @@ class GUI;
 namespace Attorney {
     class KernelScene;
 };
-
+    
 /// The kernel is the main interface to our engine components:
 ///-video
 ///-audio
@@ -94,13 +96,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// Get elapsed time since kernel initialization
     inline U64 getCurrentTime() const { return _currentTime; }
     inline U64 getCurrentTimeDelta() const { return _currentTimeDelta; }
-    /// Get a pointer to the kernel's threadpool to add,remove,pause or stop
-    /// tasks
-    inline boost::threadpool::pool* const getThreadPool() {
-        assert(_mainTaskPool != nullptr);
-        return _mainTaskPool;
-    }
-
+    
     CameraManager& getCameraMgr() { return *_cameraMgr; }
 
     bool setCursorPosition(U16 x, U16 y) const;
@@ -136,7 +132,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
      * before the Task is deleted. 0 = run forever
      * @param onCompletionFunction The callback function to call when the thread finishes
      */
-    Task* AddTask(
+    Task_ptr AddTask(
         U64 tickInterval, I32 numberOfTicks,
         const DELEGATE_CBK<>& threadedFunction,
         const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
@@ -148,7 +144,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void renderSceneAnaglyph();
     bool mainLoopScene(FrameEvent& evt);
     bool presentToScreen(FrameEvent& evt);
-    void threadPoolCompleted(U64 onExitTaskID);
+    void threadPoolCompleted(I64 onExitTaskID);
 
    private:
     void submitRenderCall(RenderStage stage,
@@ -176,7 +172,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     static bool _renderingPaused;
     static bool _freezeLoopTime;
     static bool _freezeGUITime;
-    boost::threadpool::pool* _mainTaskPool;
+    ThreadPool _mainTaskPool;
     // both are in ms
     static U64 _currentTime;
     static U64 _currentTimeFrozen;
@@ -184,11 +180,14 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     static U64 _previousTime;
     static D32 _nextGameTick;
 
-    static SharedLock _threadedCallbackLock;
-    static vectorImpl<U64> _threadedCallbackBuffer;
-    static hashMapImpl<U64, DELEGATE_CBK<> > _threadedCallbackFunctions;
+    typedef hashMapImpl<I64, DELEGATE_CBK<> > CallbackFunctions;
+
+    static boost::lockfree::queue<I64> _threadedCallbackBuffer;
+    static CallbackFunctions _threadedCallbackFunctions;
 
     static Util::GraphPlot2D _appTimeGraph;
+
+    vectorImpl<Task_ptr> _tasks;
     // Command line arguments
     I32 _argc;
     char** _argv;

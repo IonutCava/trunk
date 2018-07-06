@@ -1,4 +1,7 @@
 #include "Headers/WarSceneAISceneImpl.h"
+
+#include "Headers/WarScene.h"
+
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
 
@@ -96,28 +99,43 @@ bool WarSceneAISceneImpl::DIE() {
     if (_entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) == 0) {
         return false;
     }
+     
+    AITeam* const currentTeam = _entity->getTeam();
+    U8 ownTeamID = currentTeam->getTeamID();
+    U8 enemyTeamID = 1 - ownTeamID;
 
     _entity->getUnitRef()->setAttribute(to_uint(UnitAttributes::ALIVE_FLAG), 0);
-    U8 teamCount = _globalWorkingMemory._teamAliveCount[g_enemyTeamContainer].value();
-    _globalWorkingMemory._teamAliveCount[g_enemyTeamContainer].value(std::max(teamCount - 1, 0));
+    U8 teamCount = _globalWorkingMemory._teamAliveCount[ownTeamID].value();
+    _globalWorkingMemory._teamAliveCount[ownTeamID].value(std::max(teamCount - 1, 0));
 
-    AITeam* currentTeam = _entity->getTeam();
+    bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
+    if (hadFlag == true) {
+        _localWorkingMemory._hasEnemyFlag.value(false);
+        _globalWorkingMemory._flags[enemyTeamID].value()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
+        PhysicsComponent* pComp =
+            _globalWorkingMemory._flags[enemyTeamID]
+            .value()
+            ->getComponent<PhysicsComponent>();
+        pComp->popTransforms();
+        _globalWorkingMemory._flagCarriers[ownTeamID].value(nullptr);
+    }
+
     AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
-        _entity->sendMessage(member.second, AIMsg::HAVE_DIED, _entity);
+        _entity->sendMessage(member.second, AIMsg::HAVE_DIED, hadFlag);
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-        _entity->sendMessage(enemy.second, AIMsg::HAVE_DIED, _entity);
+        _entity->sendMessage(enemy.second, AIMsg::HAVE_DIED, hadFlag);
     }
 
     currentTeam->removeTeamMember(_entity);
 
     _entity->getUnitRef()->getBoundNode()->setActive(false);
-    _entity->getUnitRef()->getBoundNode()->getComponent<PhysicsComponent>()->scale(3);
+    
     return true;
 }
 
@@ -311,6 +329,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                      currentTeam->getTeamMembers()) {
                     _entity->sendMessage(member.second, AIMsg::HAVE_SCORED, _entity);
                 }
+                dynamic_cast<WarScene*>(GET_ACTIVE_SCENE())->registerPoint(ownTeamID);
             }
         } break;
         case ActionType::ACTION_CAPTURE_FLAG: {
@@ -346,7 +365,6 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
         } break;
         case ActionType::ACTION_RETURN_FLAG_TO_BASE: {
             PRINT("Return flag to base action over");
-          
         } break;
         case ActionType::ACTION_ATTACK_ENEMY: {
             PRINT("Attack enemy action over");
@@ -397,11 +415,14 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
         case ActionType::ACTION_IDLE: {
             state = true;
         } break;
-        case ActionType::ACTION_SCORE_FLAG:
+        case ActionType::ACTION_SCORE_FLAG: {
             if (_localWorkingMemory._enemyHasFlag.value()) {
                 invalidateCurrentPlan();
                 return false;
             }
+            state = _entity->getPosition().distanceSquared(
+                _initialFlagPositions[ownTeamID]) < g_ATTACK_RADIUS_SQ;
+        } break;
         case ActionType::ACTION_RETURN_FLAG_TO_BASE: {
             state = _entity->getPosition().distanceSquared(
                 _initialFlagPositions[ownTeamID]) < g_ATTACK_RADIUS_SQ;
@@ -437,6 +458,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
 
 void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
                                          const cdiggins::any& msg_content) {
+
     switch (msg) {
         case AIMsg::HAVE_FLAG: {
             invalidateCurrentPlan();
@@ -455,6 +477,21 @@ void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
         } break;
 
         case AIMsg::HAVE_DIED: {
+            if (msg_content.constant_cast<bool>()) {
+                U8 senderTeamID = sender->getTeamID();
+                U8 ownTeamID = _entity->getTeamID();
+                if (ownTeamID == senderTeamID) {
+                    _localWorkingMemory._hasEnemyFlag.value(false);
+                    worldState().setVariable(AI::GOAPFact(Fact::HasEnemyFlag),
+                                             AI::GOAPValue(false));
+                } else{
+                    _localWorkingMemory._enemyHasFlag.value(false);
+                    worldState().setVariable(AI::GOAPFact(Fact::EnemyHasFlag),
+                                             AI::GOAPValue(false));
+                }
+                invalidateCurrentPlan();
+            }
+
              SceneGraphNode* node = sender->getUnitRef()->getBoundNode();
             _visualSensor->unfollowSceneGraphNode(g_myTeamContainer, node->getGUID());
             _visualSensor->unfollowSceneGraphNode(g_enemyTeamContainer, node->getGUID());
@@ -478,6 +515,15 @@ void WarSceneAISceneImpl::updatePositions() {
             _visualSensor->getNodePosition(
                 g_flagContainer,
                 _globalWorkingMemory._flags[1].value()->getGUID()));
+    }
+
+    if (_entity->getPosition().distanceSquared(
+        _initialFlagPositions[_entity->getTeamID()]) >= g_ATTACK_RADIUS_SQ) {
+        worldState().setVariable(GOAPFact(Fact::AtHomeFlagLoc), GOAPValue(false));
+    }
+    if (_entity->getPosition().distanceSquared(
+        _initialFlagPositions[1 - _entity->getTeamID()]) >= g_ATTACK_RADIUS_SQ) {
+        worldState().setVariable(GOAPFact(Fact::AtEnemyFlagLoc), GOAPValue(false));
     }
 }
 

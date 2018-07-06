@@ -21,10 +21,20 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _renderGeometry(true),
       _renderBoundingBox(false),
       _renderSkeleton(false),
-      _materialInstance(materialInstance) {
+      _materialInstance(materialInstance),
+      _skeletonPrimitive(nullptr)
+{
+    _nodeSkinned = parentSGN.getNode<Object3D>()->isSkinned();
     _renderData._textureData.reserve(ParamHandler::getInstance().getParam<I32>(
         "rendering.maxTextureSlots", 16));
 
+    _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingBoxPrimitive->name("BoundingBox_" + _parentSGN.getName());
+
+    if (_nodeSkinned) {
+        _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+        _skeletonPrimitive->name("Skeleton_" + _parentSGN.getName());
+    }
 #ifdef _DEBUG
     // Red X-axis
     _axisLines.push_back(
@@ -59,7 +69,12 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 #endif
 }
 
-RenderingComponent::~RenderingComponent() {
+RenderingComponent::~RenderingComponent()
+{
+    _boundingBoxPrimitive->_canZombify = true;
+    if (_skeletonPrimitive) {
+        _skeletonPrimitive->_canZombify = true;
+    }
 #ifdef _DEBUG
     _axisGizmo->_canZombify = true;
 #endif
@@ -76,14 +91,13 @@ void RenderingComponent::update(const U64 deltaTime) {
 
     
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-    bool skinned = _parentSGN.getNode<Object3D>()->isSkinned();
-
     // Continue only for skinned submeshes
-    if (type == Object3D::ObjectType::SUBMESH && skinned) {
+    if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
         StateTracker<bool>& parentStates =
             _parentSGN.getParent()->getTrackedBools();
         parentStates.setTrackedValue(
             StateTracker<bool>::State::SKELETON_RENDERED, false);
+        _skeletonPrimitive->paused(true);
     }
 }
 
@@ -235,23 +249,20 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
         }
     }
 #endif
+    
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
-        IMPrimitive& prim = GFX_DEVICE.drawBox3D(
-            bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255), 4.0f);
-        prim.name("BoundingBox_" + _parentSGN.getName());
-
+        GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive, bb.getMin(), bb.getMax(),
+                             vec4<U8>(0, 0, 255, 255), 4.0f);
         node->postDrawBoundingBox(_parentSGN);
     }
-
+    
     if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-        bool skinned = _parentSGN.getNode<Object3D>()->isSkinned();
-
         // Continue only for skinned submeshes
-        if (type == Object3D::ObjectType::SUBMESH && skinned) {
+        if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
             StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
             if (parentStates.getTrackedValue(
                 StateTracker<bool>::State::SKELETON_RENDERED) == false) {
@@ -261,11 +272,12 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                 // Get the skeleton lines from the submesh's animation component
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
                 // Submit the skeleton lines to the GPU for rendering
-                IMPrimitive& prim = GFX_DEVICE.drawLines(
-                    skeletonLines, 2.0f,
-                    _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix(),
+                _skeletonPrimitive->paused(false);
+                GFX_DEVICE.drawLines(*_skeletonPrimitive, skeletonLines, 2.0f,
+                    _parentSGN.getComponent<PhysicsComponent>()
+                    ->getWorldMatrix(),
                     vec4<I32>(), false, true);
-                prim.name("Skeleton_" + _parentSGN.getName());
+
                 parentStates.setTrackedValue(
                     StateTracker<bool>::State::SKELETON_RENDERED, true);
             }
@@ -379,6 +391,15 @@ void RenderingComponent::inViewCallback() {
                    isTranslucent ? 1.0f : 0.0f, (F32)mat->getTextureOperation(),
                    (F32)mat->getTextureCount(), mat->getParallaxFactor()));
     }
+}
+
+void RenderingComponent::setActive(const bool state) {
+    _boundingBoxPrimitive->paused(state);
+    if (_skeletonPrimitive) {
+        _skeletonPrimitive->paused(state);
+    }
+
+    SGNComponent::setActive(state);
 }
 
 #ifdef _DEBUG

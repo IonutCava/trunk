@@ -39,10 +39,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+namespace Attorney {
+    class PXCompPXAsset;
+};
+
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsComponent : public SGNComponent {
+    friend class Attorney::PXCompPXAsset;
    public:
     PhysicsComponent(SceneGraphNode& parentSGN);
     ~PhysicsComponent();
@@ -60,8 +65,6 @@ class PhysicsComponent : public SGNComponent {
     inline void physicsGroup(const PhysicsGroup& newGroup) {
         _physicsCollisionGroup = newGroup;
     }
-
-    void physicsAsset(PhysicsAsset* const asset);
 
     inline PhysicsAsset* const physicsAsset() { return _physicsAsset; }
 
@@ -149,6 +152,20 @@ class PhysicsComponent : public SGNComponent {
     vec3<F32> _positionCache;
     Quaternion<F32> _orientationCache;
 };
+namespace Attorney {
+class PXCompPXAsset {
+   private:
+    static void setPhysicsAsset(PhysicsComponent& component,
+                                PhysicsAsset* asset)
+    {
+        DIVIDE_ASSERT(!asset || component._physicsAsset == nullptr,
+            "PhysicsComponent error: Double set physics asset detected! "
+            "remove the previous one first!");
+        component._physicsAsset = asset;
+    }
 
+    friend class Divide::PhysicsAsset;
+};
+};  // namespace Attorney
 };  // namespace Divide
 #endif

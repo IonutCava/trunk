@@ -174,9 +174,9 @@ bool NavigationMesh::buildThreaded() {
     }
 
     Kernel& kernel = Application::getInstance().getKernel();
-    _buildThread.reset(kernel.AddTask(
-        0, 1, DELEGATE_BIND(&NavigationMesh::buildInternal, this)));
-    _buildThread->startTask();
+    _buildThread = kernel.AddTask(
+        0, 1, DELEGATE_BIND(&NavigationMesh::buildInternal, this));
+    _buildThread->startTask(Task::TaskPriority::HIGH);
     return true;
 }
 

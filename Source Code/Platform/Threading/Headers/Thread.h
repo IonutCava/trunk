@@ -39,4 +39,8 @@
 #include <boost/signals2.hpp>
 
 #include <thread>
+
+typedef boost::threadpool::prio_pool ThreadPool;
+typedef boost::threadpool::prio_task_func PoolTask;
+
 #endif

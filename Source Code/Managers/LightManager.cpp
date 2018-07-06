@@ -188,8 +188,7 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
         return true;
     }
 
-    Time::START_TIMER(s_shadowPassTimer);
-
+    Time::ScopedTimer timer(*s_shadowPassTimer);
     // Tell the engine that we are drawing to depth maps
     // set the current render stage to SHADOW
     RenderStage previousRS = GFX_DEVICE.setRenderStage(RenderStage::SHADOW);
@@ -200,8 +199,6 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
 
     // Revert back to the previous stage
     GFX_DEVICE.setRenderStage(previousRS);
-
-    Time::STOP_TIMER(s_shadowPassTimer);
 
     return true;
 }

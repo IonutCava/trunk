@@ -54,12 +54,27 @@ Scene::Scene()
       _currentSelection(nullptr),
       _currentSky(nullptr)
 {
+    _sceneTimer = 0UL;
     _sceneGraph.load();
     _input.reset(MemoryManager_NEW SceneInput(*this));
+#ifdef _DEBUG
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)] =
+        GFX_DEVICE.getOrCreatePrimitive(false);
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]->name("LinesObjectToTarget");
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)] =
+        GFX_DEVICE.getOrCreatePrimitive(false);
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->name("LinesRayPick");
+#endif
 }
 
 Scene::~Scene()
 {
+#ifdef _DEBUG
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]
+        ->_canZombify = true;
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->_canZombify =
+        true;
+#endif
 }
 
 bool Scene::frameStarted() { return true; }
@@ -103,19 +118,19 @@ void Scene::preRender() {
 void Scene::postRender() {
 #ifdef _DEBUG
     if (renderState().drawDebugLines()) {
-        if (!_lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].empty()) {
-            IMPrimitive& prim = GFX_DEVICE.drawLines(
-                _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)], 3.0f,
-                mat4<F32>(), vec4<I32>(), false, false);
-            prim.name("LinesRayPick");
+        U32 linePickIdx = to_uint(DebugLines::DEBUG_LINE_RAY_PICK);
+        if (!_lines[linePickIdx].empty()) {
+            GFX_DEVICE.drawLines(*_linesPrimitive[linePickIdx],
+                                 _lines[linePickIdx], 3.0f, mat4<F32>(),
+                                 vec4<I32>(), false, false);
         }
     }
-    if (!_lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)].empty() &&
+    U32 lineTargetIdx = to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET);
+    if (!_lines[lineTargetIdx].empty() &&
         renderState().drawDebugTargetLines()) {
-        IMPrimitive& prim = GFX_DEVICE.drawLines(
-            _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)], 3.0f,
-            mat4<F32>(), vec4<I32>(), false, false);
-        prim.name("LinesObjectToTarget");
+        GFX_DEVICE.drawLines(*_linesPrimitive[lineTargetIdx],
+                             _lines[lineTargetIdx], 3.0f, mat4<F32>(),
+                             vec4<I32>(), false, false);
     }
 #endif
 }
@@ -361,9 +376,9 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     // Create an AI thread, but start it only if needed
     Kernel& kernel = Application::getInstance().getKernel();
-    _aiTask.reset(kernel.AddTask(
-        Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY),
-        0, DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance())));
+    _aiTask = kernel.AddTask(
+        Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY), 0,
+        DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance()));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::getInstance(), this));
@@ -535,7 +550,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 void Scene::clearPhysics() { PHYSICS_DEVICE.setPhysicsScene(nullptr); }
 
 bool Scene::initializeAI(bool continueOnErrors) {
-    _aiTask->startTask();
+    _aiTask->startTask(Task::TaskPriority::MAX);
     return true;
 }
 
@@ -545,9 +560,8 @@ bool Scene::deinitializeAI(
         _aiTask->stopTask();
         _aiTask.reset();
     }
-    while (_aiTask.get()) {
-    }
-
+    WAIT_FOR_CONDITION(!_aiTask.get());
+    
     return true;
 }
 
@@ -597,6 +611,7 @@ bool Scene::updateCameraControls() {
 }
 
 void Scene::updateSceneState(const U64 deltaTime) {
+    _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
     state().cameraUnderwater(renderState().getCamera().getEye().y <
                              state().waterLevel());

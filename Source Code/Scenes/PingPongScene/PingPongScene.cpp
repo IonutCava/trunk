@@ -84,7 +84,7 @@ void PingPongScene::serveBall() {
                            DELEGATE_BIND(&PingPongScene::test, this, rand() % 5,
                                          CallbackParam::TYPE_INTEGER)));
         registerTask(newGame);
-        newGame->startTask();
+        newGame->startTask(Task::TaskPriority::HIGH);
     }
 }
 

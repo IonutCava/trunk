@@ -5,14 +5,25 @@
 namespace Divide {
 
 PhysicsAsset::PhysicsAsset()
-    : _resetTransforms(true), _parentComponent(nullptr) {}
+    : _resetTransforms(true),
+    _parentComponent(nullptr)
+{
+}
 
-PhysicsAsset::~PhysicsAsset() { setParent(nullptr); }
+PhysicsAsset::~PhysicsAsset()
+{
+    setParent(nullptr);
+}
 
 void PhysicsAsset::setParent(PhysicsComponent* parent) {
     if (_parentComponent != nullptr) {
-        _parentComponent->physicsAsset(nullptr);
+        Attorney::PXCompPXAsset::setPhysicsAsset(*_parentComponent, nullptr);
     }
     _parentComponent = parent;
+
+    if (_parentComponent) {
+        Attorney::PXCompPXAsset::setPhysicsAsset(*_parentComponent, this);
+    }
 }
+
 };

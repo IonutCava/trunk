@@ -179,6 +179,7 @@ class NOINITVTABLE Scene : public Resource {
     ParamHandler& _paramHandler;
     SceneGraph _sceneGraph;
 
+    U64 _sceneTimer;
     vectorImpl<D32> _taskTimers;
     vectorImpl<D32> _guiTimers;
     /// Datablocks for models,vegetation,terrains,tasks etc
@@ -277,6 +278,7 @@ class NOINITVTABLE Scene : public Resource {
    protected:
     std::unique_ptr<SceneInput> _input;
 #ifdef _DEBUG
+    std::array<IMPrimitive*, to_const_uint(DebugLines::COUNT)> _linesPrimitive;
     std::array<vectorImpl<Line>, to_const_uint(DebugLines::COUNT)> _lines;
 #endif
 };

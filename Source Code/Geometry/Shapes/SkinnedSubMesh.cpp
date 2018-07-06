@@ -10,13 +10,10 @@
 
 namespace Divide {
 
-const static bool USE_MUTITHREADED_LOADING = false;
-
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
     : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
     _parentAnimatorPtr(nullptr)
 {
-    _buildingBoundingBoxes = false;
 }
 
 SkinnedSubMesh::~SkinnedSubMesh()
@@ -44,25 +41,31 @@ bool SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
-    _buildingBoundingBoxes = false;
     std::atomic_bool& currentBBStatus = _boundingBoxesAvailable[animationIndex];
-    currentBBStatus = true;
     std::atomic_bool& currentBBComputing = _boundingBoxesComputing[animationIndex];
     currentBBComputing = false;
+    currentBBStatus = true;
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnim(
     U32 animationIndex, AnimationComponent* const animComp) {
+
+    boundingBoxPerAnimationStatus::iterator it = _boundingBoxesComputing.find(animationIndex);
+    if (it != std::end(_boundingBoxesComputing) && it->second == true) {
+        return;
+    }
+    
+    std::atomic_bool& currentBBStatus = _boundingBoxesAvailable[animationIndex];
+    std::atomic_bool& currentBBComputing = _boundingBoxesComputing[animationIndex];
+    currentBBComputing = true;
+    currentBBStatus = false;
+
     const AnimEvaluator& currentAnimation =
         animComp->GetAnimationByIndex(animationIndex);
 
     boundingBoxPerFrame& currentBBs = _boundingBoxes[animationIndex];
-    std::atomic_bool& currentBBStatus = _boundingBoxesAvailable[animationIndex];
-    std::atomic_bool& currentBBComputing = _boundingBoxesComputing[animationIndex];
     // We might need to recompute BBs so clear any possible old values
     currentBBs.clear();
-    currentBBStatus = false;
-    currentBBComputing = true;
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
@@ -73,15 +76,12 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
     const vectorImpl<P32 >& indices = parentVB->getBoneIndices();
     const vectorImpl<vec4<F32> >& weights = parentVB->getBoneWeights();
 
-    I32 frameCount = animComp->frameCount(animationIndex);
-    //#pragma omp parallel for
-    for (I32 i = 0; i < frameCount; ++i) {
+    U32 frameCount = to_uint(animComp->frameCount(animationIndex));
+
+    for (U32 i = 0; i < frameCount; ++i) {
         BoundingBox& bb = currentBBs[i];
-        bb.reset();
 
-        const vectorImpl<mat4<F32> >& transforms =
-            currentAnimation.transforms(to_uint(i));
-
+        const vectorImpl<mat4<F32> >& transforms = currentAnimation.transforms(i);
         // loop through all vertex weights of all bones
         for (U32 j = partitionOffset; j < partitionCount; ++j) {
             U32 idx = parentVB->getIndex(j);
@@ -90,7 +90,6 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
             const vec3<F32>& curentVert = verts[idx];
 
             F32 fwgh = 1.0f - (wgh.x + wgh.y + wgh.z);
-
             bb.Add((wgh.x * (transforms[ind.b[0]] * curentVert)) +
                    (wgh.y * (transforms[ind.b[1]] * curentVert)) +
                    (wgh.z * (transforms[ind.b[2]] * curentVert)) +
@@ -109,35 +108,39 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     }
     // Attempt to get the map of BBs for the current animation
     U32 animationIndex = animComp->animationIndex();
-    boundingBoxPerFrame& animBB = _boundingBoxes[animationIndex];
+
+    boundingBoxPerAnimationStatus::iterator it1 = _boundingBoxesAvailable.find(animationIndex);
+    bool bbAvailable = !(it1 == std::end(_boundingBoxesAvailable) || it1->second == false);
+
+    boundingBoxPerAnimationStatus::iterator it2 = _boundingBoxesComputing.find(animationIndex);
+    bool bbComputing = !(it2 == std::end(_boundingBoxesComputing) || it2->second == false);
+
+    assert(!(bbAvailable && bbComputing));
+
+    if (!bbAvailable) {
+        if (!bbComputing) {
+            DELEGATE_CBK<> buildBB = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                                   this, animationIndex, animComp);
+            DELEGATE_CBK<> builBBComplete = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
+                                                          this, animationIndex);
+            Application::getInstance()
+                .getKernel()
+                .AddTask(1, 1, buildBB, builBBComplete)
+                ->startTask(Task::TaskPriority::DONT_CARE);
+        }
+
+        return true;
+    }
+
+    boundingBoxPerAnimation::const_iterator it3 = _boundingBoxes.find(animationIndex);
     // If the BBs are computed, set the BB for the current frame as the node BB
-    if (!animBB.empty()) {
-        // Update the BB, only if the calculation task has finished
-        if (!_boundingBoxesComputing[animationIndex]) {
-            sgn.setInitialBoundingBox(animBB[animComp->frameIndex()]);
-            return true;
-        }
-        return false;
-    }
+    if (it3 != std::end(_boundingBoxes)) {
+        U32 frameIndex = animComp->frameIndex();
+        const boundingBoxPerFrame& bbPerFrame = it3->second;
 
-    if (!_buildingBoundingBoxes) {
-        _buildingBoundingBoxes = true;
-        if (USE_MUTITHREADED_LOADING) {
-            Kernel& kernel = Application::getInstance().getKernel();
-            Task* task = kernel.AddTask(
-                1, 1,
-                DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
-                                this, animationIndex, animComp),
-                DELEGATE_BIND(
-                    &SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
-                    this, animationIndex));
-            task->startTask();
-        } else {
-            buildBoundingBoxesForAnim(animationIndex, animComp);
-            buildBoundingBoxesForAnimCompleted(animationIndex);
-        }
+        boundingBoxPerFrame::const_iterator it4 = bbPerFrame.find(frameIndex);
+        sgn.setInitialBoundingBox(it4->second);
     }
-
     return true;
 }
 };

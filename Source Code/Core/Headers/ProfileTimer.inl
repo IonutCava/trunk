@@ -35,28 +35,40 @@
 namespace Divide {
 namespace Time {
 
+class SCOPED_TIMER {
+};
+
+class ScopedTimer : private NonCopyable {
+   public:
+    explicit ScopedTimer(ProfileTimer& timer);
+    ~ScopedTimer();
+
+   private:
+    ProfileTimer& _timer;
+};
+
 inline ProfileTimer* ADD_TIMER(const char* timerName) {
     ProfileTimer* timer = MemoryManager_NEW ProfileTimer();
     timer->create(timerName);
     return timer;
 }
 
-inline void START_TIMER(ProfileTimer* const timer) {
-    assert(timer);
-    timer->start();
+inline void START_TIMER(ProfileTimer& timer) {
+    timer.start();
 }
 
-inline void STOP_TIMER(ProfileTimer* const timer) {
-    assert(timer);
-    timer->stop();
+inline void STOP_TIMER(ProfileTimer& timer) {
+    timer.stop();
 }
 
-inline void PRINT_TIMER(ProfileTimer* const timer) {
-    assert(timer);
-    timer->print();
+inline void PRINT_TIMER(ProfileTimer& timer) {
+    timer.print();
 }
 
-inline void REMOVE_TIMER(ProfileTimer*& timer) { MemoryManager::DELETE(timer); }
+inline void REMOVE_TIMER(ProfileTimer*& timer) { 
+    MemoryManager::DELETE(timer);
+}
+
 };  // namespace Time
 };  // namespace Divide
 

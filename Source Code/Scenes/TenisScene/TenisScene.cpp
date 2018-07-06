@@ -87,7 +87,7 @@ void TenisScene::startGame() {
         Time::MillisecondsToMicroseconds(15), 0,
         DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, CallbackParam::TYPE_INTEGER)));
     registerTask(newGame);
-    newGame->startTask();
+    newGame->startTask(Task::TaskPriority::HIGH);
     _gameGUID = newGame->getGUID();
 }
 

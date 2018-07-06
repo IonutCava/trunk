@@ -53,18 +53,19 @@ class SceneGraphNode;
 class PhysicsSceneInterface;
 
 class PhysicsAsset {
+    friend class PhysicsComponent;
+
    public:
     PhysicsAsset();
     virtual ~PhysicsAsset();
+    PhysicsComponent* getParent() { return _parentComponent; }
 
    protected:
-    friend class PhysicsComponent;
     inline bool resetTransforms() const { return _resetTransforms; }
     inline void resetTransforms(const bool state) { _resetTransforms = state; }
 
     void setParent(PhysicsComponent* parent);
-    PhysicsComponent* getComponent() { return _parentComponent; }
-
+    
    protected:
     bool _resetTransforms;
     PhysicsComponent* _parentComponent;

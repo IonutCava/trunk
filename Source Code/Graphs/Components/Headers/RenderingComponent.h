@@ -113,6 +113,7 @@ class RenderingComponent : public SGNComponent {
     void drawDebugAxis();
 #endif
 
+    void setActive(const bool state);
    protected:
     void inViewCallback();
     bool canDraw(const SceneRenderState& sceneRenderState,
@@ -141,11 +142,13 @@ class RenderingComponent : public SGNComponent {
     bool _renderWireframe;
     bool _renderBoundingBox;
     bool _renderSkeleton;
+    bool _nodeSkinned;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
 
     GFXDevice::RenderPackage _renderData;
-
+    IMPrimitive* _boundingBoxPrimitive;
+    IMPrimitive* _skeletonPrimitive;
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;

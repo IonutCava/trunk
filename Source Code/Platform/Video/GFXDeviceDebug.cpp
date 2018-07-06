@@ -51,54 +51,54 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
     // Debug axis form the axis arrow gizmo in the corner of the screen
     drawDebugAxis(sceneRenderState);
     // Loop over all available primitives
-    for (IMPrimitive* priv : _imInterfaces) {
+    for (IMPrimitive* prim : _imInterfaces) {
         // A primitive may be paused if drawing it isn't desired at the current
         // point in time
-        if (priv->paused()) {
+        if (prim->paused()) {
             continue;
         }
         // If the current primitive isn't in use, and can be recycled, increase
         // it's "zombie counter"
-        if (!priv->inUse() && priv->_canZombify) {
+        if (!prim->inUse() && prim->_canZombify) {
             // The zombie counter represents the number of frames since the
             // primitive was last used
-            priv->zombieCounter(priv->zombieCounter() + 1);
+            prim->zombieCounter(prim->zombieCounter() + 1);
             continue;
         }
         // Inform the primitive that we're using the imShader
         // A primitive can be rendered with any shader program available, so
         // make sure we actually use the right one for this stage
-        priv->drawShader(_imShader);
+        prim->drawShader(_imShader);
         // Set the primitive's render state block
-        setStateBlock(priv->stateHash());
+        setStateBlock(prim->stateHash());
         // Call any "onDraw" function the primitive may have attached
-        priv->setupStates();
+        prim->setupStates();
         // If we are drawing lines, set the required width
-        if (priv->_hasLines) {
-            setLineWidth(priv->_lineWidth);
+        if (prim->_hasLines) {
+            setLineWidth(prim->_lineWidth);
         }
         // Check if any texture is present
-        bool texture = (priv->_texture != nullptr);
+        bool texture = (prim->_texture != nullptr);
         // And bind it to the first diffuse texture slot
         if (texture) {
-            priv->_texture->Bind(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
+            prim->_texture->Bind(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
         }
         // Inform the shader if we have (or don't have) a texture
         _imShader->Uniform("useTexture", texture);
         // Upload the primitive's world matrix to the shader
-        _imShader->Uniform("dvd_WorldMatrix", priv->worldMatrix());
+        _imShader->Uniform("dvd_WorldMatrix", prim->worldMatrix());
         // Submit the render call. We do not support instancing yet!
-        priv->render(priv->forceWireframe(), 1);
+        prim->render(prim->forceWireframe(), 1);
         // Reset line width if needed
-        if (priv->_hasLines) {
+        if (prim->_hasLines) {
             restoreLineWidth();
         }
         // Call any "postDraw" function the primitive may have attached
-        priv->resetStates();
+        prim->resetStates();
         // If this primitive is recyclable, clear it's inUse flag. It should be
         // recreated next frame
-        if (priv->_canZombify) {
-            priv->inUse(false);
+        if (prim->_canZombify) {
+            prim->inUse(false);
         }
     }
 }
