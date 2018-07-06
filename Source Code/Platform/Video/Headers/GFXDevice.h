@@ -210,6 +210,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
        COUNT
    };
 
+   // Enough to hold a cubemap (e.g. environment stage has 6 passes)
+   static const U32 MAX_PASSES_PER_STAGE = 6;
+
    struct GPUBlock {
        GPUBlock() : _updated(true)
        {
@@ -275,7 +278,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
     void addToRenderQueue(const RenderPackage& package);
-    void flushRenderQueue();
+    void flushRenderQueue(U32 pass = 0);
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
@@ -354,7 +357,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline const PlaneList& getClippingPlanes() const { return _clippingPlanes; }
 
     /// Return the last number of HIZ culled items
-    U32 getLastCullCount() const;
+    U32 getLastCullCount(U32 pass = 0) const;
 
     /// 2D rendering enabled
     inline bool is2DRendering() const { return _2DRendering; }
@@ -529,10 +532,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    protected:
     friend class SceneManager;
     friend class RenderPass;
-    void occlusionCull();
+    void occlusionCull(U32 pass = 0);
     void buildDrawCommands(VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
-                           bool refreshNodeData);
+                           bool refreshNodeData,
+                           U32 pass);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
     void constructHIZ();
@@ -568,9 +572,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     NodeData& processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex);
 
-    ShaderBuffer& getCommandBuffer(RenderStage stage) const;
+    ShaderBuffer& getCommandBuffer(RenderStage stage, U32 pass) const;
 
-    ShaderBuffer& getNodeBuffer(U32 stageIndex);
+    ShaderBuffer& getNodeBuffer(RenderStage stage, U32 pass) const;
 
   private:
     Camera* _cubeCamera;
@@ -640,9 +644,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
-    std::array<std::unique_ptr<ShaderBuffer>, to_const_uint(RenderStage::COUNT)> _indirectCommandBuffers;
+    typedef std::array<std::unique_ptr<ShaderBuffer>, MAX_PASSES_PER_STAGE> RenderStageBuffer;
+    std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT)> _indirectCommandBuffers;
     // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFER
-    std::array<std::unique_ptr<ShaderBuffer>, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
+    std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
     GenericDrawCommand _defaultDrawCmd;
 END_SINGLETON
 

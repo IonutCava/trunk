@@ -107,7 +107,8 @@ class RenderBin {
     virtual void sort(U32 binIndex, RenderStage renderStage);
     virtual void preRender(RenderStage renderStage);
     virtual void render(const SceneRenderState& renderState,
-                        RenderStage renderStage);
+                        RenderStage renderStage,
+                        U32 pass = 0);
     virtual void postRender(const SceneRenderState& renderState,
                             RenderStage renderStage);
     virtual void refresh();

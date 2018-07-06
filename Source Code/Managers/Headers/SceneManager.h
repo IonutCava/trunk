@@ -99,8 +99,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     void setRenderer(RendererType rendererType);
 
     // generate a list of nodes to render
-    void updateVisibleNodes(RenderStage stage, bool refreshNodeData);
-    void renderVisibleNodes(RenderStage stage, bool refreshNodeData);
+    void updateVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass = 0);
+    void renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass = 0);
     // cull the scenegraph against the current view frustum
     const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage);
 

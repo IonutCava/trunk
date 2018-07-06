@@ -251,25 +251,24 @@ inline void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDraw
     processCommands(cmds, true);
 }
 
-inline U32 renderStageToBufferOffset(RenderStage stage) {
+inline ShaderBuffer& GFXDevice::getCommandBuffer(RenderStage stage, U32 pass) const {
+    assert(pass < MAX_PASSES_PER_STAGE && _indirectCommandBuffers[to_uint(stage)][pass]);
+    return *_indirectCommandBuffers[to_uint(stage)][pass].get();
+}
+
+inline ShaderBuffer& GFXDevice::getNodeBuffer(RenderStage stage, U32 pass) const {
+    U32 bufferIdx = 0;
     switch (stage) {
-    case RenderStage::REFLECTION:
-        return 1;
+        case RenderStage::REFLECTION:
+        bufferIdx = 1;
+        break;
     case RenderStage::SHADOW:
-        return 2;
-    default:
+        bufferIdx = 2;
         break;
     };
 
-    return 0;
-}
-
-inline ShaderBuffer& GFXDevice::getCommandBuffer(RenderStage stage) const {
-    return *_indirectCommandBuffers[to_uint(stage)].get();
-}
-
-inline ShaderBuffer& GFXDevice::getNodeBuffer(U32 stageIndex) {
-    return *_nodeBuffers[stageIndex].get();
+    assert(pass < MAX_PASSES_PER_STAGE && _nodeBuffers[bufferIdx][pass]);
+    return *_nodeBuffers[bufferIdx][pass].get();
 }
 
 #define GFX_DEVICE GFXDevice::getInstance()

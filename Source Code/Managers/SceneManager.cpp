@@ -187,7 +187,7 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
     return visibleNodes;
 }
 
-void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData) {
+void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {
     RenderQueue& queue = _renderPassManager->getQueue();
 
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
@@ -213,15 +213,15 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData) {
         getRenderer().preRender();
     }
 
-    GFX_DEVICE.buildDrawCommands(visibleNodes, _activeScene->renderState(), refreshNodeData);
+    GFX_DEVICE.buildDrawCommands(visibleNodes, _activeScene->renderState(), refreshNodeData, pass);
 }
 
-void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData) {
+void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {
     if (refreshNodeData) {
         Time::ScopedTimer timer(*_sceneGraphCullTimer);
         cullSceneGraph(stage);
     }
-    updateVisibleNodes(stage, refreshNodeData);
+    updateVisibleNodes(stage, refreshNodeData, pass);
 
     RenderStage renderStage = GFX_DEVICE.getRenderStage();
     SceneRenderState& renderState = _activeScene->renderState();
@@ -229,7 +229,7 @@ void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData) {
         RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
         U16 renderBinCount = renderQueue.getRenderQueueBinSize();
         for (U16 i = 0; i < renderBinCount; ++i) {
-            renderQueue.getBinSorted(i)->render(renderState, renderStage);
+            renderQueue.getBinSorted(i)->render(renderState, renderStage, pass);
         }
     }
 }

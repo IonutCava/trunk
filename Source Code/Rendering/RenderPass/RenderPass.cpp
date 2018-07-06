@@ -43,7 +43,7 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
         switch(stageFlag) {
             default: {
                 renderer.render(
-                    [stageFlag, refreshNodeData]() {
+                    [stageFlag, refreshNodeData, idx]() {
                         SceneManager::getInstance().renderVisibleNodes(stageFlag, refreshNodeData);
                     },
                     renderState);
@@ -56,7 +56,7 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
                 const vec2<F32>& zPlanes= renderState.getCameraConst().getZPlanes();
                 GFX_DEVICE.generateCubeMap(*(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::ENVIRONMENT)),
                                            eyePos,
-                                           zPlanes,
+                                           vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
                                            stageFlag);
             } break;
         };
@@ -83,7 +83,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindDepthMaps = true;
-            GFX.occlusionCull();
+            GFX.occlusionCull(0);
             GFXDevice::RenderTarget eyeTarget = anaglyph ? GFXDevice::RenderTarget::ANAGLYPH
                                                          : GFXDevice::RenderTarget::SCREEN;
             GFX.getRenderTarget(eyeTarget)->begin(Framebuffer::defaultPolicy());

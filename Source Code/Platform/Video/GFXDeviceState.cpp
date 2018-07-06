@@ -10,9 +10,18 @@
 
 namespace Divide {
 
+namespace {
+    std::array<U32, to_const_uint(RenderStage::COUNT)> g_shaderBuffersPerStageCount;
+};
+
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
+
+    g_shaderBuffersPerStageCount.fill(1);
+    g_shaderBuffersPerStageCount[to_uint(RenderStage::REFLECTION)] = 6;
+    g_shaderBuffersPerStageCount[to_uint(RenderStage::SHADOW)] = 6;
+
     ErrorCode hardwareState = createAPIInstance();
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
@@ -69,14 +78,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Create a shader buffer to hold all of our indirect draw commands
     // Usefull if we need access to the buffer in GLSL/Compute programs
     for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
-        _indirectCommandBuffers[i].reset(newSB(Util::StringFormat("dvd_GPUCmds%d", i), 1, true, false, BufferUpdateFrequency::OFTEN));
-        _indirectCommandBuffers[i]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
-        _indirectCommandBuffers[i]->addAtomicCounter(3);
+        RenderStageBuffer& cmdBuffers = _indirectCommandBuffers[i];
+        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
+            cmdBuffers[j].reset(newSB(Util::StringFormat("dvd_GPUCmds%d_%d", i, j), 1, true, false, BufferUpdateFrequency::OFTEN));
+            cmdBuffers[j]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
+            cmdBuffers[j]->addAtomicCounter(3);
+        }
     }
     
     for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
-        _nodeBuffers[i].reset(newSB(Util::StringFormat("dvd_MatrixBlock%d", i), 1, true, true, BufferUpdateFrequency::OFTEN));
-        _nodeBuffers[i]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(NodeData));
+        RenderStageBuffer& nodeBuffers = _nodeBuffers[i];
+        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
+            nodeBuffers[j].reset(newSB(Util::StringFormat("dvd_MatrixBlock%d_%d", i, j), 1, true, true, BufferUpdateFrequency::OFTEN));
+            nodeBuffers[j]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(NodeData));
+        }
     }
 
     // Resize our window to the target resolution
@@ -245,11 +260,18 @@ void GFXDevice::closeRenderingAPI() {
     // runtime
     MemoryManager::DELETE_VECTOR(_imInterfaces);
     _gfxDataBuffer->destroy();
+
     for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
-        _indirectCommandBuffers[i]->destroy();
+        RenderStageBuffer& cmdBuffers = _indirectCommandBuffers[i];
+        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
+            cmdBuffers[j]->destroy();
+        }
     }
     for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
-        _nodeBuffers[i]->destroy();
+        RenderStageBuffer& nodeBuffers = _nodeBuffers[i];
+        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
+            nodeBuffers[j]->destroy();
+        }
     }
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();

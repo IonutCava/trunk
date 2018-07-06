@@ -170,7 +170,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
         // And generated required matrices
         _cubeCamera->renderLookAt();
         // Pass our render function to the renderer
-        SceneManager::getInstance().renderVisibleNodes(renderStage, true);
+        SceneManager::getInstance().renderVisibleNodes(renderStage, true, i);
     }
     // Resolve our render target
     cubeMap.end();

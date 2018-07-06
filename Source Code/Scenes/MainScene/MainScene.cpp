@@ -157,10 +157,10 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     // Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
                                                 &SceneManager::getInstance(),
-                                                RenderStage::REFLECTION, true));
+                                                RenderStage::REFLECTION, true, 0));
     _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
                                                 &SceneManager::getInstance(),
-                                                RenderStage::DISPLAY, true));
+                                                RenderStage::DISPLAY, true, 0));
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = [this]() {
