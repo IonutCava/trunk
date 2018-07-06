@@ -73,7 +73,7 @@ public:
     ///Insert a new scene factory method for the given name
     template<class DerivedScene>
     inline bool registerScene(const std::string& sceneName) {
-        _sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));
+        _sceneFactory.emplace(sceneName, boost::factory<DerivedScene*>());
         return true;
     }
    

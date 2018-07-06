@@ -18,13 +18,13 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
     if (container != _nodeContainerMap.end()) {
         NodeContainer::const_iterator nodeEntry = findNodeEntry(container, node->getGUID());
         if (nodeEntry == container->second.end()) {
-            container->second.insert(std::make_pair(node->getGUID(), node));
+            container->second.emplace(node->getGUID(), node);
             node->registerdeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this, containerID, node->getGUID()));
         } else {
             ERROR_FN("VisualSensor: Added the same node to follow twice!");
         }
     } else {
-        _nodeContainerMap[containerID].insert(std::make_pair(node->getGUID(), node));
+        _nodeContainerMap[containerID].emplace(node->getGUID(), node);
     }
 }
 

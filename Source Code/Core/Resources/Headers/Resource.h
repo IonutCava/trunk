@@ -50,11 +50,11 @@ class Resource : public TrackedObject {
     friend class ImplResourceLoader;
 
 public:
-    Resource(const std::string& name) : TrackedObject(),
-                                       _name(name),
-                                       _threadedLoading(true),
-                                       _threadedLoadComplete(false),
-                                       _resourceState(RES_CREATED)
+    explicit Resource(const std::string& name) : TrackedObject(),
+                                                 _name(name),
+                                                 _threadedLoading(true),
+                                                 _threadedLoadComplete(false),
+                                                 _resourceState(RES_CREATED)
     {
     }
 

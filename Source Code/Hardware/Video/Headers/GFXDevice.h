@@ -173,8 +173,9 @@ public:
     bool setBufferData(const GenericDrawCommand& cmd);
 
     inline I32 getDrawID(I64 drawIDIndex) {
-        assert(_sgnToDrawIDMap.find(drawIDIndex) != _sgnToDrawIDMap.end());
-        return _sgnToDrawIDMap[drawIDIndex];
+        Unordered_map<I64, I32>::const_iterator it = _sgnToDrawIDMap.find(drawIDIndex);
+        assert(it != _sgnToDrawIDMap.end());
+        return it->second;
     }
     ///Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
@@ -425,8 +426,8 @@ protected:
 
     GPUBlock                _gpuBlock;
 
-    ::vectorImpl<NodeData >     _matricesData;
-    ::vectorImpl<GPUVideoMode > _supportedDislpayModes;
+    vectorImpl<NodeData >     _matricesData;
+    vectorImpl<GPUVideoMode > _supportedDislpayModes;
     Unordered_map<I64, I32>   _sgnToDrawIDMap;
 
     ShaderBuffer*  _gfxDataBuffer;

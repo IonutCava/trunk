@@ -63,9 +63,11 @@ public:
 
 	void setParam(const std::string& name, const cdiggins::any& value) {
 		WriteLock w_lock(_mutex);
-		std::pair<ParamMap::iterator, bool> result = _params.insert(std::make_pair(name,value));
-		if (!result.second) {
-			(result.first)->second = value;
+		ParamMap::iterator it = _params.find(name); 
+        if (it == _params.end()) {
+            _params.emplace(name,value);
+        } else {
+			it->second = value;
         }
 	}
 

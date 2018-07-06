@@ -41,7 +41,7 @@ public:
     void sort(const RenderStage& currentRenderStage);
     void refresh(bool force = false);
     void addNodeToQueue(SceneGraphNode* const sgn, const vec3<F32>& eyePos);
-    U16 getRenderQueueStackSize();
+    U16 getRenderQueueStackSize() const;
     SceneGraphNode* getItem(U16 renderBin, U16 index);
     RenderBin*      getBin(RenderBin::RenderBinType rbType);
 
@@ -49,6 +49,7 @@ public:
     inline RenderBin* getBinSorted(U16 renderBin) { return _sortedRenderBins[renderBin]; }
     inline RenderBin* getBin(U16 renderBin)       { return getBin(_renderBinId[renderBin]); }
     inline bool       isSorted()                  { return _isSorted;}
+
 protected:
     friend class RenderPassManager;
     ///See lock/unlock functions in RenderPassManager for more details

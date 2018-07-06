@@ -367,6 +367,9 @@ int glswAddDirectiveToken(const char* token, const char* directive)
 
     temp = gc->TokenMap;
     gc->TokenMap = (glswList*) calloc(sizeof(glswContext), 1);
+    if (!gc->TokenMap) {
+        return 0;
+    }
     gc->TokenMap->Key = bfromcstr(token);
     gc->TokenMap->Value = bfromcstr(directive);
     gc->TokenMap->Next = temp;

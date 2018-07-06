@@ -24,9 +24,9 @@ bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
     BoundingBox& bb = sgn->getBoundingBox();
 
     bb.reset();
-    FOR_EACH(childrenNodes::value_type& s, sgn->getChildren())
+    FOR_EACH(childrenNodes::value_type& s, sgn->getChildren()) {
         bb.Add(s.second->getInitialBoundingBox());
-
+    }
     bb.setComputed(true);
 
     return SceneNode::computeBoundingBox(sgn);
@@ -36,7 +36,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh){
     //A mesh always has submesh SGN nodes handled separately. No need to track it (will cause double Add/Sub Ref)
     _subMeshes.push_back(subMesh->getName());
     //Hold a reference to the submesh by ID (used for animations)
-    _subMeshRefMap.insert(std::make_pair(subMesh->getId(), subMesh));
+    _subMeshRefMap.emplace(subMesh->getId(), subMesh);
     subMesh->setParentMesh(this);
     _maxBoundingBox.reset();
 }
@@ -53,7 +53,7 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
         sgn->addNode(s, sgn->getName() + "_" + it);
         s->setParentMeshSGN(sgn);
     }
-
+    _drawCommands.reserve(_subMeshes.size());
     getGeometryVB()->Create();
 
     Object3D::postLoad(sgn);

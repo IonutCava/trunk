@@ -361,7 +361,7 @@ namespace XML {
             //Check and skip commented terrain
             if(tag.find("<xmlcomment>") != std::string::npos) continue;
             //Load the rest of the terrain
-            TerrainDescriptor* ter = CreateResource<TerrainDescriptor>(name+"_descriptor");
+            TerrainDescriptor* ter = CreateResource<TerrainDescriptor>(ResourceDescriptor(name+"_descriptor"));
             ter->addVariable("terrainName",name);
             ter->addVariable("heightmap",assetLocation + pt.get<std::string>(name + ".heightmap"));
             ter->addVariable("waterCaustics", assetLocation + pt.get<std::string>(name + ".waterCaustics"));

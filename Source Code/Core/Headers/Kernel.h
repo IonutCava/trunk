@@ -108,7 +108,7 @@ public:
          Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, numberOfTicks, threadedFunction);
          taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
          if (!onCompletionFunction.empty()){
-             _threadedCallbackFunctions.insert(std::make_pair(taskPtr->getGUID(), onCompletionFunction));
+             _threadedCallbackFunctions.emplace(taskPtr->getGUID(), onCompletionFunction);
          }
          return taskPtr;
     }
@@ -117,7 +117,7 @@ public:
         Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, runOnce, threadedFunction);
         taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
         if (!onCompletionFunction.empty()){
-            _threadedCallbackFunctions.insert(std::make_pair(taskPtr->getGUID(), onCompletionFunction));
+            _threadedCallbackFunctions.emplace(taskPtr->getGUID(), onCompletionFunction);
         }
         return taskPtr;
     }

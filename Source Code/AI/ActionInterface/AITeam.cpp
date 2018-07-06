@@ -27,7 +27,7 @@ AITeam::~AITeam()
 
 void AITeam::addCrowd(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* navMesh) {
     DIVIDE_ASSERT(_aiTeamCrowd.find(radius) == _aiTeamCrowd.end(), "AITeam error: DtCrowd already existed for new navmesh!");
-    _aiTeamCrowd.insert(std::make_pair(radius, New Navigation::DivideDtCrowd(navMesh)));
+    _aiTeamCrowd.emplace(radius, New Navigation::DivideDtCrowd(navMesh));
 }
 
 void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
@@ -88,7 +88,7 @@ bool AITeam::addTeamMember(AIEntity* entity) {
         return true;
     }
     UpgradeToWriteLock uw_lock(ur_lock);
-    _team.insert(std::make_pair(entity->getGUID(),entity));
+    _team.emplace(entity->getGUID(),entity);
     entity->setTeamPtr(this);
     return true;
 }

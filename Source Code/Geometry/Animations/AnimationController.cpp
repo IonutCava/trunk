@@ -137,18 +137,18 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
 
 Bone* SceneAnimator::GetBoneByName(const std::string& bname) const {
     Unordered_map<std::string, Bone*>::const_iterator found = _bonesByName.find(bname);
-	if(found != _bonesByName.end()) 
-		return found->second; 
-	else 
-		return nullptr;
+    if(found != _bonesByName.end()) 
+        return found->second; 
+    else 
+        return nullptr;
 }
 
 I32 SceneAnimator::GetBoneIndex(const std::string& bname) const {
-	Unordered_map<std::string, U32>::const_iterator found = _bonesToIndex.find(bname);
-	if(found != _bonesToIndex.end()) 
-		return found->second; 
-	else 
-		return -1;
+    Unordered_map<std::string, U32>::const_iterator found = _bonesToIndex.find(bname);
+    if(found != _bonesToIndex.end()) 
+        return found->second; 
+    else 
+        return -1;
 }
 
 /// ------------------------------------------------------------------------------------------------
@@ -171,22 +171,26 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 }
 
 ///Renders the current skeleton pose at time index dt
-const vectorImpl<Line >& SceneAnimator::getSkeletonLines(I32 animationIndex, const D32 dt){
+const vectorImpl<Line >& SceneAnimator::getSkeletonLines(I32 animationIndex, const D32 dt) {
     I32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
+    LineCollection::iterator it = _skeletonLines.find(animationIndex);
+    if (it == _skeletonLines.end()) {
+        std::pair<LineCollection::iterator, bool > result = _skeletonLines.insert(std::make_pair(animationIndex, LineMap()));
+        assert(result.second);
+        it = result.first;
+    }
 
-    if (_skeletonLines.find(animationIndex) == _skeletonLines.end())
-        _skeletonLines.insert(std::make_pair(animationIndex, LineMap()));
-    
-    if (_skeletonLines[animationIndex][frameIndex].empty()){
-        // create all the needed points
-        vectorImpl<Line >& lines = _skeletonLines[animationIndex][frameIndex];
+    // create all the needed points
+    vectorImpl<Line >& lines = it->second[frameIndex];
+    if (lines.empty()){
         lines.reserve(_bones.size());
         // Construct skeleton
         Calculate(animationIndex, dt);
         // Start with identity transform
         CreateSkeleton(_skeleton, aiMatrix4x4(), lines);
     }
-    return _skeletonLines[animationIndex][frameIndex];
+
+    return lines;
 }
 
 /// Create animation skeleton

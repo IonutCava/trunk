@@ -64,9 +64,9 @@ void Material::update(const U64 deltaTime){
 
 size_t Material::getRenderStateBlock(RenderStage currentStage) {
     const renderStateBlockMap::const_iterator& it = _defaultRenderStates.find(currentStage);
-    if (it == _defaultRenderStates.end())
+    if (it == _defaultRenderStates.end()) {
         return _defaultRenderStates[FINAL_STAGE];
-    
+    }
     return it->second;
 }
 

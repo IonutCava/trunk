@@ -37,7 +37,7 @@ public:
         DESCRIPTOR_SAMPLER = 1
     };
 
-    PropertyDescriptor(const DescriptorType& type) : _type(type) {}
+    explicit PropertyDescriptor(const DescriptorType& type) : _type(type) {}
 
 protected:
     friend class ResourceDescriptor;
@@ -53,9 +53,9 @@ protected:
 
 class ResourceDescriptor{
 public:
-    ResourceDescriptor(const std::string& name = "default",
-                       const std::string& resourceLocation = "default",
-                       bool flag = false, U32 id = 0, U8 enumValue = 0);
+    explicit ResourceDescriptor(const std::string& name = "default",
+                                const std::string& resourceLocation = "default",
+                                bool flag = false, U32 id = 0, U8 enumValue = 0);
 
     ~ResourceDescriptor();
 

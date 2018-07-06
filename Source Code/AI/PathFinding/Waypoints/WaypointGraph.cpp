@@ -13,7 +13,7 @@ namespace Navigation {
 
 	void WaypointGraph::addWaypoint(Waypoint* wp){
 		if(_waypoints.find(wp->getID()) != _waypoints.end()) return;
-		_waypoints.insert(std::make_pair(wp->getID(),wp));
+		_waypoints.emplace(wp->getID(), wp);
 		updateGraph();
 	}
 

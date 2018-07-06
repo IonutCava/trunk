@@ -170,7 +170,7 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
     _particleColorData.resize(descriptor._particleCount * 4);
     for(U32 i = 0; i < descriptor._particleCount; ++i){
         _particles[i].life = -1.0f;
-        _particles[i].distanceToCamera = -1.0f;
+        _particles[i].distanceToCameraSq = -1.0f;
     }
 
     if(_particleTexture){
@@ -213,9 +213,9 @@ void ParticleEmitter::uploadToGPU(){
 
 ///The onDraw call will emit particles
 bool ParticleEmitter::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
-    if(!_enabled || _particlesCurrentCount == 0 || !_created)
+    if (!_enabled || _particlesCurrentCount == 0 || !_created) {
         return false;
-    
+    }
     std::sort(_particles.begin(), _particles.end());
     uploadToGPU();
 
@@ -246,15 +246,19 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
     for(I32 i = 0; i < newParticles; ++i){
         ParticleDescriptor& currentParticle = _particles[findUnusedParticle()];
         currentParticle.life = _descriptor._lifetime + getMsToSec(random(-_descriptor._lifetimeVariance, _descriptor._lifetimeVariance));
-        currentParticle.pos.set(origin);
+        memcpy(currentParticle.pos, origin._v, 3 * sizeof(F32));
         // Very bad way to generate a random direction;
         // See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
         // combined with some user-controlled parameters (main direction, spread, etc)
-        currentParticle.speed  = mainDir + vec3<F32>((rand()%2000 - 1000.0f)/1000.0f,
-                                                     (rand()%2000 - 1000.0f)/1000.0f,
-                                                     (rand()%2000 - 1000.0f)/1000.0f) * spread;
+        currentParticle.speed[0]  = mainDir.x + (rand()%2000 - 1000.0f)/1000.0f * spread;
+        currentParticle.speed[1]  = mainDir.y + (rand()%2000 - 1000.0f)/1000.0f * spread;
+        currentParticle.speed[2]  = mainDir.z + (rand()%2000 - 1000.0f)/1000.0f * spread;
          // Very bad way to generate a random color
-        currentParticle.rgba.set(rand() % 256, rand() % 256, rand() % 256, (rand() % 256) / 3);
+        currentParticle.rgba[0] = rand() % 256;
+        currentParticle.rgba[1] = rand() % 256;
+        currentParticle.rgba[2] = rand() % 256;
+        currentParticle.rgba[3] = (rand() % 256) / 3;
+
         currentParticle.size = (rand()%1000)/2000.0f + 0.1f;
     }
 
@@ -268,23 +272,25 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
             if (p.life > 0.0f){
  
                 // Simulate simple physics : gravity only, no collisions
-                p.speed += half_gravity;
-                p.pos += p.speed * delta;
-                p.distanceToCamera = p.pos.distanceSquared(eyePos);
+                for (U8 i = 0; i < 3; ++i) {
+                    p.speed[i] += half_gravity[i];
+                    p.pos[i]   += p.speed[i] * delta;
+                }
+                p.distanceToCameraSq = vec3<F32>(p.pos).distanceSquared(eyePos);
  
-                _particlePositionData[4*particlesCount+0] = p.pos.x;
-                _particlePositionData[4*particlesCount+1] = p.pos.y;
-                _particlePositionData[4*particlesCount+2] = p.pos.z;
+                _particlePositionData[4*particlesCount+0] = p.pos[0];
+                _particlePositionData[4*particlesCount+1] = p.pos[1];
+                _particlePositionData[4*particlesCount+2] = p.pos[2];
                 _particlePositionData[4*particlesCount+3] = p.size;
  
-                _particleColorData[4*particlesCount+0] = p.rgba.r;
-                _particleColorData[4*particlesCount+1] = p.rgba.g;
-                _particleColorData[4*particlesCount+2] = p.rgba.b;
-                _particleColorData[4*particlesCount+3] = p.rgba.a;
+                _particleColorData[4*particlesCount+0] = p.rgba[0];
+                _particleColorData[4*particlesCount+1] = p.rgba[1];
+                _particleColorData[4*particlesCount+2] = p.rgba[2];
+                _particleColorData[4*particlesCount+3] = p.rgba[3];
  
             }else{
                 // Particles that just died will be put at the end of the buffer in SortParticles();
-                p.distanceToCamera = -1.0f;
+                p.distanceToCameraSq = -1.0f;
             }
  
             particlesCount++;

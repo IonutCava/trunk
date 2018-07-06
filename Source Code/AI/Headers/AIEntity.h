@@ -165,8 +165,8 @@ private:
     mutable SharedLock    _updateMutex;
     mutable SharedLock    _managerQueryMutex;
 
-    typedef Unordered_map<SensorType, Sensor*> sensorMap;
-    sensorMap               _sensorList;
+    typedef Unordered_map<SensorType, Sensor*> SensorMap;
+    SensorMap               _sensorList;
     NPC*                    _unitRef;
     /// PathFinding
     /// ID of mAgent within the crowd.

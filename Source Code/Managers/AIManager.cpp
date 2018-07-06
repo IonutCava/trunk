@@ -122,7 +122,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::Navig
     DIVIDE_ASSERT(navMesh != nullptr, "AIManager error: Invalid navmesh specified!");
 
     navMesh->debugDraw(_navMeshDebugDraw);
-    _navMeshes.insert(std::make_pair(radius, navMesh));
+    _navMeshes.emplace(radius, navMesh);
     w_lock.unlock();
 
     WriteLock w_lock2(_updateMutex);

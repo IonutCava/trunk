@@ -65,8 +65,8 @@ void CameraManager::addNewCamera(const std::string& cameraName, Camera* const ca
 
     for(const DELEGATE_CBK& listener : _updateCameralisteners) camera->addUpdateListener(listener);
     
-    _cameraPool.insert(std::make_pair(cameraName,camera));
-    _cameraPoolGUID.insert(std::make_pair(camera->getGUID(), camera));
+    _cameraPool.emplace(cameraName,camera);
+    _cameraPoolGUID.emplace(camera->getGUID(), camera);
 }
 
 Camera* CameraManager::findCamera(const std::string& name){

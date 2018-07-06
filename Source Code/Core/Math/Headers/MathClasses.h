@@ -181,8 +181,12 @@ public:
     mat3 &operator-=(const mat3 &m) { return *this = *this - m; }
 
     bool operator == (mat3& B) const {
-        for (I32 i = 0; i < 9; i++){
-            if (!FLOAT_COMPARE(this->m[i] + EPSILON , B[i] + EPSILON)) return false;
+        for (U8 i = 0; i < 3; ++i){
+            if (!FLOAT_COMPARE(this->m[i][0] + EPSILON_F32, B[i][0] + EPSILON_F32) ||
+                !FLOAT_COMPARE(this->m[i][1] + EPSILON_F32, B[i][1] + EPSILON_F32) ||
+                !FLOAT_COMPARE(this->m[i][2] + EPSILON_F32, B[i][2] + EPSILON_F32) ){
+                return false;
+            }
         }
         return true;
     }
@@ -485,15 +489,19 @@ public:
                                          this->mat[12] + this->mat[13] + this->mat[14] + this->mat[15]; }
 
     inline bool operator == (const mat4& B) const {
-        if (!FLOAT_COMPARE(elementSum(), B.elementSum()))
+        // Add a small epsilon value to avoid 0.0 != 0.0
+        if (!FLOAT_COMPARE(elementSum() + EPSILON_F32, B.elementSum() + EPSILON_F32)) {
             return false;
-
-        const F32* mat2 = &B.mat[0];
-        U8 i = 0;
-        for (; i < 16; ++i)
-            if (!FLOAT_COMPARE(mat[i] + EPSILON_F32, mat2[i] + EPSILON_F32)) //< add a small epsilon value to avoid 0.0 != 0.0
+        }
+        
+        for (U8 i = 0; i < 4; ++i) {
+            if (!FLOAT_COMPARE(this->m[i][0] + EPSILON_F32, B.m[i][0] + EPSILON_F32) ||
+                !FLOAT_COMPARE(this->m[i][1] + EPSILON_F32, B.m[i][1] + EPSILON_F32) ||
+                !FLOAT_COMPARE(this->m[i][2] + EPSILON_F32, B.m[i][2] + EPSILON_F32) ||
+                !FLOAT_COMPARE(this->m[i][3] + EPSILON_F32, B.m[i][3] + EPSILON_F32) ){
                 return false;
-
+            }
+        }
         return true;
     }
 

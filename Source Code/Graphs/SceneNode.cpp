@@ -81,13 +81,10 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const Boundin
 
 Material* const SceneNode::getMaterial() {
     //UpgradableReadLock ur_lock(_materialLock);
-    if (_material == nullptr) {
-        if (!_renderState._noDefaultMaterial) {
-            ResourceDescriptor defaultMat("defaultMaterial");
-            //UpgradeToWriteLock uw_lock(ur_lock);
-            _material = CreateResource<Material>(defaultMat);
-            REGISTER_TRACKED_DEPENDENCY(_material);
-        }
+    if (_material == nullptr && !_renderState._noDefaultMaterial) {
+        //UpgradeToWriteLock uw_lock(ur_lock);
+        _material = CreateResource<Material>(ResourceDescriptor("defaultMaterial"));
+        REGISTER_TRACKED_DEPENDENCY(_material);
     }
     return _material;
 }

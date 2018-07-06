@@ -44,7 +44,7 @@ AIEntity::~AIEntity()
     _agent = nullptr;
 
     SAFE_DELETE(_AISceneImpl);
-    FOR_EACH(sensorMap::value_type& it , _sensorList) {
+    FOR_EACH(SensorMap::value_type& it , _sensorList) {
         SAFE_DELETE(it.second);
     }
     _sensorList.clear();
@@ -109,10 +109,11 @@ bool AIEntity::addSensor(SensorType type) {
     };
 
     if (sensor) {
-        if (_sensorList.find(type) != _sensorList.end()) {
-            SAFE_UPDATE(_sensorList[type], sensor);
+        SensorMap::iterator it = _sensorList.find(type);
+        if (it != _sensorList.end()) {
+            SAFE_UPDATE(it->second, sensor);
         } else {
-            _sensorList.insert(std::make_pair(type,sensor));
+            _sensorList.emplace(type,sensor);
         }
         return true;
     }

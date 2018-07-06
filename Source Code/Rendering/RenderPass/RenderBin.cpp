@@ -15,8 +15,9 @@ RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, SceneG
 {
     Material* mat = _node->getNode()->getMaterial();
     // If we do not have a material, no need to continue
-    if(!mat) return;
-
+    if (!mat) {
+        return;
+    }
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
     _stateHash = GFX_DEVICE.getStateBlockDescriptor(mat->getRenderStateBlock(GFX_DEVICE.getRenderStage())).getHash();
@@ -42,17 +43,23 @@ struct RenderQueueKeyCompare{
     //Sort
     bool operator()(const RenderBinItem &a, const RenderBinItem &b) const{
         //Sort by shader in all states The sort key is the shader id (for now)
-        if (a._sortKeyA < b._sortKeyA)
+        if (a._sortKeyA < b._sortKeyA) {
             return true;
-        if (a._sortKeyA > b._sortKeyA)
-            return false;
+        }
 
-            // If the shader values are the same, we use the state hash for sorting
-            // The _stateHash is a CRC value created based on the RenderState.
-        if (a._stateHash < b._stateHash)
-            return true;
-        if (a._stateHash > b._stateHash)
+        if (a._sortKeyA > b._sortKeyA) {
             return false;
+        }
+         
+        // If the shader values are the same, we use the state hash for sorting
+        // The _stateHash is a CRC value created based on the RenderState.
+        if (a._stateHash < b._stateHash) {
+            return true;
+        }
+
+        if (a._stateHash > b._stateHash) {
+            return false;
+        }
 
         // If both the shader are the same and the state hashes match, we sort by the secondary key (usually the texture id)
         return (a._sortKeyB < b._sortKeyB);
@@ -82,44 +89,43 @@ RenderBin::RenderBin(const RenderBinType& rbType,const RenderingOrder::List& ren
 void RenderBin::sort(const RenderStage& currentRenderStage){
     //WriteLock w_lock(_renderBinGetMutex);
     switch(_renderOrder){
-        default:
-        case RenderingOrder::BY_STATE:{
-            if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE))
+        default :
+        case RenderingOrder::BY_STATE : {
+            if (GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
                 std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceFrontToBack());
-            else
+            } else {
                 std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueKeyCompare());
-            }break;
-        case RenderingOrder::BACK_TO_FRONT:
+            }
+        } break;
+        case RenderingOrder::BACK_TO_FRONT : {
             std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceBacktoFront());
-            break;
-        case RenderingOrder::FRONT_TO_BACK:
+        } break;
+        case RenderingOrder::FRONT_TO_BACK : {
             std::sort(_renderBinStack.begin(), _renderBinStack.end(), RenderQueueDistanceFrontToBack());
-            break;
-        case RenderingOrder::NONE:
+        } break;
+        case RenderingOrder::NONE : {
             //no need to sort
-            break;
-        case RenderingOrder::ORDER_PLACEHOLDER:
-            ERROR_FN(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"),renderBinTypeToNameMap[_rbType]);
-            break;
+        } break;
+        case RenderingOrder::ORDER_PLACEHOLDER : {
+            ERROR_FN(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"), renderBinTypeToNameMap[_rbType]);
+        } break;
     };
 }
 
 void RenderBin::refresh(){
     //WriteLock w_lock(_renderBinGetMutex);
-    _renderBinStack.resize(0);
-    _renderBinStack.reserve(125);
+    _renderBinStack.clear();
+    _renderBinStack.reserve(128);
 }
 
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
-    SceneNode* sn = sgn->getNode();
     I32 keyA = (U32)_renderBinStack.size() + 1;
     I32 keyB = keyA;
-    Material* nodeMaterial = sn->getMaterial();
-    F32 distToCam = sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos);
+    Material* nodeMaterial = sgn->getNode()->getMaterial();
     if(nodeMaterial){
         nodeMaterial->getSortKeys(keyA, keyB);
     }
-    _renderBinStack.emplace_back(keyA, keyB, distToCam, sgn);
+    _renderBinStack.emplace_back(keyA, keyB, sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos), sgn);
 }
 
 void RenderBin::preRender(const RenderStage& currentRenderStage){

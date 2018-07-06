@@ -50,12 +50,13 @@ bool ShaderManager::init() {
 
 /// Whenever a new program is created, it's registered with the manager
 void ShaderManager::registerShaderProgram(const std::string& name, ShaderProgram* const shaderProgram) {
+    ShaderProgramMap::iterator it = _shaderPrograms.find(name);
     // Either update an existing shader
-    if (_shaderPrograms.find(name) != _shaderPrograms.end()) {
-        SAFE_UPDATE(_shaderPrograms[name], shaderProgram);
+    if (it != _shaderPrograms.end()) {
+        SAFE_UPDATE(it->second, shaderProgram);
     } else {
         // Or register a new one
-        _shaderPrograms.insert(std::make_pair(name,shaderProgram));
+        _shaderPrograms.emplace(name,shaderProgram);
     }
 }
 
@@ -161,7 +162,7 @@ const char* ShaderManager::shaderFileRead(const std::string &atomName, const std
             content[count] = '\0';
             retContent = strdup(content);
             // Add the code to the atom cache for future reference
-            _atoms.insert(std::make_pair(atomName, retContent));
+            _atoms.emplace(atomName, retContent);
             SAFE_DELETE_ARRAY(content);
         }
         fclose(fp);
@@ -243,7 +244,7 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
         if(recompile) {
             _shaderNameMap[name] = shader;
         } else {
-            _shaderNameMap.insert(std::make_pair(name,shader));
+            _shaderNameMap.emplace(name,shader);
         }
     }
 

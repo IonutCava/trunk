@@ -31,8 +31,8 @@ namespace Divide {
 ///singlethreaded hardware initialization (textures, shaders, etc)
 class HardwareResource : public Resource {
 public:
-	HardwareResource(const std::string& name) : Resource(name),
-												_hardwareInitComplete(false)
+	explicit HardwareResource(const std::string& name) : Resource(name),
+											             _hardwareInitComplete(false)
 	{
 	}
 

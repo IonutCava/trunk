@@ -85,7 +85,7 @@ bool LightManager::addLight(Light* const light){
     }
 
     light->setSlot((U8)_lights.size());
-    _lights.insert(std::make_pair(light->getGUID(), light));
+    _lights.emplace(light->getGUID(), light);
     GET_ACTIVE_SCENE()->renderState().getCameraMgr().addNewCamera(light->getName(), light->shadowCamera());
     return true;
 }
@@ -113,8 +113,9 @@ void LightManager::idle(){
 }
 
 void LightManager::updateResolution(I32 newWidth, I32 newHeight){
-    FOR_EACH(Light::LightMap::value_type& it, _lights)
+    FOR_EACH(Light::LightMap::value_type& it, _lights) {
         it.second->updateResolution(newWidth, newHeight);
+    }
 
     _cachedResolution.set(newWidth, newHeight);
 }

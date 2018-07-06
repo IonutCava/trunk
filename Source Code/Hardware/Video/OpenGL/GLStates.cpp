@@ -176,12 +176,18 @@ bool GL_API::setActiveTextureUnit(GLuint unit) {
 
 /// Bind the sampler object described by the hash value to the specified unit
 bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
-    // Prevent double bind
-    if (_samplerBoundMap[unit] == samplerHash) {
-        return false;
+    samplerBoundMapDef::iterator it = _samplerBoundMap.find(unit);
+    if (it == _samplerBoundMap.end()) {
+        _samplerBoundMap.emplace(unit, samplerHash);
+    } else {
+        // Prevent double bind
+        if (it->second == samplerHash) {
+            return false;
+        } else {
+            // Remember the new binding state for future reference
+            it->second = samplerHash;
+        }
     }
-    // Remember the new binding state for future reference
-    _samplerBoundMap[unit] = samplerHash;
     // Get the sampler object defined by the hash value and bind it to the specified unit 
     glBindSampler(unit, getSamplerHandle(samplerHash));
 

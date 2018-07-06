@@ -305,7 +305,7 @@ size_t GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descri
     // Find the corresponding render state block
     if (_stateBlockMap.find(hashValue) == _stateBlockMap.end()) {
         // Create a new one if none are found. The GFXDevice class is responsible for deleting these!
-        _stateBlockMap.insert(std::make_pair(hashValue, New RenderStateBlock(descriptor)));
+        _stateBlockMap.emplace(hashValue, New RenderStateBlock(descriptor));
     }
     // Return the descriptor's hash value
     return hashValue;
@@ -321,8 +321,11 @@ size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
         _previousStateBlockHash = _currentStateBlockHash;
         // Update the current state hash
         _currentStateBlockHash = stateBlockHash;
+        RenderStateMap::const_iterator currentStateIt = _stateBlockMap.find(_currentStateBlockHash);
+        RenderStateMap::const_iterator previousStateIt = _stateBlockMap.find(_previousStateBlockHash);
+        DIVIDE_ASSERT(currentStateIt != _stateBlockMap.end() && previousStateIt != _stateBlockMap.end(), "GFXDevice error: Invalid state blocks detected on activation!");
         // Activate the new render state block in an rendering API dependent way
-        activateStateBlock(*_stateBlockMap[_currentStateBlockHash], _stateBlockMap[_previousStateBlockHash]);
+        activateStateBlock(*currentStateIt->second, previousStateIt->second);
     }
     // Return the previous state hash
     return _previousStateBlockHash;
@@ -331,7 +334,7 @@ size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
 /// Return the descriptor of the render state block defined by the specified hash value. The state block must be created prior to calling this!
 const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(size_t renderStateBlockHash) const {
     // Find the render state block associated with the received hash value
-    const RenderStateMap ::const_iterator& it = _stateBlockMap.find(renderStateBlockHash);
+    RenderStateMap ::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
     // Assert if it doesn't exist. Avoids programming errors.
     DIVIDE_ASSERT(it != _stateBlockMap.end(), "GFXDevice error: Invalid render state block hash specified for getStateBlockDescriptor!");
     // Return the state block's descriptor
@@ -424,11 +427,19 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
 
 /// Update the virtual camera's matrices and upload them to the GPU
 F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
-    _gpuBlock._ViewMatrix.set(viewMatrix);
-    _gpuBlock._cameraPosition.set(eyePos);
-    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix * _gpuBlock._ProjectionMatrix);
-    _gfxDataBuffer->SetData(&_gpuBlock);
-
+    bool updated = false;
+    if (eyePos != _gpuBlock._cameraPosition ) {
+        _gpuBlock._cameraPosition.set(eyePos);
+        updated = true;
+    }
+    if (viewMatrix != _gpuBlock._ViewMatrix) {
+        _gpuBlock._ViewMatrix.set(viewMatrix);
+        updated = true;
+    }
+    if (updated) {
+        _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix * _gpuBlock._ProjectionMatrix);
+        _gfxDataBuffer->SetData(&_gpuBlock);
+    }
     return _gpuBlock._ViewMatrix.mat;
 }
 

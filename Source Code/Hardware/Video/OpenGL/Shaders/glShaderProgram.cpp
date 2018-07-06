@@ -159,7 +159,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
         }
     }else{
         // If refresh == false, we are adding a new stage
-        _shaderIdMap.insert(std::make_pair(shaderId, shader));
+        _shaderIdMap.emplace(shaderId, shader);
     }
 
     // Attach the shader
@@ -442,7 +442,7 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform) {
     DIVIDE_ASSERT(_threadedLoadComplete, "glShaderProgram error: tried to query a shader program before threaded load completed!");
 
     // Check the cache for the location
-    const ShaderVarMap::const_iterator& it = _shaderVars.find(name);
+    ShaderVarMap::const_iterator it = _shaderVars.find(name);
     if (it != _shaderVars.end()) {
     	return it->second;
     }
@@ -451,7 +451,7 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform) {
     GLint location = uniform ? glGetUniformLocation(_shaderProgramId, name.c_str()) : glGetAttribLocation(_shaderProgramId, name.c_str());
 
     // Save it for later reference
-    _shaderVars[name] = location;
+    _shaderVars.emplace(name, location);
 
     // Return the location
     return location;

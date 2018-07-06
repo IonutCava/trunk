@@ -71,11 +71,13 @@ bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolutio
 Scene* SceneManager::createScene(const std::string& name){
     Scene* scene = nullptr;
 
-    if(!name.empty())
+    if (!name.empty()) {
         scene = _sceneFactory[name]();
+    }
 
-    if(scene != nullptr)
-        _sceneMap.insert(std::make_pair(name, scene));
+    if (scene != nullptr) {
+        _sceneMap.emplace(name, scene);
+    }
 
     return scene;
 }

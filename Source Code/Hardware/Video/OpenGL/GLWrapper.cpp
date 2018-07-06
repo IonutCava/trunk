@@ -197,7 +197,7 @@ bool GL_API::deInitShaders() {
 /// Try to find the requested font in the font cache. Load on cache miss.
 I32 GL_API::getFont(const std::string& fontName) {
     // Search for the requested font by name
-    const FontCache::const_iterator& it = _fonts.find(fontName);
+    FontCache::const_iterator it = _fonts.find(fontName);
     // If we failed to find it, it wasn't loaded yet
     if (it == _fonts.end()) {
         // Fonts are stored in the general asset directory
@@ -214,7 +214,7 @@ I32 GL_API::getFont(const std::string& fontName) {
             ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName.c_str());
         }
         // Save the font in the font cache
-        _fonts.insert(std::make_pair(fontName, tempFont));
+        _fonts.emplace(fontName, tempFont);
         // Return the font
         return tempFont;
     }
@@ -269,11 +269,11 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // Get the descriptor's hash value
     size_t hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map
-    samplerObjectMap::iterator it = _samplerMap.find(hashValue);
+    samplerObjectMap::const_iterator it = _samplerMap.find(hashValue);
     // If we fail to find it, we need to create a new sampler object
     if (it == _samplerMap.end()) {
         // Create and store the newly created sample object. GL_API is responsible for deleting these!
-        _samplerMap.insert(std::make_pair(hashValue, New glSamplerObject(descriptor)));
+        _samplerMap.emplace(hashValue, New glSamplerObject(descriptor));
     }
     // Return the sampler object's hash value
     return hashValue;
@@ -286,7 +286,7 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
         return 0;
     }
     // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
-    samplerObjectMap::iterator it = _samplerMap.find(samplerHash);
+    samplerObjectMap::const_iterator it = _samplerMap.find(samplerHash);
     if (it == _samplerMap.end()) {
         ERROR_FN(Locale::get("ERROR_NO_SAMPLER_OBJECT_FOUND"), samplerHash);
         return 0;

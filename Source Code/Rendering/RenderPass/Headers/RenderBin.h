@@ -104,6 +104,10 @@ public:
 
     inline const RenderBinType&  getType() const {return _rbType;}
 
+    bool operator< (const RenderBin& rhs){
+        return (_drawKey < rhs._drawKey); 
+    };
+
 private:
     //mutable SharedLock _renderBinGetMutex;
     D32 _drawKey;

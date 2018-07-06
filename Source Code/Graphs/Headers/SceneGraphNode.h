@@ -195,11 +195,11 @@ public:
     template<typename T>
     inline T* getComponent() { assert(false && "INVALID COMPONENT"); return nullptr; }
     template<>
-    inline AnimationComponent* getComponent() { return dynamic_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); }
+    inline AnimationComponent* getComponent()  { return static_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); }
     template<>
-    inline NavigationComponent* getComponent() { return dynamic_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); }
+    inline NavigationComponent* getComponent() { return static_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); }
     template<>
-    inline PhysicsComponent* getComponent() { return dynamic_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
+    inline PhysicsComponent* getComponent()    { return static_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
     
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 

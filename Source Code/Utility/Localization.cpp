@@ -31,7 +31,7 @@ namespace Locale {
             for ( ;keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
                 keyName = keyValuePairIt->first.pItem;
                 value   = keyValuePairIt->second;
-                _languageTable.insert(std::make_pair(keyName,value));
+                _languageTable.emplace(keyName,value);
             }
         }else{
             _languageTable[key] = defaultValue;
