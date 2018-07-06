@@ -69,4 +69,86 @@ namespace Divide {
 typedef timeval TimeValue;
 }; //namespace Divide
 
+
+// HACK FOR MISSING C++1y features:
+namespace std {
+// TEMPLATE FUNCTIONS cbegin AND cend
+template<class _Container>
+auto inline cbegin(const _Container& _Cont) -> decltype(_STD begin(_Cont))
+{	// get beginning of sequence
+    return (_STD begin(_Cont));
+}
+
+template<class _Container>
+auto inline cend(const _Container& _Cont) -> decltype(_STD end(_Cont))
+{	// get end of sequence
+    return (_STD end(_Cont));
+}
+
+// TEMPLATE FUNCTIONS rbegin AND rend
+template<class _Container>
+auto inline rbegin(_Container& _Cont) -> decltype(_Cont.rbegin())
+{	// get beginning of reversed sequence
+    return (_Cont.rbegin());
+}
+
+template<class _Container>
+auto inline rbegin(const _Container& _Cont) -> decltype(_Cont.rbegin())
+{	// get beginning of reversed sequence
+    return (_Cont.rbegin());
+}
+
+template<class _Container>
+auto inline rend(_Container& _Cont) -> decltype(_Cont.rend())
+{	// get end of reversed sequence
+    return (_Cont.rend());
+}
+
+template<class _Container>
+auto inline rend(const _Container& _Cont) -> decltype(_Cont.rend())
+{	// get end of reversed sequence
+    return (_Cont.rend());
+}
+
+template<class _Ty,
+    size_t _Size> inline
+    reverse_iterator<_Ty *> rbegin(_Ty(&_Array)[_Size])
+{	// get beginning of reversed array
+    return (reverse_iterator<_Ty *>(_Array + _Size));
+}
+
+template<class _Ty,
+    size_t _Size> inline
+    reverse_iterator<_Ty *> rend(_Ty(&_Array)[_Size])
+{	// get end of reversed array
+    return (reverse_iterator<_Ty *>(_Array));
+}
+
+template<class _Elem> inline
+reverse_iterator<const _Elem *> rbegin(initializer_list<_Elem> _Ilist)
+{	// get beginning of reversed sequence
+    return (reverse_iterator<const _Elem *>(_Ilist.end()));
+}
+
+template<class _Elem> inline
+reverse_iterator<const _Elem *> rend(initializer_list<_Elem> _Ilist)
+{	// get end of reversed sequence
+    return (reverse_iterator<const _Elem *>(_Ilist.begin()));
+}
+
+// TEMPLATE FUNCTIONS crbegin AND crend
+template<class _Container>
+auto inline crbegin(const _Container& _Cont) -> decltype(_STD rbegin(_Cont))
+{	// get beginning of reversed sequence
+    return (_STD rbegin(_Cont));
+}
+
+template<class _Container>
+auto inline crend(const _Container& _Cont) -> decltype(_STD rend(_Cont))
+{	// get end of reversed sequence
+    return (_STD rend(_Cont));
+}
+
+}; //namespace std
+
 #endif //_PLATFORM_DEFINES_UNIX_H_

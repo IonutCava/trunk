@@ -37,16 +37,18 @@
 #include "Utility/Headers/HashMap.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
+
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif //_USE_MATH_DEFINES
+#include <cmath>
+
 #include <functional>
 #include <atomic>
 #include <type_traits>
 #include <array>
 #include <memory>
 #include <bitset>
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif //_USE_MATH_DEFINES
-#include <cmath>
 
 #if defined(_WIN32)
 #include "PlatformDefinesWindows.h"

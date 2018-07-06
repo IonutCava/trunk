@@ -385,12 +385,12 @@ void Quaternion<T>::getEuler(vec3<T>* euler, bool toDegrees = false) const {
 
     if (test > (0.5f - EPSILON_F32) * unit) {  // singularity at north pole
         heading = 2 * std::atan2(x, w);
-        attitude = static_cast<T>(M_PI_2);
+        attitude = static_cast<T>(M_PI2);
         bank = 0;
     } else if (test <
                -(0.5f - EPSILON_F32) * unit) {  // singularity at south pole
         heading = -2 * std::atan2(x, w);
-        attitude = -static_cast<T>(M_PI_2);
+        attitude = -static_cast<T>(M_PI2);
         bank = 0;
     } else {
         T x2 = 2 * x;

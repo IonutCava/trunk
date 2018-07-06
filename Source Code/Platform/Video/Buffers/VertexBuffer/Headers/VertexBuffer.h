@@ -174,12 +174,12 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     template<typename T>
-    const vectorImpl<T>& getIndices() const {
+    inline const vectorImpl<T>& getIndices() const {
         static_assert(false, "VertexBuffer::getIndices error: Need valid index data type!");
     }
 
     template<>
-    const vectorImpl<U32>& getIndices() const {
+    inline const vectorImpl<U32>& getIndices() const {
         return _hardwareIndicesL;
     }
 

@@ -39,7 +39,13 @@ inline void ParamHandler::setDebugOutput(bool logState) {
 }
 
 template <typename T>
-T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
+inline bool ParamHandler::isParam(const stringImpl& param) const {
+    ReadLock r_lock(_mutex);
+    return _params.find(param) != std::cend(_params);
+}
+
+template <typename T>
+inline T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
     ReadLock r_lock(_mutex);
     ParamMap::const_iterator it = _params.find(name);
     if (it != std::cend(_params)) {
@@ -62,7 +68,7 @@ T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
 }
 
 template <typename T>
-void ParamHandler::setParam(const stringImpl& name, const T& value) {
+inline void ParamHandler::setParam(const stringImpl& name, const T& value) {
     WriteLock w_lock(_mutex);
     ParamMap::iterator it = _params.find(name);
     if (it == std::end(_params)) {
@@ -74,7 +80,7 @@ void ParamHandler::setParam(const stringImpl& name, const T& value) {
 }
 
 template <typename T>
-void ParamHandler::delParam(const stringImpl& name) {
+inline void ParamHandler::delParam(const stringImpl& name) {
     if (isParam<T>(name)) {
         WriteLock w_lock(_mutex);
         _params.erase(name);
@@ -86,15 +92,9 @@ void ParamHandler::delParam(const stringImpl& name) {
     }
 }
 
-template <typename T>
-bool ParamHandler::isParam(const stringImpl& param) const {
-    ReadLock r_lock(_mutex);
-    return _params.find(param) != std::cend(_params);
-}
-
 template <>
-stringImpl ParamHandler::getParam(const stringImpl& name,
-                                  stringImpl defaultValue) const {
+inline stringImpl ParamHandler::getParam(const stringImpl& name,
+                                         stringImpl defaultValue) const {
     ReadLock r_lock(_mutex);
     ParamStringMap::const_iterator it = _paramsStr.find(name);
     if (it != std::cend(_paramsStr)) {
@@ -106,7 +106,7 @@ stringImpl ParamHandler::getParam(const stringImpl& name,
 }
 
 template <>
-void ParamHandler::setParam(const stringImpl& name, const stringImpl& value) {
+inline void ParamHandler::setParam(const stringImpl& name, const stringImpl& value) {
     WriteLock w_lock(_mutex);
     ParamStringMap::iterator it = _paramsStr.find(name);
     if (it == std::end(_paramsStr)) {
@@ -117,27 +117,34 @@ void ParamHandler::setParam(const stringImpl& name, const stringImpl& value) {
     }
 }
 
+template <>
+inline bool ParamHandler::isParam<stringImpl>(const stringImpl& param) const {
+    ReadLock r_lock(_mutex);
+    return _paramsStr.find(param) != std::cend(_paramsStr);
+}
+
+
 #if defined(STRING_IMP) && STRING_IMP != 1
 template <>
-std::string ParamHandler::getParam(const stringImpl& name,
+inline std::string ParamHandler::getParam(const stringImpl& name,
                                    std::string defaultValue) const {
     return stringAlg::fromBase(
         getParam<stringImpl>(name, stringAlg::toBase(defaultValue)));
 }
 
 template <>
-void ParamHandler::setParam(const stringImpl& name, const std::string& value) {
+inline void ParamHandler::setParam(const stringImpl& name, const std::string& value) {
     setParam(name, stringImpl(value.c_str()));
 }
 
 template <>
-void ParamHandler::delParam<std::string>(const stringImpl& name) {
+inline void ParamHandler::delParam<std::string>(const stringImpl& name) {
     delParam<stringImpl>(name);
 }
 #endif
 
 template <>
-void ParamHandler::delParam<stringImpl>(const stringImpl& name) {
+inline void ParamHandler::delParam<stringImpl>(const stringImpl& name) {
     if (isParam<stringImpl>(name)) {
         WriteLock w_lock(_mutex);
         _paramsStr.erase(name);
@@ -150,13 +157,7 @@ void ParamHandler::delParam<stringImpl>(const stringImpl& name) {
 }
 
 template <>
-bool ParamHandler::isParam<stringImpl>(const stringImpl& param) const {
-    ReadLock r_lock(_mutex);
-    return _paramsStr.find(param) != std::cend(_paramsStr);
-}
-
-template <>
-bool ParamHandler::getParam(const stringImpl& name, bool defaultValue) const {
+inline bool ParamHandler::getParam(const stringImpl& name, bool defaultValue) const {
     ReadLock r_lock(_mutex);
     ParamBoolMap::const_iterator it = _paramBool.find(name);
     if (it != std::cend(_paramBool)) {
@@ -168,7 +169,7 @@ bool ParamHandler::getParam(const stringImpl& name, bool defaultValue) const {
 }
 
 template <>
-void ParamHandler::setParam(const stringImpl& name, const bool& value) {
+inline void ParamHandler::setParam(const stringImpl& name, const bool& value) {
     WriteLock w_lock(_mutex);
     ParamBoolMap::iterator it = _paramBool.find(name);
     if (it == std::end(_paramBool)) {
@@ -177,6 +178,12 @@ void ParamHandler::setParam(const stringImpl& name, const bool& value) {
     } else {
         it->second = value;
     }
+}
+
+template <>
+inline bool ParamHandler::isParam<bool>(const stringImpl& param) const {
+    ReadLock r_lock(_mutex);
+    return _paramBool.find(param) != std::cend(_paramBool);
 }
 
 template <>
@@ -193,13 +200,7 @@ inline void ParamHandler::delParam<bool>(const stringImpl& name) {
 }
 
 template <>
-bool ParamHandler::isParam<bool>(const stringImpl& param) const {
-    ReadLock r_lock(_mutex);
-    return _paramBool.find(param) != std::cend(_paramBool);
-}
-
-template <>
-F32 ParamHandler::getParam(const stringImpl& name, F32 defaultValue) const {
+inline F32 ParamHandler::getParam(const stringImpl& name, F32 defaultValue) const {
     ReadLock r_lock(_mutex);
     ParamFloatMap::const_iterator it = _paramsFloat.find(name);
     if (it != std::cend(_paramsFloat)) {
@@ -211,7 +212,7 @@ F32 ParamHandler::getParam(const stringImpl& name, F32 defaultValue) const {
 }
 
 template <>
-void ParamHandler::setParam(const stringImpl& name, const F32& value) {
+inline void ParamHandler::setParam(const stringImpl& name, const F32& value) {
     WriteLock w_lock(_mutex);
     ParamFloatMap::iterator it = _paramsFloat.find(name);
     if (it == std::end(_paramsFloat)) {
@@ -220,6 +221,12 @@ void ParamHandler::setParam(const stringImpl& name, const F32& value) {
     } else {
         it->second = value;
     }
+}
+
+template <>
+inline bool ParamHandler::isParam<F32>(const stringImpl& param) const {
+    ReadLock r_lock(_mutex);
+    return _paramsFloat.find(param) != std::cend(_paramsFloat);
 }
 
 template <>
@@ -233,12 +240,6 @@ inline void ParamHandler::delParam<F32>(const stringImpl& name) {
     } else {
         Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
     }
-}
-
-template <>
-bool ParamHandler::isParam<F32>(const stringImpl& param) const {
-    ReadLock r_lock(_mutex);
-    return _paramsFloat.find(param) != std::cend(_paramsFloat);
 }
 
 };  // namespace Divide

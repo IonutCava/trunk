@@ -36,12 +36,12 @@ int Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
 
 int main() {
     /*Console output redirect*/
-    std::ofstream myfile("console_server.log");
-    outbuf obuf(myfile.rdbuf(), std::cout.rdbuf());
-    scoped_streambuf_assignment ssa(std::cout, &obuf);
+    std::ofstream stdConsole(SERVER_LOG_FILE,
+        std::ofstream::out | std::ofstream::trunc);
     /*Console output redirect*/
-    stringImpl address = "127.0.0.1";
+    std::cout.rdbuf(stdConsole.rdbuf());
 
+    stringImpl address("127.0.0.1");
     Server::getInstance().init(((U16)443), address, true);
     return 0;
 }

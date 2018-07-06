@@ -182,6 +182,10 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 #define ERROR_LOG_FILE "errors.log"
 #endif  // ERROR_LOG_FILE
 
+#ifndef SERVER_LOG_FILE
+#define SERVER_LOG_FILE "server.log"
+#endif  // SERVER_LOG_FILE
+
 /// Use eastl or stl string classes
 /// 0 = EASTL
 /// 1 = STL
