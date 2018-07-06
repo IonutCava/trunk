@@ -152,7 +152,7 @@ void Octree::update(const U64 deltaTimeUS) {
 
 bool Octree::addNode(SceneGraphNode* node) {
     if (node && // check for valid node
-        !BitCompare(_nodeMask, to_U32(node->getNode<>()->getType())) &&  // check for valid type
+        !BitCompare(_nodeMask, to_U32(node->getNode<>()->type())) &&  // check for valid type
         !node->isChildOfType(_nodeMask, true)) // parent is valid type as well
     {
         WriteLock w_lock(s_pendingInsertLock);
@@ -478,7 +478,7 @@ vector<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 t
     for(SceneGraphNode* objPtr : _objects) {
         assert(objPtr);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_base(objPtr->getNode<>()->getType()))) {
+        if (BitCompare(typeFilterMask, to_base(objPtr->getNode<>()->type()))) {
             continue;
         }
 
@@ -518,7 +518,7 @@ vector<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 
     for (SceneGraphNode* objPtr : _objects) {
         assert(objPtr);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_base(objPtr->getNode<>()->getType()))) {
+        if (BitCompare(typeFilterMask, to_base(objPtr->getNode<>()->type()))) {
             continue;
         }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <model>defaultobject</model>
+<NAVIGATION/>
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
@@ -9,6 +10,7 @@
     </Transform>
     <WorldMat 00="1" 01="0" 02="0" 03="0" 10="0" 11="1" 12="0" 13="0" 20="0" 21="0" 22="1" 23="0" 30="0" 31="0" 32="0" 33="1"/>
 </TRANSFORM>
+<BOUNDS/>
 <RENDERING>
     <Material>
         <colour r="0.639999986" g="0.639999986" b="0.639999986" a="1"/>
@@ -18,11 +20,11 @@
         <doubleSided>true</doubleSided>
         <bumpMethod>NORMAL</bumpMethod>
         <shadingMode>PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>diffuse.dds</name>
-                <path>assets/textures/</path>
+                <path>assets/textures</path>
                 <MapU>REPEAT</MapU>
                 <MapV>REPEAT</MapV>
                 <MapW>REPEAT</MapW>
@@ -32,7 +34,7 @@
             </UNIT0>
             <NORMALMAP>
                 <name>normal.tga</name>
-                <path>assets/textures/</path>
+                <path>assets/textures</path>
                 <MapU>REPEAT</MapU>
                 <MapV>REPEAT</MapV>
                 <MapW>REPEAT</MapW>

@@ -118,9 +118,14 @@ class ResourceDescriptor : public Hashable {
     inline void setPropertyList(const stringImpl& propertyListString) {
         _properties = propertyListString;
     }
+
     inline void setResourceLocation(const stringImpl& resourceLocation) {
-        _resourceLocation = resourceLocation.substr(0, resourceLocation.rfind("/") + 1);
+        _resourceLocation = resourceLocation;
+        while (_resourceLocation.back() == '/') {
+            _resourceLocation.pop_back();
+        }
     }
+
     inline void setResourceName(const stringImpl& resourceName) {
         _resourceName = resourceName;
     }

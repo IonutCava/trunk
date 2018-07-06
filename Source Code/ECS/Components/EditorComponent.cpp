@@ -50,6 +50,8 @@ namespace Divide {
 
 
     void EditorComponent::saveToXML(boost::property_tree::ptree& pt) const {
+        pt.put(_name, "");
+
         for (const EditorComponentField& field : _fields) {
             stringImpl entryName = _name + "." + field._name;
 

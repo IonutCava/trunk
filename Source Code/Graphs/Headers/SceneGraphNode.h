@@ -180,10 +180,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SceneGraphNode* findChild(I64 GUID, bool recursive = false) const;
 
     /// Find the graph nodes whom's bounding boxes intersects the given ray
-    void intersect(const Ray& ray, F32 start, F32 end,
-                   bool force,
-                   vector<SGNRayResult>& selectionHits,
-                   bool recursive = true) const;
+    void intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const;
 
     /// Selection helper functions
     void setSelectionFlag(SelectionFlag flag);
@@ -371,6 +368,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         GetComponentManager()->RemoveAllComponents(GetEntityID());
         _editorComponents.clear();
     }
+
+
+    void AddMissingComponents(U32 componentMask);
 
    private:
     friend class SGNRelationshipCache;

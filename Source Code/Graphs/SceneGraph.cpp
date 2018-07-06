@@ -105,7 +105,7 @@ void SceneGraph::addToDeleteQueue(SceneGraphNode* node, vec_size childIdx) {
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     I64 guid = oldNode.getGUID();
 
-    vectorEASTL<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
+    vectorEASTL<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->type())];
 
     nodesByType.erase(eastl::remove_if(eastl::begin(nodesByType), eastl::end(nodesByType), 
                                      [guid](SceneGraphNode* node)-> bool
@@ -128,7 +128,7 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
     SceneGraphNode* newNodePtr = &newNode;
 
     _allNodes.push_back(newNodePtr);
-    _nodesByType[to_base(newNodePtr->getNode()->getType())].push_back(newNodePtr);
+    _nodesByType[to_base(newNodePtr->getNode()->type())].push_back(newNodePtr);
     
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
@@ -214,8 +214,8 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     _root->onNetworkSend(frameCount);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, bool force, vector<SGNRayResult>& selectionHits) const {
-    _root->intersect(ray, start, end, force, selectionHits);
+void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const {
+    _root->intersect(ray, start, end, intersections);
 
     /*if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);

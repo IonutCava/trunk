@@ -368,7 +368,6 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
                 tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
                 ret->setMaterialTpl(tempMaterial);
             }
-    
             skipAdd = false;
         }
         // Mesh types
@@ -376,7 +375,8 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
             if (!modelName.empty()) {
                 ++_loadingTasks;
                 ResourceDescriptor model(modelName);
-                model.setResourceLocation(Paths::g_assetsLocation + modelName);
+                model.setResourceLocation(Paths::g_assetsLocation);
+                model.setResourceName(modelName);
                 model.setFlag(true);
                 model.setThreadedLoading(true);
                 model.setOnLoadCallback(loadModelComplete);
@@ -394,15 +394,12 @@ void Scene::loadAsset(const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
         }
         // Lights
         else if (Util::CompareIgnoreCase(sceneNode.type, "LIGHT")) {
-            //ToDo: Change this - Currently, just load the default light.
-            if (!_sun) {
-                _sun = addLight(LightType::DIRECTIONAL, *parent , sceneNode.name);
-            }
+            addLight(LightType::DIRECTIONAL, *parent , sceneNode.name);
         }
         // Sky
         else if (Util::CompareIgnoreCase(sceneNode.type, "SKY")) {
             //ToDo: Change this - Currently, just load the default sky.
-            _currentSky = addSky(*parent, sceneNode.name);
+            addSky(*parent, sceneNode.name);
         }
 
         if (!ret) {
@@ -1318,46 +1315,52 @@ void Scene::findHoverTarget(PlayerIndex idx, bool force) {
     vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
     _sceneSelectionCandidates.clear();
-    // get the list of visible nodes
-    RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
 
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));
-    for (RenderPassCuller::VisibleNode& node : nodes) {
-        const SceneGraphNode* nodePtr = node._node;
-        if (nodePtr) {
-            nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, force, _sceneSelectionCandidates, false);
-        }
-    }
+    sceneGraph().intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates);
 
+    _currentHoverTarget[idx] = -1;
     if (!_sceneSelectionCandidates.empty()) {
+        // If we don't force selections, remove all of the nodes that lack a SelectionComponent
         std::sort(std::begin(_sceneSelectionCandidates),
                   std::end(_sceneSelectionCandidates),
                   [](const SGNRayResult& A, const SGNRayResult& B) -> bool {
                       return std::get<1>(A) < std::get<1>(B);
                   });
 
-        I64 crtCandidate = std::get<0>(_sceneSelectionCandidates.front());
-        SceneGraphNode* target = _sceneGraph->findNode(crtCandidate);
-
-        const SceneNode_ptr& node = target->getNode();
-        if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
-            if (static_cast<Object3D*>(node.get())->getObjectType()._value == ObjectType::SUBMESH) {
-                crtCandidate = target->getParent()->getGUID();
+        SceneGraphNode* target = nullptr;
+        if (!force) {
+            for (const SGNRayResult& result : _sceneSelectionCandidates) {
+                I64 crtCandidate = std::get<0>(result);
+                SceneGraphNode* crtNode = _sceneGraph->findNode(crtCandidate);
+                if (crtNode && crtNode->get<SelectionComponent>() && crtNode->get<SelectionComponent>()->enabled()) {
+                    target = crtNode;
+                    break;
+                }
             }
+        } else {
+            target = _sceneGraph->findNode(std::get<0>(_sceneSelectionCandidates.front()));
         }
 
-        _currentHoverTarget[idx] = crtCandidate;
-        SceneGraphNode* sgn = _sceneGraph->findNode(crtCandidate);
-        if (sgn != nullptr && sgn->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
-            sgn->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
+        // Well ... this happened somehow ...
+        if (target == nullptr) {
+            return;
+        }
+
+        _currentHoverTarget[idx] = target->getGUID();
+        if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
         }
     } else {
-        SceneGraphNode* target(_sceneGraph->findNode(_currentHoverTarget[idx]));
-        if (target != nullptr && target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+        SceneGraphNode* target = _sceneGraph->findNode(_currentHoverTarget[idx]);
+        if (target == nullptr) {
+            return;
+        }
+
+        if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
         }
-        _currentHoverTarget[idx] = -1;
     }
 }
 

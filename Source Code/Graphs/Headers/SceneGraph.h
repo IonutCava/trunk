@@ -100,7 +100,7 @@ class SceneGraph : private NonCopyable,
     void onStartUpdateLoop(const U8 loopNumber);
     void idle();
 
-    void intersect(const Ray& ray, F32 start, F32 end, bool force, vector<SGNRayResult>& selectionHits) const;
+    void intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const;
 
     SceneGraphNode* createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 

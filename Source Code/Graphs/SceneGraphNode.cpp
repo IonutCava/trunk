@@ -29,7 +29,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       ECS::Event::IEventListener(&sceneGraph.GetECSEngine()),
       _sceneGraph(sceneGraph),
       _node(descriptor._node),
-      _componentMask(descriptor._componentMask),
+      _componentMask(0),
       _usageContext(descriptor._usageContext),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
       _parent(nullptr),
@@ -47,56 +47,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     
     name(descriptor._name.empty() ? Util::StringFormat("%s_SGN", _node->name().c_str()) : descriptor._name);
 
-    if (BitCompare(_componentMask, to_U32(ComponentType::ANIMATION))) {
-        AddSGNComponent<AnimationComponent>(*this);
-    }
-
-    if (BitCompare(_componentMask, to_U32(ComponentType::INVERSE_KINEMATICS))) {
-        AddSGNComponent<IKComponent>(*this);
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::NETWORKING))) {
-        LocalClient& client = _sceneGraph.parentScene().context().client();
-        AddSGNComponent<NetworkingComponent>(*this, client);
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::RAGDOLL))) {
-        AddSGNComponent<RagdollComponent>(*this);
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::NAVIGATION))) {
-        AddSGNComponent<NavigationComponent>(*this);
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::RIGID_BODY))) {
-        PXDevice& pxContext = _sceneGraph.parentScene().context().pfx();
-
-        STUBBED("Rigid body physics disabled for now - Ionut");
-        AddSGNComponent<RigidBodyComponent>(*this, pxContext);
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::TRANSFORM))) {
-        AddSGNComponent<TransformComponent>(*this);
-    }
-
-    if (BitCompare(_componentMask, to_U32(ComponentType::BOUNDS))) {
-        AddSGNComponent<BoundsComponent>(*this);
-    }
-
-    if (BitCompare(_componentMask, to_U32(ComponentType::UNIT))) {
-        AddSGNComponent<UnitComponent>(*this);
-    }
-    
-    if (BitCompare(_componentMask, to_U32(ComponentType::RENDERING))) {
-        GFXDevice& gfxContext = _sceneGraph.parentScene().context().gfx();
-
-        const Material_ptr& materialTpl = _node->getMaterialTpl();
-        if (!materialTpl) {
-            Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
-            Material_ptr materialTemplate = CreateResource<Material>(parentGraph().parentScene().resourceCache(), ResourceDescriptor("defaultMaterial_" + name()));
-            materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-            _node->setMaterialTpl(materialTemplate);
-        }
-
-        AddSGNComponent<RenderingComponent>(gfxContext,
-                                            materialTpl->clone("_instance_" + name()),
-                                            *this);
-    }
+    AddMissingComponents(descriptor._componentMask);
 
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, this);
 }
@@ -127,6 +78,55 @@ SceneGraphNode::~SceneGraphNode()
     }
 }
 
+void SceneGraphNode::AddMissingComponents(U32 componentMask) {
+
+    for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
+        U32 componentBit = 1 << i;
+
+        // Only add new components;
+        if (BitCompare(componentMask, componentBit) && !BitCompare(_componentMask, componentBit)) {
+            _componentMask |= componentBit;
+
+            switch (static_cast<ComponentType>(componentBit)) {
+                default: break;
+                case ComponentType::ANIMATION: AddSGNComponent<AnimationComponent>(*this); break;
+                case ComponentType::INVERSE_KINEMATICS: AddSGNComponent<IKComponent>(*this); break;
+                case ComponentType::RAGDOLL: AddSGNComponent<RagdollComponent>(*this); break;
+                case ComponentType::NAVIGATION: AddSGNComponent<NavigationComponent>(*this); break;
+                case ComponentType::TRANSFORM: AddSGNComponent<TransformComponent>(*this); break;
+                case ComponentType::BOUNDS: AddSGNComponent<BoundsComponent>(*this); break;
+                case ComponentType::UNIT: AddSGNComponent<UnitComponent>(*this); break;
+                case ComponentType::SELECTION: AddSGNComponent<SelectionComponent>(*this); break;
+                case ComponentType::NETWORKING: {
+                    LocalClient& client = _sceneGraph.parentScene().context().client();
+                    AddSGNComponent<NetworkingComponent>(*this, client);
+                } break;
+                case ComponentType::RIGID_BODY: {
+                    PXDevice& pxContext = _sceneGraph.parentScene().context().pfx();
+
+                    STUBBED("Rigid body physics disabled for now - Ionut");
+                    AddSGNComponent<RigidBodyComponent>(*this, pxContext);
+                } break;
+
+                case ComponentType::RENDERING: {
+                    GFXDevice& gfxContext = _sceneGraph.parentScene().context().gfx();
+
+                    const Material_ptr& materialTpl = _node->getMaterialTpl();
+                    if (!materialTpl) {
+                        Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
+                        Material_ptr materialTemplate = CreateResource<Material>(parentGraph().parentScene().resourceCache(), ResourceDescriptor("defaultMaterial_" + name()));
+                        materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+                        _node->setMaterialTpl(materialTemplate);
+                    }
+
+                    AddSGNComponent<RenderingComponent>(gfxContext,
+                        materialTpl->clone("_instance_" + name()),
+                        *this);
+                } break;
+            }
+        }
+    }
+}
 
 void SceneGraphNode::RegisterEventCallbacks()
 {
@@ -294,7 +294,7 @@ bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
     }
     SceneGraphNode* parent = getParent();
     while (parent != nullptr) {
-        if (BitCompare(typeMask, to_U32(parent->getNode<>()->getType()))) {
+        if (BitCompare(typeMask, to_U32(parent->getNode<>()->type()))) {
             return true;
         }
         parent = parent->getParent();
@@ -363,25 +363,21 @@ SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNode
     return nullptr;
 }
 
-void SceneGraphNode::intersect(const Ray& ray,
-                               F32 start,
-                               F32 end,
-                               bool force,
-                               vector<SGNRayResult>& selectionHits,
-                               bool recursive) const {
-
-    SelectionComponent* selComp = get<SelectionComponent>();
-    if (force || (selComp && selComp->enabled())) {
+void SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const {
+    // If we start from the root node, process children only
+    if (parentGraph().getRoot() == *this) {
+        forEachChild([&ray, start, end, &intersections](const SceneGraphNode& child) {
+            child.intersect(ray, start, end, intersections);
+        });
+    } else {
+        // If we hit an AABB, we keep going down the graph
         AABBRayResult result = get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end);
         if (std::get<0>(result)) {
-            selectionHits.push_back(std::make_tuple(getGUID(), std::get<1>(result), std::get<2>(result)));
+            intersections.push_back(std::make_tuple(getGUID(), std::get<1>(result), std::get<2>(result)));
+            forEachChild([&ray, start, end, &intersections](const SceneGraphNode& child) {
+                child.intersect(ray, start, end, intersections);
+            });
         }
-    }
-
-    if (recursive) {
-        forEachChild([&ray, start, end, force, &selectionHits](const SceneGraphNode& child) {
-            child.intersect(ray, start, end, force, selectionHits);
-        });
     }
 }
 
@@ -734,6 +730,18 @@ void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
 
 void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     usageContext(pt.get("static", false) ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC);
+
+    U32 componentsToLoad = 0;
+    for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
+        ComponentType type = static_cast<ComponentType>(1 << i);
+        if (pt.count(getComponentTypeName(type)) != 0) {
+            componentsToLoad |= to_base(type);
+        }
+    }
+
+    if (componentsToLoad != 0) {
+        AddMissingComponents(componentsToLoad);
+    }
 
     for (EditorComponent* editorComponent : _editorComponents) {
         Attorney::EditorComponentSceneGraphNode::loadFromXML(*editorComponent, pt);

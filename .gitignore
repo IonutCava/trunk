@@ -940,3 +940,14 @@ Done rebuilding .git/svn/refs/remotes/git-svn/.rev_map.e89c6373-eeba-4702-abef-d
 .svn
 3rdParty
 Doxygen
+Debug_ReCast
+Debug_CEGUIRendererOpenGL
+Debug_Core
+Debug_Editor
+Debug_Engine
+Debug_Engine-Tests
+Debug_Executable
+Debug_Game
+Debug_Networking
+Debug_Platform
+Debug_Platform-Tests
