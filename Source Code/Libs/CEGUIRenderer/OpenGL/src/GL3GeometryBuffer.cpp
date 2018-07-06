@@ -90,7 +90,6 @@ void OpenGL3GeometryBuffer::draw() const
     // Bind our vao
     d_glStateChanger->bindVertexArray(d_verticesVAO);
 
-    bool scissorTestEnabled = false;
     const int pass_count = d_effect ? d_effect->getPassCount() : 1;
      size_t pos = 0;
     for (int pass = 0; pass < pass_count; ++pass)
@@ -106,13 +105,7 @@ void OpenGL3GeometryBuffer::draw() const
         {
             const BatchInfo& currentBatch = *i;
 
-            if (currentBatch.clip) {
-                glEnable(GL_SCISSOR_TEST);
-                scissorTestEnabled = true;
-            } else {
-                glDisable(GL_SCISSOR_TEST);
-                scissorTestEnabled = false;
-            }
+            d_glStateChanger->bindDefaultState(currentBatch.clip);
 
             Divide::GL_API::bindTexture(0, currentBatch.texture);
 
@@ -124,9 +117,6 @@ void OpenGL3GeometryBuffer::draw() const
         }
     }
 
-    if (scissorTestEnabled) {
-        glDisable(GL_SCISSOR_TEST);
-    }
     // clean up RenderEffect
     if (d_effect)
         d_effect->performPostRenderFunctions();
@@ -188,8 +178,8 @@ void OpenGL3GeometryBuffer::configureVertexArray() const
 //----------------------------------------------------------------------------//
 void OpenGL3GeometryBuffer::deinitialiseOpenGLBuffers()
 {
-    glDeleteVertexArrays(1, &d_verticesVAO);
-    glDeleteBuffers(1, &d_verticesVBO);
+    Divide::GL_API::deleteVAOs(1, &d_verticesVAO);
+    Divide::GL_API::deleteBuffers(1, &d_verticesVBO);
 }
 
 //----------------------------------------------------------------------------//

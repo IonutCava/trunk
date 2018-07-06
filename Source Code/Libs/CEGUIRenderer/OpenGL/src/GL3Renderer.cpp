@@ -45,8 +45,6 @@
 
 #include <algorithm>
 
-#include "Platform/Video/Headers/RenderStateBlock.h"
-
 // Start of CEGUI namespace section
 namespace CEGUI
 {
@@ -149,8 +147,7 @@ OpenGL3Renderer::OpenGL3Renderer() :
     OpenGLRendererBase(true),
     d_shaderStandard(0),
     d_openGLStateChanger(0),
-    d_shaderManager(0),
-    d_defaultStateHash(0)
+    d_shaderManager(0)
 {
     init();
     CEGUI_UNUSED(d_s3tcSupported);
@@ -171,20 +168,13 @@ OpenGL3Renderer::OpenGL3Renderer(const Sizef& display_size) :
 void OpenGL3Renderer::init()
 {
     if (      OpenGLInfo::getSingleton().isUsingOpenglEs()
-          &&  OpenGLInfo::getSingleton().verMajor() < 2)
-        CEGUI_THROW(RendererException("Only version 2 and up of OpenGL ES is "
+          &&  OpenGLInfo::getSingleton().verMajor() < 3)
+        CEGUI_THROW(RendererException("Only version 3 and up of OpenGL ES is "
                                       "supported by this type of renderer."));
     initialiseRendererIDString();
     initialiseTextureTargetFactory();
     initialiseOpenGLShaders();
     d_openGLStateChanger = CEGUI_NEW_AO OpenGL3StateChangeWrapper();
-
-    Divide::RenderStateBlock defaultState;
-    defaultState.setCullMode(Divide::CullMode::NONE);
-    defaultState.setFillMode(Divide::FillMode::SOLID);
-    defaultState.setZRead(false);
-    defaultState.setScissorTest(true);
-    d_defaultStateHash = defaultState.getHash();
 }
 
 //----------------------------------------------------------------------------//
@@ -223,13 +213,15 @@ void OpenGL3Renderer::beginRendering()
     // this information may be relevant for people combining deprecated and modern
     // functions. In that case disable client states like this: glDisableClientState(GL_VERTEX_ARRAY);
 
+    Divide::GL_API::pushDebugMessage("CEGUI Begin", 98765);
+
     d_openGLStateChanger->reset();
 
     // if enabled, restores a subset of the GL state back to default values.
     if (d_initExtraStates)
         setupExtraStates();
 
-    Divide::GL_API::setStateBlockInternal(d_defaultStateHash);
+    d_openGLStateChanger->bindDefaultState(true);
     // force set blending ops to get to a known state.
     setupRenderingBlendMode(BM_NORMAL, true);
     d_shaderStandard->bind();
@@ -242,6 +234,8 @@ void OpenGL3Renderer::endRendering()
         setupExtraStates();
 
     Divide::GL_API::setBlending(false);
+
+    Divide::GL_API::popDebugMessage();
 }
 
 //----------------------------------------------------------------------------//
@@ -345,11 +339,6 @@ void OpenGL3Renderer::initialiseOpenGLShaders()
     d_shaderManager = CEGUI_NEW_AO OpenGL3ShaderManager();
     d_shaderManager->initialiseShaders();
     d_shaderStandard = d_shaderManager->getShader(SHADER_ID_STANDARDSHADER);
-    GLuint texLoc = d_shaderStandard->getUniformLocation("texture0");
-    d_shaderStandard->bind();
-    glUniform1i(texLoc, 0);
-    d_shaderStandard->unbind();
-
     d_shaderStandardPosLoc = d_shaderStandard->getAttribLocation("inPosition");
     d_shaderStandardTexCoordLoc = d_shaderStandard->getAttribLocation("inTexCoord");
     d_shaderStandardColourLoc = d_shaderStandard->getAttribLocation("inColour");

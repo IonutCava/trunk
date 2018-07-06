@@ -28,6 +28,7 @@
  ***************************************************************************/
 #include "GL.h"
 #include "StateChangeWrapper.h"  
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
     BlendProperty getProperty(GLenum property) {
@@ -159,6 +160,16 @@ void OpenGL3StateChangeWrapper::reset()
     d_viewPortParams.reset();
     d_scissorParams.reset();
     d_bindBufferParams.reset();
+
+
+    Divide::RenderStateBlock defaultState;
+    defaultState.setCullMode(Divide::CullMode::NONE);
+    defaultState.setFillMode(Divide::FillMode::SOLID);
+    defaultState.setZRead(false);
+    defaultState.setScissorTest(true);
+    d_defaultStateHashScissor = defaultState.getHash();
+    defaultState.setScissorTest(false);
+    d_defaultStateHashNoScissor = defaultState.getHash();
 }
 
 void OpenGL3StateChangeWrapper::bindVertexArray(GLuint vertexArray)
@@ -222,5 +233,9 @@ void OpenGL3StateChangeWrapper::bindBuffer(GLenum target, GLuint buffer)
     }
 }
 
+void OpenGL3StateChangeWrapper::bindDefaultState(bool scissor)
+{
+    Divide::GL_API::setStateBlockInternal(scissor ? d_defaultStateHashScissor : d_defaultStateHashNoScissor);
+}
 
 }

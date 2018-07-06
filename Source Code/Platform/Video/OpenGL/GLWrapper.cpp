@@ -779,7 +779,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const TextElementBatch& batch) {
-    pushDebugMessage(_context, "OpenGL render text start!", 2);
+    pushDebugMessage("OpenGL render text start!", 2);
 
     GL_API::setBlending(0,
                         true,
@@ -832,7 +832,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
         _context.registerDrawCalls(to_U32(drawCount));
     }
 
-    popDebugMessage(_context);
+    popDebugMessage();
 }
 
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
@@ -924,14 +924,14 @@ bool GL_API::draw(const GenericDrawCommand& cmd) {
     return true;
 }
 
-void GL_API::pushDebugMessage(GFXDevice& context, const char* message, I32 id) {
-    if (Config::ENABLE_GPU_VALIDATION && Attorney::GFXDeviceAPI::config(context)._enableDebugMsgGroups) {
+void GL_API::pushDebugMessage(const char* message, I32 id) {
+    if (Config::ENABLE_GPU_VALIDATION && config()._enableDebugMsgGroups) {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, id, -1, message);
     }
 }
 
-void GL_API::popDebugMessage(GFXDevice& context) {
-    if (Config::ENABLE_GPU_VALIDATION && Attorney::GFXDeviceAPI::config(context)._enableDebugMsgGroups) {
+void GL_API::popDebugMessage() {
+    if (Config::ENABLE_GPU_VALIDATION && config()._enableDebugMsgGroups) {
         glPopDebugGroup();
     }
 }
@@ -1016,10 +1016,10 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             }break;
             case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
                  GFX::BeginDebugScopeCommand* crtCmd = static_cast<GFX::BeginDebugScopeCommand*>(cmd.get());
-                 pushDebugMessage(_context, crtCmd->_scopeName.c_str(), crtCmd->_scopeID);
+                 pushDebugMessage(crtCmd->_scopeName.c_str(), crtCmd->_scopeID);
             } break;
             case GFX::CommandType::END_DEBUG_SCOPE: {
-                popDebugMessage(_context);
+                popDebugMessage();
             } break;
             case GFX::CommandType::DRAW_TEXT: {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);

@@ -72,6 +72,44 @@ GLboolean GL_API::s_blendEnabledGlobal;
 vectorImpl<BlendingProperties> GL_API::s_blendProperties;
 vectorImpl<GLboolean> GL_API::s_blendEnabled;
 
+namespace {
+    GLint getBufferTargetIndex(GLenum target) {
+        GLint index = -1;
+        // Select the appropriate index in the array based on the buffer target
+        switch (target) {
+            case GL_ARRAY_BUFFER: {
+                index = 0;
+            }break;
+            case GL_TEXTURE_BUFFER: {
+                index = 1;
+            }break;
+            case GL_UNIFORM_BUFFER: {
+                index = 2;
+            }break;
+            case GL_SHADER_STORAGE_BUFFER: {
+                index = 3;
+            }break;
+            case GL_ELEMENT_ARRAY_BUFFER: {
+                index = 4;
+            }break;
+            case GL_PIXEL_UNPACK_BUFFER: {
+                index = 5;
+            }break;
+            case GL_DRAW_INDIRECT_BUFFER: {
+                index = 6;
+            }break;
+            default: {
+                // Make sure the target is available. Assert if it isn't as this
+                // means that a non-supported feature is used somewhere
+                DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(index, 0, 6),
+                              "GLStates error: attempted to bind an invalid buffer target!");
+                return -1;
+            }
+        };
+        return index;
+    }
+}; //namespace 
+
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {
     GL_API::bindTextures(0, GL_API::s_maxTextureUnits, nullptr, nullptr);
@@ -105,7 +143,6 @@ void GL_API::clearStates() {
                  DefaultColours::DIVIDE_BLUE.g,
                  DefaultColours::DIVIDE_BLUE.b,
                  DefaultColours::DIVIDE_BLUE.a);
-
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
@@ -251,6 +288,120 @@ void GL_API::updateClipPlanes() {
                         : glDisable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
         }
     }
+}
+
+bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
+    if (count > 0 && buffers != nullptr) {
+        for (GLuint i = 0; i < count; ++i) {
+            GLuint crtBuffer = buffers[i];
+            for (GLuint& boundBuffer : s_activeBufferID) {
+                if (crtBuffer != 0 && boundBuffer == crtBuffer) {
+                    boundBuffer = 0;
+                }
+            }
+        }
+
+        glDeleteBuffers(count, buffers);
+        memset(buffers, 0, count * sizeof(GLuint));
+        return true;
+    }
+
+    return false;
+}
+
+bool GL_API::deleteVAOs(GLuint count, GLuint* vaos) {
+    if (count > 0 && vaos != nullptr) {
+        for (GLuint i = 0; i < count; ++i) {
+            if (s_activeVAOID == vaos[i]) {
+                s_activeVAOID = 0;
+                break;
+            }
+        }
+        glDeleteVertexArrays(count, vaos);
+        memset(vaos, 0, count * sizeof(GLuint));
+        return true;
+    }
+    return false;
+}
+
+bool GL_API::deleteFramebuffers(GLuint count, GLuint* framebuffers) {
+    if (count > 0 && framebuffers != nullptr) {
+        for (GLuint i = 0; i < count; ++i) {
+            GLuint crtFB = framebuffers[i];
+            for (GLuint& activeFB : s_activeFBID) {
+                if (activeFB == crtFB) {
+                    activeFB = 0;
+                }
+            }
+        }
+        glDeleteFramebuffers(count, framebuffers);
+        memset(framebuffers, 0, count * sizeof(GLuint));
+        return true;
+    }
+    return false;
+}
+
+bool GL_API::deleteShaderPrograms(GLuint count, GLuint* programs) {
+    if (count > 0 && programs != nullptr) {
+        for (GLuint i = 0; i < count; ++i) {
+            if (s_activeShaderProgram == programs[i]) {
+                s_activeShaderProgram = 0;
+                break;
+            }
+            glDeleteProgram(programs[i]);
+        }
+        
+        memset(programs, 0, count * sizeof(GLuint));
+        return true;
+    }
+    return false;
+}
+
+bool GL_API::deleteTextures(GLuint count, GLuint* textures) {
+    if (count > 0 && textures != nullptr) {
+        
+        for (GLuint i = 0; i < count; ++i) {
+            GLuint crtTex = textures[i];
+            if (crtTex != 0) {
+                for (GLuint& boundTex : s_textureBoundMap) {
+                    if (boundTex == crtTex) {
+                        boundTex = 0;
+                    }
+                }
+                for (ImageBindSettings& settings : s_imageBoundMap) {
+                    if (settings._texture == crtTex) {
+                        settings.reset();
+                    }
+                }
+            }
+        }
+        glDeleteTextures(count, textures);
+        memset(textures, 0, count * sizeof(GLuint));
+        return true;
+    }
+
+    return false;
+}
+
+bool GL_API::deleteSamplers(GLuint count, GLuint* samplers) {
+    if (count > 0 && samplers != nullptr) {
+
+        for (GLuint i = 0; i < count; ++i) {
+            GLuint crtSampler = samplers[i];
+            if (crtSampler != 0) {
+                for (GLuint& boundSampler : s_samplerBoundMap) {
+                    if (boundSampler == crtSampler) {
+                        boundSampler = 0;
+                    }
+                }
+            }
+        }
+        glDeleteSamplers(count, samplers);
+        memset(samplers, 0, count * sizeof(GLuint));
+        return true;
+    }
+
+    return false;
 }
 
 bool GL_API::bindSamplers(GLushort unitOffset,
@@ -455,38 +606,7 @@ bool GL_API::setActiveTransformFeedback(GLuint ID, GLuint& previousID) {
 /// Single place to change buffer objects for every target available
 bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
     // We map buffer targets from 0 to n in a static array
-    GLint index = -1;
-    // Select the appropriate index in the array based on the buffer target
-    switch (target) {
-        case GL_ARRAY_BUFFER: {
-            index = 0;
-        }break;
-        case GL_TEXTURE_BUFFER: {
-            index = 1;
-        }break;
-        case GL_UNIFORM_BUFFER: {
-            index = 2;
-        }break;
-        case GL_SHADER_STORAGE_BUFFER: {
-            index = 3;
-        }break;
-        case GL_ELEMENT_ARRAY_BUFFER: {
-            index = 4;
-        }break;
-        case GL_PIXEL_UNPACK_BUFFER: {
-            index = 5;
-        }break;
-        case GL_DRAW_INDIRECT_BUFFER: {
-            index = 6;
-        }break;
-        default: {
-            // Make sure the target is available. Assert if it isn't as this
-            // means that a non-supported feature is used somewhere
-            DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(index, 0, 6),
-                          "GLStates error: attempted to bind an invalid buffer target!");
-            return false;
-        }
-    };
+    GLint index = getBufferTargetIndex(target);
 
     // Prevent double bind
     previousID = s_activeBufferID[index];

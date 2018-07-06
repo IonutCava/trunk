@@ -71,10 +71,16 @@ void OpenGLInfo::verForce(GLint verMajor_, GLint verMinor_)
 //----------------------------------------------------------------------------//
 void OpenGLInfo::initTypeAndVer()
 {
-    d_type = TYPE_DESKTOP;
-    glGetError ();
-    d_verMajor = 4;
-    d_verMinor = 5;
+    if (false) {
+        d_type = TYPE_ES;
+        d_verMajor = 3;
+        d_verMinor = 2;
+    } else {
+        d_type = TYPE_DESKTOP;
+        glGetError();
+        d_verMajor = 4;
+        d_verMinor = 5;
+    }
 }
 
 //----------------------------------------------------------------------------//

@@ -345,7 +345,7 @@ inline
 
 inline
 	void operator delete (void* ptr, Arena* alctr)
-{(void)alctr;}
+{(void)ptr;(void)alctr;}
 
 
 

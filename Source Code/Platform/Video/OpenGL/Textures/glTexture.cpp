@@ -44,6 +44,7 @@ glTexture::glTexture(GFXDevice& context,
 
 glTexture::~glTexture()
 {
+    unload();
     MemoryManager::DELETE(_lockManager);
 }
 
@@ -53,11 +54,11 @@ bool glTexture::unload() {
         if (_lockManager) {
             _lockManager->Wait(false);
         }
-        glDeleteTextures(1, &textureID);
+        Divide::GL_API::deleteTextures(1, &textureID);
         _textureData.setHandle(0U);
     }
 
-    return true;
+    return _textureData.getHandle() == 0;
 }
 
 void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
@@ -94,7 +95,7 @@ void glTexture::resize(const bufferPtr ptr,
         glCreateTextures(_type, 1, &tempHandle);
         assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
 
-        glDeleteTextures(1, &textureID);
+        Divide::GL_API::deleteTextures(1, &textureID);
         textureID = tempHandle;
     }
 

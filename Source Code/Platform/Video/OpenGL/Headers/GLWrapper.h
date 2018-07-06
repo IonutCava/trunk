@@ -210,6 +210,18 @@ public:
     /// unit
     static bool bindTextures(GLushort unitOffset, GLuint textureCount, GLuint* textureHandles, GLuint* samplerHandles);
 
+    static bool deleteTextures(GLuint count, GLuint* textures);
+
+    static bool deleteSamplers(GLuint count, GLuint* samplers);
+
+    static bool deleteBuffers(GLuint count, GLuint* buffers);
+
+    static bool deleteVAOs(GLuint count, GLuint* vaos);
+
+    static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
+
+    static bool deleteShaderPrograms(GLuint count, GLuint* programs);
+
     static size_t setStateBlockInternal(size_t stateBlockHash);
 
     /// Bind multiple samplers described by the array of hash values to the
@@ -225,8 +237,8 @@ public:
         GLintptr offset,
         GLsizei stride);
 
-    static void pushDebugMessage(GFXDevice& context, const char* message, I32 id);
-    static void popDebugMessage(GFXDevice& context);
+    static void pushDebugMessage(const char* message, I32 id);
+    static void popDebugMessage();
 
     static bool setScissor(I32 x, I32 y, I32 width, I32 height);
     inline static bool setScissor(const vec4<I32>& newScissorRect) {

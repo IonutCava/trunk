@@ -38,6 +38,7 @@ namespace CEGUI
 {
 //----------------------------------------------------------------------------//
 OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name) :
+    d_ogltexture(0),
     d_size(0, 0),
     d_grabBuffer(0),
     d_dataSize(0, 0),
@@ -53,6 +54,7 @@ OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name) :
 OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name,
                              const String& filename,
                              const String& resourceGroup) :
+    d_ogltexture(0),
     d_size(0, 0),
     d_grabBuffer(0),
     d_dataSize(0, 0),
@@ -67,6 +69,7 @@ OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name,
 //----------------------------------------------------------------------------//
 OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name,
                              const Sizef& size) :
+    d_ogltexture(0),
     d_size(0, 0),
     d_grabBuffer(0),
     d_dataSize(0, 0),
@@ -385,13 +388,16 @@ void OpenGLTexture::grabTexture()
         d_subpixelFormat = GL_UNSIGNED_BYTE;
     }
     else // Desktop OpenGL
+    {
         buffer_size = static_cast<std::size_t>(d_size.d_width)
           *static_cast<std::size_t>(d_size.d_height) *4;
+    }
+
     d_grabBuffer = new uint8[buffer_size];
 
     blitToMemory(d_grabBuffer);
 
-    glDeleteTextures(1, &d_ogltexture);
+    Divide::GL_API::deleteTextures(1, &d_ogltexture);
 }
 
 //----------------------------------------------------------------------------//
@@ -468,7 +474,7 @@ void OpenGLTexture::blitToMemory(void* targetData)
         glReadBuffer(read_buffer_old);
 
         Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_ONLY, framebuffer_old);
-        glDeleteFramebuffers(1, &texture_framebuffer);
+        Divide::GL_API::deleteFramebuffers(1, &texture_framebuffer);
         Divide::GL_API::setPixelPackAlignment();
 
     }
@@ -540,8 +546,7 @@ void OpenGLTexture::cleanupOpenGLTexture()
     // otherwise delete any OpenGL texture associated with this object.
     else
     {
-        glDeleteTextures(1, &d_ogltexture);
-        d_ogltexture = 0;
+        Divide::GL_API::deleteTextures(1, &d_ogltexture);
     }
 }
 

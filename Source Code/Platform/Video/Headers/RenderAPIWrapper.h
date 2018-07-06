@@ -64,6 +64,9 @@ struct VideoModes {
 
 typedef std::array<bool, to_base(VertexAttribute::COUNT)> AttribFlags;
 
+struct GFXConfig {
+    bool _enableDebugMsgGroups = true;
+};
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
    protected:
@@ -87,9 +90,13 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     virtual void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) = 0;
 
+    static GFXConfig& config() { return _config; }
+
    protected:
     virtual bool changeViewportInternal(const vec4<I32>& newViewport) = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
+
+    static GFXConfig _config;
 };
 
 };  // namespace Divide

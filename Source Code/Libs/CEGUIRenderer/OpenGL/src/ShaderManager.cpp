@@ -79,13 +79,10 @@ namespace CEGUI
                            StandardShaderFrag_Opengl3);
             else // OpenGL ES
             {
-                if (OpenGLInfo::getSingleton().verMajor() <= 2)
-                    loadShader(SHADER_ID_STANDARDSHADER, StandardShaderVert_OpenglEs2,
-                               StandardShaderFrag_OpenglEs2);
-                else
-                    loadShader(SHADER_ID_STANDARDSHADER, StandardShaderVert_OpenglEs3,
-                               StandardShaderFrag_OpenglEs3);
+                loadShader(SHADER_ID_STANDARDSHADER, StandardShaderVert_OpenglEs3,
+                           StandardShaderFrag_OpenglEs3);
             }
+
             if(!getShader(SHADER_ID_STANDARDSHADER)->isCreatedSuccessfully())
             {
                 const CEGUI::String errorString("Critical Error - One or "

@@ -3,6 +3,8 @@
 #include "Headers/glVAOPool.h"
 #include "Core/Headers/StringHelper.h"
 #include "Platform/Headers/PlatformRuntime.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+
 
 namespace Divide {
 namespace GLUtil {
@@ -39,12 +41,12 @@ void glVAOPool::init(U32 capacity) {
     }
 
 
-    glDeleteVertexArrays(g_numWarmupVAOs, warmupVAOs);
+    Divide::GL_API::deleteVAOs(g_numWarmupVAOs, warmupVAOs);
 }
 
 void glVAOPool::destroy() {
     for (std::pair<GLuint, bool>& entry : _pool) {
-        glDeleteVertexArrays(1, &entry.first);
+        Divide::GL_API::deleteVAOs(1, &entry.first);
     }
     _pool.clear();
 }
@@ -79,7 +81,7 @@ void glVAOPool::deallocate(GLuint& vao) {
 
     assert(it != std::cend(_pool));
     // We don't know what kind of state we may have in the current VAO so delete it and create a new one.
-    glDeleteVertexArrays(1, &(it->first));
+    Divide::GL_API::deleteVAOs(1, &(it->first));
     glCreateVertexArrays(1, &(it->first));
 
     if (Config::ENABLE_GPU_VALIDATION) {

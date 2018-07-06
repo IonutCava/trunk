@@ -60,9 +60,13 @@ glShaderProgram::~glShaderProgram() {
         MemoryManager::DELETE(_lockManager);
     }
 
+    if (isBound()) {
+        unbind();
+    }
+
     // delete shader program
     if (_shaderProgramID > 0 && _shaderProgramID != GLUtil::_invalidObjectID) {
-        glDeleteProgram(_shaderProgramID);
+        GL_API::deleteShaderPrograms(1, &_shaderProgramID);
         // glDeleteProgramPipelines(1, &_shaderProgramID);
     }
 }

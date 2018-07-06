@@ -77,6 +77,8 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CEGUI_STATIC;WIN32;_WINDOWS;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions); CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -161,16 +163,6 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ProjectReference Include="H:/Libs/cegui-0.8.7\build\ZERO_CHECK.vcxproj">
-      <Project>{1CE12AA1-9A17-314F-848F-8C651C43A155}</Project>
-      <Name>ZERO_CHECK</Name>
-    </ProjectReference>
-    <ProjectReference Include="H:/Libs/cegui-0.8.7\build\cegui\src\CEGUIBase-0_Static.vcxproj">
-      <Project>{6D5C7B9A-170F-3505-9B6E-79850095A5F8}</Project>
-      <Name>CEGUIBase-0_Static</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL.h" />

@@ -127,9 +127,9 @@ static void glfons__renderDraw(void* userPtr,
 static void glfons__renderDelete(void* userPtr) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex)
-        glDeleteTextures(1, &gl->tex);
+        Divide::GL_API::deleteTextures(1, &gl->tex);
     if (gl->glfons_vaoID)
-        glDeleteVertexArrays(1, &gl->glfons_vaoID);
+        Divide::GL_API::deleteVAOs(1, &gl->glfons_vaoID);
     gl->tex = 0;
     gl->glfons_vaoID = 0;
     Divide::GLUtil::freeBuffer(gl->glfons_vboID);

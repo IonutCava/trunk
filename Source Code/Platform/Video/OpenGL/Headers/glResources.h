@@ -55,23 +55,32 @@ namespace Divide {
 
 
 struct ImageBindSettings {
-    GLuint _texture;
-    GLint  _level;
-    GLboolean _layered;
-    GLint _layer;
-    GLenum _access;
-    GLenum _format;
+    GLuint _texture = 0;
+    GLint  _level = 0;
+    GLboolean _layered = GL_FALSE;
+    GLint _layer = 0;
+    GLenum _access = GL_NONE;
+    GLenum _format = GL_NONE;
 
-    bool operator==(const ImageBindSettings& other) const {
-        return _texture == other._texture &&
-            _level == other._level &&
-            _layered == other._layered &&
-            _layer == other._layer &&
-            _access == other._access &&
-            _format == other._format;
+    inline void reset() {
+        _texture = 0;
+         _level = 0;
+        _layered = GL_FALSE;
+        _layer = 0;
+        _access = GL_NONE;
+        _format = GL_NONE;
     }
 
-    bool operator!=(const ImageBindSettings& other) const {
+    inline bool operator==(const ImageBindSettings& other) const {
+        return _texture == other._texture &&
+               _level == other._level &&
+               _layered == other._layered &&
+               _layer == other._layer &&
+               _access == other._access &&
+               _format == other._format;
+    }
+
+    inline bool operator!=(const ImageBindSettings& other) const {
         return !(*this == other);
     }
 };

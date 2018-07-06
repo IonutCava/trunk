@@ -285,8 +285,6 @@ private:
     bool d_s3tcSupported;
     //! pointer to a helper that creates TextureTargets supported by the system.
     OGLTextureTargetFactory* d_textureTargetFactory;
-
-    size_t d_defaultStateHash;
 };
 
 }

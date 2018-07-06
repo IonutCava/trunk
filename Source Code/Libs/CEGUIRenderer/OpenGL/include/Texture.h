@@ -159,7 +159,7 @@ protected:
     GLsizei getCompressedTextureSize(const Sizef& pixel_size) const;
 
     //! The OpenGL texture we're wrapping.
-    GLuint d_ogltexture;
+    GLuint d_ogltexture = 0;
     //! Size of the texture.
     Sizef d_size;
     //! cached image data for restoring the texture.

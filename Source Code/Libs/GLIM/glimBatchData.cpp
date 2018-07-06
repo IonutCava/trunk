@@ -121,7 +121,7 @@ glimBatchData::~glimBatchData() {
 #ifdef AE_RENDERAPI_OPENGL
     if (m_bCreatedVBOs) {
         m_bCreatedVBOs = false;
-        glDeleteVertexArrays(1, &m_VertexArrayObjectID);
+        Divide::GL_API::deleteVAOs(1, &m_VertexArrayObjectID);
         Divide::GLUtil::freeBuffer(m_uiVertexBufferID);
         Divide::GLUtil::freeBuffer(m_uiElementBufferID_Points);
         Divide::GLUtil::freeBuffer(m_uiElementBufferID_Lines);

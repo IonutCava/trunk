@@ -55,11 +55,7 @@ glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(cont
 
 glPixelBuffer::~glPixelBuffer()
 {
-    if (_textureID > 0) {
-        glDeleteTextures(1, &_textureID);
-        _textureID = 0;
-    }
-
+    GL_API::deleteTextures(1, &_textureID);
     GLUtil::freeBuffer(_pixelBufferHandle);
 }
 
@@ -152,10 +148,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
     }
     _bufferSize *= _dataSizeBytes;
 
-    if (_textureID > 0) {
-        glDeleteTextures(1, &_textureID);
-        _textureID = 0;
-    }
+    GL_API::deleteTextures(1, &_textureID);
 
     glCreateTextures(textureTypeEnum, 1, &_textureID);
     glTextureParameteri(_textureID, GL_GENERATE_MIPMAP, 0);

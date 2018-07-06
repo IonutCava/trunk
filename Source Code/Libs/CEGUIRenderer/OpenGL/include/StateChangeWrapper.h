@@ -93,7 +93,7 @@ public:
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
     void scissor(GLint x, GLint y, GLsizei width, GLsizei height);
     void bindBuffer(GLenum target, GLuint buffer);
-
+    void bindDefaultState(bool scissor);
 protected:
     GLuint                      d_vertexArrayObject;
     BlendFuncParams             d_blendFuncParams;
@@ -101,6 +101,10 @@ protected:
     PortParams                  d_viewPortParams;
     PortParams                  d_scissorParams;
     BindBufferParams            d_bindBufferParams;
+
+
+    size_t d_defaultStateHashScissor = 0;
+    size_t d_defaultStateHashNoScissor = 0;
 };
 
 } // End of  CEGUI namespace section

@@ -72,8 +72,8 @@ OpenGL3Shader::OpenGL3Shader(const std::string& vertex_shader_source,
 //----------------------------------------------------------------------------//
 OpenGL3Shader::~OpenGL3Shader()
 {
-    if(d_program != 0)
-        glDeleteProgram(d_program);
+    Divide::GL_API::deleteShaderPrograms(1, &d_program);
+    
     if(d_vertexShader != 0)
         glDeleteShader(d_vertexShader);
     if(d_fragmentShader != 0)
@@ -187,8 +187,7 @@ void OpenGL3Shader::link()
     {
         outputProgramLog(d_program);
 
-        glDeleteProgram(d_program);
-        d_program = 0;
+        Divide::GL_API::deleteShaderPrograms(1, &d_program);
     }
 
     checkGLErrors();

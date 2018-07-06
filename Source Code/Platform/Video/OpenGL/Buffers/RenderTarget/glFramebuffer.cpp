@@ -56,10 +56,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
 
 glFramebuffer::~glFramebuffer()
 {
-    if (_framebufferHandle > 0) {
-        glDeleteFramebuffers(1, &_framebufferHandle);
-    }
-
+    GL_API::deleteFramebuffers(1, &_framebufferHandle);
     MemoryManager::DELETE(_resolveBuffer);
 }
 
@@ -418,7 +415,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Push debug state
     if (Config::ENABLE_GPU_VALIDATION) {
         assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
-        GL_API::pushDebugMessage(_context, ("FBO Begin: " + getName()).c_str(), _framebufferHandle);
+        GL_API::pushDebugMessage(("FBO Begin: " + getName()).c_str(), _framebufferHandle);
         glFramebuffer::_bufferBound = true;
     }
 
@@ -453,7 +450,7 @@ void glFramebuffer::end() {
 
     if (Config::ENABLE_GPU_VALIDATION) {
         glFramebuffer::_bufferBound = false;
-        GL_API::popDebugMessage(_context);
+        GL_API::popDebugMessage();
     }
 }
 

@@ -398,10 +398,7 @@ void GL_API::closeRenderingAPI() {
     // Destroy the text rendering system
     deleteFonsContext();
     _fonts.clear();
-    if (s_dummyVAO > 0) {
-        glDeleteVertexArrays(1, &s_dummyVAO);
-        s_dummyVAO = 0;
-    }
+    GL_API::deleteVAOs(1, &s_dummyVAO);
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     GL_API::s_vaoPool.destroy();

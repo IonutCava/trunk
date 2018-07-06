@@ -117,7 +117,7 @@
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <CompileAs>CompileAsCpp</CompileAs>
       <ShowIncludes>false</ShowIncludes>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -127,9 +127,8 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <FloatingPointExceptions>false</FloatingPointExceptions>

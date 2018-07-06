@@ -45,9 +45,8 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor)
 
 glSamplerObject::~glSamplerObject()
 {
-    if (_samplerID > 0 && _samplerID != GLUtil::_invalidObjectID) {
-        glDeleteSamplers(1, &_samplerID);
-        _samplerID = 0;
+    if (_samplerID != GLUtil::_invalidObjectID) {
+        GL_API::deleteSamplers(1, &_samplerID);
     }
 }
 

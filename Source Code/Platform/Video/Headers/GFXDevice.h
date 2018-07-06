@@ -108,10 +108,6 @@ namespace TypeUtil {
     RenderPassType stringToRenderPassType(const char* pass);
 };
 
-struct GFXConfig {
-    bool _enableDebugMsgGroups = true;
-};
-
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 class GFXDevice : public KernelComponent {
@@ -500,8 +496,6 @@ protected:
 
     Time::ProfileTimer& _commandBuildTimer;
 
-    GFXConfig _config;
-
     mutable hashMapImpl<size_t, Pipeline> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
@@ -571,10 +565,6 @@ namespace Attorney {
 
     class GFXDeviceAPI {
         private:
-        static const GFXConfig& config(GFXDevice& device) {
-            return device._config;
-        }
-
         static void uploadGPUBlock(GFXDevice& device) {
             device.uploadGPUBlock();
         }
