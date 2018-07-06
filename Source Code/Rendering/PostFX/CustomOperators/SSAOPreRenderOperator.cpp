@@ -210,10 +210,10 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
     
     // Apply AO
-    _samplerCopy._rt->blitFrom(screen._rt);
     GFX::BlitRenderTargetCommand blitRTCommand;
     blitRTCommand._source = screen._targetID;
     blitRTCommand._destination = _samplerCopy._targetID;
+    blitRTCommand._blitColours.emplace_back();
     GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
     pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getID();

@@ -171,8 +171,10 @@ BEGIN_COMMAND(EndRenderSubPassCommand, CommandType::END_RENDER_SUB_PASS, 4096);
 END_COMMAND();
 
 BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT, 4096);
-    bool _blitColour = true;
-    bool _blitDepth = false;
+    // List of depth layers to blit
+    vectorEASTL<DepthBlitEntry> _blitDepth;
+    // List of colours + colour layer to blit
+    vectorEASTL<ColourBlitEntry> _blitColours;
     RenderTargetID _source;
     RenderTargetID _destination;
 END_COMMAND();

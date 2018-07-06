@@ -223,6 +223,7 @@ void PreRenderBatch::execute(const Camera& camera, const FilterStack& stack, GFX
         GFX::BlitRenderTargetCommand blitRTCommand;
         blitRTCommand._source = _currentLuminance._targetID;
         blitRTCommand._destination = _previousLuminance._targetID;
+        blitRTCommand._blitColours.emplace_back();
         GFX::EnqueueCommand(buffer, blitRTCommand);
     }
 

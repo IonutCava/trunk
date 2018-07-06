@@ -24,13 +24,7 @@ void d3dRenderTarget::readData(const vec4<U16>& rect,
                                GFXImageFormat imageFormat,
                                GFXDataFormat dataType, bufferPtr outData) {}
 
-void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
-                               bool blitColour,
-                               bool blitDepth) {}
-
-void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
-                               U8 index,
-                               bool blitColour, bool blitDepth) {}
+void d3dRenderTarget::blitFrom(const RTBlitParams& params) {}
 
 void d3dRenderTarget::setDefaultState(const RTDrawDescriptor& drawPolicy) {}
 };

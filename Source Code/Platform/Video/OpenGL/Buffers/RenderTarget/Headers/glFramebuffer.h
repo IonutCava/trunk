@@ -71,14 +71,7 @@ class glFramebuffer : public RenderTarget,
                   GFXDataFormat dataType,
                   bufferPtr outData) override;
 
-    void blitFrom(RenderTarget* inputFB,
-                  bool blitColour = true,
-                  bool blitDepth = false) override;
-
-    void blitFrom(RenderTarget* inputFB,
-                  U8 index,
-                  bool blitColour = true,
-                  bool blitDepth = false) override;
+    void blitFrom(const RTBlitParams& params) override;
 
   protected:
     enum class AttachmentState : U8 {
@@ -129,6 +122,15 @@ class glFramebuffer : public RenderTarget,
 
     void toggleAttachments();
 
+
+    void fastBlit(GLuint inputFB,
+                  GLuint outputFB,
+                  const vec2<GLuint>& inputDim,
+                  const vec2<GLuint>& outputDim,
+                  GLenum colourAttIn,
+                  GLenum colourAttOut,
+                  ClearBufferMask mask);
+
    protected:
     void begin(const RTDrawDescriptor& drawPolicy);
     void end();
@@ -149,6 +151,7 @@ class glFramebuffer : public RenderTarget,
     bool _hasMultisampledColourAttachments;
 
     hashMap<GLenum, BindingState> _attachmentState;
+    hashMap<GLenum, std::set<U32>> _attachmentDirtyLayers;
 };
 
 namespace Attorney {

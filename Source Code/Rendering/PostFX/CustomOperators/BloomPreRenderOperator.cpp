@@ -166,6 +166,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::BlitRenderTargetCommand blitRTCommand;
     blitRTCommand._source = screen._targetID;
     blitRTCommand._destination = _bloomBlurBuffer[0]._targetID;
+    blitRTCommand._blitColours.emplace_back();
     GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
     TextureData data0 = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Screen

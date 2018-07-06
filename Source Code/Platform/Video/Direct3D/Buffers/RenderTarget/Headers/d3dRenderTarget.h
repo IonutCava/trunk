@@ -54,15 +54,8 @@ class d3dRenderTarget : public RenderTarget {
                   GFXDataFormat dataType,
                   bufferPtr outData) override;
 
-    void blitFrom(RenderTarget* inputFB,
-                  bool blitColour = true,
-                  bool blitDepth = false) override;
-
-    void blitFrom(RenderTarget* inputFB,
-                  U8 index,
-                  bool blitColour = true,
-                  bool blitDepth = false) override;
-
+    void blitFrom(const RTBlitParams& params) override;
+    
     void setDefaultState(const RTDrawDescriptor& drawPolicy) override;
 };
 

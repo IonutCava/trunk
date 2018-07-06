@@ -481,6 +481,13 @@ inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
         case GFXImageFormat::RGBA32F:
             return GFXDataFormat::FLOAT_32;
 
+        case GFXImageFormat::DEPTH_COMPONENT24:
+        case GFXImageFormat::DEPTH_COMPONENT32:
+            return GFXDataFormat::UNSIGNED_INT;
+
+        case GFXImageFormat::DEPTH_COMPONENT16:
+            return GFXDataFormat::UNSIGNED_SHORT;
+
         case GFXImageFormat::LUMINANCE_ALPHA16F:
         case GFXImageFormat::RED16F:
         case GFXImageFormat::RG16F:

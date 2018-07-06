@@ -61,6 +61,19 @@ struct RenderTargetID {
     RenderTargetUsage _usage = RenderTargetUsage::COUNT;
 };
 
+
+struct ColourBlitEntry {
+    U32 _inputIndex = 0;
+    U32 _inputLayer = 0;
+    U32 _outputIndex = 0;
+    U32 _outputLayer = 0;
+};
+
+struct DepthBlitEntry {
+    U32 _inputLayer = 0;
+    U32 _outputLayer = 0;
+};
+
 class RenderTarget;
 struct RenderTargetHandle {
     RenderTargetHandle()
@@ -107,6 +120,12 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
         bool _isCubeFace = false;
     };
 
+    struct RTBlitParams {
+        RenderTarget* _inputFB = nullptr;
+        vectorEASTL<ColourBlitEntry> _blitColours;
+        vectorEASTL<DepthBlitEntry> _blitDepth;
+    };
+
    protected:
     explicit RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor);
 
@@ -133,8 +152,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual void setMipLevel(U16 writeLevel) = 0;
     virtual void setDefaultState(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
-    virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
-    virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
+    virtual void blitFrom(const RTBlitParams& params) = 0;
 
     /// Used by cubemap FB's
     void drawToFace(const DrawLayerParams& params);

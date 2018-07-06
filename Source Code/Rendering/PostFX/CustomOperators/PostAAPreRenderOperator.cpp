@@ -80,6 +80,7 @@ void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& 
     GFX::BlitRenderTargetCommand blitRTCommand;
     blitRTCommand._source = ldrTarget._targetID;
     blitRTCommand._destination = _samplerCopy._targetID;
+    blitRTCommand._blitColours.emplace_back();
     GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
     TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();

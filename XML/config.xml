@@ -51,7 +51,7 @@
 </GUI>
 
 <rendering>
-  <MSAAsamples>8</MSAAsamples>
+  <MSAAsamples>4</MSAAsamples>
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <renderDetailLevel>4</renderDetailLevel>
   <enableFog>true</enableFog>
@@ -73,7 +73,7 @@
     <shadowDetailLevel>1</shadowDetailLevel>
     <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per slice -->
     <shadowMapResolution>512</shadowMapResolution>
-    <msaaSamples>4</msaaSamples>
+    <MSAAsamples>4</MSAAsamples>
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
     <enableBlurring>false</enableBlurring>
   </shadowMapping>

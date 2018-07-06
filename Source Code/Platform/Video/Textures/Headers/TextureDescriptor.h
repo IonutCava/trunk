@@ -305,7 +305,9 @@ class TextureDescriptor : public PropertyDescriptor {
     inline void internalFormat(GFXImageFormat internalFormat) {
         _internalFormat = internalFormat;
         _baseFormat = baseFromInternalFormat(internalFormat);
-        _dataType = dataTypeForInternalFormat(internalFormat);
+        if (_baseFormat != internalFormat) {
+            _dataType = dataTypeForInternalFormat(internalFormat);
+        }
     }
 
     inline const SamplerDescriptor& getSampler() const {

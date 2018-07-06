@@ -56,7 +56,13 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::BlitRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
                 RenderTarget& destination = renderTargetPool().renderTarget(crtCmd._destination);
-                destination.blitFrom(&source, crtCmd._blitColour, crtCmd._blitDepth);
+
+                RenderTarget::RTBlitParams params = {};
+                params._inputFB = &source;
+                params._blitDepth = crtCmd._blitDepth;
+                params._blitColours = crtCmd._blitColours;
+
+                destination.blitFrom(params);
             } break;
             case GFX::CommandType::RESET_RT: {
                 const GFX::ResetRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::ResetRenderTargetCommand>(cmd);

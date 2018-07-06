@@ -323,19 +323,19 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     drawParams._index = 0;
 
     for (U8 i = 0; i < 2; ++i) {
-            drawParams._layer = i + arrayOffset;
-            beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
-            GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
+        drawParams._layer = i + arrayOffset;
+        beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
+        GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-            // Point our camera to the correct face
-            camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
-            // And generated required matrices
-            // Pass our render function to the renderer
-            params._passIndex = passIndex;
-            params._bufferIndex = i;
-            passMgr.doCustomPass(params, bufferInOut);
-            GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
-        }
+        // Point our camera to the correct face
+        camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
+        // And generated required matrices
+        // Pass our render function to the renderer
+        params._passIndex = passIndex;
+        params._bufferIndex = i;
+        passMgr.doCustomPass(params, bufferInOut);
+        GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
+    }
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
@@ -591,8 +591,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
     GFX::BlitRenderTargetCommand blitDepthBufferCmd;
     blitDepthBufferCmd._source = depthBuffer;
     blitDepthBufferCmd._destination = RenderTargetID(RenderTargetUsage::HI_Z);
-    blitDepthBufferCmd._blitColour = false;
-    blitDepthBufferCmd._blitDepth = true;
+    blitDepthBufferCmd._blitDepth.emplace_back();
     GFX::EnqueueCommand(cmdBufferInOut, blitDepthBufferCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -651,6 +650,11 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::Comm
         theight /= 2;
         level++;
     }
+
+    // Restore mip level
+    beginRenderSubPassCmd._mipWriteLevel = 0;
+    GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
 
     viewportCommand._viewport.set(previousViewport);
     GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
