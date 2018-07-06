@@ -109,6 +109,8 @@ bool Finished(const Task *task) {
 }
 
 TaskHandle& TaskHandle::startTask(TaskPriority prio, U32 taskFlags) {
+    assert(_task->_unfinishedJobs.load() > 0 && "StartTask error: double start call detected!");
+
     Start(_task, *_tp, prio, taskFlags);
     return *this;
 }

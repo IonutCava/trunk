@@ -154,7 +154,8 @@ TEST(TaskPriorityTest)
     test.flushCallbackQueue();
     CHECK_EQUAL(callbackValue, 2u);
 
-    job.startTask(TaskPriority::REALTIME);
+    job = CreateTask(test, testFunction);
+    job.startTask();
     job.wait();
     CHECK_EQUAL(callbackValue, 3u);
     test.flushCallbackQueue();
