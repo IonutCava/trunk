@@ -49,6 +49,9 @@ public:
     virtual void onDeactivate();
 
 protected:
+    virtual void updateViewMatrix();
+
+protected:
     F32             _maxRadius;
     F32             _minRadius;
     F32             _curRadius;
@@ -57,6 +60,7 @@ protected:
     bool            _rotationDirty;
     vec3<F32>       _offsetDir;
     vec3<F32>       _cameraRotation;
+    vec3<F32>       _newEye;
     SceneGraphNode* _targetNode;
     
 };

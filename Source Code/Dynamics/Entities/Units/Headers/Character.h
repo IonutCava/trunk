@@ -75,7 +75,7 @@ public:
     };
 
     Character(CharacterType type, SceneGraphNode* const node);
-    ~Character();
+    virtual ~Character();
 
     /// Set unit type
     inline void setCharacterType(CharacterType type)      {_type = type;}
@@ -102,14 +102,17 @@ public:
     virtual vec3<F32> getLookingDirection();
     /// Rotate the character to look at another character
     virtual void lookAt(const vec3<F32>& targetPos);
+     /// Just before we render the frame
+    virtual bool frameRenderingQueued(const FrameEvent& evt);
 
     inline const vec3<F32>& getRelativeLookingDirection()                           const {return _lookingDirection;}
     inline const void       setRelativeLookingDirection(const vec3<F32>& direction)       {_lookingDirection = direction;}
+
 private:
     CharacterType _type;
     vec3<F32> _lookingDirection;
-    vec3<F32> _newPosition;
-    vec3<F32> _newVelocity;
+    vec3<F32> _newPosition, _oldPosition, _curPosition;
+    vec3<F32> _newVelocity, _curVelocity;
     boost::atomic_bool _positionDirty;
     boost::atomic_bool _velocityDirty;
 };

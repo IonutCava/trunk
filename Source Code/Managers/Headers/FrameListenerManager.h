@@ -55,7 +55,7 @@ public:
     bool frameEnded(const FrameEvent& evt);
 
     /// pass the current time in microseconds as the first parameter
-    void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt);
+    void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt, const D32 interpolationFactor = 1.0);
 
 private:
     /// pass the current time in milliseconds as the first parameter

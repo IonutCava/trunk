@@ -41,7 +41,7 @@ public:
     Quaternion(const Quaternion& q) : _dirty(true) { set(q); }
 
     inline T dot(const Quaternion& rq)  const { return _w*rq._w+_x*rq._x+_y*rq._y+_z*rq._z;  }
-    inline T magnitude()                const { return sqrtf(magnituteSq()); }
+    inline T magnitude()                const { return square_root_tpl(magnituteSq()); }
     inline T magnituteSq()              const { return (_w * _w + _x * _x + _y * _y + _z * _z); }
 
     inline bool compare(const Quaternion& rq, F32 tolerance = 1e-3f) const {
@@ -278,7 +278,7 @@ public:
 
         if ( fTrace > 0.0 ){
             // |w| > 1/2, may as well choose w > 1/2
-            fRoot = (T)sqrt((F32)fTrace + 1.0f);  // 2w
+            fRoot = (T)square_root_tpl((F32)fTrace + 1.0f);  // 2w
             _w = 0.5f*fRoot;
             fRoot = 0.5f/fRoot;  // 1/(4w)
             _x = (rotationMatrix.m[2][1]-rotationMatrix.m[1][2])*fRoot;
@@ -295,7 +295,7 @@ public:
             size_t j = s_iNext[i];
             size_t k = s_iNext[j];
 
-            fRoot = (T)sqrt((F32)(rotationMatrix.m[i][i]-rotationMatrix.m[j][j]-rotationMatrix.m[k][k] + 1.0f));
+            fRoot = (T)square_root_tpl((F32)(rotationMatrix.m[i][i]-rotationMatrix.m[j][j]-rotationMatrix.m[k][k] + 1.0f));
             T* apkQuat[3] = { &_x, &_y, &_z };
             *apkQuat[i] = 0.5f*fRoot;
             fRoot = 0.5f/fRoot;

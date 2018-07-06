@@ -61,14 +61,12 @@ void Camera::restoreCamera() {
 }
 
 void Camera::update(const U64 deltaTime) {
-    _cameraMoveSpeed = _moveSpeedFactor;
-    _cameraTurnSpeed = _turnSpeedFactor;
 #if USE_FIXED_TIMESTEP
-    _cameraMoveSpeed *= Config::TICK_DIVISOR;
-    _cameraTurnSpeed *= Config::TICK_DIVISOR;
+    _cameraMoveSpeed = _moveSpeedFactor * Config::TICK_DIVISOR;
+    _cameraTurnSpeed = _turnSpeedFactor * Config::TICK_DIVISOR;
 #else
-    _cameraMoveSpeed *= FRAME_SPEED_FACTOR;
-    _cameraTurnSpeed *= FRAME_SPEED_FACTOR;
+    _cameraMoveSpeed = _moveSpeedFactor * FRAME_SPEED_FACTOR;
+    _cameraTurnSpeed = _turnSpeedFactor * FRAME_SPEED_FACTOR;
 #endif
 }
 

@@ -153,6 +153,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     //Process physics
     _PFX.process(_currentTimeDelta);
 
+    _cameraMgr->update(_currentTimeDelta);
+
 #if USE_FIXED_TIMESTEP
     _loops = 0;
     U64 deltaTime = SKIP_TICKS;
@@ -160,8 +162,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 #else
     U64 deltaTime = _currentTimeDelta;
 #endif
-        _cameraMgr->update(deltaTime);
-
         // Update scene based on input
         _sceneMgr.processInput(deltaTime);
  
@@ -271,7 +271,7 @@ void Kernel::displaySceneAnaglyph(){
 bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
 
-    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_START,evt);
+    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_START,evt, interpolationFactor);
     if(!frameMgr.framePreRenderStarted(evt)) return false;
 
     _GFX.setInterpolation(interpolationFactor);

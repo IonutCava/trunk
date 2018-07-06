@@ -26,6 +26,7 @@ struct FrameEvent{
   D32 _timeSinceLastEvent;
   D32 _timeSinceLastFrame;
   D32 _currentTime;
+  D32 _interpolationFactor;
 };
 /// FrameListener class.
 ///Has 3 events, associated with the start of rendering a frame, the end of rendering and the end of buffer swapping after frames

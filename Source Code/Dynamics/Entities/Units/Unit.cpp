@@ -2,13 +2,16 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Headers/ApplicationTimer.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Managers/Headers/FrameListenerManager.h"
 
-Unit::Unit(UnitType type, SceneGraphNode* const node) : _type(type),
+Unit::Unit(UnitType type, SceneGraphNode* const node) : FrameListener(),
+                                                        _type(type),
                                                         _node(node),
                                                         _moveSpeed(metre(1)),
                                                         _moveTolerance(0.1f),
                                                         _prevTime(0)
 {
+    REGISTER_FRAME_LISTENER(this);
 }
 
 Unit::~Unit()

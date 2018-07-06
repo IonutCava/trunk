@@ -138,8 +138,8 @@ void AIManager::destroyNavMesh(Navigation::NavigationMesh* const navMesh){
 }
 
 void AIManager::toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool state) {
-	navMesh->debugDraw(state);
-	toggleNavMeshDebugDraw(state);
+    navMesh->debugDraw(state);
+    toggleNavMeshDebugDraw(state);
 }
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {

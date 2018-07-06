@@ -25,68 +25,70 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"
+#include "Rendering/Headers/FrameListener.h"
 
 class SceneGraphNode;
 ///Unit interface
-class Unit {
+class Unit  : public FrameListener {
 public:
-	/// Currently supported unit types
-	enum UnitType{
-		/// "Living beings"
-		UNIT_TYPE_CHARACTER,
-		/// e.g. Cars, planes, ships etc
-		UNIT_TYPE_VEHICLE,
-		/// add more types above this
-		UNIT_TYPE_PLACEHOLDER
-	};
+    /// Currently supported unit types
+    enum UnitType{
+        /// "Living beings"
+        UNIT_TYPE_CHARACTER,
+        /// e.g. Cars, planes, ships etc
+        UNIT_TYPE_VEHICLE,
+        /// add more types above this
+        UNIT_TYPE_PLACEHOLDER
+    };
 
-	Unit(UnitType type, SceneGraphNode* const node);
-	~Unit();
+    Unit(UnitType type, SceneGraphNode* const node);
+    virtual ~Unit();
 
-	/// moveTo makes the unit follow a path from it's current position to the targets position
-	virtual bool moveTo(const vec3<F32>& targetPosition);
-	virtual bool moveToX(const F32 targetPosition);
-	virtual bool moveToY(const F32 targetPosition);
-	virtual bool moveToZ(const F32 targetPosition);
-	/// teleportTo instantly places the unit at the desired position
-	virtual bool teleportTo(const vec3<F32>& targetPosition);
+    /// moveTo makes the unit follow a path from it's current position to the targets position
+    virtual bool moveTo(const vec3<F32>& targetPosition);
+    virtual bool moveToX(const F32 targetPosition);
+    virtual bool moveToY(const F32 targetPosition);
+    virtual bool moveToZ(const F32 targetPosition);
+    /// teleportTo instantly places the unit at the desired position
+    virtual bool teleportTo(const vec3<F32>& targetPosition);
 
-	/// Accesors
-	/// Get the units position in the world
-	inline const vec3<F32>& getCurrentPosition() const {return _currentPosition;}
-	/// Get the units target coordinates in the world
-	inline const vec3<F32>& getTargetPosition()  const {return _currentTargetPosition;}
-	/// Set the units movement speed in metres per second (minimum is 0 = the unit does not move / is rooted)
-	virtual void setMovementSpeed(F32 movementSpeed) {_moveSpeed = movementSpeed; CLAMP<F32>(_moveSpeed,0.0f,100.0f);}
-	/// Get the units current movement speed
-	virtual F32  getMovementSpeed()              const {return _moveSpeed;}
-	/// Set destination tolerance
-	inline void setMovementTolerance(F32 movementTolerance) {_moveTolerance = Util::max(0.1f,movementTolerance);}
-	/// Get the units current movement tolerance
-	inline F32  getMovementTolerance()          const {return _moveTolerance;}
-	/// Set unit type
-	inline void setUnitType(UnitType type) {_type = type;}
-	/// Get unit type
-	inline UnitType getUnitType()               const {return _type;}
-	/// Get bound node
-	inline SceneGraphNode* const getBoundNode() const {return _node;} 
-
+    /// Accesors
+    /// Get the units position in the world
+    inline const vec3<F32>& getCurrentPosition() const {return _currentPosition;}
+    /// Get the units target coordinates in the world
+    inline const vec3<F32>& getTargetPosition()  const {return _currentTargetPosition;}
+    /// Set the units movement speed in metres per second (minimum is 0 = the unit does not move / is rooted)
+    virtual void setMovementSpeed(F32 movementSpeed) {_moveSpeed = movementSpeed; CLAMP<F32>(_moveSpeed,0.0f,100.0f);}
+    /// Get the units current movement speed
+    virtual F32  getMovementSpeed()              const {return _moveSpeed;}
+    /// Set destination tolerance
+    inline void setMovementTolerance(F32 movementTolerance) {_moveTolerance = Util::max(0.1f,movementTolerance);}
+    /// Get the units current movement tolerance
+    inline F32  getMovementTolerance()          const {return _moveTolerance;}
+    /// Set unit type
+    inline void setUnitType(UnitType type) {_type = type;}
+    /// Get unit type
+    inline UnitType getUnitType()               const {return _type;}
+    /// Get bound node
+    inline SceneGraphNode* const getBoundNode() const {return _node;} 
+    /// Just before we render the frame
+    virtual bool frameRenderingQueued(const FrameEvent& evt) {return true;}
 protected:
-	/// Unit type
-	UnitType _type;
-	/// Movement speed (per second)
-	F32 _moveSpeed;
-	/// acceptable distance from target
-	F32 _moveTolerance;
-	/// previous time, in milliseconds when last move was applied
-	D32 _prevTime;
-	/// Unit position in world
-	vec3<F32>  _currentPosition;
-	/// Current destination point cached
-	vec3<F32> _currentTargetPosition;
-	/// SceneGraphNode the unit is managing (used for updating positions and checking collisions
-	SceneGraphNode* _node;
-	mutable SharedLock _unitUpdateMutex;
+    /// Unit type
+    UnitType _type;
+    /// Movement speed (per second)
+    F32 _moveSpeed;
+    /// acceptable distance from target
+    F32 _moveTolerance;
+    /// previous time, in milliseconds when last move was applied
+    D32 _prevTime;
+    /// Unit position in world
+    vec3<F32>  _currentPosition;
+    /// Current destination point cached
+    vec3<F32> _currentTargetPosition;
+    /// SceneGraphNode the unit is managing (used for updating positions and checking collisions
+    SceneGraphNode* _node;
+    mutable SharedLock _unitUpdateMutex;
 };
 
 #endif

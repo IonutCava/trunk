@@ -13,7 +13,9 @@ void ThirdPersonCamera::onActivate() {
 
 bool ThirdPersonCamera::onMouseMove(const OIS::MouseEvent& arg) {
     static vec2<F32> mousePos;
-
+    static const F32 rotationLimitRollLower = M_PI * 0.30f - RADIANS(1);
+    static const F32 rotationLimitRollUpper = M_PI * 0.175f - RADIANS(1);
+    static const F32 rotationLimitYaw = M_PI - RADIANS(1);
     InputInterface::getInstance().setMousePosition(Application::getInstance().getScreenCenter());
 
     mousePos.set(arg.state.X.rel, arg.state.Y.rel);
@@ -23,12 +25,18 @@ bool ThirdPersonCamera::onMouseMove(const OIS::MouseEvent& arg) {
     mousePos.set((mousePos / _mouseSensitivity) * _turnSpeedFactor);
 
     if (mousePos.y != 0) {
-        _cameraRotation.roll -= mousePos.y; //why roll? beats me.
-        _rotationDirty = true;
+        F32 targetRoll = _cameraRotation.roll - mousePos.y;
+        if(targetRoll > -rotationLimitRollLower && targetRoll < rotationLimitRollUpper){
+            _cameraRotation.roll -= mousePos.y; //why roll? beats me.
+            _rotationDirty = true;
+        }
     }
     if (mousePos.x != 0) {
-        _cameraRotation.yaw -= mousePos.x;
-        _rotationDirty = true;
+        F32 targetYaw = _cameraRotation.yaw - mousePos.x;
+        if(targetYaw > -rotationLimitYaw && targetYaw < rotationLimitYaw){
+            _cameraRotation.yaw -= mousePos.x;
+            _rotationDirty = true;
+        }
     }
      
     if(_rotationDirty)

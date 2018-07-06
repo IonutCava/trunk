@@ -82,7 +82,6 @@ bool SceneManager::deinitializeAI(bool continueOnErrors)  {
 }
 
 bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
-    _activeScene->renderState().getCamera().renderLookAt();
     return true;
 }
 

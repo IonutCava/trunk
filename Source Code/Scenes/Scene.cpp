@@ -294,7 +294,7 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
     _aiTask.reset(New Task(kernel->getThreadPool(),
-                           Config::AI_THREAD_UPDATE_FREQUENCY,
+                           1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY,
                            false,
                            false,
                            DELEGATE_BIND(&AIManager::update,

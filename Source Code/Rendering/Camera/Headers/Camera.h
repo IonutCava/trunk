@@ -142,7 +142,7 @@ public:
     ///Called when the camera becomes inactive
     virtual void onDectivate() {}
 protected:
-    void updateViewMatrix();
+    virtual void updateViewMatrix();
 
 protected:
     mat4<F32>       _viewMatrix;

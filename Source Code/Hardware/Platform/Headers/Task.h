@@ -59,7 +59,7 @@ public:
     /// <param name="numberOfTicks">The number of times to call the callback function before the Task is deleted</param>
     /// <param name="*f">The callback function</param>
     Task(boost::threadpool::pool* tp,
-          U32 tickInterval,
+          D32 tickInterval,
           bool startOnCreate,
           I32 numberOfTicks,
           const DELEGATE_CBK& f) : GUIDWrapper(),
@@ -74,7 +74,7 @@ public:
       }
 
     Task(boost::threadpool::pool* tp,
-          U32 tickInterval,
+          D32 tickInterval,
           bool startOnCreate,
           bool runOnce,
           const DELEGATE_CBK& f) : GUIDWrapper(),
@@ -91,7 +91,7 @@ public:
           if(startOnCreate) startTask();
       }
     ~Task();
-    void updateTickInterval(U32 tickInterval){_tickInterval = tickInterval;}
+    void updateTickInterval(D32 tickInterval){_tickInterval = tickInterval;}
     void updateTickCounter(I32 numberOfTicks){_numberOfTicks = numberOfTicks;}
     void startTask();
     void stopTask();
@@ -101,7 +101,7 @@ public:
 
 private:
     mutable SharedLock _lock;
-    mutable boost::atomic<U32> _tickInterval;
+    mutable boost::atomic<D32> _tickInterval;
     mutable boost::atomic<I32> _numberOfTicks;
     mutable boost::atomic<bool> _end;
     mutable boost::atomic<bool> _paused;

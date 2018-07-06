@@ -271,7 +271,7 @@ public:
         DegToRad(angle);
         T c = (T)cos(angle);
         T s = (T)sin(angle);
-        T l = Util::square_root_tpl(x * x + y * y + z * z);
+        T l = square_root_tpl(x * x + y * y + z * z);
         if(l < EPSILON) l = 1;
         else l = 1 / l;
         x *= l;

@@ -31,6 +31,11 @@ void OrbitCamera::onDeactivate() {
     _cameraRotation.reset();
 }
 
+void OrbitCamera::updateViewMatrix() {
+    setEye(_newEye);
+    Camera::updateViewMatrix();
+}
+
 void OrbitCamera::update(const U64 deltaTime) {
     Camera::update(deltaTime);
 
@@ -41,10 +46,8 @@ void OrbitCamera::update(const U64 deltaTime) {
         trans = _targetNode->getTransform();
 
     static vec3<F32> newTargetOrientation;
-    static vec3<F32> newTargetPosition;
 
     if(/*trans->changedLastFrame() || */_rotationDirty || true){
-        newTargetPosition = trans->getPosition();
         trans->getOrientation().getEuler(&newTargetOrientation);
         newTargetOrientation.yaw = M_PI - newTargetOrientation.yaw;
         newTargetOrientation += _cameraRotation;
@@ -53,7 +56,7 @@ void OrbitCamera::update(const U64 deltaTime) {
     }
 
     _orientation.fromEuler(newTargetOrientation, false);
-    setEye(newTargetPosition + _orientation * (_offsetDir * _curRadius));
+    _newEye = trans->getPosition() + _orientation * (_offsetDir * _curRadius);
 }
 
 bool OrbitCamera::onMouseMove(const OIS::MouseEvent& arg) {

@@ -8,9 +8,12 @@ Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit
                                                                        _velocityDirty(false)
 {
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
-    _newVelocity.set(0,0,0);
+    _newVelocity.reset();
+    _curVelocity.reset();
     if(node && node->getTransform()){
         _newPosition = node->getTransform()->getPosition();
+        _oldPosition = _newPosition;
+        _curPosition = _oldPosition;
         _positionDirty = true;
     }
 }
@@ -20,30 +23,36 @@ Character::~Character()
 }
 
 void Character::update(const U64 deltaTime) {
-    if(getBoundNode()){
-        Transform* t = getBoundNode()->getTransform();
-        assert(t != NULL);
-
-        if(_positionDirty){
-            _newPosition.lerp(t->getPosition(), getUsToSec(deltaTime));
-            t->setPosition(_newPosition);
-        }
-
-        if(_velocityDirty){
-            if(_newVelocity.length() > 0){
-                vec3<F32> sourceDirection = getLookingDirection();
-                const Quaternion<F32>& orientation = t->getOrientation();
-                sourceDirection.y = 0.0f;
-                _newVelocity.y = 0.0f;
-                _newVelocity.z *= -1.0f;
-                _newVelocity.normalize();
-                t->rotateSlerp(orientation * rotationFromVToU(sourceDirection, _newVelocity), getUsToSec(deltaTime) * 2.0f);
-            }
-        }
+    if(_positionDirty){
+        _curPosition.lerp(_newPosition, getUsToSec(deltaTime));
+        _positionDirty = false;
     }
-    
-    _positionDirty = false;
-    _velocityDirty = false;
+
+    if(_velocityDirty && _newVelocity.length() > 0.0f){
+        _newVelocity.y = 0.0f;
+        _newVelocity.z *= -1.0f;
+        _newVelocity.normalize();
+        _curVelocity.lerp(_newVelocity, getUsToSec(deltaTime));
+        _velocityDirty = false;
+    }
+}
+
+/// Just before we render the frame
+bool Character::frameRenderingQueued(const FrameEvent& evt) {
+    if(!getBoundNode())
+        return false;
+
+    Transform* t = getBoundNode()->getTransform();
+    assert(t != NULL);
+
+    vec3<F32> sourceDirection = getLookingDirection();
+    sourceDirection.y = 0.0f;
+
+    _oldPosition = t->getPosition();
+    _oldPosition.lerp(_curPosition, evt._interpolationFactor);  
+    t->setPosition(_oldPosition);
+    t->rotateSlerp(t->getOrientation() * rotationFromVToU(sourceDirection, _curVelocity), evt._interpolationFactor);
+    return true;
 }
 
 void Character::setPosition(const vec3<F32>& newPosition){
@@ -57,7 +66,7 @@ void Character::setVelocity(const vec3<F32>& newVelocity){
 }
 
 vec3<F32> Character::getPosition() const {
-    return getBoundNode() ? getBoundNode()->getTransform()->getPosition() : vec3<F32>();
+    return _curPosition;
 }
 
 vec3<F32> Character::getLookingDirection() {
