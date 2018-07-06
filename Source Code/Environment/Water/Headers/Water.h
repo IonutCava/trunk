@@ -53,6 +53,8 @@ class WaterPlane : public SceneNode {
 
     bool getDrawState(RenderStage currentStage);
 
+    bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
+
     void setParams(F32 shininess, const vec2<F32>& noiseTile,
                    const vec2<F32>& noiseFactor, F32 transparency);
 
@@ -92,8 +94,6 @@ class WaterPlane : public SceneNode {
                           const SceneRenderState& sceneRenderState,
                           const RenderTargetID& renderTarget,
                           U32 passIndex);
-    bool cameraUnderwater(const SceneGraphNode& sgn, const vec3<F32>& eyePos);
-
    private:
     /// cached far plane value
     I32 _sideLength;

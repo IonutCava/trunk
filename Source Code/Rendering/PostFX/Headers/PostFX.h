@@ -66,14 +66,21 @@ DEFINE_SINGLETON(PostFX)
 
     void updateResolution(U16 newWidth, U16 newHeight);
 
-    inline void toggleFilter(FilterType filter, const bool state) {
-        state ? SetBit(_filterMask, to_uint(filter)) : ClearBit(_filterMask, to_uint(filter));
+    inline void pushFilter(FilterType filter) {
+        ++_filterStackCount[to_uint(filter)];
+    }
+
+    inline void popFilter(FilterType filter) {
+        // Since this is scriptable, we may pop without a previous push
+        // just to make sure we are in a proper state
+        if (_filterStackCount[to_uint(filter)] > 0) {
+            --_filterStackCount[to_uint(filter)];
+        }
     }
 
     inline bool getFilterState(FilterType filter) const {
-        return BitCompare(_filterMask, to_uint(filter));
+        return _filterStackCount[to_uint(filter)] > 0;
     }
-
 
     // fade the screen to the specified colour lerping over the specified time interval
     // set durationMS to instantly set fade colour
@@ -94,11 +101,6 @@ DEFINE_SINGLETON(PostFX)
         PreRenderOperator::cacheDisplaySettings(context);
     }
   private:
-    bool _enableNoise;
-    bool _enableVignette;
-    bool _underwater;
-
-    U32 _filterMask;
 
     PreRenderBatch _preRenderBatch;
     /// Screen Border
@@ -127,6 +129,7 @@ DEFINE_SINGLETON(PostFX)
     DELEGATE_CBK<> _fadeOutComplete;
     DELEGATE_CBK<> _fadeInComplete;
 
+    FilterStack _filterStackCount;
 END_SINGLETON
 
 };  // namespace Divide

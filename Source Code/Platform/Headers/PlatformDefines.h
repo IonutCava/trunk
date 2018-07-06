@@ -148,7 +148,9 @@ do {                                                \
 #           if CPP_VERSION >= 201402L
 #               define CPP_14_SUPPORT
 #               if CPP_VERSION > 201402L
-#                   define CPP_17_SUPPORT
+#                   if HAS_CPP17
+#                       define CPP_17_SUPPORT
+#                   endif
 #               endif
 #           endif
 #   endif

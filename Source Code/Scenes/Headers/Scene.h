@@ -174,6 +174,7 @@ class Scene : public Resource {
 
     void resetSelection();
     void findHoverTarget();
+    bool checkCameraUnderwater() const;
     void toggleFlashlight();
 
     virtual bool save(ByteBuffer& outputBuffer) const;

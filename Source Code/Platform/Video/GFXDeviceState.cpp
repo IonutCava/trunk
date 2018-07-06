@@ -213,10 +213,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _HIZCullProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
     _displayShader = CreateResource<ShaderProgram>(ResourceDescriptor("display"));
 
+    ParamHandler& par = ParamHandler::instance();
+    PostFX& postFX = PostFX::instance();
+
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
-        ParamHandler::instance().getParam<F32>(_ID("rendering.zNear")),
-        ParamHandler::instance().getParam<F32>(_ID("rendering.zFar"))));
+        par.getParam<F32>(_ID("rendering.zNear")),
+        par.getParam<F32>(_ID("rendering.zFar"))));
     _gpuBlock._needsUpload = true;
 
     // Register a 2D function used for previewing the depth buffer.
@@ -224,9 +227,38 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this)), 0);
     }
 
-    ParamHandler::instance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
+    par.setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system
-    PostFX::instance().init();
+    postFX.init();
+    bool enablePostAA = par.getParam<I32>(_ID("rendering.PostAASamples"), 0) > 0;
+    bool enableSSR = false;
+    bool enableSSAO = par.getParam<bool>(_ID("postProcessing.enableSSAO"), false);
+    bool enableDoF = par.getParam<bool>(_ID("postProcessing.enableDepthOfField"), false);
+    bool enableMotionBlur = false;
+    bool enableBloom = par.getParam<bool>(_ID("postProcessing.enableBloom"), false);
+    bool enableLUT = false;
+
+    if (enablePostAA) {
+        postFX.pushFilter(FilterType::FILTER_SS_ANTIALIASING);
+    }
+    if (enableSSR) {
+        postFX.pushFilter(FilterType::FILTER_SS_REFLECTIONS);
+    }
+    if (enableSSAO) {
+        postFX.pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
+    }
+    if (enableDoF) {
+        postFX.pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
+    }
+    if (enableMotionBlur) {
+        postFX.pushFilter(FilterType::FILTER_MOTION_BLUR);
+    }
+    if (enableBloom) {
+        postFX.pushFilter(FilterType::FILTER_BLOOM);
+    }
+    if (enableLUT) {
+        postFX.pushFilter(FilterType::FILTER_LUT_CORECTION);
+    }
 
     _axisGizmo = newIMP();
     _axisGizmo->name("GFXDeviceAxisGizmo");

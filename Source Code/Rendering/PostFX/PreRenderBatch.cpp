@@ -115,7 +115,7 @@ void PreRenderBatch::idle() {
     }
 }
 
-void PreRenderBatch::execute(U32 filterMask) {
+void PreRenderBatch::execute(const FilterStack& stack) {
     OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
 
@@ -141,7 +141,7 @@ void PreRenderBatch::execute(U32 filterMask) {
 
     // Execute all HDR based operators
     for (PreRenderOperator* op : hdrBatch) {
-        if (op != nullptr && BitCompare(filterMask, to_uint(op->operatorType()))) {
+        if (op != nullptr && stack[to_uint(op->operatorType())] > 0) {
             op->execute();
         }
     }
@@ -160,7 +160,7 @@ void PreRenderBatch::execute(U32 filterMask) {
 
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {
-        if (op != nullptr && BitCompare(filterMask, to_uint(op->operatorType()))) {
+        if (op != nullptr && stack[to_uint(op->operatorType())] > 0) {
             op->execute();
         }
     }

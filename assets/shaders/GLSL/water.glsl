@@ -3,6 +3,7 @@
 #include "vbInputData.vert"
 #include "lightInput.cmn"
 
+out bool _underwater;
 out vec3 _pixToEye;
 out vec4 _vertexWVP;
 
@@ -10,9 +11,11 @@ void main(void)
 {
     computeData();
 
-    _pixToEye   = -vec3(dvd_ViewMatrix * VAR._vertexW);
+    _pixToEye  = -vec3(dvd_ViewMatrix * VAR._vertexW);
 
     _vertexWVP = dvd_ViewProjectionMatrix * VAR._vertexW;
+    _underwater = dvd_cameraPosition.y < VAR._vertexW.y;
+
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal);
 
     gl_Position = _vertexWVP;
@@ -20,16 +23,15 @@ void main(void)
 
 -- Fragment
 
-in vec4 _vertexWVP;
-
+in bool _underwater;
 in vec3 _pixToEye;
+in vec4 _vertexWVP;
 
 out vec4 _colourOut;
 
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 uniform float _waterShininess;
-uniform bool  underwater;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterNoiseNM;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texWaterReflection;
@@ -41,7 +43,7 @@ layout(binding = 3) uniform sampler2D texWaterNoiseDUDV;
 #include "materialData.frag"
 
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return underwater ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
+    return _underwater ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
 }
 
 void main (void)

@@ -90,10 +90,14 @@
 #   elif _MSC_VER == 1900
 #       define CPP_VERSION 201402L
 #   elif _MSC_VER > 1900
-#       define CPP_VERSION 201500 //This may change for C++17
+#       define CPP_VERSION 201500L //This may change for C++17
 #   else
 #       define CPP_VERSION 0
 #   endif
+#endif
+
+#ifndef HAS_CPP17
+#define HAS_CPP17 _HAS_CXX17
 #endif
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

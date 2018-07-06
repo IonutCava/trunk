@@ -13,10 +13,7 @@
 namespace Divide {
 
 PostFX::PostFX()
-    : _enableNoise(false),
-      _enableVignette(false),
-      _underwater(false),
-      _screenBorder(nullptr),
+    : _screenBorder(nullptr),
       _noise(nullptr),
       _randomNoiseCoefficient(0.0f),
       _randomFlashCoefficient(0.0f),
@@ -36,6 +33,8 @@ PostFX::PostFX()
     _postFXTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
     _postFXTarget.drawMask().disableAll();
     _postFXTarget.drawMask().setEnabled(RTAttachment::Type::Colour, 0, true);
+
+    _filterStackCount.fill(0);
 }
 
 PostFX::~PostFX()
@@ -47,8 +46,6 @@ void PostFX::init() {
     Console::printfn(Locale::get(_ID("START_POST_FX")));
     ParamHandler& par = ParamHandler::instance();
     _gfx = &GFX_DEVICE;
-    _enableNoise = par.getParam<bool>(_ID("postProcessing.enableNoise"));
-    _enableVignette = par.getParam<bool>(_ID("postProcessing.enableVignette"));
 
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);
@@ -131,12 +128,12 @@ void PostFX::updateResolution(U16 width, U16 height) {
 }
 
 void PostFX::apply() {
-    _shaderFunctionSelection[0] = _shaderFunctionList[_enableVignette ? 0 : 4];
-    _shaderFunctionSelection[1] = _shaderFunctionList[_enableNoise ? 1 : 4];
-    _shaderFunctionSelection[2] = _shaderFunctionList[_underwater ? 2 : 3];
+    _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];
+    _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
+    _shaderFunctionSelection[2] = _shaderFunctionList[getFilterState(FilterType::FILTER_UNDERWATER) ? 2 : 3];
 
     GFX::Scoped2DRendering scoped2D(true);
-    _preRenderBatch.execute(_filterMask);
+    _preRenderBatch.execute(_filterStackCount);
     _postProcessingShader->bind();
     _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
 
@@ -158,13 +155,8 @@ void PostFX::apply() {
 }
 
 void PostFX::idle() {
-    ParamHandler& par = ParamHandler::instance();
     // Update states
-    _underwater = SceneManager::instance().getActiveScene().state().cameraUnderwater();
-    _enableNoise = par.getParam<bool>(_ID("postProcessing.enableNoise"));
-    _enableVignette = par.getParam<bool>(_ID("postProcessing.enableVignette"));
-
-    if (_enableNoise) {
+    if (getFilterState(FilterType::FILTER_NOISE)) {
         _noiseTimer += Time::ElapsedMilliseconds();
         if (_noiseTimer > _tickInterval) {
             _noiseTimer = 0.0;
@@ -177,23 +169,6 @@ void PostFX::idle() {
     }
 
     _preRenderBatch.idle();
-
-    bool enablePostAA = par.getParam<I32>(_ID("rendering.PostAASamples"), 0) > 0;
-    bool enableSSR = false;
-    bool enableSSAO = par.getParam<bool>(_ID("postProcessing.enableSSAO"), false);
-    bool enableDoF = par.getParam<bool>(_ID("postProcessing.enableDepthOfField"), false);
-    bool enableMotionBlur = false;
-    bool enableBloom = par.getParam<bool>(_ID("postProcessing.enableBloom"), false);
-    bool enableLUT = false;
-
-    _filterMask = 0;
-    toggleFilter(FilterType::FILTER_SS_ANTIALIASING, enablePostAA);
-    toggleFilter(FilterType::FILTER_SS_REFLECTIONS, enableSSR);
-    toggleFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION, enableSSAO);
-    toggleFilter(FilterType::FILTER_DEPTH_OF_FIELD, enableDoF);
-    toggleFilter(FilterType::FILTER_MOTION_BLUR, enableMotionBlur);
-    toggleFilter(FilterType::FILTER_BLOOM, enableBloom);
-    toggleFilter(FilterType::FILTER_LUT_CORECTION, enableLUT);
 }
 
 void PostFX::update(const U64 deltaTime) {

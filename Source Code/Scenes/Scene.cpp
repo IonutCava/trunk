@@ -6,9 +6,11 @@
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Headers/Renderer.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 #include "Environment/Sky/Headers/Sky.h"
+#include "Environment/Water/Headers/Water.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
@@ -430,12 +432,20 @@ U16 Scene::registerInputActions() {
         par.setParam(_ID("freezeLoopTime"), !par.getParam(_ID("freezeLoopTime"), false));
     };
     auto toggleDepthOfField = [](InputParams param) {
-        ParamHandler& par = ParamHandler::instance();
-        par.setParam(_ID("postProcessing.enableDepthOfField"), !par.getParam(_ID("postProcessing.enableDepthOfField"), false));
+        PostFX& postFX = PostFX::instance();
+        if (postFX.getFilterState(FilterType::FILTER_DEPTH_OF_FIELD)) {
+            postFX.popFilter(FilterType::FILTER_DEPTH_OF_FIELD);
+        } else {
+            postFX.pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
+        }
     };
     auto toggleBloom = [](InputParams param) {
-        ParamHandler& par = ParamHandler::instance();
-        par.setParam(_ID("postProcessing.enableBloom"), !par.getParam(_ID("postProcessing.enableBloom"), false));
+        PostFX& postFX = PostFX::instance();
+        if (postFX.getFilterState(FilterType::FILTER_BLOOM)) {
+            postFX.popFilter(FilterType::FILTER_BLOOM);
+        } else {
+            postFX.pushFilter(FilterType::FILTER_BLOOM);
+        }
     };
     auto toggleSkeletonRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);};
     auto toggleAxisLineRendering = [this](InputParams param) {renderState().toggleAxisLines();};
@@ -776,9 +786,15 @@ bool Scene::updateCameraControls() {
 void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
-    state().cameraUnderwater(Camera::activeCamera()->getEye().y < state().waterLevel());
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
     findHoverTarget();
+    if (checkCameraUnderwater()) {
+        state().cameraUnderwater(true);
+        PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
+    } else {
+        state().cameraUnderwater(false);
+        PostFX::instance().popFilter(FilterType::FILTER_UNDERWATER);
+    }
     SceneGraphNode_ptr flashLight = _flashLight.lock();
 
     if (flashLight) {
@@ -891,6 +907,26 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPa
     _aiManager->debugDraw(subPassesInOut, false);
     _lightPool->drawLightImpostors(subPassesInOut);
     _envProbePool->debugDraw(subPassesInOut);
+}
+
+bool Scene::checkCameraUnderwater() const {
+    const Camera& crtCamera = *Camera::activeCamera();
+    const vec3<F32>& eyePos = crtCamera.getEye();
+
+    RenderPassCuller::VisibleNodeList& nodes = SceneManager::instance().getVisibleNodesCache(RenderStage::DISPLAY);
+    for (RenderPassCuller::VisibleNode& node : nodes) {
+        SceneGraphNode_cptr nodePtr = node.second.lock();
+        if (nodePtr) {
+            const std::shared_ptr<SceneNode>& sceneNode = nodePtr->getNode();
+            if (sceneNode->getType() == SceneNodeType::TYPE_WATER) {
+                if (nodePtr->getNode<WaterPlane>()->pointUnderwater(*nodePtr, eyePos)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 void Scene::findHoverTarget() {
