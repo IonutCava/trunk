@@ -12,7 +12,8 @@ varying vec3 vNormalMV;
 //vec4 specular = material[2];
 //float shininess = material[3].x;
 //vec4 emmissive = vec4(material[3].yzw,1.0f);
-uniform mat4 material;
+uniform mat4  material;
+uniform float opacity;
 
 #define LIGHT_DIRECTIONAL		0.0
 #define LIGHT_OMNIDIRECTIONAL	1.0
@@ -30,7 +31,7 @@ uniform sampler2D opacityMap;
 uniform sampler2D specularMap;
 
 vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
-
+	if(opacity < 0.2) discard;
 	float att = 1.0;
 	//If the light isn't directional, compute attenuation
 	if(vLightTBN.w != LIGHT_DIRECTIONAL) {
@@ -74,11 +75,11 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 	if(textureCount > 0){
 		//Get the texture color
 		//Get the texture color. use Replace for the first texture
-		applyTexture2D(texDiffuse0, 0, 0, uv, tBase[0]);
+		applyTexture2D(texDiffuse0, texDiffuse0Op, 0, uv, tBase[0]);
 		//If we have a second diffuse texture
 		if(textureCount > 1){
 			//Apply the second texture over the first
-			applyTexture2D(texDiffuse1, multiTextureType, 0, uv, tBase[0]);
+			applyTexture2D(texDiffuse1, texDiffuse1Op, 0, uv, tBase[0]);
 		} 
 		//If the texture's alpha channel is less than 1/3, discard current fragment
 		if(tBase[0].a < 0.3) discard;

@@ -24,6 +24,8 @@
 struct aiScene;
 struct aiMesh;
 struct aiMaterial;
+enum   aiTextureOp;
+enum   aiTextureMapMode;
 DEFINE_SINGLETON( DVDConverter )
 
 public:
@@ -31,6 +33,10 @@ public:
 private:
 	SubMesh* loadSubMeshGeometry(aiMesh* source, U8 count);
 	Material* loadSubMeshMaterial(aiMaterial* source, const std::string& materialName);
+	Material::TextureOperation aiTextureOpToTextureOperation(aiTextureOp op);
+	Material::ShadingMode      shadingModeInternal(I32 mode);
+	Texture::TextureWrap       aiTextureMapModeToInternal(aiTextureMapMode mode);
+
 private:
 	const aiScene* scene;
 	U32   _ppsteps;

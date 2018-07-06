@@ -83,7 +83,9 @@ bool Terrain::loadVisualResources(TerrainDescriptor* const terrain){
 	ResourceDescriptor textureTextureMap("Terrain Texture Map");
 	textureTextureMap.setResourceLocation(terrain->getVariable("textureMap"));
   	_terrainDiffuseMap = CreateResource<Texture>(textureTextureMap);
-	_terrainDiffuseMap->setTextureWrap(true,true);
+	_terrainDiffuseMap->setTextureWrap(Texture::TextureWrap_Repeat,
+									   Texture::TextureWrap_Repeat,
+									   Texture::TextureWrap_Repeat);
 	_terrainTextures.push_back(CreateResource<Texture>(textureNormalMap));
 	_terrainTextures.push_back(CreateResource<Texture>(textureWaterCaustics));
 	_terrainTextures.push_back(CreateResource<Texture>(textureRedTexture));

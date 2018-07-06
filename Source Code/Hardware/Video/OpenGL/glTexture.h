@@ -44,6 +44,8 @@ private:
 
 private:
 	U32 _type;
+	/// ToDo: Implement this with proper U,V,W mapping! -Ionut
+	U32 glWrapTable[TextureWrap_PLACEHOLDER];
 };
 
 #endif

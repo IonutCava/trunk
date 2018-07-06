@@ -6,8 +6,6 @@ unordered_map<U8, U32> Texture::textureBoundMap;
 
 Texture::Texture(bool flipped) : Resource(),
 								_flipped(flipped),
-								_repeatS(false),
-								_repeatT(false),
 								_minFilter(LINEAR_MIPMAP_LINEAR),
 								_magFilter(LINEAR_MIPMAP_LINEAR),
 								_handle(0),
@@ -20,6 +18,10 @@ Texture::Texture(bool flipped) : Resource(),
 			textureBoundMap.insert(std::make_pair(i,0));
 		}
 	}
+	/// Defaults
+	_wrapU = TextureWrap_Repeat;
+	_wrapV = TextureWrap_Repeat;
+	_wrapW = TextureWrap_Repeat;
 }
 
 

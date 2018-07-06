@@ -29,6 +29,7 @@ public:
 	virtual void Unbind(U16 slot);
 	virtual void Destroy() = 0;
 	virtual void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d) = 0;
+
 	virtual ~Texture() {/*_img.Destroy();*/}
 
 	enum TextureFilters{
@@ -39,6 +40,25 @@ public:
 		NEAREST_MIPMAP_LINEAR   = 0x0004,
 		LINEAR_MIPMAP_LINEAR    = 0x0005
 	};
+	enum TextureWrap {
+		 /** A texture coordinate u|v is translated to u%1|v%1 
+		 */
+		TextureWrap_Wrap = 0x0,
+
+		/** Texture coordinates outside [0...1]
+		 *  are clamped to the nearest valid value.
+		 */
+		TextureWrap_Clamp = 0x1,
+
+		/** If the texture coordinates for a pixel are outside [0...1]
+		 *  the texture is not applied to that pixel
+		 */
+		TextureWrap_Decal = 0x3,
+
+		TextureWrap_Repeat = 0x4,
+
+		TextureWrap_PLACEHOLDER = 0x5
+	};
 
 protected:
 	virtual void Bind() const;
@@ -47,8 +67,21 @@ protected:
 public:
 	virtual void createCopy() {incRefCount();}
 	virtual void removeCopy(){decRefCount();}
-			void resize(U16 width, U16 height);
 
+	void resize(U16 width, U16 height);
+
+	U32     getTextureWrap(U32 index) {
+		switch(index){
+			default:
+			case 0:
+				return _wrapU;
+			case 1:
+				return _wrapV;
+			case 2:
+				return _wrapW;
+
+		};
+	}   
 	inline	U32 getHandle() const {return _handle;} 
 	inline	U16 getWidth() const {return _width;}
 	inline	U16 getHeight() const {return _height;}
@@ -58,8 +91,9 @@ public:
 	static void enableGenerateMipmaps(bool generateMipMaps) {_generateMipmaps=generateMipMaps;}
 
 	bool LoadFile(U32 target, const std::string& name);
-	inline 	void setTextureWrap(bool repeatS, bool repeatT){_repeatS = repeatS; _repeatT = repeatT;}
-	inline	void setTextureFilters(U8 minFilter, U8 magFilter) {_minFilter = minFilter; _magFilter = magFilter;}
+
+	inline 	void  setTextureWrap(TextureWrap wrapU, TextureWrap wrapV,TextureWrap wrapW){_wrapU = wrapU; _wrapV = wrapV; _wrapW = wrapW;}
+	inline	void  setTextureFilters(U8 minFilter, U8 magFilter) {_minFilter = minFilter; _magFilter = magFilter;}
 	
 protected:
 	Texture(bool flipped = false);
@@ -74,7 +108,7 @@ protected:
 	bool _hasTransparency;
 	static bool _generateMipmaps;	
 	mat4  _transformMatrix;
-	bool  _repeatS, _repeatT;
+	U32  _wrapU, _wrapV, _wrapW;
 	U8 _minFilter,_magFilter;
 	static unordered_map<U8/*slot*/, U32/*textureHandle*/> textureBoundMap;
 };

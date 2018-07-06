@@ -11,6 +11,7 @@ bool glTexture::load(const string& name){
 	if(_handle == 0)	return false;
 
 	Bind();
+	glWrapTable[TextureWrap_Repeat] = GL_REPEAT;
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	glPixelStorei(GL_PACK_ALIGNMENT,1);
@@ -18,30 +19,30 @@ bool glTexture::load(const string& name){
 	if(!_generateMipmaps) {
 		glTexParameteri(_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-	else {
+	}else {
 		glTexParameterf(_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameterf(_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(_type, GL_GENERATE_MIPMAP, GL_TRUE);
 	}
-	if(_type == GL_TEXTURE_2D)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	
+	if(_type == GL_TEXTURE_2D){
+		glWrapTable[TextureWrap_Clamp] = GL_CLAMP;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapTable[/*_wrapU*/TextureWrap_Repeat]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapTable[/*_wrapV*/TextureWrap_Repeat]);
 		if(!LoadFile(_type,name))
 			return false;
-	}
-	else if(_type == GL_TEXTURE_CUBE_MAP)
-	{
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	}else if(_type == GL_TEXTURE_CUBE_MAP){
+
+		glWrapTable[TextureWrap_Clamp] = GL_CLAMP_TO_EDGE;
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, glWrapTable[/*_wrapU*/TextureWrap_Clamp]);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, glWrapTable[/*_wrapV*/TextureWrap_Clamp]);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, glWrapTable[/*_wrapW*/TextureWrap_Clamp]);
 
 		I8 i=0;
 		stringstream ss( name );
 		string it;
-		while(std::getline(ss, it, ' '))
-		{
+		while(std::getline(ss, it, ' ')) {
 			if(!LoadFile(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, it))
 				return false;
 			i++;
@@ -138,6 +139,5 @@ void glTexture::Unbind(U16 unit) {
 	glBindTexture(_type, 0);
 	Texture::Unbind(unit);
 }
-
 
 

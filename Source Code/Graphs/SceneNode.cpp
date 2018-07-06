@@ -158,8 +158,14 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 		s->Uniform("transformMatrix",t->getMatrix());
 		s->Uniform("parentTransformMatrix",t->getParentMatrix());
 	}*/
-	if(baseTexture)   s->UniformTexture("texDiffuse0",0);
-	if(secondTexture) s->UniformTexture("texDiffuse1",1);
+	if(baseTexture)   {
+		s->UniformTexture("texDiffuse0",0);
+		s->Uniform("texDiffuse0Op", (I32)_material->getTextureOperation(Material::TEXTURE_BASE));
+	}
+	if(secondTexture) {
+		s->UniformTexture("texDiffuse1",1);
+		s->Uniform("texDiffuse1Op", (I32)_material->getTextureOperation(Material::TEXTURE_SECOND));
+	}
 	if(bumpTexture){
 		s->UniformTexture("texBump",2);
 		s->Uniform("mode", 1);
@@ -179,6 +185,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 		s->Uniform("hasSpecular",false);
 	}
 	s->Uniform("material",_material->getMaterialMatrix());
+	s->Uniform("opacity", _material->getOpacityValue());
 	s->Uniform("textureCount",count);
 	s->Uniform("parallax_factor", 1.f);
 	s->Uniform("relief_factor", 1.f);

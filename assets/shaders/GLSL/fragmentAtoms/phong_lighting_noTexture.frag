@@ -12,8 +12,8 @@ varying vec3 vNormalMV;
 //vec4 specular = material[2];
 //float shininess = material[3].x;
 //vec4 emmissive = vec4(material[3].yzw,1.0f);
-uniform mat4 material;
-
+uniform mat4  material;
+uniform float opacity;
 #define LIGHT_DIRECTIONAL		0.0
 #define LIGHT_OMNIDIRECTIONAL	1.0
 #define LIGHT_SPOT				2.0
@@ -21,7 +21,8 @@ uniform mat4 material;
 #include "shadowMapping.frag"
 
 vec4 Phong(vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
-
+	// discard material if it is bellow opacity threshold
+	if(opacity < 0.2) discard;
 	float att = 1.0;
 	//If the light isn't directional, compute attenuation
 	if(vLightTBN.w != LIGHT_DIRECTIONAL) {

@@ -6,20 +6,34 @@
 #include "Hardware/Video/RenderStateBlock.h"
 #include "Utility/Headers/XMLParser.h"
 
+
+
 Material::Material() : Resource(),
 					   _ambient(vec4(vec3(1.0f,1.0f,1.0f)/1.5f,1)),
 					   _diffuse(vec4(vec3(1.0f,1.0f,1.0f)/1.5f,1)),
 					   _specular(1.0f,1.0f,1.0f,1.0f),
 					   _emissive(0.6f,0.6f,0.6f),
 					   _shininess(5),
+					   _opacity(1.0f),
 					   _materialMatrix(_ambient,_diffuse,_specular,vec4(_shininess,_emissive.x,_emissive.y,_emissive.z)),
 					   _computedLightShaders(false),
 					   _dirty(false),
 					   _doubleSided(false),
 					   _castsShadows(true),
 					   _receiveShadows(true),
+					   _shadingMode(SHADING_PHONG), /// phong shading by default
 					   _shaderRef(NULL)
 {
+	_textureOperationTable[TextureOperation_Replace]   = 0;
+	_textureOperationTable[TextureOperation_Multiply]  = 1;
+	_textureOperationTable[TextureOperation_Decal]     = 2;
+	_textureOperationTable[TextureOperation_Blend]     = 3;
+	_textureOperationTable[TextureOperation_Add]       = 4;
+	_textureOperationTable[TextureOperation_SmoothAdd] = 5;
+	_textureOperationTable[TextureOperation_SignedAdd] = 6;
+	_textureOperationTable[TextureOperation_Divide]    = 7;
+	_textureOperationTable[TextureOperation_Subtract]  = 8;
+	_textureOperationTable[TextureOperation_Combine]   = 9;
 
    _textures[TEXTURE_BASE] = NULL;
    _textures[TEXTURE_BUMP] = NULL;
@@ -100,7 +114,7 @@ void Material::createCopy(){
 //base = base texture
 //second = second texture used for multitexturing
 //bump = bump map
-void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture) {
+void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, TextureOperation op) {
 	if(_textures[textureUsage]){
 		RemoveResource(_textures[textureUsage]);
 	}else{
@@ -108,9 +122,49 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture) {
 		_computedLightShaders = false; //recompute shaders on texture change
 	}
 	_textures[textureUsage] = texture;
+	_operations[textureUsage] = op;
 
 	_dirty = true;
 }
+
+Material::TextureOperation Material::getTextureOperation(U32 op){
+	TextureOperation operation = TextureOperation_Replace;
+	switch(op){
+		default:
+		case 0:
+			operation = TextureOperation_Replace;
+			break;
+		case 1:
+			operation = TextureOperation_Multiply;
+			break;
+		case 2:
+			operation = TextureOperation_Decal;
+			break;
+		case 3:
+			operation = TextureOperation_Blend;
+			break;
+		case 4:
+			operation = TextureOperation_Add;
+			break;
+		case 5:
+			operation = TextureOperation_SmoothAdd;
+			break;
+		case 6:
+			operation = TextureOperation_SignedAdd;
+			break;
+		case 7:
+			operation = TextureOperation_Divide;
+			break;
+		case 8:
+			operation = TextureOperation_Subtract;
+			break;
+		case 9:
+			operation = TextureOperation_Combine;
+			break;
+	};
+	return operation;
+}
+
 
 //Here we set the shader's name
 ShaderProgram* Material::setShaderProgram(const std::string& shader){
@@ -210,6 +264,10 @@ bool Material::isTranslucent(){
 	/// diffuse channel alpha
 	if(getMaterialMatrix().getCol(1).a < 1.0f) state = true;
 
+	/// if we have a global opacity value
+	if(getOpacityValue() < 1.0f){
+		state = true;
+	}
 	/// Disable culling for translucent items
 	if(state){
 		typedef unordered_map<RENDER_STAGE, RenderStateBlock* >::value_type stateValue;

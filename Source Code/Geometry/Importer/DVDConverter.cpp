@@ -167,92 +167,151 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 		 
 }
 
+/// Load the material for the current SubMesh
 Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& materialName){
 
+	/// See if the material already exists in a cooked state (XML file)
 	Material* tempMaterial = XML::loadMaterial(materialName);
 	if(tempMaterial) return tempMaterial;
+	/// If it's not defined in an XML File, see if it was previously loaded by the Resource Manager
 	bool skip = false;
 	ResourceDescriptor tempMaterialDescriptor(materialName);
 	if(FindResource(materialName)) skip = true;
+	/// If we found it in the Resource Manager, return a copy of it
 	tempMaterial = CreateResource<Material>(tempMaterialDescriptor);
-
 	if(skip) return tempMaterial;
-	ParamHandler& par = ParamHandler::getInstance();
-	aiReturn result = AI_SUCCESS; 
-	aiString tName; aiTextureMapping mapping; U32 uvInd;
-	F32 blend;  aiTextureOp op; aiTextureMapMode mode[3];
 
-	aiColor3D tempColor;	
-	F32 alpha = 1.0f;
+	ParamHandler& par = ParamHandler::getInstance();
+
+	/// Compare load results with the standard succes value
+	aiReturn result = AI_SUCCESS; 
+	
+	/// default diffuse color
 	vec4 tempColorVec4(0.8f, 0.8f, 0.8f,1.0f);
 
-	if(AI_SUCCESS == source->Get(AI_MATKEY_COLOR_DIFFUSE,tempColor)){
-		tempColorVec4.r = tempColor.r;
-		tempColorVec4.g = tempColor.g;
-		tempColorVec4.b = tempColor.b;
-		if(AI_SUCCESS == source->Get(AI_MATKEY_COLOR_TRANSPARENT,alpha)){
-			tempColorVec4.a = alpha;
-			if(alpha < 1.0f){
-				/// Disable culling
-				tempMaterial->setDoubleSided(true);
-			}
-		}
+	/// Load diffuse color
+	aiColor4D diffuse;
+	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_DIFFUSE, &diffuse)){
+		tempColorVec4.r = diffuse.r;
+		tempColorVec4.g = diffuse.g;
+		tempColorVec4.b = diffuse.b;
+		tempColorVec4.a = diffuse.a;
+	}else{
+		D_PRINT_FN("Material [ %s ] does not have a diffuse color", materialName.c_str());
 	}
 	tempMaterial->setDiffuse(tempColorVec4);
 		
+	/// default ambient color
 	tempColorVec4.set(0.2f, 0.2f, 0.2f, 1.0f);
-	if(AI_SUCCESS == source->Get(AI_MATKEY_COLOR_AMBIENT,tempColor)){
-		tempColorVec4.r = tempColor.r;
-		tempColorVec4.g = tempColor.g;
-		tempColorVec4.b = tempColor.b;
+
+	/// Load ambient color
+	aiColor4D ambient;
+	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_AMBIENT,&ambient)){
+		tempColorVec4.r = ambient.r;
+		tempColorVec4.g = ambient.g;
+		tempColorVec4.b = ambient.b;
+		tempColorVec4.a = ambient.a;
+	}else{
+		D_PRINT_FN("Material [ %s ] does not have an ambient color", materialName.c_str());
 	}
 	tempMaterial->setAmbient(tempColorVec4);
 		
-	tempColorVec4.set(0.0f, 0.0f, 0.0f, 1.0f);
-	if(AI_SUCCESS == source->Get(AI_MATKEY_COLOR_SPECULAR,tempColor)){
-		tempColorVec4.r = tempColor.r;
-		tempColorVec4.g = tempColor.g;
-		tempColorVec4.b = tempColor.b;
+	/// default specular color
+	tempColorVec4.set(1.0f,1.0f,1.0f,1.0f);
+
+	// Load specular color
+	aiColor4D specular;
+	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_SPECULAR,&specular)){
+		tempColorVec4.r = specular.r;
+		tempColorVec4.g = specular.g;
+		tempColorVec4.b = specular.b;
+		tempColorVec4.a = specular.a;
+	}else{
+		D_PRINT_FN("Material [ %s ] does not have a specular color", materialName.c_str());
 	}
 	tempMaterial->setSpecular(tempColorVec4);
 
+	/// default emissive color
 	tempColorVec4.set(0.0f, 0.0f, 0.0f, 1.0f);
-	if(AI_SUCCESS == source->Get(AI_MATKEY_COLOR_EMISSIVE,tempColor)){
-		tempColorVec4.r = tempColor.r;
-		tempColorVec4.g = tempColor.g;
-		tempColorVec4.b = tempColor.b;
+
+	/// Load emissive color
+	aiColor4D emissive;
+	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_EMISSIVE,&emissive)){
+		tempColorVec4.r = emissive.r;
+		tempColorVec4.g = emissive.g;
+		tempColorVec4.b = emissive.b;
+		tempColorVec4.b = emissive.a;
 	}
 	tempMaterial->setEmissive(tempColorVec4);
 
+	/// default opacity value
+	F32 opacity = 1.0f;
+	/// Load material opacity value
+	aiGetMaterialFloat(source,AI_MATKEY_OPACITY,&opacity);
+	tempMaterial->setOpacityValue(opacity);
 
-	F32 shininess = 0,strength = 0;
-	U32 max = 1;
 
-	aiReturn ret1 = aiGetMaterialFloatArray( source, AI_MATKEY_SHININESS, &shininess, &max);
-	max = 1;
-	aiReturn ret2 = aiGetMaterialFloatArray( source, AI_MATKEY_SHININESS_STRENGTH, &strength, &max);
-	if((ret1 == AI_SUCCESS) && (ret2 == AI_SUCCESS))
-		tempMaterial->setShininess(shininess * strength);
-	else
-		tempMaterial->setShininess(50.0f);
+	/// default shading model
+	I32 shadingModel = Material::SHADING_PHONG;
+	/// Load shading model
+	aiGetMaterialInteger(source,AI_MATKEY_SHADING_MODEL,&shadingModel);
+	tempMaterial->setShadingMode(shadingModeInternal(shadingModel));
+
+	/// Default shininess values
+	F32 shininess = 15,strength = 1;
+	/// Load shininess
+	aiGetMaterialFloat(source,AI_MATKEY_SHININESS, &shininess);
+	/// Load shininess strength
+	aiGetMaterialFloat( source, AI_MATKEY_SHININESS_STRENGTH, &strength);
+	tempMaterial->setShininess(shininess * strength);
+
+	/// check if material is two sided
+	I32 two_sided = 0;
+	aiGetMaterialInteger(source, AI_MATKEY_TWOSIDED, &two_sided);
+	tempMaterial->setDoubleSided(two_sided != 0);
+
+	aiString tName; 
+	aiTextureMapping mapping; 
+	U32 uvInd;
+	F32 blend; 
+	aiTextureOp op;
+	aiTextureMapMode mode[3];
 
 	U8 count = 0;
+	/// While we still have diffuse textures
 	while(result == AI_SUCCESS){
-		result = source->GetTexture(aiTextureType_DIFFUSE, count, &tName, &mapping, &uvInd, &blend, &op, mode);
+		/// Load each one
+		result = source->GetTexture(aiTextureType_DIFFUSE, count, 
+									&tName, 
+									&mapping, 
+									&uvInd,
+									&blend,
+									&op, 
+									mode);
 		if(result != AI_SUCCESS) break;
+		/// get full path
 		string path = tName.data;
+		/// get only image name
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		/// try to find a path name
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		/// look in default texture folder
 		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
-
+		/// if we have a name and an extension
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
+			/// Is this the base texture or the secondary?
 			Material::TextureUsage item;
 			if(count == 0) item = Material::TEXTURE_BASE;
 			else if(count == 1) item = Material::TEXTURE_SECOND;
+			/// Load the texture resource
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(item,CreateResource<Texture2D>(texture));
+			Texture2D* textureRes = CreateResource<Texture2D>(texture);
+			tempMaterial->setTexture(item,textureRes,aiTextureOpToTextureOperation(op));
+			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
+									   aiTextureMapModeToInternal(mode[1]),
+									   aiTextureMapModeToInternal(mode[2])); 
 		}//endif
 
 		tName.Clear();
@@ -272,7 +331,11 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,CreateResource<Texture2D>(texture));
+			Texture2D* textureRes = CreateResource<Texture2D>(texture);
+			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOpToTextureOperation(op));
+			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
+									   aiTextureMapModeToInternal(mode[1]),
+									   aiTextureMapModeToInternal(mode[2])); 
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -286,7 +349,11 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_BUMP,CreateResource<Texture2D>(texture));
+			Texture2D* textureRes = CreateResource<Texture2D>(texture);
+			tempMaterial->setTexture(Material::TEXTURE_BUMP,textureRes,aiTextureOpToTextureOperation(op));
+			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
+									   aiTextureMapModeToInternal(mode[1]),
+									   aiTextureMapModeToInternal(mode[2])); 
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -301,10 +368,28 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_OPACITY,CreateResource<Texture2D>(texture));
+			Texture2D* textureRes = CreateResource<Texture2D>(texture);
+			tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes,aiTextureOpToTextureOperation(op));
 			tempMaterial->setDoubleSided(true);
+			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
+									   aiTextureMapModeToInternal(mode[1]),
+									   aiTextureMapModeToInternal(mode[2])); 
 		}//endif
-	}//endif
+	}else{
+		I32 flags = 0;
+		aiGetMaterialInteger(source,AI_MATKEY_TEXFLAGS_DIFFUSE(0),&flags);
+
+		// try to find out whether the diffuse texture has any
+		// non-opaque pixels. If we find a few, use it as opacity texture
+		if (tempMaterial->getTexture(Material::TEXTURE_BASE)){
+			if(!(flags & aiTextureFlags_IgnoreAlpha) && 
+				tempMaterial->getTexture(Material::TEXTURE_BASE)->hasTransparency()){
+					Texture2D* textureRes = CreateResource<Texture2D>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_BASE)->getName()));
+					tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes);
+			}
+		}
+	}
+
 	result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
 		string path = tName.data;
@@ -317,23 +402,72 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,CreateResource<Texture2D>(texture));
+			Texture2D* textureRes = CreateResource<Texture2D>(texture);
+			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,textureRes,aiTextureOpToTextureOperation(op));
+			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
+									   aiTextureMapModeToInternal(mode[1]),
+									   aiTextureMapModeToInternal(mode[2])); 
 		}//endif
 	}//endif
 
-	max = 1;
-	I32 two_sided = 0;
-	if((result == aiGetMaterialIntegerArray(source, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided){
-		tempMaterial->setDoubleSided(true);
-	}
-	F32 opacity = 1.0f;;
-	if (result == aiGetMaterialFloat(source, AI_MATKEY_OPACITY, &opacity)){
-		vec4 diffuse = tempMaterial->getMaterialMatrix().getCol(1);
-		diffuse.a = opacity;
-		tempMaterial->setDiffuse(diffuse);
-		/// Disable culling
-		tempMaterial->setDoubleSided(true);
-	}
-
 	return tempMaterial;
+}
+
+Material::TextureOperation DVDConverter::aiTextureOpToTextureOperation(aiTextureOp op){
+	switch(op){
+		case aiTextureOp_Multiply:
+			return Material::TextureOperation_Multiply;
+		case aiTextureOp_Add:
+			return Material::TextureOperation_Add;
+		case aiTextureOp_Subtract:
+			return Material::TextureOperation_Subtract;
+		case aiTextureOp_Divide:
+			return Material::TextureOperation_Divide;
+		case aiTextureOp_SmoothAdd:
+			return Material::TextureOperation_SmoothAdd;
+		case aiTextureOp_SignedAdd:
+			return Material::TextureOperation_SignedAdd;
+		default:
+			return Material::TextureOperation_Replace;
+	};
+}
+
+Material::ShadingMode DVDConverter::shadingModeInternal(I32 mode){
+	switch(mode){
+		case aiShadingMode_Flat:
+			return Material::SHADING_FLAT;
+		case aiShadingMode_Gouraud:
+			return Material::SHADING_GOURAUD;
+		default:
+		case aiShadingMode_Phong:
+			return Material::SHADING_PHONG;
+		case aiShadingMode_Blinn:
+			return Material::SHADING_BLINN;
+		case aiShadingMode_Toon:
+			return Material::SHADING_TOON;
+		case aiShadingMode_OrenNayar:
+			return Material::SHADING_OREN_NAYAR;
+		case aiShadingMode_Minnaert:
+			return Material::SHADING_MINNAERT;
+		case aiShadingMode_CookTorrance:
+			return Material::SHADING_COOK_TORRANCE;
+		case aiShadingMode_NoShading:
+			return Material::SHADING_NONE;
+		case aiShadingMode_Fresnel:
+			return Material::SHADING_FRESNEL;
+	};
+}
+
+Texture::TextureWrap DVDConverter::aiTextureMapModeToInternal(aiTextureMapMode mode){
+	switch(mode){
+		case aiTextureMapMode_Wrap:
+			return Texture::TextureWrap_Wrap;
+		case aiTextureMapMode_Clamp:
+			return Texture::TextureWrap_Clamp;
+		case aiTextureMapMode_Decal:
+			return Texture::TextureWrap_Decal;
+		default:
+		case aiTextureMapMode_Mirror:
+			return Texture::TextureWrap_Repeat;
+	};
 }

@@ -46,8 +46,39 @@ public:
 	  TEXTURE_MIRROR = 10,
 	  TEXTURE_LIGHTMAP = 11
   };
+  /// How should each texture be added
+  enum TextureOperation {
+	TextureOperation_Multiply    = 0x0,
+	TextureOperation_Add         = 0x1,
+	TextureOperation_Subtract    = 0x2,
+	TextureOperation_Divide      = 0x3,
+	TextureOperation_SmoothAdd   = 0x4,
+	TextureOperation_SignedAdd   = 0x5,
+	TextureOperation_Combine     = 0x6,
+	TextureOperation_Decal       = 0x7,
+	TextureOperation_Blend       = 0x8,
+	TextureOperation_Replace     = 0x9,
+	TextureOperation_PLACEHOLDER = 0x10
+  };
+
+  /// Not used yet but implemented for shading model selection in shaders
+  /// This enum matches the ASSIMP one on a 1-to-1 basis
+  enum ShadingMode {
+
+	SHADING_FLAT          = 0x1,
+    SHADING_GOURAUD       = 0x2,
+	SHADING_PHONG         = 0x3,
+	SHADING_BLINN         = 0x4,
+	SHADING_TOON          = 0x5,
+    SHADING_OREN_NAYAR    = 0x6,
+	SHADING_MINNAERT      = 0x7,
+    SHADING_COOK_TORRANCE = 0x8,
+	SHADING_NONE          = 0x9,
+	SHADING_FRESNEL       = 0xa
+};
 
 typedef unordered_map<TextureUsage, Texture2D*> textureMap;
+typedef unordered_map<TextureUsage, TextureOperation> textureOperation;
 
 public:
   Material();
@@ -55,31 +86,40 @@ public:
 
   bool load(const std::string& name) {_name = name; return true;}
   bool unload();
-  inline U8              getTextureCount() {return _textures.size();}
-  Texture2D*	 const   getTexture(TextureUsage textureUsage);
-  ShaderProgram* const   getShaderProgram();
-  inline bool            isDirty() {return _dirty;}
-  void setTexture(TextureUsage textureUsage, Texture2D* const texture);
-  ShaderProgram* setShaderProgram(const std::string& shader);
-  void setDoubleSided(bool state);
-  bool isDoubleSided() {return _doubleSided;}
-
-  inline RenderStateBlock* getRenderState(RENDER_STAGE currentStage) {return _defaultRenderStates[currentStage];}
-  RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, RENDER_STAGE renderStage);
 
   inline void setAmbient(const vec4& value) {_ambient = value; _materialMatrix.setCol(0,value);}
   inline void setDiffuse(const vec4& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
   inline void setSpecular(const vec4& value) {_specular = value; _materialMatrix.setCol(2,value);}
   inline void setEmissive(const vec3& value) {_emissive = value; _materialMatrix.setCol(3,vec4(_shininess,value.x,value.y,value.z));}
   inline void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
+  inline void setOpacityValue(F32 value) {_opacity = value;}
   inline void setCastsShadows(bool state) {_castsShadows = state;}
   inline void setReceivesShadows(bool state) {_receiveShadows = state;}
+  inline void setShadingMode(ShadingMode mode) {_shadingMode = mode;}
+  		 void setDoubleSided(bool state);
+		 void setTexture(TextureUsage textureUsage, Texture2D* const texture, TextureOperation op = TextureOperation_Replace);
+
+  ShaderProgram*    setShaderProgram(const std::string& shader);
+  RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, RENDER_STAGE renderStage);
 
   inline mat4& getMaterialMatrix()  {return _materialMatrix;}
-  P32   getMaterialId();
+         P32   getMaterialId();
   inline bool  getCastsShadows()    {return _castsShadows;}
   inline bool  getReceivesShadows() {return _receiveShadows;}
-  bool  isTranslucent();
+  inline F32   getOpacityValue()    {return _opacity;}
+  inline U8    getTextureCount()    {return _textures.size();}
+
+  inline ShadingMode             getShadingMode()                          {return _shadingMode;}
+  inline RenderStateBlock*       getRenderState(RENDER_STAGE currentStage) {return _defaultRenderStates[currentStage];}
+  inline U32               const getTextureOperation(TextureUsage textureUsage) {return _textureOperationTable[_operations[textureUsage]];}
+         Texture2D*	       const getTexture(TextureUsage textureUsage);
+         ShaderProgram*    const getShaderProgram();
+
+  inline bool isDirty()       {return _dirty;}
+  inline bool isDoubleSided() {return _doubleSided;}
+         bool isTranslucent();
+
+  TextureOperation getTextureOperation(U32 op);
 
   void computeLightShaders(); //Set shaders;
   void createCopy();
@@ -92,9 +132,9 @@ private:
   vec4 _specular;          /* specular component */
   vec3 _emissive;          /* emissive component */
   F32 _shininess;          /* specular exponent */
+  F32 _opacity;			   /* material opacity value*/
   mat4 _materialMatrix; /* all properties bundled togheter */
-
-  textureMap _textures;
+  ShadingMode _shadingMode;
   std::string _shader; /*shader name*/
   bool _computedLightShaders;
   P32  _matId;
@@ -105,8 +145,14 @@ private:
   ShaderProgram* _shaderRef;
 
   /// use this map to add more render states mapped to a specific state
-   /// 3 render state's: Normal, reflection and shadow
+  /// 3 render state's: Normal, reflection and shadow
   unordered_map<RENDER_STAGE, RenderStateBlock* > _defaultRenderStates;
+  /// use this map to add textures to the material
+  textureMap _textures;
+  /// use the bellow map to define texture operation
+  textureOperation _operations;
+  /// Map texture operation to values the shader understands
+  U32 _textureOperationTable[TextureOperation_PLACEHOLDER];
 };
 
 #endif
