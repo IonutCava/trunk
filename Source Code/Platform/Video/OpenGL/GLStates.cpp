@@ -134,13 +134,14 @@ void GL_API::clearStates() {
     }
     GL_API::setBlendColour(UColour(0u), true);
 
+    GL_API::setScissor(_context.getBaseViewport());
+
     s_activeWindowGUID = -1;
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
     s_activePixelBuffer = nullptr;
     s_activeViewport.set(-1);
     s_previousViewport.set(-1);
-    s_activeScissor.set(-1);
     s_activeClearColour.set(DefaultColours::DIVIDE_BLUE);
 
     Attorney::GLAPIShaderProgram::unbind();

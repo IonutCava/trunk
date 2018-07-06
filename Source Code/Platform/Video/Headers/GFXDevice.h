@@ -317,6 +317,8 @@ public:  // Accessors and Mutators
 
     inline const Rect<I32>& getCurrentViewport() const { return _viewport; }
 
+    inline const Rect<I32>& getBaseViewport() const { return _baseViewport; }
+
     inline const RenderStagePass& setRenderStagePass(const RenderStagePass& stage);
 
     void addDebugView(const std::shared_ptr<DebugView>& view);

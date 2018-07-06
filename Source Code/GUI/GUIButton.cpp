@@ -60,15 +60,15 @@ GUIButton::~GUIButton()
 
 void GUIButton::setActive(const bool active) {
     if (isActive() != active) {
-        _btnWindow->setEnabled(active);
         GUIElement::setActive(active);
+        _btnWindow->setEnabled(active);
     }
 }
 
 void GUIButton::setVisible(const bool visible) {
     if (isVisible() != visible) {
-        _btnWindow->setVisible(visible);
         GUIElement::setVisible(visible);
+        _btnWindow->setVisible(visible);
     }
 }
 

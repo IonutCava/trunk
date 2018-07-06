@@ -122,6 +122,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
     if (parent().platformContext().config().gui.cegui.enabled) {
         if (!parent().platformContext().config().gui.cegui.skipRendering) {
+
             _ceguiRenderer->beginRendering();
 
             _ceguiRenderTextureTarget->clear();
